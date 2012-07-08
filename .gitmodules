@@ -1,0 +1,3 @@
+[submodule "vendor/cjs"]
+	path = vendor/cjs
+	url = https://github.com/soney/ConstraintJS
