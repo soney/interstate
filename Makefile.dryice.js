@@ -40,7 +40,7 @@ if(require.main === module) { //Called directly
 		var package_info = JSON.parse(fs.readFileSync("package.json")); 
 		var version = package_info.version;
 		var filename = "dist/cjs_"+version+".zip";
-		var zip = spawn('zip', ['-rj', filename, "build/cjs.js", "build/cjs.min.js"], {cwd: __dirname});
+		var zip = spawn('zip', ['-rj', filename, "build/red.js", "build/red.min.js"], {cwd: __dirname});
 		zip.on('exit', function (code) {
 			if(code !== 0) {
 				console.log('zip process exited with code ' + code);

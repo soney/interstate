@@ -1,3 +1,6 @@
 [submodule "src/vendor/cjs"]
 	path = src/vendor/cjs
 	url = https://github.com/soney/ConstraintJS
+[submodule "src/vendor/jsep"]
+	path = src/vendor/jsep
+	url = https://github.com/soney/jsep.git

@@ -21,25 +21,21 @@ var c = concat = function() {
 var path = "";
 var build_path = cp(path, "build");
 var src = cp(path, "src");
-var vendor_src = "vendor";
+var vendor_src = cp(src, "vendor");
 var cjs_path = cp(vendor_src, "cjs");
 
-var cjs_inc = require("./vendor/cjs/include_libs");
-console.log(cjs_inc);
-console.log("HI");
+var cjs_inc = require("./src/vendor/cjs/include_libs");
 
 exports.main_build = cp(build_path, ["red.min.js"]);
 
 exports.main_src = c(
 	cp(cjs_path, cjs_inc.main_src)
+	, cp(vendor_path, "jsep/src/jsep")
 	, cp(src, [
+				"core.js"
+				, "cell_parser.js"
 			])
 );
-
-var core_tests_dir = cp(path, "test/core/unit_tests");
-exports.core_tests = cp(core_tests_dir, [	"util_tests.js"
-											, "primitive_type_tests.js"
-											]);
 
 var ends_with = function(str1, str2) {
 	return str1.slice(str1.length-str2.length) == str2;
