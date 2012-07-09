@@ -5,13 +5,13 @@ var devel_mode = true;
 var express = require('express');
 var fs = require('fs');
 var ejs = require('ejs');
-var cjs_inc = require('./include_libs');
+var red_inc = require('./include_libs');
 
 var app = express.createServer();
 if(devel_mode) {
-	cjs_inc.main = cjs_inc.main_src;
+	red_inc.main = red_inc.main_src;
 } else {
-	cjs_inc.main = cjs_inc.main_build;
+	red_inc.main = red_inc.main_build;
 }
 var text_after = function(str, portion) {
 	var index = str.lastIndexOf(portion);
@@ -49,7 +49,7 @@ var jslint_options = { //http://www.jslint.com/lint.html
 	, nomen: true // true if names should not be checked for initial or trailing underbars.
 	, white: true // true if strict whitespace rules should be ignored.
 	, plusplus: true // true if ++ and -- should be allowed.
-	, predef: ["cjs", "module", "exports"]
+	, predef: ["red", "module", "exports"]
 };
 
 app.configure(function() {
@@ -113,24 +113,24 @@ app.configure(function() {
 			res.end(body);
 		};
 		if(command==="recompile") {
-			var dev_mode = cjs_inc.main === cjs_inc.main_src;
+			var dev_mode = red_inc.main === red_inc.main_src;
 			delete require.cache[__dirname+'/include_libs.js']
-			cjs_inc = require(__dirname + '/include_libs');
+			red_inc = require(__dirname + '/include_libs');
 			delete require.cache[__dirname+'/Makefile.dryice.js']
 			var makefile = require("./Makefile.dryice");
-			cjs_inc.main = dev_mode ? cjs_inc.main_src : cjs_inc.main_build;
+			red_inc.main = dev_mode ? red_inc.main_src : red_inc.main_build;
 			makefile.build(do_confirm);
 		} else if(command === "refresh_include") {
-			var dev_mode = cjs_inc.main === cjs_inc.main_src;
+			var dev_mode = red_inc.main === red_inc.main_src;
 			delete require.cache[__dirname+'/include_libs.js']
-			cjs_inc = require(__dirname + '/include_libs');
-			cjs_inc.main = dev_mode ? cjs_inc.main_src : cjs_inc.main_build;
+			red_inc = require(__dirname + '/include_libs');
+			red_inc.main = dev_mode ? red_inc.main_src : red_inc.main_build;
 			do_confirm();
 		} else if(command === "make_src_mode") {
-			cjs_inc.main = cjs_inc.main_src;
+			red_inc.main = red_inc.main_src;
 			do_confirm();
 		} else if(command === "make_build_mode") {
-			cjs_inc.main = cjs_inc.main_build;
+			red_inc.main = red_inc.main_build;
 			do_confirm();
 		}
 	});
@@ -155,12 +155,12 @@ app.configure(function() {
 				}
 				var locals = {
 					include: function(files) {
-						return cjs_inc.include_templates(files.map(function(file) {
+						return red_inc.include_templates(files.map(function(file) {
 							return relative_path+file;
 						}));
 					}
-					, cjs_inc: cjs_inc
-					, dev_mode: cjs_inc.core === cjs_inc.src
+					, red_inc: red_inc
+					, dev_mode: red_inc.core === red_inc.src
 				};
 
 				if(filename.indexOf("jslint")>=0) {
@@ -180,7 +180,7 @@ app.configure(function() {
 							}
 						});
 					};
-					var files = req.query.filename ? [req.query.filename] : cjs_inc.main_src;
+					var files = req.query.filename ? [req.query.filename] : red_inc.main_src;
 					callback_map(files, function(file_name, good_callback) {
 						lintFile(file_name, jslint_options, function(report) {
 							good_callback(report);

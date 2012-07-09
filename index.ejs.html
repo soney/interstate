@@ -1,17 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>cjs</title>
+    <title>red</title>
 	<style type="text/css">
+		@font-face { font-family: REZ; src: url('REZ.ttf'); } 
+		body {
+			background-color: #880000;
+			color: white;
+			font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+			font-weight: 300;
+			font-size: 1.3em;
+			text-shadow: 0px 0px 1px #777;
+		}
+		h1 {
+			font-family: REZ, sans-serif;
+			text-align: center;
+			font-size: 10em;
+			color: #FFFFFF;
+			text-shadow: -0px -0px 50px #000;
+			margin: 0em;
+			padding: 0.2em;
+
+			background-color: #990000;
+		}
+
+		.content {
+			max-width: 600px;
+			margin: auto;
+			padding-top: 50px;
+		}
+
+		a {
+			text-decoration: none;
+			color: #BBB;
+			-webkit-transition: color 0.2s ease-in-out;
+		}
+		a:hover {
+			color: #CCC;
+		}
 	</style>
 	<script type="text/javascript" src="server/jquery-1.7.2.min.js"></script>
-	<%- include(cjs_inc.main) %>
+	<%- include(red_inc.main) %>
+
 	<script type="text/javascript">
 		$(function() {
+			console.log("A");
 		});
 	</script>
   </head>
   <body>
+		<h1>red</h1>
+
+		<div class="content">
+			<a href="test/unit_tests.ejs.html" target="unit_tests">Unit Tests</a>
+		</div>
+		<!--
 		<h2>Tests</h2>
 		<ul>
 			<li><span class="content"><a href="test/jslint.ejs.html" target="jslint">JSLint</a></span></li>
@@ -19,5 +62,6 @@
 			<li><span class="content"><a href="test/templates.ejs.html" target="templates">Templates</a></span></li>
 			<li><span class="content">Performance <a href="test/performance/instantaneous.ejs.html" target="templates">Instantaneous</a>&nbsp;&nbsp;<a href="test/performance/anim.ejs.html">Animation</a></span></li>
 		</ul>
+		-->
   </body>
 </html>
