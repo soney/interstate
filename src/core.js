@@ -5,6 +5,8 @@
 	var red = function() {
 		return red_call.apply(root, arguments);
 	};
+	red.cjs = cjs.noConflict();
+	red.jsep = jsep.noConflict();
 
 
 	var old_red = root.red;
