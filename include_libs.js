@@ -21,40 +21,18 @@ var c = concat = function() {
 var path = "";
 var build_path = cp(path, "build");
 var src = cp(path, "src");
-var vendor_src = cp(src, "vendor");
+var vendor_src = "vendor";
+var cjs_path = cp(vendor_src, "cjs");
 
-exports.main_build = cp(build_path, ["cjs.min.js"]);
+var cjs_inc = require("./vendor/cjs/include_libs");
+console.log(cjs_inc);
+console.log("HI");
+
+exports.main_build = cp(build_path, ["red.min.js"]);
 
 exports.main_src = c(
-	cp(src, [
-			"cjs_core.js"
-			, "vendor/underscore_cjs.js"
-			, "vendor/sizzle_cjs.js"
-			, "util/cjs_underscore_extensions.js"
-			, "util/graph.js"
-			, "util/constraint_solver.js"
-			, "fsm/cjs_fsm.js"
-			, "constraint/cjs_constraint.js"
-			, "constraint/cjs_constraint_mixins.js"
-			, "constraint/cjs_array_constraint_mixins.js"
-			, "constraint/cjs_dom_constraints.js"
-			, "constraint/cjs_dom_mixins.js"
-			, "constraint/cjs_input_widgets.js"
-			, "constraint/cjs_anim.js"
-			, "binding/cjs_binding.js"
-			, "binding/cjs_dom_bindings.js"
-			, "binding/cjs_form_bindings.js"
-			, "fsm/cjs_events.js"
-			, "fsm/cjs_fsm_constraint.js"
-			, "fsm/cjs_fsm_binding.js"
-			, "constraint/cjs_async_constraint.js"
-			, "constraint/cjs_conditional_constraint.js"
-			, "template/cjs_template.js"
-			, "template/parsers/jsep.js"
-			, "template/parsers/html_parser.js"
-			, "template/parsers/handlebars_parser.js"
-			, "template/ir_builders/handlebars_ir.js"
-			, "template/handlebars_template.js"
+	cp(cjs_path, cjs_inc.main_src)
+	, cp(src, [
 			])
 );
 
