@@ -30,38 +30,122 @@
 			padding-top: 50px;
 		}
 
-		a {
+		#input_str {
+			width: 100%;
+			height: 250px;
+			outline: none;
+			border: 1px solid black;
+			border-radius: 3px;
+			font-family: "Courier New", Courier, monospace;
+			font-size: 0.9em;
+		}
+
+		.output {
+			height: 400px;
+		}
+		a#run {
+			font-size: 0.8em;
+			float: right;
+		}
+		.button {
+			text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 			text-decoration: none;
-			color: #BBB;
-			-webkit-transition: color 0.2s ease-in-out;
+			background-color: #da4f49;
+			*background-color: #bd362f;
+			background-image: -ms-linear-gradient(top, #ee5f5b, #bd362f);
+			background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ee5f5b), to(#bd362f));
+			background-image: -webkit-linear-gradient(top, #ee5f5b, #bd362f);
+			background-image: -o-linear-gradient(top, #ee5f5b, #bd362f);
+			background-image: -moz-linear-gradient(top, #ee5f5b, #bd362f);
+			background-image: linear-gradient(top, #ee5f5b, #bd362f);
+			background-repeat: repeat-x;
+			border-color: #bd362f #bd362f #802420;
+			border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+			filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ee5f5b', endColorstr='#bd362f', GradientType=0);
+			filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+			display: inline-block;
+			*display: inline;
+			padding: 4px 10px 4px;
+			margin-bottom: 0;
+			*margin-left: .3em;
+			font-size: 13px;
+			line-height: 18px;
+			*line-height: 20px;
+			color: #333333;
+			text-align: center;
+			text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+			vertical-align: middle;
+			cursor: pointer;
+			border: 1px solid #cccccc;
+			*border: 0;
+			border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+			border-color: #e6e6e6 #e6e6e6 #bfbfbf;
+			border-bottom-color: #b3b3b3;
+			color: white;
+			text-decoration: none;
+			border-radius: 4px;
+			box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.125), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+			border-color: #bd362f #bd362f #802420;
+			border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
 		}
-		a:hover {
-			color: #CCC;
+		.button:hover {
+			color: white;
+			text-decoration: none;
+			background-color: #BD362F;
+			/* Buttons in IE7 don't get borders, so darken on hover */
+
+			background-position: 0 -15px;
+			-webkit-transition: background-position 0.1s linear;
+			-moz-transition: background-position 0.1s linear;
+			-ms-transition: background-position 0.1s linear;
+			-o-transition: background-position 0.1s linear;
+			transition: background-position 0.1s linear;
 		}
+		
 	</style>
 	<script type="text/javascript" src="server/jquery-1.7.2.min.js"></script>
+	<script type="text/javascript" src="server/jquery.textarea.js"></script>
 	<%- include(red_inc.main) %>
 
 	<script type="text/javascript">
+		var get_input_str = function() {
+			return $("#input_str").val();
+		};
+		var cache_input_str = function() {
+			var input_str = get_input_str();
+			localStorage.setItem("input_str", input_str);
+		};
 		$(function() {
-			console.log("A");
+			$("#input_str").val(localStorage.getItem("input_str")).tabby();
+			$("a#run").on("click", function() {
+				do_run();
+			});
 		});
+		$(window).on("unload", function() {
+			cache_input_str();
+		});
+
+		$(window).on("keydown", function(event) {
+			if(event.which === 13 && (event.ctrlKey || event.metaKey)) { //enter 
+				do_run();
+			}
+		});
+
+		var do_run = function() {
+			var input_str = get_input_str();
+			red.parse_table(input_str);
+		};
 	</script>
   </head>
   <body>
 		<h1>red</h1>
 
 		<div class="content">
-			<a href="test/unit_tests.ejs.html" target="unit_tests">Unit Tests</a>
+			<div class="text_mockup">
+				<textarea id="input_str"></textarea>
+				<a id="run" class="button" href="javascript:void(0)">Run</a>
+				<div class="output"></div>
+			</div>
 		</div>
-		<!--
-		<h2>Tests</h2>
-		<ul>
-			<li><span class="content"><a href="test/jslint.ejs.html" target="jslint">JSLint</a></span></li>
-			<li><span class="content"><a href="test/unit_tests.ejs.html" target="unit_tests">Unit Tests</a></span></li>
-			<li><span class="content"><a href="test/templates.ejs.html" target="templates">Templates</a></span></li>
-			<li><span class="content">Performance <a href="test/performance/instantaneous.ejs.html" target="templates">Instantaneous</a>&nbsp;&nbsp;<a href="test/performance/anim.ejs.html">Animation</a></span></li>
-		</ul>
-		-->
   </body>
 </html>
