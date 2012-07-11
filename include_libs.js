@@ -30,12 +30,15 @@ exports.main_build = cp(build_path, ["red.min.js"]);
 
 exports.main_src = c(
 	cp(cjs_path, cjs_inc.main_src)
-	, cp(vendor_src, "jsep/src/jsep.js")
+	, cp(vendor_src, [
+				"jsep/src/jsep.js"
+				, "statechart.js"
+			])
 	, cp(src, [
 				"core.js"
 				, "parser/cell_parser.js"
 				, "parser/table_parser.js"
-				, "core/red_fsm.js"
+				, "core/red_statechart.js"
 				, "core/red_obj.js"
 			])
 );
