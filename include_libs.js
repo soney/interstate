@@ -35,6 +35,7 @@ exports.main_src = c(
 				"core.js"
 				, "parser/cell_parser.js"
 				, "parser/table_parser.js"
+				, "core/red_obj.js"
 			])
 );
 
