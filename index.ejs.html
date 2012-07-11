@@ -101,6 +101,16 @@
 			-o-transition: background-position 0.1s linear;
 			transition: background-position 0.1s linear;
 		}
+		#refresh_libs {
+			color: white;
+			font-size: 1.5em;
+			text-decoration: none;
+		}
+
+		.header {
+			text-align: right;
+		}
+
 		
 	</style>
 	<script type="text/javascript" src="server/jquery-1.7.2.min.js"></script>
@@ -120,6 +130,13 @@
 			$("a#run").on("click", function() {
 				do_run();
 			});
+			$("a#refresh_libs").on("click", function() {
+				$.ajax({
+                    url:"command/refresh_include"
+                    , success: function(data) {
+                    }
+                });
+			});
 		});
 		$(window).on("unload", function() {
 			cache_input_str();
@@ -131,6 +148,7 @@
 			}
 		});
 
+
 		var do_run = function() {
 			var input_str = get_input_str();
 			red.parse_table(input_str);
@@ -141,6 +159,9 @@
 		<h1>red</h1>
 
 		<div class="content">
+			<div class="header">
+				<a href="javascript:void(0)" id="refresh_libs">&#8634;</a>
+			</div>
 			<div class="text_mockup">
 				<textarea id="input_str"></textarea>
 				<a id="run" class="button" href="javascript:void(0)">Run</a>
