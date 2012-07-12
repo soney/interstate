@@ -43,11 +43,31 @@ var RedStatechart = function() {
 		return this._concurrent;
 	};
 	proto.run = function() {
-		console.log("run");
+		if(this._concurrent) {
+			_.forEach(this.states, function(state) {
+				state.run();
+			});
+		} else {
+			this._active_state.run();
+		}
+		return this;
 	};
-	proto.get_state = function() {
+	proto.get_states = function() {
+		if(this._concurrent) {
+			var active_states = _.map(this.states, function(state) {
+				return state.get_states();
+			});
+			var rv = [];
+			return rv.concat.apply(rv, active_states);
+		} else {
+			var rv = [this._active_state];
+			return rv.concat(this._active_state.get_states());
+		}
 	};
 	proto.set_state = function(state_name) {
+		var state = this.get_state_with_name(state_name);
+		this._active_state = state;
+		return this;
 	};
 }(RedStatechart));
 
