@@ -6,6 +6,7 @@ var RedStatechart = function() {
 	this._starts_at = undefined;
 	this._parent = undefined;
 	this._concurrent = false;
+	this._active_state = undefined;
 };
 (function(my) {
 	var proto = my.prototype;
@@ -40,6 +41,13 @@ var RedStatechart = function() {
 	};
 	proto.is_concurrent = function() {
 		return this._concurrent;
+	};
+	proto.run = function() {
+		console.log("run");
+	};
+	proto.get_state = function() {
+	};
+	proto.set_state = function(state_name) {
 	};
 }(RedStatechart));
 
