@@ -1,7 +1,21 @@
 (function(red) {
 var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 
+var RedStatechartTransition = function(from_state, to_state) {
+	this.from_state = from_state;
+	this.to_state = to_state;
+};
+
+(function(my) {
+	var proto = my.prototype;
+	proto.run = function(event) {
+		var parent = from_state.parent();
+		parent.set_state(to_state, event);
+	};
+}(RedStatechartTransition));
+
 var RedStatechart = function() {
+	this.transitions = [];
 	this.states = {};
 	this._starts_at = undefined;
 	this._parent = undefined;
@@ -64,7 +78,7 @@ var RedStatechart = function() {
 			return rv.concat(this._active_state.get_states());
 		}
 	};
-	proto.set_state = function(state_name) {
+	proto.set_state = function(state_name, event) {
 		var state = this.get_state_with_name(state_name);
 		this._active_state = state;
 		return this;
