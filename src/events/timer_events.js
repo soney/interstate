@@ -30,30 +30,34 @@ var absolute_time_event = red._create_event_type("at_time");
 
 var timeout_event = red._create_event_type("timeout");
 (function(proto) {
-	proto.on_create = function(time) {
-		this.time = time;
+	proto.on_create = function(delay) {
+		this.delay = delay;
 		this.created_at = (new Date()).getTime();
 	};
 	proto.on_ready = function() {
 		var self = this;
 		var from_state = this.transition.from_state;
-		var enter_listener = from_state.once_enter(_.bind(this.notify, this));
+		var timeout;
+		var enter_listener = from_state.once_enter(function() {
+			if(!_.isUndefined(timeout)) {
+				window.clearTimeout(timeout);
+				timeout = undefined;
+			}
+			timeout = window.setTimeout(_.bind(self.notify, self), self.delay);
+		});
 
-		from_stace.on_exit(function() {
+		from_state.on_exit(function() {
+			if(!_.isUndefined(timeout)) {
+				window.clearTimeout(timeout);
+				timeout = undefined;
+			}
 			from_state.off(enter_listener);
 		});
-		var curr_time = (new Date()).getTime();
-		var time_diff = this.time - curr_time;
-		if(time_diff <= 0) {
-			this.notify();
-		} else {
-			window.setTimeout(_.bind(this.notify, this), time_diff);
-		}
 	};
 	proto.notify = function() {
 		var event = {
 			type: "timeout"
-			, time: this.time
+			, delay: this.delay
 			, current_time: (new Date()).getTime()
 			, created_at: this.created_at
 		};
