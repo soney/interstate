@@ -10,7 +10,12 @@ var RedStatechartTransition = function(from_state, to_state) {
 	var proto = my.prototype;
 	proto.run = function(event) {
 		var parent = from_state.parent();
-		parent.set_state(to_state, event);
+		if(_.isUndefined(parent)) {
+			parent = from_state;
+		}
+		if(parent.is(from_state)) {
+			parent.set_state(to_state, event);
+		}
 	};
 }(RedStatechartTransition));
 
@@ -21,6 +26,7 @@ var RedStatechart = function() {
 	this._parent = undefined;
 	this._concurrent = false;
 	this._active_state = undefined;
+	this._listeners = {};
 };
 (function(my) {
 	var proto = my.prototype;
@@ -64,6 +70,12 @@ var RedStatechart = function() {
 		} else {
 			this._active_state.run();
 		}
+		var event = {
+			type: "run"
+			, timestamp: (new Date()).getTime();
+			, target: this
+		};
+		this._notify("run", event);
 		return this;
 	};
 	proto.get_states = function() {
@@ -78,11 +90,118 @@ var RedStatechart = function() {
 			return rv.concat(this._active_state.get_states());
 		}
 	};
-	proto.set_state = function(state_name, event) {
-		var state = this.get_state_with_name(state_name);
+	proto.set_state = function(state, event) {
+		var states_left = [];
+		var states_entered = [];
+		var curr_state = this._active_state;
+
+		while(!_.isUndefined(curr_state) && curr_state !== this) {
+			states_left.push(curr_state);
+			curr_state = curr_state.parent();
+		}
+
+		curr_state = this._active_state;
+
+		while(!_.isUndefined(curr_state) && curr_state !== this) {
+			states_entered.push(curr_state);
+			curr_state = curr_state.parent();
+		}
+
+		_.forEach(states_left, function(state) {
+			state._notify("exit", event);
+		});
 		this._active_state = state;
+		_.forEach(states_entered, function(state) {
+			state._notify("enter", event);
+		});
+
+		this.notify_parent(left_state, entered_states);
+
 		return this;
 	};
+	proto.notify_parent = function(left_states, entered_states) {
+		var parent = this.parent();
+		if(_.isUndefined(parent)) {
+		} else {
+			this.notify_parent(left_states, entered_states);
+		}
+	};
+	proto.is = function(state) {
+		if(this === state) { return true; }
+
+		if(this._concurrent) {
+			return _.any(this.states, function(state) {
+				return state.is(state);
+			});
+		} else {
+			if(_.isUndefined(this._active_state)) {
+				return false;
+			} else {
+				return this._active_state.is(state);
+			}
+		}
+	};
+
+	proto._get_transition = function() {
+		var from_state, to_state;
+		if(arguments.length >= 2) {
+			from_state = arguments[0];
+			to_state = arguments[1];
+		} else {
+			from_state = this;
+			to_state = arguments[0];
+		}
+
+		if(_.isString(from_state)) {
+			from_state = this.get_state_by_name(from_state);
+		}
+		if(_.isString(to_state)) {
+			to_state = this.get_state_by_name(to_state);
+		}
+
+		var transition = new RedStatechartTransition(from_state, to_state);
+		return transition;
+	};
+
+
+	proto._on = function(event_type, func) {
+		var listeners;
+		if(_.has(this._listeners, event_type)) {
+			listeners = this._listeners[event_type];
+		} else {
+			this._listeners[event_type] = listeners = [];
+		}
+		listeners.push(func);
+		return this;
+	};
+	proto._off = function(event_type, func) {
+		var listeners = this._listeners[event_type];
+		this._listeners[event_type] = _.without(this._listeners[event_type], func);
+		if(_.isEmpty(this._listeners[event_type])) {
+			delete this._listeners[event_type];
+		}
+		return this;
+	};
+	proto._notify = function(event_type, event) {
+		var listeners = this._listeners[event_type];
+		_.forEach(listeners, function(func) {
+			func(event);
+		});
+		return this;
+	};
+
+	var bind = function(func) {
+		var bind_args = _.toArray(_.rest(arguments));
+		var rv = function() {
+			var args = bind_args.concat(_.toArray(arguments));
+			return func.apply(this, args);
+		};
+		return rv;
+	};
+	proto.on_enter = bind(proto._on, "enter");
+	proto.off_enter = bind(proto._off, "enter");
+	proto.on_exit = bind(proto._on, "exit");
+	proto.off_exit = bind(proto._off, "exit");
 }(RedStatechart));
 
 red.create_statechart = function() {
