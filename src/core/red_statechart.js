@@ -72,7 +72,7 @@ var RedStatechart = function() {
 		}
 		var event = {
 			type: "run"
-			, timestamp: (new Date()).getTime();
+			, timestamp: (new Date()).getTime()
 			, target: this
 		};
 		this._notify("run", event);
@@ -160,7 +160,26 @@ var RedStatechart = function() {
 		}
 
 		var transition = new RedStatechartTransition(from_state, to_state);
+		this.transitions.push(transition);
 		return transition;
+	};
+
+	proto.add_transition = function() {
+		var from_state, to_state, event;
+		if(arguments.length >=3)  {
+			from_state = arguments[0];
+			to_state = arguments[1];
+			event= arguments[2];
+		} else {
+			from_state = this;
+			to_state = arguments[0];
+			event= arguments[1];
+		}
+
+		var transition = this._get_transition(from_state, to_state);
+		event.set_transition(transition);
+		
+		return this;
 	};
 
 
@@ -182,6 +201,16 @@ var RedStatechart = function() {
 		}
 		return this;
 	};
+	proto._once = function(event_type, func) {
+		var self = this;
+		var listener = function() {
+			var rv = func.apply(this, arguments);
+			self._off(event_type, func);
+			return rv;
+		};
+		this._on(event_type, listener);
+		return listener;
+	};
 	proto._notify = function(event_type, event) {
 		var listeners = this._listeners[event_type];
 		_.forEach(listeners, function(func) {
@@ -200,8 +229,10 @@ var RedStatechart = function() {
 	};
 	proto.on_enter = bind(proto._on, "enter");
 	proto.off_enter = bind(proto._off, "enter");
+	proto.once_enter = bind(proto._once, "enter");
 	proto.on_exit = bind(proto._on, "exit");
 	proto.off_exit = bind(proto._off, "exit");
+	proto.once_exit = bind(proto._once, "exit");
 }(RedStatechart));
 
 red.create_statechart = function() {
