@@ -4,6 +4,15 @@ var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 var remove_by_index = function(arrayName,arrayIndex) { 
 	arrayName.splice(arrayIndex,1); 
 };
+var move_index = function (arr, old_index, new_index) {
+    if (new_index >= arr.length) {
+        var k = new_index - arr.length;
+        while ((k--) + 1) {
+            arr.push(undefined);
+        }
+    }
+    arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+};
 
 var RedMap = function() {
 	this._keys = [];
@@ -91,6 +100,14 @@ var RedMap = function() {
 			if(val) { return true; }
 		}
 		return false;
+	};
+	proto.move = function(key, index) {
+		var key_index = this._key_index(key);
+		if(key_index >= 0) {
+			move_index(this._keys,   key_index, index);
+			move_index(this._values, key_index, index);
+		}
+		return this;
 	};
 }(RedMap));
 

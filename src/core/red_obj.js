@@ -7,14 +7,14 @@ var RedObject = function() {
 (function(my) {
 	var proto = my.prototype;
 
-	proto.set_fsm = function(fsm) {
-		this._fsm = fsm;
+	proto.set_statechart = function(statechart) {
+		this._statechart = statechart;
 	};
-	proto.get_fsm = function() { return this._fsm; };
+	proto.get_statechart = function() { return this._statechart; };
 
 	proto.get_state = function() {
-		var fsm = this.get_fsm();
-		return fsm.get_state();
+		var statechart = this.get_statechart();
+		return statechart.get_state();
 	};
 
 	proto._create_prop = function(prop_name) {
@@ -23,12 +23,21 @@ var RedObject = function() {
 	};
 
 	proto.add_state = function(state, index) {
+		var statechart = this.get_statechart();
+		this.statechart.add_state(state, index);
+		return this;
 	};
 
 	proto.move_state = function(state, to_index) {
+		var statechart = this.get_statechart();
+		this.statechart.move_state(state, to_index);
+		return this;
 	};
 
 	proto.remove_state = function(state) {
+		var statechart = this.get_statechart();
+		this.statechart.remove_state(state);
+		return this;
 	};
 
 }(RedObject));

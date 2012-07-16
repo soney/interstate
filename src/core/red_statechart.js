@@ -15,6 +15,9 @@ var RedStatechartTransition = function(statechart, from_state, to_state) {
 			statechart.set_state(to_state, event);
 		}
 	};
+	proto.involves = function(state) {
+		return this._from_state === state || this._to_state === state;
+	};
 }(RedStatechartTransition));
 
 var RedStatechart = function() {
@@ -33,11 +36,23 @@ var RedStatechart = function() {
 		state.set_parent(this);
 		return this;
 	};
+	proto.remove_state = function(state) {
+		this.transitions = _.reject(this.transitions, function(transition) {
+			return transition.ivolves(state);
+		});
+		this.states.unset(state);
+		return this;
+	};
 	proto.in_state = function(state_name) {
 		return this.get_state_with_name(state_name);
 	};
 	proto.starts_at = function(state_name) {
 		this._starts_at = state_name;
+		return this;
+	};
+	proto.remove_transition = function(transition) {
+		transition.destroy();
+		this.transitions = _.without(this.transitions, transition);
 		return this;
 	};
 	proto.get_initial_state = function() {
