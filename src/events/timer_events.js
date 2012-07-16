@@ -62,6 +62,6 @@ var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 
 		this.transition.run(event);
 	};
-}(red.create_event_type("timeout").prototype));
+}(red._create_event_type("timeout").prototype));
 
 }(red));

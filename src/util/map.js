@@ -31,7 +31,7 @@ var RedMap = function() {
 			to_set = arguments[0];
 		}
 
-		_.forEach(to_set, _.bind(this.do_set, this));
+		_.forEach(to_set, _.bind(this._do_set, this));
 
 		return this;
 	};

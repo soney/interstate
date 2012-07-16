@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+	<script type="text/javascript" src="../server/jquery-1.7.2.min.js"></script>
+	<%- include(red_inc.main) %>
+
+	<script type="text/javascript">
+		$(function() {
+			var square = $("#square")[0];
+			var sc = red.create_statechart()
+						.add_state("idle")
+						.add_state("dragging")
+						.starts_at("idle")
+						.add_transition("idle", "dragging", red.create_event("dom_event", "mousedown", square))
+						.add_transition("dragging", "idle", red.create_event("dom_event", "mouseup", window))
+		});
+	</script>
+
+	<style type="text/css">
+		div#square {
+			width: 100px;
+			height: 100px;
+			background-color: red;
+		}
+	</style>
+  </head>
+  <body>
+	<div id="square"></div>
+	Hello
+  </body>
+</html>

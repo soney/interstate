@@ -11,8 +11,8 @@ var RedStatechartTransition = function(statechart, from_state, to_state) {
 	var proto = my.prototype;
 	proto.run = function(event) {
 		var statechart = this._statechart;
-		if(statechart.is(from_state)) {
-			statechart.set_state(to_state, event);
+		if(statechart.is(this._from_state)) {
+			statechart.set_state(this._to_state, event);
 		}
 	};
 	proto.involves = function(state) {
@@ -32,8 +32,9 @@ var RedStatechart = function() {
 (function(my) {
 	var proto = my.prototype;
 	proto.add_state = function(state_name) {
-		var state = this.states.set(state_name, new RedStatechart());
+		var state = new RedStatechart();
 		state.set_parent(this);
+		this.states.set(state_name, state);
 		return this;
 	};
 	proto.remove_state = function(state) {
@@ -58,7 +59,7 @@ var RedStatechart = function() {
 	proto.get_initial_state = function() {
 		return this.get_state_with_name(this._starts_at);
 	};
-	proto.parent = function() {
+	proto.up = proto.parent = function() {
 		return this._parent;
 	};
 	proto.set_parent = function(parent) {
@@ -166,10 +167,10 @@ var RedStatechart = function() {
 		}
 
 		if(_.isString(from_state)) {
-			from_state = this.get_state_by_name(from_state);
+			from_state = this.get_state_with_name(from_state);
 		}
 		if(_.isString(to_state)) {
-			to_state = this.get_state_by_name(to_state);
+			to_state = this.get_state_with_name(to_state);
 		}
 
 		var transition = new RedStatechartTransition(this, from_state, to_state);

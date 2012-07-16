@@ -47,7 +47,7 @@
 			font-size: 0.8em;
 			float: right;
 		}
-		.button {
+		a.button {
 			text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 			text-decoration: none;
 			background-color: #da4f49;
@@ -88,7 +88,7 @@
 			border-color: #bd362f #bd362f #802420;
 			border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
 		}
-		.button:hover {
+		a.button:hover {
 			color: white;
 			text-decoration: none;
 			background-color: #BD362F;
@@ -109,6 +109,18 @@
 
 		.header {
 			text-align: right;
+		}
+		a {
+			color: white;
+			text-decoration: none;
+		}
+		a:hover {
+			color: #EEEEEE;
+		}
+
+		.menu {
+			font-size: 0.8em;
+			text-align: center;
 		}
 
 		
@@ -159,6 +171,9 @@
 		<h1>red</h1>
 
 		<div class="content">
+			<div class="menu">
+				<a href="test/test_page_1.ejs.html">Test page 1</a>
+			</div>
 			<div class="header">
 				<a href="javascript:void(0)" id="refresh_libs">&#8634;</a>
 			</div>
