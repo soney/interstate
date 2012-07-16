@@ -1,7 +1,6 @@
 (function(red) {
 var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 
-var dom_event = red._create_event_type("dom_event");
 (function(proto) {
 	proto.on_create = function(target, type) {
 		this.target = target;
@@ -13,5 +12,5 @@ var dom_event = red._create_event_type("dom_event");
 	proto.notify = function(event) {
 		this.transition.run(event);
 	};
-}(dom_event.prototype));
+}(red._create_event_type("dom_event").prototype));
 }(red));

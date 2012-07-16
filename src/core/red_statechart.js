@@ -1,27 +1,25 @@
 (function(red) {
 var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 
-var RedStatechartTransition = function(from_state, to_state) {
-	this.from_state = from_state;
-	this.to_state = to_state;
+var RedStatechartTransition = function(statechart, from_state, to_state) {
+	this._statechart = statechart;
+	this._from_state = from_state;
+	this._to_state = to_state;
 };
 
 (function(my) {
 	var proto = my.prototype;
 	proto.run = function(event) {
-		var parent = from_state.parent();
-		if(_.isUndefined(parent)) {
-			parent = from_state;
-		}
-		if(parent.is(from_state)) {
-			parent.set_state(to_state, event);
+		var statechart = this._statechart;
+		if(statechart.is(from_state)) {
+			statechart.set_state(to_state, event);
 		}
 	};
 }(RedStatechartTransition));
 
 var RedStatechart = function() {
 	this.transitions = [];
-	this.states = {};
+	this.states = red._create_map();
 	this._starts_at = undefined;
 	this._parent = undefined;
 	this._concurrent = false;
@@ -31,7 +29,7 @@ var RedStatechart = function() {
 (function(my) {
 	var proto = my.prototype;
 	proto.add_state = function(state_name) {
-		var state = this.states[state_name] = new RedStatechart();
+		var state = this.states.set(state_name, new RedStatechart());
 		state.set_parent(this);
 		return this;
 	};
@@ -53,7 +51,7 @@ var RedStatechart = function() {
 		return this;
 	};
 	proto.get_state_with_name = function(state_name) {
-		return this.states[state_name];
+		return this.states.get(state_name);
 	};
 	proto.concurrent = function(is_concurrent) {
 		this._concurrent = is_concurrent;
@@ -64,7 +62,7 @@ var RedStatechart = function() {
 	};
 	proto.run = function() {
 		if(this._concurrent) {
-			_.forEach(this.states, function(state) {
+			this.states.forEach(function(state) {
 				state.run();
 			});
 		} else {
@@ -78,11 +76,11 @@ var RedStatechart = function() {
 		this._notify("run", event);
 		return this;
 	};
-	proto.get_states = function() {
+	proto.get_state = function() {
 		if(this._concurrent) {
-			var active_states = _.map(this.states, function(state) {
-				return state.get_states();
-			});
+			var active_states = this.states.map(function(state) {
+				return state.get_state();
+			}).to_obj();
 			var rv = [];
 			return rv.concat.apply(rv, active_states);
 		} else {
@@ -130,7 +128,7 @@ var RedStatechart = function() {
 		if(this === state) { return true; }
 
 		if(this._concurrent) {
-			return _.any(this.states, function(state) {
+			return this.states.any(function(state) {
 				return state.is(state);
 			});
 		} else {
@@ -159,7 +157,7 @@ var RedStatechart = function() {
 			to_state = this.get_state_by_name(to_state);
 		}
 
-		var transition = new RedStatechartTransition(from_state, to_state);
+		var transition = new RedStatechartTransition(this, from_state, to_state);
 		this.transitions.push(transition);
 		return transition;
 	};

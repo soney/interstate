@@ -36,12 +36,16 @@ exports.main_src = c(
 			])
 	, cp(src, [
 				"core.js"
+				, "util/map.js"
 				, "parser/cell_parser.js"
 				, "parser/table_parser.js"
 				, "core/red_statechart.js"
 				, "core/red_obj.js"
+				, "core/red_prop.js"
 				, "events/red_events_core.js"
+				, "events/timer_events.js"
 				, "events/dom_events.js"
+				, "events/statechart_events.js"
 			])
 );
 

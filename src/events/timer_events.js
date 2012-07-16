@@ -1,7 +1,6 @@
 (function(red) {
 var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 
-var absolute_time_event = red._create_event_type("at_time");
 (function(proto) {
 	proto.on_create = function(time) {
 		this.time = time;
@@ -26,9 +25,8 @@ var absolute_time_event = red._create_event_type("at_time");
 
 		this.transition.run(event);
 	};
-}(absolute_time_event.prototype));
+}(red._create_event_type("at_time").prototype));
 
-var timeout_event = red._create_event_type("timeout");
 (function(proto) {
 	proto.on_create = function(delay) {
 		this.delay = delay;
@@ -64,6 +62,6 @@ var timeout_event = red._create_event_type("timeout");
 
 		this.transition.run(event);
 	};
-}(timeout_event.prototype));
+}(red.create_event_type("timeout").prototype));
 
 }(red));
