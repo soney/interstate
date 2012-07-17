@@ -14,6 +14,14 @@
 						.starts_at("idle")
 						.add_transition("idle", "dragging", red.create_event("dom_event", "mousedown", square))
 						.add_transition("dragging", "idle", red.create_event("dom_event", "mouseup", window))
+						.run();
+			$(window).on("keydown", function(event) {
+				if(event.keyCode === 83) { // s
+					console.log(red.cjs._.map(sc.get_state(), function(statechart) {
+						return statechart.my_name();
+					}));
+				}
+			});
 		});
 	</script>
 

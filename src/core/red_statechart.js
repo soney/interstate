@@ -20,35 +20,45 @@ var RedStatechartTransition = function(statechart, from_state, to_state) {
 	};
 }(RedStatechartTransition));
 
-var RedStatechart = function() {
+var RedStatechart = function(type) {
 	this.transitions = [];
-	this.states = red._create_map();
+	this._states = red._create_map();
+	
 	this._starts_at = undefined;
 	this._parent = undefined;
 	this._concurrent = false;
 	this._active_state = undefined;
 	this._listeners = {};
+	this._type = _.isUndefined(type) ? "statechart" : type;
+	if(this.get_type() !== "pre_init") {
+		this.add_state("_pre_init", "pre_init");
+		this._active_state = this.get_state_with_name("_pre_init");
+	}
 };
 (function(my) {
 	var proto = my.prototype;
-	proto.add_state = function(state_name) {
-		var state = new RedStatechart();
+	proto.get_type = function() {
+		return this._type;
+	};
+	proto.add_state = function(state_name, type) {
+		var state = new RedStatechart(type);
 		state.set_parent(this);
-		this.states.set(state_name, state);
+		this._states.set(state_name, state);
 		return this;
 	};
 	proto.remove_state = function(state) {
 		this.transitions = _.reject(this.transitions, function(transition) {
 			return transition.ivolves(state);
 		});
-		this.states.unset(state);
+		this._states.unset(state);
 		return this;
 	};
 	proto.in_state = function(state_name) {
 		return this.get_state_with_name(state_name);
 	};
 	proto.starts_at = function(state_name) {
-		this._starts_at = state_name;
+		var pre_init_state = this.get_state_with_name("_pre_init");
+		this.add_transition(pre_init_state, state_name, red.create_event("init", this));
 		return this;
 	};
 	proto.remove_transition = function(transition) {
@@ -67,7 +77,7 @@ var RedStatechart = function() {
 		return this;
 	};
 	proto.get_state_with_name = function(state_name) {
-		return this.states.get(state_name);
+		return this._states.get(state_name);
 	};
 	proto.concurrent = function(is_concurrent) {
 		this._concurrent = is_concurrent;
@@ -78,11 +88,13 @@ var RedStatechart = function() {
 	};
 	proto.run = function() {
 		if(this._concurrent) {
-			this.states.forEach(function(state) {
+			this._states.forEach(function(state) {
 				state.run();
 			});
 		} else {
-			this._active_state.run();
+			if(!_.isUndefined(this._active_state)) {
+				this._active_state.run();
+			}
 		}
 		var event = {
 			type: "run"
@@ -94,14 +106,23 @@ var RedStatechart = function() {
 	};
 	proto.get_state = function() {
 		if(this._concurrent) {
-			var active_states = this.states.map(function(state) {
+			var active_states = this._states.map(function(state) {
 				return state.get_state();
 			}).to_obj();
 			var rv = [];
 			return rv.concat.apply(rv, active_states);
 		} else {
-			var rv = [this._active_state];
-			return rv.concat(this._active_state.get_states());
+			if(this.is_atomic()) {
+				return [];
+			}
+
+			var active_state = this._active_state;
+			if(active_state.get_type() === "pre_init") {
+				return [active_state];
+			} else {
+				var rv = [active_state];
+				return rv.concat(active_state.get_state());
+			}
 		}
 	};
 	proto.set_state = function(state, event) {
@@ -129,8 +150,6 @@ var RedStatechart = function() {
 			state._notify("enter", event);
 		});
 
-		this.notify_parent(left_state, entered_states);
-
 		return this;
 	};
 	proto.notify_parent = function(left_states, entered_states) {
@@ -144,7 +163,7 @@ var RedStatechart = function() {
 		if(this === state) { return true; }
 
 		if(this._concurrent) {
-			return this.states.any(function(state) {
+			return this._states.any(function(state) {
 				return state.is(state);
 			});
 		} else {
@@ -194,6 +213,31 @@ var RedStatechart = function() {
 		event.set_transition(transition);
 		
 		return this;
+	};
+
+	proto.name_for_state = function(state) {
+		return this._states.key_for_value(state);
+	};
+
+	proto.my_name = function() {
+		var parent = this.parent();
+		if(_.isUndefined(parent)) {
+			return undefined;
+		}
+		return parent.name_for_state(this);
+	};
+
+	proto.get_substates = function() {
+		var state_names = this._states.get_keys();
+		if(state_names.length === 1) {
+			return [];
+		} else {
+			return state_names;
+		}
+	};
+
+	proto.is_atomic = function() {
+		return _.isEmpty(this.get_substates());
 	};
 
 

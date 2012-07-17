@@ -17,6 +17,9 @@ var move_index = function (arr, old_index, new_index) {
 var RedMap = function() {
 	this._keys = [];
 	this._values = [];
+	if(arguments.length > 0) {
+		this.set.apply(this, arguments);
+	}
 };
 
 (function(my) {
@@ -31,7 +34,9 @@ var RedMap = function() {
 			to_set = arguments[0];
 		}
 
-		_.forEach(to_set, _.bind(this._do_set, this));
+		_.forEach(to_set, _.bind(function(value, key) {
+			this._do_set(key, value);
+		}, this));
 
 		return this;
 	};
@@ -42,10 +47,10 @@ var RedMap = function() {
 		var key_index = this._key_index(key);
 
 		if(key_index<0) {
-			this._values[key_index] = value;
-		} else {
 			this._keys.push(key);
 			this._values.push(value);
+		} else {
+			this._values[key_index] = value;
 		}
 
 		return this;
@@ -53,7 +58,7 @@ var RedMap = function() {
 	proto.get = function(key) {
 		var key_index = this._key_index(key);
 		if(key_index < 0) { return undefined; }
-		else { return this.values[key_index]; }
+		else { return this._values[key_index]; }
 	};
 	proto.unset = function(key) {
 		var key_index = this._key_index(key);
@@ -108,6 +113,16 @@ var RedMap = function() {
 			move_index(this._values, key_index, index);
 		}
 		return this;
+	};
+	proto.key_for_value = function(value) {
+		var value_index = _.indexOf(this._values, value);
+		if(value_index >= 0) {
+			return this._keys[value_index];
+		}
+		return undefined;
+	};
+	proto.get_keys = function() {
+		return _.clone(this._keys);
 	};
 }(RedMap));
 
