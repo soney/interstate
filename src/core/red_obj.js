@@ -2,7 +2,7 @@
 var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 
 var RedObject = function() {
-	this._local_properties = cjs([]);
+	this._local_properties = red._create_map();
 };
 (function(my) {
 	var proto = my.prototype;
@@ -21,6 +21,7 @@ var RedObject = function() {
 		var prop = red._create_prop(this);
 		return prop;
 	};
+	/*
 
 	proto.add_state = function(state, index) {
 		var statechart = this.get_statechart();
@@ -40,6 +41,7 @@ var RedObject = function() {
 		return this;
 	};
 
+*/
 }(RedObject));
 
 red.create_object = function() {

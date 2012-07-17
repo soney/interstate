@@ -1,10 +1,14 @@
 (function(red) {
 var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 
-var RedStatechartTransition = function(statechart, from_state, to_state) {
+var RedStatechartTransition = function(statechart, from_state, to_state, event) {
 	this._statechart = statechart;
 	this._from_state = from_state;
 	this._to_state = to_state;
+	this.do_run = _.bind(this.run, this);
+	this._event = event;
+
+	this._event.on_fire(this.do_run);
 };
 
 (function(my) {
@@ -18,9 +22,14 @@ var RedStatechartTransition = function(statechart, from_state, to_state) {
 	proto.involves = function(state) {
 		return this._from_state === state || this._to_state === state;
 	};
+	proto.destroy = function() {
+		this._event.off_fire(this.do_run);
+		this._event.destroy();
+	};
 }(RedStatechartTransition));
 
 var RedStatechart = function(type) {
+	this._running = false;
 	this.transitions = [];
 	this._states = red._create_map();
 	
@@ -47,9 +56,16 @@ var RedStatechart = function(type) {
 		return this;
 	};
 	proto.remove_state = function(state) {
-		this.transitions = _.reject(this.transitions, function(transition) {
-			return transition.ivolves(state);
+		var transitions_involving_state = [];
+		var transitions_not_involving_state = [];
+		_.forEach(this.transitions, function(transition) {
+			if(transition.involves(state)) {
+				transitions_involving_state.push(transition);
+			} else {
+				transitions_not_involving_state.push(transition);
+			}
 		});
+		this.transitions = transitions_not_involving_state;
 		this._states.unset(state);
 		return this;
 	};
@@ -57,7 +73,7 @@ var RedStatechart = function(type) {
 		return this.get_state_with_name(state_name);
 	};
 	proto.starts_at = function(state_name) {
-		var pre_init_state = this.get_state_with_name("_pre_init");
+		var pre_init_state = this._find_state("_pre_init");
 		this.add_transition(pre_init_state, state_name, red.create_event("init", this));
 		return this;
 	};
@@ -86,7 +102,15 @@ var RedStatechart = function(type) {
 	proto.is_concurrent = function() {
 		return this._concurrent;
 	};
+	proto._find_state = function(state) {
+		if(_.isString(state)) {
+			return this.get_state_with_name(state);
+		} else {
+			return state;
+		}
+	}
 	proto.run = function() {
+		this._running = true;
 		if(this._concurrent) {
 			this._states.forEach(function(state) {
 				state.run();
@@ -103,6 +127,9 @@ var RedStatechart = function(type) {
 		};
 		this._notify("run", event);
 		return this;
+	};
+	proto.is_running = function() {
+		return this._running;
 	};
 	proto.get_state = function() {
 		if(this._concurrent) {
@@ -146,6 +173,9 @@ var RedStatechart = function(type) {
 			state._notify("exit", event);
 		});
 		this._active_state = state;
+		if(!this._active_state.is_running()) {
+			this._active_state.run();
+		}
 		_.forEach(states_entered, function(state) {
 			state._notify("enter", event);
 		});
@@ -176,23 +206,18 @@ var RedStatechart = function(type) {
 	};
 
 	proto._get_transition = function() {
-		var from_state, to_state;
+		var from_state, to_state, event;
 		if(arguments.length >= 2) {
-			from_state = arguments[0];
-			to_state = arguments[1];
+			from_state = this._find_state(arguments[0]);
+			to_state = this._find_state(arguments[1]);
+			event = arguments[2];
 		} else {
 			from_state = this;
-			to_state = arguments[0];
+			to_state = this._find_state(arguments[0]);
+			event = arguments[1];
 		}
 
-		if(_.isString(from_state)) {
-			from_state = this.get_state_with_name(from_state);
-		}
-		if(_.isString(to_state)) {
-			to_state = this.get_state_with_name(to_state);
-		}
-
-		var transition = new RedStatechartTransition(this, from_state, to_state);
+		var transition = new RedStatechartTransition(this, from_state, to_state, event);
 		this.transitions.push(transition);
 		return transition;
 	};
@@ -202,15 +227,14 @@ var RedStatechart = function(type) {
 		if(arguments.length >=3)  {
 			from_state = arguments[0];
 			to_state = arguments[1];
-			event= arguments[2];
+			event = arguments[2];
 		} else {
 			from_state = this;
 			to_state = arguments[0];
-			event= arguments[1];
+			event = arguments[1];
 		}
 
-		var transition = this._get_transition(from_state, to_state);
-		event.set_transition(transition);
+		var transition = this._get_transition(from_state, to_state, event);
 		
 		return this;
 	};

@@ -24,25 +24,28 @@ var RedEvent = function() {
 		this.transition = undefined;
 		this.listeners = [];
 	};
-	proto.on_create = function() {
-	};
-	proto.add_listener = function(listener) {
+	proto.on_create = function() {};
+	proto.on_fire = proto.add_listener = function(listener) {
 		this.listeners.push(listener);
 	};
-	proto.remove_listener = function(listener) {
+	proto.off_fire = proto.remove_listener = function(listener) {
 		this.listeners = _.without(listener);
 	};
-	proto.notify = function() {
+	proto.fire = proto.notify = function() {
 		var args = arguments;
 		_.forEach(this.listeners, function(listener) {
 			listener.apply(this, args);
 		});
 	};
-	proto.set_transition = function(transition) {
-		this.transition = transition;
-		this.on_ready();
+	proto.guard = function(func) {
+		var new_transition = new RedEvent();
+		this.on_fire(function() {
+			if(func.apply(this, arguments)) {
+				new_transition.fire.apply(new_transition, arguments);
+			}
+		});
+		return new_transition;
 	};
-	proto.on_ready = function() {};
 }(RedEvent));
 
 var event_types = {};
@@ -58,7 +61,6 @@ red.create_event = function(event_type) {
 red._create_event_type = function(name) {
 	var Constructor = function() {
 		this._initialize();
-		this.on_create.apply(this, arguments);
 	};
 	extend(Constructor, RedEvent);
 	event_types[name] = Constructor;

@@ -3,27 +3,17 @@ var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 
 (function(proto) {
 	proto.on_create = function(time) {
-		this.time = time;
-		this.created_at = (new Date()).getTime();
-	};
-	proto.on_ready = function() {
-		var curr_time = (new Date()).getTime();
-		var time_diff = this.time - curr_time;
-		if(time_diff <= 0) {
-			this.notify();
-		} else {
-			window.setTimeout(_.bind(this.notify, this), time_diff);
-		}
-	};
-	proto.notify = function() {
-		var event = {
-			type: "at_time"
-			, time: this.time
-			, current_time: (new Date()).getTime()
-			, created_at: this.created_at
-		};
+		var creation_time = (new Date()).getTime();
+		var time_diff = this.time - creation_time;
 
-		this.transition.run(event);
+		window.setTimeout(function() {
+			self.fire({
+				type: "at_time"
+				, time: time
+				, current_time: (new Date()).getTime()
+				, created_at: creation_time
+			});
+		}, time_diff);
 	};
 }(red._create_event_type("at_time").prototype));
 
@@ -53,14 +43,12 @@ var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 		});
 	};
 	proto.notify = function() {
-		var event = {
+		this.fire({
 			type: "timeout"
 			, delay: this.delay
 			, current_time: (new Date()).getTime()
 			, created_at: this.created_at
-		};
-
-		this.transition.run(event);
+		});
 	};
 }(red._create_event_type("timeout").prototype));
 
