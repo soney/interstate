@@ -41,11 +41,10 @@ exports.main_src = c(
 				, "parser/table_parser.js"
 				, "core/red_statechart.js"
 				, "core/red_obj.js"
-				, "core/red_prop.js"
-				, "events/red_events_core.js"
-				, "events/timer_events.js"
-				, "events/dom_events.js"
-				, "events/statechart_events.js"
+				, "core/events/red_events_core.js"
+				, "core/events/timer_events.js"
+				, "core/events/dom_events.js"
+				, "core/events/statechart_events.js"
 			])
 );
 

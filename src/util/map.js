@@ -25,18 +25,15 @@ var RedMap = function() {
 (function(my) {
 	var proto = my.prototype;
 	proto.set = function() {
-		var to_set;
 		if(arguments.length >= 2) {
 			var key = arguments[0], value = arguments[1];
-			to_set = {};
-			to_set[key] = value;
+			this._do_set(key, value);
 		} else {
-			to_set = arguments[0];
+			_.forEach(arguments[0], _.bind(function(value, key) {
+				this._do_set(key, value);
+			}, this));
 		}
 
-		_.forEach(to_set, _.bind(function(value, key) {
-			this._do_set(key, value);
-		}, this));
 
 		return this;
 	};

@@ -2,50 +2,71 @@
 var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 
 var RedObject = function() {
-	this._local_properties = red._create_map();
+	this._properties = red._create_map();
 };
 (function(my) {
 	var proto = my.prototype;
 
 	proto.set_statechart = function(statechart) {
 		this._statechart = statechart;
+		return this;
 	};
 	proto.get_statechart = function() { return this._statechart; };
 
-	proto.get_state = function() {
-		var statechart = this.get_statechart();
-		return statechart.get_state();
-	};
-
 	proto._create_prop = function(prop_name) {
-		var prop = red._create_prop(this);
+		var prop = new RedProperty(this);
 		return prop;
 	};
-	/*
-
-	proto.add_state = function(state, index) {
-		var statechart = this.get_statechart();
-		this.statechart.add_state(state, index);
+	proto.add_prop = function(prop_name) {
+		var prop = this._create_prop();
+		this._properties.set(prop_name, prop);
 		return this;
 	};
-
-	proto.move_state = function(state, to_index) {
-		var statechart = this.get_statechart();
-		this.statechart.move_state(state, to_index);
+	proto.remove_prop = function(prop_name) {
+		this._properties.unset(prop_name);
 		return this;
 	};
-
-	proto.remove_state = function(state) {
-		var statechart = this.get_statechart();
-		this.statechart.remove_state(state);
-		return this;
+	proto.find_prop = function(prop_name) {
+		return this._properties.get(prop_name);
 	};
-
-*/
 }(RedObject));
 
 red.create_object = function() {
 	return new RedObject();
 };
+
+var RedProperty = function(parent) {
+	this._parent = parent;
+	this._state_map = red._create_map();
+};
+(function(my) {
+	var proto = my.prototype;
+	proto.up = proto.parent = function() {
+		return this._parent;
+	};
+
+	proto.get = function() {
+		return this.do_get();
+	};
+
+	proto.do_get = function() {
+		var parent = this.parent();
+		var parent_statechart = parent.get_statechart();
+		var parent_state = parent_statechart.get_state();
+		var initial_state = _.first(parent_state);
+		var value = this._state_map.get(initial_state);
+		return cjs.get(value);
+	};
+
+	proto.set_value = function(state, value) {
+		this._state_map.set(state, value);
+		return this;
+	};
+
+	proto.unset_value = function(state) {
+		this._state_map.unset(state);
+		return this;
+	};
+}(RedProperty));
 
 }(red));

@@ -27,13 +27,20 @@
 						.up()
 						.run();
 			var obj = red	.create_object()
-							.set_statechart(sc);
+							.set_statechart(sc)
+							.add_prop("prop1")
+							.find_prop("prop1")
+								.set_value(sc.get_state_with_name("idle"), 1)
+								.set_value(sc.get_state_with_name("dragging"), 2)
+							.up();
 								
 			$(window).on("keydown", function(event) {
 				if(event.keyCode === 83) { // s
-					console.log(red.cjs._.map(sc.get_state(), function(statechart) {
-						return statechart.my_name();
-					}));
+					console.log(obj.find_prop("prop1").get());
+					console.log(
+						red.cjs._.map(sc.get_state(), function(statechart) {
+							return statechart.my_name();
+						}));
 				}
 			});
 		});
