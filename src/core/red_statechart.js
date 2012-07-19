@@ -50,7 +50,12 @@ var RedStatechart = function(type) {
 		return this._type;
 	};
 	proto.add_state = function(state_name, type) {
-		var state = new RedStatechart(type);
+		var state;
+		if(type instanceof RedStatechart) {
+			state = type;
+		} else {
+			state = new RedStatechart(type);
+		}
 		state.set_parent(this);
 		this._states.set(state_name, state);
 		return this;

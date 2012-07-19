@@ -1,7 +1,7 @@
 (function(red) {
 var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 
-var RedObject = function() {
+var RedSkeleton = function() {
 	this._properties = red._create_map();
 };
 (function(my) {
@@ -29,11 +29,7 @@ var RedObject = function() {
 	proto.find_prop = function(prop_name) {
 		return this._properties.get(prop_name);
 	};
-}(RedObject));
-
-red.create_object = function() {
-	return new RedObject();
-};
+}(RedSkeleton));
 
 var RedProperty = function(parent) {
 	this._parent = parent;
@@ -68,5 +64,7 @@ var RedProperty = function(parent) {
 		return this;
 	};
 }(RedProperty));
+
+red.RedSkeleton = RedSkeleton;
 
 }(red));

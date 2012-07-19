@@ -11,7 +11,7 @@ var extend = function(subClass, superClass) {
     if(superClass.prototype.constructor == Object.prototype.constructor) {
         superClass.prototype.constructor = superClass;
     }
-}
+};
 
 var RedEvent = function() {
 	this._initialize();
