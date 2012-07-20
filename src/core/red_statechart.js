@@ -243,6 +243,9 @@ var RedStatechart = function(type) {
 		
 		return this;
 	};
+	proto.get_transitions = function() {
+		return _.clone(this.transitions);
+	};
 
 	proto.name_for_state = function(state) {
 		return this._states.key_for_value(state);
@@ -267,6 +270,19 @@ var RedStatechart = function(type) {
 
 	proto.is_atomic = function() {
 		return _.isEmpty(this.get_substates());
+	};
+
+	proto.clone = function(context) {
+		var new_statechart = new RedStatechart(this.get_type());
+		var substates_names = this.get_substates();
+		for(var i = 0; i<substates_names.length; i++) {
+			var substate_name = substates_names[i];
+			var substate = this.get_state_with_name(substate_name);
+			new_statechart.add_state(substate.clone());
+		}
+		console.log(this.get_transitions());
+		
+		return new_statechart;
 	};
 
 

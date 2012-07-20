@@ -67,9 +67,17 @@ var RedObject = function() {
 		this._prototypes = _.without(this.prototypes, proto);
 	};
 
+	proto.adapt_statechart = function(statechart) {
+		var new_sc = red.create_statechart();
+		console.log(statechart);
+		return new_sc;
+	};
+
 }(RedObject));
 
-new RedObject();
+red.create_object = function() {
+	return new RedObject();
+};
 
 
 }(red));

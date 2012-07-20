@@ -85,43 +85,35 @@ red.parse_table = function(table_str) {
 		}
 	}
 
+	var create_statechart = function(obj) {
+		var statechart = red.create_statechart();
+		_.forEach(obj.states, function(state, state_name) {
+			var sc = create_statechart(state);
+			statechart.add_state(state_name, sc);
+			if(_.isString(state.options) && state.options.indexOf("start") >= 0) {
+				statechart.starts_at(sc);
+			}
+		});
+		if(_.isString(state.options) && state.options.indexOf("concurrent") >= 0) {
+			statechart.concurrent(true);
+		}
+
+		_.forEach(obj.transitions, function(transition) {
+			statechart.add_transition(transition.from, transition.to, red.create_event("parsed", transition.on));
+		});
+		return statechart;
+	};
+
 	var translated_objects = {};
 	_.forEach(objs, function(obj, key) {
 		if(obj.type === "fsm") {
-			var create_statechart = function(obj) {
-				var statechart = red.create_statechart();
-				_.forEach(obj.states, function(state, state_name) {
-					var sc = create_statechart(state);
-					statechart.add_state(state_name, sc);
-					if(_.isString(state.options)) {
-						var options = state.options.split(",");
-						_.forEach(options, function(option) {
-							option = option.trim();
-							if(option === "start") {
-								statechart.starts_at(sc);
-							}
-						});
-					}
-				});
-				if(_.isString(obj.options)) {
-					var options = obj.options.split(",");
-					_.forEach(options, function(option) {
-						option = option.trim();
-						if(option === "concurrent") {
-							statechart.concurrent(true);
-						}
-					});
-				}
-
-				_.forEach(obj.transitions, function(transition) {
-					statechart.add_transition(transition.from, transition.to, red.create_event("parsed", transition.on));
-				});
-				return statechart;
-			};
 			translated_objects[key] = create_statechart(obj);
+		} else if(obj.type === "obj") {
+			var red_obj = red.create_object();
+			var statechart = create_statechart(obj.fsm);
+			var cloned_statechart = statechart.clone(red_obj);
+			translated_objects[key] = red_obj;
 		}
 	});
-
-	console.log(translated_objects);
 };
 }(red));
