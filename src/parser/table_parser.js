@@ -114,7 +114,35 @@ red.parse_table = function(table_str) {
 			var cloned_statechart = statechart.clone(red_obj);
 			red_obj.use_statechart(cloned_statechart, "own");
 			translated_objects[key] = red_obj;
+
+			var states = _.map(obj.states, function(state_name) {
+				if(state_name === "INIT") {
+					return red_obj.get_statechart().get_state_with_name("INIT");
+				} else {
+					return cloned_statechart.get_state_with_name(state_name);
+				}
+			});
+
+			_.forEach(obj.props, function(cells, prop_name) {
+				red_obj.add_prop(prop_name);
+				var prop = red_obj.find_prop(prop_name);
+				_.forEach(cells, function(cell_text, index) {
+					var state = states[index];
+
+					var match = cell_text.match(/^@([A-Za-z_\$][A-Za-z_\$0-9]*)$/);
+					if(match) {
+						var obj_name = match[1];
+						var o = translated_objects[obj_name];
+						prop.set_value(state, o);
+					} else {
+						var cell = red.create_cell(cell_text);
+						prop.set_value(state, cell);
+					}
+				});
+			});
 		}
 	});
+
+	return translated_objects;
 };
 }(red));

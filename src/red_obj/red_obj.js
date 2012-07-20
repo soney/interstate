@@ -27,7 +27,8 @@ var RedObject = function() {
 	proto.initialize_statechart = function() {
 		var statechart = red.create_statechart()
 							.add_state("INIT")
-							.starts_at("INIT");
+							.starts_at("INIT")
+							.set_context(this);
 
 		var reset_event = red.create_event("manual");
 		this.do_reset = _.bind(reset_event.fire, reset_event);
@@ -53,13 +54,6 @@ var RedObject = function() {
 		this.do_reset(); // Set in the initialize_statechart function
 	};
 
-	(["starts_at", "in_state", "add_state", "remove_state"
-		, "get_state_with_name"]).forEach(function(func_name) {
-		proto[func_name] = function() {
-			return this.own_statechart[func_name].apply(this.own_statechart, arguments);
-		};
-	});
-
 	proto.add_prototype = function(proto) {
 		this._prototypes.push(proto);
 	};
@@ -69,7 +63,7 @@ var RedObject = function() {
 
 	proto.use_statechart = function(statechart) {
 		var new_sc = red.create_statechart();
-		this.running_statechart.set_state("own", statechart);
+		this.running_statechart.add_state("own", statechart);
 		return new_sc;
 	};
 

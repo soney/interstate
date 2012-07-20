@@ -46,13 +46,20 @@ var RedStatechart = function(type) {
 		this.add_state("_pre_init", "pre_init");
 		this._active_state = this.get_state_with_name("_pre_init");
 	}
+	this._context = undefined;
 };
 (function(my) {
 	var proto = my.prototype;
+	proto.get_context = function() { return this._context; };
+	proto.set_context = function(context) { this._context = context; return this; };
 	proto.get_type = function() {
 		return this._type;
 	};
 	proto.add_state = function(state_name, type) {
+		if(this.has_state(state_name)) {
+			this.remove_state(this.get_state_with_name(state_name));
+		}
+
 		var state;
 		if(type instanceof RedStatechart) {
 			state = type;
@@ -76,6 +83,9 @@ var RedStatechart = function(type) {
 		this.transitions = transitions_not_involving_state;
 		this._states.unset(state);
 		return this;
+	};
+	proto.has_state = function(state_name) {
+		return !_.isUndefined(this.get_state_with_name(state_name));
 	};
 	proto.in_state = function(state_name) {
 		return this.get_state_with_name(state_name);
@@ -286,14 +296,13 @@ var RedStatechart = function(type) {
 		for(var i = 0; i<substates_names.length; i++) {
 			var substate_name = substates_names[i];
 			var substate = this.get_state_with_name(substate_name);
-			new_statechart.add_state(substate.clone(context, state_map));
+			new_statechart.add_state(substate_name, substate.clone(context, state_map));
 		}
 
 		var transitions = this.get_transitions();
 		for(var i = 0; i<transitions.length; i++) {
 			var transition = transitions[i];
 			var from = state_map.get(transition.from());
-			console.log(transition.to());
 			var to = state_map.get(transition.to());
 
 			var event = transition.get_event().clone(this);

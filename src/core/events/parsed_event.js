@@ -10,7 +10,7 @@ var parse_event = function(str) {
 		this.parse_tree = parse_event(str);
 		var tree = jsep(str, { });
 	};
-	proto.clone = function(context) {
+	proto.clone = function() {
 		return red.create_event("parsed", this.str);
 	};
 }(red._create_event_type("parsed").prototype));
