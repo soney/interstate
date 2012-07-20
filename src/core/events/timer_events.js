@@ -3,6 +3,7 @@ var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 
 (function(proto) {
 	proto.on_create = function(time) {
+		this.time = time;
 		var creation_time = (new Date()).getTime();
 		var time_diff = this.time - creation_time;
 
@@ -14,6 +15,9 @@ var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 				, created_at: creation_time
 			});
 		}, time_diff);
+	};
+	proto.clone = function(context) {
+		return red.create_event("at_time", this.time);
 	};
 }(red._create_event_type("at_time").prototype));
 
@@ -49,6 +53,9 @@ var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 			, current_time: (new Date()).getTime()
 			, created_at: this.created_at
 		});
+	};
+	proto.clone = function(timeout) {
+		return red.create_event("timeout", this.delay);
 	};
 }(red._create_event_type("timeout").prototype));
 

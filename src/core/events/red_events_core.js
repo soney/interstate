@@ -46,6 +46,9 @@ var RedEvent = function() {
 		});
 		return new_transition;
 	};
+	proto.clone = function() {
+		return new RedEvent();
+	};
 }(RedEvent));
 
 var event_types = {};

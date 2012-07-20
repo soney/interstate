@@ -112,6 +112,7 @@ red.parse_table = function(table_str) {
 			var red_obj = red.create_object();
 			var statechart = create_statechart(obj.fsm);
 			var cloned_statechart = statechart.clone(red_obj);
+			red_obj.use_statechart(cloned_statechart, "own");
 			translated_objects[key] = red_obj;
 		}
 	});

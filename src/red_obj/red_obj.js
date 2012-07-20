@@ -36,11 +36,11 @@ var RedObject = function() {
 
 		this.own_statechart = red.create_statechart();
 
-		var running_statechart = red.create_statechart()
-									.concurrent(true)
-									.add_state("own", this.own_statechart);
+		this.running_statechart = red	.create_statechart()
+										.concurrent(true)
+										.add_state("own", this.own_statechart);
 
-		statechart	.add_state("running", running_statechart)
+		statechart	.add_state("running", this.running_statechart)
 					.add_transition("INIT", "running", red.create_event("on_enter", init_state))
 					.add_transition("running", "INIT", reset_event);
 
@@ -67,9 +67,9 @@ var RedObject = function() {
 		this._prototypes = _.without(this.prototypes, proto);
 	};
 
-	proto.adapt_statechart = function(statechart) {
+	proto.use_statechart = function(statechart) {
 		var new_sc = red.create_statechart();
-		console.log(statechart);
+		this.running_statechart.set_state("own", statechart);
 		return new_sc;
 	};
 

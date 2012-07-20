@@ -15,17 +15,20 @@ var RedStatechartTransition = function(statechart, from_state, to_state, event) 
 	var proto = my.prototype;
 	proto.run = function(event) {
 		var statechart = this._statechart;
-		if(statechart.is(this._from_state)) {
-			statechart.set_state(this._to_state, event);
+		if(statechart.is(this.from())) {
+			statechart.set_state(this.to(), event);
 		}
 	};
 	proto.involves = function(state) {
-		return this._from_state === state || this._to_state === state;
+		return this.from() === state || this.to() === state;
 	};
 	proto.destroy = function() {
 		this._event.off_fire(this.do_run);
 		this._event.destroy();
 	};
+	proto.from = function() { return this._from_state; }; 
+	proto.to = function() { return this._to_state; };
+	proto.get_event = function() { return this._event; };
 }(RedStatechartTransition));
 
 var RedStatechart = function(type) {
@@ -272,15 +275,31 @@ var RedStatechart = function(type) {
 		return _.isEmpty(this.get_substates());
 	};
 
-	proto.clone = function(context) {
+	proto.clone = function(context, state_map) {
+		if(_.isUndefined(state_map)) {
+			state_map = red._create_map();
+		}
+
 		var new_statechart = new RedStatechart(this.get_type());
+		state_map.set(this, new_statechart);
 		var substates_names = this.get_substates();
 		for(var i = 0; i<substates_names.length; i++) {
 			var substate_name = substates_names[i];
 			var substate = this.get_state_with_name(substate_name);
-			new_statechart.add_state(substate.clone());
+			new_statechart.add_state(substate.clone(context, state_map));
 		}
-		console.log(this.get_transitions());
+
+		var transitions = this.get_transitions();
+		for(var i = 0; i<transitions.length; i++) {
+			var transition = transitions[i];
+			var from = state_map.get(transition.from());
+			console.log(transition.to());
+			var to = state_map.get(transition.to());
+
+			var event = transition.get_event().clone(this);
+
+			new_statechart.add_transition(from, to, event);
+		}
 		
 		return new_statechart;
 	};
