@@ -1,11 +1,13 @@
 (function(red) {
 var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
 
-var stay = "STAY"
-red.parse_cell = function(cell_str) {
-	var tree = jsep(cell_str, {
+var RedCell = function(str) {
+	this.str = str;
+	this.tree = jsep(this.str, {
 		keywords: ["true", "false", "this", "STAY"]
 	});
-	return tree;
 };
+(function(my) {
+}(RedCell));
+
 }(red));

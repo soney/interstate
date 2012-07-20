@@ -55,6 +55,7 @@ red.create_event = function(event_type) {
 
 	var rv = new Constructor();
 	rv.on_create.apply(rv, _.rest(arguments));
+	rv.type = event_type;
 	return rv;
 };
 

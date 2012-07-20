@@ -46,7 +46,9 @@ exports.main_src = c(
 				, "core/events/timer_events.js"
 				, "core/events/dom_events.js"
 				, "core/events/statechart_events.js"
+				, "core/events/parsed_event.js"
 				, "red_obj/red_obj.js"
+				, "red_obj/red_cell.js"
 			])
 );
 
