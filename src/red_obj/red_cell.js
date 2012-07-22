@@ -1,5 +1,6 @@
 (function(red) {
-var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = cjs._;
+var esprima = window.esprima;
 
 var RedCell = function(str, parent) {
 	this.set_str(str);
@@ -15,9 +16,7 @@ var RedCell = function(str, parent) {
 	proto.get_str = function() { return this._str; };
 
 	proto._update_tree = function() {
-		this._tree = jsep(this.get_str(), {
-			keywords: ["true", "false", "this", "STAY"]
-		});
+		this._tree = esprima.parse(this.get_str());
 	};
 
 	proto._update_value = function() {

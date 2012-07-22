@@ -1,5 +1,5 @@
 (function(red) {
-var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = cjs._;
 
 var remove_by_index = function(arrayName,arrayIndex) { 
 	arrayName.splice(arrayIndex,1); 

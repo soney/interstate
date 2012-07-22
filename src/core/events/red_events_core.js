@@ -1,5 +1,5 @@
 (function(red) {
-var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = cjs._;
 
 var extend = function(subClass, superClass) {
     var F = function() {};

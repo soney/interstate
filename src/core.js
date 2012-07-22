@@ -6,7 +6,7 @@
 		return red_call.apply(root, arguments);
 	};
 	red.cjs = cjs.noConflict();
-	red.jsep = jsep.noConflict();
+	red.esprima = esprima;
 
 
 	var old_red = root.red;

@@ -1,5 +1,5 @@
 (function(red) {
-var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = cjs._;
 
 var RedSkeleton = function() {
 	this._properties = red._create_map();

@@ -1,5 +1,5 @@
 (function(red) {
-var jsep = red.jsep, cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = cjs._;
 
 var RedStatechartTransition = function(statechart, from_state, to_state, event) {
 	this._statechart = statechart;
