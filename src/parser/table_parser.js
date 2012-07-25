@@ -107,7 +107,7 @@ red.parse_table = function(table_str) {
 	var translated_objects = {};
 	_.forEach(objs, function(obj, key) {
 		if(obj.type === "fsm") {
-			translated_objects[key] = create_statechart(obj);
+//			translated_objects[key] = create_statechart(obj);
 		} else if(obj.type === "obj") {
 			var red_obj = red.create_object();
 			var statechart = create_statechart(obj.fsm);
