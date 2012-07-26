@@ -51,7 +51,8 @@ var RedProperty = function(parent) {
 		var parent_state = parent_statechart.get_state();
 		var initial_state = _.first(parent_state);
 		var value = this._state_map.get(initial_state);
-		return cjs.get(value);
+		return value.get();
+		//return cjs.get(value);
 	};
 
 	proto.set_value = function(state, value) {

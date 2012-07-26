@@ -85,8 +85,11 @@ red.parse_table = function(table_str) {
 		}
 	}
 
-	var create_statechart = function(obj) {
+	var create_statechart = function(obj, context) {
 		var statechart = red.create_statechart();
+		if(context) {
+			statechart.set_context(context);
+		}
 		_.forEach(obj.states, function(state, state_name) {
 			var sc = create_statechart(state);
 			statechart.add_state(state_name, sc);
@@ -99,7 +102,7 @@ red.parse_table = function(table_str) {
 		}
 
 		_.forEach(obj.transitions, function(transition) {
-			statechart.add_transition(transition.from, transition.to, red.create_event("parsed", transition.on));
+			statechart.add_transition(transition.from, transition.to, red.create_event("parsed", transition.on, statechart));
 		});
 		return statechart;
 	};
@@ -110,7 +113,7 @@ red.parse_table = function(table_str) {
 //			translated_objects[key] = create_statechart(obj);
 		} else if(obj.type === "obj") {
 			var red_obj = red.create_object();
-			var statechart = create_statechart(obj.fsm);
+			var statechart = create_statechart(obj.fsm, red_obj);
 			var cloned_statechart = statechart.clone(red_obj);
 			red_obj.use_statechart(cloned_statechart, "own");
 			translated_objects[key] = red_obj;

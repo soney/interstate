@@ -14,7 +14,7 @@ var RedStatechartTransition = function(statechart, from_state, to_state, event) 
 (function(my) {
 	var proto = my.prototype;
 	proto.run = function(event) {
-		var statechart = this._statechart;
+		var statechart = this.get_statechart();
 		if(statechart.is(this.from())) {
 			statechart.set_state(this.to(), event);
 		}
@@ -29,6 +29,10 @@ var RedStatechartTransition = function(statechart, from_state, to_state, event) 
 	proto.from = function() { return this._from_state; }; 
 	proto.to = function() { return this._to_state; };
 	proto.get_event = function() { return this._event; };
+	proto.get_context = function() {
+		return this.get_statechart();
+	};
+	proto.get_statechart = function() { return this._statechart; };
 }(RedStatechartTransition));
 
 var RedStatechart = function(type) {

@@ -123,7 +123,14 @@
 			text-align: center;
 		}
 
-		
+		.euc_obj {
+			border: 3px solid black;
+			width: 150px;
+			height: 150px;
+			margin: 20px;
+			border-radius: 5px;
+			background-color: #AAA;
+		}
 	</style>
 	<script type="text/javascript" src="server/jquery-1.7.2.min.js"></script>
 	<script type="text/javascript" src="server/jquery.textarea.js"></script>
@@ -164,7 +171,10 @@
 
 		var do_run = function() {
 			var input_str = get_input_str();
-			red.parse_table(input_str);
+			var objs = red.parse_table(input_str);
+			red.cjs._.forEach(objs, function(obj) {
+				$("div.output").append(obj.dom_element);
+			});
 		};
 	</script>
   </head>

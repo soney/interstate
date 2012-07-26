@@ -19,6 +19,8 @@ var RedObject = function() {
 	this._properties = red._create_map();
 	this.initialize_statechart();
 	this._prototypes = [];
+	this.dom_element = document.createElement("div");
+	this.dom_element.className = "euc_obj";
 };
 (function(my) {
 	extend(my, red.RedSkeleton);
