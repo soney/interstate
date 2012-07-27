@@ -173,6 +173,7 @@
 			var input_str = get_input_str();
 			var objs = red.parse_table(input_str);
 			red.cjs._.forEach(objs, function(obj) {
+				obj.get_statechart().run();
 				$("div.output").append(obj.dom_element);
 			});
 		};

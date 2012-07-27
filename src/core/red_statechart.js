@@ -9,6 +9,7 @@ var RedStatechartTransition = function(statechart, from_state, to_state, event) 
 	this._event = event;
 
 	this._event.on_fire(this.do_run);
+	this.id = _.uniqueId();
 };
 
 (function(my) {
@@ -51,6 +52,7 @@ var RedStatechart = function(type) {
 		this._active_state = this.get_state_with_name("_pre_init");
 	}
 	this._context = undefined;
+	this.id = _.uniqueId();
 };
 (function(my) {
 	var proto = my.prototype;

@@ -25,7 +25,7 @@ var eval_tree = function(node, context) {
 		var property = eval_tree(node.property, context);
 		return object[property];
 	} else if(type === "Literal") {
-		return node.value;
+		return cjs(node.value);
 	} else {
 		console.log(type, node);
 	}
@@ -53,7 +53,7 @@ var RedCell = function(str, parent) {
 	};
 
 	proto.get = function() {
-		return this._value;
+		return cjs.get(this._value);
 	};
 }(RedCell));
 

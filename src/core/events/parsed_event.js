@@ -71,6 +71,7 @@ var eval_tree = function(node, context) {
 	};
 	proto._update_value = function() {
 		this._event = eval_tree(this._tree.body[0], this.get_context());
+		this._event.on_fire(_.bind(this.on_fire, this));
 	};
 	proto.get_context = function() {
 		var statechart = this.statechart;

@@ -34,6 +34,7 @@ var RedSkeleton = function() {
 var RedProperty = function(parent) {
 	this._parent = parent;
 	this._state_map = red._create_map();
+	this.value = cjs(_.bind(this.get, this));
 };
 (function(my) {
 	var proto = my.prototype;
@@ -50,12 +51,15 @@ var RedProperty = function(parent) {
 		var parent_statechart = parent.get_statechart();
 		var parent_state = parent_statechart.get_state();
 		var initial_state = _.first(parent_state);
-		var value = this._state_map.get(initial_state);
-		return value.get();
-		//return cjs.get(value);
+		var cell = this._state_map.get(initial_state);
+		return cell.get();
 	};
 
 	proto.set_value = function(state, value) {
+		state.on_enter(_.bind(function() {
+			console.log("K");
+			this.do_set(value);
+		}, this));
 		this._state_map.set(state, value);
 		return this;
 	};
@@ -63,6 +67,10 @@ var RedProperty = function(parent) {
 	proto.unset_value = function(state) {
 		this._state_map.unset(state);
 		return this;
+	};
+
+	proto.do_set = function(value) {
+		this._value = value;
 	};
 }(RedProperty));
 
