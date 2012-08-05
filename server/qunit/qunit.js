@@ -1,11 +1,11 @@
 /**
- * QUnit v1.8.0 - A JavaScript Unit Testing Framework
+ * QUnit v1.10.0pre - A JavaScript Unit Testing Framework
  *
- * http://docs.jquery.com/QUnit
+ * http://qunitjs.com
  *
- * Copyright (c) 2012 John Resig, Jörn Zaefferer
- * Dual licensed under the MIT (MIT-LICENSE.txt)
- * or GPL (GPL-LICENSE.txt) licenses.
+ * Copyright 2012 jQuery Foundation and other contributors
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
  */
 
 (function( window ) {
@@ -17,6 +17,8 @@ var QUnit,
 	fileName = (sourceFromStacktrace( 0 ) || "" ).replace(/(:\d+)+\)?/, "").replace(/.+\//, ""),
 	toString = Object.prototype.toString,
 	hasOwn = Object.prototype.hasOwnProperty,
+	// Keep a local reference to Date (GH-283)
+	Date = window.Date,
 	defined = {
 	setTimeout: typeof window.setTimeout !== "undefined",
 	sessionStorage: (function() {
@@ -305,6 +307,7 @@ QUnit = {
 	module: function( name, testEnvironment ) {
 		config.currentModule = name;
 		config.currentModuleTestEnviroment = testEnvironment;
+		config.modules[name] = true;
 	},
 
 	asyncTest: function( testName, expected, callback ) {
@@ -403,6 +406,8 @@ QUnit = {
 QUnit.assert = {
 	/**
 	 * Asserts rough true-ish result.
+	 * @name ok
+	 * @function
 	 * @example ok( "asdfasdf".length > 5, "There must be at least 5 chars" );
 	 */
 	ok: function( result, msg ) {
@@ -437,36 +442,59 @@ QUnit.assert = {
 	/**
 	 * Assert that the first two arguments are equal, with an optional message.
 	 * Prints out both actual and expected values.
+	 * @name equal
+	 * @function
 	 * @example equal( format( "Received {0} bytes.", 2), "Received 2 bytes.", "format() replaces {0} with next argument" );
 	 */
 	equal: function( actual, expected, message ) {
 		QUnit.push( expected == actual, actual, expected, message );
 	},
 
+	/**
+	 * @name notEqual
+	 * @function
+	 */
 	notEqual: function( actual, expected, message ) {
 		QUnit.push( expected != actual, actual, expected, message );
 	},
 
+	/**
+	 * @name deepEqual
+	 * @function
+	 */
 	deepEqual: function( actual, expected, message ) {
 		QUnit.push( QUnit.equiv(actual, expected), actual, expected, message );
 	},
 
+	/**
+	 * @name notDeepEqual
+	 * @function
+	 */
 	notDeepEqual: function( actual, expected, message ) {
 		QUnit.push( !QUnit.equiv(actual, expected), actual, expected, message );
 	},
 
+	/**
+	 * @name strictEqual
+	 * @function
+	 */
 	strictEqual: function( actual, expected, message ) {
 		QUnit.push( expected === actual, actual, expected, message );
 	},
 
+	/**
+	 * @name notStrictEqual
+	 * @function
+	 */
 	notStrictEqual: function( actual, expected, message ) {
 		QUnit.push( expected !== actual, actual, expected, message );
 	},
 
-	raises: function( block, expected, message ) {
+	throws: function( block, expected, message ) {
 		var actual,
 			ok = false;
 
+		// 'expected' is optional
 		if ( typeof expected === "string" ) {
 			message = expected;
 			expected = null;
@@ -494,18 +522,29 @@ QUnit.assert = {
 			} else if ( expected.call( {}, actual ) === true ) {
 				ok = true;
 			}
-		}
 
-		QUnit.push( ok, actual, null, message );
+			QUnit.push( ok, actual, null, message );
+		} else {
+			QUnit.pushFailure( message, null, 'No exception was thrown.' );
+		}
 	}
 };
 
-// @deprecated: Kept assertion helpers in root for backwards compatibility
+/**
+ * @deprecate since 1.8.0
+ * Kept assertion helpers in root for backwards compatibility
+ */
 extend( QUnit, QUnit.assert );
 
 /**
- * @deprecated: Kept for backwards compatibility
- * next step: remove entirely
+ * @deprecated since 1.9.0
+ * Kept global "raises()" for backwards compatibility
+ */
+QUnit.raises = QUnit.assert.throws;
+
+/**
+ * @deprecated since 1.0.0, replaced with error pushes since 1.3.0
+ * Kept to avoid TypeErrors for undefined methods.
  */
 QUnit.equals = function() {
 	QUnit.push( false, false, false, "QUnit.equals has been deprecated since 2009 (e88049a0), use QUnit.equal instead" );
@@ -549,7 +588,23 @@ config = {
 	// when enabled, all tests must call expect()
 	requireExpects: false,
 
-	urlConfig: [ "noglobals", "notrycatch" ],
+	// add checkboxes that are persisted in the query-string
+	// when enabled, the id is set to `true` as a `QUnit.config` property
+	urlConfig: [
+		{
+			id: "noglobals",
+			label: "Check for Globals",
+			tooltip: "Enabling this will test if any test introduces new properties on the `window` object. Stored as query-strings."
+		},
+		{
+			id: "notrycatch",
+			label: "No try-catch",
+			tooltip: "Enabling this will run tests outside of a try-catch block. Makes debugging exceptions in IE reasonable. Stored as query-strings."
+		}
+	],
+
+	// Set of all modules.
+	modules: {},
 
 	// logging callback queues
 	begin: [],
@@ -770,7 +825,7 @@ extend( QUnit, {
 		});
 	},
 
-	pushFailure: function( message, source ) {
+	pushFailure: function( message, source, actual ) {
 		if ( !config.current ) {
 			throw new Error( "pushFailure() assertion outside test context, was " + sourceFromStacktrace(2) );
 		}
@@ -781,14 +836,22 @@ extend( QUnit, {
 				message: message
 			};
 
-		message = escapeInnerText(message ) || "error";
+		message = escapeInnerText( message ) || "error";
 		message = "<span class='test-message'>" + message + "</span>";
 		output = message;
 
+		output += "<table>";
+
+		if ( actual ) {
+			output += "<tr class='test-actual'><th>Result: </th><td><pre>" + escapeInnerText( actual ) + "</pre></td></tr>";
+		}
+
 		if ( source ) {
 			details.source = source;
-			output += "<table><tr class='test-source'><th>Source: </th><td><pre>" + escapeInnerText( source ) + "</pre></td></tr></table>";
+			output += "<tr class='test-source'><th>Source: </th><td><pre>" + escapeInnerText( source ) + "</pre></td></tr>";
 		}
+
+		output += "</table>";
 
 		runLoggingCallbacks( "log", QUnit, details );
 
@@ -859,7 +922,9 @@ QUnit.load = function() {
 	runLoggingCallbacks( "begin", QUnit, {} );
 
 	// Initialize the config, saving the execution queue
-	var banner, filter, i, label, len, main, ol, toolbar, userAgent, val,
+	var banner, filter, i, label, len, main, ol, toolbar, userAgent, val, urlConfigCheckboxes, moduleFilter,
+	    numModules = 0,
+	    moduleFilterHtml = "",
 		urlConfigHtml = "",
 		oldconfig = extend( {}, config );
 
@@ -872,10 +937,26 @@ QUnit.load = function() {
 
 	for ( i = 0; i < len; i++ ) {
 		val = config.urlConfig[i];
-		config[val] = QUnit.urlParams[val];
-		urlConfigHtml += "<label><input name='" + val + "' type='checkbox'" + ( config[val] ? " checked='checked'" : "" ) + ">" + val + "</label>";
+		if ( typeof val === "string" ) {
+			val = {
+				id: val,
+				label: val,
+				tooltip: "[no tooltip available]"
+			};
+		}
+		config[ val.id ] = QUnit.urlParams[ val.id ];
+		urlConfigHtml += "<input id='qunit-urlconfig-" + val.id + "' name='" + val.id + "' type='checkbox'" + ( config[ val.id ] ? " checked='checked'" : "" ) + " title='" + val.tooltip + "'><label for='qunit-urlconfig-" + val.id + "' title='" + val.tooltip + "'>" + val.label + "</label>";
 	}
 
+	moduleFilterHtml += "<label for='qunit-modulefilter'>Module: </label><select id='qunit-modulefilter' name='modulefilter'><option value='' " + ( config.module === undefined  ? "selected" : "" ) + ">< All Modules ></option>";
+	for ( i in config.modules ) {
+		if ( config.modules.hasOwnProperty( i ) ) {
+			numModules += 1;
+			moduleFilterHtml += "<option value='" + encodeURIComponent(i) + "' " + ( config.module === i ? "selected" : "" ) + ">" + i + "</option>";
+		}
+	}
+	moduleFilterHtml += "</select>";
+	
 	// `userAgent` initialized at top of scope
 	userAgent = id( "qunit-userAgent" );
 	if ( userAgent ) {
@@ -885,12 +966,7 @@ QUnit.load = function() {
 	// `banner` initialized at top of scope
 	banner = id( "qunit-header" );
 	if ( banner ) {
-		banner.innerHTML = "<a href='" + QUnit.url({ filter: undefined }) + "'>" + banner.innerHTML + "</a> " + urlConfigHtml;
-		addEvent( banner, "change", function( event ) {
-			var params = {};
-			params[ event.target.name ] = event.target.checked ? true : undefined;
-			window.location = QUnit.url( params );
-		});
+		banner.innerHTML = "<a href='" + QUnit.url({ filter: undefined, module: undefined, testNumber: undefined }) + "'>" + banner.innerHTML + "</a> ";
 	}
 
 	// `toolbar` initialized at top of scope
@@ -931,8 +1007,31 @@ QUnit.load = function() {
 		// `label` initialized at top of scope
 		label = document.createElement( "label" );
 		label.setAttribute( "for", "qunit-filter-pass" );
+		label.setAttribute( "title", "Only show tests and assertons that fail. Stored in sessionStorage." );
 		label.innerHTML = "Hide passed tests";
 		toolbar.appendChild( label );
+
+		urlConfigCheckboxes = document.createElement( 'span' );
+		urlConfigCheckboxes.innerHTML = urlConfigHtml;
+		addEvent( urlConfigCheckboxes, "change", function( event ) {
+			var params = {};
+			params[ event.target.name ] = event.target.checked ? true : undefined;
+			window.location = QUnit.url( params );
+		});
+		toolbar.appendChild( urlConfigCheckboxes );
+
+		if (numModules > 1) {
+			moduleFilter = document.createElement( 'span' );
+			moduleFilter.setAttribute( 'id', 'qunit-modulefilter-container' );
+			moduleFilter.innerHTML = moduleFilterHtml;
+			addEvent( moduleFilter, "change", function() {
+				var selectBox = moduleFilter.getElementsByTagName("select")[0],
+				    selectedModule = decodeURIComponent(selectBox.options[selectBox.selectedIndex].value);
+				
+				window.location = QUnit.url( { module: ( selectedModule === "" ) ? undefined : selectedModule } );
+			});
+			toolbar.appendChild(moduleFilter);
+		}
 	}
 
 	// `main` initialized at top of scope
@@ -1051,14 +1150,14 @@ function done() {
 function validTest( test ) {
 	var include,
 		filter = config.filter && config.filter.toLowerCase(),
-		module = config.module,
+		module = config.module && config.module.toLowerCase(),
 		fullName = (test.module + ": " + test.testName).toLowerCase();
 
 	if ( config.testNumber ) {
 		return test.testNumber === config.testNumber;
 	}
 
-	if ( module && test.module !== module ) {
+	if ( module && ( !test.module || test.module.toLowerCase() !== module ) ) {
 		return false;
 	}
 
