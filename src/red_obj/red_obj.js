@@ -47,8 +47,6 @@ var RedObject = function() {
 					.add_transition("INIT", "running", red.create_event("on_enter", init_state))
 					.add_transition("running", "INIT", reset_event);
 
-
-
 		this.set_statechart(statechart);
 	};
 
@@ -56,12 +54,6 @@ var RedObject = function() {
 		this.do_reset(); // Set in the initialize_statechart function
 	};
 
-	proto.add_prototype = function(proto) {
-		this._prototypes.push(proto);
-	};
-	proto.remove_prototype = function(proto) {
-		this._prototypes = _.without(this.prototypes, proto);
-	};
 
 	proto.use_statechart = function(statechart) {
 		var new_sc = red.create_statechart();
