@@ -84,7 +84,7 @@ var RedSkeleton = function() {
 
 			self.inherited_statecharts.remove_state("proto_"+index);
 			var i = index;
-			while(self.inherited_statecharts.has_state("proto_"+i)) {
+			while(self.inherited_statecharts.has_state("proto_"+(i+1))) {
 				self.inherited_statecharts.rename_state("proto_"+(i+1), "proto_"+i);
 				i++;
 			}
@@ -102,13 +102,36 @@ var RedSkeleton = function() {
 			while(self.inherited_statecharts.has_state("proto_"+i)) {
 				i++;
 			}
+			i--;
 			while(i >= index) {
+				console.log(i, i+1);
+				self.inherited_statecharts.rename_state("proto_"+i, "proto_"+(i+1));
 				i--;
-				self.inherited_statecharts.rename_state("proto_"+(i+1), "proto_"+i);
 			};
 			self.inherited_statecharts.add_state("proto_"+index, shadow_statechart);
 		});
 		_.forEach(diff.moved, function(moved) {
+			var item = moved.item
+				, from_index = moved.from_index
+				, to_index = moved.to_index;
+
+			var shadow_statechart = self.inherited_statecharts.get_state("proto_"+from_index);
+
+			
+			self.inherited_statecharts.remove_state("proto_"+from_index);
+			var i = from_index;
+			if(from_index < to_index) {
+				while(i < to_index) {
+					self.inherited_statecharts.rename_state("proto_"+(i+1), "proto_"+i);
+					i++;
+				}
+			} else {
+				while(i > to_index) {
+					self.inherited_statecharts.rename_state("proto_"+i, "proto_"+(i-1));
+					i--;
+				}
+			}
+			self.inherited_statecharts.add_state("proto_"+to_index, shadow_statechart);
 		});
 
 		if(diff.added.length > 0 || diff.removed.length > 0 || diff.moved.length > 0) {
