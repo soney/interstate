@@ -38,9 +38,23 @@ test('Prototypes', function() {
 
 	b.set_direct_prototypes([a]);
 	c.set_direct_prototypes([a,b]);
+	d.set_direct_prototypes([c,b]);
 
 	deepEqual(b.get_all_prototypes(), [a]);
-	deepEqual(c.get_all_prototypes(), [a, b]);
+	deepEqual(c.get_all_prototypes(), [a,b]);
+	deepEqual(d.get_all_prototypes(), [c,a,b]);
+
+	f.set_direct_prototypes([e,d]);
+	deepEqual(f.get_all_prototypes(), [e,d,c,a,b]);
+	b.set_direct_prototypes([]);
+	deepEqual(c.get_all_prototypes(), [a,b]);
+	c.set_direct_prototypes([a]);
+	deepEqual(c.get_all_prototypes(), [a]);
+
+	d.set_direct_prototypes([g,h]);
+	deepEqual(f.get_all_prototypes(), [e,d,g,h]);
+	d.set_direct_prototypes([h,g]);
+	deepEqual(f.get_all_prototypes(), [e,d,h,g]);
 });
 
 }());

@@ -2,12 +2,16 @@
 var cjs = red.cjs, _ = cjs._;
 
 var RedSkeleton = function() {
-	this._direct_prototypes = [];
-	this._all_prototypes = [];
 	this._statechart = cjs.create("statechart");
 	this._properties = cjs.create("map");
 	this.initialize_statechart();
 	this._listeners = {};
+
+	this._direct_prototypes = [];
+	this._all_prototypes = [];
+
+	this._direct_properties = cjs.create("map");
+	this._all_properties = cjs.create("map");
 };
 (function(my) {
 	var proto = my.prototype;
@@ -25,14 +29,20 @@ var RedSkeleton = function() {
 
 		this.own_statechart = cjs.create("statechart");
 
+		this.inherited_statecharts = cjs.create("statechart")
+										.concurrent(true);
+
 		this.running_statechart = cjs	.create("statechart")
 										.concurrent(true)
-										.add_state("own", this.own_statechart);
+										.add_state("own", this.own_statechart)
+										.add_state("inherited", this.inherited_statecharts);
 
 		statechart	.add_state("running", this.running_statechart)
 					.add_transition("INIT", "running", cjs.create_event("on_enter", init_state))
 					.add_transition("running", "INIT", reset_event);
+		this.$prototypes_changed = _.bind(this.prototypes_changed, this);
 	};
+	proto.get_statechart = function() { return this._statechart; };
 
 	proto._create_prop = function(prop_name) {
 		var prop = new RedProperty(this);
@@ -51,28 +61,61 @@ var RedSkeleton = function() {
 		return this._properties.get(prop_name);
 	};
 	proto.get_direct_prototypes = function() {
+		return this._direct_prototypes;
 	};
 	proto.set_direct_prototypes = function(new_protos) {
 		this._direct_prototypes = new_protos;
-
+		this.update_all_prototypes();
+	};
+	proto.prototypes_changed = function() {
+		this.update_all_prototypes();
+	};
+	proto.update_all_prototypes = function() {
 		var old_all_prototypes = this._all_prototypes;
 		this._all_prototypes = this.get_all_prototypes();
 
 		var diff = _.diff(old_all_prototypes, this._all_prototypes);
-		console.log(old_all_prototypes, this._all_prototypes, diff);
 		var self = this;
 		_.forEach(diff.removed, function(removed) {
 			var item = removed.item
 				, index = removed.index;
 			item.destroy(self);
+			item._on("prototypes_changed", this.$prototypes_changed);
+
+			self.inherited_statecharts.remove_state("proto_"+index);
+			var i = index;
+			while(self.inherited_statecharts.has_state("proto_"+i)) {
+				self.inherited_statecharts.rename_state("proto_"+(i+1), "proto_"+i);
+				i++;
+			}
 		});
 		_.forEach(diff.added, function(added) {
 			var item = added.item
 				, index = added.index;
 			item.initialize(self);
+			item._off("prototypes_changed", this.$prototypes_changed);
+
+			var item_statechart = item.get_statechart().get_state_with_name("running.own");
+			var shadow_statechart = red._shadow_statechart(item_statechart);
+
+			var i = index;
+			while(self.inherited_statecharts.has_state("proto_"+i)) {
+				i++;
+			}
+			while(i >= index) {
+				i--;
+				self.inherited_statecharts.rename_state("proto_"+(i+1), "proto_"+i);
+			};
+			self.inherited_statecharts.add_state("proto_"+index, shadow_statechart);
 		});
 		_.forEach(diff.moved, function(moved) {
 		});
+
+		if(diff.added.length > 0 || diff.removed.length > 0 || diff.moved.length > 0) {
+			this._notify("prototypes_changed", {
+				context: this
+			});
+		}
 	};
 	proto.get_all_prototypes = function() {
 		return this._all_prototypes;
@@ -81,9 +124,13 @@ var RedSkeleton = function() {
 	proto.destroy = function(self) {};
 
 	proto.get_all_prototypes = function() {
-		return _.uniq(_.flatten(_.map(this._direct_prototypes, function(p) {
+		return _.uniq(_.flatten(_.map(this.get_direct_prototypes(), function(p) {
 			return ([p]).concat(p.get_all_prototypes());
 		})));
+	};
+	proto.get_direct_properties = function() {
+	};
+	proto.get_all_properties = function() {
 	};
 	/*
 
@@ -143,7 +190,7 @@ var RedSkeleton = function() {
 
 
 
-	proto.inherits_from = function(proto) {
+	proto.inherits_from = function() {
 		var self = this;
 		return _.all(arguments, function(arg) {
 			return _.indexOf(self._all_prototypes, arg) >= 0;
