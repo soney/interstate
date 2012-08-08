@@ -63,8 +63,6 @@ test('Prototypes', function() {
 	f.set_direct_prototypes([e,d]);
 	deepEqual(f.get_all_prototypes(), [e,d,c,a,b]);
 
-	console.log(f.get_statechart().stringify());
-
 	b.set_direct_prototypes([]);
 	deepEqual(c.get_all_prototypes(), [a,b]);
 	c.set_direct_prototypes([a]);
@@ -74,8 +72,33 @@ test('Prototypes', function() {
 	deepEqual(f.get_all_prototypes(), [e,d,g,h]);
 	d.set_direct_prototypes([h,g]);
 	deepEqual(f.get_all_prototypes(), [e,d,h,g]);
+});
 
-	console.log(f.get_statechart().stringify());
+test('Properties', function() {
+	var A = new red.RedSkeleton();
+	var B = new red.RedSkeleton();
+	var C = new red.RedSkeleton();
+	var D = new red.RedSkeleton();
+	var E = new red.RedSkeleton();
+	var F = new red.RedSkeleton();
+	var G = new red.RedSkeleton();
+	var H = new red.RedSkeleton();
+
+	A.own_statechart.add_state("A");
+	B.own_statechart.add_state("B");
+	C.own_statechart.add_state("C");
+	D.own_statechart.add_state("D");
+	E.own_statechart.add_state("E");
+	F.own_statechart.add_state("F");
+	G.own_statechart.add_state("G");
+	H.own_statechart.add_state("H");
+
+	expect(0);
+
+	A.set_direct_prop("x");
+	A.rename_direct_prop("x", "y");
+	//A.find_prop("x");
+	console.log(A.get_direct_props().to_obj());
 });
 
 }());

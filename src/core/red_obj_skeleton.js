@@ -3,7 +3,6 @@ var cjs = red.cjs, _ = cjs._;
 
 var RedSkeleton = function() {
 	this._statechart = cjs.create("statechart");
-	this._properties = cjs.create("map");
 	this.initialize_statechart();
 	this._listeners = {};
 
@@ -44,22 +43,6 @@ var RedSkeleton = function() {
 	};
 	proto.get_statechart = function() { return this._statechart; };
 
-	proto._create_prop = function(prop_name) {
-		var prop = new RedProperty(this);
-		return prop;
-	};
-	proto.add_prop = function(prop_name) {
-		var prop = this._create_prop();
-		this._properties.set(prop_name, prop);
-		return this;
-	};
-	proto.remove_prop = function(prop_name) {
-		this._properties.unset(prop_name);
-		return this;
-	};
-	proto.find_prop = function(prop_name) {
-		return this._properties.get(prop_name);
-	};
 	proto.get_direct_prototypes = function() {
 		return this._direct_prototypes;
 	};
@@ -72,7 +55,7 @@ var RedSkeleton = function() {
 	};
 	proto.update_all_prototypes = function() {
 		var old_all_prototypes = this._all_prototypes;
-		this._all_prototypes = this.get_all_prototypes();
+		this._all_prototypes = this._get_all_prototypes();
 
 		var diff = _.diff(old_all_prototypes, this._all_prototypes);
 		var self = this;
@@ -80,7 +63,7 @@ var RedSkeleton = function() {
 			var item = removed.item
 				, index = removed.index;
 			item.destroy(self);
-			item._on("prototypes_changed", this.$prototypes_changed);
+			item._off("prototypes_changed", self.$prototypes_changed);
 
 			self.inherited_statecharts.remove_state("proto_"+index);
 			var i = index;
@@ -93,7 +76,7 @@ var RedSkeleton = function() {
 			var item = added.item
 				, index = added.index;
 			item.initialize(self);
-			item._off("prototypes_changed", this.$prototypes_changed);
+			item._on("prototypes_changed", self.$prototypes_changed);
 
 			var item_statechart = item.get_statechart().get_state_with_name("running.own");
 			var shadow_statechart = red._shadow_statechart(item_statechart);
@@ -104,7 +87,6 @@ var RedSkeleton = function() {
 			}
 			i--;
 			while(i >= index) {
-				console.log(i, i+1);
 				self.inherited_statecharts.rename_state("proto_"+i, "proto_"+(i+1));
 				i--;
 			};
@@ -115,20 +97,19 @@ var RedSkeleton = function() {
 				, from_index = moved.from_index
 				, to_index = moved.to_index;
 
-			var shadow_statechart = self.inherited_statecharts.get_state("proto_"+from_index);
+			var shadow_statechart = self.inherited_statecharts.get_state_with_name("proto_"+from_index);
 
-			
 			self.inherited_statecharts.remove_state("proto_"+from_index);
 			var i = from_index;
-			if(from_index < to_index) {
-				while(i < to_index) {
-					self.inherited_statecharts.rename_state("proto_"+(i+1), "proto_"+i);
-					i++;
+			if(from_index > to_index) {
+				while(i > to_index) {
+					self.inherited_statecharts.rename_state("proto_"+(i-1), "proto_"+(i));
+					i--;
 				}
 			} else {
-				while(i > to_index) {
-					self.inherited_statecharts.rename_state("proto_"+i, "proto_"+(i-1));
-					i--;
+				while(i < to_index) {
+					self.inherited_statecharts.rename_state("proto_"+(i+1), "proto_"+(i));
+					i++;
 				}
 			}
 			self.inherited_statecharts.add_state("proto_"+to_index, shadow_statechart);
@@ -140,21 +121,104 @@ var RedSkeleton = function() {
 			});
 		}
 	};
-	proto.get_all_prototypes = function() {
-		return this._all_prototypes;
+	proto._get_all_prototypes = function() {
+		return _.uniq(_.flatten(_.map(this.get_direct_prototypes(), function(p) {
+			return ([p]).concat(p._get_all_prototypes());
+		})));
 	};
 	proto.initialize = function(self) {};
 	proto.destroy = function(self) {};
+
+	proto._create_prop = function(prop_name) {
+		var prop = new red.RedProperty(this);
+		return prop;
+	};
+
+	proto.set_direct_prop = function(prop_name, prop, index) {
+		prop = prop || this._create_prop();
+		this._direct_properties.set(prop_name, prop, index);
+		this._notify("direct_property_changed", {
+			context: this
+			, action: "set"
+			, prop_name: prop_name
+			, prop: prop
+		});
+		return this;
+	};
+
+	proto.remove_direct_prop = function(prop_name) {
+		this._direct_properties.unset(prop_name, prop, index);
+		this._notify("direct_property_changed", {
+			context: this
+			, action: "removed"
+			, prop_name: prop_name
+		});
+		return this;
+	};
+
+	proto.move_direct_prop = function(prop_name, to_index) {
+		this._direct_properties.move(prop_name, to_index);
+		this._notify("direct_property_changed", {
+			context: this
+			, action: "moved"
+			, prop_name: prop_name
+			, to_index: to_index
+		});
+		return this;
+	};
+
+	proto.rename_direct_prop = function(old_name, new_name) {
+		this._direct_properties.rename(old_name, new_name);
+		this._notify("direct_property_changed", {
+			context: this
+			, action: "renamed"
+			, old_name: old_name
+			, new_name: new_name
+		});
+		return this;
+	};
+
+	proto.has_direct_prop = function(prop_name) {
+		return this._direct_prop.has_key(prop_name);
+	};
+
+	proto.get_direct_props = function() {
+		return this._direct_properties;
+	};
+
+	proto._get_all_props = function() {
+		console.log("HI");
+	};
+
+	/*
 
 	proto.get_all_prototypes = function() {
 		return _.uniq(_.flatten(_.map(this.get_direct_prototypes(), function(p) {
 			return ([p]).concat(p.get_all_prototypes());
 		})));
 	};
+
+	proto.add_prop = function(prop_name, prop) {
+		prop = prop || this._create_prop();
+		this._properties.set(prop_name, prop);
+		return this;
+	};
+
+	proto.remove_prop = function(prop_name) {
+		this._properties.unset(prop_name);
+		return this;
+	};
+
+	proto.find_prop = function(prop_name) {
+		return this._properties.get(prop_name);
+	};
+
 	proto.get_direct_properties = function() {
 	};
+
 	proto.get_all_properties = function() {
 	};
+
 	/*
 
 	proto.add_prototype = function(proto) {
