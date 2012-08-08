@@ -102,19 +102,21 @@ test('Properties', function() {
 	A.set_direct_prop("y");
 	ok(B._has_prop("y"));
 
-	console.log(B.get_state_shadow(A.own_statechart.get_state_with_name("A")));
-	console.log(B.get_statechart().stringify());
-
 	B.set_direct_prototypes([]);
 	ok(!B._has_prop("x"));
 	ok(!B._has_prop("y"));
+});
 
+test('Cells', function() {
+	var c1 = red.create_cell("2");
+	equal(c1.get(), 2);
+	c1.set_str("1");
+	equal(c1.get(), 1);
 
-/*
-	A.rename_direct_prop("x", "y");
-	B.set_direct_prop("z");
-	A.set_direct_prop("w");
-	*/
+	var c2 = red.create_cell("-1");
+	equal(c2.get(), -1);
+	c2.set_str("1+1");
+	equal(c2.get(), 2);
 });
 
 }());

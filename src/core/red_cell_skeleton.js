@@ -2,6 +2,29 @@
 var cjs = red.cjs, _ = cjs._;
 var esprima = window.esprima;
 
+var binary_operators = {
+	"+": function(a, b) { return a + b; }
+	, "-": function(a, b) { return a - b; }
+	, "*": function(a, b) { return a * b; }
+	, "/": function(a, b) { return a / b; }
+	, "%": function(a, b) { return a % b; }
+	, "||": function(a, b) { return a || b; }
+	, "&&": function(a, b) { return a && b; }
+	, "|": function(a, b) { return a | b; }
+	, "&": function(a, b) { return a & b; }
+	, "==": function(a, b) { return a == b; }
+	, "===": function(a, b) { return a === b; }
+	, ">": function(a, b) { return a > b; }
+	, ">=": function(a, b) { return a >= b; }
+	, "<": function(a, b) { return a < b; }
+	, "<=": function(a, b) { return a <= b; }
+};
+
+var unary_operators = {
+	"-": function(a) { return -a; }
+	, "!": function(a) { return !a; }
+};
+
 var eval_tree = function(node, context) {
 	var type = node.type;
 	if(type === "ExpressionStatement") {
@@ -25,7 +48,21 @@ var eval_tree = function(node, context) {
 		var property = eval_tree(node.property, context);
 		return object[property];
 	} else if(type === "Literal") {
-		return cjs(node.value);
+		return node.value;
+	} else if(type === "BinaryExpression") {
+		var op_func = binary_operators[node.operator];
+		var left_arg = eval_tree(node.left)
+			, right_arg = eval_tree(node.right);
+		return cjs(function() {
+			return op_func(cjs.get(left_arg), cjs.get(right_arg));
+		});
+	} else if(type === "UnaryExpression") {
+		var op_func = unary_operators[node.operator];
+		var arg = eval_tree(node.argument);
+
+		return cjs(function() {
+			return op_func(cjs.get(arg));
+		});
 	} else {
 		console.log(type, node);
 	}

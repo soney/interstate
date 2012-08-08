@@ -38,6 +38,7 @@ exports.main_src = c(
 				, "parser/cell_parser.js"
 				, "parser/table_parser.js"
 				, "core/shadow_statechart.js"
+				, "core/red_context.js"
 				, "core/red_cell_skeleton.js"
 				, "core/red_prop_skeleton.js"
 				, "core/red_obj_skeleton.js"
