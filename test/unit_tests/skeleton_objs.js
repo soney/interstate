@@ -56,22 +56,22 @@ test('Prototypes', function() {
 	c.set_direct_prototypes([a,b]);
 	d.set_direct_prototypes([c,b]);
 
-	deepEqual(b.get_all_prototypes(), [a]);
-	deepEqual(c.get_all_prototypes(), [a,b]);
-	deepEqual(d.get_all_prototypes(), [c,a,b]);
+	deepEqual(b._all_prototypes, [a]);
+	deepEqual(c._all_prototypes, [a,b]);
+	deepEqual(d._all_prototypes, [c,a,b]);
 
 	f.set_direct_prototypes([e,d]);
-	deepEqual(f.get_all_prototypes(), [e,d,c,a,b]);
+	deepEqual(f._all_prototypes, [e,d,c,a,b]);
 
 	b.set_direct_prototypes([]);
-	deepEqual(c.get_all_prototypes(), [a,b]);
+	deepEqual(c._all_prototypes, [a,b]);
 	c.set_direct_prototypes([a]);
-	deepEqual(c.get_all_prototypes(), [a]);
+	deepEqual(c._all_prototypes, [a]);
 
 	d.set_direct_prototypes([g,h]);
-	deepEqual(f.get_all_prototypes(), [e,d,g,h]);
+	deepEqual(f._all_prototypes, [e,d,g,h]);
 	d.set_direct_prototypes([h,g]);
-	deepEqual(f.get_all_prototypes(), [e,d,h,g]);
+	deepEqual(f._all_prototypes, [e,d,h,g]);
 });
 
 test('Properties', function() {
@@ -84,6 +84,8 @@ test('Properties', function() {
 	var G = new red.RedSkeleton();
 	var H = new red.RedSkeleton();
 
+	window.B = B;
+
 	A.own_statechart.add_state("A");
 	B.own_statechart.add_state("B");
 	C.own_statechart.add_state("C");
@@ -93,12 +95,26 @@ test('Properties', function() {
 	G.own_statechart.add_state("G");
 	H.own_statechart.add_state("H");
 
-	expect(0);
 
 	A.set_direct_prop("x");
+	B.set_direct_prototypes([A]);
+	ok(B._has_prop("x"));
+	A.set_direct_prop("y");
+	ok(B._has_prop("y"));
+
+	console.log(B.get_state_shadow(A.own_statechart.get_state_with_name("A")));
+	console.log(B.get_statechart().stringify());
+
+	B.set_direct_prototypes([]);
+	ok(!B._has_prop("x"));
+	ok(!B._has_prop("y"));
+
+
+/*
 	A.rename_direct_prop("x", "y");
-	//A.find_prop("x");
-	console.log(A.get_direct_props().to_obj());
+	B.set_direct_prop("z");
+	A.set_direct_prop("w");
+	*/
 });
 
 }());
