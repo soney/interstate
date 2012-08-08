@@ -7,7 +7,7 @@ var fs = require('fs');
 var ejs = require('ejs');
 var red_inc = require('./include_libs');
 
-var app = express.createServer();
+var app = express();
 if(devel_mode) {
 	red_inc.main = red_inc.main_src;
 } else {
