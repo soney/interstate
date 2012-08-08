@@ -32,17 +32,15 @@ exports.main_src = c(
 	cp(cjs_path, cjs_inc.main_src)
 	, cp(vendor_src, [
 				"esprima/esprima.js"
-				, "statechart.js"
 			])
 	, cp(src, [
 				"core.js"
 				, "parser/cell_parser.js"
 				, "parser/table_parser.js"
 				, "core/shadow_statechart.js"
+				, "core/red_cell_skeleton.js"
 				, "core/red_prop_skeleton.js"
 				, "core/red_obj_skeleton.js"
-				, "red_obj/red_obj.js"
-				, "red_obj/red_cell.js"
 			])
 );
 

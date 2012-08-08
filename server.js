@@ -154,7 +154,7 @@ app.configure(function() {
 					relative_path += "../";
 				}
 				var locals = {
-					include: function(files) {
+					red_include: function(files) {
 						return red_inc.include_templates(files.map(function(file) {
 							return relative_path+file;
 						}));
@@ -193,7 +193,7 @@ app.configure(function() {
 							};
 						});
 
-						body = ejs.render(str, {locals: locals});
+						body = ejs.render(str, {cache: false, locals: locals});
 						res.writeHead(200, {
 							  'Content-Type': 'text/html'
 							, 'Content-Length': body.length
@@ -203,7 +203,8 @@ app.configure(function() {
 					return;
 				}
 				
-				var body = ejs.render(str, {locals: locals});
+				var body = ejs.render(str, {cache: false, locals: locals});
+
 				res.writeHead(200, {
 					  'Content-Type': 'text/html'
 					, 'Content-Length': body.length
