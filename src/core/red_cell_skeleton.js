@@ -31,28 +31,48 @@ var eval_tree = function(node, context) {
 		return eval_tree(node.expression, context);
 	} else if(type === "CallExpression") {
 		var callee = eval_tree(node.callee, context);
-		var args = _.map(node.arguments, function(argument) {
-			return eval_tree(argument, context);
+		var args = node.arguments;
+		return cjs(function() {
+			var args_got = _.map(args, function(arg) {
+				return cjs.get(arg);
+			});
+			var callee_got = cjs.get(callee);
+			return callee_got.apply(this, args_got);
 		});
-		return callee.apply(this, args);
 	} else if(type === "Identifier") {
 		var name = node.name;
-		if(name === "window") {
-			return window;
-		}
-		return event_types[name];
+		return cjs(function() {
+			var got_context = cjs.get(context);
+			if(got_context) {
+				return got_context.get_prop_constraint(name);
+			} else {
+				return undefined;
+			}
+		});
 	} else if(type === "ThisExpression") {
-		return context;
+		return cjs(function() {
+			var got_context = cjs.get(context);
+			return got_context.get_this_constraint();
+		});
 	} else if(type === "MemberExpression") {
 		var object = eval_tree(node.object, context);
-		var property = eval_tree(node.property, context);
-		return object[property];
+		var variable_context = cjs(function() {
+			var object_got = cjs.get(object);
+			if(object_got && object_got.is) {
+				if(object_got.is("context")) {
+					return object_got;
+				}
+			}
+			return object_got;
+		});
+		var property = eval_tree(node.property, variable_context);
+		return property;
 	} else if(type === "Literal") {
 		return node.value;
 	} else if(type === "BinaryExpression") {
 		var op_func = binary_operators[node.operator];
-		var left_arg = eval_tree(node.left)
-			, right_arg = eval_tree(node.right);
+		var left_arg = eval_tree(node.left, context)
+			, right_arg = eval_tree(node.right, context);
 		return cjs(function() {
 			return op_func(cjs.get(left_arg), cjs.get(right_arg));
 		});
@@ -68,7 +88,8 @@ var eval_tree = function(node, context) {
 	}
 };
 
-var RedCell = function(str, parent) {
+var RedCell = function(str, context) {
+	this._context = context;
 	this.set_str(str);
 };
 (function(my) {
@@ -86,16 +107,17 @@ var RedCell = function(str, parent) {
 	};
 
 	proto._update_value = function() {
-		this._value = eval_tree(this._tree.body[0]);
+		this._value = eval_tree(this._tree.body[0], this._context);
 	};
 
 	proto.get = function() {
 		return cjs.get(this._value);
 	};
+	proto.clone = function(context) {
+		return new RedCell(this.get_str(), context);
+	};
 }(RedCell));
 
-red.create_cell = function(str, parent) {
-	return new RedCell(str, parent);
-};
+red.RedCell = RedCell;
 
 }(red));

@@ -3,13 +3,21 @@ var cjs = red.cjs, _ = cjs._;
 
 var RedProperty = function(parent) {
 	this._parent = parent;
-	this._value = cjs.create("statechart_constraint", this.get_root_statechart());
+	var root_statechart = this.get_root_statechart();
+	this._value = cjs.create("statechart_constraint", root_statechart);
 	this._values = cjs.create("map");
 	this._prototypes = [this];
-	this._listeners = [];
+	this._listeners = {};
+	this._context = red .create_context({parent: parent.get_context(), thisable: false})
+						.set_prop("event", root_statechart._event);
+	this.$on_value_set = _.bind(this.on_value_set, this);
+	this.$on_value_unset = _.bind(this.on_value_unset, this);
+	this._on("on_value_set", this.$on_value_set);
+	this._on("on_value_unset", this.$on_value_unset);
 };
 (function(my) {
 	var proto = my.prototype;
+	proto.get_context = function() { return this._context; };
 	proto.up = proto.parent = function() {
 		return this._parent;
 	};
@@ -58,19 +66,23 @@ var RedProperty = function(parent) {
 		index++;
 		_.insert_at(this._prototypes, proto_obj, index);
 
-		var missing_states = _.difference(proto_obj._states(), this._states());
-
-		_.forEach(missing_states, function(missing_state) {
-			this._value.set(missing_state, []);
-		});
-
 		var self = this;
-		this._values.forEach(function(value, state)  {
-			_.insertAt(value, state, index);
-			self.update_state_value(state);
+		var proto_states = proto_obj._states();
+		_.forEach(proto_states, function(proto_state) {
+			var my_equivalent = self.my_version_of_state(proto_state);
+			var value;
+			if(self._values.has_key(my_equivalent)) {
+				value = self._values.get(my_equivalent);
+			} else {
+				value = [];
+				self._values.set(my_equivalent, value);
+			}
+			_.insert_at(value, proto_obj.get_value_for_state(proto_state), index);
+			console.log(proto_obj, proto_state, proto_obj.get_value_for_state(proto_state));
 		});
 
-		proto_obj._add_listener(this);
+		proto_obj._on("on_value_set", this.$on_value_set);
+		proto_obj._on("on_value_unset", this.$on_value_unset);
 
 		return this;
 	};
@@ -97,7 +109,8 @@ var RedProperty = function(parent) {
 			this._values.unset(state);
 		});
 		if(proto_obj) {
-			proto_obj._remove_listener(this);
+			proto_obj._off("on_value_set", this.$on_value_set);
+			proto_obj._off("on_value_unset", this.$on_value_unset);
 		}
 	};
 	proto.move_prototype = function(proto_obj, to_index) {
@@ -111,35 +124,51 @@ var RedProperty = function(parent) {
 		}
 	};
 
-	proto._notify = function() {
-		var func = arguments[0];
+	proto._on = function(event_type, func) {
+		var listeners;
+		if(_.has(this._listeners, event_type)) {
+			listeners = this._listeners[event_type];
+		} else {
+			this._listeners[event_type] = listeners = [];
+		}
+		listeners.push(func);
+		return this;
+	};
+
+	proto._off = function(event_type, func) {
+		var listeners = this._listeners[event_type];
+		this._listeners[event_type] = _.without(this._listeners[event_type], func);
+		if(_.isEmpty(this._listeners[event_type])) {
+			delete this._listeners[event_type];
+		}
+		return this;
+	};
+	proto._notify = function(event_type) {
+		var listeners = this._listeners[event_type];
 		var args = _.rest(arguments);
 
-		_.foreach(this._listeners, function(listener) {
-			listener[func].apply(this, args);
+		_.forEach(listeners, function(listener) {
+			listener.apply(this, args);
 		});
 	};
 	proto.update_state_value = function(state) {
 		var v = this._values.get(state);
-		var do_clone = !!v[0];
+		var do_clone = !v[0];
 		var values = _.compact(v);
-		var new_value = _.first(value);
-		var old_value = this._value.get(state);
+		var new_value = _.first(values);
+		var old_value = this._value.get_value_for_state(state);
 		if(old_value !== new_value) {
 			if(do_clone) {
-				new_value = new_value.clone();
+				new_value = new_value.clone(this.get_context());
 			}
-			this._values.set(state, new_value);
+			this._value.set_value_for_state(state, new_value);
 		}
+	};
+	proto.get_value_for_state = function(state) {
+		return this._value.get_value_for_state(state);
 	};
 	proto._states = function() {
 		return this._values.get_keys();
-	};
-	proto._add_listener = function(listener) {
-		this._listeners.push(listener);
-	};
-	proto._remove_listener = function(listener) {
-		_.remove(this._listeners, listener);
 	};
 	proto.my_version_of_state = function(state) {
 		var parent = this.parent();

@@ -1,31 +1,29 @@
 (function(red) {
 var cjs = red.cjs, _ = cjs._;
 var Context = function(options) {
-	this._options = _.extend({
+	_options = _.extend({
 		thisable: true
-		, parent: undefined
-	}, options);
-	this._props = {};
+		, parent: null
+	});
+	this._thisable = cjs(_options.thisable);
+	this._parent = cjs(_options.parent);
+	this._props = cjs({});
 	this._listeners = {};
 };
 (function(my) {
 	var proto = my.prototype;
 	proto.make_thisable = function(thisable) {
-		this._options.thisable = thisable;
-		this._notify("thisable_changed", {
-			prop_name: prop_name
-		});
+		this._thisable.set(thisable);
 		return this;
 	};
 	proto.is_thisable = function() {
-		return !!this._options.thisable;
+		return !!this._thisable.get();
 	};
 	proto.parent = function() {
-		return this._options.parent;
+		return this._parent.get();
 	};
 	proto.set_parent = function(parent) {
-		this._options.parent = parent;
-		this._notify("parent_changed");
+		this._parent.set(parent);
 		return this;
 	};
 	proto._get_this = function() {
@@ -40,32 +38,47 @@ var Context = function(options) {
 		}
 	};
 
+	proto._has_prop = function(prop_name) {
+		return _.has(this._props.get(), prop_name);
+	};
+
 	proto._get_prop = function(prop_name) {
-		return this._props[prop_name];
+		return this._props.get()[prop_name];
 	};
 
 	proto.set_prop = function(prop_name, value) {
-		this._props[prop_name] = value;
-		this._notify("prop_changed", {
-			prop_name: prop_name
-		});
+		this._props.get()[prop_name] = value;
+		this._props.invalidate();
+		return this;
+	};
+	proto.unset_prop = function(prop_name) {
+		delete this._props.get()[prop_name];
+		this._props.invalidate();
 		return this;
 	};
 
 	proto.get_parent_constraint = function() {
 		var constraint = cjs(function() {
-			return self._get_this();
+			return self._get_parent();
 		});
-		this._on("parent_changed", constraint.nullify);
 		return constraint;
 	};
 
 	proto.get_prop_constraint = function(prop_name) {
 		var self = this;
 		var constraint = cjs(function() {
-			return self.get_prop(cjs.get(prop_name));
+			var pn = cjs.get(prop_name);
+			if(self._has_prop(pn)) {
+				return self._get_prop(cjs.get(prop_name));
+			} else {
+				var parent = this._get_parent();
+				if(parent) {
+					return parent._get_prop(pn);
+				} else {
+					return undefined;
+				}
+			}
 		});
-		this._on("prop_changed", constraint.nullify);
 		return constraint;
 	};
 
@@ -74,8 +87,6 @@ var Context = function(options) {
 		var constraint = cjs(function() {
 			return self._get_this();
 		});
-		this._on("parent_changed", constraint.nullify);
-		this._on("thisable_changed", constraint.nullify);
 		return constraint;
 	};
 
@@ -106,6 +117,7 @@ var Context = function(options) {
 		});
 		return this;
 	};
+	proto.is = function(x) { return x === "context"; };
 }(Context));
 
 red.create_context = function(options) {

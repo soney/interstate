@@ -14,9 +14,19 @@ var RedSkeleton = function() {
 	this._all_properties = cjs.create("map");
 	this.$prototypes_changed = _.bind(this.prototypes_changed, this);
 	this.$direct_property_changed = _.bind(this.direct_property_changed, this);
+	this._context = red.create_context();
 };
 (function(my) {
 	var proto = my.prototype;
+
+	proto.get_context = function() {
+		return this._context;
+	};
+	proto.set_parent = function(parent) {
+		if(parent instanceof RedSkeleton) {
+			this._context.set_parent(parent.get_context());
+		}
+	};
 
 	proto.initialize_statechart = function() {
 		var statechart = this._statechart;
@@ -284,6 +294,7 @@ var RedSkeleton = function() {
 	proto._set_prop = function(prop_name, prop, index) {
 		prop = prop || this._create_prop();
 		this._all_properties.set(prop_name, prop, index);
+		this._context.set_prop(prop_name, prop);
 		this._notify("property_changed", {
 			context: this
 			, action: "set"
@@ -295,6 +306,7 @@ var RedSkeleton = function() {
 
 	proto._remove_prop = function(prop_name) {
 		this._all_properties.unset(prop_name);
+		this._context.unset_prop(prop_name);
 		this._notify("property_changed", {
 			context: this
 			, action: "removed"

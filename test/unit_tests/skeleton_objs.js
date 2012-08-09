@@ -107,16 +107,4 @@ test('Properties', function() {
 	ok(!B._has_prop("y"));
 });
 
-test('Cells', function() {
-	var c1 = red.create_cell("2");
-	equal(c1.get(), 2);
-	c1.set_str("1");
-	equal(c1.get(), 1);
-
-	var c2 = red.create_cell("-1");
-	equal(c2.get(), -1);
-	c2.set_str("1+1");
-	equal(c2.get(), 2);
-});
-
 }());
