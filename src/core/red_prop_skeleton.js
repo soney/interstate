@@ -12,8 +12,8 @@ var RedProperty = function(parent) {
 						.set_prop("event", root_statechart._event);
 	this.$on_value_set = _.bind(this.on_value_set, this);
 	this.$on_value_unset = _.bind(this.on_value_unset, this);
-	this._on("on_value_set", this.$on_value_set);
-	this._on("on_value_unset", this.$on_value_unset);
+	//this._on("on_value_set", this.$on_value_set);
+	//this._on("on_value_unset", this.$on_value_unset);
 };
 (function(my) {
 	var proto = my.prototype;
@@ -27,10 +27,12 @@ var RedProperty = function(parent) {
 	};
 
 	proto.set = function(state, value) {
+		this.on_value_set(this, state, value);
 		this._notify("on_value_set", this, state, value);
 		return this;
 	};
 	proto.unset = function(state) {
+		this.on_value_unset(this, state);
 		this._notify("on_value_unset", this, state);
 		return this;
 	};
@@ -78,7 +80,7 @@ var RedProperty = function(parent) {
 				self._values.set(my_equivalent, value);
 			}
 			_.insert_at(value, proto_obj.get_value_for_state(proto_state), index);
-			console.log(proto_obj, proto_state, proto_obj.get_value_for_state(proto_state));
+			self.update_state_value(my_equivalent);
 		});
 
 		proto_obj._on("on_value_set", this.$on_value_set);
@@ -156,10 +158,12 @@ var RedProperty = function(parent) {
 		var do_clone = !v[0];
 		var values = _.compact(v);
 		var new_value = _.first(values);
-		var old_value = this._value.get_value_for_state(state);
+		var old_value = this.get_value_for_state(state);
 		if(old_value !== new_value) {
 			if(do_clone) {
-				new_value = new_value.clone(this.get_context());
+				if(new_value) {
+					new_value = new_value.clone(this.get_context());
+				}
 			}
 			this._value.set_value_for_state(state, new_value);
 		}
@@ -181,5 +185,13 @@ var RedProperty = function(parent) {
 }(RedProperty));
 
 red.RedProperty = RedProperty;
+
+cjs.define("red_property", function() {
+	var property = new RedProperty();
+	var constraint = cjs(function() {
+		return property.get();
+	});
+	return constraint;
+});
 
 }(red));

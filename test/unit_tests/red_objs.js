@@ -23,7 +23,9 @@ test('Basic objs', function() {
 	var o2 = new red.RedSkeleton();
 	o2.set_direct_prototypes([o1]);
 	o2.get_statechart().run();
-	console.log(o2.get_statechart().stringify());
-	console.log(o2._get_prop("x"));
+	equal(o2._get_prop("x").get(), 1);
+	x_prop.unset(a_state)
+	x_prop.set(a_state, new red.RedCell("3", x_prop.get_context()))
+	equal(o2._get_prop("x").get(), 3);
 });
 }());
