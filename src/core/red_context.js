@@ -7,7 +7,7 @@ var Context = function(options) {
 	});
 	this._thisable = cjs(_options.thisable);
 	this._parent = cjs(_options.parent);
-	this._props = cjs({});
+	this._props = cjs.create("map");
 	this._listeners = {};
 };
 (function(my) {
@@ -39,21 +39,19 @@ var Context = function(options) {
 	};
 
 	proto._has_prop = function(prop_name) {
-		return _.has(this._props.get(), prop_name);
+		return _.has(this._props.has_key(prop_name), prop_name);
 	};
 
 	proto._get_prop = function(prop_name) {
-		return this._props.get()[prop_name];
+		return this._props.get(prop_name);
 	};
 
 	proto.set_prop = function(prop_name, value) {
-		this._props.get()[prop_name] = value;
-		this._props.invalidate();
+		this._props.set(prop_name, value);
 		return this;
 	};
 	proto.unset_prop = function(prop_name) {
-		delete this._props.get()[prop_name];
-		this._props.invalidate();
+		this._props.unset(prop_name);
 		return this;
 	};
 
