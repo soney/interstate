@@ -85,13 +85,10 @@ red.parse_table = function(table_str) {
 		}
 	}
 
-	var create_statechart = function(obj, context) {
-		var statechart = red.create_statechart();
-		if(context) {
-			statechart.set_context(context);
-		}
+	var create_statechart = function(obj, context, sc) {
+		var statechart = sc || cjs.create("statechart");
 		_.forEach(obj.states, function(state, state_name) {
-			var sc = create_statechart(state);
+			var sc = create_statechart(state, context);
 			statechart.add_state(state_name, sc);
 			if(_.isString(state.options) && state.options.indexOf("start") >= 0) {
 				statechart.starts_at(sc);
@@ -102,33 +99,35 @@ red.parse_table = function(table_str) {
 		}
 
 		_.forEach(obj.transitions, function(transition) {
-			statechart.add_transition(transition.from, transition.to, red.create_event("parsed", transition.on, statechart));
+			statechart.get_root().add_transition(statechart.get_name() + "." + transition.from, statechart.get_name() + "." + transition.to, cjs.create_event("parsed", transition.on));
 		});
 		return statechart;
 	};
 
+	$("div.output").html("");
+	var root_context = red.create_context();
 	var translated_objects = {};
 	_.forEach(objs, function(obj, key) {
 		if(obj.type === "fsm") {
 //			translated_objects[key] = create_statechart(obj);
 		} else if(obj.type === "obj") {
-			var red_obj = red.create_object();
-			var statechart = create_statechart(obj.fsm, red_obj);
-			var cloned_statechart = statechart.clone(red_obj);
-			red_obj.use_statechart(cloned_statechart, "own");
+			var red_obj = new red.RedSkeleton();
+			var statechart = create_statechart(obj.fsm, red_obj, red_obj.own_statechart);
+
 			translated_objects[key] = red_obj;
+			root_context.set_prop(key, red_obj);
 
 			var states = _.map(obj.states, function(state_name) {
 				if(state_name === "INIT") {
 					return red_obj.get_statechart().get_state_with_name("INIT");
 				} else {
-					return cloned_statechart.get_state_with_name(state_name);
+					return statechart.get_state_with_name(state_name);
 				}
 			});
 
 			_.forEach(obj.props, function(cells, prop_name) {
-				red_obj.add_prop(prop_name);
-				var prop = red_obj.find_prop(prop_name);
+				red_obj.set_direct_prop(prop_name);
+				var prop = red_obj._get_prop(prop_name);
 				_.forEach(cells, function(cell_text, index) {
 					var state = states[index];
 
@@ -138,10 +137,11 @@ red.parse_table = function(table_str) {
 						var o = translated_objects[obj_name];
 						prop.set_value(state, o);
 					} else {
-						var cell = red.create_cell(cell_text);
-						prop.set_value(state, cell);
+						var cell = cjs.create("red_cell", cell_text, prop.get_context());
+						prop.set(state, cell);
 					}
 				});
+		//		window.p = prop;
 			});
 		}
 	});

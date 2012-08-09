@@ -113,9 +113,9 @@ cjs.define("red_cell", function(str, context) {
 		return cell.get();
 	});
 	rv.set_str = function(str) {
-		
-		
+		cell.set_str(str);
 	};
+	return rv;
 });
 
 }(red));

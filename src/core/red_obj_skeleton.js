@@ -325,6 +325,20 @@ var RedSkeleton = function() {
 		});
 		return this;
 	};
+	proto.item = function(prop_name) {
+		var got = cjs.get(this._get_prop(prop_name));
+		if(got) {
+			return cjs.get(got.get());
+		}
+	};
+	proto.$item = function(prop_name) {
+		var self = this;
+		var rv = cjs(function() {
+			return self.item(prop_name);
+		});
+		this._on("property_changed", rv.invalidate);
+		return rv;
+	};
 
 	proto._get_prop = function(prop_name) {
 		return this._all_properties.get(prop_name);
