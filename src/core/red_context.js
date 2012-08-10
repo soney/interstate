@@ -118,7 +118,7 @@ var Context = function(options) {
 	proto.is = function(x) { return x === "context"; };
 }(Context));
 
-red.create_context = function(options) {
+cjs.define("red_context", function(options) {
 	return new Context(options);
-};
+});
 }(red));

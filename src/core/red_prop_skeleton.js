@@ -8,7 +8,7 @@ var RedProperty = function(parent) {
 	this._values = cjs.create("map");
 	this._prototypes = [this];
 	this._listeners = {};
-	this._context = red .create_context({parent: parent.get_context(), thisable: false})
+	this._context = cjs .create("red_context", {parent: parent.get_context(), thisable: false})
 						.set_prop("event", root_statechart._event);
 	this.$on_value_set = _.bind(this.on_value_set, this);
 	this.$on_value_unset = _.bind(this.on_value_unset, this);

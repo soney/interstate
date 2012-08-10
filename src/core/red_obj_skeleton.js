@@ -14,7 +14,7 @@ var RedSkeleton = function() {
 	this._all_properties = cjs.create("map");
 	this.$prototypes_changed = _.bind(this.prototypes_changed, this);
 	this.$direct_property_changed = _.bind(this.direct_property_changed, this);
-	this._context = red.create_context();
+	this._context = cjs.create("red_context");
 };
 (function(my) {
 	var proto = my.prototype;

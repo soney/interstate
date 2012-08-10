@@ -109,13 +109,15 @@ var RedCell = function(str, context) {
 red.RedCell = RedCell;
 cjs.define("red_cell", function(str, context) {
 	var cell = new RedCell(str, context);
-	var rv = cjs(function() {
+	var constraint = cjs(function() {
 		return cell.get();
 	});
-	rv.set_str = function(str) {
+	constraint.set_str = function(str) {
 		cell.set_str(str);
+		return constraint;
 	};
-	return rv;
+	constraint.get_str = _.bind(cell.get_str, cell);
+	return constraint;
 });
 
 }(red));
