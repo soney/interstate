@@ -2,6 +2,8 @@
 var cjs = red.cjs, _ = cjs._;
 
 var RedProperty = function(parent) {
+	this._statechart_constraint = cjs.create("statechart_constraint");
+/*
 	this._parent = parent;
 	var root_statechart = this.get_root_statechart();
 	this._value = cjs.create("statechart_constraint", root_statechart);
@@ -14,9 +16,12 @@ var RedProperty = function(parent) {
 	this.$on_value_unset = _.bind(this.on_value_unset, this);
 	//this._on("on_value_set", this.$on_value_set);
 	//this._on("on_value_unset", this.$on_value_unset);
+	
+*/
 };
 (function(my) {
 	var proto = my.prototype;
+	/*
 	proto.get_context = function() { return this._context; };
 	proto.up = proto.parent = function() {
 		return this._parent;
@@ -182,6 +187,7 @@ var RedProperty = function(parent) {
 		var parent = this.parent();
 		return parent.get_statechart();
 	};
+	*/
 }(RedProperty));
 
 red.RedProperty = RedProperty;

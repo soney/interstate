@@ -4,10 +4,11 @@ var Context = function(options) {
 	_options = _.extend({
 		thisable: true
 		, parent: null
+		, props: cjs.create("map")
 	});
 	this._thisable = cjs(_options.thisable);
 	this._parent = cjs(_options.parent);
-	this._props = cjs.create("map");
+	this._props = _options.map;
 	this._listeners = {};
 };
 (function(my) {

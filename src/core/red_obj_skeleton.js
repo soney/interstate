@@ -3,7 +3,24 @@ var cjs = red.cjs, _ = cjs._;
 
 var RedSkeleton = function() {
 	this._statechart = cjs.create("statechart");
+	this._context = cjs.create("red_context", {
+		thisable: true
+	});
+
+	this._$prototype_removed = _.bind(this._prototype_removed, this);
+	this._$prototype_added   = _.bind(this._prototype_added,   this);
+	this._$prototype_moved   = _.bind(this._prototype_moved,   this);
+
+	this._direct_properties = cjs.create("map");
+
+	this._direct_prototypes = cjs.create("array");
+	this._all_prototypes = cjs	.create("constraint", _.bind(this._get_all_prototypes, this))
+								.onRemove(this._$prototype_removed)
+								.onAdd   (this._$prototype_added)
+								.onMove  (this._$prototype_moved);
+
 	this.initialize_statechart();
+/*
 	this._listeners = {};
 
 	this._direct_prototypes = [];
@@ -14,19 +31,14 @@ var RedSkeleton = function() {
 	this._all_properties = cjs.create("map");
 	this.$prototypes_changed = _.bind(this.prototypes_changed, this);
 	this.$direct_property_changed = _.bind(this.direct_property_changed, this);
-	this._context = cjs.create("red_context");
+	*/
 };
 (function(my) {
 	var proto = my.prototype;
 
-	proto.get_context = function() {
-		return this._context;
-	};
-	proto.set_parent = function(parent) {
-		if(parent instanceof RedSkeleton) {
-			this._context.set_parent(parent.get_context());
-		}
-	};
+	//
+	// ===== STATECHARTS =====
+	//
 
 	proto.initialize_statechart = function() {
 		var statechart = this._statechart;
@@ -53,6 +65,101 @@ var RedSkeleton = function() {
 					.add_transition("INIT", "running", cjs.create_event("on_enter", init_state))
 					.add_transition("running", "INIT", reset_event);
 	};
+
+	// 
+	// ===== PROTOTYPES =====
+	//
+	
+	proto.set_direct_prototypes = function(protos) {
+		this._direct_prototypes.set(protos);
+	};
+
+	proto._get_direct_prototypes = function() {
+		return this._direct_prototypes.get();
+	};
+
+	proto._prototype_removed = function(item, index) {
+		item.destroy(this);
+
+		//Update the statechart
+		this.inherited_statecharts.remove_state("proto_"+index);
+		var i = index;
+		while(this.inherited_statecharts.has_state("proto_"+(i+1))) {
+			this.inherited_statecharts.rename_state("proto_"+(i+1), "proto_"+i);
+			i++;
+		}
+	};
+	proto._prototype_added = function(item, index) {
+		//Update the statechart
+		var item_statechart = item.get_statechart().get_state_with_name("running.own");
+		var shadow_statechart = red._shadow_statechart(item_statechart);
+
+		var i = index;
+		while(this.inherited_statecharts.has_state("proto_"+i)) {
+			i++;
+		}
+		i--;
+		while(i >= index) {
+			this.inherited_statecharts.rename_state("proto_"+i, "proto_"+(i+1));
+			i--;
+		};
+		this.inherited_statecharts.add_state("proto_"+index, shadow_statechart);
+
+		item.initialize(this);
+	};
+	proto._prototype_moved = function(item, from_index, to_index) {
+		var shadow_statechart = this.inherited_statecharts.get_state_with_name("proto_"+from_index);
+
+		this.inherited_statecharts.remove_state("proto_"+from_index);
+		var i = from_index;
+		if(from_index > to_index) {
+			while(i > to_index) {
+				this.inherited_statecharts.rename_state("proto_"+(i-1), "proto_"+(i));
+				i--;
+			}
+		} else {
+			while(i < to_index) {
+				this.inherited_statecharts.rename_state("proto_"+(i+1), "proto_"+(i));
+				i++;
+			}
+		}
+		this.inherited_statecharts.add_state("proto_"+to_index, shadow_statechart);
+	};
+
+	proto._get_all_prototypes = function() {
+		var direct_prototypes = this._get_direct_prototypes();
+		var all_prototypes = _.map(direct_prototypes, function(direct_prototype) {
+			return ([direct_prototype]).concat(direct_prototype._get_all_prototypes());
+		});
+
+		var flattened_all_prototypes = _.flatten(all_prototypes
+		
+		return _.uniq(_.flatten(_.map(this.get_direct_prototypes(), function(p) {
+			return ([p]).concat(p._get_all_prototypes());
+		})));
+	};
+
+	//
+	// ===== PROPERTIES =====
+	//
+	
+	proto._get_prop_names = function() {
+		var my_names = this._direct_properties.get_keys();
+		var protos = 
+	};
+
+
+/*
+
+	proto.get_context = function() {
+		return this._context;
+	};
+	proto.set_parent = function(parent) {
+		if(parent instanceof RedSkeleton) {
+			this._context.set_parent(parent.get_context());
+		}
+	};
+
 	proto.get_statechart = function() { return this._statechart; };
 
 	proto.get_direct_prototypes = function() {
@@ -407,8 +514,13 @@ var RedSkeleton = function() {
 		});
 		return this;
 	};
+	*/
 }(RedSkeleton));
 
 red.RedSkeleton = RedSkeleton;
+
+cjs.define("red_skeleton", function() {
+	return new RedSkeleton();
+});
 
 }(red));
