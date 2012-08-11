@@ -192,7 +192,7 @@ var RedProperty = function(parent) {
 
 red.RedProperty = RedProperty;
 
-cjs.define("red_property", function() {
+cjs.define("red_prop", function() {
 	var property = new RedProperty();
 	var constraint = cjs(function() {
 		return property.get();
