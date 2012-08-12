@@ -76,7 +76,7 @@ var RedSkeleton = function() {
 		}
 	};
 
-	proto.add_shadow_shatestart = function(shadow_statechart, index) {
+	proto.add_shadow_statechart = function(shadow_statechart, index) {
 		var i = index;
 		while(this.inherited_statecharts.has_state("proto_"+i)) {
 			i++;
@@ -117,9 +117,10 @@ var RedSkeleton = function() {
 		
 		var candidate_index = -1;
 		var candidate_proto = null;
-		var i, len = this._all_prototypes.length;
+		var all_prototypes = this._all_prototypes.get();
+		var i, len = all_prototypes.length;
 		for(i = 0; i<len; i++) {
-			var p = this._all_prototypes[i];
+			var p = all_prototypes[i];
 			if(state_root === p.get_statechart()) {
 				candidate_proto = p;
 				candidate_index = i;
@@ -197,9 +198,8 @@ var RedSkeleton = function() {
 	proto._prototype_added = function(item, index) {
 		//Update the statechart
 		var item_statechart = item.get_statechart().get_state_with_name("running.own");
-		this.add_shadow_statechart(statechart, index);
 		var shadow_statechart = red._shadow_statechart(item_statechart);
-		this.add_shadow_shatestart(shadow_statechart, index);
+		this.add_shadow_statechart(shadow_statechart, index);
 		item.initialize(this);
 	};
 	proto._prototype_moved = function(item, from_index, to_index) {
@@ -232,10 +232,11 @@ var RedSkeleton = function() {
 		var protos = this._get_all_prototypes();
 
 		var all_proto_prop_names = _.map(this._all_prototypes.get(), function(my_proto) {
-			return my_proto.get_direct_prop_names();
+			return my_proto._get_direct_prop_names();
 		});
-		var flattened_all_proto_prop_names = _.flatten(all_proto_prop_names, true);
-		var all_prop_names = _.uniq(flattened_all_proto_prop_names);
+		var all_prop_names = ([my_prop_names]).concat(all_proto_prop_names);
+		var flattened_all_prop_names = _.flatten(all_prop_names, true);
+		var all_prop_names = _.uniq(flattened_all_prop_names);
 
 		return all_prop_names;
 	};
@@ -272,7 +273,7 @@ var RedSkeleton = function() {
 	};
 
 	proto._prop_index = function(prop_name) {
-		var prop_names = this.get_prop_names();
+		var prop_names = this._all_property_names.get();
 		return _.indexOf(prop_names, prop_name);
 	};
 
@@ -289,7 +290,7 @@ var RedSkeleton = function() {
 
 	proto.prop_is_inherited = function(prop_name) {
 		if(this._has_prop(prop_name)) {
-			var inherited_prop_names = this._get_inherited_names();
+			var inherited_prop_names = this._get_inherited_prop_names();
 			return _.indexOf(inherited_prop_names, prop_name >= 0);
 		} else {
 			return false;
@@ -341,7 +342,7 @@ var RedSkeleton = function() {
 			return undefined;
 		} else {
 			var all_properties = this._all_properties.get();
-			return all_properties[index];
+			return all_properties[prop_index];
 		}
 	};
 

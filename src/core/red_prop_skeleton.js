@@ -9,13 +9,13 @@ var RedProperty = function(parent) {
 
 	this._context = cjs.create("red_context", {thisable: false});
 
-	this._states = cjs(_.bind(this._get_states, this));
+	this._states = cjs(_.bind(this.get_states, this));
 	this._values = this._states.map(
 						_.bind(this._value_for_state, this)
 					);
-	this._values.onAdd(_.bind(this._value_added, this))
-				.onRemove(_.bind(this._value_removed, this))
-				.onMove(_.bind(this._value_moved, this));
+	this._values.onAdd(_.bind(this._on_value_added, this))
+				.onRemove(_.bind(this._on_value_removed, this))
+				.onMove(_.bind(this._on_value_moved, this));
 };
 (function(my) {
 	var proto = my.prototype;
@@ -25,6 +25,8 @@ var RedProperty = function(parent) {
 	//
 	
 	proto.destroy = function() {};
+
+	proto.get_context = function() { return this._context; };
 
 
 	//
@@ -75,28 +77,34 @@ var RedProperty = function(parent) {
 	};
 
 	proto.get = function() {
+		console.log(this._statechart_constraint);
 		return this._statechart_constraint.get();
+	};
+	proto.set = function(state, value) {
+		this._direct_values.set(state, value);
+		return this;
 	};
 
 	proto._on_value_added = function(value, index) {
 		var states = this._states.get();
 		var state = state[index];
+			console.log("A");
 		if(state) {
-			this._statechart_constraint.set(state, value);
+			this._statechart_constraint.set_value_for_state(state, value);
 		}
 	};
 	proto._on_value_removed = function(value, index) {
 		var states = this._states.get();
 		var state = state[index];
 		if(state) {
-			this._statechart_constraint.unset(state);
+			this._statechart_constraint.unset_value_for_state(state);
 		}
 	};
 	proto._on_value_moved = function(value, from_index, to_index) {
 		var states = this._states.get();
 		var state = state[index];
 		if(state) {
-			this._statechart_constraint.move(state, value);
+			this._statechart_constraint.move_value_for_state(state, value);
 		}
 	};
 
@@ -163,6 +171,10 @@ cjs.define("red_prop", function() {
 	var constraint = cjs(function() {
 		return property.get();
 	});
+	constraint.set = _.bind(property.set, property);
+	constraint.get = _.bind(property.get, property);
+	constraint.get_context = _.bind(property.get_context, property);
+	constraint.type = "red_prop";
 	return constraint;
 });
 
