@@ -8,7 +8,7 @@ var Context = function(options) {
 	});
 	this._thisable = cjs(_options.thisable);
 	this._parent = cjs(_options.parent);
-	this._props = _options.map;
+	this._props = _options.props;
 	this._listeners = {};
 };
 (function(my) {

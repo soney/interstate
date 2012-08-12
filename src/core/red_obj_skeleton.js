@@ -11,27 +11,22 @@ var RedSkeleton = function() {
 	this._$prototype_added   = _.bind(this._prototype_added,   this);
 	this._$prototype_moved   = _.bind(this._prototype_moved,   this);
 
-	this._direct_properties = cjs.create("map");
-
 	this._direct_prototypes = cjs.create("array");
 	this._all_prototypes = cjs	.create("constraint", _.bind(this._get_all_prototypes, this))
 								.onRemove(this._$prototype_removed)
 								.onAdd   (this._$prototype_added)
 								.onMove  (this._$prototype_moved);
 
-	this.initialize_statechart();
-/*
-	this._listeners = {};
-
-	this._direct_prototypes = [];
-	this._all_prototypes = [];
+	this._$prop_removed = _.bind(this._prop_removed, this);
+	this._$prop_added   = _.bind(this._prop_added,   this);
+	this._$prop_moved   = _.bind(this._prop_moved,   this);
 
 	this._direct_properties = cjs.create("map");
-	this._inherited_properties = cjs.create("map");
-	this._all_properties = cjs.create("map");
-	this.$prototypes_changed = _.bind(this.prototypes_changed, this);
-	this.$direct_property_changed = _.bind(this.direct_property_changed, this);
-	*/
+	this._all_property_names = cjs(_.bind(this.get_prop_names, this));
+	this._all_properties = this._all_property_names.map(this._$prop_added, this._$prop_removed, this._$prop_moved);
+
+	this._states = cjs(_.bind(this.get_states, this));
+	this.initialize_statechart();
 };
 (function(my) {
 	var proto = my.prototype;
@@ -49,7 +44,6 @@ var RedSkeleton = function() {
 		var reset_event = cjs.create_event("manual");
 		this.do_reset = reset_event.fire;
 
-		var init_state = statechart.get_state_with_name("INIT");
 
 		this.own_statechart = cjs.create("statechart");
 
@@ -61,9 +55,16 @@ var RedSkeleton = function() {
 										.add_state("own", this.own_statechart)
 										.add_state("inherited", this.inherited_statecharts);
 
+		this._init_state = statechart.get_state_with_name("INIT");
 		statechart	.add_state("running", this.running_statechart)
-					.add_transition("INIT", "running", cjs.create_event("on_enter", init_state))
+					.add_transition("INIT", "running", cjs.create_event("on_enter", this._init_state))
 					.add_transition("running", "INIT", reset_event);
+
+		statechart._on("state_added", this._states.invalidate);
+		statechart._on("state_removed", this._states.invalidate);
+		statechart._on("state_moved", this._states.invalidate);
+		statechart._on("transition_added", this._states.invalidate);
+		statechart._on("transition_removed", this._states.invalidate);
 	};
 
 	proto.remove_shadow_shatestart = function(index) {
@@ -107,6 +108,7 @@ var RedSkeleton = function() {
 		this.inherited_statecharts.add_state("proto_"+to_index, shadow_statechart);
 	};
 
+
 	proto.get_state_shadow = function(state) {
 		var state_root = state.get_root();
 		if(state_root === this.get_statechart()) { // Belongs to me
@@ -131,6 +133,49 @@ var RedSkeleton = function() {
 			var name = state.get_name(candidate_proto.own_statechart);
 			return shadow_root.get_state_with_name(name);
 		}
+	};
+
+	proto.get_states = function() {
+		var init_state = [this._init_state];
+		var own_states = this.own_statechart.flatten();
+		var inherited_states = _.flatten(_.map(this.inherited_statecharts, function(inherited_statechart) {
+			return inherited_statechart.flatten();
+		}), true);
+		return init_state.concat(own_states, inherited_states);
+	};
+
+	proto.state_is_inherited = function(state) {
+		var parent = state;
+		do {
+			if(parent === this.inherited_statecharts) { return true; }
+			parent = parent.parent();
+		} while(parent);
+		return false;
+	};
+
+	proto.get_obj_for_state = function(state) {
+		var basis = state.get_basis();
+		if(!basis) {
+			basis = state;
+		}
+		var root = basis.get_root();
+		if(root === this.get_statechart()) {
+			return this;
+		} else {
+			var all_prototypes = this._all_prototypes.get();
+			var len = all_prototypes.length;
+			for(var i = 0; i<len; i++) {
+				var p = all_prototypes[i];
+				if(root === p.get_statechart()) {
+					return p;
+				}
+			}
+			return undefined;
+		}
+	};
+
+	proto.get_statechart = function() {
+		return this._statechart;
 	};
 
 	// 
@@ -169,7 +214,7 @@ var RedSkeleton = function() {
 
 		var flattened_all_prototypes = _.flatten(all_prototypes);
 		
-		return _.uniq(_.flatten(_.map(this.get_direct_prototypes(), function(p) {
+		return _.uniq(_.flatten(_.map(this._get_direct_prototypes(), function(p) {
 			return ([p]).concat(p._get_all_prototypes());
 		})));
 	};
@@ -186,7 +231,7 @@ var RedSkeleton = function() {
 		var my_prop_names = this._get_direct_prop_names();
 		var protos = this._get_all_prototypes();
 
-		var all_proto_prop_names = _.map(this._all_prototypes, function(my_proto) {
+		var all_proto_prop_names = _.map(this._all_prototypes.get(), function(my_proto) {
 			return my_proto.get_direct_prop_names();
 		});
 		var flattened_all_proto_prop_names = _.flatten(all_proto_prop_names, true);
@@ -201,9 +246,38 @@ var RedSkeleton = function() {
 		return _.difference(inherited_prop_names, my_prop_names);
 	};
 
-	proto._has_prop = function(prop_name) {
+	proto.name_for_prop = function(prop) {
+		var all_properties = this._all_properties.get();
+		var prop_index = _.indexOf(all_properties, prop);
+		if(prop_index < 0) {
+			return undefined;
+		} else {
+			var prop_names = this.get_prop_names();
+			return prop_names[index];
+		}
+	};
+
+	proto.prop_prototypes = function(prop) {
+		var prop_name = this.name_for_prop(prop);
+		if(_.isUndefined(prop_name)) {
+			return [];
+		} else {
+			var all_prototypes = this._all_prototypes.get();
+			var props = _.map(all_prototypes, function(p) {
+				return p.get_prop(prop_name);
+			});
+			var filtered_props = _.compact(props);
+			return filtered_props;
+		}
+	};
+
+	proto._prop_index = function(prop_name) {
 		var prop_names = this.get_prop_names();
-		return _.indexOf(prop_names, prop_name) >= 0;
+		return _.indexOf(prop_names, prop_name);
+	};
+
+	proto._has_prop = function(prop_name) {
+		return this._prop_index(prop_name) >= 0;
 	};
 
 	proto.inherits_from = function() {
@@ -248,6 +322,28 @@ var RedSkeleton = function() {
 		return this;
 	};
 
+	proto._prop_removed = function(prop_name, index, prop) {
+		prop.destroy();
+	};
+
+	proto._prop_added = function(prop_name, index) {
+		if(this.prop_is_inherited(prop_name)) {
+			return this._create_prop();
+		} else {
+			return this._direct_properties.get(prop_name);
+		}
+	};
+	proto._prop_moved = function(prop_name, from_index, to_index) { };
+
+	proto.get_prop = function(prop_name) {
+		var prop_index = this._prop_index(prop_name);
+		if(prop_index < 0) {
+			return undefined;
+		} else {
+			var all_properties = this._all_properties.get();
+			return all_properties[index];
+		}
+	};
 
 	//
 	// ===== INITIALIZERS AND DESTROYERS =====
