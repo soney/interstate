@@ -8,14 +8,16 @@ var RedProperty = function(parent, name) {
 	this._statechart_constraint = cjs.create("statechart_constraint", this._statechart);
 	this._name = cjs.create("constraint", name);
 
-	this._context = cjs.create("red_context", {thisable: false});
-
 	var self = this;
+	this._context = cjs.create("red_context", {
+		thisable: false
+	});
+	this._context.set("event", cjs(_.bind(this.get_event, this)));
+
 
 	this._states = cjs(_.bind(this.get_states, this));
 	this._values = this._states.map(
 						function(state) {
-							//console.log(_.map(cjs.get(self._states), function(x) { return x.id; }));
 							return cjs.create("constraint", function() {
 								return cjs.get(self._value_for_state(state));	
 							});
