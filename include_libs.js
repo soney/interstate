@@ -35,13 +35,12 @@ exports.main_src = c(
 			])
 	, cp(src, [
 				"core.js"
-				, "parser/cell_parser.js"
-				, "parser/table_parser.js"
+				, "core/cell.js"
+				, "core/dict.js"
+				, "core/prop.js"
 				, "core/shadow_statechart.js"
-				, "core/red_context.js"
-				, "core/red_cell_skeleton.js"
-				, "core/red_prop_skeleton.js"
-				, "core/red_obj_skeleton.js"
+				, "core/stateful_obj.js"
+				, "core/stateful_prop.js"
 			])
 );
 
