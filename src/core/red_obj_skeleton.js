@@ -74,6 +74,7 @@ var RedSkeleton = function() {
 			this.inherited_statecharts.rename_state("proto_"+(i+1), "proto_"+i);
 			i++;
 		}
+		console.log("REMOVE");
 	};
 
 	proto.add_shadow_statechart = function(shadow_statechart, index) {
@@ -87,6 +88,11 @@ var RedSkeleton = function() {
 			i--;
 		};
 		this.inherited_statecharts.add_state("proto_"+index, shadow_statechart);
+		shadow_statechart	._on("state_added", function(){console.log(arguments);})
+					._on("state_removed",function(){console.log(arguments);} )
+					._on("transition_added", function(){console.log(arguments);})
+					._on("transition_removed", function(){console.log(arguments);})
+					._on("destroy", function(){console.log(arguments);});
 	};
 
 	proto.move_shadow_statechart = function(from_index, to_index) {
@@ -138,10 +144,17 @@ var RedSkeleton = function() {
 
 	proto.get_states = function() {
 		var init_state = [this._init_state];
-		var own_states = this.own_statechart.flatten();
-		var inherited_states = _.flatten(_.map(this.inherited_statecharts, function(inherited_statechart) {
-			return inherited_statechart.flatten();
-		}), true);
+		var own_states = _.rest(this.own_statechart.flatten().filter(function(state) {
+			return state.get_type() !== "pre_init";
+		}));
+		var self = this;
+		var inherited_states = _.rest(this.inherited_statecharts.flatten().filter(function(state) {
+			if(state.get_type() === "pre_init") { return false; }
+			else if(state.parent() === self.inherited_statecharts) { return false; }
+
+			return true;
+		}));
+
 		return init_state.concat(own_states, inherited_states);
 	};
 
@@ -297,13 +310,14 @@ var RedSkeleton = function() {
 		}
 	};
 
-	proto._create_prop = function() {
-		var prop = cjs.create("red_prop", this);
+	proto._create_prop = function(name) {
+		var prop = cjs.create("red_prop", this, name);
 		return prop;
 	};
 
 	proto.set_prop = function(prop_name, prop, index) {
-		prop = prop || this._create_prop();
+		prop = prop || this._create_prop(prop_name);
+		prop.set_name(prop_name);
 		this._direct_properties.set(prop_name, prop, index);
 		return this;
 	};
@@ -319,6 +333,7 @@ var RedSkeleton = function() {
 	};
 
 	proto.rename_prop = function(old_name, new_name) {
+		prop.set_name(new_name);
 		this._direct_properties.rename(old_name, new_name);
 		return this;
 	};
@@ -329,7 +344,7 @@ var RedSkeleton = function() {
 
 	proto._prop_added = function(prop_name, index) {
 		if(this.prop_is_inherited(prop_name)) {
-			return this._create_prop();
+			return this._create_prop(prop_name);
 		} else {
 			return this._direct_properties.get(prop_name);
 		}

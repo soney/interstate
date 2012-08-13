@@ -101,9 +101,11 @@ var RedCell = function(str, context) {
 	proto.get = function() {
 		return cjs.get(this._value);
 	};
+	/*
 	proto.clone = function(context) {
 		return new RedCell(this.get_str(), context);
 	};
+	*/
 }(RedCell));
 
 red.RedCell = RedCell;
@@ -117,6 +119,9 @@ cjs.define("red_cell", function(str, context) {
 		return constraint;
 	};
 	constraint.get_str = _.bind(cell.get_str, cell);
+	constraint.clone = function(context) {
+		return cjs.create("red_cell", cell.get_str(), context);
+	};
 	return constraint;
 });
 
