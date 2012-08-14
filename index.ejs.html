@@ -182,6 +182,35 @@
 		var cjs = red.cjs;
 
 		var root = cjs.create("red_dict");
+		var x = cjs.create("red_dict");
+		var y = cjs.create("red_dict");
+		var z = cjs.create("red_dict");
+		//console.log("BEGIN SET PROTOS");
+		y.set_protos([x]);
+		z.set_protos([y]);
+		//console.log("END SET PROTOS");
+
+		/*
+		x.set_prop("a", 1);
+		console.log(z.get_prop("a"));
+		x.set_prop("a", 2);
+		console.log(z.get_prop("a"));
+		*/
+		var cell = cjs.create("red_cell", {str: "b"});
+		x.set_prop("a", cell);
+		console.log(z.get_prop("a").get());
+		//cell.set_str("4");
+		console.log(z.get_prop("a").get());
+		x.set_prop("b", 1);
+		y.set_prop("b", 2);
+		z.set_prop("b", 3);
+		console.log(x.get_prop("a").get());
+		console.log(y.get_prop("a").get());
+		console.log(z.get_prop("a").get());
+
+		window.x = x;
+		window.y = y;
+		window.z = z;
 		window.root = root;
 	</script>
   </head>

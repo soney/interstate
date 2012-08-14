@@ -382,6 +382,8 @@ cjs.define("red_stateful_obj", function(parent) {
 	var constraint = cjs(function() {
 		return obj;
 	});
+	constraint.get_prop = _.bind(obj.get_prop, obj);
+	constraint.set_prop = _.bind(obj.set_prop, obj);
 	return constraint;
 });
 

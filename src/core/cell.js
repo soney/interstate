@@ -41,11 +41,17 @@ var eval_tree = function(node, context) {
 	} else if(type === "Identifier") {
 		var name = cjs.get(node.name);
 		var got_context = cjs.get(context);
-		if(got_context) {
-			return got_context._get_prop(name);
-		} else {
-			return undefined;
+		var prop;
+		while(got_context) {
+			if(got_context.get_prop) {
+				prop = got_context.get_prop(name);
+				if(prop) {
+					return prop;
+				}
+			}
+			got_context = got_context.get_parent();
 		}
+		return undefined;
 	} else if(type === "ThisExpression") {
 		var got_context = cjs.get(context);
 		if(got_context) {
@@ -77,16 +83,18 @@ var eval_tree = function(node, context) {
 	}
 };
 
-var RedCell = function(str, parent) {
-	this._parent = cjs(parent);
-	this._str = cjs(str);
+var RedCell = function(options) {
+	options = options || {};
+	this._parent = cjs.create("constraint", options.parent, true);
+	this._str = _.isString(options.str) ? cjs.create("constraint", options.str) : options.str;
+	if(!this._str) debugger;
 	var self = this;
 	this._tree = cjs(function() {
 		return esprima.parse(self._str.get());
 	});
 	this._value = cjs(function() {
 		var tree = self._tree.get();
-		return eval_tree(tree.body[0], self._context);
+		return eval_tree(tree.body[0], self.get_parent());
 	});
 };
 (function(my) {
@@ -102,13 +110,16 @@ var RedCell = function(str, parent) {
 		return cjs.get(this._value);
 	};
 	proto.set_parent = function(parent) {
-		this._parent.set(parent);
+		this._parent.set(parent, true);
+	};
+	proto.get_parent = function() {
+		return this._parent.get();
 	};
 }(RedCell));
 
 red.RedCell = RedCell;
-cjs.define("red_cell", function(str, context) {
-	var cell = new RedCell(str, context);
+cjs.define("red_cell", function(options) {
+	var cell = new RedCell(options);
 	var constraint = cjs(function() {
 		return cell.get();
 	});
@@ -118,10 +129,18 @@ cjs.define("red_cell", function(str, context) {
 	};
 	constraint.get_str = _.bind(cell.get_str, cell);
 	constraint.set_parent = _.bind(cell.set_parent, cell);
-	constraint.clone = function(context) {
-		return cjs.create("red_cell", cell.get_str(), context);
+	constraint.get_parent = _.bind(cell.get_parent, cell);
+	constraint.clone = function(options) {
+		options = options || {};
+		if(!options.str) {
+			options.str = cjs.create("constraint", function() {
+				return constraint.get_str();
+			});
+		}
+		return cjs.create("red_cell", options);
 	};
 	constraint.type = "red_cell";
+	constraint.cell = cell;
 	return constraint;
 });
 

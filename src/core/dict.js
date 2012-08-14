@@ -5,7 +5,7 @@ var RedDict = function(options) {
 	options = options || {};
 	if(!options.parent) { options.parent = undefined; }
 	else if(!options.direct_props) { options.direct_props = []; }
-	else if(!options.protos) { options.protos = []; }
+	else if(!options.direct_protos) { options.protos = []; }
 
 	this._parent = cjs.create("constraint", options.parent);
 
@@ -15,7 +15,7 @@ var RedDict = function(options) {
 	this._all_props = cjs(_.bind(this._all_props_getter, this));
 
 	// Prototypes
-	this._protos = cjs.create("array", options.protos);
+	this._direct_protos = cjs.create("array", options.direct_protos);
 	this._$proto_removed = _.bind(this._proto_removed, this);
 	this._$proto_added   = _.bind(this._proto_added,   this);
 	this._$proto_moved   = _.bind(this._proto_moved,   this);
@@ -31,16 +31,21 @@ var RedDict = function(options) {
 	//
 	// === DIRECT PROPERTIES ===
 	//
-	proto._create_prop_obj = function(name, value) {
-		var prop_obj = red.create("prop", {
+	proto._get_direct_props = function() {
+		return this._direct_props.get();
+	};
+	proto._create_prop_obj = function(name, value, inherited) {
+		var prop_obj = cjs.create("red_prop", {
 			name: name
 			, value: value
+			, inherited: inherited
+			, parent: this
 		});
 		return prop_obj;
 	};
 
 	proto._direct_prop_index = function(name) {
-		var direct_props = this._direct_props.get();
+		var direct_props = this._get_direct_props();
 		var i, len = direct_props.length;
 		for(i = 0; i<len; i++) {
 			if(direct_props[i].get_name() === name) {
@@ -57,12 +62,12 @@ var RedDict = function(options) {
 		if(index < 0) {
 			return undefined;
 		} else {
-			var direct_props = this._direct_props.get();
+			var direct_props = this._get_direct_props();
 			return direct_props[index];
 		}
 	};
 	proto._set_direct_prop_obj = function(prop_obj, index) {
-		this._direct_props.insert_at(prop, index);
+		this._direct_props.insert_at(prop_obj, index, false);
 	};
 
 	proto._set_direct_prop = function(name, value, index) {
@@ -113,6 +118,35 @@ var RedDict = function(options) {
 	// === INHERITED PROPS ===
 	//
 	proto._inherited_props_getter = function() {
+		var all_protos = this._all_protos.get();
+		var used_names = [];
+		var rv = [];
+		var self = this;
+		var inherited_props = _.forEach(all_protos, function(all_proto) {
+			var proto_props = all_proto._get_direct_props();
+			_.forEach(proto_props, function(proto_prop) {
+				var proto_prop_name = proto_prop.get_name();
+				if(_.indexOf(used_names, proto_prop_name) < 0) {
+					used_names.push(proto_prop_name);
+					rv.push(self._create_prop_obj(proto_prop_name, undefined, true)); 
+				}
+			});
+		});
+		return rv;
+	};
+	proto._inherited_props_with_name = function(name) {
+		var all_protos = this._all_protos.get();
+		var rv = [];
+		var inherited_props = _.forEach(all_protos, function(all_proto) {
+			var proto_props = all_proto._get_direct_props();
+			_.forEach(proto_props, function(proto_prop) {
+				var proto_prop_name = proto_prop.get_name();
+				if(proto_prop_name === name) {
+					rv.push(proto_prop);
+				}
+			});
+		});
+		return rv;
 	};
 	proto._all_props_getter = function() {
 		var direct_props = this._direct_props.get();
@@ -122,7 +156,7 @@ var RedDict = function(options) {
 		var all_props = [];
 
 		_.forEach(direct_props.concat(inherited_props), function(prop) {
-			var prop_name = direct_prop.get_name();
+			var prop_name = prop.get_name();
 			if(_.indexOf(used_names, prop_name) < 0) {
 				used_names.push(prop_name);
 				all_props.push(prop);
@@ -130,11 +164,37 @@ var RedDict = function(options) {
 		});
 		return all_props;
 	};
-	/*
+	proto._all_prop_index = function(name) {
+		var all_props = this._all_props.get();
+		var i, len = all_props.length;
+		for(i = 0; i<len; i++) {
+			if(all_props[i].get_name() === name) {
+				return i;
+			}
+		}
+		return -1;
+	};
+	proto._has_all_prop = function(name) {
+		return this._all_proop_index(name) >= 0;
+	};
+	proto._get_all_prop_obj = function(name) {
+		var index = this._all_prop_index(name);
+		if(index < 0) {
+			return undefined;
+		} else {
+			var all_props = this._all_props.get();
+			return all_props[index];
+		}
+	};
 
-	this._inherited_props = cjs(_.bind(this._inherited_props_getter, this));
-	this._all_props = cjs(_.bind(this._all_props_getter, this));
-	*/
+	proto._get_all_prop = function(name) {
+		var prop_obj = this._get_all_prop_obj(name);
+		if(_.isUndefined(prop_obj)) {
+			return undefined;
+		} else {
+			return prop_obj.get_value();
+		}
+	};
 
 	//
 	// === PARENT ===
@@ -150,28 +210,17 @@ var RedDict = function(options) {
 	};
 
 	proto._get_direct_protos = function() {
-		return this._protos.get();
+		return this._direct_protos.get();
 	};
 
-	proto._proto_removed = function(item, index) {
-		item.destroy(this);
-		this.remove_shadow_statechart(index);
-	};
-	proto._proto_added = function(item, index) {
-		//Update the statechart
-		var item_statechart = item.get_statechart().get_state_with_name("running.own");
-		var shadow_statechart = red._shadow_statechart(item_statechart);
-		this.add_shadow_statechart(shadow_statechart, index);
-		item.initialize(this);
-	};
-	proto._proto_moved = function(item, from_index, to_index) {
-		this.move_shadow_statechart(from_index, to_index);
-	};
+	proto._proto_removed = function(item, index) { item.destroy(this); };
+	proto._proto_moved = function(item, index) { };
+	proto._proto_added = function(item, index) { item.initialize(this); };
 
 	proto._all_protos_getter = function() {
 		var direct_protos = this._get_direct_protos();
 		var all_protos = _.map(direct_protos, function(direct_proto) {
-			return ([direct_proto]).concat(direct_prototype._get_all_protos());
+			return ([direct_proto]).concat(direct_proto._get_all_protos());
 		});
 
 		var flattened_all_protos = _.flatten(all_protos);
@@ -180,6 +229,11 @@ var RedDict = function(options) {
 			return ([direct_proto]).concat(direct_proto._get_all_protos());
 		})));
 	};
+
+	proto._get_all_protos = function() {
+		return this._all_protos.get();
+	};
+	proto.get_prop = proto._get_all_prop;
 }(RedDict));
 
 red.RedDict = RedDict;
@@ -190,6 +244,14 @@ cjs.define("red_dict", function(options) {
 	});
 	constraint.get_parent = _.bind(dict.get_parent, dict);
 	constraint.set_parent = _.bind(dict.set_parent, dict);
-	return new RedDict();
+	constraint.get_prop = _.bind(dict._get_all_prop, dict);
+	constraint.set_prop = _.bind(dict._set_direct_prop, dict);
+	constraint.set_protos = _.bind(dict._set_direct_protos, dict);
+	constraint._get_all_protos = _.bind(dict._get_all_protos, dict);
+	constraint._get_direct_props = _.bind(dict._get_direct_props, dict);
+	constraint._inherited_props_with_name = _.bind(dict._inherited_props_with_name, dict);
+	constraint.initialize = function(self) {};
+	constraint.destroy = function(self) { };
+	return constraint;
 });
 }(red));

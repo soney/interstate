@@ -5,6 +5,7 @@
 	var red = function() {
 		return red_call.apply(root, arguments);
 	};
+	red._debug = true;
 	red.cjs = cjs.noConflict();
 	red.esprima = esprima;
 
