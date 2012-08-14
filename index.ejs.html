@@ -137,6 +137,7 @@
 	<%- red_include(red_inc.main) %>
 
 	<script type="text/javascript">
+		/*
 		var get_input_str = function() {
 			return $("#input_str").val();
 		};
@@ -177,6 +178,11 @@
 				$("div.output").append(obj.dom_element);
 			});
 		};
+		*/
+		var cjs = red.cjs;
+
+		var root = cjs.create("red_dict");
+		window.root = root;
 	</script>
   </head>
   <body>

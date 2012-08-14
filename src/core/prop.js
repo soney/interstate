@@ -1,10 +1,15 @@
 (function(red) {
 var cjs = red.cjs, _ = cjs._;
 
-var RedProp = function(parent, name, value) {
-	this._parent = cjs(parent);
-	this._name = cjs(name);
-	this._value = cjs(value);
+var RedProp = function(options) {
+	options = options || {};
+	if(!options.parent) { options.parent = undefined; }
+	else if(!options.name) { options.name = undefined; }
+	else if(!options.value) { options.value = undefined; }
+
+	this._parent = cjs(options.parent);
+	this._name = cjs(options.name);
+	this._value = cjs(options.value);
 };
 
 (function(my) {
@@ -30,8 +35,8 @@ var RedProp = function(parent, name, value) {
 }(RedProp));
 
 red.RedProp = RedProp;
-cjs.define("red_prop", function(parent, name, value) {
-	var prop = new RedProp(parent, name, value);
+cjs.define("red_prop", function(options) {
+	var prop = new RedProp(options);
 	var constraint = cjs(function() {
 		return prop.get();
 	});
