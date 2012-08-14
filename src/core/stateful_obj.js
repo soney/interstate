@@ -1,7 +1,9 @@
 (function(red) {
 var cjs = red.cjs, _ = cjs._;
 
-var RedStatefulObj = function(parent) {
+var RedStatefulObj = function(options) {
+	RedStatefulObj.super.constructor.apply(this, arguments);
+/*
 	this._parent = cjs(parent);
 	this._statechart = cjs.create("statechart");
 	this._context = cjs.create("red_context", {
@@ -28,8 +30,11 @@ var RedStatefulObj = function(parent) {
 
 	this._states = cjs(_.bind(this.get_states, this));
 	this.initialize_statechart();
+	*/
 };
 (function(my) {
+	_.proto_extend(my, red.RedDict);
+	/*
 	var proto = my.prototype;
 
 	//
@@ -75,7 +80,6 @@ var RedStatefulObj = function(parent) {
 			this.inherited_statecharts.rename_state("proto_"+(i+1), "proto_"+i);
 			i++;
 		}
-		console.log("REMOVE");
 	};
 
 	proto.add_shadow_statechart = function(shadow_statechart, index) {
@@ -89,11 +93,6 @@ var RedStatefulObj = function(parent) {
 			i--;
 		};
 		this.inherited_statecharts.add_state("proto_"+index, shadow_statechart);
-		shadow_statechart	._on("state_added", function(){console.log(arguments);})
-					._on("state_removed",function(){console.log(arguments);} )
-					._on("transition_added", function(){console.log(arguments);})
-					._on("transition_removed", function(){console.log(arguments);})
-					._on("destroy", function(){console.log(arguments);});
 	};
 
 	proto.move_shadow_statechart = function(from_index, to_index) {
@@ -192,192 +191,27 @@ var RedStatefulObj = function(parent) {
 	proto.get_statechart = function() {
 		return this._statechart;
 	};
-
-	// 
-	// ===== PROTOTYPES =====
-	//
-	
-	proto.set_direct_prototypes = function(protos) {
-		this._direct_prototypes.set(protos);
-	};
-
-	proto._get_direct_prototypes = function() {
-		return this._direct_prototypes.get();
-	};
-
-	proto._prototype_removed = function(item, index) {
-		item.destroy(this);
-		this.remove_shadow_statechart(index);
-	};
-	proto._prototype_added = function(item, index) {
-		//Update the statechart
-		var item_statechart = item.get_statechart().get_state_with_name("running.own");
-		var shadow_statechart = red._shadow_statechart(item_statechart);
-		this.add_shadow_statechart(shadow_statechart, index);
-		item.initialize(this);
-	};
-	proto._prototype_moved = function(item, from_index, to_index) {
-		this.move_shadow_statechart(from_index, to_index);
-	};
-
-	proto._get_all_prototypes = function() {
-		var direct_prototypes = this._get_direct_prototypes();
-		var all_prototypes = _.map(direct_prototypes, function(direct_prototype) {
-			return ([direct_prototype]).concat(direct_prototype._get_all_prototypes());
-		});
-
-		var flattened_all_prototypes = _.flatten(all_prototypes);
-		
-		return _.uniq(_.flatten(_.map(this._get_direct_prototypes(), function(p) {
-			return ([p]).concat(p._get_all_prototypes());
-		})));
-	};
-
-	//
-	// ===== PROPERTIES =====
-	//
-	
-	proto._get_direct_prop_names = function() {
-		return this._direct_properties.get_keys();
-	};
-
-	proto.get_prop_names = function() {
-		var my_prop_names = this._get_direct_prop_names();
-		var protos = this._get_all_prototypes();
-
-		var all_proto_prop_names = _.map(this._all_prototypes.get(), function(my_proto) {
-			return my_proto._get_direct_prop_names();
-		});
-		var all_prop_names = ([my_prop_names]).concat(all_proto_prop_names);
-		var flattened_all_prop_names = _.flatten(all_prop_names, true);
-		var all_prop_names = _.uniq(flattened_all_prop_names);
-
-		return all_prop_names;
-	};
-
-	proto._get_inherited_prop_names = function() {
-		var my_prop_names = this._get_direct_prop_names();
-		var inherited_prop_names = this.get_prop_names();
-		return _.difference(inherited_prop_names, my_prop_names);
-	};
-
-	proto.name_for_prop = function(prop) {
-		var all_properties = this._all_properties.get();
-		var prop_index = _.indexOf(all_properties, prop);
-		if(prop_index < 0) {
-			return undefined;
-		} else {
-			var prop_names = this.get_prop_names();
-			return prop_names[index];
-		}
-	};
-
-	proto.prop_prototypes = function(prop) {
-		var prop_name = this.name_for_prop(prop);
-		if(_.isUndefined(prop_name)) {
-			return [];
-		} else {
-			var all_prototypes = this._all_prototypes.get();
-			var props = _.map(all_prototypes, function(p) {
-				return p.get_prop(prop_name);
-			});
-			var filtered_props = _.compact(props);
-			return filtered_props;
-		}
-	};
-
-	proto._prop_index = function(prop_name) {
-		var prop_names = this._all_property_names.get();
-		return _.indexOf(prop_names, prop_name);
-	};
-
-	proto._has_prop = function(prop_name) {
-		return this._prop_index(prop_name) >= 0;
-	};
-
-	proto.inherits_from = function() {
-		var all_prototypes = this._get_all_prototypes();
-		return _.all(arguments, function(arg) {
-			return _.indexOf(_all_prototypes, arg) >= 0;
-		});
-	};
-
-	proto.prop_is_inherited = function(prop_name) {
-		if(this._has_prop(prop_name)) {
-			var inherited_prop_names = this._get_inherited_prop_names();
-			return _.indexOf(inherited_prop_names, prop_name >= 0);
-		} else {
-			return false;
-		}
-	};
-
-	proto._create_prop = function(name) {
-		var prop = cjs.create("red_prop", this, name);
-		return prop;
-	};
-
-	proto.set_prop = function(prop_name, prop, index) {
-		prop = prop || this._create_prop(prop_name);
-		prop.set_name(prop_name);
-		this._direct_properties.set(prop_name, prop, index);
-		return this;
-	};
-
-	proto.remove_prop = function(prop_name) {
-		this._direct_properties.unset(prop_name);
-		return this;
-	};
-
-	proto.move_prop = function(prop_name, index) {
-		this._direct_properties.move(prop_name, index);
-		return this;
-	};
-
-	proto.rename_prop = function(old_name, new_name) {
-		prop.set_name(new_name);
-		this._direct_properties.rename(old_name, new_name);
-		return this;
-	};
-
-	proto._prop_removed = function(prop_name, index, prop) {
-		prop.destroy();
-	};
-
-	proto._prop_added = function(prop_name, index) {
-		if(this.prop_is_inherited(prop_name)) {
-			return this._create_prop(prop_name);
-		} else {
-			return this._direct_properties.get(prop_name);
-		}
-	};
-	proto._prop_moved = function(prop_name, from_index, to_index) { };
-
-	proto.get_prop = function(prop_name) {
-		var prop_index = this._prop_index(prop_name);
-		if(prop_index < 0) {
-			return undefined;
-		} else {
-			var all_properties = this._all_properties.get();
-			return all_properties[prop_index];
-		}
-	};
-
-	//
-	// ===== INITIALIZERS AND DESTROYERS =====
-	//
-	proto.initialize = function(self) {};
-	proto.destroy = function(self) {};
-	proto.set_parent = function(parent) {
-		this._parent.set(parent);
-	};
-	proto.get_parent = function() {
-		return this._parent.get();
-	};
+	*/
 }(RedStatefulObj));
 
 red.RedStatefulObj = RedStatefulObj;
 
-cjs.define("red_stateful_obj", function(parent) {
+cjs.define("red_stateful_obj", function(options) {
+	var dict = new RedStatefulObj(options);
+	var constraint = cjs(function() {
+		return dict;
+	});
+	constraint.get_parent = _.bind(dict.get_parent, dict);
+	constraint.set_parent = _.bind(dict.set_parent, dict);
+	constraint.get_prop = _.bind(dict._get_all_prop, dict);
+	constraint.set_prop = _.bind(dict._set_direct_prop, dict);
+	constraint.set_protos = _.bind(dict._set_direct_protos, dict);
+	constraint._get_all_protos = _.bind(dict._get_all_protos, dict);
+	constraint._get_direct_props = _.bind(dict._get_direct_props, dict);
+	constraint._inherited_props_with_name = _.bind(dict._inherited_props_with_name, dict);
+	constraint.initialize = function(self) {};
+	constraint.destroy = function(self) { };
+	return constraint;
 	var obj = new RedStatefulObj(parent);
 	var constraint = cjs(function() {
 		return obj;

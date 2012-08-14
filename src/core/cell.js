@@ -25,7 +25,7 @@ var unary_operators = {
 	, "!": function(a) { return !a; }
 };
 
-var eval_tree = function(node, context) {
+var eval_tree = function(node, context, restrict_context) {
 	var type = node.type;
 	if(type === "ExpressionStatement") {
 		return eval_tree(node.expression, context);
@@ -41,6 +41,7 @@ var eval_tree = function(node, context) {
 	} else if(type === "Identifier") {
 		var name = cjs.get(node.name);
 		var got_context = cjs.get(context);
+
 		var prop;
 		while(got_context) {
 			if(got_context.get_prop) {
@@ -48,6 +49,9 @@ var eval_tree = function(node, context) {
 				if(prop) {
 					return prop;
 				}
+			}
+			if(restrict_context === true) {
+				break;
 			}
 			got_context = got_context.get_parent();
 		}
@@ -64,7 +68,7 @@ var eval_tree = function(node, context) {
 		var object_got = cjs.get(object);
 		//More cases here
 		variable_context = object_got;
-		var property = eval_tree(node.property, variable_context);
+		var property = eval_tree(node.property, variable_context, true);
 		return property;
 	} else if(type === "Literal") {
 		return node.value;

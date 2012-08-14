@@ -137,54 +137,15 @@
 	<%- red_include(red_inc.main) %>
 
 	<script type="text/javascript">
-		/*
-		var get_input_str = function() {
-			return $("#input_str").val();
-		};
-		var cache_input_str = function() {
-			var input_str = get_input_str();
-			localStorage.setItem("input_str", input_str);
-		};
-		$(function() {
-			$("#input_str").val(localStorage.getItem("input_str")).tabby();
-			$("a#run").on("click", function() {
-				do_run();
-			});
-			$("a#refresh_libs").on("click", function() {
-				$.ajax({
-                    url:"command/refresh_include"
-                    , success: function(data) {
-                    }
-                });
-			});
-	//		do_run();
-		});
-		$(window).on("unload", function() {
-			cache_input_str();
-		});
-
-		$(window).on("keydown", function(event) {
-			if(event.which === 13 && (event.ctrlKey || event.metaKey)) { //enter 
-				do_run();
-			}
-		});
-
-
-		var do_run = function() {
-			var input_str = get_input_str();
-			var objs = red.parse_table(input_str);
-			red.cjs._.forEach(objs, function(obj) {
-				obj.get_statechart().run();
-				$("div.output").append(obj.dom_element);
-			});
-		};
-		*/
 		var cjs = red.cjs;
 
 		var root = cjs.create("red_dict");
 		var x = cjs.create("red_dict");
 		var y = cjs.create("red_dict");
 		var z = cjs.create("red_dict");
+		root.set_prop("x", x);
+		root.set_prop("y", y);
+		root.set_prop("z", z);
 		//console.log("BEGIN SET PROTOS");
 		y.set_protos([x]);
 		z.set_protos([y]);
@@ -196,7 +157,7 @@
 		x.set_prop("a", 2);
 		console.log(z.get_prop("a"));
 		*/
-		var cell = cjs.create("red_cell", {str: "b"});
+		var cell = cjs.create("red_cell", {str: "b + x.b"});
 		x.set_prop("a", cell);
 		console.log(z.get_prop("a").get());
 		//cell.set_str("4");
