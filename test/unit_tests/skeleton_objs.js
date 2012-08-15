@@ -33,75 +33,74 @@ test('Shadow Statecharts', function() {
 });
 
 test('Prototypes', function() {
-	var a = new red.RedSkeleton();
-	var b = new red.RedSkeleton();
-	var c = new red.RedSkeleton();
-	var d = new red.RedSkeleton();
-	var e = new red.RedSkeleton();
-	var f = new red.RedSkeleton();
-	var g = new red.RedSkeleton();
-	var h = new red.RedSkeleton();
+	var a = cjs.create("red_stateful_obj");
+	var b = cjs.create("red_stateful_obj");
+	var c = cjs.create("red_stateful_obj");
+	var d = cjs.create("red_stateful_obj");
+	var e = cjs.create("red_stateful_obj");
+	var f = cjs.create("red_stateful_obj");
+	var g = cjs.create("red_stateful_obj");
+	var h = cjs.create("red_stateful_obj");
 
-	a.own_statechart.add_state("a");
-	b.own_statechart.add_state("b");
-	c.own_statechart.add_state("c");
-	d.own_statechart.add_state("d");
-	e.own_statechart.add_state("e");
-	f.own_statechart.add_state("f");
-	g.own_statechart.add_state("g");
-	h.own_statechart.add_state("h");
+	a.get_own_statechart().add_state("a");
+	b.get_own_statechart().add_state("b");
+	c.get_own_statechart().add_state("c");
+	d.get_own_statechart().add_state("d");
+	e.get_own_statechart().add_state("e");
+	f.get_own_statechart().add_state("f");
+	g.get_own_statechart().add_state("g");
+	h.get_own_statechart().add_state("h");
 
-	b.set_direct_prototypes([a]);
-	c.set_direct_prototypes([a,b]);
-	d.set_direct_prototypes([c,b]);
+	b.set_protos([a]);
+	c.set_protos([a,b]);
+	d.set_protos([c,b]);
 
-	deepEqual(b._all_prototypes.get(), [a]);
-	deepEqual(c._all_prototypes.get(), [a,b]);
-	deepEqual(d._all_prototypes.get(), [c,a,b]);
+	deepEqual(b.get_protos(), [a]);
+	deepEqual(c.get_protos(), [a,b]);
+	deepEqual(d.get_protos(), [c,a,b]);
 
-	f.set_direct_prototypes([e,d]);
-	deepEqual(f._all_prototypes.get(), [e,d,c,a,b]);
+	f.set_protos([e,d]);
+	deepEqual(f.get_protos(), [e,d,c,a,b]);
 
-	b.set_direct_prototypes([]);
-	deepEqual(c._all_prototypes.get(), [a,b]);
-	c.set_direct_prototypes([a]);
-	deepEqual(c._all_prototypes.get(), [a]);
+	b.set_protos([]);
+	deepEqual(c.get_protos(), [a,b]);
+	c.set_protos([a]);
+	deepEqual(c.get_protos(), [a]);
 
-	d.set_direct_prototypes([g,h]);
-	deepEqual(f._all_prototypes.get(), [e,d,g,h]);
-	d.set_direct_prototypes([h,g]);
-	deepEqual(f._all_prototypes.get(), [e,d,h,g]);
+	d.set_protos([g,h]);
+	deepEqual(f.get_protos(), [e,d,g,h]);
+	d.set_protos([h,g]);
+	deepEqual(f.get_protos(), [e,d,h,g]);
 });
 
 test('Properties', function() {
-	var A = new red.RedSkeleton();
-	var B = new red.RedSkeleton();
-	var C = new red.RedSkeleton();
-	var D = new red.RedSkeleton();
-	var E = new red.RedSkeleton();
-	var F = new red.RedSkeleton();
-	var G = new red.RedSkeleton();
-	var H = new red.RedSkeleton();
+	var A = cjs.create("red_stateful_obj");
+	var B = cjs.create("red_stateful_obj");
+	var C = cjs.create("red_stateful_obj");
+	var D = cjs.create("red_stateful_obj");
+	var E = cjs.create("red_stateful_obj");
+	var F = cjs.create("red_stateful_obj");
+	var G = cjs.create("red_stateful_obj");
+	var H = cjs.create("red_stateful_obj");
 
-	A.own_statechart.add_state("A");
-	B.own_statechart.add_state("B");
-	C.own_statechart.add_state("C");
-	D.own_statechart.add_state("D");
-	E.own_statechart.add_state("E");
-	F.own_statechart.add_state("F");
-	G.own_statechart.add_state("G");
-	H.own_statechart.add_state("H");
-
+	A.get_own_statechart().add_state("a");
+	B.get_own_statechart().add_state("b");
+	C.get_own_statechart().add_state("c");
+	D.get_own_statechart().add_state("d");
+	E.get_own_statechart().add_state("e");
+	F.get_own_statechart().add_state("f");
+	G.get_own_statechart().add_state("g");
+	H.get_own_statechart().add_state("h");
 
 	A.set_prop("x");
-	B.set_direct_prototypes([A]);
-	ok(B._has_prop("x"));
+	B.set_protos([A]);
+	ok(B.has_prop("x"));
 	A.set_prop("y");
-	ok(B._has_prop("y"));
+	ok(B.has_prop("y"));
 
-	B.set_direct_prototypes([]);
-	ok(!B._has_prop("x"));
-	ok(!B._has_prop("y"));
+	B.set_protos([]);
+	ok(!B.has_prop("x"));
+	ok(!B.has_prop("y"));
 });
 
 }());

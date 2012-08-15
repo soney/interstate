@@ -1,21 +1,28 @@
 (function(red) {
 var cjs = red.cjs, _ = cjs._;
 
-var RedStatefulProp = function(parent, name) {
-	this._parent = cjs(parent);
-	this._direct_values = cjs.create("map");
-	this._statechart = cjs.create("constraint", _.bind(this.get_root_statechart, this));
-	this._statechart_constraint = cjs.create("statechart_constraint", this._statechart);
-	this._name = cjs.create("constraint", name);
+var RedStatefulProp = function(options) {
+	options = options || {};
+	if(!options.parent) { options.parent = undefined; }
 
 	var self = this;
+
+	this._parent = cjs.create("constraint", options.parent, true);
+	this._statechart = cjs.create("constraint", _.bind(this._root_statechart_getter, this));
+	this._statechart_constraint = cjs.create("statechart_constraint", this._statechart);
+	this._direct_values = cjs.create("map");
+/*
+	this._parent = cjs(parent);
+	this._direct_values = cjs.create("map");
+	this._name = cjs.create("constraint", name);
+
 	this._context = cjs.create("red_context", {
 		thisable: false
 	});
 	this._context.set("event", cjs(_.bind(this.get_event, this)));
+*/
 
-
-	this._states = cjs(_.bind(this.get_states, this));
+	this._states = cjs(_.bind(this._states_getter, this));
 	this._values = this._states.map(
 						function(state) {
 							return cjs.create("constraint", function() {
@@ -34,37 +41,43 @@ var RedStatefulProp = function(parent, name) {
 	var proto = my.prototype;
 
 	//
-	// ===== INITIALIZERS/DESTROYERS =====
-	//
-	
-	proto.destroy = function() {};
-
-	proto.get_context = function() { return this._context; };
-	proto.set_name = function(name) { this._name.set(name); return this; };
-	proto.get_name = function(name) { return this._name.get(); };
-
-	//
 	// ===== PARENTAGE =====
 	//
 
-	proto.get_parent = function() {
-		return this._parent.get();
+	proto.get_parent = function() { return this._parent.get(); };
+	proto.set_parent = function(parent) { this._parent.set(parent); };
+	proto.get_stateful_obj_parent = function() {
+		var prop_obj = this.get_parent();
+		if(prop_obj) {
+			var stateful_obj = prop_obj.get_parent();
+			if(stateful_obj) {
+				return stateful_obj;
+			}
+		}
+		return undefined;
 	};
-
-	proto.get_root_statechart = function() {
-		var parent = this.get_parent();
-		if(!parent) {
-			return undefined;
+	proto._root_statechart_getter = function() {
+		var stateful_obj = this.get_stateful_obj_parent();
+		if(stateful_obj) {
+			return stateful_obj.get_statechart();
 		} else {
-			return parent.get_statechart();
+			return undefined;
 		}
 	};
-
-	proto.get_statechart_event = function() {
-		var root_statechart = this.get_root_statechart();
-		return root_statechart._event;
+	
+	//
+	// ===== STATECHART =====
+	//
+	
+	proto._states_getter = function() {
+		var stateful_obj = this.get_stateful_obj_parent();
+		if(stateful_obj) {
+			return stateful_obj.get_states();
+		} else {
+			return [];
+		}
 	};
-
+	
 	//
 	// ===== VALUES =====
 	//
@@ -81,29 +94,30 @@ var RedStatefulProp = function(parent, name) {
 			return direct_value;
 		} else {
 			var proto_value = this._get_prototype_value_for_state(state);
-			if(proto_value) {
+			if(proto_value && proto_value.clone) {
 				var cloned_value = proto_value.clone(this);
 				//cloned_value.set_parent(this);
 				return cloned_value;
+			} else if(proto_value) {
+				return proto_value;
 			} else {
 				return undefined;
 			}
 		}
 	};
 	
-	proto.value_for_state = function(state) {
-		var root_statechart = this.get_root_statechart();
-		return this._value.get_value_for_state(state);
+	proto.get_value = function(state) {
+		return this._statechart_constraint.get_value_for_state(state);
 	};
 
 	proto.get = function() {
 		return cjs.get(this._statechart_constraint, true);
 	};
-	proto.set = function(state, value) {
+	proto.set_value = function(state, value) {
 		this._direct_values.set(state, value);
 		return this;
 	};
-	proto.unset = function(state) {
+	proto.unset_value = function(state) {
 		this._direct_values.unset(state);
 		return this;
 	};
@@ -112,7 +126,6 @@ var RedStatefulProp = function(parent, name) {
 		var states = this._states.get();
 		var state = states[index];
 		if(state) {
-			//debugger;
 			this._statechart_constraint.set_value_for_state(state, value);
 		}
 	};
@@ -130,6 +143,67 @@ var RedStatefulProp = function(parent, name) {
 			this._statechart_constraint.move_value_for_state(state, value);
 		}
 	};
+	
+	// 
+	// ===== PROTOTYPES =====
+	//
+	
+	proto.get_prototypes = function() {
+		var parent = this.get_parent();
+		if(parent) {
+			return parent.prop_prototypes(this);
+		}
+	};
+
+	proto._get_prototype_value_for_state = function(state) {
+		var basis = state.get_basis();
+		var inherits_from = this._get_inherits_from();
+		var len = inherits_from.length;
+		for(var i = 0; i<len; i++) {
+			var p_value = inherits_from[i]._direct_value_for_state(basis);
+			if(!_.isUndefined(p_value)) {
+				return p_value;
+			}
+		};
+	};
+
+	proto._get_inherits_from = function() {
+		var parent = this.get_parent();
+		if(parent) {
+			var parent_inherits_from = parent.inherits_from();
+			return _.map(parent_inherits_from, function(prop_obj) {
+				return prop_obj.get_value();
+			});
+		}
+		return [];
+	};
+	/*
+
+	//
+	// ===== INITIALIZERS/DESTROYERS =====
+	//
+	
+	proto.destroy = function() {};
+
+	proto.get_context = function() { return this._context; };
+	proto.set_name = function(name) { this._name.set(name); return this; };
+	proto.get_name = function(name) { return this._name.get(); };
+
+
+	proto.get_root_statechart = function() {
+		var parent = this.get_parent();
+		if(!parent) {
+			return undefined;
+		} else {
+			return parent.get_statechart();
+		}
+	};
+
+	proto.get_statechart_event = function() {
+		var root_statechart = this.get_root_statechart();
+		return root_statechart._event;
+	};
+
 
 	//
 	// ===== STATECHART =====
@@ -162,62 +236,32 @@ var RedStatefulProp = function(parent, name) {
 		}
 	};
 
-	// 
-	// ===== PROTOTYPES =====
-	//
-	
-	proto.get_prototypes = function() {
-		var parent = this.get_parent();
-		if(parent) {
-			return parent.prop_prototypes(this);
-		}
-	};
-
-	proto._get_prototype_value_for_state = function(state) {
-		var basis = state.get_basis();
-		if(!basis) { basis = state; }
-		var parent = this.get_parent();
-		if(parent) {
-			var p = parent.get_obj_for_state(basis);
-			if(p === parent) {
-				return undefined;
-			}
-			if(p) {
-				var my_name = this.get_name();
-				var prop = p.get_prop(my_name);
-				if(prop) {
-					var p_value = prop._direct_value_for_state(basis);
-					if(!_.isUndefined(p_value)) {
-						return p_value;
-					}
-				}
-			}
-		}
-		return undefined;
-	};
+	*/
 }(RedStatefulProp));
 
 red.RedStatefulProp = RedStatefulProp;
 
-cjs.define("red_stateful_prop", function(parent, name) {
-	var property = new RedStatefulProp(parent, name);
+cjs.define("red_stateful_prop", function(options) {
+	var property = new RedStatefulProp(options);
 	var constraint = cjs(function() {
 		var val = property.get();
 		return cjs.get(val); //Double constraint if inherited
-		/*
-		if(cjs.is_constraint(val)) {
-		}
-		return property.get();
-		*/
 	});
-	constraint.set = _.bind(property.set, property);
-	constraint.unset = _.bind(property.unset, property);
-	constraint.get = _.bind(property.get, property);
+	constraint.set_value = _.bind(property.set_value, property);
+	constraint.unset_value = _.bind(property.unset_value, property);
+	constraint.get_value = _.bind(property.get_value, property);
+	constraint.get_parent = _.bind(property.get_parent, property);
+	constraint.set_parent = _.bind(property.set_parent, property);
+	constraint.clone = function(options) {
+		options = options || {};
+		return cjs.create("red_stateful_prop", options);
+	};
+	constraint._direct_value_for_state= _.bind(property._direct_value_for_state, property);
+	/*
 	constraint.get_context = _.bind(property.get_context, property);
 	constraint.set_name = _.bind(property.set_name, property);
-	constraint._direct_value_for_state= _.bind(property._direct_value_for_state, property);
+	*/
 	constraint.type = "red_stateful_prop";
-	constraint.prop = property;
 	return constraint;
 });
 

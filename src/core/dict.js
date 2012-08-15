@@ -174,8 +174,8 @@ var RedDict = function(options) {
 		}
 		return -1;
 	};
-	proto._has_all_prop = function(name) {
-		return this._all_proop_index(name) >= 0;
+	proto.has_prop = function(name) {
+		return this._all_prop_index(name) >= 0;
 	};
 	proto._get_all_prop_obj = function(name) {
 		var index = this._all_prop_index(name);
@@ -242,11 +242,13 @@ cjs.define("red_dict", function(options) {
 	var constraint = cjs(function() {
 		return dict;
 	});
+	constraint.has_prop = _.bind(dict.has_prop, dict);
 	constraint.get_parent = _.bind(dict.get_parent, dict);
 	constraint.set_parent = _.bind(dict.set_parent, dict);
 	constraint.get_prop = _.bind(dict._get_all_prop, dict);
 	constraint.set_prop = _.bind(dict._set_direct_prop, dict);
 	constraint.set_protos = _.bind(dict._set_direct_protos, dict);
+	constraint.get_protos = _.bind(dict._get_all_protos, dict);
 	constraint._get_all_protos = _.bind(dict._get_all_protos, dict);
 	constraint._get_direct_props = _.bind(dict._get_direct_props, dict);
 	constraint._inherited_props_with_name = _.bind(dict._inherited_props_with_name, dict);

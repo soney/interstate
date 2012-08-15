@@ -19,8 +19,9 @@ var RedProp = function(options) {
 	this._parent = cjs.create("constraint", options.parent, true);
 	this._name = cjs.create("constraint", options.name);
 	this._value = cjs.create("constraint", options.value, true);
-	set_parent(options.value, this);
 	this._inherited = cjs.create("constraint", options.inherited, true);
+	this._inherits_from = cjs.create("constraint", _.bind(this._inherits_from_getter, this));
+	set_parent(options.value, this);
 };
 
 (function(my) {
@@ -58,6 +59,9 @@ var RedProp = function(options) {
 	proto.get_parent = function() { return this._parent.get(); };
 	proto.is_inherited = function() { return this._inherited.get(); };
 	proto.inherits_from = function() {
+		return this._inherits_from.get();
+	};
+	proto._inherits_from_getter = function() {
 		var parent = this.get_parent();
 		if(parent) {
 			var name = this.get_name();
@@ -80,6 +84,7 @@ cjs.define("red_prop", function(options) {
 	constraint.get_parent = _.bind(prop.get_parent, prop);
 	constraint.set_parent = _.bind(prop.set_parent, prop);
 	constraint.is_inherited = _.bind(prop.is_inherited, prop);
+	constraint.inherits_from = _.bind(prop.inherits_from, prop);
 	constraint.type = "red_prop";
 	return constraint;
 });
