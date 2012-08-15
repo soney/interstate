@@ -18,6 +18,6 @@
 		return red;
 	};
 
-	red.protos = {};
+	red.blueprints = {};
 
 }(this));

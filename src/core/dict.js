@@ -3,6 +3,7 @@ var cjs = red.cjs, _ = cjs._;
 
 var RedDict = function(options) {
 	options = options || {};
+	this._blueprint_data = {};
 	if(!options.parent) { options.parent = undefined; }
 	else if(!options.direct_props) { options.direct_props = []; }
 	else if(!options.direct_protos) { options.protos = []; }
@@ -213,9 +214,9 @@ var RedDict = function(options) {
 		return this._direct_protos.get();
 	};
 
-	proto._proto_removed = function(item, index) { item.destroy(this); };
+	proto._proto_removed = function(item, index) { item.destroy(this._constraint); };
 	proto._proto_moved = function(item, index) { };
-	proto._proto_added = function(item, index) { item.initialize(this); };
+	proto._proto_added = function(item, index) { item.initialize(this._constraint); };
 
 	proto._all_protos_getter = function() {
 		var direct_protos = this._get_direct_protos();
@@ -242,6 +243,8 @@ cjs.define("red_dict", function(options) {
 	var constraint = cjs(function() {
 		return dict;
 	});
+	dict._constraint = constraint;
+
 	constraint.has_prop = _.bind(dict.has_prop, dict);
 	constraint.get_parent = _.bind(dict.get_parent, dict);
 	constraint.set_parent = _.bind(dict.set_parent, dict);
@@ -254,6 +257,19 @@ cjs.define("red_dict", function(options) {
 	constraint._inherited_props_with_name = _.bind(dict._inherited_props_with_name, dict);
 	constraint.initialize = function(self) {};
 	constraint.destroy = function(self) { };
+	constraint.get_blueprint_datum = function(blueprint_name, key) {
+		return dict._blueprint_data[blueprint_name][key];
+	};
+	constraint.set_blueprint_datum = function(blueprint_name, key, value) {
+		dict._blueprint_data[blueprint_name][key] = value;
+	};
+	constraint.add_blueprint_data = function(blueprint_name) {
+		dict._blueprint_data[blueprint_name] = {};
+	};
+	constraint.remove_blueprint_data = function(blueprint_name) {
+		delete dict._blueprint_data[blueprint_name];
+	};
+	constraint.type = "red_dict";
 	return constraint;
 });
 }(red));

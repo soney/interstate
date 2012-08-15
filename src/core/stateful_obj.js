@@ -224,9 +224,14 @@ var RedStatefulObj = function(options) {
 		this.remove_shadow_statechart(index);
 	};
 	proto._sc_proto_added = function(item, index) {
-		var item_statechart = item.get_statechart().get_state_with_name("running.own");
-		var shadow_statechart = red._shadow_statechart(item_statechart);
-		this.add_shadow_statechart(shadow_statechart, index);
+		if(item.get_statechart) {
+			var item_statechart = item.get_statechart().get_state_with_name("running.own");
+			var shadow_statechart = red._shadow_statechart(item_statechart);
+			this.add_shadow_statechart(shadow_statechart, index);
+		} else {
+			var fake_shadow_statechart = cjs.create("statechart");
+			this.add_shadow_statechart(fake_shadow_statechart, index);
+		}
 	};
 	proto._sc_proto_moved = function(item, from_index, to_index) {
 		this.move_shadow_statechart(from_index, to_index);
@@ -240,6 +245,7 @@ cjs.define("red_stateful_obj", function(options) {
 	var constraint = cjs(function() {
 		return dict;
 	});
+	dict._constraint = constraint;
 	constraint.has_prop = _.bind(dict.has_prop, dict);
 	constraint.get_parent = _.bind(dict.get_parent, dict);
 	constraint.set_parent = _.bind(dict.set_parent, dict);
@@ -257,6 +263,19 @@ cjs.define("red_stateful_obj", function(options) {
 	constraint.get_own_statechart = function() {
 		return dict.own_statechart;
 	};
+	constraint.get_blueprint_datum = function(blueprint_name, key) {
+		return dict._blueprint_data[blueprint_name][key];
+	};
+	constraint.set_blueprint_datum = function(blueprint_name, key, value) {
+		dict._blueprint_data[blueprint_name][key] = value;
+	};
+	constraint.add_blueprint_data = function(blueprint_name) {
+		dict._blueprint_data[blueprint_name] = {};
+	};
+	constraint.remove_blueprint_data = function(blueprint_name) {
+		delete dict._blueprint_data[blueprint_name];
+	};
+	constraint.type = "red_stateful_obj";
 	return constraint;
 });
 

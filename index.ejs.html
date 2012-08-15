@@ -134,16 +134,9 @@
 	</style>
 	<script type="text/javascript" src="server/jquery-1.7.2.min.js"></script>
 	<script type="text/javascript" src="server/jquery.textarea.js"></script>
-	<%- red_include(red_inc.main) %>
-
-	<script type="text/javascript">
-		var cjs = red.cjs;
-
-
-	</script>
   </head>
   <body>
-		<h1>red</h1>
+	  <!--<h1>red</h1>-->
 
 		<div class="content">
 			<div class="menu">
@@ -160,5 +153,14 @@
 				<div class="output"></div>
 			</div>
 		</div>
+
+		<%- red_include(red_inc.main) %>
+
+		<script type="text/javascript">
+			var cjs = red.cjs, _ = cjs._;
+			$(function() {
+				var env = red.create_environment();
+			});
+		</script>
   </body>
 </html>
