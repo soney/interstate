@@ -41,6 +41,9 @@ exports.main_src = c(
 				, "core/shadow_statechart.js"
 				, "core/stateful_obj.js"
 				, "core/stateful_prop.js"
+				, "objs/html_obj.js"
+				, "command/command_core.js"
+				, "environment/default_environment.js"
 			])
 );
 
