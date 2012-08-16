@@ -18,9 +18,16 @@ var update_dom_props = function(self, datum) {
 	if(dom_obj) {
 		_.forEach(changeable_css_props, function(changeable_css_prop, my_name) {
 			var prop = self.get_prop(my_name);
-			var val = cjs.get(prop);
-			dom_obj.style[changeable_css_prop] = val;
+			if(prop) {
+				var val = cjs.get(prop);
+				dom_obj.style[changeable_css_prop] = val;
+			}
 		});
+		var text = self.get_prop("text");
+		if(text) {
+			var val = cjs.get(text);
+			dom.textContent = val;
+		}
 	}
 };
 
@@ -83,11 +90,11 @@ var add_text_change_listeners = function(self, datum) {
 	var update_text = function(text) {
 		var dom_obj = datum("dom_obj");
 		if(dom_obj) {
-			dom_obj.style[changeable_css_prop] = css_val;
+			dom_obj.textContent = text;
 		}
 	};
 
-	add_prop_change_listener(self, "tag", update_tag);
+	add_prop_change_listener(self, "text", update_text);
 };
 
 
@@ -108,6 +115,7 @@ red.blueprints['dom_obj'] = function() {
 
 		add_tag_change_listener(self, datum);
 		add_css_change_listeners(self, datum);
+		add_text_change_listeners(self, datum);
 	};
 
 	dom_obj.destroy = function(self) {
