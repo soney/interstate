@@ -274,12 +274,16 @@ var Env = function() {
 				return val + "";
 			} else if(_.isString(val)) {
 				return '"' + val + '"';
+			} else if(_.isArray(val)) {
+				return "[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]";
 			} else if(cjs.is_constraint(val)) {
 				if(val.type === "red_dict") {
 					return "(dict)";
 				}
 			} else {
-				return val + "";
+				return "{ " + _.map(val, function(v, k) {
+					return k + ": " + value_to_value_str(v);
+				}).join(", ") + " }";
 			}
 		};
 
@@ -293,7 +297,7 @@ var Env = function() {
 			} else if(_.isNumber(val)) {
 				return val + "";
 			} else if(val.type === "red_cell") {
-				return val.get_str();
+				return "= " + val.get_str();
 			} else if(cjs.is_constraint(val)) {
 				if(val.type === "red_dict") {
 					return "";

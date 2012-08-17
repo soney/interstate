@@ -40,7 +40,7 @@ var RedDict = function(options) {
 			name: name
 			, value: value
 			, inherited: inherited
-			, parent: this
+			, parent: this._constraint
 		});
 		return prop_obj;
 	};

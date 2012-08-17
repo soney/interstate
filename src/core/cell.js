@@ -28,9 +28,9 @@ var unary_operators = {
 var eval_tree = function(node, context, restrict_context) {
 	var type = node.type;
 	if(type === "ExpressionStatement") {
-		return eval_tree(node.expression, context);
+		return eval_tree(node.expression, context, restrict_context);
 	} else if(type === "CallExpression") {
-		var callee = eval_tree(node.callee, context);
+		var callee = eval_tree(node.callee, context, restrict_context);
 		var args = node.arguments;
 		
 		var args_got = _.map(args, function(arg) {
@@ -47,7 +47,7 @@ var eval_tree = function(node, context, restrict_context) {
 			if(got_context.get_prop) {
 				prop = got_context.get_prop(name);
 				if(prop) {
-					return prop;
+					return cjs.get(prop);
 				}
 			}
 			if(restrict_context === true) {
@@ -58,13 +58,16 @@ var eval_tree = function(node, context, restrict_context) {
 		return undefined;
 	} else if(type === "ThisExpression") {
 		var got_context = cjs.get(context);
-		if(got_context) {
-			return got_context._get_this();
-		} else {
-			return undefined;
+
+		while(got_context) {
+			if(got_context.type === "red_dict" || got_context.type === "red_stateful_obj") {
+				return got_context;
+			}
+			got_context = got_context.get_parent();
 		}
+		return undefined;
 	} else if(type === "MemberExpression") {
-		var object = eval_tree(node.object, context);
+		var object = eval_tree(node.object, context, restrict_context);
 		var object_got = cjs.get(object);
 		//More cases here
 		variable_context = object_got;
@@ -74,14 +77,26 @@ var eval_tree = function(node, context, restrict_context) {
 		return node.value;
 	} else if(type === "BinaryExpression") {
 		var op_func = binary_operators[node.operator];
-		var left_arg = eval_tree(node.left, context)
-			, right_arg = eval_tree(node.right, context);
+		var left_arg = eval_tree(node.left, context, restrict_context)
+			, right_arg = eval_tree(node.right, context, restrict_context);
 		return op_func(cjs.get(left_arg), cjs.get(right_arg));
 	} else if(type === "UnaryExpression") {
 		var op_func = unary_operators[node.operator];
-		var arg = eval_tree(node.argument);
+		var arg = eval_tree(node.argument, context, restrict_context);
 
 		return op_func(cjs.get(arg));
+	} else if(type === "ArrayExpression") {
+		return _.map(node.elements, function(element) {
+			return eval_tree(element, context);
+		});
+	} else if(type === "BlockStatement") {
+		var rv = {};
+		_.forEach(node.body, function(key_value_pair) {
+			var key = key_value_pair.label.name;
+			var value = eval_tree(key_value_pair.body, context, restrict_context);
+			rv[key] = value;
+		});
+		return rv;
 	} else {
 		console.log(type, node);
 	}
