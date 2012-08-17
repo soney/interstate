@@ -165,6 +165,18 @@ var RedDict = function(options) {
 		});
 		return all_props;
 	};
+
+	proto.get_all_props = function() {
+		return this._all_props.get();
+	};
+
+	proto.get_all_prop_names = function() {
+		var all_props = this.get_all_props();
+		return _.map(all_props, function(prop) {
+			return prop.get_name();
+		});
+	};
+
 	proto._all_prop_index = function(name) {
 		var all_props = this._all_props.get();
 		var i, len = all_props.length;
@@ -194,6 +206,14 @@ var RedDict = function(options) {
 			return undefined;
 		} else {
 			return prop_obj.get_value();
+		}
+	};
+	proto.is_inherited = function(name) {
+		var prop_obj = this._get_all_prop_obj(name);
+		if(_.isUndefined(prop_obj)) {
+			return undefined;
+		} else {
+			return prop_obj.is_inherited();
 		}
 	};
 
@@ -254,7 +274,11 @@ cjs.define("red_dict", function(options) {
 	constraint.get_protos = _.bind(dict._get_all_protos, dict);
 	constraint._get_all_protos = _.bind(dict._get_all_protos, dict);
 	constraint._get_direct_props = _.bind(dict._get_direct_props, dict);
+	constraint.get_all_props = _.bind(dict.get_all_props, dict);
+	constraint.get_all_prop_names = _.bind(dict.get_all_prop_names, dict);
 	constraint._inherited_props_with_name = _.bind(dict._inherited_props_with_name, dict);
+	constraint.is_inherited = _.bind(dict.is_inherited, dict);
+	constraint.unset_prop = _.bind(dict._unset_direct_prop, dict);
 	constraint.initialize = function(self) {};
 	constraint.destroy = function(self) { };
 	constraint.get_blueprint_datum = function(blueprint_name, key) {

@@ -1,8 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = cjs._;
 
-var output = document.body.getElementsByClassName("output")[0];
-
 var changeable_css_props = {
 	"width": "width"
 	, "height": "height"
@@ -64,7 +62,6 @@ var add_tag_change_listener = function(self, datum) {
 		datum("dom_obj", dom_obj);
 
 		if(dom_obj) {
-			output.appendChild(dom_obj);
 			update_dom_props(self, datum);
 		}
 	};

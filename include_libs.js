@@ -43,7 +43,10 @@ exports.main_src = c(
 				, "core/stateful_prop.js"
 				, "blueprints/dom_container.js"
 				, "blueprints/dom_obj.js"
+				, "blueprints/proto_prop.js"
 				, "commands/command_core.js"
+				, "commands/prop_commands.js"
+				, "commands/cell_commands.js"
 				, "environment/default_environment.js"
 			])
 );

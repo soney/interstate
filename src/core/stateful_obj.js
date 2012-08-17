@@ -255,9 +255,13 @@ cjs.define("red_stateful_obj", function(options) {
 	constraint.get_protos = _.bind(dict._get_all_protos, dict);
 	constraint._get_all_protos = _.bind(dict._get_all_protos, dict);
 	constraint._get_direct_props = _.bind(dict._get_direct_props, dict);
+	constraint.get_all_props = _.bind(dict.get_all_props, dict);
+	constraint.get_all_prop_names = _.bind(dict.get_all_prop_names, dict);
 	constraint._inherited_props_with_name = _.bind(dict._inherited_props_with_name, dict);
 	constraint.get_statechart = _.bind(dict.get_statechart, dict);
 	constraint.get_states = _.bind(dict.get_states, dict);
+	constraint.is_inherited = _.bind(dict.is_inherited, dict);
+	constraint.unset_prop = _.bind(dict.unset_prop, dict);
 	constraint.initialize = function(self) {};
 	constraint.destroy = function(self) { };
 	constraint.get_own_statechart = function() {
