@@ -23,6 +23,9 @@ var print_table = function(table, max_width) {
 	var column_widths = [];
 	_.forEach(table, function(cells, row) {
 		_.forEach(cells, function(cell, col) {
+			if(!_.isString(cell)) {
+				cell = cell+"";
+			}
 			var len = cell.length;
 			column_widths[col] = _.isNumber(column_widths[col]) ? Math.max(len, column_widths[col]) : len;
 		});
@@ -47,6 +50,9 @@ var print_table = function(table, max_width) {
 	_.forEach(table, function(cells, row) {
 		var row_str = "";
 		_.forEach(cells, function(cell, col) {
+			if(!_.isString(cell)) {
+				cell = cell+"";
+			}
 			row_str += pad(cell, column_widths[col]);
 			if(col < cells.length-1) {
 				row_str += " | ";
@@ -77,7 +83,9 @@ var command_stack_factory = function() {
 
 			command._do();
 			_.forEach(discarded_commands, function(discarded_command) {
-				discarded_command.destroy();
+				if(cjs.is_constraint(discarded_command)) {
+					discarded_command.destroy();
+				}
 			});
 
 			stack.push(command);
@@ -142,16 +150,16 @@ var Env = function() {
 		//this.root.set_prop("mouse", cjs.mouse);
 		//this.root.set_prop("keyboard", cjs.keyboard);
 		//this.root.set_prop("dom", red.blueprints.dom_obj());
-		this.add_prop("a", "1");
-		this.add_prop("b", "1+2");
-		this.add_prop("c", "1+2+3");
+		this.set("a", "1");
+		this.set("b", "1+2");
+		this.set("c", "1+2+3");
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
 	proto.undo = function() { this._command_stack._undo(); return this.print(); };
 	proto.redo = function() { this._command_stack._redo(); return this.print(); };
 
-	proto.add_prop = proto.set_prop = function(prop_name, value, index) {
+	proto.add = proto.set = function(prop_name, value, index) {
 		var parent_obj = this._context.get_context();
 		if(!_.isString(prop_name)) {
 			var parent_direct_props = parent_obj._get_direct_props();
@@ -170,7 +178,11 @@ var Env = function() {
 				value = cjs.create("red_cell", {str: ""});
 			}
 		} else if(_.isString(value)) {
-			value = cjs.create("red_cell", {str: value});
+			if(value === "dict") {
+				value = cjs.create("red_dict");
+			} else {
+				value = cjs.create("red_cell", {str: value});
+			}
 		}
 
 		var command = red.command("set_prop", {
@@ -182,7 +194,7 @@ var Env = function() {
 		this._do(command);
 		return this.print();
 	};
-	proto.unset_prop = function(prop_name) {
+	proto.unset = function(prop_name) {
 		var parent_obj = this._context.get_context();
 		if(!_.isString(prop_name)) {
 			console.error("No name given");
@@ -195,7 +207,7 @@ var Env = function() {
 		this._do(command);
 		return this.print();
 	};
-	proto.rename_prop = function(from_name, to_name) {
+	proto.rename = function(from_name, to_name) {
 		var parent_obj = this._context.get_context();
 		var command = red.command("rename_prop", {
 			parent: parent_obj
@@ -205,7 +217,7 @@ var Env = function() {
 		this._do(command);
 		return this.print();
 	};
-	proto.move_prop = function(prop_name, index) {
+	proto.move = function(prop_name, index) {
 		var parent_obj = this._context.get_context();
 		var command = red.command("move_prop", {
 			parent: parent_obj
@@ -233,6 +245,26 @@ var Env = function() {
 		return this.print();
 	};
 
+	proto.set_cell = function(arg0, arg1) {
+		var cell, str;
+		if(arguments.length === 1) {
+			cell = this._context.get_context();
+			str = arg0;
+		} else {
+			cell = this.root;
+			_.forEach(arg0.split("."), function(name) {
+				cell = cell.get_prop(name);
+			});
+			str = arg1;
+		}
+		var command = red.command("change_cell", {
+			cell: cell
+			, str: str
+		});
+		this._do(command);
+		return this.print();
+	};
+
 
 	proto.print = function() {
 		var context = this._context.get_context();
@@ -242,6 +274,10 @@ var Env = function() {
 				return val + "";
 			} else if(_.isString(val)) {
 				return '"' + val + '"';
+			} else if(cjs.is_constraint(val)) {
+				if(val.type === "red_dict") {
+					return "(dict)";
+				}
 			} else {
 				return val + "";
 			}
@@ -258,6 +294,10 @@ var Env = function() {
 				return val + "";
 			} else if(val.type === "red_cell") {
 				return val.get_str();
+			} else if(cjs.is_constraint(val)) {
+				if(val.type === "red_dict") {
+					return "";
+				}
 			} else {
 				return val + "";
 			}

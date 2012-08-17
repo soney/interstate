@@ -261,7 +261,7 @@ red.RedDict = RedDict;
 cjs.define("red_dict", function(options) {
 	var dict = new RedDict(options);
 	var constraint = cjs(function() {
-		return dict;
+		return constraint;
 	});
 	dict._constraint = constraint;
 
