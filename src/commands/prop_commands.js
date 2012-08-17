@@ -14,6 +14,7 @@ var SetPropCommand = function(options) {
 	this._parent = this._options.parent;
 	this._prop_name = this._options.name;
 	this._prop_value = this._options.value;
+	this._prop_index = this._options.index;
 };
 
 (function(my) {
@@ -22,8 +23,8 @@ var SetPropCommand = function(options) {
 
 	proto._execute = function() {
 		var index = undefined;
-		if(_.isNumber(this._options.index)) {
-			index = this._options.index;
+		if(_.isNumber(this._prop_index)) {
+			index = this._prop_index;
 		}
 		this._old_prop_value = this._parent.get_prop(this._prop_name);
 
@@ -71,13 +72,13 @@ var UnsetPropCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		this._prop_val = this._parent.get_prop(this._prop_name);
+		this._prop_index = this._parent.prop_index(this._prop_name);
+		this._prop_value = this._parent.get_prop(this._prop_name);
 		this._parent.unset_prop(this._prop_name);
 	};
 	proto._unexecute = function() {
-		console.log(this._prop_val);
-		if(!_.isUndefined(this._prop_val)) {
-			this._parent.set_prop(this._prop_name, this._prop_value);
+		if(!_.isUndefined(this._prop_value)) {
+			this._parent.set_prop(this._prop_name, this._prop_value, this._prop_index);
 		}
 	};
 	proto._do_destroy = function(in_effect) {
@@ -116,6 +117,7 @@ var RenamePropCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
+		console.log(this._from_name, this._to_name);
 		this._prop_value = this._parent.get_prop(this._to_name);
 		this._parent.rename_prop(this._from_name, this._to_name);
 	};
@@ -166,7 +168,7 @@ var MovePropCommand = function(options) {
 	proto._do_destroy = function(in_effect) { };
 }(MovePropCommand));
 
-red._commands["move_prop"] = function() {
+red._commands["move_prop"] = function(options) {
 	return new MovePropCommand(options);
 };
 

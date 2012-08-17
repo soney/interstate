@@ -177,6 +177,7 @@ var Env = function() {
 			parent: parent_obj
 			, name: prop_name
 			, value: value
+			, index: index
 		});
 		this._do(command);
 		return this.print();
@@ -196,10 +197,10 @@ var Env = function() {
 	};
 	proto.rename_prop = function(from_name, to_name) {
 		var parent_obj = this._context.get_context();
-		var command = red.command("unset_prop", {
+		var command = red.command("rename_prop", {
 			parent: parent_obj
 			, from: from_name
-			, to: from_name
+			, to: to_name
 		});
 		this._do(command);
 		return this.print();
@@ -211,6 +212,7 @@ var Env = function() {
 			, name: prop_name
 			, to: index
 		});
+		this._do(command);
 		return this.print();
 	};
 

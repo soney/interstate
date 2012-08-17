@@ -14,7 +14,7 @@ var Command = function() {
 		this._unexecute();
 	};
 	proto.destroy = function() {
-		this.do_destroy(this.in_effect());
+		this._do_destroy(this.in_effect());
 	};
 	proto.in_effect = function() {
 		return this._in_effect;

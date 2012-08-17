@@ -56,7 +56,7 @@ var RedDict = function(options) {
 		return -1;
 	};
 	proto._has_direct_prop = function(name) {
-		return this._direct_proop_index(name) >= 0;
+		return this._direct_prop_index(name) >= 0;
 	};
 	proto._get_direct_prop_obj = function(name) {
 		var index = this._direct_prop_index(name);
@@ -99,8 +99,8 @@ var RedDict = function(options) {
 
 	proto._move_direct_prop = function(name, to_index) {
 		var from_index = this._direct_prop_index(name);
-		if(prop_index<0) {
-			this._direct_properties.move_item(from_index, to_index);
+		if(from_index>=0) {
+			this._direct_props.move_item(from_index, to_index);
 		}
 	};
 
@@ -279,6 +279,9 @@ cjs.define("red_dict", function(options) {
 	constraint._inherited_props_with_name = _.bind(dict._inherited_props_with_name, dict);
 	constraint.is_inherited = _.bind(dict.is_inherited, dict);
 	constraint.unset_prop = _.bind(dict._unset_direct_prop, dict);
+	constraint.prop_index = _.bind(dict._all_prop_index, dict);
+	constraint.rename_prop = _.bind(dict._rename_direct_prop, dict);
+	constraint.move_prop = _.bind(dict._move_direct_prop, dict);
 	constraint.initialize = function(self) {};
 	constraint.destroy = function(self) { };
 	constraint.get_blueprint_datum = function(blueprint_name, key) {
