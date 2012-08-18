@@ -257,12 +257,8 @@ var RedDict = function(options) {
 	proto.get_prop = proto._get_all_prop;
 }(RedDict));
 
-red.RedDict = RedDict;
-cjs.define("red_dict", function(options) {
-	var dict = new RedDict(options);
-	var constraint = cjs(function() {
-		return constraint;
-	});
+
+red.add_dict_commands = function(dict, constraint) {
 	dict._constraint = constraint;
 
 	constraint.has_prop = _.bind(dict.has_prop, dict);
@@ -296,6 +292,17 @@ cjs.define("red_dict", function(options) {
 	constraint.remove_blueprint_data = function(blueprint_name) {
 		delete dict._blueprint_data[blueprint_name];
 	};
+};
+
+red.RedDict = RedDict;
+cjs.define("red_dict", function(options) {
+	var dict = new RedDict(options);
+	var constraint = cjs(function() {
+		return constraint;
+	});
+
+	red.add_dict_commands(dict, constraint);
+
 	constraint.type = "red_dict";
 	return constraint;
 });

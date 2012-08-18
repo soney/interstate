@@ -153,6 +153,8 @@ var Env = function() {
 		this.set("a", "1");
 		this.set("b", "1+2");
 		this.set("c", "1+2+3");
+		this.set("d", "stateful");
+		this.in_prop("d");
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
@@ -180,6 +182,8 @@ var Env = function() {
 		} else if(_.isString(value)) {
 			if(value === "dict") {
 				value = cjs.create("red_dict");
+			} else if(value === "stateful") {
+				value = cjs.create("red_stateful_obj");
 			} else {
 				value = cjs.create("red_cell", {str: value});
 			}
@@ -265,6 +269,45 @@ var Env = function() {
 		return this.print();
 	};
 
+	proto.add_state = function(state_name, index) {
+		var context = this._context.get_context();
+		var statechart;
+		
+		if(cjs.is_statechart(context)) {
+			statechart = context;
+		} else if(cjs.is_constraint(context) && context.type === "red_stateful_obj") {
+			statechart = context.get_statechart().get_state_with_name("running.own");
+		}
+
+		if(_.isNumber(index)) { index--; } // Because of the pre_init state
+
+		var command = red.command("add_state", {
+			state_name: state_name
+			, statechart: statechart
+			, index: index
+		});
+		this._do(command);
+		return this.print();
+	};
+
+	proto.remove_state = function(state_name) {
+		var context = this._context.get_context();
+		var statechart;
+		
+		if(cjs.is_statechart(context)) {
+			statechart = context;
+		} else if(cjs.is_constraint(context) && context.type === "red_stateful_obj") {
+			statechart = context.get_statechart().get_state_with_name("running.own");
+		}
+
+		var command = red.command("remove_state", {
+			state_name: state_name
+			, statechart: statechart
+		});
+		this._do(command);
+		return this.print();
+	};
+
 
 	proto.print = function() {
 		var context = this._context.get_context();
@@ -274,12 +317,14 @@ var Env = function() {
 				return val + "";
 			} else if(_.isString(val)) {
 				return '"' + val + '"';
-			} else if(_.isArray(val)) {
-				return "[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]";
 			} else if(cjs.is_constraint(val)) {
 				if(val.type === "red_dict") {
 					return "(dict)";
+				} else if(val.type === "red_stateful_obj") {
+					return "(stateful)";
 				}
+			} else if(_.isArray(val)) {
+				return "[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]";
 			} else {
 				return "{ " + _.map(val, function(v, k) {
 					return k + ": " + value_to_value_str(v);
@@ -300,6 +345,8 @@ var Env = function() {
 				return "= " + val.get_str();
 			} else if(cjs.is_constraint(val)) {
 				if(val.type === "red_dict") {
+					return "";
+				} else if(val.type === "red_stateful_obj") {
 					return "";
 				}
 			} else {
@@ -325,15 +372,32 @@ var Env = function() {
 
 				var value_got = cjs.get(value);
 
-				var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
 
-				rows.push(row);
+				if(cjs.is_constraint(value) && value.type === "red_dict") {
+					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
+					rows.push(row);
 
-				if(cjs.is_constraint(value)) {
-					if(value.type === "red_dict" || value.type === "red_stateful_obj") {
-						var tablified_values = tablify_dict(value, indentation_level + 2);
-						rows.push.apply(rows, tablified_values);
-					}
+					var tablified_values = tablify_dict(value, indentation_level + 2);
+					rows.push.apply(rows, tablified_values);
+				} else if(cjs.is_constraint(value) && value.type === "red_stateful_obj") {
+					var tablified_values = tablify_dict(value, indentation_level + 2);
+					rows.push.apply(rows, tablified_values);
+
+					var statechart = value.get_statechart();
+					var own_running_statechart = statechart.get_state_with_name("running.own");
+
+					var row = [prop_name, value_to_value_str(value_got)];
+					row = row.concat(_.map(value.get_states(), function(state) {
+						var name = state.get_name(own_running_statechart);
+						if(statechart.is(state)) {
+							name = "*"+name+"*";
+						}
+						return name;
+					}));
+					rows.push(row);
+				} else {
+					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
+					rows.push(row);
 				}
 			});
 			return rows;

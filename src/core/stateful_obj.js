@@ -243,42 +243,14 @@ red.RedStatefulObj = RedStatefulObj;
 cjs.define("red_stateful_obj", function(options) {
 	var dict = new RedStatefulObj(options);
 	var constraint = cjs(function() {
-		return dict;
+		return constraint;
 	});
-	dict._constraint = constraint;
-	constraint.has_prop = _.bind(dict.has_prop, dict);
-	constraint.get_parent = _.bind(dict.get_parent, dict);
-	constraint.set_parent = _.bind(dict.set_parent, dict);
-	constraint.get_prop = _.bind(dict._get_all_prop, dict);
-	constraint.set_prop = _.bind(dict._set_direct_prop, dict);
-	constraint.set_protos = _.bind(dict._set_direct_protos, dict);
-	constraint.get_protos = _.bind(dict._get_all_protos, dict);
-	constraint._get_all_protos = _.bind(dict._get_all_protos, dict);
-	constraint._get_direct_props = _.bind(dict._get_direct_props, dict);
-	constraint.get_all_props = _.bind(dict.get_all_props, dict);
-	constraint.get_all_prop_names = _.bind(dict.get_all_prop_names, dict);
-	constraint._inherited_props_with_name = _.bind(dict._inherited_props_with_name, dict);
+
+	red.add_dict_commands(dict, constraint);
+
 	constraint.get_statechart = _.bind(dict.get_statechart, dict);
 	constraint.get_states = _.bind(dict.get_states, dict);
-	constraint.is_inherited = _.bind(dict.is_inherited, dict);
-	constraint.unset_prop = _.bind(dict.unset_prop, dict);
-	constraint.initialize = function(self) {};
-	constraint.destroy = function(self) { };
-	constraint.get_own_statechart = function() {
-		return dict.own_statechart;
-	};
-	constraint.get_blueprint_datum = function(blueprint_name, key) {
-		return dict._blueprint_data[blueprint_name][key];
-	};
-	constraint.set_blueprint_datum = function(blueprint_name, key, value) {
-		dict._blueprint_data[blueprint_name][key] = value;
-	};
-	constraint.add_blueprint_data = function(blueprint_name) {
-		dict._blueprint_data[blueprint_name] = {};
-	};
-	constraint.remove_blueprint_data = function(blueprint_name) {
-		delete dict._blueprint_data[blueprint_name];
-	};
+
 	constraint.type = "red_stateful_obj";
 	return constraint;
 });

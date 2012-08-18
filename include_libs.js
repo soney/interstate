@@ -47,6 +47,7 @@ exports.main_src = c(
 				, "commands/command_core.js"
 				, "commands/prop_commands.js"
 				, "commands/cell_commands.js"
+				, "commands/statechart_commands.js"
 				, "environment/default_environment.js"
 			])
 );
