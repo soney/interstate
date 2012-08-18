@@ -340,9 +340,11 @@ var Env = function() {
 
 	proto.add_transition = function(from_state_name, to_state_name, event) {
 		var statechart = this.get_statechart_context();
+		var parent = this.get_context();
 
 		var command = red.command("add_transition", {
 			statechart: statechart
+			, parent: parent
 			, event: event
 			, from: from_state_name
 			, to: to_state_name

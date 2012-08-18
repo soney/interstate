@@ -158,6 +158,7 @@ var AddTransitionCommand = function(options) {
 	}
 
 	this._statechart = this._options.statechart;
+	this._parent = this._options.parent;
 	this._from_state_name = this._options.from;
 	this._to_state_name = this._options.to;
 	this._event_str = this._options.event;

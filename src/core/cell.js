@@ -109,7 +109,7 @@ var RedCell = function(options) {
 	if(!this._str) debugger;
 	var self = this;
 	this._tree = cjs(function() {
-		return esprima.parse(self._str.get());
+		return esprima.parse(self.get_str());
 	});
 	this._value = cjs(function() {
 		var tree = self._tree.get();

@@ -281,7 +281,11 @@ red.add_dict_commands = function(dict, constraint) {
 	constraint.initialize = function(self) {};
 	constraint.destroy = function(self) { };
 	constraint.get_blueprint_datum = function(blueprint_name, key) {
-		return dict._blueprint_data[blueprint_name][key];
+		if(_.has(dict._blueprint_data, blueprint_name)) {
+			return dict._blueprint_data[blueprint_name][key];
+		} else {
+			return undefined;
+		}
 	};
 	constraint.set_blueprint_datum = function(blueprint_name, key, value) {
 		dict._blueprint_data[blueprint_name][key] = value;
