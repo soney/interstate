@@ -45,7 +45,7 @@ var RedStatefulObj = function(options) {
 
 		this._init_state = statechart.get_state_with_name("INIT");
 		statechart	.add_state("running", this.running_statechart)
-					.add_transition("INIT", "running", cjs.create_event("on_enter", this._init_state))
+		//			.add_transition("INIT", "running", cjs.create_event("on_enter", this._init_state))
 					.add_transition("running", "INIT", reset_event);
 
 		statechart._on("state_added", this._states.invalidate);
@@ -236,6 +236,10 @@ var RedStatefulObj = function(options) {
 	proto._sc_proto_moved = function(item, from_index, to_index) {
 		this.move_shadow_statechart(from_index, to_index);
 	};
+	proto.run = function() {
+		var statechart = this.get_statechart();
+		statechart.run();
+	};
 }(RedStatefulObj));
 
 red.RedStatefulObj = RedStatefulObj;
@@ -250,6 +254,7 @@ cjs.define("red_stateful_obj", function(options) {
 
 	constraint.get_statechart = _.bind(dict.get_statechart, dict);
 	constraint.get_states = _.bind(dict.get_states, dict);
+	constraint.run = _.bind(dict.run, dict);
 
 	constraint.type = "red_stateful_obj";
 	return constraint;

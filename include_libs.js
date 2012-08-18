@@ -41,6 +41,7 @@ exports.main_src = c(
 				, "core/shadow_statechart.js"
 				, "core/stateful_obj.js"
 				, "core/stateful_prop.js"
+				, "core/red_event.js"
 				, "blueprints/dom_container.js"
 				, "blueprints/dom_obj.js"
 				, "blueprints/proto_prop.js"
