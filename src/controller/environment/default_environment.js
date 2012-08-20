@@ -183,7 +183,7 @@ var Env = function() {
 		this.set("x");
 		*/
 		this.set("x", "stateful");
-		this.in_prop("children.x");
+		this.in_prop("x");
 		window.x = this.get_context();
 	};
 
@@ -231,6 +231,7 @@ var Env = function() {
 				value = cjs.create("red_dict");
 			} else if(value === "stateful") {
 				value = cjs.create("red_stateful_obj", {implicit_protos: [this._proto_prop_blueprint]});
+				value.set_prop("blueprints", cjs.create("red_stateful_prop"));
 				value.run();
 			} else {
 				value = cjs.create("red_cell", {str: value});
@@ -282,16 +283,18 @@ var Env = function() {
 
 	proto.in_prop = function(prop_name) {
 		prop_name = prop_name || "";
-		var context = this.root;
+		var context = this.get_context();
 
 		_.forEach(prop_name.split("."), function(name) {
-			context = context.get_prop(name);
+			if(context) {
+				context = context.get_prop(name);
+			}
 		});
 		this._context.set_context(context);
 
 		return this.print();
 	};
-	proto.up = function() {
+	proto.top = function() {
 		this._context.set_context(this.root);
 
 		return this.print();

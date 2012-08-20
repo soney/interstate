@@ -93,6 +93,8 @@ var update = function(node, container) {
 red.blueprints['dom_container'] = function() {
 	var dom_container = cjs.create("red_dict");
 
+	dom_container.name = "dom_container";
+
 	var container = document.createElement("div");
 	document.body.getElementsByClassName("output")[0].appendChild(container);
 

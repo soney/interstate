@@ -100,6 +100,8 @@ var add_text_change_listeners = function(self, datum) {
 red.blueprints['dom_obj'] = function() {
 	var dom_obj = cjs.create("red_dict");
 
+	dom_obj.name = "dom_obj";
+
 	dom_obj.set_prop("children", cjs.create("red_dict"));
 
 	dom_obj.initialize = function(self) {
