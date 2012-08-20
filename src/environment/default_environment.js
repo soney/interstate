@@ -131,7 +131,11 @@ var context_factory = function(initial_context) {
 };
 
 var Env = function() {
-	this.root = cjs.create("red_dict");
+	this._proto_prop_blueprint = red.blueprints.proto_prop();
+	this._dom_container_blueprint = red.blueprints.dom_container();
+	this._dom_obj_blueprint = red.blueprints.dom_obj();
+
+	this.root = cjs.create("red_dict", {implicit_protos: [this._dom_container_blueprint]});
 
 	// Undo stack
 	this._command_stack = command_stack_factory();
@@ -147,9 +151,10 @@ var Env = function() {
 	var proto = my.prototype;
 
 	proto.initialize_props = function() {
-		//this.root.set_prop("mouse", cjs.mouse);
-		//this.root.set_prop("keyboard", cjs.keyboard);
-		//this.root.set_prop("dom", red.blueprints.dom_obj());
+		this.set("dom", this._dom_obj_blueprint);
+		this.set("children", "dict");
+		this.in_prop("children");
+	/*
 		this.set("a", "1");
 		this.set("b", "1+2");
 		this.set("c", "1+2+3");
@@ -176,6 +181,10 @@ var Env = function() {
 		this.add_transition("c", "b", cb_event);
 
 		this.set("x");
+		*/
+		this.set("x", "stateful");
+		this.in_prop("children.x");
+		window.x = this.get_context();
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
@@ -221,7 +230,7 @@ var Env = function() {
 			if(value === "dict") {
 				value = cjs.create("red_dict");
 			} else if(value === "stateful") {
-				value = cjs.create("red_stateful_obj");
+				value = cjs.create("red_stateful_obj", {implicit_protos: [this._proto_prop_blueprint]});
 				value.run();
 			} else {
 				value = cjs.create("red_cell", {str: value});

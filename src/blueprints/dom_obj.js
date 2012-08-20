@@ -48,6 +48,7 @@ var add_tag_change_listener = function(self, datum) {
 			new_dom_obj = document.createElement(tag_name);
 		}
 
+/*
 		if(dom_obj) {
 			if(dom_obj.parentNode) {
 				if(new_dom_obj) {
@@ -57,6 +58,7 @@ var add_tag_change_listener = function(self, datum) {
 				}
 			}
 		}
+		*/
 
 		dom_obj = new_dom_obj;
 		datum("dom_obj", dom_obj);

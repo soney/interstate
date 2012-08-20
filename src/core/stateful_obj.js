@@ -248,7 +248,7 @@ var RedStatefulObj = function(options) {
 red.RedStatefulObj = RedStatefulObj;
 
 cjs.define("red_stateful_obj", function(options) {
-	var dict = new RedStatefulObj(options);
+	var dict = new RedStatefulObj(options, constraint);
 	var constraint = cjs(function() {
 		return constraint;
 	});
@@ -261,7 +261,10 @@ cjs.define("red_stateful_obj", function(options) {
 	constraint.get_init_state = _.bind(dict.get_init_state, dict);
 	constraint.run = _.bind(dict.run, dict);
 
+	constraint.dict = dict;
+
 	constraint.type = "red_stateful_obj";
+	dict.on_ready();
 	return constraint;
 });
 

@@ -1,9 +1,9 @@
 (function(red) {
 var cjs = red.cjs, _ = cjs._;
 
-var RedDict = function(options) {
+var RedDict = function(options, _constraint) {
 	options = options || {};
-	this._blueprint_data = {};
+	this._blueprint_data = cjs.create("map");
 	if(!options.parent) { options.parent = undefined; }
 	else if(!options.direct_props) { options.direct_props = []; }
 	else if(!options.direct_protos) { options.protos = []; }
@@ -16,6 +16,7 @@ var RedDict = function(options) {
 	this._all_props = cjs(_.bind(this._all_props_getter, this));
 
 	// Prototypes
+	this._implicit_protos = options.implicit_protos || [];
 	this._direct_protos = cjs.create("array", options.direct_protos);
 	this._$proto_removed = _.bind(this._proto_removed, this);
 	this._$proto_added   = _.bind(this._proto_added,   this);
@@ -28,6 +29,12 @@ var RedDict = function(options) {
 
 (function(my) {
 	var proto = my.prototype;
+	proto.on_ready = function() {
+		var self = this;
+		_.forEach(this._get_implicit_protos(), function(implicit_proto) {
+			implicit_proto.initialize(self._constraint);
+		});
+	};
 
 	//
 	// === DIRECT PROPERTIES ===
@@ -233,22 +240,26 @@ var RedDict = function(options) {
 	proto._get_direct_protos = function() {
 		return this._direct_protos.get();
 	};
+	proto._get_implicit_protos = function() {
+		return this._implicit_protos;
+	};
 
 	proto._proto_removed = function(item, index) { item.destroy(this._constraint); };
 	proto._proto_moved = function(item, index) { };
 	proto._proto_added = function(item, index) { item.initialize(this._constraint); };
 
 	proto._all_protos_getter = function() {
+		var implicit_protos = this._get_implicit_protos();
 		var direct_protos = this._get_direct_protos();
 		var all_protos = _.map(direct_protos, function(direct_proto) {
 			return ([direct_proto]).concat(direct_proto._get_all_protos());
 		});
 
+		all_protos = implicit_protos.concat(all_protos);
+
 		var flattened_all_protos = _.flatten(all_protos);
-		
-		return _.uniq(_.flatten(_.map(this._get_direct_protos(), function(direct_proto) {
-			return ([direct_proto]).concat(direct_proto._get_all_protos());
-		})));
+
+		return _.compact(_.uniq(_.flatten(all_protos)));
 	};
 
 	proto._get_all_protos = function() {
@@ -281,26 +292,27 @@ red.add_dict_commands = function(dict, constraint) {
 	constraint.initialize = function(self) {};
 	constraint.destroy = function(self) { };
 	constraint.get_blueprint_datum = function(blueprint_name, key) {
-		if(_.has(dict._blueprint_data, blueprint_name)) {
-			return dict._blueprint_data[blueprint_name][key];
+		var bn = dict._blueprint_data.get(blueprint_name);
+		if(bn) {
+			return bn.get(key);
 		} else {
 			return undefined;
 		}
 	};
 	constraint.set_blueprint_datum = function(blueprint_name, key, value) {
-		dict._blueprint_data[blueprint_name][key] = value;
+		dict._blueprint_data.get(blueprint_name).set(key, value);
 	};
 	constraint.add_blueprint_data = function(blueprint_name) {
-		dict._blueprint_data[blueprint_name] = {};
+		dict._blueprint_data.set(blueprint_name, cjs.create("map"));
 	};
 	constraint.remove_blueprint_data = function(blueprint_name) {
-		delete dict._blueprint_data[blueprint_name];
+		dict._blueprint_data.unset(blueprint_name);
 	};
 };
 
 red.RedDict = RedDict;
 cjs.define("red_dict", function(options) {
-	var dict = new RedDict(options);
+	var dict = new RedDict(options, constraint);
 	var constraint = cjs(function() {
 		return constraint;
 	});
@@ -308,6 +320,7 @@ cjs.define("red_dict", function(options) {
 	red.add_dict_commands(dict, constraint);
 
 	constraint.type = "red_dict";
+	dict.on_ready();
 	return constraint;
 });
 }(red));
