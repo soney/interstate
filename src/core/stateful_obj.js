@@ -54,6 +54,9 @@ var RedStatefulObj = function(options) {
 		statechart._on("transition_added", this._states.invalidate);
 		statechart._on("transition_removed", this._states.invalidate);
 	};
+	proto.get_init_state = function() {
+		return this._init_state;
+	};
 
 	proto.remove_shadow_shatestart = function(index) {
 		this.inherited_statecharts.remove_state("proto_"+index);
@@ -253,7 +256,9 @@ cjs.define("red_stateful_obj", function(options) {
 	red.add_dict_commands(dict, constraint);
 
 	constraint.get_statechart = _.bind(dict.get_statechart, dict);
+	constraint.get_own_statechart = function() { return dict.own_statechart; };
 	constraint.get_states = _.bind(dict.get_states, dict);
+	constraint.get_init_state = _.bind(dict.get_init_state, dict);
 	constraint.run = _.bind(dict.run, dict);
 
 	constraint.type = "red_stateful_obj";

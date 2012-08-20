@@ -40,7 +40,17 @@ var eval_tree = function(node, context, restrict_context) {
 		return callee_got.apply(this, args_got);
 	} else if(type === "Identifier") {
 		var name = cjs.get(node.name);
-		var got_context = cjs.get(context);
+
+		var got_context;
+		if(cjs.is_constraint(context)) {
+			if(context.type === "red_stateful_prop") {
+				got_context = context;
+			} else {
+				got_context = cjs.get(context);
+			}
+		} else {
+			got_context = cjs.get(context);
+		}
 
 		var prop;
 		while(got_context) {

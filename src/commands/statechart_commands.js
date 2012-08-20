@@ -58,7 +58,6 @@ var RemoveStateCommand = function(options) {
 		this._index = this._statechart.get_state_index(this._state_name);
 		this._state = this._statechart._find_state(this._state_name);
 		this._transitions = this._statechart.transitions_involving(this._state);
-		console.log(this._transitions);
 		this._statechart.remove_state(this._state_name, false); //don't destroy
 	};
 
@@ -161,9 +160,13 @@ var AddTransitionCommand = function(options) {
 	this._parent = this._options.parent;
 	this._from_state_name = this._options.from;
 	this._to_state_name = this._options.to;
-	this._event_str = this._options.event;
 
-	this._event = cjs.create_event("red_event", this._parent, this._event_str);
+	if(_.isString(this._options.event)) {
+		this._event_str = this._options.event;
+		this._event = cjs.create_event("red_event", this._parent, this._event_str);
+	} else {
+		this._event = this._options.event;
+	}
 };
 
 (function(my) {
@@ -171,11 +174,11 @@ var AddTransitionCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		if(!_.has(this, "_transition")) {
+		if(_.has(this, "_transition")) {
+			this._statechart.add_transition(this._transition);
+		} else {
 			this._statechart.add_transition(this._from_state_name, this._to_state_name, this._event);
 			this._transition = this._statechart._last_transition;
-		} else {
-			this._statechart.add_transition(this._transition);
 		}
 	};
 

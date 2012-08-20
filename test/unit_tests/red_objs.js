@@ -18,7 +18,9 @@ test('Basic objs', function() {
 	x_prop.set_value(b_state, cjs.create("red_cell", {str: "2"}))
 	o1.get_statechart().run();
 
+	console.log(x_prop.get());
 	equal(x_prop.get(), 1);
+	/*
 	ab_event.fire();
 	equal(x_prop.get(), 2);
 
@@ -30,6 +32,7 @@ test('Basic objs', function() {
 	x_prop.set_value(a_state, cjs.create("red_cell", {str: "3"}))
 
 	equal(o2.get_prop("x").get(), 3);
+	*/
 });
 test('Obj inheritance 1', function() {
 	var root = cjs.create("red_dict");

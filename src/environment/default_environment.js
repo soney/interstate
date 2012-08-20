@@ -155,9 +155,27 @@ var Env = function() {
 		this.set("c", "1+2+3");
 		this.set("d", "stateful");
 		this.in_prop("d");
+		var inita_event = cjs.create_event("manual");
+		var ab_event = cjs.create_event("manual");
+		var ba_event = cjs.create_event("manual");
+		var bc_event = cjs.create_event("manual");
+		var cb_event = cjs.create_event("manual");
+		var self = this;
+		window.inita = function() { inita_event.fire(); return self.print(); };
+		window.ab = function() { ab_event.fire(); return self.print(); };
+		window.ba = function() { ba_event.fire(); return self.print(); };
+		window.bc = function() { bc_event.fire(); return self.print(); };
+		window.cb = function() { cb_event.fire(); return self.print(); };
 		this.add_state("a");
 		this.add_state("b");
 		this.add_state("c");
+		this.add_transition("INIT", "a", inita_event);
+		this.add_transition("a", "b", ab_event);
+		this.add_transition("b", "a", ba_event);
+		this.add_transition("b", "c", bc_event);
+		this.add_transition("c", "b", cb_event);
+
+		this.set("x");
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
@@ -174,7 +192,7 @@ var Env = function() {
 		if(cjs.is_statechart(context)) {
 			statechart = context;
 		} else if(cjs.is_constraint(context) && context.type === "red_stateful_obj") {
-			statechart = context.get_statechart().get_state_with_name("running.own");
+			statechart = context.get_statechart();
 		}
 		return statechart;
 	};
@@ -196,6 +214,8 @@ var Env = function() {
 		if(_.isUndefined(value)) {
 			if(parent_obj.type === "red_dict") {
 				value = cjs.create("red_cell", {str: ""});
+			} else if(parent_obj.type === "red_stateful_obj") {
+				value = cjs.create("red_stateful_prop");
 			}
 		} else if(_.isString(value)) {
 			if(value === "dict") {
@@ -268,17 +288,41 @@ var Env = function() {
 		return this.print();
 	};
 
-	proto.set_cell = function(arg0, arg1) {
-		var cell, str;
+	proto.set_cell = function(arg0, arg1, arg2) {
+		var cell, str, for_state;
 		if(arguments.length === 1) {
 			cell = this.get_context();
 			str = arg0;
-		} else {
+		} else if(arguments.length === 2) {
 			cell = this.root;
 			_.forEach(arg0.split("."), function(name) {
 				cell = cell.get_prop(name);
 			});
 			str = arg1;
+		} else {
+			prop = this.get_context();
+			_.forEach(arg0.split("."), function(name) {
+				prop = prop.get_prop(name);
+			});
+
+			for_state = arg1;
+			str = arg2;
+
+			var context = this.get_context();
+			var context_states = context.get_states();
+			if(_.isNumber(for_state)) {
+				for(var i = 0; i<context_states.length; i++) {
+					if(context_states[i].id === for_state) {
+						for_state = context_states[i];
+						break;
+					}
+				}
+			} else if(_.isString(for_state)) {
+				var statechart = this.get_statechart_context();
+				for_state = get_state(context, statechart, for_state);
+			}
+			cell = cjs.create("red_cell", {str: ""});
+			prop.set_value(for_state, cell);
 		}
 		var command = red.command("change_cell", {
 			cell: cell
@@ -289,7 +333,7 @@ var Env = function() {
 	};
 
 	proto.add_state = function(state_name, index) {
-		var statechart = this.get_statechart_context();
+		var statechart = this.get_statechart_context().get_state_with_name("running.own");
 
 		if(_.isNumber(index)) { index++; } // Because of the pre_init state
 
@@ -303,7 +347,7 @@ var Env = function() {
 	};
 
 	proto.remove_state = function(state_name) {
-		var statechart = this.get_statechart_context();
+		var statechart = this.get_statechart_context().get_state_with_name("running.own");
 
 		var command = red.command("remove_state", {
 			state_name: state_name
@@ -314,7 +358,7 @@ var Env = function() {
 	};
 
 	proto.move_state = function(state_name, index) {
-		var statechart = this.get_statechart_context();
+		var statechart = this.get_statechart_context().get_state_with_name("running.own");
 
 		if(_.isNumber(index)) { index++; } // Because of the pre_init state
 		var command = red.command("move_state", {
@@ -327,7 +371,7 @@ var Env = function() {
 	};
 
 	proto.rename_state = function(from_state_name, to_state_name) {
-		var statechart = this.get_statechart_context();
+		var statechart = this.get_statechart_context().get_state_with_name("running.own");
 
 		var command = red.command("rename_state", {
 			from: from_state_name
@@ -338,16 +382,31 @@ var Env = function() {
 		return this.print();
 	};
 
+	var get_state = function(parent, statechart, state_name) {
+		if(_.isString(state_name)) {
+			if(state_name === "INIT") {
+				return parent.get_init_state();
+			} else {
+				return statechart.get_state_with_name("running.own." + state_name);
+			}
+		} else {
+			return state_name;
+		}
+	};
+
 	proto.add_transition = function(from_state_name, to_state_name, event) {
 		var statechart = this.get_statechart_context();
 		var parent = this.get_context();
+
+		var from_state = get_state(parent, statechart, from_state_name);
+		var to_state = get_state(parent, statechart, to_state_name);
 
 		var command = red.command("add_transition", {
 			statechart: statechart
 			, parent: parent
 			, event: event
-			, from: from_state_name
-			, to: to_state_name
+			, from: from_state
+			, to: to_state
 		});
 
 		this._do(command);
@@ -383,7 +442,11 @@ var Env = function() {
 		var context = this._context.get_context();
 
 		var value_to_value_str = function(val) {
-			if(_.isNumber(val)) {
+			if(_.isUndefined(val)) {
+				return "(undefined)";
+			} else if(_.isNull(val)) {
+				return "(null)";
+			} else if(_.isNumber(val)) {
 				return val + "";
 			} else if(_.isString(val)) {
 				return '"' + val + '"';
@@ -411,13 +474,13 @@ var Env = function() {
 				return '"' + val + '"';
 			} else if(_.isNumber(val)) {
 				return val + "";
-			} else if(val.type === "red_cell") {
-				return "= " + val.get_str();
 			} else if(cjs.is_constraint(val)) {
 				if(val.type === "red_dict") {
 					return "";
 				} else if(val.type === "red_stateful_obj") {
 					return "";
+				} else if(val.type === "red_cell") {
+					return "= " + val.get_str();
 				}
 			} else {
 				return val + "";
@@ -442,6 +505,7 @@ var Env = function() {
 
 				var value_got = cjs.get(value);
 
+
 				if(cjs.is_constraint(value) && value.type === "red_dict") {
 					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
 					rows.push(row);
@@ -449,9 +513,6 @@ var Env = function() {
 					var tablified_values = tablify_dict(value, indentation_level + 2);
 					rows.push.apply(rows, tablified_values);
 				} else if(cjs.is_constraint(value) && value.type === "red_stateful_obj") {
-					var tablified_values = tablify_dict(value, indentation_level + 2);
-					rows.push.apply(rows, tablified_values);
-
 					var statechart = value.get_statechart();
 					to_print_statecharts.push(statechart);
 					var own_running_statechart = statechart.get_state_with_name("running.own");
@@ -464,6 +525,20 @@ var Env = function() {
 						}
 						return name;
 					}));
+					rows.push(row);
+
+					var tablified_values = tablify_dict(value, indentation_level + 2);
+					rows.push.apply(rows, tablified_values);
+				} else if(cjs.is_constraint(value) && value.type === "red_stateful_prop") {
+					var parent = value.get_stateful_obj_parent();
+					var parent_states = parent.get_states();
+
+					var row = [prop_name, value_to_value_str(value_got)];
+					_.forEach(parent_states, function(parent_state) {
+						var val = value.get_value(parent_state);
+						var val_got = val.get();
+						row.push(value_to_source_str(val_got));
+					});
 					rows.push(row);
 				} else {
 					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];

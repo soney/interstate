@@ -26,7 +26,7 @@ var RedStatefulProp = function(options) {
 	this._values = this._states.map(
 						function(state) {
 							return cjs.create("constraint", function() {
-								return cjs.get(self._value_for_state(state));	
+								return self._value_for_state(state);	
 							});
 						}
 					);
@@ -88,7 +88,6 @@ var RedStatefulProp = function(options) {
 
 	proto._value_for_state = function(state) {
 		var direct_value = this._direct_value_for_state(state);
-		//console.log(direct_value, state, state.id);
 		
 		if(direct_value) {
 			return direct_value;
@@ -107,7 +106,8 @@ var RedStatefulProp = function(options) {
 	};
 	
 	proto.get_value = function(state) {
-		return this._statechart_constraint.get_value_for_state(state);
+		var rv = this._statechart_constraint.get_value_for_state(state);
+		return rv;
 	};
 
 	proto.get = function() {
@@ -115,6 +115,9 @@ var RedStatefulProp = function(options) {
 	};
 	proto.set_value = function(state, value) {
 		this._direct_values.set(state, value);
+		if(value && _.has(value, "set_parent")) {
+			value.set_parent(this._constraint);
+		}
 		return this;
 	};
 	proto.unset_value = function(state) {
@@ -247,11 +250,13 @@ cjs.define("red_stateful_prop", function(options) {
 		var val = property.get();
 		return cjs.get(val); //Double constraint if inherited
 	});
+	property._constraint = constraint;
 	constraint.set_value = _.bind(property.set_value, property);
 	constraint.unset_value = _.bind(property.unset_value, property);
 	constraint.get_value = _.bind(property.get_value, property);
 	constraint.get_parent = _.bind(property.get_parent, property);
 	constraint.set_parent = _.bind(property.set_parent, property);
+	constraint.get_stateful_obj_parent = _.bind(property.get_stateful_obj_parent, property);
 	constraint.clone = function(options) {
 		options = options || {};
 		return cjs.create("red_stateful_prop", options);
