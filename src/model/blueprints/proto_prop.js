@@ -19,13 +19,7 @@ red.blueprints['proto_prop'] = function() {
 
 	proto_prop.initialize = function(self) {
 		self.add_blueprint_data("proto_prop");
-		var datum = function(arg0, arg1) {
-			if(arguments.length === 1 && _.isString(arg0)) {
-				return self.get_blueprint_datum("proto_prop", arg0);
-			} else if(arguments.length === 2 && _.isString(arg0)) {
-				self.set_blueprint_datum("proto_prop", arg0, arg1);
-			}
-		};
+		var datum = self.get_blueprint_datum_getter("proto_prop");
 		
 		add_prop_change_listener(self, "blueprints", function(val) {
 			self.set_protos(val);

@@ -101,13 +101,7 @@ red.blueprints['dom_container'] = function() {
 
 	dom_container.initialize = function(self) {
 		self.add_blueprint_data("dom_container");
-		var datum = function(arg0, arg1) {
-			if(arguments.length === 1 && _.isString(arg0)) {
-				return self.get_blueprint_datum("dom_container", arg0);
-			} else if(arguments.length === 2 && _.isString(arg0)) {
-				self.set_blueprint_datum("dom_container", arg0, arg1);
-			}
-		};
+		var datum = self.get_blueprint_datum_getter("dom_container");
 
 		datum("container", container);
 

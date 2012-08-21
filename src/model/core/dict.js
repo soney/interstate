@@ -293,6 +293,17 @@ var RedDict = function(options) {
 	proto.remove_blueprint_data = function(blueprint_name) {
 		this._blueprint_data.unset(blueprint_name);
 	};
+	proto.get_blueprint_datum_getter = function(blueprint_name) {
+		var self = this;
+		var getter = function(arg0, arg1) {
+			if(arguments.length === 1 && _.isString(arg0)) {
+				return self.get_blueprint_datum(blueprint_name, arg0);
+			} else if(arguments.length === 2 && _.isString(arg0)) {
+				self.set_blueprint_datum(blueprint_name, arg0, arg1);
+			}
+		};
+		return getter;
+	};
 }(RedDict));
 
 red.RedDict = RedDict;
