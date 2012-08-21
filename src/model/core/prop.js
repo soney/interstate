@@ -2,10 +2,8 @@
 var cjs = red.cjs, _ = cjs._;
 
 var set_parent = function(obj, parent) {
-	if(cjs.is_constraint(obj)) {
-		if(obj.set_parent) {
-			obj.set_parent(parent);
-		}
+	if(obj && obj.set_parent) {
+		obj.set_parent(parent);
 	}
 };
 

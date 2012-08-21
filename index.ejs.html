@@ -154,14 +154,16 @@
 			</div>
 		</div>
 
-		<%- red_include(red_inc.main) %>
+	  <div>
+			<%- red_include(red_inc.main) %>
 
-		<script type="text/javascript">
-			var cjs = red.cjs, _ = cjs._;
-			$(function() {
-				var env = red.create_environment();
-				window.env = env;
-			});
-		</script>
+			<script type="text/javascript">
+				var cjs = red.cjs, _ = cjs._;
+				$(function() {
+					var env = red.create_environment();
+					window.env = env;
+				});
+			</script>
+	  </div>
   </body>
 </html>

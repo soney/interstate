@@ -32,12 +32,12 @@ var get_children = function(node) {
 				, children: [] };
 
 	var children_prop, got_children_prop;
-	if(node && _.has(node, "get_prop")) {
+	if(node instanceof red.RedDict) {
 		children_prop = node.get_prop("children");
 		got_children_prop = cjs.get(children_prop);
 	}
 
-	if(node && _.has(node, "get_blueprint_datum")) {	
+	if(node instanceof red.RedDict) {	
 		rv.dom_elem = node.get_blueprint_datum("dom_obj", "dom_obj");
 
 		if(got_children_prop) {

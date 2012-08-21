@@ -73,7 +73,7 @@ var eval_tree = function(node, context, restrict_context) {
 		var got_context = cjs.get(context);
 
 		while(got_context) {
-			if(got_context.type === "red_dict" || got_context.type === "red_stateful_obj") {
+			if(got_context instanceof RedDict) {
 				return got_context;
 			}
 			got_context = got_context.get_parent();

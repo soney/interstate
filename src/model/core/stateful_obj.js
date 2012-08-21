@@ -14,6 +14,7 @@ var RedStatefulObj = function(options) {
 	this._all_protos.onRemove(this._$sc_proto_removed)
 					.onAdd   (this._$sc_proto_added)
 					.onMove  (this._$sc_proto_moved);
+	this.type = "red_stateful_obj";
 };
 (function(my) {
 	_.proto_extend(my, red.RedDict);
@@ -40,7 +41,7 @@ var RedStatefulObj = function(options) {
 
 		this.running_statechart = cjs	.create("statechart")
 										.concurrent(true)
-										.add_state("own", this.own_statechart)
+										.add_state("own", this.get_own_statechart())
 										.add_state("inherited", this.inherited_statecharts);
 
 		this._init_state = statechart.get_state_with_name("INIT");
@@ -122,7 +123,7 @@ var RedStatefulObj = function(options) {
 			return undefined;
 		} else {
 			var shadow_root = this.inherited_statecharts.get_state_with_name("proto_"+candidate_index);
-			var name = state.get_name(candidate_proto.own_statechart);
+			var name = state.get_name(candidate_proto.get_own_statechart());
 			return shadow_root.get_state_with_name(name);
 		}
 	};
@@ -169,7 +170,7 @@ var RedStatefulObj = function(options) {
 
 	proto._state_getter = function() {
 		var init_state = [this._init_state];
-		var own_states = _.rest(this.own_statechart.flatten().filter(function(state) {
+		var own_states = _.rest(this.get_own_statechart().flatten().filter(function(state) {
 			return state.get_type() !== "pre_init";
 		}));
 		var self = this;
@@ -243,29 +244,15 @@ var RedStatefulObj = function(options) {
 		var statechart = this.get_statechart();
 		statechart.run();
 	};
+	proto.get_own_statechart = function() { return this.own_statechart; };
 }(RedStatefulObj));
 
 red.RedStatefulObj = RedStatefulObj;
 
 cjs.define("red_stateful_obj", function(options) {
-	var dict = new RedStatefulObj(options, constraint);
-	var constraint = cjs(function() {
-		return constraint;
-	});
-
-	red.add_dict_commands(dict, constraint);
-
-	constraint.get_statechart = _.bind(dict.get_statechart, dict);
-	constraint.get_own_statechart = function() { return dict.own_statechart; };
-	constraint.get_states = _.bind(dict.get_states, dict);
-	constraint.get_init_state = _.bind(dict.get_init_state, dict);
-	constraint.run = _.bind(dict.run, dict);
-
-	constraint.dict = dict;
-
-	constraint.type = "red_stateful_obj";
+	var dict = new RedStatefulObj(options);
 	dict.on_ready();
-	return constraint;
+	return dict;
 });
 
 }(red));

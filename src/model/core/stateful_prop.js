@@ -11,16 +11,6 @@ var RedStatefulProp = function(options) {
 	this._statechart = cjs.create("constraint", _.bind(this._root_statechart_getter, this));
 	this._statechart_constraint = cjs.create("statechart_constraint", this._statechart);
 	this._direct_values = cjs.create("map");
-/*
-	this._parent = cjs(parent);
-	this._direct_values = cjs.create("map");
-	this._name = cjs.create("constraint", name);
-
-	this._context = cjs.create("red_context", {
-		thisable: false
-	});
-	this._context.set("event", cjs(_.bind(this.get_event, this)));
-*/
 
 	this._states = cjs(_.bind(this._states_getter, this));
 	this._values = this._states.map(
@@ -180,66 +170,6 @@ var RedStatefulProp = function(options) {
 		}
 		return [];
 	};
-	/*
-
-	//
-	// ===== INITIALIZERS/DESTROYERS =====
-	//
-	
-	proto.destroy = function() {};
-
-	proto.get_context = function() { return this._context; };
-	proto.set_name = function(name) { this._name.set(name); return this; };
-	proto.get_name = function(name) { return this._name.get(); };
-
-
-	proto.get_root_statechart = function() {
-		var parent = this.get_parent();
-		if(!parent) {
-			return undefined;
-		} else {
-			return parent.get_statechart();
-		}
-	};
-
-	proto.get_statechart_event = function() {
-		var root_statechart = this.get_root_statechart();
-		return root_statechart._event;
-	};
-
-
-	//
-	// ===== STATECHART =====
-	//
-
-	proto.my_version_of_state = function(state) {
-		var parent = this.parent();
-		if(parent) {
-			return parent.get_state_shadow(state);
-		} else {
-			return undefined;
-		}
-	};
-
-	proto.get_states = function() {
-		var parent = this.get_parent();
-		if(parent) {
-			return parent.get_states();
-		} else {
-			return [];
-		}
-	};
-
-	proto.state_is_inherited = function(state) {
-		var parent = this.get_parent();
-		if(parent) {
-			return parent.state_is_inherited(state);
-		} else {
-			return false;
-		}
-	};
-
-	*/
 }(RedStatefulProp));
 
 red.RedStatefulProp = RedStatefulProp;
@@ -262,10 +192,7 @@ cjs.define("red_stateful_prop", function(options) {
 		return cjs.create("red_stateful_prop", options);
 	};
 	constraint._direct_value_for_state= _.bind(property._direct_value_for_state, property);
-	/*
-	constraint.get_context = _.bind(property.get_context, property);
-	constraint.set_name = _.bind(property.set_name, property);
-	*/
+
 	constraint.type = "red_stateful_prop";
 	return constraint;
 });

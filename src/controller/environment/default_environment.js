@@ -24,7 +24,7 @@ var print_table = function(table, max_width) {
 	_.forEach(table, function(cells, row) {
 		_.forEach(cells, function(cell, col) {
 			if(!_.isString(cell)) {
-				cell = cell+"";
+				cell = cell + "";
 			}
 			var len = cell.length;
 			column_widths[col] = _.isNumber(column_widths[col]) ? Math.max(len, column_widths[col]) : len;
@@ -221,16 +221,16 @@ var Env = function() {
 		}
 
 		if(_.isUndefined(value)) {
-			if(parent_obj.type === "red_dict") {
-				value = cjs.create("red_cell", {str: ""});
-			} else if(parent_obj.type === "red_stateful_obj") {
+			if(parent_obj instanceof red.RedStatefulObj) {
 				value = cjs.create("red_stateful_prop");
+			} else if(parent_obj instanceof red.RedDict) {
+				value = cjs.create("red_cell", {str: ""});
 			}
 		} else if(_.isString(value)) {
 			if(value === "dict") {
 				value = cjs.create("red_dict");
 			} else if(value === "stateful") {
-				value = cjs.create("red_stateful_obj"/*, {implicit_protos: [this._proto_prop_blueprint]}*/);
+				value = cjs.create("red_stateful_obj", {implicit_protos: [this._proto_prop_blueprint]});
 				value.run();
 			} else {
 				value = cjs.create("red_cell", {str: value});
@@ -462,12 +462,10 @@ var Env = function() {
 				return val + "";
 			} else if(_.isString(val)) {
 				return '"' + val + '"';
-			} else if(cjs.is_constraint(val)) {
-				if(val.type === "red_dict") {
-					return "(dict)";
-				} else if(val.type === "red_stateful_obj") {
-					return "(stateful)";
-				}
+			} else if(val instanceof red.RedStatefulObj) {
+				return "(stateful)";
+			} else if(val instanceof red.RedDict) {
+				return "(dict)";
 			} else if(_.isArray(val)) {
 				return "[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]";
 			} else {
@@ -486,12 +484,12 @@ var Env = function() {
 				return '"' + val + '"';
 			} else if(_.isNumber(val)) {
 				return val + "";
+			} else if(val instanceof red.RedStatefulObj) {
+				return "";
+			} else if(val instanceof red.RedDict) {
+				return "";
 			} else if(cjs.is_constraint(val)) {
-				if(val.type === "red_dict") {
-					return "";
-				} else if(val.type === "red_stateful_obj") {
-					return "";
-				} else if(val.type === "red_cell") {
+				if(val.type === "red_cell") {
 					return "= " + val.get_str();
 				}
 			} else {
@@ -518,13 +516,7 @@ var Env = function() {
 				var value_got = cjs.get(value);
 
 
-				if(cjs.is_constraint(value) && value.type === "red_dict") {
-					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
-					rows.push(row);
-
-					var tablified_values = tablify_dict(value, indentation_level + 2);
-					rows.push.apply(rows, tablified_values);
-				} else if(cjs.is_constraint(value) && value.type === "red_stateful_obj") {
+				if(value instanceof red.RedStatefulObj) {
 					var statechart = value.get_statechart();
 					to_print_statecharts.push(statechart);
 					var own_running_statechart = statechart.get_state_with_name("running.own");
@@ -537,6 +529,12 @@ var Env = function() {
 						}
 						return name;
 					}));
+					rows.push(row);
+
+					var tablified_values = tablify_dict(value, indentation_level + 2);
+					rows.push.apply(rows, tablified_values);
+				} else if(value instanceof red.RedDict) {
+					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
 					rows.push(row);
 
 					var tablified_values = tablify_dict(value, indentation_level + 2);

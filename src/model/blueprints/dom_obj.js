@@ -24,7 +24,7 @@ var update_dom_props = function(self, datum) {
 		var text = self.get_prop("text");
 		if(text) {
 			var val = cjs.get(text);
-			dom.textContent = val;
+			dom_obj.textContent = val;
 		}
 	}
 };
@@ -47,18 +47,6 @@ var add_tag_change_listener = function(self, datum) {
 		if(tag_name) {
 			new_dom_obj = document.createElement(tag_name);
 		}
-
-/*
-		if(dom_obj) {
-			if(dom_obj.parentNode) {
-				if(new_dom_obj) {
-					dom_obj.parentNode.replaceChild(dom_obj, new_dom_obj);
-				} else {
-					dom_obj.parentNode.removeChild(dom_obj);
-				}
-			}
-		}
-		*/
 
 		dom_obj = new_dom_obj;
 		datum("dom_obj", dom_obj);
