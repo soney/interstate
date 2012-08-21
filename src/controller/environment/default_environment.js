@@ -230,8 +230,7 @@ var Env = function() {
 			if(value === "dict") {
 				value = cjs.create("red_dict");
 			} else if(value === "stateful") {
-				value = cjs.create("red_stateful_obj", {implicit_protos: [this._proto_prop_blueprint]});
-				value.set_prop("blueprints", cjs.create("red_stateful_prop"));
+				value = cjs.create("red_stateful_obj"/*, {implicit_protos: [this._proto_prop_blueprint]}*/);
 				value.run();
 			} else {
 				value = cjs.create("red_cell", {str: value});
@@ -340,6 +339,7 @@ var Env = function() {
 			cell: cell
 			, str: str
 		});
+
 		this._do(command);
 		return this.print();
 	};

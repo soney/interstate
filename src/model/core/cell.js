@@ -26,6 +26,9 @@ var unary_operators = {
 };
 
 var eval_tree = function(node, context, restrict_context) {
+	if(!node) {
+		return undefined;
+	}
 	var type = node.type;
 	if(type === "ExpressionStatement") {
 		return eval_tree(node.expression, context, restrict_context);
