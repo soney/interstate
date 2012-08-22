@@ -154,37 +154,6 @@ var Env = function() {
 		this.set("dom", this._dom_obj_blueprint);
 		this.set("children", "dict");
 		this.in_prop("children");
-	/*
-		this.set("a", "1");
-		this.set("b", "1+2");
-		this.set("c", "1+2+3");
-		this.set("d", "stateful");
-		this.in_prop("d");
-		var inita_event = cjs.create_event("manual");
-		var ab_event = cjs.create_event("manual");
-		var ba_event = cjs.create_event("manual");
-		var bc_event = cjs.create_event("manual");
-		var cb_event = cjs.create_event("manual");
-		var self = this;
-		window.inita = function() { inita_event.fire(); return self.print(); };
-		window.ab = function() { ab_event.fire(); return self.print(); };
-		window.ba = function() { ba_event.fire(); return self.print(); };
-		window.bc = function() { bc_event.fire(); return self.print(); };
-		window.cb = function() { cb_event.fire(); return self.print(); };
-		this.add_state("a");
-		this.add_state("b");
-		this.add_state("c");
-		this.add_transition("INIT", "a", inita_event);
-		this.add_transition("a", "b", ab_event);
-		this.add_transition("b", "a", ba_event);
-		this.add_transition("b", "c", bc_event);
-		this.add_transition("c", "b", cb_event);
-
-		this.set("x");
-		*/
-		this.set("x", "stateful");
-		this.in_prop("x");
-		window.x = this.get_context();
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
