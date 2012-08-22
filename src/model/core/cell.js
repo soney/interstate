@@ -172,7 +172,6 @@ cjs.define("red_cell", function(options) {
 		return cjs.create("red_cell", options);
 	};
 	constraint.type = "red_cell";
-	constraint.cell = cell;
 	return constraint;
 });
 

@@ -45,6 +45,7 @@ exports.main_src = c(
 				, "model/blueprints/dom_container.js"
 				, "model/blueprints/dom_obj.js"
 				, "model/blueprints/proto_prop.js"
+				, "model/blueprints/group.js"
 				, "controller/commands/command_core.js"
 				, "controller/commands/prop_commands.js"
 				, "controller/commands/cell_commands.js"
