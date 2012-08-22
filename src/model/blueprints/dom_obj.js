@@ -11,6 +11,10 @@ var changeable_css_props = {
 	, "position": "position"
 };
 
+var changeable_attrs = {
+	"src": "src"
+}
+
 var update_dom_props = function(self, datum) {
 	var dom_obj = datum("dom_obj");
 	if(dom_obj) {
@@ -19,6 +23,13 @@ var update_dom_props = function(self, datum) {
 			if(prop) {
 				var val = cjs.get(prop);
 				dom_obj.style[changeable_css_prop] = val;
+			}
+		});
+		_.forEach(changeable_attrs, function(changeable_attr, my_name) {
+			var prop = self.get_prop(my_name);
+			if(prop) {
+				var val = cjs.get(prop);
+				dom_obj[changeable_attr] = val;
 			}
 		});
 		var text = self.get_prop("text");
@@ -61,11 +72,24 @@ var add_tag_change_listener = function(self, datum) {
 
 var add_css_change_listeners = function(self, datum) {
 	_.forEach(changeable_css_props, function(changeable_css_prop, my_name) {
-		var update_val = function(css_val) {
+		var update_val = function(val) {
 			var dom_obj = datum("dom_obj");
 
 			if(dom_obj) {
-				dom_obj.style[changeable_css_prop] = css_val;
+				dom_obj.style[changeable_css_prop] = val;
+			}
+		};
+
+		add_prop_change_listener(self, my_name, update_val);
+	});
+};
+var add_attr_change_listeners = function(self, datum) {
+	_.forEach(changeable_attrs, function(changeable_attr, my_name) {
+		var update_val = function(val) {
+			var dom_obj = datum("dom_obj");
+
+			if(dom_obj) {
+				dom_obj[changeable_attr] = val;
 			}
 		};
 
@@ -98,6 +122,7 @@ red.blueprints['dom_obj'] = function() {
 
 		add_tag_change_listener(self, datum);
 		add_css_change_listeners(self, datum);
+		add_attr_change_listeners(self, datum);
 		add_text_change_listeners(self, datum);
 	};
 

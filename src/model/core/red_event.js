@@ -22,7 +22,7 @@ _.forEach(dom_events, function(dom_event) {
 			var dom_elem;
 			if(_.isElement(parent) || parent === window) {
 				dom_elem = parent;
-			} else if(cjs.is_constraint(parent)) {
+			} else if(parent instanceof red.RedDict) {
 				dom_elem = parent.get_blueprint_datum("dom_obj", "dom_obj");
 			}
 
@@ -88,7 +88,6 @@ var get_event = function(node, parent) {
 
 			if(event) {
 				event.on_fire(self.$child_fired);
-				console.log("re-constituted event");
 			}
 
 			self._old_event = event;

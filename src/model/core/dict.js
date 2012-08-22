@@ -1,6 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = cjs._;
 
+var id = 0;
 var RedDict = function(options) {
 	options = options || {};
 	this._blueprint_data = cjs.create("map");
@@ -26,6 +27,7 @@ var RedDict = function(options) {
 							.onAdd   (this._$proto_added)
 							.onMove  (this._$proto_moved);
 	this.type = "red_dict";
+	this.id = id++;
 };
 
 (function(my) {
@@ -240,7 +242,7 @@ var RedDict = function(options) {
 
 	proto._get_direct_protos = function() {
 		var direct_protos = this._direct_protos.get();
-		if(!_.isArray(direct_protos)) {
+		if(!_.isUndefined(direct_protos) && !_.isArray(direct_protos)) {
 			direct_protos = [direct_protos];
 		}
 		return direct_protos;
@@ -253,17 +255,22 @@ var RedDict = function(options) {
 	proto._proto_moved = function(item, index) { };
 	proto._proto_added = function(item, index) { item.initialize(this); };
 
-	proto._all_protos_getter = function() {
-		var implicit_protos = this._get_implicit_protos();
+	proto._get_explicit_protos = function() {
 		var direct_protos = this._get_direct_protos();
-		var all_protos = _.map(direct_protos, function(direct_proto) {
+		var explicit_protos = _.map(direct_protos, function(direct_proto) {
 			if(_.isUndefined(direct_proto)) { return false; };
 			
-			return ([direct_proto]).concat(direct_proto._get_all_protos());
+			return ([direct_proto]).concat(direct_proto._get_explicit_protos());
 		});
-		all_protos = _.compact(all_protos);
+		explicit_protos = _.compact(explicit_protos);
+		return explicit_protos
+	};
 
-		all_protos = implicit_protos.concat(all_protos);
+	proto._all_protos_getter = function() {
+		var implicit_protos = this._get_implicit_protos();
+		var explicit_protos = this._get_explicit_protos();
+
+		var all_protos = implicit_protos.concat(explicit_protos);
 
 		var flattened_all_protos = _.flatten(all_protos);
 

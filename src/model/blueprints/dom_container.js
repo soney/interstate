@@ -67,6 +67,7 @@ var update = function(node, container) {
 
 	var diff = _.diff(actual_children, proposed_children);
 	if(diff.added.length > 0 || diff.moved.length > 0 || diff.removed.length > 0) {
+		console.log(actual_children, proposed_children);
 		_.forEach(diff.removed, function(x) {
 			var index = x.index
 				, item = x.item;
@@ -90,13 +91,13 @@ var update = function(node, container) {
 	});
 };
 
-red.blueprints['dom_container'] = function() {
+red.blueprints['dom_container'] = function(container_parent) {
 	var dom_container = cjs.create("red_dict");
 
 	dom_container.name = "dom_container";
 
 	var container = document.createElement("div");
-	document.body.getElementsByClassName("output")[0].appendChild(container);
+	container_parent.appendChild(container);
 
 
 	dom_container.initialize = function(self) {

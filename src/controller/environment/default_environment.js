@@ -130,9 +130,9 @@ var context_factory = function(initial_context) {
 	};
 };
 
-var Env = function() {
+var Env = function(dom_container_parent) {
 	this._proto_prop_blueprint = red.blueprints.proto_prop();
-	this._dom_container_blueprint = red.blueprints.dom_container();
+	this._dom_container_blueprint = red.blueprints.dom_container(dom_container_parent);
 	this._dom_obj_blueprint = red.blueprints.dom_obj();
 
 	this.root = cjs.create("red_dict", {implicit_protos: [this._dom_container_blueprint]});
@@ -144,7 +144,6 @@ var Env = function() {
 	this._context = context_factory(this.root);
 
 	this.initialize_props();
-	console.log(this.print());
 };
 
 (function(my) {
@@ -168,8 +167,8 @@ var Env = function() {
 		
 		if(cjs.is_statechart(context)) {
 			statechart = context;
-		} else if(cjs.is_constraint(context) && context.type === "red_stateful_obj") {
-			statechart = context.get_statechart();
+		} else if(context instanceof red.RedStatefulObj) {
+			statechart = context.get_own_statechart();
 		}
 		return statechart;
 	};
@@ -343,7 +342,7 @@ var Env = function() {
 	};
 
 	proto._get_add_state_command = function(state_name, index) {
-		var statechart = this.get_statechart_context().get_state_with_name("running.own");
+		var statechart = this.get_statechart_context();
 
 		if(_.isNumber(index)) { index++; } // Because of the pre_init state
 
@@ -362,7 +361,7 @@ var Env = function() {
 	};
 
 	proto._get_remove_state_command = function(state_name) {
-		var statechart = this.get_statechart_context().get_state_with_name("running.own");
+		var statechart = this.get_statechart_context();
 
 		var command = red.command("remove_state", {
 			state_name: state_name
@@ -396,7 +395,7 @@ var Env = function() {
 
 
 	proto._get_rename_state_command = function(from_state_name, to_state_name) {
-		var statechart = this.get_statechart_context().get_state_with_name("running.own");
+		var statechart = this.get_statechart_context();
 
 		var command = red.command("rename_state", {
 			from: from_state_name
@@ -416,7 +415,7 @@ var Env = function() {
 			if(state_name === "INIT") {
 				return parent.get_init_state();
 			} else {
-				return statechart.get_state_with_name("running.own." + state_name);
+				return statechart.get_state_with_name(state_name);
 			}
 		} else {
 			return state_name;
@@ -615,8 +614,8 @@ var Env = function() {
 	};
 }(Env));
 
-red.create_environment = function() {
-	var env = new Env();
+red.create_environment = function(dom_container_parent) {
+	var env = new Env(dom_container_parent);
 	return env;
 };
 }(red));

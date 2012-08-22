@@ -228,7 +228,7 @@ var RedStatefulObj = function(options) {
 		this.remove_shadow_statechart(index);
 	};
 	proto._sc_proto_added = function(item, index) {
-		if(item.get_statechart) {
+		if(item.get_own_statechart) {
 			var item_statechart = item.get_own_statechart();
 			var shadow_statechart = red._shadow_statechart(item_statechart);
 			this.add_shadow_statechart(shadow_statechart, index);
