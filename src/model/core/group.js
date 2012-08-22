@@ -50,15 +50,17 @@ var RedGroup = function(options) {
 		var basis = this.get_basis();
 
 		var rv;
+		var self = this;
 		if(_.isNumber(basis)) {
-			rv = _.times(basis, function(index) {
-				var dict = cjs.create("red_stateful_obj", {direct_protos: this._protos});
+			rv = [];
+			_.times(basis, function(index) {
+				var dict = cjs.create("red_stateful_obj", {direct_protos: self._protos});
 				dict.set_prop("basis", index);
-				return dict;
+				rv.push(dict);
 			});
 		} else if(_.isArray(basis)) {
 			rv = _.map(basis, function(basis_obj) {
-				var dict = cjs.create("red_stateful_obj", {direct_protos: this._protos});
+				var dict = cjs.create("red_stateful_obj", {direct_protos: self._protos});
 				dict.set_prop("basis", basis_obj);
 				return dict;
 			});
@@ -78,10 +80,15 @@ cjs.define("red_group", function(options) {
 	var constraint = cjs(function() {
 		return group.get();
 	});
-	constraint.set_parent = _.bind(cell.set_parent, cell);
-	constraint.get_parent = _.bind(cell.get_parent, cell);
+	constraint.set_parent = _.bind(group.set_parent, group);
+	constraint.get_parent = _.bind(group.get_parent, group);
+	constraint.set_basis = _.bind(group.set_basis, group);
+	constraint.get_basis = _.bind(group.get_basis, group);
+	constraint.set_protos = _.bind(group.set_protos, group);
+	constraint.get_protos = _.bind(group.get_protos, group);
 	constraint.type = "red_group;";
-	return dict;
+
+	return constraint;
 });
 
 }(red));

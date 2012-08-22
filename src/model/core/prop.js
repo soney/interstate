@@ -10,9 +10,9 @@ var set_parent = function(obj, parent) {
 var RedProp = function(options) {
 	options = options || {};
 	if(!options.parent) { options.parent = undefined; }
-	else if(!options.name) { options.name = undefined; }
-	else if(!options.value) { options.value = undefined; }
-	else if(_.has(options, "inherited")) { options.inherited = false; }
+	else if(!_.has(options, "name")) { options.name = undefined; }
+	else if(!_.has(options, "value")) { options.value = undefined; }
+	else if(!_.has(options, "inherited")) { options.inherited = false; }
 
 	this._parent = cjs.create("constraint", options.parent, true);
 	this._name = cjs.create("constraint", options.name);
@@ -24,7 +24,7 @@ var RedProp = function(options) {
 
 (function(my) {
 	var proto = my.prototype;
-	proto.get = function() { return this._value.get(); };
+	proto.get = function() { var value = this.get_value(); return cjs.get(value); };
 	proto.get_value = function() {
 		if(this.is_inherited()) {
 			var inherits_from = this.inherits_from();

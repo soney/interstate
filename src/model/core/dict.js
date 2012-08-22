@@ -6,7 +6,6 @@ var RedDict = function(options) {
 	this._blueprint_data = cjs.create("map");
 	if(!options.parent) { options.parent = undefined; }
 	else if(!options.direct_props) { options.direct_props = []; }
-	else if(!options.direct_protos) { options.protos = []; }
 
 	this._parent = cjs.create("constraint", options.parent);
 
@@ -17,7 +16,8 @@ var RedDict = function(options) {
 
 	// Prototypes
 	this._implicit_protos = options.implicit_protos || [];
-	this._direct_protos = cjs.create("array", options.direct_protos);
+	if(options.direct_protos) { this._direct_protos = options.direct_protos; }
+	else { this._direct_protos = cjs.create("array"); }
 	this._$proto_removed = _.bind(this._proto_removed, this);
 	this._$proto_added   = _.bind(this._proto_added,   this);
 	this._$proto_moved   = _.bind(this._proto_moved,   this);
@@ -32,8 +32,8 @@ var RedDict = function(options) {
 	var proto = my.prototype;
 	proto.on_ready = function() {
 		var self = this;
-		_.forEach(this._get_implicit_protos(), function(implicit_proto) {
-			implicit_proto.initialize(self);
+		_.forEach(this._get_all_protos(), function(proto) {
+			proto.initialize(self);
 		});
 	};
 
@@ -131,7 +131,7 @@ var RedDict = function(options) {
 		var used_names = [];
 		var rv = [];
 		var self = this;
-		var inherited_props = _.forEach(all_protos, function(all_proto) {
+		_.forEach(all_protos, function(all_proto) {
 			var proto_props = all_proto._get_direct_props();
 			_.forEach(proto_props, function(proto_prop) {
 				var proto_prop_name = proto_prop.get_name();
@@ -239,7 +239,11 @@ var RedDict = function(options) {
 	};
 
 	proto._get_direct_protos = function() {
-		return this._direct_protos.get();
+		var direct_protos = this._direct_protos.get();
+		if(!_.isArray(direct_protos)) {
+			direct_protos = [direct_protos];
+		}
+		return direct_protos;
 	};
 	proto._get_implicit_protos = function() {
 		return this._implicit_protos;
@@ -253,8 +257,11 @@ var RedDict = function(options) {
 		var implicit_protos = this._get_implicit_protos();
 		var direct_protos = this._get_direct_protos();
 		var all_protos = _.map(direct_protos, function(direct_proto) {
+			if(_.isUndefined(direct_proto)) { return false; };
+			
 			return ([direct_proto]).concat(direct_proto._get_all_protos());
 		});
+		all_protos = _.compact(all_protos);
 
 		all_protos = implicit_protos.concat(all_protos);
 
