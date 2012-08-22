@@ -172,4 +172,76 @@ red._commands["move_prop"] = function(options) {
 	return new MovePropCommand(options);
 };
 
+// === STATEFUL PROPS ===
+
+var SetStatefulPropValueCommand = function(options) {
+	SetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
+	this._options = options || {};
+
+	if(!_.has(this._options, "stateful_prop")) {
+		throw new Error("Must select a stateful_prop object");
+	}
+
+	this._stateful_prop = this._options.stateful_prop;
+	this._state = this._options.state;
+	this._value = this._options.value;
+};
+(function(my) {
+	_.proto_extend(my, red.Command);
+	var proto = my.prototype;
+
+	proto._execute = function() {
+		this._stateful_prop.set_value(this._state, this._value);
+	};
+	proto._unexecute = function() {
+		this._stateful_prop.unset_value(this._state);
+	};
+	proto._do_destroy = function(in_effect) {
+		if(!in_effect) {
+			if(this._value && this._value.destroy) {
+				this._value.destroy;
+			}
+		}
+	};
+}(SetStatefulPropValueCommand));
+
+red._commands["set_stateful_prop_value"] = function(options) {
+	return new SetStatefulPropValueCommand(options);
+};
+
+var UnsetStatefulPropValueCommand = function(options) {
+	UnsetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
+	this._options = options || {};
+
+	if(!_.has(this._options, "stateful_prop")) {
+		throw new Error("Must select a stateful_prop object");
+	}
+
+	this._stateful_prop = this._options.stateful_prop;
+	this._state = this._options.state;
+};
+(function(my) {
+	_.proto_extend(my, red.Command);
+	var proto = my.prototype;
+
+	proto._execute = function() {
+		this._value = this._stateful_prop.get_value(this._state);
+		this._stateful_prop.unset_value(this._state);
+	};
+	proto._unexecute = function() {
+		this._stateful_prop.set_value(this._state, this._value);
+	};
+	proto._do_destroy = function(in_effect) {
+		if(in_effect) {
+			if(this._value && this._value.destroy) {
+				this._value.destroy;
+			}
+		}
+	};
+}(UnsetStatefulPropValueCommand));
+
+red._commands["unset_stateful_prop_value"] = function(options) {
+	return new UnsetStatefulPropValueCommand(options);
+};
+
 }(red));

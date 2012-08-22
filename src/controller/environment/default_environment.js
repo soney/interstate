@@ -206,7 +206,7 @@ var Env = function() {
 		return statechart;
 	};
 
-	proto.add = proto.set = function(prop_name, value, index) {
+	proto._get_set_prop_command = function(prop_name, value, index) {
 		var parent_obj = this.get_context();
 		if(!_.isString(prop_name)) {
 			var parent_direct_props = parent_obj._get_direct_props();
@@ -243,10 +243,14 @@ var Env = function() {
 			, value: value
 			, index: index
 		});
+		return command;
+	};
+	proto.add = proto.set = function() {
+		var command = this._get_set_prop_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
 	};
-	proto.unset = function(prop_name) {
+	proto._get_unset_prop_command = function(prop_name) {
 		var parent_obj = this.get_context();
 		if(!_.isString(prop_name)) {
 			console.error("No name given");
@@ -256,26 +260,38 @@ var Env = function() {
 			parent: parent_obj
 			, name: prop_name
 		});
+		return command;
+	};
+	proto.unset = function() {
+		var command = this._get_unset_prop_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
 	};
-	proto.rename = function(from_name, to_name) {
+	proto._get_rename_prop_command = function(from_name, to_name) {
 		var parent_obj = this.get_context();
 		var command = red.command("rename_prop", {
 			parent: parent_obj
 			, from: from_name
 			, to: to_name
 		});
+		return command;
+	};
+	proto.rename = function() {
+		var command = this._get_rename_prop_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
 	};
-	proto.move = function(prop_name, index) {
+	proto._get_move_prop_command = function(prop_name, index) {
 		var parent_obj = this.get_context();
 		var command = red.command("move_prop", {
 			parent: parent_obj
 			, name: prop_name
 			, to: index
 		});
+		return command;
+	};
+	proto.move = function() {
+		var command = this._get_move_prop_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
 	};
@@ -298,8 +314,8 @@ var Env = function() {
 
 		return this.print();
 	};
-
-	proto.set_cell = function(arg0, arg1, arg2) {
+	proto._get_set_cell_command = function(arg0, arg1, arg2) {
+		var combine_command = false;
 		var cell, str, for_state;
 		if(arguments.length === 1) {
 			cell = this.get_context();
@@ -333,18 +349,32 @@ var Env = function() {
 				for_state = get_state(context, statechart, for_state);
 			}
 			cell = cjs.create("red_cell", {str: ""});
+			combine_command = this._get_stateful_prop_set_value_command(prop, for_state, cell);
+			
 			prop.set_value(for_state, cell);
 		}
-		var command = red.command("change_cell", {
+		var command;
+		var change_cell_command = red.command("change_cell", {
 			cell: cell
 			, str: str
 		});
+		if(combine_command) {
+			command = red.command("combined", {
+				commands: [combine_command, change_cell_command]
+			});
+		} else {
+			command = change_cell_command;
+		}
+		return command;
+	};
 
+	proto.set_cell = function() {
+		var command = this._get_set_cell_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
 	};
 
-	proto.add_state = function(state_name, index) {
+	proto._get_add_state_command = function(state_name, index) {
 		var statechart = this.get_statechart_context().get_state_with_name("running.own");
 
 		if(_.isNumber(index)) { index++; } // Because of the pre_init state
@@ -354,22 +384,31 @@ var Env = function() {
 			, statechart: statechart
 			, index: index
 		});
+		return command;
+	};
+
+	proto.add_state = function() {
+		var command = this._get_add_state_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
 	};
 
-	proto.remove_state = function(state_name) {
+	proto._get_remove_state_command = function(state_name) {
 		var statechart = this.get_statechart_context().get_state_with_name("running.own");
 
 		var command = red.command("remove_state", {
 			state_name: state_name
 			, statechart: statechart
 		});
+		return command;
+	};
+	proto.remove_state = function() {
+		var command = this._get_remove_state_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
 	};
 
-	proto.move_state = function(state_name, index) {
+	proto._get_move_state_command = function(state_name, index) {
 		var statechart = this.get_statechart_context().get_state_with_name("running.own");
 
 		if(_.isNumber(index)) { index++; } // Because of the pre_init state
@@ -378,11 +417,17 @@ var Env = function() {
 			, statechart: statechart
 			, index: index
 		});
+		return command;
+	};
+
+	proto.move_state = function() {
+		var command = this._get_move_state_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
 	};
 
-	proto.rename_state = function(from_state_name, to_state_name) {
+
+	proto._get_rename_state_command = function(from_state_name, to_state_name) {
 		var statechart = this.get_statechart_context().get_state_with_name("running.own");
 
 		var command = red.command("rename_state", {
@@ -390,6 +435,10 @@ var Env = function() {
 			, to: to_state_name
 			, statechart: statechart
 		});
+		return command;
+	};
+	proto.rename_state = function() {
+		var command = this._get_rename_state_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
 	};
@@ -406,7 +455,7 @@ var Env = function() {
 		}
 	};
 
-	proto.add_transition = function(from_state_name, to_state_name, event) {
+	proto._get_add_transition_command = function(from_state_name, to_state_name, event) {
 		var statechart = this.get_statechart_context();
 		var parent = this.get_context();
 
@@ -420,24 +469,30 @@ var Env = function() {
 			, from: from_state
 			, to: to_state
 		});
-
+		return command;
+	};
+	proto.add_transition = function() {
+		var command = this._get_add_transition_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
 	};
 
-	proto.remove_transition = function(transition_id) {
+	proto._get_remove_transition_command = function(transition_id) {
 		var statechart = this.get_statechart_context();
 
 		var command = red.command("remove_transition", {
 			statechart: statechart
 			, id: transition_id
 		});
-
+		return command;
+	};
+	proto.remove_transition = function() {
+		var command = this._get_remove_transition_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
 	};
 
-	proto.set_event = function(transition_id, event) {
+	proto._get_set_event_command = function(transition_id, event) {
 		var statechart = this.get_statechart_context();
 
 		var command = red.command("set_transition_event", {
@@ -445,9 +500,29 @@ var Env = function() {
 			, id: transition_id
 			, event: event
 		});
-
+		return command
+	};
+	proto.set_event = function() {
+		var command = this._get_set_event_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
+	};
+
+	proto._get_stateful_prop_set_value_command = function(stateful_prop, state, value) {
+		var command = red.command("set_stateful_prop_value", {
+			stateful_prop: stateful_prop
+			, state: state
+			, value: value
+		});
+		return command;
+	};
+
+	proto._get_stateful_prop_unset_value_command = function(stateful_prop, state) {
+		var command = red.command("unset_stateful_prop_value", {
+			stateful_prop: stateful_prop
+			, state: state
+		});
+		return command;
 	};
 
 	proto.print = function() {

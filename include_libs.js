@@ -50,6 +50,7 @@ exports.main_src = c(
 				, "controller/commands/prop_commands.js"
 				, "controller/commands/cell_commands.js"
 				, "controller/commands/statechart_commands.js"
+				, "controller/commands/combined_commands.js"
 				, "controller/environment/default_environment.js"
 			])
 );
