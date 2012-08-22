@@ -1,6 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = cjs._;
 
+
 var RedStatefulObj = function(options) {
 	RedStatefulObj.superclass.constructor.apply(this, arguments);
 
@@ -9,7 +10,7 @@ var RedStatefulObj = function(options) {
 	this._$sc_proto_moved   = _.bind(this._sc_proto_moved,   this);
 
 	this._statechart = cjs.create("statechart");
-	this._states = cjs(_.bind(this._state_getter, this));
+	this._states = cjs(_.bind(this._states_getter, this));
 	this.initialize_statechart();
 	this._all_protos.onRemove(this._$sc_proto_removed)
 					.onAdd   (this._$sc_proto_added)
@@ -27,33 +28,29 @@ var RedStatefulObj = function(options) {
 	proto.initialize_statechart = function() {
 		var statechart = this._statechart;
 
-		statechart	.add_state("INIT")
-					.starts_at("INIT");
-
-		var reset_event = cjs.create_event("manual");
-		this.do_reset = reset_event.fire;
-
-
-		this.own_statechart = cjs.create("statechart");
+		this.own_statechart = cjs	.create("statechart")
+									.add_state("INIT")
+									.starts_at("INIT");
+		this._init_state = this.own_statechart.get_state_with_name("INIT");
 
 		this.inherited_statecharts = cjs.create("statechart")
 										.concurrent(true);
 
-		this.running_statechart = cjs	.create("statechart")
-										.concurrent(true)
-										.add_state("own", this.get_own_statechart())
-										.add_state("inherited", this.inherited_statecharts);
+		statechart	.concurrent(true)
+					.add_state("own", this.own_statechart)
+					.add_state("inherited", this.inherited_statecharts);
 
-		this._init_state = statechart.get_state_with_name("INIT");
-		statechart	.add_state("running", this.running_statechart)
-		//			.add_transition("INIT", "running", cjs.create_event("on_enter", this._init_state))
-					.add_transition("running", "INIT", reset_event);
+
 
 		statechart._on("state_added", this._states.invalidate);
 		statechart._on("state_removed", this._states.invalidate);
 		statechart._on("state_moved", this._states.invalidate);
 		statechart._on("transition_added", this._states.invalidate);
 		statechart._on("transition_removed", this._states.invalidate);
+	};
+	proto.reset = function() {
+		var statechart = this.get_statechart();
+		statechart.reset();
 	};
 	proto.get_init_state = function() {
 		return this._init_state;
@@ -168,11 +165,18 @@ var RedStatefulObj = function(options) {
 		this.inherited_statecharts.add_state("proto_"+to_index, shadow_statechart);
 	};;
 
-	proto._state_getter = function() {
-		var init_state = [this._init_state];
+	proto._states_getter = function() {
 		var own_states = _.rest(this.get_own_statechart().flatten().filter(function(state) {
 			return state.get_type() !== "pre_init";
 		}));
+		var inherited_states = this.get_inherited_states();
+
+		return own_states.concat(inherited_states);
+	};
+	proto.get_states = function() {
+		return this._states.get();
+	};
+	proto.get_inherited_states = function() {
 		var self = this;
 		var inherited_states = _.rest(this.inherited_statecharts.flatten().filter(function(state) {
 			if(state.get_type() === "pre_init") { return false; }
@@ -180,11 +184,7 @@ var RedStatefulObj = function(options) {
 
 			return true;
 		}));
-
-		return init_state.concat(own_states, inherited_states);
-	};
-	proto.get_states = function() {
-		return this._states.get();
+		return inherited_states;
 	};
 
 	proto.state_is_inherited = function(state) {
@@ -229,7 +229,7 @@ var RedStatefulObj = function(options) {
 	};
 	proto._sc_proto_added = function(item, index) {
 		if(item.get_statechart) {
-			var item_statechart = item.get_statechart().get_state_with_name("running.own");
+			var item_statechart = item.get_own_statechart();
 			var shadow_statechart = red._shadow_statechart(item_statechart);
 			this.add_shadow_statechart(shadow_statechart, index);
 		} else {
@@ -245,6 +245,54 @@ var RedStatefulObj = function(options) {
 		statechart.run();
 	};
 	proto.get_own_statechart = function() { return this.own_statechart; };
+	proto.add_state = function() {
+		var own_statechart = this.get_own_statechart();
+		own_statechart.add_state.apply(own_statechart, arguments);
+		return this;
+	};
+	proto.find_state = function(state) {
+		if(_.isString(state)) {
+			var own_statechart = this.get_own_statechart();
+			var rv = own_statechart.get_state_with_name(state);
+			if(rv) { return rv; }
+			else {
+				var statechart = this.get_statechart();
+				return statechart.get_state_with_name(state);
+			}
+		} else {
+			return state;
+		}
+	};
+	proto.get_state = function() {
+		var statechart = this.get_statechart();
+		return statechart.get_state();
+	};
+	proto.add_transition = function(from_state, to_state, event) {
+		var statechart = this.get_own_statechart();
+		if(arguments.length === 1) {
+			statechart.add_transition.apply(statechart, arguments);
+		} else {
+			from_state = this.find_state(from_state);
+			to_state = this.find_state(to_state);
+			statechart.add_transition(from_state, to_state, event);
+		}
+		return this;
+	};
+	proto.is = function(state) {
+		var statechart = this.get_statechart();
+		return statechart.is(state);
+	};
+	proto.starts_at = function(transition_to) {
+		var statechart = this.get_own_statechart();
+		transition_to = this.find_state(transition_to);
+		statechart.starts_at(transition_to);
+		return this;
+	};
+	proto.rename_state = function() {
+		var own_statechart = this.get_own_statechart();
+		own_statechart.rename_state.apply(own_statechart, arguments);
+		return this;
+	};
 }(RedStatefulObj));
 
 red.RedStatefulObj = RedStatefulObj;

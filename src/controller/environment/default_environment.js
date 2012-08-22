@@ -546,7 +546,7 @@ var Env = function() {
 					var row = [prop_name, value_to_value_str(value_got)];
 					_.forEach(parent_states, function(parent_state) {
 						var val = value.get_value(parent_state);
-						var val_got = val.get();
+						var val_got = cjs.get(val);
 						row.push(value_to_source_str(val_got));
 					});
 					rows.push(row);

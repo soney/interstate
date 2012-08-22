@@ -5,34 +5,33 @@ var _ = cjs._;
 module("OBJ");
 test('Basic objs', function() {
 	var o1 = cjs.create("red_stateful_obj");
+	var inita_event = cjs.create_event("manual");
 	var ab_event = cjs.create_event("manual");
-	o1.get_own_statechart()	.add_state("a")
-							.add_state("b")
-							.add_transition("a", "b", ab_event)
-							.starts_at("a");
-	var a_state = o1.get_own_statechart().get_state_with_name("a");
-	var b_state = o1.get_own_statechart().get_state_with_name("b");
+	o1	.rename_state("INIT", "a")
+		.add_state("b")
+		.add_transition("a", "b", ab_event);
+	inita_event.fire();
+	var a_state = o1.find_state("a");
+	var b_state = o1.find_state("b");
 	o1.set_prop("x", cjs.create("red_stateful_prop"));
 	var x_prop = o1.get_prop("x");
 	x_prop.set_value(a_state, cjs.create("red_cell", {str: "1"}))
 	x_prop.set_value(b_state, cjs.create("red_cell", {str: "2"}))
-	o1.get_statechart().run();
+	o1.run();
 
-	console.log(x_prop.get());
 	equal(x_prop.get(), 1);
-	/*
 	ab_event.fire();
 	equal(x_prop.get(), 2);
 
 	var o2 = cjs.create("red_stateful_obj");
+
 	o2.set_protos([o1]);
-	o2.get_statechart().run();
+	o2.run();
 	equal(o2.get_prop("x").get(), 1);
-	x_prop.unset_value(a_state)
+	x_prop.unset_value(a_state);
 	x_prop.set_value(a_state, cjs.create("red_cell", {str: "3"}))
 
 	equal(o2.get_prop("x").get(), 3);
-	*/
 });
 test('Obj inheritance 1', function() {
 	var root = cjs.create("red_dict");
@@ -63,16 +62,14 @@ test('Obj inheritance 2', function() {
 	var y = cjs.create("red_stateful_obj");
 	root.set_prop("y", y);
 
-	var running = x.get_statechart().get_state_with_name("running.own");
 	var xy_event = cjs.create_event("manual");
-	running	.add_state("x_state")
-			.add_state("y_state")
-			.add_transition("x_state", "y_state", xy_event)
-			.starts_at("x_state");
-	x.get_statechart().run();
+	x	.rename_state("INIT", "x_state")
+		.add_state("y_state")
+		.add_transition("x_state", "y_state", xy_event);
+	x.run();
 
-	var x_state = running.get_state_with_name("x_state");
-	var y_state = running.get_state_with_name("y_state");
+	var x_state = x.find_state("x_state");
+	var y_state = x.find_state("y_state");
 
 	var a = cjs.create("red_stateful_prop");
 	x.set_prop("a", a);
@@ -83,7 +80,7 @@ test('Obj inheritance 2', function() {
 
 	y.set_protos([x]);
 
-	y.get_statechart().run();
+	y.run();
 	equal(y.get_prop("a").get(), 1);
 	equal(x.get_prop("a").get(), 2);
 });
