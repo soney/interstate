@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>music player</title>
+		<script type="text/javascript" src="../../server/jquery-1.7.2.min.js"></script>
+	</head>
+	<body>
+		<div class="output"></div>
+
+		<div>
+			<%- red_include(red_inc.main) %>
+
+			<script type="text/javascript">
+				var cjs = red.cjs, _ = cjs._;
+				$(function() {
+					var env = red.create_environment();
+					window.env = env;
+				});
+			</script>
+		</div>
+	</body>
+</html>

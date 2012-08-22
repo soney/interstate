@@ -153,7 +153,6 @@ var Env = function() {
 	proto.initialize_props = function() {
 		this.set("dom", this._dom_obj_blueprint);
 		this.set("children", "dict");
-		this.in_prop("children");
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
