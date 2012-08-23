@@ -317,8 +317,6 @@ var Env = function(dom_container_parent) {
 			}
 			cell = cjs.create("red_cell", {str: ""});
 			combine_command = this._get_stateful_prop_set_value_command(prop, for_state, cell);
-			
-			prop.set_value(for_state, cell);
 		}
 		var command;
 		var change_cell_command = red.command("change_cell", {
@@ -589,7 +587,7 @@ var Env = function(dom_container_parent) {
 					_.forEach(parent_states, function(parent_state) {
 						var val = value.get_value(parent_state);
 						var val_got = cjs.get(val);
-						row.push(value_to_source_str(val_got));
+						row.push(value_to_source_str(val));
 					});
 					rows.push(row);
 				} else {

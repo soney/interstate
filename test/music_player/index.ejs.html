@@ -15,6 +15,38 @@
 				var cjs = red.cjs, _ = cjs._;
 				$(function() {
 					var env = red.create_environment($(".output")[0]);
+					env.in_prop("children");
+					env.set("a", "stateful");
+					env.set("b", "stateful");
+					//var c = env.set("c", "stateful");
+
+					env.top();
+					env.in_prop("children.a");
+					env.set("tag", "div");
+					window.a = env.get_context();
+
+					env.set("blueprints");
+					env.set_cell("blueprints", "INIT", "[dom]");
+
+					env.top();
+
+					env.in_prop("children.b");
+					window.b = env.get_context();
+
+					env.set("blueprints");
+					env.set_cell("blueprints", "INIT", "[a]");
+					/*
+					env.add_state("s1");
+					env.add_state("s2");
+					env.top();
+
+					env.in_prop("children.c");
+					window.c = env.get_context();
+
+					env.set("blueprints");
+					env.set_cell("blueprints", "INIT", "[b]");
+					env.top();
+					/*
 
 					env.set("clickable_button", "stateful");
 					env.in_prop("clickable_button");
@@ -29,12 +61,13 @@
 					env.add_transition("active", "hover", "mouseup(window)");
 					env.add_transition("activeout", "active", "mouseover(this)");
 					env.add_transition("activeout", "idle", "mouseup(window)");
+					/*
 
-					env.set("blueprints");
-					env.set_cell("blueprints", "idle", "[dom]");
-					env.set("tag");
 					env.set_cell("tag", "idle", "'img'");
 					env.set("src");
+					env.set("tag");
+					env.set("blueprints");
+					env.set_cell("blueprints", "idle", "[dom]");
 
 					var button = window.button = env.get_context();
 					//console.log(button);

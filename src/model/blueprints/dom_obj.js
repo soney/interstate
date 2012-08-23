@@ -52,6 +52,7 @@ var add_prop_change_listener = function(obj, prop_name, updater) {
 
 var add_tag_change_listener = function(self, datum) {
 	var update_tag = function(tag_name) {
+		console.log(tag_name);
 		var dom_obj = datum("dom_obj");
 		var new_dom_obj;
 
