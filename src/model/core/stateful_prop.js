@@ -65,6 +65,9 @@ var RedStatefulProp = function(options) {
 	//
 	
 	proto._set_direct_value_for_state = function(state, value) {
+		if(value && _.has(value, "set_parent")) {
+			value.set_parent(this._constraint);
+		}
 		this._direct_values.set(state, value);
 	};
 	proto._unset_direct_value_for_state = function(state) {
@@ -147,7 +150,11 @@ var RedStatefulProp = function(options) {
 	};
 	proto._active_value_getter = function() {
 		var active_state = this.get_active_state();
-		return this._value_for_state(active_state);
+		if(_.isUndefined(active_state)) {
+			return undefined;
+		} else {
+			return this._value_for_state(active_state);
+		}
 	};
 	proto.get_active_value = function() {
 		return this._active_value.get();

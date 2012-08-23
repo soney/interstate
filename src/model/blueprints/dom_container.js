@@ -67,7 +67,6 @@ var update = function(node, container) {
 
 	var diff = _.diff(actual_children, proposed_children);
 	if(diff.added.length > 0 || diff.moved.length > 0 || diff.removed.length > 0) {
-		console.log(actual_children, proposed_children);
 		_.forEach(diff.removed, function(x) {
 			var index = x.index
 				, item = x.item;

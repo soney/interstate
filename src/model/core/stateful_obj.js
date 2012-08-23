@@ -177,6 +177,7 @@ var RedStatefulObj = function(options) {
 	};
 
 	proto._states_getter = function() {
+		var self = this;
 		var own_states = _.rest(this.get_own_statechart().flatten().filter(function(state) {
 			return self._interested_in_state(state);
 		}));
