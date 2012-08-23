@@ -9,22 +9,12 @@ var RedStatefulProp = function(options) {
 
 	this._parent = cjs.create("constraint", options.parent, true);
 	this._statechart = cjs.create("constraint", _.bind(this._root_statechart_getter, this));
-	this._statechart_constraint = cjs.create("statechart_constraint", this._statechart);
 
-	this._inherited_states =  cjs(_.bind(this._inherited_states_getter, this));
-	this._inherited_values = this._inherited_states.map(
-						function(state) {
-							return cjs.create("constraint", function() {
-								return self._inherited_value_for_state(state);	
-							});
-						}
-					);
-	_.forEach(this._inherited_values.get(), function(value, index) {
-		self._on_inherited_value_added(value, index);
-	});
-	this._inherited_values	.onAdd   (_.bind(this._on_inherited_value_added,   this))
-							.onRemove(_.bind(this._on_inherited_value_removed, this))
-							.onMove  (_.bind(this._on_inherited_value_moved,   this));
+	this._direct_values = cjs.create("map");
+	this._active_states = cjs.create("constraint", _.bind(this._active_states_getter, this));
+	this._active_values = cjs.create("constraint", _.bind(this._active_values_getter, this));
+	this._active_state = cjs.create("constraint", _.bind(this._active_state_getter, this));
+	this._active_value = cjs.create("constraint", _.bind(this._active_value_getter, this));
 };
 (function(my) {
 	var proto = my.prototype;
@@ -53,6 +43,9 @@ var RedStatefulProp = function(options) {
 			return undefined;
 		}
 	};
+	proto.get_statechart = function() {
+		return this._statechart.get();
+	};
 	
 	//
 	// ===== STATECHART =====
@@ -71,11 +64,21 @@ var RedStatefulProp = function(options) {
 	// ===== VALUES =====
 	//
 	
+	proto._set_direct_value_for_state = function(state, value) {
+		this._direct_values.set(state, value);
+	};
+	proto._unset_direct_value_for_state = function(state) {
+		this._direct_values.unset(state);
+	};
+	
+	proto._direct_value_for_state = function(state) {
+		return this._direct_values.get(state);
+	};
+	
 	proto._inherited_value_for_state = function(state) {
 		var proto_value = this._get_prototype_value_for_state(state);
 		if(proto_value && proto_value.clone) {
 			var cloned_value = proto_value.clone({parent: this});
-			//cloned_value.set_parent(this);
 			return cloned_value;
 		} else if(proto_value) {
 			return proto_value;
@@ -93,6 +96,7 @@ var RedStatefulProp = function(options) {
 			return this._inherited_value_for_state(state);
 		}
 	};
+
 	
 	proto.get_value = function(state) {
 		var rv = this._statechart_constraint.get_value_for_state(state);
@@ -100,40 +104,53 @@ var RedStatefulProp = function(options) {
 	};
 
 	proto.get = function() {
-		return cjs.get(this._statechart_constraint, true);
-	};
-	proto.set_value = function(state, value) {
-		if(value && _.has(value, "set_parent")) {
-			value.set_parent(this._constraint);
-		}
-		this._statechart_constraint.set_value_for_state(state, value);
-		return this;
-	};
-	proto.unset_value = function(state) {
-		this._statechart_constraint.unset_value_for_state(state);
-		return this;
+		var active_value = this.get_active_value();
+		return cjs.get(active_value);
 	};
 
-	proto._on_inherited_value_added = function(value, index) {
-		var states = this._inherited_states.get();
-		var state = states[index];
-		if(state) {
-			this._statechart_constraint.set_value_for_state(state, value);
-		}
+	proto.set_value = proto._set_direct_value_for_state;
+	proto.get_value = proto._value_for_state;
+	proto.unset_value = proto._unset_direct_value_for_state;
+
+	proto._active_states_getter = function() {
+		var stateful_obj = this.get_stateful_obj_parent();
+		return stateful_obj.get_active_states();
 	};
-	proto._on_inherited_value_removed = function(value, index) {
-		var states = this._inherited_states.get();
-		var state = states[index];
-		if(state) {
-			this._statechart_constraint.unset_value_for_state(state);
-		}
+	proto.get_active_states = function() {
+		return this._active_states.get();
 	};
-	proto._on_inherited_value_moved = function(value, from_index, to_index) {
-		var states = this._inherited_states.get();
-		var state = states[from_index];
-		if(state) {
-			this._statechart_constraint.move_value_for_state(state, value);
+	proto._active_values_getter = function() {
+		var active_states = this.get_active_states();
+		var self = this;
+		var active_values = _.map(active_states, function(state) {
+			return self._value_for_state(state);
+		});
+		return active_values;
+	};
+	proto.get_active_values = function() {
+		return this._active_values.get();
+	};
+	proto._active_state_getter = function() {
+		var active_states = this.get_active_states();
+		var active_values = this.get_active_values();
+		for(var i = 0; i<active_states.length; i++) {
+			var active_state = active_states[i];
+			var active_value = active_values[i];
+			if(!_.isUndefined(active_value)) {
+				return active_state;
+			}
 		}
+		return undefined;
+	};
+	proto.get_active_state = function() {
+		return this._active_state.get();
+	};
+	proto._active_value_getter = function() {
+		var active_state = this.get_active_state();
+		return this._value_for_state(active_state);
+	};
+	proto.get_active_value = function() {
+		return this._active_value.get();
 	};
 	
 	// 
@@ -149,14 +166,17 @@ var RedStatefulProp = function(options) {
 
 	proto._get_prototype_value_for_state = function(state) {
 		var basis = state.get_basis();
-		var inherits_from = this._get_inherits_from();
-		var len = inherits_from.length;
-		for(var i = 0; i<len; i++) {
-			var p_value = inherits_from[i].get_value(basis);
-			if(!_.isUndefined(p_value)) {
-				return p_value;
+		if(basis) {
+			var inherits_from = this._get_inherits_from();
+			var len = inherits_from.length;
+			for(var i = 0; i<len; i++) {
+				var p_value = inherits_from[i].get_value(basis);
+				if(!_.isUndefined(p_value)) {
+					return p_value;
+				}
 			}
-		};
+		}
+		return undefined;
 	};
 
 	proto._get_inherits_from = function() {

@@ -11,6 +11,7 @@ var RedStatefulObj = function(options) {
 
 	this._statechart = cjs.create("statechart");
 	this._states = cjs(_.bind(this._states_getter, this));
+	this._active_states = cjs(_.bind(this._active_states_getter, this));
 	this.initialize_statechart();
 	this._all_protos.onRemove(this._$sc_proto_removed)
 					.onAdd   (this._$sc_proto_added)
@@ -163,11 +164,21 @@ var RedStatefulObj = function(options) {
 			}
 		}
 		this.inherited_statecharts.add_state("proto_"+to_index, shadow_statechart);
-	};;
+	};
+
+	proto._interested_in_state = function(state) {
+		if(state.get_type() === "pre_init") {
+			return false;
+		} else if(state.parent() === this.inherited_statecharts) {
+			return false;
+		} else {
+			return true;
+		}
+	};
 
 	proto._states_getter = function() {
 		var own_states = _.rest(this.get_own_statechart().flatten().filter(function(state) {
-			return state.get_type() !== "pre_init";
+			return self._interested_in_state(state);
 		}));
 		var inherited_states = this.get_inherited_states();
 
@@ -176,13 +187,22 @@ var RedStatefulObj = function(options) {
 	proto.get_states = function() {
 		return this._states.get();
 	};
+	proto._active_states_getter = function() {
+		var statechart = this.get_statechart();
+		var states = statechart.get_state();
+		var self = this;
+		active_states = _.filter(states, function(state) {
+			return self._interested_in_state(state);
+		});
+		return states;
+	};
+	proto.get_active_states = function() {
+		return this._active_states.get();
+	};
 	proto.get_inherited_states = function() {
 		var self = this;
 		var inherited_states = _.rest(this.inherited_statecharts.flatten().filter(function(state) {
-			if(state.get_type() === "pre_init") { return false; }
-			else if(state.parent() === self.inherited_statecharts) { return false; }
-
-			return true;
+			return self._interested_in_state(state);
 		}));
 		return inherited_states;
 	};
