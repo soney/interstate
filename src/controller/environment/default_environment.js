@@ -409,15 +409,7 @@ var Env = function(dom_container_parent) {
 	};
 
 	var get_state = function(parent, statechart, state_name) {
-		if(_.isString(state_name)) {
-			if(state_name === "INIT") {
-				return parent.get_init_state();
-			} else {
-				return statechart.get_state_with_name(state_name);
-			}
-		} else {
-			return state_name;
-		}
+		return parent.find_state(state_name);
 	};
 
 	proto._get_add_transition_command = function(from_state_name, to_state_name, event) {

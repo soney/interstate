@@ -62,9 +62,10 @@
 					env.add_transition("active", "hover", "mouseup(window)");
 					env.add_transition("activeout", "active", "mouseover(this)");
 					env.add_transition("activeout", "idle", "mouseup(window)");
-
+					env.set("blueprints");
 					env.set("tag");
 					env.set("src");
+					env.set_cell("blueprints", "idle", "[dom]");
 					env.set_cell("tag", "idle", "'img'");
 
 					env.top();
@@ -73,11 +74,15 @@
 					env.set("prev_button", "stateful");
 					env.in_prop("prev_button");
 					env.set("blueprints");
+					env.set("src");
 					env.set_cell("blueprints", "INIT", "[clickable_button]");
 					env.set_cell("src", "idle", "'buttons/play.png'");
 					env.set_cell("src", "hover", "'buttons/play.png'");
 					env.set_cell("src", "active", "'buttons/play_active.png'");
 					env.set_cell("src", "activeout", "'buttons/play.png'");
+
+					window.prev = env.get_context();
+					window.src = prev.get_prop("src");
 
 					/*
 

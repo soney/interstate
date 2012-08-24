@@ -218,6 +218,7 @@ cjs.define("red_stateful_prop", function(options) {
 		return cjs.create("red_stateful_prop", options);
 	};
 
+	constraint.property = property;
 	constraint.type = "red_stateful_prop";
 	return constraint;
 });

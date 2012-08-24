@@ -54,7 +54,7 @@ var get_event = function(node, parent) {
 		} else if(name === "window") {
 			return window;
 		} else {
-			console.log("unfound", type, node, parent);
+			//console.log("unfound", type, node, parent);
 		}
 	} else if(type === "ThisExpression") {
 		return parent;

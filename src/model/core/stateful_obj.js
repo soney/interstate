@@ -273,13 +273,23 @@ var RedStatefulObj = function(options) {
 	};
 	proto.find_state = function(state) {
 		if(_.isString(state)) {
-			var own_statechart = this.get_own_statechart();
-			var rv = own_statechart.get_state_with_name(state);
+			var statechart = this.get_statechart();
+			var rv = statechart.get_state_with_name(state);
 			if(rv) { return rv; }
-			else {
-				var statechart = this.get_statechart();
-				return statechart.get_state_with_name(state);
-			}
+
+			var own_statechart = this.get_own_statechart();
+			rv = own_statechart.get_state_with_name(state);
+			if(rv) { return rv; }
+
+			var my_states = this.get_states();
+			var my_state_names = _.map(my_states, function(my_state) {
+				return my_state.get_name(my_state.parent());
+			});
+
+			var index = _.indexOf(my_state_names, state);
+			if(index>=0) { return my_states[index]; }
+
+			return undefined;
 		} else {
 			return state;
 		}
