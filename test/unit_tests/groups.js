@@ -15,9 +15,9 @@ test('Counted groups', function() {
 	g1.set_basis(cjs(2));
 	val = g1.get();
 	ok(val.length === 2);
-	equal(val[0].get_prop("basis"), 0);
-	equal(val[1].get_prop("basis"), 1);
-	equal(val[1].get_prop("x").get(), 2);
+	equal(val[0].prop_val("basis"), 0);
+	equal(val[1].prop_val("basis"), 1);
+	equal(val[1].prop_val("x"), 2);
 });
 }());
 

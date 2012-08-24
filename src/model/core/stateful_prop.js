@@ -2,31 +2,17 @@
 var cjs = red.cjs, _ = cjs._;
 
 var RedStatefulProp = function(options) {
-	options = options || {};
-	if(!options.parent) { options.parent = undefined; }
-
-	var self = this;
-
-	this._parent = cjs.create("constraint", options.parent, true);
-	this._statechart = cjs.create("constraint", _.bind(this._root_statechart_getter, this));
-
 	this._direct_values = cjs.create("map");
-	this._active_states = cjs.create("constraint", _.bind(this._active_states_getter, this));
-	this._active_values = cjs.create("constraint", _.bind(this._active_values_getter, this));
-	this._active_state = cjs.create("constraint", _.bind(this._active_state_getter, this));
-	this._active_value = cjs.create("constraint", _.bind(this._active_value_getter, this));
 };
 (function(my) {
 	var proto = my.prototype;
 
 	//
-	// ===== PARENTAGE =====
+	// ===== STATECHARTS =====
 	//
 
-	proto.get_parent = function() { return this._parent.get(); };
-	proto.set_parent = function(parent) { this._parent.set(parent); };
-	proto.get_stateful_obj_parent = function() {
-		var prop_obj = this.get_parent();
+	proto.get_stateful_obj_in_context = function(context) {
+		var prop_obj = context;
 		if(prop_obj) {
 			var stateful_obj = prop_obj.get_parent();
 			if(stateful_obj) {
@@ -35,55 +21,76 @@ var RedStatefulProp = function(options) {
 		}
 		return undefined;
 	};
-	proto._root_statechart_getter = function() {
-		var stateful_obj = this.get_stateful_obj_parent();
+	proto.get_root_statechart_in_context = function(context) {
+		var stateful_obj = this.get_stateful_obj_in_context(context);
 		if(stateful_obj) {
 			return stateful_obj.get_statechart();
 		} else {
 			return undefined;
 		}
 	};
-	proto.get_statechart = function() {
-		return this._statechart.get();
-	};
 	
+	//
+	// ===== DIRECT VALUES =====
+	//
+	
+	proto.set_value = proto._set_direct_value_for_state = function(state, value) {
+		this._direct_values.set(state, value);
+	};
+	proto.unset_value = proto._unset_direct_value_for_state = function(state) {
+		this._direct_values.unset(state);
+	};
+	proto._direct_value_for_state = function(state) {
+		return this._direct_values.get(state);
+	};
+
+
+	//
+	// ===== INHERITED VALUES =====
+	//
+
+	proto._get_inherits_from_in_context = function(context) {
+		if(context) {
+			var context_inherits_from = context.inherits_from();
+			return _.map(context_inherits_from, function(prop_obj) {
+				return prop_obj.get_value();
+			});
+		}
+		return [];
+	};
+
+	proto._get_prototype_value_for_state_in_context = function(context, state) {
+		var basis = state.get_basis();
+		if(basis) {
+			var inherits_from = this._get_inherits_from_in_context(context);
+			var len = inherits_from.length;
+			for(var i = 0; i<len; i++) {
+				var p_value = inherits_from[i].get_value(basis);
+				if(!_.isUndefined(p_value)) {
+					return p_value;
+				}
+			}
+		}
+		return undefined;
+	};
+
 	//
 	// ===== STATECHART =====
 	//
-	
-	proto._inherited_states_getter = function() {
-		var stateful_obj = this.get_stateful_obj_parent();
+
+	proto._get_inherited_states_in_context = function(context) {
+		var stateful_obj = this.get_stateful_obj_in_context(context);
 		if(stateful_obj) {
 			return stateful_obj.get_inherited_states();
 		} else {
 			return [];
 		}
 	};
-	
-	//
-	// ===== VALUES =====
-	//
-	
-	proto._set_direct_value_for_state = function(state, value) {
-		if(value && _.has(value, "set_parent")) {
-			value.set_parent(this._constraint);
-		}
-		this._direct_values.set(state, value);
-	};
-	proto._unset_direct_value_for_state = function(state) {
-		this._direct_values.unset(state);
-	};
-	
-	proto._direct_value_for_state = function(state) {
-		return this._direct_values.get(state);
-	};
-	
-	proto._inherited_value_for_state = function(state) {
-		var proto_value = this._get_prototype_value_for_state(state);
-		if(proto_value && proto_value.clone) {
-			var cloned_value = proto_value.clone({parent: this});
-			return cloned_value;
-		} else if(proto_value) {
+
+
+	proto._inherited_value_for_state_in_context = function(context, state) {
+		var proto_value = this._get_prototype_value_for_state_in_context(state, context);
+		if(proto_value) {
 			return proto_value;
 		} else {
 			return undefined;
@@ -100,6 +107,18 @@ var RedStatefulProp = function(options) {
 		}
 	};
 
+	/*
+	
+	proto._inherited_value_for_state = function(state) {
+		var proto_value = this._get_prototype_value_for_state(state);
+		if(proto_value) {
+			return proto_value;
+		} else {
+			return undefined;
+		}
+	};
+
+
 	
 	proto.get_value = function(state) {
 		var rv = this._statechart_constraint.get_value_for_state(state);
@@ -107,8 +126,15 @@ var RedStatefulProp = function(options) {
 	};
 
 	proto.get = function() {
-		var active_value = this.get_active_value();
-		return cjs.get(active_value);
+		return this.value_in_context(this);
+	};
+
+	proto.value_in_context = function(context) {
+		var value = this.get_active_value();
+		if(value && _.isFunction(value.value_in_context)) {
+			return value.value_in_context(context);
+		}
+		return cjs.get(value);
 	};
 
 	proto.set_value = proto._set_direct_value_for_state;
@@ -196,31 +222,14 @@ var RedStatefulProp = function(options) {
 		}
 		return [];
 	};
+	*/
 }(RedStatefulProp));
 
 red.RedStatefulProp = RedStatefulProp;
 
 cjs.define("red_stateful_prop", function(options) {
 	var property = new RedStatefulProp(options);
-	var constraint = cjs(function() {
-		var val = property.get();
-		return cjs.get(val); //Double constraint if inherited
-	});
-	property._constraint = constraint;
-	constraint.set_value = _.bind(property.set_value, property);
-	constraint.unset_value = _.bind(property.unset_value, property);
-	constraint.get_value = _.bind(property.get_value, property);
-	constraint.get_parent = _.bind(property.get_parent, property);
-	constraint.set_parent = _.bind(property.set_parent, property);
-	constraint.get_stateful_obj_parent = _.bind(property.get_stateful_obj_parent, property);
-	constraint.clone = function(options) {
-		options = options || {};
-		return cjs.create("red_stateful_prop", options);
-	};
-
-	constraint.property = property;
-	constraint.type = "red_stateful_prop";
-	return constraint;
+	return property;
 });
 
 }(red));

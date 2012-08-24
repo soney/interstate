@@ -31,15 +31,7 @@ var RedProp = function(options) {
 			if(inherits_from.length > 0) {
 				var primary_inheritance = _.first(inherits_from);
 				var primary_inheritance_value = primary_inheritance.get_value();
-				var cloned_value;
-				if(cjs.is_constraint(primary_inheritance_value)) {
-					return primary_inheritance_value.clone({
-						parent: this
-					});
-				} else {
-					cloned_value = primary_inheritance_value;
-				}
-				return cloned_value;
+				return primary_inheritance_value;
 			} else {
 				return undefined;
 			}

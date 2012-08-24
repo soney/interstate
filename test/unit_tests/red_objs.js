@@ -19,7 +19,7 @@ test('Basic objs', function() {
 	x_prop.set_value(b_state, cjs.create("red_cell", {str: "2"}))
 	o1.run();
 
-	equal(x_prop.get(), 1);
+	equal(o1.prop_val("x"), 1);
 	ab_event.fire();
 	equal(x_prop.get(), 2);
 
@@ -27,11 +27,13 @@ test('Basic objs', function() {
 
 	o2.set_protos([o1]);
 	o2.run();
-	equal(o2.get_prop("x").get(), 1);
+	equal(o2.prop_val("x"), 1);
+	/*
 	x_prop.unset_value(a_state);
 	x_prop.set_value(a_state, cjs.create("red_cell", {str: "3"}))
 
-	equal(o2.get_prop("x").get(), 3);
+	equal(o2.prop_val("x"), 3);
+	/**/
 });
 test('Obj inheritance 1', function() {
 	var root = cjs.create("red_dict");
@@ -46,14 +48,14 @@ test('Obj inheritance 1', function() {
 
 	var cell = cjs.create("red_cell", {str: "4"});
 	x.set_prop("a", cell);
-	equal(z.get_prop("a").get(), 4);
+	equal(z.prop_val("a"), 4);
 	cell.set_str("b + x.b");
 	x.set_prop("b", 1);
 	y.set_prop("b", 2);
 	z.set_prop("b", 3);
-	equal(x.get_prop("a").get(), 2);
-	equal(y.get_prop("a").get(), 3);
-	equal(z.get_prop("a").get(), 4);
+	equal(x.prop_val("a"), 2);
+	equal(y.prop_val("a"), 3);
+	equal(z.prop_val("a"), 4);
 });
 test('Obj inheritance 2', function() {
 	var root = cjs.create("red_dict");
@@ -81,8 +83,10 @@ test('Obj inheritance 2', function() {
 	y.set_protos([x]);
 
 	y.run();
-	equal(y.get_prop("a").get(), 1);
-	equal(x.get_prop("a").get(), 2);
+/*
+	equal(y.prop_val("a"), 1);
+	equal(x.prop_val("a"), 2);
+	/**/
 });
 }());
 

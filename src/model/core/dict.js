@@ -210,6 +210,16 @@ var RedDict = function(options) {
 		}
 	};
 
+	proto.prop_val = function(name) {
+		var value = this.get_prop(name);
+		if(value && _.isFunction(value.value_in_context)) {
+			return value.value_in_context(this);
+		} else if(value && value instanceof red.RedStatefulProp) {
+			return value.get();
+		}
+		return cjs.get(value);
+	};
+
 	proto._get_all_prop = function(name) {
 		var prop_obj = this._get_all_prop_obj(name);
 		if(_.isUndefined(prop_obj)) {

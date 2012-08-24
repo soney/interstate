@@ -117,16 +117,10 @@ var eval_tree = function(node, context, restrict_context) {
 
 var RedCell = function(options) {
 	options = options || {};
-	this._parent = cjs.create("constraint", options.parent, true);
 	this._str = _.isString(options.str) ? cjs.create("constraint", options.str) : options.str;
-	if(!this._str) debugger;
 	var self = this;
 	this._tree = cjs(function() {
 		return esprima.parse(self.get_str());
-	});
-	this._value = cjs(function() {
-		var tree = self._tree.get();
-		return eval_tree(tree.body[0], self.get_parent());
 	});
 };
 (function(my) {
@@ -138,41 +132,16 @@ var RedCell = function(options) {
 	proto.get_str = function() {
 		return this._str.get();
 	};
-	proto.get = function() {
-		return cjs.get(this._value);
-	};
-	proto.set_parent = function(parent) {
-		this._parent.set(parent, true);
-	};
-	proto.get_parent = function() {
-		return this._parent.get();
+	proto.value_in_context = function(context) {
+		var tree = this._tree.get();
+		return eval_tree(tree.body[0], context);
 	};
 }(RedCell));
 
 red.RedCell = RedCell;
 cjs.define("red_cell", function(options) {
 	var cell = new RedCell(options);
-	var constraint = cjs(function() {
-		return cell.get();
-	});
-	constraint.set_str = function(str) {
-		cell.set_str(str);
-		return constraint;
-	};
-	constraint.get_str = _.bind(cell.get_str, cell);
-	constraint.set_parent = _.bind(cell.set_parent, cell);
-	constraint.get_parent = _.bind(cell.get_parent, cell);
-	constraint.clone = function(options) {
-		options = options || {};
-		if(!options.str) {
-			options.str = cjs.create("constraint", function() {
-				return constraint.get_str();
-			});
-		}
-		return cjs.create("red_cell", options);
-	};
-	constraint.type = "red_cell";
-	return constraint;
+	return cell;
 });
 
 }(red));
