@@ -161,9 +161,52 @@
 			<script type="text/javascript">
 				var cjs = red.cjs, _ = cjs._;
 				$(function() {
+					/*
 					var env = red.create_environment($(".output")[0]);
+
+					env.set("a", "dict");
+					env.in_prop("a");
+					window.a = env.get_context();
+					env.top();
+					env.set("b", "dict");
+					env.in_prop("b");
+					window.b = env.get_context();
+
+					b.set_protos([a]);
+
+					env.top();
+					env.in_prop("a");
+					env.set("x", "1+2");
+
 					console.log(env.print());
 					window.env = env;
+					*/
+					window.a = cjs.create("red_dict");
+					window.b = cjs.create("red_dict");
+
+
+					b.set_protos([a]);
+					/*
+					a.set("x", cjs.create("red_cell", {str: "1+2+3"}));
+					console.log(a.get("x"));
+					console.log(b.get("x"));
+					*/
+					/*
+					a.set("x", cjs.create("red_cell", {str: "1"}));
+					a.set("y", cjs.create("red_cell", {str: "x+1"}));
+					b.set("x", cjs.create("red_cell", {str: "2"}));
+					console.log(a.get("y"));
+					console.log(b.get("y"));
+					*/
+					window.a_x = cjs.create("red_dict");
+					a_x.set("s", cjs.create("red_cell", {str: "x+y+1"}));
+					a_x.set("x", cjs.create("red_cell", {str: "1"}));
+					a.set("x", a_x);
+					a.set("y", cjs.create("red_cell", {str: "2"}));
+					b.set("y", cjs.create("red_cell", {str: "3"}));
+
+
+					console.log(b.get("x"));
 				});
 			</script>
 	  </div>

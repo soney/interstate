@@ -42,7 +42,22 @@ var eval_tree = function(node, context, restrict_context) {
 		var callee_got = cjs.get(callee);
 		return callee_got.apply(this, args_got);
 	} else if(type === "Identifier") {
-		var name = cjs.get(node.name);
+		var name = node.name;
+
+		context.reset_iterator();
+		var curr_context = context.iter();
+		while(curr_context) {
+			if(curr_context instanceof red.RedDict) {
+				if(curr_context.has_prop(name)) {
+					context.reset_iterator();
+					return curr_context.get(name);
+				}
+			}
+			curr_context = context.iter();
+		}
+		context.reset_iterator();
+		return undefined;
+		/*
 
 		var got_context;
 		if(cjs.is_constraint(context)) {
@@ -69,7 +84,9 @@ var eval_tree = function(node, context, restrict_context) {
 			got_context = got_context.get_parent();
 		}
 		return undefined;
+		*/
 	} else if(type === "ThisExpression") {
+	/*
 		var got_context = cjs.get(context);
 
 		while(got_context) {
@@ -78,6 +95,7 @@ var eval_tree = function(node, context, restrict_context) {
 			}
 			got_context = got_context.get_parent();
 		}
+		*/
 		return undefined;
 	} else if(type === "MemberExpression") {
 		var object = eval_tree(node.object, context, restrict_context);
@@ -117,8 +135,8 @@ var eval_tree = function(node, context, restrict_context) {
 
 var RedCell = function(options) {
 	options = options || {};
-	this._str = _.isString(options.str) ? cjs.create("constraint", options.str) : options.str;
 	var self = this;
+	this._str = _.isString(options.str) ? cjs.create("constraint", options.str) : options.str;
 	this._tree = cjs(function() {
 		return esprima.parse(self.get_str());
 	});
@@ -132,7 +150,7 @@ var RedCell = function(options) {
 	proto.get_str = function() {
 		return this._str.get();
 	};
-	proto.value_in_context = function(context) {
+	proto.get = function(context) {
 		var tree = this._tree.get();
 		return eval_tree(tree.body[0], context);
 	};

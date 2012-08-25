@@ -35,17 +35,9 @@ exports.main_src = c(
 			])
 	, cp(src, [
 				"model/core.js"
+				, "model/core/context_stack.js"
 				, "model/core/cell.js"
 				, "model/core/dict.js"
-				, "model/core/prop.js"
-				, "model/core/shadow_statechart.js"
-				, "model/core/stateful_obj.js"
-				, "model/core/stateful_prop.js"
-				, "model/core/red_event.js"
-				, "model/core/group.js"
-				, "model/blueprints/dom_container.js"
-				, "model/blueprints/dom_obj.js"
-				, "model/blueprints/proto_prop.js"
 				, "controller/commands/command_core.js"
 				, "controller/commands/prop_commands.js"
 				, "controller/commands/cell_commands.js"
