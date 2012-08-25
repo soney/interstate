@@ -62,7 +62,7 @@ var RedDict = function(options) {
 		this._direct_props.move(name, to_index);
 	};
 	proto.index = proto.prop_index = proto._direct_prop_index = function(name) {
-		return direct_props.key_index(name);
+		return this._direct_props._key_index(name);
 	};
 	proto.rename = proto._rename_direct_prop = function(from_name, to_name) {
 		if(this._has_direct_prop(to_name)) {
@@ -71,7 +71,9 @@ var RedDict = function(options) {
 			this._direct_props.rename(from_name, to_name);
 		}
 	};
-
+	proto._get_direct_prop_names = function() {
+		return this._direct_props.get_keys();
+	};
 
 	//
 	// === FULLY INHERITED PROPERTIES ===
@@ -108,6 +110,15 @@ var RedDict = function(options) {
 		}
 		return false;
 	};
+	proto._get_inherited_prop_names = function() {
+		var protos = this._get_all_protos();
+		var rv = [];
+		_.forEach(protos, function(protoi) {
+			rv.push.apply(rv, protoi._get_direct_prop_names());
+		});
+		rv = _.unique(rv);
+		return rv;
+	};
 	
 	
 	//
@@ -137,6 +148,26 @@ var RedDict = function(options) {
 			context = cjs.create("red_context", {stack: [this]});
 		}
 		return red.get_contextualizable(val, context);
+	};
+	proto.get_prop_names = function() {
+		var direct_prop_names = this._get_direct_prop_names();
+		var inherited_prop_names = this._get_inherited_prop_names();
+		return _.unique(direct_prop_names.concat(inherited_prop_names));
+	};
+	proto.is_inherited = function(prop_name) {
+		var direct_prop_names = this._get_direct_prop_names();
+		var inherited_prop_names = this._get_inherited_prop_names();
+		return _.indexOf(direct_prop_names, prop_name) < 0 && _.indexOf(inherited_prop_names, prop_name) >= 0;
+	};
+	proto.inherit = function(prop_name) {
+		if(!this.is_inherited(prop_name)) {
+			throw new Error("Trying to inherit non-inherited property");
+		}
+		var prop_val = this.get(prop_name);
+		var cloned_prop_val;
+		if(prop_val instanceof red.RedCell) {
+			cloned_prop_val = prop_val.clone();
+		}
 	};
 }(RedDict));
 

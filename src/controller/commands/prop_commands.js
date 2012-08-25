@@ -117,12 +117,14 @@ var RenamePropCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		console.log(this._from_name, this._to_name);
 		this._prop_value = this._parent.get_prop(this._to_name);
-		this._parent.rename_prop(this._from_name, this._to_name);
+		if(this._prop_value) {
+			this._parent.unset(this._to_name);
+		}
+		this._parent.rename(this._from_name, this._to_name);
 	};
 	proto._unexecute = function() {
-		this._parent.rename_prop(this._to_name, this._from_name);
+		this._parent.rename(this._to_name, this._from_name);
 		if(!_.isUndefined(this._prop_value)) {
 			this._parent.set_prop(this._from_name, this._prop_value);
 		}
@@ -171,6 +173,7 @@ var MovePropCommand = function(options) {
 red._commands["move_prop"] = function(options) {
 	return new MovePropCommand(options);
 };
+/*
 
 // === STATEFUL PROPS ===
 
@@ -244,4 +247,5 @@ red._commands["unset_stateful_prop_value"] = function(options) {
 	return new UnsetStatefulPropValueCommand(options);
 };
 
+*/
 }(red));

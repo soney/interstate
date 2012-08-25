@@ -38,6 +38,7 @@ exports.main_src = c(
 				, "model/core/context_stack.js"
 				, "model/core/cell.js"
 				, "model/core/dict.js"
+				, "model/core/stateful_obj.js"
 				, "controller/commands/command_core.js"
 				, "controller/commands/prop_commands.js"
 				, "controller/commands/cell_commands.js"

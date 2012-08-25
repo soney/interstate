@@ -154,6 +154,13 @@ var RedCell = function(options) {
 		var tree = this._tree.get();
 		return eval_tree(tree.body[0], context);
 	};
+	proto.clone = function() {
+		return cjs.create("red_cell", {str: this.get_str()});
+	};
+	proto.destroy = function() {
+		this._tree.destroy();
+		this._str.destroy();
+	};
 }(RedCell));
 
 red.RedCell = RedCell;
