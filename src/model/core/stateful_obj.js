@@ -29,6 +29,7 @@ var RedStatefulObj = function(options) {
 		this._direct_statechart	.add_state("INIT")
 								.starts_at("INIT");
 	};
+	/*
 	proto.reset = function() {
 		var statechart = this.get_own_statechart();
 		statechart.reset();
@@ -65,6 +66,7 @@ var RedStatefulObj = function(options) {
 		own_statechart.rename_state.apply(own_statechart, arguments);
 		return this;
 	};
+	*/
 
 	//
 	// === STATECHART SHADOWS ===
