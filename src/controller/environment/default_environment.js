@@ -115,6 +115,7 @@ var command_stack_factory = function() {
 
 var pointer_factory = function(initial_pointer) {
 	var pointer = initial_pointer;
+	var context = cjs.create("red_context");
 
 	return {
 		parent: function() {
@@ -126,6 +127,12 @@ var pointer_factory = function(initial_pointer) {
 		}
 		, set_pointer: function(p) {
 			pointer = p;
+		}
+		, get_context: function() {
+			return context;
+		}
+		, set_context: function(c) {
+			context = c;
 		}
 	};
 };
@@ -140,6 +147,7 @@ var Env = function(dom_container_parent) {
 	this._pointer = pointer_factory(this.root);
 
 	this.initialize_props();
+	this.top();
 };
 
 (function(my) {
@@ -157,23 +165,30 @@ var Env = function(dom_container_parent) {
 	proto.in_prop = function(prop_name) {
 		prop_name = prop_name || "";
 		var pointer = this.get_pointer();
+		var context = this.get_context();
 
 		_.forEach(prop_name.split("."), function(name) {
 			if(pointer) {
+				context = context.push(pointer);
 				pointer = pointer.get_prop(name);
 			}
 		});
 		this._pointer.set_pointer(pointer);
+		this._pointer.set_context(context);
 
 		return this.print();
 	};
 	proto.top = function() {
 		this._pointer.set_pointer(this.root);
+		this._pointer.set_context(cjs.create("red_context"));
 
 		return this.print();
 	};
 	proto.get_pointer = function() {
 		return this._pointer.get_pointer();
+	};
+	proto.get_context = function() {
+		return this._pointer.get_context();
 	};
 	proto.get_statechart_pointer = function() {
 		var pointer = this.get_pointer();
@@ -430,7 +445,7 @@ var Env = function(dom_container_parent) {
 			str = arg2;
 
 			var pointer = this.get_pointer();
-			var context_states = pointer.get_states();
+			var pointer_states = pointer.get_states(this.get_context());
 			if(_.isNumber(for_state)) {
 				for(var i = 0; i<context_states.length; i++) {
 					if(context_states[i].id === for_state) {
@@ -440,7 +455,7 @@ var Env = function(dom_container_parent) {
 				}
 			} else if(_.isString(for_state)) {
 				var statechart = this.get_statechart_pointer();
-				for_state = get_state(context, statechart, for_state);
+				for_state = get_state(for_state, pointer_states);
 			}
 			cell = cjs.create("red_cell", {str: ""});
 			combine_command = this._get_stateful_prop_set_value_command(prop, for_state, cell);
@@ -466,16 +481,39 @@ var Env = function(dom_container_parent) {
 		return this.print();
 	};
 
-	var get_state = function(parent, statechart, state_name) {
-		return parent.find_state(state_name);
+	var get_state = function(state_name, states) {
+		for(var i = 0; i<states.length; i++) {
+			var state = states[i];
+			if(state === state_name) {
+				return state;
+			} else if(state.get_name() === state_name) {
+				return state;
+			} else if(state.get_name(state.parent()) === state_name) {
+				return state;
+			}
+		}
+		return undefined
 	};
-	/*
 
+	proto._get_stateful_prop_set_value_command = function(stateful_prop, state, value) {
+		var command = red.command("set_stateful_prop_value", {
+			stateful_prop: stateful_prop
+			, state: state
+			, value: value
+		});
+		return command;
+	};
 
-
+	proto._get_stateful_prop_unset_value_command = function(stateful_prop, state) {
+		var command = red.command("unset_stateful_prop_value", {
+			stateful_prop: stateful_prop
+			, state: state
+		});
+		return command;
+	};
 
 	proto._get_add_state_command = function(state_name, index) {
-		var statechart = this.get_statechart_context();
+		var statechart = this.get_statechart_pointer();
 
 		if(_.isNumber(index)) { index++; } // Because of the pre_init state
 
@@ -494,7 +532,7 @@ var Env = function(dom_container_parent) {
 	};
 
 	proto._get_remove_state_command = function(state_name) {
-		var statechart = this.get_statechart_context();
+		var statechart = this.get_statechart_pointer();
 
 		var command = red.command("remove_state", {
 			state_name: state_name
@@ -509,7 +547,7 @@ var Env = function(dom_container_parent) {
 	};
 
 	proto._get_move_state_command = function(state_name, index) {
-		var statechart = this.get_statechart_context().get_state_with_name("running.own");
+		var statechart = this.get_statechart_pointer();
 
 		if(_.isNumber(index)) { index++; } // Because of the pre_init state
 		var command = red.command("move_state", {
@@ -528,7 +566,7 @@ var Env = function(dom_container_parent) {
 
 
 	proto._get_rename_state_command = function(from_state_name, to_state_name) {
-		var statechart = this.get_statechart_context();
+		var statechart = this.get_statechart_pointer();
 
 		var command = red.command("rename_state", {
 			from: from_state_name
@@ -545,8 +583,8 @@ var Env = function(dom_container_parent) {
 
 
 	proto._get_add_transition_command = function(from_state_name, to_state_name, event) {
-		var statechart = this.get_statechart_context();
-		var parent = this.get_context();
+		var statechart = this.get_statechart_pointer();
+		var parent = this.get_pointer();
 
 		var from_state = get_state(parent, statechart, from_state_name);
 		var to_state = get_state(parent, statechart, to_state_name);
@@ -567,7 +605,7 @@ var Env = function(dom_container_parent) {
 	};
 
 	proto._get_remove_transition_command = function(transition_id) {
-		var statechart = this.get_statechart_context();
+		var statechart = this.get_statechart_pointer();
 
 		var command = red.command("remove_transition", {
 			statechart: statechart
@@ -582,7 +620,7 @@ var Env = function(dom_container_parent) {
 	};
 
 	proto._get_set_event_command = function(transition_id, event) {
-		var statechart = this.get_statechart_context();
+		var statechart = this.get_statechart_pointer();
 
 		var command = red.command("set_transition_event", {
 			statechart: statechart
@@ -596,24 +634,6 @@ var Env = function(dom_container_parent) {
 		this._do(command);
 		return this.print();
 	};
-
-	proto._get_stateful_prop_set_value_command = function(stateful_prop, state, value) {
-		var command = red.command("set_stateful_prop_value", {
-			stateful_prop: stateful_prop
-			, state: state
-			, value: value
-		});
-		return command;
-	};
-
-	proto._get_stateful_prop_unset_value_command = function(stateful_prop, state) {
-		var command = red.command("unset_stateful_prop_value", {
-			stateful_prop: stateful_prop
-			, state: state
-		});
-		return command;
-	};
-	*/
 }(Env));
 
 red.create_environment = function(dom_container_parent) {
