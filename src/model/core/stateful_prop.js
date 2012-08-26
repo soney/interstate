@@ -74,11 +74,27 @@ var RedStatefulProp = function(options) {
 	proto.get_values = function(context) {
 		var states = this.get_states();
 		var inherits_from = this._get_inherits_from(context);
+		var self = this;
+		var values = _.map(states, function(state) {
+			return get_value_for_state(state, self, inherits_from);
+		});
+		var is_inheriteds = _.map(states, function(state) {
+			return !self._has_direct_value_for_state(state);
+		});
+
+
 	};
 	var get_value_for_state = function(state, stateful_prop, inherits_from) {
-		var direct_value = stateful_prop._direct_value_for_state(state);
-		if(!_.isUndefined(direct_value)) {
-			return direct_value;
+		if(stateful_prop._has_direct_value_for_state(state)) {
+			return stateful_prop._direct_value_for_state(state);
+		} else {
+			for(var i = 0; i<inherits_from.length; i++) {
+				var i_from = inherits_from[i];
+				if(i_from._has_direct_value_for_state(state)) {
+					return i_from._direct_value_for_state(state);
+				}
+			}
+			return undefined;
 		}
 	};
 }(RedStatefulProp));
