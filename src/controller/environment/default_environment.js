@@ -147,7 +147,6 @@ var Env = function(dom_container_parent) {
 	this._pointer = pointer_factory(this.root);
 
 	this.initialize_props();
-	this.top();
 };
 
 (function(my) {
@@ -265,10 +264,10 @@ var Env = function(dom_container_parent) {
 				if(value === pointer) { prop_name = "> " + prop_name; }
 				else { prop_name = "  " + prop_name; }
 
-				var value_got = red.get_contextualizable(value, context);
+				var value_got = red.get_contextualizable(value, context.push(dict));
 
 				if(value instanceof red.RedStatefulObj) {
-					var state_specs = value.get_state_specs(context);
+					var state_specs = value.get_state_specs(context.push(dict));
 					var row = [prop_name, value_to_value_str(value_got)];
 
 					var state_strs = _.map(state_specs, function(state_spec) {
@@ -281,20 +280,20 @@ var Env = function(dom_container_parent) {
 						return rv;
 					});
 					row.push.apply(row, state_strs);
-					to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(context));
+					to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(context.push(dict)));
 
 					rows.push(row);
-
-					var tablified_values = tablify_dict(value, indentation_level + 2, context.push(value));
+					
+					var tablified_values = tablify_dict(value, indentation_level + 2, context.push(dict));
 					rows.push.apply(rows, tablified_values);
 				} else if(value instanceof red.RedDict) {
 					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
 					rows.push(row);
 
-					var tablified_values = tablify_dict(value, indentation_level + 2, context.push(value));
+					var tablified_values = tablify_dict(value, indentation_level + 2, context.push(dict));
 					rows.push.apply(rows, tablified_values);
 				} else if(value instanceof red.RedStatefulProp) {
-					var value_specs = value.get_value_specs(context);
+					var value_specs = value.get_value_specs(context.push(dict));
 					var row = [prop_name, value_to_value_str(value_got)];
 
 					var value_strs = _.map(value_specs, function(value_spec) {

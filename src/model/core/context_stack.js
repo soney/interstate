@@ -49,6 +49,9 @@ var RedContext = function(options) {
 		}
 		return true;
 	};
+	proto.is_empty = function() {
+		return _.isEmpty(this._stack);
+	};
 }(RedContext));
 
 red.RedContext = RedContext;

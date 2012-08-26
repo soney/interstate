@@ -10,14 +10,25 @@ var RedStatefulProp = function(options) {
 	//
 	// === PARENTAGE ===
 	//
-	proto.get_stateful_obj_context = function(context) {
-		while(context) {
+	var get_stateful_obj_context = function(context) {
+		while(!context.is_empty()) {
 			if(context.last() instanceof red.RedStatefulObj) {
 				return context;
 			}
 			context = context.pop();
 		}
 		return undefined;
+	};
+	proto.get_stateful_obj_and_context = function(context) {
+		var one_level_above_context = get_stateful_obj_context(context);
+		if(_.isUndefined(one_level_above_context)) {
+			return undefined;
+		} else {
+			return {
+				stateful_obj: one_level_above_context.last()
+				, context: one_level_above_context.pop()
+			};
+		}
 	};
 
 	var state_basis = function(state) {
@@ -52,15 +63,19 @@ var RedStatefulProp = function(options) {
 	// === INHERITED VALUES ===
 	//
 	proto._get_inherits_from = function(context) {
-		var stateful_obj_context = this.get_stateful_obj_context();
+		var stateful_obj_and_context = this.get_stateful_obj_and_context(context);
+		var stateful_obj_context = stateful_obj_and_context.context;
+		var stateful_obj = stateful_obj_and_context.stateful_obj;
+
+
 		if(_.isUndefined(stateful_obj_context)) {
 			return [];
 		}
-		var my_name = stateful_obj_context.name_for_prop(this);
+		var my_name = stateful_obj.name_for_prop(this);
 		if(_.isUndefined(my_name)) {
 			return [];
 		}
-		var inherited_props = stateful_obj_context._get_all_inherited_props(my_name);
+		var inherited_props = stateful_obj._get_all_inherited_props(my_name);
 		return inherited_props;
 	};
 
@@ -68,8 +83,9 @@ var RedStatefulProp = function(options) {
 	// === VALUES ===
 	//
 	proto.get_state_specs = function(context) {
-		var stateful_obj_context = this.get_stateful_obj_context(context);
-		var stateful_obj = stateful_obj_context.last();
+		var stateful_obj_and_context = this.get_stateful_obj_and_context(context);
+		var stateful_obj_context = stateful_obj_and_context.context;
+		var stateful_obj = stateful_obj_and_context.stateful_obj;
 		return stateful_obj.get_state_specs(stateful_obj_context);
 	};
 	proto.get_value_specs = function(context) {
