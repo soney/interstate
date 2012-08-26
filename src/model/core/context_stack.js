@@ -58,7 +58,7 @@ cjs.define("red_context", function(options) {
 });
 
 red.get_contextualizable = function(obj, context) {
-	if(obj instanceof red.RedCell) {
+	if(obj instanceof red.RedCell || obj instanceof red.RedStatefulProp) {
 		return obj.get(context);
 	}
 	return obj;

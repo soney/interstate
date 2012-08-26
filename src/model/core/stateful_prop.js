@@ -67,22 +67,44 @@ var RedStatefulProp = function(options) {
 	//
 	// === VALUES ===
 	//
-	proto.get_states = function(context) {
-		var stateful_obj_context = this.get_stateful_obj_context();
-		return stateful_obj_context.get_states(context);
+	proto.get_state_specs = function(context) {
+		var stateful_obj_context = this.get_stateful_obj_context(context);
+		var stateful_obj = stateful_obj_context.last();
+		return stateful_obj.get_state_specs(stateful_obj_context);
 	};
-	proto.get_values = function(context) {
-		var states = this.get_states();
-		var inherits_from = this._get_inherits_from(context);
+	proto.get_value_specs = function(context) {
 		var self = this;
-		var values = _.map(states, function(state) {
-			return get_value_for_state(state, self, inherits_from);
+		var inherits_from = this._get_inherits_from(context);
+		var state_specs = this.get_state_specs(context);
+		var values = _.map(state_specs, function(state_spec) {
+			return get_value_for_state(state_spec.state, self, inherits_from);
 		});
-		var is_inheriteds = _.map(states, function(state) {
-			return !self._has_direct_value_for_state(state);
+		var is_inheriteds = _.map(state_specs, function(state_spec) {
+			return !self._has_direct_value_for_state(state_spec.state);
 		});
 
+		var rv = [];
+		var found_using_value = false;
+		for(var i = 0; i<state_specs.length; i++) {
+			var state_spec = state_specs[i];
 
+			var state = state_spec.state;
+			var active = state_spec.active;
+			var value = values[i];
+			var using = false;
+
+			if(!_.isUndefined(value) && !found_using_value) {
+				found_using_value = using = true;
+			}
+
+			rv.push({
+				state: state
+				, active: active
+				, value: value
+				, using: using
+			});
+		}
+		return rv;
 	};
 	var get_value_for_state = function(state, stateful_prop, inherits_from) {
 		if(stateful_prop._has_direct_value_for_state(state)) {
@@ -96,6 +118,17 @@ var RedStatefulProp = function(options) {
 			}
 			return undefined;
 		}
+	};
+	proto.get = function(context) {
+		var values = this.get_value_specs(context);
+		for(var i = 0; i<values.length; i++) {
+			var value = values[i];
+			if(value.using) {
+				var val = value.value;
+				return red.get_contextualizable(val, context);
+			}
+		}
+		return undefined;
 	};
 }(RedStatefulProp));
 

@@ -163,31 +163,9 @@
 				$(function() {
 					var env = red.create_environment($(".output")[0]);
 
-					env.set("a", "dict");
-					env.set("b", "dict");
-
+					env.set("a", "stateful");
 					env.in_prop("a");
-					window.a = env.get_pointer();
-
-					env.set("x", "1+2");
-					env.set("s", "dict");
-					env.in_prop("s");
-					env.set("t", "dict");
-					env.in_prop("t");
-
-					env.set("y", "x+1");
-
-					env.top();
-
-					env.in_prop("b");
-
-					env.set("x", "1+2+3");
-
-					window.b = env.get_pointer();
-					env.top();
-
-
-					b.set_protos([a]);
+					env.set("x");
 
 					console.log(env.print());
 					window.env = env;
