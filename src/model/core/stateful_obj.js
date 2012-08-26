@@ -29,44 +29,6 @@ var RedStatefulObj = function(options) {
 		this._direct_statechart	.add_state("INIT")
 								.starts_at("INIT");
 	};
-	/*
-	proto.reset = function() {
-		var statechart = this.get_own_statechart();
-		statechart.reset();
-	};
-	proto.add_state = function() {
-		var own_statechart = this.get_own_statechart();
-		own_statechart.add_state.apply(own_statechart, arguments);
-		return this;
-	};
-	proto.remove_state = function() {
-		var own_statechart = this.get_own_statechart();
-		own_statechart.remove_state.apply(own_statechart, arguments);
-		return this;
-	};
-	proto.add_transition = function(from_state, to_state, event) {
-		var statechart = this.get_own_statechart();
-		if(arguments.length === 1) {
-			statechart.add_transition.apply(statechart, arguments);
-		} else {
-			from_state = this.find_state(from_state);
-			to_state = this.find_state(to_state);
-			statechart.add_transition(from_state, to_state, event);
-		}
-		return this;
-	};
-	proto.starts_at = function(transition_to) {
-		var statechart = this.get_own_statechart();
-		transition_to = this.find_state(transition_to);
-		statechart.starts_at(transition_to);
-		return this;
-	};
-	proto.rename_state = function() {
-		var own_statechart = this.get_own_statechart();
-		own_statechart.rename_state.apply(own_statechart, arguments);
-		return this;
-	};
-	*/
 
 	//
 	// === STATECHART SHADOWS ===
@@ -89,7 +51,7 @@ var RedStatefulObj = function(options) {
 	// === INHERITED STATECHARTS ===
 	//
 	proto.get_inherited_statecharts = function(context) {
-		var protos = this._get_all_protos();
+		var protos = this._get_all_protos(context);
 		var statecharts = _.map(protos, function(protoi) {
 			if(protoi instanceof red.RedStatefulObj) {
 				return protoi.get_statechart_for_context(context);
@@ -108,8 +70,14 @@ var RedStatefulObj = function(options) {
 		var inherited_statechart = this.get_inherited_statecharts(context);
 		return ([own_statechart]).concat(inherited_statechart);
 	};
-	proto.get_state_specs = function(context) {
-		var statecharts = this.get_statecharts(context);
+	proto.get_state_specs = function(context, include_inherited) {
+		var statecharts;
+		if(include_inherited === false) {
+			statecharts = [this.get_statechart_for_context(context)];
+		} else {
+			statecharts = this.get_statecharts(context);
+		}
+
 
 		var active_states = get_active_states(statecharts);
 

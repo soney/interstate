@@ -9,7 +9,6 @@ var RedDict = function(options) {
 	this._direct_props = cjs.create("map");
 
 	// Prototypes
-	this._implicit_protos = options.implicit_protos || [];
 	if(options.direct_protos) { this._direct_protos = options.direct_protos; }
 	else { this._direct_protos = cjs.create("constraint", [], true); }
 
@@ -23,21 +22,21 @@ var RedDict = function(options) {
 	//
 	// === DIRECT PROTOS ===
 	//
-	proto.set_protos = proto._set_direct_protos = function(protos) {
-		this._direct_protos.set(protos);
+	proto.direct_protos = function() {
+		return this._direct_protos;
 	};
-	proto._get_direct_protos = function() {
-		return this._direct_protos.get();
+	proto._get_direct_protos = function(context) {
+		return red.get_contextualizable(this.direct_protos(), context.push(this));
 	};
 	//
 	// === ALL PROTOS ===
 	//
-	proto.get_protos = proto._get_all_protos = function() {
-		var direct_protos = this._get_direct_protos();
+	proto.get_protos = proto._get_all_protos = function(context) {
+		var direct_protos = this._get_direct_protos(context);
 		var protos = _.map(direct_protos, function(direct_proto) {
 			if(_.isUndefined(direct_proto)) { return false; };
 			
-			return ([direct_proto]).concat(direct_proto._get_all_protos());
+			return ([direct_proto]).concat(direct_proto._get_all_protos(context));
 		});
 		protos = _.compact(_.flatten(protos, true));
 		return protos;
@@ -79,8 +78,8 @@ var RedDict = function(options) {
 	// === FULLY INHERITED PROPERTIES ===
 	//
 	
-	proto._get_inherited_prop = function(prop_name) {
-		var protos = this._get_all_protos();
+	proto._get_inherited_prop = function(prop_name, context) {
+		var protos = this._get_all_protos(context);
 		for(var i = 0; i<protos.length; i++) {
 			var protoi = protos[i];
 			if(protoi._has_direct_prop(prop_name)) {
@@ -89,9 +88,9 @@ var RedDict = function(options) {
 		}
 		return undefined;
 	};
-	proto._get_all_inherited_props = function(prop_name) {
+	proto._get_all_inherited_props = function(prop_name, context) {
 		var rv = [];
-		var protos = this._get_all_protos();
+		var protos = this._get_all_protos(context);
 		for(var i = 0; i<protos.length; i++) {
 			var protoi = protos[i];
 			if(protoi._has_direct_prop(prop_name)) {
@@ -100,8 +99,8 @@ var RedDict = function(options) {
 		}
 		return rv;
 	};
-	proto._has_inherited_prop = function(prop_name) {
-		var protos = this._get_all_protos();
+	proto._has_inherited_prop = function(prop_name, context) {
+		var protos = this._get_all_protos(context);
 		for(var i = 0; i<protos.length; i++) {
 			var protoi = protos[i];
 			if(protoi._has_direct_prop(prop_name)) {
@@ -110,8 +109,8 @@ var RedDict = function(options) {
 		}
 		return false;
 	};
-	proto._get_inherited_prop_names = function() {
-		var protos = this._get_all_protos();
+	proto._get_inherited_prop_names = function(context) {
+		var protos = this._get_all_protos(context);
 		var rv = [];
 		_.forEach(protos, function(protoi) {
 			rv.push.apply(rv, protoi._get_direct_prop_names());
@@ -124,24 +123,24 @@ var RedDict = function(options) {
 	//
 	// === PROPERTIES ===
 	//
-	proto.get_prop = function(prop_name) {
+	proto.get_prop = function(prop_name, context) {
 		if(this._has_direct_prop(prop_name)) {
 			return this._get_direct_prop(prop_name);
 		} else {
-			return this._get_inherited_prop(prop_name);
+			return this._get_inherited_prop(prop_name, context);
 		}
 	};
-	proto.has_prop = function(prop_name) {
+	proto.has_prop = function(prop_name, context) {
 		if(this._has_direct_prop(prop_name)) {
 			return true;
-		} else if(this._has_inherited_prop(prop_name)) {
+		} else if(this._has_inherited_prop(prop_name, context)) {
 			return true;
 		} else {
 			return false;
 		}
 	};
 	proto.get = proto.prop_val = function(prop_name, context) {
-		var val = this.get_prop(prop_name);
+		var val = this.get_prop(prop_name, context);
 		if(context instanceof red.RedContext) {
 			context = context.push(this);
 		} else {
@@ -149,14 +148,14 @@ var RedDict = function(options) {
 		}
 		return red.get_contextualizable(val, context);
 	};
-	proto.get_prop_names = function() {
+	proto.get_prop_names = function(context) {
 		var direct_prop_names = this._get_direct_prop_names();
-		var inherited_prop_names = this._get_inherited_prop_names();
+		var inherited_prop_names = this._get_inherited_prop_names(context);
 		return _.unique(direct_prop_names.concat(inherited_prop_names));
 	};
-	proto.is_inherited = function(prop_name) {
+	proto.is_inherited = function(prop_name, context) {
 		var direct_prop_names = this._get_direct_prop_names();
-		var inherited_prop_names = this._get_inherited_prop_names();
+		var inherited_prop_names = this._get_inherited_prop_names(context);
 		return _.indexOf(direct_prop_names, prop_name) < 0 && _.indexOf(inherited_prop_names, prop_name) >= 0;
 	};
 	proto.inherit = function(prop_name) {

@@ -255,11 +255,11 @@ var Env = function(dom_container_parent) {
 				indent += " ";
 			}
 			var rows = [];
-			var prop_names = dict.get_prop_names();
+			var prop_names = dict.get_prop_names(context);
 			var dictified_context = context.push(dict);
 			_.forEach(prop_names, function(prop_name) {
-				var value = dict.get_prop(prop_name);
-				var is_inherited = dict.is_inherited(prop_name);
+				var value = dict.get_prop(prop_name, context);
+				var is_inherited = dict.is_inherited(prop_name, context);
 				prop_name = indent + prop_name;
 				if(is_inherited) { prop_name += " i" }
 				if(value === pointer) { prop_name = "> " + prop_name; }
@@ -280,6 +280,7 @@ var Env = function(dom_container_parent) {
 						}
 						return rv;
 					});
+
 					row.push.apply(row, state_strs);
 					to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(dictified_context));
 
@@ -290,6 +291,9 @@ var Env = function(dom_container_parent) {
 				} else if(value instanceof red.RedDict) {
 					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
 					rows.push(row);
+
+					var protos = value.direct_protos();
+					console.log(protos);
 
 					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);
@@ -355,9 +359,9 @@ var Env = function(dom_container_parent) {
 			}
 		} else if(_.isString(value)) {
 			if(value === "dict") {
-				value = cjs.create("red_dict");
+				value = cjs.create("red_dict", {direct_protos: cjs.create("red_cell")});
 			} else if(value === "stateful") {
-				value = cjs.create("red_stateful_obj");
+				value = cjs.create("red_stateful_obj", {direct_protos: cjs.create("red_stateful_prop", {can_inherit: false})});
 			} else {
 				value = cjs.create("red_cell", {str: value});
 			}

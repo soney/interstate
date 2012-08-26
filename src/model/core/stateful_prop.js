@@ -2,7 +2,9 @@
 var cjs = red.cjs, _ = cjs._;
 var RedStatefulProp = function(options) {
 	options = options || {};
+
 	this._direct_values = cjs.create("map");
+	this._can_inherit = options.can_inherit !== false;
 };
 (function(my) {
 	var proto = my.prototype;
@@ -63,6 +65,9 @@ var RedStatefulProp = function(options) {
 	// === INHERITED VALUES ===
 	//
 	proto._get_inherits_from = function(context) {
+		if(!this.can_inherit) {
+			return [];
+		}
 		var stateful_obj_and_context = this.get_stateful_obj_and_context(context);
 		var stateful_obj_context = stateful_obj_and_context.context;
 		var stateful_obj = stateful_obj_and_context.stateful_obj;
@@ -86,7 +91,7 @@ var RedStatefulProp = function(options) {
 		var stateful_obj_and_context = this.get_stateful_obj_and_context(context);
 		var stateful_obj_context = stateful_obj_and_context.context;
 		var stateful_obj = stateful_obj_and_context.stateful_obj;
-		return stateful_obj.get_state_specs(stateful_obj_context);
+		return stateful_obj.get_state_specs(stateful_obj_context, this._can_inherit);
 	};
 	proto.get_value_specs = function(context) {
 		var self = this;

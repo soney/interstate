@@ -26,7 +26,7 @@ var SetPropCommand = function(options) {
 		if(_.isNumber(this._prop_index)) {
 			index = this._prop_index;
 		}
-		this._old_prop_value = this._parent.get_prop(this._prop_name);
+		this._old_prop_value = this._parent._get_direct_prop(this._prop_name);
 
 		this._parent.set_prop(this._prop_name, this._prop_value, index);
 	};
