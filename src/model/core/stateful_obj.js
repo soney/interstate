@@ -72,7 +72,6 @@ var RedStatefulObj = function(options) {
 	proto.get_statechart_for_context = function(context) {
 		var sc = this._contextual_statecharts.get(context);
 		if(_.isUndefined(sc)) {
-			debugger;
 			sc = this._create_statechart_for_context(context);
 			sc.run();
 		}

@@ -256,6 +256,7 @@ var Env = function(dom_container_parent) {
 			}
 			var rows = [];
 			var prop_names = dict.get_prop_names();
+			var dictified_context = context.push(dict);
 			_.forEach(prop_names, function(prop_name) {
 				var value = dict.get_prop(prop_name);
 				var is_inherited = dict.is_inherited(prop_name);
@@ -264,10 +265,10 @@ var Env = function(dom_container_parent) {
 				if(value === pointer) { prop_name = "> " + prop_name; }
 				else { prop_name = "  " + prop_name; }
 
-				var value_got = red.get_contextualizable(value, context.push(dict));
+				var value_got = red.get_contextualizable(value, dictified_context);
 
 				if(value instanceof red.RedStatefulObj) {
-					var state_specs = value.get_state_specs(context.push(dict));
+					var state_specs = value.get_state_specs(dictified_context);
 					var row = [prop_name, value_to_value_str(value_got)];
 
 					var state_strs = _.map(state_specs, function(state_spec) {
@@ -280,20 +281,20 @@ var Env = function(dom_container_parent) {
 						return rv;
 					});
 					row.push.apply(row, state_strs);
-					to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(context.push(dict)));
+					to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(dictified_context));
 
 					rows.push(row);
 					
-					var tablified_values = tablify_dict(value, indentation_level + 2, context.push(dict));
+					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);
 				} else if(value instanceof red.RedDict) {
 					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
 					rows.push(row);
 
-					var tablified_values = tablify_dict(value, indentation_level + 2, context.push(dict));
+					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);
 				} else if(value instanceof red.RedStatefulProp) {
-					var value_specs = value.get_value_specs(context.push(dict));
+					var value_specs = value.get_value_specs(dictified_context);
 					var row = [prop_name, value_to_value_str(value_got)];
 
 					var value_strs = _.map(value_specs, function(value_spec) {
