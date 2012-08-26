@@ -5,19 +5,14 @@ var RedStatefulObj = function(options) {
 	RedStatefulObj.superclass.constructor.apply(this, arguments);
 
 	this._direct_statechart = cjs.create("statechart");
-	/*
-
-	this._$sc_proto_removed = _.bind(this._sc_proto_removed, this);
-	this._$sc_proto_added   = _.bind(this._sc_proto_added,   this);
-	this._$sc_proto_moved   = _.bind(this._sc_proto_moved,   this);
-
-	this._states = cjs(_.bind(this._states_getter, this));
-	this._active_states = cjs(_.bind(this._active_states_getter, this));
-	this.initialize_statechart();
-	this._all_protos.onRemove(this._$sc_proto_removed)
-					.onAdd   (this._$sc_proto_added)
-					.onMove  (this._$sc_proto_moved);
-	*/
+	this._contextual_statecharts = cjs.create("map", function(itema, itemb) {
+														if(itema instanceof red.RedContext && itemb instanceof red.RedContext) {
+															return itema.eq(itemb);
+														} else {
+															return itema === itemb;
+														}
+												});
+		
 	this.type = "red_stateful_obj";
 };
 (function(my) {
@@ -25,17 +20,102 @@ var RedStatefulObj = function(options) {
 	var proto = my.prototype;
 
 	//
-	// ===== STATECHARTS =====
+	// ===== DIRECT STATECHART =====
 	//
 
+	proto.get_own_statechart = function() { return this.own_statechart; };
 	proto.initialize_statechart = function() {
 		this._direct_statechart	.add_state("INIT")
 								.starts_at("INIT");
 	};
 	proto.reset = function() {
-		var statechart = this.get_statechart();
+		var statechart = this.get_own_statechart();
 		statechart.reset();
 	};
+	proto.run = function() {
+		var statechart = this.get_own_statechart();
+		statechart.run();
+	};
+	proto.add_state = function() {
+		var own_statechart = this.get_own_statechart();
+		own_statechart.add_state.apply(own_statechart, arguments);
+		return this;
+	};
+	proto.remove_state = function() {
+		var own_statechart = this.get_own_statechart();
+		own_statechart.remove_state.apply(own_statechart, arguments);
+		return this;
+	};
+	proto.add_transition = function(from_state, to_state, event) {
+		var statechart = this.get_own_statechart();
+		if(arguments.length === 1) {
+			statechart.add_transition.apply(statechart, arguments);
+		} else {
+			from_state = this.find_state(from_state);
+			to_state = this.find_state(to_state);
+			statechart.add_transition(from_state, to_state, event);
+		}
+		return this;
+	};
+	proto.starts_at = function(transition_to) {
+		var statechart = this.get_own_statechart();
+		transition_to = this.find_state(transition_to);
+		statechart.starts_at(transition_to);
+		return this;
+	};
+	proto.rename_state = function() {
+		var own_statechart = this.get_own_statechart();
+		own_statechart.rename_state.apply(own_statechart, arguments);
+		return this;
+	};
+
+	//
+	// === STATECHART SHADOWS ===
+	//
+	proto.get_statechart_for_context = function(context) {
+		var sc = this._contextual_statecharts.get(context);
+		if(_.isUndefined(sc)) {
+			sc = protoi._create_statechart_for_context(context);
+		}
+		return sc;
+	};
+	proto._create_statechart_for_context = function(context) {
+		var shadow_statechart = red._shadow_statechart(this._get_own_statechart());
+		this._contextual_statecharts.set(context, shadow_statechart);
+		return shadow_statechart;
+	};
+
+	//
+	// === INHERITED STATECHARTS ===
+	//
+	proto.get_inherited_statecharts = function(context) {
+		var protos = this._get_all_protos();
+		var statecharts = _.map(protos, function(protoi) {
+			if(protoi instanceof red.RedStatefulObj) {
+				return protoi.get_statechart_for_context(context);
+			} else {
+				return false;
+			}
+		});
+		return _.compact(statecharts);
+	};
+
+	//
+	// === STATECHARTS ===
+	//
+	proto.get_statecharts = function(context) {
+		var own_statechart = this.get_statechart_for_context(context);
+		var inherited_statechart = this.get_inherited_statecharts(context);
+		return ([own_statechart]).concat(inherited_statechart);
+	};
+	proto.get_states = function(context) {
+		var statecharts = this.get_statecharts(context);
+		var flattened_statecharts = _.flatten(_.map(statecharts, function(statechart) {
+			return statechart.flatten();
+		}), true);
+		return flattened_statecharts;
+	};
+
 	/*
 
 	proto.remove_shadow_shatestart = function(index) {

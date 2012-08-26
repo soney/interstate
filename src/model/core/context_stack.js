@@ -10,6 +10,9 @@ var RedContext = function(options) {
 	proto.get_stack = function() {
 		return _.clone(this._stack);
 	};
+	proto.last = function() {
+		return _.last(this._stack);
+	};
 	proto.push = function(item) {
 		var stack = this.get_stack();
 		stack.push(item); //It's a clone, so it doesn't affect my stack
@@ -32,6 +35,19 @@ var RedContext = function(options) {
 	};
 	proto.reset_iterator = function() {
 		this._stack_pointer_index = _.size(this.get_stack())-1;
+	};
+	proto.eq = function(other_context) {
+		var my_stack = this.get_stack();
+		var other_stack = other_context.get_stack();
+		if(my_stack.length !== other_stack.length) {
+			return false;
+		}
+		for(var i = 0; i<my_stack.length; i++) {
+			if(my_stack[i] !== other_stack[i]) {
+				return false;
+			}
+		}
+		return true;
 	};
 }(RedContext));
 

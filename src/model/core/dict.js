@@ -169,6 +169,9 @@ var RedDict = function(options) {
 			cloned_prop_val = prop_val.clone();
 		}
 	};
+	proto.name_for_prop = function(value) {
+		return this._direct_props.key_for_value(value);
+	};
 }(RedDict));
 
 red.RedDict = RedDict;
