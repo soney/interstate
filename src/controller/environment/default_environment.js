@@ -161,7 +161,7 @@ var Env = function(dom_container_parent) {
 	proto.undo = function() { this._command_stack._undo(); return this.print(); };
 	proto.redo = function() { this._command_stack._redo(); return this.print(); };
 
-	proto.in_prop = function(prop_name) {
+	proto.in = function(prop_name) {
 		prop_name = prop_name || "";
 		var pointer = this.get_pointer();
 		var context = this.get_context();
@@ -169,7 +169,7 @@ var Env = function(dom_container_parent) {
 		_.forEach(prop_name.split("."), function(name) {
 			if(pointer) {
 				context = context.push(pointer);
-				pointer = pointer.get_prop(name);
+				pointer = pointer.get_prop(name, context);
 			}
 		});
 		this._pointer.set_pointer(pointer);
@@ -181,6 +181,14 @@ var Env = function(dom_container_parent) {
 		this._pointer.set_pointer(this.root);
 		this._pointer.set_context(cjs.create("red_context"));
 
+		return this.print();
+	};
+	proto.up = function() {
+		var context = this.get_context();
+
+		var ptr = context.last() || this.root;
+		this._pointer.set_pointer(ptr);
+		this._pointer.set_context(context.pop());
 		return this.print();
 	};
 	proto.get_pointer = function() {
@@ -269,7 +277,7 @@ var Env = function(dom_container_parent) {
 
 				if(value instanceof red.RedStatefulObj) {
 					var state_specs = value.get_state_specs(dictified_context);
-					var row = [prop_name, value_to_value_str(value_got)];
+					var row = [prop_name + " - " + value.id, value_to_value_str(value_got)];
 
 					var state_strs = _.map(state_specs, function(state_spec) {
 						var state = state_spec.state;
@@ -310,7 +318,7 @@ var Env = function(dom_container_parent) {
 					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);
 				} else if(value instanceof red.RedDict) {
-					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
+					var row = [prop_name + " - " + value.id, value_to_value_str(value_got), value_to_source_str(value)];
 					rows.push(row);
 
 					var protos = value.direct_protos();
@@ -324,7 +332,7 @@ var Env = function(dom_container_parent) {
 					rows.push.apply(rows, tablified_values);
 				} else if(value instanceof red.RedStatefulProp) {
 					var value_specs = value.get_value_specs(dictified_context);
-					var row = [prop_name, value_to_value_str(value_got)];
+					var row = [prop_name + " - " + value.id, value_to_value_str(value_got)];
 
 					var value_strs = _.map(value_specs, function(value_spec) {
 						var value = value_spec.value;
@@ -354,7 +362,7 @@ var Env = function(dom_container_parent) {
 		var table = tablify_dict(this.root);
 		var str = print_table(table);
 		str += "\n\n====\n";
-		_.forEach(to_print_statecharts, function(statechart) {
+		_.forEach(_.uniq(to_print_statecharts), function(statechart) {
 			str += "\n"
 			str += statechart.stringify();
 			str += "\n"
@@ -384,7 +392,7 @@ var Env = function(dom_container_parent) {
 			}
 		} else if(_.isString(value)) {
 			if(value === "dict") {
-				value = cjs.create("red_dict", {direct_protos: cjs.create("red_cell"), ignore_inherited_in_contexts: [parent_obj] });
+				value = cjs.create("red_dict", {direct_protos: cjs.create("red_cell", {str: ""}), ignore_inherited_in_contexts: [parent_obj] });
 			} else if(value === "stateful") {
 				value = cjs.create("red_stateful_obj", {direct_protos: cjs.create("red_stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [parent_obj]})});
 			} else {
@@ -401,9 +409,13 @@ var Env = function(dom_container_parent) {
 		return command;
 	};
 	proto.set = function() {
-		var command = this._get_set_prop_command.apply(this, arguments);
-		this._do(command);
-		return this.print();
+		if(arguments.length === 3) {
+			return this.set_cell.apply(this, arguments);
+		} else {
+			var command = this._get_set_prop_command.apply(this, arguments);
+			this._do(command);
+			return this.print();
+		}
 	};
 	proto._get_unset_prop_command = function(prop_name) {
 		var parent_obj = this.get_pointer();
@@ -476,9 +488,11 @@ var Env = function(dom_container_parent) {
 				prop = pointer.direct_protos();
 				ignore_inherited_in_contexts = [pointer];
 			} else {
+				var ptr_context = this.get_context();
 				prop = this.get_pointer();
 				_.forEach(arg0.split("."), function(name) {
-					prop = prop.get_prop(name);
+					prop = prop.get_prop(name, ptr_context);
+					ptr_context = ptr_context.push(prop);
 				});
 			}
 
@@ -486,9 +500,9 @@ var Env = function(dom_container_parent) {
 			str = arg2;
 
 			if(_.isNumber(for_state)) {
-				for(var i = 0; i<context_states.length; i++) {
-					if(context_states[i].id === for_state) {
-						for_state = context_states[i];
+				for(var i = 0; i<pointer_states.length; i++) {
+					if(pointer_states[i].id === for_state) {
+						for_state = pointer_states[i];
 						break;
 					}
 				}

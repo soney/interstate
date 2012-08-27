@@ -132,8 +132,6 @@
 			background-color: #AAA;
 		}
 	</style>
-	<script type="text/javascript" src="server/jquery-1.7.2.min.js"></script>
-	<script type="text/javascript" src="server/jquery.textarea.js"></script>
   </head>
   <body>
 	  <!--<h1>red</h1>-->
@@ -160,16 +158,13 @@
 
 			<script type="text/javascript">
 				var cjs = red.cjs, _ = cjs._;
-				$(function() {
-					var env = red.create_environment($(".output")[0]);
+				var env = red.create_environment();
 
-					env.set("a", "stateful");
-					env.in_prop("a");
-					env.set("x");
+				env.set("a", "stateful");
+				env.in("a");
+				env.set("x");
 
-					console.log(env.print());
-					window.env = env;
-				});
+				console.log(env.print());
 			</script>
 	  </div>
   </body>

@@ -1,7 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = cjs._;
 
-var id = 0;
 var RedDict = function(options) {
 	options = options || {};
 
@@ -13,7 +12,7 @@ var RedDict = function(options) {
 	else { this._direct_protos = cjs.create("constraint", [], true); }
 
 	this.type = "red_dict";
-	this.id = id++;
+	this.id = _.uniqueId();
 };
 
 (function(my) {

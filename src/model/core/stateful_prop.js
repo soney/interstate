@@ -6,6 +6,7 @@ var RedStatefulProp = function(options) {
 	this._direct_values = cjs.create("map");
 	this._can_inherit = options.can_inherit !== false;
 	this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
+	this.id = _.uniqueId();
 };
 (function(my) {
 	var proto = my.prototype;
