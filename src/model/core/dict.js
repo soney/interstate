@@ -186,24 +186,6 @@ var RedDict = function(options) {
 		return red.get_contextualizable(this.direct_attachments(), context.push(this));
 	};
 	
-	//
-	// === ALL ATTACHMENTS ===
-	//
-	proto.get_attachments = proto._get_all_attachments = function(context) {
-		var protos = this.get_protos(context);
-
-		var direct_attachments = this._get_direct_attachments(context);
-		var proto_attachments = _.map(protos, function(protoi) {
-			if(protoi instanceof red.RedDict) {
-				return protoi._get_direct_attachments();
-			} else {
-				return [];
-			}
-		});
-
-		var attachments = direct_attachments.concat(_.flatten(proto_attachments, true));
-		return attachments;
-	};
 	
 	//
 	// === DIRECT ATTACHMENT INSTANCES ===
@@ -216,7 +198,7 @@ var RedDict = function(options) {
 			attachment_instances = cjs.create("map");
 			this._direct_attachment_instances.set(attachment, attachment_instances);
 		}
-		var attachment_instance = attachment.create_instance(context);
+		var attachment_instance = attachment.create_instance(this, context);
 		attachment_instances.set(context, attachment_instance);
 		return attachment_instance;
 	};
@@ -248,6 +230,58 @@ var RedDict = function(options) {
 			return self.create_or_get_direct_attachment_instance(attachment, context);
 		});
 		return attachment_instances;
+	};
+	
+	//
+	// === ALL ATTACHMENTS ===
+	//
+	proto._get_all_attachments_and_srcs = function(context) {
+
+		var self = this;
+		var direct_attachments = this._get_direct_attachments(context);
+		var direct_attachments_and_srcs = _.map(direct_attachments, function(direct_attachment) {
+			return {
+						attachment: direct_attachment
+						, holder: self
+			};
+		});
+
+		var protos = this.get_protos(context);
+		var proto_attachments_and_srcs = _.map(protos, function(protoi) {
+			if(protoi instanceof red.RedDict) {
+				var attachments = protoi._get_direct_attachments();
+				return _.map(attachments, function(attachment) {
+					return {
+						attachment: attachment
+						, holder: protoi
+					};
+				});
+			} else {
+				return [];
+			}
+		});
+		var flattened_proto_attachments_and_srcs = _.flatten(proto_attachments_and_srcs, true);
+
+		var non_duplicate_attachments_and_srcs = [];
+		_.forEach(proto_attachments_and_srcs.concat(flattened_proto_attachments_and_srcs), function(attachment_and_src) {
+			var attachment = attachment_and_src.attachment;
+			var holder = attachment_and_src.holder;
+
+			if(!_.any(non_duplicate_attachments_and_srcs, function(a_and_src) {
+				if(a_and_src.attachment === attachment) {
+					return !attachment.multiple_allowed();
+				} else {
+					return false;
+				}
+			})) {
+				non_duplicate_attachments_and_srcs.push(attachment_and_src);
+			}
+		});
+
+		return non_duplicate_attachments_and_srcs;
+	};
+	proto.get_attachment_instances = proto._get_all_attachment_instances = function(context) {
+		var attachment_and_srcs = this._get_all_attachments_and_srcs(context);
 	};
 	
 }(RedDict));

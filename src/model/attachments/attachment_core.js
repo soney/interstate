@@ -22,6 +22,9 @@ var RedAttachmentInstance = function(options) {
 
 var RedAttachment = function(options) {
 	options = options || {};
+	if(options.multiple_allowed === true) {
+		this._multiple_allowed = true;
+	} else { this._multiple_allowed = false; }
 	this._InstanceClass = options.instance_class || RedAttachmentInstance;
 	this.type = "(generic)";
 };
@@ -40,6 +43,7 @@ var RedAttachment = function(options) {
 	proto.get_type = function() {
 		return this.type;
 	};
+	proto.multiple_allowed = function() { return this._multiple_allowed; };
 }(RedAttachment));
 
 red.RedAttachmentInstance = RedAttachmentInstance;
