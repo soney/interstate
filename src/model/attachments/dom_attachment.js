@@ -5,11 +5,18 @@ var RedDomAttachmentInstance = function(options) {
 	RedDomAttachmentInstance.superclass.constructor.apply(this, arguments);
 	this.type = "(dom)";
 	this._dom_obj = undefined;
+	_.defer(_.bind(this.on_ready, this));
 };
 (function(my) {
 	_.proto_extend(my, red.RedAttachmentInstance);
 	var proto = my.prototype;
+	proto.on_ready = function() {
+		console.log("Ready");
+	};
 	proto.destroy = function() {
+	};
+	proto.get_dom_obj = function() {
+		return this._dom_obj;
 	};
 }(RedDomAttachmentInstance));
 

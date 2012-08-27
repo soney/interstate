@@ -31,7 +31,7 @@ var RedAttachment = function(options) {
 (function(my) {
 	var proto = my.prototype;
 	proto.create_instance = function(parent, context) {
-		var instance = new this._InstanceClass(parent, context);
+		var instance = new this._InstanceClass({parent: parent, context: context});
 		return instance;
 	};
 	proto.destroy_instance = function(instance) {
