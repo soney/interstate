@@ -14,6 +14,7 @@ var RedDict = function(options) {
 	// Attachments
 	if(options.direct_attachments) { this._direct_attachments = options.direct_attachments; }
 	else { this._direct_attachments = cjs.create("constraint", [], true); }
+	this._direct_attachment_instances = cjs.create("map");
 
 	this.type = "red_dict";
 	this.id = _.uniqueId();
@@ -188,14 +189,13 @@ var RedDict = function(options) {
 	//
 	// === ALL ATTACHMENTS ===
 	//
-
 	proto.get_attachments = proto._get_all_attachments = function(context) {
 		var protos = this.get_protos(context);
 
 		var direct_attachments = this._get_direct_attachments(context);
 		var proto_attachments = _.map(protos, function(protoi) {
 			if(protoi instanceof red.RedDict) {
-				return protoi.get_attachments;
+				return protoi._get_direct_attachments();
 			} else {
 				return [];
 			}
@@ -204,6 +204,52 @@ var RedDict = function(options) {
 		var attachments = direct_attachments.concat(_.flatten(proto_attachments, true));
 		return attachments;
 	};
+	
+	//
+	// === DIRECT ATTACHMENT INSTANCES ===
+	//
+	proto.add_direct_attachment_instance = function(attatchment, context) {
+		var attachment_instances;
+		if(this._direct_attachment_instances.has_key(attachment)) {
+			attachment_instances = this._direct_attachment_instances.get(attachment);
+		} else {
+			attachment_instances = cjs.create("map");
+			this._direct_attachment_instances.set(attachment, attachment_instances);
+		}
+		var attachment_instance = attachment.create_instance(context);
+		attachment_instances.set(context, attachment_instance);
+		return attachment_instance;
+	};
+	proto.has_direct_attachment_instance = function(attachment, context) {
+		return !_.isUndefined(eet_direct_attachment_instance);
+	};
+	proto.get_direct_attachment_instance = function(attachment, context) {
+		var attachment_instances;
+		if(this._direct_attachment_instances.has_key(attachment)) {
+			attachment_instances = this._direct_attachment_instances.get(attachment);
+		} else {
+			return undefined;
+		}
+
+		return attachment_instances.get(context);
+	};
+	proto.create_or_get_direct_attachment_instance = function(attachment, context) {
+		var existing_instance = this.get_direct_attachment_instance;
+		if(_.isUndefined(existing_instance)) {
+			return this.add_direct_attachment_index(attachment, context);
+		} else {
+			return existing_instance;
+		}
+	};
+	proto.create_or_get_direct_attachment_instances = function(context) {
+		var attachments = this._get_direct_attachments(context);
+		var self = this;
+		var attachment_instances = _.map(attachment, function(attachment) {
+			return self.create_or_get_direct_attachment_instance(attachment, context);
+		});
+		return attachment_instances;
+	};
+	
 }(RedDict));
 
 red.RedDict = RedDict;
