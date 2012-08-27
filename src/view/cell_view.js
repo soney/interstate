@@ -1,3 +1,7 @@
+(function(red, $) {
+var cjs = red.cjs, _ = cjs._;
+}(red, jQuery));
+/*
 (function(Euclase) {
 var array_utils = Euclase._array_utils;
 $.widget(
@@ -98,3 +102,4 @@ $.widget(
 
 });
 })(Euclase);
+*/
