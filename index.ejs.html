@@ -159,6 +159,7 @@
 			<script type="text/javascript">
 				var cjs = red.cjs, _ = cjs._;
 				var env = red.create_environment();
+				var root = env.get_pointer();
 
 				env.set("a", "stateful");
 				env.in("a");

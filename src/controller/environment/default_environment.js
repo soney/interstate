@@ -138,7 +138,7 @@ var pointer_factory = function(initial_pointer) {
 };
 
 var Env = function(dom_container_parent) {
-	this.root = cjs.create("red_dict");
+	this.root = cjs.create("red_dict", {direct_attachments: [cjs.create("red_dom_attachment")]});
 
 	// Undo stack
 	this._command_stack = command_stack_factory();

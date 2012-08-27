@@ -190,7 +190,7 @@ var RedDict = function(options) {
 	//
 	// === DIRECT ATTACHMENT INSTANCES ===
 	//
-	proto.add_direct_attachment_instance = function(attatchment, context) {
+	proto.add_direct_attachment_instance = function(attachment, context) {
 		var attachment_instances;
 		if(this._direct_attachment_instances.has_key(attachment)) {
 			attachment_instances = this._direct_attachment_instances.get(attachment);
@@ -203,7 +203,7 @@ var RedDict = function(options) {
 		return attachment_instance;
 	};
 	proto.has_direct_attachment_instance = function(attachment, context) {
-		return !_.isUndefined(eet_direct_attachment_instance);
+		return !_.isUndefined(this.get_direct_attachment_instance);
 	};
 	proto.get_direct_attachment_instance = function(attachment, context) {
 		var attachment_instances;
@@ -216,27 +216,18 @@ var RedDict = function(options) {
 		return attachment_instances.get(context);
 	};
 	proto.create_or_get_direct_attachment_instance = function(attachment, context) {
-		var existing_instance = this.get_direct_attachment_instance;
+		var existing_instance = this.get_direct_attachment_instance(attachment, context);
 		if(_.isUndefined(existing_instance)) {
-			return this.add_direct_attachment_index(attachment, context);
+			return this.add_direct_attachment_instance(attachment, context);
 		} else {
 			return existing_instance;
 		}
-	};
-	proto.create_or_get_direct_attachment_instances = function(context) {
-		var attachments = this._get_direct_attachments(context);
-		var self = this;
-		var attachment_instances = _.map(attachment, function(attachment) {
-			return self.create_or_get_direct_attachment_instance(attachment, context);
-		});
-		return attachment_instances;
 	};
 	
 	//
 	// === ALL ATTACHMENTS ===
 	//
 	proto._get_all_attachments_and_srcs = function(context) {
-
 		var self = this;
 		var direct_attachments = this._get_direct_attachments(context);
 		var direct_attachments_and_srcs = _.map(direct_attachments, function(direct_attachment) {
@@ -263,7 +254,7 @@ var RedDict = function(options) {
 		var flattened_proto_attachments_and_srcs = _.flatten(proto_attachments_and_srcs, true);
 
 		var non_duplicate_attachments_and_srcs = [];
-		_.forEach(proto_attachments_and_srcs.concat(flattened_proto_attachments_and_srcs), function(attachment_and_src) {
+		_.forEach(direct_attachments_and_srcs.concat(flattened_proto_attachments_and_srcs), function(attachment_and_src) {
 			var attachment = attachment_and_src.attachment;
 			var holder = attachment_and_src.holder;
 
@@ -281,7 +272,13 @@ var RedDict = function(options) {
 		return non_duplicate_attachments_and_srcs;
 	};
 	proto.get_attachment_instances = proto._get_all_attachment_instances = function(context) {
-		var attachment_and_srcs = this._get_all_attachments_and_srcs(context);
+		var attachments_and_srcs = this._get_all_attachments_and_srcs(context);
+		return _.map(attachments_and_srcs, function(attachment_and_src) {
+			var holder = attachment_and_src.holder;
+			var attachment = attachment_and_src.attachment;
+
+			return holder.create_or_get_direct_attachment_instance(attachment, context);
+		});
 	};
 	
 }(RedDict));

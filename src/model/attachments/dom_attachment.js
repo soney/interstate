@@ -14,7 +14,10 @@ var RedDomAttachmentInstance = function(options) {
 }(RedDomAttachmentInstance));
 
 var RedDomAttachment = function(options) {
-	RedDomAttachment.superclass.constructor.apply(this, arguments);
+	options = _.extend({
+		instance_class: RedDomAttachmentInstance
+	}, options);
+	RedDomAttachment.superclass.constructor.call(this, options);
 	this.type = "(dom)";
 };
 (function(my) {
