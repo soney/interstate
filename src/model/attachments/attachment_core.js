@@ -2,7 +2,7 @@
 var cjs = red.cjs, _ = cjs._;
 
 var id = 0;
-var RedAttatchment = function(options) {
+var RedAttachment = function(options) {
 	options = options || {};
 };
 

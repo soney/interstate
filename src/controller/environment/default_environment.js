@@ -161,7 +161,7 @@ var Env = function(dom_container_parent) {
 	proto.undo = function() { this._command_stack._undo(); return this.print(); };
 	proto.redo = function() { this._command_stack._redo(); return this.print(); };
 
-	proto.in = function(prop_name) {
+	proto.cd = proto.in = function(prop_name) {
 		prop_name = prop_name || "";
 		var pointer = this.get_pointer();
 		var context = this.get_context();

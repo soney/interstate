@@ -164,6 +164,13 @@
 				env.in("a");
 				env.set("x");
 
+				var globalize = function() {
+					_.forEach(arguments, function(prop) {
+						window[prop] = _.bind(env[prop], env);
+					});
+				};
+
+				globalize("cd", "set", "unset", "rename", "move", "up", "top", "add_state", "remove_state", "add_transition", "remove_transition");
 				console.log(env.print());
 			</script>
 	  </div>

@@ -10,6 +10,10 @@ var RedDict = function(options) {
 	// Prototypes
 	if(options.direct_protos) { this._direct_protos = options.direct_protos; }
 	else { this._direct_protos = cjs.create("constraint", [], true); }
+	
+	// Attachments
+	if(options.direct_attachments) { this._direct_attachments = options.direct_attachments; }
+	else { this._direct_attachments = cjs.create("constraint", [], true); }
 
 	this.type = "red_dict";
 	this.id = _.uniqueId();
@@ -169,6 +173,36 @@ var RedDict = function(options) {
 	};
 	proto.name_for_prop = function(value) {
 		return this._direct_props.key_for_value(value);
+	};
+	
+	//
+	// === DIRECT ATTACHMENTS ===
+	//
+	proto.direct_attachments = function() {
+		return this._direct_attachments;
+	};
+	proto._get_direct_attachments = function(context) {
+		return red.get_contextualizable(this.direct_attachments(), context.push(this));
+	};
+	
+	//
+	// === ALL ATTACHMENTS ===
+	//
+
+	proto.get_attachments = proto._get_all_attachments = function(context) {
+		var protos = this.get_protos(context);
+
+		var direct_attachments = this._get_direct_attachments(context);
+		var proto_attachments = _.map(protos, function(protoi) {
+			if(protoi instanceof red.RedDict) {
+				return protoi.get_attachments;
+			} else {
+				return [];
+			}
+		});
+
+		var attachments = direct_attachments.concat(_.flatten(proto_attachments, true));
+		return attachments;
 	};
 }(RedDict));
 
