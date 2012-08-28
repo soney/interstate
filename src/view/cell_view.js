@@ -1,5 +1,10 @@
 (function(red, $) {
 var cjs = red.cjs, _ = cjs._;
+
+$.widget("red.cell", {
+	
+});
+
 }(red, jQuery));
 /*
 (function(Euclase) {
