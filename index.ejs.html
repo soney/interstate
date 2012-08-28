@@ -16,9 +16,10 @@
 			<script type="text/javascript">
 				var cjs = red.cjs, _ = cjs._;
 				var env = red.create_environment();
-				var cell = cjs.create("red_cell", {str: "1+1"});
-				var cell_view = $("<span />").cell({cell: cell});
-				cell_view.appendTo(document.body);
+				var dict = cjs.create("red_dict");
+				var context = cjs.create("red_context");
+				var dict_view = $("<div />").dict({dict: dict, context: context});
+				dict_view.appendTo(document.body);
 
 				/*
 				var root = env.get_pointer();

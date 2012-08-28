@@ -3,6 +3,10 @@
 	border-left: 1px solid #AAA;
 	border-bottom: 1px solid #AAA;
 	padding: 2px;
+	margin: 0px;
+	width: 50px;
+	display: inline-block;
+	overflow: hidden;
 }
 .cell.editing {
 	background-color: #EEE;
@@ -16,6 +20,7 @@
 	border: none;
 	margin: 0px;
 	padding: 0px;
+	width: 100%;
 }
 .cell.editing input[type=text] {
 	background-color: #EEE;

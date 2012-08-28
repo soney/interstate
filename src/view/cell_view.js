@@ -32,7 +32,7 @@ $.widget("red.cell", {
 			});
 		}
 		if(this.option("execute_generated_commands")) {
-			this.element.on("cellset_cell_command.red_cell", function(event, data) {
+			this.element.on("cellcommand.red_cell", function(event, data) {
 				var command = data.command;
 				command._do();
 			});
@@ -57,10 +57,10 @@ $.widget("red.cell", {
 			}
 		} else if(key === "execute_generated_commands") {
 			if(old_value) {
-				this.element.off("cellset_cell_command.red_cell");
+				this.element.off("cellcommand.red_cell");
 			}
 			if(new_value) {
-				this.element.on("cellset_cell_command.red_cell", function(event, command) {
+				this.element.on("cellcommand.red_cell", function(event, command) {
 					command._do();
 				});
 			}
@@ -83,6 +83,9 @@ $.widget("red.cell", {
 					.off("click.red_cell")
 					.off("cellset_cell_command.red_cell")
 					.off("cellbegin_editing.red_cell");
+		if(this._live_updater) {
+			this._live_updater.destroy();
+		}
 	}
 
 	, begin_edit: function() {
@@ -126,9 +129,9 @@ $.widget("red.cell", {
 			this._edit_input.remove();
 			this.element.removeClass("editing");
 
-			var set_cell_command = this._get_set_cell_command(value);
-			this._trigger("set_cell_command", null, {
-				command: set_cell_command
+			var command = this._get_set_cell_command(value);
+			this._trigger("command", null, {
+				command: command
 			});
 		}
 	}
@@ -144,7 +147,7 @@ $.widget("red.cell", {
 
 	, _remove_change_listeners: function(cell) {
 		cell = cell || this.option("cell");
-		this._live_updater.destroy;
+		this._live_updater.destroy();
 		delete this._live_updater;
 	}
 

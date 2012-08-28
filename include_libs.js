@@ -52,6 +52,8 @@ exports.main_src = c(
 				, "controller/commands/combined_commands.js"
 				, "controller/environment/default_environment.js"
 				, "view/cell_view.js"
+				, "view/dict_entry_view.js"
+				, "view/dict_view.js"
 			])
 );
 
