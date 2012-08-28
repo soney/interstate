@@ -2,155 +2,12 @@
 <html lang="en">
   <head>
     <title>red</title>
-	<style type="text/css">
-		@font-face { font-family: REZ; src: url('REZ.ttf'); } 
-		body {
-			background-color: #880000;
-			color: white;
-			font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-			font-weight: 300;
-			font-size: 1.3em;
-			text-shadow: 0px 0px 1px #777;
-		}
-		h1 {
-			font-family: REZ, sans-serif;
-			text-align: center;
-			font-size: 10em;
-			color: #FFFFFF;
-			text-shadow: -0px -0px 50px #000;
-			margin: 0em;
-			padding: 0.2em;
-
-			background-color: #990000;
-		}
-
-		.content {
-			max-width: 600px;
-			margin: auto;
-			padding-top: 50px;
-		}
-
-		#input_str {
-			width: 100%;
-			height: 250px;
-			outline: none;
-			border: 1px solid black;
-			border-radius: 3px;
-			font-family: "Courier New", Courier, monospace;
-			font-size: 0.9em;
-		}
-
-		.output {
-			height: 400px;
-		}
-		a#run {
-			font-size: 0.8em;
-			float: right;
-		}
-		a.button {
-			text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-			text-decoration: none;
-			background-color: #da4f49;
-			*background-color: #bd362f;
-			background-image: -ms-linear-gradient(top, #ee5f5b, #bd362f);
-			background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ee5f5b), to(#bd362f));
-			background-image: -webkit-linear-gradient(top, #ee5f5b, #bd362f);
-			background-image: -o-linear-gradient(top, #ee5f5b, #bd362f);
-			background-image: -moz-linear-gradient(top, #ee5f5b, #bd362f);
-			background-image: linear-gradient(top, #ee5f5b, #bd362f);
-			background-repeat: repeat-x;
-			border-color: #bd362f #bd362f #802420;
-			border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-			filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ee5f5b', endColorstr='#bd362f', GradientType=0);
-			filter: progid:dximagetransform.microsoft.gradient(enabled=false);
-			display: inline-block;
-			*display: inline;
-			padding: 4px 10px 4px;
-			margin-bottom: 0;
-			*margin-left: .3em;
-			font-size: 13px;
-			line-height: 18px;
-			*line-height: 20px;
-			color: #333333;
-			text-align: center;
-			text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
-			vertical-align: middle;
-			cursor: pointer;
-			border: 1px solid #cccccc;
-			*border: 0;
-			border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-			border-color: #e6e6e6 #e6e6e6 #bfbfbf;
-			border-bottom-color: #b3b3b3;
-			color: white;
-			text-decoration: none;
-			border-radius: 4px;
-			box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.125), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
-			border-color: #bd362f #bd362f #802420;
-			border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-		}
-		a.button:hover {
-			color: white;
-			text-decoration: none;
-			background-color: #BD362F;
-			/* Buttons in IE7 don't get borders, so darken on hover */
-
-			background-position: 0 -15px;
-			-webkit-transition: background-position 0.1s linear;
-			-moz-transition: background-position 0.1s linear;
-			-ms-transition: background-position 0.1s linear;
-			-o-transition: background-position 0.1s linear;
-			transition: background-position 0.1s linear;
-		}
-		#refresh_libs {
-			color: white;
-			font-size: 1.5em;
-			text-decoration: none;
-		}
-
-		.header {
-			text-align: right;
-		}
-		a {
-			color: white;
-			text-decoration: none;
-		}
-		a:hover {
-			color: #EEEEEE;
-		}
-
-		.menu {
-			font-size: 0.8em;
-			text-align: center;
-		}
-
-		.euc_obj {
-			border: 3px solid black;
-			width: 150px;
-			height: 150px;
-			margin: 20px;
-			border-radius: 5px;
-			background-color: #AAA;
-		}
-	</style>
+	<link rel="stylesheet" type="text/css" href="src/view/styles.css"></link>
   </head>
   <body>
 	  <!--<h1>red</h1>-->
 
 		<div class="content">
-			<div class="menu">
-				<a href="test/music_player/index.ejs.html">Music Player</a>
-				&nbsp;&nbsp;|&nbsp;&nbsp;
-				<a href="test/unit_tests.ejs.html">Unit Tests</a>
-				&nbsp;&nbsp;|&nbsp;&nbsp;
-				<a href="javascript:void(0)" id="refresh_libs">&#8634;</a>
-			</div>
-			<div class="text_mockup">
-				<!--
-				<textarea id="input_str"></textarea>
-				<a id="run" class="button" href="javascript:void(0)">Run</a>
-				-->
-				<div class="output"></div>
-			</div>
 		</div>
 
 	  <div>
@@ -159,6 +16,11 @@
 			<script type="text/javascript">
 				var cjs = red.cjs, _ = cjs._;
 				var env = red.create_environment();
+				var cell = cjs.create("red_cell", {str: "1+1"});
+				var cell_view = $("<span />").cell({cell: cell});
+				cell_view.appendTo(document.body);
+
+				/*
 				var root = env.get_pointer();
 
 				env.set("a", "stateful");
@@ -173,6 +35,7 @@
 
 				globalize("cd", "set", "unset", "rename", "move", "up", "top", "add_state", "remove_state", "add_transition", "remove_transition");
 				console.log(env.print());
+				*/
 			</script>
 	  </div>
   </body>

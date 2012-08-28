@@ -1,0 +1,22 @@
+@font-face { font-family: UbuntuMono; src: url('Ubuntu-R.ttf'); } 
+.cell {
+	border-left: 1px solid #AAA;
+	border-bottom: 1px solid #AAA;
+	padding: 2px;
+}
+.cell.editing {
+	background-color: #EEE;
+}
+.cell, .cell input[type=text] {
+	font-family: UbuntuMono, Courier New, monospace;
+	font-size: 14px;
+}
+.cell input[type=text] {
+	outline: none;
+	border: none;
+	margin: 0px;
+	padding: 0px;
+}
+.cell.editing input[type=text] {
+	background-color: #EEE;
+}
