@@ -6,6 +6,7 @@ $.widget("red.ambiguous", {
 	options: {
 		value: undefined
 		, context: undefined
+		, indent: 0
 	}
 
 	, _create: function() {

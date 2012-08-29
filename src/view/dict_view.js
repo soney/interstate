@@ -105,10 +105,13 @@ $.widget("red.dict", {
 			var prop_names = dict.get_prop_names(self.option("context"));
 			var diff = _.diff(cached_prop_names, prop_names);
 			_.defer(function() {
+				if(diff.removed.length === 1 && diff.added.length === 1 && diff.moved.length === 0) {
+					console.log("probably rename");
+				}
 				_.forEach(diff.removed, function(info) {
 					var index = info.index
 						, prop_name = info.item;
-					var item_view = self._child_props.children(":eq("+index+")");
+					var item_view = self._child_props.children().eq(index);
 					item_view.dict_entry("destroy");
 					remove(item_view[0]);
 				});
@@ -119,6 +122,7 @@ $.widget("red.dict", {
 						prop_name: prop_name
 						, dict: self.option("dict")
 						, context: self.option("context")
+						, indent: self.option("indent")+1
 					});
 					insert_at(item_view[0], self._child_props[0], index);
 				});
@@ -127,7 +131,7 @@ $.widget("red.dict", {
 						, to_index = info.to_index
 						, prop_name = info.item;
 
-					var item_view = self._child_props.children(":eq("+from_index+")");
+					var item_view = self._child_props.children().eq(from_index);
 					move(item_view[0], from_index, to_index);
 				});
 			});

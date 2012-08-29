@@ -36,6 +36,7 @@ $.widget("red.dict_entry", {
 		, context: undefined
 		, prop_name: ""
 		, execute_generated_commands: true
+		, indent: 0
 	}
 
 	, _create: function() {
@@ -49,6 +50,7 @@ $.widget("red.dict_entry", {
 											.appendTo(this.element);
 		this._source_value = $("<span />")	.ambiguous({
 												context: my_context.push(dict)
+												, indent: this.option("indent")
 											})
 											.appendTo(this.element);
 
