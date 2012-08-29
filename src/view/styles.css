@@ -1,21 +1,23 @@
 @font-face { font-family: UbuntuMono; src: url('Ubuntu-R.ttf'); } 
-.cell {
-	border-left: 1px solid #AAA;
-	border-bottom: 1px solid #AAA;
-	padding: 2px;
-	margin: 0px;
-	width: 50px;
+.cell, .prop_name {
+	width: 70px;
 	display: inline-block;
 	overflow: hidden;
+	padding: 2px;
+	margin: 0px;
+}
+.cell {
+	border: 1px solid #AAA;
+	min-height: 16px;
 }
 .cell.editing {
 	background-color: #EEE;
 }
-.cell, .cell input[type=text] {
+.prop_name, .prop_name input[type=text], .cell, .cell input[type=text], .current_value {
 	font-family: UbuntuMono, Courier New, monospace;
 	font-size: 14px;
 }
-.cell input[type=text] {
+.cell input[type=text], .prop_name input[type=text] {
 	outline: none;
 	border: none;
 	margin: 0px;
@@ -24,4 +26,20 @@
 }
 .cell.editing input[type=text] {
 	background-color: #EEE;
+}
+
+.prop_name {
+	width: 50px;
+	display: inline-block;
+	overflow: hidden;
+	min-height: 18px;
+}
+
+.dict_row .current_value {
+	display: inline-block;
+	width: 100px;
+	background-color: #F8F785;
+	min-height: 18px;
+	padding: 2px;
+	margin: 0px;
 }

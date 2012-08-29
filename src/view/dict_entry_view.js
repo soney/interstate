@@ -40,7 +40,22 @@ $.widget("red.dict_entry", {
 	}
 
 	, _create: function() {
+		this._state = state.IDLE;
 		var my_context = this.option("context");
+		var self = this;
+		this.element.addClass("dict_row")
+					.on("editablesetstr.red_cell", function(event, data) {
+						event.stopPropagation();
+						var str = data.value;
+						var command = self._get_rename_command(str);
+						self._trigger("command", null, {
+							command: command
+						});
+						if(self.option("execute_generated_commands")) {
+							command._do();
+						}
+					});
+
 		var dict = this.option("dict");
 		this._prop_name = $("<span />")	.addClass("prop_name")
 										.editable({str: this.option("prop_name")})
@@ -54,21 +69,8 @@ $.widget("red.dict_entry", {
 											})
 											.appendTo(this.element);
 
-		var self = this;
-		this.element.on("editablesetstr.red_cell", function(event, data) {
-			event.stopPropagation();
-			var str = data.value;
-			var command = self._get_rename_command(str);
-			self._trigger("command", null, {
-				command: command
-			});
-			if(self.option("execute_generated_commands")) {
-				command._do();
-			}
-		});
 
 		_.defer(_.bind(this._add_change_listeners, this));
-		this._state = state.IDLE;
 	}
 
 	, _setOption: function(key, value) {
