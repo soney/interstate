@@ -25,6 +25,11 @@ var value_to_text = function(val) {
 	}
 };
 
+var state = {
+	IDLE: 0
+	, CHANGING_NAME: 1
+};
+
 $.widget("red.dict_entry", {
 	options: {
 		dict: undefined
@@ -36,6 +41,9 @@ $.widget("red.dict_entry", {
 		var my_context = this.option("context");
 		var dict = this.option("dict");
 		this._prop_name = $("<span />")	.addClass("prop_name")
+										.click(function() {
+											console.log("A");
+										})
 										.appendTo(this.element)
 										.text(this.option("prop_name"));
 		this._current_value = $("<span />")	.addClass("current_value")
@@ -45,6 +53,7 @@ $.widget("red.dict_entry", {
 											})
 											.appendTo(this.element);
 		_.defer(_.bind(this._add_change_listeners, this));
+		this._state = state.IDLE;
 	}
 
 	, _setOption: function(key, value) {
@@ -58,6 +67,9 @@ $.widget("red.dict_entry", {
 		this._prop_name.remove();
 		this._current_value.remove();
 		this._remove_change_listeners();
+	}
+
+	, _get_change_name_command: function() {
 	}
 
 	, _add_change_listeners: function(dict) {
