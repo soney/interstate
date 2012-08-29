@@ -117,7 +117,7 @@ var RenamePropCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		this._prop_value = this._parent.get_prop(this._to_name);
+		this._prop_value = this._parent._get_direct_prop(this._to_name);
 		if(this._prop_value) {
 			this._parent.unset(this._to_name);
 		}

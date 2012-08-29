@@ -35,23 +35,36 @@ $.widget("red.dict_entry", {
 		dict: undefined
 		, context: undefined
 		, prop_name: ""
+		, execute_generated_commands: true
 	}
 
 	, _create: function() {
 		var my_context = this.option("context");
 		var dict = this.option("dict");
 		this._prop_name = $("<span />")	.addClass("prop_name")
-										.click(function() {
-											console.log("A");
-										})
-										.appendTo(this.element)
-										.text(this.option("prop_name"));
+										.editable({str: this.option("prop_name")})
+										.appendTo(this.element);
+
 		this._current_value = $("<span />")	.addClass("current_value")
 											.appendTo(this.element);
 		this._source_value = $("<span />")	.ambiguous({
 												context: my_context.push(dict)
 											})
 											.appendTo(this.element);
+
+		var self = this;
+		this.element.on("editablesetstr.red_cell", function(event, data) {
+			event.stopPropagation();
+			var str = data.value;
+			var command = self._get_rename_command(str);
+			self._trigger("command", null, {
+				command: command
+			});
+			if(self.option("execute_generated_commands")) {
+				command._do();
+			}
+		});
+
 		_.defer(_.bind(this._add_change_listeners, this));
 		this._state = state.IDLE;
 	}
@@ -69,7 +82,12 @@ $.widget("red.dict_entry", {
 		this._remove_change_listeners();
 	}
 
-	, _get_change_name_command: function() {
+	, _get_rename_command: function(str) {
+		return red.command("rename_prop", {
+			parent: this.option("dict")
+			, from: this.option("prop_name")
+			, to: str
+		});
 	}
 
 	, _add_change_listeners: function(dict) {
