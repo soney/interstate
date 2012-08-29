@@ -32,8 +32,8 @@ exports.main_src = c(
 	cp(cjs_path, cjs_inc.main_src)
 	, cp(vendor_src, [
 				"esprima/esprima.js"
-				, "jquery-ui-1.8.23.custom/js/jquery-1.8.0.js"
-				, "jquery-ui-1.8.23.custom/development-bundle/ui/jquery-ui-1.8.23.custom.js"
+				, "jquery-ui-1.9.0-rc.1/jquery-1.8.0.js"
+				, "jquery-ui-1.9.0-rc.1/ui/jquery-ui.js"
 			])
 	, cp(src, [
 				"model/core.js"
@@ -51,6 +51,7 @@ exports.main_src = c(
 				, "controller/commands/statechart_commands.js"
 				, "controller/commands/combined_commands.js"
 				, "controller/environment/default_environment.js"
+				, "view/ambiguous_view.js"
 				, "view/cell_view.js"
 				, "view/dict_entry_view.js"
 				, "view/dict_view.js"
