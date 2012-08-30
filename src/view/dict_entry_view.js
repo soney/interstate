@@ -55,19 +55,23 @@ $.widget("red.dict_entry", {
 							command._do();
 						}
 					});
+		this._sub_entries = $("<div />");
 
 		var dict = this.option("dict");
 		this._prop_name = $("<span />")	.addClass("prop_name")
 										.editable({str: this.option("prop_name")})
+										.css("padding-left", (this.option("indent")*15)+"px")
 										.appendTo(this.element);
 
 		this._current_value = $("<span />")	.addClass("current_value")
 											.appendTo(this.element);
 		this._source_value = $("<span />")	.ambiguous({
 												context: my_context.push(dict)
-												, indent: this.option("indent")
+												, indent: this.option("indent") + 1
+												, sub_entries: this._sub_entries
 											})
 											.appendTo(this.element);
+		this._sub_entries.appendTo(this.element);
 
 
 		_.defer(_.bind(this._add_change_listeners, this));

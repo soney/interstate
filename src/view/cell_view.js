@@ -54,14 +54,15 @@ $.widget("red.cell", {
 	}
 	
 	, _destroy: function() {
+		console.log("destroy", this);
+		if(this._live_updater) {
+			this._live_updater.destroy();
+		}
 		this.element.removeClass("cell")
 					.editable("destroy")
 					.off("click.red_cell")
 					.off("cellset_cell_command.red_cell")
 					.off("cellbegin_editing.red_cell");
-		if(this._live_updater) {
-			this._live_updater.destroy();
-		}
 	}
 
 	, _add_change_listeners: function(cell) {

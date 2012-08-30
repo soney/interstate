@@ -7,6 +7,7 @@ $.widget("red.ambiguous", {
 		value: undefined
 		, context: undefined
 		, indent: 0
+		, sub_entries: undefined
 	}
 
 	, _create: function() {
@@ -35,12 +36,22 @@ $.widget("red.ambiguous", {
 			this.element.cell({
 				cell: value
 			});
+		} else if(value instanceof red.RedDict) {
+			var sub_entries = this.option("sub_entries");
+			sub_entries.dict({
+				dict: value
+				, context: context
+				, indent: this.option("indent")
+			});
 		}
 	}
 
 	, _remove_view: function(value, context) {
 		if(value instanceof red.RedCell) {
 			this.element.cell("destroy");
+		} else if(value instanceof red.RedDict) {
+			var sub_entries = this.option("sub_entries");
+			sub_entries.dict("destroy");
 		}
 	}
 });

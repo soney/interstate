@@ -37,13 +37,13 @@ $.widget("red.dict", {
 				return cjs.create("red_cell", {str: ""});
 			}
 			, "Dictionary": function() {
-				return cjs.create("dict");
+				return cjs.create("red_dict");
 			}
 			, "Stateful Object": function() {
-				return cjs.create("stateful_obj");
+				return cjs.create("red_stateful_obj");
 			}
 			, "Stateful Property": function() {
-				return cjs.create("stateful_prop");
+				return cjs.create("red_stateful_prop");
 			}
 		}
 		, get_new_prop_name: function(dict, context) {
@@ -67,9 +67,21 @@ $.widget("red.dict", {
 	, _create: function() {
 		this._child_props = $("<div />").appendTo(this.element)
 										.sortable()
+										.bind("sortstart", function(event, ui) {
+											var prop_div = ui.item;
+											var prop_name = prop_div.dict_entry("option", "prop_name");
+											console.log("start", event, ui, prop_name);
+										})
+										.bind("sortchange", function(event, ui) {
+											var prop_div = ui.item;
+											console.log("change", event, ui);
+										})
 										.bind("sortstop", function(event, ui) {
-											console.log(event, ui);
-										});
+											var prop_div = ui.item;
+											var new_prop_index = prop_div.index();
+											console.log("stop", event, ui, new_prop_index);
+										})
+										;
 
 		this._get_add_prop_button();
 
@@ -187,7 +199,7 @@ $.widget("red.dict", {
 						prop_name: prop_name
 						, dict: self.option("dict")
 						, context: self.option("context")
-						, indent: self.option("indent")+1
+						, indent: self.option("indent")
 					});
 					insert_at(item_view[0], self._child_props[0], index);
 				});
