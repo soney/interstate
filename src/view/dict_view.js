@@ -53,7 +53,8 @@ $.widget("red.dict", {
 	}
 
 	, _create: function() {
-		this._child_props = $("<div />").appendTo(this.element);
+		this._child_props = $("<div />").appendTo(this.element)
+										.sortable();
 		this._add_prop_row = $("<div />").appendTo(this.element);
 		var self = this;
 		this._add_prop_button = $("<a />")	.attr("href", "javascript:void(0)")
@@ -134,6 +135,7 @@ $.widget("red.dict", {
 					var item_view = self._child_props.children().eq(from_index);
 					move(item_view[0], from_index, to_index);
 				});
+				self._child_props.sortable("refresh");
 			});
 			cached_prop_names = prop_names;
 		});
