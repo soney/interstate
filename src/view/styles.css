@@ -1,14 +1,77 @@
 @font-face { font-family: UbuntuMono; src: url('Ubuntu-R.ttf'); } 
+
+.prop_name, .cell, .current_value {
+	font-family: UbuntuMono, Courier New, monospace;
+	font-size: 14px;
+}
+
+.dict_row {
+	height: 20px;
+	background-color: #AAA;
+}
+
+.editing input[type=text] {
+	background: none;
+	outline: none;
+	border: none;
+	margin: 0px;
+	width: 100%;
+	font-family: inherit;
+	font-size: inherit;
+	box-sizing: border-box;
+}
+
+
+.prop_name {
+	width: 150px;
+	display: inline-block;
+	overflow: hidden;
+	background-color: #FF7777;
+	padding: 2px;
+	box-sizing: border-box;
+	height: 100%;
+}
+
+.prop_name.editing {
+	padding: 0px;
+}
+.prop_name.editing input[type=text] {
+	padding: 2px;
+}
+
+.dict_row .current_value {
+	display: inline-block;
+	width: 100px;
+	background-color: #77FF77;
+	min-height: 18px;
+	padding: 2px;
+	margin: 0px;
+	box-sizing: border-box;
+	height: 100%;
+}
+
+.cell {
+	background-color: #7777FF;
+	box-sizing: border-box;
+	width: 70px;
+	display: inline-block;
+	padding: 2px;
+	height: 100%;
+}
+.cell.editing {
+	padding: 0px;
+}
+.cell.editing input[type=text] {
+	padding: 2px;
+}
+
+/*
 .cell, .prop_name {
 	width: 70px;
 	display: inline-block;
 	overflow: hidden;
 	padding: 2px;
 	margin: 0px;
-}
-.cell {
-	border: 1px solid #AAA;
-	min-height: 16px;
 }
 .cell.editing {
 	background-color: #EEE;
@@ -18,9 +81,6 @@
 	font-size: 14px;
 }
 .cell input[type=text], .prop_name input[type=text] {
-	outline: none;
-	border: none;
-	margin: 0px;
 	padding: 0px;
 	width: 100%;
 }
@@ -33,13 +93,17 @@
 	display: inline-block;
 	overflow: hidden;
 	min-height: 18px;
+	box-sizing: border-box;
+	background-color: #770000;
 }
 
 .dict_row .current_value {
 	display: inline-block;
 	width: 100px;
-	background-color: #F8F785;
+	background-color: #007700;
 	min-height: 18px;
 	padding: 2px;
 	margin: 0px;
+	box-sizing: border-box;
 }
+*/

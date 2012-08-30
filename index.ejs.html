@@ -3,6 +3,7 @@
   <head>
     <title>red</title>
 	<link rel="stylesheet" type="text/css" href="src/view/styles.css"></link>
+	<link rel="stylesheet" type="text/css" href="src/vendor/bootstrap/css/bootstrap.css"></link>
   </head>
   <body>
 	  <!--<h1>red</h1>-->
@@ -12,14 +13,18 @@
 
 	  <div>
 			<%- red_include(red_inc.main) %>
+			<script type="text/javascript" src="src/vendor/bootstrap/js/bootstrap.js"></script>
 
 			<script type="text/javascript">
-				var cjs = red.cjs, _ = cjs._;
-				var env = red.create_environment();
-				var dict = cjs.create("red_dict");
-				var context = cjs.create("red_context");
-				var dict_view = $("<div />").dict({dict: dict, context: context});
-				dict_view.appendTo(document.body);
+				$(function() {
+					var cjs = red.cjs, _ = cjs._;
+					var env = red.create_environment();
+					var dict = cjs.create("red_dict");
+					var context = cjs.create("red_context");
+					var dict_view = $("<div />").dict({dict: dict, context: context});
+					dict_view.appendTo(document.body);
+				});
+				/*
 
 				/*
 				var root = env.get_pointer();

@@ -31,8 +31,20 @@ $.widget("red.dict", {
 	options: {
 		dict: undefined
 		, context: undefined
-		, get_new_prop: function() {
-			return cjs.create("red_cell", {str: ""});
+		, property_types: ["Cell", "Dictionary", "Stateful Object", "Stateful Property"]
+		, property_factories: {
+			"Cell": function() {
+				return cjs.create("red_cell", {str: ""});
+			}
+			, "Dictionary": function() {
+				return cjs.create("dict");
+			}
+			, "Stateful Object": function() {
+				return cjs.create("stateful_obj");
+			}
+			, "Stateful Property": function() {
+				return cjs.create("stateful_prop");
+			}
 		}
 		, get_new_prop_name: function(dict, context) {
 			var prop_names = dict.get_prop_names(context);
@@ -54,18 +66,14 @@ $.widget("red.dict", {
 
 	, _create: function() {
 		this._child_props = $("<div />").appendTo(this.element)
-										.sortable();
-		this._add_prop_row = $("<div />").appendTo(this.element);
-		var self = this;
-		this._add_prop_button = $("<a />")	.attr("href", "javascript:void(0)")
-											.appendTo(this._add_prop_row)
-											.text("+")
-											.on("click.add_prop", function() {
-												var command = self._get_add_prop_command();
-												self._trigger("command", null, {
-													command: command
-												});
-											});
+										.sortable()
+										.bind("sortstop", function(event, ui) {
+											console.log(event, ui);
+										});
+
+		this._get_add_prop_button();
+
+
 		if(this.option("execute_generated_commands")) {
 			this.element.on("dictcommand", function(event, data) {
 				var command = data.command;
@@ -73,6 +81,62 @@ $.widget("red.dict", {
 			});
 		}
 		_.defer(_.bind(this._add_change_listeners, this));
+	}
+
+	, _get_add_prop_button: function() {
+		var prop_types = this.option("property_types");
+		var factories = this.option("property_factories");
+
+		var self = this;
+
+		var default_factory = factories[prop_types[0]];
+		this._add_prop_row = $("<div />").appendTo(this.element);
+		this._add_prop_button_group = $("<div />")	.addClass("btn-group")	
+													.appendTo(this._add_prop_row);
+		this._add_prop_button = $("<button />")	.addClass("btn")
+												.html("Add property")
+												.on("click.add_prop", function() {
+													var value = default_factory();
+													var command = self._get_add_prop_command(value);
+													self._trigger("command", null, {
+														command: command
+													});
+												})
+												.appendTo(this._add_prop_button_group);
+
+		this._add_prop_dropdown = $("<button />")	.addClass("btn dropdown-toggle")
+													.attr("data-toggle", "dropdown")
+													.html("<span class='caret'></span>")
+													.appendTo(this._add_prop_button_group);
+
+		this._dropdown_menu = $("<ul />")	.addClass("dropdown-menu")
+											.appendTo(this._add_prop_button_group);
+
+		_.forEach(prop_types, function(prop_type, index) {
+			var factory = factories[prop_type];
+			self._dropdown_menu.append(self._create_add_prop_row(prop_type, factory));
+			if(index === 0) {
+				self._dropdown_menu.append($("<li class='divider'></li>"));
+			}
+		});
+
+		return this._add_prop_row;
+	}
+	
+	, _create_add_prop_row: function(prop_type, factory) {
+		var li = $("<li />");
+		var link = $("<a tabindex='-1' href='javascript:void(0)' />")	.text(prop_type)
+																		.appendTo(li);
+
+		var self = this;
+		link.on("click", _.bind(function() {
+			var prop = factory.apply(self);
+			var command = self._get_add_prop_command(prop);
+			self._trigger("command", null, {
+				command: command
+			});
+		}, this));
+		return li;
 	}
 
 	, _setOption: function(key, value) {
@@ -147,14 +211,13 @@ $.widget("red.dict", {
 		delete this._live_updater;
 	}
 
-	, _get_add_prop_command: function() {
+	, _get_add_prop_command: function(prop_value) {
 		var new_prop_name = this.option("get_new_prop_name")(this.option("dict"), this.option("context"));
-		var new_prop = this.option("get_new_prop")(this.option("dict"), this.option("context"));
 
 		var command = red.command("set_prop", {
 			parent: this.option("dict")
 			, name: new_prop_name
-			, value: new_prop
+			, value: prop_value
 		});
 
 		return command;
