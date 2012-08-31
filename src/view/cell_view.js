@@ -30,7 +30,8 @@ $.widget("red.cell", {
 				command._do();
 			}
 		});
-		_.defer(_.bind(this._add_change_listeners, this, this.option("cell")));
+		//_.defer(_.bind(this._add_change_listeners, this, this.option("cell")));
+		this._add_change_listeners(this.option("cell"));
 	}
 
 	, _setOption: function(key, value) {

@@ -180,7 +180,9 @@ $.widget("red.dict", {
 						, to_index = info.to_index
 						, prop_name = info.item;
 					var prop_row = self._get_prop_row(prop_name);
-					move(prop_row, from_index, to_index);
+					var prop_row_index = prop_row.index();
+					console.log(prop_row_index, to_index);
+					//move(prop_row, prop_row_index, to_index);
 				});
 				self._child_props.sortable("refresh");
 			});
