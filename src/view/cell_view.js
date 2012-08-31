@@ -54,7 +54,6 @@ $.widget("red.cell", {
 	}
 	
 	, _destroy: function() {
-		console.log("destroy", this);
 		if(this._live_updater) {
 			this._live_updater.destroy();
 		}

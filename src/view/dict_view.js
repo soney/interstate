@@ -65,24 +65,9 @@ $.widget("red.dict", {
 	}
 
 	, _create: function() {
-		this._child_props = $("<div />").appendTo(this.element)
-										.sortable()
-										.bind("sortstart", function(event, ui) {
-											var prop_div = ui.item;
-											var prop_name = prop_div.dict_entry("option", "prop_name");
-											console.log("start", event, ui, prop_name);
-										})
-										.bind("sortchange", function(event, ui) {
-											var prop_div = ui.item;
-											console.log("change", event, ui);
-										})
-										.bind("sortstop", function(event, ui) {
-											var prop_div = ui.item;
-											var new_prop_index = prop_div.index();
-											console.log("stop", event, ui, new_prop_index);
-										})
-										;
+		this._child_props = $("<div />").appendTo(this.element);
 
+		this._make_props_draggable();
 		this._get_add_prop_button();
 
 
@@ -95,45 +80,32 @@ $.widget("red.dict", {
 		_.defer(_.bind(this._add_change_listeners, this));
 	}
 
-	, _get_add_prop_button: function() {
-		var prop_types = this.option("property_types");
-		var factories = this.option("property_factories");
-
+	, _make_props_draggable: function() {
 		var self = this;
+		this._child_props	.sortable()
+		/*
+							.bind("sortstart", function(event, ui) {
+								var prop_div = ui.item;
+								var prop_name = prop_div.dict_entry("option", "prop_name");
+								dragging_prop_name = prop_name;
+							})
+							.bind("sortchange", function(event, ui) {
+								var prop_div = ui.item;
+								console.log("change", event, ui);
+							})
+		*/
+							.bind("sortstop", function(event, ui) {
+								var prop_div = ui.item;
+								var new_prop_index = prop_div.index();
+								var prop_name = prop_div.dict_entry("option", "prop_name");
 
-		var default_factory = factories[prop_types[0]];
-		this._add_prop_row = $("<div />").appendTo(this.element);
-		this._add_prop_button_group = $("<div />")	.addClass("btn-group")	
-													.appendTo(this._add_prop_row);
-		this._add_prop_button = $("<button />")	.addClass("btn")
-												.html("Add property")
-												.on("click.add_prop", function() {
-													var value = default_factory();
-													var command = self._get_add_prop_command(value);
-													self._trigger("command", null, {
-														command: command
-													});
-												})
-												.appendTo(this._add_prop_button_group);
-
-		this._add_prop_dropdown = $("<button />")	.addClass("btn dropdown-toggle")
-													.attr("data-toggle", "dropdown")
-													.html("<span class='caret'></span>")
-													.appendTo(this._add_prop_button_group);
-
-		this._dropdown_menu = $("<ul />")	.addClass("dropdown-menu")
-											.appendTo(this._add_prop_button_group);
-
-		_.forEach(prop_types, function(prop_type, index) {
-			var factory = factories[prop_type];
-			self._dropdown_menu.append(self._create_add_prop_row(prop_type, factory));
-			if(index === 0) {
-				self._dropdown_menu.append($("<li class='divider'></li>"));
-			}
-		});
-
-		return this._add_prop_row;
+								var command = self._get_move_prop_command(prop_name, new_prop_index);
+								self._trigger("command", null, {
+									command: command
+								});
+							});
 	}
+
 	
 	, _create_add_prop_row: function(prop_type, factory) {
 		var li = $("<li />");
@@ -203,13 +175,12 @@ $.widget("red.dict", {
 					});
 					insert_at(item_view[0], self._child_props[0], index);
 				});
-				_.forEach(diff.moved, function() {
+				_.forEach(diff.moved, function(info) {
 					var from_index = info.from_index
 						, to_index = info.to_index
 						, prop_name = info.item;
-
-					var item_view = self._child_props.children().eq(from_index);
-					move(item_view[0], from_index, to_index);
+					var prop_row = self._get_prop_row(prop_name);
+					move(prop_row, from_index, to_index);
 				});
 				self._child_props.sortable("refresh");
 			});
@@ -223,6 +194,61 @@ $.widget("red.dict", {
 		delete this._live_updater;
 	}
 
+	// === PROPERTY VIEWS ===
+
+	, _get_add_prop_button: function() {
+		var prop_types = this.option("property_types");
+		var factories = this.option("property_factories");
+
+		var self = this;
+
+		var default_factory = factories[prop_types[0]];
+		this._add_prop_row = $("<div />").appendTo(this.element);
+		this._add_prop_button_group = $("<div />")	.addClass("btn-group")	
+													.appendTo(this._add_prop_row);
+		this._add_prop_button = $("<button />")	.addClass("btn")
+												.html("Add property")
+												.on("click.add_prop", function() {
+													var value = default_factory();
+													var command = self._get_add_prop_command(value);
+													self._trigger("command", null, {
+														command: command
+													});
+												})
+												.appendTo(this._add_prop_button_group);
+
+		this._add_prop_dropdown = $("<button />")	.addClass("btn dropdown-toggle")
+													.attr("data-toggle", "dropdown")
+													.html("<span class='caret'></span>")
+													.appendTo(this._add_prop_button_group);
+
+		this._dropdown_menu = $("<ul />")	.addClass("dropdown-menu")
+											.appendTo(this._add_prop_button_group);
+
+		_.forEach(prop_types, function(prop_type, index) {
+			var factory = factories[prop_type];
+			self._dropdown_menu.append(self._create_add_prop_row(prop_type, factory));
+			if(index === 0) {
+				self._dropdown_menu.append($("<li class='divider'></li>"));
+			}
+		});
+
+		return this._add_prop_row;
+	}
+
+	, _get_prop_row: function(prop_name) {
+		var prop_rows = this._child_props.children();
+		for(var i = 0; i<prop_rows.length; i++) {
+			var prop_row = prop_rows.eq(i);
+			if(prop_name === prop_row.dict_entry("option", "prop_name")) {
+				return prop_row;
+			}
+		}
+		return undefined;
+	}
+
+	// === COMMANDS ===
+
 	, _get_add_prop_command: function(prop_value) {
 		var new_prop_name = this.option("get_new_prop_name")(this.option("dict"), this.option("context"));
 
@@ -234,6 +260,17 @@ $.widget("red.dict", {
 
 		return command;
 	}
+
+	, _get_move_prop_command: function(prop_name, index) {
+		var command = red.command("move_prop", {
+			parent: this.option("dict")
+			, name: prop_name
+			, to: index
+		});
+
+		return command;
+	}
+
 });
 
 }(red, jQuery));

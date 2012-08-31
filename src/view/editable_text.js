@@ -15,20 +15,18 @@ $.widget("red.editable", {
 	, _create: function() {
 		this._state = state.IDLE;
 
-		var self = this;
+
+		this.$_begin_edit_handler = _.bind(this._begin_edit_handler, this);
+		this.$begin_edit = _.bind(this.begin_edit, this);
+		this.$_on_keydown = _.bind(this._on_keydown, this);
+
 		this.element.text(this.option("str"))
-					.on("mousedown.editable", function(event) {
-						if(self._state === state.IDLE) {
-							event.preventDefault();
-							event.stopPropagation();
-							self._trigger("begin_editing");
-						}
-					});
+					.on("mousedown", this.$_begin_edit_handler);
+
+		this._edit_input = $("<input type='text' />");	
 
 		if(this.option("immediate_edits")) {
-			this.element.on("editablebegin_editing.editable", function() {
-				self.begin_edit();
-			});
+			this.element.on("editablebegin_editing", this.$begin_edit);
 		}
 	}
 
@@ -37,24 +35,23 @@ $.widget("red.editable", {
 		var new_value = value;
 		if(key === "str") {
 			this.element.text(value);
-		} else if(key === "immediate_edits") {
-			if(old_value) {
-				this.element.off("editablebegin_editing.editable");
-			}
-			if(new_value) {
-				this.element.on("editablebegin_editing.editable", function() {
-					self.begin_edit();
-				});
-			}
 		}
 
 		this._super(key, value);
 	}
 
 	, _destroy: function() {
-		this.element.off("mousedown.editable")
-					.off("editablebegin_editing.editable");
-		$(window).off("keydown.editable");
+		this.element.off("mousedown", this.$_begin_edit_handler)
+					.off("editablebegin_editing", this.$begin_edit);
+		this._edit_input.off("keydown", this.$_on_keydown);	
+	}
+
+	, _begin_edit_handler: function(event) {
+		if(this._state === state.IDLE) {
+			event.preventDefault();
+			event.stopPropagation();
+			this._trigger("begin_editing");
+		}
 	}
 
 	, begin_edit: function() {
@@ -65,28 +62,33 @@ $.widget("red.editable", {
 			this.element.html("")
 						.addClass("editing");
 
-			this._edit_input = $("<input type='text' />")	.appendTo(this.element)
-															.attr("value", this._before_editing_value)
-															.select()
-															.focus();
-			var self = this;
-			$(window).on("keydown.editable", function(event) {
+			this._edit_input.appendTo(this.element)
+							.attr("value", this._before_editing_value)
+							.select()
+							.focus()
+							.on("keydown", this.$_on_keydown);
+		}
+	}
+
+	, _on_keydown: function(event) {
+		if(this._state === state.EDITING) {
+			if(this._edit_input.is(":focus")) {
 				if(event.which === 27) { //Esc
-					self.cancel_changes();
+					this.cancel_changes();
 				} else if(event.which === 13) { //Enter
-					self.commit_changes();
+					this.commit_changes();
 				}
-			});
+			}
 		}
 	}
 
 	, cancel_changes: function() {
 		if(this._state === state.EDITING) {
 			this._state = state.IDLE;
-			$(window).off("keydown.editable");
 			this._edit_input.remove();
 			this.element.text(this._before_editing_value)
 						.removeClass("editing");
+			this._edit_input.off("keydown", this.$_on_keydown);	
 		}
 	}
 
@@ -102,6 +104,7 @@ $.widget("red.editable", {
 			this._trigger("setstr", null, {
 				value: value
 			});
+			this._edit_input.off("keydown", this.$_on_keydown);	
 		}
 	}
 
