@@ -66,53 +66,6 @@ var print_table = function(table, max_width) {
 	return table_str;
 };
 
-var command_stack_factory = function() {
-	var stack = [];
-	var index = -1; // Points at the next thing to undo
-
-	var can_undo = function() {
-		return index >= 0;
-	};
-	var can_redo = function() {
-		return index < stack.length - 1;
-	};
-
-	return {
-		_do: function(command) {
-			var discarded_commands = stack.splice(index + 1, stack.length - index);
-
-			command._do();
-			_.forEach(discarded_commands, function(discarded_command) {
-				if(cjs.is_constraint(discarded_command)) {
-					discarded_command.destroy();
-				}
-			});
-
-			stack.push(command);
-			index++;
-		}
-		, _undo: function() {
-			if(can_undo()) {
-				var last_command = stack[index];
-				last_command._undo();
-				index--;
-			}
-		}
-		, _redo: function() {
-			if(can_redo()) {
-				var last_command = stack[index+1];
-				last_command._do()
-				index++;
-			}
-		}
-		, print: function() {
-			console.log(stack, index);
-		}
-		, can_undo: can_undo
-		, can_redo: can_redo
-	};
-};
-
 var pointer_factory = function(initial_pointer) {
 	var pointer = initial_pointer;
 	var context = cjs.create("red_context");
@@ -141,7 +94,7 @@ var Env = function(dom_container_parent) {
 	this.root = cjs.create("red_dict", {direct_attachments: [cjs.create("red_dom_attachment")]});
 
 	// Undo stack
-	this._command_stack = command_stack_factory();
+	this._command_stack = cjs.create("command_stack");
 
 	//Context tracking
 	this._pointer = pointer_factory(this.root);
@@ -689,7 +642,7 @@ var Env = function(dom_container_parent) {
 	};
 }(Env));
 
-red.create_environment = function(dom_container_parent) {
+red.create_textual_environment = function(dom_container_parent) {
 	var env = new Env(dom_container_parent);
 	return env;
 };

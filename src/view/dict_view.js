@@ -61,7 +61,6 @@ $.widget("red.dict", {
 			return prop_name;
 		}
 		, indent: 0
-		, execute_generated_commands: true
 	}
 
 	, _create: function() {
@@ -71,12 +70,6 @@ $.widget("red.dict", {
 		this._get_add_prop_button();
 
 
-		if(this.option("execute_generated_commands")) {
-			this.element.on("dictcommand", function(event, data) {
-				var command = data.command;
-				command._do();
-			});
-		}
 		_.defer(_.bind(this._add_change_listeners, this));
 	}
 
@@ -87,11 +80,9 @@ $.widget("red.dict", {
 							.bind("sortstart", function(event, ui) {
 								var prop_div = ui.item;
 								var prop_name = prop_div.dict_entry("option", "prop_name");
-								dragging_prop_name = prop_name;
 							})
 							.bind("sortchange", function(event, ui) {
 								var prop_div = ui.item;
-								console.log("change", event, ui);
 							})
 		*/
 							.bind("sortstop", function(event, ui) {
@@ -99,10 +90,9 @@ $.widget("red.dict", {
 								var new_prop_index = prop_div.index();
 								var prop_name = prop_div.dict_entry("option", "prop_name");
 
-								var command = self._get_move_prop_command(prop_name, new_prop_index);
-								self._trigger("command", null, {
-									command: command
-								});
+								var event = $.Event("red_command");
+								event.command = self._get_move_prop_command(prop_name, new_prop_index);
+								self.element.trigger(event);
 							});
 	}
 
@@ -115,10 +105,9 @@ $.widget("red.dict", {
 		var self = this;
 		link.on("click", _.bind(function() {
 			var prop = factory.apply(self);
-			var command = self._get_add_prop_command(prop);
-			self._trigger("command", null, {
-				command: command
-			});
+			var event = $.Event("red_command");
+			event.command = self._get_add_prop_command(prop);
+			self.element.trigger(event);
 		}, this));
 		return li;
 	}
@@ -126,17 +115,6 @@ $.widget("red.dict", {
 	, _setOption: function(key, value) {
 		var old_value = this.option(key);
 		var new_value = value;
-
-		if(key === "execute_generated_commands") {
-			if(old_value) {
-				this.element.off("dictcommand.red_cell");
-			}
-			if(new_value) {
-				this.element.on("dictcommand.red_cell", function(event, command) {
-					command._do();
-				});
-			}
-		}
 
 		this._super(key, value);
 	}
@@ -181,7 +159,6 @@ $.widget("red.dict", {
 						, prop_name = info.item;
 					var prop_row = self._get_prop_row(prop_name);
 					var prop_row_index = prop_row.index();
-					console.log(prop_row_index, to_index);
 					//move(prop_row, prop_row_index, to_index);
 				});
 				self._child_props.sortable("refresh");
@@ -212,10 +189,9 @@ $.widget("red.dict", {
 												.html("Add property")
 												.on("click.add_prop", function() {
 													var value = default_factory();
-													var command = self._get_add_prop_command(value);
-													self._trigger("command", null, {
-														command: command
-													});
+													var event = $.Event("red_command");
+													event.command = self._get_add_prop_command(value);
+													self.element.trigger(event);
 												})
 												.appendTo(this._add_prop_button_group);
 

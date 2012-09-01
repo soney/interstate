@@ -9,7 +9,6 @@ $.widget("red.cell", {
 	
 	options: {
 		cell: undefined
-		, execute_generated_commands: true
 	}
 
 	, _create: function() {
@@ -22,16 +21,11 @@ $.widget("red.cell", {
 		this.element.on("editablesetstr.red_cell", function(event, data) {
 			event.stopPropagation();
 			var str = data.value;
-			var command = self._get_set_cell_command(str);
-			self._trigger("command", null, {
-				command: command
-			});
-			if(self.option("execute_generated_commands")) {
-				command._do();
-			}
+			var event = $.Event("red_command");
+			event.command = self._get_set_cell_command(str);
+			self.element.trigger(event);
 		});
-		//_.defer(_.bind(this._add_change_listeners, this, this.option("cell")));
-		this._add_change_listeners(this.option("cell"));
+		_.defer(_.bind(this._add_change_listeners, this, this.option("cell")));
 	}
 
 	, _setOption: function(key, value) {

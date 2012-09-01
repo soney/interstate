@@ -18,12 +18,11 @@
 			<script type="text/javascript">
 				$(function() {
 					var cjs = red.cjs, _ = cjs._;
+
 					var env = red.create_environment();
-					var dict = cjs.create("red_dict");
-					var context = cjs.create("red_context");
-					var dict_view = $("<div />").dict({dict: dict, context: context});
-					dict_view.appendTo(document.body);
-					window.dict = dict;
+
+					var root_view = $("<div />").root({controller: env});
+					root_view.appendTo(document.body);
 				});
 				/*
 

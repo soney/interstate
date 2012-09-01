@@ -50,12 +50,15 @@ exports.main_src = c(
 				, "controller/commands/cell_commands.js"
 				, "controller/commands/statechart_commands.js"
 				, "controller/commands/combined_commands.js"
-				, "controller/environment/default_environment.js"
+				, "controller/environment/command_stack.js"
+				, "controller/environment/textual_environment.js"
+				, "controller/environment/red_environment.js"
 				, "view/editable_text.js"
 				, "view/ambiguous_view.js"
 				, "view/cell_view.js"
 				, "view/dict_entry_view.js"
 				, "view/dict_view.js"
+				, "view/root_view.js"
 			])
 );
 
