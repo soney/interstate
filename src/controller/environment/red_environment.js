@@ -17,8 +17,8 @@ var Env = function(dom_container_parent) {
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
-	proto.undo = function() { this._command_stack._undo(); return this.print(); };
-	proto.redo = function() { this._command_stack._redo(); return this.print(); };
+	proto.undo = function() { this._command_stack._undo(); };
+	proto.redo = function() { this._command_stack._redo(); };
 
 	proto.get_root = function() { return this._root; };
 	proto.get_root_context = function() { return this._root_context; };

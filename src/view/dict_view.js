@@ -31,7 +31,7 @@ $.widget("red.dict", {
 	options: {
 		dict: undefined
 		, context: undefined
-		, property_types: ["Cell", "Dictionary", "Stateful Object", "Stateful Property"]
+		, property_types: ["Cell", "Dictionary"/*, "Stateful Object", "Stateful Property"*/]
 		, property_factories: {
 			"Cell": function() {
 				return cjs.create("red_cell", {str: ""});
@@ -70,7 +70,8 @@ $.widget("red.dict", {
 		this._get_add_prop_button();
 
 
-		_.defer(_.bind(this._add_change_listeners, this));
+		//_.defer(_.bind(this._add_change_listeners, this));
+		this._change_listener_timeout = setTimeout(_.bind(this._add_change_listeners, this), 0);
 	}
 
 	, _make_props_draggable: function() {
@@ -120,8 +121,10 @@ $.widget("red.dict", {
 	}
 
 	, _destroy: function() {
+		this._remove_change_listeners();
 		this._add_prop_row.remove();
-		this._child_props.remove();
+		this._child_props	.sortable("destroy")
+							.remove();
 	}
 
 	, _add_change_listeners: function(dict) {
@@ -133,7 +136,7 @@ $.widget("red.dict", {
 			var diff = _.diff(cached_prop_names, prop_names);
 			_.defer(function() {
 				if(diff.removed.length === 1 && diff.added.length === 1 && diff.moved.length === 0) {
-					console.log("probably rename");
+					//console.log("probably rename");
 				}
 				_.forEach(diff.removed, function(info) {
 					var index = info.index
@@ -159,7 +162,7 @@ $.widget("red.dict", {
 						, prop_name = info.item;
 					var prop_row = self._get_prop_row(prop_name);
 					var prop_row_index = prop_row.index();
-					//move(prop_row, prop_row_index, to_index);
+					move(prop_row[0], prop_row_index, to_index);
 				});
 				self._child_props.sortable("refresh");
 			});
@@ -169,8 +172,10 @@ $.widget("red.dict", {
 
 	, _remove_change_listeners: function(dict) {
 		dict = dict || this.option("cell");
-		this._live_updater.destroy;
-		delete this._live_updater;
+		if(_.has(this, "_live_updater")) {
+			this._live_updater.destroy();
+			delete this._live_updater;
+		}
 	}
 
 	// === PROPERTY VIEWS ===

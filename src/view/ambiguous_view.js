@@ -20,8 +20,10 @@ $.widget("red.ambiguous", {
 
 		if(key === "value") {
 			var context = this.option("context");
-			this._remove_view(old_value, context);
-			this._add_view(new_value, context);
+			if(old_value !== new_value) {
+				this._remove_view(old_value, context);
+				this._add_view(new_value, context);
+			}
 		}
 
 		this._super(key, value);

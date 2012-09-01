@@ -35,7 +35,6 @@ $.widget("red.dict_entry", {
 		dict: undefined
 		, context: undefined
 		, prop_name: ""
-		, execute_generated_commands: true
 		, indent: 0
 	}
 
@@ -47,13 +46,9 @@ $.widget("red.dict_entry", {
 					.on("editablesetstr.red_cell", function(event, data) {
 						event.stopPropagation();
 						var str = data.value;
-						var command = self._get_rename_command(str);
-						self._trigger("command", null, {
-							command: command
-						});
-						if(self.option("execute_generated_commands")) {
-							command._do();
-						}
+						var event = $.Event("red_command");
+						event.command = self._get_rename_command(str);
+						self.element.trigger(event);
 					});
 		this._sub_entries = $("<div />");
 
