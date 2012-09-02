@@ -14,6 +14,14 @@ var Env = function(dom_container_parent) {
 	var proto = my.prototype;
 
 	proto.initialize_props = function() {
+	/*
+		var d1 = cjs.create("red_dict");
+		var a = cjs.create("red_cell", {str: "1"});
+		var x = cjs.create("red_cell", {str: "2"});
+		d1.set("x", x);
+		this._root.set("a", a);
+		this._root.set_prop("dict1", d1);
+		*/
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };

@@ -76,6 +76,11 @@ $.widget("red.dict_entry", {
 		var old_value = this.option(key);
 		var new_value = value;
 
+		if(key === "indent") {
+			this._prop_name.css("padding-left", (value*15)+"px");
+			this._source_value.ambiguous("option", "indent", value + 1);
+		}
+
 		this._super(key, value);
 	}
 

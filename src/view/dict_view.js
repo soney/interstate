@@ -64,36 +64,77 @@ $.widget("red.dict", {
 	}
 
 	, _create: function() {
-		this._child_props = $("<div />").appendTo(this.element);
+		this.element.addClass("dict");
+		this._child_props = $("<div />").addClass("dict_entries")
+										.appendTo(this.element);
 
 		this._make_props_draggable();
 		this._get_add_prop_button();
 
 
-		_.defer(_.bind(this._add_change_listeners, this));
+		/*_.defer(_.bind(*/this._add_change_listeners();/*, this));*/
 	}
 
 	, _make_props_draggable: function() {
 		var self = this;
-		this._child_props	.sortable()
+		//console.log("make sortable", this.uuid);
+		this._child_props	.sortable({
+								connectWith: ".dict_entries"
+								, axis: "y"
+							})
 		/*
 							.bind("sortstart", function(event, ui) {
 								var prop_div = ui.item;
 								var prop_name = prop_div.dict_entry("option", "prop_name");
 							})
-							.bind("sortchange", function(event, ui) {
+		*/
+		/*
+							.on("sortchange", function(event, ui) {
 								var prop_div = ui.item;
+								var new_prop_parent = $(event.target).parents(".dict").first();
+								var new_prop_parent_indent = new_prop_parent.dict("option", "indent");
+
+								//console.log(new_prop_parent_indent, event, ui, event.target);
 							})
 		*/
-							.bind("sortstop", function(event, ui) {
+							.on("sortover", function(event, ui) {
+								//console.log("sort over");
+								var my_indent = self.option("indent");
 								var prop_div = ui.item;
+
+								prop_div.dict_entry("option", "indent", my_indent);
+								event.stopPropagation();
+							})
+							.on("sortstop", function(event, ui) {
+								var prop_div = ui.item;
+								var new_prop_parent = prop_div.parents(".dict").first();
 								var new_prop_index = prop_div.index();
 								var prop_name = prop_div.dict_entry("option", "prop_name");
-
 								var command_event = $.Event("red_command");
-								command_event.command = self._get_move_prop_command(prop_name, new_prop_index);
+
+								var my_dict = self.option("dict");
+								var other_dict = new_prop_parent.dict("option", "dict");
+
+								if(my_dict === other_dict) {
+									command_event.command = self._get_move_prop_command(prop_name, new_prop_index);
+								} else {
+									command_event.command = self._get_set_parent_command(my_dict, other_dict, prop_name, new_prop_index);
+								}
+
+								self._child_props.sortable("cancel");
 								self.element.trigger(command_event);
+
 								event.stopPropagation(); // don't want any parent dicts to listen
+							})
+							.on("sortstart", function(event, ui) {
+								$(window).one("keydown.escsort", function(e) {
+									if(e.which === 27) { // Esc
+										self._child_props.sortable("cancel");
+									}
+								});
+							})
+							.on("sortstop", function() {
+								$(window).off("keydown.escsort");
 							});
 	}
 
@@ -117,12 +158,20 @@ $.widget("red.dict", {
 		var old_value = this.option(key);
 		var new_value = value;
 
+		if(key === "indent") {
+			this._child_props.children().each(function() {
+				$(this).dict_entry("option", "indent", value);
+			});
+		}
+
 		this._super(key, value);
 	}
 
 	, _destroy: function() {
+		this.element.removeClass("dict");
 		this._remove_change_listeners();
 		this._add_prop_row.remove();
+		//console.log("destroy sortable", this.uuid);
 		this._child_props	.sortable("destroy")
 							.remove();
 	}
@@ -134,7 +183,7 @@ $.widget("red.dict", {
 		this._live_updater = cjs.liven(function() {
 			var prop_names = dict.get_prop_names(self.option("context"));
 			var diff = _.diff(cached_prop_names, prop_names);
-			_.defer(function() {
+			//_.defer(function() {
 				if(diff.removed.length === 1 && diff.added.length === 1 && diff.moved.length === 0) {
 					//console.log("probably rename");
 				}
@@ -164,8 +213,10 @@ $.widget("red.dict", {
 					var prop_row_index = prop_row.index();
 					move(prop_row[0], prop_row_index, to_index);
 				});
+
+				//console.log("refresh sortable", self.uuid);
 				self._child_props.sortable("refresh");
-			});
+			//});
 			cached_prop_names = prop_names;
 		});
 	}
@@ -251,6 +302,18 @@ $.widget("red.dict", {
 			, to: index
 		});
 
+		return command;
+	}
+
+	, _get_set_parent_command: function(from_parent, to_parent, prop_name, index) {
+		var prop = from_parent._get_direct_prop(prop_name);
+		var command = red.command("set_prop_parent", {
+			from_parent: from_parent
+			, to_parent: to_parent
+			, prop_name: prop_name
+			, to_index: index
+			, value: prop
+		});
 		return command;
 	}
 

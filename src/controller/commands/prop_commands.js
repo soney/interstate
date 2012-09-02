@@ -73,11 +73,16 @@ var UnsetPropCommand = function(options) {
 
 	proto._execute = function() {
 		this._prop_index = this._parent.prop_index(this._prop_name);
-		this._prop_value = this._parent.get_prop(this._prop_name);
+		
+		this._has_direct_prop = this._parent._has_direct_prop(this._prop_name);
+		if(this._has_direct_prop) {
+			this._prop_value = this._parent._get_direct_prop(this._prop_name);
+		}
+
 		this._parent.unset_prop(this._prop_name);
 	};
 	proto._unexecute = function() {
-		if(!_.isUndefined(this._prop_value)) {
+		if(this._has_direct_prop) {
 			this._parent.set_prop(this._prop_name, this._prop_value, this._prop_index);
 		}
 	};
@@ -172,6 +177,27 @@ var MovePropCommand = function(options) {
 
 red._commands["move_prop"] = function(options) {
 	return new MovePropCommand(options);
+};
+
+// === SET PARENT ===
+
+red._commands["set_prop_parent"] = function(options) {
+	var unset_command = red.command("unset_prop", {
+		parent: options.from_parent
+		, name: options.prop_name
+	});
+	var set_command = red.command("set_prop", {
+		parent: options.to_parent
+		, name: options.prop_name
+		, value: options.value
+		, index: options.to_index
+	});
+
+	var combo_command = red.command("combined", {
+		commands: [unset_command, set_command]
+	});
+
+	return combo_command;
 };
 
 // === STATEFUL PROPS ===

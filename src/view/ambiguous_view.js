@@ -24,6 +24,12 @@ $.widget("red.ambiguous", {
 				this._remove_view(old_value, context);
 				this._add_view(new_value, context);
 			}
+		} else if(key === "indent") {
+			var my_value = this.option("value");
+			if(my_value instanceof red.RedDict) {
+				var sub_entries = this.option("sub_entries");
+				sub_entries.dict("option", "indent", value);
+			}
 		}
 
 		this._super(key, value);
