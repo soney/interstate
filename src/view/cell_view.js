@@ -21,9 +21,10 @@ $.widget("red.cell", {
 		this.element.on("editablesetstr.red_cell", function(event, data) {
 			event.stopPropagation();
 			var str = data.value;
-			var event = $.Event("red_command");
-			event.command = self._get_set_cell_command(str);
-			self.element.trigger(event);
+			var command_event = $.Event("red_command");
+			command_event.command = self._get_set_cell_command(str);
+			self.element.trigger(command_event);
+			event.stopPropagation();
 		});
 		_.defer(_.bind(this._add_change_listeners, this, this.option("cell")));
 	}

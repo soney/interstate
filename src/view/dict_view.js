@@ -70,8 +70,7 @@ $.widget("red.dict", {
 		this._get_add_prop_button();
 
 
-		//_.defer(_.bind(this._add_change_listeners, this));
-		this._change_listener_timeout = setTimeout(_.bind(this._add_change_listeners, this), 0);
+		_.defer(_.bind(this._add_change_listeners, this));
 	}
 
 	, _make_props_draggable: function() {
@@ -91,9 +90,10 @@ $.widget("red.dict", {
 								var new_prop_index = prop_div.index();
 								var prop_name = prop_div.dict_entry("option", "prop_name");
 
-								var event = $.Event("red_command");
-								event.command = self._get_move_prop_command(prop_name, new_prop_index);
-								self.element.trigger(event);
+								var command_event = $.Event("red_command");
+								command_event.command = self._get_move_prop_command(prop_name, new_prop_index);
+								self.element.trigger(command_event);
+								event.stopPropagation(); // don't want any parent dicts to listen
 							});
 	}
 
