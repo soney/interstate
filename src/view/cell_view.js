@@ -26,7 +26,7 @@ $.widget("red.cell", {
 			self.element.trigger(command_event);
 			event.stopPropagation();
 		});
-		/*_.defer(_.bind(*/this._add_change_listeners(this.option("cell"));/*, this, this.option("cell")));*/
+		this._add_change_listeners(this.option("cell"));
 	}
 
 	, _setOption: function(key, value) {

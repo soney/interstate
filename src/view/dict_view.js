@@ -72,7 +72,7 @@ $.widget("red.dict", {
 		this._get_add_prop_button();
 
 
-		/*_.defer(_.bind(*/this._add_change_listeners();/*, this));*/
+		this._add_change_listeners();
 	}
 
 	, _make_props_draggable: function() {
