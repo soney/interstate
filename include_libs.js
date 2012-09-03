@@ -59,6 +59,8 @@ exports.main_src = c(
 				, "view/dict_entry_view.js"
 				, "view/dict_view.js"
 				, "view/root_view.js"
+				, "view/statechart_view.js"
+				, "view/stateful_dict_statechart_view.js"
 			])
 );
 

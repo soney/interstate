@@ -44,6 +44,17 @@ $.widget("red.ambiguous", {
 			this.element.cell({
 				cell: value
 			});
+		} else if(value instanceof red.RedStatefulObj) {
+			this.element.stateful_dict_statechart({
+				stateful_obj: value
+				, context: context
+			});
+			var sub_entries = this.option("sub_entries");
+			sub_entries.dict({
+				dict: value
+				, context: context
+				, indent: this.option("indent")
+			});
 		} else if(value instanceof red.RedDict) {
 			var sub_entries = this.option("sub_entries");
 			sub_entries.dict({
@@ -57,6 +68,10 @@ $.widget("red.ambiguous", {
 	, _remove_view: function(value, context) {
 		if(value instanceof red.RedCell) {
 			this.element.cell("destroy");
+		} else if(value instanceof red.RedStatefulObj) {
+			this.element.stateful_dict_statechart("destroy");
+			var sub_entries = this.option("sub_entries");
+			sub_entries.dict("destroy");
 		} else if(value instanceof red.RedDict) {
 			var sub_entries = this.option("sub_entries");
 			sub_entries.dict("destroy");

@@ -31,7 +31,7 @@ $.widget("red.dict", {
 	options: {
 		dict: undefined
 		, context: undefined
-		, property_types: ["Cell", "Dictionary"/*, "Stateful Object", "Stateful Property"*/]
+		, property_types: ["Cell", "Dictionary", "Stateful Object", "Stateful Property"]
 		, property_factories: {
 			"Cell": function() {
 				return cjs.create("red_cell", {str: ""});
@@ -43,7 +43,10 @@ $.widget("red.dict", {
 				return dict;
 			}
 			, "Stateful Object": function() {
-				return cjs.create("red_stateful_obj");
+				var dict = cjs.create("red_stateful_obj");
+				//var direct_protos = cjs.create("red_stateful_prop", {can_inherit: false});
+				//dict._set_direct_protos(direct_protos);
+				return dict;
 			}
 			, "Stateful Property": function() {
 				return cjs.create("red_stateful_prop");
@@ -69,9 +72,15 @@ $.widget("red.dict", {
 
 	, _create: function() {
 		this.element.addClass("dict");
+		this._builtin_child_props = $("<div />").addClass("builtin dict_entries")
+												.appendTo(this.element);
+		this._direct_child_props = $("<div />")	.addClass("direct dict_entries")
+												.appendTo(this.element);
+		this._inherited_child_props = $("<div />")	.addClass("inherited dict_entries")
+													.appendTo(this.element);
 		if(this.option("show_protos")) {
 			var my_dict = this.option("dict");
-			this._protos_view = $("<div />").appendTo(this.element)
+			this._protos_view = $("<div />").appendTo(this._builtin_child_props)
 											.dict_entry({
 												prop_name: "(protos)"
 												, dict: my_dict
@@ -81,8 +90,6 @@ $.widget("red.dict", {
 												, value: my_dict.direct_protos()
 											});
 		}
-		this._child_props = $("<div />").addClass("dict_entries")
-										.appendTo(this.element);
 
 		this._make_props_draggable();
 		this._get_add_prop_button();
@@ -93,26 +100,11 @@ $.widget("red.dict", {
 	, _make_props_draggable: function() {
 		var self = this;
 		//console.log("make sortable", this.uuid);
-		this._child_props	.sortable({
-								connectWith: ".dict_entries"
-								, axis: "y"
-								, items: "> :not(.inherited)"
-							})
-		/*
-							.bind("sortstart", function(event, ui) {
-								var prop_div = ui.item;
-								var prop_name = prop_div.dict_entry("option", "prop_name");
-							})
-		*/
-		/*
-							.on("sortchange", function(event, ui) {
-								var prop_div = ui.item;
-								var new_prop_parent = $(event.target).parents(".dict").first();
-								var new_prop_parent_indent = new_prop_parent.dict("option", "indent");
-
-								//console.log(new_prop_parent_indent, event, ui, event.target);
-							})
-		*/
+		this._direct_child_props	.sortable({
+										connectWith: ".direct.dict_entries"
+										, axis: "y"
+										, items: "> :not(.inherited)"
+									})
 							.on("sortover", function(event, ui) {
 								//console.log("sort over");
 								var my_indent = self.option("indent");
@@ -137,23 +129,11 @@ $.widget("red.dict", {
 									command_event.command = self._get_set_parent_command(my_dict, other_dict, prop_name, new_prop_index);
 								}
 
-								self._child_props.sortable("cancel");
+								self._direct_child_props.sortable("cancel");
 								self.element.trigger(command_event);
 
 								event.stopPropagation(); // don't want any parent dicts to listen
 							});
-							/*
-							.on("sortstart", function(event, ui) {
-								$(window).one("keydown.escsort", function(e) {
-									if(e.which === 27) { // Esc
-										self._child_props.sortable("cancel");
-									}
-								});
-							})
-							.on("sortstop", function() {
-								$(window).off("keydown.escsort");
-							});
-							*/
 	}
 
 	
@@ -177,7 +157,7 @@ $.widget("red.dict", {
 		var new_value = value;
 
 		if(key === "indent") {
-			this._child_props.children().each(function() {
+			this._direct_child_props.children().each(function() {
 				$(this).dict_entry("option", "indent", value);
 			});
 		}
@@ -188,18 +168,46 @@ $.widget("red.dict", {
 	, _destroy: function() {
 		this.element.removeClass("dict");
 		this._remove_change_listeners();
+		this._add_prop_button.off("click.add_prop");
 		this._add_prop_row.remove();
 		//console.log("destroy sortable", this.uuid);
-		this._child_props	.sortable("destroy")
-							.remove();
+		this._direct_child_props.sortable("destroy")
+		this._direct_child_props.add(this._inherited_child_props, this._builtin_child_props)
+								.children().each(function() {
+									$(this).dict_entry("destroy");
+								})
+								.end()
+								.remove();
+		this._inherited_child_props.remove();
+		this._protos_view.dict_entry("destroy");
+		this._builtin_child_props.remove();
 	}
 
-	, _add_change_listeners: function(dict) {
-		dict = dict || this.option("dict");
+	, _add_change_listeners: function() {
+		this._direct_prop_live_updater = this._get_prop_name_listener("direct", this._direct_child_props);
+		this._inherited_prop_live_updater = this._get_prop_name_listener("inherited", this._inherited_child_props);
+	}
+
+	, _remove_change_listeners: function(dict) {
+		dict = dict || this.option("cell");
+		this._direct_prop_live_updater.destroy();
+		delete this._direct_prop_live_updater;
+		this._inherited_prop_live_updater.destroy();
+		delete this._inherited_prop_live_updater;
+	}
+
+	, _get_prop_name_listener: function(direct_or_inherited, container) {
+		var dict = this.option("dict");
+		var context = this.option("context");
 		var cached_prop_names = [];
 		var self = this;
-		this._live_updater = cjs.liven(function() {
-			var prop_names = dict.get_prop_names(self.option("context"));
+		return cjs.liven(function() {
+			var prop_names;
+			if(direct_or_inherited === "direct") {
+				prop_names = dict._get_direct_prop_names();
+			} else {
+				prop_names = dict._get_inherited_prop_names(context);
+			}
 			var diff = _.diff(cached_prop_names, prop_names);
 			//_.defer(function() {
 				if(diff.removed.length === 1 && diff.added.length === 1 && diff.moved.length === 0) {
@@ -208,7 +216,7 @@ $.widget("red.dict", {
 				_.forEach(diff.removed, function(info) {
 					var index = info.index
 						, prop_name = info.item;
-					var item_view = self._child_props.children().eq(index);
+					var item_view = container.children().eq(index);
 					item_view.dict_entry("destroy");
 					remove(item_view[0]);
 				});
@@ -221,28 +229,24 @@ $.widget("red.dict", {
 						, context: self.option("context")
 						, indent: self.option("indent")
 					});
-					insert_at(item_view[0], self._child_props[0], index);
+					insert_at(item_view[0], container[0], index);
 				});
 				_.forEach(diff.moved, function(info) {
 					var from_index = info.from_index
 						, to_index = info.to_index
 						, prop_name = info.item;
-					var prop_row = self._get_prop_row(prop_name);
+					var prop_row = self._get_prop_row(prop_name, container);
 					var prop_row_index = prop_row.index();
 					move(prop_row[0], prop_row_index, to_index);
 				});
 
 				//console.log("refresh sortable", self.uuid);
-				self._child_props.sortable("refresh");
+				if(direct_or_inherited === "direct") {
+					container.sortable("refresh");
+				}
 			//});
 			cached_prop_names = prop_names;
 		});
-	}
-
-	, _remove_change_listeners: function(dict) {
-		dict = dict || this.option("cell");
-		this._live_updater.destroy();
-		delete this._live_updater;
 	}
 
 	// === PROPERTY VIEWS ===
@@ -286,8 +290,8 @@ $.widget("red.dict", {
 		return this._add_prop_row;
 	}
 
-	, _get_prop_row: function(prop_name) {
-		var prop_rows = this._child_props.children();
+	, _get_prop_row: function(prop_name, container) {
+		var prop_rows = container.children();
 		for(var i = 0; i<prop_rows.length; i++) {
 			var prop_row = prop_rows.eq(i);
 			if(prop_name === prop_row.dict_entry("option", "prop_name")) {

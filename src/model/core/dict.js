@@ -30,7 +30,12 @@ var RedDict = function(options) {
 		return this._direct_protos;
 	};
 	proto._get_direct_protos = function(context) {
-		return red.get_contextualizable(this.direct_protos(), context.push(this));
+		var protos = red.get_contextualizable(this.direct_protos(), context.push(this));
+		if(_.isArray(protos)) {
+			return protos;
+		} else {
+			return [protos];
+		}
 	};
 	proto._set_direct_protos = function(direct_protos) {
 		this._direct_protos = direct_protos;
@@ -117,12 +122,12 @@ var RedDict = function(options) {
 		return false;
 	};
 	proto._get_inherited_prop_names = function(context) {
-		var protos = this._get_all_protos(context);
 		var rv = [];
-		_.forEach(protos, function(protoi) {
+		_.forEach(this._get_all_protos(context), function(protoi) {
 			rv.push.apply(rv, protoi._get_direct_prop_names());
 		});
 		rv = _.unique(rv);
+		rv = _.difference(rv, this._get_direct_prop_names());
 		return rv;
 	};
 	
@@ -158,7 +163,7 @@ var RedDict = function(options) {
 	proto.get_prop_names = function(context) {
 		var direct_prop_names = this._get_direct_prop_names();
 		var inherited_prop_names = this._get_inherited_prop_names(context);
-		return _.unique(direct_prop_names.concat(inherited_prop_names));
+		return direct_prop_names.concat(inherited_prop_names);
 	};
 	proto.is_inherited = function(prop_name, context) {
 		var direct_prop_names = this._get_direct_prop_names();
