@@ -1,6 +1,31 @@
 (function(red, $) {
 var cjs = red.cjs, _ = cjs._;
 
+var insert_at = function(child_node, parent_node, index) {
+	var children = parent_node.childNodes;
+	if(children.length <= index) {
+		parent_node.appendChild(child_node);
+	} else {
+		var before_child = children[index];
+		parent_node.insertBefore(child_node, before_child);
+	}
+};
+var remove = function(child_node) {
+	var parent_node = child_node.parentNode;
+	if(parent_node) {
+		parent_node.removeChild(child_node);
+	}
+};
+var move = function(child_node, from_index, to_index) {
+	var parent_node = child_node.parentNode;
+	if(parent_node) {
+		if(from_index < to_index) { //If it's less than the index we're inserting at...
+			to_index++; //Increase the index by 1, to make up for the fact that we're removing me at the beginning
+		}
+		insert_at(child_node, parent_node, to_index);
+	}
+};
+
 $.widget("red.stateful_dict_statechart", {
 	
 	options: {

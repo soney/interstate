@@ -10,7 +10,7 @@ var AddStateCommand = function(options) {
 	}
 
 	this._statechart = this._options.statechart;
-	this._state_name = this._options.state_name;
+	this._state_name = this._options.name;
 	this._index = this._options.index;
 };
 
@@ -47,7 +47,7 @@ var RemoveStateCommand = function(options) {
 	}
 
 	this._statechart = this._options.statechart;
-	this._state_name = this._options.state_name;
+	this._state_name = this._options.name;
 };
 
 (function(my) {
@@ -92,7 +92,7 @@ var MoveStateCommand = function(options) {
 	}
 
 	this._statechart = this._options.statechart;
-	this._state_name = this._options.state_name;
+	this._state_name = this._options.name;
 	this._to_index = this._options.index;
 };
 

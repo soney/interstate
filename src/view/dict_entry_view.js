@@ -73,7 +73,11 @@ $.widget("red.dict_entry", {
 								event.stopPropagation();
 								var str = data.value;
 								var event = $.Event("red_command");
-								event.command = self._get_rename_command(str);
+								if(str === "") {
+									event.command = self._get_remove_command(str);
+								} else {
+									event.command = self._get_rename_command(str);
+								}
 								self.element.trigger(event);
 							});
 		}
@@ -99,13 +103,6 @@ $.widget("red.dict_entry", {
 		this._remove_change_listeners();
 	}
 
-	, _get_rename_command: function(str) {
-		return red.command("rename_prop", {
-			parent: this.option("dict")
-			, from: this.option("prop_name")
-			, to: str
-		});
-	}
 
 	, _add_change_listeners: function(dict) {
 		var self = this;
@@ -161,6 +158,21 @@ $.widget("red.dict_entry", {
 				this._prop_name.editable("enable")
 			}
 		}
+	}
+
+	, _get_rename_command: function(str) {
+		return red.command("rename_prop", {
+			parent: this.option("dict")
+			, from: this.option("prop_name")
+			, to: str
+		});
+	}
+
+	, _get_remove_command: function() {
+		return red.command("unset_prop", {
+			parent: this.option("dict")
+			, name: this.option("prop_name")
+		});
 	}
 });
 

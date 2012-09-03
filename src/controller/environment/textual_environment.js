@@ -524,7 +524,7 @@ var Env = function(dom_container_parent) {
 		if(_.isNumber(index)) { index++; } // Because of the pre_init state
 
 		var command = red.command("add_state", {
-			state_name: state_name
+			name: state_name
 			, statechart: statechart
 			, index: index
 		});
@@ -541,7 +541,7 @@ var Env = function(dom_container_parent) {
 		var statechart = this.get_statechart_pointer();
 
 		var command = red.command("remove_state", {
-			state_name: state_name
+			name: state_name
 			, statechart: statechart
 		});
 		return command;
@@ -557,7 +557,7 @@ var Env = function(dom_container_parent) {
 
 		if(_.isNumber(index)) { index++; } // Because of the pre_init state
 		var command = red.command("move_state", {
-			state_name: state_name
+			name: state_name
 			, statechart: statechart
 			, index: index
 		});

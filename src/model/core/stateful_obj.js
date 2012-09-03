@@ -78,7 +78,6 @@ var RedStatefulObj = function(options) {
 			statecharts = this.get_statecharts(context);
 		}
 
-
 		var active_states = get_active_states(statecharts);
 
 		var flattened_statecharts = _.flatten(_.map(statecharts, function(statechart) {
@@ -87,7 +86,6 @@ var RedStatefulObj = function(options) {
 		var viable_states = _.filter(flattened_statecharts, function(state) {
 			return state.get_type() !== "pre_init";
 		});
-
 
 		var rv = _.map(viable_states, function(state) {
 			var is_active = _.indexOf(active_states, state) >= 0;
