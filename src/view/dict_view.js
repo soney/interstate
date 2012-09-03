@@ -37,7 +37,10 @@ $.widget("red.dict", {
 				return cjs.create("red_cell", {str: ""});
 			}
 			, "Dictionary": function() {
-				return cjs.create("red_dict");
+				var dict = cjs.create("red_dict");
+				var direct_protos = cjs.create("red_cell", {str: "[]", ignore_inherited_in_contexts: [dict]});
+				dict._set_direct_protos(direct_protos);
+				return dict;
 			}
 			, "Stateful Object": function() {
 				return cjs.create("red_stateful_obj");
@@ -61,16 +64,28 @@ $.widget("red.dict", {
 			return prop_name;
 		}
 		, indent: 0
+		, show_protos: true
 	}
 
 	, _create: function() {
 		this.element.addClass("dict");
+		if(this.option("show_protos")) {
+			var my_dict = this.option("dict");
+			this._protos_view = $("<div />").appendTo(this.element)
+											.dict_entry({
+												prop_name: "(protos)"
+												, dict: my_dict
+												, context: this.option("context")
+												, indent: this.option("indent")
+												, static: true
+												, value: my_dict.direct_protos()
+											});
+		}
 		this._child_props = $("<div />").addClass("dict_entries")
 										.appendTo(this.element);
 
 		this._make_props_draggable();
 		this._get_add_prop_button();
-
 
 		this._add_change_listeners();
 	}
@@ -81,6 +96,7 @@ $.widget("red.dict", {
 		this._child_props	.sortable({
 								connectWith: ".dict_entries"
 								, axis: "y"
+								, items: "> :not(.inherited)"
 							})
 		/*
 							.bind("sortstart", function(event, ui) {
@@ -125,7 +141,8 @@ $.widget("red.dict", {
 								self.element.trigger(command_event);
 
 								event.stopPropagation(); // don't want any parent dicts to listen
-							})
+							});
+							/*
 							.on("sortstart", function(event, ui) {
 								$(window).one("keydown.escsort", function(e) {
 									if(e.which === 27) { // Esc
@@ -136,6 +153,7 @@ $.widget("red.dict", {
 							.on("sortstop", function() {
 								$(window).off("keydown.escsort");
 							});
+							*/
 	}
 
 	
@@ -223,10 +241,8 @@ $.widget("red.dict", {
 
 	, _remove_change_listeners: function(dict) {
 		dict = dict || this.option("cell");
-		if(_.has(this, "_live_updater")) {
-			this._live_updater.destroy();
-			delete this._live_updater;
-		}
+		this._live_updater.destroy();
+		delete this._live_updater;
 	}
 
 	// === PROPERTY VIEWS ===

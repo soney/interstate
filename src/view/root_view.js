@@ -15,6 +15,7 @@ $.widget("red.root", {
 		this._root_view = $("<div />")	.dict({
 												dict: controller.get_root()
 												, context: controller.get_root_context()
+												, show_protos: false
 										})
 										.appendTo(this.element)
 										.on("red_command", this.$_on_command);

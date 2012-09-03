@@ -17,7 +17,7 @@ var value_to_text = function(val) {
 	} else if(val instanceof red.RedCell) {
 		return "(cell)";
 	} else if(_.isArray(val)) {
-		return "[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]";
+		return "[" + _.map(val, function(v) { return value_to_text(v);}).join(", ") + "]";
 	} else {
 		return "{ " + _.map(val, function(v, k) {
 			return k + ": " + value_to_value_str(v);
@@ -36,25 +36,19 @@ $.widget("red.dict_entry", {
 		, context: undefined
 		, prop_name: ""
 		, indent: 0
+		, value: undefined
+		, static: false
 	}
 
 	, _create: function() {
 		this._state = state.IDLE;
 		var my_context = this.option("context");
 		var self = this;
-		this.element.addClass("dict_row")
-					.on("editablesetstr.red_cell", function(event, data) {
-						event.stopPropagation();
-						var str = data.value;
-						var event = $.Event("red_command");
-						event.command = self._get_rename_command(str);
-						self.element.trigger(event);
-					});
+		this.element.addClass("dict_row");
 		this._sub_entries = $("<div />");
 
 		var dict = this.option("dict");
 		this._prop_name = $("<span />")	.addClass("prop_name")
-										.editable({str: this.option("prop_name")})
 										.css("padding-left", (this.option("indent")*15)+"px")
 										.appendTo(this.element);
 
@@ -68,8 +62,22 @@ $.widget("red.dict_entry", {
 											.appendTo(this.element);
 		this._sub_entries.appendTo(this.element);
 
-
-		_.defer(_.bind(this._add_change_listeners, this));
+		if(this.option("static")) {
+			this._prop_name.text(this.option("prop_name"));
+			this._source_value.ambiguous({
+								value: this.option("value")
+							});
+		} else {
+			this._prop_name	.editable({str: this.option("prop_name")})
+							.on("editablesetstr.red_cell", function(event, data) {
+								event.stopPropagation();
+								var str = data.value;
+								var event = $.Event("red_command");
+								event.command = self._get_rename_command(str);
+								self.element.trigger(event);
+							});
+		}
+		this._add_change_listeners();
 	}
 
 	, _setOption: function(key, value) {
@@ -85,7 +93,8 @@ $.widget("red.dict_entry", {
 	}
 
 	, _destroy: function() {
-		this._prop_name.remove();
+		this._prop_name	.off("editablesetstr.red_cell")
+						.remove();
 		this._current_value.remove();
 		this._remove_change_listeners();
 	}
@@ -100,20 +109,27 @@ $.widget("red.dict_entry", {
 
 	, _add_change_listeners: function(dict) {
 		var self = this;
-		this._live_src_fn = cjs.liven(function() {
-			var dict = self.option("dict");
-			var context = self.option("context");
-			var prop_name = self.option("prop_name");
-			var prop_value = dict.get_prop(prop_name, context);
-			self._source_value.ambiguous({
-								value: prop_value
-							});
-		});
+		if(!this.option("static")) {
+			this._live_src_fn = cjs.liven(function() {
+				var dict = self.option("dict");
+				var context = self.option("context");
+				var prop_name = self.option("prop_name");
+				var prop_value = dict.get_prop(prop_name, context);
+				self._source_value.ambiguous({
+									value: prop_value
+								});
+			});
+		}
 		this._live_value_fn = cjs.liven(function() {
 			var dict = self.option("dict");
 			var context = self.option("context");
-			var prop_name = self.option("prop_name");
-			var value = dict.prop_val(prop_name, context);
+			var value;
+			if(self.option("static")) {
+				value = red.get_contextualizable(self.option("value"), context.push(dict));
+			} else {
+				var prop_name = self.option("prop_name");
+				value = dict.prop_val(prop_name, context);
+			}
 			var value_str = value_to_text(value);
 			self._current_value.text(value_str);
 		});
@@ -122,14 +138,29 @@ $.widget("red.dict_entry", {
 			var context = self.option("context");
 			var prop_name = self.option("prop_name");
 			var is_inherited = dict.is_inherited(prop_name, context);
+			self._mark_inherited(is_inherited);
 		});
 	}
 
 	, _remove_change_listeners: function() {
-		this._live_value_fn.destroy();
-		this._live_src_fn.destroy();
-		this._is_inherited_fn.destroy();
+		if(_.has(this, "_live_value_fn")) { this._live_value_fn.destroy(); }
+		if(_.has(this, "_live_src_fn")) { this._live_src_fn.destroy(); }
+		if(_.has(this, "_is_inherited_fn")) { this._is_inherited_fn.destroy(); }
 		delete this._live_fn;
+	}
+
+	, _mark_inherited: function(is_inherited) {
+		if(is_inherited) {
+			this.element.addClass("inherited");
+			if(!this.option("static")) {
+				this._prop_name.editable("disable")
+			}
+		} else {
+			this.element.removeClass("inherited");
+			if(!this.option("static")) {
+				this._prop_name.editable("enable")
+			}
+		}
 	}
 });
 

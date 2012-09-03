@@ -10,6 +10,7 @@ $.widget("red.editable", {
 	options: {
 		str: ""
 		, immediate_edits: true
+		, enabled: true
 	}
 
 	, _create: function() {
@@ -20,8 +21,11 @@ $.widget("red.editable", {
 		this.$begin_edit = _.bind(this.begin_edit, this);
 		this.$_on_keydown = _.bind(this._on_keydown, this);
 
-		this.element.text(this.option("str"))
-					.on("mousedown", this.$_begin_edit_handler);
+		this.element.text(this.option("str"));
+
+		if(this.option("enabled")) {
+			this.element.on("mousedown", this.$_begin_edit_handler);
+		}
 
 		this._edit_input = $("<input type='text' />");	
 
@@ -35,6 +39,11 @@ $.widget("red.editable", {
 		var new_value = value;
 		if(key === "str") {
 			this.element.text(value);
+		} else if(key === "enabled") {
+			this.element.off("mousedown", this.$_begin_edit_handler);
+			if(value) {
+				this.element.on("mousedown", this.$_begin_edit_handler);
+			}
 		}
 
 		this._super(key, value);
@@ -106,6 +115,14 @@ $.widget("red.editable", {
 			});
 			this._edit_input.off("keydown", this.$_on_keydown);	
 		}
+	}
+
+	, disable: function() {
+		this.option("enabled", false);
+	}
+
+	, enable: function() {
+		this.option("enabled", true);
 	}
 
 });

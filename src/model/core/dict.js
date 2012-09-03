@@ -32,6 +32,9 @@ var RedDict = function(options) {
 	proto._get_direct_protos = function(context) {
 		return red.get_contextualizable(this.direct_protos(), context.push(this));
 	};
+	proto._set_direct_protos = function(direct_protos) {
+		this._direct_protos = direct_protos;
+	};
 	//
 	// === ALL PROTOS ===
 	//

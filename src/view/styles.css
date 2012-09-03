@@ -65,6 +65,11 @@
 	padding: 2px;
 }
 
+.inherited {
+	opacity: 0.7;
+	cursor: pointer;
+}
+
 /*
 .cell, .prop_name {
 	width: 70px;
