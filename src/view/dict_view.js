@@ -105,35 +105,35 @@ $.widget("red.dict", {
 										, axis: "y"
 										, items: "> :not(.inherited)"
 									})
-							.on("sortover", function(event, ui) {
-								//console.log("sort over");
-								var my_indent = self.option("indent");
-								var prop_div = ui.item;
+									.on("sortover", function(event, ui) {
+										//console.log("sort over");
+										var my_indent = self.option("indent");
+										var prop_div = ui.item;
 
-								prop_div.dict_entry("option", "indent", my_indent);
-								event.stopPropagation();
-							})
-							.on("sortstop", function(event, ui) {
-								var prop_div = ui.item;
-								var new_prop_parent = prop_div.parents(".dict").first();
-								var new_prop_index = prop_div.index();
-								var prop_name = prop_div.dict_entry("option", "prop_name");
-								var command_event = $.Event("red_command");
+										prop_div.dict_entry("option", "indent", my_indent);
+										event.stopPropagation();
+									})
+									.on("sortstop", function(event, ui) {
+										var prop_div = ui.item;
+										var new_prop_parent = prop_div.parents(".dict").first();
+										var new_prop_index = prop_div.index();
+										var prop_name = prop_div.dict_entry("option", "prop_name");
+										var command_event = $.Event("red_command");
 
-								var my_dict = self.option("dict");
-								var other_dict = new_prop_parent.dict("option", "dict");
+										var my_dict = self.option("dict");
+										var other_dict = new_prop_parent.dict("option", "dict");
 
-								if(my_dict === other_dict) {
-									command_event.command = self._get_move_prop_command(prop_name, new_prop_index);
-								} else {
-									command_event.command = self._get_set_parent_command(my_dict, other_dict, prop_name, new_prop_index);
-								}
+										if(my_dict === other_dict) {
+											command_event.command = self._get_move_prop_command(prop_name, new_prop_index);
+										} else {
+											command_event.command = self._get_set_parent_command(my_dict, other_dict, prop_name, new_prop_index);
+										}
 
-								self._direct_child_props.sortable("cancel");
-								self.element.trigger(command_event);
+										self._direct_child_props.sortable("cancel");
+										self.element.trigger(command_event);
 
-								event.stopPropagation(); // don't want any parent dicts to listen
-							});
+										event.stopPropagation(); // don't want any parent dicts to listen
+									});
 	}
 
 	

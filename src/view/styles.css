@@ -70,6 +70,15 @@
 	cursor: pointer;
 }
 
+span.state_name {
+	padding-top: 15px;
+}
+
+.state {
+	width: 100px;
+	display: inline-block;
+}
+
 /*
 .cell, .prop_name {
 	width: 70px;

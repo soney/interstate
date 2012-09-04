@@ -54,21 +54,47 @@ $.widget("red.statechart", {
 		this._child_states = $("<span />").appendTo(this.element);
 		this._add_change_listeners();
 		this._create_add_state_button();
+		this._make_states_draggable();
 	}
 
 	, _destroy: function() {
 		this._remove_change_listeners();
 		this._destroy_add_state_button();
+		this._child_states.sortable("destroy");
 		this._child_states.children().each(function() {
 			$(this).state("destroy");
 		});
 		this._child_states.remove();
 	}
 
-	, _create_add_state_button: function() {
-		this._add_state = $("<span />").appendTo(this.element);
+	, _make_states_draggable: function() {
 		var self = this;
-		this._add_state_button = $("<a />")	.attr("href", "javascript:void(0)")
+		//console.log("make sortable", this.uuid);
+		this._child_states	.sortable({
+								axis: "x"
+							})
+							.on("sortover", function(event) { event.stopPropagation(); })
+							.on("sortstop", function(event, ui) {
+								var state_span = ui.item;
+								var new_state_index = state_span.index();
+								var state = state_span.state("option", "statechart");
+
+								var command_event = $.Event("red_command");
+								command_event.command = self._get_move_state_command(state, new_state_index + 1); // add one to index to account for _pre_init
+
+								self._child_states.sortable("cancel");
+								self.element.trigger(command_event);
+
+								event.stopPropagation(); // don't want any parents to listen
+							});
+	}
+
+	, _create_add_state_button: function() {
+		this._add_state = $("<span />")	.addClass("add_state")
+										.appendTo(this.element);
+		var self = this;
+		this._add_state_button = $("<a />")	.addClass("add_state_button")
+											.attr("href", "javascript:void(0)")
 											.on("click.add_state", function() {
 												var state_name = self.option("get_new_state_name")(self.option("statechart"));
 												var event = $.Event("red_command");
@@ -144,6 +170,16 @@ $.widget("red.statechart", {
 			, name: get_new_state_name(statechart)
 		});
 	}
+
+	, _get_move_state_command: function(state, to_index) {
+		var parent = this.option("statechart");
+		var state_name = state.get_name(parent);
+		return red.command("move_state", {
+			statechart: parent
+			, name: state_name
+			, index: to_index
+		});
+	}
 });
 
 $.widget("red.state", {
@@ -153,6 +189,15 @@ $.widget("red.state", {
 
 	, _create: function() {
 		var self = this;
+		this.element.addClass("state");
+		this._handle = $("<span />").appendTo(this.element)
+									.addClass("handle")
+									.css({
+										width: "20px"
+										, height: "20px"
+										, display: "inline-block"
+										, "background-color": "red"
+									});
 		this._state_label = $("<span />")	.addClass("state_name")
 											.appendTo(this.element)
 											.editable()
@@ -171,9 +216,11 @@ $.widget("red.state", {
 	}
 
 	, _destroy: function() {
+		this.element.removeClass("state");
 		this._state_label	.off("editablesetstr.rename_state")
 							.editable("destroy")
 							.remove();
+		this._handle.remove();
 		this._remove_change_listeners();
 	}
 
