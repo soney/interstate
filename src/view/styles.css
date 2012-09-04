@@ -79,6 +79,21 @@ span.state_name {
 	display: inline-block;
 }
 
+.transition {
+	display: inline-block;
+	height: 3px;
+	background-color: black;
+	position: absolute;
+}
+
+.transitions {
+	position: absolute;
+	left: 0px;
+}
+.statechart {
+	position: relative;
+}
+
 /*
 .cell, .prop_name {
 	width: 70px;

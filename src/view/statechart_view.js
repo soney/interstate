@@ -51,19 +51,26 @@ $.widget("red.statechart", {
 	}
 
 	, _create: function() {
-		this._child_states = $("<span />").appendTo(this.element);
+		this.element.addClass("statechart");	
+		this._child_states = $("<span />").addClass("states").appendTo(this.element);
+		this._transitions = $("<span />").addClass("transitions").appendTo(this.element);
 		this._add_change_listeners();
 		this._create_add_state_button();
 		this._make_states_draggable();
 	}
 
 	, _destroy: function() {
+		this.element.removeClass("statechart");	
 		this._remove_change_listeners();
 		this._destroy_add_state_button();
 		this._child_states.sortable("destroy");
 		this._child_states.children().each(function() {
 			$(this).state("destroy");
 		});
+		this._transitions.children().each(function() {
+			$(this).transition("destroy");
+		});
+		this._transitions.remove();
 		this._child_states.remove();
 	}
 
@@ -117,12 +124,23 @@ $.widget("red.statechart", {
 				return child;
 			}
 		}
-		return state;
+		return undefined;
+	}
+	, _get_transition_view: function(transition) {
+		var children = this._transitions.children();
+		for(var i = 0; i<children.length; i++) {
+			var child = children.eq(i);
+			if(child.transition("option", "transition") === transition) {
+				return child;
+			}
+		}
+		return undefined;
 	}
 
 	, _add_change_listeners: function() {
 		var statechart = this.option("statechart");
 		var cached_substates = [];
+		var cached_transitions = [];
 		var filter = this.option("filter");
 		var self = this;
 		this._states_live_fn = cjs.liven(function() {
@@ -135,6 +153,7 @@ $.widget("red.statechart", {
 				var index = info.index
 					, state = info.item;
 				var state_view = self._get_state_view(state);
+				state_view.state("destroy");
 				remove(state_view[0]);
 			});
 			_.forEach(diff.added, function(info) {
@@ -155,10 +174,44 @@ $.widget("red.statechart", {
 
 			cached_substates = substates;
 		});
+
+		this._transitions_live_fn = cjs.liven(function() {
+			var transitions = statechart.get_transitions();
+			var diff = _.diff(cached_transitions, transitions);
+
+			_.forEach(diff.removed, function(info) {
+				var index = info.index
+					, transition = info.item;
+				var transition_view = self._get_transition_view(transition);
+				transition_view.transition("destroy");
+				remove(transition_view[0]);
+			});
+			_.forEach(diff.added, function(info) {
+				var index = info.index
+					, transition = info.item;
+				var transition_view = $("<span />").transition({
+					transition: transition
+					, index: index
+				});
+				insert_at(transition_view[0], self._transitions[0], index);
+			});
+			_.forEach(diff.moved, function(info) {
+				var from_index = info.from_index
+					, to_index = info.to_index
+					, transition = info.item;
+				var transition_view = self._get_transition_view(transition);
+				move(transition_view[0], from_index, to_index);
+				transition_view.transition("option", "index", to_index);
+			});
+
+			cached_transitions = transitions;
+		});
+
 	}
 
 	, _remove_change_listeners: function() {
 		this._states_live_fn.destroy();
+		this._transitions_live_fn.destroy();
 	}
 
 	, _get_add_state_command: function() {
@@ -190,14 +243,31 @@ $.widget("red.state", {
 	, _create: function() {
 		var self = this;
 		this.element.addClass("state");
-		this._handle = $("<span />").appendTo(this.element)
-									.addClass("handle")
-									.css({
-										width: "20px"
-										, height: "20px"
-										, display: "inline-block"
-										, "background-color": "red"
-									});
+		this._transition_adder = $("<span />")	.appendTo(this.element)
+												.addClass("transition_adder")
+												.on("mousedown.send_transition", function(event) {
+													var statechart = $(this).parents(".statechart");
+													$(".transition_adder", statechart)	.not(this)
+																						.on("mouseup.receive_transition", function() {
+																							var from_state = self.option("statechart");
+																							var to_state = $(this).parent(".state").state("option", "statechart");
+																							$(".transition_adder", statechart).off("mouseup.receive_transition");
+																							var event = $.Event("red_command");
+																							event.command = self._get_add_transition_command(from_state, to_state);
+																							self.element.trigger(event);
+																						});
+													$(window).one("mouseup", function() {
+														$(".transition_adder", statechart).off("mouseup.receive_transition");
+													});
+													event.stopPropagation();
+													event.preventDefault();
+												})
+												.css({
+													width: "20px"
+													, height: "100px"
+													, display: "inline-block"
+													, "background-color": "red"
+												});
 		this._state_label = $("<span />")	.addClass("state_name")
 											.appendTo(this.element)
 											.editable()
@@ -220,7 +290,8 @@ $.widget("red.state", {
 		this._state_label	.off("editablesetstr.rename_state")
 							.editable("destroy")
 							.remove();
-		this._handle.remove();
+		this._transition_adder	.off("mousedown.send_transition")
+								.remove();
 		this._remove_change_listeners();
 	}
 
@@ -254,6 +325,83 @@ $.widget("red.state", {
 			statechart: parent
 			, name: statechart.get_name(parent)
 		});
+	}
+
+	, _get_add_transition_command: function(from_state, to_state) {
+		var from_name = from_state.get_name(parent);
+		var to_name = to_state.get_name(parent);
+		var dict_parent = this.element.parents(".dict").dict("option", "dict");
+		return red.command("add_transition", {
+			event: cjs.create_event("red_event", dict_parent, "")
+			, statechart: from_state.parent()
+			, from: from_name
+			, to: to_name
+		});
+	}
+});
+
+$.widget("red.transition", {
+	options: {
+		transition: undefined
+		, index: 0
+	}
+
+	, _create: function() {
+		var transition = this.option("transition");
+		var from = transition.from();
+		var to = transition.to();
+		var parent = from.parent();
+		var parent_states = parent.get_substates();
+		this.element.addClass("transition")
+					.css({
+					});
+		if(from.get_type() === "pre_init") {
+			this.element.hide();
+		}
+
+		var from_index = _.indexOf(parent_states, from);
+		var to_index = _.indexOf(parent_states, to);
+		var from_x = (from_index - 1) * 100;
+		var to_x = (to_index -1 ) * 100;
+
+		var minx = Math.min(from_x, to_x);
+		var maxx = Math.max(from_x, to_x);
+		var width = maxx - minx;
+		var left = minx;
+		this.element.css({
+			width: width+"px"
+			, left: left+"px"
+			, top: (this.option("index") * 4) + "px"
+		});
+		this._add_change_listeners();
+	}
+
+	, _destroy: function() {
+		this._remove_change_listeners();
+		this.element.removeClass("transition");
+	}
+
+	, _setOption: function(key, value) {
+		var old_value = this.option(key);
+		var new_value = value;
+
+		if(key === "index") {
+			this.element.css({
+				top: (index * 4) + "px"
+			});
+		}
+
+		this._super(key, value);
+	}
+
+	, _add_change_listeners: function() {
+		var self = this;
+		this._transition_str_fn = cjs.liven(function() {
+		});
+	}
+
+	, _remove_change_listeners: function() {
+		this._transition_str_fn.destroy();
 	}
 });
 

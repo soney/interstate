@@ -43,6 +43,7 @@ exports.main_src = c(
 				, "model/core/stateful_obj.js"
 				, "model/core/stateful_prop.js"
 				, "model/core/shadow_statechart.js"
+				, "model/core/red_event.js"
 				, "model/attachments/attachment_core.js"
 				, "model/attachments/dom_attachment.js"
 				, "controller/commands/command_core.js"
