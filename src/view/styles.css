@@ -82,8 +82,23 @@ span.state_name {
 .transition {
 	display: inline-block;
 	height: 3px;
-	background-color: black;
+	background-color: #333;
 	position: absolute;
+}
+.transition:hover {
+	background-color: #666;
+}
+
+.transition .arrow {
+	height: 100%;
+	width: 3px;
+	background-color: #FF0;
+	display: block;
+	position: relative;
+}
+
+.transition:hover .arrow {
+	background-color: #660;
 }
 
 .transitions {

@@ -189,11 +189,12 @@ $.widget("red.statechart", {
 			_.forEach(diff.added, function(info) {
 				var index = info.index
 					, transition = info.item;
-				var transition_view = $("<span />").transition({
+				var transition_view = $("<span />");
+				insert_at(transition_view[0], self._transitions[0], index);
+				transition_view.transition({
 					transition: transition
 					, index: index
 				});
-				insert_at(transition_view[0], self._transitions[0], index);
 			});
 			_.forEach(diff.moved, function(info) {
 				var from_index = info.from_index
@@ -340,6 +341,10 @@ $.widget("red.state", {
 	}
 });
 
+var state = {
+	idle: 0
+	, editing: 1
+};
 $.widget("red.transition", {
 	options: {
 		transition: undefined
@@ -355,9 +360,7 @@ $.widget("red.transition", {
 		this.element.addClass("transition")
 					.css({
 					});
-		if(from.get_type() === "pre_init") {
-			this.element.hide();
-		}
+		this._arrow = $("<span />").addClass("arrow").appendTo(this.element);
 
 		var from_index = _.indexOf(parent_states, from);
 		var to_index = _.indexOf(parent_states, to);
@@ -374,11 +377,79 @@ $.widget("red.transition", {
 			, top: (this.option("index") * 4) + "px"
 		});
 		this._add_change_listeners();
+		if(from_x < to_x) {
+			this._arrow.css({
+				left: width + "px"
+			});
+		}
+		else {
+			this._arrow.css({
+				left: "0px"
+			});
+		}
+		this.$edit = _.bind(this.edit, this);
+		this.element.on("click", this.$edit);
+		this._state = state.idle;
+
+		if(from.get_type() === "pre_init") {
+			this.element.hide();
+		} else {
+			this.edit();
+		}
 	}
 
 	, _destroy: function() {
 		this._remove_change_listeners();
+		this._arrow.remove();
 		this.element.removeClass("transition");
+		this.element.off("click", this.$edit);
+	}
+
+	, edit: function() {
+		if(this._state === state.idle) {
+			this._state = state.editing;
+
+			var self = this;
+			this._text_box = $("<input />")	.appendTo(self.element)
+											.on("keydown.transition_edit", function() {
+												if($(this).is(":focus")) {
+													if(event.which === 27) { //Esc
+														self.cancel();
+													} else if(event.which === 13) { //Enter
+														self.confirm();
+													}
+												}
+											})
+											.val(this._get_transition_event_str())
+											.select()
+											.focus();
+		}
+	}
+	, confirm: function() {
+		if(this._state === state.editing) {
+			this._state = state.idle;
+			var value = this._text_box.val();
+
+			var command_event = $.Event("red_command");
+
+			if(value === "") {
+				command_event.command = this._get_remove_transition_command();
+			} else {
+				command_event.command = this._get_set_event_command(value);
+			}
+
+			this.element.trigger(command_event);
+
+			this._text_box	.off("keydown.transition_edit")
+							.remove();
+		}
+	}
+	, cancel: function() {
+		if(this._state === state.editing) {
+			this._state = state.idle;
+			this._text_box.off("keydown.transition_edit")
+							.remove();
+		}
 	}
 
 	, _setOption: function(key, value) {
@@ -387,7 +458,7 @@ $.widget("red.transition", {
 
 		if(key === "index") {
 			this.element.css({
-				top: (index * 4) + "px"
+				top: (value * 4) + "px"
 			});
 		}
 
@@ -395,13 +466,41 @@ $.widget("red.transition", {
 	}
 
 	, _add_change_listeners: function() {
+	/*
 		var self = this;
 		this._transition_str_fn = cjs.liven(function() {
 		});
+		*/
 	}
 
 	, _remove_change_listeners: function() {
+	/*
 		this._transition_str_fn.destroy();
+		*/
+	}
+
+	, _get_transition_event_str: function() {
+		var transition = this.option("transition");
+		var event = transition.get_event();
+		return event.get_str();
+	}
+
+
+	, _get_remove_transition_command: function() {
+		var transition = this.option("transition");
+		return red.command("remove_transition", {
+			transition: transition
+			, statechart: transition.get_statechart()
+		})
+	}
+	
+	, _get_set_event_command: function(str) {
+		var transition = this.option("transition");
+		return red.command("set_transition_event", {
+			transition: transition
+			, event: str
+			, statechart: transition.get_statechart()
+		})
 	}
 });
 

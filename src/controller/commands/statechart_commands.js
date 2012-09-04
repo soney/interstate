@@ -207,9 +207,8 @@ var RemoveTransitionCommand = function(options) {
 	}
 
 	this._statechart = this._options.statechart;
-	this._transition_id = this._options.id;
 
-	this._transition = this._statechart.get_transition_by_id(this._transition_id);
+	this._transition = this._options.transition || this._statechart.get_transition_by_id(this._options.id);
 };
 
 (function(my) {
@@ -242,11 +241,9 @@ var SetTransitionEventCommand = function(options) {
 		throw new Error("Must select a statechart");
 	}
 
-	this._statechart = this._options.statechart;
-	this._transition_id = this._options.id;
 	this._event_str = this._options.event;
 
-	this._transition = this._statechart.get_transition_by_id(this._transition_id);
+	this._transition = this._options.transition || this._options.statechart.get_transition_by_id(this.options.id);
 	this._event = this._transition.get_event();
 };
 
