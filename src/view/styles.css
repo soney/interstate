@@ -79,6 +79,10 @@ span.state_name {
 	display: inline-block;
 }
 
+.state.active {
+	background-color: yellow;
+}
+
 .transition {
 	display: inline-block;
 	height: 3px;

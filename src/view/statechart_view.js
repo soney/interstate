@@ -297,11 +297,19 @@ $.widget("red.state", {
 	}
 
 	, _add_change_listeners: function() {
-		var statechart = this.option("statechart");
 		var self = this;
+		var statechart = this.option("statechart");
+		var root = statechart.get_root();
 		this._state_name_fn = cjs.liven(function() {
 			var name = statechart.get_name(statechart.parent());
 			self._state_label.editable("option", "str", name);
+		});
+		this._state_active_fn = cjs.liven(function() {
+			if(root.is(statechart)) {
+				self.element.addClass("active");
+			} else {
+				self.element.removeClass("active");
+			}
 		});
 	}
 
@@ -354,39 +362,9 @@ $.widget("red.transition", {
 	, _create: function() {
 		var transition = this.option("transition");
 		var from = transition.from();
-		var to = transition.to();
-		var parent = from.parent();
-		var parent_states = parent.get_substates();
-		this.element.addClass("transition")
-					.css({
-					});
+		this.element.addClass("transition");
 		this._arrow = $("<span />").addClass("arrow").appendTo(this.element);
 
-		var from_index = _.indexOf(parent_states, from);
-		var to_index = _.indexOf(parent_states, to);
-		var from_x = (from_index - 1) * 100;
-		var to_x = (to_index -1 ) * 100;
-
-		var minx = Math.min(from_x, to_x);
-		var maxx = Math.max(from_x, to_x);
-		var width = maxx - minx;
-		var left = minx;
-		this.element.css({
-			width: width+"px"
-			, left: left+"px"
-			, top: (this.option("index") * 4) + "px"
-		});
-		this._add_change_listeners();
-		if(from_x < to_x) {
-			this._arrow.css({
-				left: width + "px"
-			});
-		}
-		else {
-			this._arrow.css({
-				left: "0px"
-			});
-		}
 		this.$edit = _.bind(this.edit, this);
 		this.element.on("click", this.$edit);
 		this._state = state.idle;
@@ -396,6 +374,7 @@ $.widget("red.transition", {
 		} else {
 			this.edit();
 		}
+		this._add_change_listeners();
 	}
 
 	, _destroy: function() {
@@ -466,17 +445,42 @@ $.widget("red.transition", {
 	}
 
 	, _add_change_listeners: function() {
-	/*
+		var transition = this.option("transition");
 		var self = this;
-		this._transition_str_fn = cjs.liven(function() {
+		this._transition_pos_fn = cjs.liven(function() {
+			var from = transition.from();
+			var to = transition.to();
+			var parent = from.parent();
+			var parent_states = parent.get_substates();
+			var from_index = _.indexOf(parent_states, from);
+			var to_index = _.indexOf(parent_states, to);
+			var from_x = (from_index - 1) * 100;
+			var to_x = (to_index -1 ) * 100;
+
+			var minx = Math.min(from_x, to_x);
+			var maxx = Math.max(from_x, to_x);
+			var width = maxx - minx;
+			var left = minx;
+			self.element.css({
+				width: width+"px"
+				, left: left+"px"
+				, top: (self.option("index") * 4) + "px"
+			});
+			if(from_x < to_x) {
+				self._arrow.css({
+					left: width + "px"
+				});
+			}
+			else {
+				self._arrow.css({
+					left: "0px"
+				});
+			}
 		});
-		*/
 	}
 
 	, _remove_change_listeners: function() {
-	/*
-		this._transition_str_fn.destroy();
-		*/
+		this._transition_pos_fn.destroy();
 	}
 
 	, _get_transition_event_str: function() {
