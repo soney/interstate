@@ -62,6 +62,11 @@ $.widget("red.ambiguous", {
 				, context: context
 				, indent: this.option("indent")
 			});
+		} else if(value instanceof red.RedStatefulProp) {
+			this.element.stateful_prop({
+				prop: value
+				, context: context
+			});
 		}
 	}
 
@@ -75,6 +80,8 @@ $.widget("red.ambiguous", {
 		} else if(value instanceof red.RedDict) {
 			var sub_entries = this.option("sub_entries");
 			sub_entries.dict("destroy");
+		} else if(value instanceof red.RedStatefulProp) {
+			this.element.stateful_prop("destroy");
 		}
 	}
 });
