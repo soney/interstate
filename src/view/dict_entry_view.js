@@ -126,6 +126,9 @@ $.widget("red.dict_entry", {
 			} else {
 				var prop_name = self.option("prop_name");
 				value = dict.prop_val(prop_name, context);
+				if(this.__constraint_solver_node__.id === 63) {
+					debugger;
+				}
 			}
 			var value_str = value_to_text(value);
 			self._current_value.text(value_str);

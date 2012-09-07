@@ -346,9 +346,13 @@ var Env = function(dom_container_parent) {
 			}
 		} else if(_.isString(value)) {
 			if(value === "dict") {
-				value = cjs.create("red_dict", {direct_protos: cjs.create("red_cell", {str: ""}), ignore_inherited_in_contexts: [parent_obj] });
+				value = cjs.create("red_dict");
+				var direct_protos = cjs.create("red_cell", {str: "[]", ignore_inherited_in_contexts: [value]});
+				value._set_direct_protos(direct_protos);
 			} else if(value === "stateful") {
-				value = cjs.create("red_stateful_obj", {direct_protos: cjs.create("red_stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [parent_obj]})});
+				value = cjs.create("red_stateful_obj");
+				var direct_protos = cjs.create("red_stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]});
+				value._set_direct_protos(direct_protos);
 			} else {
 				value = cjs.create("red_cell", {str: value});
 			}
@@ -426,9 +430,14 @@ var Env = function(dom_container_parent) {
 			str = arg0;
 		} else if(arguments.length === 2) {
 			cell = this._root;
-			_.forEach(arg0.split("."), function(name) {
-				cell = cell.get_prop(name);
-			});
+			if(arg0 === "(protos)") {
+				var pointer = this.get_pointer();
+				cell = pointer.direct_protos();
+			} else {
+				_.forEach(arg0.split("."), function(name) {
+					cell = cell.get_prop(name);
+				});
+			}
 			str = arg1;
 		} else {
 			var prop;

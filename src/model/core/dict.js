@@ -16,8 +16,18 @@ var RedDict = function(options) {
 	else { this._direct_attachments = cjs.create("constraint", [], true); }
 	this._direct_attachment_instances = cjs.create("map");
 
+
 	this.type = "red_dict";
 	this.id = _.uniqueId();
+
+	red._set_constraint_descriptor(this._direct_props._keys,   "Direct Prop Keys " + this.id);
+	red._set_constraint_descriptor(this._direct_props._values, "Direct Prop Vals " + this.id);
+
+	red._set_constraint_descriptor(this._direct_protos,	    	"Direct protos " + this.id);
+
+	if(this.id === 5) {
+		console.log(this._direct_protos.__constraint_solver_node__.id);
+	}
 };
 
 (function(my) {

@@ -20,4 +20,6 @@
 
 	red.blueprints = {};
 
+	red.__debug = true;
+
 }(this));

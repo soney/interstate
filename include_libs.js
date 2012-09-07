@@ -37,6 +37,7 @@ exports.main_src = c(
 			])
 	, cp(src, [
 				"model/core.js"
+				, "model/core/debug.js"
 				, "model/core/context_stack.js"
 				, "model/core/cell.js"
 				, "model/core/dict.js"
