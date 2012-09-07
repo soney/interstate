@@ -44,8 +44,8 @@ $.widget("red.dict", {
 			}
 			, "Stateful Object": function() {
 				var dict = cjs.create("red_stateful_obj");
-				//var direct_protos = cjs.create("red_stateful_prop", {can_inherit: false});
-				//dict._set_direct_protos(direct_protos);
+				var direct_protos = cjs.create("red_stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [dict]});
+				dict._set_direct_protos(direct_protos);
 				dict.get_own_statechart().run();
 				return dict;
 			}

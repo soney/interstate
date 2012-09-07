@@ -67,6 +67,8 @@ $.widget("red.ambiguous", {
 				prop: value
 				, context: context
 			});
+		} else {
+			this.element.text(value+"");
 		}
 	}
 
@@ -82,6 +84,8 @@ $.widget("red.ambiguous", {
 			sub_entries.dict("destroy");
 		} else if(value instanceof red.RedStatefulProp) {
 			this.element.stateful_prop("destroy");
+		} else {
+			this.element.text("");
 		}
 	}
 });
