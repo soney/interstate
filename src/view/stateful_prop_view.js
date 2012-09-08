@@ -31,7 +31,6 @@ $.widget("red.stateful_prop", {
 			var value_specs = prop.get_value_specs(context);
 
 			var values = _.pluck(value_specs, "value");
-
 			
 			self.element.children().each(function() {
 				$(this)	.off("click.make_cell")

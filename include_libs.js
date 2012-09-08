@@ -53,7 +53,6 @@ exports.main_src = c(
 				, "controller/commands/statechart_commands.js"
 				, "controller/commands/combined_commands.js"
 				, "controller/environment/command_stack.js"
-				, "controller/environment/textual_environment.js"
 				, "controller/environment/red_environment.js"
 				, "view/editable_text.js"
 				, "view/ambiguous_view.js"

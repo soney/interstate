@@ -24,10 +24,6 @@ var RedDict = function(options) {
 	red._set_constraint_descriptor(this._direct_props._values, "Direct Prop Vals " + this.id);
 
 	red._set_constraint_descriptor(this._direct_protos,	    	"Direct protos " + this.id);
-
-	if(this.id === 5) {
-		console.log(this._direct_protos.__constraint_solver_node__.id);
-	}
 };
 
 (function(my) {

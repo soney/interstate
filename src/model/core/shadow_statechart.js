@@ -31,6 +31,15 @@ var do_shadow = function(statechart, shadow) {
 			do_shadow(substate, shadow_substate);
 		}
 	};
+	var on_state_moved = function(event) {
+		var substate_name = event.state_name
+			, target = event.target
+			, index = event.index;
+
+		if(target === statechart) {
+			shadow.move_state(substate_name, index);
+		}
+	};
 	var on_state_removed = function(event) {
 		var substate_name = event.state_name
 			, substate = event.state
@@ -69,12 +78,14 @@ var do_shadow = function(statechart, shadow) {
 
 	var on_destroy = function(event) {
 		statechart	._off("state_added", on_state_added)
+					._off("state_moved", on_state_moved)
 					._off("state_removed", on_state_removed)
 					._off("transition_added", on_transition_added)
 					._off("transition_removed", on_transition_removed)
 					._off("destroy", on_destroy);
 	};
 	statechart	._on("state_added", on_state_added)
+				._on("state_moved", on_state_moved)
 				._on("state_removed", on_state_removed)
 				._on("transition_added", on_transition_added)
 				._on("transition_removed", on_transition_removed)
@@ -83,6 +94,11 @@ var do_shadow = function(statechart, shadow) {
 
 red._shadow_statechart = function(statechart) {
 	var shadow = statechart.clone();
+	red._set_constraint_descriptor(shadow._states._keys, "State keys " + shadow.id + " shadowing " + statechart.id);
+	red._set_constraint_descriptor(shadow._states._values, "State values " + shadow.id + " shadowing " + statechart.id);
+	red._set_constraint_descriptor(shadow.transitions, "Transitions " + shadow.id + " shadowing " + statechart.id);
+	red._set_constraint_descriptor(shadow._$complete_state, "$complete_state " + shadow.id + " shadowing " + statechart.id);
+	red._set_constraint_descriptor(shadow._$local_state, "$local_state " + shadow.id + " shadowing " + statechart.id);
 	do_shadow(statechart, shadow);
 	return shadow;
 };

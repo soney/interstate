@@ -24,22 +24,6 @@
 					var root_view = $("<div />").root({controller: env});
 					root_view.appendTo(document.body);
 					window.env = env;
-
-					env.set("a", "dict");
-					env.set("b", "dict");
-					env.set("c", "dict");
-					env.cd("c");
-					env.set_cell("(protos)", "[a,b]");
-					env.top();
-					env.cd("a");
-					env.set("x", "1+1");
-					env.top();
-					env.cd("b");
-					env.set("x", "2+3");
-					env.top();
-					env.cd("c");
-					env.set_cell("(protos)", "[b,a]");
-					console.log(env.print());
 				});
 				/*
 

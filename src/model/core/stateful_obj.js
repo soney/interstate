@@ -12,6 +12,9 @@ var RedStatefulObj = function(options) {
 															return itema === itemb;
 														}
 												});
+	red._set_constraint_descriptor(this._contextual_statecharts._keys, "Contextual statecharts " + this.id + " keys");
+	red._set_constraint_descriptor(this._contextual_statecharts._values, "Contextual statecharts " + this.id + " values");
+	
 		
 	this.initialize_statechart();
 	this.type = "red_stateful_obj";
