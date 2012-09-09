@@ -35,8 +35,9 @@ $.widget("red.stateful_dict_statechart", {
 
 	, _create: function() {
 		var stateful_obj = this.option("stateful_obj");
-		this._own_statechart = $("<span />")	.statechart({
+		this._own_statechart = $("<span />").statechart({
 												statechart: stateful_obj.get_own_statechart()
+												, inherited: false
 											})
 											.appendTo(this.element);
 		this._inherited_statecharts = $("<span />").appendTo(this.element);
@@ -55,10 +56,20 @@ $.widget("red.stateful_dict_statechart", {
 									.remove();
 	}
 
+	, _get_view_for_inherited_statechart: function(statechart) {
+		var children = this._inherited_statecharts.children();
+		for(var i = 0; i<children.length; i++) {
+			var child = children.eq(i);
+			if(child.statechart("option", "statechart") === statechart) { return child; }
+		}
+		return undefined;
+	}
+
 	, _add_change_listeners: function() {
 		var cached_inherited_statecharts = [];
 		var stateful_obj = this.option("stateful_obj");
 		var context = this.option("context");
+		var self = this;
 		this._inherited_statechart_listener = cjs.liven(function() {
 			var inherited_statecharts = stateful_obj.get_inherited_statecharts(context);
 			var diff = _.diff(cached_inherited_statecharts, inherited_statecharts);
@@ -66,15 +77,25 @@ $.widget("red.stateful_dict_statechart", {
 			_.forEach(diff.removed, function(info) {
 				var index = info.index
 					, statechart = info.item;
+				var view = self._get_view_for_inherited_statechart(statechart);
+				view.statechart("destroy").remove();
 			});
 			_.forEach(diff.added, function(info) {
 				var index = info.index
 					, statechart = info.item;
+				var view = $("<span />").statechart({
+					statechart: statechart
+					, inherited: true
+				});
+				insert_at(view[0], self._inherited_statecharts[0], index);
 			});
 			_.forEach(diff.moved, function(info) {
 				var from_index = info.from_index
 					, to_index = info.to_index
 					, statechart = info.item;
+				var view = self._get_view_for_inherited_statechart(statechart);
+				var view_index = view.index();
+				move(view[0], view_index, to_index);
 			});
 
 			cached_inherited_statecharts = inherited_statecharts;

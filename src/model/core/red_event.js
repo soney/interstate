@@ -56,13 +56,13 @@ var get_event = function(node, parent) {
 		} else if(name === "window") {
 			return window;
 		} else {
-			console.log("unfound", type, node, parent);
+			//console.log("unfound", type, node, parent);
 		}
 	} else if(type === "ThisExpression") {
 		return parent;
 	} else if(type === "XXXXXXX") {
 	} else {
-		console.log(type, node, parent);
+		//console.log(type, node, parent);
 	}
 };
 
@@ -90,7 +90,7 @@ var get_event = function(node, parent) {
 
 			if(event) {
 				event.on_fire(self.$child_fired);
-				console.log("re-constituted event");
+				//console.log("re-constituted event");
 			}
 
 			self._old_event = event;

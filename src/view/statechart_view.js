@@ -48,6 +48,7 @@ $.widget("red.statechart", {
 			}
 			return state_name;
 		}
+		, inherited: false
 	}
 
 	, _create: function() {
@@ -55,15 +56,21 @@ $.widget("red.statechart", {
 		this._child_states = $("<span />").addClass("states").appendTo(this.element);
 		this._transitions = $("<span />").addClass("transitions").appendTo(this.element);
 		this._add_change_listeners();
-		this._create_add_state_button();
-		this._make_states_draggable();
+		if(!this.option("inherited")) {
+			this._create_add_state_button();
+			this._make_states_draggable();
+		}
 	}
 
 	, _destroy: function() {
 		this.element.removeClass("statechart");	
 		this._remove_change_listeners();
-		this._destroy_add_state_button();
-		this._child_states.sortable("destroy");
+		if(!this.option("inherited")) {
+			this._destroy_add_state_button();
+			this._child_states	.off("sortover")
+								.off("sortstop")
+								.sortable("destroy");
+		}
 		this._child_states.children().each(function() {
 			$(this).state("destroy");
 		});
@@ -194,6 +201,7 @@ $.widget("red.statechart", {
 				transition_view.transition({
 					transition: transition
 					, index: index
+					, inherited: self.option("inherited")
 				});
 			});
 			_.forEach(diff.moved, function(info) {
@@ -357,6 +365,7 @@ $.widget("red.transition", {
 	options: {
 		transition: undefined
 		, index: 0
+		, inherited: false
 	}
 
 	, _create: function() {
@@ -372,7 +381,9 @@ $.widget("red.transition", {
 		if(from.get_type() === "pre_init") {
 			this.element.hide();
 		} else {
-			this.edit();
+			if(!this.option("inherited")) {
+				this.edit();
+			}
 		}
 		this._add_change_listeners();
 	}

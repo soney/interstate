@@ -106,7 +106,9 @@ var Env = function(dom_container_parent) {
 (function(my) {
 	var proto = my.prototype;
 
-	proto.initialize_props = function() { };
+	proto.initialize_props = function() {
+		
+	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
 	proto.undo = function() { this._command_stack._undo(); };
@@ -603,8 +605,8 @@ var Env = function(dom_container_parent) {
 		var statechart = this.get_statechart_pointer();
 		var parent = this.get_pointer();
 
-		var from_state = get_state(parent, statechart, from_state_name);
-		var to_state = get_state(parent, statechart, to_state_name);
+		var from_state = statechart.get_state_with_name(from_state_name);
+		var to_state = statechart.get_state_with_name(to_state_name);
 
 		var command = red.command("add_transition", {
 			statechart: statechart

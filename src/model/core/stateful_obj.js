@@ -47,8 +47,7 @@ var RedStatefulObj = function(options) {
 	proto._create_statechart_for_context = function(context) {
 		var shadow_statechart = red._shadow_statechart(this.get_own_statechart());
 		this._contextual_statecharts.set(context, shadow_statechart);
-		shadow_statechart.transitions.invalidate();
-		shadow_statechart._states.invalidate();
+		shadow_statechart.invalidate();
 		return shadow_statechart;
 	};
 

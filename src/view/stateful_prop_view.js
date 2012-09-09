@@ -19,6 +19,10 @@ $.widget("red.stateful_prop", {
 
 	, _destroy: function() {
 		this._remove_change_listeners();
+		this.element.children().each(function() {
+			$(this)	.off("click.make_cell")
+					.ambiguous("destroy");
+		}).remove();
 	}
 
 
@@ -63,10 +67,11 @@ $.widget("red.stateful_prop", {
 	}
 
 	, _get_make_cell_command: function(state) {
+		var prop = this.option("prop");
 		return red.command("set_stateful_prop_value", {
 			state: state
-			, value: cjs.create("red_cell", {str: ""})
-			, stateful_prop: this.option("prop")
+			, value: cjs.create("red_cell", {str: "", ignore_inherited_in_contexts: prop._ignore_inherited_in_contexts})
+			, stateful_prop: prop
 		});
 	}
 });

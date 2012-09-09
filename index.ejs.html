@@ -24,11 +24,22 @@
 					var root_view = $("<div />").root({controller: env});
 					root_view.appendTo(document.body);
 					window.env = env;
-					for(var i = 0; i<500; i++) {
-						env.set("prop_"+i, ""+i+"");
-						env.undo();
-						//env.unset("prop_"+i);
-					}
+
+					env.set("a", "stateful");
+					env.cd("a");
+					env.add_state("x");
+					env.add_transition("INIT", "x", cjs.create_event("red_event", env.get_context(), "mousedown(this)"));
+					env.undo();
+					env.undo();
+					env.redo();
+					env.redo();
+
+					/*
+					env.set("b", "stateful");
+					env.cd("b");
+					env.set("(protos)", "INIT", "a");
+					/**/
+					//console.log(env.print());
 				});
 				/*
 

@@ -70,6 +70,10 @@ $.widget("red.cell", {
 		delete this._live_updater;
 	}
 
+	, edit: function() {
+		this.element.editable("begin_edit");
+	}
+
 });
 
 }(red, jQuery));

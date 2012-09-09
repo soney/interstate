@@ -56,7 +56,7 @@ var RedDict = function(options) {
 			
 			return ([direct_proto]).concat(direct_proto._get_all_protos(context));
 		});
-		protos = _.compact(_.flatten(protos, true));
+		protos = _.uniq(_.compact(_.flatten(protos, true)));
 		return protos;
 	};
 	

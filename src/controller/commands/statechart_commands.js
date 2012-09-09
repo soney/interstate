@@ -19,8 +19,12 @@ var AddStateCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		this._statechart.add_state(this._state_name, "statechart", this._index);
-		this._state = this._statechart.get_state_with_name(this._state_name);
+		if(_.has(this, "_state")) {
+			this._statechart.add_state(this._state_name, this._state, this._index);
+		} else {
+			this._statechart.add_state(this._state_name, "statechart", this._index);
+			this._state = this._statechart.get_state_with_name(this._state_name);
+		}
 	};
 
 	proto._unexecute = function() {
@@ -183,7 +187,7 @@ var AddTransitionCommand = function(options) {
 	};
 
 	proto._unexecute = function() {
-		this._statechart.remove_transition(this._transition);
+		this._statechart.remove_transition(this._transition, false);
 	};
 
 	proto._do_destroy = function(in_effect) {
@@ -216,7 +220,7 @@ var RemoveTransitionCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		this._statechart.remove_transition(this._transition);
+		this._statechart.remove_transition(this._transition, false);
 	};
 
 	proto._unexecute = function() {
