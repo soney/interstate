@@ -97,10 +97,18 @@ $.widget("red.dict_entry", {
 	}
 
 	, _destroy: function() {
-		this._prop_name	.off("editablesetstr.red_cell")
-						.remove();
-		this._current_value.remove();
 		this._remove_change_listeners();
+
+		this._prop_name	.off("editablesetstr.red_cell");
+		if(!this.option("static")) {
+			this._prop_name.editable("destroy")
+		}
+		this._prop_name.remove();
+
+		this._source_value	.ambiguous("destroy")
+							.remove();
+
+		this._current_value.remove();
 	}
 
 

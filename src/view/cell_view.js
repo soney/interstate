@@ -16,17 +16,16 @@ $.widget("red.cell", {
 
 		var self = this;
 		this.element.addClass("cell")
-					.editable({str: this.option("cell").get_str()});
-
-		this.element.on("editablesetstr.red_cell", function(event, data) {
-			event.stopPropagation();
-			var str = data.value;
-			var command_event = $.Event("red_command");
-			command_event.command = self._get_set_cell_command(str);
-			self.element.trigger(command_event);
-			event.stopPropagation();
-		});
-		this._add_change_listeners(this.option("cell"));
+					.editable({str: this.option("cell").get_str()})
+					.on("editablesetstr.red_cell", function(event, data) {
+						event.stopPropagation();
+						var str = data.value;
+						var command_event = $.Event("red_command");
+						command_event.command = self._get_set_cell_command(str);
+						self.element.trigger(command_event);
+						event.stopPropagation();
+					});
+		this._add_change_listeners();
 	}
 
 	, _setOption: function(key, value) {
@@ -50,18 +49,14 @@ $.widget("red.cell", {
 	}
 	
 	, _destroy: function() {
-		if(this._live_updater) {
-			this._live_updater.destroy();
-		}
+		this._remove_change_listeners();
 		this.element.removeClass("cell")
-					.editable("destroy")
-					.off("click.red_cell")
-					.off("cellset_cell_command.red_cell")
-					.off("cellbegin_editing.red_cell");
+					.off("editablesetstr.red_cell")
+					.editable("destroy");
 	}
 
-	, _add_change_listeners: function(cell) {
-		cell = cell || this.option("cell");
+	, _add_change_listeners: function() {
+		var cell = this.option("cell");
 		var self = this;
 		this._live_updater = cjs.liven(function() {
 			var cell_str = cell.get_str();
@@ -70,8 +65,7 @@ $.widget("red.cell", {
 		});
 	}
 
-	, _remove_change_listeners: function(cell) {
-		cell = cell || this.option("cell");
+	, _remove_change_listeners: function() {
 		this._live_updater.destroy();
 		delete this._live_updater;
 	}

@@ -22,7 +22,8 @@ $.widget("red.root", {
 	}
 
 	, _destroy: function() {
-		this._root_view.dict("destroy");
+		this._root_view	.dict("destroy")
+						.off("red_command", this.$_on_command);
 		$(window).off("keydown.red_keyboard_commands");
 	}
 

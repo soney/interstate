@@ -24,6 +24,11 @@
 					var root_view = $("<div />").root({controller: env});
 					root_view.appendTo(document.body);
 					window.env = env;
+					for(var i = 0; i<500; i++) {
+						env.set("prop_"+i, ""+i+"");
+						env.undo();
+						//env.unset("prop_"+i);
+					}
 				});
 				/*
 
