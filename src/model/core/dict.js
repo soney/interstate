@@ -160,7 +160,7 @@ var RedDict = function(options) {
 	proto.get = proto.prop_val = function(prop_name, context) {
 		var val = this.get_prop(prop_name, context);
 		if(context instanceof red.RedContext) {
-			context = context.push(this);
+		//	context = context.push(this);
 		} else {
 			context = cjs.create("red_context", {stack: [this]});
 		}

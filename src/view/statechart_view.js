@@ -227,6 +227,8 @@ $.widget("red.statechart", {
 		var statechart = this.option("statechart");
 		var get_new_state_name = this.option("get_new_state_name");
 
+		statechart = statechart.get_basis() || statechart;
+
 		return red.command("add_state", {
 			statechart: statechart
 			, name: get_new_state_name(statechart)
@@ -236,6 +238,9 @@ $.widget("red.statechart", {
 	, _get_move_state_command: function(state, to_index) {
 		var parent = this.option("statechart");
 		var state_name = state.get_name(parent);
+
+		parent = parent.get_basis() || parent;
+
 		return red.command("move_state", {
 			statechart: parent
 			, name: state_name
@@ -328,9 +333,13 @@ $.widget("red.state", {
 	, _get_rename_state_command: function(to_name) {
 		var statechart = this.option("statechart");
 		var parent = statechart.parent();
+		var from_name = statechart.get_name(parent);
+
+		parent = parent.get_basis() || parent;
+
 		return red.command("rename_state", {
 			statechart: parent
-			, from: statechart.get_name(parent)
+			, from: from_name
 			, to: to_name
 		});
 	}
@@ -348,9 +357,13 @@ $.widget("red.state", {
 		var from_name = from_state.get_name(parent);
 		var to_name = to_state.get_name(parent);
 		var dict_parent = this.element.parents(".dict").dict("option", "dict");
+
+		var parent = from_state.parent();
+		parent = parent.get_basis() || parent;
+
 		return red.command("add_transition", {
 			event: cjs.create_event("red_event", dict_parent, "")
-			, statechart: from_state.parent()
+			, statechart: parent
 			, from: from_name
 			, to: to_name
 		});
@@ -503,6 +516,7 @@ $.widget("red.transition", {
 
 	, _get_remove_transition_command: function() {
 		var transition = this.option("transition");
+		transition = transition.get_basis() || transition;
 		return red.command("remove_transition", {
 			transition: transition
 			, statechart: transition.get_statechart()
@@ -511,6 +525,7 @@ $.widget("red.transition", {
 	
 	, _get_set_event_command: function(str) {
 		var transition = this.option("transition");
+		transition = transition.get_basis() || transition;
 		return red.command("set_transition_event", {
 			transition: transition
 			, event: str
