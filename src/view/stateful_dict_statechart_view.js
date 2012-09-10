@@ -36,7 +36,7 @@ $.widget("red.stateful_dict_statechart", {
 	, _create: function() {
 		var stateful_obj = this.option("stateful_obj");
 		this._own_statechart = $("<span />").statechart({
-												statechart: stateful_obj.get_own_statechart()
+												statechart: stateful_obj.get_statechart_for_context(this.option("context"))
 												, inherited: false
 											})
 											.appendTo(this.element);
