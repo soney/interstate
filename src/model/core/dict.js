@@ -218,15 +218,20 @@ var RedDict = function(options) {
 	// === DIRECT ATTACHMENT INSTANCES ===
 	//
 	proto.add_direct_attachment_instance = function(attachment, context) {
+		var do_invalidate = false;
 		var attachment_instances;
 		if(this._direct_attachment_instances.has_key(attachment)) {
 			attachment_instances = this._direct_attachment_instances.get(attachment);
 		} else {
+			this._direct_attachment_instances.defer_invalidation(true);
 			attachment_instances = cjs.create("map");
 			this._direct_attachment_instances.set(attachment, attachment_instances);
+			this._direct_attachment_instances.defer_invalidation(false);
+			do_invalidate = true;
 		}
 		var attachment_instance = attachment.create_instance(this, context);
 		attachment_instances.set(context, attachment_instance);
+		if(do_invalidate) { this._direct_attachment_instances.invalidate(); }
 		return attachment_instance;
 	};
 	proto.has_direct_attachment_instance = function(attachment, context) {

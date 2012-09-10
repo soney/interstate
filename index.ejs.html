@@ -21,7 +21,7 @@
 
 					var env = red.create_environment();
 
-					var root_view = $("<div />").root({controller: env}).appendTo(document.body);
+					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					window.env = env;
 					window.root = env.get_pointer();
 
