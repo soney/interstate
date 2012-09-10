@@ -2,8 +2,8 @@
 <html lang="en">
   <head>
     <title>red</title>
-	<link rel="stylesheet" type="text/css" href="src/view/styles.css"></link>
-	<link rel="stylesheet" type="text/css" href="src/vendor/bootstrap/css/bootstrap.css"></link>
+	<link rel="stylesheet" type="text/css" href="src/view/css/styles.css"></link>
+	<link rel="stylesheet" type="text/css" href="src/_vendor/bootstrap/css/bootstrap.css"></link>
   </head>
   <body>
 	  <!--<h1>red</h1>-->
@@ -13,7 +13,7 @@
 
 	  <div>
 			<%- red_include(red_inc.main) %>
-			<script type="text/javascript" src="src/vendor/bootstrap/js/bootstrap.js"></script>
+			<script type="text/javascript" src="src/_vendor/bootstrap/js/bootstrap.js"></script>
 
 			<script type="text/javascript">
 				$(function() {
@@ -23,6 +23,15 @@
 
 					var root_view = $("<div />").root({controller: env}).appendTo(document.body);
 					window.env = env;
+					window.root = env.get_pointer();
+
+					env.set("a", "dict");
+					env.cd("a");
+					window.a = env.get_pointer();
+					env.set_cell("(protos)", "dom");
+					window.rac = cjs.create("red_context", {stack: [root, a]});
+
+
 					console.log(env.print());
 				});
 				/*

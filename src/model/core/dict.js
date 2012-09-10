@@ -22,8 +22,10 @@ var RedDict = function(options) {
 
 	red._set_constraint_descriptor(this._direct_props._keys,   "Direct Prop Keys " + this.id);
 	red._set_constraint_descriptor(this._direct_props._values, "Direct Prop Vals " + this.id);
-
-	red._set_constraint_descriptor(this._direct_protos,	    	"Direct protos " + this.id);
+	red._set_constraint_descriptor(this._direct_protos,	       "Direct protos " + this.id);
+	if(cjs.is_constraint(this._direct_attachments)) { red._set_constraint_descriptor(this._direct_attachments,   "Direct Attachments " + this.id); }
+	red._set_constraint_descriptor(this._direct_attachment_instances._keys,   "Direct Attachment instance Keys " + this.id);
+	red._set_constraint_descriptor(this._direct_attachment_instances._values, "Direct Attachment instance Vals " + this.id);
 };
 
 (function(my) {
@@ -265,7 +267,7 @@ var RedDict = function(options) {
 		var protos = this.get_protos(context);
 		var proto_attachments_and_srcs = _.map(protos, function(protoi) {
 			if(protoi instanceof red.RedDict) {
-				var attachments = protoi._get_direct_attachments();
+				var attachments = protoi._get_direct_attachments(context);
 				return _.map(attachments, function(attachment) {
 					return {
 						attachment: attachment

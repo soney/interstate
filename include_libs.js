@@ -21,10 +21,10 @@ var c = concat = function() {
 var path = "";
 var build_path = cp(path, "build");
 var src = cp(path, "src");
-var vendor_src = cp(src, "vendor");
+var vendor_src = cp(src, "_vendor");
 var cjs_path = cp(vendor_src, "cjs");
 
-var cjs_inc = require("./src/vendor/cjs/include_libs");
+var cjs_inc = require("./src/_vendor/cjs/include_libs");
 
 exports.main_build = cp(build_path, ["red.min.js"]);
 
@@ -54,15 +54,17 @@ exports.main_src = c(
 				, "controller/commands/combined_commands.js"
 				, "controller/environment/command_stack.js"
 				, "controller/environment/red_environment.js"
-				, "view/editable_text.js"
-				, "view/ambiguous_view.js"
-				, "view/cell_view.js"
-				, "view/dict_entry_view.js"
-				, "view/dict_view.js"
-				, "view/root_view.js"
-				, "view/statechart_view.js"
-				, "view/stateful_dict_statechart_view.js"
-				, "view/stateful_prop_view.js"
+				, "view/util/editable_text.js"
+				, "view/objs/ambiguous_view.js"
+				, "view/objs/cell_view.js"
+				, "view/objs/dict_entry_view.js"
+				, "view/objs/dict_view.js"
+				, "view/objs/statechart_view.js"
+				, "view/objs/stateful_dict_statechart_view.js"
+				, "view/objs/stateful_prop_view.js"
+				, "view/environment/red_visual_environment_view.js"
+				, "view/environment/root_view.js"
+				, "view/environment/dom_output_view.js"
 			])
 );
 

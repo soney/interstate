@@ -1,6 +1,3 @@
-[submodule "src/vendor/cjs"]
-	path = src/vendor/cjs
+[submodule "src/_vendor/cjs"]
+	path = src/_vendor/cjs
 	url = https://github.com/soney/ConstraintJS
-[submodule "src/vendor/esprima"]
-	path = src/vendor/esprima
-	url = https://github.com/ariya/esprima.git
