@@ -347,9 +347,11 @@ $.widget("red.state", {
 	, _get_remove_state_command: function() {
 		var statechart = this.option("statechart");
 		var parent = statechart.parent();
+		var name = statechart.get_name(parent);
+		parent = parent.get_basis() || parent;
 		return red.command("remove_state", {
 			statechart: parent
-			, name: statechart.get_name(parent)
+			, name: name
 		});
 	}
 
