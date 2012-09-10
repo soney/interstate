@@ -47,25 +47,25 @@ $.widget("red.ambiguous", {
 		} else if(value instanceof red.RedStatefulObj) {
 			this.element.stateful_dict_statechart({
 				stateful_obj: value
-				, context: context
+				, context: context.push(value)
 			});
 			var sub_entries = this.option("sub_entries");
 			sub_entries.dict({
 				dict: value
-				, context: context
+				, context: context.push(value)
 				, indent: this.option("indent")
 			});
 		} else if(value instanceof red.RedDict) {
 			var sub_entries = this.option("sub_entries");
 			sub_entries.dict({
 				dict: value
-				, context: context
+				, context: context.push(value)
 				, indent: this.option("indent")
 			});
 		} else if(value instanceof red.RedStatefulProp) {
 			this.element.stateful_prop({
 				prop: value
-				, context: context
+				, context: context.push(value)
 			});
 		} else {
 			this.element.text(value+"");

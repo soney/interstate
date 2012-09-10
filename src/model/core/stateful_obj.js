@@ -77,9 +77,9 @@ var RedStatefulObj = function(options) {
 	proto.get_state_specs = function(context, include_inherited) {
 		var statecharts;
 		if(include_inherited === false) {
-			statecharts = [this.get_statechart_for_context(context.push(this))];
+			statecharts = [this.get_statechart_for_context(context)];
 		} else {
-			statecharts = this.get_statecharts(context.push(this));
+			statecharts = this.get_statecharts(context);
 		}
 
 		var active_states = get_active_states(statecharts);

@@ -68,7 +68,7 @@ var print_table = function(table, max_width) {
 
 var pointer_factory = function(initial_pointer) {
 	var pointer = initial_pointer;
-	var context = cjs.create("red_context");
+	var context = cjs.create("red_context", {stack: [initial_pointer]});
 
 	return {
 		parent: function() {
@@ -92,7 +92,7 @@ var pointer_factory = function(initial_pointer) {
 
 var Env = function(dom_container_parent) {
 	this._root = cjs.create("red_dict", {direct_attachments: [cjs.create("red_dom_attachment")]});
-	this._root_context = cjs.create("red_context");
+	this._root_context = cjs.create("red_context", {stack: [this._root]});
 
 	// Undo stack
 	this._command_stack = cjs.create("command_stack");
@@ -124,20 +124,20 @@ var Env = function(dom_container_parent) {
 
 		_.forEach(prop_name.split("."), function(name) {
 			if(pointer) {
-				context = context.push(pointer);
 				pointer = pointer.get_prop(name, context);
+				context = context.push(pointer);
 			}
 		});
 		this._pointer.set_pointer(pointer);
 		this._pointer.set_context(context);
 
-		return this.print();
+		//return this.print();
 	};
 	proto.top = function() {
 		this._pointer.set_pointer(this._root);
-		this._pointer.set_context(cjs.create("red_context"));
+		this._pointer.set_context(cjs.create("red_context", {stack: [this._root]}));
 
-		return this.print();
+		//return this.print();
 	};
 	proto.up = function() {
 		var context = this.get_context();
@@ -145,7 +145,7 @@ var Env = function(dom_container_parent) {
 		var ptr = context.last() || this._root;
 		this._pointer.set_pointer(ptr);
 		this._pointer.set_context(context.pop());
-		return this.print();
+		//return this.print();
 	};
 	proto.get_pointer = function() {
 		return this._pointer.get_pointer();
@@ -219,26 +219,29 @@ var Env = function(dom_container_parent) {
 				indent += " ";
 			}
 			var rows = [];
-			var prop_names = dict.get_prop_names(context);
 			var dictified_context = context.push(dict);
+			var prop_names = dict.get_prop_names(dictified_context);
 			_.forEach(prop_names, function(prop_name) {
-				var value = dict.get_prop(prop_name, context);
-				var is_inherited = dict.is_inherited(prop_name, context);
+				var value = dict.get_prop(prop_name, dictified_context);
+				var is_inherited = dict.is_inherited(prop_name, dictified_context);
 				prop_name = indent + prop_name;
 				if(is_inherited) { prop_name += " i" }
 				if(value === pointer) { prop_name = "> " + prop_name; }
 				else { prop_name = "  " + prop_name; }
 
-				var value_got = red.get_contextualizable(value, dictified_context);
+				var value_got = red.get_contextualizable(value, dictified_context.push(value));
 
 				if(value instanceof red.RedStatefulObj) {
-					var state_specs = value.get_state_specs(dictified_context);
+					var state_specs = value.get_state_specs(dictified_context.push(value));
 					var row = [prop_name + " - " + value.id, value_to_value_str(value_got)];
 
 					var state_strs = _.map(state_specs, function(state_spec) {
 						var state = state_spec.state;
 						var rv = state.get_name(state.parent());
 						rv += " " + state.id;
+						if(state.get_basis()) {
+							rv += "<-"+state.get_basis().id;
+						}
 						if(state_spec.active) {
 							rv = "* " + rv + " *";
 						}
@@ -246,14 +249,14 @@ var Env = function(dom_container_parent) {
 					});
 
 					row.push.apply(row, state_strs);
-					to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(dictified_context));
+					to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(dictified_context.push(value)));
 
 					rows.push(row);
 
 					var protos = value.direct_protos();
 
-					var protos_got = red.get_contextualizable(protos, dictified_context.push(value));
-					var proto_row = [indent + "    (protos)", value_to_value_str(protos_got)];
+					var protos_got = red.get_contextualizable(protos, dictified_context.push(value).push(protos));
+					var proto_row = [indent + "    (protos) - " + protos.id, value_to_value_str(protos_got)];
 					var proto_value_specs = protos.get_value_specs(dictified_context.push(value));
 					var value_strs = _.map(proto_value_specs, function(value_spec) {
 						var value = value_spec.value;
@@ -269,7 +272,6 @@ var Env = function(dom_container_parent) {
 					});
 					proto_row.push.apply(proto_row, value_strs);
 					rows.push(proto_row);
-
 					
 					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);
@@ -287,7 +289,7 @@ var Env = function(dom_container_parent) {
 					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);
 				} else if(value instanceof red.RedStatefulProp) {
-					var value_specs = value.get_value_specs(dictified_context);
+					var value_specs = value.get_value_specs(dictified_context.push(value));
 					var row = [prop_name + " - " + value.id, value_to_value_str(value_got)];
 
 					var value_strs = _.map(value_specs, function(value_spec) {
@@ -375,7 +377,7 @@ var Env = function(dom_container_parent) {
 		} else {
 			var command = this._get_set_prop_command.apply(this, arguments);
 			this._do(command);
-			return this.print();
+			//return this.print();
 		}
 	};
 	proto._get_unset_prop_command = function(prop_name) {
@@ -393,7 +395,7 @@ var Env = function(dom_container_parent) {
 	proto.unset = function() {
 		var command = this._get_unset_prop_command.apply(this, arguments);
 		this._do(command);
-		return this.print();
+		//return this.print();
 	};
 
 	proto._get_rename_prop_command = function(from_name, to_name) {
@@ -408,7 +410,7 @@ var Env = function(dom_container_parent) {
 	proto.rename = function() {
 		var command = this._get_rename_prop_command.apply(this, arguments);
 		this._do(command);
-		return this.print();
+		//return this.print();
 	};
 	proto._get_move_prop_command = function(prop_name, index) {
 		var parent_obj = this.get_pointer();
@@ -422,7 +424,7 @@ var Env = function(dom_container_parent) {
 	proto.move = function() {
 		var command = this._get_move_prop_command.apply(this, arguments);
 		this._do(command);
-		return this.print();
+		//return this.print();
 	};
 
 	proto._get_set_cell_command = function(arg0, arg1, arg2) {
@@ -497,7 +499,7 @@ var Env = function(dom_container_parent) {
 	proto.set_cell = function() {
 		var command = this._get_set_cell_command.apply(this, arguments);
 		this._do(command);
-		return this.print();
+		//return this.print();
 	};
 
 	var get_state = function(state_name, states) {
@@ -547,7 +549,7 @@ var Env = function(dom_container_parent) {
 	proto.add_state = function() {
 		var command = this._get_add_state_command.apply(this, arguments);
 		this._do(command);
-		return this.print();
+		//return this.print();
 	};
 
 	proto._get_remove_state_command = function(state_name) {
@@ -562,7 +564,7 @@ var Env = function(dom_container_parent) {
 	proto.remove_state = function() {
 		var command = this._get_remove_state_command.apply(this, arguments);
 		this._do(command);
-		return this.print();
+		//return this.print();
 	};
 
 	proto._get_move_state_command = function(state_name, index) {
@@ -580,7 +582,7 @@ var Env = function(dom_container_parent) {
 	proto.move_state = function() {
 		var command = this._get_move_state_command.apply(this, arguments);
 		this._do(command);
-		return this.print();
+		//return this.print();
 	};
 
 
@@ -597,7 +599,7 @@ var Env = function(dom_container_parent) {
 	proto.rename_state = function() {
 		var command = this._get_rename_state_command.apply(this, arguments);
 		this._do(command);
-		return this.print();
+		//return this.print();
 	};
 
 
@@ -620,7 +622,7 @@ var Env = function(dom_container_parent) {
 	proto.add_transition = function() {
 		var command = this._get_add_transition_command.apply(this, arguments);
 		this._do(command);
-		return this.print();
+		//return this.print();
 	};
 
 	proto._get_remove_transition_command = function(transition_id) {
@@ -635,7 +637,7 @@ var Env = function(dom_container_parent) {
 	proto.remove_transition = function() {
 		var command = this._get_remove_transition_command.apply(this, arguments);
 		this._do(command);
-		return this.print();
+		//return this.print();
 	};
 
 	proto._get_set_event_command = function(transition_id, event) {
@@ -651,7 +653,7 @@ var Env = function(dom_container_parent) {
 	proto.set_event = function() {
 		var command = this._get_set_event_command.apply(this, arguments);
 		this._do(command);
-		return this.print();
+		//return this.print();
 	};
 }(Env));
 

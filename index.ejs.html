@@ -44,15 +44,17 @@
 					env.set_cell("x", "INIT", "2");
 					env.top();
 					env.cd("c");
-					red.__debug = true;
-					env.set("(protos)", "INIT", "[a,b]");
-					red.__debug = false;
 
 					window.ec = cjs.create("red_context");
 					window.rc = ec.push(root);
 					window.ac = rc.push(a);
 					window.bc = rc.push(b);
 					window.cc = rc.push(c);
+
+					red.__debug = true;
+					/*env.set("(protos)", "INIT", "[a,b]");
+					red.__debug = false;
+
 					/*
 					env.set("prop_0");
 					env.cd("a");

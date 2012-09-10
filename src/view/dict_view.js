@@ -81,14 +81,16 @@ $.widget("red.dict", {
 													.appendTo(this.element);
 		if(this.option("show_protos")) {
 			var my_dict = this.option("dict");
+			var context = this.option("context");
+			var direct_protos = my_dict.direct_protos();
 			this._protos_view = $("<div />").appendTo(this._builtin_child_props)
 											.dict_entry({
 												prop_name: "(protos)"
 												, dict: my_dict
-												, context: this.option("context")
+												, context: context.push(direct_protos)
 												, indent: this.option("indent")
 												, static: true
-												, value: my_dict.direct_protos()
+												, value: direct_protos
 											});
 		}
 
@@ -227,7 +229,7 @@ $.widget("red.dict", {
 					var item_view = $("<div />").dict_entry({
 						prop_name: prop_name
 						, dict: self.option("dict")
-						, context: self.option("context")
+						, context: context
 						, indent: self.option("indent")
 					});
 					insert_at(item_view[0], container[0], index);

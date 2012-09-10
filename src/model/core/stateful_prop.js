@@ -33,7 +33,7 @@ var RedStatefulProp = function(options) {
 		} else {
 			return {
 				stateful_obj: one_level_above_context.last()
-				, context: one_level_above_context.pop()
+				, context: one_level_above_context //.pop()
 			};
 		}
 	};
@@ -50,6 +50,7 @@ var RedStatefulProp = function(options) {
 	// === DIRECT VALUES ===
 	//
 	proto.set = proto._set_direct_value_for_state = function(state, value) {
+		//debugger;
 		state = state_basis(state);
 		this._direct_values.set(state, value);
 	};
@@ -70,7 +71,7 @@ var RedStatefulProp = function(options) {
 	// === INHERITED VALUES ===
 	//
 	proto._get_inherits_from = function(context) {
-		if(!this.can_inherit) {
+		if(!this._can_inherit) {
 			return [];
 		}
 		var stateful_obj_and_context = this.get_stateful_obj_and_context(context);
@@ -81,11 +82,11 @@ var RedStatefulProp = function(options) {
 		if(_.isUndefined(stateful_obj_context)) {
 			return [];
 		}
-		var my_name = stateful_obj.name_for_prop(this);
+		var my_name = stateful_obj.name_for_prop(this, stateful_obj_context);
 		if(_.isUndefined(my_name)) {
 			return [];
 		}
-		var inherited_props = stateful_obj._get_all_inherited_props(my_name);
+		var inherited_props = stateful_obj._get_all_inherited_props(my_name, stateful_obj_context);
 		return inherited_props;
 	};
 

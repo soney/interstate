@@ -55,7 +55,7 @@ $.widget("red.dict_entry", {
 		this._current_value = $("<span />")	.addClass("current_value")
 											.appendTo(this.element);
 		this._source_value = $("<span />")	.ambiguous({
-												context: my_context.push(dict)
+												context: my_context
 												, indent: this.option("indent") + 1
 												, sub_entries: this._sub_entries
 											})
@@ -130,7 +130,7 @@ $.widget("red.dict_entry", {
 			var context = self.option("context");
 			var value;
 			if(self.option("static")) {
-				value = red.get_contextualizable(self.option("value"), context.push(dict));
+				value = red.get_contextualizable(self.option("value"), context);
 			} else {
 				var prop_name = self.option("prop_name");
 				value = dict.prop_val(prop_name, context);

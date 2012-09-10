@@ -36,7 +36,7 @@ var RedDict = function(options) {
 		return this._direct_protos;
 	};
 	proto._get_direct_protos = function(context) {
-		var protos = red.get_contextualizable(this.direct_protos(), context.push(this));
+		var protos = red.get_contextualizable(this.direct_protos(), context);
 		if(_.isArray(protos)) {
 			return protos;
 		} else {
@@ -186,8 +186,19 @@ var RedDict = function(options) {
 			cloned_prop_val = prop_val.clone();
 		}
 	};
-	proto.name_for_prop = function(value) {
-		return this._direct_props.key_for_value(value);
+	proto.name_for_prop = function(value, context) {
+		var rv = this._direct_props.key_for_value(value);
+		if(_.isUndefined(rv) && context) {
+			var protos = this.get_protos(context);
+			for(var i = 0; i<protos.length; i++) {
+				var protoi = protos[i];
+				rv = protoi.name_for_prop(value, false);
+				if(!_.isUndefined(rv)) {
+					break;
+				}
+			}
+		}
+		return rv;
 	};
 	
 	//
