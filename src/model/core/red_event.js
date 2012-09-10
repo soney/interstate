@@ -69,7 +69,7 @@ var get_event = function(node, parent) {
 (function(proto) {
 	proto.on_create = function(parent, str) {
 		this._parent = cjs(parent);
-		this._str = cjs(str);
+		this._str = cjs.is_constraint(str) ? str : cjs(str);
 		var self = this;
 		this._tree = cjs(function() {
 			return esprima.parse(self.get_str());
@@ -112,7 +112,7 @@ var get_event = function(node, parent) {
 		this._parent.set(parent);
 	};
 	proto.clone = function() {
-		return cjs.create_event("red_event");
+		return cjs.create_event("red_event", undefined, this._str);
 	};
 	proto.destroy = function() {
 		this._live_event_creator.destroy();
