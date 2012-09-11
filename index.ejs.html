@@ -24,15 +24,6 @@
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					window.env = env;
 					window.root = env.get_pointer();
-
-					env.set("a", "dict");
-					env.cd("a");
-					window.a = env.get_pointer();
-					env.set_cell("(protos)", "dom");
-					window.rac = cjs.create("red_context", {stack: [root, a]});
-
-
-					console.log(env.print());
 				});
 				/*
 

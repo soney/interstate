@@ -1,6 +1,14 @@
 (function(red) {
 var cjs = red.cjs, _ = cjs._;
 
+var check_context_equality = function(itema, itemb) {
+	if(itema instanceof red.RedContext && itemb instanceof red.RedContext) {
+		return itema.eq(itemb);
+	} else {
+		return itema === itemb;
+	}
+};
+
 var RedDict = function(options) {
 	options = options || {};
 
@@ -14,7 +22,7 @@ var RedDict = function(options) {
 	// Attachments
 	if(options.direct_attachments) { this._direct_attachments = options.direct_attachments; }
 	else { this._direct_attachments = cjs.create("constraint", [], true); }
-	this._direct_attachment_instances = cjs.create("map");
+	this._direct_attachment_instances = cjs.create("map", check_context_equality);
 
 
 	this.type = "red_dict";
@@ -224,13 +232,17 @@ var RedDict = function(options) {
 			attachment_instances = this._direct_attachment_instances.get(attachment);
 		} else {
 			this._direct_attachment_instances.defer_invalidation(true);
-			attachment_instances = cjs.create("map");
+			attachment_instances = cjs.create("map", check_context_equality);
+
 			this._direct_attachment_instances.set(attachment, attachment_instances);
 			this._direct_attachment_instances.defer_invalidation(false);
 			do_invalidate = true;
 		}
-		var attachment_instance = attachment.create_instance(this, context);
+		var attachment_instance = attachment.create_instance(context.last(), context);
+		attachment_instances.defer_invalidation(true);
 		attachment_instances.set(context, attachment_instance);
+		attachment_instances.defer_invalidation(false);
+		attachment_instances.invalidate();
 		if(do_invalidate) { this._direct_attachment_instances.invalidate(); }
 		return attachment_instance;
 	};

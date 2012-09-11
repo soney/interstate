@@ -27,11 +27,16 @@ var RedAttachment = function(options) {
 	} else { this._multiple_allowed = false; }
 	this._InstanceClass = options.instance_class || RedAttachmentInstance;
 	this.type = "(generic)";
+	this.instance_options = options.instance_options || {};
 };
 (function(my) {
 	var proto = my.prototype;
 	proto.create_instance = function(parent, context) {
-		var instance = new this._InstanceClass({parent: parent, context: context});
+		var options = _.extend({
+			parent: parent
+			, context: context
+		}, this.instance_options);
+		var instance = new this._InstanceClass(options);
 		return instance;
 	};
 	proto.destroy_instance = function(instance) {

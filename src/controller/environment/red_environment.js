@@ -91,7 +91,11 @@ var pointer_factory = function(initial_pointer) {
 };
 
 var Env = function(dom_container_parent) {
-	this._root = cjs.create("red_dict", {direct_attachments: [cjs.create("red_dom_attachment")]});
+	this._root = cjs.create("red_dict", {direct_attachments: [cjs.create("red_dom_attachment", {
+		instance_options: {
+			tag: "div"
+		}
+	})]});
 	this._root_context = cjs.create("red_context", {stack: [this._root]});
 
 	// Undo stack
@@ -109,6 +113,9 @@ var Env = function(dom_container_parent) {
 	proto.initialize_props = function() {
 		var dom = cjs.create("red_dict", {direct_attachments: [cjs.create("red_dom_attachment")]});
 		this._root.set("dom", dom);
+
+		var children = cjs.create("red_dict");
+		this._root.set("children", children);
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
