@@ -51,39 +51,45 @@ $.widget("red.dom_output", {
 				var dom_element = dom_attachment.get_dom_obj();
 				if(_.isUndefined(dom_element)) { return false; }
 
-				var children = node.get_prop("children", context);
-				var children_context = context.push(children);
+				var text = node.get_prop("text", context);
+				if(_.isUndefined(text)) {
+					var children = node.get_prop("children", context);
+					var children_context = context.push(children);
 
-				var children_got = red.get_contextualizable(children, children_context);
-				var prop_values = []
+					var children_got = red.get_contextualizable(children, children_context);
+					var prop_values = []
 
-				if(children_got instanceof red.RedDict) {
-					var prop_names = children.get_prop_names(children_context);
-					prop_values = _.map(prop_names, function(prop_name) {
-						return children.get_prop(prop_name, children_context);
+					if(children_got instanceof red.RedDict) {
+						var prop_names = children.get_prop_names(children_context);
+						prop_values = _.map(prop_names, function(prop_name) {
+							return children.get_prop(prop_name, children_context);
+						});
+					} else if(_.isArray(children)) {
+						prop_values = children;
+					}
+					var children = _.map(prop_values, function(prop_value) {
+						return get_dom_tree(prop_value, children_context.push(prop_value));
 					});
-				} else if(_.isArray(children)) {
-					prop_values = children;
-				}
-				var children = _.map(prop_values, function(prop_value) {
-					return get_dom_tree(prop_value, children_context.push(prop_value));
-				});
-				var desired_children = _.compact(children);
-				var current_children = _.toArray(dom_element.childNodes);
+					var desired_children = _.compact(children);
+					var current_children = _.toArray(dom_element.childNodes);
 
-				var diff = _.diff(current_children, desired_children);
-				_.forEach(diff.removed, function(info) {
-					var index = info.index, child = info.item;
-					remove(child);
-				});
-				_.forEach(diff.added, function(info) {
-					var index = info.index, child = info.item;
-					insert_at(child, dom_element, index);
-				});
-				_.forEach(diff.moved, function(info) {
-					var from_index = info.from_index, to_index = info.to_index, child = info.item;
-					move(child, from_index, to_index);
-				});
+					var diff = _.diff(current_children, desired_children);
+					_.forEach(diff.removed, function(info) {
+						var index = info.index, child = info.item;
+						remove(child);
+					});
+					_.forEach(diff.added, function(info) {
+						var index = info.index, child = info.item;
+						insert_at(child, dom_element, index);
+					});
+					_.forEach(diff.moved, function(info) {
+						var from_index = info.from_index, to_index = info.to_index, child = info.item;
+						move(child, from_index, to_index);
+					});
+				} else {
+					$(dom_element)	.html("")
+									.text(red.get_contextualizable(text, context.push(text)));
+				}
 				return dom_element;
 			}
 		};
