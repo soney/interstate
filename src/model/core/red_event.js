@@ -22,7 +22,8 @@ _.forEach(dom_events, function(dom_event) {
 			var dom_elem;
 			if(_.isElement(parent) || parent === window) {
 				dom_elem = parent;
-			} else if(cjs.is_constraint(parent)) {
+			} else if(parent instanceof red.RedDict) {
+				var dom_attachment = parent.
 				dom_elem = parent.get_blueprint_datum("dom_obj", "dom_obj");
 			}
 
@@ -67,8 +68,9 @@ var get_event = function(node, parent) {
 };
 
 (function(proto) {
-	proto.on_create = function(parent, str) {
+	proto.on_create = function(str, parent, context) {
 		this._parent = cjs(parent);
+
 		this._str = cjs.is_constraint(str) ? str : cjs(str);
 		var self = this;
 		this._tree = cjs(function() {

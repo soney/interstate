@@ -358,13 +358,15 @@ $.widget("red.state", {
 	, _get_add_transition_command: function(from_state, to_state) {
 		var from_name = from_state.get_name(parent);
 		var to_name = to_state.get_name(parent);
-		var dict_parent = this.element.parents(".dict").dict("option", "dict");
+		var dict_parent = this.element.parents(".dict");
+		var dict = dict_parent.dict("option", "dict");
+		var dict_context = dict_parent.dict("option", "context");
 
 		var parent = from_state.parent();
 		parent = parent.get_basis() || parent;
 
 		return red.command("add_transition", {
-			event: cjs.create_event("red_event", dict_parent, "")
+			event: cjs.create_event("red_event", "", dict, dict_context)
 			, statechart: parent
 			, from: from_name
 			, to: to_name

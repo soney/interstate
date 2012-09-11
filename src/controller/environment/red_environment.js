@@ -614,13 +614,16 @@ var Env = function(dom_container_parent) {
 	proto._get_add_transition_command = function(from_state_name, to_state_name, event) {
 		var statechart = this.get_statechart_pointer();
 		var parent = this.get_pointer();
+		var parent_context = this.get_context();
 
 		var from_state = statechart.get_state_with_name(from_state_name);
 		var to_state = statechart.get_state_with_name(to_state_name);
 
+
 		var command = red.command("add_transition", {
 			statechart: statechart
 			, parent: parent
+			, parent_context: parent_context
 			, event: event
 			, from: from_state
 			, to: to_state
