@@ -312,6 +312,16 @@ var RedDict = function(options) {
 			return holder.create_or_get_direct_attachment_instance(attachment, context);
 		});
 	};
+	proto.get_attachment_instance = function(type, context) {
+		var attachment_instances = this._get_all_attachment_instances(context);
+		for(var i = 0; i<attachment_instances.length; i++) {
+			var attachment_instance = attachment_instances[i];
+			if(attachment_instance.type === type) {
+				return attachment_instance;
+			}
+		}
+		return undefined;
+	};
 	
 }(RedDict));
 

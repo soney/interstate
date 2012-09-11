@@ -3,7 +3,7 @@ var cjs = red.cjs, _ = cjs._;
 
 var RedDomAttachmentInstance = function(options) {
 	RedDomAttachmentInstance.superclass.constructor.apply(this, arguments);
-	this.type = "(dom)";
+	this.type = "dom";
 	this._dom_obj = undefined;
 	//_.defer(_.bind(this.on_ready, this));
 	this.on_ready();
@@ -26,7 +26,7 @@ var RedDomAttachment = function(options) {
 		instance_class: RedDomAttachmentInstance
 	}, options);
 	RedDomAttachment.superclass.constructor.call(this, options);
-	this.type = "(dom)";
+	this.type = "dom";
 };
 (function(my) {
 	_.proto_extend(my, red.RedAttachment);
