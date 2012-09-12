@@ -150,9 +150,10 @@ var Env = function(dom_container_parent) {
 	proto.up = function() {
 		var context = this.get_context();
 
+		context = context.pop();
 		var ptr = context.last() || this._root;
 		this._pointer.set_pointer(ptr);
-		this._pointer.set_context(context.pop());
+		this._pointer.set_context(context);
 		return this.print();
 	};
 	proto.get_pointer = function() {

@@ -107,7 +107,7 @@ var id  = 0;
 
 			if(event) {
 				event.on_fire(self.$child_fired);
-				console.log("re-constituted event", event);
+				//console.log("re-constituted event", event);
 			}
 
 			self._old_event = event;

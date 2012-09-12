@@ -34,8 +34,7 @@ var RedDomAttachmentInstance = function(options) {
 (function(my) {
 	_.proto_extend(my, red.RedAttachmentInstance);
 	var proto = my.prototype;
-	proto.on_ready = function() {
-	};
+	proto.on_ready = function() { };
 	proto.destroy = function() {
 		if(this.has("_tag_change_listener")) { this._tag_change_listener.destroy(); }
 		if(this.has("_css_change_listeners")) {

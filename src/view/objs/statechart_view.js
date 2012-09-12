@@ -401,7 +401,7 @@ $.widget("red.transition", {
 			this.element.hide();
 		} else {
 			if(!this.option("inherited")) {
-				this.edit();
+		//		this.edit();
 			}
 		}
 		this._add_change_listeners();

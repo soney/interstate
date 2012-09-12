@@ -18,6 +18,7 @@
 			<script type="text/javascript">
 				$(function() {
 					var cjs = red.cjs, _ = cjs._;
+					red.__debug = false;
 
 					var env = red.create_environment();
 
@@ -26,15 +27,26 @@
 					window.root = env.get_pointer();
 
 					env.cd("children");
+					window.children = env.get_pointer();
 					env.set("x", "stateful");
 					env.cd("x");
 					env.set_cell("(protos)", "INIT", "dom")
 					env.set("tag");
 					env.set_cell("tag", "INIT", "'div'")
 					env.set("text");
-					env.set_cell("text", "INIT", "'something'")
+					env.set_cell("text", "INIT", "'INI'")
 					env.add_state("state1");
-					//env.add_transition("INIT", "state1", "mouseover(this)");
+					env.set_cell("text", "state1", "'s1'")
+					env.add_transition("INIT", "state1", "mouseover(this)");
+					env.up();
+					env.set("y", "stateful");
+					env.cd("y");
+					env.set_cell("(protos)", "INIT", "x")
+					window.y = env.get_pointer();
+
+					window.yxt = cjs.create("red_context", {stack: [root, children, y]});
+					console.log(env.print());
+					red.__debug = true;
 				});
 				/*
 
