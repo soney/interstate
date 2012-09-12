@@ -38,12 +38,20 @@ $.widget("red.dict", {
 			}
 			, "Dictionary": function() {
 				var dict = cjs.create("red_dict");
+
+				var parent = this.option("dict");
+				dict.set_default_context(parent.get_default_context().push(dict));
+
 				var direct_protos = cjs.create("red_cell", {str: "[]", ignore_inherited_in_contexts: [dict]});
 				dict._set_direct_protos(direct_protos);
 				return dict;
 			}
 			, "Stateful Object": function() {
 				var dict = cjs.create("red_stateful_obj");
+
+				var parent = this.option("dict");
+				dict.set_default_context(parent.get_default_context().push(dict));
+
 				var direct_protos = cjs.create("red_stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [dict]});
 				dict._set_direct_protos(direct_protos);
 				return dict;
@@ -213,6 +221,7 @@ $.widget("red.dict", {
 				prop_names = dict._get_inherited_prop_names(context);
 			}
 			var diff = _.diff(cached_prop_names, prop_names);
+			cached_prop_names = prop_names;
 			//_.defer(function() {
 				if(diff.removed.length === 1 && diff.added.length === 1 && diff.moved.length === 0) {
 					//console.log("probably rename");
@@ -249,7 +258,6 @@ $.widget("red.dict", {
 					container.sortable("refresh");
 				}
 			//});
-			cached_prop_names = prop_names;
 		});
 	}
 

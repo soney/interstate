@@ -97,6 +97,7 @@ var Env = function(dom_container_parent) {
 		}
 	})]});
 	this._root_context = cjs.create("red_context", {stack: [this._root]});
+	this._root.set_default_context(this._root_context);
 
 	// Undo stack
 	this._command_stack = cjs.create("command_stack");
@@ -113,9 +114,11 @@ var Env = function(dom_container_parent) {
 	proto.initialize_props = function() {
 		var dom = cjs.create("red_dict", {direct_attachments: [cjs.create("red_dom_attachment")]});
 		this._root.set("dom", dom);
+		dom.set_default_context(this._root_context.push(dom));
 
 		var children = cjs.create("red_dict");
 		this._root.set("children", children);
+		children.set_default_context(this._root_context.push(children));
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
@@ -360,10 +363,12 @@ var Env = function(dom_container_parent) {
 		} else if(_.isString(value)) {
 			if(value === "dict") {
 				value = cjs.create("red_dict");
+				value.set_default_context(parent_obj.get_default_context().push(value));
 				var direct_protos = cjs.create("red_cell", {str: "[]", ignore_inherited_in_contexts: [value]});
 				value._set_direct_protos(direct_protos);
 			} else if(value === "stateful") {
 				value = cjs.create("red_stateful_obj");
+				value.set_default_context(parent_obj.get_default_context().push(value));
 				var direct_protos = cjs.create("red_stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]});
 				value._set_direct_protos(direct_protos);
 			} else {

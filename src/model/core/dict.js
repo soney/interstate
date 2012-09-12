@@ -27,6 +27,8 @@ var RedDict = function(options) {
 	this.type = "red_dict";
 	this.id = _.uniqueId();
 
+	this._default_context = cjs(options.default_context, true);
+
 	red._set_constraint_descriptor(this._direct_props._keys,   "Direct Prop Keys " + this.id);
 	red._set_constraint_descriptor(this._direct_props._values, "Direct Prop Vals " + this.id);
 	red._set_constraint_descriptor(this._direct_protos,	       "Direct protos " + this.id);
@@ -37,6 +39,12 @@ var RedDict = function(options) {
 
 (function(my) {
 	var proto = my.prototype;
+
+	//
+	// === DEFAULT CONTEXT ===
+	//
+	proto.get_default_context = function() { return this._default_context.get(); }
+	proto.set_default_context = function(context) { this._default_context.set(context, true); }
 	
 	//
 	// === DIRECT PROTOS ===
@@ -60,11 +68,11 @@ var RedDict = function(options) {
 	//
 	proto.get_protos = proto._get_all_protos = function(context) {
 		var direct_protos = this._get_direct_protos(context);
-		if(this.id === 28 && red.__debug) debugger;
 		var protos = _.map(direct_protos, function(direct_proto) {
 			if(_.isUndefined(direct_proto)) { return false; };
+			var direct_proto_all_protos = direct_proto._get_all_protos(direct_proto.get_default_context());
 			
-			return ([direct_proto]).concat(direct_proto._get_all_protos(context));
+			return ([direct_proto]).concat(direct_proto_all_protos);
 		});
 		protos = _.uniq(_.compact(_.flatten(protos, true)));
 		return protos;

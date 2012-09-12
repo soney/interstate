@@ -40,14 +40,17 @@ var RedStatefulObj = function(options) {
 		var sc = this._contextual_statecharts.get(context);
 		if(_.isUndefined(sc)) {
 			sc = this._create_statechart_for_context(context);
-			sc.run();
 		}
 		return sc;
 	};
 	proto._create_statechart_for_context = function(context) {
 		var shadow_statechart = red._shadow_statechart(this.get_own_statechart(), context.last(), context);
+		this._contextual_statecharts.defer_invalidation(true);
 		this._contextual_statecharts.set(context, shadow_statechart);
+		shadow_statechart.run();
 		shadow_statechart.invalidate();
+		this._contextual_statecharts.defer_invalidation(false);
+		this._contextual_statecharts.invalidate();
 		return shadow_statechart;
 	};
 

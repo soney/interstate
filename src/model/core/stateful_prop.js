@@ -1,4 +1,11 @@
 (function(red) {
+var check_context_equality = function(itema, itemb) {
+	if(itema instanceof red.RedContext && itemb instanceof red.RedContext) {
+		return itema.eq(itemb);
+	} else {
+		return itema === itemb;
+	}
+};
 var cjs = red.cjs, _ = cjs._;
 var RedStatefulProp = function(options) {
 	options = options || {};
@@ -10,6 +17,8 @@ var RedStatefulProp = function(options) {
 
 	red._set_constraint_descriptor(this._direct_values._keys,   "Direct values Keys " + this.id);
 	red._set_constraint_descriptor(this._direct_values._values, "Direct values Vals " + this.id);
+
+	this._last_valid_using_index = cjs.create("map", check_context_equality);
 };
 (function(my) {
 	var proto = my.prototype;
@@ -122,7 +131,8 @@ var RedStatefulProp = function(options) {
 
 			if(active && !_.isUndefined(value) && !found_using_value) {
 				found_using_value = using = true;
-				this._last_valid_using_index = i;
+
+				this._last_valid_using_index.set(context, i);
 			}
 
 			rv.push({
@@ -133,8 +143,9 @@ var RedStatefulProp = function(options) {
 			});
 		}
 
-		if(!found_using_value && _.has(this, "_last_valid_using_index")) {
-			rv[this._last_valid_using_index].using = true;
+		if(!found_using_value && this._last_valid_using_index.has_key(context)) {
+			var using_index = this._last_valid_using_index.get(context);
+			rv[using_index].using = true;
 		}
 
 		return rv;

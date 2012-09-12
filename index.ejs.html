@@ -25,11 +25,14 @@
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					window.env = env;
 					window.root = env.get_pointer();
+					/*
 
 					env.cd("children");
 					window.children = env.get_pointer();
 					env.set("x", "stateful");
 					env.cd("x");
+					window.x = env.get_pointer();
+					window.xxt = cjs.create("red_context", {stack: [root, children, x]});
 					env.set_cell("(protos)", "INIT", "dom")
 					env.set("tag");
 					env.set_cell("tag", "INIT", "'div'")
@@ -41,12 +44,13 @@
 					env.up();
 					env.set("y", "stateful");
 					env.cd("y");
+					red.__debug = true;
 					env.set_cell("(protos)", "INIT", "x")
 					window.y = env.get_pointer();
 
 					window.yxt = cjs.create("red_context", {stack: [root, children, y]});
+					/**/
 					console.log(env.print());
-					red.__debug = true;
 				});
 				/*
 
