@@ -1,7 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = cjs._;
 
-var do_shadow = function(statechart, shadow) {
+var do_shadow = function(statechart, shadow, parent, context) {
 	var state_map = {};
 	var transition_map = {};
 
@@ -17,7 +17,7 @@ var do_shadow = function(statechart, shadow) {
 		}
 
 		state_map[substate.id] = shadow_substate;
-		do_shadow(substate, shadow_substate);
+		do_shadow(substate, shadow_substate, parent, context);
 	});
 	var on_state_added = function(event) {
 		var substate_name = event.state_name
@@ -37,7 +37,7 @@ var do_shadow = function(statechart, shadow) {
 			}
 
 			state_map[substate.id] = shadow_substate;
-			do_shadow(substate, shadow_substate);
+			do_shadow(substate, shadow_substate, parent, context);
 		}
 	};
 	var on_state_moved = function(event) {
@@ -73,7 +73,7 @@ var do_shadow = function(statechart, shadow) {
 
 	var on_transition_added = function(event) {
 		var transition = event.transition;
-		var shadow_event = transition.get_event().clone()
+		var shadow_event = transition.get_event().clone(parent, context)
 			, from_state_name = transition.from().get_name(statechart)
 			, to_state_name = transition.to().get_name(statechart)
 			, target = event.target;
@@ -120,14 +120,14 @@ var do_shadow = function(statechart, shadow) {
 				._on("destroy", on_destroy);
 };
 
-red._shadow_statechart = function(statechart) {
-	var shadow = statechart.clone();
+red._shadow_statechart = function(statechart, parent, context) {
+	var shadow = statechart.clone(parent, context);
 	red._set_constraint_descriptor(shadow._states._keys, "State keys " + shadow.id + " shadowing " + statechart.id);
 	red._set_constraint_descriptor(shadow._states._values, "State values " + shadow.id + " shadowing " + statechart.id);
 	red._set_constraint_descriptor(shadow._transitions, "Transitions " + shadow.id + " shadowing " + statechart.id);
 	red._set_constraint_descriptor(shadow._$complete_state, "$complete_state " + shadow.id + " shadowing " + statechart.id);
 	red._set_constraint_descriptor(shadow._$local_state, "$local_state " + shadow.id + " shadowing " + statechart.id);
-	do_shadow(statechart, shadow);
+	do_shadow(statechart, shadow, parent, context);
 	return shadow;
 };
 }(red));

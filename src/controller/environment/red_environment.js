@@ -365,7 +365,6 @@ var Env = function(dom_container_parent) {
 				value = cjs.create("red_stateful_obj");
 				var direct_protos = cjs.create("red_stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]});
 				value._set_direct_protos(direct_protos);
-				value.get_own_statechart().run();
 			} else {
 				value = cjs.create("red_cell", {str: value});
 			}

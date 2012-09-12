@@ -18,13 +18,25 @@ var esprima = window.esprima;
 
 _.forEach(dom_events, function(dom_event) {
 	event_types[dom_event] = function(parent) {
+		var context = _.last(arguments);
+		if(arguments.length === 0) {
+			parent = window; // Ex: mouseup() <-> mouseup(window)
+		}
+
+		if(!(context instanceof red.RedContext)) {
+			context = cjs.create("red_context");
+		}
+
+
 		if(parent) {
 			var dom_elem;
 			if(_.isElement(parent) || parent === window) {
 				dom_elem = parent;
 			} else if(parent instanceof red.RedDict) {
-				var dom_attachment = parent.
-				dom_elem = parent.get_blueprint_datum("dom_obj", "dom_obj");
+				var dom_attachment = parent.get_attachment_instance("dom", context);
+				if(dom_attachment) {
+					dom_elem = dom_attachment.get_dom_obj();
+				}
 			}
 
 			if(dom_elem) {
@@ -34,21 +46,22 @@ _.forEach(dom_events, function(dom_event) {
 	};
 });
 
-var get_event = function(node, parent) {
+var get_event = function(node, parent, context) {
 	if(_.isUndefined(node)) { return undefined; }
 
 	var type = node.type;
 	if(type === "ExpressionStatement") {
-		return get_event(node.expression, parent);
+		return get_event(node.expression, parent, context);
 	} else if(type === "CallExpression") {
-		var callee = get_event(node.callee, parent);
+		var callee = get_event(node.callee, parent, context);
 		var args = node.arguments;
 		
 		var args_got = _.map(args, function(arg) {
-			var arg_val = get_event(arg, parent);
-			return cjs.get(arg_val);
+			var arg_val = get_event(arg, parent, context);
+			return red.get_contextualizable(arg_val, context);
 		});
-		var callee_got = cjs.get(callee);
+		args_got.push(context);
+		var callee_got = red.get_contextualizable(callee, context);
 		return callee_got.apply(this, args_got);
 	} else if(type === "Identifier") {
 		var name = node.name;
@@ -67,8 +80,10 @@ var get_event = function(node, parent) {
 	}
 };
 
+var id  = 0;
 (function(proto) {
 	proto.on_create = function(str, parent, context) {
+		this.id = id++;
 		this._parent = cjs(parent);
 
 		this._str = cjs.is_constraint(str) ? str : cjs(str);
@@ -88,11 +103,11 @@ var get_event = function(node, parent) {
 
 			var tree = self._tree.get();
 			var parent = self.get_parent();
-			var event = get_event(tree.body[0], parent);
+			var event = get_event(tree.body[0], parent, context);
 
 			if(event) {
 				event.on_fire(self.$child_fired);
-				//console.log("re-constituted event");
+				console.log("re-constituted event", event);
 			}
 
 			self._old_event = event;
@@ -108,13 +123,13 @@ var get_event = function(node, parent) {
 		this._str.set(str);
 	};
 	proto.get_parent = function() {
-		return this._parent.get();
+		return cjs.get(this._parent);
 	};
 	proto.set_parent = function(parent) {
 		this._parent.set(parent);
 	};
-	proto.clone = function() {
-		return cjs.create_event("red_event", undefined, this._str);
+	proto.clone = function(parent, context) {
+		return cjs.create_event("red_event", this._str, parent, context);
 	};
 	proto.destroy = function() {
 		this._live_event_creator.destroy();

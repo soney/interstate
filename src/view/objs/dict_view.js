@@ -46,7 +46,6 @@ $.widget("red.dict", {
 				var dict = cjs.create("red_stateful_obj");
 				var direct_protos = cjs.create("red_stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [dict]});
 				dict._set_direct_protos(direct_protos);
-				dict.get_own_statechart().run();
 				return dict;
 			}
 			, "Stateful Property": function() {
@@ -98,6 +97,8 @@ $.widget("red.dict", {
 		this._get_add_prop_button();
 
 		this._add_change_listeners();
+
+		if(this.option("context").last() !== this.option("dict")) debugger;
 	}
 
 	, _make_props_draggable: function() {

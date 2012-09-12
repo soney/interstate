@@ -120,8 +120,9 @@ var RedStatefulProp = function(options) {
 			var value = values[i];
 			var using = false;
 
-			if(!_.isUndefined(value) && !found_using_value) {
+			if(active && !_.isUndefined(value) && !found_using_value) {
 				found_using_value = using = true;
+				this._last_valid_using_index = i;
 			}
 
 			rv.push({
@@ -131,6 +132,11 @@ var RedStatefulProp = function(options) {
 				, using: using
 			});
 		}
+
+		if(!found_using_value && _.has(this, "_last_valid_using_index")) {
+			rv[this._last_valid_using_index].using = true;
+		}
+
 		return rv;
 	};
 	var get_value_for_state = function(state, stateful_prop, inherits_from) {

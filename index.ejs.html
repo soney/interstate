@@ -24,6 +24,17 @@
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					window.env = env;
 					window.root = env.get_pointer();
+
+					env.cd("children");
+					env.set("x", "stateful");
+					env.cd("x");
+					env.set_cell("(protos)", "INIT", "dom")
+					env.set("tag");
+					env.set_cell("tag", "INIT", "'div'")
+					env.set("text");
+					env.set_cell("text", "INIT", "'something'")
+					env.add_state("state1");
+					//env.add_transition("INIT", "state1", "mouseover(this)");
 				});
 				/*
 

@@ -24,7 +24,6 @@ var RedDict = function(options) {
 	else { this._direct_attachments = cjs.create("constraint", [], true); }
 	this._direct_attachment_instances = cjs.create("map", check_context_equality);
 
-
 	this.type = "red_dict";
 	this.id = _.uniqueId();
 
