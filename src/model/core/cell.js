@@ -51,10 +51,7 @@ var eval_tree = function(node, context, ignore_inherited_in_contexts) {
 		var context_item;
 		var curr_context = context;
 		while(!curr_context.is_empty()) {
-			context_item = curr_context.last();
-			curr_context = curr_context.pop();
 			if(context_item instanceof red.RedDict) {
-
 				if(_.indexOf(ignore_inherited_in_contexts, context_item) < 0) {
 					if(context_item.has_prop(name, curr_context)) {
 						return context_item.get(name, curr_context);
@@ -66,6 +63,8 @@ var eval_tree = function(node, context, ignore_inherited_in_contexts) {
 					
 				}
 			}
+			curr_context = curr_context.pop();
+			context_item = curr_context.last();
 		}
 		return undefined;
 		/*
