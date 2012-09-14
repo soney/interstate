@@ -31,10 +31,37 @@ $.widget("red.group", {
 	options: {
 		group: undefined
 		, context: undefined
+		, indent: 0
 	}
 
 	, _create: function() {
+		var group = this.option("group");
+		var context = this.option("context");
+
 		this.element.addClass("group");
+		this._builtin_child_props = $("<div />").addClass("builtin dict_entries")
+												.appendTo(this.element);
+		var basis = group.get_basis();
+		this._basis_view = $("<div />").appendTo(this._builtin_child_props)
+										.dict_entry({
+											prop_name: "(basis)"
+											, dict: group
+											, context: context.push(basis)
+											, indent: this.option("indent")
+											, static: true
+											, value: basis
+										});
+
+		var template = group.get_template();
+		this._template_view = $("<div />").appendTo(this._builtin_child_props)
+										.dict_entry({
+											prop_name: "(template)"
+											, dict: group
+											, context: context.push(template)
+											, indent: this.option("indent")
+											, static: true
+											, value: template
+										});
 		this._add_change_listeners();
 	}
 
@@ -51,6 +78,8 @@ $.widget("red.group", {
 	, _destroy: function() {
 		this._remove_change_listeners();
 		this.element.removeClass("group");
+		this._basis_view.dict_entry("destroy");
+		this._template_view.dict_entry("destroy");
 	}
 
 	, _add_change_listeners: function() {

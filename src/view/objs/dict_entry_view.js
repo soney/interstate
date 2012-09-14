@@ -16,6 +16,8 @@ var value_to_text = function(val) {
 		return "(dict)";
 	} else if(val instanceof red.RedCell) {
 		return "(cell)";
+	} else if(val instanceof red.RedGroup) {
+		return "(group)";
 	} else if(_.isArray(val)) {
 		return "[" + _.map(val, function(v) { return value_to_text(v);}).join(", ") + "]";
 	} else {

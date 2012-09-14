@@ -195,6 +195,8 @@ var Env = function(dom_container_parent) {
 				return "(dict)";
 			} else if(val instanceof red.RedCell) {
 				return "(cell)";
+			} else if(val instanceof red.RedGroup) {
+				return "(group)";
 			} else if(_.isArray(val)) {
 				return "[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]";
 			} else {
@@ -214,6 +216,8 @@ var Env = function(dom_container_parent) {
 			} else if(_.isNumber(val)) {
 				return val + "";
 			} else if(val instanceof red.RedDict) {
+				return "";
+			} else if(val instanceof red.RedGroup) {
 				return "";
 			} else if(val instanceof red.RedCell) {
 				return "=(" + val.id + ")= " + val.get_str();
@@ -292,7 +296,6 @@ var Env = function(dom_container_parent) {
 					rows.push(row);
 
 					var protos = value.direct_protos();
-
 					var protos_got = red.get_contextualizable(protos, dictified_context.push(value));
 					var proto_row = [indent + "    (protos)", value_to_value_str(protos_got), value_to_source_str(protos)];
 					proto_row.push.apply(proto_row, value_strs);
@@ -319,6 +322,21 @@ var Env = function(dom_container_parent) {
 					row.push.apply(row, value_strs);
 
 					rows.push(row);
+				} else if(value instanceof red.RedGroup) {
+					var row = [prop_name + " - " + value.id, value_to_value_str(value_got), value_to_source_str(value)];
+					rows.push(row);
+
+					var basis = value.get_basis();
+					var basis_got = red.get_contextualizable(basis, dictified_context.push(value));
+					var basis_row = [indent + "    (basis)", value_to_value_str(basis_got), value_to_source_str(basis)];
+					basis_row.push.apply(basis_row, value_strs);
+					rows.push(basis_row);
+
+					var template = value.get_template();
+					var template_got = red.get_contextualizable(template, dictified_context.push(value));
+					var template_row = [indent + "    (template)", value_to_value_str(template_got), value_to_source_str(template)];
+					template_row.push.apply(template_row, value_strs);
+					rows.push(template_row);
 				} else {
 					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
 					rows.push(row);
@@ -371,6 +389,12 @@ var Env = function(dom_container_parent) {
 				value.set_default_context(parent_obj.get_default_context().push(value));
 				var direct_protos = cjs.create("red_stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]});
 				value._set_direct_protos(direct_protos);
+			} else if(value === "group") {
+				value = cjs.create("red_group");
+				var template = cjs.create("red_cell", {str: ""});
+				value.set_template(template);
+				var basis = cjs.create("red_cell", {str: ""});
+				value.set_basis(basis);
 			} else {
 				value = cjs.create("red_cell", {str: value});
 			}
@@ -451,6 +475,12 @@ var Env = function(dom_container_parent) {
 			if(arg0 === "(protos)") {
 				var pointer = this.get_pointer();
 				cell = pointer.direct_protos();
+			} else if(arg0 === "(basis)") {
+				var pointer = this.get_pointer();
+				cell = pointer.get_basis();
+			} else if(arg0 === "(template)") {
+				var pointer = this.get_pointer();
+				cell = pointer.get_template();
 			} else {
 				_.forEach(arg0.split("."), function(name) {
 					cell = cell.get_prop(name);
@@ -668,6 +698,36 @@ var Env = function(dom_container_parent) {
 	};
 	proto.set_event = function() {
 		var command = this._get_set_event_command.apply(this, arguments);
+		this._do(command);
+		return this.print();
+	};
+
+	proto._get_set_basis_command = function(basis) {
+		var group = this.get_pointer();
+
+		var command = red.command("set_group_basis", {
+			group: group
+			, basis: basis
+		});
+		return command
+	};
+	proto.set_basis = function() {
+		var command = this._get_set_basis_command.apply(this, arguments);
+		this._do(command);
+		return this.print();
+	};
+
+	proto._get_set_template_command = function(template) {
+		var group = this.get_pointer();
+
+		var command = red.command("set_group_template", {
+			group: group
+			, template: template
+		});
+		return command
+	};
+	proto.set_template = function() {
+		var command = this._get_set_template_command.apply(this, arguments);
 		this._do(command);
 		return this.print();
 	};

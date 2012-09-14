@@ -51,6 +51,7 @@ exports.main_src = c(
 				, "controller/commands/command_core.js"
 				, "controller/commands/prop_commands.js"
 				, "controller/commands/cell_commands.js"
+				, "controller/commands/group_commands.js"
 				, "controller/commands/statechart_commands.js"
 				, "controller/commands/combined_commands.js"
 				, "controller/environment/command_stack.js"

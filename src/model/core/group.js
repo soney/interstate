@@ -12,8 +12,13 @@ var RedGroup = function(options) {
 	this._basis = cjs.create("constraint");
 };
 (function(my) {
-	_.proto_extend(my, red.RedDict);
 	var proto = my.prototype;
+	//
+	//
+	// === DEFAULT CONTEXT ===
+	//
+	proto.get_default_context = function() { return this._default_context.get(); }
+	proto.set_default_context = function(context) { this._default_context.set(context, true); }
 	
 	//
 	// === PROTOS ===
@@ -64,6 +69,8 @@ var RedGroup = function(options) {
 		this._last_rv = rv;
 		return rv;
 	};
+
+	proto.is_inherited = function() { return false; };
 
 }(RedGroup));
 

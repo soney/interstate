@@ -31,7 +31,7 @@ $.widget("red.dict", {
 	options: {
 		dict: undefined
 		, context: undefined
-		, property_types: ["Cell", "Dictionary", "Stateful Object", "Stateful Property"]
+		, property_types: ["Cell", "Group", "Dictionary", "Stateful Object", "Stateful Property"]
 		, property_factories: {
 			"Cell": function() {
 				return cjs.create("red_cell", {str: ""});
@@ -58,6 +58,15 @@ $.widget("red.dict", {
 			}
 			, "Stateful Property": function() {
 				return cjs.create("red_stateful_prop");
+			}
+			, "Group": function() {
+				var group = cjs.create("red_group");
+				var template = cjs.create("red_cell", {str: ""});
+				group.set_template(template);
+				var basis = cjs.create("red_cell", {str: ""});
+				group.set_basis(basis);
+
+				return group;
 			}
 		}
 		, get_new_prop_name: function(dict, context) {

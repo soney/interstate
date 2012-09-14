@@ -25,6 +25,10 @@
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					window.env = env;
 					window.root = env.get_pointer();
+					/*
+					env.set("x", "group");
+					env.cd("x");
+					/*
 
 					env.cd("children");
 					window.children = env.get_pointer();
@@ -56,11 +60,7 @@
 
 					window.yxt = cjs.create("red_context", {stack: [root, children, y]});
 					/**/
-					$("div#undefined").on("mouseover", function() {
-						_.defer(function() {
-				//			red.__debug = true;
-						});
-					});
+					console.log(env.print());
 				});
 				/*
 

@@ -60,8 +60,12 @@ cjs.define("red_context", function(options) {
 	return context;
 });
 
+red.is_contextualizable = function(obj) {
+	return obj instanceof red.RedCell || obj instanceof red.RedStatefulProp || obj instanceof red.RedGroup;
+}
+
 red.get_contextualizable = function(obj, context) {
-	if(obj instanceof red.RedCell || obj instanceof red.RedStatefulProp) {
+	if(red.is_contextualizable(obj)) {
 		return obj.get(context);
 	}
 	return cjs.get(obj);

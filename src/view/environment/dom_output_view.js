@@ -64,6 +64,8 @@ $.widget("red.dom_output", {
 						prop_values = _.map(prop_names, function(prop_name) {
 							return children.get_prop(prop_name, children_context);
 						});
+					} else if(red.is_contextualizable(children)) {
+						prop_values = red.get_contextualizable(children, children_context);
 					} else if(_.isArray(children)) {
 						prop_values = children;
 					}
