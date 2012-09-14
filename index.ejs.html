@@ -25,7 +25,6 @@
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					window.env = env;
 					window.root = env.get_pointer();
-					/*
 
 					env.cd("children");
 					window.children = env.get_pointer();
@@ -41,6 +40,13 @@
 					env.add_state("state1");
 					env.set_cell("text", "state1", "'s1'")
 					env.add_transition("INIT", "state1", "mouseover(this)");
+					env.add_transition("state1", "INIT", "mouseout(this)");
+					env.up();
+					env.set("y", "stateful");
+					env.cd("y");
+					env.set_cell("(protos)", "INIT", "")
+					red.__debug = true;
+					/*
 					env.up();
 					env.set("y", "stateful");
 					env.cd("y");
@@ -50,7 +56,11 @@
 
 					window.yxt = cjs.create("red_context", {stack: [root, children, y]});
 					/**/
-					console.log(env.print());
+					$("div#undefined").on("mouseover", function() {
+						_.defer(function() {
+				//			red.__debug = true;
+						});
+					});
 				});
 				/*
 

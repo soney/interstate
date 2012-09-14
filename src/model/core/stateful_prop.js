@@ -19,6 +19,7 @@ var RedStatefulProp = function(options) {
 	red._set_constraint_descriptor(this._direct_values._values, "Direct values Vals " + this.id);
 
 	this._last_valid_using_index = cjs.create("map", check_context_equality);
+	this._last_valid_using_index.defer_invalidation(true);
 };
 (function(my) {
 	var proto = my.prototype;
@@ -59,7 +60,6 @@ var RedStatefulProp = function(options) {
 	// === DIRECT VALUES ===
 	//
 	proto.set = proto._set_direct_value_for_state = function(state, value) {
-		//debugger;
 		state = state_basis(state);
 		this._direct_values.set(state, value);
 	};
