@@ -66,6 +66,9 @@ $.widget("red.dict", {
 				var basis = cjs.create("red_cell", {str: ""});
 				group.set_basis(basis);
 
+				var parent = this.option("dict");
+				group.set_default_context(parent.get_default_context().push(group));
+
 				return group;
 			}
 		}

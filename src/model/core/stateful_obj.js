@@ -3,8 +3,9 @@ var cjs = red.cjs, _ = cjs._;
 
 var RedStatefulObj = function(options) {
 	RedStatefulObj.superclass.constructor.apply(this, arguments);
+	options = options || {};
 
-	this._direct_statechart = cjs.create("statechart");
+	this._direct_statechart = cjs.create("statechart", undefined, options.defer_statechart_invalidation);
 	this._contextual_statecharts = cjs.create("map", function(itema, itemb) {
 														if(itema instanceof red.RedContext && itemb instanceof red.RedContext) {
 															return itema.eq(itemb);
@@ -16,7 +17,7 @@ var RedStatefulObj = function(options) {
 	red._set_constraint_descriptor(this._contextual_statecharts._values, "Contextual statecharts " + this.id + " values");
 	
 		
-	this.initialize_statechart();
+	//this.initialize_statechart();
 	this.type = "red_stateful_obj";
 };
 (function(my) {
@@ -29,8 +30,8 @@ var RedStatefulObj = function(options) {
 
 	proto.get_own_statechart = function() { return this._direct_statechart; };
 	proto.initialize_statechart = function() {
-		this._direct_statechart	.add_state("INIT")
-								.starts_at("INIT");
+	//	this._direct_statechart	.add_state("INIT")
+	//							.starts_at("INIT");
 	};
 
 	//

@@ -389,12 +389,15 @@ var Env = function(dom_container_parent) {
 				value.set_default_context(parent_obj.get_default_context().push(value));
 				var direct_protos = cjs.create("red_stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]});
 				value._set_direct_protos(direct_protos);
+				value.get_own_statechart()	.add_state("INIT")
+											.starts_at("INIT");
 			} else if(value === "group") {
 				value = cjs.create("red_group");
 				var template = cjs.create("red_cell", {str: ""});
 				value.set_template(template);
 				var basis = cjs.create("red_cell", {str: ""});
 				value.set_basis(basis);
+				value.set_default_context(parent_obj.get_default_context().push(value));
 			} else {
 				value = cjs.create("red_cell", {str: value});
 			}

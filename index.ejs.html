@@ -12,7 +12,20 @@
 		</div>
 
 	  <div>
+			<script type="text/javascript">
+				var props = [];
+				for(var prop_name in window) {
+						props.push(prop_name);
+				}
+			</script>
 			<%- red_include(red_inc.main) %>
+			<script type="text/javascript">
+				var new_props = [];
+				for(var prop_name in window) {
+						new_props.push(prop_name);
+				}
+				console.log(props, new_props);
+			</script>
 			<script type="text/javascript" src="src/_vendor/bootstrap/js/bootstrap.js"></script>
 
 			<script type="text/javascript">
@@ -25,6 +38,26 @@
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					window.env = env;
 					window.root = env.get_pointer();
+
+					env.set("x", "stateful");
+					env.cd("x");
+					window.x = env.get_pointer();
+					window.xxt = cjs.create("red_context", {stack: [root, x]});
+					env.set_cell("(protos)", "INIT", "dom")
+					env.set("tag");
+					env.set_cell("tag", "INIT", "'div'")
+					env.set("text");
+					env.set_cell("text", "INIT", "'INI'")
+
+					env.top();
+
+					env.set("children", "group");
+					env.cd("children");
+					red.__debug = true;
+					env.set_cell("(basis)", "10");
+					env.set_cell("(template)", "x");
+
+					env.top();
 					/*
 					env.set("x", "group");
 					env.cd("x");
