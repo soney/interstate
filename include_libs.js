@@ -32,11 +32,13 @@ exports.main_src = c(
 	cp(cjs_path, cjs_inc.main_src)
 	, cp(vendor_src, [
 				"esprima/esprima.js"
+				, "underscore/underscore.js"
 				, "jquery-ui-1.9.0-rc.1/jquery-1.8.0.js"
 				, "jquery-ui-1.9.0-rc.1/ui/jquery-ui.js"
 			])
 	, cp(src, [
 				"model/core.js"
+				/*
 				, "model/core/debug.js"
 				, "model/core/context_stack.js"
 				, "model/core/cell.js"
@@ -68,6 +70,7 @@ exports.main_src = c(
 				, "view/environment/red_visual_environment_view.js"
 				, "view/environment/root_view.js"
 				, "view/environment/dom_output_view.js"
+				*/
 			])
 );
 
