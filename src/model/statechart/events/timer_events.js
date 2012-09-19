@@ -1,5 +1,5 @@
-(function(cjs) {
-var _ = cjs._;
+(function(red) {
+var cjs = red.cjs, _ = red._;
 
 (function(proto) {
 	proto.on_create = function(time) {
@@ -19,7 +19,7 @@ var _ = cjs._;
 	proto.clone = function(context) {
 		return cjs.create_event("at_time", this.time);
 	};
-}(cjs._create_event_type("at_time").prototype));
+}(red._create_event_type("at_time").prototype));
 
 (function(proto) {
 	proto.on_create = function(delay) {
@@ -57,6 +57,6 @@ var _ = cjs._;
 	proto.clone = function(timeout) {
 		return cjs.create_event("timeout", this.delay);
 	};
-}(cjs._create_event_type("timeout").prototype));
+}(red._create_event_type("timeout").prototype));
 
-}(cjs));
+}(red));

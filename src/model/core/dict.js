@@ -1,5 +1,5 @@
 (function(red) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 
 var check_context_equality = function(itema, itemb) {
 	if(itema instanceof red.RedContext && itemb instanceof red.RedContext) {
@@ -13,28 +13,28 @@ var RedDict = function(options) {
 	options = options || {};
 
 	//Properties
-	this._direct_props = cjs.create("map");
+	this._direct_props = cjs.map();
 
 	// Prototypes
 	if(options.direct_protos) { this._direct_protos = options.direct_protos; }
-	else { this._direct_protos = cjs.create("constraint", [], true); }
+	else { this._direct_protos = cjs.array(); }
 	
 	// Attachments
 	if(options.direct_attachments) { this._direct_attachments = options.direct_attachments; }
-	else { this._direct_attachments = cjs.create("constraint", [], true); }
-	this._direct_attachment_instances = cjs.create("map", check_context_equality);
+	else { this._direct_attachments = cjs.array(); }
+	this._direct_attachment_instances = cjs.map().set_equality_check(check_context_equality);
 
 	this.type = "red_dict";
 	this.id = _.uniqueId();
 
-	this._default_context = cjs(options.default_context, true);
+	this._default_context = cjs.$(options.default_context);
 
-	red._set_constraint_descriptor(this._direct_props._keys,   "Direct Prop Keys " + this.id);
-	red._set_constraint_descriptor(this._direct_props._values, "Direct Prop Vals " + this.id);
-	red._set_constraint_descriptor(this._direct_protos,	       "Direct protos " + this.id);
-	if(cjs.is_constraint(this._direct_attachments)) { red._set_constraint_descriptor(this._direct_attachments,   "Direct Attachments " + this.id); }
-	red._set_constraint_descriptor(this._direct_attachment_instances._keys,   "Direct Attachment instance Keys " + this.id);
-	red._set_constraint_descriptor(this._direct_attachment_instances._values, "Direct Attachment instance Vals " + this.id);
+	red._set_descriptor(this._direct_props._keys,   "Direct Prop Keys " + this.id);
+	red._set_descriptor(this._direct_props._values, "Direct Prop Vals " + this.id);
+	red._set_descriptor(this._direct_protos,	       "Direct protos " + this.id);
+	//if(cjs.is_constraint(this._direct_attachments)) { red._set_constraint_descriptor(this._direct_attachments,   "Direct Attachments " + this.id); }
+	red._set_descriptor(this._direct_attachment_instances._keys,   "Direct Attachment instance Keys " + this.id);
+	red._set_descriptor(this._direct_attachment_instances._values, "Direct Attachment instance Vals " + this.id);
 };
 
 (function(my) {
@@ -346,7 +346,7 @@ var RedDict = function(options) {
 }(RedDict));
 
 red.RedDict = RedDict;
-cjs.define("red_dict", function(options) {
+red.define("dict", function(options) {
 	var dict = new RedDict(options);
 	return dict;
 });

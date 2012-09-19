@@ -1,5 +1,5 @@
 (function(red) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 var RedContext = function(options) {
 	options = options || {};
 	this._stack = options.stack || [];
@@ -16,12 +16,12 @@ var RedContext = function(options) {
 	proto.push = function(item) {
 		var stack = this.get_stack();
 		stack.push(item); //It's a clone, so it doesn't affect my stack
-		return cjs.create("red_context", {stack: stack});
+		return red.create("context", {stack: stack});
 	};
 	proto.pop = function() {
 		var stack = this.get_stack();
 		stack.pop(); //It's a clone, so it doesn't affect my stack
-		return cjs.create("red_context", {stack: stack});
+		return red.create("context", {stack: stack});
 	};
 	proto.iter = function() {
 		if(this._stack_pointer_index >= 0) {
@@ -55,7 +55,7 @@ var RedContext = function(options) {
 }(RedContext));
 
 red.RedContext = RedContext;
-cjs.define("red_context", function(options) {
+red.define("context", function(options) {
 	var context = new RedContext(options);
 	return context;
 });

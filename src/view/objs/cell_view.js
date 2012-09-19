@@ -1,5 +1,5 @@
 (function(red, $) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 var state = {
 	IDLE: 0
 	, EDITING: 1

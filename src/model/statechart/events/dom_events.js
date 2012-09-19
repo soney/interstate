@@ -1,5 +1,5 @@
-(function(cjs) {
-var _ = cjs._;
+(function(red) {
+var cjs = red.cjs, _ = red._;
 
 (function(proto) {
 	proto.on_create = function(type, target) {
@@ -29,5 +29,5 @@ var _ = cjs._;
 	proto.destroy = function() {
 		this.remove_listener();
 	};
-}(cjs._create_event_type("dom_event").prototype));
-}(cjs));
+}(red._create_event_type("dom_event").prototype));
+}(red));

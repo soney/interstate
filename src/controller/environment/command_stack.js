@@ -1,5 +1,5 @@
 (function(red) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 
 var command_stack_factory = function() {
 	var stack = [];
@@ -48,6 +48,6 @@ var command_stack_factory = function() {
 	};
 };
 
-cjs.define("command_stack", command_stack_factory);
+red.define("command_stack", command_stack_factory);
 
 }(red));

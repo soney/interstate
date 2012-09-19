@@ -19,8 +19,8 @@ var StatechartTransition = function(from_state, to_state, event) {
 		}
 		this._event = event;
 		if(this._event) {
-			this._event.on_fire(this.do_run);
 			this._event.set_transition(this);
+			this._event.on_fire(this.do_run);
 		}
 	};
 	proto.event = function() { return this._event; };
@@ -46,7 +46,9 @@ var StatechartTransition = function(from_state, to_state, event) {
 		return shadow_transition;
 	};
 	proto.stringify = function() {
-		return "" + this.id + "," + this.event.stringify();
+		var event = this.event();
+		var stringified_event = event ? ","+event.stringify() : "";
+		return "" + this.id + stringified_event;
 	};
 }(StatechartTransition));
 
@@ -84,6 +86,7 @@ var Statechart = function(options) {
 			this._running = true;
 			this.$local_state.set(this._init_state);
 		}
+		return this;
 	};
 	proto.stop = function() {
 		this._running = false;
@@ -123,11 +126,9 @@ var Statechart = function(options) {
 			if(_.isEmpty(state_name)) {
 				return this;
 			} else {
-				var first_state_name = _.first(state_names);
+				var first_state_name = _.first(state_name);
 				if(_.size(state_name) === 1) {
-					if(this.has_substate_with_name(first_state_name)) {
-						throw new Error("State with name '" + state_name + "' already exists.");
-					} else if(create_superstates===true) {
+					if(!this.has_substate_with_name(first_state_name) && create_superstates === true) {
 						this.add_substate(first_state_name, state_value, index);
 					}
 					var state = this.get_substate_with_name(first_state_name);
@@ -136,21 +137,25 @@ var Statechart = function(options) {
 					if(create_superstates===true && !this.has_substate_with_name(first_state_name)) {
 						this.add_substate(first_state_name);
 					}
-					var state = this.get_substate_with_name(name);
-					return state.find_state(_.rest(state_names), create_superstates, state_value, index);
+					var state = this.get_substate_with_name(first_state_name);
+					if(!state) {
+						return undefined;
+					} else {
+						return state.find_state(_.rest(state_name), create_superstates, state_value, index);
+					}
 				}
 			}
 		} else if(_.isString(state_name)) {
-			return find_state(state_name.split("."), create_superstates, state_value, index);
+			return this.find_state(state_name.split("."), create_superstates, state_value, index);
 		} else {
 			return undefined;
 		}
 	};
 	proto.add_substate = function(state_name, state, index) {
 		if(!(state instanceof Statechart)) {
-			state = new Statechart();
+			state = new Statechart({parent: this});
 		}
-		this.$substates.set(state_name, state, index);
+		this.$substates.item(state_name, state, index);
 	};
 	proto.remove_substate = function(substate, also_destroy) {
 		var name = this.$substates.keyForvalue(substate);
@@ -173,6 +178,9 @@ var Statechart = function(options) {
 		this.$substates.move(state_name, index);
 	};
 	proto.add_state = function(state_name, state, index) {
+		if(this.find_state(state_name)) {
+			throw new Error("State with name '" + state_name + "' already exists.");
+		}
 		this.find_state(state_name, true, state, index);
 		return this;
 	};
@@ -269,12 +277,16 @@ var Statechart = function(options) {
 			}
 		} else {
 			from_state = this.find_state(arg0);
+			if(!from_state) { throw new Error("No state '" + arg0 + "'"); }
 			to_state = this.find_state(arg1);
+			if(!to_state) { throw new Error("No state '" + arg1 + "'"); }
 			var event = arg2;
 			transition = new StatechartTransition(from_state, to_state, event);
 		}
 		from_state.add_direct_outgoing_transition(transition);
 		to_state.add_direct_incoming_transition(transition);
+
+		return this;
 	};
 	proto.add_direct_outgoing_transition = function(transition) {
 		this.$outgoing_transitions.push(transition);
@@ -322,10 +334,10 @@ var Statechart = function(options) {
 	proto.get_name = function(relative_to) {
 		var parent = this.parent();
 		if(!relative_to) {
-			relative_to = this.get_root();
+			relative_to = this.root();
 		}
 
-		var my_name = parent ? parent.name_for_state(this) : "";
+		var my_name = parent ? parent.get_name_for_substate(this) : "";
 		if(parent === relative_to) {
 			return my_name;
 		} else {
@@ -353,8 +365,7 @@ var Statechart = function(options) {
 		});
 		rv += _.map(this.get_outgoing_transitions(), function(transition) {
 			var to = transition.to().get_name();
-			var event = transition.get_event();
-			return event.type + " -(" + transition.stringify() + ")-> " + to;
+			return " -(" + transition.stringify() + ")-> " + to;
 		}).join(", ");
 		var self = this;
 		_.forEach(this.get_substates(), function(substate) {

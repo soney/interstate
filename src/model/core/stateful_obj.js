@@ -1,5 +1,5 @@
 (function(red) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 
 var RedStatefulObj = function(options) {
 	RedStatefulObj.superclass.constructor.apply(this, arguments);
@@ -120,7 +120,7 @@ var RedStatefulObj = function(options) {
 
 red.RedStatefulObj = RedStatefulObj;
 
-cjs.define("red_stateful_obj", function(options) {
+red.define("stateful_obj", function(options) {
 	var dict = new RedStatefulObj(options);
 	return dict;
 });

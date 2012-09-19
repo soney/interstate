@@ -6,7 +6,7 @@ var check_context_equality = function(itema, itemb) {
 		return itema === itemb;
 	}
 };
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 var RedStatefulProp = function(options) {
 	options = options || {};
 
@@ -177,7 +177,7 @@ var RedStatefulProp = function(options) {
 }(RedStatefulProp));
 
 red.RedStatefulProp = RedStatefulProp;
-cjs.define("red_stateful_prop", function(options) {
+red.define("stateful_prop", function(options) {
 	var prop = new RedStatefulProp(options);
 	return prop;
 });

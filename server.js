@@ -216,14 +216,14 @@ app.configure(function() {
 });
 
 var makefile = require("./Makefile.dryice");
-makefile.build(function() {
+//makefile.build(function() {
 	app.listen(8000);
 	console.log("Interactive times at http://localhost:8000/");
 	process.on('SIGINT', function () {
 		console.log("iao...");
 		process.exit(0);
 	});
-});
+//});
 
 var render_files = function(res, files) {
 	concat_files(files, function(str) {

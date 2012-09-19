@@ -1,5 +1,5 @@
 (function(red, $) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 
 var value_to_text = function(val) {
 	if(_.isUndefined(val)) {

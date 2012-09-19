@@ -1,5 +1,5 @@
 (function(red, $) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 
 var insert_at = function(child_node, parent_node, index) {
 	var children = parent_node.childNodes;

@@ -1,5 +1,5 @@
 (function(red) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 var Command = function() {
 	this._in_effect = false;
 };

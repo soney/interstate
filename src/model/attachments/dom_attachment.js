@@ -1,5 +1,5 @@
 (function(red) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 
 // Red name: CSS name
 var changeable_css_props = {
@@ -132,7 +132,7 @@ var RedDomAttachment = function(options) {
 
 red.RedDomAttachmentInstance = RedDomAttachmentInstance;
 red.RedDomAttachment = RedDomAttachment;
-cjs.define("red_dom_attachment", function(options) {
+red.define("dom_attachment", function(options) {
 	var attachment = new RedDomAttachment(options);
 	return attachment;
 });

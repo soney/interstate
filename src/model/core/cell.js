@@ -1,5 +1,5 @@
 (function(red) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 var esprima = window.esprima;
 
 var binary_operators = {
@@ -179,7 +179,7 @@ var RedCell = function(options) {
 }(RedCell));
 
 red.RedCell = RedCell;
-cjs.define("red_cell", function(options) {
+red.define("cell", function(options) {
 	var cell = new RedCell(options);
 	return cell;
 });

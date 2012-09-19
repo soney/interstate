@@ -33,21 +33,25 @@ exports.main_src = c(
 	, cp(vendor_src, [
 				"esprima/esprima.js"
 				, "underscore/underscore.js"
+				, "underscore/red_underscore_extensions.js"
 				, "jquery-ui-1.9.0-rc.1/jquery-1.8.0.js"
 				, "jquery-ui-1.9.0-rc.1/ui/jquery-ui.js"
 			])
 	, cp(src, [
 				"model/core.js"
-				/*
 				, "model/core/debug.js"
+				, "model/statechart/red_statechart.js"
+				, "model/statechart/events/event_core.js"
+				, "model/statechart/events/manual_event.js"
+				, "model/statechart/events/dom_events.js"
+				, "model/statechart/events/timer_events.js"
+				, "model/statechart/events/parsed_events.js"
 				, "model/core/context_stack.js"
 				, "model/core/cell.js"
 				, "model/core/dict.js"
 				, "model/core/group.js"
 				, "model/core/stateful_obj.js"
 				, "model/core/stateful_prop.js"
-				, "model/core/shadow_statechart.js"
-				, "model/core/red_event.js"
 				, "model/attachments/attachment_core.js"
 				, "model/attachments/dom_attachment.js"
 				, "controller/commands/command_core.js"
@@ -70,7 +74,6 @@ exports.main_src = c(
 				, "view/environment/red_visual_environment_view.js"
 				, "view/environment/root_view.js"
 				, "view/environment/dom_output_view.js"
-				*/
 			])
 );
 

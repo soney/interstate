@@ -1,5 +1,5 @@
 (function(red) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 
 var pad = function(str, len) {
 	if(str.length > len) {
@@ -68,7 +68,7 @@ var print_table = function(table, max_width) {
 
 var pointer_factory = function(initial_pointer) {
 	var pointer = initial_pointer;
-	var context = cjs.create("red_context", {stack: [initial_pointer]});
+	var context = red.create("context", {stack: [initial_pointer]});
 
 	return {
 		parent: function() {
@@ -374,32 +374,32 @@ var Env = function(dom_container_parent) {
 
 		if(_.isUndefined(value)) {
 			if(parent_obj instanceof red.RedStatefulObj) {
-				value = cjs.create("red_stateful_prop");
+				value = red.create("stateful_prop");
 			} else if(parent_obj instanceof red.RedDict) {
-				value = cjs.create("red_cell", {str: ""});
+				value = red.create("cell", {str: ""});
 			}
 		} else if(_.isString(value)) {
 			if(value === "dict") {
-				value = cjs.create("red_dict");
+				value = red.create("dict");
 				value.set_default_context(parent_obj.get_default_context().push(value));
-				var direct_protos = cjs.create("red_cell", {str: "[]", ignore_inherited_in_contexts: [value]});
+				var direct_protos = red.create("cell", {str: "[]", ignore_inherited_in_contexts: [value]});
 				value._set_direct_protos(direct_protos);
 			} else if(value === "stateful") {
-				value = cjs.create("red_stateful_obj");
+				value = red.create("stateful_obj");
 				value.set_default_context(parent_obj.get_default_context().push(value));
-				var direct_protos = cjs.create("red_stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]});
+				var direct_protos = red.create("stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]});
 				value._set_direct_protos(direct_protos);
 				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");
 			} else if(value === "group") {
-				value = cjs.create("red_group");
-				var template = cjs.create("red_cell", {str: ""});
+				value = red.create("group");
+				var template = red.create("cell", {str: ""});
 				value.set_template(template);
-				var basis = cjs.create("red_cell", {str: ""});
+				var basis = red.create("cell", {str: ""});
 				value.set_basis(basis);
 				value.set_default_context(parent_obj.get_default_context().push(value));
 			} else {
-				value = cjs.create("red_cell", {str: value});
+				value = cjs.create("cell", {str: value});
 			}
 		}
 
@@ -736,8 +736,8 @@ var Env = function(dom_container_parent) {
 	};
 }(Env));
 
-red.create_environment = function(dom_container_parent) {
+red.define("environment", function(dom_container_parent) {
 	var env = new Env(dom_container_parent);
 	return env;
-};
+});
 }(red));

@@ -1,5 +1,5 @@
 (function(red) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 var event_types = {};
 var dom_events = ["click", "dblclick", "mousedown", "mouseup", "mouseover", "mousemove", "mouseout",
 					"keydown", "keypress", "keyup", "load", "unload", "abort", "error", "resize",
@@ -134,5 +134,5 @@ var id  = 0;
 	proto.destroy = function() {
 		this._live_event_creator.destroy();
 	};
-}(cjs._create_event_type("red_event").prototype));
+}(red._create_event_type("parsed").prototype));
 }(red));

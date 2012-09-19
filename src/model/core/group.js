@@ -1,5 +1,5 @@
 (function(red) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 
 var RedGroup = function(options) {
 	options = options || {};
@@ -78,7 +78,7 @@ var RedGroup = function(options) {
 
 red.RedGroup = RedGroup;
 
-cjs.define("red_group", function(options) {
+red.define("group", function(options) {
 	var group = new RedGroup(options);
 	return group;
 });

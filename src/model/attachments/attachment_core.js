@@ -1,5 +1,5 @@
 (function(red) {
-var cjs = red.cjs, _ = cjs._;
+var cjs = red.cjs, _ = red._;
 
 var RedAttachmentInstance = function(options) {
 	options = options || {};
@@ -53,7 +53,7 @@ var RedAttachment = function(options) {
 
 red.RedAttachmentInstance = RedAttachmentInstance;
 red.RedAttachment = RedAttachment;
-cjs.define("red_attachment", function(options) {
+red.define("attachment", function(options) {
 	var attachment = new RedAttachment(options);
 	return attachment;
 });
