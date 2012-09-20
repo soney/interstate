@@ -6,15 +6,16 @@ var RedStatefulObj = function(options) {
 	options = options || {};
 
 	this._direct_statechart = cjs.create("statechart", undefined, options.defer_statechart_invalidation);
-	this._contextual_statecharts = cjs.create("map", function(itema, itemb) {
+	this._contextual_statecharts = cjs	.map()
+										.set_equality_check(function(itema, itemb) {
 														if(itema instanceof red.RedContext && itemb instanceof red.RedContext) {
 															return itema.eq(itemb);
 														} else {
 															return itema === itemb;
 														}
 												});
-	red._set_constraint_descriptor(this._contextual_statecharts._keys, "Contextual statecharts " + this.id + " keys");
-	red._set_constraint_descriptor(this._contextual_statecharts._values, "Contextual statecharts " + this.id + " values");
+	red._set_descriptor(this._contextual_statecharts._keys, "Contextual statecharts " + this.id + " keys");
+	red._set_descriptor(this._contextual_statecharts._values, "Contextual statecharts " + this.id + " values");
 	
 		
 	//this.initialize_statechart();

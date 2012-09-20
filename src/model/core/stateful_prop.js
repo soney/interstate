@@ -10,16 +10,15 @@ var cjs = red.cjs, _ = red._;
 var RedStatefulProp = function(options) {
 	options = options || {};
 
-	this._direct_values = cjs.create("map");
+	this._direct_values = cjs.map();
 	this._can_inherit = options.can_inherit !== false;
 	this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
 	this.id = _.uniqueId();
 
-	red._set_constraint_descriptor(this._direct_values._keys,   "Direct values Keys " + this.id);
-	red._set_constraint_descriptor(this._direct_values._values, "Direct values Vals " + this.id);
+	red._set_descriptor(this._direct_values._keys,   "Direct values Keys " + this.id);
+	red._set_descriptor(this._direct_values._values, "Direct values Vals " + this.id);
 
-	this._last_valid_using_index = cjs.create("map", check_context_equality);
-	this._last_valid_using_index.defer_invalidation(true);
+	this._last_valid_using_index = cjs.map().set_equality_check(check_context_equality);
 };
 (function(my) {
 	var proto = my.prototype;

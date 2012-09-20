@@ -91,16 +91,16 @@ var pointer_factory = function(initial_pointer) {
 };
 
 var Env = function(dom_container_parent) {
-	this._root = cjs.create("red_dict", {direct_attachments: [cjs.create("red_dom_attachment", {
+	this._root = red.create("dict", {direct_attachments: [red.create("dom_attachment", {
 		instance_options: {
 			tag: "div"
 		}
 	})]});
-	this._root_context = cjs.create("red_context", {stack: [this._root]});
+	this._root_context = red.create("context", {stack: [this._root]});
 	this._root.set_default_context(this._root_context);
 
 	// Undo stack
-	this._command_stack = cjs.create("command_stack");
+	this._command_stack = red.create("command_stack");
 
 	//Context tracking
 	this._pointer = pointer_factory(this._root);
@@ -112,11 +112,11 @@ var Env = function(dom_container_parent) {
 	var proto = my.prototype;
 
 	proto.initialize_props = function() {
-		var dom = cjs.create("red_dict", {direct_attachments: [cjs.create("red_dom_attachment")]});
+		var dom = red.create("dict", {direct_attachments: [red.create("dom_attachment")]});
 		this._root.set("dom", dom);
 		dom.set_default_context(this._root_context.push(dom));
 
-		var children = cjs.create("red_dict");
+		var children = red.create("dict");
 		this._root.set("children", children);
 		children.set_default_context(this._root_context.push(children));
 	};
@@ -146,7 +146,7 @@ var Env = function(dom_container_parent) {
 	};
 	proto.top = function() {
 		this._pointer.set_pointer(this._root);
-		this._pointer.set_context(cjs.create("red_context", {stack: [this._root]}));
+		this._pointer.set_context(red.create("context", {stack: [this._root]}));
 
 		return this.print();
 	};
@@ -228,7 +228,7 @@ var Env = function(dom_container_parent) {
 
 		var tablify_dict = function(dict, indentation_level, context) {
 			if(!_.isNumber(indentation_level)) { indentation_level = 0; }
-			if(_.isUndefined(context)) { context = cjs.create("red_context"); }
+			if(_.isUndefined(context)) { context = red.create("context"); }
 
 			var indent = "";
 			while(indent.length < indentation_level) {
@@ -399,7 +399,7 @@ var Env = function(dom_container_parent) {
 				value.set_basis(basis);
 				value.set_default_context(parent_obj.get_default_context().push(value));
 			} else {
-				value = cjs.create("cell", {str: value});
+				value = red.create("cell", {str: value});
 			}
 		}
 
@@ -524,7 +524,7 @@ var Env = function(dom_container_parent) {
 				var statechart = this.get_statechart_pointer();
 				for_state = get_state(for_state, pointer_states);
 			}
-			cell = cjs.create("red_cell", {str: "", ignore_inherited_in_contexts: ignore_inherited_in_contexts });
+			cell = red.create("cell", {str: "", ignore_inherited_in_contexts: ignore_inherited_in_contexts });
 			combine_command = this._get_stateful_prop_set_value_command(prop, for_state, cell);
 		}
 		var command;

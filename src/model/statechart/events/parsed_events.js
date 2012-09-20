@@ -40,7 +40,7 @@ _.forEach(dom_events, function(dom_event) {
 			}
 
 			if(dom_elem) {
-				return cjs.create_event("dom_event", dom_event, dom_elem);
+				return red.create_event("dom_event", dom_event, dom_elem);
 			}
 		}
 	};
@@ -129,7 +129,7 @@ var id  = 0;
 		this._parent.set(parent);
 	};
 	proto.clone = function(parent, context) {
-		return cjs.create_event("red_event", this._str, parent, context);
+		return red.create_event("parsed", this._str, parent, context);
 	};
 	proto.destroy = function() {
 		this._live_event_creator.destroy();

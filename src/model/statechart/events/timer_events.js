@@ -16,9 +16,6 @@ var cjs = red.cjs, _ = red._;
 			});
 		}, time_diff);
 	};
-	proto.clone = function(context) {
-		return cjs.create_event("at_time", this.time);
-	};
 }(red._create_event_type("at_time").prototype));
 
 (function(proto) {
@@ -53,9 +50,6 @@ var cjs = red.cjs, _ = red._;
 			, current_time: (new Date()).getTime()
 			, created_at: this.created_at
 		});
-	};
-	proto.clone = function(timeout) {
-		return cjs.create_event("timeout", this.delay);
 	};
 }(red._create_event_type("timeout").prototype));
 
