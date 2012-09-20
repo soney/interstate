@@ -146,15 +146,15 @@ var eval_tree = function(node, context, ignore_inherited_in_contexts) {
 var RedCell = function(options) {
 	options = options || {};
 	var self = this;
-	this._str = _.isString(options.str) ? cjs.create("constraint", options.str) : options.str;
-	this._tree = cjs.create("constraint", function() {
+	this._str = _.isString(options.str) ? cjs.$(options.str) : options.str;
+	this._tree = cjs.$(function() {
 		return esprima.parse(self.get_str());
 	});
 	this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
 	this.id = _.uniqueId();
 
-	red._set_constraint_descriptor(this._str,   "Cell str " + this.id);
-	red._set_constraint_descriptor(this._tree,   "Cell tree " + this.id);
+	red._set_descriptor(this._str,   "Cell str " + this.id);
+	red._set_descriptor(this._tree,   "Cell tree " + this.id);
 };
 (function(my) {
 	var proto = my.prototype;
@@ -170,7 +170,7 @@ var RedCell = function(options) {
 		return eval_tree(tree.body[0], context, this._ignore_inherited_in_contexts);
 	};
 	proto.clone = function() {
-		return cjs.create("red_cell", {str: this.get_str()});
+		return red.create("cell", {str: this.get_str()});
 	};
 	proto.destroy = function() {
 		this._tree.destroy();
