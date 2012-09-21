@@ -68,7 +68,7 @@ var RedDict = function(options) {
 	//
 	proto.get_protos = proto._get_all_protos = function(context) {
 		var direct_protos = this._get_direct_protos(context);
-		var protos = _.map(direct_protos, function(direct_proto) {
+		var protos = _.map(cjs.get(direct_protos), function(direct_proto) {
 			if(_.isUndefined(direct_proto)) { return false; };
 			var direct_proto_all_protos = direct_proto._get_all_protos(direct_proto.get_default_context());
 			
@@ -82,22 +82,22 @@ var RedDict = function(options) {
 	// === DIRECT PROPERTIES ===
 	//
 	proto.set = proto.set_prop = proto._set_direct_prop = function(name, value, index) {
-		this._direct_props.set(name, value, index);
+		this._direct_props.item(name, value, index);
 	};
 	proto.unset = proto.unset_prop = proto._unset_direct_prop = function(name) {
-		this._direct_props.unset(name);
+		this._direct_props.remove(name);
 	};
 	proto._get_direct_prop = function(name) {
-		return this._direct_props.get(name);
+		return this._direct_props.item(name);
 	};
 	proto._has_direct_prop = function(name) {
-		return this._direct_props.has_key(name);
+		return this._direct_props.has(name);
 	};
 	proto.move = proto.move_prop = proto._move_direct_prop = function(name, to_index) {
 		this._direct_props.move(name, to_index);
 	};
 	proto.index = proto.prop_index = proto._direct_prop_index = function(name) {
-		return this._direct_props._key_index(name);
+		return this._direct_props.keyIndex(name);
 	};
 	proto.rename = proto._rename_direct_prop = function(from_name, to_name) {
 		if(this._has_direct_prop(to_name)) {
@@ -107,7 +107,7 @@ var RedDict = function(options) {
 		}
 	};
 	proto._get_direct_prop_names = function() {
-		return this._direct_props.get_keys();
+		return this._direct_props.keys();
 	};
 
 	//
@@ -177,10 +177,8 @@ var RedDict = function(options) {
 	};
 	proto.get = proto.prop_val = function(prop_name, context) {
 		var val = this.get_prop(prop_name, context);
-		if(context instanceof red.RedContext) {
-		//	context = context.push(this);
-		} else {
-			context = cjs.create("red_context", {stack: [this]});
+		if(!(context instanceof red.RedContext)) {
+			context = this.get_default_context();
 		}
 		return red.get_contextualizable(val, context);
 	};
@@ -205,7 +203,7 @@ var RedDict = function(options) {
 		}
 	};
 	proto.name_for_prop = function(value, context) {
-		var rv = this._direct_props.key_for_value(value);
+		var rv = this._direct_props.keyForValue(value);
 		if(_.isUndefined(rv) && context) {
 			var protos = this.get_protos(context);
 			for(var i = 0; i<protos.length; i++) {
@@ -238,14 +236,14 @@ var RedDict = function(options) {
 
 		cjs.wait();
 
-		if(this._direct_attachment_instances.has_key(attachment)) {
+		if(this._direct_attachment_instances.has(attachment)) {
 			attachment_instances = this._direct_attachment_instances.get(attachment);
 		} else {
-			attachment_instances = cjs.map().set_equality_check(check_context_inequality);
-			this._direct_attachment_instances.set(attachment, attachment_instances);
+			attachment_instances = cjs.map().set_equality_check(check_context_equality);
+			this._direct_attachment_instances.item(attachment, attachment_instances);
 		}
 		var attachment_instance = attachment.create_instance(context.last(), context);
-		attachment_instances.set(context, attachment_instance);
+		attachment_instances.item(context, attachment_instance);
 
 		cjs.signal();
 		return attachment_instance;
@@ -255,13 +253,13 @@ var RedDict = function(options) {
 	};
 	proto.get_direct_attachment_instance = function(attachment, context) {
 		var attachment_instances;
-		if(this._direct_attachment_instances.has_key(attachment)) {
-			attachment_instances = this._direct_attachment_instances.get(attachment);
+		if(this._direct_attachment_instances.has(attachment)) {
+			attachment_instances = this._direct_attachment_instances.item(attachment);
 		} else {
 			return undefined;
 		}
 
-		return attachment_instances.get(context);
+		return attachment_instances.item(context);
 	};
 	proto.create_or_get_direct_attachment_instance = function(attachment, context) {
 		var existing_instance = this.get_direct_attachment_instance(attachment, context);

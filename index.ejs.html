@@ -19,15 +19,20 @@
 				$(function() {
 					var cjs = red.cjs, _ = red._;
 					red.__debug = false;
-					/*
 
-					var env = red.create_environment();
-
+					var env = red.create("environment");
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					window.env = env;
 					window.root = env.get_pointer();
 
+					//console.log("set x");
 					env.set("x", "stateful");
+					console.log(env.print());
+					/*
+					console.log("set y");
+					red.__debug = true;
+					env.set("y", "2+3");
+					env.set("y", "dict");
 					env.cd("x");
 					window.x = env.get_pointer();
 					window.xxt = cjs.create("red_context", {stack: [root, x]});
@@ -80,7 +85,6 @@
 					window.y = env.get_pointer();
 
 					window.yxt = cjs.create("red_context", {stack: [root, children, y]});
-					console.log(env.print());
 					/**/
 				});
 				/*

@@ -4,6 +4,7 @@
 	var fcamelCase = function(all, letter) {
 		return String(letter).toUpperCase();
 	};
+	var clone = _.clone;
 
 	_.mixin({
 		remove_index: function(arr, from, to) {
@@ -13,25 +14,25 @@
 			return arr.push.apply(arr, rest);
 		}
 		, remove: function(arr, obj) {
-			var objIndex = _.index_of(arr, obj);
+			var objIndex = index_of(arr, obj);
 
 			if(objIndex>=0) {
-				_.remove_index(arr, objIndex);
+				remove_index(arr, objIndex);
 			}
 		}
 		, remove_all: function(arr, obj) {
 			var objIndex;
 			do {
-				objIndex = _.index_of(arr, obj);
+				objIndex = index_of(arr, obj);
 
 				if(objIndex>=0) {
-					_.remove_index(arr, objIndex);
+					remove_index(arr, objIndex);
 				}
 			} while(objIndex >= 0);
 		}
 		, index_of: function(arr, item, equality_check) {
 			if(equality_check === undefined) { equality_check = function(a,b) { return a === b; }; }
-			return _.index_where(arr, function(x) { return equality_check(item, x); });
+			return index_where(arr, function(x) { return equality_check(item, x); });
 		}
 		, index_where: function(arr, test) {
 			var i, len = arr.length;
@@ -55,13 +56,13 @@
 		, set_index: function(arr, old_index, new_index) {
 			if(old_index>=0 && old_index < arr.length && new_index>=0 && new_index < arr.length) {
 				var obj = arr[old_index];
-				_.remove_index(arr, old_index);
+				remove_index(arr, old_index);
 				/*
 				if(new_index > old_index) {
 					new_index--; //Account for the fact that the indicies shift
 				}
 				*/
-				_.insert_at(arr, obj, new_index);
+				insert_at(arr, obj, new_index);
 				return obj;
 			}
 			return false;
@@ -78,13 +79,13 @@
 			   and moves every item in moved in sequence, it will result in an array
 			   that is equivalent to newArray.
 			*/
-			var old_arr = _.clone(oldArray)
-				, new_arr = _.clone(newArray)
+			var old_arr = clone(oldArray)
+				, new_arr = clone(newArray)
 				, removed = []
 				, added = []
 				, moved = []
-				, old_arr_clone = _.clone(old_arr)
-				, new_arr_clone = _.clone(new_arr)
+				, old_arr_clone = clone(old_arr)
+				, new_arr_clone = clone(new_arr)
 				, i, j;
 
 			if(equality_check === undefined) { equality_check = function(a,b) { return a === b; }; }
@@ -92,16 +93,16 @@
 			//Figure out removed
 			for(i = 0; i<old_arr_clone.length; i++) {
 				var old_item = old_arr_clone[i];
-				var new_index = _.index_of(new_arr_clone, old_item, equality_check);
+				var new_index = index_of(new_arr_clone, old_item, equality_check);
 				if(new_index >= 0) {
-					_.remove_index(new_arr_clone, new_index);
+					remove_index(new_arr_clone, new_index);
 				}
 				else {
 					var removed_item = {
 						item: old_item,
 						index: i
 					};
-					_.remove_index(old_arr_clone, i);
+					remove_index(old_arr_clone, i);
 					i--;
 
 					removed.push(removed_item);
@@ -109,12 +110,12 @@
 			}
 
 			//Figure out added
-			old_arr_clone = _.clone(old_arr); //...reset the old array, which was mutated in the previous step
+			old_arr_clone = clone(old_arr); //...reset the old array, which was mutated in the previous step
 			for(i = 0; i<new_arr.length; i++) {
 				var new_item = new_arr[i];
-				var old_index = _.index_of(old_arr_clone, new_item, equality_check);
+				var old_index = index_of(old_arr_clone, new_item, equality_check);
 				if(old_index >= 0) {
-					_.remove_index(old_arr_clone, old_index);
+					remove_index(old_arr_clone, old_index);
 				}
 				else {
 					var added_item = {
@@ -127,17 +128,17 @@
 			}
 
 			//Figure out moved by first creating an array with all of the right elements...
-			var after_removing_and_adding = _.clone(old_arr);
+			var after_removing_and_adding = clone(old_arr);
 			for(i = removed.length-1; i>=0; i--) { //Go in reverse to prevent index shifting
 				var rm_index = removed[i].index;
-				_.remove_index(after_removing_and_adding, rm_index);
+				remove_index(after_removing_and_adding, rm_index);
 			}
 			for(i = 0; i<added.length; i++) {
-				_.insert_at(after_removing_and_adding, added[i].item, added[i].index);
+				insert_at(after_removing_and_adding, added[i].item, added[i].index);
 			}
 
 			var added_contains_index = function(i) {
-				_.any(added, function(a) {
+				any(added, function(a) {
 					return a.index === i;
 				});
 			};
@@ -207,4 +208,9 @@
 	_.isCommentElement = function(obj) {
 		return !!(obj && obj.nodeType === 8);
 	};
+	var index_of = _.index_of;
+	var remove_index = _.remove_index;
+	var index_where = _.index_where;
+	var any = _.any;
+	var insert_at = _.insert_at;
 }());

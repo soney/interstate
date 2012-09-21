@@ -48,7 +48,7 @@ var RedStatefulProp = function(options) {
 	};
 
 	var state_basis = function(state) {
-		var basis = state.get_basis();
+		var basis = state.basis();
 		if(_.isUndefined(basis)) {
 			basis = state;
 		}
@@ -60,11 +60,11 @@ var RedStatefulProp = function(options) {
 	//
 	proto.set = proto._set_direct_value_for_state = function(state, value) {
 		state = state_basis(state);
-		this._direct_values.set(state, value);
+		this._direct_values.item(state, value);
 	};
 	proto.unset = proto._unset_direct_value_for_state = function(state) {
 		state = state_basis(state);
-		this._direct_values.unset(state);
+		this._direct_values.remove(state);
 	};
 	proto._direct_value_for_state = function(state) {
 		state = state_basis(state);
@@ -72,7 +72,7 @@ var RedStatefulProp = function(options) {
 	};
 	proto._has_direct_value_for_state = function(state) {
 		state = state_basis(state);
-		return this._direct_values.has_key(state);
+		return this._direct_values.has(state);
 	};
 	
 	//
@@ -131,7 +131,7 @@ var RedStatefulProp = function(options) {
 			if(active && !_.isUndefined(value) && !found_using_value) {
 				found_using_value = using = true;
 
-				this._last_valid_using_index.set(context, i);
+				this._last_valid_using_index.item(context, i);
 			}
 
 			rv.push({
@@ -142,8 +142,8 @@ var RedStatefulProp = function(options) {
 			});
 		}
 
-		if(!found_using_value && this._last_valid_using_index.has_key(context)) {
-			var using_index = this._last_valid_using_index.get(context);
+		if(!found_using_value && this._last_valid_using_index.has(context)) {
+			var using_index = this._last_valid_using_index.item(context);
 			rv[using_index].using = true;
 		}
 

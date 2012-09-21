@@ -30,9 +30,6 @@ $.widget("red.statechart", {
 	
 	options: {
 		statechart: undefined
-		, filter: function(state) {
-			return state.get_type() !== "pre_init";
-		}
 		, has_add_state_button: true
 		, get_new_state_name: function(statechart) {
 			var substate_names = statechart.get_substate_names();
@@ -148,11 +145,9 @@ $.widget("red.statechart", {
 		var statechart = this.option("statechart");
 		var cached_substates = [];
 		var cached_transitions = [];
-		var filter = this.option("filter");
 		var self = this;
 		this._states_live_fn = cjs.liven(function() {
 			var substates = statechart.get_substates();
-			substates = _.filter(substates, filter);
 
 			var diff = _.diff(cached_substates, substates);
 
@@ -183,7 +178,7 @@ $.widget("red.statechart", {
 		});
 
 		this._transitions_live_fn = cjs.liven(function() {
-			var transitions = statechart.get_transitions();
+			var transitions = statechart.get_substate_transitions();
 			var diff = _.diff(cached_transitions, transitions);
 
 			_.forEach(diff.removed, function(info) {
@@ -215,7 +210,6 @@ $.widget("red.statechart", {
 
 			cached_transitions = transitions;
 		});
-
 	}
 
 	, _remove_change_listeners: function() {
@@ -227,7 +221,7 @@ $.widget("red.statechart", {
 		var statechart = this.option("statechart");
 		var get_new_state_name = this.option("get_new_state_name");
 
-		statechart = statechart.get_basis() || statechart;
+		statechart = statechart.basis() || statechart;
 
 		return red.command("add_state", {
 			statechart: statechart
@@ -239,7 +233,7 @@ $.widget("red.statechart", {
 		var parent = this.option("statechart");
 		var state_name = state.get_name(parent);
 
-		parent = parent.get_basis() || parent;
+		parent = parent.basis() || parent;
 
 		return red.command("move_state", {
 			statechart: parent
@@ -312,7 +306,7 @@ $.widget("red.state", {
 	, _add_change_listeners: function() {
 		var self = this;
 		var statechart = this.option("statechart");
-		var root = statechart.get_root();
+		var root = statechart.root();
 		this._state_name_fn = cjs.liven(function() {
 			var name = statechart.get_name(statechart.parent());
 			self._state_label.editable("option", "str", name);
@@ -335,7 +329,7 @@ $.widget("red.state", {
 		var parent = statechart.parent();
 		var from_name = statechart.get_name(parent);
 
-		parent = parent.get_basis() || parent;
+		parent = parent.basis() || parent;
 
 		return red.command("rename_state", {
 			statechart: parent
@@ -348,7 +342,7 @@ $.widget("red.state", {
 		var statechart = this.option("statechart");
 		var parent = statechart.parent();
 		var name = statechart.get_name(parent);
-		parent = parent.get_basis() || parent;
+		parent = parent.basis() || parent;
 		return red.command("remove_state", {
 			statechart: parent
 			, name: name
@@ -364,7 +358,7 @@ $.widget("red.state", {
 		var dict_context = dict_parent.dict("option", "context");
 
 		var parent = from_state.parent();
-		parent = parent.get_basis() || parent;
+		parent = parent.basis() || parent;
 
 
 		return red.command("add_transition", {
@@ -522,7 +516,7 @@ $.widget("red.transition", {
 
 	, _get_remove_transition_command: function() {
 		var transition = this.option("transition");
-		transition = transition.get_basis() || transition;
+		transition = transition.basis() || transition;
 		return red.command("remove_transition", {
 			transition: transition
 			, statechart: transition.get_statechart()
@@ -531,7 +525,7 @@ $.widget("red.transition", {
 	
 	, _get_set_event_command: function(str) {
 		var transition = this.option("transition");
-		transition = transition.get_basis() || transition;
+		transition = transition.basis() || transition;
 		return red.command("set_transition_event", {
 			transition: transition
 			, event: str

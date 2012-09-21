@@ -23,7 +23,7 @@ var AddStateCommand = function(options) {
 			this._statechart.add_state(this._state_name, this._state, this._index);
 		} else {
 			this._statechart.add_state(this._state_name, "statechart", this._index);
-			this._state = this._statechart.get_state_with_name(this._state_name);
+			this._state = this._statechart.find_state(this._state_name);
 		}
 	};
 

@@ -47,9 +47,8 @@ var eval_tree = function(node, context, ignore_inherited_in_contexts) {
 	} else if(type === "Identifier") {
 		var name = node.name;
 
-		context.reset_iterator();
-		var context_item;
 		var curr_context = context;
+		var context_item = curr_context.last();
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.RedDict) {
 				if(_.indexOf(ignore_inherited_in_contexts, context_item) < 0) {

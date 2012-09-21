@@ -5,7 +5,7 @@ var RedStatefulObj = function(options) {
 	RedStatefulObj.superclass.constructor.apply(this, arguments);
 	options = options || {};
 
-	this._direct_statechart = cjs.create("statechart", undefined, options.defer_statechart_invalidation);
+	this._direct_statechart = red.create("statechart", undefined, options.defer_statechart_invalidation);
 	this._contextual_statecharts = cjs	.map()
 										.set_equality_check(function(itema, itemb) {
 														if(itema instanceof red.RedContext && itemb instanceof red.RedContext) {
@@ -39,20 +39,19 @@ var RedStatefulObj = function(options) {
 	// === STATECHART SHADOWS ===
 	//
 	proto.get_statechart_for_context = function(context) {
-		var sc = this._contextual_statecharts.get(context);
+		var sc = this._contextual_statecharts.item(context);
 		if(_.isUndefined(sc)) {
 			sc = this._create_statechart_for_context(context);
 		}
 		return sc;
 	};
 	proto._create_statechart_for_context = function(context) {
-		var shadow_statechart = red._shadow_statechart(this.get_own_statechart(), context.last(), context);
-		this._contextual_statecharts.defer_invalidation(true);
-		this._contextual_statecharts.set(context, shadow_statechart);
+		var own_statechart = this.get_own_statechart();
+		cjs.wait();
+		var shadow_statechart = own_statechart.create_shadow();//red._shadow_statechart(this.get_own_statechart(), context.last(), context);
+		this._contextual_statecharts.item(context, shadow_statechart);
 		shadow_statechart.run();
-		shadow_statechart.invalidate();
-		this._contextual_statecharts.defer_invalidation(false);
-		this._contextual_statecharts.invalidate();
+		cjs.signal();
 		return shadow_statechart;
 	};
 
@@ -90,13 +89,10 @@ var RedStatefulObj = function(options) {
 		var active_states = get_active_states(statecharts);
 
 		var flattened_statecharts = _.flatten(_.map(statecharts, function(statechart) {
-			return _.without(statechart.flatten(), statechart);
+			return _.without(statechart.get_substates(), statechart);
 		}), true);
-		var viable_states = _.filter(flattened_statecharts, function(state) {
-			return state.get_type() !== "pre_init";
-		});
 
-		var rv = _.map(viable_states, function(state) {
+		var rv = _.map(flattened_statecharts, function(state) {
 			var is_active = _.indexOf(active_states, state) >= 0;
 			return {
 				active: is_active
@@ -113,7 +109,7 @@ var RedStatefulObj = function(options) {
 	var get_active_states = function(statecharts) {
 		var active_states = _.flatten(_.map(statecharts, function(statechart) {
 			
-			return statechart.get_state();
+			return statechart.get_active_states();
 		}), true);
 		return active_states;
 	};

@@ -56,7 +56,7 @@ var Statechart = function(options) {
 	options = _.extend({}, options);
 
 	this.id = _.uniqueId();
-	this.$substates = cjs.map();
+	this.$substates = options.substates || cjs.map();
 	this.$local_state = cjs();
 	this.$concurrent = cjs(false);
 	this._init_state = undefined;
@@ -350,6 +350,32 @@ var Statechart = function(options) {
 		}
 	};
 
+	proto.create_shadow = function(options) {
+		var shadow = red.create("statechart", {substates: this.$substates.$shadow(function(substate) {
+			var substate_shadow = substate.create_shadow();
+			substate_shadow.set_basis(shadow);
+			return substate_shadow;
+		})});
+		shadow.set_basis(this);
+		return shadow;
+	};
+
+	proto.get_transitions = function() {
+		return (this.get_incoming_transitions()).concat(this.get_outgoing_transitions());
+	};
+
+	proto.get_substate_transitions = function() {
+		var my_transitions = this.get_transitions();
+		return _.uniq(
+			_.flatten(
+				my_transitions.concat(_.map(this.get_substates(), function(substate) {
+					return substate.get_substate_transitions();
+				})),
+				true
+			)
+		);
+	};
+
 	proto.stringify = function(tab_level, punctuation) {
 		var name_spacing = 15;
 		var rv = "";
@@ -382,8 +408,8 @@ var Statechart = function(options) {
 	};
 }(Statechart));
 
-red.define("statechart", function() {
-	return new Statechart();
+red.define("statechart", function(options) {
+	return new Statechart(options);
 });
 red.is_statechart = function(obj) {
 	return obj instanceof Statechart;

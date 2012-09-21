@@ -112,6 +112,7 @@ var Env = function(dom_container_parent) {
 	var proto = my.prototype;
 
 	proto.initialize_props = function() {
+	/*
 		var dom = red.create("dict", {direct_attachments: [red.create("dom_attachment")]});
 		this._root.set("dom", dom);
 		dom.set_default_context(this._root_context.push(dom));
@@ -119,6 +120,7 @@ var Env = function(dom_container_parent) {
 		var children = red.create("dict");
 		this._root.set("children", children);
 		children.set_default_context(this._root_context.push(children));
+		*/
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
@@ -255,8 +257,8 @@ var Env = function(dom_container_parent) {
 						var state = state_spec.state;
 						var rv = state.get_name(state.parent());
 						rv += " " + state.id;
-						if(state.get_basis()) {
-							rv += "<-"+state.get_basis().id;
+						if(state.basis()) {
+							rv += "<-"+state.basis().id;
 						}
 						if(state_spec.active) {
 							rv = "* " + rv + " *";
@@ -266,6 +268,8 @@ var Env = function(dom_container_parent) {
 
 					row.push.apply(row, state_strs);
 					to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(dictified_context.push(value)));
+					console.log(value);
+					to_print_statecharts.push(value.get_own_statechart());
 
 					rows.push(row);
 
