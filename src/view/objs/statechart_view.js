@@ -362,7 +362,7 @@ $.widget("red.state", {
 
 
 		return red.command("add_transition", {
-			event: cjs.create_event("red_event", "", dict, dict_context)
+			event: red.create_event("parsed", "", dict, dict_context)
 			, statechart: parent
 			, from: from_name
 			, to: to_name
@@ -391,13 +391,6 @@ $.widget("red.transition", {
 		this.element.on("click", this.$edit);
 		this._state = state.idle;
 
-		if(from.get_type() === "pre_init") {
-			this.element.hide();
-		} else {
-			if(!this.option("inherited")) {
-		//		this.edit();
-			}
-		}
 		this._add_change_listeners();
 	}
 
@@ -478,8 +471,8 @@ $.widget("red.transition", {
 			var parent_states = parent.get_substates();
 			var from_index = _.indexOf(parent_states, from);
 			var to_index = _.indexOf(parent_states, to);
-			var from_x = (from_index - 1) * 100;
-			var to_x = (to_index -1 ) * 100;
+			var from_x = from_index * 100;
+			var to_x = to_index * 100;
 
 			var minx = Math.min(from_x, to_x);
 			var maxx = Math.max(from_x, to_x);
@@ -509,7 +502,7 @@ $.widget("red.transition", {
 
 	, _get_transition_event_str: function() {
 		var transition = this.option("transition");
-		var event = transition.get_event();
+		var event = transition.event();
 		return event.get_str();
 	}
 

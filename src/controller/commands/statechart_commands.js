@@ -168,7 +168,7 @@ var AddTransitionCommand = function(options) {
 		this._parent = this._options.parent;
 		this._parent_context = this._options.parent_context
 		this._event_str = this._options.event;
-		this._event = cjs.create_event("red_event", this._event_str, this._parent, this._parent_context);
+		this._event = red.create_event("parsed", this._event_str, this._parent, this._parent_context);
 	} else {
 		this._event = this._options.event;
 	}
@@ -249,7 +249,7 @@ var SetTransitionEventCommand = function(options) {
 	this._event_str = this._options.event;
 
 	this._transition = this._options.transition || this._options.statechart.get_transition_by_id(this.options.id);
-	this._event = this._transition.get_event();
+	this._event = this._transition.event();
 };
 
 (function(my) {

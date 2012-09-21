@@ -24,7 +24,7 @@ _.forEach(dom_events, function(dom_event) {
 		}
 
 		if(!(context instanceof red.RedContext)) {
-			context = cjs.create("red_context");
+			context = red.create("context");
 		}
 
 
@@ -128,7 +128,7 @@ var id  = 0;
 	proto.set_parent = function(parent) {
 		this._parent.set(parent);
 	};
-	proto.clone = function(parent, context) {
+	proto.shadow = function(parent, context) {
 		return red.create_event("parsed", this._str, parent, context);
 	};
 	proto.destroy = function() {

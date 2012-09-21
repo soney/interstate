@@ -68,7 +68,7 @@ var RedStatefulProp = function(options) {
 	};
 	proto._direct_value_for_state = function(state) {
 		state = state_basis(state);
-		return this._direct_values.get(state);
+		return this._direct_values.item(state);
 	};
 	proto._has_direct_value_for_state = function(state) {
 		state = state_basis(state);

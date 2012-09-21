@@ -26,11 +26,9 @@ var RedDomAttachmentInstance = function(options) {
 	} else {
 		this._dom_obj = cjs(undefined);
 		var self = this;
-		_.defer(function() {
-			self._tag_change_listener = self.add_tag_change_listener();
-			self._css_change_listeners = self.add_css_change_listeners();
-			self._attr_change_listeners = self.add_attribute_change_listeners();
-		});
+		this._tag_change_listener = self.add_tag_change_listener();
+		this._css_change_listeners = self.add_css_change_listeners();
+		this._attr_change_listeners = self.add_attribute_change_listeners();
 	}
 	this.on_ready();
 };

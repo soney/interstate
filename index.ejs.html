@@ -18,6 +18,7 @@
 			<script type="text/javascript">
 				$(function() {
 					var cjs = red.cjs, _ = red._;
+					window.cjs = cjs;
 					red.__debug = false;
 
 					var env = red.create("environment");
@@ -26,7 +27,16 @@
 					window.root = env.get_pointer();
 
 					//console.log("set x");
+					env.cd("children");
 					env.set("x", "stateful");
+					env.cd("x");
+					env.set("(protos)", "INIT", "dom");
+					env.set("tag");
+					env.set("text");
+					env.set("tag", "INIT", "'div'");
+					env.set("text", "INIT", "'hi'");
+					env.add_state("hover");
+					env.add_transition("INIT", "hover", "mouseover(this)");
 					console.log(env.print());
 					/*
 					console.log("set y");

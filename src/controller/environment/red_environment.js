@@ -112,7 +112,6 @@ var Env = function(dom_container_parent) {
 	var proto = my.prototype;
 
 	proto.initialize_props = function() {
-	/*
 		var dom = red.create("dict", {direct_attachments: [red.create("dom_attachment")]});
 		this._root.set("dom", dom);
 		dom.set_default_context(this._root_context.push(dom));
@@ -120,7 +119,7 @@ var Env = function(dom_container_parent) {
 		var children = red.create("dict");
 		this._root.set("children", children);
 		children.set_default_context(this._root_context.push(children));
-		*/
+		/**/
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
@@ -171,7 +170,7 @@ var Env = function(dom_container_parent) {
 		var pointer = this.get_pointer();
 		var statechart;
 		
-		if(cjs.is_statechart(pointer)) {
+		if(red.is_statechart(pointer)) {
 			statechart = pointer;
 		} else if(pointer instanceof red.RedStatefulObj) {
 			statechart = pointer.get_own_statechart();
@@ -268,7 +267,6 @@ var Env = function(dom_container_parent) {
 
 					row.push.apply(row, state_strs);
 					to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(dictified_context.push(value)));
-					console.log(value);
 					to_print_statecharts.push(value.get_own_statechart());
 
 					rows.push(row);
@@ -658,8 +656,8 @@ var Env = function(dom_container_parent) {
 		var parent = this.get_pointer();
 		var parent_context = this.get_context();
 
-		var from_state = statechart.get_state_with_name(from_state_name);
-		var to_state = statechart.get_state_with_name(to_state_name);
+		var from_state = statechart.find_state(from_state_name);
+		var to_state = statechart.find_state(to_state_name);
 
 
 		var command = red.command("add_transition", {

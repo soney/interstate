@@ -70,7 +70,7 @@ $.widget("red.stateful_prop", {
 		var prop = this.option("prop");
 		return red.command("set_stateful_prop_value", {
 			state: state
-			, value: cjs.create("red_cell", {str: "", ignore_inherited_in_contexts: prop._ignore_inherited_in_contexts})
+			, value: red.create("cell", {str: "", ignore_inherited_in_contexts: prop._ignore_inherited_in_contexts})
 			, stateful_prop: prop
 		});
 	}
