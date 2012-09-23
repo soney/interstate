@@ -62,7 +62,7 @@ red.define("context", function(options) {
 
 red.is_contextualizable = function(obj) {
 	return obj instanceof red.RedCell || obj instanceof red.RedStatefulProp || obj instanceof red.RedGroup;
-}
+};
 
 red.get_contextualizable = function(obj, context) {
 	if(red.is_contextualizable(obj)) {
