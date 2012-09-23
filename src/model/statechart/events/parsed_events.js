@@ -128,7 +128,7 @@ var id  = 0;
 	proto.set_parent = function(parent) {
 		this._parent.set(parent);
 	};
-	proto.shadow = function(parent, context) {
+	proto.create_shadow = function(parent, context) {
 		return red.create_event("parsed", this._str, parent, context);
 	};
 	proto.destroy = function() {

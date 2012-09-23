@@ -91,7 +91,7 @@ $.widget("red.statechart", {
 								var state = state_span.state("option", "statechart");
 
 								var command_event = $.Event("red_command");
-								command_event.command = self._get_move_state_command(state, new_state_index + 1); // add one to index to account for _pre_init
+								command_event.command = self._get_move_state_command(state, new_state_index); // add one to index to account for _pre_init
 
 								self._child_states.sortable("cancel");
 								self.element.trigger(command_event);
@@ -174,12 +174,14 @@ $.widget("red.statechart", {
 				move(state_view[0], from_index, to_index);
 			});
 
-			cached_substates = substates;
+			cached_substates = substates.slice();
 		});
 
 		this._transitions_live_fn = cjs.liven(function() {
 			var transitions = statechart.get_substate_transitions();
 			var diff = _.diff(cached_transitions, transitions);
+			console.log(transitions, diff);
+			debugger;
 
 			_.forEach(diff.removed, function(info) {
 				var index = info.index
@@ -192,7 +194,8 @@ $.widget("red.statechart", {
 				var index = info.index
 					, transition = info.item;
 				var transition_view = $("<span />");
-				insert_at(transition_view[0], self._transitions[0], index);
+				//insert_at(transition_view[0], self._transitions[0], index);
+				self._transitions.append(transition_view);
 				transition_view.transition({
 					transition: transition
 					, index: index
@@ -208,7 +211,7 @@ $.widget("red.statechart", {
 				transition_view.transition("option", "index", to_index);
 			});
 
-			cached_transitions = transitions;
+			cached_transitions = transitions.slice();
 		});
 	}
 

@@ -40,9 +40,9 @@ var StatechartTransition = function(from_state, to_state, event) {
 		var statechart = this.get_statechart();
 		statechart.on_transition_fire(this, event);
 	};
-	proto.create_shadow = function(from_state, to_state) {
+	proto.create_shadow = function(from_state, to_state, context) {
 		var my_event = this.event()
-			, shadow_event = my_event.create_shadow();
+			, shadow_event = my_event.create_shadow(context.last(), context);
 		var shadow_transition = new StatechartTransition(from_state, to_state, shadow_event);
 		return shadow_transition;
 	};
@@ -67,11 +67,11 @@ var Statechart = function(options) {
 	this.$substates = options.substates || cjs.map();
 	this.$local_state = cjs();
 	this.$concurrent = cjs(false);
-	this._init_state = undefined;
+	this.$init_state = options.init_state || cjs(undefined);
 	this._running = false;
 	this._parent = options.parent;
-	this.$incoming_transitions = options.incoming_transitions || cjs.array();
-	this.$outgoing_transitions = options.outgoing_transitions || cjs.array();
+	this.$incoming_transitions = cjs.array();
+	this.$outgoing_transitions = cjs.array();
 };
 (function(my) {
 	var proto = my.prototype;
@@ -92,7 +92,7 @@ var Statechart = function(options) {
 	proto.run = function() {
 		if(!this.is_running()) {
 			this._running = true;
-			this.set_active_substate(this._init_state);
+			this.set_active_substate(this.$init_state.get());
 		}
 		return this;
 	};
@@ -102,7 +102,7 @@ var Statechart = function(options) {
 	};
 	proto.reset = function() {
 		if(this.is_running()) {
-			this.$local_state.set(this._init_state);
+			this.$local_state.set(this.$init_state.get());
 		}
 	};
 	proto.get_name_for_substate = function(substate) {
@@ -158,6 +158,9 @@ var Statechart = function(options) {
 		} else {
 			return undefined;
 		}
+	};
+	proto.get_substate_index = function(substate) {
+		return this.$substates.values().indexOf(this.find_state(substate));
 	};
 	proto.add_substate = function(state_name, state, index) {
 		if(!(state instanceof Statechart)) {
@@ -359,9 +362,9 @@ var Statechart = function(options) {
 		}
 	};
 	proto.starts_at = function(state) {
-		this._init_state = this.find_state(state);
+		this.$init_state.set(this.find_state(state));
 		if(this.is_running() && this.get_active_substate() == null) {
-			this.set_active_substate(this._init_state);
+			this.set_active_substate(this.$init_state.get());
 		}
 		return this;
 	};
@@ -384,61 +387,70 @@ var Statechart = function(options) {
 			}
 		}
 	};
+	proto.find_substate_with_basis = function(state) {
+		var substates = this.get_substates();
+		for(var i = 0; i<substates.length; i++) {
+			var substate = substates[i];
+			if(substate.is_based_on(state)) { return substate; }
+		}
+	};
+	proto.find_state_with_basis = function(state) {
+		var parent = this;
+		while(parent) {
+			var s = parent.find_substate_with_basis(state);
+			if(s != null) { return s; }
+			parent = parent.parent();
+		}
+	};
+	proto.is_based_on = function(state) {
+		return this.basis() === state;
+	};
 
 	proto.create_shadow = function(context) {
-		var init_state = this._init_state;
-		var shadow = red.create("statechart", {substates: this.$substates.$shadow(function(substate) {
+		var self = this;
+		var create_substate_shadow = function(substate) {
 			var substate_shadow = substate.create_shadow(context);
 			substate_shadow.set_parent(shadow);
-			if(substate === init_state) {
-				shadow.starts_at(substate_shadow);
-			}
 			return substate_shadow;
-		})
+		};
+		var shadow = red.create("statechart", {
+			substates: this.$substates.$shadow(create_substate_shadow),
+			init_state: cjs.$(function() {
+				var original_init_state = self.$init_state.get();
+				if(original_init_state) {
+					original_init_state = self.find_state(original_init_state);
+					var original_init_state_name = original_init_state.get_name(self);
+					return shadow.find_state(original_init_state_name);
+				}
+			})
 		});
 
-		
-		var self = this;
-		var mapped_incoming = [];
-		var cached_incoming = [];
-		this.$incoming_transitions.onChange(function() {
-			var incoming = self.$incoming_transitions.get();
-			var diff = _.diff(cached_incoming, incoming);
+		var create_shadow_transition = function(transition) {
+			var to = shadow;
+			var from = shadow.find_state_with_basis(transition.from());
+			if(!from) debugger;
+			return transition.create_shadow(from, to, context);
+		};
 
-			_.forEach(diff.removed, function(info) {
-				var index = info.index
-					, item = info.item;
-				var mapped_transition = mapped_incoming.splice(index, 1)[0];
-				this.remove_transition(mapped_transition);
-			});
-			_.forEach(diff.added, function(info) {
-				var index = info.index
-					, item= info.item;
-				var orig_from = item.from();
-				var orig_to = item.to();
-				var from_name = orig_from.get_name();
-				var to_name = orig_to.get_name();
-				var orig_event = item.event();
-				var shadow_event = orig_event.shadow(context.last(), context);
-
-				shadow.root().add_transition(from_name, to_name, shadow_event);
-				var transition = shadow.root()._last_transition;
-				mapped_incoming.splice(index, 0, transition);
-			});
-			_.forEach(diff.moved, function(info) {
-				var from_index = info.from_index
-					, to_index = info.to_index
-					, item = info.item;
-			});
-
-			cached_incoming = incoming;
+		var shadow_incoming = _.map(this.$incoming_transitions.get(), function(transition) {
+			var shadow_transition = create_shadow_transition(transition);
+			shadow.add_transition(shadow_transition);
+			return shadow_transition;
 		});
-		/*
-		var cached_outgoing = [];
-		this.$outgoing_transitions.onChange(function() {
-			console.log("CHANGE");
+		this.$incoming_transitions.onRemove(function(transition, index) {
+			var shadow_transition = shadow_incoming[index];
+			shadow_incoming.splice(index, 1);
+			shadow_transition.remove();
 		});
-		*/
+		this.$incoming_transitions.onAdd(function(transition, index) {
+			var shadow_transition = create_shadow_transition(transition);
+			shadow_incoming.splice(index, 0, shadow_transition);
+			shadow.add_transition(shadow_transition);
+			console.log("Add", shadow_transition, shadow_transition.from().id, shadow_transition.to().id);
+		});
+		this.$incoming_transitions.onMove(function(transition, to_index, from_index) {
+			shadow_incoming.splice(to_index, shadow_incoming.splice(from_index, 1)[0]);
+		});
 		shadow.set_basis(this);
 		return shadow;
 	};

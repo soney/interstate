@@ -105,7 +105,7 @@ var MoveStateCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		this._from_index = this._statechart.get_state_index(this._state_name);
+		this._from_index = this._statechart.get_substate_index(this._state_name);
 		this._statechart.move_state(this._state_name, this._to_index);
 	};
 
