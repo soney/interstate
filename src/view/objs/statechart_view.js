@@ -180,8 +180,6 @@ $.widget("red.statechart", {
 		this._transitions_live_fn = cjs.liven(function() {
 			var transitions = statechart.get_substate_transitions();
 			var diff = _.diff(cached_transitions, transitions);
-			console.log(transitions, diff);
-			debugger;
 
 			_.forEach(diff.removed, function(info) {
 				var index = info.index
@@ -209,6 +207,9 @@ $.widget("red.statechart", {
 				var transition_view = self._get_transition_view(transition);
 				move(transition_view[0], from_index, to_index);
 				transition_view.transition("option", "index", to_index);
+			});
+			self._transitions.children().each(function(index) {
+				$(this).transition("option", "index", index);
 			});
 
 			cached_transitions = transitions.slice();

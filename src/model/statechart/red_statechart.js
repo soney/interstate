@@ -70,8 +70,12 @@ var Statechart = function(options) {
 	this.$init_state = options.init_state || cjs(undefined);
 	this._running = false;
 	this._parent = options.parent;
+	red._set_descriptor(this.$substates._keys, "substates keys " + this.id);
+	red._set_descriptor(this.$substates._values, "substates values " + this.id);
 	this.$incoming_transitions = cjs.array();
+	red._set_descriptor(this.$incoming_transitions.$value, "incoming transitions " + this.id);
 	this.$outgoing_transitions = cjs.array();
+	red._set_descriptor(this.$outgoing_transitions.$value, "outgoing transitions " + this.id);
 };
 (function(my) {
 	var proto = my.prototype;
@@ -408,11 +412,13 @@ var Statechart = function(options) {
 
 	proto.create_shadow = function(context) {
 		var self = this;
-		var create_substate_shadow = function(substate) {
+		var create_substate_shadow = _.memoize(function(substate) {
 			var substate_shadow = substate.create_shadow(context);
 			substate_shadow.set_parent(shadow);
 			return substate_shadow;
-		};
+		}, function(substate) {
+			return substate.id;
+		});
 		var shadow = red.create("statechart", {
 			substates: this.$substates.$shadow(create_substate_shadow),
 			init_state: cjs.$(function() {
@@ -425,12 +431,14 @@ var Statechart = function(options) {
 			})
 		});
 
-		var create_shadow_transition = function(transition) {
+		var create_shadow_transition = _.memoize(function(transition) {
 			var to = shadow;
 			var from = shadow.find_state_with_basis(transition.from());
 			if(!from) debugger;
 			return transition.create_shadow(from, to, context);
-		};
+		}, function(transition) {
+			return transition.id;
+		});
 
 		var shadow_incoming = _.map(this.$incoming_transitions.get(), function(transition) {
 			var shadow_transition = create_shadow_transition(transition);
@@ -446,7 +454,6 @@ var Statechart = function(options) {
 			var shadow_transition = create_shadow_transition(transition);
 			shadow_incoming.splice(index, 0, shadow_transition);
 			shadow.add_transition(shadow_transition);
-			console.log("Add", shadow_transition, shadow_transition.from().id, shadow_transition.to().id);
 		});
 		this.$incoming_transitions.onMove(function(transition, to_index, from_index) {
 			shadow_incoming.splice(to_index, shadow_incoming.splice(from_index, 1)[0]);

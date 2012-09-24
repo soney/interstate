@@ -112,7 +112,6 @@ var Env = function(dom_container_parent) {
 	var proto = my.prototype;
 
 	proto.initialize_props = function() {
-	/*
 		var dom = red.create("dict", {direct_attachments: [red.create("dom_attachment")]});
 		this._root.set("dom", dom);
 		dom.set_default_context(this._root_context.push(dom));
