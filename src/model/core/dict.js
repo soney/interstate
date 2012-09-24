@@ -237,7 +237,7 @@ var RedDict = function(options) {
 		cjs.wait();
 
 		if(this._direct_attachment_instances.has(attachment)) {
-			attachment_instances = this._direct_attachment_instances.get(attachment);
+			attachment_instances = this._direct_attachment_instances.item(attachment);
 		} else {
 			attachment_instances = cjs.map().set_equality_check(check_context_equality);
 			this._direct_attachment_instances.item(attachment, attachment_instances);

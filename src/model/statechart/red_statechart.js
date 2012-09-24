@@ -37,7 +37,7 @@ var StatechartTransition = function(from_state, to_state, event) {
 		return from.root();
 	};
 	proto.run = function(event) {
-		var statechart = this.get_statechart();
+		var statechart = this.get_parent_statechart();
 		statechart.on_transition_fire(this, event);
 	};
 	proto.create_shadow = function(from_state, to_state, context) {
@@ -96,6 +96,9 @@ var Statechart = function(options) {
 	proto.run = function() {
 		if(!this.is_running()) {
 			this._running = true;
+			_.forEach(this.get_substates(), function(substate) {
+				substate.run();
+			});
 			this.set_active_substate(this.$init_state.get());
 		}
 		return this;
@@ -415,6 +418,9 @@ var Statechart = function(options) {
 		var create_substate_shadow = _.memoize(function(substate) {
 			var substate_shadow = substate.create_shadow(context);
 			substate_shadow.set_parent(shadow);
+			if(shadow.is_running()) {
+				substate_shadow.run();
+			}
 			return substate_shadow;
 		}, function(substate) {
 			return substate.id;
