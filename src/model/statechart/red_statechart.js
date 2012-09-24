@@ -436,11 +436,12 @@ var Statechart = function(options) {
 				}
 			})
 		});
+		shadow.set_basis(this);
 
 		var create_shadow_transition = _.memoize(function(transition) {
-			var to = shadow;
+			var to = shadow.find_state_with_basis(transition.to());
 			var from = shadow.find_state_with_basis(transition.from());
-			if(!from) debugger;
+			if(!from || !to) debugger;
 			return transition.create_shadow(from, to, context);
 		}, function(transition) {
 			return transition.id;
@@ -464,7 +465,6 @@ var Statechart = function(options) {
 		this.$incoming_transitions.onMove(function(transition, to_index, from_index) {
 			shadow_incoming.splice(to_index, shadow_incoming.splice(from_index, 1)[0]);
 		});
-		shadow.set_basis(this);
 		return shadow;
 	};
 
