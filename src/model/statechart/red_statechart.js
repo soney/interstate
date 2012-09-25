@@ -7,12 +7,13 @@ var StatechartTransition = function(from_state, to_state, event) {
 	this.id = _.uniqueId();
 	this.do_run = _.bind(this.run, this);
 	this.set_event(event);
-	this.$parent = cjs.$();
 };
 (function(my) {
 	var proto = my.prototype;
 	proto.from = function() { return this._from_state; }; 
 	proto.to = function() { return this._to_state; };
+	proto.setFrom = function(state) { this._from_state = state; };
+	proto.setTo = function(state) { this._to_state = state; };
 	proto.set_event = function(event) {
 		if(this._event) {
 			this._event.off_fire(this.do_run);
@@ -51,8 +52,6 @@ var StatechartTransition = function(from_state, to_state, event) {
 		var stringified_event = event ? ","+event.stringify() : "";
 		return "" + this.id + stringified_event;
 	};
-	proto.set_statechart = function(parent) { this.$parent.set(parent); };
-	proto.get_statechart = function(parent) { return this.$parent.get(); };
 	proto.remove = function() {
 		var from = this.from();
 		var parent = from.parent() || from;
@@ -302,7 +301,6 @@ var Statechart = function(options) {
 			transition = new StatechartTransition(from_state, to_state, event);
 			this._last_transition  = transition;
 		}
-		transition.set_statechart(this);
 		from_state.add_direct_outgoing_transition(transition);
 		to_state.add_direct_incoming_transition(transition);
 
@@ -413,10 +411,20 @@ var Statechart = function(options) {
 		return this.basis() === state;
 	};
 
-	proto.create_shadow = function(context) {
+	proto.create_shadow = function(context, create_shadow_transition) {
+		cjs.wait();
 		var self = this;
+		create_shadow_transition = create_shadow_transition || _.memoize(function(transition) {
+			var to = shadow.find_state_with_basis(transition.to());
+			var from = shadow.find_state_with_basis(transition.from());
+			if(!from || !to) debugger;
+			return transition.create_shadow(from, to, context);
+		}, function(transition) {
+			return transition.id;
+		});
+
 		var create_substate_shadow = _.memoize(function(substate) {
-			var substate_shadow = substate.create_shadow(context);
+			var substate_shadow = substate.create_shadow(context, create_shadow_transition);
 			substate_shadow.set_parent(shadow);
 			if(shadow.is_running()) {
 				substate_shadow.run();
@@ -438,33 +446,48 @@ var Statechart = function(options) {
 		});
 		shadow.set_basis(this);
 
-		var create_shadow_transition = _.memoize(function(transition) {
-			var to = shadow.find_state_with_basis(transition.to());
-			var from = shadow.find_state_with_basis(transition.from());
-			if(!from || !to) debugger;
-			return transition.create_shadow(from, to, context);
-		}, function(transition) {
-			return transition.id;
-		});
-
 		var shadow_incoming = _.map(this.$incoming_transitions.get(), function(transition) {
 			var shadow_transition = create_shadow_transition(transition);
-			shadow.add_transition(shadow_transition);
+			shadow_transition.setTo(shadow);
+			shadow.add_direct_outgoing_transition(transition);
 			return shadow_transition;
 		});
 		this.$incoming_transitions.onRemove(function(transition, index) {
 			var shadow_transition = shadow_incoming[index];
 			shadow_incoming.splice(index, 1);
+			shadow_transition.setTo(shadow);
 			shadow_transition.remove();
 		});
 		this.$incoming_transitions.onAdd(function(transition, index) {
 			var shadow_transition = create_shadow_transition(transition);
 			shadow_incoming.splice(index, 0, shadow_transition);
-			shadow.add_transition(shadow_transition);
+			shadow.add_direct_incoming_transition(shadow_transition);
 		});
 		this.$incoming_transitions.onMove(function(transition, to_index, from_index) {
 			shadow_incoming.splice(to_index, shadow_incoming.splice(from_index, 1)[0]);
 		});
+
+		var shadow_outgoing = _.map(this.$outgoing_transitions.get(), function(transition) {
+			var shadow_transition = create_shadow_transition(transition);
+			shadow_transition.setFrom(shadow);
+			shadow.add_direct_outgoing_transition(transition);
+			return shadow_transition;
+		});
+		this.$outgoing_transitions.onRemove(function(transition, index) {
+			var shadow_transition = shadow_incoming[index];
+			shadow_outgoing.splice(index, 1);
+			shadow_transition.setFrom(shadow);
+			shadow_transition.remove();
+		});
+		this.$outgoing_transitions.onAdd(function(transition, index) {
+			var shadow_transition = create_shadow_transition(transition);
+			shadow_outgoing.splice(index, 0, shadow_transition);
+			shadow.add_direct_outgoing_transition(shadow_transition);
+		});
+		this.$outgoing_transitions.onMove(function(transition, to_index, from_index) {
+			shadow_outgoing.splice(to_index, shadow_incoming.splice(from_index, 1)[0]);
+		});
+		cjs.signal();
 		return shadow;
 	};
 
