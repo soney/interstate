@@ -516,7 +516,7 @@ $.widget("red.transition", {
 		transition = transition.basis() || transition;
 		return red.command("remove_transition", {
 			transition: transition
-			, statechart: transition.get_statechart()
+			, statechart: transition.get_parent_statechart()
 		})
 	}
 	
@@ -526,7 +526,7 @@ $.widget("red.transition", {
 		return red.command("set_transition_event", {
 			transition: transition
 			, event: str
-			, statechart: transition.get_statechart()
+			, statechart: transition.get_parent_statechart()
 		})
 	}
 });

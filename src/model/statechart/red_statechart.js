@@ -422,17 +422,23 @@ var Statechart = function(options) {
 		}, function(transition) {
 			return transition.id;
 		});
-
-		create_substate_shadow = create_substate_shadow || _.memoize(function(substate) {
+		create_substate_shadow = create_substate_shadow || _.memoize(function(substate, shadow_transitions) {
 			var substate_shadow = substate.create_shadow(context, create_substate_shadow, create_transition_shadow);
 			if(shadow.is_running()) {
 				substate_shadow.run();
 			}
+
+			if(shadow_transitions) {
+				substate_shadow.shadow_transitions(
+			}
+
 			return substate_shadow;
 		}, function(substate) {
 			return substate.id;
 		});
+	};
 
+	proto.shadow_substates = function(context, create_substate_shadow, create_transition_shadow) {
 		cjs.wait();
 		var self = this;
 		var shadow = red.create("statechart", {
@@ -446,7 +452,6 @@ var Statechart = function(options) {
 			})
 		});
 		shadow.set_basis(this);
-
 		var substates_val = this.$substates.get();
 		for(var i = 0; i<substates_val.keys.length; i++) {
 			var key = substates_val.keys[i];
@@ -473,6 +478,11 @@ var Statechart = function(options) {
 			shadow.move_state(key, to_index);
 		});
 
+		cjs.signal();
+		return shadow;
+	};
+
+	proto.shadow_transitions = function(create_transition_shadow) {
 		var shadow_incoming = _.map(this.$incoming_transitions.get(), function(transition) {
 			var shadow_transition = create_transition_shadow(transition);
 			shadow_transition.setTo(shadow);
@@ -513,9 +523,6 @@ var Statechart = function(options) {
 		this.$outgoing_transitions.onMove(function(transition, to_index, from_index) {
 			shadow_outgoing.splice(to_index, shadow_incoming.splice(from_index, 1)[0]);
 		});
-
-		cjs.signal();
-		return shadow;
 	};
 	proto.get_transitions = function() {
 		return (this.get_incoming_transitions()).concat(this.get_outgoing_transitions());
