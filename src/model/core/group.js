@@ -50,7 +50,14 @@ var RedGroup = function(options) {
 		basis = red.get_contextualizable(basis, context);
 		var template = this.get_template();
 
-		if(this._last_basis === basis && this._last_template === template) { return this._last_rv; }
+		if(this._last_basis === basis && this._last_template === template) {
+			return this._last_rv;
+		} else {
+			_.forEach(this._last_rv, function(dict) {
+				dict.destroy();
+			});
+			this._last_rv = undefined;
+		}
 
 		var rv;
 		if(_.isNumber(basis)) {

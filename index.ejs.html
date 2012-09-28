@@ -25,127 +25,12 @@
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					window.env = env;
 					window.root = env.get_pointer();
-					env.set("templ", "stateful");
-					env.cd("templ");
-					env.set_cell("(protos)", "INIT", "dom");
-					env.set("tag");
-					env.set("text");
-					env.set("tag", "INIT", "'div'");
-					env.set("text", "INIT", "'hello'");
-					env.top();
+
 					env.unset("children");
 					env.set("children", "group");
-					env.cd("children");
-					env.set_cell("(basis)", "1");
-					red.__debug = true;
-					env.set_cell("(template)", "templ");
-					/*
-					env.set("a", "stateful");
-					env.cd("a");
-					env.add_state("hover");
-					env.set_cell("(protos)", "INIT", "dom");
-					env.set("tag");
-					env.set("text");
-					env.set("tag", "INIT", "'div'");
-					env.set("text", "INIT", "'idle'");
-					env.set("text", "hover", "'hover'");
-					env.add_transition("INIT", "hover", "mouseover(this)");
-					env.add_transition("hover", "INIT", "mouseout(this)");
-					env.up();
-					env.set("b", "stateful");
-					env.cd("b");
-					env.set_cell("(protos)", "INIT", "a");
-					/*
 
-					//console.log("set x");
-					env.cd("children");
-					env.set("x", "stateful");
-					env.cd("x");
-					env.set("(protos)", "INIT", "dom");
-					env.set("tag");
-					env.set("text");
-					env.set("tag", "INIT", "'div'");
-					env.set("text", "INIT", "'hi'");
-					env.add_state("hover");
-					env.add_transition("INIT", "hover", "mouseover(this)");
-					console.log(env.print());
-					/*
-					console.log("set y");
-					red.__debug = true;
-					env.set("y", "2+3");
-					env.set("y", "dict");
-					env.cd("x");
-					window.x = env.get_pointer();
-					window.xxt = cjs.create("red_context", {stack: [root, x]});
-					env.set_cell("(protos)", "INIT", "dom")
-					env.set("tag");
-					env.set_cell("tag", "INIT", "'div'")
-					env.set("text");
-					env.set_cell("text", "INIT", "'INI'")
-
-					env.top();
-
-					env.set("children", "group");
-					env.cd("children");
-					red.__debug = true;
-					env.set_cell("(basis)", "10");
-					env.set_cell("(template)", "x");
-
-					env.top();
-					/*
-					env.set("x", "group");
-					env.cd("x");
-					/*
-
-					env.cd("children");
-					window.children = env.get_pointer();
-					env.set("x", "stateful");
-					env.cd("x");
-					window.x = env.get_pointer();
-					window.xxt = cjs.create("red_context", {stack: [root, children, x]});
-					env.set_cell("(protos)", "INIT", "dom")
-					env.set("tag");
-					env.set_cell("tag", "INIT", "'div'")
-					env.set("text");
-					env.set_cell("text", "INIT", "'INI'")
-					env.add_state("state1");
-					env.set_cell("text", "state1", "'s1'")
-					env.add_transition("INIT", "state1", "mouseover(this)");
-					env.add_transition("state1", "INIT", "mouseout(this)");
-					env.up();
-					env.set("y", "stateful");
-					env.cd("y");
-					env.set_cell("(protos)", "INIT", "")
-					red.__debug = true;
-					/*
-					env.up();
-					env.set("y", "stateful");
-					env.cd("y");
-					red.__debug = true;
-					env.set_cell("(protos)", "INIT", "x")
-					window.y = env.get_pointer();
-
-					window.yxt = cjs.create("red_context", {stack: [root, children, y]});
 					/**/
 				});
-				/*
-
-				/*
-				var root = env.get_pointer();
-
-				env.set("a", "stateful");
-				env.in("a");
-				env.set("x");
-
-				var globalize = function() {
-					_.forEach(arguments, function(prop) {
-						window[prop] = _.bind(env[prop], env);
-					});
-				};
-
-				globalize("cd", "set", "unset", "rename", "move", "up", "top", "add_state", "remove_state", "add_transition", "remove_transition");
-				console.log(env.print());
-				*/
 			</script>
 	  </div>
   </body>
