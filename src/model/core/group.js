@@ -46,29 +46,32 @@ var RedGroup = function(options) {
 	//
 	
 	proto.get = function(context) {
-		cjs.wait();
 		var basis = this.get_basis();
 		basis = red.get_contextualizable(basis, context);
+		var template = this.get_template();
+
+		if(this._last_basis === basis && this._last_template === template) { return this._last_rv; }
 
 		var rv;
-		var self = this;
 		if(_.isNumber(basis)) {
 			rv = [];
 			_.times(basis, function(index) {
-				var dict = red.create("stateful_obj", {defer_statechart_invalidation: true, direct_protos: self._template});
-				//dict.set_prop("basis", index);
+				var dict = red.create("stateful_obj", {defer_statechart_invalidation: true, direct_protos: template});
+				dict.set_prop("basis", index);
 				rv.push(dict);
 			});
 		} else if(_.isArray(basis)) {
 			rv = _.map(basis, function(basis_obj) {
-				var dict = red.create("stateful_obj", {defer_statechart_invalidation: true, direct_protos: self._template});
-				//dict.set_prop("basis", basis_obj);
+				var dict = red.create("stateful_obj", {defer_statechart_invalidation: true, direct_protos: template});
+				dict.set_prop("basis", basis_obj);
 				return dict;
 			});
 		} else {
 			rv = [];
 		}
-		cjs.signal();
+		this._last_basis = basis;
+		this._last_template  = template;
+		this._last_rv = rv;
 		return rv;
 	};
 

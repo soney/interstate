@@ -54,7 +54,6 @@ var RedDict = function(options) {
 	};
 	proto._get_direct_protos = function(context) {
 		var protos = red.get_contextualizable(this.direct_protos(), context);
-		if(red.__debug) { debugger; }
 		if(_.isArray(protos)) {
 			return protos;
 		} else {
@@ -246,6 +245,7 @@ var RedDict = function(options) {
 		}
 		var attachment_instance = attachment.create_instance(context.last(), context);
 		attachment_instances.item(context, attachment_instance);
+		//if(red.__debug) debugger;
 
 		cjs.signal();
 		return attachment_instance;

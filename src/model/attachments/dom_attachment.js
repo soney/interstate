@@ -3,6 +3,7 @@ var cjs = red.cjs, _ = red._;
 
 // Red name: CSS name
 var changeable_css_props = {
+	/*
 	"width": "width"
 	, "height": "height"
 	, "backgroundColor": "backgroundColor"
@@ -10,12 +11,15 @@ var changeable_css_props = {
 	, "left": "left"
 	, "top": "top"
 	, "position": "position"
+	*/
 };
 
 var changeable_attributes = {
+/*
 	"src": "src"
 	, "class": "class"
 	, "id": "id"
+	*/
 };
 
 var RedDomAttachmentInstance = function(options) {

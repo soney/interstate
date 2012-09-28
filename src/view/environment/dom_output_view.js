@@ -101,6 +101,7 @@ $.widget("red.dom_output", {
 
 		var self = this;
 		this._dom_tree_fn = cjs.liven(function() {
+			//if(red.__debug) debugger;
 			var dom_element = get_dom_tree(root, root_context);
 			if(self.element.children().is(dom_element)) {
 				self.element.children().not(dom_element).remove();
