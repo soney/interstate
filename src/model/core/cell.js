@@ -165,8 +165,18 @@ var RedCell = function(options) {
 		return this._str.get();
 	};
 	proto.get = function(context) {
+		var self = this;
 		var tree = this._tree.get();
-		return eval_tree(tree.body[0], context, this._ignore_inherited_in_contexts);
+		var ignore_inherited_in_contexts = this._ignore_inherited_in_contexts.slice();
+		var context_item;
+		while(context_item = context.iter()) {
+			if(context_item instanceof red.RedDict && (cjs.get(context_item.direct_protos()) === self)) {
+				ignore_inherited_in_contexts.push(context_item);
+			}
+		}
+		context.reset_iterator();
+		
+		return eval_tree(tree.body[0], context, ignore_inherited_in_contexts);
 	};
 	proto.clone = function() {
 		return red.create("cell", {str: this.get_str()});

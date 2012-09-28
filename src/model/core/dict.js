@@ -54,6 +54,7 @@ var RedDict = function(options) {
 	};
 	proto._get_direct_protos = function(context) {
 		var protos = red.get_contextualizable(this.direct_protos(), context);
+		if(red.__debug) { debugger; }
 		if(_.isArray(protos)) {
 			return protos;
 		} else {
@@ -69,6 +70,7 @@ var RedDict = function(options) {
 	proto.get_protos = proto._get_all_protos = function(context) {
 		var direct_protos = this._get_direct_protos(context);
 		var protos = _.map(cjs.get(direct_protos), function(direct_proto) {
+			direct_proto = red.get_contextualizable(direct_proto, context);
 			if(_.isUndefined(direct_proto)) { return false; };
 			var direct_proto_all_protos = direct_proto._get_all_protos(direct_proto.get_default_context());
 			

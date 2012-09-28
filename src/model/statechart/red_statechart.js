@@ -413,29 +413,28 @@ var Statechart = function(options) {
 	proto.is_based_on = function(state) {
 		return this.basis() === state;
 	};
-	proto.create_shadow = function(context, create_substate_shadow, create_transition_shadow) {
-		create_transition_shadow = create_transition_shadow || _.memoize(function(transition) {
+	proto.create_shadow = function(context) {
+		var create_transition_shadow = _.memoize(function(transition) {
 			var to = shadow.find_state_with_basis(transition.to());
 			var from = shadow.find_state_with_basis(transition.from());
-			if(!from || !to) debugger;
 			return transition.create_shadow(from, to, context);
 		}, function(transition) {
 			return transition.id;
 		});
-		create_substate_shadow = create_substate_shadow || _.memoize(function(substate, shadow_transitions) {
-			var substate_shadow = substate.create_shadow(context, create_substate_shadow, create_transition_shadow);
-			if(shadow.is_running()) {
-				substate_shadow.run();
-			}
-
-			if(shadow_transitions) {
-				substate_shadow.shadow_transitions(
-			}
-
+		var create_substate_shadow = _.memoize(function(substate, shadow_transitions) {
+			cjs.wait();
+			var substate_shadow = substate.shadow_substates(context, create_substate_shadow, create_transition_shadow);
+			if(shadow_transitions) { substate_shadow.shadow_transitions(create_transition_shadow); }
+			cjs.signal();
 			return substate_shadow;
 		}, function(substate) {
 			return substate.id;
 		});
+		cjs.wait();
+		var shadow = this.shadow_substates(context, create_substate_shadow, create_transition_shadow);
+		shadow.shadow_transitions(create_transition_shadow);
+		cjs.signal();
+		return shadow;
 	};
 
 	proto.shadow_substates = function(context, create_substate_shadow, create_transition_shadow) {
@@ -456,12 +455,12 @@ var Statechart = function(options) {
 		for(var i = 0; i<substates_val.keys.length; i++) {
 			var key = substates_val.keys[i];
 			var val = substates_val.values[i];
-			var shadow_val = create_substate_shadow(val);
+			var shadow_val = create_substate_shadow(val, false);
 			shadow.add_state(key, shadow_val, i);
 		}
 
 		this.$substates.onSet(function(state, name, index) {
-			var shadow_val = create_substate_shadow(state);
+			var shadow_val = create_substate_shadow(state, true);
 			shadow.add_state(name, shadow_val, index);
 		});
 		this.$substates.onUnset(function(state, name, index) {
@@ -483,45 +482,51 @@ var Statechart = function(options) {
 	};
 
 	proto.shadow_transitions = function(create_transition_shadow) {
-		var shadow_incoming = _.map(this.$incoming_transitions.get(), function(transition) {
+		var shadow = this;
+		var basis = shadow.basis();
+		var shadow_incoming = _.map(basis.$incoming_transitions.get(), function(transition) {
 			var shadow_transition = create_transition_shadow(transition);
 			shadow_transition.setTo(shadow);
 			shadow.add_direct_outgoing_transition(transition);
 			return shadow_transition;
 		});
-		this.$incoming_transitions.onRemove(function(transition, index) {
+		basis.$incoming_transitions.onRemove(function(transition, index) {
 			var shadow_transition = shadow_incoming[index];
 			shadow_incoming.splice(index, 1);
 			shadow_transition.setTo(shadow);
 			shadow_transition.remove();
 		});
-		this.$incoming_transitions.onAdd(function(transition, index) {
+		basis.$incoming_transitions.onAdd(function(transition, index) {
 			var shadow_transition = create_transition_shadow(transition);
 			shadow_incoming.splice(index, 0, shadow_transition);
 			shadow.add_direct_incoming_transition(shadow_transition);
 		});
-		this.$incoming_transitions.onMove(function(transition, to_index, from_index) {
+		basis.$incoming_transitions.onMove(function(transition, to_index, from_index) {
 			shadow_incoming.splice(to_index, shadow_incoming.splice(from_index, 1)[0]);
 		});
-		var shadow_outgoing = _.map(this.$outgoing_transitions.get(), function(transition) {
+		var shadow_outgoing = _.map(basis.$outgoing_transitions.get(), function(transition) {
 			var shadow_transition = create_transition_shadow(transition);
 			shadow_transition.setFrom(shadow);
 			shadow.add_direct_outgoing_transition(transition);
 			return shadow_transition;
 		});
-		this.$outgoing_transitions.onRemove(function(transition, index) {
+		basis.$outgoing_transitions.onRemove(function(transition, index) {
 			var shadow_transition = shadow_outgoing[index];
 			shadow_outgoing.splice(index, 1);
 			shadow_transition.setFrom(shadow);
 			//shadow_transition.remove(); already removed by incoming
 		});
-		this.$outgoing_transitions.onAdd(function(transition, index) {
+		basis.$outgoing_transitions.onAdd(function(transition, index) {
 			var shadow_transition = create_transition_shadow(transition);
 			shadow_outgoing.splice(index, 0, shadow_transition);
 			shadow.add_direct_outgoing_transition(shadow_transition);
 		});
-		this.$outgoing_transitions.onMove(function(transition, to_index, from_index) {
+		basis.$outgoing_transitions.onMove(function(transition, to_index, from_index) {
 			shadow_outgoing.splice(to_index, shadow_incoming.splice(from_index, 1)[0]);
+		});
+
+		_.forEach(shadow.get_substates(), function(shadow_substate) {
+			shadow_substate.shadow_transitions(create_transition_shadow);
 		});
 	};
 	proto.get_transitions = function() {
