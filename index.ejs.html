@@ -25,9 +25,7 @@
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					window.env = env;
 					window.root = env.get_pointer();
-
-					env.unset("children");
-					env.set("children", "group");
+					console.log(env.print());
 
 					/**/
 				});

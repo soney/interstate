@@ -196,7 +196,6 @@ $.widget("red.dict", {
 		this._remove_change_listeners();
 		this._add_prop_button.off("click.add_prop");
 		this._add_prop_row.remove();
-		//console.log("destroy sortable", this.uuid);
 		this._direct_child_props.sortable("destroy")
 		this._direct_child_props.add(this._inherited_child_props, this._builtin_child_props)
 								.children().each(function() {

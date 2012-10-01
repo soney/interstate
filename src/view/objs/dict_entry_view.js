@@ -150,10 +150,9 @@ $.widget("red.dict_entry", {
 	}
 
 	, _remove_change_listeners: function() {
-		if(_.has(this, "_live_value_fn")) { this._live_value_fn.destroy(); }
 		if(_.has(this, "_live_src_fn")) { this._live_src_fn.destroy(); }
+		if(_.has(this, "_live_value_fn")) { this._live_value_fn.destroy(); }
 		if(_.has(this, "_is_inherited_fn")) { this._is_inherited_fn.destroy(); }
-		delete this._live_fn;
 	}
 
 	, _mark_inherited: function(is_inherited) {
