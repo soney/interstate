@@ -1,8 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var constraint_solver = cjs._constraint_solver;
-
 var objs = [];
 var descriptors = [];
 

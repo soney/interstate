@@ -185,6 +185,12 @@ var RedCell = function(options) {
 		this._tree.destroy();
 		this._str.destroy();
 	};
+	proto.serialize = function() {
+		return { str: this.get_str() };
+	};
+	my.deserialize = function(obj) {
+		return new RedCell({str: obj.str});
+	};
 }(RedCell));
 
 red.RedCell = RedCell;
