@@ -3,6 +3,10 @@ var cjs = red.cjs, _ = red._;
 
 var red_types = [
 	{name: "cell", type: red.RedCell}
+	, {name: "stateful_obj", type: red.RedStatefulObj}
+	, {name: "dict", type: red.RedDict}
+	, {name: "stateful_prop", type: red.RedStatefulProp}
+	, {name: "group", type: red.RedGroup}
 ];
 
 red.serialize = function(red_obj) {

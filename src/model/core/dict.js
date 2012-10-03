@@ -9,6 +9,7 @@ var check_context_equality = function(itema, itemb) {
 	}
 };
 
+
 var RedDict = function(options) {
 	options = options || {};
 
@@ -39,6 +40,26 @@ var RedDict = function(options) {
 
 (function(my) {
 	var proto = my.prototype;
+
+	my.builtins = {
+		"direct_protos": {
+			default: function() { return cjs.array(); }
+		}
+
+		, "default_context": {
+			default: function() { return cjs.array(); }
+			, getter: function(me) { return me.get(); }
+			, setter: function(me, context) { me.set(context, true); }
+		}
+
+		, "direct_attachments": {
+			default: function() { return cjs.array(); }
+		}
+
+		, "direct_attachment_instances": {
+			default: function() { return cjs.array(); }
+		}
+	};
 
 	//
 	// === DEFAULT CONTEXT ===
