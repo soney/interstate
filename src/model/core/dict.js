@@ -36,6 +36,8 @@ var RedDict = function(options) {
 	//if(cjs.is_constraint(this._direct_attachments)) { red._set_constraint_descriptor(this._direct_attachments,   "Direct Attachments " + this.id); }
 	red._set_descriptor(this._direct_attachment_instances._keys,   "Direct Attachment instance Keys " + this.id);
 	red._set_descriptor(this._direct_attachment_instances._values, "Direct Attachment instance Vals " + this.id);
+
+	red.install_instance_builtins(this, arguments.callee);
 };
 
 (function(my) {
@@ -61,15 +63,19 @@ var RedDict = function(options) {
 		}
 	};
 
+	red.install_proto_builtins(proto, my.builtins);
+
 	//
 	// === DEFAULT CONTEXT ===
 	//
+
 	proto.get_default_context = function() { return this._default_context.get(); }
 	proto.set_default_context = function(context) { this._default_context.set(context, true); }
 	
 	//
 	// === DIRECT PROTOS ===
 	//
+
 	proto.direct_protos = function() {
 		return this._direct_protos;
 	};
@@ -84,9 +90,11 @@ var RedDict = function(options) {
 	proto._set_direct_protos = function(direct_protos) {
 		this._direct_protos = direct_protos;
 	};
+
 	//
 	// === ALL PROTOS ===
 	//
+
 	proto.get_protos = proto._get_all_protos = function(context) {
 		var direct_protos = this._get_direct_protos(context);
 		var protos = _.map(cjs.get(direct_protos), function(direct_proto) {
@@ -103,6 +111,7 @@ var RedDict = function(options) {
 	//
 	// === DIRECT PROPERTIES ===
 	//
+
 	proto.set = proto.set_prop = proto._set_direct_prop = function(name, value, index) {
 		this._direct_props.item(name, value, index);
 	};
@@ -181,6 +190,7 @@ var RedDict = function(options) {
 	//
 	// === PROPERTIES ===
 	//
+
 	proto.get_prop = function(prop_name, context) {
 		if(this._has_direct_prop(prop_name)) {
 			return this._get_direct_prop(prop_name);
@@ -242,6 +252,7 @@ var RedDict = function(options) {
 	//
 	// === DIRECT ATTACHMENTS ===
 	//
+
 	proto.direct_attachments = function() {
 		return this._direct_attachments;
 	};
@@ -253,6 +264,7 @@ var RedDict = function(options) {
 	//
 	// === DIRECT ATTACHMENT INSTANCES ===
 	//
+
 	proto.add_direct_attachment_instance = function(attachment, context) {
 		var attachment_instances;
 
@@ -296,6 +308,7 @@ var RedDict = function(options) {
 	//
 	// === ALL ATTACHMENTS ===
 	//
+
 	proto._get_all_attachments_and_srcs = function(context) {
 		var self = this;
 		var direct_attachments = this._get_direct_attachments(context);
@@ -364,6 +377,7 @@ var RedDict = function(options) {
 	//
 	// === BYE BYE ===
 	//
+
 	proto.destroy = function() {
 	/*
 		this._direct_props.destroy();

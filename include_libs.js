@@ -39,6 +39,7 @@ exports.main_src = c(
 			])
 	, cp(src, [
 				"model/core.js"
+				, "model/core/obj_utils.js"
 				, "model/core/debug.js"
 				, "model/serialize.js"
 				, "model/statechart/red_statechart.js"
