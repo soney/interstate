@@ -7,39 +7,37 @@ var RedGroup = function(options) {
 	this.type = "red_group";
 	this.id = _.uniqueId();
 
+/*
 	this._default_context = cjs(options.default_context, true);
 	this._template = cjs.$();
 	this._basis = cjs.$();
+	*/
+	red.install_instance_builtins(this, options, arguments.callee);
 };
 (function(my) {
 	var proto = my.prototype;
-	//
-	//
-	// === DEFAULT CONTEXT ===
-	//
-	proto.get_default_context = function() { return this._default_context.get(); }
-	proto.set_default_context = function(context) { this._default_context.set(context, true); }
-	
-	//
-	// === PROTOS ===
-	//
-	proto.set_template = function(protos) {
-		this._template.set(protos);
-	};
-	proto.get_template = function() {
-		return this._template.get();
+	my.builtins = {
+		"template": {
+			start_with: function() { return cjs.$(); }
+			, setter: function(me, val) { me.set(val); }
+			, getter: function(me) { return me.get(); }
+			, env_visible: true
+		}
+
+		, "basis": {
+			start_with: function() { return cjs.$(); }
+			, setter: function(me, val) { me.set(val); }
+			, getter: function(me) { return me.get(); }
+			, env_visible: true
+		}
+		, "default_context": {
+			start_with: function() { return cjs.$(); }
+			, getter: function(me) { return me.get(); }
+			, setter: function(me, val) { me.set(val); }
+		}
 	};
 
-	//
-	// === BASIS ===
-	//
-	proto.set_basis = function(basis) {
-		this._basis.set(basis);
-	};
-	proto.get_basis = function() {
-		return this._basis.get();
-	};
-
+	red.install_proto_builtins(proto, my.builtins);
 
 	//
 	// === GETTER ===

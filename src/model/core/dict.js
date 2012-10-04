@@ -16,28 +16,10 @@ var RedDict = function(options) {
 	//Properties
 	this._direct_props = cjs.map();
 
-	// Prototypes
-	if(options.direct_protos) { this._direct_protos = options.direct_protos; }
-	else { this._direct_protos = cjs.array(); }
-	
-	// Attachments
-	if(options.direct_attachments) { this._direct_attachments = options.direct_attachments; }
-	else { this._direct_attachments = cjs.array(); }
-	this._direct_attachment_instances = cjs.map().set_equality_check(check_context_equality);
-
 	this.type = "red_dict";
 	this.id = _.uniqueId();
 
-	this._default_context = cjs.$(options.default_context);
-
-	red._set_descriptor(this._direct_props._keys,   "Direct Prop Keys " + this.id);
-	red._set_descriptor(this._direct_props._values, "Direct Prop Vals " + this.id);
-	red._set_descriptor(this._direct_protos,	       "Direct protos " + this.id);
-	//if(cjs.is_constraint(this._direct_attachments)) { red._set_constraint_descriptor(this._direct_attachments,   "Direct Attachments " + this.id); }
-	red._set_descriptor(this._direct_attachment_instances._keys,   "Direct Attachment instance Keys " + this.id);
-	red._set_descriptor(this._direct_attachment_instances._values, "Direct Attachment instance Vals " + this.id);
-
-	red.install_instance_builtins(this, arguments.callee);
+	red.install_instance_builtins(this, options, arguments.callee);
 };
 
 (function(my) {
@@ -46,39 +28,34 @@ var RedDict = function(options) {
 	my.builtins = {
 		"direct_protos": {
 			default: function() { return cjs.array(); }
+			, getter_name: "direct_protos"
+			, setter_name: "_set_direct_protos"
+			, env_visible: true
 		}
 
 		, "default_context": {
-			default: function() { return cjs.array(); }
+			start_with: function() { return cjs.$(); }
 			, getter: function(me) { return me.get(); }
 			, setter: function(me, context) { me.set(context, true); }
 		}
 
 		, "direct_attachments": {
 			default: function() { return cjs.array(); }
+			, getter_name: "direct_attachments"
 		}
 
 		, "direct_attachment_instances": {
-			default: function() { return cjs.array(); }
+			default: function() { return cjs.map(); }
+			, getter_name: "direct_attachment_instances"
 		}
 	};
 
 	red.install_proto_builtins(proto, my.builtins);
-
-	//
-	// === DEFAULT CONTEXT ===
-	//
-
-	proto.get_default_context = function() { return this._default_context.get(); }
-	proto.set_default_context = function(context) { this._default_context.set(context, true); }
 	
 	//
 	// === DIRECT PROTOS ===
 	//
 
-	proto.direct_protos = function() {
-		return this._direct_protos;
-	};
 	proto._get_direct_protos = function(context) {
 		var protos = red.get_contextualizable(this.direct_protos(), context);
 		if(_.isArray(protos)) {
@@ -86,9 +63,6 @@ var RedDict = function(options) {
 		} else {
 			return [protos];
 		}
-	};
-	proto._set_direct_protos = function(direct_protos) {
-		this._direct_protos = direct_protos;
 	};
 
 	//
@@ -253,9 +227,6 @@ var RedDict = function(options) {
 	// === DIRECT ATTACHMENTS ===
 	//
 
-	proto.direct_attachments = function() {
-		return this._direct_attachments;
-	};
 	proto._get_direct_attachments = function(context) {
 		return red.get_contextualizable(this.direct_attachments(), context.push(this));
 	};
@@ -266,15 +237,16 @@ var RedDict = function(options) {
 	//
 
 	proto.add_direct_attachment_instance = function(attachment, context) {
+		var direct_attachment_instances = this.direct_attachment_instances();
 		var attachment_instances;
 
 		cjs.wait();
 
-		if(this._direct_attachment_instances.has(attachment)) {
-			attachment_instances = this._direct_attachment_instances.item(attachment);
+		if(direct_attachment_instances.has(attachment)) {
+			attachment_instances = direct_attachment_instances.item(attachment);
 		} else {
 			attachment_instances = cjs.map().set_equality_check(check_context_equality);
-			this._direct_attachment_instances.item(attachment, attachment_instances);
+			direct_attachment_instances.item(attachment, attachment_instances);
 		}
 		var attachment_instance = attachment.create_instance(context.last(), context);
 		attachment_instances.item(context, attachment_instance);
@@ -284,12 +256,13 @@ var RedDict = function(options) {
 		return attachment_instance;
 	};
 	proto.has_direct_attachment_instance = function(attachment, context) {
-		return !_.isUndefined(this.get_direct_attachment_instance);
+		return !_.isUndefined(this.get_direct_attachment_instance(attachment, context));
 	};
 	proto.get_direct_attachment_instance = function(attachment, context) {
+		var direct_attachment_instances = this.direct_attachment_instances();
 		var attachment_instances;
-		if(this._direct_attachment_instances.has(attachment)) {
-			attachment_instances = this._direct_attachment_instances.item(attachment);
+		if(direct_attachment_instances.has(attachment)) {
+			attachment_instances = direct_attachment_instances.item(attachment);
 		} else {
 			return undefined;
 		}
