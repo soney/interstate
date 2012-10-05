@@ -52,6 +52,11 @@ var RedContext = function(options) {
 	proto.is_empty = function() {
 		return _.isEmpty(this._stack);
 	};
+
+	proto.serialize = function() {
+	};
+	my.deserialize = function(obj) {
+	};
 }(RedContext));
 
 red.RedContext = RedContext;

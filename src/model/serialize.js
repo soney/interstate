@@ -27,6 +27,11 @@ red.deserialize = function(serialized_obj) {
 	if(serialized_obj == null || typeof serialized_obj !== "object") { return serialized_obj; }
 
 	var serialized_obj_type = serialized_obj.type;
+
+	if(serialized_obj_type === "map") {
+		return deserialize(serialized_obj);
+	}
+
 	for(var i = 0; i<red_types.length; i++) {
 		var type_info = red_types[i];
 		if(serialized_obj_type === type_info.name) {
@@ -55,6 +60,7 @@ var serialize_map = function(map) {
 };
 
 var deserialize_map = function(obj) {
+	return cjs.map(obj.keys, obj.values);
 };
 
 red.stringify = function(obj) {

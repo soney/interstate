@@ -14,7 +14,7 @@ var RedDict = function(options) {
 	options = options || {};
 
 	//Properties
-	this._direct_props = cjs.map();
+	this._direct_props = options.direct_props || cjs.map();
 
 	this.type = "red_dict";
 	this.id = _.uniqueId();
@@ -346,6 +346,29 @@ var RedDict = function(options) {
 		return undefined;
 	};
 
+	proto.serialize = function() {
+		var rv = {};
+
+		var self = this;
+		_.each(my.builtins, function(builtin, name) {
+			var getter_name = builtin.getter_name || "get_" + name;
+			rv[name] = red.serialize(self[getter_name]());
+		});
+
+		rv.direct_props = red.serialize(this._direct_props);
+
+		return rv;
+	};
+	my.deserialize = function(obj) {
+		var options = {
+			direct_props: red.deserialize(obj.direct_props);
+		};
+		_.each(obj.builtins, function(builtin, name) {
+			options[name] = red.deserialize(obj[name]);
+		});
+
+		return new RedDict(options);
+	};
 
 	//
 	// === BYE BYE ===
