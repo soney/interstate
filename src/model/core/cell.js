@@ -66,51 +66,23 @@ var eval_tree = function(node, context, ignore_inherited_in_contexts) {
 			context_item = curr_context.last();
 		}
 		return undefined;
-		/*
-
-		var got_context;
-		if(cjs.is_constraint(context)) {
-			if(context.type === "red_stateful_prop") {
-				got_context = context;
-			} else {
-				got_context = cjs.get(context);
-			}
-		} else {
-			got_context = cjs.get(context);
-		}
-
-		var prop;
-		while(got_context) {
-			if(got_context.get_prop) {
-				prop = got_context.get_prop(name);
-				if(prop) {
-					return cjs.get(prop);
-				}
-			}
-			if(restrict_context === true) {
-				break;
-			}
-			got_context = got_context.get_parent();
-		}
-		return undefined;
-		*/
 	} else if(type === "ThisExpression") {
-	/*
-		var got_context = cjs.get(context);
-
-		while(got_context) {
-			if(got_context instanceof RedDict) {
-				return got_context;
+		var curr_context = context;
+		var context_item = curr_context.last();
+		while(!curr_context.is_empty()) {
+			if(context_item instanceof red.RedDict) {
+				return context_item;
 			}
-			got_context = got_context.get_parent();
+			curr_context = curr_context.pop();
+			context_item = curr_context.last();
 		}
-		*/
 		return undefined;
 	} else if(type === "MemberExpression") {
 		var object = eval_tree(node.object, context, ignore_inherited_in_contexts);
 		var object_got = cjs.get(object);
 		//More cases here
-		variable_context = object_got;
+		variable_context = red.create("context", {stack: [object_got]});
+		if(!variable_context) { return undefined; }
 		var property = eval_tree(node.property, variable_context, ignore_inherited_in_contexts);
 		return property;
 	} else if(type === "Literal") {

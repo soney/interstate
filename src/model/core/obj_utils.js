@@ -30,16 +30,26 @@ red.install_proto_builtins = function(proto, builtins) {
 red.install_instance_builtins = function(obj, options, constructor) {
 	var builtins = constructor.builtins;
 
-	obj._builtins = {};
+	obj._builtins = obj._builtins || {};
 	_.each(builtins, function(builtin, name) {
 		var setter_name = builtin.setter_name || "set_" + name;
 		if(_.isFunction(builtin.start_with)) {
 			obj._builtins[name] = builtin.start_with();
 		}
-		if(options && _.has(options, name)) {
-			obj[setter_name](options[name]);
-		} else if(_.isFunction(builtin.default)) {
-			obj[setter_name](builtin.default());
+		if(builtin.settable === false) { 
+			if(!_.isFunction(builtin.start_with)) {
+				if(options && _.has(options, name)) {
+					obj._builtins[name] = options[name];
+				} else if(_.isFunction(builtin.default)) {
+					obj._builtins[name] = builtin.default();
+				}
+			}
+		} else {
+			if(options && _.has(options, name)) {
+				obj[setter_name](options[name]);
+			} else if(_.isFunction(builtin.default)) {
+				obj[setter_name](builtin.default());
+			}
 		}
 	});
 };

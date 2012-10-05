@@ -4,36 +4,34 @@ var cjs = red.cjs, _ = red._;
 var RedStatefulObj = function(options) {
 	RedStatefulObj.superclass.constructor.apply(this, arguments);
 	options = options || {};
-
-	this._direct_statechart = red.create("statechart", undefined, options.defer_statechart_invalidation);
-	this._contextual_statecharts = cjs	.map()
-										.set_equality_check(function(itema, itemb) {
-														if(itema instanceof red.RedContext && itemb instanceof red.RedContext) {
-															return itema.eq(itemb);
-														} else {
-															return itema === itemb;
-														}
-												});
-	red._set_descriptor(this._contextual_statecharts._keys, "Contextual statecharts " + this.id + " keys");
-	red._set_descriptor(this._contextual_statecharts._values, "Contextual statecharts " + this.id + " values");
-	
 	this.type = "red_stateful_obj";
+	red.install_instance_builtins(this, options, arguments.callee);
+	this.contextual_statecharts() .set_equality_check(red.check_context_equality);
 };
 (function(my) {
 	_.proto_extend(my, red.RedDict);
 	var proto = my.prototype;
 
-	//
-	// ===== DIRECT STATECHART =====
-	//
+	my.builtins = {
+		"direct_statechart": {
+			default: function() { return red.create("statechart"); }
+			, getter_name: "get_own_statechart"
+			, settable: false
+		}
 
-	proto.get_own_statechart = function() { return this._direct_statechart; };
+		, "contextual_statecharts": {
+			default: function() { return cjs.map(); }
+			, getter_name: "contextual_statecharts"
+			, settable: false
+		}
+	};
+	red.install_proto_builtins(proto, my.builtins);
 
 	//
 	// === STATECHART SHADOWS ===
 	//
 	proto.get_statechart_for_context = function(context) {
-		var sc = this._contextual_statecharts.item(context);
+		var sc = this.contextual_statecharts().item(context);
 		if(_.isUndefined(sc)) {
 			sc = this._create_statechart_for_context(context);
 		}
@@ -43,7 +41,7 @@ var RedStatefulObj = function(options) {
 		var own_statechart = this.get_own_statechart();
 		cjs.wait();
 		var shadow_statechart = own_statechart.create_shadow(context);//red._shadow_statechart(this.get_own_statechart(), context.last(), context);
-		this._contextual_statecharts.item(context, shadow_statechart);
+		this.contextual_statecharts().item(context, shadow_statechart);
 		shadow_statechart.run();
 		cjs.signal();
 		return shadow_statechart;

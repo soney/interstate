@@ -1,20 +1,8 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var check_context_equality = function(itema, itemb) {
-	if(itema instanceof red.RedContext && itemb instanceof red.RedContext) {
-		return itema.eq(itemb);
-	} else {
-		return itema === itemb;
-	}
-};
-
-
 var RedDict = function(options) {
 	options = options || {};
-
-	//Properties
-	this._direct_props = options.direct_props || cjs.map();
 
 	this.type = "red_dict";
 	this.id = _.uniqueId();
@@ -31,6 +19,7 @@ var RedDict = function(options) {
 			, getter_name: "direct_protos"
 			, setter_name: "_set_direct_protos"
 			, env_visible: true
+			, env_name: "protos"
 		}
 
 		, "default_context": {
@@ -47,6 +36,11 @@ var RedDict = function(options) {
 		, "direct_attachment_instances": {
 			default: function() { return cjs.map(); }
 			, getter_name: "direct_attachment_instances"
+		}
+
+		, "direct_props": {
+			default: function() { return cjs.map(); }
+			, getter_name: "direct_props"
 		}
 	};
 
@@ -87,32 +81,32 @@ var RedDict = function(options) {
 	//
 
 	proto.set = proto.set_prop = proto._set_direct_prop = function(name, value, index) {
-		this._direct_props.item(name, value, index);
+		this.direct_props().item(name, value, index);
 	};
 	proto.unset = proto.unset_prop = proto._unset_direct_prop = function(name) {
-		this._direct_props.remove(name);
+		this.direct_props().remove(name);
 	};
 	proto._get_direct_prop = function(name) {
-		return this._direct_props.item(name);
+		return this.direct_props().item(name);
 	};
 	proto._has_direct_prop = function(name) {
-		return this._direct_props.has(name);
+		return this.direct_props().has(name);
 	};
 	proto.move = proto.move_prop = proto._move_direct_prop = function(name, to_index) {
-		this._direct_props.move(name, to_index);
+		this.direct_props().move(name, to_index);
 	};
 	proto.index = proto.prop_index = proto._direct_prop_index = function(name) {
-		return this._direct_props.keyIndex(name);
+		return this.direct_props().keyIndex(name);
 	};
 	proto.rename = proto._rename_direct_prop = function(from_name, to_name) {
 		if(this._has_direct_prop(to_name)) {
 			throw new Error("Already a property with name " + to_name);
 		} else {
-			this._direct_props.rename(from_name, to_name);
+			this.direct_props().rename(from_name, to_name);
 		}
 	};
 	proto._get_direct_prop_names = function() {
-		return this._direct_props.keys();
+		return this.direct_props().keys();
 	};
 
 	//
@@ -209,7 +203,7 @@ var RedDict = function(options) {
 		}
 	};
 	proto.name_for_prop = function(value, context) {
-		var rv = this._direct_props.keyForValue(value);
+		var rv = this.direct_props().keyForValue(value);
 		if(_.isUndefined(rv) && context) {
 			var protos = this.get_protos(context);
 			for(var i = 0; i<protos.length; i++) {
@@ -245,7 +239,7 @@ var RedDict = function(options) {
 		if(direct_attachment_instances.has(attachment)) {
 			attachment_instances = direct_attachment_instances.item(attachment);
 		} else {
-			attachment_instances = cjs.map().set_equality_check(check_context_equality);
+			attachment_instances = cjs.map().set_equality_check(red.check_context_equality);
 			direct_attachment_instances.item(attachment, attachment_instances);
 		}
 		var attachment_instance = attachment.create_instance(context.last(), context);
@@ -355,13 +349,13 @@ var RedDict = function(options) {
 			rv[name] = red.serialize(self[getter_name]());
 		});
 
-		rv.direct_props = red.serialize(this._direct_props);
+		rv.direct_props = red.serialize(this.direct_props());
 
 		return rv;
 	};
 	my.deserialize = function(obj) {
 		var options = {
-			direct_props: red.deserialize(obj.direct_props);
+			direct_props: red.deserialize(obj.direct_props)
 		};
 		_.each(obj.builtins, function(builtin, name) {
 			options[name] = red.deserialize(obj[name]);

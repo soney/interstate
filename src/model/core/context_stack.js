@@ -76,4 +76,12 @@ red.get_contextualizable = function(obj, context) {
 	return cjs.get(obj);
 };
 
+red.check_context_equality = function(itema, itemb) {
+	if(itema instanceof red.RedContext && itemb instanceof red.RedContext) {
+		return itema.eq(itemb);
+	} else {
+		return itema === itemb;
+	}
+};
+
 }(red));

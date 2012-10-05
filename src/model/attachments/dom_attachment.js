@@ -3,7 +3,6 @@ var cjs = red.cjs, _ = red._;
 
 // Red name: CSS name
 var changeable_css_props = {
-	/*
 	"width": "width"
 	, "height": "height"
 	, "backgroundColor": "backgroundColor"
@@ -11,15 +10,12 @@ var changeable_css_props = {
 	, "left": "left"
 	, "top": "top"
 	, "position": "position"
-	*/
 };
 
 var changeable_attributes = {
-/*
 	"src": "src"
 	, "class": "class"
 	, "id": "id"
-	*/
 };
 
 var RedDomAttachmentInstance = function(options) {
@@ -82,8 +78,8 @@ var RedDomAttachmentInstance = function(options) {
 		return cjs.liven(function() {
 			var tag = parent.prop_val("tag", context);
 			if(tag !== old_tag) {
-				var dom_obj = document.createElement(tag);
 				if(_.isString(tag)) {
+					var dom_obj = document.createElement(tag);
 					self._dom_obj.set(dom_obj);
 				} else {
 					self._dom_obj.set(undefined);

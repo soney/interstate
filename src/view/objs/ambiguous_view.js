@@ -54,6 +54,7 @@ $.widget("red.ambiguous", {
 				dict: value
 				, context: context.push(value)
 				, indent: this.option("indent")
+				, property_types: ["Stateful Property", "Cell", "Group", "Dictionary", "Stateful Object"]
 			});
 		} else if(value instanceof red.RedDict) {
 			var sub_entries = this.option("sub_entries");

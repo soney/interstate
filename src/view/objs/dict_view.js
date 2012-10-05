@@ -31,7 +31,7 @@ $.widget("red.dict", {
 	options: {
 		dict: undefined
 		, context: undefined
-		, property_types: ["Cell", "Group", "Dictionary", "Stateful Object", "Stateful Property"]
+		, property_types: ["Stateful Object", "Stateful Property", "Cell", "Group", "Dictionary"]
 		, property_factories: {
 			"Cell": function() {
 				return red.create("cell", {str: ""});
@@ -170,7 +170,7 @@ $.widget("red.dict", {
 
 		var self = this;
 		link.on("click", _.bind(function() {
-			var prop = factory.apply(self);
+			var prop = factory.call(self);
 			var event = $.Event("red_command");
 			event.command = self._get_add_prop_command(prop);
 			self.element.trigger(event);
@@ -292,7 +292,7 @@ $.widget("red.dict", {
 		this._add_prop_button = $("<button />")	.addClass("btn")
 												.html("Add property")
 												.on("click.add_prop", function() {
-													var value = default_factory();
+													var value = default_factory.call(self);
 													var event = $.Event("red_command");
 													event.command = self._get_add_prop_command(value);
 													self.element.trigger(event);
