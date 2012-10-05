@@ -37,6 +37,26 @@ red.deserialize = function(serialized_obj) {
 	return serialized_obj;
 };
 
+var serialize_map = function(map) {
+	var keys = map.keys();
+	var values = map.values();
+	var serialized_keys = _.map(map.keys(), function(x) {
+		return red.serialize(x);
+	});
+	var serialized_values = _.map(map.values(), function(x) {
+		return red.serialize(x);
+	});
+
+	return ({
+		type: "map"
+		, keys: serialized_keys
+		, values: serialized_values
+	});
+};
+
+var deserialize_map = function(obj) {
+};
+
 red.stringify = function(obj) {
 	return JSON.stringify(red.serialize(obj));
 };
