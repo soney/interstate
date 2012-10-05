@@ -59,7 +59,11 @@ var StatechartTransition = function(from_state, to_state, event) {
 	};
 
 	proto.serialize = function() {
-		return {};
+		return {
+			from: this.from().serialize()
+			, to: this.to().serialize()
+			, event: this.event().serialize()
+		};
 	};
 	my.deserialize = function(obj) {
 		return new StatechartTransition();
@@ -584,7 +588,17 @@ var Statechart = function(options) {
 		return rv;
 	};
 	proto.serialize = function() {
-		return {};
+	this.$substates = options.substates || cjs.map();
+	this.$local_state = cjs();
+	this.$concurrent = cjs(false);
+	this.$init_state = options.init_state || cjs(undefined);
+		return {
+			substates: this.$substates.serialize()
+			, concurrent: this.is_concurrent()
+			, init_state: this.$init_state.get()
+			, outgoing_transitions: this.$outgoing_transitions.get()
+			, incoming_transitions: this.$incoming_transitions.get()
+		};
 	};
 	my.deserialize = function(obj) {
 		return new Statechart();

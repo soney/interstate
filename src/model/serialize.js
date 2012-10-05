@@ -29,7 +29,7 @@ var get_or_create_serialized_obj_id = function(obj) {
 	if(obj_id < 0) {
 		obj_id = serialized_objs.length;
 		serialized_objs.push(obj);
-		serialized_obj_values.push(_.extend({ type: type_info.name }, obj.serialize()));
+		serialized_obj_values.push(do_serialize(obj));
 	}
 	return obj_id;
 };
@@ -41,7 +41,7 @@ var create_or_get_serialized_obj = function(obj) {
 	};
 };
 
-red.serialize = function(red_obj) {
+red.serialize = function(obj) {
 	var is_init_serial_call = false;
 	if(!serializing) {
 		serializing = true;
@@ -50,23 +50,58 @@ red.serialize = function(red_obj) {
 		serialized_obj_values = [];
 	}
 
-	if(red_obj == null || typeof red_obj !== "object") { return red_obj; }
+	if(obj == null || typeof obj !== "object") {
+		return obj;
+	} else if(is_init_serial_call) {
+		var serialized_obj = create_or_get_serialized_obj(obj);
+		serializing = false;
+		return {
+			serialized_objs: serialized_obj_values
+			, root: serialized_obj
+		};
+	} else {
+		return create_or_get_serialized_obj(obj);
+	}
 
-	if(cjs.is_map(red_obj)) { return serialize_map(red_obj); }
-	else if(cjs.is_array(red_obj)) { return serialize_array(red_obj); }
+};
+
+var serialize_array = function(arr) {
+	var serialized_values = _.map(arr.get(), function(x) {
+		return x.get();
+	});
+
+	return ({
+		type: "array"
+		, values: serialized_values
+	});
+};
+
+var serialize_map = function(map) {
+	var serialized_keys = _.map(map.keys(), function(x) {
+		return red.serialize(x);
+	});
+	var serialized_values = _.map(map.values(), function(x) {
+		return red.serialize(x);
+	});
+
+	return ({
+		type: "map"
+		, keys: serialized_keys
+		, values: serialized_values
+	});
+};
+
+
+var do_serialize = function(obj) {
+	if(cjs.is_map(obj)) { return serialize_map(obj); }
+	else if(cjs.is_array(obj)) { return serialize_array(obj); }
 
 	for(var i = 0; i<red_types.length; i++) {
 		var type_info = red_types[i];
 		var type = type_info.type;
-		if(red_obj instanceof type_info.type) {
-			return create_or_get_serialized_obj(red_obj);
+		if(obj instanceof type_info.type) {
+			return _.extend({ type: type_info.name }, obj.serialize());
 		}
-	}
-
-	if(is_init_serial_call) {
-		serializing = false;
-	} else {
-		return red_obj;
 	}
 };
 
@@ -88,34 +123,9 @@ red.deserialize = function(serialized_obj) {
 	return serialized_obj;
 };
 
-var serialize_map = function(map) {
-	var serialized_keys = _.map(map.keys(), function(x) {
-		return red.serialize(x);
-	});
-	var serialized_values = _.map(map.values(), function(x) {
-		return red.serialize(x);
-	});
-
-	return ({
-		type: "map"
-		, keys: serialized_keys
-		, values: serialized_values
-	});
-};
 
 var deserialize_map = function(obj) {
 	return cjs.map(obj.keys, obj.values);
-};
-
-var serialize_array = function(arr) {
-	var serialized_values = _.map(arr.get(), function(x) {
-		return x.get();
-	});
-
-	return ({
-		type: "array"
-		, values: serialized_values
-	});
 };
 
 var deserialize_arary = function(obj) {

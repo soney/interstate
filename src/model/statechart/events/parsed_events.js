@@ -136,5 +136,11 @@ var id  = 0;
 	proto.destroy = function() {
 		this._live_event_creator.destroy();
 	};
+	proto.serialize = function(obj) {
+		return { str: this.get_str() };
+	};
+	proto.deserialize = function(obj) {
+		return red.create_event("parsed", obj.str);
+	};
 }(red._create_event_type("parsed").prototype));
 }(red));
