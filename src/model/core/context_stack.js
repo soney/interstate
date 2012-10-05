@@ -54,8 +54,13 @@ var RedContext = function(options) {
 	};
 
 	proto.serialize = function() {
+		return {
+			stack: this._stack;
+		};
 	};
+		
 	my.deserialize = function(obj) {
+		return new RedContext({stack: obj.stack});
 	};
 }(RedContext));
 

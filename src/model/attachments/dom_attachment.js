@@ -126,12 +126,18 @@ var RedDomAttachment = function(options) {
 (function(my) {
 	_.proto_extend(my, red.RedAttachment);
 	var proto = my.prototype;
+
+	proto.serialize = function() {
+		return {};
+	};
+	my.deserialize = function(obj) {
+		return new RedDomAttachment();
+	};
 }(RedDomAttachment));
 
 red.RedDomAttachmentInstance = RedDomAttachmentInstance;
 red.RedDomAttachment = RedDomAttachment;
 red.define("dom_attachment", function(options) {
-	var attachment = new RedDomAttachment(options);
-	return attachment;
+	return new RedDomAttachment(options);
 });
 }(red));

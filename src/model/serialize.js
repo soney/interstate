@@ -2,11 +2,15 @@
 var cjs = red.cjs, _ = red._;
 
 var red_types = [
-	{name: "cell", type: red.RedCell}
-	, {name: "stateful_obj", type: red.RedStatefulObj}
-	, {name: "dict", type: red.RedDict}
-	, {name: "stateful_prop", type: red.RedStatefulProp}
-	, {name: "group", type: red.RedGroup}
+	  {name: "cell", type: red.RedCell }
+	, {name: "stateful_obj", type: red.RedStatefulObj }
+	, {name: "dict", type: red.RedDict }
+	, {name: "stateful_prop", type: red.RedStatefulProp }
+	, {name: "group", type: red.RedGroup }
+	, {name: "red_dom_attachment", type: red.RedDomAttachment }
+	, {name: "red_context", type: red.RedContext }
+	, {name: "statechart_transition", type: red.StatechartTransition }
+	, {name: "statechart", type: red.Statechart }
 ];
 
 var serializing = false;

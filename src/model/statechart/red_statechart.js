@@ -57,7 +57,15 @@ var StatechartTransition = function(from_state, to_state, event) {
 		var parent = from.parent() || from;
 		parent.remove_transition(this);
 	};
+
+	proto.serialize = function() {
+		return {};
+	};
+	my.deserialize = function(obj) {
+		return new StatechartTransition();
+	};
 }(StatechartTransition));
+red.StatechartTransition = StatechartTransition;
 
 var Statechart = function(options) {
 	options = _.extend({}, options);
@@ -575,7 +583,14 @@ var Statechart = function(options) {
 		});
 		return rv;
 	};
+	proto.serialize = function() {
+		return {};
+	};
+	my.deserialize = function(obj) {
+		return new Statechart();
+	};
 }(Statechart));
+red.Statechart = Statechart;
 
 red.define("statechart", function(options) {
 	return new Statechart(options);

@@ -173,6 +173,13 @@ var RedStatefulProp = function(options) {
 		}
 		return undefined;
 	};
+
+	proto.serialize = function() {
+		return {};
+	};
+	my.deserialize = function(obj) {
+		return new RedStatefulProp();
+	};
 }(RedStatefulProp));
 
 red.RedStatefulProp = RedStatefulProp;
