@@ -19,18 +19,16 @@
 				$(function() {
 					var cjs = red.cjs, _ = red._;
 					window.cjs = cjs;
-					/*
 					red.__debug = false;
-					d = red.create("dict");
-					d.set("a", 1);
-					d.set("b", "hello");
-
-					d2 = red.destringify(red.stringify(d));
-					/*
-					*/
 
 					var env = red.create("environment");
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
+					var stringify_button = $("<a />")	.attr("href", "javascript:void(0)")
+														.text("stringify")
+														.click(function() {
+																console.log(red.stringify(root));
+														})
+														.appendTo(document.body);
 					window.env = env;
 					window.root = env.get_pointer();
 					console.log(env.print());
