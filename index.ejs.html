@@ -19,6 +19,7 @@
 				$(function() {
 					var cjs = red.cjs, _ = red._;
 					window.cjs = cjs;
+					/*
 					red.__debug = false;
 					d = red.create("dict");
 					d.set("a", 1);
@@ -26,6 +27,7 @@
 
 					d2 = red.destringify(red.stringify(d));
 					/*
+					*/
 
 					var env = red.create("environment");
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
