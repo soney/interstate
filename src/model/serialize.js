@@ -52,8 +52,10 @@ red.serialize = function(obj) {
 		serialized_obj_values = [];
 	}
 
-	if(obj == null || typeof obj !== "object" || _.isArray(obj)) {
+	if(obj == null || typeof obj !== "object") {
 		return obj;
+	} else if(_.isArray(obj)) {
+		return _.map(obj, red.serialize);
 	} else if(is_init_serial_call) {
 		var serialized_obj = create_or_get_serialized_obj(obj);
 		serializing = false;
@@ -101,7 +103,7 @@ var do_serialize = function(obj) {
 	for(var i = 0; i<serialization_funcs.length; i++) {
 		var type_info = serialization_funcs[i];
 		var type = type_info.type;
-		if(obj instanceof type_info.type) {
+		if(obj instanceof type) {
 			return _.extend({ type: type_info.name }, obj.serialize());
 		}
 	}
@@ -117,27 +119,26 @@ var deserialized_objs;
 var deserialized_obj_vals;
 var deserializing = false;
 red.deserialize = function(serialized_obj) {
-	var is_init_serial_call = false;
 	if(deserializing === false) {
-		is_init_serial_call = true;
 		deserializing = true;
 		deserialized_objs = serialized_obj.serialized_objs;
 		deserialized_obj_vals = [];
-		return red.deserialize(serialized_obj.root);
+
+		var rv = red.deserialize(serialized_obj.root);
+
+		delete deserialized_obj_vals;
+		delete deserialized_objs;
+		deserializing = false;
+
+		return rv;
 	}
 	
-	if(serialized_obj == null || typeof serialized_obj !== "object" || _.isArray(serialized_obj)) { return serialized_obj; }
-
-	var obj = get_deserialized_obj(serialized_obj);
-
-
-	if(is_init_serial_call) {
-		deserializing = false;
-		delete deserialized_objs;
-		delete deserialized_obj_vals;
+	if(serialized_obj == null || typeof serialized_obj !== "object") { return serialized_obj; }
+	else if(_.isArray(serialized_obj)) {
+		return _.map(serialized_obj, red.deserialize);
+	} else {
+		return get_deserialized_obj(serialized_obj);
 	}
-
-	return obj;
 };
 
 var do_deserialize = function(serialized_obj) {
@@ -166,16 +167,18 @@ var get_deserialized_obj = function(serialized_obj) {
 			}
 		}
 		return val;
+	} else {
+		return do_deserialize(serialized_obj);
 	}
 };
 
 
 var deserialize_map = function(obj) {
-	return cjs.map(obj.keys, obj.values);
+	return cjs.map(_.map(obj.keys, red.deserialize), _.map(obj.values, red.deserialize));
 };
 
 var deserialize_array = function(obj) {
-	return cjs.array(obj.values);
+	return cjs.array(_.map(obj.values, red.deserialize));
 };
 
 red.destringify = function(str) {

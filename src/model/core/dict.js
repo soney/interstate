@@ -7,7 +7,7 @@ var RedDict = function(options, defer_initialization) {
 	this.type = "red_dict";
 	this.id = _.uniqueId();
 	if(defer_initialization === true) {
-		this.initialize = _.bind(this.do_initialize, this, options);
+		//this.initialize = _.bind(this.do_initialize, this, options);
 	} else {
 		this.do_initialize(options);
 	}
@@ -17,7 +17,6 @@ var RedDict = function(options, defer_initialization) {
 	var proto = my.prototype;
 
 	proto.do_initialize = function(options) {
-		console.log(options);
 		red.install_instance_builtins(this, options, my);
 	};
 
@@ -365,17 +364,23 @@ var RedDict = function(options, defer_initialization) {
 		return rv;
 	};
 	my.deserialize = function(obj) {
-		var options = {};
+		var serialized_options = {};
 		_.each(my.builtins, function(builtin, name) {
 			if(builtin.serialize !== false) {
-				options[name] = obj[name];
+				serialized_options[name] = obj[name];
 			}
 		});
-		_.each(obj.builtins, function(builtin, name) {
-			options[name] = red.deserialize(obj[name]);
-		});
 
-		return new RedDict(options, true);
+		var rv = new RedDict(undefined, true);
+		rv.initialize = function() {
+			var options = {};
+			_.each(serialized_options, function(serialized_option, name) {
+				options[name] = red.deserialize(serialized_option);
+			});
+			this.do_initialize(options);
+		};
+
+		return rv;
 	};
 
 	//

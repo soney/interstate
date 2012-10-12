@@ -16,14 +16,18 @@
 			<script type="text/javascript" src="src/_vendor/bootstrap/js/bootstrap.js"></script>
 
 			<script type="text/javascript">
+				var root, env, cjs, _;
 				$(function() {
-					var cjs = red.cjs, _ = red._;
-					window.cjs = cjs;
+					cjs = red.cjs;
+					_ = red._;
+
 					red.__debug = false;
 
-					var env = red.create("environment");
-					window.env = env;
-					window.root = env.get_pointer();
+					env = red.create("environment");
+					root = env.get_pointer();
+
+					env.set("x", "stateful");
+
 
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					var stringify_button = $("<a />")	.attr("href", "javascript:void(0)")
@@ -33,11 +37,15 @@
 																root_view.environment("destroy");
 																root.destroy();
 
-																root = red.destringify(stringified_root);
-																console.log(root);
-																env = red.create("environment", {root: root});
+																root_view.text("Refreshing");
 
-																root_view.environment({controller: env});
+																window.setTimeout(function() {
+																		root_view.html("");
+																		root = red.destringify(stringified_root);
+																		env = red.create("environment", {root: root});
+
+																		root_view.environment({controller: env});
+																}, 100);
 														})
 														.appendTo(document.body)
 														.click();

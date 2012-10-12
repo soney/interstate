@@ -58,7 +58,7 @@ var RedContext = function(options) {
 	};
 		
 	my.deserialize = function(obj) {
-		return new RedContext({stack: obj.stack});
+		return new RedContext({stack: _.map(obj.stack, red.deserialize)});
 	};
 }(RedContext));
 
