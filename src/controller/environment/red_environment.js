@@ -96,6 +96,7 @@ var Env = function(options) {
 
 	if(options && _.has(options, "root")) {
 		this._root = options.root;
+		this._root_context = this._root.get_default_context();
 	} else {
 		this._root = red.create("dict", {direct_attachments: [red.create("dom_attachment", {
 			instance_options: {

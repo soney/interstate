@@ -174,7 +174,7 @@ var deserialize_map = function(obj) {
 	return cjs.map(obj.keys, obj.values);
 };
 
-var deserialize_arary = function(obj) {
+var deserialize_array = function(obj) {
 	return cjs.array(obj.values);
 };
 
