@@ -54,7 +54,7 @@ var RedContext = function(options) {
 	};
 
 	proto.serialize = function() {
-		return { stack: this._stack };
+		return { stack: _.map(this._stack, red.serialize) };
 	};
 		
 	my.deserialize = function(obj) {

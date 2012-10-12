@@ -204,7 +204,9 @@ $.widget("red.dict", {
 								.end()
 								.remove();
 		this._inherited_child_props.remove();
-		this._protos_view.dict_entry("destroy");
+		if(this._protos_view) {
+			this._protos_view.dict_entry("destroy");
+		}
 		this._builtin_child_props.remove();
 	}
 

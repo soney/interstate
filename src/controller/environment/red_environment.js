@@ -90,22 +90,26 @@ var pointer_factory = function(initial_pointer) {
 	};
 };
 
-var Env = function(dom_container_parent) {
-	this._root = red.create("dict", {direct_attachments: [red.create("dom_attachment", {
-		instance_options: {
-			tag: "div"
-		}
-	})]});
-	this._root_context = red.create("context", {stack: [this._root]});
-	this._root.set_default_context(this._root_context);
-
+var Env = function(options) {
 	// Undo stack
 	this._command_stack = red.create("command_stack");
 
+	if(options && _.has(options, "root")) {
+		this._root = options.root;
+	} else {
+		this._root = red.create("dict", {direct_attachments: [red.create("dom_attachment", {
+			instance_options: {
+				tag: "div"
+			}
+		})]});
+		this._root_context = red.create("context", {stack: [this._root]});
+		this._root.set_default_context(this._root_context);
+
+		//this.initialize_props();
+	}
+
 	//Context tracking
 	this._pointer = pointer_factory(this._root);
-
-	this.initialize_props();
 };
 
 (function(my) {
@@ -738,8 +742,8 @@ var Env = function(dom_container_parent) {
 	};
 }(Env));
 
-red.define("environment", function(dom_container_parent) {
-	var env = new Env(dom_container_parent);
+red.define("environment", function(options) {
+	var env = new Env(options);
 	return env;
 });
 }(red));

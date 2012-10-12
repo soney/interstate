@@ -22,18 +22,24 @@
 					red.__debug = false;
 
 					var env = red.create("environment");
+					window.env = env;
+					window.root = env.get_pointer();
+
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					var stringify_button = $("<a />")	.attr("href", "javascript:void(0)")
 														.text("stringify")
-														.click(function() {
-																console.log(red.stringify(root));
-														})
-														.appendTo(document.body);
-					window.env = env;
-					window.root = env.get_pointer();
-					console.log(env.print());
+														.on("click", function() {
+																var stringified_root = red.stringify(root);
+																root_view.environment("destroy");
+																root.destroy();
 
-					/**/
+																root = red.destringify(stringified_root);
+																env = red.create("environment", {root: root});
+
+																root_view.environment({controller: env});
+														})
+														.appendTo(document.body)
+														.click();
 				});
 			</script>
 	  </div>

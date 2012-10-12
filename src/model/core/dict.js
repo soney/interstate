@@ -1,17 +1,24 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var RedDict = function(options) {
+var RedDict = function(options, defer_initialization) {
 	options = options || {};
 
 	this.type = "red_dict";
 	this.id = _.uniqueId();
-
-	red.install_instance_builtins(this, options, arguments.callee);
+	if(defer_initialization === true) {
+		this.initialize = _.bind(this.do_initialize, this);
+	} else {
+		this.do_initialize(options);
+	}
 };
 
 (function(my) {
 	var proto = my.prototype;
+
+	proto.do_initialize = function(options) {
+		red.install_instance_builtins(this, options, my);
+	};
 
 	my.builtins = {
 		"direct_protos": {
@@ -36,6 +43,7 @@ var RedDict = function(options) {
 		, "direct_attachment_instances": {
 			default: function() { return cjs.map(); }
 			, getter_name: "direct_attachment_instances"
+			, serialize: false
 		}
 
 		, "direct_props": {
@@ -345,8 +353,10 @@ var RedDict = function(options) {
 
 		var self = this;
 		_.each(my.builtins, function(builtin, name) {
-			var getter_name = builtin.getter_name || "get_" + name;
-			rv[name] = red.serialize(self[getter_name]());
+			if(builtin.serialize !== false) {
+				var getter_name = builtin.getter_name || "get_" + name;
+				rv[name] = red.serialize(self[getter_name]());
+			}
 		});
 
 		rv.direct_props = red.serialize(this.direct_props());
@@ -361,7 +371,7 @@ var RedDict = function(options) {
 			options[name] = red.deserialize(obj[name]);
 		});
 
-		return new RedDict(options);
+		return new RedDict(options, true);
 	};
 
 	//
