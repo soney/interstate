@@ -158,13 +158,14 @@ var get_deserialized_obj = function(serialized_obj) {
 	if(serialized_obj.type === "pointer") {
 		var id = serialized_obj.id;
 		var val = deserialized_obj_vals[id];
-		if(deserialized_obj_vals[id] === undefined) {
+		if(val === undefined) {
 			val = deserialized_obj_vals[id] = do_deserialize(deserialized_objs[id]);
 			if(val.initialize) {
 				val.initialize();
 				delete val.initialize;
 			}
 		}
+		return val;
 	}
 };
 
