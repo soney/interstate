@@ -71,25 +71,36 @@ var StatechartTransition = function(from_state, to_state, event) {
 }(StatechartTransition));
 red.StatechartTransition = StatechartTransition;
 
-var Statechart = function(options) {
+var Statechart = function(options, defer_initialization) {
 	options = _.extend({}, options);
 
 	this.id = _.uniqueId();
-	this.$substates = options.substates || cjs.map();
-	this.$local_state = cjs();
-	this.$concurrent = cjs(false);
-	this.$init_state = options.init_state || cjs(undefined);
-	this._running = false;
-	this._parent = options.parent;
-	red._set_descriptor(this.$substates._keys, "substates keys " + this.id);
-	red._set_descriptor(this.$substates._values, "substates values " + this.id);
-	this.$incoming_transitions = cjs.array();
-	red._set_descriptor(this.$incoming_transitions.$value, "incoming transitions " + this.id);
-	this.$outgoing_transitions = cjs.array();
-	red._set_descriptor(this.$outgoing_transitions.$value, "outgoing transitions " + this.id);
+
+	if(defer_initialization === true) {
+		//this.initialize = _.bind(this.do_initialize, this, options);
+	} else {
+		this.do_initialize(options);
+	}
 };
 (function(my) {
 	var proto = my.prototype;
+
+	proto.do_initialize = function(options) {
+		this.$substates = options.substates || cjs.map();
+		this.$local_state = cjs();
+		this.$concurrent = cjs(false);
+		if(cjs.is_constraint(options.init_state)) { this.$init_state = options.init_state; }
+		else { this.$init_state = cjs(options.init_state); }
+		this._running = false;
+		this._parent = options.parent;
+		red._set_descriptor(this.$substates._keys, "substates keys " + this.id);
+		red._set_descriptor(this.$substates._values, "substates values " + this.id);
+		this.$incoming_transitions = cjs.array();
+		red._set_descriptor(this.$incoming_transitions.$value, "incoming transitions " + this.id);
+		this.$outgoing_transitions = cjs.array();
+		red._set_descriptor(this.$outgoing_transitions.$value, "outgoing transitions " + this.id);
+	};
+
 	proto.set_basis = function(basis) { this._basis = basis; };
 	proto.basis = function() { return this._basis; };
 	proto.parent = function() { return this._parent; };
@@ -591,13 +602,27 @@ var Statechart = function(options) {
 		return {
 			substates: red.serialize(this.$substates)
 			, concurrent: this.is_concurrent()
-			, init_state: this.$init_state.get()
+			, init_state: red.serialize(this.$init_state.get())
 			, outgoing_transitions: red.serialize(this.$outgoing_transitions.get())
 			, incoming_transitions: red.serialize(this.$incoming_transitions.get())
+			, parent: red.serialize(this._parent)
 		};
 	};
 	my.deserialize = function(obj) {
-		return new Statechart();
+		var rv = new Statechart(undefined, true);
+		rv.initialize = function() {
+			var options = {
+				substates: red.deserialize(obj.substates)
+				, concurrent: obj.concurrent
+				, init_state: red.deserialize(obj.init_state)
+				, outgoing_transitions: red.deserialize(obj.outgoing_transitions)
+				, incoming_transitions: red.deserialize(obj.incoming_transitions)
+				, parent: red.deserialize(obj.parent)
+			};
+			this.do_initialize(options);
+		};
+
+		return rv;
 	};
 }(Statechart));
 red.Statechart = Statechart;

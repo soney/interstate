@@ -1,16 +1,27 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var RedStatefulObj = function(options) {
-	RedStatefulObj.superclass.constructor.apply(this, arguments);
+var RedStatefulObj = function(options, defer_initialization) {
 	options = options || {};
+	RedStatefulObj.superclass.constructor.apply(this, arguments);
+
 	this.type = "red_stateful_obj";
-	red.install_instance_builtins(this, options, arguments.callee);
-	this.contextual_statecharts() .set_equality_check(red.check_context_equality);
+
+	if(defer_initialization === true) {
+		//this.initialize = _.bind(this.do_initialize, this, options);
+	} else {
+		this.do_initialize(options);
+	}
 };
 (function(my) {
 	_.proto_extend(my, red.RedDict);
 	var proto = my.prototype;
+
+	proto.do_initialize = function(options) {
+		my.superclass.do_initialize.apply(this, arguments);
+		red.install_instance_builtins(this, options, my);
+		this.contextual_statecharts() .set_equality_check(red.check_context_equality);
+	};
 
 	my.builtins = {
 		"direct_statechart": {
@@ -23,6 +34,7 @@ var RedStatefulObj = function(options) {
 			default: function() { return cjs.map(); }
 			, getter_name: "contextual_statecharts"
 			, settable: false
+			, serialize: false
 		}
 	};
 	red.install_proto_builtins(proto, my.builtins);
@@ -110,24 +122,36 @@ var RedStatefulObj = function(options) {
 		var rv = {};
 
 		var self = this;
-		_.each(my.builtins, function(builtin, name) {
-			var getter_name = builtin.getter_name || "get_" + name;
-			rv[name] = red.serialize(self[getter_name]());
+		var builtins = _.extend({}, my.builtins, my.prototype.builtins);
+		_.each(builtins, function(builtin, name) {
+			if(builtin.serialize !== false) {
+				var getter_name = builtin.getter_name || "get_" + name;
+				rv[name] = red.serialize(self[getter_name]());
+			}
 		});
-
-		rv.direct_props = red.serialize(this.direct_props());
 
 		return rv;
 	};
 	my.deserialize = function(obj) {
-		var options = {
-			direct_props: red.deserialize(obj.direct_props)
-		};
-		_.each(obj.builtins, function(builtin, name) {
-			options[name] = red.deserialize(obj[name]);
+		var builtins = _.extend({}, my.builtins, my.prototype.builtins);
+
+		var serialized_options = {};
+		_.each(builtins, function(builtin, name) {
+			if(builtin.serialize !== false) {
+				serialized_options[name] = obj[name];
+			}
 		});
 
-		return new RedDict(options);
+		var rv = new RedStatefulObj(undefined, true);
+		rv.initialize = function() {
+			var options = {};
+			_.each(serialized_options, function(serialized_option, name) {
+				options[name] = red.deserialize(serialized_option);
+			});
+			this.do_initialize(options);
+		};
+
+		return rv;
 	};
 }(RedStatefulObj));
 

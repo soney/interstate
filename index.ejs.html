@@ -28,6 +28,7 @@
 
 					env.set("x", "stateful");
 
+					console.log(env.print());
 
 					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					var stringify_button = $("<a />")	.attr("href", "javascript:void(0)")

@@ -175,9 +175,11 @@ var RedStatefulProp = function(options) {
 	};
 
 	proto.serialize = function() {
+		console.log("Serialize");
 		return {};
 	};
 	my.deserialize = function(obj) {
+		console.log("Deerialize");
 		return new RedStatefulProp();
 	};
 }(RedStatefulProp));
