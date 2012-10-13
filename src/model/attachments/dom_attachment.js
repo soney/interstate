@@ -128,10 +128,10 @@ var RedDomAttachment = function(options) {
 	var proto = my.prototype;
 
 	proto.serialize = function() {
-		return {};
+		return {instance_options: red.serialize(this.instance_options)};
 	};
 	my.deserialize = function(obj) {
-		return new RedDomAttachment();
+		return new RedDomAttachment({instance_options: red.deserialize(obj.instance_options)});
 	};
 }(RedDomAttachment));
 

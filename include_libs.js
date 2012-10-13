@@ -53,7 +53,6 @@ exports.main_src = c(
 				, "model/core/group.js"
 				, "model/core/stateful_obj.js"
 				, "model/core/stateful_prop.js"
-				, "model/core/event_mutatable.js"
 				, "model/attachments/attachment_core.js"
 				, "model/attachments/dom_attachment.js"
 				, "model/serialize.js"

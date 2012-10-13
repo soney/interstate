@@ -23,47 +23,50 @@
 
 					red.__debug = false;
 
-					var use_local_storage = true;
-					if(use_local_storage && localStorage.stringified_root) {
-						root = red.destringify(localStorage.stringified_root);
-						env = red.create("environment", {root: root});
-					} else {
-						env = red.create("environment");
-						root = env.get_pointer();
-					}
+					env = red.create("environment");
+					root = env.get_pointer();
 					root_view = $("<div />").environment({controller: env}).appendTo(document.body);
-					console.log(env.print());
 
-					$(window).on("unload", function() {
-							try {
-								var stringified_root = red.stringify(root);
-								localStorage.stringified_root = stringified_root;
-							} catch(e) {
-								console.log("ERROR");
-							}
-					});
-					/*
-					var stringify_button = $("<a />")	.attr("href", "javascript:void(0)")
-														.text("stringify")
-														.on("click", function() {
-																var stringified_root = red.stringify(root);
-																root_view.environment("destroy");
-																root.destroy();
-
-																root_view.text("Refreshing");
-
-																window.setTimeout(function() {
-																		root_view.html("");
-																		root = red.destringify(stringified_root);
-																		env = red.create("environment", {root: root});
-
-																		root_view.environment({controller: env});
-																		console.log(env.print());
-																}, 100);
-														})
-														.appendTo(document.body)
-														.click();
-					*/
+					var storage_prefix = "_";
+					window.save = function(name) {
+						if(!_.isString(name)) {
+							name = "default";
+						}
+						name = storage_prefix+name;
+						localStorage[name] = red.stringify(root);
+					};
+					window.open = window.load = function(name) {
+						if(!_.isString(name)) {
+							name = "default";
+						}
+						name = storage_prefix+name;
+						root_view.environment("destroy");
+						root.destroy();
+						root = red.destringify(localStorage[name]);
+						env = red.create("environment", {root: root});
+						root_view.environment({controller: env});
+					};
+					window.ls = function() {
+						return _.chain(localStorage)
+								.keys()
+								.filter(function(key) {
+									return key.substr(0, storage_prefix.length) === storage_prefix
+								})
+								.map(function(key) {
+										return key.slice(storage_prefix.length);
+								})
+								.value();
+					};
+					window.rm = function(name) {
+						if(!_.isString(name)) {
+							name = "default";
+						}
+						name = storage_prefix+name;
+						delete localStorage[name];
+					};
+					window.print = function() {
+						console.log(env.print());
+					};
 				});
 			</script>
 	  </div>

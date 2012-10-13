@@ -108,6 +108,7 @@ var do_serialize = function(obj) {
 			return _.extend({ type: type_info.name }, obj.serialize());
 		}
 	}
+	return obj;
 };
 
 red.stringify = function(obj) {
@@ -154,6 +155,7 @@ var do_deserialize = function(serialized_obj) {
 			return type_info.type.deserialize(serialized_obj);
 		}
 	}
+	return serialized_obj;
 };
 
 var get_deserialized_obj = function(serialized_obj) {
