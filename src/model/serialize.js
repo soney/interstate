@@ -111,7 +111,7 @@ var do_serialize = function(obj) {
 };
 
 red.stringify = function(obj) {
-	return JSON.stringify(red.serialize(obj));
+	return lzw_encode(JSON.stringify(red.serialize(obj)));
 };
 
 // === DESERIALIZE ===
@@ -183,11 +183,10 @@ var deserialize_array = function(obj) {
 };
 
 red.destringify = function(str) {
-	return red.deserialize(JSON.parse(str));
+	return red.deserialize(JSON.parse(lzw_decode(str)));
 };
 
 }(red));
-/*
 //http://stackoverflow.com/questions/294297/javascript-implementation-of-gzip
 // LZW-compress a string
 function lzw_encode(s) {
@@ -241,4 +240,3 @@ function lzw_decode(s) {
     }
     return out.join("");
 }
-*/

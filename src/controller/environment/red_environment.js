@@ -106,7 +106,7 @@ var Env = function(options) {
 		this._root_context = red.create("context", {stack: [this._root]});
 		this._root.set_default_context(this._root_context);
 
-		//this.initialize_props();
+		this.initialize_props();
 	}
 
 	//Context tracking

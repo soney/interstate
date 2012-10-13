@@ -16,30 +16,33 @@
 			<script type="text/javascript" src="src/_vendor/bootstrap/js/bootstrap.js"></script>
 
 			<script type="text/javascript">
-				var root, env, cjs, _;
+				var root, env, cjs, _, root_view;
 				$(function() {
 					cjs = red.cjs;
 					_ = red._;
 
 					red.__debug = false;
 
-					env = red.create("environment");
-					root = env.get_pointer();
-
-					env.set("x", "stateful");
-					env.set("y", "stateful");
-					/*
-					env.cd("x");
-					env.add_state("state1");
-					env.add_transition("INIT", "state1", "mousedown(this)");
-					env.top()
-					*/
-					env.cd("y");
-					env.set("(protos)", "INIT", "x");
-
+					var use_local_storage = true;
+					if(use_local_storage && localStorage.stringified_root) {
+						root = red.destringify(localStorage.stringified_root);
+						env = red.create("environment", {root: root});
+					} else {
+						env = red.create("environment");
+						root = env.get_pointer();
+					}
+					root_view = $("<div />").environment({controller: env}).appendTo(document.body);
 					console.log(env.print());
 
-					var root_view = $("<div />").environment({controller: env}).appendTo(document.body);
+					$(window).on("unload", function() {
+							try {
+								var stringified_root = red.stringify(root);
+								localStorage.stringified_root = stringified_root;
+							} catch(e) {
+								console.log("ERROR");
+							}
+					});
+					/*
 					var stringify_button = $("<a />")	.attr("href", "javascript:void(0)")
 														.text("stringify")
 														.on("click", function() {
@@ -60,6 +63,7 @@
 														})
 														.appendTo(document.body)
 														.click();
+					*/
 				});
 			</script>
 	  </div>
