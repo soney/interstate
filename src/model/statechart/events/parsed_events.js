@@ -27,7 +27,6 @@ _.forEach(dom_events, function(dom_event) {
 			context = red.create("context");
 		}
 
-
 		if(parent) {
 			var dom_elem;
 			if(_.isElement(parent) || parent === window) {
@@ -80,8 +79,11 @@ var get_event = function(node, parent, context) {
 	}
 };
 
+var ParsedEvent = red._create_event_type("parsed");
+red.ParsedEvent = ParsedEvent;
 var id  = 0;
-(function(proto) {
+(function(my) {
+	var proto = my.prototype;
 	proto.on_create = function(str, parent, context) {
 		this.id = id++;
 		this._parent = cjs(parent);
@@ -136,11 +138,11 @@ var id  = 0;
 	proto.destroy = function() {
 		this._live_event_creator.destroy();
 	};
-	proto.serialize = function(obj) {
+	proto.serialize = function() {
 		return { str: this.get_str() };
 	};
-	proto.deserialize = function(obj) {
+	my.deserialize = function(obj) {
 		return red.create_event("parsed", obj.str);
 	};
-}(red._create_event_type("parsed").prototype));
+}(ParsedEvent));
 }(red));

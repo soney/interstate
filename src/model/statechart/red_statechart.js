@@ -1,15 +1,22 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var StatechartTransition = function(from_state, to_state, event) {
-	this._from_state = from_state;
-	this._to_state = to_state;
-	this.id = _.uniqueId();
-	this.do_run = _.bind(this.run, this);
-	this.set_event(event);
+var StatechartTransition = function(options, defer_initialization) {
+	if(defer_initialization === true) {
+		//this.initialize = _.bind(this.do_initialize, this, options);
+	} else {
+		this.do_initialize(options);
+	}
 };
 (function(my) {
 	var proto = my.prototype;
+	proto.do_initialize = function(options) {
+		this._from_state = options.from;
+		this._to_state = options.to;
+		this.id = _.uniqueId();
+		this.do_run = _.bind(this.run, this);
+		this.set_event(options.event);
+	};
 	proto.from = function() { return this._from_state; }; 
 	proto.to = function() { return this._to_state; };
 	proto.setFrom = function(state) { this._from_state = state; };
@@ -44,7 +51,7 @@ var StatechartTransition = function(from_state, to_state, event) {
 	proto.create_shadow = function(from_state, to_state, context) {
 		var my_event = this.event()
 			, shadow_event = my_event.create_shadow(context.last(), context);
-		var shadow_transition = new StatechartTransition(from_state, to_state, shadow_event);
+		var shadow_transition = new StatechartTransition({from: from_state, to: to_state, event: shadow_event});
 		return shadow_transition;
 	};
 	proto.stringify = function() {
@@ -60,13 +67,17 @@ var StatechartTransition = function(from_state, to_state, event) {
 
 	proto.serialize = function() {
 		return {
-			from: this.from().serialize()
-			, to: this.to().serialize()
-			, event: this.event().serialize()
+			from: red.serialize(this.from())
+			, to: red.serialize(this.to())
+			, event: red.serialize(this.event())
 		};
 	};
 	my.deserialize = function(obj) {
-		return new StatechartTransition();
+		var rv = new StatechartTransition(undefined, true);
+		rv.initialize = function() {
+			this.do_initialize({from: red.deserialize(obj.from), to: red.deserialize(obj.to), event: red.deserialize(obj.event)});
+		};
+		return rv;
 	};
 }(StatechartTransition));
 red.StatechartTransition = StatechartTransition;
@@ -95,9 +106,9 @@ var Statechart = function(options, defer_initialization) {
 		this._parent = options.parent;
 		red._set_descriptor(this.$substates._keys, "substates keys " + this.id);
 		red._set_descriptor(this.$substates._values, "substates values " + this.id);
-		this.$incoming_transitions = cjs.array();
+		this.$incoming_transitions = cjs.array(options.incoming_transitions || []);
 		red._set_descriptor(this.$incoming_transitions.$value, "incoming transitions " + this.id);
-		this.$outgoing_transitions = cjs.array();
+		this.$outgoing_transitions = cjs.array(options.outgoing_transitions || []);
 		red._set_descriptor(this.$outgoing_transitions.$value, "outgoing transitions " + this.id);
 	};
 
@@ -324,7 +335,7 @@ var Statechart = function(options, defer_initialization) {
 			to_state = this.find_state(arg1);
 			if(!to_state) { throw new Error("No state '" + arg1 + "'"); }
 			var event = arg2;
-			transition = new StatechartTransition(from_state, to_state, event);
+			transition = new StatechartTransition({from: from_state, to: to_state, event: event});
 			this._last_transition  = transition;
 		}
 		from_state.add_direct_outgoing_transition(transition);
@@ -510,7 +521,7 @@ var Statechart = function(options, defer_initialization) {
 		var shadow_incoming = _.map(basis.$incoming_transitions.get(), function(transition) {
 			var shadow_transition = create_transition_shadow(transition);
 			shadow_transition.setTo(shadow);
-			shadow.add_direct_outgoing_transition(transition);
+			shadow.add_direct_incoming_transition(shadow_transition);
 			return shadow_transition;
 		});
 		basis.$incoming_transitions.onRemove(function(transition, index) {
@@ -530,7 +541,7 @@ var Statechart = function(options, defer_initialization) {
 		var shadow_outgoing = _.map(basis.$outgoing_transitions.get(), function(transition) {
 			var shadow_transition = create_transition_shadow(transition);
 			shadow_transition.setFrom(shadow);
-			shadow.add_direct_outgoing_transition(transition);
+			shadow.add_direct_outgoing_transition(shadow_transition);
 			return shadow_transition;
 		});
 		basis.$outgoing_transitions.onRemove(function(transition, index) {

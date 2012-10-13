@@ -27,6 +27,15 @@
 					root = env.get_pointer();
 
 					env.set("x", "stateful");
+					env.set("y", "stateful");
+					/*
+					env.cd("x");
+					env.add_state("state1");
+					env.add_transition("INIT", "state1", "mousedown(this)");
+					env.top()
+					*/
+					env.cd("y");
+					env.set("(protos)", "INIT", "x");
 
 					console.log(env.print());
 
@@ -46,6 +55,7 @@
 																		env = red.create("environment", {root: root});
 
 																		root_view.environment({controller: env});
+																		console.log(env.print());
 																}, 100);
 														})
 														.appendTo(document.body)

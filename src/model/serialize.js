@@ -13,6 +13,7 @@ var serialization_funcs = [
 	, {name: "red_context", type: red.RedContext }
 	, {name: "statechart_transition", type: red.StatechartTransition }
 	, {name: "statechart", type: red.Statechart }
+	, {name: "parsed_event", type: red.ParsedEvent }
 ];
 
 var serializing = false;
@@ -71,7 +72,7 @@ red.serialize = function(obj) {
 
 var serialize_array = function(arr) {
 	var serialized_values = _.map(arr.get(), function(x) {
-		return x.get();
+		return red.serialize(x);
 	});
 
 	return ({

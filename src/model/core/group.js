@@ -1,7 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var RedGroup = function(options) {
+var RedGroup = function(options, defer_initialization) {
 	options = options || {};
 
 	this.type = "red_group";
@@ -12,10 +12,19 @@ var RedGroup = function(options) {
 	this._template = cjs.$();
 	this._basis = cjs.$();
 	*/
-	red.install_instance_builtins(this, options, arguments.callee);
+	if(defer_initialization === true) {
+		//this.initialize = _.bind(this.do_initialize, this, options);
+	} else {
+		this.do_initialize(options);
+	}
 };
 (function(my) {
 	var proto = my.prototype;
+
+	proto.do_initialize = function(options) {
+		red.install_instance_builtins(this, options, my);
+	};
+
 	my.builtins = {
 		"template": {
 			start_with: function() { return cjs.$(); }
@@ -81,6 +90,39 @@ var RedGroup = function(options) {
 	};
 
 	proto.is_inherited = function() { return false; };
+
+	proto.serialize = function() {
+		var rv = {};
+
+		var self = this;
+		_.each(my.builtins, function(builtin, name) {
+			if(builtin.serialize !== false) {
+				var getter_name = builtin.getter_name || "get_" + name;
+				rv[name] = red.serialize(self[getter_name]());
+			}
+		});
+
+		return rv;
+	};
+	my.deserialize = function(obj) {
+		var serialized_options = {};
+		_.each(my.builtins, function(builtin, name) {
+			if(builtin.serialize !== false) {
+				serialized_options[name] = obj[name];
+			}
+		});
+
+		var rv = new RedGroup(undefined, true);
+		rv.initialize = function() {
+			var options = {};
+			_.each(serialized_options, function(serialized_option, name) {
+				options[name] = red.deserialize(serialized_option);
+			});
+			this.do_initialize(options);
+		};
+
+		return rv;
+	};
 
 }(RedGroup));
 

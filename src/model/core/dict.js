@@ -359,8 +359,6 @@ var RedDict = function(options, defer_initialization) {
 			}
 		});
 
-		rv.direct_props = red.serialize(this.direct_props());
-
 		return rv;
 	};
 	my.deserialize = function(obj) {

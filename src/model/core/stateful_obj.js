@@ -122,7 +122,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 		var rv = {};
 
 		var self = this;
-		var builtins = _.extend({}, my.builtins, my.prototype.builtins);
+		var builtins = _.extend({}, my.builtins, my.superclass.constructor.builtins);
 		_.each(builtins, function(builtin, name) {
 			if(builtin.serialize !== false) {
 				var getter_name = builtin.getter_name || "get_" + name;
@@ -133,7 +133,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 		return rv;
 	};
 	my.deserialize = function(obj) {
-		var builtins = _.extend({}, my.builtins, my.prototype.builtins);
+		var builtins = _.extend({}, my.builtins, my.superclass.constructor.builtins);
 
 		var serialized_options = {};
 		_.each(builtins, function(builtin, name) {

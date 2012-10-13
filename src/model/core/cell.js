@@ -114,21 +114,28 @@ var eval_tree = function(node, context, ignore_inherited_in_contexts) {
 	}
 };
 
-var RedCell = function(options) {
+var RedCell = function(options, defer_initialization) {
 	options = options || {};
-	var self = this;
-	this._str = _.isString(options.str) ? cjs.$(options.str) : options.str;
-	this._tree = cjs.$(function() {
-		return esprima.parse(self.get_str());
-	});
-	this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
 	this.id = _.uniqueId();
-
-	red._set_descriptor(this._str,   "Cell str " + this.id);
-	red._set_descriptor(this._tree,   "Cell tree " + this.id);
+	if(defer_initialization === true) {
+		//this.initialize = _.bind(this.do_initialize, this, options);
+	} else {
+		this.do_initialize(options);
+	}
 };
 (function(my) {
 	var proto = my.prototype;
+	proto.do_initialize = function(options) {
+		var self = this;
+		this._str = _.isString(options.str) ? cjs.$(options.str) : options.str;
+		this._tree = cjs.$(function() {
+			return esprima.parse(self.get_str());
+		});
+		this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
+
+		red._set_descriptor(this._str,   "Cell str " + this.id);
+		red._set_descriptor(this._tree,   "Cell tree " + this.id);
+	};
 	proto.set_str = function(str) {
 		this._str.set(str);
 		return this;
@@ -158,10 +165,17 @@ var RedCell = function(options) {
 		this._str.destroy();
 	};
 	proto.serialize = function() {
-		return { str: this.get_str() };
+		return { str: this.get_str(), ignore_inherited_in_contexts: red.serialize(this._ignore_inherited_in_contexts)};
 	};
 	my.deserialize = function(obj) {
-		return new RedCell({str: obj.str});
+		var rv = new RedCell(undefined, true);
+		rv.initialize = function() {
+			this.do_initialize({
+				str: obj.str
+				, ignore_inherited_in_contexts: red.deserialize(obj.ignore_inherited_in_contexts)
+			});
+		};
+		return rv;
 	};
 }(RedCell));
 
