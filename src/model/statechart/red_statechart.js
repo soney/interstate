@@ -79,6 +79,14 @@ var StatechartTransition = function(options, defer_initialization) {
 		};
 		return rv;
 	};
+	proto.on = function(state_spec, func) {
+		var listeners = this._listeners[state_spec];
+		if(!isArray(listeners)) {
+			listeners = this._listeners[state_spec] = [];
+		}
+
+		listeners.push(func);
+	};
 }(StatechartTransition));
 red.StatechartTransition = StatechartTransition;
 
@@ -86,6 +94,7 @@ var Statechart = function(options, defer_initialization) {
 	options = _.extend({}, options);
 
 	this.id = _.uniqueId();
+	this._listeners = {};
 
 	if(defer_initialization === true) {
 		//this.initialize = _.bind(this.do_initialize, this, options);
@@ -123,9 +132,34 @@ var Statechart = function(options, defer_initialization) {
 	proto.get_substates = function() { return this.$substates.values(); };
 	proto.get_incoming_transitions = function() { return this.$incoming_transitions.get(); };
 	proto.get_outgoing_transitions = function() { return this.$outgoing_transitions.get(); };
-	proto.set_active_substate = function(substate) { this.$local_state.set(substate); };
 	proto.get_active_substate = function(substate) { return this.$local_state.get(); };
 	proto.is_running = function() { return this._running; };
+	var get_state_regex = function(state_name) { 
+		var valid_chars = "[^\\-<>a-zA-Z0-9]*";
+		return valid_chars + "\\*|("+state_name+")" + valid_chars;
+	};
+	proto.set_active_substate = function(state) {
+		var old_state = this.get_active_substate();
+		var old_state_name = old_state ? old_state.get_name() : "";
+		var new_state_name = state ? state.get_name() : "";
+		var pre_transition_listeners = [];
+		var post_transition_listeners = [];
+		var old_state_regex = get_state_regex(old_state_name);
+		var new_state_regex = get_state_regex(new_state_name);
+		_.each(this._listeners, function(listeners, spec) {
+			if(spec.match(new RegExp("^"+new_state_regex+"$"))) {
+				post_transition_listeners.push.apply(post_transition_listeners, listeners);
+			} else if(spec.match(new RegExp("^" + old_state_regex + "(->|<->)" + new_state_regex+"$"))) {
+				post_transition_listeners.push.apply(post_transition_listeners, listeners);
+			} else if(spec.match(new RegExp("^" + old_state_regex + "(>-|>-<)" + new_state_regex+"$"))) {
+				pre_transition_listeners.push.apply(pre_transition_listeners, listeners);
+			}
+		});
+		var fsm = this;
+		_.each(pre_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, fsm); });
+		this.$local_state.set(state);
+		_.each(post_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, fsm); });
+	};
 	proto.run = function() {
 		if(!this.is_running()) {
 			this._running = true;
@@ -474,15 +508,14 @@ var Statechart = function(options, defer_initialization) {
 	proto.shadow_substates = function(context, create_substate_shadow, create_transition_shadow) {
 		cjs.wait();
 		var self = this;
-		var shadow = red.create("statechart", {
-			init_state: cjs.$(function() {
-				var original_init_state = self.$init_state.get();
-				if(original_init_state) {
-					original_init_state = self.find_state(original_init_state);
-					var original_init_state_name = original_init_state.get_name(self);
-					return shadow.find_state(original_init_state_name);
-				}
-			})
+		var shadow = red.create("statechart");
+		cjs.liven(function() {
+			var original_init_state = self.$init_state.get();
+			if(original_init_state) {
+				original_init_state = self.find_state(original_init_state);
+				var original_init_state_name = original_init_state.get_name(self);
+				shadow.starts_at(original_init_state_name);
+			}
 		});
 		shadow.set_basis(this);
 		var substates_val = this.$substates.get();
@@ -634,6 +667,28 @@ var Statechart = function(options, defer_initialization) {
 		};
 
 		return rv;
+	};
+	proto.on = function(state_spec, func) {
+		var listeners = this._listeners[state_spec];
+		if(!_.isArray(listeners)) {
+			listeners = this._listeners[state_spec] = [];
+		}
+
+		listeners.push(func);
+	};
+	proto.off = function(state_spec, func) {
+		var listeners = this._listeners[state_spec];
+		if(_.isArray(listeners)) {
+			for(var i = 0; i<listeners.length; i++) {
+				if(listeners[i] === func) {
+					listeners.splice(i, 1);
+					i--;
+				}
+			}
+			if(listeners.length === 0) {
+				delete this._listeners[state_spec];
+			}
+		}
 	};
 }(Statechart));
 red.Statechart = Statechart;

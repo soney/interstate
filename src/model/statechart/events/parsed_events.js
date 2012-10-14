@@ -45,6 +45,29 @@ _.forEach(dom_events, function(dom_event) {
 	};
 });
 
+event_types["on_transition"] = function(sc_obj, event_spec) {
+	if(!_.isArray(sc_obj)) {
+		sc_obj = [sc_obj];
+	}
+	sc_obj = _	.chain(sc_obj)
+				.map(function(obj) {
+					if(obj instanceof red.RedGroup) {
+						return obj.get(obj.get_default_context());
+					} else {
+						return obj;
+					}
+				})
+				.filter(function(obj) {
+					return obj instanceof red.RedStatefulObj;
+				})
+				.map(function(obj) {
+					return obj.get_statecharts(obj.get_default_context());
+				})
+				.flatten()
+				.value();
+	return red.create_event("statechart", sc_obj, event_spec);
+};
+
 var get_event = function(node, parent, context) {
 	if(_.isUndefined(node)) { return undefined; }
 
@@ -64,15 +87,45 @@ var get_event = function(node, parent, context) {
 		return callee_got.apply(this, args_got);
 	} else if(type === "Identifier") {
 		var name = node.name;
+
 		if(_.has(event_types, name)) {
 			return event_types[name];
 		} else if(name === "window") {
 			return window;
 		} else {
-			//console.log("unfound", type, node, parent);
+			var curr_context = context;
+			if(!context) { return; }
+			var context_item = curr_context.last();
+			while(!curr_context.is_empty()) {
+				if(context_item instanceof red.RedDict) {
+					if(context_item._has_direct_prop(name)) {
+						return context_item._get_direct_prop(name, curr_context);
+					}
+				}
+				curr_context = curr_context.pop();
+				context_item = curr_context.last();
+			}
 		}
+	} else if(type === "MemberExpression") {
+		var object = get_event(node.object, parent, context);
+		var object_got = cjs.get(object);
+		if(object_got instanceof red.RedDict) {
+			//More cases here
+			variable_context = red.create("context", {stack: [object_got]});
+			if(!variable_context) { return undefined; }
+			var property = get_event(node.property, parent, variable_context);
+			return property;
+		} else {
+			return(object_got[node.property.name]);
+		}
+	} else if(type === "ArrayExpression") {
+		return _.map(node.elements, function(element) {
+			return eval_tree(element, context, ignore_inherited_in_contexts);
+		});
 	} else if(type === "ThisExpression") {
 		return parent;
+	} else if(type === "Literal") {
+		return node.value;
 	} else if(type === "XXXXXXX") {
 	} else {
 		//console.log(type, node, parent);

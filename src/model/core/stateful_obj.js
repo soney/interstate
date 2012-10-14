@@ -21,6 +21,15 @@ var RedStatefulObj = function(options, defer_initialization) {
 		my.superclass.do_initialize.apply(this, arguments);
 		red.install_instance_builtins(this, options, my);
 		this.contextual_statecharts() .set_equality_check(red.check_context_equality);
+		/*
+		this.set("event", red.create("stateful_prop"));
+		var visible_statechart = this.get_statechart_for_context(this.get_default_context());
+		var event = this.get_event();
+		visible_statechart.on("*>-*", function(e, to_state_name) {
+			var to_state = visible_statechart.find_state(to_state_name);
+			event.set(to_state, e);
+		});
+		*/
 	};
 
 	my.builtins = {
@@ -35,6 +44,14 @@ var RedStatefulObj = function(options, defer_initialization) {
 			, getter_name: "contextual_statecharts"
 			, settable: false
 			, serialize: false
+		}
+		, "event": {
+			default: function() {
+				return red.create("stateful_prop")
+			}
+			, serialize: false
+			, env_visible: true
+			, standard_prop: true
 		}
 	};
 	red.install_proto_builtins(proto, my.builtins);
@@ -54,7 +71,23 @@ var RedStatefulObj = function(options, defer_initialization) {
 		cjs.wait();
 		var shadow_statechart = own_statechart.create_shadow(context);//red._shadow_statechart(this.get_own_statechart(), context.last(), context);
 		this.contextual_statecharts().item(context, shadow_statechart);
+
 		shadow_statechart.run();
+		
+		var sc_owner = context.last();
+		if(sc_owner instanceof my) {
+		//if(red.check_context_equality(this.get_default_context(), context)) {
+			var self = sc_owner;
+			shadow_statechart.on("*>-*", function(e, to_state_name) {
+				var to_state = shadow_statechart.find_state(to_state_name);
+				var event = sc_owner.get_event();
+				event.set(to_state, e);
+				//var e_prop = self._get_direct_prop("event");
+				//e_prop.set(to_state, e);
+			});
+			shadow_statechart.owner = sc_owner;
+		}
+
 		cjs.signal();
 		return shadow_statechart;
 	};
@@ -118,20 +151,6 @@ var RedStatefulObj = function(options, defer_initialization) {
 		return active_states;
 	};
 
-	proto.serialize = function() {
-		var rv = {};
-
-		var self = this;
-		var builtins = _.extend({}, my.builtins, my.superclass.constructor.builtins);
-		_.each(builtins, function(builtin, name) {
-			if(builtin.serialize !== false) {
-				var getter_name = builtin.getter_name || "get_" + name;
-				rv[name] = red.serialize(self[getter_name]());
-			}
-		});
-
-		return rv;
-	};
 	my.deserialize = function(obj) {
 		var builtins = _.extend({}, my.builtins, my.superclass.constructor.builtins);
 
@@ -157,8 +176,8 @@ var RedStatefulObj = function(options, defer_initialization) {
 
 red.RedStatefulObj = RedStatefulObj;
 
-red.define("stateful_obj", function(options) {
-	var dict = new RedStatefulObj(options);
+red.define("stateful_obj", function(options, defer_init) {
+	var dict = new RedStatefulObj(options, defer_init);
 	return dict;
 });
 

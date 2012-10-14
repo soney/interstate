@@ -46,7 +46,6 @@ var eval_tree = function(node, context, ignore_inherited_in_contexts) {
 		return callee_got.apply(this, args_got);
 	} else if(type === "Identifier") {
 		var name = node.name;
-
 		var curr_context = context;
 		var context_item = curr_context.last();
 		while(!curr_context.is_empty()) {
@@ -80,11 +79,19 @@ var eval_tree = function(node, context, ignore_inherited_in_contexts) {
 	} else if(type === "MemberExpression") {
 		var object = eval_tree(node.object, context, ignore_inherited_in_contexts);
 		var object_got = cjs.get(object);
-		//More cases here
-		variable_context = red.create("context", {stack: [object_got]});
-		if(!variable_context) { return undefined; }
-		var property = eval_tree(node.property, variable_context, ignore_inherited_in_contexts);
-		return property;
+		if(object_got instanceof red.RedDict) {
+			//More cases here
+			variable_context = red.create("context", {stack: [object_got]});
+			if(!variable_context) { return undefined; }
+			var property = eval_tree(node.property, variable_context, ignore_inherited_in_contexts);
+			return property;
+		} else {
+			if(object_got == null) {
+				return undefined;
+			} else {
+				return(object_got[node.property.name]);
+			}
+		}
 	} else if(type === "Literal") {
 		return node.value;
 	} else if(type === "BinaryExpression") {

@@ -22,7 +22,7 @@ var value_to_text = function(val) {
 		return "[" + _.map(val, function(v) { return value_to_text(v);}).join(", ") + "]";
 	} else {
 		return "{ " + _.map(val, function(v, k) {
-			return k + ": " + value_to_value_str(v);
+			return k + ": " + v;
 		}).join(", ") + " }";
 	}
 };
@@ -138,6 +138,7 @@ $.widget("red.dict_entry", {
 				value = dict.prop_val(prop_name, context);
 			}
 			var value_str = value_to_text(value);
+			value_str = value_str.substr(0, 10);
 			self._current_value.text(value_str);
 		});
 		this._is_inherited_fn = cjs.liven(function() {

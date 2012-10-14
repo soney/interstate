@@ -207,7 +207,7 @@ var Env = function(options) {
 				return "[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]";
 			} else {
 				return "{ " + _.map(val, function(v, k) {
-					return k + ": " + value_to_value_str(v);
+					return k + ": " + v;
 				}).join(", ") + " }";
 			}
 		};
@@ -276,6 +276,7 @@ var Env = function(options) {
 
 					rows.push(row);
 
+/*
 					var protos = value.direct_protos();
 
 					var protos_got = red.get_contextualizable(protos, dictified_context.push(value).push(protos));
@@ -284,6 +285,7 @@ var Env = function(options) {
 					var value_strs = _.map(proto_value_specs, function(value_spec) {
 						var value = value_spec.value;
 						var rv = value_to_source_str(value);
+						rv = rv.substr(0, 10);
 						if(value_spec.active) {
 							rv = rv + " *";
 						}
@@ -295,6 +297,7 @@ var Env = function(options) {
 					});
 					proto_row.push.apply(proto_row, value_strs);
 					rows.push(proto_row);
+					*/
 					
 					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);
@@ -302,11 +305,13 @@ var Env = function(options) {
 					var row = [prop_name + " - " + value.id, value_to_value_str(value_got), value_to_source_str(value)];
 					rows.push(row);
 
+/*
 					var protos = value.direct_protos();
 					var protos_got = red.get_contextualizable(protos, dictified_context.push(value));
 					var proto_row = [indent + "    (protos)", value_to_value_str(protos_got), value_to_source_str(protos)];
 					proto_row.push.apply(proto_row, value_strs);
 					rows.push(proto_row);
+					*/
 
 					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);
@@ -392,10 +397,11 @@ var Env = function(options) {
 				var direct_protos = red.create("cell", {str: "[]", ignore_inherited_in_contexts: [value]});
 				value._set_direct_protos(direct_protos);
 			} else if(value === "stateful") {
-				value = red.create("stateful_obj");
-				value.set_default_context(parent_obj.get_default_context().push(value));
-				var direct_protos = red.create("stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]});
-				value._set_direct_protos(direct_protos);
+				value = red.create("stateful_obj", undefined, true);
+				value.do_initialize({
+					default_context: parent_obj.get_default_context().push(value)
+					, direct_protos: red.create("stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]})
+				});
 				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");
 			} else if(value === "group") {

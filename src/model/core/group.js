@@ -70,13 +70,18 @@ var RedGroup = function(options, defer_initialization) {
 		if(_.isNumber(basis)) {
 			rv = [];
 			_.times(basis, function(index) {
-				var dict = red.create("stateful_obj", {defer_statechart_invalidation: true, direct_protos: template});
+				var dict = red.create("stateful_obj", undefined, true);
+				dict.do_initialize({
+					direct_protos: template
+					, default_context: this.get_default_context().push(dict)
+				});
 				dict.set_prop("basis", index);
 				rv.push(dict);
-			});
+			}, this);
 		} else if(_.isArray(basis)) {
 			rv = _.map(basis, function(basis_obj) {
-				var dict = red.create("stateful_obj", {defer_statechart_invalidation: true, direct_protos: template});
+				var dict = red.create("stateful_obj", undefined, true);
+				dict.do_initialize({direct_protos: template});
 				dict.set_prop("basis", basis_obj);
 				return dict;
 			});

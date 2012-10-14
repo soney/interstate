@@ -47,16 +47,17 @@ $.widget("red.dict", {
 				return dict;
 			}
 			, "Stateful Object": function() {
-				var dict = red.create("stateful_obj");
+				var value = red.create("stateful_obj");
+				var parent_obj = this.option("dict");
 
-				var parent = this.option("dict");
-				dict.set_default_context(parent.get_default_context().push(dict));
-
-				var direct_protos = red.create("stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [dict]});
-				dict._set_direct_protos(direct_protos);
-				dict.get_own_statechart()	.add_state("INIT")
+				value = red.create("stateful_obj", undefined, true);
+				value.do_initialize({
+					default_context: parent_obj.get_default_context().push(value)
+					, direct_protos: red.create("stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]})
+				});
+				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");
-				return dict;
+				return value;
 			}
 			, "Stateful Property": function() {
 				return red.create("stateful_prop");
@@ -100,6 +101,9 @@ $.widget("red.dict", {
 												.appendTo(this.element);
 		this._inherited_child_props = $("<div />")	.addClass("inherited dict_entries")
 													.appendTo(this.element);
+
+		var my_dict = this.option("dict");
+		/*
 		if(this.option("show_protos")) {
 			var my_dict = this.option("dict");
 			var context = this.option("context");
@@ -114,6 +118,7 @@ $.widget("red.dict", {
 												, value: direct_protos
 											});
 		}
+		*/
 
 		this._make_props_draggable();
 		this._get_add_prop_button();
@@ -203,7 +208,6 @@ $.widget("red.dict", {
 								})
 								.end()
 								.remove();
-		this._inherited_child_props.remove();
 		if(this._protos_view) {
 			this._protos_view.dict_entry("destroy");
 		}
@@ -211,6 +215,7 @@ $.widget("red.dict", {
 	}
 
 	, _add_change_listeners: function() {
+		this._builtin_prop_live_updater = this._get_prop_name_listener("builtin", this._builtin_child_props);
 		this._direct_prop_live_updater = this._get_prop_name_listener("direct", this._direct_child_props);
 		this._inherited_prop_live_updater = this._get_prop_name_listener("inherited", this._inherited_child_props);
 
@@ -220,6 +225,8 @@ $.widget("red.dict", {
 
 	, _remove_change_listeners: function(dict) {
 		dict = dict || this.option("cell");
+		this._builtin_prop_live_updater.destroy();
+		delete this._builtin_prop_live_updater;
 		this._direct_prop_live_updater.destroy();
 		delete this._direct_prop_live_updater;
 		this._inherited_prop_live_updater.destroy();
@@ -233,7 +240,9 @@ $.widget("red.dict", {
 		var self = this;
 		return cjs.liven(function() {
 			var prop_names;
-			if(direct_or_inherited === "direct") {
+			if(direct_or_inherited === "builtin") {
+				prop_names = dict._get_builtin_prop_names();
+			} else if(direct_or_inherited === "direct") {
 				prop_names = dict._get_direct_prop_names();
 			} else {
 				prop_names = dict._get_inherited_prop_names(context);

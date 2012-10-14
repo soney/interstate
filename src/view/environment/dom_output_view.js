@@ -44,6 +44,7 @@ $.widget("red.dom_output", {
 
 	, _add_change_listeners: function() {
 		var get_dom_tree = function(node, context) {
+			if(!(node instanceof red.RedDict)) { return false; }
 			var dom_attachment = node.get_attachment_instance("dom", context);
 
 			if(_.isUndefined(dom_attachment)) { return false; }
@@ -57,7 +58,7 @@ $.widget("red.dom_output", {
 					var children_context = context.push(children);
 
 					var children_got = red.get_contextualizable(children, children_context);
-					var prop_values = []
+					var prop_values = [];
 
 					if(children_got instanceof red.RedDict) {
 						var prop_names = children.get_prop_names(children_context);

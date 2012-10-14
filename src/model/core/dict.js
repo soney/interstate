@@ -117,6 +117,7 @@ var RedDict = function(options, defer_initialization) {
 		return this.direct_props().keys();
 	};
 
+
 	//
 	// === FULLY INHERITED PROPERTIES ===
 	//
@@ -162,20 +163,77 @@ var RedDict = function(options, defer_initialization) {
 		return rv;
 	};
 	
+	//
+	// === BUILTIN PROPERTIES ===
+	//
+	
+	proto.get_builtins = function() {
+		var builtins = _.clone(this.constructor.builtins);
+		var supah = this.constructor.superclass;
+		while(supah) {
+			_.extend(builtins, supah.constructor.builtins);
+			supah = supah.superclass;
+		}
+		return builtins;
+	};
+	
+	proto._get_builtin_prop_names = function() {
+		var rv = [];
+		_.each(this.get_builtins(), function(val, name) {
+			if(val.env_visible === true) {
+				name = val.env_name || name;
+				rv.push(name);
+			}
+		});
+		return rv;
+	};
+	proto._get_builtin_prop = function(prop_name) {
+		var builtins = this.get_builtins();
+		for(var builtin_name in builtins) {
+			if(builtins.hasOwnProperty(builtin_name)) {
+				var builtin = builtins[builtin_name];
+				if(builtin.env_visible === true) {
+					var env_name = builtin.env_name || builtin_name;
+					if(prop_name === env_name) {
+						var getter_name = builtin.getter_name || "get_"+builtin_name;
+						return this[getter_name]();
+					}
+				}
+			}
+		}
+	};
+	proto._has_builtin_prop = function(prop_name) {
+		var rv = false;
+		return _.any(this.get_builtins(), function(val, name) {
+			if(val.env_visible === true) {
+				name = val.env_name || name;
+				if(name === prop_name) {
+					return true;
+				}
+			}
+			return false;
+		});
+	};
+
+	
 	
 	//
 	// === PROPERTIES ===
 	//
 
 	proto.get_prop = function(prop_name, context) {
-		if(this._has_direct_prop(prop_name)) {
+		if(this._has_builtin_prop(prop_name)) {
+			return this._get_builtin_prop(prop_name);
+		} else if(this._has_direct_prop(prop_name)) {
 			return this._get_direct_prop(prop_name);
 		} else {
 			return this._get_inherited_prop(prop_name, context);
 		}
 	};
 	proto.has_prop = function(prop_name, context) {
-		if(this._has_direct_prop(prop_name)) {
+		if(this._has_builtin_prop(prop_name)) {
+			return true;
+		} else if(this._has_direct_prop(prop_name)) {
 			return true;
 		} else if(this._has_inherited_prop(prop_name, context)) {
 			return true;
@@ -191,14 +249,16 @@ var RedDict = function(options, defer_initialization) {
 		return red.get_contextualizable(val, context);
 	};
 	proto.get_prop_names = function(context) {
+		var builtin_prop_names = this._get_builtin_prop_names();
 		var direct_prop_names = this._get_direct_prop_names();
 		var inherited_prop_names = this._get_inherited_prop_names(context);
-		return direct_prop_names.concat(inherited_prop_names);
+		return builtin_prop_names.concat(direct_prop_names, inherited_prop_names);
 	};
 	proto.is_inherited = function(prop_name, context) {
+		var builtin_prop_names = this._get_builtin_prop_names();
 		var direct_prop_names = this._get_direct_prop_names();
 		var inherited_prop_names = this._get_inherited_prop_names(context);
-		return _.indexOf(direct_prop_names, prop_name) < 0 && _.indexOf(inherited_prop_names, prop_name) >= 0;
+		return _.indexOf(direct_prop_names, prop_name) < 0 && _.indexOf(builtin_prop_names) < 0 && _.indexOf(inherited_prop_names, prop_name) >= 0;
 	};
 	proto.inherit = function(prop_name) {
 		if(!this.is_inherited(prop_name)) {
@@ -352,7 +412,7 @@ var RedDict = function(options, defer_initialization) {
 		var rv = {};
 
 		var self = this;
-		_.each(my.builtins, function(builtin, name) {
+		_.each(this.get_builtins(), function(builtin, name) {
 			if(builtin.serialize !== false) {
 				var getter_name = builtin.getter_name || "get_" + name;
 				rv[name] = red.serialize(self[getter_name]());
