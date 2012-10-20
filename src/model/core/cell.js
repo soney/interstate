@@ -168,6 +168,7 @@ var RedCell = function(options, defer_initialization) {
 		this._tree = cjs.$(function() {
 			return esprima.parse(self.get_str());
 		});
+		this.get_contextual_values() .set_equality_check(red.check_context_equality);
 	};
 	proto.get = function(context) {
 		var tree = this._tree.get();
