@@ -137,6 +137,7 @@ $.widget("red.dict_entry", {
 				var prop_name = self.option("prop_name");
 				value = dict.prop_val(prop_name, context);
 			}
+			value = cjs.get(value); // turn cells into cell values
 			var value_str = value_to_text(value);
 			value_str = value_str.substr(0, 10);
 			self._current_value.text(value_str);

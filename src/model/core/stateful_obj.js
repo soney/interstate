@@ -7,9 +7,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 
 	this.type = "red_stateful_obj";
 
-	if(defer_initialization === true) {
-		//this.initialize = _.bind(this.do_initialize, this, options);
-	} else {
+	if(defer_initialization !== true) {
 		this.do_initialize(options);
 	}
 };
@@ -21,15 +19,6 @@ var RedStatefulObj = function(options, defer_initialization) {
 		my.superclass.do_initialize.apply(this, arguments);
 		red.install_instance_builtins(this, options, my);
 		this.contextual_statecharts() .set_equality_check(red.check_context_equality);
-		/*
-		this.set("event", red.create("stateful_prop"));
-		var visible_statechart = this.get_statechart_for_context(this.get_default_context());
-		var event = this.get_event();
-		visible_statechart.on("*>-*", function(e, to_state_name) {
-			var to_state = visible_statechart.find_state(to_state_name);
-			event.set(to_state, e);
-		});
-		*/
 	};
 
 	my.builtins = {

@@ -2,6 +2,7 @@
 var cjs = red.cjs, _ = red._;
 var esprima = window.esprima;
 
+
 var binary_operators = {
 	"+": function(a, b) { return a + b; }
 	, "-": function(a, b) { return a - b; }
@@ -25,85 +26,97 @@ var unary_operators = {
 	, "!": function(a) { return !a; }
 };
 
-var eval_tree = function(node, context, ignore_inherited_in_contexts) {
-	if(!node) {
-		return undefined;
-	}
-	if(!ignore_inherited_in_contexts) {
-		ignore_inherited_in_contexts = [];
-	}
+var get_op_$ = function(op) {
+	var args = _.rest(arguments);
+	return cjs.$(function() {
+		var op_got = cjs.get(op);
+		var args_got = _.map(args, cjs.get);
+
+		return op_got.apply(this, args_got);
+	});
+};
+
+var get_$ = function(node, context, ignore_inherited_in_contexts) {
+	if(!node) { return undefined; }
+	if(!ignore_inherited_in_contexts) { ignore_inherited_in_contexts = []; }
 	var type = node.type;
 	if(type === "ExpressionStatement") {
-		return eval_tree(node.expression, context, ignore_inherited_in_contexts);
-	} else if(type === "CallExpression") {
-		var callee = eval_tree(node.callee, context, ignore_inherited_in_contexts);
-		var args = node.arguments;
-		
-		var args_got = _.map(args, function(arg) {
-			return cjs.get(arg);
-		});
-		var callee_got = cjs.get(callee);
-		return callee_got.apply(this, args_got);
-	} else if(type === "Identifier") {
-		var name = node.name;
-		var curr_context = context;
-		var context_item = curr_context.last();
-		while(!curr_context.is_empty()) {
-			if(context_item instanceof red.RedDict) {
-				if(_.indexOf(ignore_inherited_in_contexts, context_item) < 0) {
-					if(context_item.has_prop(name, curr_context)) {
-						return context_item.get(name, curr_context);
-					}
-				} else {
-					if(context_item._has_direct_prop(name)) {
-						return context_item._get_direct_prop(name, curr_context);
-					}
-					
-				}
-			}
-			curr_context = curr_context.pop();
-			context_item = curr_context.last();
-		}
-		return undefined;
-	} else if(type === "ThisExpression") {
-		var curr_context = context;
-		var context_item = curr_context.last();
-		while(!curr_context.is_empty()) {
-			if(context_item instanceof red.RedDict) {
-				return context_item;
-			}
-			curr_context = curr_context.pop();
-			context_item = curr_context.last();
-		}
-		return undefined;
-	} else if(type === "MemberExpression") {
-		var object = eval_tree(node.object, context, ignore_inherited_in_contexts);
-		var object_got = cjs.get(object);
-		if(object_got instanceof red.RedDict) {
-			//More cases here
-			variable_context = red.create("context", {stack: [object_got]});
-			if(!variable_context) { return undefined; }
-			var property = eval_tree(node.property, variable_context, ignore_inherited_in_contexts);
-			return property;
-		} else {
-			if(object_got == null) {
-				return undefined;
-			} else {
-				return(object_got[node.property.name]);
-			}
-		}
+		return get_$(node.expression, context, ignore_inherited_in_contexts);
 	} else if(type === "Literal") {
 		return node.value;
 	} else if(type === "BinaryExpression") {
 		var op_func = binary_operators[node.operator];
-		var left_arg = eval_tree(node.left, context, ignore_inherited_in_contexts)
-			, right_arg = eval_tree(node.right, context, ignore_inherited_in_contexts);
-		return op_func(cjs.get(left_arg), cjs.get(right_arg));
+		var left_arg = get_$(node.left, context, ignore_inherited_in_contexts)
+			, right_arg = get_$(node.right, context, ignore_inherited_in_contexts);
+		return get_op_$(op_func, left_arg, right_arg);
 	} else if(type === "UnaryExpression") {
 		var op_func = unary_operators[node.operator];
-		var arg = eval_tree(node.argument, context, ignore_inherited_in_contexts);
-
-		return op_func(cjs.get(arg));
+		var arg = get_$(node.argument, context, ignore_inherited_in_contexts);
+		return get_op_$(op_func, arg);
+	} else if(type === "CallExpression") {
+		var callee = get_$(node.callee, context, ignore_inherited_in_contexts);
+		var args = _.map(node.arguments, function(arg) {
+			return get_$(arg, context, ignore_inherited_in_contexts);
+		});
+		return get_op_$.apply(this, ([callee]).concat(args))
+	} else if(type === "Identifier") {
+		var name = node.name;
+		return cjs.$(function() {
+			var curr_context = context;
+			var context_item = curr_context.last();
+			var rv;
+			while(!curr_context.is_empty()) {
+				if(context_item instanceof red.RedDict) {
+					if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
+						if(context_item._has_direct_prop(name)) {
+							rv = context_item._get_direct_prop(name, curr_context);
+							break;
+						}
+					} else {
+						if(context_item.has_prop(name, curr_context)) {
+							rv = context_item.get(name, curr_context);
+							break;
+						}
+					}
+				}
+				curr_context = curr_context.pop();
+				context_item = curr_context.last();
+			}
+			return cjs.get(rv);
+		});
+	} else if(type === "ThisExpression") {
+		return cjs.$(function() {
+			var curr_context = context;
+			var context_item = curr_context.last();
+			var rv;
+			while(!curr_context.is_empty()) {
+				if(context_item instanceof red.RedDict) {
+					rv = context_item;
+					break;
+				}
+				curr_context = curr_context.pop();
+				context_item = curr_context.last();
+			}
+			return rv;
+		});
+	} else if(type === "MemberExpression") {
+		return cjs.$(function() {
+			var object = eval_tree(node.object, context, ignore_inherited_in_contexts);
+			var object_got = cjs.get(object);
+			if(object_got instanceof red.RedDict) {
+				//More cases here
+				variable_context = red.create("context", {stack: [object_got]});
+				if(!variable_context) { return undefined; }
+				var property = get_$(node.property, variable_context, ignore_inherited_in_contexts);
+				return property;
+			} else {
+				if(object_got == null) {
+					return undefined;
+				} else {
+					return(object_got[node.property.name]);
+				}
+			}
+		});
 	} else if(type === "ArrayExpression") {
 		return _.map(node.elements, function(element) {
 			return eval_tree(element, context, ignore_inherited_in_contexts);
@@ -116,6 +129,8 @@ var eval_tree = function(node, context, ignore_inherited_in_contexts) {
 			rv[key] = value;
 		});
 		return rv;
+	} else if(type === "Program") {
+		return get_$(node.body[0], context, ignore_inherited_in_contexts);
 	} else {
 		console.log(type, node);
 	}
@@ -124,48 +139,52 @@ var eval_tree = function(node, context, ignore_inherited_in_contexts) {
 var RedCell = function(options, defer_initialization) {
 	options = options || {};
 	this.id = _.uniqueId();
-	if(defer_initialization === true) {
-		//this.initialize = _.bind(this.do_initialize, this, options);
-	} else {
+	if(defer_initialization !== true) {
 		this.do_initialize(options);
 	}
+	this._last_tree = undefined;
 };
 (function(my) {
 	var proto = my.prototype;
+	my.builtins = {
+		"str": {
+			start_with: function() { return cjs.$(""); }
+			, getter: function(me) { return me.get(); }
+			, setter: function(me, str) { me.set(str, true); }
+		}
+		, "contextual_values": {
+			default: function() { return cjs.map(); }
+			, settable: false
+			, serialize: false
+		}
+		, "ignore_inherited_in_contexts": {
+			default: function() { return []; }
+		}
+	};
+	red.install_proto_builtins(proto, my.builtins);
 	proto.do_initialize = function(options) {
 		var self = this;
-		this._str = _.isString(options.str) ? cjs.$(options.str) : options.str;
+		red.install_instance_builtins(this, options, my);
 		this._tree = cjs.$(function() {
 			return esprima.parse(self.get_str());
 		});
-		this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
-
-		red._set_descriptor(this._str,   "Cell str " + this.id);
-		red._set_descriptor(this._tree,   "Cell tree " + this.id);
-	};
-	proto.set_str = function(str) {
-		this._str.set(str);
-		return this;
-	};
-	proto.get_str = function() {
-		return this._str.get();
 	};
 	proto.get = function(context) {
-		var self = this;
 		var tree = this._tree.get();
-		var ignore_inherited_in_contexts = this._ignore_inherited_in_contexts.slice();
-		var context_item;
-		while(context_item = context.iter()) {
-			if(context_item instanceof red.RedDict && (cjs.get(context_item.direct_protos()) === self)) {
-				ignore_inherited_in_contexts.push(context_item);
-			}
+		var contextual_values = this.get_contextual_values();
+		if(tree !== this._last_tree) {
+			this._last_tree = tree;
+			contextual_values.clear();
 		}
-		context.reset_iterator();
-		
-		return eval_tree(tree.body[0], context, ignore_inherited_in_contexts);
-	};
-	proto.clone = function() {
-		return red.create("cell", {str: this.get_str()});
+
+		var val;
+		if(contextual_values.has(context)) {
+			val = contextual_values.item(context);
+		} else {
+			val = get_$(tree, context, this.get_ignore_inherited_in_contexts());
+			contextual_values.item(context, val);
+		}
+		return val;
 	};
 	proto.destroy = function() {
 		this._tree.destroy();
