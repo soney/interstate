@@ -1,0 +1,343 @@
+<html>
+	<head>
+		<title>iTunes interface</title>
+		<link rel="stylesheet" type="text/css" href="zflow/zflow.css" />
+		<script type="text/javascript" src="zflow/zflow.js"></script>
+		<script type="text/javascript" src="jquery.js"></script>
+		<script type="text/javascript" src="data.js"></script>
+		<script type="text/javascript">
+			$(function() {
+				var return_album_timeout = undefined;
+				var all_songs = Array.prototype.concat.apply([], albums.map(function(album) {
+					return album.songs;
+				}));
+				var album_index = function(album) {
+					for(var i = 0, len = albums.length; i<len; i++) {
+						if(albums[i] === album) return i;
+					}
+					return -1;
+				};
+				var song_index = function(song) {
+					for(var i = 0, len = all_songs.length; i<len; i++) {
+						if(all_songs[i] === song) return i;
+					}
+					return -1;
+				};
+				var playing_song = null;
+				var selected_song = null;
+				var select_song = function(song) {
+					var i = song_index(song);
+					if(i >= 0) {
+						selected_song = song;
+						var song_item = $("> :nth-child("+(i+1)+")", song_list);
+						$(".selected", song_list).not(song_item).removeClass("selected");
+						$(song_item).addClass("selected");
+					}
+				};
+				var play_song = function(song) {
+					$(".controls .play_pause").addClass("pause");
+					playing_song = song;
+					$(".controls .disabled").removeClass("disabled");
+					$("img[src='"+song.album.cover_src+"']").parent().find(".overlay").mousedown();
+					var album = song.album;
+					scroll_to_album(album);
+				};
+				var scroll_to_album = function(album) {
+					var i = album_index(album);
+					do_select_cover(i);
+					set_album_info(album);
+				};
+				var prev_song = function() {
+					var i = song_index(playing_song);
+					if(i >= 0 ) {
+						if(i > 0) {
+							select_song(all_songs[i-1]);
+							play_song(all_songs[i-1]);
+						}
+					}
+				};
+				var next_song = function() {
+					var i = song_index(playing_song);
+					if(i >= 0) {
+						if(i < all_songs.length - 1) {
+							select_song(all_songs[i+1]);
+							play_song(all_songs[i+1]);
+						}
+					}
+				};
+				var pause_song = function() {
+					$(".controls .play_pause").removeClass("pause");
+					playing_song = null;
+					$(".controls .prev, .controls .next").addClass("disabled");
+				};
+				var format_duration = function(time) {
+					var minutes = Math.floor(time);
+					var seconds = Math.round((time - minutes) * 60);
+					if(seconds < 10) seconds = "0"+seconds;
+					else seconds = ""+seconds;
+					return minutes+":"+seconds;
+				};
+				var song_list = $("div.song_list");
+				all_songs.forEach(function(song) {
+					var song_div = $("<div />")	.appendTo(song_list)
+												.addClass("song")
+												.data("song", song);
+					$("<span />")	.text(song.title)
+									.appendTo(song_div)
+									.addClass("title");
+					$("<span />")	.text(format_duration(song.duration))
+									.appendTo(song_div)
+									.addClass("duration");
+					$("<span />")	.text(song.album.artist)
+									.appendTo(song_div)
+									.addClass("artist");
+					$("<span />")	.text(song.album.title)
+									.appendTo(song_div)
+									.addClass("album");
+					song_div.mousedown(function(event) {
+						select_song(song);
+						event.preventDefault();
+					});
+					song_div.dblclick(function(event) {
+						play_song(song);
+					});
+				});
+
+				var album_list = albums.map(function(album) {
+					return album.cover_src;
+				});
+				var do_select_cover = zflow(album_list, ".tray", function(img) {
+					var src = $(img).attr("src");
+					var album = null;
+					for(var i = 0; i<albums.length; i++) {
+						if(albums[i].cover_src === src) {
+							album = albums[i];
+							break;
+						}
+					}
+					set_album_info(album);
+					window.clearTimeout(return_album_timeout);
+					return_album_timeout = window.setTimeout(function() {
+						if(playing_song !== null) {
+							scroll_to_album(playing_song.album);
+						}
+					}, 5000);
+				});
+
+				var set_album_info = function(album) {
+					var title = album.title;
+					var artist = album.artist;
+
+					$(".coverflow .album_name").text(title);
+					$(".coverflow .artist_name").text(artist);
+				};
+
+				$(".controls .prev, .controls .play_pause, .controls .next").mousedown(function(event) {
+					var elem = $(this);
+					elem.addClass("active");
+					$(window).one("mouseup", function() {
+						elem.removeClass("active");
+						elem.unbind("mouseout.active");
+						elem.unbind("mouseover.active");
+					});
+					elem.bind("mouseout.active", function() {
+						elem.removeClass("active");
+					});
+					elem.bind("mouseover.active", function() {
+						elem.addClass("active");
+					});
+					event.preventDefault();
+
+					if(elem.is(".prev")) {
+						prev_song();
+					} else if(elem.is(".play_pause")) {
+						if(playing_song !== null) {
+							pause_song();
+						} else {
+							if(selected_song === null) {
+							} else {
+								play_song(selected_song);
+							}
+						}
+					} else if(elem.is(".next")) {
+						next_song();
+					}
+				});
+				$(window).mousedown(function() {
+					event.preventDefault();
+				});
+				set_album_info(albums[0]);
+			});
+		</script>
+		<style type="text/css">
+			body {
+				overflow: hidden;
+				font-family: Arial, "Lucida Grande", sans-serif;
+				background-color: yellowgreen;
+			}
+			.app {
+				height: 620px;
+				width: 800px;
+				margin: auto;
+				margin-top: 20px;
+				border-radius: 5px;
+				border: 1px solid black;
+			}
+			.song_list .song {
+				font-family: Arial, "Lucida Grande", sans-serif;
+				cursor: default;
+				padding-top: 2px;
+				padding-bottom: 2px;
+				font-size: 12px;
+			}
+			.song_list .song {
+				background-color: #FFF;
+			}
+			.song_list .song:nth-child(even) {
+				background-color: #F8F8F8;
+			}
+			.song_list .song span {
+				overflow: hidden;
+				display: inline-block;
+				white-space:nowrap
+			}
+			.song_list .song .title {
+				width: 200px;
+			}
+			.song_list .song .artist {
+				width: 120px;
+			}
+			.song_list .song .duration {
+				width: 60px;
+			}
+
+			.song_list .song.selected {
+				background-color: rgb(61, 128, 223);
+				color: white;
+			}
+			.coverflow {
+				background-color: black;
+				overflow: hidden;
+				height: 270px;
+				position: relative;
+			}
+			.coverflow .album_name {
+				bottom: 25px;
+				width: 100%;
+				text-align: center;
+				position: absolute;
+			}
+			.coverflow .artist_name {
+				bottom: 10px;
+				width: 100%;
+				text-align: center;
+				z-index: 999;
+			}
+			.zflow {
+				position: relative;
+				top: 150px;
+			}
+			.song_list {
+				overflow-y: scroll;
+				height: 300px;
+			}
+			.app {
+				border: 1px solid black;
+			}
+
+			.coverflow .album_name, .coverflow .artist_name {
+				position: absolute;
+				color: white;
+				font-weight: bold;
+				z-index: 999;
+				width: 100%;
+				font-size: 14px;
+			}
+			.header {
+				height: 50px;
+				background-image: -webkit-linear-gradient(top, rgb(246,246,246), rgb(167,167,167));
+				border-top-left-radius: 5px;
+				border-top-right-radius: 5px;
+			}
+
+			.controls {
+				display: inline-block;
+				height: 100%;
+				margin-left: 15px;
+			}
+			.controls .prev, .controls .play_pause, .controls .next {
+				float: left;
+			}
+
+			.controls .prev.disabled, .controls .prev.disabled.active {
+				background-image: url('buttons/prev.png');
+				opacity: 0.3;
+			}
+			.controls .next.disabled, .controls .next.disabled.active {
+				background-image: url('buttons/next.png');
+				opacity: 0.3;
+			}
+			.controls .prev {
+				width: 31px;
+				height: 31px;
+				background-image: url('buttons/prev.png');
+				margin-top: 10px;
+				margin-right: 3px;
+			}
+			.controls .prev.active {
+				background-image: url('buttons/prev_active.png');
+			}
+			.controls .play_pause {
+				width: 38px;
+				height: 38px;
+				background-image: url('buttons/play.png');
+				margin-top: 7px;
+			}
+			.controls .play_pause.pause {
+				background-image: url('buttons/pause.png');
+			}
+			.controls .play_pause.active {
+				background-image: url('buttons/play_active.png');
+			}
+			.controls .play_pause.pause.active {
+				background-image: url('buttons/pause_active.png');
+			}
+			.controls .next {
+				width: 31px;
+				height: 31px;
+				background-image: url('buttons/next.png');
+				margin-top: 10px;
+				margin-left: 3px;
+			}
+			.controls .next.active {
+				background-image: url('buttons/next_active.png');
+			}
+			h1 {
+				text-align: center;
+				margin: 0px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>(Mockup)</h1>
+		<div class="app">
+			<div class="header">
+				<span class="controls">
+					<span class="prev disabled"></span>
+					<span class="play_pause"></span>
+					<span class="next disabled"></span>
+				</span>
+			</div>
+			<div class="coverflow">
+				<span class="album_name">Album name</span>
+				<span class="artist_name">Artist name</span>
+				<div class="zflow">
+					<div class="centering portrait">
+						<div id="tray" class="tray"></div>
+					</div>
+				</div>
+			</div>
+			<div class="song_list" />
+		</div>
+	</body>
+</html>

@@ -14,6 +14,7 @@
 	  <div>
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript" src="src/_vendor/bootstrap/js/bootstrap.js"></script>
+			<script type="text/javascript" src="album_data.js"></script>
 
 			<script type="text/javascript">
 				var root, env, cjs, _, root_view;
@@ -26,7 +27,9 @@
 
 					env = red.create("environment");
 					root = env.get_pointer();
-					root_view = $("<div />").environment({controller: env}).appendTo(document.body);
+					root.set("albums", albums);
+					root_view = $("<div />").environment({controller: env})
+											.appendTo(document.body);
 
 					var storage_prefix = "_";
 					window.save = function(name) {
