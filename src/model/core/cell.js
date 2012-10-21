@@ -36,6 +36,34 @@ var get_op_$ = function(op) {
 	});
 };
 
+var get_member_$ = function(key, context, ignore_inherited_in_contexts) {
+	return cjs.$(function() {
+		var key_got = cjs.get(key);
+		var curr_context = context;
+		var context_item = curr_context.last();
+		var rv;
+		while(!curr_context.is_empty()) {
+			context_item = cjs.get(context_item);
+			if(context_item instanceof red.RedDict) {
+				if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
+					if(context_item._has_direct_prop(key_got)) {
+						rv = context_item._get_direct_prop(key_got, curr_context);
+						break;
+					}
+				} else {
+					if(context_item.has_prop(key_got, curr_context)) {
+						rv = context_item.get(key_got, curr_context);
+						break;
+					}
+				}
+			}
+			curr_context = curr_context.pop();
+			context_item = curr_context.last();
+		}
+		return cjs.get(rv);
+	});
+};
+
 var get_$ = function(node, context, ignore_inherited_in_contexts) {
 	if(!node) { return undefined; }
 	if(!ignore_inherited_in_contexts) { ignore_inherited_in_contexts = []; }
@@ -61,29 +89,7 @@ var get_$ = function(node, context, ignore_inherited_in_contexts) {
 		return get_op_$.apply(this, ([callee]).concat(args))
 	} else if(type === "Identifier") {
 		var name = node.name;
-		return cjs.$(function() {
-			var curr_context = context;
-			var context_item = curr_context.last();
-			var rv;
-			while(!curr_context.is_empty()) {
-				if(context_item instanceof red.RedDict) {
-					if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
-						if(context_item._has_direct_prop(name)) {
-							rv = context_item._get_direct_prop(name, curr_context);
-							break;
-						}
-					} else {
-						if(context_item.has_prop(name, curr_context)) {
-							rv = context_item.get(name, curr_context);
-							break;
-						}
-					}
-				}
-				curr_context = curr_context.pop();
-				context_item = curr_context.last();
-			}
-			return cjs.get(rv);
-		});
+		return get_member_$(name, context, ignore_inherited_in_contexts);
 	} else if(type === "ThisExpression") {
 		return cjs.$(function() {
 			var curr_context = context;
@@ -100,23 +106,17 @@ var get_$ = function(node, context, ignore_inherited_in_contexts) {
 			return rv;
 		});
 	} else if(type === "MemberExpression") {
-		return cjs.$(function() {
-			var object = eval_tree(node.object, context, ignore_inherited_in_contexts);
-			var object_got = cjs.get(object);
-			if(object_got instanceof red.RedDict) {
-				//More cases here
-				variable_context = red.create("context", {stack: [object_got]});
-				if(!variable_context) { return undefined; }
-				var property = get_$(node.property, variable_context, ignore_inherited_in_contexts);
-				return property;
-			} else {
-				if(object_got == null) {
-					return undefined;
-				} else {
-					return(object_got[node.property.name]);
-				}
-			}
-		});
+		var object = get_$(node.object, context, ignore_inherited_in_contexts);
+		var variable_context = red.create("context", {stack: [object]});
+		var property;
+		if(node.computed) {
+			var key = get_$(node.property, context, ignore_inherited_in_contexts);
+			property = get_member_$(key, variable_context, ignore_inherited_in_contexts);
+		} else {
+			property = get_$(node.property, variable_context, ignore_inherited_in_contexts);
+		}
+
+		return property;
 	} else if(type === "ArrayExpression") {
 		return _.map(node.elements, function(element) {
 			return eval_tree(element, context, ignore_inherited_in_contexts);
@@ -160,6 +160,11 @@ var RedCell = function(options, defer_initialization) {
 		, "ignore_inherited_in_contexts": {
 			default: function() { return []; }
 		}
+		, "default_context": {
+			start_with: function() { return cjs.$(); }
+			, getter: function(me) { return me.get(); }
+			, setter: function(me, context) { me.set(context, true); }
+		}
 	};
 	red.install_proto_builtins(proto, my.builtins);
 	proto.do_initialize = function(options) {
@@ -192,16 +197,35 @@ var RedCell = function(options, defer_initialization) {
 		this._str.destroy();
 	};
 	proto.serialize = function() {
-		return { str: this.get_str(), ignore_inherited_in_contexts: red.serialize(this._ignore_inherited_in_contexts)};
+		var rv = {};
+
+		var self = this;
+		_.each(this.get_builtins(), function(builtin, name) {
+			if(builtin.serialize !== false) {
+				var getter_name = builtin.getter_name || "get_" + name;
+				rv[name] = red.serialize(self[getter_name]());
+			}
+		});
+
+		return rv;
 	};
 	my.deserialize = function(obj) {
+		var serialized_options = {};
+		_.each(my.builtins, function(builtin, name) {
+			if(builtin.serialize !== false) {
+				serialized_options[name] = obj[name];
+			}
+		});
+
 		var rv = new RedCell(undefined, true);
 		rv.initialize = function() {
-			this.do_initialize({
-				str: obj.str
-				, ignore_inherited_in_contexts: red.deserialize(obj.ignore_inherited_in_contexts)
+			var options = {};
+			_.each(serialized_options, function(serialized_option, name) {
+				options[name] = red.deserialize(serialized_option);
 			});
+			this.do_initialize(options);
 		};
+
 		return rv;
 	};
 }(RedCell));

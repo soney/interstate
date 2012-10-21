@@ -27,7 +27,10 @@
 
 					env = red.create("environment");
 					root = env.get_pointer();
-					root.set("albums", albums);
+					console.log(albums);
+					var $albums = cjs.array(albums);
+					//root.set("albums", $albums);
+					//env.set("artists", "albums.pluck('artist')");
 					root_view = $("<div />").environment({controller: env})
 											.appendTo(document.body);
 
