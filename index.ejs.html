@@ -41,6 +41,7 @@
 						}
 						name = storage_prefix+name;
 						localStorage[name] = red.stringify(root);
+						return ls();
 					};
 					window.open = window.load = function(name) {
 						if(!_.isString(name)) {
@@ -52,6 +53,7 @@
 						root = red.destringify(localStorage[name]);
 						env = red.create("environment", {root: root});
 						root_view.environment({controller: env});
+						console.log(env.print());
 					};
 					window.ls = function() {
 						return _.chain(localStorage)
@@ -70,6 +72,7 @@
 						}
 						name = storage_prefix+name;
 						delete localStorage[name];
+						return ls();
 					};
 					window.print = function() {
 						console.log(env.print());

@@ -200,7 +200,7 @@ var RedCell = function(options, defer_initialization) {
 		var rv = {};
 
 		var self = this;
-		_.each(this.get_builtins(), function(builtin, name) {
+		_.each(my.builtins, function(builtin, name) {
 			if(builtin.serialize !== false) {
 				var getter_name = builtin.getter_name || "get_" + name;
 				rv[name] = red.serialize(self[getter_name]());
