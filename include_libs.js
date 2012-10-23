@@ -41,6 +41,7 @@ exports.main_src = c(
 				"model/core.js"
 				, "model/core/obj_utils.js"
 				, "model/core/debug.js"
+				, "model/core/cjs_extensions.js"
 				, "model/statechart/red_statechart.js"
 				, "model/statechart/events/event_core.js"
 				, "model/statechart/events/manual_event.js"

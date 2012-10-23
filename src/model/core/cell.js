@@ -31,8 +31,11 @@ var get_op_$ = function(op) {
 	return cjs.$(function() {
 		var op_got = cjs.get(op);
 		var args_got = _.map(args, cjs.get);
+		console.log(op_got);
 
-		return op_got.apply(this, args_got);
+		if(_.isFunction(op_got)) {
+			return op_got.apply(this, args_got);
+		}
 	});
 };
 
@@ -43,19 +46,23 @@ var get_member_$ = function(key, context, ignore_inherited_in_contexts) {
 		var context_item = curr_context.last();
 		var rv;
 		while(!curr_context.is_empty()) {
-			context_item = cjs.get(context_item);
-			if(context_item instanceof red.RedDict) {
-				if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
-					if(context_item._has_direct_prop(key_got)) {
-						rv = context_item._get_direct_prop(key_got, curr_context);
+			var context_item_got = cjs.get(context_item);
+			if(context_item_got instanceof red.RedDict) {
+				if(_.indexOf(ignore_inherited_in_contexts, context_item_got) >= 0) {
+					if(context_item_got._has_direct_prop(key_got)) {
+						rv = context_item_got._get_direct_prop(key_got, curr_context);
 						break;
 					}
 				} else {
-					if(context_item.has_prop(key_got, curr_context)) {
-						rv = context_item.get(key_got, curr_context);
+					if(context_item_got.has_prop(key_got, curr_context)) {
+						rv = context_item_got.get(key_got, curr_context);
 						break;
 					}
 				}
+			} else if(_.has(context_item_got, key_got)) {
+				return context_item_got[key_got];
+			} else if(context_item[key_got]) {
+				return context_item[key_got];
 			}
 			curr_context = curr_context.pop();
 			context_item = curr_context.last();
@@ -113,6 +120,7 @@ var get_$ = function(node, context, ignore_inherited_in_contexts) {
 			var key = get_$(node.property, context, ignore_inherited_in_contexts);
 			property = get_member_$(key, variable_context, ignore_inherited_in_contexts);
 		} else {
+			console.log(node.property, variable_context);
 			property = get_$(node.property, variable_context, ignore_inherited_in_contexts);
 		}
 

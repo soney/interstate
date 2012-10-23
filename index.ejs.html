@@ -25,11 +25,13 @@
 					red.__debug = false;
 
 
+					albums.pluck = _.bind(_.pluck, _, albums);
 					env = red.create("environment");
 					root = env.get_pointer();
 					console.log(albums);
-					var $albums = cjs.array(albums);
-					//root.set("albums", $albums);
+					var $albums = window.$albums = cjs.$(albums);
+					root.set("albums", $albums);
+					env.set("artists", "albums.pluck('artist')");
 					//env.set("artists", "albums.pluck('artist')");
 					root_view = $("<div />").environment({controller: env})
 											.appendTo(document.body);
