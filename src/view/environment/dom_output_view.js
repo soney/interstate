@@ -52,7 +52,7 @@ $.widget("red.dom_output", {
 				var dom_element = dom_attachment.get_dom_obj();
 				if(_.isUndefined(dom_element)) { return false; }
 
-				var text = node.get_prop("text", context);
+				var text = node.prop_val("text", context);
 				if(_.isUndefined(text)) {
 					var children = node.get_prop("children", context);
 					var children_context = context.push(children);
@@ -65,8 +65,10 @@ $.widget("red.dom_output", {
 						prop_values = _.map(prop_names, function(prop_name) {
 							return children.get_prop(prop_name, children_context);
 						});
+					} else if(children instanceof red.RedGroup) {
+						prop_values = children_got;
 					} else if(red.is_contextualizable(children)) {
-						prop_values = red.get_contextualizable(children, children_context);
+						prop_values = children_got;
 					} else if(_.isArray(children)) {
 						prop_values = children;
 					}

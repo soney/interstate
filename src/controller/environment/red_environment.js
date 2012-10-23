@@ -252,6 +252,7 @@ var Env = function(options) {
 				else { prop_name = "  " + prop_name; }
 
 				var value_got = red.get_contextualizable(value, dictified_context.push(value));
+				value_got = cjs.get(value_got);
 
 				if(value instanceof red.RedStatefulObj) {
 					var state_specs = value.get_state_specs(dictified_context.push(value));
@@ -276,28 +277,6 @@ var Env = function(options) {
 
 					rows.push(row);
 
-/*
-					var protos = value.direct_protos();
-
-					var protos_got = red.get_contextualizable(protos, dictified_context.push(value).push(protos));
-					var proto_row = [indent + "    (protos) - " + protos.id, value_to_value_str(protos_got)];
-					var proto_value_specs = protos.get_value_specs(dictified_context.push(value));
-					var value_strs = _.map(proto_value_specs, function(value_spec) {
-						var value = value_spec.value;
-						var rv = value_to_source_str(value);
-						rv = rv.substr(0, 10);
-						if(value_spec.active) {
-							rv = rv + " *";
-						}
-
-						if(value_spec.using) {
-							rv = "* " + rv;
-						}
-						return rv;
-					});
-					proto_row.push.apply(proto_row, value_strs);
-					rows.push(proto_row);
-					*/
 					
 					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);
@@ -305,13 +284,6 @@ var Env = function(options) {
 					var row = [prop_name + " - " + value.id, value_to_value_str(value_got), value_to_source_str(value)];
 					rows.push(row);
 
-/*
-					var protos = value.direct_protos();
-					var protos_got = red.get_contextualizable(protos, dictified_context.push(value));
-					var proto_row = [indent + "    (protos)", value_to_value_str(protos_got), value_to_source_str(protos)];
-					proto_row.push.apply(proto_row, value_strs);
-					rows.push(proto_row);
-					*/
 
 					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);
@@ -340,15 +312,22 @@ var Env = function(options) {
 
 					var basis = value.get_basis();
 					var basis_got = red.get_contextualizable(basis, dictified_context.push(value));
+					basis_got = cjs.get(basis);
 					var basis_row = [indent + "    (basis)", value_to_value_str(basis_got), value_to_source_str(basis)];
 					basis_row.push.apply(basis_row, value_strs);
 					rows.push(basis_row);
 
 					var template = value.get_template();
 					var template_got = red.get_contextualizable(template, dictified_context.push(value));
+					template_got = cjs.get(template);
 					var template_row = [indent + "    (template)", value_to_value_str(template_got), value_to_source_str(template)];
 					template_row.push.apply(template_row, value_strs);
 					rows.push(template_row);
+
+					_.each(value_got, function(value, index) {
+						rows.push([indent + "    " + index + ":"]);
+						rows.push.apply(rows, tablify_dict(value, indentation_level + 3, dictified_context.push(value)));
+					});
 				} else {
 					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
 					rows.push(row);

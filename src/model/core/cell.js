@@ -31,7 +31,6 @@ var get_op_$ = function(op) {
 	return cjs.$(function() {
 		var op_got = cjs.get(op);
 		var args_got = _.map(args, cjs.get);
-		console.log(op_got);
 
 		if(_.isFunction(op_got)) {
 			return op_got.apply(this, args_got);
@@ -127,13 +126,13 @@ var get_$ = function(node, context, ignore_inherited_in_contexts) {
 		return property;
 	} else if(type === "ArrayExpression") {
 		return _.map(node.elements, function(element) {
-			return eval_tree(element, context, ignore_inherited_in_contexts);
+			return get_$(element, context, ignore_inherited_in_contexts);
 		});
 	} else if(type === "BlockStatement") {
 		var rv = {};
 		_.forEach(node.body, function(key_value_pair) {
 			var key = key_value_pair.label.name;
-			var value = eval_tree(key_value_pair.body, context, ignore_inherited_in_contexts);
+			var value = get_$(key_value_pair.body, context, ignore_inherited_in_contexts);
 			rv[key] = value;
 		});
 		return rv;
