@@ -76,13 +76,15 @@ var RedGroup = function(options, defer_initialization) {
 					, default_context: this.get_default_context().push(dict)
 				});
 				dict.set_prop("basis", index);
+				dict.set_prop("index", index);
 				rv.push(dict);
 			}, this);
 		} else if(_.isArray(basis)) {
-			rv = _.map(basis, function(basis_obj) {
+			rv = _.map(basis, function(basis_obj, index) {
 				var dict = red.create("stateful_obj", undefined, true);
 				dict.do_initialize({direct_protos: template});
 				dict.set_prop("basis", basis_obj);
+				dict.set_prop("index", index);
 				return dict;
 			});
 		} else {
