@@ -36,6 +36,7 @@ exports.main_src = c(
 				, "underscore/red_underscore_extensions.js"
 				, "jquery-ui-1.9.0-rc.1/jquery-1.8.0.js"
 				, "jquery-ui-1.9.0-rc.1/ui/jquery-ui.js"
+				, "raphael/raphael.js"
 			])
 	, cp(src, [
 				"model/core.js"

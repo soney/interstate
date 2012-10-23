@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+	<link rel="stylesheet" type="text/css" href="src/view/css/styles.css"></link>
+	<link rel="stylesheet" type="text/css" href="src/_vendor/bootstrap/css/bootstrap.css"></link>
+  </head>
+  <body>
+	  <!--<h1>red</h1>-->
+
+		<div class="content">
+		</div>
+
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript" src="src/_vendor/bootstrap/js/bootstrap.js"></script>
+			<script type="text/javascript">
+				var root, env, cjs, _, root_view;
+				$(function() {
+					var statechart = red.create("statechart")
+										.add_state("stateA")
+										.starts_at("stateA")
+										.run();
+					/*
+										.add_state("superstateA")
+										.add_state("superstateA.substate1")
+										.add_state("superstateA.substate2")
+										.add_state("stateB")
+										.add_state("superstateC")
+										.add_state("superstateC.substate1")
+										.add_state("superstateC.substate2")
+										.add_state("stateD");
+					*/
+					console.log(statechart.stringify());
+					console.log(statechart.get_substates());
+
+
+
+					var paper = Raphael(0, 0, 600, 200);
+					// Creates circle at x = 50, y = 40, with radius 10
+					var circle = paper.circle(50, 40, 10);
+					// Sets the fill attribute of the circle to red (#f00)
+					circle.attr("fill", "#f00");
+
+					// Sets the stroke attribute of the circle to white
+					circle.attr("stroke", "#fff");
+				});
+			</script>
+	  </div>
+  </body>
+</html>
