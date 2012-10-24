@@ -55,9 +55,10 @@ var RedGroup = function(options, defer_initialization) {
 	proto.get = function(context) {
 		var basis = this.get_basis();
 		basis = red.get_contextualizable(basis, context);
+		basis = cjs.get(basis);
 		var template = this.get_template();
 
-		if(this._last_basis === basis && this._last_template === template) {
+		if((this._last_basis === basis || _.isEqual(this._last_basis, basis)) && this._last_template === template) {
 			return this._last_rv;
 		} else {
 			_.forEach(this._last_rv, function(dict) {

@@ -26,14 +26,16 @@ var unary_operators = {
 	, "!": function(a) { return !a; }
 };
 
-var get_op_$ = function(op) {
-	var args = _.rest(arguments);
+var get_op_$ = function(op_context, op) {
+	var args = _.rest(arguments, 2);
 	return cjs.$(function() {
 		var op_got = cjs.get(op);
 		var args_got = _.map(args, cjs.get);
+		var op_context_got = cjs.get(op_context);
 
 		if(_.isFunction(op_got)) {
-			return op_got.apply(this, args_got);
+			var rv = op_got.apply(op_context_got, args_got);
+			return rv;
 		}
 	});
 };
@@ -58,9 +60,9 @@ var get_member_$ = function(key, context, ignore_inherited_in_contexts) {
 						break;
 					}
 				}
-			} else if(_.has(context_item_got, key_got)) {
+			} else if(context_item_got && context_item_got[key_got]/*_.has(context_item_got, key_got)*/) {
 				return context_item_got[key_got];
-			} else if(context_item[key_got]) {
+			} else if(context_item && context_item[key_got]) {
 				return context_item[key_got];
 			}
 			curr_context = curr_context.pop();
@@ -82,17 +84,21 @@ var get_$ = function(node, context, ignore_inherited_in_contexts) {
 		var op_func = binary_operators[node.operator];
 		var left_arg = get_$(node.left, context, ignore_inherited_in_contexts)
 			, right_arg = get_$(node.right, context, ignore_inherited_in_contexts);
-		return get_op_$(op_func, left_arg, right_arg);
+		return get_op_$(window, op_func, left_arg, right_arg);
 	} else if(type === "UnaryExpression") {
 		var op_func = unary_operators[node.operator];
 		var arg = get_$(node.argument, context, ignore_inherited_in_contexts);
-		return get_op_$(op_func, arg);
+		return get_op_$(window, op_func, arg);
 	} else if(type === "CallExpression") {
 		var callee = get_$(node.callee, context, ignore_inherited_in_contexts);
+		var op_context = window;
+		if(node.callee.type === "MemberExpression") {
+			op_context = get_$(node.callee.object, context, ignore_inherited_in_contexts);
+		}
 		var args = _.map(node.arguments, function(arg) {
 			return get_$(arg, context, ignore_inherited_in_contexts);
 		});
-		return get_op_$.apply(this, ([callee]).concat(args))
+		return get_op_$.apply(this, ([op_context, callee]).concat(args))
 	} else if(type === "Identifier") {
 		var name = node.name;
 		return get_member_$(name, context, ignore_inherited_in_contexts);
@@ -119,7 +125,6 @@ var get_$ = function(node, context, ignore_inherited_in_contexts) {
 			var key = get_$(node.property, context, ignore_inherited_in_contexts);
 			property = get_member_$(key, variable_context, ignore_inherited_in_contexts);
 		} else {
-			console.log(node.property, variable_context);
 			property = get_$(node.property, variable_context, ignore_inherited_in_contexts);
 		}
 
