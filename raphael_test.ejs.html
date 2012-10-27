@@ -15,6 +15,179 @@
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript" src="src/_vendor/bootstrap/js/bootstrap.js"></script>
 			<script type="text/javascript">
+				var _ = red._;
+				var Antenna = function(paper, options) {
+					this.options = _.extend({
+						radius: 5
+						, height: 40
+						, top: 5
+						, left: 10
+						, animation_duration: 600
+					}, options);
+
+					this.expanded = true;
+
+					this.ellipse = paper.ellipse(this.options.left
+												, this.options.top + this.options.radius
+												, this.options.radius
+												, this.options.radius);
+					this.line = paper.path("M"+this.options.left+","+(this.options.top+2*this.options.radius)+
+											"L"+this.options.left+","+(this.options.top + this.options.height));
+				};
+
+				Antenna.prototype.collapse = function() {
+					this.line.animate({
+						path: "M" + this.options.left + "," + (this.options.top+this.options.height)
+					}, this.options.animation_duration);
+					this.ellipse.animate({
+						cy: this.options.top + this.options.height
+						, ry: 0
+						, rx: 0
+					}, this.options.animation_duration);
+					this.expanded = false;
+				};
+				Antenna.prototype.expand = function() {
+					this.expanded = true;
+					this.line.animate({
+						path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
+										"L"+this.options.left+","+(this.options.top + this.options.height)
+					}, this.options.animation_duration);
+					this.ellipse.animate({
+						cy: this.options.top + this.options.radius
+						, ry: this.options.radius
+						, rx: this.options.radius
+					}, this.options.animation_duration);
+				};
+				Antenna.prototype.option = function(key, value, animated) {
+					if(arguments.length <= 1) {
+						return this.options[key];
+					} else {
+						this.options[key] = value;
+						var animation_duration = animated ? this.animation_duration : 0;
+						if(this.expanded) {
+							if(key === "radius") {
+								this.ellipse.animate({
+									cy: this.options.top + this.options.radius
+									, ry: this.options.radius
+									, rx: this.options.radius
+								}, animation_duration);
+								this.line.animate({
+									path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
+													"L"+this.options.left+","+(this.options.top + this.options.height)
+								}, animation_duration);
+							} else if(key === "height") {
+								this.line.animate({
+									path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
+													"L"+this.options.left+","+(this.options.top + this.options.height)
+								}, animation_duration);
+							} else if(key === "top") {
+								this.ellipse.animate({
+									cy: this.options.top + this.options.radius
+								}, animation_duration);
+								this.line.animate({
+									path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
+													"L"+this.options.left+","+(this.options.top + this.options.height)
+								}, animation_duration);
+							} 
+						}
+						if(key === "left") {
+							this.line.animate({
+								path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
+												"L"+this.options.left+","+(this.options.top + this.options.height)
+							}, animation_duration);
+							this.ellipse.animate({
+								cy: this.options.top + this.options.radius
+								, ry: this.options.radius
+								, rx: this.options.radius
+							}, animation_duration);
+						}
+						return this;
+					}
+				};
+
+				var Arrow = function(paper, options) {
+					this.options = _.extend({
+						arrowLength: 7
+						, fromX: 30
+						, toX: 80
+						, fromY: 20
+						, toY: 20
+						, radius: 3
+						, arrowAngle:30 
+					});
+
+					var lineStart = this.getLineStart();
+					var lineEnd = this.getLineEnd();
+					this.ellipse = paper.ellipse(this.options.fromX
+												, this.options.fromY
+												, this.options.radius
+												, this.options.radius);
+					this.line = paper.path("M"+lineStart.x+","+lineStart.y+
+											"L"+lineEnd.x+","+lineEnd.y);
+					this.triangle = paper.path(this.getTrianglePath());
+				};
+				Arrow.prototype.getTheta = function() {
+					var dy = this.options.toY - this.options.fromY;
+					var dx = this.options.toX - this.options.fromX;
+					return Math.atan2(dy, dx);
+				};
+				Arrow.prototype.getLineStart = function() {
+					var theta = this.getTheta();
+					return {
+						x: this.options.fromX + Math.cos(theta) * this.options.radius
+						, y: this.options.fromY + Math.sin(theta) * this.options.radius
+					};
+				};
+				Arrow.prototype.getLineEnd = function() {
+					var theta = this.getTheta();
+					return {
+						x: this.options.toX - Math.cos(theta) * this.options.arrowLength
+						, y: this.options.toY - Math.sin(theta) * this.options.arrowLength
+					};
+				};
+				Arrow.prototype.getTrianglePath = function() {
+					var theta = this.getTheta();
+					var arrowAngleRadians = this.options.arrowAngle * Math.PI/180;
+
+					var line_end = this.getLineEnd();
+					var off_line = this.options.arrowLength * Math.tan(arrowAngleRadians);
+					
+					var path = [
+						{x: this.options.toX, y:this.options.toY}
+						, {x: line_end.x + off_line * Math.cos(theta - Math.PI/2)
+							, y: line_end.y + off_line * Math.sin(theta - Math.PI/2)
+						}
+						, {x: line_end.x + off_line * Math.cos(theta + Math.PI/2)
+							, y: line_end.y + off_line * Math.sin(theta + Math.PI/2)
+						}
+					];
+					return "M" + _.map(path, function(point) {
+									return point.x+","+point.y;
+								}).join("L") + "Z";
+				};
+				Arrow.prototype.collapse = function() {
+					this.line.animate({
+						path: "M" + this.options.left + "," + (this.options.top+this.options.height)
+					}, this.options.animation_duration);
+					this.ellipse.animate({
+						cy: this.options.top + this.options.height
+						, ry: 0
+						, rx: 0
+					}, this.options.animation_duration);
+				};
+				Arrow.prototype.expand = function() {
+					this.line.animate({
+						path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
+										"L"+this.options.left+","+(this.options.top + this.options.height)
+					}, this.options.animation_duration);
+					this.ellipse.animate({
+						cy: this.options.top + this.options.radius
+						, ry: this.options.radius
+						, rx: this.options.radius
+					}, this.options.animation_duration);
+				};
+
+
 				var root, env, cjs, _, root_view;
 				$(function() {
 					var statechart = red.create("statechart")
@@ -37,13 +210,29 @@
 
 
 					var paper = Raphael(0, 0, 600, 200);
+
+					var a1 = new Antenna(paper, {
+					});
+					var arrow1 = new Arrow(paper, {
+					});
+					window.setInterval(function() {
+						a1.collapse();
+						window.setTimeout(function() {
+							a1.expand();
+						}, 1000);
+					}, 2000);
+
+					/*
 					// Creates circle at x = 50, y = 40, with radius 10
 					var circle = paper.circle(50, 40, 10);
 					// Sets the fill attribute of the circle to red (#f00)
 					circle.attr("fill", "#f00");
 
+					var line = paper.path("M50,40L50,80");
+
 					// Sets the stroke attribute of the circle to white
 					circle.attr("stroke", "#fff");
+					*/
 				});
 			</script>
 	  </div>
