@@ -65,41 +65,27 @@
 						this.options[key] = value;
 						var animation_duration = animated ? this.animation_duration : 0;
 						if(this.expanded) {
-							if(key === "radius") {
-								this.ellipse.animate({
-									cy: this.options.top + this.options.radius
-									, ry: this.options.radius
-									, rx: this.options.radius
-								}, animation_duration);
-								this.line.animate({
-									path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
-													"L"+this.options.left+","+(this.options.top + this.options.height)
-								}, animation_duration);
-							} else if(key === "height") {
-								this.line.animate({
-									path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
-													"L"+this.options.left+","+(this.options.top + this.options.height)
-								}, animation_duration);
-							} else if(key === "top") {
-								this.ellipse.animate({
-									cy: this.options.top + this.options.radius
-								}, animation_duration);
-								this.line.animate({
-									path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
-													"L"+this.options.left+","+(this.options.top + this.options.height)
-								}, animation_duration);
-							} 
-						}
-						if(key === "left") {
-							this.line.animate({
-								path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
-												"L"+this.options.left+","+(this.options.top + this.options.height)
-							}, animation_duration);
 							this.ellipse.animate({
 								cy: this.options.top + this.options.radius
 								, ry: this.options.radius
 								, rx: this.options.radius
 							}, animation_duration);
+							this.line.animate({
+								path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
+												"L"+this.options.left+","+(this.options.top + this.options.height)
+							}, animation_duration);
+						} else {
+							if(key === "left") {
+								this.line.animate({
+									path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
+													"L"+this.options.left+","+(this.options.top + this.options.height)
+								}, animation_duration);
+								this.ellipse.animate({
+									cy: this.options.top + this.options.radius
+									, ry: this.options.radius
+									, rx: this.options.radius
+								}, 0);
+							}
 						}
 						return this;
 					}
@@ -108,14 +94,17 @@
 				var Arrow = function(paper, options) {
 					this.options = _.extend({
 						arrowLength: 7
-						, fromX: 30
+						, fromX: 10
 						, toX: 80
 						, fromY: 20
 						, toY: 20
 						, radius: 3
-						, arrowAngle:30 
+						, arrowAngle: 20
+						, bottom: 45
+						, animation_duration: 600
 					});
 
+					this.expanded = true;
 					var lineStart = this.getLineStart();
 					var lineEnd = this.getLineEnd();
 					this.ellipse = paper.ellipse(this.options.fromX
@@ -166,31 +155,104 @@
 								}).join("L") + "Z";
 				};
 				Arrow.prototype.collapse = function() {
-					this.line.animate({
-						path: "M" + this.options.left + "," + (this.options.top+this.options.height)
-					}, this.options.animation_duration);
 					this.ellipse.animate({
-						cy: this.options.top + this.options.height
-						, ry: 0
+						cx: this.options.fromX
+						, cy: this.options.bottom
 						, rx: 0
+						, ry: 0
 					}, this.options.animation_duration);
+					this.line.animate({
+						path: "M"+this.options.fromX+","+this.options.bottom
+					}, this.options.animation_duration);
+					this.triangle.animate({
+						path: "M"+this.options.fromX+","+this.options.bottom
+					}, this.options.animation_duration);
+					this.expanded = false;
 				};
 				Arrow.prototype.expand = function() {
-					this.line.animate({
-						path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
-										"L"+this.options.left+","+(this.options.top + this.options.height)
-					}, this.options.animation_duration);
+					this.expanded = true;
+					var lineStart = this.getLineStart();
+					var lineEnd = this.getLineEnd();
 					this.ellipse.animate({
-						cy: this.options.top + this.options.radius
-						, ry: this.options.radius
+						cx: this.options.fromX
+						, cy: this.options.fromY
 						, rx: this.options.radius
+						, ry: this.options.radius
+					}, this.options.animation_duration);
+					this.line.animate({
+						path: "M"+lineStart.x+","+lineStart.y+
+											"L"+lineEnd.x+","+lineEnd.y
+					}, this.options.animation_duration);
+					this.triangle.animate({
+						path: this.getTrianglePath()
 					}, this.options.animation_duration);
 				};
+
+				var StatechartView = function(statechart, paper, options) {
+					this.statechart = statechart;
+					this.paper = paper;
+					this.options = _.extend({
+										root: false
+										, parent: null
+										, left: 0
+										, width: 100
+									}, options);
+
+
+					if(!this.options.root) {
+						this.antenna = new Antenna(this.paper, { left: this.options.left + (this.options.width / 2) });
+					}
+
+					this.$substates = this.statechart.$substates;
+					this.$onSet = _.bind(this.onSet, this);
+					this.$onUnset = _.bind(this.onUnset, this);
+					this.$onIndexChange = _.bind(this.onIndexChange, this);
+					this.$onMove = _.bind(this.onMove, this);
+					this.$onValueChange = _.bind(this.onValueChange, this);
+
+					this.$substates.each(this.$onSet);
+
+					this.$substates.onSet(this.$onSet);
+					this.$substates.onUnset(this.$onUnset);
+					this.$substates.onIndexChange(this.$onIndexChange);
+					this.$substates.onKeyChange(this.$onKeyChange);
+					this.$substates.onMove(this.$onMove);
+					this.$substates.onValueChange(this.$onValueChange)
+				};
+
+				(function(my) {
+					var proto = my.prototype;
+					proto.onSet = function(state, state_name, index) {
+						var state_view = new StatechartView(state, this.paper, {
+							parent: this
+							, left: this.options.left + 50*index
+							, width: this.options.width
+						});
+					};
+					proto.onUnset = function() {
+					};
+					proto.onIndexChange = function() {
+					};
+					proto.onKeyChange = function() {
+					};
+					proto.onMove = function() {
+					};
+					proto.onValueChange = function() {
+					};
+					proto.option = function(key, value, animated) {
+						if(arguments.length <= 1) {
+							return this.options[key];
+						} else {
+							this.options[key] = value;
+							return this;
+						}
+					};
+				}(StatechartView));
 
 
 				var root, env, cjs, _, root_view;
 				$(function() {
-					var statechart = red.create("statechart")
+					var statechart = window.statechart = red.create("statechart")
 										.add_state("stateA")
 										.starts_at("stateA")
 										.run();
@@ -204,21 +266,29 @@
 										.add_state("superstateC.substate2")
 										.add_state("stateD");
 					*/
-					console.log(statechart.stringify());
-					console.log(statechart.get_substates());
 
 
 
 					var paper = Raphael(0, 0, 600, 200);
 
-					var a1 = new Antenna(paper, {
-					});
-					var arrow1 = new Arrow(paper, {
-					});
+					var statechart_view = new StatechartView(statechart, paper, {root: true});
+					
+					statechart.add_state("stateB");
+
+
+					/*
+					var a1 = new Antenna(paper, { });
+					var arrow1 = new Arrow(paper, { });
+					var a2 = new Antenna(paper, { left: 80 });
+
 					window.setInterval(function() {
 						a1.collapse();
+						a2.collapse();
+						arrow1.collapse();
 						window.setTimeout(function() {
 							a1.expand();
+							a2.expand();
+							arrow1.expand();
 						}, 1000);
 					}, 2000);
 
