@@ -35,90 +35,128 @@
 											"L"+this.options.left+","+(this.options.top + this.options.height));
 				};
 
-				Antenna.prototype.collapse = function() {
-					this.line.animate({
-						path: "M" + this.options.left + "," + (this.options.top+this.options.height)
-					}, this.options.animation_duration);
-					this.ellipse.animate({
-						cy: this.options.top + this.options.height
-						, ry: 0
-						, rx: 0
-					}, this.options.animation_duration);
-					this.expanded = false;
-				};
-				Antenna.prototype.expand = function() {
-					this.expanded = true;
-					this.line.animate({
-						path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
-										"L"+this.options.left+","+(this.options.top + this.options.height)
-					}, this.options.animation_duration);
-					this.ellipse.animate({
-						cy: this.options.top + this.options.radius
-						, ry: this.options.radius
-						, rx: this.options.radius
-					}, this.options.animation_duration);
-				};
-				Antenna.prototype.option = function(key, value, animated) {
-					if(arguments.length <= 1) {
-						return this.options[key];
-					} else {
-						this.options[key] = value;
-						var animation_duration = animated ? this.animation_duration : 0;
-						if(this.expanded) {
-							this.ellipse.animate({
-								cy: this.options.top + this.options.radius
-								, ry: this.options.radius
-								, rx: this.options.radius
-							}, animation_duration);
-							this.line.animate({
-								path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
-												"L"+this.options.left+","+(this.options.top + this.options.height)
-							}, animation_duration);
+				(function(my) {
+					var proto = my.prototype;
+
+					proto.collapse = function(callback) {
+						this.line.animate({
+							path: "M" + this.options.left + "," + (this.options.top+this.options.height)
+						}, this.options.animation_duration);
+						this.ellipse.animate({
+							cy: this.options.top + this.options.height
+							, ry: 0
+							, rx: 0
+						}, this.options.animation_duration, "<>", callback);
+						this.expanded = false;
+					};
+					proto.expand = function() {
+						this.expanded = true;
+						this.line.animate({
+							path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
+											"L"+this.options.left+","+(this.options.top + this.options.height)
+						}, this.options.animation_duration);
+						this.ellipse.animate({
+							cy: this.options.top + this.options.radius
+							, ry: this.options.radius
+							, rx: this.options.radius
+						}, this.options.animation_duration);
+					};
+					proto.option = function(key, value, animated) {
+						if(arguments.length <= 1) {
+							return this.options[key];
 						} else {
-							if(key === "left") {
+							this.options[key] = value;
+							var animation_duration = animated ? this.options.animation_duration : 0;
+							if(this.expanded) {
+								this.ellipse.animate({
+									cy: this.options.top + this.options.radius
+									, cx: this.options.left
+									, ry: this.options.radius
+									, rx: this.options.radius
+								}, animation_duration);
 								this.line.animate({
 									path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
 													"L"+this.options.left+","+(this.options.top + this.options.height)
 								}, animation_duration);
-								this.ellipse.animate({
-									cy: this.options.top + this.options.radius
-									, ry: this.options.radius
-									, rx: this.options.radius
-								}, 0);
+							} else {
+								if(key === "left") {
+									this.line.animate({
+										path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
+														"L"+this.options.left+","+(this.options.top + this.options.height)
+									}, 0);
+									this.ellipse.animate({
+										cy: this.options.top + this.options.radius
+										, cx: this.options.left
+										, ry: this.options.radius
+										, rx: this.options.radius
+									}, 0);
+								}
 							}
+							return this;
 						}
-						return this;
-					}
-				};
+					};
+					proto.remove = function (animated) {
+						if(animated) {
+							var self = this;
+							this.collapse(function() {
+								self.ellipse.remove();
+								self.line.remove();
+							});
+						} else {
+							this.ellipse.remove();
+							this.line.remove();
+						}
+					};
+				}(Antenna));
 
 				var Arrow = function(paper, options) {
 					this.options = _.extend({
 						arrowLength: 7
 						, fromX: 10
-						, toX: 80
+						, toX: 20
 						, fromY: 20
 						, toY: 20
 						, radius: 3
 						, arrowAngle: 20
 						, bottom: 45
 						, animation_duration: 600
-					});
+						, self_pointing_theta: 45
+					}, options);
 
 					this.expanded = true;
-					var lineStart = this.getLineStart();
-					var lineEnd = this.getLineEnd();
 					this.ellipse = paper.ellipse(this.options.fromX
 												, this.options.fromY
 												, this.options.radius
 												, this.options.radius);
-					this.line = paper.path("M"+lineStart.x+","+lineStart.y+
-											"L"+lineEnd.x+","+lineEnd.y);
+					this.line = paper.path(this.getLinePath());
 					this.triangle = paper.path(this.getTrianglePath());
 				};
 				Arrow.prototype.getTheta = function() {
 					var dy = this.options.toY - this.options.fromY;
 					var dx = this.options.toX - this.options.fromX;
 					return Math.atan2(dy, dx);
+				};
+				Arrow.prototype.getLinePath = function() {
+					var xDiff = this.options.fromX - this.options.toX;
+					var yDiff = this.options.fromY - this.options.toY;
+					if(Math.pow(xDiff, 2) + Math.pow(yDiff, 2) <= Math.pow(this.options.radius + this.options.arrowLength, 2)) {
+						var fromX = this.options.fromX;
+						var fromY = this.options.fromY;
+						var radius = this.options.radius;
+						var curve_radius = 2*radius * radius;
+						var theta = this.options.self_pointing_theta * Math.PI/180;
+						var arrowLength = this.options.arrowLength;
+
+						return    "M" + (fromX + radius * Math.cos(theta))+","+(fromY + radius * Math.sin(theta))
+								+ "C" + (fromX + curve_radius * Math.cos(theta))+","+(fromY + curve_radius * Math.sin(theta))
+								+ "," + (fromX + (curve_radius + arrowLength) * Math.cos(theta))+","+(fromY - (curve_radius + arrowLength) * Math.sin(theta))
+								+ "," + (fromX + (radius + arrowLength) * Math.cos(theta))+","+(fromY - (radius + arrowLength) * Math.sin(theta))
+					} else {
+						var lineStart = this.getLineStart();
+						var lineEnd = this.getLineEnd();
+						return "M"+lineStart.x+","+lineStart.y+"L"+lineEnd.x+","+lineEnd.y;
+					}
+
 				};
 				Arrow.prototype.getLineStart = function() {
 					var theta = this.getTheta();
@@ -135,19 +173,37 @@
 					};
 				};
 				Arrow.prototype.getTrianglePath = function() {
-					var theta = this.getTheta();
+					var xDiff = this.options.fromX - this.options.toX;
+					var yDiff = this.options.fromY - this.options.toY;
+
+					var theta, lineEndX, lineEndY, toX, toY;
+
+					if(Math.pow(xDiff, 2) + Math.pow(yDiff, 2) <= Math.pow(this.options.radius + this.options.arrowLength, 2)) {
+						theta = (this.options.self_pointing_theta - 90) * Math.PI/180;
+						lineEndX = (this.options.fromX + (this.options.radius + this.options.arrowLength) * Math.cos(theta));
+						lineEndY = (this.options.fromY + (this.options.radius + this.options.arrowLength) * Math.sin(theta));
+						toX = (this.options.fromX + (this.options.radius) * Math.cos(theta));
+						toY = (this.options.fromY + (this.options.radius) * Math.sin(theta));
+					} else {
+						theta = this.getTheta();
+						var line_end = this.getLineEnd();
+						lineEndX = line_end.x;
+						lineEndY = line_end.y;
+						toX = this.options.toX;
+						toY = this.options.toY;
+					}
+						
 					var arrowAngleRadians = this.options.arrowAngle * Math.PI/180;
 
-					var line_end = this.getLineEnd();
 					var off_line = this.options.arrowLength * Math.tan(arrowAngleRadians);
 					
 					var path = [
-						{x: this.options.toX, y:this.options.toY}
-						, {x: line_end.x + off_line * Math.cos(theta - Math.PI/2)
-							, y: line_end.y + off_line * Math.sin(theta - Math.PI/2)
+						{x: toX, y:toY}
+						, {x: lineEndX + off_line * Math.cos(theta - Math.PI/2)
+							, y: lineEndY + off_line * Math.sin(theta - Math.PI/2)
 						}
-						, {x: line_end.x + off_line * Math.cos(theta + Math.PI/2)
-							, y: line_end.y + off_line * Math.sin(theta + Math.PI/2)
+						, {x: lineEndX + off_line * Math.cos(theta + Math.PI/2)
+							, y: lineEndY + off_line * Math.sin(theta + Math.PI/2)
 						}
 					];
 					return "M" + _.map(path, function(point) {
@@ -180,12 +236,47 @@
 						, ry: this.options.radius
 					}, this.options.animation_duration);
 					this.line.animate({
-						path: "M"+lineStart.x+","+lineStart.y+
-											"L"+lineEnd.x+","+lineEnd.y
+						path: this.getLinePath()
 					}, this.options.animation_duration);
 					this.triangle.animate({
 						path: this.getTrianglePath()
 					}, this.options.animation_duration);
+				};
+				Arrow.prototype.option = function(key, value, animated) {
+					if(arguments.length <= 1) {
+						return this.options[key];
+					} else {
+						this.options[key] = value;
+						var animation_duration = animated ? this.options.animation_duration : 0;
+						if(this.expanded) {
+							this.ellipse.animate({
+								cx: this.options.fromX
+								, cy: this.options.fromY
+								, rx: this.options.radius
+								, ry: this.options.radius
+							}, animation_duration);
+							this.line.animate({
+								path: this.getLinePath()
+							}, animation_duration);
+							this.triangle.animate({
+								path: this.getTrianglePath()
+							}, animation_duration);
+						} else {
+							this.ellipse.animate({
+								cx: this.options.fromX
+								, cy: this.options.bottom
+								, rx: 0
+								, ry: 0
+							}, 0);
+							this.line.animate({
+								path: "M"+this.options.fromX+","+this.options.bottom
+							}, 0);
+							this.triangle.animate({
+								path: "M"+this.options.fromX+","+this.options.bottom
+							}, 0);
+						}
+						return this;
+					}
 				};
 
 				var StatechartView = function(statechart, paper, options) {
@@ -200,8 +291,10 @@
 
 
 					if(!this.options.root) {
-						this.antenna = new Antenna(this.paper, { left: this.options.left + (this.options.width / 2) });
+						this.antenna = new Antenna(this.paper, { left: this.option("left") + (this.options.width / 2) });
 					}
+
+					this.substate_views = [];
 
 					this.$substates = this.statechart.$substates;
 					this.$onSet = _.bind(this.onSet, this);
@@ -228,23 +321,44 @@
 							, left: this.options.left + 50*index
 							, width: this.options.width
 						});
+						this.substate_views.splice(index, 0, state_view);
+						//console.log("set", arguments);
 					};
-					proto.onUnset = function() {
+					proto.onUnset = function(state, state_name, index) {
+						var substate_view = this.substate_views[index];
+						this.substate_views.splice(index, 1);
+						substate_view.remove(true);
+						//console.log("unset", arguments);
 					};
-					proto.onIndexChange = function() {
+					proto.onIndexChange = function(state, state_name, to_index, from_index) {
+						var substate_view = this.substate_views[from_index];
+						substate_view.option("left", this.options.left + 50*to_index, true);
+						//console.log("index change", arguments);
 					};
-					proto.onKeyChange = function() {
-					};
-					proto.onMove = function() {
+					proto.onMove = function(state, state_name, insert_at, to_index, from_index) {
+						var substate_view = this.substate_views[from_index];
+						this.substate_views.splice(from_index, 1);
+						this.substate_views.splice(insert_at, 0, substate_view);
+						//console.log("move", arguments);
 					};
 					proto.onValueChange = function() {
+					};
+					proto.onKeyChange = function() {
 					};
 					proto.option = function(key, value, animated) {
 						if(arguments.length <= 1) {
 							return this.options[key];
 						} else {
 							this.options[key] = value;
+							if(key === "left") {
+								this.antenna.option("left", this.option("left") + (this.option("width") / 2), animated);
+							}
 							return this;
+						}
+					};
+					proto.remove = function(animated) {
+						if(_.has(this, "antenna")) {
+							this.antenna.remove(animated);
 						}
 					};
 				}(StatechartView));
@@ -253,8 +367,8 @@
 				var root, env, cjs, _, root_view;
 				$(function() {
 					var statechart = window.statechart = red.create("statechart")
-										.add_state("stateA")
-										.starts_at("stateA")
+										.add_state("a")
+										.starts_at("a")
 										.run();
 					/*
 										.add_state("superstateA")
@@ -273,13 +387,21 @@
 
 					var statechart_view = new StatechartView(statechart, paper, {root: true});
 					
-					statechart.add_state("stateB");
+					statechart.add_state("b");
+					statechart.add_state("c");
+					statechart.remove_state("b");
 
 
 					/*
-					var a1 = new Antenna(paper, { });
+					//var a1 = new Antenna(paper, { });
 					var arrow1 = new Arrow(paper, { });
-					var a2 = new Antenna(paper, { left: 80 });
+					window.addEventListener("mousemove", function(event) {
+						var m = {x: event.clientX, y: event.clientY};
+						arrow1.option("toX", m.x);
+						arrow1.option("toY", m.y);
+					});
+					//var a2 = new Antenna(paper, { left: 80 });
+					/*
 
 					window.setInterval(function() {
 						a1.collapse();
