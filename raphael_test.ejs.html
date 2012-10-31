@@ -2,8 +2,6 @@
 <html lang="en">
   <head>
     <title>red</title>
-	<link rel="stylesheet" type="text/css" href="src/view/css/styles.css"></link>
-	<link rel="stylesheet" type="text/css" href="src/_vendor/bootstrap/css/bootstrap.css"></link>
   </head>
   <body>
 	  <!--<h1>red</h1>-->
@@ -13,9 +11,76 @@
 
 	  <div>
 			<%- red_include(red_inc.main) %>
-			<script type="text/javascript" src="src/_vendor/bootstrap/js/bootstrap.js"></script>
 			<script type="text/javascript">
 				var _ = red._;
+				var EditableText = function(paper, options) {
+					this.options = _.extend({
+						x: 0
+						, y: 0
+						, text: ""
+						, maxWidth: -1
+					}, options);
+					this.text = paper.text(this.options.x, this.options.y, this.options.text);
+
+					this.$onClick = _.bind(this.onClick, this);
+					this.$onKeydown = _.bind(this.onKeydown, this);
+					this.$onBlur = _.bind(this.onBlur, this);
+					this.text.click(this.$onClick);
+					this.text.attr("text-anchor", "start");
+					this.paper = paper;
+				};
+				(function(my) {
+					var proto = my.prototype;
+					proto.onClick = function(event) {
+						var textbox = document.createElement("input");
+						textbox.type = "text"
+						textbox.style.position = "absolute";
+						textbox.style.zIndex = 2;
+						textbox.style.color = this.text.attr("fill");
+						textbox.style.textAlign = this.text.attr("text-anchor");
+						textbox.style.fontFamily = this.text.attr("font-family");
+						textbox.style.fontWeight = this.text.attr("font-weight");
+						textbox.style.fontStyle = this.text.attr("font-style");
+						textbox.style.fontSize = this.text.attr("font-size")+"px";
+						this.paper.canvas.parentNode.insertBefore(textbox, this.paper.canvas);
+						var box = this.text.getBBox();
+						textbox.style.top = box.y + "px";
+						textbox.style.left = box.x + "px";
+						textbox.style.outline = "none";
+						textbox.style.border = "none";
+						textbox.style.padding = "0px";
+						textbox.style.margin = "0px";
+						textbox.style.boxSizing = "border-box";
+						textbox.style.background = "none";
+						textbox.value = this.text.attr("text");
+						textbox.focus();
+						textbox.select();
+
+						this.text.hide();
+						textbox.addEventListener("keydown", this.$onKeydown);
+						textbox.addEventListener("blur", this.$onBlur);
+					};
+					proto.onKeydown = function(event) {
+						var textbox = event.srcElement;
+						if(event.keyCode === 27) { //esc
+							this.showText(textbox);
+						} else if(event.keyCode === 13) { // enter
+							this.text.attr("text", textbox.value);
+							this.showText(textbox);
+						}
+					};
+					proto.onBlur = function(event) {
+						var textbox = event.srcElement;
+						this.text.attr("text", textbox.value);
+						this.showText(textbox);
+					};
+					proto.showText = function(textbox) {
+						this.text.show();
+						textbox.removeEventListener("keydown", this.$onKeydown);
+						textbox.removeEventListener("blur", this.$onBlur);
+						textbox.parentNode.removeChild(textbox);
+					};
+				}(EditableText));
 				var Antenna = function(paper, options) {
 					this.options = _.extend({
 						radius: 5
@@ -23,16 +88,27 @@
 						, top: 5
 						, left: 10
 						, animation_duration: 600
+						, animate_creation: false
 					}, options);
 
-					this.expanded = true;
 
-					this.ellipse = paper.ellipse(this.options.left
-												, this.options.top + this.options.radius
-												, this.options.radius
-												, this.options.radius);
-					this.line = paper.path("M"+this.options.left+","+(this.options.top+2*this.options.radius)+
-											"L"+this.options.left+","+(this.options.top + this.options.height));
+					if(this.options.animate_creation) {
+						this.expanded = false;
+						this.ellipse = paper.ellipse(this.options.left
+													, this.options.top + this.options.height
+													, 0
+													, 0);
+						this.line = paper.path("M" + this.options.left + "," + (this.options.top+this.options.height));
+						this.expand();
+					} else {
+						this.expanded = true;
+						this.ellipse = paper.ellipse(this.options.left
+													, this.options.top + this.options.radius
+													, this.options.radius
+													, this.options.radius);
+						this.line = paper.path("M"+this.options.left+","+(this.options.top+2*this.options.radius)+
+												"L"+this.options.left+","+(this.options.top + this.options.height));
+					}
 				};
 
 				(function(my) {
@@ -131,153 +207,156 @@
 					this.line = paper.path(this.getLinePath());
 					this.triangle = paper.path(this.getTrianglePath());
 				};
-				Arrow.prototype.getTheta = function() {
-					var dy = this.options.toY - this.options.fromY;
-					var dx = this.options.toX - this.options.fromX;
-					return Math.atan2(dy, dx);
-				};
-				Arrow.prototype.getLinePath = function() {
-					var xDiff = this.options.fromX - this.options.toX;
-					var yDiff = this.options.fromY - this.options.toY;
-					if(Math.pow(xDiff, 2) + Math.pow(yDiff, 2) <= Math.pow(this.options.radius + this.options.arrowLength, 2)) {
-						var fromX = this.options.fromX;
-						var fromY = this.options.fromY;
-						var radius = this.options.radius;
-						var curve_radius = 2*radius * radius;
-						var theta = this.options.self_pointing_theta * Math.PI/180;
-						var arrowLength = this.options.arrowLength;
+				(function(my) {
+					var proto = my.prototype
+					proto.getTheta = function() {
+						var dy = this.options.toY - this.options.fromY;
+						var dx = this.options.toX - this.options.fromX;
+						return Math.atan2(dy, dx);
+					};
+					proto.getLinePath = function() {
+						var xDiff = this.options.fromX - this.options.toX;
+						var yDiff = this.options.fromY - this.options.toY;
+						if(Math.pow(xDiff, 2) + Math.pow(yDiff, 2) <= Math.pow(this.options.radius + this.options.arrowLength, 2)) {
+							var fromX = this.options.fromX;
+							var fromY = this.options.fromY;
+							var radius = this.options.radius;
+							var curve_radius = 2*radius * radius;
+							var theta = this.options.self_pointing_theta * Math.PI/180;
+							var arrowLength = this.options.arrowLength;
 
-						return    "M" + (fromX + radius * Math.cos(theta))+","+(fromY + radius * Math.sin(theta))
-								+ "C" + (fromX + curve_radius * Math.cos(theta))+","+(fromY + curve_radius * Math.sin(theta))
-								+ "," + (fromX + (curve_radius + arrowLength) * Math.cos(theta))+","+(fromY - (curve_radius + arrowLength) * Math.sin(theta))
-								+ "," + (fromX + (radius + arrowLength) * Math.cos(theta))+","+(fromY - (radius + arrowLength) * Math.sin(theta))
-					} else {
+							return    "M" + (fromX + radius * Math.cos(theta))+","+(fromY + radius * Math.sin(theta))
+									+ "C" + (fromX + curve_radius * Math.cos(theta))+","+(fromY + curve_radius * Math.sin(theta))
+									+ "," + (fromX + (curve_radius + arrowLength) * Math.cos(theta))+","+(fromY - (curve_radius + arrowLength) * Math.sin(theta))
+									+ "," + (fromX + (radius + arrowLength) * Math.cos(theta))+","+(fromY - (radius + arrowLength) * Math.sin(theta))
+						} else {
+							var lineStart = this.getLineStart();
+							var lineEnd = this.getLineEnd();
+							return "M"+lineStart.x+","+lineStart.y+"L"+lineEnd.x+","+lineEnd.y;
+						}
+
+					};
+					proto.getLineStart = function() {
+						var theta = this.getTheta();
+						return {
+							x: this.options.fromX + Math.cos(theta) * this.options.radius
+							, y: this.options.fromY + Math.sin(theta) * this.options.radius
+						};
+					};
+					proto.getLineEnd = function() {
+						var theta = this.getTheta();
+						return {
+							x: this.options.toX - Math.cos(theta) * this.options.arrowLength
+							, y: this.options.toY - Math.sin(theta) * this.options.arrowLength
+						};
+					};
+					proto.getTrianglePath = function() {
+						var xDiff = this.options.fromX - this.options.toX;
+						var yDiff = this.options.fromY - this.options.toY;
+
+						var theta, lineEndX, lineEndY, toX, toY;
+
+						if(Math.pow(xDiff, 2) + Math.pow(yDiff, 2) <= Math.pow(this.options.radius + this.options.arrowLength, 2)) {
+							theta = (this.options.self_pointing_theta - 90) * Math.PI/180;
+							lineEndX = (this.options.fromX + (this.options.radius + this.options.arrowLength) * Math.cos(theta));
+							lineEndY = (this.options.fromY + (this.options.radius + this.options.arrowLength) * Math.sin(theta));
+							toX = (this.options.fromX + (this.options.radius) * Math.cos(theta));
+							toY = (this.options.fromY + (this.options.radius) * Math.sin(theta));
+						} else {
+							theta = this.getTheta();
+							var line_end = this.getLineEnd();
+							lineEndX = line_end.x;
+							lineEndY = line_end.y;
+							toX = this.options.toX;
+							toY = this.options.toY;
+						}
+							
+						var arrowAngleRadians = this.options.arrowAngle * Math.PI/180;
+
+						var off_line = this.options.arrowLength * Math.tan(arrowAngleRadians);
+						
+						var path = [
+							{x: toX, y:toY}
+							, {x: lineEndX + off_line * Math.cos(theta - Math.PI/2)
+								, y: lineEndY + off_line * Math.sin(theta - Math.PI/2)
+							}
+							, {x: lineEndX + off_line * Math.cos(theta + Math.PI/2)
+								, y: lineEndY + off_line * Math.sin(theta + Math.PI/2)
+							}
+						];
+						return "M" + _.map(path, function(point) {
+										return point.x+","+point.y;
+									}).join("L") + "Z";
+					};
+					proto.collapse = function() {
+						this.ellipse.animate({
+							cx: this.options.fromX
+							, cy: this.options.bottom
+							, rx: 0
+							, ry: 0
+						}, this.options.animation_duration);
+						this.line.animate({
+							path: "M"+this.options.fromX+","+this.options.bottom
+						}, this.options.animation_duration);
+						this.triangle.animate({
+							path: "M"+this.options.fromX+","+this.options.bottom
+						}, this.options.animation_duration);
+						this.expanded = false;
+					};
+					proto.expand = function() {
+						this.expanded = true;
 						var lineStart = this.getLineStart();
 						var lineEnd = this.getLineEnd();
-						return "M"+lineStart.x+","+lineStart.y+"L"+lineEnd.x+","+lineEnd.y;
-					}
-
-				};
-				Arrow.prototype.getLineStart = function() {
-					var theta = this.getTheta();
-					return {
-						x: this.options.fromX + Math.cos(theta) * this.options.radius
-						, y: this.options.fromY + Math.sin(theta) * this.options.radius
+						this.ellipse.animate({
+							cx: this.options.fromX
+							, cy: this.options.fromY
+							, rx: this.options.radius
+							, ry: this.options.radius
+						}, this.options.animation_duration);
+						this.line.animate({
+							path: this.getLinePath()
+						}, this.options.animation_duration);
+						this.triangle.animate({
+							path: this.getTrianglePath()
+						}, this.options.animation_duration);
 					};
-				};
-				Arrow.prototype.getLineEnd = function() {
-					var theta = this.getTheta();
-					return {
-						x: this.options.toX - Math.cos(theta) * this.options.arrowLength
-						, y: this.options.toY - Math.sin(theta) * this.options.arrowLength
-					};
-				};
-				Arrow.prototype.getTrianglePath = function() {
-					var xDiff = this.options.fromX - this.options.toX;
-					var yDiff = this.options.fromY - this.options.toY;
-
-					var theta, lineEndX, lineEndY, toX, toY;
-
-					if(Math.pow(xDiff, 2) + Math.pow(yDiff, 2) <= Math.pow(this.options.radius + this.options.arrowLength, 2)) {
-						theta = (this.options.self_pointing_theta - 90) * Math.PI/180;
-						lineEndX = (this.options.fromX + (this.options.radius + this.options.arrowLength) * Math.cos(theta));
-						lineEndY = (this.options.fromY + (this.options.radius + this.options.arrowLength) * Math.sin(theta));
-						toX = (this.options.fromX + (this.options.radius) * Math.cos(theta));
-						toY = (this.options.fromY + (this.options.radius) * Math.sin(theta));
-					} else {
-						theta = this.getTheta();
-						var line_end = this.getLineEnd();
-						lineEndX = line_end.x;
-						lineEndY = line_end.y;
-						toX = this.options.toX;
-						toY = this.options.toY;
-					}
-						
-					var arrowAngleRadians = this.options.arrowAngle * Math.PI/180;
-
-					var off_line = this.options.arrowLength * Math.tan(arrowAngleRadians);
-					
-					var path = [
-						{x: toX, y:toY}
-						, {x: lineEndX + off_line * Math.cos(theta - Math.PI/2)
-							, y: lineEndY + off_line * Math.sin(theta - Math.PI/2)
-						}
-						, {x: lineEndX + off_line * Math.cos(theta + Math.PI/2)
-							, y: lineEndY + off_line * Math.sin(theta + Math.PI/2)
-						}
-					];
-					return "M" + _.map(path, function(point) {
-									return point.x+","+point.y;
-								}).join("L") + "Z";
-				};
-				Arrow.prototype.collapse = function() {
-					this.ellipse.animate({
-						cx: this.options.fromX
-						, cy: this.options.bottom
-						, rx: 0
-						, ry: 0
-					}, this.options.animation_duration);
-					this.line.animate({
-						path: "M"+this.options.fromX+","+this.options.bottom
-					}, this.options.animation_duration);
-					this.triangle.animate({
-						path: "M"+this.options.fromX+","+this.options.bottom
-					}, this.options.animation_duration);
-					this.expanded = false;
-				};
-				Arrow.prototype.expand = function() {
-					this.expanded = true;
-					var lineStart = this.getLineStart();
-					var lineEnd = this.getLineEnd();
-					this.ellipse.animate({
-						cx: this.options.fromX
-						, cy: this.options.fromY
-						, rx: this.options.radius
-						, ry: this.options.radius
-					}, this.options.animation_duration);
-					this.line.animate({
-						path: this.getLinePath()
-					}, this.options.animation_duration);
-					this.triangle.animate({
-						path: this.getTrianglePath()
-					}, this.options.animation_duration);
-				};
-				Arrow.prototype.option = function(key, value, animated) {
-					if(arguments.length <= 1) {
-						return this.options[key];
-					} else {
-						this.options[key] = value;
-						var animation_duration = animated ? this.options.animation_duration : 0;
-						if(this.expanded) {
-							this.ellipse.animate({
-								cx: this.options.fromX
-								, cy: this.options.fromY
-								, rx: this.options.radius
-								, ry: this.options.radius
-							}, animation_duration);
-							this.line.animate({
-								path: this.getLinePath()
-							}, animation_duration);
-							this.triangle.animate({
-								path: this.getTrianglePath()
-							}, animation_duration);
+					proto.option = function(key, value, animated) {
+						if(arguments.length <= 1) {
+							return this.options[key];
 						} else {
-							this.ellipse.animate({
-								cx: this.options.fromX
-								, cy: this.options.bottom
-								, rx: 0
-								, ry: 0
-							}, 0);
-							this.line.animate({
-								path: "M"+this.options.fromX+","+this.options.bottom
-							}, 0);
-							this.triangle.animate({
-								path: "M"+this.options.fromX+","+this.options.bottom
-							}, 0);
+							this.options[key] = value;
+							var animation_duration = animated ? this.options.animation_duration : 0;
+							if(this.expanded) {
+								this.ellipse.animate({
+									cx: this.options.fromX
+									, cy: this.options.fromY
+									, rx: this.options.radius
+									, ry: this.options.radius
+								}, animation_duration);
+								this.line.animate({
+									path: this.getLinePath()
+								}, animation_duration);
+								this.triangle.animate({
+									path: this.getTrianglePath()
+								}, animation_duration);
+							} else {
+								this.ellipse.animate({
+									cx: this.options.fromX
+									, cy: this.options.bottom
+									, rx: 0
+									, ry: 0
+								}, 0);
+								this.line.animate({
+									path: "M"+this.options.fromX+","+this.options.bottom
+								}, 0);
+								this.triangle.animate({
+									path: "M"+this.options.fromX+","+this.options.bottom
+								}, 0);
+							}
+							return this;
 						}
-						return this;
-					}
-				};
+					};
+				} (Arrow));
 
 				var StatechartView = function(statechart, paper, options) {
 					this.statechart = statechart;
@@ -287,11 +366,12 @@
 										, parent: null
 										, left: 0
 										, width: 100
+										, state_name: ""
 									}, options);
 
 
 					if(!this.options.root) {
-						this.antenna = new Antenna(this.paper, { left: this.option("left") + (this.options.width / 2) });
+						this.antenna = new Antenna(this.paper, { left: this.option("left") + (this.options.width / 2), animate_creation: true });
 					}
 
 					this.substate_views = [];
@@ -302,14 +382,15 @@
 					this.$onIndexChange = _.bind(this.onIndexChange, this);
 					this.$onMove = _.bind(this.onMove, this);
 					this.$onValueChange = _.bind(this.onValueChange, this);
+					this.$onKeyChange = _.bind(this.onKeyChange, this);
 
 					this.$substates.each(this.$onSet);
 
 					this.$substates.onSet(this.$onSet);
 					this.$substates.onUnset(this.$onUnset);
 					this.$substates.onIndexChange(this.$onIndexChange);
-					this.$substates.onKeyChange(this.$onKeyChange);
 					this.$substates.onMove(this.$onMove);
+					this.$substates.onKeyChange(this.$onKeyChange);
 					this.$substates.onValueChange(this.$onValueChange)
 				};
 
@@ -341,9 +422,21 @@
 						this.substate_views.splice(insert_at, 0, substate_view);
 						//console.log("move", arguments);
 					};
-					proto.onValueChange = function() {
+					proto.onValueChange = function(state, state_name, old_state, index) {
+						var substate_view = this.substate_views[index];
+						substate_view.remove(true);
+						var new_substate_view = new StatechartView(state, this.paper, {
+							parent: this
+							, left: this.options.left + 50*index
+							, width: this.options.width
+						});
+						this.substate_views[index] = new_substate_view;
+
+						console.log("value change", arguments);
 					};
-					proto.onKeyChange = function() {
+					proto.onKeyChange = function(new_state_name, old_state_name, index) {
+						var substate_view = this.substate_views[index];
+						substate_view.option("state_name", new_state_name);
 					};
 					proto.option = function(key, value, animated) {
 						if(arguments.length <= 1) {
@@ -383,13 +476,21 @@
 
 
 
-					var paper = Raphael(0, 0, 600, 200);
+					var el = document.createElement("div");
+					el.style.position = "relative";
+					document.body.appendChild(el);
+					var paper = Raphael(el, 600, 200);
 
+					/*
 					var statechart_view = new StatechartView(statechart, paper, {root: true});
 					
 					statechart.add_state("b");
 					statechart.add_state("c");
 					statechart.remove_state("b");
+					*/
+					var eText = new EditableText(paper, {
+						x: 30, y: 30, text: "Hello"
+					});
 
 
 					/*
