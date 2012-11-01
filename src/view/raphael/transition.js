@@ -148,6 +148,11 @@ var Arrow = function(paper, options) {
 			path: this.getTrianglePath()
 		}, this.options.animation_duration);
 	};
+	proto.remove = function() {
+		this.ellipse.remove();
+		this.line.remove();
+		this.triangle.remove();
+	};
 	proto.option = function(key, value, animated) {
 		if(arguments.length <= 1) {
 			return this.options[key];
@@ -206,12 +211,13 @@ var Transition = function(transition, paper, options) {
 		, fromY: this.option("y")
 		, toY: this.option("y")
 	});
+	var event = this.transition.event();
 	this.label = red.create("editable_text", this.paper, {
 		x: (this.arrow.option("fromX") + this.arrow.option("toX"))/2
 		, y: (this.arrow.option("fromY") + this.arrow.option("toY"))/2 - this.option("y_offset")
 		, width: Math.max(from_view.option("width"), Math.abs(this.arrow.option("fromX") - this.arrow.option("toX")) - this.arrow.option("radius") - this.arrow.option("arrowLength"))
 		, text_anchor: "middle"
-		, text: "<event>"
+		, text: event.get_str()
 		, default: "<event>"
 	});
 	this.$onSetEventRequest = _.bind(this.onSetEventRequest, this);

@@ -29,8 +29,10 @@ var EditableText = function(paper, options) {
 		, width: 100
 		, text_anchor: "start"
 		, animation_duration: 600
+		, default: ""
 	}, options);
-	this.text = paper.text(this.options.x, this.options.y, this.options.text);
+
+	this.text = paper.text(this.options.x, this.options.y, this.get_text());
 
 	this.$onClick = _.bind(this.onClick, this);
 	this.$onKeydown = _.bind(this.onKeydown, this);
@@ -42,7 +44,18 @@ var EditableText = function(paper, options) {
 (function(my) {
 	var proto = my.prototype;
 	red.make_proto_listenable(proto);
+	proto.get_text = function() {
+		var normal_text = this.option("text");
+		if(normal_text === "") {
+			return this.option("default");
+		} else {
+			return normal_text;
+		}
+	};
 	proto.onClick = function(event) {
+		this.edit();
+	};
+	proto.edit = function() {
 		var textbox = document.createElement("input");
 		textbox.type = "text"
 		textbox.style.zIndex = 2;
@@ -70,7 +83,8 @@ var EditableText = function(paper, options) {
 		}
 	};
 	proto.onTextChange = function(value) {
-		this.text.attr("text", value);
+		this.option("text", value);
+		this.text.attr("text", this.get_text());
 		this._emit("change", {
 			value: value
 			, target: this

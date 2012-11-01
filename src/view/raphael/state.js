@@ -29,6 +29,7 @@ var Antenna = function(paper, options) {
 		this.line = paper.path("M"+this.options.left+","+(this.options.top+2*this.options.radius)+
 								"L"+this.options.left+","+(this.options.top + this.options.height));
 	}
+	this.ellipse.attr("fill", "#AAA");
 };
 
 (function(my) {
@@ -159,6 +160,10 @@ var TransitionLayoutManager = function(root_view) {
 		return this;
 	};
 
+	proto.num_rows = function() {
+		return this.transition_rows.length;
+	};
+
 	proto.update_layout = function() {
 		this.transition_rows = this.compute_transition_rows();
 		var transition_positions = simple_map();
@@ -175,7 +180,6 @@ var TransitionLayoutManager = function(root_view) {
 		var row_height = this.root_view.option("transition_height");
 		transition_positions.each(function(inverse_row, transition_view) {
 			var row = this.transition_rows.length - inverse_row - 1;
-			
 			transition_view.option("y", base_diameter+row * row_height, true);
 		}, this);
 		return this;
@@ -262,6 +266,67 @@ var StatechartView = function(statechart, paper, options) {
 															, radius: this.option("antenna_top_radius")
 															, top: this.option("top")
 															});
+
+		this.antenna.ellipse.mousedown(_.bind(function(event) {
+			var sc_root = this.statechart.root();
+			var substates = sc_root.flatten_substates();
+			var sc_root_view = statechart_view_map.get(sc_root);
+			var targets = _.chain(substates)
+							.map(statechart_view_map.get)
+							.pluck("antenna")
+							.compact()
+							.pluck("ellipse")
+							.value();
+			var nearest_target = function(x, y) {
+				var min_distance = -1;
+				var min_distance_index = -1;
+				for(var i = 0; i<targets.length; i++) {
+					var target = targets[i];
+					var distance = Math.pow(target.attr("cx") - x, 2) + Math.pow(target.attr("cy") - y, 2);
+					if(min_distance_index < 0 || distance < min_distance) {
+						min_distance = distance;
+						min_distance_index = i;
+					}
+				}
+				return targets[min_distance_index]
+			};
+			var get_dest_point = function(x, y) {
+				var target = nearest_target();
+				if(!target) {
+					return {x: x, y: y};
+				} else {
+					return {x: target.attr("cx"), y: target.attr("cy")};
+				}
+			}
+				
+			var dest_point = get_dest_point(event.clientX, event.clientY);
+
+			var ellipse = this.antenna.ellipse;
+			
+			var arrow = red.create("arrow", paper, {
+				fromX: ellipse.attr("cx")
+				, fromY: ellipse.attr("cy")
+				, toX: dest_point.x
+				, toY: dest_point.y
+			});
+			var onMouseMove = _.bind(function(event) {
+				var dest_point = get_dest_point(event.clientX, event.clientY);
+				arrow.option("toX", dest_point.x, false);
+				arrow.option("toY", dest_point.y, false);
+				event.stopPropagation();
+				event.preventDefault();
+			}, this);
+			window.addEventListener("mousemove", onMouseMove);
+
+			var onMouseUp = _.bind(function(event) {
+				arrow.remove();
+				window.removeEventListener("mousemove", onMouseMove);
+				window.removeEventListener("mouseup", onMouseUp);
+			}, this);
+			window.addEventListener("mouseup", onMouseUp);
+			event.stopPropagation();
+			event.preventDefault();
+		}, this));
 	}
 
 	this.substate_views = [];
