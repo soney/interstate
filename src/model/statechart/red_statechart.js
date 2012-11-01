@@ -134,6 +134,13 @@ var Statechart = function(options, defer_initialization) {
 	proto.get_outgoing_transitions = function() { return this.$outgoing_transitions.get(); };
 	proto.get_active_substate = function(substate) { return this.$local_state.get(); };
 	proto.is_running = function() { return this._running; };
+
+	proto.flatten_substates = function() {
+		return ([this]).concat(_.flatten(_.map(this.get_substates(), function(substate) {
+			return substate.flatten_substates();
+		})));
+	};
+
 	var get_state_regex = function(state_name) { 
 		var valid_chars = "[^\\-<>a-zA-Z0-9]*";
 		return valid_chars + "\\*|("+state_name+")" + valid_chars;

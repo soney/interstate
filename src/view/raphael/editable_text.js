@@ -46,7 +46,7 @@ var EditableText = function(paper, options) {
 		var textbox = document.createElement("input");
 		textbox.type = "text"
 		textbox.style.zIndex = 2;
-		textbox.style.left = this.options.x - this.options.width/2 + "px";
+		textbox.style.left = (this.text.attr("text-anchor") === "middle" ? this.options.x - this.options.width/2 : this.options.x) + "px" ;
 		textbox.style.width = this.options.width + "px";
 		match_styles(textbox, this.text);
 		this.paper.canvas.parentNode.insertBefore(textbox, this.paper.canvas);
@@ -96,6 +96,10 @@ var EditableText = function(paper, options) {
 			if(key === "x") {
 				this.text.animate({
 					"x": this.option("x")
+				}, animation_duration);
+			} else if(key === "y") {
+				this.text.animate({
+					"y": this.option("y")
 				}, animation_duration);
 			}
 			return this;

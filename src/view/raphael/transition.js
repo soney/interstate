@@ -12,15 +12,28 @@ var Arrow = function(paper, options) {
 		, bottom: 45
 		, animation_duration: 600
 		, self_pointing_theta: 45
+		, animate_creation: false
 	}, options);
+	this.paper = paper;
 
-	this.expanded = true;
-	this.ellipse = paper.ellipse(this.options.fromX
-								, this.options.fromY
-								, this.options.radius
-								, this.options.radius);
-	this.line = paper.path(this.getLinePath());
-	this.triangle = paper.path(this.getTrianglePath());
+	if(this.options.animate_creation) {
+		this.expanded = false;
+		this.ellipse = paper.ellipse(this.options.fromX
+									, this.options.bottom
+									, 0
+									, 0);
+		this.line = paper.path("M"+this.options.fromX+","+this.options.bottom);
+		this.triangle = paper.path("M"+this.options.fromX+","+this.options.bottom);
+		this.expand();
+	} else {
+		this.expanded = true;
+		this.ellipse = paper.ellipse(this.options.fromX
+									, this.options.fromY
+									, this.options.radius
+									, this.options.radius);
+		this.line = paper.path(this.getLinePath());
+		this.triangle = paper.path(this.getTrianglePath());
+	}
 };
 (function(my) {
 	var proto = my.prototype
@@ -173,5 +186,59 @@ var Arrow = function(paper, options) {
 	};
 } (Arrow));
 red.define("arrow", function(a, b) { return new Arrow(a,b); });
+
+var Transition = function(transition, paper, options) {
+	this.options = _.extend({
+		from_view: null
+		, animate_creation: false
+		, y_offset: 4
+		, y: 0
+	}, options);
+
+	this.transition = transition;
+	this.paper = paper;
+	var from_view = this.option("from_view");
+	var to_view = this.option("to_view");
+	this.arrow = red.create("arrow", this.paper, {
+		fromX: from_view.option("left") + from_view.option("width")/2
+		, toX: to_view.option("left") + to_view.option("width")/2
+		, animate_creation: this.option("animate_creation")
+		, fromY: this.option("y")
+		, toY: this.option("y")
+	});
+	this.label = red.create("editable_text", this.paper, {
+		x: (this.arrow.option("fromX") + this.arrow.option("toX"))/2
+		, y: (this.arrow.option("fromY") + this.arrow.option("toY"))/2 - this.option("y_offset")
+		, width: Math.max(from_view.option("width"), Math.abs(this.arrow.option("fromX") - this.arrow.option("toX")) - this.arrow.option("radius") - this.arrow.option("arrowLength"))
+		, text_anchor: "middle"
+		, text: "<event>"
+		, default: "<event>"
+	});
+	this.$onSetEventRequest = _.bind(this.onSetEventRequest, this);
+	this.label.on("change", this.$onSetEventRequest);
+};
+
+(function(my) {
+	var proto = my.prototype;
+	proto.onSetEventRequest = function(e) {
+		var str = e.value;
+		var transition_event = this.transition.event();
+		transition_event.set_str(str);
+	};
+	proto.option = function(key, value, animated) {
+		if(arguments.length <= 1) {
+			return this.options[key];
+		} else {
+			this.options[key] = value;
+			if(key === "y") {
+				this.arrow.option("fromY", this.option("y"), animated);
+				this.arrow.option("toY", this.option("y"), animated);
+				this.label.option("y", (this.arrow.option("fromY") + this.arrow.option("toY"))/2 - this.option("y_offset"));
+			}
+		}
+	};
+}(Transition));
+
+red.define("transition", function(a,b,c) { return new Transition(a,b,c); });
 
 }(red));
