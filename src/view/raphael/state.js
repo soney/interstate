@@ -271,27 +271,30 @@ var StatechartView = function(statechart, paper, options) {
 			var sc_root = this.statechart.root();
 			var substates = sc_root.flatten_substates();
 			var sc_root_view = statechart_view_map.get(sc_root);
-			var targets = _.chain(substates)
-							.map(statechart_view_map.get)
-							.pluck("antenna")
-							.compact()
-							.pluck("ellipse")
-							.value();
-			var nearest_target = function(x, y) {
+
+			var nearest_target_index = function(x, y) {
 				var min_distance = -1;
 				var min_distance_index = -1;
-				for(var i = 0; i<targets.length; i++) {
-					var target = targets[i];
-					var distance = Math.pow(target.attr("cx") - x, 2) + Math.pow(target.attr("cy") - y, 2);
-					if(min_distance_index < 0 || distance < min_distance) {
-						min_distance = distance;
-						min_distance_index = i;
+				for(var i = 0; i<substates.length; i++) {
+					var substate = substates[i];
+					var substate_view = statechart_view_map.get(substate);
+					if(_.has(substate_view, "antenna")) {
+						var target = substate_view.antenna.ellipse;
+						var distance = Math.pow(target.attr("cx") - x, 2) + Math.pow(target.attr("cy") - y, 2);
+						if(min_distance_index < 0 || distance < min_distance) {
+							min_distance = distance;
+							min_distance_index = i;
+						}
 					}
 				}
-				return targets[min_distance_index]
+				return min_distance_index;
+			};
+			var nearest_target = function(x, y) {
+				var nti = nearest_target_index(x, y);
+				return statechart_view_map.get(substates[nti]).antenna.ellipse;
 			};
 			var get_dest_point = function(x, y) {
-				var target = nearest_target();
+				var target = nearest_target(x,y);
 				if(!target) {
 					return {x: x, y: y};
 				} else {
@@ -309,21 +312,45 @@ var StatechartView = function(statechart, paper, options) {
 				, toX: dest_point.x
 				, toY: dest_point.y
 			});
+			var old_dest = {x:-1, y:-1};
 			var onMouseMove = _.bind(function(event) {
 				var dest_point = get_dest_point(event.clientX, event.clientY);
-				arrow.option("toX", dest_point.x, false);
-				arrow.option("toY", dest_point.y, false);
+				if(dest_point.x !== old_dest.x || dest_point.y !== old_dest.y) {
+					arrow.option("toX", dest_point.x, true);
+					arrow.option("toY", dest_point.y, true);
+					old_dest = dest_point;
+				}
 				event.stopPropagation();
 				event.preventDefault();
 			}, this);
+
 			window.addEventListener("mousemove", onMouseMove);
+
+			var remove_event_listeners = function() {
+				window.removeEventListener("mousemove", onMouseMove);
+				window.removeEventListener("mouseup", onMouseUp);
+				window.removeEventListener("keydown", onKeyDown);
+			};
 
 			var onMouseUp = _.bind(function(event) {
 				arrow.remove();
-				window.removeEventListener("mousemove", onMouseMove);
-				window.removeEventListener("mouseup", onMouseUp);
+				remove_event_listeners();
+				var substate_index = nearest_target_index(event.clientX, event.clientY);
+				var to_state = substates[substate_index];
+				var from_state = this.statechart;
+				var transition_event = red.create_event("parsed", "");
+				from_state.parent().add_transition(from_state, to_state, transition_event);
 			}, this);
+
+			var onKeyDown = _.bind(function(event) {
+				if(event.keyCode === 27) { // Esc
+					arrow.remove();
+					remove_event_listeners();
+				}
+			}, this);
+
 			window.addEventListener("mouseup", onMouseUp);
+			window.addEventListener("keydown", onKeyDown);
 			event.stopPropagation();
 			event.preventDefault();
 		}, this));
