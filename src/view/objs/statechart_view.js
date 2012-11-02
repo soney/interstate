@@ -1,6 +1,38 @@
 (function(red, $) {
 var cjs = red.cjs, _ = red._;
+$.widget("red.statechart", {
+	options: {
+		statechart: undefined
+		, has_add_state_button: true
+		, get_new_state_name: function(statechart) {
+			var substate_names = statechart.get_substate_names();
 
+			var num_substates = _.size(substate_names);
+			var state_name = "state_" + num_substates;
+
+			var original_state_name = state_name;
+			var prop_try = 0;
+			while(_.indexOf(substate_names, state_name) >= 0) {
+				state_name = original_state_name + "_" + prop_try;
+				prop_try++;
+			}
+			return state_name;
+		}
+		, inherited: false
+	}
+
+	, _create: function() {
+		this.element.addClass("statechart");	
+		var paper = Raphael(this.element[0], 600, 70);
+		this.scv = red.create("statechart_view", this.option("statechart"), paper, {root: true});
+	}
+
+	, _destroy: function() {
+		this.element.removeClass("statechart");	
+	}
+});
+
+/*
 var insert_at = function(child_node, parent_node, index) {
 	var children = parent_node.childNodes;
 	if(children.length <= index) {
@@ -78,27 +110,6 @@ $.widget("red.statechart", {
 		this._child_states.remove();
 	}
 
-	, _make_states_draggable: function() {
-		var self = this;
-		//console.log("make sortable", this.uuid);
-		this._child_states	.sortable({
-								axis: "x"
-							})
-							.on("sortover", function(event) { event.stopPropagation(); })
-							.on("sortstop", function(event, ui) {
-								var state_span = ui.item;
-								var new_state_index = state_span.index();
-								var state = state_span.state("option", "statechart");
-
-								var command_event = $.Event("red_command");
-								command_event.command = self._get_move_state_command(state, new_state_index); // add one to index to account for _pre_init
-
-								self._child_states.sortable("cancel");
-								self.element.trigger(command_event);
-
-								event.stopPropagation(); // don't want any parents to listen
-							});
-	}
 
 	, _create_add_state_button: function() {
 		this._add_state = $("<span />")	.addClass("add_state")
@@ -531,4 +542,5 @@ $.widget("red.transition", {
 	}
 });
 
+*/
 }(red, jQuery));

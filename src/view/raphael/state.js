@@ -370,7 +370,9 @@ var StatechartView = function(statechart, paper, options) {
 	this.$onKeyChange = _.bind(this.onKeyChange, this);
 
 	this.$substates.each(function(a,b,c) {
+		console.log("BEGIN");
 		this.$onSet(a,b,c,false);
+		console.log("END");
 	}, this);
 
 	this.$substates.onSet(this.$onSet);
@@ -425,6 +427,7 @@ var StatechartView = function(statechart, paper, options) {
 	};
 
 	proto.onSet = function(state, state_name, index, also_initialize) {
+		debugger;
 		var state_view = red.create("statechart_view", state, this.paper, {
 			parent: this
 			, left: this.options.left + this.option("width")*index
