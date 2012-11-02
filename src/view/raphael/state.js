@@ -427,7 +427,6 @@ var StatechartView = function(statechart, paper, options) {
 	};
 
 	proto.onSet = function(state, state_name, index, also_initialize) {
-		debugger;
 		var state_view = red.create("statechart_view", state, this.paper, {
 			parent: this
 			, left: this.options.left + this.option("width")*index
