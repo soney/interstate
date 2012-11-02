@@ -26,15 +26,27 @@
 
 
 					albums.pluck = _.bind(_.pluck, _, albums);
+					//console.log(albums.pluck('songs'));
+					//albums.flatten = _.bind(_.flatten, _, albums);
+					/*
+					Array.prototype.pluck = function(val) {
+						console.log("A");
+						return _.pluck(this, val);
+					};
+					Array.prototype.flatten = function() {
+						return _.flatten(this);
+					};
+					*/
 					env = red.create("environment");
 					root = env.get_pointer();
-					/*
 					console.log(albums);
 					var $albums = window.$albums = cjs.$(albums);
 					root.set("albums", $albums);
-					env.set("artists", "albums.pluck('artist')");
+					//env.set("songs", "albums.pluck('songs')");
+					//env.set("flat_songs", "songs.flatten()");
 					//env.set("artists", "albums.pluck('artist')");
-					*/
+					//env.set("artists", "albums.pluck('artist')");
+					//env.set("artists", "albums.pluck('artist')");
 					root_view = $("<div />").environment({controller: env})
 											.appendTo(document.body);
 
