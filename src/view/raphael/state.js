@@ -370,9 +370,7 @@ var StatechartView = function(statechart, paper, options) {
 	this.$onKeyChange = _.bind(this.onKeyChange, this);
 
 	this.$substates.each(function(a,b,c) {
-		console.log("BEGIN");
 		this.$onSet(a,b,c,false);
-		console.log("END");
 	}, this);
 
 	this.$substates.onSet(this.$onSet);
