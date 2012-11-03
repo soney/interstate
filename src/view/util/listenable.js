@@ -3,6 +3,11 @@ var cjs = red.cjs, _ = red._;
 
 red.make_this_listenable = function(instance) {
 	instance._listeners = {};
+	this.forward = function() {
+		var args = _.toArray(arguments);
+		var type = _.last(args);
+		this._emit.apply(([type]).concat(args.slice(0, args.length-1)));
+	};
 };
 red.make_proto_listenable = function(proto) {
 	proto.on = function(event_type, callback, context) {

@@ -25,10 +25,42 @@ $.widget("red.statechart", {
 		this.element.addClass("statechart");	
 		var paper = Raphael(this.element[0], 600, 70);
 		this.scv = red.create("statechart_view", this.option("statechart"), paper, {root: true});
+		var self = this;
+		this.scv.on("add_state", function() {
+			var state_name = self.option("get_new_state_name")(self.option("statechart"));
+			var event = $.Event("red_command");
+			event.command = self._get_add_state_command();
+			self.element.trigger(event);
+		});
 	}
 
 	, _destroy: function() {
 		this.element.removeClass("statechart");	
+	}
+
+	, _get_add_state_command: function() {
+		var statechart = this.option("statechart");
+		var get_new_state_name = this.option("get_new_state_name");
+
+		statechart = statechart.basis() || statechart;
+
+		return red.command("add_state", {
+			statechart: statechart
+			, name: get_new_state_name(statechart)
+		});
+	}
+
+	, _get_move_state_command: function(state, to_index) {
+		var parent = this.option("statechart");
+		var state_name = state.get_name(parent);
+
+		parent = parent.basis() || parent;
+
+		return red.command("move_state", {
+			statechart: parent
+			, name: state_name
+			, index: to_index
+		});
 	}
 });
 

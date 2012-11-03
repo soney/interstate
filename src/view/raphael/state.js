@@ -228,6 +228,7 @@ var TransitionLayoutManager = function(root_view) {
 var statechart_view_map = simple_map();
 
 var StatechartView = function(statechart, paper, options) {
+	red.make_this_listenable(this);
 	this.statechart = statechart;
 	statechart_view_map.set(this.statechart, this);
 	this.paper = paper;
@@ -246,8 +247,18 @@ var StatechartView = function(statechart, paper, options) {
 					}, options);
 
 
+	var self = this;
 	if(this.options.root) {
 		this.options.transition_layout_manager = new TransitionLayoutManager(this);
+		this.add_state_button = paper.text(400, 10, "+");
+		this.add_state_button.click(function(event) {
+			self._emit("add_state", {
+				originalEvent: event
+			});
+		}).attr({
+			"font-size": 30
+			, "cursor": "pointer"
+		});
 	} else {
 		this.label = red.create("editable_text", this.paper, {
 			x: this.option("left") + this.option("width")/2
@@ -314,7 +325,9 @@ var StatechartView = function(statechart, paper, options) {
 			});
 			var old_dest = {x:-1, y:-1};
 			var onMouseMove = _.bind(function(event) {
-				var dest_point = get_dest_point(event.clientX, event.clientY);
+				var x = event.clientX - this.paper.canvas.offsetLeft;
+				var y = event.clientY - this.paper.canvas.offsetTop;
+				var dest_point = get_dest_point(x, y);
 				if(dest_point.x !== old_dest.x || dest_point.y !== old_dest.y) {
 					arrow.option("toX", dest_point.x, true);
 					arrow.option("toY", dest_point.y, true);
@@ -335,7 +348,9 @@ var StatechartView = function(statechart, paper, options) {
 			var onMouseUp = _.bind(function(event) {
 				arrow.remove();
 				remove_event_listeners();
-				var substate_index = nearest_target_index(event.clientX, event.clientY);
+				var x = event.clientX - this.paper.canvas.offsetLeft;
+				var y = event.clientY - this.paper.canvas.offsetTop;
+				var substate_index = nearest_target_index(x, y);
 				var to_state = substates[substate_index];
 				var from_state = this.statechart;
 				var transition_event = red.create_event("parsed", "");
@@ -387,6 +402,7 @@ var StatechartView = function(statechart, paper, options) {
 
 (function(my) {
 	var proto = my.prototype;
+	red.make_proto_listenable(proto);
 	proto.onStatesReady = function() {
 		this.$onTransitionAdded = _.bind(this.onTransitionAdded, this);
 		this.$onTransitionRemoved = _.bind(this.onTransitionRemoved, this);
@@ -434,7 +450,6 @@ var StatechartView = function(statechart, paper, options) {
 			, transition_layout_manager: this.options.transition_layout_manager
 		});
 		this.substate_views.splice(index, 0, state_view);
-		//console.log("set", arguments);
 		if(also_initialize !== false) {
 			state_view.onStatesReady();
 		}
