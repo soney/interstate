@@ -353,8 +353,14 @@ var StatechartView = function(statechart, paper, options) {
 				var substate_index = nearest_target_index(x, y);
 				var to_state = substates[substate_index];
 				var from_state = this.statechart;
-				var transition_event = red.create_event("parsed", "");
-				from_state.parent().add_transition(from_state, to_state, transition_event);
+				//var transition_event = red.create_event("parsed", "");
+				//from_state.parent().add_transition(from_state, to_state, transition_event);
+				//console.log("emit");
+				self._emit("add_transition", {
+					originalEvent: event,
+					from_state: from_state,
+					to_state: to_state
+				});
 			}, this);
 
 			var onKeyDown = _.bind(function(event) {
@@ -433,8 +439,10 @@ var StatechartView = function(statechart, paper, options) {
 		transition_layout_manager	.add_transition_view(transition_view)
 									.update_layout();
 	};
-	proto.onTransitionRemoved = function() {
-		console.log("removed", arguments);
+	proto.onTransitionRemoved = function(transition, index) {
+		var transition_view = this.transition_views[index];
+		this.transition_views.splice(index, 1);
+		transition_view.remove();
 	};
 	proto.onTransitionMoved = function() {
 		console.log("moved", arguments);
@@ -453,11 +461,15 @@ var StatechartView = function(statechart, paper, options) {
 		if(also_initialize !== false) {
 			state_view.onStatesReady();
 		}
+		state_view.on("add_transition", this.forward);
+		state_view.on("add_state", this.forward);
 	};
 	proto.onUnset = function(state, state_name, index) {
 		var substate_view = this.substate_views[index];
 		this.substate_views.splice(index, 1);
 		substate_view.remove(true);
+		state_view.off("add_transition", this.forward);
+		state_view.off("add_state", this.forward);
 		//console.log("unset", arguments);
 	};
 	proto.onIndexChange = function(state, state_name, to_index, from_index) {

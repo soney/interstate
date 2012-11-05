@@ -243,6 +243,10 @@ var Transition = function(transition, paper, options) {
 			}
 		}
 	};
+	proto.remove = function() {
+		this.arrow.remove();
+		this.label.remove();
+	};
 }(Transition));
 
 red.define("transition", function(a,b,c) { return new Transition(a,b,c); });

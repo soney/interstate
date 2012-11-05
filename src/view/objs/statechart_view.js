@@ -31,6 +31,10 @@ $.widget("red.statechart", {
 			var event = $.Event("red_command");
 			event.command = self._get_add_state_command();
 			self.element.trigger(event);
+		}).on("add_transition", function(add_transition_event) {
+			var event = $.Event("red_command");
+			event.command = self._get_add_transition_command(add_transition_event.from_state, add_transition_event.to_state);
+			self.element.trigger(event);
 		});
 	}
 
@@ -50,6 +54,17 @@ $.widget("red.statechart", {
 		});
 	}
 
+	, _get_remove_state_command: function() {
+		var statechart = this.option("statechart");
+		var parent = statechart.parent();
+		var name = statechart.get_name(parent);
+		parent = parent.basis() || parent;
+		return red.command("remove_state", {
+			statechart: parent
+			, name: name
+		});
+	}
+
 	, _get_move_state_command: function(state, to_index) {
 		var parent = this.option("statechart");
 		var state_name = state.get_name(parent);
@@ -62,6 +77,59 @@ $.widget("red.statechart", {
 			, index: to_index
 		});
 	}
+
+	, _get_rename_state_command: function(to_name) {
+		var statechart = this.option("statechart");
+		var parent = statechart.parent();
+		var from_name = statechart.get_name(parent);
+
+		parent = parent.basis() || parent;
+
+		return red.command("rename_state", {
+			statechart: parent
+			, from: from_name
+			, to: to_name
+		});
+	}
+
+	, _get_add_transition_command: function(from_state, to_state) {
+		var from_name = from_state.get_name(parent);
+		var to_name = to_state.get_name(parent);
+		var dict_row_parent = this.element.parents(".dict_row").first();
+		var dict_parent = dict_row_parent.find("> .dict").first();
+		var dict = dict_parent.dict("option", "dict");
+		var dict_context = dict_parent.dict("option", "context");
+
+		var parent = from_state.parent();
+		parent = parent.basis() || parent;
+
+
+		return red.command("add_transition", {
+			event: red.create_event("parsed", "", dict, dict_context)
+			, statechart: parent
+			, from: from_name
+			, to: to_name
+		});
+	}
+	, _get_remove_transition_command: function() {
+		var transition = this.option("transition");
+		transition = transition.basis() || transition;
+		return red.command("remove_transition", {
+			transition: transition
+			, statechart: transition.get_parent_statechart()
+		})
+	}
+	
+	, _get_set_event_command: function(str) {
+		var transition = this.option("transition");
+		transition = transition.basis() || transition;
+		return red.command("set_transition_event", {
+			transition: transition
+			, event: str
+			, statechart: transition.get_parent_statechart()
+		})
+	}
+
 });
 
 /*

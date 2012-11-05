@@ -3,10 +3,10 @@ var cjs = red.cjs, _ = red._;
 
 red.make_this_listenable = function(instance) {
 	instance._listeners = {};
-	this.forward = function() {
+	instance.forward = function() {
 		var args = _.toArray(arguments);
 		var type = _.last(args);
-		this._emit.apply(([type]).concat(args.slice(0, args.length-1)));
+		instance._emit.apply(instance, ([type]).concat(args.slice(0, args.length-1)));
 	};
 };
 red.make_proto_listenable = function(proto) {
@@ -29,6 +29,7 @@ red.make_proto_listenable = function(proto) {
 	};
 	proto._emit = function(event_type) {
 		var args = _.rest(arguments);
+		args.push(event_type);
 		_.each(this._listeners[event_type], function(listener) {
 			var context = listener.context || this;
 			listener.callback.apply(context, args);
