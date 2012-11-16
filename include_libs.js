@@ -34,8 +34,8 @@ exports.main_src = c(
 				"esprima/esprima.js"
 				, "underscore/underscore.js"
 				, "underscore/red_underscore_extensions.js"
-				, "jquery-ui-1.9.0-rc.1/jquery-1.8.0.js"
-				, "jquery-ui-1.9.0-rc.1/ui/jquery-ui.js"
+				, "jquery-ui-1.9.1.custom/js/jquery-1.8.2.js"
+				, "jquery-ui-1.9.1.custom/js/jquery-ui-1.9.1.custom.js"
 				, "raphael/raphael.js"
 			])
 	, cp(src, [
