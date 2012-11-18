@@ -1,5 +1,19 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
+Raphael.fn.addGuides = function() {
+	this.ca.guide = function(g) {
+		return {
+			guide: g
+		};
+	};
+	this.ca.along = function(from_percent, to_percent) {
+		var g = this.attr("guide");
+		var len = g.getTotalLength();
+		if(from_percent === to_percent && to_percent === 1) { from_percent = 0.9999; }
+		var subpath = g.getSubpath(from_percent*len, to_percent*len);
+		return { path: subpath };
+	};
+};
 var Arrow = function(paper, options) {
 	this.options = _.extend({
 		arrowLength: 7
@@ -26,6 +40,7 @@ var Arrow = function(paper, options) {
 		, attrs: this.state_attrs
 	});
 	this.paper = paper;
+	this.paper.addGuides();
 };
 
 (function(my) {
@@ -107,16 +122,25 @@ var Arrow = function(paper, options) {
 		var the_flash = this.paper.path(line_elem.getSubpath(0, 0));
 		the_flash.attr({
 			stroke: "red"
-			, "stroke-width": 2
+			, "stroke-width": 3
+			, guide: line_elem
+			, along: [0, 0]
 		});
 		the_flash.animate({
-			path: line_elem.getSubpath(0, len)
-		}, 1000, "ease-in", function() {
+			along: [0, 1]
+		}, 400, "ease-in", function() {
 			the_flash.animate({
-				path: line_elem.getSubpath(len, len)
-			}, 1000, "ease-out", function() {
+				along: [1, 1]
+			}, 400, "ease-out", function() {
 				the_flash.remove();
 				console.log("all done");
+			});
+			arrow.option({"fill": "red"});
+			arrow.option({
+				fill: "white"
+			}, {
+				ms: 400
+				, easing: "ease-out"
 			});
 		});
 
