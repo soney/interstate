@@ -68,6 +68,7 @@ exports.main_src = c(
 				, "controller/environment/command_stack.js"
 				, "controller/environment/red_environment.js"
 				, "view/util/listenable.js"
+				, "view/raphael/raphael_utils.js"
 				, "view/raphael/editable_text.js"
 				, "view/raphael/state.js"
 				, "view/raphael/transition.js"

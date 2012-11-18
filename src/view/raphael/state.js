@@ -11,97 +11,129 @@ var Antenna = function(paper, options) {
 		, animate_creation: false
 	}, options);
 
+	this.state_attrs = this.get_state_attrs();
 
+	this.highlighted = false;
 	if(this.options.animate_creation) {
 		this.expanded = false;
-		this.ellipse = paper.ellipse(this.options.left
-									, this.options.top + this.options.height
-									, 0
-									, 0);
-		this.line = paper.path("M" + this.options.left + "," + (this.options.top+this.options.height));
-		this.expand();
 	} else {
 		this.expanded = true;
-		this.ellipse = paper.ellipse(this.options.left
-									, this.options.top + this.options.radius
-									, this.options.radius
-									, this.options.radius);
-		this.line = paper.path("M"+this.options.left+","+(this.options.top+2*this.options.radius)+
-								"L"+this.options.left+","+(this.options.top + this.options.height));
 	}
-	this.ellipse.attr("fill", "#AAA");
+
+	this.rrcompound = red.create("rrcompound", paper, {
+		contents: {
+			"circle": "circle"
+			, "line": "path"
+		}
+		, attrs: this.get_attrs()
+	});
+
+	if(this.options.animate_creation) {
+		this.expand();
+	}
 };
 
 (function(my) {
 	var proto = my.prototype;
 
-	proto.collapse = function(callback) {
-		this.line.animate({
-			path: "M" + this.options.left + "," + (this.options.top+this.options.height)
-		}, this.options.animation_duration);
-		this.ellipse.animate({
-			cy: this.options.top + this.options.height
-			, ry: 0
-			, rx: 0
-		}, this.options.animation_duration, "<>", callback);
+	proto.get_state_attrs = function() {
+		return {
+			collapsed: {
+				circle: {
+					r: 0
+					, cx: this.option("left")
+					, cy: this.option("top") + this.option("height")
+				}, line: {
+					path:  "M" + this.option("left") + "," + (this.option("top") + this.option("height"))
+				}
+			}, expanded: {
+				circle: {
+					r: this.option("radius")
+					, cx: this.option("left")
+					, cy: this.option("top") + this.option("radius")
+				} , line: {
+					path:  "M" + this.option("left") + "," + (this.option("top") + 2*this.option("radius")) +
+									"V"+(this.option("top") + this.option("height"))
+				}
+			}, highlighted: {
+				circle: {
+					fill: "#FF0000"
+					, stroke: "#990000"
+				} , line: {
+					stroke: "#990000"
+				}
+			}, dim: {
+				circle: {
+					fill: "#FFFFFF"
+					, stroke: "#000000"
+				} , line: {
+					stroke: "#000000"
+				}
+			}
+		};
+	};
+	proto.get_attrs = function() {
+		var attrs = {};
+		if(this.expanded) { _.deepExtend(attrs, this.state_attrs.expanded); }
+		else { _.deepExtend(attrs, this.state_attrs.collapsed); }
+
+		if(this.highlighted) { _.deepExtend(attrs, this.state_attrs.highlighted); }
+		else { _.deepExtend(attrs, this.state_attrs.dim); }
+
+		
+		return attrs;
+	};
+
+	proto.collapse = function() {
 		this.expanded = false;
+		this.rrcompound.option("attrs", this.get_attrs(), this.option("animation_duration"));
 	};
 	proto.expand = function() {
 		this.expanded = true;
-		this.line.animate({
-			path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
-							"L"+this.options.left+","+(this.options.top + this.options.height)
-		}, this.options.animation_duration);
-		this.ellipse.animate({
-			cy: this.options.top + this.options.radius
-			, ry: this.options.radius
-			, rx: this.options.radius
-		}, this.options.animation_duration);
+		this.rrcompound.option("attrs", this.get_attrs(), this.option("animation_duration"));
 	};
+	proto.highlight = function() {
+		this.highlighted = true;
+		this.rrcompound.option("attrs", this.get_attrs(), this.option("animation_duration"));
+	};
+	proto.dim = function() {
+		this.highlighted = false;
+		this.rrcompound.option("attrs", this.get_attrs(), this.option("animation_duration"));
+	};
+
 	proto.option = function(key, value, animated) {
-		if(arguments.length <= 1) {
-			return this.options[key];
-		} else {
-			this.options[key] = value;
-			var animation_duration = animated ? this.options.animation_duration : 0;
-			if(this.expanded) {
-				this.ellipse.animate({
-					cy: this.options.top + this.options.radius
-					, cx: this.options.left
-					, ry: this.options.radius
-					, rx: this.options.radius
-				}, animation_duration);
-				this.line.animate({
-					path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
-									"L"+this.options.left+","+(this.options.top + this.options.height)
-				}, animation_duration);
-			} else {
-				if(key === "left") {
-					this.line.animate({
-						path: "M"+this.options.left+","+(this.options.top+2*this.options.radius)+
-										"L"+this.options.left+","+(this.options.top + this.options.height)
-					}, 0);
-					this.ellipse.animate({
-						cy: this.options.top + this.options.radius
-						, cx: this.options.left
-						, ry: this.options.radius
-						, rx: this.options.radius
-					}, 0);
-				}
+		if(_.isString(key)) {
+			if(arguments.length === 1) {
+				return this.options[key];
+			} else if(arguments.length > 1) {
+				this.options[key] = value;
 			}
-			return this;
+		} else {
+			animated = value;
+			_.each(key, function(v, k) {
+				this.options[k] = v;
+			}, this);
 		}
+		this.state_attrs = this.get_state_attrs();
+		var new_attrs = this.expanded ? this.state_attrs.expanded: this.state_attrs.collapsed;
+		if(animated) {
+			var anim_options = _.extend({
+				ms: this.option("animation_duration")
+			}, animated);
+			this.rrcompound.option("attrs", new_attrs, anim_options);
+		} else {
+			this.rrcompound.option("attrs", new_attrs, false);
+		}
+		return this;
 	};
 	proto.remove = function (animated) {
 		if(animated) {
-			var self = this;
-			this.collapse(function() {
-				self.ellipse.remove();
-				self.line.remove();
+			this.collapse({
+				callback: function() {
+				}
 			});
 		} else {
-			this.ellipse.remove();
-			this.line.remove();
+			this.rrcompound.remove();
 		}
 	};
 }(Antenna));
@@ -278,7 +310,7 @@ var StatechartView = function(statechart, paper, options) {
 															, top: this.option("top")
 															});
 
-		this.antenna.ellipse.mousedown(_.bind(function(event) {
+		this.antenna.circle.mousedown(_.bind(function(event) {
 			var sc_root = this.statechart.root();
 			var substates = sc_root.flatten_substates();
 			var sc_root_view = statechart_view_map.get(sc_root);
