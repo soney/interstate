@@ -214,62 +214,61 @@ red.RRaphael = RRaphael;
 var ColumnLayout = function(options) {
 	red.make_this_listenable(this);
 	this.options = _.extend({
-		width: 50
+		own_width: false
+		, x: 0
+		/*
 		, onMove: function(new_x, old_x) { }
 		, onResize: function(new_width, old_width) { }
 		, onRemove: function() { }
 		, onIndexChange: function(new_index, old_index) { }
-		, x: 0
+		*/
 	}, options);
-	this.columns = [];
+	this.children = [];
 };
 (function(my) {
 	var proto = my.prototype;
 	red.make_proto_listenable(proto);
 	proto.push = function(options) {
-		var column = this.get_column(options);
-		if(this.columns.length > 0) {
-			var previous_column = this.columns[this.columns.length - 1];
-			options.x = previous_column.x + previous_column.width;
-		}
-		this.columns.push(options);
+		return this.insert_at(null, options);
 	};
 	proto.insert_at = function(index, options) {
-		index = Math.max(0, Math.min(index, this.columns.length - 1));
-		var column = this.get_column(options);
+		if(!_.isNumber(index)) { index = this.children.length; }
+		index = Math.max(0, Math.min(index, this.children.length));
 		if(index > 0) {
-			var previous_column = this.columns[index - 1];
-			options.x = previous_column.x + previous_column.width;
+			var previous_child = this.children[index - 1];
+			options = _.extend(options, {
+				x: previous_child.get_x() + previous_child.get_width()
+			});
 		}
-		this.comlumns.splice(index, 0, options);
-
-		this.update_subsequent_columns(options.x + options.width, index+1);
+		var child = new ColumnLayout(options);
+		this.children.splice(index, 0, child);
+		this.update_subsequent_children(child.get_x(), index);
+		return child;
 	};
-	proto.remove = function(index) {
-		var options_arr = this.columns.splice(index, 1);
-		_.each(options_arr, function(options) {
-			options.onRemove();
+	proto.remove_child = function(index) {
+		var child_arr = this.columns.splice(index, 1);
+		_.each(child_arr, function(child) {
+			child.onRemove();
 		});
 
 		var x = 0;
 		if(index > 0) {
-			var previous_column = this.columns[index-1];
-			x = previous_column.x + previous_column.width;
+			var previous_child = this.children[index-1];
+			x = previous_column.get_x() + previous_column.get_width();
 		}
-		this.update_subsequent_columns(x, index);
+		this.update_subsequtent_children(x, index);
+
 		for(var i = index; i<this.columns.length; i++) {
 			this.columns[i].onIndexChange(i, i+1);
 		}
 	};
-	proto.resize = function(index, new_width) {
-		var options = this.columns[index];
-		var old_width = options.width;
-		options.width = new_width;
-		options.onResize(new_width, old_width);
-
-		this.update_subsequent_columns(options.x + options.width, index);
+	proto.resize = function(new_width) {
+		var old_width = this.get_width();
+		this.options.own_width = new_width;
+		this._emit("resize", new_width, old_width);
 	};
-	proto.update_subsequent_columns = function(starting_x, starting_index) {
+	proto.update_subsequent_children = function(starting_x, starting_index) {
+		/*
 		var x = starting_x;
 		for(var i = starting_index; i<this.columns.length; i++) {
 			var column = this.columns[i];
@@ -282,16 +281,34 @@ var ColumnLayout = function(options) {
 
 			x+=column.width;
 		}
+		*/
 	};
-	proto.get_options = function(options) {
-		return _.extend({
-			width: this.options.default_column_width
-			, onMove: function(new_x, old_x) { }
-			, onResize: function(new_width, old_width) { }
-			, onRemove: function() { }
-			, onIndexChange: function(new_index, old_index) { }
-			, x: 0
-		}, options);
+
+	proto.get_width = function() {
+		if(_.isNumber(this.options.own_width)) {
+			return this.options.own_width;
+		} else {
+			return this.compute_child_width();
+		}
+	};
+	proto.compute_child_width = function() {
+		var rv = 0;
+		_.each(this.children, function(child) {
+			rv += child.get_width();
+		});
+		return rv;
+	};
+	proto.get_x = function() {
+		return this.options.x;
+	};
+	proto.onIndexChange = function(to_index, from_index) {
+		this._emit("indexChanged", to_index, from_index);
+	};
+	proto.onRemove = function() {
+		_.each(this.children, function(child) {
+			child.onRemove();
+		});
+		this._emit("removed");
 	};
 }(ColumnLayout));
 red.ColumnLayout = ColumnLayout;
