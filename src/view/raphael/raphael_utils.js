@@ -211,4 +211,89 @@ red.define("rrcompound", function(paper, options) {
 });
 red.RRaphael = RRaphael;
 
+var ColumnLayout = function(options) {
+	red.make_this_listenable(this);
+	this.options = _.extend({
+		width: 50
+		, onMove: function(new_x, old_x) { }
+		, onResize: function(new_width, old_width) { }
+		, onRemove: function() { }
+		, onIndexChange: function(new_index, old_index) { }
+		, x: 0
+	}, options);
+	this.columns = [];
+};
+(function(my) {
+	var proto = my.prototype;
+	red.make_proto_listenable(proto);
+	proto.push = function(options) {
+		var column = this.get_column(options);
+		if(this.columns.length > 0) {
+			var previous_column = this.columns[this.columns.length - 1];
+			options.x = previous_column.x + previous_column.width;
+		}
+		this.columns.push(options);
+	};
+	proto.insert_at = function(index, options) {
+		index = Math.max(0, Math.min(index, this.columns.length - 1));
+		var column = this.get_column(options);
+		if(index > 0) {
+			var previous_column = this.columns[index - 1];
+			options.x = previous_column.x + previous_column.width;
+		}
+		this.comlumns.splice(index, 0, options);
+
+		this.update_subsequent_columns(options.x + options.width, index+1);
+	};
+	proto.remove = function(index) {
+		var options_arr = this.columns.splice(index, 1);
+		_.each(options_arr, function(options) {
+			options.onRemove();
+		});
+
+		var x = 0;
+		if(index > 0) {
+			var previous_column = this.columns[index-1];
+			x = previous_column.x + previous_column.width;
+		}
+		this.update_subsequent_columns(x, index);
+		for(var i = index; i<this.columns.length; i++) {
+			this.columns[i].onIndexChange(i, i+1);
+		}
+	};
+	proto.resize = function(index, new_width) {
+		var options = this.columns[index];
+		var old_width = options.width;
+		options.width = new_width;
+		options.onResize(new_width, old_width);
+
+		this.update_subsequent_columns(options.x + options.width, index);
+	};
+	proto.update_subsequent_columns = function(starting_x, starting_index) {
+		var x = starting_x;
+		for(var i = starting_index; i<this.columns.length; i++) {
+			var column = this.columns[i];
+			var old_column_x = column.x;
+			column.x = x;
+
+			if(old_column_x !== column.x) {
+				column.onMove(column.x, old_column_x);
+			}
+
+			x+=column.width;
+		}
+	};
+	proto.get_options = function(options) {
+		return _.extend({
+			width: this.options.default_column_width
+			, onMove: function(new_x, old_x) { }
+			, onResize: function(new_width, old_width) { }
+			, onRemove: function() { }
+			, onIndexChange: function(new_index, old_index) { }
+			, x: 0
+		}, options);
+	};
+}(ColumnLayout));
+red.ColumnLayout = ColumnLayout;
+
 }(red));
