@@ -3,8 +3,14 @@ var cjs = red.cjs, _ = red._;
 
 var match_styles = function(textbox, text) {
 	textbox.style.position = "absolute";
-	textbox.style.color = text.attr("fill");
-	textbox.style.textAlign = text.attr("text-anchor") === "middle" ? "center" : "left";
+	var anchor = text.attr("text-anchor");
+	if(anchor === "start") {
+		textbox.style.textAlign = "left";
+	} else if(anchor === "middle") {
+		textbox.style.textAlign = "center";
+	} else {
+		textbox.style.textAlign = "right";
+	}
 	textbox.style.fontFamily = text.attr("font-family");
 	textbox.style.fontWeight = text.attr("font-weight");
 	textbox.style.fontStyle = text.attr("font-style");
@@ -17,7 +23,6 @@ var match_styles = function(textbox, text) {
 	textbox.style.margin = "0px";
 	textbox.style.boxSizing = "border-box";
 	textbox.style.background = "none";
-	textbox.value = text.attr("text");
 };
 
 var EditableText = function(paper, options) {
@@ -27,29 +32,50 @@ var EditableText = function(paper, options) {
 		, y: 0
 		, text: ""
 		, width: 100
-		, text_anchor: "start"
+		, "text-anchor": "start"
 		, animation_duration: 600
 		, default: ""
+		, font: ""
+		, "font-family": "Courier New, Courier"
+		, "font-size": 14
+		, "font-weight": "normal"
+		, color: "#000000"
+		, default_color: "#AAAAAA"
 	}, options);
 
-	this.text = paper.text(this.options.x, this.options.y, this.get_text());
+	this.text = paper	.text(this.option("x"), this.option("y"), this.get_text())
+						.attr({
+							font: this.option("font")
+							, "font-family": this.option("font-family")
+							, "font-size": this.option("font-size")
+							, "font-weight": this.option("font-weight")
+							, "text-anchor": this.option("text-anchor")
+						});
+
+	if(this.show_default()) {
+		this.text.attr("fill", this.option("default_color"))
+	} else {
+		this.text.attr("fill", this.option("color"))
+	}
 
 	this.$onClick = _.bind(this.onClick, this);
 	this.$onKeydown = _.bind(this.onKeydown, this);
 	this.$onBlur = _.bind(this.onBlur, this);
+
 	this.text.click(this.$onClick);
-	this.text.attr("text-anchor", this.options.text_anchor);
 	this.paper = paper;
 };
 (function(my) {
 	var proto = my.prototype;
 	red.make_proto_listenable(proto);
+	proto.show_default = function() {
+		return this.option("text") === "";
+	};
 	proto.get_text = function() {
-		var normal_text = this.option("text");
-		if(normal_text === "") {
+		if(this.show_default()) {
 			return this.option("default");
 		} else {
-			return normal_text;
+			return this.option("text");
 		}
 	};
 	proto.onClick = function(event) {
@@ -59,10 +85,21 @@ var EditableText = function(paper, options) {
 		var textbox = document.createElement("input");
 		textbox.type = "text"
 		textbox.style.zIndex = 2;
-		textbox.style.left = (this.text.attr("text-anchor") === "middle" ? this.options.x - this.options.width/2 : this.options.x) + "px" ;
-		textbox.style.width = this.options.width + "px";
+
+		var anchor = this.text.attr("text-anchor");
+		if(anchor === "start") {
+			textbox.style.left = this.option("x") + "px";
+		} else if(anchor === "middle") {
+			textbox.style.left = (this.option("x") - this.option("width")/2) + "px";
+		} else {
+			textbox.style.left = (this.option("x") - this.option("width")) + "px";
+		}
+
+		textbox.style.width = this.option("width") + "px";
 		match_styles(textbox, this.text);
 		this.paper.canvas.parentNode.insertBefore(textbox, this.paper.canvas);
+		textbox.value = this.option("text");
+		textbox.style.color = this.option("color");
 		textbox.focus();
 		textbox.select();
 
@@ -85,6 +122,11 @@ var EditableText = function(paper, options) {
 	proto.onTextChange = function(value) {
 		this.option("text", value);
 		this.text.attr("text", this.get_text());
+		if(this.show_default()) {
+			this.text.attr("fill", this.option("default_color"))
+		} else {
+			this.text.attr("fill", this.option("color"))
+		}
 		this._emit("change", {
 			value: value
 			, target: this
@@ -116,8 +158,16 @@ var EditableText = function(paper, options) {
 					"y": this.option("y")
 				}, animation_duration);
 			}
-			return this;
 		}
+		this.text.attr({
+			x: this.option("x")
+			, y: this.option("y")
+			, font: this.option("font")
+			, "font-family": this.option("font-family")
+			, "font-size": this.option("font-size")
+			, "font-weight": this.option("font-weight")
+			, "text-anchor": this.option("text-anchor")
+		});
 	};
 	proto.remove = function() {
 		this.text.remove();

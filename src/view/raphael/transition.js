@@ -227,7 +227,7 @@ var Transition = function(transition, paper, options) {
 		x: (this.arrow.option("fromX") + this.arrow.option("toX"))/2
 		, y: (this.arrow.option("fromY") + this.arrow.option("toY"))/2 - this.option("y_offset")
 		, width: Math.max(from_view.option("width"), Math.abs(this.arrow.option("fromX") - this.arrow.option("toX")) - this.arrow.option("radius") - this.arrow.option("arrowLength"))
-		, text_anchor: "middle"
+		, "text-anchor": "middle"
 		, text: event.get_str()
 		, default: "<event>"
 	});
@@ -261,5 +261,4 @@ var Transition = function(transition, paper, options) {
 }(Transition));
 
 red.define("transition", function(a,b,c) { return new Transition(a,b,c); });
-
 }(red));

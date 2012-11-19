@@ -14,8 +14,6 @@
 			<script type="text/javascript">
 				var _ = red._;
 
-
-
 				var root, env, cjs, _, root_view;
 				$(function() {
 					var statechart = window.statechart = red.create("statechart")
@@ -42,45 +40,15 @@
 					document.body.appendChild(el);
 					var paper = Raphael(el, 600, 200);
 
-					/*
-					var eText = red.create("editable_text", paper, {
-						x: 30, y: 30, text: "Hello"
+					window.t = red.create("editable_text", paper, {
+						x: 30, y: 30, default: "Something"
 					});
-					*/
 					//var scv = red.create("statechart_view", statechart, paper, {root: true});
 					/*
 					window.circle = red.create("rrcircle", paper, {
 						cx: 10, cy: 10, r: 5, fill:"#AAA", stroke:"#000"
 					});
 					*/
-					/*
-					window.x = red.create("rrcompound", paper, {
-						contents: {
-							"c": "circle"
-							, "p": "path"
-						}, attrs: {
-							c: {
-								cx: 10
-								, cy: 10
-								, r: 5
-								, fill: "#AAA"
-							}
-							, p: {
-								path: "M10,10L200,200"
-							}
-						}
-					});
-					window.antenna = red.create("antenna", paper, {
-						animate_creation: true
-					});
-					*/
-					window.arrow = red.create("arrow", paper, {
-						fromX: 10
-						, fromY: 10
-						, toX: 10
-						, toY: 10
-						, animate_creation: true
-					});
 
 				});
 			</script>

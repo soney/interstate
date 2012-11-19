@@ -139,6 +139,7 @@ var Antenna = function(paper, options) {
 }(Antenna));
 red.define("antenna", function(a, b) { return new Antenna(a,b); });
 
+/*
 var simple_map = function() {
 	var keys = [];
 	var values = [];
@@ -516,7 +517,6 @@ var StatechartView = function(statechart, paper, options) {
 		//console.log("move", arguments);
 	};
 	proto.onValueChange = function(state, state_name, old_state, index) {
-	/*
 		var substate_view = this.substate_views[index];
 		substate_view.remove(true);
 		var new_substate_view = red.create("statechart_view", state, this.paper, {
@@ -528,7 +528,6 @@ var StatechartView = function(statechart, paper, options) {
 		});
 		this.substate_views[index] = new_substate_view;
 		state_view.onStatesReady();
-		*/
 	};
 	proto.onKeyChange = function(new_state_name, old_state_name, index) {
 		var substate_view = this.substate_views[index];
@@ -564,4 +563,5 @@ var StatechartView = function(statechart, paper, options) {
 	};
 }(StatechartView));
 red.define("statechart_view", function(a, b, c) { return new StatechartView(a,b,c); });
+*/
 }(red));
