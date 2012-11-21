@@ -216,14 +216,9 @@ var ColumnLayout = function(options) {
 	this.options = _.extend({
 		own_width: false
 		, x: 0
-		/*
-		, onMove: function(new_x, old_x) { }
-		, onResize: function(new_width, old_width) { }
-		, onRemove: function() { }
-		, onIndexChange: function(new_index, old_index) { }
-		*/
 	}, options);
 	this.children = [];
+	this.$onChildResize = _.bind(this.onChildResize, this);
 };
 (function(my) {
 	var proto = my.prototype;
@@ -242,7 +237,12 @@ var ColumnLayout = function(options) {
 		}
 		var child = new ColumnLayout(options);
 		this.children.splice(index, 0, child);
-		this.update_subsequent_children(child.get_x(), index);
+		this.update_subsequent_children(index);
+		child.on("resize", this.$onChildResize);
+		var on_remove = function() {
+			child.off("remove", on_remove);
+			child.off("resize", this.$onChildResize);
+		};
 		return child;
 	};
 	proto.remove_child = function(index) {
@@ -251,12 +251,7 @@ var ColumnLayout = function(options) {
 			child.onRemove();
 		});
 
-		var x = 0;
-		if(index > 0) {
-			var previous_child = this.children[index-1];
-			x = previous_column.get_x() + previous_column.get_width();
-		}
-		this.update_subsequtent_children(x, index);
+		this.update_subsequtent_children(index);
 
 		for(var i = index; i<this.columns.length; i++) {
 			this.columns[i].onIndexChange(i, i+1);
@@ -265,23 +260,25 @@ var ColumnLayout = function(options) {
 	proto.resize = function(new_width) {
 		var old_width = this.get_width();
 		this.options.own_width = new_width;
-		this._emit("resize", new_width, old_width);
+		this._emit("resize", this, new_width, old_width);
 	};
-	proto.update_subsequent_children = function(starting_x, starting_index) {
-		/*
-		var x = starting_x;
-		for(var i = starting_index; i<this.columns.length; i++) {
-			var column = this.columns[i];
-			var old_column_x = column.x;
-			column.x = x;
-
-			if(old_column_x !== column.x) {
-				column.onMove(column.x, old_column_x);
-			}
-
-			x+=column.width;
+	proto.update_subsequent_children = function(starting_index) {
+		var x = 0;
+		if(starting_index > 0) {
+			var previous_child = this.children[starting_index-1];
+			x = previous_child.get_x() + previous_child.get_width();
 		}
-		*/
+		for(var i = starting_index; i<this.columns.length; i++) {
+			var child = this.children[i];
+			var old_child_x = child.x;
+			child.set_x(x);
+
+			if(old_child_x !== child.x) {
+				child.update_subsequent_children(0);
+				child.onMove(child.x, old_child_x);
+			}
+			x += child.get_width();
+		}
 	};
 
 	proto.get_width = function() {
@@ -301,14 +298,28 @@ var ColumnLayout = function(options) {
 	proto.get_x = function() {
 		return this.options.x;
 	};
+	proto.set_x = function(x) {
+		this.options.x = x;
+	};
 	proto.onIndexChange = function(to_index, from_index) {
-		this._emit("indexChanged", to_index, from_index);
+		this._emit("indexChange", to_index, from_index);
 	};
 	proto.onRemove = function() {
 		_.each(this.children, function(child) {
 			child.onRemove();
 		});
-		this._emit("removed");
+		this._emit("remove");
+	};
+	proto.onMove = function(old_x, new_x) {
+		this._emit("move", old_x, new_x);
+	};
+	proto.onChildResize = function(child, new_width, old_width) {
+		for(var i = 0; i< this.children.length; i++) {
+			if(this.children[i] === child) {
+				this.update_subsequent_children(i);
+				break;
+			}
+		}
 	};
 }(ColumnLayout));
 red.ColumnLayout = ColumnLayout;
