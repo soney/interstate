@@ -16,6 +16,33 @@
 
 				var root, env, cjs, _, root_view;
 				$(function() {
+					var el = document.createElement("div");
+					el.style.position = "relative";
+					document.body.appendChild(el);
+					var paper = Raphael(el, 600, 500);
+
+					var RectDisplay = function(cl, z) {
+						this.z = z || 0;
+						this.cl = cl || new red.ColumnLayout();
+						this.rect = paper.rect(this.cl.get_x(), (this.z * 40), this.cl.get_width(), 300 - 2*(this.z * 40));
+						var fill_color = this.z * 40;
+						this.rect.attr({fill: "rgb(" + fill_color + "," + fill_color + "," + fill_color + ")"});
+						var self = this;
+						this.cl.on("resize", function(target, width) {
+							self.rect.attr("width", width);
+						});
+						this.cl.on("move", function(target, x) {
+							self.rect.attr("x", x);
+						});
+					};
+					(function(my) {
+						var proto = my.prototype;
+						proto.push = function(options) {
+							return new RectDisplay(this.cl.push(options), this.z + 1);
+						};
+					}(RectDisplay));
+					window.root = new RectDisplay();
+					/*
 					var statechart = window.statechart = red.create("statechart")
 										.add_state("a")
 										.starts_at("a")
@@ -33,8 +60,13 @@
 										.add_state("stateD");
 					*/
 
+					
 
+					/*
+					var cl = new red.ColumnLayout();
+					cl.push({own_width: 50});
 
+					/*
 					var el = document.createElement("div");
 					el.style.position = "relative";
 					document.body.appendChild(el);
