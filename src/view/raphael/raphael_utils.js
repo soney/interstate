@@ -215,6 +215,8 @@ var ColumnLayout = function(options) {
 	red.make_this_listenable(this);
 	this.options = _.extend({
 		own_width: false
+		, x: 0
+		, parent: undefined
 	}, options);
 
 	this.$onChildResize = _.bind(this.onChildResize, this);
@@ -238,6 +240,7 @@ var ColumnLayout = function(options) {
 				x: previous_child.get_x() + previous_child.get_width()
 			});
 		}
+		options = _.extend(options, { parent: this });
 
 		var child = new ColumnLayout(options);
 		this.children.splice(index, 0, child);
@@ -255,22 +258,36 @@ var ColumnLayout = function(options) {
 
 		return child;
 	};
-	proto.remove_child = function(index) {
-		var child_arr = this.columns.splice(index, 1);
+	proto.remove_child = function(child) {
+		var index;
+		if(_.isNumber(child)) { index = child; }
+		else { index = _.indexOf(this.children, child); }
+		var child_arr = this.children.splice(index, 1);
 		_.each(child_arr, function(child) {
 			child.onRemove();
 		});
 
-		this.update_subsequtent_children(index);
+		this.update_subsequent_children(index);
 
-		for(var i = index; i<this.columns.length; i++) {
-			this.columns[i].onIndexChange(i, i+1);
+		for(var i = index; i<this.children.length; i++) {
+			this.children[i].onIndexChange(i, i+1);
 		}
 
 		this.options.own_width = false;
 		this._set_width(this.compute_width());
 	};
+	proto.remove = function() {
+		var parent = this.get_parent();
+		if(parent) {
+			parent.remove_child(this);
+		} else {
+			this.onRemove();
+		}
+	};
+	proto.get_parent = function() { return this.options.parent; };
 	proto.resize = function(new_width) {
+		if(!_.isNumber(new_width)) { new_width = 0; }
+		else { new_width = Math.max(new_width, 0); }
 		this.options.own_width = new_width;
 		this._set_width(this.compute_width());
 	};
@@ -311,6 +328,10 @@ var ColumnLayout = function(options) {
 		this._x = x;
 		if(this._x !== old_x && ignore_emit !== true) {
 			this._emit("move", this, this._x, old_x);
+			if(this.children.length > 0) {
+				this.children[0]._set_x(this.get_x());
+				this.update_subsequent_children(1);
+			}
 		}
 	};
 	proto._set_width = function(width, ignore_emit) {
@@ -318,6 +339,7 @@ var ColumnLayout = function(options) {
 		this._width = width;
 		if(this._width !== old_width && ignore_emit !== true) {
 			this._emit("resize", this, this._width, old_width);
+			
 		}
 	};
 	proto.onIndexChange = function(to_index, from_index) {
@@ -336,9 +358,22 @@ var ColumnLayout = function(options) {
 		for(var i = 0; i< this.children.length; i++) {
 			if(this.children[i] === child) {
 				this.update_subsequent_children(i);
+				this._set_width(this.compute_width());
 				break;
 			}
 		}
+	};
+	proto.print = function() {
+		return this.arrify().join("\n");
+	};
+	proto.arrify = function() {
+		var rv = ["x: " + this.get_x() + ", width: " + this.get_width() + " (" + (_.isNumber(this.options.own_width) ? "own" : "comp")] + ")";
+		_.each(this.children, function(child) {
+			rv.push.apply(rv, _.map(child.arrify(), function(arr) {
+				return "\t" + arr;
+			}));
+		});
+		return rv;
 	};
 }(ColumnLayout));
 red.ColumnLayout = ColumnLayout;

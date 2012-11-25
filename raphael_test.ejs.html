@@ -30,9 +30,13 @@
 						var self = this;
 						this.cl.on("resize", function(target, width) {
 							self.rect.attr("width", width);
-						});
-						this.cl.on("move", function(target, x) {
+						}).on("move", function(target, x) {
 							self.rect.attr("x", x);
+						}).on("remove", function() {
+							self.rect.remove();
+						});
+						this.rect.mousedown(function() {
+							self.select();
 						});
 					};
 					(function(my) {
@@ -40,8 +44,39 @@
 						proto.push = function(options) {
 							return new RectDisplay(this.cl.push(options), this.z + 1);
 						};
+						proto.print = function() { return this.cl.print(); };
+						proto.select = function() {
+							if(selected_display) { selected_display.unselect(); }
+							this.rect.attr("stroke", "red");
+							selected_display = this;
+							return this;
+						};
+						proto.unselect = function() {
+							this.rect.attr("stroke", "black");
+						};
 					}(RectDisplay));
 					window.root = new RectDisplay();
+					window.root.push({own_width: 50});
+					window.selected_display = window.root;
+					$(window).on("keydown", function(event) {
+						if(event.keyCode === 8) { // Delete
+							if(selected_display) {
+								selected_display.cl.remove();
+							}
+							selected_display = false;
+						} else if(event.keyCode === 37) { // Left arrow
+							selected_display.cl.resize(selected_display.cl.get_width() - 10);
+						} else if(event.keyCode === 39) { // Right arrow
+							selected_display.cl.resize(selected_display.cl.get_width() + 10);
+						} else if(event.keyCode === 40) { // Down arrow
+							selected_display.push({own_width: 50}).select();
+						} else {
+							return;
+						}
+						event.preventDefault();
+						event.stopPropagation();
+					});
+					
 					/*
 					var statechart = window.statechart = red.create("statechart")
 										.add_state("a")
