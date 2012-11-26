@@ -2,6 +2,7 @@
 var cjs = red.cjs, _ = red._;
 
 var RRaphael = function(paper, options) {
+	red.make_this_listenable(this);
 	this.options = _.extend({
 		anim_ms: 200
 		, anim_easing: "<>"
@@ -12,6 +13,7 @@ var RRaphael = function(paper, options) {
 };
 (function(my) {
 	var proto = my.prototype;
+	red.make_proto_listenable(proto);
 
 	proto.initialize = function() {
 		if(this.option("stroke")) {
@@ -67,6 +69,7 @@ var RRaphael = function(paper, options) {
 	};
 
 	proto._set_option = function(key, value, animated) {
+		var animation;
 		this.options[key] = value;
 		if(_.indexOf(this._attrs, key) >= 0) {
 			if(animated) {
@@ -77,7 +80,7 @@ var RRaphael = function(paper, options) {
 					, easing: this.option("anim_easing")
 					, params: anim_params
 				}, animated);
-				var animation = Raphael.animation(anim_options.params, anim_options.ms, anim_options.easing, anim_options.callback);
+				animation = Raphael.animation(anim_options.params, anim_options.ms, anim_options.easing, anim_options.callback);
 				var element = this.get_element();
 				if(animated.animate_with_el && animated.animate_with_anim) {
 					element.animateWith(animated.animate_with_el, animated.animate_with_anim, animation);
@@ -89,6 +92,7 @@ var RRaphael = function(paper, options) {
 				element.attr(key, value);
 			}
 		}
+		this._emit("option", key, value, animation);
 	};
 	proto._get_option = function(key, value, animated) {
 		return this.options[key];
@@ -141,6 +145,7 @@ var RRCircle = function(paper, options) {
 }(RRCircle));
 
 var RRCompound = function(paper, options) {
+	red.make_this_listenable(this);
 	this.options = _.extend({
 		contents: {}
 		, attrs: {}
@@ -163,11 +168,13 @@ var RRCompound = function(paper, options) {
 (function(my) {
 	_.proto_extend(my, RRaphael);
 	var proto = my.prototype;
+
+	red.make_proto_listenable(proto);
+
 	proto.find = function(name) {
 		return this._contents[name];
 	};
 	proto._set_option = function(key, value, animated) {
-		my.superclass._set_option.apply(this, arguments);
 		if(key === "attrs") {
 			var anim;
 			var elem;
@@ -192,6 +199,7 @@ var RRCompound = function(paper, options) {
 				elem = obj.get_element();
 			}, this);
 		}
+		my.superclass._set_option.apply(this, arguments);
 	};
 	proto.remove = function() {
 		_.each(this._contents, function(obj, name) {

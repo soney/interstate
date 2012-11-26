@@ -215,6 +215,7 @@ var Transition = function(transition, paper, options) {
 	this.paper = paper;
 	var from_view = this.option("from_view");
 	var to_view = this.option("to_view");
+
 	this.arrow = red.create("arrow", this.paper, {
 		fromX: from_view.option("left") + from_view.option("width")/2
 		, toX: to_view.option("left") + to_view.option("width")/2
@@ -231,6 +232,14 @@ var Transition = function(transition, paper, options) {
 		, text: event.get_str()
 		, default: "<event>"
 	});
+
+	var update_position = function() {
+		console.log(arguments);
+	};
+	//from_view.find("line").on("option", update_position);
+	//to_view.find("line").on("option", update_position);
+	console.log(from_view, to_view);
+
 	this.$onSetEventRequest = _.bind(this.onSetEventRequest, this);
 	this.label.on("change", this.$onSetEventRequest);
 };

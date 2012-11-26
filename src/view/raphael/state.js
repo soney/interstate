@@ -320,13 +320,11 @@ var StatechartView = function(statechart, paper, options) {
 															, top: this.option("top")
 															});
 		my_transition_column.on("resize", function(col, width) {
-			this.label.option("width", width);
-			this.antenna.option("width", width);
-		});
+			this.option("width", width);
+		}, this);
 		my_transition_column.on("move", function(col, x) {
-			this.label.option("x", x);
-			this.antenna.option("x", x);
-		});
+			this.option("left", x);
+		}, this);
 
 /*
 		this.antenna.circle.mousedown(_.bind(function(event) {
@@ -558,7 +556,7 @@ var StatechartView = function(statechart, paper, options) {
 			return this.options[key];
 		} else {
 			this.options[key] = value;
-			if(key === "left") {
+			if(key === "left" || key === "width") {
 				this.antenna.option("left", this.option("left") + (this.option("width") / 2), animated);
 				this.label.option("x", this.option("left") + (this.option("width") / 2), animated);
 			}
