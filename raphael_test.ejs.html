@@ -19,8 +19,8 @@
 					var el = document.createElement("div");
 					el.style.position = "relative";
 					document.body.appendChild(el);
+					/*
 					var paper = Raphael(el, 600, 500);
-
 					var RectDisplay = function(cl, z) {
 						this.z = z || 0;
 						this.cl = cl || new red.ColumnLayout();
@@ -76,8 +76,8 @@
 						event.preventDefault();
 						event.stopPropagation();
 					});
+					*/
 					
-					/*
 					var statechart = window.statechart = red.create("statechart")
 										.add_state("a")
 										.starts_at("a")
@@ -97,20 +97,18 @@
 
 					
 
-					/*
-					var cl = new red.ColumnLayout();
-					cl.push({own_width: 50});
 
-					/*
 					var el = document.createElement("div");
 					el.style.position = "relative";
 					document.body.appendChild(el);
 					var paper = Raphael(el, 600, 200);
 
-					window.t = red.create("editable_text", paper, {
-						x: 30, y: 30, default: "Something"
+					var scv = red.create("statechart_view", statechart, paper, {root: true});
+					scv.on("add_state", function(event) {
+						var statechart = event.statechart;
+						var child_name = "state_" + statechart.get_substates().length;
+						statechart.add_state(child_name);
 					});
-					//var scv = red.create("statechart_view", statechart, paper, {root: true});
 					/*
 					window.circle = red.create("rrcircle", paper, {
 						cx: 10, cy: 10, r: 5, fill:"#AAA", stroke:"#000"

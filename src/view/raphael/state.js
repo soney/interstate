@@ -79,7 +79,6 @@ var Antenna = function(paper, options) {
 
 		if(this.highlighted) { _.deepExtend(attrs, this.state_attrs.highlighted); }
 		else { _.deepExtend(attrs, this.state_attrs.dim); }
-
 		
 		return attrs;
 	};
@@ -139,7 +138,6 @@ var Antenna = function(paper, options) {
 }(Antenna));
 red.define("antenna", function(a, b) { return new Antenna(a,b); });
 
-/*
 var simple_map = function() {
 	var keys = [];
 	var values = [];
@@ -277,40 +275,60 @@ var StatechartView = function(statechart, paper, options) {
 						, transition_height: 10
 						, top: 0
 						, transition_radius: 3
+						, column_layout_manager: null
 					}, options);
-
+	
+	this.column_layout_manager = this.options.column_layout_manager || new red.ColumnLayout();
+	this.transition_layout_manager = this.options.transition_layout_manager || new TransitionLayoutManager(this);
+	this.children_layout_manager = this.column_layout_manager.push({own_width: false});
 
 	var self = this;
 	if(this.options.root) {
-		this.options.transition_layout_manager = new TransitionLayoutManager(this);
-		this.add_state_button = paper.text(400, 10, "+");
+		var add_state_layout_manager = this.column_layout_manager.push({own_width: 20});
+		this.add_state_button = paper.text(add_state_layout_manager.get_x(), 10, "+");
 		this.add_state_button.click(function(event) {
 			self._emit("add_state", {
 				originalEvent: event
+				, statechart: self.statechart
 			});
 		}).attr({
 			"font-size": 30
 			, "cursor": "pointer"
+			, "text-anchor": "start"
+		});
+		add_state_layout_manager.on("move", function(col, x) {
+			self.add_state_button.attr("x", x);
 		});
 	} else {
+		var my_transition_column = this.column_layout_manager.insert_at(0, {own_width: this.option("width")});
+
 		this.label = red.create("editable_text", this.paper, {
-			x: this.option("left") + this.option("width")/2
+			x: my_transition_column.get_x() + my_transition_column.get_width()/2
 			, y: 50
 			, text: this.option("state_name")
-			, text_anchor: "middle"
+			, "text-anchor": "middle"
 			, width: this.option("width")
 		});
 		this.$onRenameRequested = _.bind(this.onRenameRequested, this);
 		this.label.on("change", this.$onRenameRequested);
 		var bbox = this.label.getBBox();
 		var height = bbox.height;
-		this.antenna = red.create("antenna", this.paper, { left: this.option("left") + (this.option("width") / 2)
+		this.antenna = red.create("antenna", this.paper, { left: my_transition_column.get_x() + my_transition_column.get_width()/2
 															, height: this.option("height") - bbox.height
 															, animate_creation: true
 															, radius: this.option("antenna_top_radius")
 															, top: this.option("top")
 															});
+		my_transition_column.on("resize", function(col, width) {
+			this.label.option("width", width);
+			this.antenna.option("width", width);
+		});
+		my_transition_column.on("move", function(col, x) {
+			this.label.option("x", x);
+			this.antenna.option("x", x);
+		});
 
+/*
 		this.antenna.circle.mousedown(_.bind(function(event) {
 			var sc_root = this.statechart.root();
 			var substates = sc_root.flatten_substates();
@@ -408,6 +426,7 @@ var StatechartView = function(statechart, paper, options) {
 			event.stopPropagation();
 			event.preventDefault();
 		}, this));
+		*/
 	}
 
 	this.substate_views = [];
@@ -468,9 +487,8 @@ var StatechartView = function(statechart, paper, options) {
 		});
 		this.transition_views.splice(index, 0, transition_view);
 
-		var transition_layout_manager = this.option("transition_layout_manager");
-		transition_layout_manager	.add_transition_view(transition_view)
-									.update_layout();
+		this.transition_layout_manager	.add_transition_view(transition_view)
+										.update_layout();
 	};
 	proto.onTransitionRemoved = function(transition, index) {
 		var transition_view = this.transition_views[index];
@@ -488,7 +506,8 @@ var StatechartView = function(statechart, paper, options) {
 			, width: this.options.width
 			, state_name: state_name
 			, height: this.options.height
-			, transition_layout_manager: this.options.transition_layout_manager
+			, transition_layout_manager: this.transition_layout_manager
+			, column_layout_manager: this.children_layout_manager.push({own_width: false})
 		});
 		this.substate_views.splice(index, 0, state_view);
 		if(also_initialize !== false) {
@@ -525,6 +544,7 @@ var StatechartView = function(statechart, paper, options) {
 			, width: this.options.width
 			, state_name: state_name
 			, height: this.options.height
+			, column_layout_manager: this.children_layout_manager.push({own_width: false})
 		});
 		this.substate_views[index] = new_substate_view;
 		state_view.onStatesReady();
@@ -563,5 +583,4 @@ var StatechartView = function(statechart, paper, options) {
 	};
 }(StatechartView));
 red.define("statechart_view", function(a, b, c) { return new StatechartView(a,b,c); });
-*/
 }(red));

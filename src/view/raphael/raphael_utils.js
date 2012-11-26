@@ -367,7 +367,7 @@ var ColumnLayout = function(options) {
 		return this.arrify().join("\n");
 	};
 	proto.arrify = function() {
-		var rv = ["x: " + this.get_x() + ", width: " + this.get_width() + " (" + (_.isNumber(this.options.own_width) ? "own" : "comp")] + ")";
+		var rv = ["x: " + this.get_x() + ", width: " + this.get_width() + " (" + (_.isNumber(this.options.own_width) ? "own" : "comp") + ")"];
 		_.each(this.children, function(child) {
 			rv.push.apply(rv, _.map(child.arrify(), function(arr) {
 				return "\t" + arr;
