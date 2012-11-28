@@ -213,6 +213,7 @@ var TransitionLayoutManager = function(root_view) {
 			var row = this.transition_rows.length - inverse_row - 1;
 			transition_view.option("y", base_diameter+row * row_height, true);
 		}, this);
+		this.root_view.option("antenna_shaft_height", this.transition_rows.length * row_height);
 		return this;
 	};
 
@@ -252,7 +253,6 @@ var TransitionLayoutManager = function(root_view) {
 		}, this);
 
 		return rows;
-
 	};
 }(TransitionLayoutManager));
 
@@ -269,7 +269,7 @@ var StatechartView = function(statechart, paper, options) {
 						, left: 0
 						, width: 100
 						, state_name: ""
-						, height: 50
+						, antenna_shaft_height: 0
 						, transition_layout_manager: null
 						, antenna_top_radius: 5
 						, transition_height: 10
@@ -300,11 +300,11 @@ var StatechartView = function(statechart, paper, options) {
 			self.add_state_button.attr("x", x);
 		});
 	} else {
-		var my_transition_column = this.column_layout_manager.insert_at(0, {own_width: this.option("width")});
+		this.transition_column = this.column_layout_manager.insert_at(0, {own_width: this.option("width")});
 
 		this.label = red.create("editable_text", this.paper, {
-			x: my_transition_column.get_x() + my_transition_column.get_width()/2
-			, y: 50
+			x: this.transition_column.get_x() + this.transition_column.get_width()/2
+			, y: this.option("antenna_shaft_height") + 2 * this.option("antenna_top_radius")
 			, text: this.option("state_name")
 			, "text-anchor": "middle"
 			, width: this.option("width")
@@ -313,21 +313,21 @@ var StatechartView = function(statechart, paper, options) {
 		this.label.on("change", this.$onRenameRequested);
 		var bbox = this.label.getBBox();
 		var height = bbox.height;
-		this.antenna = red.create("antenna", this.paper, { left: my_transition_column.get_x() + my_transition_column.get_width()/2
-															, height: this.option("height") - bbox.height
+		this.antenna = red.create("antenna", this.paper, { left: this.transition_column.get_x() + this.transition_column.get_width()/2
+															, height: this.option("antenna_shaft_height") + 2 * this.option("antenna_top_radius")
 															, animate_creation: true
 															, radius: this.option("antenna_top_radius")
 															, top: this.option("top")
 															});
-		my_transition_column.on("resize", function(col, width) {
+		this.transition_column.on("resize", function(col, width) {
 			this.option("width", width);
 		}, this);
-		my_transition_column.on("move", function(col, x) {
+		this.transition_column.on("move", function(col, x) {
 			this.option("left", x);
 		}, this);
 
-/*
-		this.antenna.circle.mousedown(_.bind(function(event) {
+		this.transition_layout_manager.update_layout();
+		this.antenna.rrcompound.find("circle").mousedown(_.bind(function(event) {
 			var sc_root = this.statechart.root();
 			var substates = sc_root.flatten_substates();
 			var sc_root_view = statechart_view_map.get(sc_root);
@@ -339,8 +339,8 @@ var StatechartView = function(statechart, paper, options) {
 					var substate = substates[i];
 					var substate_view = statechart_view_map.get(substate);
 					if(_.has(substate_view, "antenna")) {
-						var target = substate_view.antenna.ellipse;
-						var distance = Math.pow(target.attr("cx") - x, 2) + Math.pow(target.attr("cy") - y, 2);
+						var target = substate_view.antenna.rrcompound.find("circle");
+						var distance = Math.pow(target.option("cx") - x, 2) + Math.pow(target.option("cy") - y, 2);
 						if(min_distance_index < 0 || distance < min_distance) {
 							min_distance = distance;
 							min_distance_index = i;
@@ -351,24 +351,24 @@ var StatechartView = function(statechart, paper, options) {
 			};
 			var nearest_target = function(x, y) {
 				var nti = nearest_target_index(x, y);
-				return statechart_view_map.get(substates[nti]).antenna.ellipse;
+				return statechart_view_map.get(substates[nti]).antenna.rrcompound.find("circle");
 			};
 			var get_dest_point = function(x, y) {
 				var target = nearest_target(x,y);
 				if(!target) {
 					return {x: x, y: y};
 				} else {
-					return {x: target.attr("cx"), y: target.attr("cy")};
+					return {x: target.option("cx"), y: target.option("cy")};
 				}
 			}
 				
 			var dest_point = get_dest_point(event.clientX, event.clientY);
 
-			var ellipse = this.antenna.ellipse;
+			var circle = this.antenna.rrcompound.find("circle");
 			
 			var arrow = red.create("arrow", paper, {
-				fromX: ellipse.attr("cx")
-				, fromY: ellipse.attr("cy")
+				fromX: circle.option("cx")
+				, fromY: circle.option("cy")
 				, toX: dest_point.x
 				, toY: dest_point.y
 			});
@@ -378,8 +378,8 @@ var StatechartView = function(statechart, paper, options) {
 				var y = event.clientY - this.paper.canvas.offsetTop;
 				var dest_point = get_dest_point(x, y);
 				if(dest_point.x !== old_dest.x || dest_point.y !== old_dest.y) {
-					arrow.option("toX", dest_point.x, true);
-					arrow.option("toY", dest_point.y, true);
+					arrow.option("toX", dest_point.x);
+					arrow.option("toY", dest_point.y);
 					old_dest = dest_point;
 				}
 				event.stopPropagation();
@@ -424,7 +424,6 @@ var StatechartView = function(statechart, paper, options) {
 			event.stopPropagation();
 			event.preventDefault();
 		}, this));
-		*/
 	}
 
 	this.substate_views = [];
@@ -487,6 +486,7 @@ var StatechartView = function(statechart, paper, options) {
 
 		this.transition_layout_manager	.add_transition_view(transition_view)
 										.update_layout();
+		transition_view.on("set_event_str", this.forward);
 	};
 	proto.onTransitionRemoved = function(transition, index) {
 		var transition_view = this.transition_views[index];
@@ -503,7 +503,7 @@ var StatechartView = function(statechart, paper, options) {
 			, left: this.options.left + this.option("width")*index
 			, width: this.options.width
 			, state_name: state_name
-			, height: this.options.height
+			, antenna_shaft_height: this.option("antenna_shaft_height")
 			, transition_layout_manager: this.transition_layout_manager
 			, column_layout_manager: this.children_layout_manager.push({own_width: false})
 		});
@@ -513,25 +513,22 @@ var StatechartView = function(statechart, paper, options) {
 		}
 		state_view.on("add_transition", this.forward);
 		state_view.on("add_state", this.forward);
+		state_view.on("set_event_str", this.forward);
 	};
 	proto.onUnset = function(state, state_name, index) {
-		var substate_view = this.substate_views[index];
+		var state_view = this.substate_views[index];
 		this.substate_views.splice(index, 1);
-		substate_view.remove(true);
+		state_view.remove(true);
 		state_view.off("add_transition", this.forward);
 		state_view.off("add_state", this.forward);
-		//console.log("unset", arguments);
+		state_view.off("set_event_str", this.forward);
 	};
-	proto.onIndexChange = function(state, state_name, to_index, from_index) {
-		var substate_view = this.substate_views[from_index];
-		substate_view.option("left", this.options.left + this.option("width")*to_index, true);
-		//console.log("index change", arguments);
-	};
+	proto.onIndexChange = function(state, state_name, to_index, from_index) { };
 	proto.onMove = function(state, state_name, insert_at, to_index, from_index) {
 		var substate_view = this.substate_views[from_index];
 		this.substate_views.splice(from_index, 1);
 		this.substate_views.splice(insert_at, 0, substate_view);
-		//console.log("move", arguments);
+		this.children_layout_manager.move(from_index, to_index);
 	};
 	proto.onValueChange = function(state, state_name, old_state, index) {
 		var substate_view = this.substate_views[index];
@@ -557,8 +554,25 @@ var StatechartView = function(statechart, paper, options) {
 		} else {
 			this.options[key] = value;
 			if(key === "left" || key === "width") {
-				this.antenna.option("left", this.option("left") + (this.option("width") / 2), animated);
-				this.label.option("x", this.option("left") + (this.option("width") / 2), animated);
+				if(this.antenna) {
+					this.antenna.option("left", this.option("left") + (this.option("width") / 2), animated);
+					this.label.option("x", this.option("left") + (this.option("width") / 2), animated);
+				}
+
+				if(this.option("root")) {
+					this.paper.setSize(this.column_layout_manager.get_width(), this.option("antenna_shaft_height") + 2 * this.option("antenna_top_radius"));
+				}
+			} else if(key === "antenna_shaft_height") {
+				if(this.antenna) {
+					this.antenna.option("height", this.option("antenna_shaft_height") + 2 * this.option("antenna_top_radius"), animated);
+					this.label.option("y", this.option("antenna_shaft_height") + 2 * this.option("antenna_top_radius"), animated);
+				}
+				_.each(this.substate_views, function(substate_view) {
+					substate_view.option(key, value, animated);
+				}, this);
+				if(this.option("root")) {
+					this.paper.setSize(this.column_layout_manager.get_width(), this.option("antenna_shaft_height") + 2 * this.option("antenna_top_radius"));
+				}
 			}
 			return this;
 		}

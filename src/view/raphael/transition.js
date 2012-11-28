@@ -204,6 +204,7 @@ var Arrow = function(paper, options) {
 red.define("arrow", function(a, b) { return new Arrow(a,b); });
 
 var Transition = function(transition, paper, options) {
+	red.make_this_listenable(this);
 	this.options = _.extend({
 		from_view: null
 		, animate_creation: false
@@ -233,12 +234,25 @@ var Transition = function(transition, paper, options) {
 		, default: "<event>"
 	});
 
-	var update_position = function() {
-		console.log(arguments);
-	};
-	//from_view.find("line").on("option", update_position);
-	//to_view.find("line").on("option", update_position);
-	console.log(from_view, to_view);
+	var update_position = _.bind(function() {
+		this.arrow.option({
+			fromX: from_view.option("left") + from_view.option("width")/2
+			, toX: to_view.option("left") + to_view.option("width")/2
+			, animate_creation: this.option("animate_creation")
+			, fromY: this.option("y")
+			, toY: this.option("y")
+		});
+		this.label.option({
+			x: (this.arrow.option("fromX") + this.arrow.option("toX"))/2
+			, y: (this.arrow.option("fromY") + this.arrow.option("toY"))/2 - this.option("y_offset")
+			, width: Math.max(from_view.option("width"), Math.abs(this.arrow.option("fromX") - this.arrow.option("toX")) - this.arrow.option("radius") - this.arrow.option("arrowLength"))
+		});
+	}, this);
+
+	from_view.transition_column.on("move", update_position);
+	to_view.transition_column.on("move", update_position);
+	from_view.transition_column.on("resize", update_position);
+	to_view.transition_column.on("resize", update_position);
 
 	this.$onSetEventRequest = _.bind(this.onSetEventRequest, this);
 	this.label.on("change", this.$onSetEventRequest);
@@ -246,10 +260,16 @@ var Transition = function(transition, paper, options) {
 
 (function(my) {
 	var proto = my.prototype;
+	red.make_proto_listenable(proto);
 	proto.onSetEventRequest = function(e) {
 		var str = e.value;
 		var transition_event = this.transition.event();
-		transition_event.set_str(str);
+		this._emit("set_event_str", {
+			transition: this.transition
+			, originalEvent: e
+			, str: str
+			, transition_event: this.transition.event()
+		});
 	};
 	proto.option = function(key, value, animated) {
 		if(arguments.length <= 1) {

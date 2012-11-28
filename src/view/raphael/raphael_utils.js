@@ -266,6 +266,17 @@ var ColumnLayout = function(options) {
 
 		return child;
 	};
+	proto.move = function(child, to_index) {
+		var index;
+		if(_.isNumber(child)) { index = child; }
+		else { index = _.indexOf(this.children, child); }
+
+		if(index >=0 && index < this.children.length) {
+			var child = this.children.splice(index, 1)[0];
+			this.children.splice(to_index, 0, child);
+			this.update_subsequent_children(Math.min(index, to_index));
+		}
+	};
 	proto.remove_child = function(child) {
 		var index;
 		if(_.isNumber(child)) { index = child; }

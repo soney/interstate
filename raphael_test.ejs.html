@@ -108,7 +108,16 @@
 						var statechart = event.statechart;
 						var child_name = "state_" + statechart.get_substates().length;
 						statechart.add_state(child_name);
+					}).on("add_transition", function(event) {
+						statechart.add_transition(event.from_state, event.to_state, red.create_event("parsed", ""));
+					}).on("set_event_str", function(event) {
+						var str = event.str;
+						var transition_event = event.transition_event;
+
+						transition_event.set_str(str);
 					});
+					window.scv = scv;
+
 					/*
 					window.circle = red.create("rrcircle", paper, {
 						cx: 10, cy: 10, r: 5, fill:"#AAA", stroke:"#000"

@@ -145,19 +145,15 @@ var EditableText = function(paper, options) {
 	};
 	proto.option = function(key, value, animated) {
 		if(arguments.length <= 1) {
-			return this.options[key];
+			if(_.isString(key)) {
+				return this.options[key];
+			} else {
+				_.each(key, function(v, k) {
+					this.options[k] = v;
+				}, this);
+			}
 		} else {
 			this.options[key] = value;
-			var animation_duration = animated ? this.options.animation_duration : 0;
-			if(key === "x") {
-				this.text.animate({
-					"x": this.option("x")
-				}, animation_duration);
-			} else if(key === "y") {
-				this.text.animate({
-					"y": this.option("y")
-				}, animation_duration);
-			}
 		}
 		this.text.attr({
 			x: this.option("x")

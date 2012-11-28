@@ -170,32 +170,15 @@ var id  = 0;
 			self._old_event = event;
 		});
 	};
-	proto.child_fired = function() {
-		this.fire.apply(this, arguments);
-	};
-	proto.get_str = function() {
-		return this._str.get();
-	};
-	proto.set_str = function(str) {
-		this._str.set(str);
-	};
-	proto.get_parent = function() {
-		return cjs.get(this._parent);
-	};
-	proto.set_parent = function(parent) {
-		this._parent.set(parent);
-	};
-	proto.create_shadow = function(parent, context) {
-		return red.create_event("parsed", this._str, parent, context);
-	};
-	proto.destroy = function() {
-		this._live_event_creator.destroy();
-	};
-	proto.serialize = function() {
-		return { str: this.get_str() };
-	};
-	my.deserialize = function(obj) {
-		return red.create_event("parsed", obj.str);
-	};
+	proto.child_fired = function() { this.fire.apply(this, arguments); };
+	proto.get_str = function() { return this._str.get(); };
+	proto.set_str = function(str) { this._str.set(str); };
+	proto.get_parent = function() { return cjs.get(this._parent); };
+	proto.set_parent = function(parent) { this._parent.set(parent); };
+	proto.create_shadow = function(parent, context) { return red.create_event("parsed", this._str, parent, context); };
+	proto.destroy = function() { this._live_event_creator.destroy(); };
+	proto.stringify = function() { return "'" + this.get_str() + "'"; };
+	proto.serialize = function() { return { str: this.get_str() }; };
+	my.deserialize = function(obj) { return red.create_event("parsed", obj.str); };
 }(ParsedEvent));
 }(red));
