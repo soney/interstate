@@ -474,17 +474,19 @@ var StatechartView = function(statechart, paper, options) {
 		this.onStatesReady();
 		var last_active_substates = [];
 		cjs.liven(function() {
+			
 			var active_substates = this.statechart.get_active_states();
 			var made_active = _.difference(active_substates, last_active_substates);
 			var made_inactive = _.difference(last_active_substates, active_substates);
+			_.defer(function() {
+				var made_active_views = _.map(made_active, function(state) { return statechart_view_map.get(state); });
+				var made_inactive_views = _.map(made_inactive, function(state) { return statechart_view_map.get(state); });
 
-			var made_active_views = _.map(made_active, function(state) { return statechart_view_map.get(state); });
-			var made_inactive_views = _.map(made_inactive, function(state) { return statechart_view_map.get(state); });
+				_.each(made_active_views, function(view) { view.highlight(); });
+				_.each(made_inactive_views, function(view) { view.dim(); });
 
-			_.each(made_active_views, function(view) { view.highlight(); });
-			_.each(made_inactive_views, function(view) { view.dim(); });
-
-			last_active_substates = active_substates;
+				last_active_substates = active_substates;
+			});
 		}, this);
 	}
 };
@@ -657,9 +659,13 @@ var StatechartView = function(statechart, paper, options) {
 		if(statechart.is_concurrent()) {
 			var children = this.children_layout_manager.get_children();
 			var path = "";
+			var child;
 			for(var i = 1; i<children.length; i++) {
-				var child = children[i];
+				child = children[i];
 				path += "M" + child.get_x() + "," + this.option("y") + "V" + height;
+			}
+			if(this.option("root") && child) {
+				path += "M" + (child.get_x() + child.get_width()) + "," + this.option("y") + "V" + height;
 			}
 			this.concurrent_divider.option({
 				path: path
