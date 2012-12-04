@@ -3,17 +3,19 @@ var cjs = red.cjs, _ = red._;
 
 var RRaphael = function(paper, options) {
 	red.make_this_listenable(this);
-	this.options = _.extend({
+	red.make_this_optionable(this, {
 		anim_ms: 200
 		, anim_easing: "<>"
 		, fill: false
 		, stroke: false
 	}, this._defaults, options);
+
 	this._attrs = this._attrs || ["fill", "stroke"];
 };
 (function(my) {
 	var proto = my.prototype;
 	red.make_proto_listenable(proto);
+	red.make_proto_optionable(proto);
 
 	proto.initialize = function() {
 		if(this.option("stroke")) {
@@ -27,76 +29,35 @@ var RRaphael = function(paper, options) {
 		}
 	};
 
-	proto.option = function(key, value, animated) {
-		if(arguments.length == 1) {
-			if(_.isString(key)) {
-				return this._get_option(key);
-			} else {
-				_.each(key, function(v, k) {
-					this._set_option(k, v, false);
-				}, this);
-			}
-		} else if(arguments.length > 1) {
-			if(!_.isString(key)) {
-				animated = value;
-			}
+	proto._on_options_set = function(values, animated) {
+		var attr_values = {};
+		_.each(values, function(value, key) {
+			if(_.indexOf(this._attrs, key) >= 0) {
+				attr_values[key] = value;
+			};
+		}, this);
 
-			if(_.isNumber(animated)) {
-				animated = { ms: animated };
-			}
-			if(_.isString(key)) {
-				this._set_option(key, value, animated);
-			} else {
-				var anim;
-				_.each(key, function(v, k) {
-					if(animated) {
-						if(anim) {
-							anim = this._set_option(k, v, _.extend({
-								animate_with_anim: anim
-								, animate_with_el: this.get_element()
-							}, animated));
-						} else {
-							anim = this._set_option(k, v, animated);
-						}
-						this._last_anim = anim;
-					} else {
-						this._set_option(k, v, animated);
-					}
-				}, this);
-			}
-		}
-		return this;
-	};
+		if(animated) {
+			var anim_options = _.extend({
+				ms: _.isNumber(animated) ? animated : this.option("anim_ms")
+				, easing: this.option("anim_easing")
+				, params: attr_values
+			}, animated);
 
-	proto._set_option = function(key, value, animated) {
-		var animation;
-		this.options[key] = value;
-		if(_.indexOf(this._attrs, key) >= 0) {
-			if(animated) {
-				var anim_params = {};
-				anim_params[key] = value;
-				var anim_options = _.extend({
-					ms: this.option("anim_ms")
-					, easing: this.option("anim_easing")
-					, params: anim_params
-				}, animated);
-				animation = Raphael.animation(anim_options.params, anim_options.ms, anim_options.easing, anim_options.callback);
-				var element = this.get_element();
-				if(animated.animate_with_el && animated.animate_with_anim) {
-					element.animateWith(animated.animate_with_el, animated.animate_with_anim, animation);
-				} else {
-					element.animate(animation);
-				}
+			var animation = Raphael.animation(anim_options.params, anim_options.ms, anim_options.easing, anim_options.callback);
+			var element = this.get_element();
+			if(animated.animate_with_el && animated.animate_with_anim) {
+				element.animateWith(animated.animate_with_el, animated.animate_with_anim, animation);
 			} else {
-				var element = this.get_element();
-				element.attr(key, value);
+				element.animate(animation);
 			}
+			this._latest_animation = animation;
+		} else {
+			var element = this.get_element();
+			element.attr(attr_values);
 		}
-		this._emit("option", key, value, animation);
 	};
-	proto._get_option = function(key, value, animated) {
-		return this.options[key];
-	};
+	proto.get_latest_animation = function() { return this._latest_animation; };
 
 	proto.remove = function() {
 		var element = this.get_element();
@@ -106,10 +67,16 @@ var RRaphael = function(paper, options) {
 		return this._element;
 	};
 
-	_.each(["mousedown", "click", "mouseup"], function(event) {
+	_.each(["mousedown", "mouseup", "click", "dblclick", "drag", "hover", "mousemove"
+			, "mouseover", "mouseout", "touchstart", "touchend", "touchmove", "touchcancel"], function(event) {
 		proto[event] = function() {
 			var element = this.get_element();
 			return element[event].apply(element, arguments);
+		};
+
+		proto["un"+event] = function() {
+			var element = this.get_element();
+			return element["un"+event].apply(element, arguments);
 		};
 	});
 }(RRaphael));
@@ -146,7 +113,7 @@ var RRCircle = function(paper, options) {
 
 var RRCompound = function(paper, options) {
 	red.make_this_listenable(this);
-	this.options = _.extend({
+	red.make_this_optionable(this, {
 		contents: {}
 		, attrs: {}
 	}, options);
@@ -166,25 +133,21 @@ var RRCompound = function(paper, options) {
 	}, this);
 };
 (function(my) {
-	_.proto_extend(my, RRaphael);
 	var proto = my.prototype;
 
 	red.make_proto_listenable(proto);
+	red.make_proto_optionable(proto);
 
 	proto.find = function(name) {
 		return this._contents[name];
 	};
-	proto._set_option = function(key, value, animated) {
+	proto._on_option_set = function(key, value, animated) {
 		if(key === "attrs") {
 			var anim;
 			var elem;
 			_.each(value, function(attrs, name) {
 				var obj = this.find(name);
 				if(animated) {
-					if(_.isNumber(animated)) {
-						animated = {ms: animated};
-					}
-
 					if(anim) {
 						animated = _.extend({
 							animate_with_el: elem
@@ -195,11 +158,10 @@ var RRCompound = function(paper, options) {
 				} else {
 					obj.option(attrs, false);
 				}
-				anim = obj._last_anim;
+				anim = obj.get_latest_animation();
 				elem = obj.get_element();
 			}, this);
 		}
-		my.superclass._set_option.apply(this, arguments);
 	};
 	proto.remove = function() {
 		_.each(this._contents, function(obj, name) {
@@ -221,7 +183,7 @@ red.RRaphael = RRaphael;
 
 var ColumnLayout = function(options) {
 	red.make_this_listenable(this);
-	this.options = _.extend({
+	red.make_this_optionable(this, {
 		own_width: false
 		, x: 0
 		, parent: undefined
@@ -230,12 +192,13 @@ var ColumnLayout = function(options) {
 	this.$onChildResize = _.bind(this.onChildResize, this);
 	this.children = [];
 
-	this._set_x(this.options.x, true);
+	this._set_x(this.option("x"), true);
 	this._set_width(this.compute_width(), true);
 };
 (function(my) {
 	var proto = my.prototype;
 	red.make_proto_listenable(proto);
+	red.make_proto_optionable(proto);
 	proto.push = function(options) {
 		return this.insert_at(null, options);
 	};
@@ -330,8 +293,8 @@ var ColumnLayout = function(options) {
 	};
 
 	proto.compute_width = function() {
-		if(_.isNumber(this.options.own_width)) {
-			return this.options.own_width;
+		if(_.isNumber(this.option("own_width"))) {
+			return this.option("own_width");
 		} else {
 			var rv = 0;
 			_.each(this.children, function(child) {
@@ -386,7 +349,7 @@ var ColumnLayout = function(options) {
 		return this.arrify().join("\n");
 	};
 	proto.arrify = function() {
-		var rv = ["x: " + this.get_x() + ", width: " + this.get_width() + " (" + (_.isNumber(this.options.own_width) ? "own" : "comp") + ")"];
+		var rv = ["x: " + this.get_x() + ", width: " + this.get_width() + " (" + (_.isNumber(this.option("own_width")) ? "own" : "comp") + ")"];
 		_.each(this.children, function(child) {
 			rv.push.apply(rv, _.map(child.arrify(), function(arr) {
 				return "\t" + arr;

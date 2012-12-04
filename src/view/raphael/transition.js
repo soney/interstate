@@ -15,7 +15,7 @@ Raphael.fn.addGuides = function() {
 	};
 };
 var Arrow = function(paper, options) {
-	this.options = _.extend({
+	red.make_this_optionable(this, {
 		arrowLength: 7
 		, fromX: 10
 		, toX: 20
@@ -45,6 +45,7 @@ var Arrow = function(paper, options) {
 
 (function(my) {
 	var proto = my.prototype;
+	red.make_proto_optionable(proto);
 
 	proto.get_state_attrs = function() {
 		var fromX = this.option("fromX")
@@ -166,29 +167,9 @@ var Arrow = function(paper, options) {
 		this.rrcompound.option("attrs", this.get_attrs(), this.option("animation_duration"));
 	};
 
-	proto.option = function(key, value, animated) {
-		if(_.isString(key)) {
-			if(arguments.length === 1) {
-				return this.options[key];
-			} else if(arguments.length > 1) {
-				this.options[key] = value;
-			}
-		} else {
-			animated = value;
-			_.each(key, function(v, k) {
-				this.options[k] = v;
-			}, this);
-		}
+	proto._on_options_set = function(key, value, animated) {
 		this.state_attrs = this.get_state_attrs();
-		if(animated) {
-			var anim_options = _.extend({
-				ms: this.option("animation_duration")
-			}, animated);
-			this.rrcompound.option("attrs", this.state_attrs, anim_options);
-		} else {
-			this.rrcompound.option("attrs", this.state_attrs, false);
-		}
-		return this;
+		this.rrcompound.option("attrs", this.get_attrs(), animated);
 	};
 	proto.remove = function (animated) {
 		if(animated) {
@@ -205,7 +186,7 @@ red.define("arrow", function(a, b) { return new Arrow(a,b); });
 
 var Transition = function(transition, paper, options) {
 	red.make_this_listenable(this);
-	this.options = _.extend({
+	red.make_this_optionable(this, {
 		from_view: null
 		, animate_creation: false
 		, y_offset: 4
@@ -217,9 +198,13 @@ var Transition = function(transition, paper, options) {
 	var from_view = this.option("from_view");
 	var to_view = this.option("to_view");
 
+	console.log(to_view.option("state_name"), to_view.option("x"));
+	//console.log("from_x: " + from_view.option("x"), "from_width: " + from_view.option("width"), "to_x: " + to_view.option("x") , "to_width: " + to_view.option("width"));
+	//console.log(to_view.antenna.rrcompound.find("circle")._element.node);
+
 	this.arrow = red.create("arrow", this.paper, {
-		fromX: from_view.option("left") + from_view.option("width")/2
-		, toX: to_view.option("left") + to_view.option("width")/2
+		fromX: from_view.option("x") + from_view.option("width")/2
+		, toX: to_view.option("x") + to_view.option("width")/2
 		, animate_creation: this.option("animate_creation")
 		, fromY: this.option("y")
 		, toY: this.option("y")
@@ -236,8 +221,8 @@ var Transition = function(transition, paper, options) {
 
 	var update_position = _.bind(function() {
 		this.arrow.option({
-			fromX: from_view.option("left") + from_view.option("width")/2
-			, toX: to_view.option("left") + to_view.option("width")/2
+			fromX: from_view.option("x") + from_view.option("width")/2
+			, toX: to_view.option("x") + to_view.option("width")/2
 			, animate_creation: this.option("animate_creation")
 			, fromY: this.option("y")
 			, toY: this.option("y")
@@ -261,6 +246,7 @@ var Transition = function(transition, paper, options) {
 (function(my) {
 	var proto = my.prototype;
 	red.make_proto_listenable(proto);
+	red.make_proto_optionable(proto);
 	proto.onSetEventRequest = function(e) {
 		var str = e.value;
 		var transition_event = this.transition.event();

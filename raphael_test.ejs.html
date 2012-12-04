@@ -82,7 +82,11 @@
 										.add_state("a")
 										.starts_at("a")
 										.add_state("b")
-										.add_transition("a", "b", red.create_event("parsed", ""))
+										.add_state("c")
+										.find_state("b")
+										.add_state("b1")
+										.parent()
+										.add_transition("a", "c", red.create_event("parsed", "event_name"))
 										.run();
 					/*
 										.add_state("superstateA")
