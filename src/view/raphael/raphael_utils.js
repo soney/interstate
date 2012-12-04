@@ -10,7 +10,7 @@ var RRaphael = function(paper, options) {
 		, stroke: false
 	}, this._defaults, options);
 
-	this._attrs = this._attrs || ["fill", "stroke"];
+	this._attrs = this._attrs || ["fill", "stroke", "stroke-width", "stroke-dasharray", "stroke-linecap", "stroke-join"];
 };
 (function(my) {
 	var proto = my.prototype;
@@ -18,15 +18,10 @@ var RRaphael = function(paper, options) {
 	red.make_proto_optionable(proto);
 
 	proto.initialize = function() {
-		if(this.option("stroke")) {
-			var element = this.get_element();
-			element.attr("stroke", this.option("stroke"));
-		}
-
-		if(this.option("fill")) {
-			var element = this.get_element();
-			element.attr("fill", this.option("fill"));
-		}
+		if(this.option("stroke")) { this.get_element().attr("stroke", this.option("stroke")); }
+		if(this.option("fill")) { this.get_element().attr("fill", this.option("fill")); }
+		if(this.option("stroke-width")) { this.get_element().attr("stroke-width", this.option("stroke-width")); }
+		if(this.option("stroke-dasharray")) { this.get_element().attr("stroke-dasharray", this.option("stroke-dasharray")); }
 	};
 
 	proto._on_options_set = function(values, animated) {
@@ -59,13 +54,12 @@ var RRaphael = function(paper, options) {
 	};
 	proto.get_latest_animation = function() { return this._latest_animation; };
 
-	proto.remove = function() {
-		var element = this.get_element();
-		element.remove();
-	};
-	proto.get_element = function()  {
-		return this._element;
-	};
+	proto.remove = function() { this.get_element().remove(); return this; };
+	proto.hide = function() { this.get_element().hide(); return this; };
+	proto.show = function() { this.get_element().show(); return this; };
+	proto.get_element = function()  { return this._element; return this; };
+	proto.toFront = function() { this.get_element().toFront(); return this; };
+	proto.toBack = function() { this.get_element().toBack(); return this; };
 
 	_.each(["mousedown", "mouseup", "click", "dblclick", "drag", "hover", "mousemove"
 			, "mouseover", "mouseout", "touchstart", "touchend", "touchmove", "touchcancel"], function(event) {
@@ -85,7 +79,7 @@ var RRPath = function(paper, options) {
 	this._defaults = {
 		path: ""
 	};
-	this._attrs = ["path", "fill", "stroke"];
+	this._attrs = ["path", "fill", "stroke", "stroke-width", "stroke-dasharray", "stroke-linecap", "stroke-join"];
 	RRPath.superclass.constructor.apply(this, arguments);
 	this._element = paper.path(this.option("path"));
 	this.initialize();
@@ -101,8 +95,8 @@ var RRCircle = function(paper, options) {
 		, cy: 10
 		, r: 5
 	};
-	this._attrs = ["cx", "cy", "r", "fill", "stroke"];
-	RRPath.superclass.constructor.apply(this, arguments);
+	this._attrs = ["cx", "cy", "r", "fill", "stroke", "stroke-width", "stroke-dasharray", "stroke-linecap", "stroke-join"];
+	RRCircle.superclass.constructor.apply(this, arguments);
 	this._element = paper.circle(this.option("cx"), this.option("cy"), this.option("r"));
 	this.initialize();
 };
@@ -110,6 +104,24 @@ var RRCircle = function(paper, options) {
 	_.proto_extend(my, RRaphael);
 	var proto = my.prototype;
 }(RRCircle));
+
+var RRRect = function(paper, options) {
+	this._defaults = {
+		x: 0
+		, y: 0
+		, width: 20
+		, height: 20
+		, r: 5
+	};
+	this._attrs = ["x", "y", "width", "height", "r", "fill", "stroke", "stroke-width", "stroke-dasharray", "stroke-linecap", "stroke-join"];
+	RRRect.superclass.constructor.apply(this, arguments);
+	this._element = paper.rect(this.option("x"), this.option("y"), this.option("width"), this.option("height"), this.option("r"));
+	this.initialize();
+};
+(function(my) {
+	_.proto_extend(my, RRaphael);
+	var proto = my.prototype;
+}(RRRect));
 
 var RRCompound = function(paper, options) {
 	red.make_this_listenable(this);
@@ -172,6 +184,9 @@ var RRCompound = function(paper, options) {
 
 red.define("rrcircle", function(paper, options) {
 	return new RRCircle(paper,  options);
+});
+red.define("rrrect", function(paper, options) {
+	return new RRRect(paper,  options);
 });
 red.define("rrpath", function(paper, options) {
 	return new RRPath(paper,  options);
@@ -257,6 +272,9 @@ var ColumnLayout = function(options) {
 
 		this.options.own_width = false;
 		this._set_width(this.compute_width());
+	};
+	proto.get_children = function() {
+		return this.children;
 	};
 	proto.remove = function() {
 		var parent = this.get_parent();

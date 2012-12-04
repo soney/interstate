@@ -40,6 +40,8 @@ exports.main_src = c(
 			])
 	, cp(src, [
 				"model/core.js"
+				, "view/util/listenable.js"
+				, "view/util/optionable.js"
 				, "model/core/obj_utils.js"
 				, "model/core/debug.js"
 				, "model/core/cjs_extensions.js"
@@ -67,8 +69,6 @@ exports.main_src = c(
 				, "controller/commands/combined_commands.js"
 				, "controller/environment/command_stack.js"
 				, "controller/environment/red_environment.js"
-				, "view/util/listenable.js"
-				, "view/util/optionable.js"
 				, "view/raphael/raphael_utils.js"
 				, "view/raphael/editable_text.js"
 				, "view/raphael/state.js"

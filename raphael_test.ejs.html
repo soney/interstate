@@ -4,11 +4,8 @@
     <title>red</title>
   </head>
   <body>
-	  <!--<h1>red</h1>-->
-
-		<div class="content">
-		</div>
-
+		<div id="content"></div>
+		<div id="thediv" style="background-color: red; width: 100px; height: 100px;margin-top: 10px;"></div>
 	  <div>
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
@@ -78,15 +75,56 @@
 					});
 					*/
 					
+					var dict = red.create("dict");
+					dict.set("div", document.getElementById("thediv"));
+					/*
+					var e = red.create_event("parsed", "mouseover(div)", dict, red.create("context", {stack: [dict]}));
+					console.log(e);
+					e.on_fire(function() {
+							console.log(arguments);
+					});
+					*/
 					var statechart = window.statechart = red.create("statechart")
-										.add_state("a")
+										.make_concurrent(true)
+										.add_state("hoverable")
+										.find_state("hoverable")
+										.add_state("idle")
+										.add_state("hover")
+										.starts_at("idle")
+										.add_transition("idle", "hover", red.create_event("parsed", "mouseover(div)", dict, red.create("context", {stack: [dict]})))
+										.add_transition("hover", "idle", red.create_event("parsed", "mouseout(div)", dict, red.create("context", {stack: [dict]})))
+										.parent()
+										.add_state("downable")
+										.find_state("downable")
+										.add_state("idle")
+										.add_state("active")
+										.add_state("activeout")
+										.starts_at("idle")
+										.add_transition("idle", "active", red.create_event("parsed", "mousedown(div)", dict, red.create("context", {stack: [dict]})))
+										.add_transition("active", "idle", red.create_event("parsed", "mouseup(div)", dict, red.create("context", {stack: [dict]})))
+										.add_transition("active", "activeout", red.create_event("parsed", "mouseout(div)", dict, red.create("context", {stack: [dict]})))
+										.add_transition("activeout", "active", red.create_event("parsed", "mouseover(div)", dict, red.create("context", {stack: [dict]})))
+										.add_transition("activeout", "idle", red.create_event("parsed", "mouseup()", dict, red.create("context", {stack: [dict]})))
+										.parent()
+										.run();
+										/*
+										.add_state("")
 										.starts_at("a")
 										.add_state("b")
 										.add_state("c")
 										.find_state("b")
 										.add_state("b1")
+										.add_state("b2")
+										.add_state("b3")
 										.parent()
-										.add_transition("a", "c", red.create_event("parsed", "event_name"))
+										.add_state("hoverable")
+										.find_state("hoverable")
+										.make_concurrent(true)
+										.add_state("idle")
+										.add_state("hover")
+										.add_state("other")
+										.parent()
+										.add_transition("a", "hoverable", red.create_event("parsed", "mouseover(div)", dict, red.create("context", {stack: [dict]})))
 										.run();
 					/*
 										.add_state("superstateA")
@@ -104,7 +142,8 @@
 
 					var el = document.createElement("div");
 					el.style.position = "relative";
-					document.body.appendChild(el);
+					var content = document.getElementById("content");
+					content.appendChild(el);
 					var paper = Raphael(el, 600, 200);
 
 					var scv = red.create("statechart_view", statechart, paper, {root: true});
@@ -113,7 +152,7 @@
 						var child_name = "state_" + statechart.get_substates().length;
 						statechart.add_state(child_name);
 					}).on("add_transition", function(event) {
-						statechart.add_transition(event.from_state, event.to_state, red.create_event("parsed", ""));
+						statechart.add_transition(event.from_state, event.to_state, red.create_event("parsed", "", dict, red.create("context", {stack: [dict]})));
 					}).on("set_event_str", function(event) {
 						var str = event.str;
 						var transition_event = event.transition_event;

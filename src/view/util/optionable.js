@@ -21,25 +21,25 @@ red.make_proto_optionable = function(proto) {
 	proto._on_option_set = function(key, value) { };
 	proto._on_options_set = function(values) { };
 
-	proto.option = function(key) {
+	proto.option = function(key, value) {
 		if(arguments.length === 0) {
 			return this;
 		} else if(_.isString(key)) {
 			if(arguments.length === 1) {
 				return this._get_option(key);
 			} else {
-				var args = _.rest(arguments);
-				this._set_option.apply(this, [key].concat(args));
-				this._on_option_set.apply(this, [key].concat(args));
+				var args = _.rest(arguments, 2);
+				this._set_option.apply(this, [key, value].concat(args));
+				this._on_option_set.apply(this, [key, value].concat(args));
 
 				var keys_val = {};
-				keys_val[key] = arguments[1];
+				keys_val[key] = value;
 				this._on_options_set.apply(this, [keys_val].concat(args));
 
 				return this;
 			}
 		} else {
-			var args = _.rest(arguments);
+			var args = _.rest(arguments, 1);
 			_.each(key, function(v, k) {
 				this._set_option.apply(this, [k, v].concat(args));
 				this._on_option_set.apply(this, [k, v].concat(args));

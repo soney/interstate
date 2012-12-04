@@ -27,7 +27,7 @@ var match_styles = function(textbox, text) {
 
 var EditableText = function(paper, options) {
 	red.make_this_listenable(this);
-	this.options = _.extend({
+	red.make_this_optionable(this, {
 		x: 0
 		, y: 0
 		, text: ""
@@ -68,6 +68,8 @@ var EditableText = function(paper, options) {
 (function(my) {
 	var proto = my.prototype;
 	red.make_proto_listenable(proto);
+	red.make_proto_optionable(proto);
+
 	proto.show_default = function() {
 		return this.option("text") === "";
 	};
@@ -143,18 +145,7 @@ var EditableText = function(paper, options) {
 		textbox.removeEventListener("blur", this.$onBlur);
 		textbox.parentNode.removeChild(textbox);
 	};
-	proto.option = function(key, value, animated) {
-		if(arguments.length <= 1) {
-			if(_.isString(key)) {
-				return this.options[key];
-			} else {
-				_.each(key, function(v, k) {
-					this.options[k] = v;
-				}, this);
-			}
-		} else {
-			this.options[key] = value;
-		}
+	proto._on_options_set = function(values, animated) {
 		this.text.attr({
 			x: this.option("x")
 			, y: this.option("y")
@@ -164,6 +155,7 @@ var EditableText = function(paper, options) {
 			, "font-size": this.option("font-size")
 			, "font-weight": this.option("font-weight")
 			, "text-anchor": this.option("text-anchor")
+			, fill: this.show_default() ? this.option("default_color") : this.option("color")
 		});
 	};
 	proto.remove = function() {

@@ -24,7 +24,7 @@ var Arrow = function(paper, options) {
 		, radius: 3
 		, arrowAngle: 20
 		, bottom: 45
-		, animation_duration: 600
+		, animation_duration: 9000
 		, self_pointing_theta: 45
 		, animate_creation: false
 	}, options);
@@ -129,33 +129,24 @@ var Arrow = function(paper, options) {
 		});
 		the_flash.animate({
 			along: [0, 1]
-		}, 400, "ease-in", function() {
+		}, 200, "ease-in", function() {
 			the_flash.animate({
 				along: [1, 1]
-			}, 400, "ease-out", function() {
+			}, 200, "ease-out", function() {
 				the_flash.remove();
-				console.log("all done");
 			});
 			arrow.option({"fill": "red"});
 			arrow.option({
 				fill: "white"
 			}, {
-				ms: 400
+				ms: 200
 				, easing: "ease-out"
 			});
 		});
 
 	};
 	proto.get_attrs = function() {
-		var attrs = {};
-		if(this.expanded) { _.deepExtend(attrs, this.state_attrs.expanded); }
-		else { _.deepExtend(attrs, this.state_attrs.collapsed); }
-
-		if(this.highlighted) { _.deepExtend(attrs, this.state_attrs.highlighted); }
-		else { _.deepExtend(attrs, this.state_attrs.dim); }
-
-		
-		return attrs;
+		return this.state_attrs;
 	};
 
 	proto.collapse = function() {
@@ -167,7 +158,7 @@ var Arrow = function(paper, options) {
 		this.rrcompound.option("attrs", this.get_attrs(), this.option("animation_duration"));
 	};
 
-	proto._on_options_set = function(key, value, animated) {
+	proto._on_options_set = function(values, animated) {
 		this.state_attrs = this.get_state_attrs();
 		this.rrcompound.option("attrs", this.get_attrs(), animated);
 	};
@@ -189,8 +180,8 @@ var Transition = function(transition, paper, options) {
 	red.make_this_optionable(this, {
 		from_view: null
 		, animate_creation: false
-		, y_offset: 4
-		, y: 0
+		, y_offset: 6
+		, y: 5
 	}, options);
 
 	this.transition = transition;
@@ -198,13 +189,13 @@ var Transition = function(transition, paper, options) {
 	var from_view = this.option("from_view");
 	var to_view = this.option("to_view");
 
-	console.log(to_view.option("state_name"), to_view.option("x"));
+	//console.log(to_view.option("state_name"), to_view.option("x"));
 	//console.log("from_x: " + from_view.option("x"), "from_width: " + from_view.option("width"), "to_x: " + to_view.option("x") , "to_width: " + to_view.option("width"));
 	//console.log(to_view.antenna.rrcompound.find("circle")._element.node);
 
 	this.arrow = red.create("arrow", this.paper, {
-		fromX: from_view.option("x") + from_view.option("width")/2
-		, toX: to_view.option("x") + to_view.option("width")/2
+		fromX: from_view.option("ownStateMiddleX")
+		, toX: to_view.option("ownStateMiddleX")
 		, animate_creation: this.option("animate_creation")
 		, fromY: this.option("y")
 		, toY: this.option("y")
@@ -221,8 +212,8 @@ var Transition = function(transition, paper, options) {
 
 	var update_position = _.bind(function() {
 		this.arrow.option({
-			fromX: from_view.option("x") + from_view.option("width")/2
-			, toX: to_view.option("x") + to_view.option("width")/2
+			fromX: from_view.option("ownStateMiddleX")
+			, toX: to_view.option("ownStateMiddleX")
 			, animate_creation: this.option("animate_creation")
 			, fromY: this.option("y")
 			, toY: this.option("y")
@@ -234,13 +225,16 @@ var Transition = function(transition, paper, options) {
 		});
 	}, this);
 
-	from_view.transition_column.on("move", update_position);
-	to_view.transition_column.on("move", update_position);
-	from_view.transition_column.on("resize", update_position);
-	to_view.transition_column.on("resize", update_position);
+	from_view.state_column.on("move", update_position);
+	to_view.state_column.on("move", update_position);
+	from_view.state_column.on("resize", update_position);
+	to_view.state_column.on("resize", update_position);
 
 	this.$onSetEventRequest = _.bind(this.onSetEventRequest, this);
 	this.label.on("change", this.$onSetEventRequest);
+	this.transition.on("fired", function() {
+		this.arrow.flash();
+	}, this);
 };
 
 (function(my) {
@@ -257,16 +251,13 @@ var Transition = function(transition, paper, options) {
 			, transition_event: this.transition.event()
 		});
 	};
-	proto.option = function(key, value, animated) {
-		if(arguments.length <= 1) {
-			return this.options[key];
-		} else {
-			this.options[key] = value;
-			if(key === "y") {
-				this.arrow.option("fromY", this.option("y"), animated);
-				this.arrow.option("toY", this.option("y"), animated);
-				this.label.option("y", (this.arrow.option("fromY") + this.arrow.option("toY"))/2 - this.option("y_offset"));
-			}
+	proto._on_option_set = function(key, value, animated) {
+		if(key === "y") {
+			this.arrow.option({
+				fromY: this.option("y")
+				, toY: this.option("y")
+			}, animated);
+			this.label.option("y", (this.arrow.option("fromY") + this.arrow.option("toY"))/2 - this.option("y_offset"), animated);
 		}
 	};
 	proto.remove = function() {

@@ -2,6 +2,7 @@
 var cjs = red.cjs, _ = red._;
 
 var StatechartTransition = function(options, defer_initialization) {
+	red.make_this_listenable(this);
 	if(defer_initialization === true) {
 		//this.initialize = _.bind(this.do_initialize, this, options);
 	} else {
@@ -10,6 +11,7 @@ var StatechartTransition = function(options, defer_initialization) {
 };
 (function(my) {
 	var proto = my.prototype;
+	red.make_proto_listenable(proto);
 	proto.do_initialize = function(options) {
 		this._from_state = options.from;
 		this._to_state = options.to;
@@ -46,7 +48,9 @@ var StatechartTransition = function(options, defer_initialization) {
 	};
 	proto.run = function(event) {
 		var statechart = this.get_parent_statechart();
-		statechart.on_transition_fire(this, event);
+		if(statechart.on_transition_fire(this, event)) {
+			this._emit("fired", {transition: this, statechart: statechart});
+		}
 	};
 	proto.create_shadow = function(from_state, to_state, context) {
 		var my_event = this.event()
@@ -78,14 +82,6 @@ var StatechartTransition = function(options, defer_initialization) {
 			this.do_initialize({from: red.deserialize(obj.from), to: red.deserialize(obj.to), event: red.deserialize(obj.event)});
 		};
 		return rv;
-	};
-	proto.on = function(state_spec, func) {
-		var listeners = this._listeners[state_spec];
-		if(!isArray(listeners)) {
-			listeners = this._listeners[state_spec] = [];
-		}
-
-		listeners.push(func);
 	};
 }(StatechartTransition));
 red.StatechartTransition = StatechartTransition;
@@ -440,9 +436,11 @@ var Statechart = function(options, defer_initialization) {
 						parent.set_active_substate(active_substate);
 					}
 					cjs.signal();
+					return true;
 				}
 			}
 		}
+		return false;
 	};
 	proto.starts_at = function(state) {
 		this.$init_state.set(this.find_state(state));

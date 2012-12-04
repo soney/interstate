@@ -19,7 +19,7 @@ var esprima = window.esprima;
 _.forEach(dom_events, function(dom_event) {
 	event_types[dom_event] = function(parent) {
 		var context = _.last(arguments);
-		if(arguments.length === 0) {
+		if(arguments.length === 1) {
 			parent = window; // Ex: mouseup() <-> mouseup(window)
 		}
 
