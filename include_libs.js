@@ -32,6 +32,7 @@ exports.main_src = c(
 	cp(cjs_path, cjs_inc.main_src)
 	, cp(vendor_src, [
 				"esprima/esprima.js"
+				, "ablejs/able.js"
 				, "underscore/underscore.js"
 				, "underscore/red_underscore_extensions.js"
 				, "jquery-ui-1.9.1.custom/js/jquery-1.8.2.js"
@@ -40,8 +41,6 @@ exports.main_src = c(
 			])
 	, cp(src, [
 				"model/core.js"
-				, "view/util/listenable.js"
-				, "view/util/optionable.js"
 				, "model/core/obj_utils.js"
 				, "model/core/debug.js"
 				, "model/core/cjs_extensions.js"

@@ -1,3 +1,6 @@
 [submodule "src/_vendor/cjs"]
 	path = src/_vendor/cjs
 	url = https://github.com/soney/ConstraintJS
+[submodule "src/_vendor/ablejs"]
+	path = src/_vendor/ablejs
+	url = https://github.com/soney/ablejs.git
