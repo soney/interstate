@@ -15,7 +15,7 @@ Raphael.fn.addGuides = function() {
 	};
 };
 var Arrow = function(paper, options) {
-	red.make_this_optionable(this, {
+	able.make_this_optionable(this, {
 		arrowLength: 7
 		, fromX: 10
 		, toX: 20
@@ -45,7 +45,7 @@ var Arrow = function(paper, options) {
 
 (function(my) {
 	var proto = my.prototype;
-	red.make_proto_optionable(proto);
+	able.make_proto_optionable(proto);
 
 	proto.get_state_attrs = function() {
 		var fromX = this.option("fromX")
@@ -176,8 +176,8 @@ var Arrow = function(paper, options) {
 red.define("arrow", function(a, b) { return new Arrow(a,b); });
 
 var Transition = function(transition, paper, options) {
-	red.make_this_listenable(this);
-	red.make_this_optionable(this, {
+	able.make_this_listenable(this);
+	able.make_this_optionable(this, {
 		from_view: null
 		, animate_creation: false
 		, y_offset: 6
@@ -239,8 +239,8 @@ var Transition = function(transition, paper, options) {
 
 (function(my) {
 	var proto = my.prototype;
-	red.make_proto_listenable(proto);
-	red.make_proto_optionable(proto);
+	able.make_proto_listenable(proto);
+	able.make_proto_optionable(proto);
 	proto.onSetEventRequest = function(e) {
 		var str = e.value;
 		var transition_event = this.transition.event();

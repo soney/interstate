@@ -2,7 +2,7 @@
 var cjs = red.cjs, _ = red._;
 
 var StatechartTransition = function(options, defer_initialization) {
-	red.make_this_listenable(this);
+	able.make_this_listenable(this);
 	if(defer_initialization === true) {
 		//this.initialize = _.bind(this.do_initialize, this, options);
 	} else {
@@ -11,7 +11,7 @@ var StatechartTransition = function(options, defer_initialization) {
 };
 (function(my) {
 	var proto = my.prototype;
-	red.make_proto_listenable(proto);
+	able.make_proto_listenable(proto);
 	proto.do_initialize = function(options) {
 		this._from_state = options.from;
 		this._to_state = options.to;

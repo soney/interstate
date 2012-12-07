@@ -26,8 +26,8 @@ var match_styles = function(textbox, text) {
 };
 
 var EditableText = function(paper, options) {
-	red.make_this_listenable(this);
-	red.make_this_optionable(this, {
+	able.make_this_listenable(this);
+	able.make_this_optionable(this, {
 		x: 0
 		, y: 0
 		, text: ""
@@ -67,8 +67,8 @@ var EditableText = function(paper, options) {
 };
 (function(my) {
 	var proto = my.prototype;
-	red.make_proto_listenable(proto);
-	red.make_proto_optionable(proto);
+	able.make_proto_listenable(proto);
+	able.make_proto_optionable(proto);
 
 	proto.show_default = function() {
 		return this.option("text") === "";

@@ -2,8 +2,8 @@
 var cjs = red.cjs, _ = red._;
 
 var RRaphael = function(paper, options) {
-	red.make_this_listenable(this);
-	red.make_this_optionable(this, {
+	able.make_this_listenable(this);
+	able.make_this_optionable(this, {
 		anim_ms: 200
 		, anim_easing: "<>"
 		, fill: false
@@ -14,8 +14,8 @@ var RRaphael = function(paper, options) {
 };
 (function(my) {
 	var proto = my.prototype;
-	red.make_proto_listenable(proto);
-	red.make_proto_optionable(proto);
+	able.make_proto_listenable(proto);
+	able.make_proto_optionable(proto);
 
 	proto.initialize = function() {
 		if(this.option("stroke")) { this.get_element().attr("stroke", this.option("stroke")); }
@@ -124,16 +124,16 @@ var RRRect = function(paper, options) {
 }(RRRect));
 
 var RRCompound = function(paper, options) {
-	red.make_this_listenable(this);
-	red.make_this_optionable(this, {
+	able.make_this_listenable(this);
+	able.make_this_optionable(this, {
 		contents: {}
 		, attrs: {}
 	}, options);
 
 	this._contents = {};
-	_.each(this.options.contents, function(type, name) {
+	_.each(this.option("contents"), function(type, name) {
 		var rrobj;
-		var options = this.options.attrs[name];
+		var options = this.option("attrs")[name];
 		if(type === "path") {
 			rrobj = red.create("rrpath", paper, options);
 		} else if(type === "circle") {
@@ -147,8 +147,8 @@ var RRCompound = function(paper, options) {
 (function(my) {
 	var proto = my.prototype;
 
-	red.make_proto_listenable(proto);
-	red.make_proto_optionable(proto);
+	able.make_proto_listenable(proto);
+	able.make_proto_optionable(proto);
 
 	proto.find = function(name) {
 		return this._contents[name];
@@ -197,8 +197,8 @@ red.define("rrcompound", function(paper, options) {
 red.RRaphael = RRaphael;
 
 var ColumnLayout = function(options) {
-	red.make_this_listenable(this);
-	red.make_this_optionable(this, {
+	able.make_this_listenable(this);
+	able.make_this_optionable(this, {
 		own_width: false
 		, x: 0
 		, parent: undefined
@@ -212,8 +212,8 @@ var ColumnLayout = function(options) {
 };
 (function(my) {
 	var proto = my.prototype;
-	red.make_proto_listenable(proto);
-	red.make_proto_optionable(proto);
+	able.make_proto_listenable(proto);
+	able.make_proto_optionable(proto);
 	proto.push = function(options) {
 		return this.insert_at(null, options);
 	};
@@ -239,7 +239,7 @@ var ColumnLayout = function(options) {
 		child	.on("resize", this.$onChildResize)
 				.on("remove", on_remove);
 
-		this.options.own_width = false;
+		this.option("own_width", false);
 		this._set_width(this.compute_width());
 
 		return child;

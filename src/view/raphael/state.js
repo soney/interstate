@@ -2,7 +2,7 @@
 var cjs = red.cjs, _ = red._;
 
 var Antenna = function(paper, options) {
-	red.make_this_optionable(this, {
+	able.make_this_optionable(this, {
 		radius: 5
 		, height: 40
 		, x: 10
@@ -14,7 +14,7 @@ var Antenna = function(paper, options) {
 	this.state_attrs = this.get_state_attrs();
 
 	this.highlighted = false;
-	if(this.options.animate_creation) {
+	if(this.option("animate_creation")) {
 		this.expanded = false;
 	} else {
 		this.expanded = true;
@@ -28,14 +28,14 @@ var Antenna = function(paper, options) {
 		, attrs: this.get_attrs()
 	});
 
-	if(this.options.animate_creation) {
+	if(this.option("animate_creation")) {
 		this.expand();
 	}
 };
 
 (function(my) {
 	var proto = my.prototype;
-	red.make_proto_optionable(proto);
+	able.make_proto_optionable(proto);
 
 	proto.get_state_attrs = function() {
 		return {
@@ -242,11 +242,11 @@ var TransitionLayoutManager = function(root_view) {
 var statechart_view_map = simple_map();
 
 var StatechartView = function(statechart, paper, options) {
-	red.make_this_listenable(this);
+	able.make_this_listenable(this);
 	this.statechart = statechart;
 	statechart_view_map.set(this.statechart, this);
 	this.paper = paper;
-	red.make_this_optionable(this, {
+	able.make_this_optionable(this, {
 						root: false
 						, parent: null
 						, x: function() { return this.column_layout_manager.get_x(); }
@@ -493,8 +493,8 @@ var StatechartView = function(statechart, paper, options) {
 
 (function(my) {
 	var proto = my.prototype;
-	red.make_proto_listenable(proto);
-	red.make_proto_optionable(proto);
+	able.make_proto_listenable(proto);
+	able.make_proto_optionable(proto);
 	proto.onStatesReady = function() {
 		this.$onTransitionAdded = _.bind(this.onTransitionAdded, this);
 		this.$onTransitionRemoved = _.bind(this.onTransitionRemoved, this);
