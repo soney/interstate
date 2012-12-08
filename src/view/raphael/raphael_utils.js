@@ -51,6 +51,13 @@ var RRaphael = function(paper, options) {
 			var element = this.get_element();
 			element.attr(attr_values);
 		}
+		/*
+			if(_.has(attr_values, "path")) {
+				console.log(attr_values.path);
+				console.log(element.node);
+				console.log(attr_values);
+			}
+		*/
 	};
 	proto.get_latest_animation = function() { return this._latest_animation; };
 

@@ -10,7 +10,7 @@ var match_styles = function(textbox, text) {
 		textbox.style.textAlign = "center";
 	} else {
 		textbox.style.textAlign = "right";
-	}
+	 + this.option("state_label_height")/2}
 	textbox.style.fontFamily = text.attr("font-family");
 	textbox.style.fontWeight = text.attr("font-weight");
 	textbox.style.fontStyle = text.attr("font-style");

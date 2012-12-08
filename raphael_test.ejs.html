@@ -84,7 +84,23 @@
 							console.log(arguments);
 					});
 					*/
+					var get_parsed_event = function(str) {
+						return red.create_event("parsed", str || "", dict, red.create("context", {stack: [dict]}));
+					};
 					var statechart = window.statechart = red.create("statechart")
+															.add_state("state_a")
+															.add_state("state_b")
+															.add_transition("state_a", "state_b", get_parsed_event(""))
+															.add_transition("state_b", "state_a", get_parsed_event(""))
+															/*
+															.add_transition("state_a", "state_a", get_parsed_event(""))
+															.add_transition("state_a", "state_a", get_parsed_event(""))
+															.add_transition("state_a", "state_a", get_parsed_event(""))
+															.add_transition("state_a", "state_a", get_parsed_event(""))
+															.add_transition("state_a", "state_a", get_parsed_event(""))
+															*/
+															.run();
+					/*
 										.make_concurrent(true)
 										.add_state("hoverable")
 										.find_state("hoverable")
@@ -107,6 +123,7 @@
 										.add_transition("activeout", "idle", red.create_event("parsed", "mouseup()", dict, red.create("context", {stack: [dict]})))
 										.parent()
 										.run();
+					*/
 										/*
 										.add_state("")
 										.starts_at("a")
