@@ -217,7 +217,6 @@ var TransitionLayoutManager = function(root_view) {
 		var rows = [];
 		var states = this.root.flatten_substates();
 
-		var curr_row = null;
 		_.each(transitions, function(transition, index) {
 			var from_index = _.indexOf(states, transition.from());
 			var to_index = _.indexOf(states, transition.to());
@@ -225,21 +224,25 @@ var TransitionLayoutManager = function(root_view) {
 			var min_index = Math.min(from_index, to_index);
 			var max_index = Math.max(from_index, to_index);
 
-			if(curr_row === null) {
-				curr_row = _.map(states, function() { return false; });
-				rows.push(curr_row);
-			} else {
-				var need_new_row = false;
-				for(var i = min_index; i<=max_index; i++) {
-					if(curr_row[i]) {
-						need_new_row = true;
+			var curr_row;
+			var has_enough_space;
+			for(var i = 0; i<rows.length; i++) {
+				has_enough_space = true;
+				var row = rows[i];
+				for(var j = min_index; j<=max_index; j++) {
+					if(row[j]) {
+						has_enough_space = false;
 						break;
 					}
 				}
-				if(need_new_row) {
-					curr_row = _.map(states, function() { return false; });
-					rows.push(curr_row);
+				if(has_enough_space) {
+					curr_row = rows[i];
+					break;
 				}
+			}
+			if(!curr_row) {
+				curr_row = _.map(states, function() { return false; });
+				rows.push(curr_row);
 			}
 
 			for(var i = min_index; i<=max_index; i++) {
@@ -365,10 +368,11 @@ var StatechartView = function(statechart, paper, options) {
 		this.column_layout_manager	.on("resize", this.$update_outlines)
 									.on("move", this.$update_outlines);
 		this.state_column	.on("resize", this.$update_antenna)
-							.on("move", this.$update_antenna);
+							.on("move", this.$update_antenna)
+							.on("resize", this.$update_outlines)
+							.on("move", this.$update_outlines);
 
 		//this.transition_layout_manager.update_layout();
-		/*
 		this.antenna.rrcompound.find("circle").mousedown(_.bind(function(event) {
 			var sc_root = this.statechart.root();
 			var substates = sc_root.flatten_substates();
@@ -382,7 +386,7 @@ var StatechartView = function(statechart, paper, options) {
 					var substate_view = statechart_view_map.get(substate);
 					if(_.has(substate_view, "antenna")) {
 						var target = substate_view.antenna.rrcompound.find("circle");
-						var distance = math.pow(target.option("cx") - x, 2) + math.pow(target.option("cy") - y, 2);
+						var distance = Math.pow(target.option("cx") - x, 2) + Math.pow(target.option("cy") - y, 2);
 						if(min_distance_index < 0 || distance < min_distance) {
 							min_distance = distance;
 							min_distance_index = i;
@@ -423,16 +427,16 @@ var StatechartView = function(statechart, paper, options) {
 					arrow.option("tox", dest_point.x); arrow.option("toy", dest_point.y);
 					old_dest = dest_point;
 				}
-				event.stoppropagation();
-				event.preventdefault();
+				event.stopPropagation();
+				event.preventDefault();
 			}, this);
 
-			window.addeventlistener("mousemove", onmousemove);
+			window.addEventListener("mousemove", onmousemove);
 
 			var remove_event_listeners = function() {
-				window.removeeventlistener("mousemove", onmousemove);
-				window.removeeventlistener("mouseup", onmouseup);
-				window.removeeventlistener("keydown", onkeydown);
+				window.removeEventListener("mousemove", onmousemove);
+				window.removeEventListener("mouseup", onmouseup);
+				window.removeEventListener("keydown", onkeydown);
 			};
 
 			var onmouseup = _.bind(function(event) {
@@ -458,12 +462,11 @@ var StatechartView = function(statechart, paper, options) {
 				}
 			}, this);
 
-			window.addeventlistener("mouseup", onmouseup);
-			window.addeventlistener("keydown", onkeydown);
-			event.stoppropagation();
-			event.preventdefault();
+			window.addEventListener("mouseup", onmouseup);
+			window.addEventListener("keydown", onkeydown);
+			event.stopPropagation();
+			event.preventDefault();
 		}, this));
-		*/
 	}
 
 	this.$substates = this.statechart.$substates;
@@ -635,7 +638,7 @@ var StatechartView = function(statechart, paper, options) {
 	};
 
 	proto.update_paper_size = function(animated) {
-		this.paper.setSize(this.option("width"), this.option("height"));
+		this.paper.setSize(this.option("width"), this.option("y") + this.option("height"));
 	};
 
 	proto.update_antenna = function(animated) {
@@ -654,7 +657,7 @@ var StatechartView = function(statechart, paper, options) {
 	};
 
 	proto.update_outlines = function() {
-		var height = this.option("height") + 15;
+		var height = this.option("height");
 		if(this.outline) {
 			if(this.statechart.get_substates().length === 0) {
 				this.outline.hide();
@@ -663,8 +666,19 @@ var StatechartView = function(statechart, paper, options) {
 			} else {
 				this.outline.show();
 				this.state_outline.show();
-				this.outline.option("height", height);
-				this.state_outline.option("height", height);
+				this.outline.option({
+					height: height
+					, width: this.column_layout_manager.get_width()
+					, x: this.state_column.get_x()
+					, y: this.option("y")
+				});
+				this.state_outline.option({
+					height: height
+					, width: this.state_column.get_width()
+					, x: this.state_column.get_x()
+					, y: this.option("y")
+				});
+				
 
 				//var indent_level = -1;
 				//var parent = this.statechart;
