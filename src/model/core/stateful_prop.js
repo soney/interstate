@@ -149,11 +149,6 @@ var RedStatefulProp = function(options, defer_initialization) {
 				, value: value
 				, using: using
 			});
-			
-			var outgoing_transitions = state.get_outgoing_transitions();
-			for(var j = 0; j<outgoing_transitions.length; j++) {
-				var outgoing_transition = outgoing_transitions[j];
-			}
 		}
 
 		if(!found_using_value && this._last_valid_using_index.has(context)) {

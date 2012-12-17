@@ -118,7 +118,11 @@ var RedStatefulObj = function(options, defer_initialization) {
 			return _.without(statechart.get_substates(), statechart);
 		}), true);
 
-		var rv = _.map(flattened_statecharts, function(state) {
+		var flattened_states_and_transitions = _.flatten(_.map(flattened_statecharts, function(state) {
+			return ([state]).concat(state.get_outgoing_transitions());
+		}));
+
+		var rv = _.map(flattened_states_and_transitions, function(state) {
 			var is_active = _.indexOf(active_states, state) >= 0;
 			return {
 				active: is_active

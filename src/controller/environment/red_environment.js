@@ -259,23 +259,27 @@ var Env = function(options) {
 					var row = [prop_name + " - " + value.id, value_to_value_str(value_got)];
 
 					var state_strs = _.map(state_specs, function(state_spec) {
+						var rv;
 						var state = state_spec.state;
-						var rv = state.get_name(state.parent());
-						rv += " " + state.id;
-						if(state.basis()) {
-							rv += "<-"+state.basis().id;
+						if(state instanceof red.Statechart) {
+							rv = state.get_name(state.parent());
+							rv += " " + state.id;
+							if(state.basis()) {
+								rv += "<-"+state.basis().id;
+							}
+							if(state_spec.active) {
+								rv = "* " + rv + " *";
+							}
+						} else if(state instanceof red.StatechartTransition) {
+							var transition = state
+								, to_state = transition.to();
+							
+							rv = "(" + transition.stringify() + ")-> " + to_state.get_name(to_state.parent());
 						}
-						if(state_spec.active) {
-							rv = "* " + rv + " *";
-						}
-						var strs =  [rv];
-						_.each(state.get_outgoing_transitions(), function(transition) {
-							strs.push("(" + transition.stringify() + ")-> " + transition.to().get_name(transition.to().parent()));
-						});
-						return strs;
+						return rv;
 					});
 
-					row.push.apply(row, _.flatten(state_strs));
+					row.push.apply(row, state_strs);
 					to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(dictified_context.push(value)));
 					to_print_statecharts.push(value.get_own_statechart());
 
@@ -511,19 +515,17 @@ var Env = function(options) {
 			var pointer_states = pointer.get_states(this.get_context());
 			if(_.isNumber(for_state)) {
 				for(var i = 0; i<pointer_states.length; i++) {
-					if(pointer_states[i].id === for_state) {
-						for_state = pointer_states[i];
-						break;
-					} else {
-						var outgoing = pointer_states[i].get_outgoing_transitions();
-						var found = false;
-						for(var j = 0; j<outgoing.length; j++) {
-							if(outgoing[j].id() === for_state || (outgoing[j].basis() && outgoing[j].basis().id() === for_state)) {
-								for_state = outgoing[j];
-								break;
-							}
+					var state= pointer_states[i];
+					if(state instanceof red.Statechart) {
+						if(state.id === for_state) {
+							for_state = pointer_states[i];
+							break;
 						}
-						if(found) { break; }
+					} else {
+						if(state.id() === for_state || (state.basis() && state.basis().id() === for_state)) {
+							for_state = state;
+							break;
+						}
 					}
 				}
 			} else if(_.isString(for_state)) {
