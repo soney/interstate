@@ -2,6 +2,7 @@
 var cjs = red.cjs, _ = red._;
 
 var StatechartTransition = function(options, defer_initialization) {
+	able.make_this_listenable(this);
 	if(defer_initialization === true) {
 		//this.initialize = _.bind(this.do_initialize, this, options);
 	} else {
@@ -10,6 +11,7 @@ var StatechartTransition = function(options, defer_initialization) {
 };
 (function(my) {
 	var proto = my.prototype;
+	able.make_proto_listenable(proto);
 	proto.do_initialize = function(options) {
 		this._from_state = options.from;
 		this._to_state = options.to;
@@ -46,7 +48,9 @@ var StatechartTransition = function(options, defer_initialization) {
 	};
 	proto.run = function(event) {
 		var statechart = this.get_parent_statechart();
-		statechart.on_transition_fire(this, event);
+		if(statechart.on_transition_fire(this, event)) {
+			this._emit("fired", {transition: this, statechart: statechart});
+		}
 	};
 	proto.create_shadow = function(from_state, to_state, context) {
 		var my_event = this.event()
@@ -78,14 +82,6 @@ var StatechartTransition = function(options, defer_initialization) {
 			this.do_initialize({from: red.deserialize(obj.from), to: red.deserialize(obj.to), event: red.deserialize(obj.event)});
 		};
 		return rv;
-	};
-	proto.on = function(state_spec, func) {
-		var listeners = this._listeners[state_spec];
-		if(!isArray(listeners)) {
-			listeners = this._listeners[state_spec] = [];
-		}
-
-		listeners.push(func);
 	};
 }(StatechartTransition));
 red.StatechartTransition = StatechartTransition;
@@ -134,6 +130,13 @@ var Statechart = function(options, defer_initialization) {
 	proto.get_outgoing_transitions = function() { return this.$outgoing_transitions.get(); };
 	proto.get_active_substate = function(substate) { return this.$local_state.get(); };
 	proto.is_running = function() { return this._running; };
+
+	proto.flatten_substates = function() {
+		return ([this]).concat(_.flatten(_.map(this.get_substates(), function(substate) {
+			return substate.flatten_substates();
+		})));
+	};
+
 	var get_state_regex = function(state_name) { 
 		var valid_chars = "[^\\-<>a-zA-Z0-9]*";
 		return valid_chars + "\\*|("+state_name+")" + valid_chars;
@@ -433,9 +436,11 @@ var Statechart = function(options, defer_initialization) {
 						parent.set_active_substate(active_substate);
 					}
 					cjs.signal();
+					return true;
 				}
 			}
 		}
+		return false;
 	};
 	proto.starts_at = function(state) {
 		this.$init_state.set(this.find_state(state));

@@ -13,7 +13,7 @@ var define_map_func = function(name, func, context) {
 	});
 };
 
-define_map_func("pluck", _.pluck, _);
-define_map_func("flatten", _.flatten, _);
+//define_map_func("pluck", _.pluck, _);
+//define_map_func("flatten", _.flatten, _);
 
 }(red));

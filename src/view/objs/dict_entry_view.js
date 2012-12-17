@@ -56,12 +56,12 @@ $.widget("red.dict_entry", {
 
 		this._current_value = $("<span />")	.addClass("current_value")
 											.appendTo(this.element);
-		this._source_value = $("<span />")	.ambiguous({
+		this._source_value = $("<span />")	.appendTo(this.element)
+											.ambiguous({
 												context: my_context
 												, indent: this.option("indent") + 1
 												, sub_entries: this._sub_entries
-											})
-											.appendTo(this.element);
+											});
 		this._sub_entries.appendTo(this.element);
 
 		if(this.option("static")) {

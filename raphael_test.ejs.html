@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+  </head>
+  <body>
+		<div id="content"></div>
+		<div id="thediv" style="background-color: red; width: 100px; height: 100px;margin-top: 10px;"></div>
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript">
+				var _ = red._;
+
+				var root, env, cjs, _, root_view;
+				$(function() {
+					var el = document.createElement("div");
+					el.style.position = "relative";
+					document.body.appendChild(el);
+					/*
+					var paper = Raphael(el, 600, 500);
+					var RectDisplay = function(cl, z) {
+						this.z = z || 0;
+						this.cl = cl || new red.ColumnLayout();
+						this.rect = paper.rect(this.cl.get_x(), (this.z * 40), this.cl.get_width(), 300 - 2*(this.z * 40));
+						var fill_color = this.z * 40;
+						this.rect.attr({fill: "rgb(" + fill_color + "," + fill_color + "," + fill_color + ")"});
+						var self = this;
+						this.cl.on("resize", function(target, width) {
+							self.rect.attr("width", width);
+						}).on("move", function(target, x) {
+							self.rect.attr("x", x);
+						}).on("remove", function() {
+							self.rect.remove();
+						});
+						this.rect.mousedown(function() {
+							self.select();
+						});
+					};
+					(function(my) {
+						var proto = my.prototype;
+						proto.push = function(options) {
+							return new RectDisplay(this.cl.push(options), this.z + 1);
+						};
+						proto.print = function() { return this.cl.print(); };
+						proto.select = function() {
+							if(selected_display) { selected_display.unselect(); }
+							this.rect.attr("stroke", "red");
+							selected_display = this;
+							return this;
+						};
+						proto.unselect = function() {
+							this.rect.attr("stroke", "black");
+						};
+					}(RectDisplay));
+					window.root = new RectDisplay();
+					window.root.push({own_width: 50});
+					window.selected_display = window.root;
+					$(window).on("keydown", function(event) {
+						if(event.keyCode === 8) { // Delete
+							if(selected_display) {
+								selected_display.cl.remove();
+							}
+							selected_display = false;
+						} else if(event.keyCode === 37) { // Left arrow
+							selected_display.cl.resize(selected_display.cl.get_width() - 10);
+						} else if(event.keyCode === 39) { // Right arrow
+							selected_display.cl.resize(selected_display.cl.get_width() + 10);
+						} else if(event.keyCode === 40) { // Down arrow
+							selected_display.push({own_width: 50}).select();
+						} else {
+							return;
+						}
+						event.preventDefault();
+						event.stopPropagation();
+					});
+					*/
+					
+					var dict = red.create("dict");
+					dict.set("div", document.getElementById("thediv"));
+					/*
+					var e = red.create_event("parsed", "mouseover(div)", dict, red.create("context", {stack: [dict]}));
+					console.log(e);
+					e.on_fire(function() {
+							console.log(arguments);
+					});
+					*/
+					var get_parsed_event = function(str) {
+						return red.create_event("parsed", str || "", dict, red.create("context", {stack: [dict]}));
+					};
+					var statechart = window.statechart = red.create("statechart")
+					/*
+															.add_state("a")
+															.add_state("b")
+															.add_state("b.x")
+															.add_state("b.y")
+															.add_state("state_a")
+															.add_state("state_b")
+															.add_transition("state_a", "state_b", get_parsed_event(""))
+															.add_transition("state_b", "state_a", get_parsed_event(""))
+															.add_transition("state_a", "state_a", get_parsed_event(""))
+															.add_transition("state_a", "state_a", get_parsed_event(""))
+															.add_transition("state_a", "state_a", get_parsed_event(""))
+															.add_transition("state_a", "state_a", get_parsed_event(""))
+															.add_transition("state_a", "state_a", get_parsed_event(""))
+															.starts_at("a")
+															.run();
+					/**/
+										.make_concurrent(true)
+										.add_state("hoverable")
+										.find_state("hoverable")
+										.add_state("idle")
+										.add_state("hover")
+										.starts_at("idle")
+										.add_transition("idle", "hover", red.create_event("parsed", "mouseover(div)", dict, red.create("context", {stack: [dict]})))
+										.add_transition("hover", "idle", red.create_event("parsed", "mouseout(div)", dict, red.create("context", {stack: [dict]})))
+										.parent()
+										.add_state("downable")
+										.find_state("downable")
+										.add_state("idle")
+										.add_state("active")
+										.add_state("activeout")
+										.starts_at("idle")
+										.add_transition("idle", "active", red.create_event("parsed", "mousedown(div)", dict, red.create("context", {stack: [dict]})))
+										.add_transition("active", "idle", red.create_event("parsed", "mouseup(div)", dict, red.create("context", {stack: [dict]})))
+										.add_transition("active", "activeout", red.create_event("parsed", "mouseout(div)", dict, red.create("context", {stack: [dict]})))
+										.add_transition("activeout", "active", red.create_event("parsed", "mouseover(div)", dict, red.create("context", {stack: [dict]})))
+										.add_transition("activeout", "idle", red.create_event("parsed", "mouseup()", dict, red.create("context", {stack: [dict]})))
+										.parent()
+										.run();
+					
+										/*
+										.add_state("")
+										.starts_at("a")
+										.add_state("b")
+										.add_state("c")
+										.find_state("b")
+										.add_state("b1")
+										.add_state("b2")
+										.add_state("b3")
+										.parent()
+										.add_state("hoverable")
+										.find_state("hoverable")
+										.make_concurrent(true)
+										.add_state("idle")
+										.add_state("hover")
+										.add_state("other")
+										.parent()
+										.add_transition("a", "hoverable", red.create_event("parsed", "mouseover(div)", dict, red.create("context", {stack: [dict]})))
+										.run();
+					/*
+										.add_state("superstateA")
+										.add_state("superstateA.substate1")
+										.add_state("superstateA.substate2")
+										.add_state("stateB")
+										.add_state("superstateC")
+										.add_state("superstateC.substate1")
+										.add_state("superstateC.substate2")
+										.add_state("stateD");
+					*/
+
+					
+
+
+					var el = document.createElement("div");
+					el.style.position = "relative";
+					var content = document.getElementById("content");
+					content.appendChild(el);
+					var paper = Raphael(el, 600, 200);
+
+					var scv = red.create("statechart_view", statechart, paper, {root: true});
+					scv.on("add_state", function(event) {
+						var statechart = event.statechart;
+						var child_name = "state_" + statechart.get_substates().length;
+						statechart.add_state(child_name);
+					}).on("add_transition", function(event) {
+						statechart.add_transition(event.from_state, event.to_state, red.create_event("parsed", "", dict, red.create("context", {stack: [dict]})));
+					}).on("set_event_str", function(event) {
+						var str = event.str;
+						var transition_event = event.transition_event;
+
+						transition_event.set_str(str);
+					});
+					window.scv = scv;
+
+					/*
+					window.circle = red.create("rrcircle", paper, {
+						cx: 10, cy: 10, r: 5, fill:"#AAA", stroke:"#000"
+					});
+					*/
+
+				});
+			</script>
+	  </div>
+  </body>
+</html>

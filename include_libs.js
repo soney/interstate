@@ -32,10 +32,12 @@ exports.main_src = c(
 	cp(cjs_path, cjs_inc.main_src)
 	, cp(vendor_src, [
 				"esprima/esprima.js"
+				, "ablejs/able.js"
 				, "underscore/underscore.js"
 				, "underscore/red_underscore_extensions.js"
-				, "jquery-ui-1.9.0-rc.1/jquery-1.8.0.js"
-				, "jquery-ui-1.9.0-rc.1/ui/jquery-ui.js"
+				, "jquery-ui-1.9.1.custom/js/jquery-1.8.2.js"
+				, "jquery-ui-1.9.1.custom/js/jquery-ui-1.9.1.custom.js"
+				, "raphael/raphael.js"
 			])
 	, cp(src, [
 				"model/core.js"
@@ -66,6 +68,10 @@ exports.main_src = c(
 				, "controller/commands/combined_commands.js"
 				, "controller/environment/command_stack.js"
 				, "controller/environment/red_environment.js"
+				, "view/raphael/raphael_utils.js"
+				, "view/raphael/editable_text.js"
+				, "view/raphael/state.js"
+				, "view/raphael/transition.js"
 				, "view/util/editable_text.js"
 				, "view/objs/ambiguous_view.js"
 				, "view/objs/cell_view.js"
