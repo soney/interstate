@@ -408,23 +408,23 @@ var StatechartView = function(statechart, paper, options) {
 				}
 			}
 				
-			var dest_point = get_dest_point(event.clientx, event.clienty);
+			var dest_point = get_dest_point(event.clientX, event.clientY);
 
 			var circle = this.antenna.rrcompound.find("circle");
 			
 			var arrow = red.create("arrow", paper, {
-				fromx: circle.option("cx")
-				, fromy: circle.option("cy")
-				, tox: dest_point.x
-				, toy: dest_point.y
+				fromX: circle.option("cx")
+				, fromY: circle.option("cy")
+				, toX: dest_point.x
+				, toY: dest_point.y
 			});
 			var old_dest = {x:-1, y:-1};
 			var onmousemove = _.bind(function(event) {
-				var x = event.clientx - this.paper.canvas.offsetleft;
-				var y = event.clienty - this.paper.canvas.offsettop;
+				var x = event.clientX - this.paper.canvas.offsetLeft;
+				var y = event.clientY - this.paper.canvas.offsetTop;
 				var dest_point = get_dest_point(x, y);
 				if(dest_point.x !== old_dest.x || dest_point.y !== old_dest.y) {
-					arrow.option("tox", dest_point.x); arrow.option("toy", dest_point.y);
+					arrow.option("toX", dest_point.x); arrow.option("toY", dest_point.y);
 					old_dest = dest_point;
 				}
 				event.stopPropagation();
@@ -442,8 +442,8 @@ var StatechartView = function(statechart, paper, options) {
 			var onmouseup = _.bind(function(event) {
 				arrow.remove();
 				remove_event_listeners();
-				var x = event.clientx - this.paper.canvas.offsetleft;
-				var y = event.clienty - this.paper.canvas.offsettop;
+				var x = event.clientX - this.paper.canvas.offsetLeft;
+				var y = event.clientY - this.paper.canvas.offsetTop;
 				var substate_index = nearest_target_index(x, y);
 				var to_state = substates[substate_index];
 				var from_state = this.statechart;
