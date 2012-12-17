@@ -15,10 +15,12 @@ var StatechartTransition = function(options, defer_initialization) {
 	proto.do_initialize = function(options) {
 		this._from_state = options.from;
 		this._to_state = options.to;
-		this.id = _.uniqueId();
+		this._id = _.uniqueId();
+		this._basis = options.basis;
 		this.do_run = _.bind(this.run, this);
 		this.set_event(options.event);
 	};
+	proto.id = function() { return this._id; }
 	proto.from = function() { return this._from_state; }; 
 	proto.to = function() { return this._to_state; };
 	proto.setFrom = function(state) { this._from_state = state; };
@@ -36,7 +38,6 @@ var StatechartTransition = function(options, defer_initialization) {
 	};
 	proto.event = function() { return this._event; };
 	proto.involves = function(state) { return this.from() === state || this.to() === state; };
-	proto.set_basis = function(basis) { this._basis = basis; };
 	proto.basis = function() { return this._basis; };
 	proto.destroy = function() {
 		this._event.off_fire(this.do_run);
@@ -55,13 +56,13 @@ var StatechartTransition = function(options, defer_initialization) {
 	proto.create_shadow = function(from_state, to_state, context) {
 		var my_event = this.event()
 			, shadow_event = my_event.create_shadow(context.last(), context);
-		var shadow_transition = new StatechartTransition({from: from_state, to: to_state, event: shadow_event});
+		var shadow_transition = new StatechartTransition({from: from_state, to: to_state, event: shadow_event, basis: this});
 		return shadow_transition;
 	};
 	proto.stringify = function() {
 		var event = this.event();
 		var stringified_event = event ? ","+event.stringify() : "";
-		return "" + this.id + stringified_event;
+		return "" + this.id() + stringified_event;
 	};
 	proto.remove = function() {
 		var from = this.from();

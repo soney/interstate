@@ -24,26 +24,21 @@
 
 					red.__debug = false;
 
-
-					Array.prototype.pluck = function() {
-						return _.pluck.apply(_, [this].concat(_.toArray(arguments)));
-					};
-					Array.prototype.flatten = function() {
-						return _.flatten.apply(_, [this].concat(_.toArray(arguments)));
-					};
-					//albums.pluck = _.bind(_.pluck, _, albums);
 					env = red.create("environment");
 					root = env.get_pointer();
-					//root.set("albums", $albums);
-
-					//albums.artist ?
-					//parent.selected_object
-
-				//	env.set("artists", "albums.pluck('artist')");
-				//	env.set("songs", "albums.pluck('songs').flatten()");
-					//env.set("artists", "albums.pluck('artist')");
 					root_view = $("<div />").environment({controller: env})
 											.appendTo(document.body);
+
+					env.set("proto_obj", "stateful");
+					env.set("obj", "stateful");
+					env.cd("obj");
+					env.add_state("hover");
+					env.add_transition("INIT", "hover", "mouseover(this)");
+					env.set("(protos)", "INIT", "proto_obj");
+					env.set("prop1");
+					env.set("prop1", env._last_transition.id(), "1");
+
+					console.log(env.print());
 
 					var storage_prefix = "_";
 					window.save = function(name) {

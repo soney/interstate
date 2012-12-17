@@ -268,15 +268,18 @@ var Env = function(options) {
 						if(state_spec.active) {
 							rv = "* " + rv + " *";
 						}
-						return rv;
+						var strs =  [rv];
+						_.each(state.get_outgoing_transitions(), function(transition) {
+							strs.push("(" + transition.stringify() + ")-> " + transition.to().get_name(transition.to().parent()));
+						});
+						return strs;
 					});
 
-					row.push.apply(row, state_strs);
+					row.push.apply(row, _.flatten(state_strs));
 					to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(dictified_context.push(value)));
 					to_print_statecharts.push(value.get_own_statechart());
 
 					rows.push(row);
-
 					
 					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);
@@ -467,19 +470,13 @@ var Env = function(options) {
 			str = arg0;
 		} else if(arguments.length === 2) {
 			cell = this._root;
-			if(arg0 === "(protos)") {
-				var pointer = this.get_pointer();
-				cell = pointer.direct_protos();
-			} else if(arg0 === "(basis)") {
-				var pointer = this.get_pointer();
-				cell = pointer.get_basis();
-			} else if(arg0 === "(template)") {
-				var pointer = this.get_pointer();
-				cell = pointer.get_template();
-			} else {
-				_.forEach(arg0.split("."), function(name) {
-					cell = cell.get_prop(name);
-				});
+			var pointer = this.get_pointer();
+			var builtins = pointer.get_builtins();
+			for(var i = 0; i<builtins.lenth; i++) {
+				if(arg0 === "(" + builtins[i].env_name + ")") {
+					cell = pointer[builtins[i].getter_name];
+					break;
+				}
 			}
 			str = arg1;
 		} else {
@@ -487,12 +484,18 @@ var Env = function(options) {
 			var ignore_inherited_in_contexts = [];
 
 			var pointer = this.get_pointer();
-			var pointer_states = pointer.get_states(this.get_context());
 
-			if(arg0 === "(protos)") {
-				var pointer = this.get_pointer();
+			if(arg0[0] === "(" && arg0[arg0.length-1] === ")") {
 				prop = pointer.direct_protos();
 				ignore_inherited_in_contexts = [pointer];
+
+				var builtins = pointer.get_builtins();
+				for(var i = 0; i<builtins.lenth; i++) {
+					if(arg0 === "(" + builtins[i].env_name + ")") {
+						prop = pointer[builtins[i].getter_name];
+						break;
+					}
+				}
 			} else {
 				var ptr_context = this.get_context();
 				prop = this.get_pointer();
@@ -505,15 +508,25 @@ var Env = function(options) {
 			for_state = arg1;
 			str = arg2;
 
+			var pointer_states = pointer.get_states(this.get_context());
 			if(_.isNumber(for_state)) {
 				for(var i = 0; i<pointer_states.length; i++) {
 					if(pointer_states[i].id === for_state) {
 						for_state = pointer_states[i];
 						break;
+					} else {
+						var outgoing = pointer_states[i].get_outgoing_transitions();
+						var found = false;
+						for(var j = 0; j<outgoing.length; j++) {
+							if(outgoing[j].id() === for_state || (outgoing[j].basis() && outgoing[j].basis().id() === for_state)) {
+								for_state = outgoing[j];
+								break;
+							}
+						}
+						if(found) { break; }
 					}
 				}
 			} else if(_.isString(for_state)) {
-				var statechart = this.get_statechart_pointer();
 				for_state = get_state(for_state, pointer_states);
 			}
 			cell = red.create("cell", {str: "", ignore_inherited_in_contexts: ignore_inherited_in_contexts });
@@ -663,6 +676,7 @@ var Env = function(options) {
 	proto.add_transition = function() {
 		var command = this._get_add_transition_command.apply(this, arguments);
 		this._do(command);
+		this._last_transition = command._transition;
 		return this.print();
 	};
 

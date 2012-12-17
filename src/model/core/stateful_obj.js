@@ -39,7 +39,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 				return red.create("stateful_prop")
 			}
 			, serialize: false
-			, env_visible: true
+			, env_visible: false
 			, standard_prop: true
 		}
 	};
