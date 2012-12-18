@@ -77,6 +77,16 @@ var RedStatefulObj = function(options, defer_initialization) {
 			shadow_statechart.owner = sc_owner;
 		}
 
+		var self = this;
+		shadow_statechart.on("* >- *", function(event, to_state, from_state, transition, statechart) {
+			var prop_names = self.get_prop_names(context);
+			for(var i = 0; i<prop_names.length; i++) {
+				var prop_name = prop_names[i];
+				var prop = self.get_prop(prop_name, context);
+				prop.on_transition_fire(context, transition);
+			}
+		});
+
 		cjs.signal();
 		return shadow_statechart;
 	};

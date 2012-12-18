@@ -10,6 +10,7 @@ var cjs = red.cjs, _ = red._;
 var RedStatefulProp = function(options, defer_initialization) {
 	options = options || {};
 
+	this.transitory_value = cjs();
 	this.id = _.uniqueId();
 
 	if(defer_initialization === true) {
@@ -158,6 +159,8 @@ var RedStatefulProp = function(options, defer_initialization) {
 
 		return rv;
 	};
+
+
 	var get_value_for_state = function(state, stateful_prop, inherits_from) {
 		if(stateful_prop._has_direct_value_for_state(state)) {
 			return stateful_prop._direct_value_for_state(state);
@@ -171,6 +174,14 @@ var RedStatefulProp = function(options, defer_initialization) {
 			return undefined;
 		}
 	};
+	proto.on_transition_fire = function(context, transition) {
+		if(!transition) { return; }
+		var inherits_from = this._get_inherits_from(context);
+		var val = get_value_for_state(transition, this, inherits_from);
+		if(val) {
+			this.transitory_value.set(red.get_contextualizable(val, context));
+		}
+	};
 	proto.get = function(context) {
 		var values = this.get_value_specs(context);
 		for(var i = 0; i<values.length; i++) {
@@ -180,7 +191,7 @@ var RedStatefulProp = function(options, defer_initialization) {
 				return red.get_contextualizable(val, context);
 			}
 		}
-		return undefined;
+		return this.transitory_value.get();
 	};
 
 	proto.serialize = function() {

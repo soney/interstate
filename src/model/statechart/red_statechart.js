@@ -142,7 +142,7 @@ var Statechart = function(options, defer_initialization) {
 		var valid_chars = "[^\\-<>a-zA-Z0-9]*";
 		return valid_chars + "\\*|("+state_name+")" + valid_chars;
 	};
-	proto.set_active_substate = function(state) {
+	proto.set_active_substate = function(state, transition, event) {
 		var old_state = this.get_active_substate();
 		var old_state_name = old_state ? old_state.get_name() : "";
 		var new_state_name = state ? state.get_name() : "";
@@ -160,9 +160,9 @@ var Statechart = function(options, defer_initialization) {
 			}
 		});
 		var fsm = this;
-		_.each(pre_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, fsm); });
+		_.each(pre_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, transition, fsm); });
 		this.$local_state.set(state);
-		_.each(post_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, fsm); });
+		_.each(post_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, transition, fsm); });
 	};
 	proto.run = function() {
 		if(!this.is_running()) {
@@ -434,7 +434,7 @@ var Statechart = function(options, defer_initialization) {
 						if(!active_substate.is_running()) {
 							active_substate.run();
 						}
-						parent.set_active_substate(active_substate);
+						parent.set_active_substate(active_substate, transition, event);
 					}
 					cjs.signal();
 					return true;

@@ -446,12 +446,10 @@ var RedDict = function(options, defer_initialization) {
 	//
 
 	proto.destroy = function() {
-	/*
 		this._direct_props.destroy();
 		this._direct_protos.destroy();
 		this._direct_attachments.destroy();
 		this._direct_attachment_instances.destroy();
-		*/
 	};
 	
 }(RedDict));
