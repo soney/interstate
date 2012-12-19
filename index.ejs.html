@@ -38,6 +38,7 @@
 					env.set("prop1");
 					env.set("prop1", env._last_transition.id(), "1");
 					window.transition = env._last_transition;
+					window.obj = env.get_pointer();
 
 					console.log(env.print());
 

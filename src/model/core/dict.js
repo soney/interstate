@@ -6,6 +6,7 @@ var RedDict = function(options, defer_initialization) {
 
 	this.type = "red_dict";
 	this.id = _.uniqueId();
+	this.context_manifestations = cjs.map();
 	if(defer_initialization === true) {
 		//this.initialize = _.bind(this.do_initialize, this, options);
 	} else {
@@ -54,6 +55,11 @@ var RedDict = function(options, defer_initialization) {
 		, "manifestations": {
 			default: function() { return 1; }
 			, env_visible: true
+		}
+		, "contextual_manifestation_maps": {
+			default: function() { return cjs.map(); }
+			, settable: false
+			, serialize: false
 		}
 	};
 
@@ -450,6 +456,32 @@ var RedDict = function(options, defer_initialization) {
 	// === MANIFESTATIONS ===
 	//
 	
+	proto._create_manifestation_map_for_context = function(context) {
+		var contextual_manifestation_maps = this.get_contextual_manifestation_maps();
+		var manifestation_map = cjs.map();
+		contextual_manifestation_maps.item(context, manifestation_map);
+		return manifestation_map;
+	};
+
+	proto.get_manifestation_map_for_context = function(context) {
+		var mm = this.get_contextual_manifestation_maps().item(context);
+		if(_.isUndefined(mm)) {
+			mm = this._create_manifestation_map_for_context(context);
+		} 
+		return mm;
+	};
+
+	proto.get_manifestation_obj = function(context, basis, index) {
+		var mm = this.get_manifestation_map_for_context(context);
+		var dict = mm.item(basis);
+		if(_.isUndefined(dict)) {
+			dict = red.create("dict");
+			dict.set("basis", basis);
+		}
+		dict.set("basis_index", index);
+		return dict;
+	};
+
 	proto.get_manifestation_objs = function(context) {
 		var manifestations = red.get_contextualizable(this.get_manifestations(), context);
 
@@ -458,11 +490,9 @@ var RedDict = function(options, defer_initialization) {
 		}
 
 		var manifest_objs = _.map(manifestations, function(manifestation, index) {
-			var dict = red.create("dict");
-			dict.item("basis", manifestation);
-			dict.item("basis_index", index);
-			return dict;
-		});
+			return this.get_manifestation_obj(context, manifestation, index);
+		}, this);
+
 		return manifest_objs;
 	};
 
