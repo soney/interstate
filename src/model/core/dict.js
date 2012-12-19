@@ -50,6 +50,11 @@ var RedDict = function(options, defer_initialization) {
 			default: function() { return cjs.map(); }
 			, getter_name: "direct_props"
 		}
+
+		, "manifestations": {
+			default: function() { return 1; }
+			, env_visible: true
+		}
 	};
 
 	red.install_proto_builtins(proto, my.builtins);
@@ -439,6 +444,26 @@ var RedDict = function(options, defer_initialization) {
 		};
 
 		return rv;
+	};
+
+	//
+	// === MANIFESTATIONS ===
+	//
+	
+	proto.get_manifestation_objs = function(context) {
+		var manifestations = red.get_contextualizable(this.get_manifestations(), context);
+
+		if(!_.isArray(manifestations)) {
+			manifestations = [manifestations];
+		}
+
+		var manifest_objs = _.map(manifestations, function(manifestation, index) {
+			var dict = red.create("dict");
+			dict.item("basis", manifestation);
+			dict.item("basis_index", index);
+			return dict;
+		});
+		return manifest_objs;
 	};
 
 	//

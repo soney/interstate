@@ -83,7 +83,9 @@ var RedStatefulObj = function(options, defer_initialization) {
 			for(var i = 0; i<prop_names.length; i++) {
 				var prop_name = prop_names[i];
 				var prop = self.get_prop(prop_name, context);
-				prop.on_transition_fire(context, transition);
+				if(prop instanceof red.RedStatefulProp) {
+					prop.on_transition_fire(context, transition);
+				}
 			}
 		});
 

@@ -387,6 +387,7 @@ var Env = function(options) {
 				value.do_initialize({
 					default_context: parent_obj.get_default_context().push(value)
 					, direct_protos: red.create("stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]})
+					, manifestations: red.create("stateful_prop")
 				});
 				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");
