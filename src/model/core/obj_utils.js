@@ -4,6 +4,7 @@ var cjs = red.cjs, _ = red._;
 red.install_proto_builtins = function(proto, builtins) {
 	_.each(builtins, function(builtin, name) {
 		var getter_name = builtin.getter_name || "get_" + name;
+		builtin._get_getter_name = function() { return getter_name; }
 		if(_.isFunction(builtin.getter)) {
 			proto[getter_name] = function() {
 				return builtin.getter.apply(this, ([this._builtins[name]]).concat(_.toArray(arguments)));
@@ -15,6 +16,7 @@ red.install_proto_builtins = function(proto, builtins) {
 		}
 
 		var setter_name = builtin.setter_name || "set_" + name;
+		builtin._get_setter_name = function() { return setter_name; }
 		if(_.isFunction(builtin.setter)) {
 			proto[setter_name] = function() {
 				return builtin.setter.apply(this, ([this._builtins[name]]).concat(_.toArray(arguments)));
@@ -24,6 +26,9 @@ red.install_proto_builtins = function(proto, builtins) {
 				this._builtins[name] = set_to;
 			};
 		}
+
+		var env_name = builtin.env_name || name;
+		builtin._get_env_name = function() { return env_name; }
 	});
 };
 

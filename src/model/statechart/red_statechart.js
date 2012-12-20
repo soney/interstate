@@ -493,7 +493,7 @@ var Statechart = function(options, defer_initialization) {
 			var from = shadow.find_state_with_basis(transition.from());
 			return transition.create_shadow(from, to, context);
 		}, function(transition) {
-			return transition.id;
+			return transition.id();
 		});
 		var create_substate_shadow = _.memoize(function(substate, shadow_transitions) {
 			cjs.wait();

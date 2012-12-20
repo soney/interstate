@@ -495,9 +495,11 @@ var Env = function(options) {
 				ignore_inherited_in_contexts = [pointer];
 
 				var builtins = pointer.get_builtins();
-				for(var i = 0; i<builtins.lenth; i++) {
-					if(arg0 === "(" + builtins[i].env_name + ")") {
-						prop = pointer[builtins[i].getter_name];
+				for(var i in builtins) {
+					var env_name = builtins[i]._get_env_name();
+					if(arg0 === "(" + env_name + ")") {
+						var getter_name = builtins[i]._get_getter_name();
+						prop = pointer[getter_name]();
 						break;
 					}
 				}
@@ -559,6 +561,7 @@ var Env = function(options) {
 	var get_state = function(state_name, states) {
 		for(var i = 0; i<states.length; i++) {
 			var state = states[i];
+			if(!(state instanceof red.Statechart)) { continue; }
 			if(state === state_name) {
 				return state;
 			} else if(state.get_name() === state_name) {

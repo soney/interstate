@@ -6,7 +6,6 @@ var RedDict = function(options, defer_initialization) {
 
 	this.type = "red_dict";
 	this.id = _.uniqueId();
-	this.context_manifestations = cjs.map();
 	if(defer_initialization === true) {
 		//this.initialize = _.bind(this.do_initialize, this, options);
 	} else {
@@ -19,6 +18,7 @@ var RedDict = function(options, defer_initialization) {
 
 	proto.do_initialize = function(options) {
 		red.install_instance_builtins(this, options, my);
+		this.get_contextual_manifestation_maps() .set_equality_check(red.check_context_equality);
 	};
 
 	my.builtins = {
@@ -58,6 +58,11 @@ var RedDict = function(options, defer_initialization) {
 		}
 		, "contextual_manifestation_maps": {
 			default: function() { return cjs.map(); }
+			, settable: false
+			, serialize: false
+		}
+		, "manifestation_of": {
+			default: function() { return false; }
 			, settable: false
 			, serialize: false
 		}
@@ -458,8 +463,10 @@ var RedDict = function(options, defer_initialization) {
 	
 	proto._create_manifestation_map_for_context = function(context) {
 		var contextual_manifestation_maps = this.get_contextual_manifestation_maps();
+		cjs.wait();
 		var manifestation_map = cjs.map();
 		contextual_manifestation_maps.item(context, manifestation_map);
+		cjs.signal();
 		return manifestation_map;
 	};
 
@@ -473,27 +480,44 @@ var RedDict = function(options, defer_initialization) {
 
 	proto.get_manifestation_obj = function(context, basis, index) {
 		var mm = this.get_manifestation_map_for_context(context);
+		cjs.wait();
 		var dict = mm.item(basis);
 		if(_.isUndefined(dict)) {
-			dict = red.create("dict");
+			dict = red.create("dict", {manifestation_of: this});
 			dict.set("basis", basis);
+			mm.item(basis, dict);
 		}
 		dict.set("basis_index", index);
+		cjs.signal();
 		return dict;
 	};
 
 	proto.get_manifestation_objs = function(context) {
 		var manifestations = red.get_contextualizable(this.get_manifestations(), context);
 
-		if(!_.isArray(manifestations)) {
-			manifestations = [manifestations];
+		for(var i = 0; i<context._stack.length; i++) {
+			if(context._stack[i].get_manifestation_of() === this) {
+				return null;
+			}
 		}
 
-		var manifest_objs = _.map(manifestations, function(manifestation, index) {
-			return this.get_manifestation_obj(context, manifestation, index);
-		}, this);
+		if(_.isNumber(manifestations)) {
+			var arr = []
+			for(var i = 0; i<manifestations; i++) {
+				arr.push(i);
+			}
+			manifestations = arr;
+		}
 
-		return manifest_objs;
+		if(_.isArray(manifestations)) {
+			var manifest_objs = _.map(manifestations, function(manifestation, index) {
+				return this.get_manifestation_obj(context, manifestation, index);
+			}, this);
+
+			return manifest_objs;
+		} else {
+			return null;
+		}
 	};
 
 	//

@@ -45,6 +45,16 @@ $.widget("red.dom_output", {
 	, _add_change_listeners: function() {
 		var get_dom_tree = function(node, context) {
 			if(!(node instanceof red.RedDict)) { return false; }
+			var manifestations = node.get_manifestation_objs(context);
+
+			if(_.isArray(manifestations)) {
+				var dom_elem_array =  _.map(manifestations, function(manifestation, i) {
+					return get_dom_tree(node, context.push(manifestation));
+				}, this);
+				console.log(node.get_manifestations(context), manifestations, dom_elem_array, context);
+				return dom_elem_array;
+			}
+
 			var dom_attachment = node.get_attachment_instance("dom", context);
 
 			if(_.isUndefined(dom_attachment)) { return false; }
@@ -75,7 +85,7 @@ $.widget("red.dom_output", {
 					var children = _.map(prop_values, function(prop_value) {
 						return get_dom_tree(prop_value, children_context.push(prop_value));
 					});
-					var desired_children = _.compact(children);
+					var desired_children = _.compact(_.flatten(children));
 					var current_children = _.toArray(dom_element.childNodes);
 
 					var diff = _.diff(current_children, desired_children);
