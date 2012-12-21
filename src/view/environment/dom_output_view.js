@@ -48,10 +48,14 @@ $.widget("red.dom_output", {
 			var manifestations = node.get_manifestation_objs(context);
 
 			if(_.isArray(manifestations)) {
-				var dom_elem_array =  _.map(manifestations, function(manifestation, i) {
-					return get_dom_tree(node, context.push(manifestation));
-				}, this);
-				console.log(node.get_manifestations(context), manifestations, dom_elem_array, context);
+				var manifestation_contexts = _.map(manifestations, function(manifestation) {
+					return context.push(manifestation);
+				});
+
+				var dom_elem_array = _.map(manifestation_contexts, function(manifestation_context) {
+					return get_dom_tree(node, manifestation_context);
+				});
+
 				return dom_elem_array;
 			}
 

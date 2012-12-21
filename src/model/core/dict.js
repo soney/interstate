@@ -485,9 +485,9 @@ var RedDict = function(options, defer_initialization) {
 		if(_.isUndefined(dict)) {
 			dict = red.create("dict", {manifestation_of: this});
 			dict.set("basis", basis);
+			dict.set("basis_index", index);
 			mm.item(basis, dict);
 		}
-		dict.set("basis_index", index);
 		cjs.signal();
 		return dict;
 	};

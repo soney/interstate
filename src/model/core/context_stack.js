@@ -60,6 +60,23 @@ var RedContext = function(options) {
 	my.deserialize = function(obj) {
 		return new RedContext({stack: _.map(obj.stack, red.deserialize)});
 	};
+	proto.print = function() {
+		var rarr = [];
+		for(var i = 0; i<this._stack.length; i++) {
+			var item = this._stack[i];
+
+			var str = item.id + "";
+
+			var manifestation_of = item.get_manifestation_of();
+			if(manifestation_of) {
+				var basis_index = item._get_direct_prop("basis_index");
+				str += "(" + manifestation_of.id + "," + basis_index + ")";
+			}
+
+			rarr.push(str);
+		}
+		return rarr.join(" > ");
+	};
 }(RedContext));
 
 red.RedContext = RedContext;

@@ -21,14 +21,18 @@ var changeable_attributes = {
 var RedDomAttachmentInstance = function(options) {
 	RedDomAttachmentInstance.superclass.constructor.apply(this, arguments);
 	this.type = "dom";
+	this.id = _.uniqueId();
 	if(options.tag) {
 		this._dom_obj = document.createElement("div");
 	} else {
-		this._dom_obj = cjs(undefined);
-		var self = this;
-		this._tag_change_listener = self.add_tag_change_listener();
-		this._css_change_listeners = self.add_css_change_listeners();
-		this._attr_change_listeners = self.add_attribute_change_listeners();
+		var parent = this.get_parent();
+		var context = this.get_context();
+		var tag = parent.prop_val("tag", context);
+		var dom_obj = document.createElement(tag);
+		this._dom_obj = cjs(dom_obj);
+		this._tag_change_listener = this.add_tag_change_listener();
+		this._css_change_listeners = this.add_css_change_listeners();
+		this._attr_change_listeners = this.add_attribute_change_listeners();
 	}
 	this.on_ready();
 };
