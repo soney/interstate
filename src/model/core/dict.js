@@ -326,7 +326,9 @@ var RedDict = function(options, defer_initialization) {
 			attachment_instances = cjs.map().set_equality_check(red.check_context_equality);
 			direct_attachment_instances.item(attachment, attachment_instances);
 		}
-		var attachment_instance = attachment.create_instance(context.last(), context);
+		var parent = context.last();
+		parent = parent.get_manifestation_of() || parent;
+		var attachment_instance = attachment.create_instance(parent, context);
 		attachment_instances.item(context, attachment_instance);
 		//if(red.__debug) debugger;
 

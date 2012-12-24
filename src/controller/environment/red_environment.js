@@ -201,8 +201,6 @@ var Env = function(options) {
 				return "(dict)";
 			} else if(val instanceof red.RedCell) {
 				return "(cell)";
-			} else if(val instanceof red.RedGroup) {
-				return "(group)";
 			} else if(_.isArray(val)) {
 				return "[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]";
 			} else {
@@ -222,8 +220,6 @@ var Env = function(options) {
 			} else if(_.isNumber(val)) {
 				return val + "";
 			} else if(val instanceof red.RedDict) {
-				return "";
-			} else if(val instanceof red.RedGroup) {
 				return "";
 			} else if(val instanceof red.RedCell) {
 				return "=(" + val.id + ")= " + val.get_str();
@@ -313,28 +309,6 @@ var Env = function(options) {
 					row.push.apply(row, value_strs);
 
 					rows.push(row);
-				} else if(value instanceof red.RedGroup) {
-					var row = [prop_name + " - " + value.id, value_to_value_str(value_got), value_to_source_str(value)];
-					rows.push(row);
-
-					var basis = value.get_basis();
-					var basis_got = red.get_contextualizable(basis, dictified_context.push(value));
-					basis_got = cjs.get(basis);
-					var basis_row = [indent + "    (basis)", value_to_value_str(basis_got), value_to_source_str(basis)];
-					basis_row.push.apply(basis_row, value_strs);
-					rows.push(basis_row);
-
-					var template = value.get_template();
-					var template_got = red.get_contextualizable(template, dictified_context.push(value));
-					template_got = cjs.get(template);
-					var template_row = [indent + "    (template)", value_to_value_str(template_got), value_to_source_str(template)];
-					template_row.push.apply(template_row, value_strs);
-					rows.push(template_row);
-
-					_.each(value_got, function(value, index) {
-						rows.push([indent + "    " + index + ":"]);
-						rows.push.apply(rows, tablify_dict(value, indentation_level + 3, dictified_context.push(value)));
-					});
 				} else {
 					var row = [prop_name, value_to_value_str(value_got), value_to_source_str(value)];
 					rows.push(row);
@@ -391,24 +365,25 @@ var Env = function(options) {
 				});
 				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");
-			} else if(value === "group") {
-				value = red.create("group");
-				var template = red.create("cell", {str: ""});
-				value.set_template(template);
-				var basis = red.create("cell", {str: ""});
-				value.set_basis(basis);
-				value.set_default_context(parent_obj.get_default_context().push(value));
 			} else {
 				value = red.create("cell", {str: value});
 			}
 		}
 
-		var command = red.command("set_prop", {
-			parent: parent_obj
-			, name: prop_name
-			, value: value
-			, index: index
-		});
+		if(prop_name[0] === "(" && prop_name[prop_name.length-1] === ")") {
+			var command = red.command("set_builtin", {
+				parent: parent_obj
+				, name: prop_name.slice(1, prop_name.length-1)
+				, value: value
+			});
+		} else {
+			var command = red.command("set_prop", {
+				parent: parent_obj
+				, name: prop_name
+				, value: value
+				, index: index
+			});
+		}
 		return command;
 	};
 	proto.set = function() {
