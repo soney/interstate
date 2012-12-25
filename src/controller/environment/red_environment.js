@@ -366,17 +366,46 @@ var Env = function(options) {
 				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");
 			} else {
-				value = red.create("cell", {str: value});
+				//value = red.create("cell", {str: value});
 			}
 		}
 
 		if(prop_name[0] === "(" && prop_name[prop_name.length-1] === ")") {
-			var command = red.command("set_builtin", {
-				parent: parent_obj
-				, name: prop_name.slice(1, prop_name.length-1)
-				, value: value
-			});
+			var builtin_name = prop_name.slice(1, prop_name.length-1);
+
+			var builtin_info;
+			var builtins = parent_obj.get_builtins();
+			for(var i in builtins) {
+				var builtin = builtins[i];
+				var env_name = builtin._get_env_name();
+				if(builtin_name === env_name) {
+					builtin_info = builtin;
+					break;
+				}
+			}
+			if(builtin_info) {
+				var getter_name = builtin_info._get_getter_name();
+				var curr_val = parent_obj[getter_name]();
+				if(curr_val instanceof red.RedCell) {
+					var command = red.command("change_cell", {
+						cell: curr_val
+						, str: value
+					});
+				} else {
+					if(_.isString(value)) {
+						value = red.create("cell", {str: value});
+					}
+					var command = red.command("set_builtin", {
+						parent: parent_obj
+						, name: builtin_name
+						, value: value
+					});
+				}
+			}
 		} else {
+			if(_.isString(value)) {
+				value = red.create("cell", {str: value});
+			}
 			var command = red.command("set_prop", {
 				parent: parent_obj
 				, name: prop_name

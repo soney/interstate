@@ -53,8 +53,10 @@ var RedDict = function(options, defer_initialization) {
 		}
 
 		, "manifestations": {
-			default: function() { return 1; }
+			start_with: function() { return cjs.$(); }
 			, env_visible: true
+			, getter: function(me) { return me.get(); }
+			, setter: function(me, val) { me.set(val, true); }
 		}
 		, "contextual_manifestation_maps": {
 			default: function() { return cjs.map(); }

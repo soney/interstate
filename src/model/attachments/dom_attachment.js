@@ -25,10 +25,13 @@ var RedDomAttachmentInstance = function(options) {
 	if(options.tag) {
 		this._dom_obj = document.createElement("div");
 	} else {
+	/*
 		var parent = this.get_parent();
 		var context = this.get_context();
 		var tag = parent.prop_val("tag", context);
 		var dom_obj = document.createElement(tag);
+		*/
+		var dom_obj = undefined;
 		this._dom_obj = cjs(dom_obj);
 		this._tag_change_listener = this.add_tag_change_listener();
 		this._css_change_listeners = this.add_css_change_listeners();

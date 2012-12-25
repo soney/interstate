@@ -24,7 +24,6 @@
 
 					red.__debug = false;
 
-					cjs.wait();
 					env = red.create("environment");
 					root = env.get_pointer();
 					root_view = $("<div />").environment({controller: env})
@@ -44,7 +43,7 @@
 					env.set("obj", "dict");
 					env.cd("obj");
 					env.set("(protos)", "dom");
-					env.set("(manifestations)", "2");
+					env.set("(manifestations)", "4");
 					env.set("tag", "'div'");
 					env.set("text", "'hello'");
 											/*
@@ -62,7 +61,6 @@
 					env.set("text", "hover", "'bye'");
 											/**/
 
-					cjs.signal();
 
 					console.log(env.print());
 

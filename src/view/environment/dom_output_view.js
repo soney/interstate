@@ -79,8 +79,6 @@ $.widget("red.dom_output", {
 						prop_values = _.map(prop_names, function(prop_name) {
 							return children.get_prop(prop_name, children_context);
 						});
-					} else if(children instanceof red.RedGroup) {
-						prop_values = children_got;
 					} else if(red.is_contextualizable(children)) {
 						prop_values = children_got;
 					} else if(_.isArray(children)) {
