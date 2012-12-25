@@ -87,6 +87,9 @@ var StatechartTransition = function(options, defer_initialization) {
 }(StatechartTransition));
 red.StatechartTransition = StatechartTransition;
 
+var StartState = function() {
+};
+
 var Statechart = function(options, defer_initialization) {
 	options = _.extend({}, options);
 
@@ -103,6 +106,8 @@ var Statechart = function(options, defer_initialization) {
 	var proto = my.prototype;
 
 	proto.do_initialize = function(options) {
+		this._start_state = new StartState();
+		this._start
 		this.$substates = options.substates || cjs.map();
 		this.$local_state = cjs();
 		this.$concurrent = cjs(false);

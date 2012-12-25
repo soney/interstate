@@ -22,6 +22,10 @@ var cjs = red.cjs, _ = red._;
 	};
 	proto.add_listener = function() {
 		this.target.addEventListener(this.type, this.fire);
+		var self = this;
+		this.target.addEventListener(this.type, function() {
+			console.log(self.type, arguments);
+		});
 	};
 	proto.remove_listener = function() {
 		this.target.removeEventListener(this.type, this.fire);
