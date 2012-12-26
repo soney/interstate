@@ -53,6 +53,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 		if(_.isUndefined(sc)) {
 			sc = this._create_statechart_for_context(context);
 		}
+			console.log("GET " + context.print());
 		return sc;
 	};
 	proto._create_statechart_for_context = function(context) {
@@ -113,8 +114,8 @@ var RedStatefulObj = function(options, defer_initialization) {
 	//
 	proto.get_statecharts = function(context) {
 		var own_statechart = this.get_statechart_for_context(context);
-		var inherited_statechart = this.get_inherited_statecharts(context);
-		return ([own_statechart]).concat(inherited_statechart);
+		var inherited_statecharts = this.get_inherited_statecharts(context);
+		return ([own_statechart]).concat(inherited_statecharts);
 	};
 	proto.get_state_specs = function(context, include_inherited) {
 		var statecharts;

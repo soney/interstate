@@ -282,7 +282,6 @@ var Statechart = function(options, defer_initialization) {
 	};
 	proto.remove_state = function(state_name, also_destroy) {
 		var state = this.find_state(state_name);
-		if(!state_name) debugger;
 		if(!_.isUndefined(state)) {
 			var parent = state.parent();
 			if(!_.isUndefined(parent)) {

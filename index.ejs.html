@@ -26,6 +26,7 @@
 
 					env = red.create("environment");
 					root = env.get_pointer();
+					/*
 					root_view = $("<div />").environment({controller: env})
 											.appendTo(document.body);
 
@@ -46,16 +47,20 @@
 					env.add_transition("INIT", "hover", "mouseover(this)");
 					env.add_transition("hover", "INIT", "mouseout(this)");
 					env.set("(protos)", "INIT", "dom");
-					env.set("(manifestations)", "INIT", "2");
+					env.set("(manifestations)", "INIT", "1");
 					env.set("tag");
 					env.set("text");
 					env.set("tag", "INIT", "'div'");
 					env.set("text", "INIT", "'hi'");
 					env.set("text", "hover", "'bye'");
 											/**/
+					output_view = $("<div />").dom_output({
+						root: env.get_root()
+						, context: env.get_root_context()
+					}).appendTo(document.body);
 
 
-					console.log(env.print());
+//					console.log(env.print());
 
 					var storage_prefix = "_";
 					window.save = function(name) {
