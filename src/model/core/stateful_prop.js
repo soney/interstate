@@ -93,7 +93,8 @@ var RedStatefulProp = function(options, defer_initialization) {
 			return [];
 		}
 		var stateful_obj_and_context = this.get_stateful_obj_and_context(context);
-		var stateful_obj_context = stateful_obj_and_context.context;
+		//var stateful_obj_context = stateful_obj_and_context.context;
+		var stateful_obj_context = context;
 		var stateful_obj = stateful_obj_and_context.stateful_obj;
 
 
@@ -113,7 +114,8 @@ var RedStatefulProp = function(options, defer_initialization) {
 	//
 	proto.get_state_specs = function(context) {
 		var stateful_obj_and_context = this.get_stateful_obj_and_context(context);
-		var stateful_obj_context = stateful_obj_and_context.context;
+		//var stateful_obj_context = stateful_obj_and_context.context;
+		var stateful_obj_context = context;
 		var stateful_obj = stateful_obj_and_context.stateful_obj;
 		return stateful_obj.get_state_specs(stateful_obj_context, this._can_inherit);
 	};

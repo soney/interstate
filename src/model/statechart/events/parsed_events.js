@@ -139,10 +139,11 @@ var id  = 0;
 	var proto = my.prototype;
 	proto.on_create = function(options) {
 		this.id = id++;
+		this.options = options;
+		this._str = cjs.is_constraint(options.str) ? options.str : cjs(options.str);
 		if(options.inert_super_event !== true) {
 			this._parent = cjs(options.parent);
 
-			this._str = cjs.is_constraint(options.str) ? options.str : cjs(options.str);
 			var self = this;
 			this._tree = cjs(function() {
 				return esprima.parse(self.get_str());
