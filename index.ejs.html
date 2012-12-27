@@ -47,17 +47,19 @@
 					env.add_transition("INIT", "hover", "mouseover(this)");
 					env.add_transition("hover", "INIT", "mouseout(this)");
 					env.set("(protos)", "INIT", "dom");
-					env.set("(manifestations)", "1");
+					env.set("(manifestations)", "200");
 					env.set("tag");
 					env.set("text");
 					env.set("tag", "INIT", "'div'");
 					env.set("text", "INIT", "'hi'");
 					env.set("text", "hover", "'bye'");
 											/**/
+					console.log("Begin dom_output creation");
 					output_view = $("<div />").dom_output({
 						root: env.get_root()
 						, context: env.get_root_context()
 					}).appendTo(document.body);
+					console.log("End dom_output creation");
 
 
 //					console.log(env.print());

@@ -53,7 +53,6 @@ var RedStatefulObj = function(options, defer_initialization) {
 		if(_.isUndefined(sc)) {
 			sc = this._create_statechart_for_context(context);
 		}
-		console.log("GET " + context.print());
 		return sc;
 	};
 	proto._create_statechart_for_context = function(context) {

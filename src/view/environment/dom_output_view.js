@@ -113,18 +113,24 @@ $.widget("red.dom_output", {
 
 		var root = this.option("root");
 		var root_context = this.option("context");
+		console.log("Begin DOM change listeners");
 
-		var self = this;
 		this._dom_tree_fn = cjs.liven(function() {
+			this._dom_tree_fn.pause();
 			//if(red.__debug) debugger;
+			console.log("begin live");
 			var dom_element = get_dom_tree(root, root_context);
-			if(self.element.children().is(dom_element)) {
-				self.element.children().not(dom_element).remove();
+			if(this.element.children().is(dom_element)) {
+				this.element.children().not(dom_element).remove();
 			} else {
-				self.element.children().remove();
-				self.element.append(dom_element);
+				this.element.children().remove();
+				this.element.append(dom_element);
 			}
-		});
+			console.log("end live");
+			this._dom_tree_fn.resume();
+		}, this, false);
+		this._dom_tree_fn.run();
+		console.log("End DOM change listeners");
 	}
 
 	, _remove_change_listeners: function() {
