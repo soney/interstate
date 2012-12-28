@@ -29,7 +29,10 @@ var cjs_inc = require("./src/_vendor/cjs/include_libs");
 exports.main_build = cp(build_path, ["red.min.js"]);
 
 exports.main_src = c(
-	cp(cjs_path, cjs_inc.main_src)
+	cp(vendor_src, [
+				"stopwatch.js"
+	])
+	, cp(cjs_path, cjs_inc.main_src)
 	, cp(vendor_src, [
 				"esprima/esprima.js"
 				, "ablejs/able.js"

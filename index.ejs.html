@@ -41,18 +41,14 @@
 					env.set("prop1", env._last_transition.id(), "1");
 											*/
 					env.cd("children");
-					env.set("obj", "stateful");
+					env.set("obj", "dict");
 					env.cd("obj");
-					env.add_state("hover");
-					env.add_transition("INIT", "hover", "mouseover(this)");
-					env.add_transition("hover", "INIT", "mouseout(this)");
-					env.set("(protos)", "INIT", "dom");
-					env.set("(manifestations)", "200");
+					env.set("(protos)", "dom");
+					env.set("(manifestations)", "1500");
 					env.set("tag");
 					env.set("text");
-					env.set("tag", "INIT", "'div'");
-					env.set("text", "INIT", "'hi'");
-					env.set("text", "hover", "'bye'");
+					env.set("tag", "'div'");
+					env.set("text", "'hi'");
 											/**/
 					console.log("Begin dom_output creation");
 					output_view = $("<div />").dom_output({

@@ -29,8 +29,6 @@ var RedStatefulProp = function(options, defer_initialization) {
 
 		red._set_descriptor(this._direct_values._keys,   "Direct values Keys " + this.id);
 		red._set_descriptor(this._direct_values._values, "Direct values Vals " + this.id);
-
-		this._last_valid_using_index = cjs.map().set_equality_check(check_context_equality);
 	};
 
 	//
@@ -142,8 +140,6 @@ var RedStatefulProp = function(options, defer_initialization) {
 
 			if(active && !_.isUndefined(value) && !found_using_value) {
 				found_using_value = using = true;
-
-				this._last_valid_using_index.item(context, i);
 			}
 
 			rv.push({
@@ -154,10 +150,6 @@ var RedStatefulProp = function(options, defer_initialization) {
 			});
 		}
 
-		if(!found_using_value && this._last_valid_using_index.has(context)) {
-			var using_index = this._last_valid_using_index.item(context);
-			rv[using_index].using = true;
-		}
 
 		return rv;
 	};

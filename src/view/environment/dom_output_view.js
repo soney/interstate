@@ -44,8 +44,11 @@ $.widget("red.dom_output", {
 
 	, _add_change_listeners: function() {
 		var get_dom_tree = function(node, context) {
+			var sw = new Stopwatch().start();
 			if(!(node instanceof red.RedDict)) { return false; }
+			sw.lap("A");
 			var manifestations = node.get_manifestation_objs(context);
+			sw.lap("B");
 
 			if(_.isArray(manifestations)) {
 				var manifestation_contexts = _.map(manifestations, function(manifestation) {
@@ -56,18 +59,25 @@ $.widget("red.dom_output", {
 					return get_dom_tree(node, manifestation_context);
 				});
 
+				console.log("end3");
 				return dom_elem_array;
 			}
 
+			sw.lap("c");
 			var dom_attachment = node.get_attachment_instance("dom", context);
 
-			if(_.isUndefined(dom_attachment)) { return false; }
-			else {
+			if(_.isUndefined(dom_attachment)) {
+				return false;
+			} else {
 				var dom_element = dom_attachment.get_dom_obj();
-				if(_.isUndefined(dom_element)) { return false; }
+				if(_.isUndefined(dom_element)) {
+					console.log("end4");
+					return false;
+				}
 
 				var text = node.prop_val("text", context);
 				if(_.isUndefined(text)) {
+					sw.lap("d");
 					var children = node.get_prop("children", context);
 					var children_context = context.push(children);
 
@@ -84,29 +94,43 @@ $.widget("red.dom_output", {
 					} else if(_.isArray(children)) {
 						prop_values = children;
 					}
+					sw.lap("e");
+					console.log(prop_values, prop_values.length);
 					var children = _.map(prop_values, function(prop_value) {
-						return get_dom_tree(prop_value, children_context.push(prop_value));
+						var dt = get_dom_tree(prop_value, children_context.push(prop_value));
+						return dt;
 					});
-					var desired_children = _.compact(_.flatten(children));
-					var current_children = _.toArray(dom_element.childNodes);
+					//var desired_children = _.compact(_.flatten(children));
+					//var current_children = _.toArray(dom_element.childNodes);
 
+					sw.lap("f");
+					/*
 					var diff = _.diff(current_children, desired_children);
+					sw.lap([current_children, desired_children]);
 					_.forEach(diff.removed, function(info) {
 						var index = info.index, child = info.item;
 						remove(child);
 					});
+					sw.lap("f2");
 					_.forEach(diff.added, function(info) {
 						var index = info.index, child = info.item;
 						insert_at(child, dom_element, index);
 					});
+					sw.lap("f3");
 					_.forEach(diff.moved, function(info) {
 						var from_index = info.from_index, to_index = info.to_index, child = info.item;
 						move(child, from_index, to_index);
 					});
+					sw.lap("g");
+					*/
 				} else {
 					$(dom_element)	.html("")
 									.text(red.get_contextualizable(text, context.push(text)));
+					sw.lap("d2");
 				}
+				sw.lap("h");
+				window.sw = sw;
+				sw.stop();
 				return dom_element;
 			}
 		};
@@ -116,7 +140,6 @@ $.widget("red.dom_output", {
 		console.log("Begin DOM change listeners");
 
 		this._dom_tree_fn = cjs.liven(function() {
-			this._dom_tree_fn.pause();
 			//if(red.__debug) debugger;
 			console.log("begin live");
 			var dom_element = get_dom_tree(root, root_context);
@@ -127,9 +150,11 @@ $.widget("red.dom_output", {
 				this.element.append(dom_element);
 			}
 			console.log("end live");
-			this._dom_tree_fn.resume();
-		}, this, false);
-		this._dom_tree_fn.run();
+		}, {
+			context: this
+			, pause_while_running: true
+		});
+		//this._dom_tree_fn.run();
 		console.log("End DOM change listeners");
 	}
 

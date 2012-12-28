@@ -25,17 +25,14 @@ var RedDomAttachmentInstance = function(options) {
 	if(options.tag) {
 		this._dom_obj = document.createElement("div");
 	} else {
-	/*
 		var parent = this.get_parent();
 		var context = this.get_context();
 		var tag = parent.prop_val("tag", context);
 		var dom_obj = document.createElement(tag);
-		*/
-		var dom_obj = undefined;
 		this._dom_obj = cjs(dom_obj);
-		this._tag_change_listener = this.add_tag_change_listener();
-		this._css_change_listeners = this.add_css_change_listeners();
-		this._attr_change_listeners = this.add_attribute_change_listeners();
+		//this._tag_change_listener = this.add_tag_change_listener();
+		//this._css_change_listeners = this.add_css_change_listeners();
+		//this._attr_change_listeners = this.add_attribute_change_listeners();
 	}
 	this.on_ready();
 };
@@ -80,45 +77,52 @@ var RedDomAttachmentInstance = function(options) {
 		var parent = this.get_parent();
 		var context = this.get_context();
 
-		var self = this;
 		var old_tag = undefined;
 		return cjs.liven(function() {
 			var tag = parent.prop_val("tag", context);
 			if(tag !== old_tag) {
 				if(_.isString(tag)) {
 					var dom_obj = document.createElement(tag);
-					self._dom_obj.set(dom_obj);
+					this._dom_obj.set(dom_obj);
 				} else {
-					self._dom_obj.set(undefined);
+					this._dom_obj.set(undefined);
 				}
 				old_tag = tag;
 			}
+		}, {
+			context: this
+			, pause_while_running: true
+			, run_on_create: false
 		});
 	};
 	proto.add_css_change_listener = function(red_attr_name, css_prop_name) {
 		var parent = this.get_parent();
 		var context = this.get_context();
 
-		var self = this;
 		return cjs.liven(function() {
-			var dom_obj = self.get_dom_obj();
+			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
 				var val = parent.prop_val(red_attr_name, context);
 				dom_obj.style[css_prop_name] = val;
 			}
+		}, {
+			context: this
+			, pause_while_running: true
 		});
 	};
 	proto.add_attribute_change_listener = function(red_attr_name, attr_name) {
 		var parent = this.get_parent();
 		var context = this.get_context();
 
-		var self = this;
 		return cjs.liven(function() {
-			var dom_obj = self.get_dom_obj();
+			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
 				var val = parent.prop_val(red_attr_name, context);
 				dom_obj[attr_name] = val;
 			}
+		}, {
+			context: this
+			, pause_while_running: true
 		});
 	};
 }(RedDomAttachmentInstance));
