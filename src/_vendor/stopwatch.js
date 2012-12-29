@@ -47,5 +47,4 @@
 	}(Stopwatch));
 
 	root.Stopwatch = Stopwatch;
-	console.log("A");
 }(this));
