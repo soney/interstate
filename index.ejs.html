@@ -20,6 +20,7 @@
 				var root, env, cjs, _, root_view;
 				$(function() {
 					cjs = red.cjs;
+					/*
 					_ = red._;
 
 					red.__debug = false;
@@ -40,6 +41,7 @@
 					env.set("prop1");
 					env.set("prop1", env._last_transition.id(), "1");
 											*/
+											/*
 					env.cd("children");
 					env.set("obj", "dict");
 					env.cd("obj");
@@ -50,6 +52,7 @@
 					env.set("tag", "'div'");
 					env.set("text", "'hi'");
 											/**/
+											/*
 					console.log("Begin dom_output creation");
 					output_view = $("<div />").dom_output({
 						root: env.get_root()
@@ -59,6 +62,9 @@
 
 
 //					console.log(env.print());
+											*/
+					var m = window.m = cjs.map({value :{a: 1}});
+					console.log(m.size());
 
 					var storage_prefix = "_";
 					window.save = function(name) {
