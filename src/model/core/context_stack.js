@@ -52,6 +52,13 @@ var RedContext = function(options) {
 	proto.is_empty = function() {
 		return _.isEmpty(this._stack);
 	};
+	proto.hash = function() {
+		var hash = 0;
+		_.each(_.last(this._stack, 3), function(dict) {
+			hash +=  dict.hash();
+		});
+		return hash;
+	};
 
 	proto.serialize = function() {
 		return { stack: _.map(this._stack, red.serialize) };

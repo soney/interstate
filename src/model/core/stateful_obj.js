@@ -18,7 +18,6 @@ var RedStatefulObj = function(options, defer_initialization) {
 	proto.do_initialize = function(options) {
 		my.superclass.do_initialize.apply(this, arguments);
 		red.install_instance_builtins(this, options, my);
-		this.contextual_statecharts() .set_equality_check(red.check_context_equality);
 	};
 
 	my.builtins = {
@@ -29,7 +28,10 @@ var RedStatefulObj = function(options, defer_initialization) {
 		}
 
 		, "contextual_statecharts": {
-			default: function() { return cjs.map(); }
+			default: function() { return cjs.map({
+				equals: red.check_context_equality
+				, hash: function(context) { return context.hash(); }
+			}); }
 			, getter_name: "contextual_statecharts"
 			, settable: false
 			, serialize: false
@@ -49,10 +51,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 	// === STATECHART SHADOWS ===
 	//
 	proto.get_statechart_for_context = function(context) {
-		var sc = this.contextual_statecharts().item(context);
-		if(_.isUndefined(sc)) {
-			sc = this._create_statechart_for_context(context);
-		}
+		var sc = this.contextual_statecharts().get_or_put(context, _.bind(this._create_statechart_for_context, this, context));
 		return sc;
 	};
 	proto._create_statechart_for_context = function(context) {

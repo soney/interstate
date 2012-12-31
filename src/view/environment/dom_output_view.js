@@ -59,7 +59,6 @@ $.widget("red.dom_output", {
 					return get_dom_tree(node, manifestation_context);
 				});
 
-				console.log("end3");
 				return dom_elem_array;
 			}
 
@@ -100,11 +99,10 @@ $.widget("red.dom_output", {
 						var dt = get_dom_tree(prop_value, children_context.push(prop_value));
 						return dt;
 					});
-					//var desired_children = _.compact(_.flatten(children));
-					//var current_children = _.toArray(dom_element.childNodes);
+					var desired_children = _.compact(_.flatten(children));
+					var current_children = _.toArray(dom_element.childNodes);
 
 					sw.lap("f");
-					/*
 					var diff = _.diff(current_children, desired_children);
 					sw.lap([current_children, desired_children]);
 					_.forEach(diff.removed, function(info) {
@@ -122,7 +120,6 @@ $.widget("red.dom_output", {
 						move(child, from_index, to_index);
 					});
 					sw.lap("g");
-					*/
 				} else {
 					$(dom_element)	.html("")
 									.text(red.get_contextualizable(text, context.push(text)));

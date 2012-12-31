@@ -240,6 +240,9 @@ var RedCell = function(options, defer_initialization) {
 
 		return rv;
 	};
+	proto.hash = function() {
+		return this.id;
+	};
 }(RedCell));
 
 red.RedCell = RedCell;

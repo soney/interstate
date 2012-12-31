@@ -18,7 +18,6 @@ var RedDict = function(options, defer_initialization) {
 
 	proto.do_initialize = function(options) {
 		red.install_instance_builtins(this, options, my);
-		this.get_contextual_manifestation_maps() .set_equality_check(red.check_context_equality);
 	};
 
 	my.builtins = {
@@ -42,7 +41,9 @@ var RedDict = function(options, defer_initialization) {
 		}
 
 		, "direct_attachment_instances": {
-			default: function() { return cjs.map(); }
+			default: function() { return cjs.map({
+				hash: function(attachment) { return attachment.hash(); }
+			}); }
 			, getter_name: "direct_attachment_instances"
 			, serialize: false
 		}
@@ -59,7 +60,10 @@ var RedDict = function(options, defer_initialization) {
 			, setter: function(me, val) { me.set(val, true); }
 		}
 		, "contextual_manifestation_maps": {
-			default: function() { return cjs.map(); }
+			default: function() { return cjs.map({
+				equals: red.check_context_equality,
+				hash: function(context) { return context.hash(); }
+			}); }
 			, settable: false
 			, serialize: false
 		}
@@ -316,48 +320,32 @@ var RedDict = function(options, defer_initialization) {
 	// === DIRECT ATTACHMENT INSTANCES ===
 	//
 
-	proto.add_direct_attachment_instance = function(attachment, context) {
-		var direct_attachment_instances = this.direct_attachment_instances();
-		var attachment_instances;
-
-		cjs.wait();
-
-		if(direct_attachment_instances.has(attachment)) {
-			attachment_instances = direct_attachment_instances.item(attachment);
-		} else {
-			attachment_instances = cjs.map().set_equality_check(red.check_context_equality);
-			direct_attachment_instances.item(attachment, attachment_instances);
-		}
-		var parent = context.last();
-		parent = parent.get_manifestation_of() || parent;
-		var attachment_instance = attachment.create_instance(parent, context);
-		attachment_instances.item(context, attachment_instance);
-		//if(red.__debug) debugger;
-
-		cjs.signal();
-		return attachment_instance;
-	};
-	proto.has_direct_attachment_instance = function(attachment, context) {
-		return !_.isUndefined(this.get_direct_attachment_instance(attachment, context));
-	};
-	proto.get_direct_attachment_instance = function(attachment, context) {
-		var direct_attachment_instances = this.direct_attachment_instances();
-		var attachment_instances;
-		if(direct_attachment_instances.has(attachment)) {
-			attachment_instances = direct_attachment_instances.item(attachment);
-		} else {
-			return undefined;
-		}
-
-		return attachment_instances.item(context);
-	};
 	proto.create_or_get_direct_attachment_instance = function(attachment, context) {
-		var existing_instance = this.get_direct_attachment_instance(attachment, context);
-		if(_.isUndefined(existing_instance)) {
-			return this.add_direct_attachment_instance(attachment, context);
-		} else {
-			return existing_instance;
-		}
+		var direct_attachment_instances = this.direct_attachment_instances();
+
+		var create_attachment_instance = function() {
+			var parent = context.last();
+			parent = parent.get_manifestation_of() || parent;
+			var attachment_instance = attachment.create_instance(parent, context);
+			return attachment_instance;
+		};
+
+		var attachment_instances = direct_attachment_instances.get_or_put(attachment, function() {
+			var parent = context.last();
+			parent = parent.get_manifestation_of() || parent;
+			var attachment_instance = attachment.create_instance(parent, context);
+
+			return cjs.map({
+						equals: red.check_context_equality,
+						hash: function(context) { return context.hash(); },
+						keys: [context],
+						values: [create_attachment_instance()]
+					});
+		}, this);
+
+		var attachment_instance = attachment_instances.get_or_put(context, create_attachment_instance);
+
+		return attachment_instance;
 	};
 	
 	//
@@ -465,20 +453,10 @@ var RedDict = function(options, defer_initialization) {
 	// === MANIFESTATIONS ===
 	//
 	
-	proto._create_manifestation_map_for_context = function(context) {
-		var contextual_manifestation_maps = this.get_contextual_manifestation_maps();
-		cjs.wait();
-		var manifestation_map = cjs.map();
-		contextual_manifestation_maps.item(context, manifestation_map);
-		cjs.signal();
-		return manifestation_map;
-	};
-
 	proto.get_manifestation_map_for_context = function(context) {
-		var mm = this.get_contextual_manifestation_maps().item(context);
-		if(_.isUndefined(mm)) {
-			mm = this._create_manifestation_map_for_context(context);
-		} 
+		var mm = this.get_contextual_manifestation_maps().get_or_put(context, function(context) {
+			return cjs.map();
+		});
 		return mm;
 	};
 
@@ -522,6 +500,10 @@ var RedDict = function(options, defer_initialization) {
 		} else {
 			return null;
 		}
+	};
+
+	proto.hash = function() {
+		return this.id;
 	};
 
 	//
