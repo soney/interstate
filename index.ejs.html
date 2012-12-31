@@ -24,22 +24,9 @@
 
 					red.__debug = false;
 
+
 					env = red.create("environment");
 					root = env.get_pointer();
-					/*
-					root_view = $("<div />").environment({controller: env})
-											.appendTo(document.body);
-
-											/*
-					env.set("proto_obj", "stateful");
-					env.set("obj", "stateful");
-					env.cd("obj");
-					env.add_state("hover");
-					env.add_transition("INIT", "hover", "mouseover(this)");
-					env.set("(protos)", "INIT", "proto_obj");
-					env.set("prop1");
-					env.set("prop1", env._last_transition.id(), "1");
-											*/
 					env.cd("children");
 					env.set("obj", "dict");
 					env.cd("obj");
@@ -49,13 +36,13 @@
 					env.set("text");
 					env.set("tag", "'div'");
 					env.set("text", "'hi'");
-											/**/
 					console.log("Begin dom_output creation");
 					output_view = $("<div />").dom_output({
 						root: env.get_root()
 						, context: env.get_root_context()
 					}).appendTo(document.body);
 					console.log("End dom_output creation");
+											/**/
 
 
 					//console.log(env.print());
