@@ -165,7 +165,10 @@ var RedCell = function(options, defer_initialization) {
 			, setter: function(me, str) { me.set(str, true); }
 		}
 		, "contextual_values": {
-			default: function() { return cjs.map(); }
+			default: function() { return cjs.map({
+				equals: red.check_context_equality,
+				hash: "hash"
+			}); }
 			, settable: false
 			, serialize: false
 		}

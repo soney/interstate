@@ -1,6 +1,8 @@
 (function(root) {
 	var get_time = function() { return (new Date()).getTime(); };
 
+	var buckets = {};
+
 	var Stopwatch = function(auto_start) {
 		this._elapsed_time = 0;
 		this._start_time = undefined;
@@ -43,6 +45,52 @@
 			this._elapsed_time = 0;
 			this.start();
 			return this;
+		};
+		proto.drop = function(bucket_name) {
+			if(!buckets.hasOwnProperty(bucket_name)) {
+				buckets[bucket_name] = [];
+			}
+			var bucket = buckets[bucket_name];
+			for(var i = 0; i<bucket.length; i++) {
+				if(bucket[i] === this) { return this; }
+			}
+			bucket.push(this);
+			return this;
+		};
+
+		my.bucket = function(bucket_name) {
+			var bucket = buckets[bucket_name];
+			if(bucket) {
+				var total_elapsed = 0;
+				var laps = {}; 
+				for(var i = 0; i<bucket.length; i++) {
+					var stopwatch = bucket[i];
+
+					total_elapsed += stopwatch.elapsed();
+					var stopwatch_laps = stopwatch.get_laps();
+					for(var j = 0; j<stopwatch_laps.length; j++) {
+						var stopwatch_lap = stopwatch_laps[j];
+						var marker = stopwatch_lap.marker;
+						var duration = stopwatch_lap.time;
+
+						if(laps.hasOwnProperty(marker)) {
+							laps[marker].time += duration;
+							laps[marker].instances++;
+						} else {
+							laps[marker] = {
+								marker: marker,
+								time: duration,
+								instances: 1
+							};
+						}
+					}
+				}
+				return {
+					elapsed: total_elapsed,
+					laps: laps
+				};
+			}
+			return undefined;
 		};
 	}(Stopwatch));
 

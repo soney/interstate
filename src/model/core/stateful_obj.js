@@ -30,7 +30,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 		, "contextual_statecharts": {
 			default: function() { return cjs.map({
 				equals: red.check_context_equality
-				, hash: function(context) { return context.hash(); }
+				, hash: "hash"
 			}); }
 			, getter_name: "contextual_statecharts"
 			, settable: false

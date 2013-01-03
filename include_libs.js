@@ -31,6 +31,7 @@ exports.main_build = cp(build_path, ["red.min.js"]);
 exports.main_src = c(
 	cp(vendor_src, [
 				"stopwatch.js"
+				, "array_diff.js"
 	])
 	, cp(cjs_path, cjs_inc.main_src)
 	, cp(vendor_src, [

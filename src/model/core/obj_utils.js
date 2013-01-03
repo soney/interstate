@@ -46,14 +46,14 @@ red.install_instance_builtins = function(obj, options, constructor) {
 				if(options && _.has(options, name)) {
 					obj._builtins[name] = options[name];
 				} else if(_.isFunction(builtin.default)) {
-					obj._builtins[name] = builtin.default();
+					obj._builtins[name] = builtin.default.call(obj);
 				}
 			}
 		} else {
 			if(options && _.has(options, name)) {
 				obj[setter_name](options[name]);
 			} else if(_.isFunction(builtin.default)) {
-				obj[setter_name](builtin.default());
+				obj[setter_name](builtin.default.call(obj));
 			}
 		}
 	});

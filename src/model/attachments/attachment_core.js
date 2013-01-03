@@ -19,6 +19,7 @@ var RedAttachmentInstance = function(options) {
 	proto.get_context = function() { return this._context; };
 	proto.get_parent = function() { return this._parent; };
 	proto.hash = function() {
+		console.log(this._context.hash());
 		return this._context.hash();
 	};
 }(RedAttachmentInstance));

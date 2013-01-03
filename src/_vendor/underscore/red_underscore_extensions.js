@@ -79,6 +79,8 @@
 			   and moves every item in moved in sequence, it will result in an array
 			   that is equivalent to newArray.
 			*/
+			return getArrayDiff(oldArray, newArray, equality_check);
+			/*
 			var old_arr = clone(oldArray)
 				, new_arr = clone(newArray)
 				, removed = []
@@ -182,6 +184,7 @@
 			}
 
 			return {removed: removed, added: added, moved: moved};
+			*/
 		}
 
 		, proto_extend: function (subClass, superClass) {

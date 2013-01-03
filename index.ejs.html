@@ -30,18 +30,32 @@
 					env.cd("children");
 					env.set("obj", "dict");
 					env.cd("obj");
+					//var obj = env.get_pointer();
 					env.set("(protos)", "dom");
 					env.set("(manifestations)", "1500");
 					env.set("tag");
 					env.set("text");
 					env.set("tag", "'div'");
 					env.set("text", "'hi'");
+					//obj.set("tag", "div");
+					//obj.set("text", "hi");
 					console.log("Begin dom_output creation");
 					output_view = $("<div />").dom_output({
 						root: env.get_root()
 						, context: env.get_root_context()
 					}).appendTo(document.body);
 					console.log("End dom_output creation");
+					var dom_out_buckets = Stopwatch.bucket("dom out");
+					var long_laps = {};
+					for(var name in dom_out_buckets.laps) {
+						var lap_info = dom_out_buckets.laps[name];
+						var time = lap_info.time;
+						if(time > 100) {
+							long_laps[name] = time;
+						}
+					}
+
+					console.log(long_laps);
 											/**/
 
 

@@ -2,7 +2,12 @@
 var cjs = red.cjs, _ = red._;
 
 var RedDict = function(options, defer_initialization) {
-	options = options || {};
+	options = _.extend({
+		value: {},
+		keys: [],
+		values: []
+	}, options);
+	this.options = options;
 
 	this.type = "red_dict";
 	this.id = _.uniqueId();
@@ -42,14 +47,18 @@ var RedDict = function(options, defer_initialization) {
 
 		, "direct_attachment_instances": {
 			default: function() { return cjs.map({
-				hash: function(attachment) { return attachment.hash(); }
+				hash: "hash"
 			}); }
 			, getter_name: "direct_attachment_instances"
 			, serialize: false
 		}
 
 		, "direct_props": {
-			default: function() { return cjs.map(); }
+			default: function() { return cjs.map({
+					keys: this.options.keys,
+					values: this.options.values,
+					value: this.options.value
+				}); }
 			, getter_name: "direct_props"
 		}
 
@@ -62,7 +71,7 @@ var RedDict = function(options, defer_initialization) {
 		, "contextual_manifestation_maps": {
 			default: function() { return cjs.map({
 				equals: red.check_context_equality,
-				hash: function(context) { return context.hash(); }
+				hash: "hash"
 			}); }
 			, settable: false
 			, serialize: false
@@ -337,7 +346,7 @@ var RedDict = function(options, defer_initialization) {
 
 			return cjs.map({
 						equals: red.check_context_equality,
-						hash: function(context) { return context.hash(); },
+						hash: "hash",
 						keys: [context],
 						values: [create_attachment_instance()]
 					});
@@ -455,7 +464,11 @@ var RedDict = function(options, defer_initialization) {
 	
 	proto.get_manifestation_map_for_context = function(context) {
 		var mm = this.get_contextual_manifestation_maps().get_or_put(context, function(context) {
-			return cjs.map();
+			return cjs.map({
+				hash: function(item) {
+					return item;
+				}
+			});
 		});
 		return mm;
 	};
@@ -463,13 +476,12 @@ var RedDict = function(options, defer_initialization) {
 	proto.get_manifestation_obj = function(context, basis, index) {
 		var mm = this.get_manifestation_map_for_context(context);
 		cjs.wait();
-		var dict = mm.item(basis);
-		if(_.isUndefined(dict)) {
-			dict = red.create("dict", {manifestation_of: this});
+		var dict = mm.get_or_put(basis, _.bind(function() {
+			var dict = red.create("dict", {manifestation_of: this});
 			dict.set("basis", basis);
 			dict.set("basis_index", index);
-			mm.item(basis, dict);
-		}
+			return dict;
+		}, this));
 		cjs.signal();
 		return dict;
 	};
