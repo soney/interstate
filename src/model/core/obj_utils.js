@@ -33,6 +33,7 @@ red.install_proto_builtins = function(proto, builtins) {
 };
 
 red.install_instance_builtins = function(obj, options, constructor) {
+	var sw = new Stopwatch().start();
 	var builtins = constructor.builtins;
 
 	obj._builtins = obj._builtins || {};
@@ -56,7 +57,10 @@ red.install_instance_builtins = function(obj, options, constructor) {
 				obj[setter_name](builtin.default.call(obj));
 			}
 		}
+		sw.lap(name);
 	});
+	sw.stop();
+	sw.drop("dict");
 };
 
 }(red));

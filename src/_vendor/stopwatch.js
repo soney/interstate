@@ -87,7 +87,8 @@
 				}
 				return {
 					elapsed: total_elapsed,
-					laps: laps
+					laps: laps,
+					instances: bucket.length
 				};
 			}
 			return undefined;

@@ -28,9 +28,10 @@
 					env = red.create("environment");
 					root = env.get_pointer();
 					env.cd("children");
+					var children = env.get_pointer();
 					env.set("obj", "dict");
 					env.cd("obj");
-					//var obj = env.get_pointer();
+					var obj = env.get_pointer();
 					env.set("(protos)", "dom");
 					env.set("(manifestations)", "1500");
 					env.set("tag");
@@ -39,11 +40,26 @@
 					env.set("text", "'hi'");
 					//obj.set("tag", "div");
 					//obj.set("text", "hi");
+
+					var context = red.create("context", {stack: [root, children, obj]});
+					var mobjs = obj.get_manifestation_objs(context);
+					var mcontexts = _.map(mobjs, function(mobj) {
+						return context.push(mobj);
+					});
+
+					var stopwatch = new Stopwatch().start();
+					_.each(mcontexts, function(context) {
+						var dom_attachment = obj.get_attachment_instance("dom", context);
+					});
+					console.log(stopwatch.stop());
+					
+					/*
 					console.log("Begin dom_output creation");
 					output_view = $("<div />").dom_output({
 						root: env.get_root()
 						, context: env.get_root_context()
 					}).appendTo(document.body);
+					/*
 					console.log("End dom_output creation");
 					var dom_out_buckets = Stopwatch.bucket("dom out");
 					var long_laps = {};

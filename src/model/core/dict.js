@@ -54,11 +54,14 @@ var RedDict = function(options, defer_initialization) {
 		}
 
 		, "direct_props": {
-			default: function() { return cjs.map({
+			default: function() {
+				var rv = cjs.map({
 					keys: this.options.keys,
 					values: this.options.values,
 					value: this.options.value
-				}); }
+				});
+				return rv;
+				}
 			, getter_name: "direct_props"
 		}
 
@@ -477,9 +480,13 @@ var RedDict = function(options, defer_initialization) {
 		var mm = this.get_manifestation_map_for_context(context);
 		cjs.wait();
 		var dict = mm.get_or_put(basis, _.bind(function() {
-			var dict = red.create("dict", {manifestation_of: this});
-			dict.set("basis", basis);
-			dict.set("basis_index", index);
+			var dict = red.create("dict", {
+				manifestation_of: this,
+				value: {
+					basis: basis,
+					basis_index: index
+				}
+			});
 			return dict;
 		}, this));
 		cjs.signal();
