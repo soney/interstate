@@ -1,6 +1,31 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+var insert_at = function(child_node, parent_node, index) {
+	var children = parent_node.childNodes;
+	if(children.length <= index) {
+		parent_node.appendChild(child_node);
+	} else {
+		var before_child = children[index];
+		parent_node.insertBefore(child_node, before_child);
+	}
+};
+var remove = function(child_node) {
+	var parent_node = child_node.parentNode;
+	if(parent_node) {
+		parent_node.removeChild(child_node);
+	}
+};
+var move = function(child_node, from_index, to_index) {
+	var parent_node = child_node.parentNode;
+	if(parent_node) {
+		if(from_index < to_index) { //If it's less than the index we're inserting at...
+			to_index++; //Increase the index by 1, to make up for the fact that we're removing me at the beginning
+		}
+		insert_at(child_node, parent_node, to_index);
+	}
+};
+
 // Red name: CSS name
 var changeable_css_props = {
 	"width": "width"
@@ -30,10 +55,13 @@ var RedDomAttachmentInstance = function(options) {
 		var tag = parent.prop_val("tag", context);
 		var dom_obj = document.createElement(tag);
 		this._dom_obj = cjs.$(dom_obj);
-		//this._tag_change_listener = this.add_tag_change_listener();
-		//this._css_change_listeners = this.add_css_change_listeners();
-		//this._attr_change_listeners = this.add_attribute_change_listeners();
+		this._tag_change_listener = this.add_tag_change_listener();
 	}
+
+	this._css_change_listeners = this.add_css_change_listeners();
+	this._attr_change_listeners = this.add_attribute_change_listeners();
+	this._children_change_listener = this.add_children_change_listener();
+
 	this.on_ready();
 };
 (function(my) {
@@ -41,17 +69,18 @@ var RedDomAttachmentInstance = function(options) {
 	var proto = my.prototype;
 	proto.on_ready = function() { };
 	proto.destroy = function() {
-		if(this.has("_tag_change_listener")) { this._tag_change_listener.destroy(); }
-		if(this.has("_css_change_listeners")) {
+		if(_.has(this, "_tag_change_listener")) { this._tag_change_listener.destroy(); }
+		if(_.has(this, "_css_change_listeners")) {
 			this._css_change_listeners.forEach(function(change_listener) {
 				change_listener.destroy();
 			});
 		}
-		if(this.has("_attr_change_listeners")) {
+		if(_.has(this, "_attr_change_listeners")) {
 			this._attr_change_listeners.forEach(function(change_listener) {
 				change_listener.destroy();
 			});
 		}
+		if(_.has(this, "_children_change_listener")) { this._children_change_listener.destroy(); }
 	};
 	proto.get_dom_obj = function() {
 		return cjs.get(this._dom_obj);
@@ -119,6 +148,87 @@ var RedDomAttachmentInstance = function(options) {
 			if(dom_obj) {
 				var val = parent.prop_val(red_attr_name, context);
 				dom_obj[attr_name] = val;
+			}
+		}, {
+			context: this
+			, pause_while_running: true
+		});
+	};
+	proto.add_children_change_listener = function() {
+		var parent = this.get_parent();
+		var context = this.get_context();
+
+		return cjs.liven(function() {
+			var dom_obj = this.get_dom_obj();
+
+			var text = parent.prop_val("text", context);
+			if(text) {
+				dom_obj.textContent = cjs.get(text);
+			} else {
+				var children = parent.get_prop("children", children_context);
+				var children_context = context.push(children);
+
+				var children_got = red.get_contextualizable(children, children_context);
+				var prop_values = [];
+
+				if(children_got instanceof red.RedDict) {
+					prop_values = children.get_prop_values(children_context);
+				} else if(red.is_contextualizable(children)) {
+					prop_values = children_got;
+				} else if(_.isArray(children)) {
+					prop_values = children;
+				}
+
+				var current_children = _.toArray(dom_obj.childNodes);
+				var desired_children = [];
+				_.each(prop_values, function(prop_value) {
+					if(prop_value instanceof red.RedDict) {
+						var pv_context = context.push(prop_value);
+
+						var manifestations = prop_value.get_manifestation_objs(pv_context);
+
+						var dom_attachments;
+
+						if(_.isArray(manifestations)) {
+							var manifestation_contexts = _.map(manifestations, function(manifestation) {
+								return context.push(manifestation);
+							});
+							dom_attachments = [];
+							_.each(manifestation_contexts, function(manifestation_context) {
+								var dom_attachment = parent.get_attachment_instance("dom", manifestation_context);
+								if(dom_attachment) {
+									dom_attachments.push(dom_attachment);
+								}
+							});
+						} else {
+							var dom_attachment = parent.get_attachment_instance("dom", context);
+							if(dom_attachment) {
+								dom_attachments = [dom_attachment];
+							}
+						}
+
+						_.each(dom_attachments, function(dom_attachment) {
+							var dom_element = dom_attachment.get_dom_obj();
+							if(dom_element) {
+								desired_children.push(dom_element);
+							}
+						});
+					}
+				});
+
+				var diff = _.diff(current_children, desired_children);
+				_.forEach(diff.removed, function(info) {
+					var index = info.from, child = info.item;
+					remove(child);
+				});
+				_.forEach(diff.added, function(info) {
+					var index = info.to, child = info.item;
+					insert_at(child, dom_obj, index);
+				});
+				_.forEach(diff.moved, function(info) {
+					var from_index = info.from, to_index = info.to, child = info.item;
+					move(child, from_index, to_index);
+				});
 			}
 		}, {
 			context: this

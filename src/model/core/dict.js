@@ -313,6 +313,13 @@ var RedDict = function(options, defer_initialization) {
 		var inherited_prop_names = this._get_inherited_prop_names(context);
 		return builtin_prop_names.concat(direct_prop_names, inherited_prop_names);
 	};
+	proto.get_prop_values = function(context) {
+		var prop_names = this.get_prop_names(context);
+		var prop_values = _.map(prop_names, function(prop_name) {
+			return this.get_prop(prop_name, context);
+		}, this);
+		return prop_values;
+	};
 	proto.is_inherited = function(prop_name, context) {
 		var builtin_prop_names = this._get_builtin_prop_names();
 		var direct_prop_names = this._get_direct_prop_names();
