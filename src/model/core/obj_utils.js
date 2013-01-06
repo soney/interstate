@@ -63,4 +63,26 @@ red.install_instance_builtins = function(obj, options, constructor) {
 	sw.drop("dict");
 };
 
+var default_hash = function() {
+	var rv = "";
+	for(var i = 0; i<arguments.length; i++) {
+		rv += "" + arguments[i];
+	}
+	return rv;
+};
+var default_equals = function(args1, args2) {
+	if(args1.length === args2.length) {
+		for(var i = 0; i<args1.length; i++) {
+			var arg1 = args1[i],
+				arg2 = args2[i];
+			if(arg1 !== arg2) {
+				return false;
+			}
+		}
+		return true;
+	} else {
+		return false;
+	}
+};
+
 }(red));

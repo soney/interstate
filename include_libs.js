@@ -32,6 +32,7 @@ exports.main_src = c(
 	cp(vendor_src, [
 				"stopwatch.js"
 				, "array_diff.js"
+				, "set.js"
 	])
 	, cp(cjs_path, cjs_inc.main_src)
 	, cp(vendor_src, [

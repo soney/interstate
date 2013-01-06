@@ -33,11 +33,24 @@
 					env.cd("obj");
 					var obj = env.get_pointer();
 					env.set("(protos)", "dom");
-					env.set("(manifestations)", "1500");
+					env.set("(manifestations)", "200");
 					env.set("tag");
 					env.set("text");
 					env.set("tag", "'div'");
-					env.set("text", "'hi'");
+					//env.set("text", "'hi'+basis");
+					env.set("children", "dict");
+					env.cd("children");
+					env.set("0", "dict");
+					env.cd("0");
+					env.set("(protos)", "dom");
+					env.set("tag", "'span'");
+					env.set("text", "'yo'");
+					env.up();
+					env.set("1", "dict");
+					env.cd("1");
+					env.set("(protos)", "dom");
+					env.set("tag", "'span'");
+					env.set("text", "basis");
 					//obj.set("tag", "div");
 					//obj.set("text", "hi");
 
@@ -46,36 +59,23 @@
 					var mcontexts = _.map(mobjs, function(mobj) {
 						return context.push(mobj);
 					});
+					/*
 
 					var stopwatch = new Stopwatch().start();
 					_.each(mcontexts, function(context) {
 						var dom_attachment = obj.get_attachment_instance("dom", context);
+					//	var protos = obj._get_direct_protos(context);
 					});
 					console.log(stopwatch.stop());
+					*/
 					
-					/*
-					console.log("Begin dom_output creation");
 					output_view = $("<div />").dom_output({
 						root: env.get_root()
 						, context: env.get_root_context()
 					}).appendTo(document.body);
-					/*
-					console.log("End dom_output creation");
-					var dom_out_buckets = Stopwatch.bucket("dom out");
-					var long_laps = {};
-					for(var name in dom_out_buckets.laps) {
-						var lap_info = dom_out_buckets.laps[name];
-						var time = lap_info.time;
-						if(time > 100) {
-							long_laps[name] = time;
-						}
-					}
-
-					console.log(long_laps);
-											/**/
 
 
-					//console.log(env.print());
+					console.log(env.print());
 
 					var storage_prefix = "_";
 					window.save = function(name) {

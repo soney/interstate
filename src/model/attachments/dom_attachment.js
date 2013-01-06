@@ -23,7 +23,7 @@ var RedDomAttachmentInstance = function(options) {
 	this.type = "dom";
 	this.id = _.uniqueId();
 	if(options.tag) {
-		this._dom_obj = document.createElement("div");
+		this._dom_obj = document.createElement(options.tag);
 	} else {
 		var parent = this.get_parent();
 		var context = this.get_context();
