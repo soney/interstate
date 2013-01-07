@@ -23,7 +23,6 @@
 					_ = red._;
 
 					red.__debug = false;
-					/*
 
 
 					env = red.create("environment");
@@ -34,7 +33,7 @@
 					env.cd("obj");
 					var obj = env.get_pointer();
 					env.set("(protos)", "dom");
-					env.set("(manifestations)", "15");
+					env.set("(manifestations)", "1");
 					env.set("tag");
 					env.set("text", "'hi'");
 					env.set("tag", "'div'");
@@ -72,7 +71,6 @@
 					});
 					console.log(stopwatch.stop());
 					*/
-					/*
 					
 					output_view = $("<div />").dom_output({
 						root: env.get_root()
@@ -80,9 +78,7 @@
 					}).appendTo(document.body);
 
 
-					console.log(env.print());
-					*/
-
+					//console.log(env.print());
 
 					var storage_prefix = "_";
 					window.save = function(name) {

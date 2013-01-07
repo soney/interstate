@@ -114,7 +114,6 @@ var RedDomAttachmentInstance = function(options) {
 					this._dom_obj.set(undefined);
 				}
 			}
-			console.log("TCL");
 		}, {
 			context: this
 			, pause_while_running: true
@@ -196,12 +195,9 @@ var RedDomAttachmentInstance = function(options) {
 						var dom_attachments;
 
 						if(_.isArray(manifestations)) {
-							var manifestation_contexts = _.map(manifestations, function(manifestation) {
-								return pv_context.push(manifestation);
-							});
 							dom_attachments = [];
-							_.each(manifestation_contexts, function(manifestation_context) {
-								var dom_attachment = parent.get_attachment_instance("dom", manifestation_context);
+							_.each(manifestations, function(manifestation) {
+								var dom_attachment = prop_value.get_attachment_instance("dom", pv_context.push(manifestation));
 								if(dom_attachment) {
 									dom_attachments.push(dom_attachment);
 								}
