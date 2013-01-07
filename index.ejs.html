@@ -33,12 +33,11 @@
 					env.cd("obj");
 					var obj = env.get_pointer();
 					env.set("(protos)", "dom");
-					env.set("(manifestations)", "1");
+					env.set("(manifestations)", "20");
 					env.set("tag");
-					env.set("text", "'hi'");
+					//env.set("text", "'hi'");
 					env.set("tag", "'div'");
 					//env.set("text", "'hi'+basis");
-					/*
 					env.set("children", "dict");
 					env.cd("children");
 					env.set("0", "dict");
@@ -54,7 +53,6 @@
 					env.set("text", "basis");
 					//obj.set("tag", "div");
 					//obj.set("text", "hi");
-					*/
 
 					/*
 					var context = red.create("context", {stack: [root, children, obj]});
@@ -62,8 +60,9 @@
 					var mcontexts = _.map(mobjs, function(mobj) {
 						return context.push(mobj);
 					});
-					/*
+					*/
 
+					/*
 					var stopwatch = new Stopwatch().start();
 					_.each(mcontexts, function(context) {
 						var dom_attachment = obj.get_attachment_instance("dom", context);
@@ -78,7 +77,7 @@
 					}).appendTo(document.body);
 
 
-					//console.log(env.print());
+					console.log(env.print());
 
 					var storage_prefix = "_";
 					window.save = function(name) {

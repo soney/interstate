@@ -88,7 +88,11 @@ var StatechartTransition = function(options, defer_initialization) {
 red.StatechartTransition = StatechartTransition;
 
 var StartState = function() {
+	this.outgoingTransition = new StatechartTransition();
 };
+(function(my) {
+	var proto = my.prototype;
+}(StartState));
 
 var Statechart = function(options, defer_initialization) {
 	options = _.extend({}, options);
@@ -107,20 +111,19 @@ var Statechart = function(options, defer_initialization) {
 
 	proto.do_initialize = function(options) {
 		this._start_state = new StartState();
-		this._start
 		this.$substates = options.substates || cjs.map();
 		this.$local_state = cjs();
 		this.$concurrent = cjs(false);
-		if(cjs.is_constraint(options.init_state)) { this.$init_state = options.init_state; }
-		else { this.$init_state = cjs(options.init_state); }
 		this._running = false;
 		this._parent = options.parent;
+		this.$incoming_transitions = cjs.array(options.incoming_transitions || []);
+		this.$outgoing_transitions = cjs.array(options.outgoing_transitions || []);
+		/*
+		red._set_descriptor(this.$outgoing_transitions.$value, "outgoing transitions " + this.id);
+		red._set_descriptor(this.$incoming_transitions.$value, "incoming transitions " + this.id);
 		red._set_descriptor(this.$substates._keys, "substates keys " + this.id);
 		red._set_descriptor(this.$substates._values, "substates values " + this.id);
-		this.$incoming_transitions = cjs.array(options.incoming_transitions || []);
-		red._set_descriptor(this.$incoming_transitions.$value, "incoming transitions " + this.id);
-		this.$outgoing_transitions = cjs.array(options.outgoing_transitions || []);
-		red._set_descriptor(this.$outgoing_transitions.$value, "outgoing transitions " + this.id);
+		*/
 	};
 
 	proto.set_basis = function(basis) { this._basis = basis; };
