@@ -18,7 +18,6 @@ var RedStatefulObj = function(options, defer_initialization) {
 	proto.do_initialize = function(options) {
 		my.superclass.do_initialize.apply(this, arguments);
 		red.install_instance_builtins(this, options, my);
-		this.contextual_statecharts() .set_equality_check(red.check_context_equality);
 	};
 
 	my.builtins = {
@@ -29,7 +28,10 @@ var RedStatefulObj = function(options, defer_initialization) {
 		}
 
 		, "contextual_statecharts": {
-			default: function() { return cjs.map(); }
+			default: function() { return cjs.map({
+				equals: red.check_context_equality
+				, hash: "hash"
+			}); }
 			, getter_name: "contextual_statecharts"
 			, settable: false
 			, serialize: false
@@ -39,7 +41,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 				return red.create("stateful_prop")
 			}
 			, serialize: false
-			, env_visible: true
+			, env_visible: false
 			, standard_prop: true
 		}
 	};
@@ -49,10 +51,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 	// === STATECHART SHADOWS ===
 	//
 	proto.get_statechart_for_context = function(context) {
-		var sc = this.contextual_statecharts().item(context);
-		if(_.isUndefined(sc)) {
-			sc = this._create_statechart_for_context(context);
-		}
+		var sc = this.contextual_statecharts().get_or_put(context, _.bind(this._create_statechart_for_context, this, context));
 		return sc;
 	};
 	proto._create_statechart_for_context = function(context) {
@@ -76,6 +75,18 @@ var RedStatefulObj = function(options, defer_initialization) {
 			});
 			shadow_statechart.owner = sc_owner;
 		}
+
+		var self = this;
+		shadow_statechart.on("* >- *", function(event, to_state, from_state, transition, statechart) {
+			var prop_names = self.get_prop_names(context);
+			for(var i = 0; i<prop_names.length; i++) {
+				var prop_name = prop_names[i];
+				var prop = self.get_prop(prop_name, context);
+				if(prop instanceof red.RedStatefulProp) {
+					prop.on_transition_fire(context, transition);
+				}
+			}
+		});
 
 		cjs.signal();
 		return shadow_statechart;
@@ -101,8 +112,8 @@ var RedStatefulObj = function(options, defer_initialization) {
 	//
 	proto.get_statecharts = function(context) {
 		var own_statechart = this.get_statechart_for_context(context);
-		var inherited_statechart = this.get_inherited_statecharts(context);
-		return ([own_statechart]).concat(inherited_statechart);
+		var inherited_statecharts = this.get_inherited_statecharts(context);
+		return ([own_statechart]).concat(inherited_statecharts);
 	};
 	proto.get_state_specs = function(context, include_inherited) {
 		var statecharts;
@@ -118,7 +129,11 @@ var RedStatefulObj = function(options, defer_initialization) {
 			return _.without(statechart.get_substates(), statechart);
 		}), true);
 
-		var rv = _.map(flattened_statecharts, function(state) {
+		var flattened_states_and_transitions = _.flatten(_.map(flattened_statecharts, function(state) {
+			return ([state]).concat(state.get_outgoing_transitions());
+		}));
+
+		var rv = _.map(flattened_states_and_transitions, function(state) {
 			var is_active = _.indexOf(active_states, state) >= 0;
 			return {
 				active: is_active

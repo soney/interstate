@@ -18,6 +18,10 @@ var RedAttachmentInstance = function(options) {
 	};
 	proto.get_context = function() { return this._context; };
 	proto.get_parent = function() { return this._parent; };
+	proto.hash = function() {
+		console.log(this._context.hash());
+		return this._context.hash();
+	};
 }(RedAttachmentInstance));
 
 var RedAttachment = function(options) {
@@ -49,6 +53,9 @@ var RedAttachment = function(options) {
 		return this.type;
 	};
 	proto.multiple_allowed = function() { return this._multiple_allowed; };
+	proto.hash = function() {
+		return this.type;
+	};
 }(RedAttachment));
 
 red.RedAttachmentInstance = RedAttachmentInstance;

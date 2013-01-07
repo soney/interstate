@@ -10,6 +10,7 @@ var cjs = red.cjs, _ = red._;
 var RedStatefulProp = function(options, defer_initialization) {
 	options = options || {};
 
+	this.transitory_value = cjs();
 	this.id = _.uniqueId();
 
 	if(defer_initialization === true) {
@@ -28,8 +29,6 @@ var RedStatefulProp = function(options, defer_initialization) {
 
 		red._set_descriptor(this._direct_values._keys,   "Direct values Keys " + this.id);
 		red._set_descriptor(this._direct_values._values, "Direct values Vals " + this.id);
-
-		this._last_valid_using_index = cjs.map().set_equality_check(check_context_equality);
 	};
 
 	//
@@ -92,7 +91,8 @@ var RedStatefulProp = function(options, defer_initialization) {
 			return [];
 		}
 		var stateful_obj_and_context = this.get_stateful_obj_and_context(context);
-		var stateful_obj_context = stateful_obj_and_context.context;
+		//var stateful_obj_context = stateful_obj_and_context.context;
+		var stateful_obj_context = context;
 		var stateful_obj = stateful_obj_and_context.stateful_obj;
 
 
@@ -112,7 +112,8 @@ var RedStatefulProp = function(options, defer_initialization) {
 	//
 	proto.get_state_specs = function(context) {
 		var stateful_obj_and_context = this.get_stateful_obj_and_context(context);
-		var stateful_obj_context = stateful_obj_and_context.context;
+		//var stateful_obj_context = stateful_obj_and_context.context;
+		var stateful_obj_context = context;
 		var stateful_obj = stateful_obj_and_context.stateful_obj;
 		return stateful_obj.get_state_specs(stateful_obj_context, this._can_inherit);
 	};
@@ -139,8 +140,6 @@ var RedStatefulProp = function(options, defer_initialization) {
 
 			if(active && !_.isUndefined(value) && !found_using_value) {
 				found_using_value = using = true;
-
-				this._last_valid_using_index.item(context, i);
 			}
 
 			rv.push({
@@ -151,13 +150,11 @@ var RedStatefulProp = function(options, defer_initialization) {
 			});
 		}
 
-		if(!found_using_value && this._last_valid_using_index.has(context)) {
-			var using_index = this._last_valid_using_index.item(context);
-			rv[using_index].using = true;
-		}
 
 		return rv;
 	};
+
+
 	var get_value_for_state = function(state, stateful_prop, inherits_from) {
 		if(stateful_prop._has_direct_value_for_state(state)) {
 			return stateful_prop._direct_value_for_state(state);
@@ -171,6 +168,14 @@ var RedStatefulProp = function(options, defer_initialization) {
 			return undefined;
 		}
 	};
+	proto.on_transition_fire = function(context, transition) {
+		if(!transition) { return; }
+		var inherits_from = this._get_inherits_from(context);
+		var val = get_value_for_state(transition, this, inherits_from);
+		if(val) {
+			this.transitory_value.set(red.get_contextualizable(val, context));
+		}
+	};
 	proto.get = function(context) {
 		var values = this.get_value_specs(context);
 		for(var i = 0; i<values.length; i++) {
@@ -180,7 +185,7 @@ var RedStatefulProp = function(options, defer_initialization) {
 				return red.get_contextualizable(val, context);
 			}
 		}
-		return undefined;
+		return this.transitory_value.get();
 	};
 
 	proto.serialize = function() {

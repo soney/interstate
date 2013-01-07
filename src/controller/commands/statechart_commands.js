@@ -163,15 +163,7 @@ var AddTransitionCommand = function(options) {
 	this._statechart = this._options.statechart;
 	this._from_state_name = this._options.from;
 	this._to_state_name = this._options.to;
-
-	if(_.isString(this._options.event)) {
-		this._parent = this._options.parent;
-		this._parent_context = this._options.parent_context
-		this._event_str = this._options.event;
-		this._event = red.create_event("parsed", this._event_str, this._parent, this._parent_context);
-	} else {
-		this._event = this._options.event;
-	}
+	this._event = this._options.event;
 };
 
 (function(my) {

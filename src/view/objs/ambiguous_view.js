@@ -54,7 +54,7 @@ $.widget("red.ambiguous", {
 				dict: value
 				, context: context.push(value)
 				, indent: this.option("indent")
-				, property_types: ["Stateful Property", "Cell", "Group", "Dictionary", "Stateful Object"]
+				, property_types: ["Stateful Property", "Cell", "Dictionary", "Stateful Object"]
 			});
 		} else if(value instanceof red.RedDict) {
 			var sub_entries = this.option("sub_entries");
@@ -67,12 +67,6 @@ $.widget("red.ambiguous", {
 			this.element.stateful_prop({
 				prop: value
 				, context: context.push(value)
-			});
-		} else if(value instanceof red.RedGroup) {
-			this.element.group({
-				group: value
-				, context: context.push(value)
-				, indent: this.option("indent")
 			});
 		} else {
 			this.element.text(value+"");
@@ -91,8 +85,6 @@ $.widget("red.ambiguous", {
 			sub_entries.dict("destroy");
 		} else if(value instanceof red.RedStatefulProp) {
 			this.element.stateful_prop("destroy");
-		} else if(value instanceof red.RedGroup) {
-			this.element.group("destroy");
 		} else {
 			this.element.text("");
 		}

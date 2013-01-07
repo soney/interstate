@@ -275,4 +275,64 @@ red._commands["unset_stateful_prop_value"] = function(options) {
 	return new UnsetStatefulPropValueCommand(options);
 };
 
+
+var SetBuiltinCommand = function(options) {
+	SetBuiltinCommand.superclass.constructor.apply(this, arguments);
+	this._options = options || {};
+
+	if(!_.has(this._options, "parent")) {
+		throw new Error("Must select a parent object");
+	}
+
+	this._parent = this._options.parent;
+	this._builtin_name = this._options.name;
+	this._value = this._options.value;
+};
+(function(my) {
+	_.proto_extend(my, red.Command);
+	var proto = my.prototype;
+
+	proto._execute = function() {
+		var builtins = this._parent.get_builtins();
+		for(var i in builtins) {
+			var builtin = builtins[i];
+			var env_name = builtin._get_env_name();
+			if(this._builtin_name === env_name) {
+				var getter_name = builtin._get_getter_name();
+				var setter_name = builtin._get_setter_name();
+				this._old_value = this._parent[getter_name]();
+				this._parent[setter_name](this._value);
+				break;
+			}
+		}
+	};
+	proto._unexecute = function() {
+		var builtins = this._parent.get_builtins();
+		for(var i in builtins) {
+			var builtin = builtins[i];
+			var env_name = builtin._get_env_name();
+			if(this._builtin_name === env_name) {
+				var getter_name = builtin._get_getter_name();
+				this._parent[setter_name](this._old_value);
+				break;
+			}
+		}
+	};
+	proto._do_destroy = function(in_effect) {
+		if(in_effect) {
+			if(this._old_value && this._old_value.destroy) {
+				this._old_value.destroy();
+			}
+		} else {
+			if(this._value && this._value.destroy) {
+				this._value.destroy();
+			}
+		}
+	};
+}(SetBuiltinCommand));
+
+red._commands["set_builtin"] = function(options) {
+	return new SetBuiltinCommand(options);
+};
+
 }(red));

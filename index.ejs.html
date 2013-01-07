@@ -25,25 +25,59 @@
 					red.__debug = false;
 
 
-					Array.prototype.pluck = function() {
-						return _.pluck.apply(_, [this].concat(_.toArray(arguments)));
-					};
-					Array.prototype.flatten = function() {
-						return _.flatten.apply(_, [this].concat(_.toArray(arguments)));
-					};
-					//albums.pluck = _.bind(_.pluck, _, albums);
 					env = red.create("environment");
 					root = env.get_pointer();
-					//root.set("albums", $albums);
+					env.cd("children");
+					var children = env.get_pointer();
+					env.set("obj", "dict");
+					env.cd("obj");
+					var obj = env.get_pointer();
+					env.set("(protos)", "dom");
+					env.set("(manifestations)", "20");
+					env.set("tag");
+					//env.set("text", "'hi'");
+					env.set("tag", "'div'");
+					//env.set("text", "'hi'+basis");
+					env.set("children", "dict");
+					env.cd("children");
+					env.set("0", "dict");
+					env.cd("0");
+					env.set("(protos)", "dom");
+					env.set("tag", "'span'");
+					env.set("text", "'yo'");
+					env.up();
+					env.set("1", "dict");
+					env.cd("1");
+					env.set("(protos)", "dom");
+					env.set("tag", "'span'");
+					env.set("text", "basis");
+					//obj.set("tag", "div");
+					//obj.set("text", "hi");
 
-					//albums.artist ?
-					//parent.selected_object
+					/*
+					var context = red.create("context", {stack: [root, children, obj]});
+					var mobjs = obj.get_manifestation_objs(context);
+					var mcontexts = _.map(mobjs, function(mobj) {
+						return context.push(mobj);
+					});
+					*/
 
-				//	env.set("artists", "albums.pluck('artist')");
-				//	env.set("songs", "albums.pluck('songs').flatten()");
-					//env.set("artists", "albums.pluck('artist')");
-					root_view = $("<div />").environment({controller: env})
-											.appendTo(document.body);
+					/*
+					var stopwatch = new Stopwatch().start();
+					_.each(mcontexts, function(context) {
+						var dom_attachment = obj.get_attachment_instance("dom", context);
+					//	var protos = obj._get_direct_protos(context);
+					});
+					console.log(stopwatch.stop());
+					*/
+					
+					output_view = $("<div />").dom_output({
+						root: env.get_root()
+						, context: env.get_root_context()
+					}).appendTo(document.body);
+
+
+					console.log(env.print());
 
 					var storage_prefix = "_";
 					window.save = function(name) {

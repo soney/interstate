@@ -2,7 +2,12 @@
 var cjs = red.cjs, _ = red._;
 
 var RedDict = function(options, defer_initialization) {
-	options = options || {};
+	options = _.extend({
+		value: {},
+		keys: [],
+		values: []
+	}, options);
+	this.options = options;
 
 	this.type = "red_dict";
 	this.id = _.uniqueId();
@@ -11,6 +16,15 @@ var RedDict = function(options, defer_initialization) {
 	} else {
 		this.do_initialize(options);
 	}
+	this._get_direct_protos = cjs.memoize(this._get_direct_protos, {
+		hash: function(args) {
+			return args[0].hash()
+		},
+		equals: function(args1, args2) {
+			return red.check_context_equality(args1[0], args2[0]);
+		},
+		context: this
+	});
 };
 
 (function(my) {
@@ -41,14 +55,43 @@ var RedDict = function(options, defer_initialization) {
 		}
 
 		, "direct_attachment_instances": {
-			default: function() { return cjs.map(); }
+			default: function() { return cjs.map({
+				hash: "hash"
+			}); }
 			, getter_name: "direct_attachment_instances"
 			, serialize: false
 		}
 
 		, "direct_props": {
-			default: function() { return cjs.map(); }
+			default: function() {
+				var rv = cjs.map({
+					keys: this.options.keys,
+					values: this.options.values,
+					value: this.options.value
+				});
+				return rv;
+				}
 			, getter_name: "direct_props"
+		}
+
+		, "manifestations": {
+			start_with: function() { return cjs.$(); }
+			, env_visible: true
+			, getter: function(me) { return me.get(); }
+			, setter: function(me, val) { me.set(val, true); }
+		}
+		, "contextual_manifestation_maps": {
+			default: function() { return cjs.map({
+				equals: red.check_context_equality,
+				hash: "hash"
+			}); }
+			, settable: false
+			, serialize: false
+		}
+		, "manifestation_of": {
+			default: function() { return false; }
+			, settable: false
+			, serialize: false
 		}
 	};
 
@@ -60,11 +103,25 @@ var RedDict = function(options, defer_initialization) {
 
 	proto._get_direct_protos = function(context) {
 		var protos = red.get_contextualizable(this.direct_protos(), context);
-		if(_.isArray(protos)) {
-			return protos;
-		} else {
-			return [protos];
+		if(!_.isArray(protos)) {
+			protos = [protos];
 		}
+		var rv = _	.chain(protos)
+					.map(function(x) {
+						return red.get_contextualizable(x, context);
+					})
+					.filter(function(x) {
+						return x instanceof red.RedDict;
+					})
+					.value();
+		return rv;
+		/*
+		protos = _.map(protos, function(proto) {
+			return red.get_contextualizable(proto, context);
+		});
+
+		return protos;
+		*/
 	};
 
 	//
@@ -73,14 +130,16 @@ var RedDict = function(options, defer_initialization) {
 
 	proto.get_protos = proto._get_all_protos = function(context) {
 		var direct_protos = this._get_direct_protos(context);
-		var protos = _.map(cjs.get(direct_protos), function(direct_proto) {
-			direct_proto = red.get_contextualizable(direct_proto, context);
-			if(_.isUndefined(direct_proto)) { return false; };
-			var direct_proto_all_protos = direct_proto._get_all_protos(direct_proto.get_default_context());
-			
-			return ([direct_proto]).concat(direct_proto_all_protos);
+		var proto_set = new Set({
+			value: direct_protos
+			, hash: "hash"
 		});
-		protos = _.uniq(_.compact(_.flatten(protos, true)));
+		proto_set.each(function(x, i) {
+			var c = x.get_default_context();
+			var dp = x._get_direct_protos(c);
+			proto_set.add_at.apply(proto_set, [i+1].concat(dp));
+		});
+		var protos = proto_set.toArray();
 		return protos;
 	};
 	
@@ -254,6 +313,13 @@ var RedDict = function(options, defer_initialization) {
 		var inherited_prop_names = this._get_inherited_prop_names(context);
 		return builtin_prop_names.concat(direct_prop_names, inherited_prop_names);
 	};
+	proto.get_prop_values = function(context) {
+		var prop_names = this.get_prop_names(context);
+		var prop_values = _.map(prop_names, function(prop_name) {
+			return this.get_prop(prop_name, context);
+		}, this);
+		return prop_values;
+	};
 	proto.is_inherited = function(prop_name, context) {
 		var builtin_prop_names = this._get_builtin_prop_names();
 		var direct_prop_names = this._get_direct_prop_names();
@@ -290,7 +356,7 @@ var RedDict = function(options, defer_initialization) {
 	//
 
 	proto._get_direct_attachments = function(context) {
-		return red.get_contextualizable(this.direct_attachments(), context.push(this));
+		return red.get_contextualizable(this.direct_attachments(), context);
 	};
 	
 	
@@ -298,46 +364,28 @@ var RedDict = function(options, defer_initialization) {
 	// === DIRECT ATTACHMENT INSTANCES ===
 	//
 
-	proto.add_direct_attachment_instance = function(attachment, context) {
-		var direct_attachment_instances = this.direct_attachment_instances();
-		var attachment_instances;
-
-		cjs.wait();
-
-		if(direct_attachment_instances.has(attachment)) {
-			attachment_instances = direct_attachment_instances.item(attachment);
-		} else {
-			attachment_instances = cjs.map().set_equality_check(red.check_context_equality);
-			direct_attachment_instances.item(attachment, attachment_instances);
-		}
-		var attachment_instance = attachment.create_instance(context.last(), context);
-		attachment_instances.item(context, attachment_instance);
-		//if(red.__debug) debugger;
-
-		cjs.signal();
-		return attachment_instance;
-	};
-	proto.has_direct_attachment_instance = function(attachment, context) {
-		return !_.isUndefined(this.get_direct_attachment_instance(attachment, context));
-	};
-	proto.get_direct_attachment_instance = function(attachment, context) {
-		var direct_attachment_instances = this.direct_attachment_instances();
-		var attachment_instances;
-		if(direct_attachment_instances.has(attachment)) {
-			attachment_instances = direct_attachment_instances.item(attachment);
-		} else {
-			return undefined;
-		}
-
-		return attachment_instances.item(context);
-	};
 	proto.create_or_get_direct_attachment_instance = function(attachment, context) {
-		var existing_instance = this.get_direct_attachment_instance(attachment, context);
-		if(_.isUndefined(existing_instance)) {
-			return this.add_direct_attachment_instance(attachment, context);
-		} else {
-			return existing_instance;
-		}
+		var direct_attachment_instances = this.direct_attachment_instances();
+
+		var create_attachment_instance = function() {
+			var parent = context.last();
+			parent = parent.get_manifestation_of() || parent;
+			var attachment_instance = attachment.create_instance(parent, context);
+			return attachment_instance;
+		};
+
+		var attachment_instances = direct_attachment_instances.get_or_put(attachment, function() {
+			return cjs.map({
+						equals: red.check_context_equality,
+						hash: "hash",
+						keys: [context],
+						values: [create_attachment_instance()]
+					});
+		}, this);
+
+		var attachment_instance = attachment_instances.get_or_put(context, create_attachment_instance);
+
+		return attachment_instance;
 	};
 	
 	//
@@ -345,16 +393,39 @@ var RedDict = function(options, defer_initialization) {
 	//
 
 	proto._get_all_attachments_and_srcs = function(context) {
-		var self = this;
 		var direct_attachments = this._get_direct_attachments(context);
 		var direct_attachments_and_srcs = _.map(direct_attachments, function(direct_attachment) {
 			return {
 						attachment: direct_attachment
-						, holder: self
+						, holder: this
 			};
-		});
+		}, this);
 
 		var protos = this.get_protos(context);
+		var attachments_and_srcs = new Set({
+			hash: function(item) {
+				return item.attachment.hash();
+			},
+			equals: function(a, b) {
+				return a.attachment === b.attachment;
+			},
+			value: direct_attachments_and_srcs
+		});
+
+		_.each(protos, function(protoi) {
+			if(protoi instanceof red.RedDict) {
+				var attachments = protoi._get_direct_attachments(context);
+				attachments_and_srcs.add.apply(attachments_and_srcs, _.map(attachments, function(attachment) {
+					return {
+						attachment: attachment
+						, holder: protoi
+					};
+				}));
+			}
+		});
+		return attachments_and_srcs.toArray();
+
+/*
 		var proto_attachments_and_srcs = _.map(protos, function(protoi) {
 			if(protoi instanceof red.RedDict) {
 				var attachments = protoi._get_direct_attachments(context);
@@ -387,6 +458,7 @@ var RedDict = function(options, defer_initialization) {
 		});
 
 		return non_duplicate_attachments_and_srcs;
+		*/
 	};
 	proto.get_attachment_instances = proto._get_all_attachment_instances = function(context) {
 		var attachments_and_srcs = this._get_all_attachments_and_srcs(context);
@@ -442,16 +514,78 @@ var RedDict = function(options, defer_initialization) {
 	};
 
 	//
+	// === MANIFESTATIONS ===
+	//
+	
+	proto.get_manifestation_map_for_context = function(context) {
+		var mm = this.get_contextual_manifestation_maps().get_or_put(context, function(context) {
+			return cjs.map({
+				hash: function(item) {
+					return item;
+				}
+			});
+		});
+		return mm;
+	};
+
+	proto.get_manifestation_obj = function(context, basis, index) {
+		var mm = this.get_manifestation_map_for_context(context);
+		cjs.wait();
+		var dict = mm.get_or_put(basis, _.bind(function() {
+			var dict = red.create("dict", {
+				manifestation_of: this,
+				value: {
+					basis: basis,
+					basis_index: index
+				}
+			});
+			return dict;
+		}, this));
+		cjs.signal();
+		return dict;
+	};
+
+	proto.get_manifestation_objs = function(context) {
+		var manifestations = red.get_contextualizable(this.get_manifestations(), context);
+
+		for(var i = 0; i<context._stack.length; i++) {
+			if(context._stack[i].get_manifestation_of() === this) {
+				return null;
+			}
+		}
+
+		if(_.isNumber(manifestations)) {
+			var arr = []
+			for(var i = 0; i<manifestations; i++) {
+				arr.push(i);
+			}
+			manifestations = arr;
+		}
+
+		if(_.isArray(manifestations)) {
+			var manifest_objs = _.map(manifestations, function(manifestation, index) {
+				return this.get_manifestation_obj(context, manifestation, index);
+			}, this);
+
+			return manifest_objs;
+		} else {
+			return null;
+		}
+	};
+
+	proto.hash = function() {
+		return this.id;
+	};
+
+	//
 	// === BYE BYE ===
 	//
 
 	proto.destroy = function() {
-	/*
 		this._direct_props.destroy();
 		this._direct_protos.destroy();
 		this._direct_attachments.destroy();
 		this._direct_attachment_instances.destroy();
-		*/
 	};
 	
 }(RedDict));

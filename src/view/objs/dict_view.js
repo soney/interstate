@@ -124,8 +124,6 @@ $.widget("red.dict", {
 		this._get_add_prop_button();
 
 		this._add_change_listeners();
-
-		if(this.option("context").last() !== this.option("dict")) debugger;
 	}
 
 	, _make_props_draggable: function() {

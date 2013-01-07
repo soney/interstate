@@ -29,7 +29,12 @@ var cjs_inc = require("./src/_vendor/cjs/include_libs");
 exports.main_build = cp(build_path, ["red.min.js"]);
 
 exports.main_src = c(
-	cp(cjs_path, cjs_inc.main_src)
+	cp(vendor_src, [
+				"stopwatch.js"
+				, "array_diff.js"
+				, "set.js"
+	])
+	, cp(cjs_path, cjs_inc.main_src)
 	, cp(vendor_src, [
 				"esprima/esprima.js"
 				, "ablejs/able.js"
@@ -54,7 +59,6 @@ exports.main_src = c(
 				, "model/core/context_stack.js"
 				, "model/core/cell.js"
 				, "model/core/dict.js"
-				, "model/core/group.js"
 				, "model/core/stateful_obj.js"
 				, "model/core/stateful_prop.js"
 				, "model/attachments/attachment_core.js"
@@ -63,7 +67,6 @@ exports.main_src = c(
 				, "controller/commands/command_core.js"
 				, "controller/commands/prop_commands.js"
 				, "controller/commands/cell_commands.js"
-				, "controller/commands/group_commands.js"
 				, "controller/commands/statechart_commands.js"
 				, "controller/commands/combined_commands.js"
 				, "controller/environment/command_stack.js"

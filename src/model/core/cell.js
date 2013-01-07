@@ -165,7 +165,10 @@ var RedCell = function(options, defer_initialization) {
 			, setter: function(me, str) { me.set(str, true); }
 		}
 		, "contextual_values": {
-			default: function() { return cjs.map(); }
+			default: function() { return cjs.map({
+				equals: red.check_context_equality,
+				hash: "hash"
+			}); }
 			, settable: false
 			, serialize: false
 		}
@@ -185,7 +188,6 @@ var RedCell = function(options, defer_initialization) {
 		this._tree = cjs.$(function() {
 			return esprima.parse(self.get_str());
 		});
-		this.get_contextual_values() .set_equality_check(red.check_context_equality);
 	};
 	proto.get = function(context) {
 		var tree = this._tree.get();
@@ -195,13 +197,10 @@ var RedCell = function(options, defer_initialization) {
 			contextual_values.clear();
 		}
 
-		var val;
-		if(contextual_values.has(context)) {
-			val = contextual_values.item(context);
-		} else {
-			val = get_$(tree, context, this.get_ignore_inherited_in_contexts());
-			contextual_values.item(context, val);
-		}
+		var val = contextual_values.get_or_put(context, function() {
+			return get_$(tree, context, this.get_ignore_inherited_in_contexts());
+		}, this);
+
 		return val;
 	};
 	proto.destroy = function() {
@@ -239,6 +238,9 @@ var RedCell = function(options, defer_initialization) {
 		};
 
 		return rv;
+	};
+	proto.hash = function() {
+		return this.id;
 	};
 }(RedCell));
 

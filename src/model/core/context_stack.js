@@ -52,6 +52,13 @@ var RedContext = function(options) {
 	proto.is_empty = function() {
 		return _.isEmpty(this._stack);
 	};
+	proto.hash = function() {
+		var hash = 0;
+		_.each(_.last(this._stack, 3), function(dict) {
+			hash +=  dict.hash();
+		});
+		return hash;
+	};
 
 	proto.serialize = function() {
 		return { stack: _.map(this._stack, red.serialize) };
@@ -59,6 +66,23 @@ var RedContext = function(options) {
 		
 	my.deserialize = function(obj) {
 		return new RedContext({stack: _.map(obj.stack, red.deserialize)});
+	};
+	proto.print = function() {
+		var rarr = [];
+		for(var i = 0; i<this._stack.length; i++) {
+			var item = this._stack[i];
+
+			var str = item.id + "";
+
+			var manifestation_of = item.get_manifestation_of();
+			if(manifestation_of) {
+				var basis_index = item._get_direct_prop("basis_index");
+				str += "(" + manifestation_of.id + "," + basis_index + ")";
+			}
+
+			rarr.push(str);
+		}
+		return rarr.join(" > ");
 	};
 }(RedContext));
 
@@ -69,7 +93,7 @@ red.define("context", function(options) {
 });
 
 red.is_contextualizable = function(obj) {
-	return obj instanceof red.RedCell || obj instanceof red.RedStatefulProp || obj instanceof red.RedGroup;
+	return obj instanceof red.RedCell || obj instanceof red.RedStatefulProp;
 };
 
 red.get_contextualizable = function(obj, context) {
