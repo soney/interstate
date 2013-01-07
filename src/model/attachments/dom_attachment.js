@@ -129,7 +129,11 @@ var RedDomAttachmentInstance = function(options) {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
 				var val = parent.prop_val(red_attr_name, context);
-				dom_obj.style[css_prop_name] = val;
+				if(val) {
+					dom_obj.style[css_prop_name] = val;
+				} else {
+					delete dom_obj.style[css_prop_name];
+				}
 			}
 		}, {
 			context: this
@@ -144,7 +148,11 @@ var RedDomAttachmentInstance = function(options) {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
 				var val = parent.prop_val(red_attr_name, context);
-				dom_obj[attr_name] = val;
+				if(val) {
+					dom_obj[attr_name] = val;
+				} else {
+					delete dom_obj[attr_name];
+				}
 			}
 		}, {
 			context: this
@@ -217,7 +225,7 @@ var RedDomAttachmentInstance = function(options) {
 				var diff = _.diff(current_children, desired_children);
 				window.dc = desired_children;
 				_.forEach(diff.removed, function(info) {
-					var index = info.from, child = info.item;
+					var index = info.from, child = info.from_item;
 					remove(child);
 				});
 				_.forEach(diff.added, function(info) {
