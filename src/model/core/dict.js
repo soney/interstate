@@ -356,7 +356,7 @@ var RedDict = function(options, defer_initialization) {
 	//
 
 	proto._get_direct_attachments = function(context) {
-		return red.get_contextualizable(this.direct_attachments(), context.push(this));
+		return red.get_contextualizable(this.direct_attachments(), context);
 	};
 	
 	
@@ -375,10 +375,6 @@ var RedDict = function(options, defer_initialization) {
 		};
 
 		var attachment_instances = direct_attachment_instances.get_or_put(attachment, function() {
-			var parent = context.last();
-			parent = parent.get_manifestation_of() || parent;
-			var attachment_instance = attachment.create_instance(parent, context);
-
 			return cjs.map({
 						equals: red.check_context_equality,
 						hash: "hash",
@@ -410,8 +406,8 @@ var RedDict = function(options, defer_initialization) {
 			hash: function(item) {
 				return item.attachment.hash();
 			},
-			equals: function(itema, itemb) {
-				return itema.attachment === itemb.attachment;
+			equals: function(a, b) {
+				return a.attachment === b.attachment;
 			},
 			value: direct_attachments_and_srcs
 		});

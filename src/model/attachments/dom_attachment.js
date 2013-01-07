@@ -50,11 +50,7 @@ var RedDomAttachmentInstance = function(options) {
 	if(options.tag) {
 		this._dom_obj = document.createElement(options.tag);
 	} else {
-		var parent = this.get_parent();
-		var context = this.get_context();
-		var tag = parent.prop_val("tag", context);
-		var dom_obj = document.createElement(tag);
-		this._dom_obj = cjs.$(dom_obj);
+		this._dom_obj = cjs.$();
 		this._tag_change_listener = this.add_tag_change_listener();
 	}
 
@@ -110,19 +106,19 @@ var RedDomAttachmentInstance = function(options) {
 		return cjs.liven(function() {
 			var tag = parent.prop_val("tag", context);
 			if(tag !== old_tag) {
+				old_tag = tag;
 				if(_.isString(tag)) {
 					var dom_obj = document.createElement(tag);
 					this._dom_obj.set(dom_obj);
 				} else {
 					this._dom_obj.set(undefined);
 				}
-				old_tag = tag;
 			}
 		}, {
 			context: this
 			, pause_while_running: true
 			, run_on_create: false
-		});
+		}).run();
 	};
 	proto.add_css_change_listener = function(red_attr_name, css_prop_name) {
 		var parent = this.get_parent();
@@ -164,6 +160,7 @@ var RedDomAttachmentInstance = function(options) {
 			var text = parent.prop_val("text", context);
 			if(text) {
 				dom_obj.textContent = cjs.get(text);
+				window.dom_obj = dom_obj;
 			} else {
 				var children = parent.get_prop("children", children_context);
 				var children_context = context.push(children);
@@ -191,7 +188,7 @@ var RedDomAttachmentInstance = function(options) {
 
 						if(_.isArray(manifestations)) {
 							var manifestation_contexts = _.map(manifestations, function(manifestation) {
-								return context.push(manifestation);
+								return pv_context.push(manifestation);
 							});
 							dom_attachments = [];
 							_.each(manifestation_contexts, function(manifestation_context) {
@@ -201,7 +198,7 @@ var RedDomAttachmentInstance = function(options) {
 								}
 							});
 						} else {
-							var dom_attachment = parent.get_attachment_instance("dom", context);
+							var dom_attachment = prop_value.get_attachment_instance("dom", pv_context);
 							if(dom_attachment) {
 								dom_attachments = [dom_attachment];
 							}
@@ -217,6 +214,7 @@ var RedDomAttachmentInstance = function(options) {
 				});
 
 				var diff = _.diff(current_children, desired_children);
+				window.dc = desired_children;
 				_.forEach(diff.removed, function(info) {
 					var index = info.from, child = info.item;
 					remove(child);

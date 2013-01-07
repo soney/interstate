@@ -33,11 +33,12 @@
 					env.cd("obj");
 					var obj = env.get_pointer();
 					env.set("(protos)", "dom");
-					env.set("(manifestations)", "2");
+					env.set("(manifestations)", "200");
 					env.set("tag");
-					env.set("text");
+					env.set("text", "'hi'");
 					env.set("tag", "'div'");
 					//env.set("text", "'hi'+basis");
+					/*
 					env.set("children", "dict");
 					env.cd("children");
 					env.set("0", "dict");
@@ -53,7 +54,9 @@
 					env.set("text", "basis");
 					//obj.set("tag", "div");
 					//obj.set("text", "hi");
+					*/
 
+					/*
 					var context = red.create("context", {stack: [root, children, obj]});
 					var mobjs = obj.get_manifestation_objs(context);
 					var mcontexts = _.map(mobjs, function(mobj) {
