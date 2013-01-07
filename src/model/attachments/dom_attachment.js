@@ -114,6 +114,7 @@ var RedDomAttachmentInstance = function(options) {
 					this._dom_obj.set(undefined);
 				}
 			}
+			console.log("TCL");
 		}, {
 			context: this
 			, pause_while_running: true
