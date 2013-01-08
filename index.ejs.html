@@ -85,10 +85,11 @@
 								.add_state("A")
 								.add_state("B")
 								.starts_at("B")
-								.add_state("B.x")
-								.rename_state("B", "state b")
 								.reset()
 								.run();
+					//console.log(red.serialize(sc));
+					//console.log(red.stringify(sc));
+					sc = red.destringify(red.stringify(sc)).run();
 					console.log(sc.stringify());
 
 					var storage_prefix = "_";

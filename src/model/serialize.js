@@ -8,12 +8,13 @@ var serialization_funcs = [
 	, {name: "stateful_obj", type: red.RedStatefulObj }
 	, {name: "dict", type: red.RedDict }
 	, {name: "stateful_prop", type: red.RedStatefulProp }
-	, {name: "group", type: red.RedGroup }
 	, {name: "red_dom_attachment", type: red.RedDomAttachment }
 	, {name: "red_context", type: red.RedContext }
 	, {name: "statechart_transition", type: red.StatechartTransition }
 	, {name: "statechart", type: red.Statechart }
+	, {name: "startstate", type: red.StartState }
 	, {name: "parsed_event", type: red.ParsedEvent }
+	, {name: "statechart_event", type: red.StatechartEvent }
 ];
 
 var serializing = false;
@@ -77,7 +78,7 @@ var serialize_array = function(arr) {
 
 	return ({
 		type: "array"
-		, values: serialized_values
+		, value: serialized_values
 	});
 };
 
@@ -177,11 +178,16 @@ var get_deserialized_obj = function(serialized_obj) {
 
 
 var deserialize_map = function(obj) {
-	return cjs.map(_.map(obj.keys, red.deserialize), _.map(obj.values, red.deserialize));
+	return cjs.map({
+		keys: _.map(obj.keys, red.deserialize),
+		values: _.map(obj.values, red.deserialize)
+	});
 };
 
 var deserialize_array = function(obj) {
-	return cjs.array(_.map(obj.values, red.deserialize));
+	return cjs.array({
+		value: _.map(obj.values, red.deserialize)
+	});
 };
 
 red.destringify = function(str) {

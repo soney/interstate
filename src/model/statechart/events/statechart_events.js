@@ -1,7 +1,11 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-(function(proto) {
+var StatechartEvent = red._create_event_type("statechart");
+red.StatechartEvent = StatechartEvent;
+
+(function(my) {
+	var proto = my.prototype;
 	proto.on_create = function(statecharts, spec) {
 		if(!_.isArray(statecharts)) { statecharts = [statecharts]; }
 		this.statecharts = statecharts;
@@ -19,6 +23,15 @@ var cjs = red.cjs, _ = red._;
 	proto.on_change = function(event, to_state_name, from_state_name, statechart) {
 		this.fire(event);
 	};
-}(red._create_event_type("statechart").prototype));
+	proto.serialize = function() {
+		return {
+			spec: this.spec,
+			statecharts: red.serialize(this.statecharts)
+		};
+	};
+	my.deserialize = function(obj) {
+		return red.create_event("statechart", red.deserialize(obj.statecharts), obj.spec);
+	};
+}(StatechartEvent));
 
 }(red));
