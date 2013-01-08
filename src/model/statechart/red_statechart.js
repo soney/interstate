@@ -205,15 +205,22 @@ var Statechart = function(options, defer_initialization) {
 
 	proto.is_concurrent = function() { return this.$concurrent.get(); };
 	proto.make_concurrent = function(is_concurrent) { this.$concurrent.set(is_concurrent===true); return this; };
-	proto.get_substates = function() { return this.$substates.values(); };
+	proto.get_substates = function(include_start) {
+		var substates = this.$substates.values();
+		if(include_start) {
+			substates.unshift(this.get_start_state());
+		}
+		return substates;
+	};
+	proto.get_start_state = function() { return this._start_state; };
 	proto.get_incoming_transitions = function() { return this.$incoming_transitions.get(); };
 	proto.get_outgoing_transitions = function() { return this.$outgoing_transitions.get(); };
 	proto.get_active_substate = function(substate) { return this.$local_state.get(); };
 	proto.is_running = function() { return this._running; };
 
-	proto.flatten_substates = function() {
-		return ([this]).concat(_.flatten(_.map(this.get_substates(), function(substate) {
-			return substate.flatten_substates();
+	proto.flatten_substates = function(include_start) {
+		return ([this]).concat(_.flatten(_.map(this.get_substates(include_start), function(substate) {
+			return substate.flatten_substates(include_start);
 		})));
 	};
 
@@ -258,24 +265,32 @@ var Statechart = function(options, defer_initialization) {
 	};
 	proto.stop = function() {
 		this._running = false;
-		this.$local_state.set(undefined);
+		this.$local_state.set(this._start_state);
+		_.forEach(this.get_substates(), function(substate) {
+			substate.stop();
+		});
+		var stop_listeners = this._listeners["stop"];
+		_.each(stop_listeners, function(listener) {
+			listener();
+		});
+		return this;
 	};
 	proto.reset = function() {
 		if(this.is_running()) {
-			this.$local_state.set(this._start_state);
+			this.stop();
+			this.run();
 		}
 		return this;
 	};
 	proto.get_name_for_substate = function(substate) {
-		return substate instanceof StartState ? "(start)" : this.$substates.keyForValue(substate);
+		return substate === this.get_start_state() ? "(start)" : this.$substates.keyForValue(substate);
 	};
 	proto.get_active_direct_substates = function() {
 		if(this.is_concurrent()) {
 			return this.get_substates();
 		} else {
 			var local_state = this.$local_state.get();
-			if(local_state instanceof State) { return [local_state]; }
-			else { return []; }
+			return [local_state];
 		}
 	};
 	proto.get_active_states = function() {
@@ -283,10 +298,10 @@ var Statechart = function(options, defer_initialization) {
 				.map(function(substate) {
 					return ([substate]).concat(substate.get_active_states());
 				})
-				.flatten()
+				.flatten(true)
 				.value();
 	};
-	proto.get_substate_with_name = function(name) { return this.$substates.item(name); };
+	proto.get_substate_with_name = function(name) { return this.$substates.get(name); };
 	proto.has_substate_with_name = function(name) { return this.$substates.has(name); };
 	proto.find_state = function(state_name, create_superstates, state_value, index) {
 		if(state_name instanceof State) {
@@ -421,6 +436,8 @@ var Statechart = function(options, defer_initialization) {
 		_.forEach(this.get_substates(), function(substate) {
 			substate.destroy();
 		});
+		var start_state = this.get_start_state();
+		start_state.destroy();
 		cjs.signal();
 	};
 	proto.get_substate_names = function() {
@@ -439,7 +456,7 @@ var Statechart = function(options, defer_initialization) {
 		var state = this.find_state(state);
 		if(this === state) { return true; }
 		else {
-			var substates = this.get_substates();
+			var substates = this.get_substates(true);
 			return _.any(substates, function(substate) {
 				return substate.contains(state);
 			});
