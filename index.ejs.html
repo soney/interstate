@@ -83,7 +83,11 @@
 					*/
 					var sc = red.create("statechart")
 								.add_state("A")
-								.starts_at("A")
+								.add_state("B")
+								.starts_at("B")
+								.add_state("B.x")
+								.rename_state("B", "state b")
+								.reset()
 								.run();
 					console.log(sc.stringify());
 
