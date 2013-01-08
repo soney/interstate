@@ -82,15 +82,19 @@
 					console.log(env.print());
 					*/
 					var sc = red.create("statechart")
-								.add_state("A")
-								.add_state("B")
-								.starts_at("B")
-								.reset()
-								.run();
+								.add_state("A");
+					var shadow = sc.create_shadow(red.create("context"));
+
+					sc	.add_state("B")
+						.starts_at("B")
+						.reset()
+						.run();
+						shadow.run();
 					//console.log(red.serialize(sc));
 					//console.log(red.stringify(sc));
-					sc = red.destringify(red.stringify(sc)).run();
-					console.log(sc.stringify());
+					console.log(shadow.stringify());
+					window.sc = sc;
+					window.shadow = shadow;
 
 					var storage_prefix = "_";
 					window.save = function(name) {

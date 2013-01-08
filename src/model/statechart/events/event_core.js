@@ -36,7 +36,7 @@ var RedEvent = function() {
 		return new_transition;
 	};
 	proto.destroy = function(){};
-	proto.shadow = function() { return new RedEvent(); };
+	proto.create_shadow = function() { return new RedEvent(); };
 	proto.stringify = function() {
 		return "" + this.id;
 	};
