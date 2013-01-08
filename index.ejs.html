@@ -23,6 +23,7 @@
 					_ = red._;
 
 					red.__debug = false;
+					/*
 
 
 					env = red.create("environment");
@@ -71,6 +72,7 @@
 					console.log(stopwatch.stop());
 					*/
 					
+					/*
 					output_view = $("<div />").dom_output({
 						root: env.get_root()
 						, context: env.get_root_context()
@@ -78,6 +80,12 @@
 
 
 					console.log(env.print());
+					*/
+					var sc = red.create("statechart")
+								.add_state("A")
+								.starts_at("A")
+								.run();
+					console.log(sc.stringify());
 
 					var storage_prefix = "_";
 					window.save = function(name) {

@@ -17,7 +17,6 @@ var cjs = red.cjs, _ = red._;
 		}, this);
 	};
 	proto.on_change = function(event, to_state_name, from_state_name, statechart) {
-		event.owner = statechart.owner;
 		this.fire(event);
 	};
 }(red._create_event_type("statechart").prototype));

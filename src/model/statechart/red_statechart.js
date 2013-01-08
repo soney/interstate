@@ -87,11 +87,36 @@ var StatechartTransition = function(options, defer_initialization) {
 }(StatechartTransition));
 red.StatechartTransition = StatechartTransition;
 
-var StartState = function() {
-	this.outgoingTransition = new StatechartTransition();
+var BasicState = function(options) {
+};
+
+(function(my) {
+}(BasicState));
+
+var StartState = function(options) {
+	this._parent = options.parent;
+	var to = options.to || this;
+	this.outgoingTransition = new StatechartTransition({
+		from: this,
+		to: to,
+		event: red.create_event("statechart", this.parent(), "run")
+	});
 };
 (function(my) {
 	var proto = my.prototype;
+	proto.setTo = function(toNode) {
+		if(toNode.is_child_of(this.parent())) {
+			this.outgoingTransition.setTo(toNode);
+		}
+	};
+	proto.parent = function() { return this._parent; };
+	proto.root = function() { return this._parent.root(); };
+	proto.basis = function() { return this._basis; };
+	proto.set_parent = function(parent) { this._parent = parent; };
+	proto.set_context = function(context) { this._context = context; };
+	proto.get_context = function() { return this._context; };
+	proto.get_outgoing_transitions = function() { return [this.outgoingTransition]; };
+	proto.get_active_states = function() { return []; };
 }(StartState));
 
 var Statechart = function(options, defer_initialization) {
@@ -110,10 +135,13 @@ var Statechart = function(options, defer_initialization) {
 	var proto = my.prototype;
 
 	proto.do_initialize = function(options) {
-		this._start_state = new StartState();
+		this._start_state = new StartState({
+			parent: this,
+			to: options.start_at
+		});
 		this.$substates = options.substates || cjs.map();
-		this.$local_state = cjs();
-		this.$concurrent = cjs(false);
+		this.$local_state = cjs.$(this._start_state);
+		this.$concurrent = cjs.$(false);
 		this._running = false;
 		this._parent = options.parent;
 		this.$incoming_transitions = cjs.array(options.incoming_transitions || []);
@@ -139,6 +167,16 @@ var Statechart = function(options, defer_initialization) {
 	proto.get_outgoing_transitions = function() { return this.$outgoing_transitions.get(); };
 	proto.get_active_substate = function(substate) { return this.$local_state.get(); };
 	proto.is_running = function() { return this._running; };
+	proto.is_child_of = function(node) {
+		var curr_parent = this.parent();
+		while(curr_parent) {
+			if(curr_parent === node) {
+				return true;
+			}
+			curr_parent = curr_parent.parent();
+		}
+		return false;
+	};
 
 	proto.flatten_substates = function() {
 		return ([this]).concat(_.flatten(_.map(this.get_substates(), function(substate) {
@@ -178,7 +216,10 @@ var Statechart = function(options, defer_initialization) {
 			_.forEach(this.get_substates(), function(substate) {
 				substate.run();
 			});
-			this.set_active_substate(this.$init_state.get());
+			var run_listeners = this._listeners["run"];
+			_.each(run_listeners, function(listener) {
+				listener();
+			});
 		}
 		return this;
 	};
@@ -192,14 +233,14 @@ var Statechart = function(options, defer_initialization) {
 		}
 	};
 	proto.get_name_for_substate = function(substate) {
-		return this.$substates.keyForValue(substate);
+		return substate instanceof StartState ? "(start)" : this.$substates.keyForValue(substate);
 	};
 	proto.get_active_direct_substates = function() {
 		if(this.is_concurrent()) {
 			return this.get_substates();
 		} else {
 			var local_state = this.$local_state.get();
-			if(local_state instanceof Statechart) { return [local_state]; }
+			if(local_state instanceof Statechart || local_state instanceof StartState) { return [local_state]; }
 			else { return []; }
 		}
 	};
@@ -214,7 +255,7 @@ var Statechart = function(options, defer_initialization) {
 	proto.get_substate_with_name = function(name) { return this.$substates.item(name); };
 	proto.has_substate_with_name = function(name) { return this.$substates.has(name); };
 	proto.find_state = function(state_name, create_superstates, state_value, index) {
-		if(state_name instanceof Statechart) {
+		if(state_name instanceof Statechart || state_name instanceof StartState) {
 			return state_name;
 		} else if(_.isArray(state_name)) {
 			if(_.isEmpty(state_name)) {
@@ -345,6 +386,7 @@ var Statechart = function(options, defer_initialization) {
 	proto.is = function(state) {
 		state = this.find_state(state);
 		if(state) {
+		console.log(this.get_active_direct_substates());
 			return _.indexOf(this.get_active_states(), state) >= 0;
 		} else {
 			return false;
@@ -428,6 +470,7 @@ var Statechart = function(options, defer_initialization) {
 	proto.on_transition_fire = function(transition, event) {
 		if(this.is_running()) {
 			var from = transition.from();
+			console.log("RUNNING", from, this.is(from));
 			if(this.is(from)) {
 				var to = transition.to();
 				var to_lineage = to.get_lineage();
@@ -451,7 +494,7 @@ var Statechart = function(options, defer_initialization) {
 		return false;
 	};
 	proto.starts_at = function(state) {
-		this.$init_state.set(this.find_state(state));
+		this._start_state.setTo(this.find_state(state, false));
 		if(this.is_running() && this.get_active_substate() == null) {
 			this.set_active_substate(this.$init_state.get());
 		}
