@@ -17,7 +17,7 @@ var EventQueue = function() {
 		}
 	};
 	this.is_ready = function() {
-		return this.semaphore >= 0;
+		return semaphore >= 0;
 	};
 };
 (function(my) {
@@ -34,7 +34,7 @@ var EventQueue = function() {
 		}
 	};
 
-	proto.push = function() {
+	proto.push = function(context, args) {
 		this.queue.push({
 			context: context,
 			args: args
@@ -44,7 +44,7 @@ var EventQueue = function() {
 	proto.do_run_event_queue = function() {
 		var fire = RedEvent.prototype._fire;
 		while(this.queue.length > 0) {
-			var event_info = my.event_queue.shift();
+			var event_info = this.queue.shift();
 			fire.apply(event_info.context, event_info.args);
 		}
 	};
@@ -72,7 +72,7 @@ var RedEvent = function() {
 	};
 	proto.on_create = function() {};
 	proto.fire = function() {
-		if(red.event_queue.is_ready() < 0) {
+		if(red.event_queue.is_ready()) {
 			red.event_queue.push(this, arguments);
 		} else {
 			this._fire.apply(this, arguments);

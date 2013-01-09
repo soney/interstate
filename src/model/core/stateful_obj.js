@@ -29,8 +29,8 @@ var RedStatefulObj = function(options, defer_initialization) {
 
 		, "contextual_statecharts": {
 			default: function() { return cjs.map({
+				hash: "hash",
 				equals: red.check_context_equality
-				, hash: "hash"
 			}); }
 			, getter_name: "contextual_statecharts"
 			, settable: false
@@ -57,15 +57,14 @@ var RedStatefulObj = function(options, defer_initialization) {
 	proto._create_statechart_for_context = function(context) {
 		var own_statechart = this.get_own_statechart();
 		cjs.wait();
-		var shadow_statechart = own_statechart.create_shadow(context);//red._shadow_statechart(this.get_own_statechart(), context.last(), context);
-		this.contextual_statecharts().item(context, shadow_statechart);
+		var shadow_statechart = own_statechart.create_shadow(context);
 
 		shadow_statechart.run();
 		
+		/*
 		var sc_owner = context.last();
 		if(sc_owner instanceof my) {
 		//if(red.check_context_equality(this.get_default_context(), context)) {
-			var self = sc_owner;
 			shadow_statechart.on("*>-*", function(e, to_state_name) {
 				var to_state = shadow_statechart.find_state(to_state_name);
 				var event = sc_owner.get_event();
@@ -76,17 +75,17 @@ var RedStatefulObj = function(options, defer_initialization) {
 			shadow_statechart.owner = sc_owner;
 		}
 
-		var self = this;
 		shadow_statechart.on("* >- *", function(event, to_state, from_state, transition, statechart) {
-			var prop_names = self.get_prop_names(context);
+			var prop_names = this.get_prop_names(context);
 			for(var i = 0; i<prop_names.length; i++) {
 				var prop_name = prop_names[i];
-				var prop = self.get_prop(prop_name, context);
+				var prop = this.get_prop(prop_name, context);
 				if(prop instanceof red.RedStatefulProp) {
 					prop.on_transition_fire(context, transition);
 				}
 			}
-		});
+		}, this);
+		*/
 
 		cjs.signal();
 		return shadow_statechart;

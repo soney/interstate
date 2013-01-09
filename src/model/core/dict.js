@@ -32,6 +32,7 @@ var RedDict = function(options, defer_initialization) {
 
 	proto.do_initialize = function(options) {
 		red.install_instance_builtins(this, options, my);
+		this.direct_attachment_instances().set_hash("hash");
 	};
 
 	my.builtins = {
@@ -55,9 +56,7 @@ var RedDict = function(options, defer_initialization) {
 		}
 
 		, "direct_attachment_instances": {
-			default: function() { return cjs.map({
-				hash: "hash"
-			}); }
+			default: function() { return cjs.map(); }
 			, getter_name: "direct_attachment_instances"
 			, serialize: false
 		}

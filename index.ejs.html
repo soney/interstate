@@ -23,11 +23,13 @@
 					_ = red._;
 
 					red.__debug = false;
-					/*
 
 
 					env = red.create("environment");
 					root = env.get_pointer();
+					env.set("a", "stateful");
+					console.log(env.print());
+					/*
 					env.cd("children");
 					var children = env.get_pointer();
 					env.set("obj", "dict");
@@ -81,6 +83,7 @@
 
 					console.log(env.print());
 					*/
+					/*
 					var thediv = document.getElementById("mydiv");
 					var dict = red.create("dict").set("div", thediv);
 					var context = red.create("context", {stack: [dict]});
@@ -89,18 +92,20 @@
 					var shadow = sc.create_shadow(context);
 
 					sc	.add_state("INIT")
-						.starts_at("INIT")
-						.add_state("hover")
-						.add_transition("INIT", "hover", red.create_event("parsed", {str: "mouseover(div)", inert_super_event: true}))
+					//	.starts_at("INIT")
+					//	.add_state("hover")
+					//	.add_transition("INIT", "hover", red.create_event("parsed", {str: "mouseover(div)", inert_super_event: true}))
 						.run();
 
-					shadow.run();
+					//shadow.run();
 					//console.log(red.serialize(sc));
 					//console.log(red.stringify(sc));
 					console.log(sc.stringify());
-					console.log(shadow.stringify());
+					//console.log(shadow.stringify());
 					window.sc = sc;
 					window.shadow = shadow;
+					/*
+					*/
 
 					var storage_prefix = "_";
 					window.save = function(name) {

@@ -260,9 +260,9 @@ var Env = function(options) {
 						var state = state_spec.state;
 						if(state instanceof red.Statechart) {
 							rv = state.get_name(state.parent());
-							rv += " " + state.id;
+							rv += " " + state.id();
 							if(state.basis()) {
-								rv += "<-"+state.basis().id;
+								rv += "<-"+state.basis().id();
 							}
 							if(state_spec.active) {
 								rv = "* " + rv + " *";
@@ -287,7 +287,6 @@ var Env = function(options) {
 				} else if(value instanceof red.RedDict) {
 					var row = [prop_name + " - " + value.id, value_to_value_str(value_got), value_to_source_str(value)];
 					rows.push(row);
-
 
 					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);

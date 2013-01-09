@@ -640,11 +640,12 @@ var Statechart = function(options, defer_initialization) {
 	};
 	proto.starts_at = function(state) {
 		var start_at_state = this.find_state(state, false);
-		this.get_start_state().setTo(start_at_state);
-		if(this.is_running() && this.get_active_substate() == null) {
+		var start_state = this.get_start_state();
+		start_state.setTo(start_at_state);
+		if(this.is_running() && this.get_active_substate() === start_state) {
 			this.set_active_substate(start_at_state);
 		}
-		var start_change_listeners = this._listeners["starts_at"];
+		var start_change_listeners = this._listeners["**starts_at**"];
 		_.each(start_change_listeners, function(listener) {
 			listener(start_at_state);
 		});
@@ -704,7 +705,8 @@ var Statechart = function(options, defer_initialization) {
 			shadow.add_state(key, shadow_val, i);
 		});
 
-		this.on("starts_at", function(state) {
+		this.on("**starts_at**", function(state) {
+			console.log("SA");
 			var shadow_state = create_substate_shadow(state, true);
 			shadow.starts_at(shadow_state);
 		});

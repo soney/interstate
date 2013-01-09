@@ -13,9 +13,7 @@ var RedStatefulProp = function(options, defer_initialization) {
 	this.transitory_value = cjs();
 	this.id = _.uniqueId();
 
-	if(defer_initialization === true) {
-		//this.initialize = _.bind(this.do_initialize, this, options);
-	} else {
+	if(defer_initialization !== true) {
 		this.do_initialize(options);
 	}
 };
@@ -150,10 +148,8 @@ var RedStatefulProp = function(options, defer_initialization) {
 			});
 		}
 
-
 		return rv;
 	};
-
 
 	var get_value_for_state = function(state, stateful_prop, inherits_from) {
 		if(stateful_prop._has_direct_value_for_state(state)) {
@@ -186,6 +182,9 @@ var RedStatefulProp = function(options, defer_initialization) {
 			}
 		}
 		return this.transitory_value.get();
+	};
+	proto.hash = function() {
+		return this.id;
 	};
 
 	proto.serialize = function() {
