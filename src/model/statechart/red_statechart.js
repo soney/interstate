@@ -202,18 +202,22 @@ var StartState = function(options) {
 		this.outgoingTransition = options.outgoing_transition || new StatechartTransition({
 			from: this,
 			to: to,
-			event: red.create_event("statechart", this.parent(), "**run**")
+			event: red.create_event("statechart", this.parent(), "--run--")
 		});
 		to.add_direct_incoming_transition(this.outgoingTransition);
 	};
 	proto.setTo = function(toNode) {
-		var transition = this.outgoingTransition
+		var transition = this.outgoingTransition;
 		var old_to = transition.to();
 		old_to.remove_direct_incoming_transition(transition);
 		if(toNode.is_child_of(this.parent())) {
 			transition.setTo(toNode);
 			toNode.add_direct_incoming_transition(transition);
 		}
+	};
+	proto.getTo = function() {
+		var transition = this.outgoingTransition;
+		return transition.to();
 	};
 	proto.get_substates = function() { return []; };
 	proto.get_active_states = function() { return []; };
@@ -347,7 +351,7 @@ var Statechart = function(options, defer_initialization) {
 			var run_event = {
 				target: this
 			};
-			var run_listeners = this._listeners["**run**"];
+			var run_listeners = this._listeners["--run--"];
 			_.each(run_listeners, function(listener) {
 				listener(run_event)
 			});
@@ -365,7 +369,7 @@ var Statechart = function(options, defer_initialization) {
 		var stop_event = {
 			target: this
 		};
-		var stop_listeners = this._listeners["**stop**"];
+		var stop_listeners = this._listeners["--stop--"];
 		_.each(stop_listeners, function(listener) {
 			listener(stop_event);
 		});
@@ -645,7 +649,7 @@ var Statechart = function(options, defer_initialization) {
 		if(this.is_running() && this.get_active_substate() === start_state) {
 			this.set_active_substate(start_at_state);
 		}
-		var start_change_listeners = this._listeners["**starts_at**"];
+		var start_change_listeners = this._listeners["--starts_at--"];
 		_.each(start_change_listeners, function(listener) {
 			listener(start_at_state);
 		});
@@ -695,7 +699,8 @@ var Statechart = function(options, defer_initialization) {
 	proto.shadow_substates = function(context, create_substate_shadow, create_transition_shadow) {
 		cjs.wait();
 		var shadow = red.create("statechart", {}, false);
-		var shadow_start_state = this.get_start_state().create_shadow(shadow, context);
+		var my_start_state = this.get_start_state();
+		var shadow_start_state = my_start_state.create_shadow(shadow, context);
 		shadow.do_initialize({
 			basis: this,
 			start_state: shadow_start_state
@@ -705,15 +710,19 @@ var Statechart = function(options, defer_initialization) {
 			shadow.add_state(key, shadow_val, i);
 		});
 
-		this.on("**starts_at**", function(state) {
-			console.log("SA");
+		
+		var my_start_state_to = my_start_state.getTo();
+		if(my_start_state_to !== my_start_state) {
+			shadow_start_state.setTo(create_substate_shadow(my_start_state_to, true));
+		}
+
+		this.on("--starts_at--", function(state) {
 			var shadow_state = create_substate_shadow(state, true);
 			shadow.starts_at(shadow_state);
 		});
 
 		this.$substates.onPut(function(state, name, index) {
-			var shadow_val = create_substate_shadow(state, true);
-			shadow.add_state(name, shadow_val, index);
+			var shadow_val = create_substate_shadow(state, true); shadow.add_state(name, shadow_val, index);
 		});
 		this.$substates.onRemove(function(state, name, index) {
 			shadow.remove_state(name);
@@ -733,6 +742,7 @@ var Statechart = function(options, defer_initialization) {
 	proto.shadow_transitions = function(create_transition_shadow) {
 		var shadow = this;
 		var basis = shadow.basis();
+		console.log(shadow.id(), basis.id());
 		var shadow_incoming = _.map(basis.$incoming_transitions.get(), function(transition) {
 			var shadow_transition = create_transition_shadow(transition);
 			shadow_transition.setTo(shadow);

@@ -196,6 +196,8 @@ var Env = function(options) {
 				return val + "";
 			} else if(_.isString(val)) {
 				return '"' + val + '"';
+			} else if(_.isElement(val)) {
+				return "(dom)";
 			} else if(val instanceof red.RedStatefulObj) {
 				return "(stateful)";
 			} else if(val instanceof red.RedDict) {

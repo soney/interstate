@@ -25,9 +25,15 @@
 					red.__debug = false;
 
 
+					var thediv = document.getElementById("mydiv");
+
 					env = red.create("environment");
 					root = env.get_pointer();
+					env.set("elem", thediv);
 					env.set("a", "stateful");
+					env.cd("a");
+					env.add_state("hover");
+					env.add_transition("INIT", "hover", "mouseover(elem)");
 					console.log(env.print());
 					/*
 					env.cd("children");
