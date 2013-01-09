@@ -202,7 +202,7 @@ var StartState = function(options) {
 		this.outgoingTransition = options.outgoing_transition || new StatechartTransition({
 			from: this,
 			to: to,
-			event: red.create_event("statechart", this.parent(), "run")
+			event: red.create_event("statechart", this.parent(), "**run**")
 		});
 		to.add_direct_incoming_transition(this.outgoingTransition);
 	};
@@ -329,12 +329,22 @@ var Statechart = function(options, defer_initialization) {
 			}
 		});
 		var fsm = this;
+
+		var step_listener_names = ["**transition_step_0**", "**transition_step_1**", "**transition_step_2**", "**transition_step_3**"];
+		
+		var step_listeners = _.map(step_listener_names, function(name) { return this._listeners[name]; }, this);
+
+		_.each(step_listeners[0], function(listener) { listener(); });
 		_.each(pre_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, transition, fsm); });
+		_.each(step_listeners[1], function(listener) { listener(); });
 		this.$local_state.set(state);
+		_.each(step_listeners[2], function(listener) { listener(); });
 		_.each(post_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, transition, fsm); });
+		_.each(step_listeners[3], function(listener) { listener(); });
 	};
 	proto.run = function() {
 		if(!this.is_running()) {
+			red.RedEvent.wait();
 			this._running = true;
 			_.forEach(this.get_substates(), function(substate) {
 				substate.run();
@@ -342,23 +352,29 @@ var Statechart = function(options, defer_initialization) {
 			var run_event = {
 				target: this
 			};
-			var run_listeners = this._listeners["run"];
+			var run_listeners = this._listeners["**run**"];
 			_.each(run_listeners, function(listener) {
 				listener(run_event)
 			});
+			red.RedEvent.signal();
 		}
 		return this;
 	};
 	proto.stop = function() {
+		red.RedEvent.wait();
 		this._running = false;
 		this.$local_state.set(this._start_state);
 		_.forEach(this.get_substates(), function(substate) {
 			substate.stop();
 		});
-		var stop_listeners = this._listeners["stop"];
+		var stop_event = {
+			target: this
+		};
+		var stop_listeners = this._listeners["**stop**"];
 		_.each(stop_listeners, function(listener) {
-			listener();
+			listener(stop_event);
 		});
+		red.RedEvent.signal();
 		return this;
 	};
 	proto.reset = function() {

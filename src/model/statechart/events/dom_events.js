@@ -21,14 +21,12 @@ var cjs = red.cjs, _ = red._;
 		this.add_listener();
 	};
 	proto.add_listener = function() {
-		this.target.addEventListener(this.type, this.fire);
-		var self = this;
-		this.target.addEventListener(this.type, function() {
-			console.log(self.type, arguments);
-		});
+		this.target.addEventListener(this.type, red.RedEvent.wait, true); // Capture
+		this.target.addEventListener(this.type, this.$fire_and_signal, false); // Bubble
 	};
 	proto.remove_listener = function() {
-		this.target.removeEventListener(this.type, this.fire);
+		this.target.removeEventListener(this.type, red.RedEvent.wait, true); // Capture
+		this.target.removeEventListener(this.type, this.$fire_and_signal, false); // Bubble
 	};
 	proto.destroy = function() {
 		this.remove_listener();
