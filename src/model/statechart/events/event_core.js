@@ -3,17 +3,49 @@ var cjs = red.cjs, _ = red._;
 
 var EventQueue = function() {
 	able.make_this_listenable(this);
-	this.semaphore = 0;
+
+	this.queue = [];
+	this.running_event_queue = false;
+
+	var semaphore = 0;
+	this.wait = function() {
+		semaphore--;
+	};
+	this.signal = function() {
+		if(++semaphore >= 0) {
+			this.run_event_queue();
+		}
+	};
+	this.is_ready = function() {
+		return this.semaphore >= 0;
+	};
 };
 (function(my) {
 	var proto = my.prototype;
 	able.make_proto_listenable(proto);
-	proto.wait = function() {
-		this.semaphore--;
+
+	proto.run_event_queue = function() {
+		if(this.running_event_queue === false) {
+			this.running_event_queue = true;
+			this._emit("begin_event_queue");
+			this.do_run_event_queue();
+			this._emit("end_event_queue");
+			this.running_event_queue = false;
+		}
 	};
-	proto.signal = function() {
-		this.semaphore++;
-		if(this.semaphore > 0) {
+
+	proto.push = function() {
+		this.queue.push({
+			context: context,
+			args: args
+		});
+	};
+
+	proto.do_run_event_queue = function() {
+		var fire = RedEvent.prototype._fire;
+		while(this.queue.length > 0) {
+			var event_info = my.event_queue.shift();
+			fire.apply(event_info.context, event_info.args);
 		}
 	};
 }(EventQueue));
@@ -36,12 +68,12 @@ var RedEvent = function() {
 	};
 	proto.fire_and_signal = function() {
 		this.fire.apply(this, arguments);
-		this.signal();
+		red.event_queue.signal();
 	};
 	proto.on_create = function() {};
 	proto.fire = function() {
-		if(my.semaphore < 0) {
-			my.append_event_queue(this, arguments);
+		if(red.event_queue.is_ready() < 0) {
+			red.event_queue.push(this, arguments);
 		} else {
 			this._fire.apply(this, arguments);
 		}
@@ -70,34 +102,8 @@ var RedEvent = function() {
 	proto.stringify = function() {
 		return "" + this.id;
 	};
-
-	my.event_queue = [];
-
-	my.semaphore = 0;
-	my.wait = function() {
-		my.semaphore--;
-	};
-	my.signal = function() {
-		my.semaphore++;
-		if(my.semaphore >= 0) {
-			my.run_event_queue();
-		}
-	};
-	my.append_event_queue = function(context, args) {
-		my.event_queue.push({
-			context: context,
-			args: args
-		});
-	};
-	my.run_event_queue = function() {
-		var fire = proto._fire;
-		while(my.event_queue.length > 0) {
-			var event_info = my.event_queue.shift();
-			fire.apply(event_info.context, event_info.args);
-		}
-	};
 }(RedEvent));
-red.RedEvent = RedEvent;
+red.event_queue = new EventQueue();
 
 
 var event_types = {};

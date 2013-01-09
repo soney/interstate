@@ -81,17 +81,23 @@
 
 					console.log(env.print());
 					*/
-					var sc = red.create("statechart")
-								.add_state("A");
-					var shadow = sc.create_shadow(red.create("context"));
+					var thediv = document.getElementById("mydiv");
+					var dict = red.create("dict").set("div", thediv);
+					var context = red.create("context", {stack: [dict]});
 
-					sc	.add_state("B")
-						.starts_at("B")
-						.reset()
+					var sc = red.create("statechart");
+					var shadow = sc.create_shadow(context);
+
+					sc	.add_state("INIT")
+						.starts_at("INIT")
+						.add_state("hover")
+						.add_transition("INIT", "hover", red.create_event("parsed", {str: "mouseover(div)", inert_super_event: true}))
 						.run();
-						shadow.run();
+
+					shadow.run();
 					//console.log(red.serialize(sc));
 					//console.log(red.stringify(sc));
+					console.log(sc.stringify());
 					console.log(shadow.stringify());
 					window.sc = sc;
 					window.shadow = shadow;
@@ -142,5 +148,6 @@
 				});
 			</script>
 	  </div>
+	  <div id="mydiv" style="width:150px;height:150px;background-color:red;"></div>
   </body>
 </html>

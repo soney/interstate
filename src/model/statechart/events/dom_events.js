@@ -21,11 +21,11 @@ var cjs = red.cjs, _ = red._;
 		this.add_listener();
 	};
 	proto.add_listener = function() {
-		this.target.addEventListener(this.type, red.RedEvent.wait, true); // Capture
+		this.target.addEventListener(this.type, red.event_queue.wait, true); // Capture
 		this.target.addEventListener(this.type, this.$fire_and_signal, false); // Bubble
 	};
 	proto.remove_listener = function() {
-		this.target.removeEventListener(this.type, red.RedEvent.wait, true); // Capture
+		this.target.removeEventListener(this.type, red.event_queue.wait, true); // Capture
 		this.target.removeEventListener(this.type, this.$fire_and_signal, false); // Bubble
 	};
 	proto.destroy = function() {

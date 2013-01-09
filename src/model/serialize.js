@@ -72,7 +72,7 @@ red.serialize = function(obj) {
 };
 
 var serialize_array = function(arr) {
-	var serialized_values = _.map(arr.get(), function(x) {
+	var serialized_values = _.map(arr.toArray(), function(x) {
 		return red.serialize(x);
 	});
 

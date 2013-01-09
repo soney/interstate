@@ -296,8 +296,8 @@ var Statechart = function(options, defer_initialization) {
 		}
 	};
 	proto.get_start_state = function() { return this._start_state; };
-	proto.get_incoming_transitions = function() { return this.$incoming_transitions.get(); };
-	proto.get_outgoing_transitions = function() { return this.$outgoing_transitions.get(); };
+	proto.get_incoming_transitions = function() { return this.$incoming_transitions.toArray(); };
+	proto.get_outgoing_transitions = function() { return this.$outgoing_transitions.toArray(); };
 	proto.get_active_substate = function(substate) { return this.$local_state.get(); };
 	proto.is_running = function() { return this._running; };
 
@@ -330,21 +330,16 @@ var Statechart = function(options, defer_initialization) {
 		});
 		var fsm = this;
 
-		var step_listener_names = ["**transition_step_0**", "**transition_step_1**", "**transition_step_2**", "**transition_step_3**"];
-		
-		var step_listeners = _.map(step_listener_names, function(name) { return this._listeners[name]; }, this);
-
-		_.each(step_listeners[0], function(listener) { listener(); });
 		_.each(pre_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, transition, fsm); });
-		_.each(step_listeners[1], function(listener) { listener(); });
-		this.$local_state.set(state);
-		_.each(step_listeners[2], function(listener) { listener(); });
-		_.each(post_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, transition, fsm); });
-		_.each(step_listeners[3], function(listener) { listener(); });
+
+		red.event_queue.once("end_event_queue", function() {
+			this.$local_state.set(state);
+			_.each(post_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, transition, fsm); });
+		}, this);
 	};
 	proto.run = function() {
 		if(!this.is_running()) {
-			red.RedEvent.wait();
+			red.event_queue.wait();
 			this._running = true;
 			_.forEach(this.get_substates(), function(substate) {
 				substate.run();
@@ -356,12 +351,12 @@ var Statechart = function(options, defer_initialization) {
 			_.each(run_listeners, function(listener) {
 				listener(run_event)
 			});
-			red.RedEvent.signal();
+			red.event_queue.signal();
 		}
 		return this;
 	};
 	proto.stop = function() {
-		red.RedEvent.wait();
+		red.event_queue.wait();
 		this._running = false;
 		this.$local_state.set(this._start_state);
 		_.forEach(this.get_substates(), function(substate) {
@@ -374,7 +369,7 @@ var Statechart = function(options, defer_initialization) {
 		_.each(stop_listeners, function(listener) {
 			listener(stop_event);
 		});
-		red.RedEvent.signal();
+		red.event_queue.signal();
 		return this;
 	};
 	proto.reset = function() {

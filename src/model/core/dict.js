@@ -38,7 +38,7 @@ var RedDict = function(options, defer_initialization) {
 		"direct_protos": {
 			default: function() { return cjs.array(); }
 			, getter_name: "direct_protos"
-			, setter_name: "_set_direct_protos"
+			, prop_val: "_set_direct_protos"
 			, env_visible: true
 			, env_name: "protos"
 		}
@@ -149,9 +149,11 @@ var RedDict = function(options, defer_initialization) {
 
 	proto.set = proto.set_prop = proto._set_direct_prop = function(name, value, index) {
 		this.direct_props().item(name, value, index);
+		return this;
 	};
 	proto.unset = proto.unset_prop = proto._unset_direct_prop = function(name) {
 		this.direct_props().remove(name);
+		return this;
 	};
 	proto._get_direct_prop = function(name) {
 		return this.direct_props().item(name);
@@ -161,6 +163,7 @@ var RedDict = function(options, defer_initialization) {
 	};
 	proto.move = proto.move_prop = proto._move_direct_prop = function(name, to_index) {
 		this.direct_props().move(name, to_index);
+		return this;
 	};
 	proto.index = proto.prop_index = proto._direct_prop_index = function(name) {
 		return this.direct_props().keyIndex(name);
