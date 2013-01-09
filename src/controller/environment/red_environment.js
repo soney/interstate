@@ -250,7 +250,7 @@ var Env = function(options) {
 				if(value === pointer) { prop_name = "> " + prop_name; }
 				else { prop_name = "  " + prop_name; }
 
-				var value_got = red.get_contextualizable(value, dictified_context.push(value));
+				var value_got = red.get_contextualizable(value, dictified_context);
 				value_got = cjs.get(value_got);
 
 				if(value instanceof red.RedStatefulObj) {
@@ -293,7 +293,7 @@ var Env = function(options) {
 					var tablified_values = tablify_dict(value, indentation_level + 2, dictified_context);
 					rows.push.apply(rows, tablified_values);
 				} else if(value instanceof red.RedStatefulProp) {
-					var value_specs = value.get_value_specs(dictified_context.push(value));
+					var value_specs = value.get_value_specs(dictified_context);
 					var row = [prop_name + " - " + value.id, value_to_value_str(value_got)];
 
 					var value_strs = _.map(value_specs, function(value_spec) {

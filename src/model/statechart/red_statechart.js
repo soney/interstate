@@ -3,9 +3,9 @@ var cjs = red.cjs, _ = red._;
 
 var StatechartTransition = function(options, defer_initialization) {
 	able.make_this_listenable(this);
-	if(defer_initialization === true) {
-		//this.initialize = _.bind(this.do_initialize, this, options);
-	} else {
+	this.$remove = _.bind(this.remove, this);
+	this.$destroy = _.bind(this.destroy, this);
+	if(defer_initialization !== true) {
 		this.do_initialize(options);
 	}
 };
@@ -14,44 +14,69 @@ var StatechartTransition = function(options, defer_initialization) {
 	able.make_proto_listenable(proto);
 	proto.do_initialize = function(options) {
 		this._from_state = options.from;
-		if(!options.from) debugger;
 		this._to_state = options.to;
+		this.set_basis(options.basis);
 		this._id = _.uniqueId();
-		this._basis = options.basis;
-		this.do_run = _.bind(this.run, this);
+		this.do_fire = _.bind(this.fire, this);
 		this.set_event(options.event);
+	};
+	proto.basis = function() { return this._basis; };
+	proto.set_basis = function(basis) {
+		if(this._basis) {
+			this._basis.off("remove", this.$remove);
+			this._basis.off("destroy", this.$destroy);
+		}
+		this._basis = basis;
+		if(this._basis) {
+			this._basis.on("remove", this.$remove);
+			this._basis.on("destroy", this.$destroy);
+		}
+		return this;
 	};
 	proto.id = function() { return this._id; }
 	proto.from = function() { return this._from_state; }; 
 	proto.to = function() { return this._to_state; };
-	proto.setFrom = function(state) { this._from_state = state; };
-	proto.setTo = function(state) { this._to_state = state; };
+	proto.setFrom = function(state) {
+		this._from_state._remove_direct_outgoing_transition(this);
+		this._from_state = state;
+		this._from_state._add_direct_incoming_transition(this);
+		return this;
+	};
+	proto.setTo = function(state) {
+		this._to_state._remove_direct_outgoing_transition(this);
+		this._to_state = state;
+		this._to_state._add_direct_incoming_transition(this);
+		return this;
+	};
 	proto.set_event = function(event) {
 		if(this._event) {
-			this._event.off_fire(this.do_run);
+			this._event.off_fire(this.do_fire);
 			this._event.destroy();
 		}
 		this._event = event;
 		if(this._event) {
 			this._event.set_transition(this);
-			this._event.on_fire(this.do_run);
+			this._event.on_fire(this.do_fire);
 		}
 	};
 	proto.event = function() { return this._event; };
 	proto.involves = function(state) { return this.from() === state || this.to() === state; };
-	proto.basis = function() { return this._basis; };
+	proto.root_basis = function() {
+		var my_basis = this.basis();
+		if(my_basis) {
+			return my_basis.root_basis();
+		} else {
+			return this;
+		}
+	};
 	proto.destroy = function() {
-		this._event.off_fire(this.do_run);
+		this._event.off_fire(this.do_fire);
 		this._event.destroy();
+		this._emit("destroy", {target: this});
 	};
-	proto.get_parent_statechart = function() {
-		var from = this.from();
-		return from.root();
-	};
-	proto.run = function(event) {
-		var statechart = this.get_parent_statechart();
-		if(statechart.on_transition_fire(this, event)) {
-			this._emit("fired", {transition: this, statechart: statechart});
+	proto.fire = function() {
+		if(this.from().on_outgoing_transition_fire.apply(this, arguments)) {
+			this._emit("fire", {transition: this});
 		}
 	};
 	proto.create_shadow = function(from_state, to_state, parent_statechart, context) {
@@ -67,8 +92,18 @@ var StatechartTransition = function(options, defer_initialization) {
 	};
 	proto.remove = function() {
 		var from = this.from();
-		var parent = from.parent() || from;
-		parent.remove_transition(this);
+		var to = this.to();
+		cjs.wait();
+		from._remove_direct_outgoing_transition(this);
+		to._remove_direct_incoming_transition(this);
+		cjs.signal();
+		this._emit("remove", {transition: this});
+	};
+
+	proto.get_state_based_on = function(basis_state, derived_child) {
+		var parent = my_child.parent();
+		return parent.
+		
 	};
 
 	proto.serialize = function() {
@@ -87,6 +122,7 @@ var StatechartTransition = function(options, defer_initialization) {
 	};
 }(StatechartTransition));
 red.StatechartTransition = StatechartTransition;
+/*
 
 var State = function(options, defer_initialization) {
 	options = options || {};
@@ -204,15 +240,12 @@ var StartState = function(options) {
 			to: to,
 			event: red.create_event("statechart", this.parent(), "--run--")
 		});
-		to.add_direct_incoming_transition(this.outgoingTransition);
+		to._add_direct_incoming_transition(this.outgoingTransition);
 	};
 	proto.setTo = function(toNode) {
 		var transition = this.outgoingTransition;
-		var old_to = transition.to();
-		old_to.remove_direct_incoming_transition(transition);
 		if(toNode.is_child_of(this.parent())) {
 			transition.setTo(toNode);
-			toNode.add_direct_incoming_transition(transition);
 		}
 	};
 	proto.getTo = function() {
@@ -225,8 +258,10 @@ var StartState = function(options) {
 	proto.get_incoming_transitions = function() { 
 		return this.outgoingTransition.to() === this ? [this.outgoingTransition] : [];
 	};
-	proto.add_direct_incoming_transition = function() {};
-	proto.remove_direct_incoming_transition = function() {};
+	proto._add_direct_incoming_transition = function() {};
+	proto._remove_direct_incoming_transition = function() {};
+	proto._add_direct_outgoing_transition = function() {};
+	proto._remove_direct_outgoing_transition = function() {};
 	proto.is_running = function() { return false; };
 	proto.run = function() {};
 	proto.destroy = function() {
@@ -281,12 +316,6 @@ var Statechart = function(options, defer_initialization) {
 		this._parent = options.parent;
 		this.$incoming_transitions = cjs.array(options.incoming_transitions || []);
 		this.$outgoing_transitions = cjs.array(options.outgoing_transitions || []);
-		/*
-		red._set_descriptor(this.$outgoing_transitions.$value, "outgoing transitions " + this.id);
-		red._set_descriptor(this.$incoming_transitions.$value, "incoming transitions " + this.id);
-		red._set_descriptor(this.$substates._keys, "substates keys " + this.id);
-		red._set_descriptor(this.$substates._values, "substates values " + this.id);
-		*/
 	};
 
 	proto.is_concurrent = function() { return this.$concurrent.get(); };
@@ -584,8 +613,8 @@ var Statechart = function(options, defer_initialization) {
 			transition = new StatechartTransition({from: from_state, to: to_state, event: event});
 			this._last_transition  = transition;
 		}
-		from_state.add_direct_outgoing_transition(transition);
-		to_state.add_direct_incoming_transition(transition);
+		from_state._add_direct_outgoing_transition(transition);
+		to_state._add_direct_incoming_transition(transition);
 
 		return this;
 	};
@@ -599,23 +628,31 @@ var Statechart = function(options, defer_initialization) {
 			return transition.from() === from;
 		});
 	};
-	proto.remove_transition = function(transition) {
-		transition.from().remove_direct_outgoing_transition(transition);
-		transition.to().remove_direct_incoming_transition(transition);
+	proto._add_direct_outgoing_transition = function(transition, index) {
+		if(_.isNumber(index)) {
+			this.$outgoing_transitions.splice(index, 0, transition);
+		} else {
+			this.$outgoing_transitions.push(transition);
+		}
 	};
-	proto.add_direct_outgoing_transition = function(transition) {
-		this.$outgoing_transitions.push(transition);
+	proto._add_direct_incoming_transition = function(transition, index) {
+		if(_.isNumber(index)) {
+			this.$incoming_transitions.splice(index, 0, transition);
+		} else {
+			this.$incoming_transitions.push(transition);
+		}
 	};
-	proto.add_direct_incoming_transition = function(transition) {
-		this.$incoming_transitions.push(transition);
-	};
-	proto.remove_direct_outgoing_transition = function(transition) {
+	proto._remove_direct_outgoing_transition = function(transition) {
 		var index = this.$outgoing_transitions.indexOf(transition);
-		this.$outgoing_transitions.splice(index, 1);
+		if(index >= 0) {
+			this.$outgoing_transitions.splice(index, 1);
+		}
 	};
-	proto.remove_direct_incoming_transition = function(transition) {
+	proto._remove_direct_incoming_transition = function(transition) {
 		var index = this.$incoming_transitions.indexOf(transition);
-		this.$incoming_transitions.splice(index, 1);
+		if(index >= 0) {
+			this.$incoming_transitions.splice(index, 1);
+		}
 	};
 	proto.on_transition_fire = function(transition, event) {
 		if(this.is_running()) {
@@ -710,7 +747,6 @@ var Statechart = function(options, defer_initialization) {
 			shadow.add_state(key, shadow_val, i);
 		});
 
-		
 		var my_start_state_to = my_start_state.getTo();
 		if(my_start_state_to !== my_start_state) {
 			shadow_start_state.setTo(create_substate_shadow(my_start_state_to, true));
@@ -742,11 +778,9 @@ var Statechart = function(options, defer_initialization) {
 	proto.shadow_transitions = function(create_transition_shadow) {
 		var shadow = this;
 		var basis = shadow.basis();
-		console.log(shadow.id(), basis.id());
-		var shadow_incoming = _.map(basis.$incoming_transitions.get(), function(transition) {
+		var shadow_incoming = _.map(basis.$incoming_transitions.toArray(), function(transition) {
 			var shadow_transition = create_transition_shadow(transition);
 			shadow_transition.setTo(shadow);
-			shadow.add_direct_incoming_transition(shadow_transition);
 			return shadow_transition;
 		});
 		basis.$incoming_transitions.onRemove(function(transition, index) {
@@ -758,12 +792,12 @@ var Statechart = function(options, defer_initialization) {
 		basis.$incoming_transitions.onAdd(function(transition, index) {
 			var shadow_transition = create_transition_shadow(transition);
 			shadow_incoming.splice(index, 0, shadow_transition);
-			shadow.add_direct_incoming_transition(shadow_transition);
+			shadow._add_direct_incoming_transition(shadow_transition);
 		});
-		var shadow_outgoing = _.map(basis.$outgoing_transitions.get(), function(transition) {
+		var shadow_outgoing = _.map(basis.$outgoing_transitions.toArray(), function(transition) {
 			var shadow_transition = create_transition_shadow(transition);
 			shadow_transition.setFrom(shadow);
-			shadow.add_direct_outgoing_transition(shadow_transition);
+			shadow._add_direct_outgoing_transition(shadow_transition);
 			return shadow_transition;
 		});
 		basis.$outgoing_transitions.onRemove(function(transition, index) {
@@ -775,7 +809,7 @@ var Statechart = function(options, defer_initialization) {
 		basis.$outgoing_transitions.onAdd(function(transition, index) {
 			var shadow_transition = create_transition_shadow(transition);
 			shadow_outgoing.splice(index, 0, shadow_transition);
-			shadow.add_direct_outgoing_transition(shadow_transition);
+			shadow._add_direct_outgoing_transition(shadow_transition);
 		});
 
 		_.forEach(shadow.get_substates(), function(shadow_substate) {
@@ -855,5 +889,6 @@ red.define("statechart", function(options) {
 red.is_statechart = function(obj) {
 	return obj instanceof Statechart;
 };
+*/
 
 }(red));
