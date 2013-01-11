@@ -7,21 +7,36 @@ red.StatechartEvent = StatechartEvent;
 (function(my) {
 	var proto = my.prototype;
 	proto.on_create = function(statecharts, spec) {
-		if(!_.isArray(statecharts)) { statecharts = [statecharts]; }
-		this.statecharts = statecharts;
 		this._spec = spec;
 		this.$on_change = _.bind(this.on_change, this);
-		_.each(this.statecharts, function(statechart) {
-			statechart.on(this._spec, this.$on_change);
-		}, this);
+		this.set_statecharts(statecharts);
 	};
 	proto.destroy = function() {
 		_.each(this.statecharts, function(statechart) {
-			statechart.off(this._spec, this.$on_change);
+			if(statechart) {
+				statechart.off(this._spec, this.$on_change);
+			}
 		}, this);
 	};
 	proto.on_change = function(event, to_state_name, from_state_name, statechart) {
 		this.fire(event);
+	};
+	proto.set_statecharts = function(statecharts) {
+		_.each(this.statecharts, function(statechart) {
+			if(statechart) {
+				statechart.off(this._spec, this.$on_change);
+			}
+		}, this);
+
+		if(!_.isArray(statecharts)) {
+			statecharts = [statecharts];
+		}
+		this.statecharts = statecharts;
+		_.each(this.statecharts, function(statechart) {
+			if(statechart) {
+				statechart.on(this._spec, this.$on_change);
+			}
+		}, this);
 	};
 	proto.serialize = function() {
 		return {
