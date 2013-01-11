@@ -5282,12 +5282,14 @@ if ( document.querySelectorAll ) {
 				// on a disconnected node (IE 9)
 				disconnectedMatch = matches.call( div, "div" );
 
+				/*
 				// This should fail with an exception
 				// Gecko does not error, returns false instead
 				try {
 					matches.call( div, "[test!='']:sizzle" );
 					rbuggyMatches.push( "!=", pseudos );
 				} catch ( e ) {}
+				*/
 			});
 
 			// rbuggyMatches always contains :active and :focus, so no need for a length check
