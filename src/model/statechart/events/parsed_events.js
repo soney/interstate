@@ -179,7 +179,11 @@ var id  = 0;
 	proto.get_str = function() { return this._str.get(); };
 	proto.set_str = function(str) { this._str.set(str); };
 	proto.create_shadow = function(parent_statechart, context) { return red.create_event("parsed", {str: this._str, context: context}); };
-	proto.destroy = function() { this._live_event_creator.destroy(); };
+	proto.destroy = function() {
+		if(this._live_event_creator) {
+			this._live_event_creator.destroy();
+		}
+	};
 	proto.stringify = function() { return "'" + this.get_str() + "'"; };
 	proto.serialize = function() { return { str: this.get_str() }; };
 	my.deserialize = function(obj) { return red.create_event("parsed", obj.str); };

@@ -143,6 +143,7 @@ var StatechartTransition = function(options, defer_initialization) {
 		to._remove_direct_incoming_transition(this);
 		cjs.signal();
 		this._emit("remove", {transition: this});
+		return this;
 	};
 
 	proto.serialize = function() {
@@ -168,7 +169,7 @@ var State = function(options, defer_initialization) {
 	this._id = _.uniqueId();
 
 	this.$onBasisAddTransition = _.bind(function(event) {
-		var transition = event.target;
+		var transition = event.transition;
 		var new_from = find_equivalent_state(transition.from(), this);
 		var new_to = find_equivalent_state(transition.to(), this);
 		this.add_transition(transition.create_shadow(new_from, new_to, this, this.context()));
@@ -397,8 +398,9 @@ var StartState = function(options) {
 	};
 	proto.create_shadow = function(parent, context) {
 		var shadow = new StartState({
-			parent: parent,
 			basis: this,
+			parent: parent,
+			outgoing_transition: this.outgoingTransition.create_shadow(parent, context)
 		});
 		return shadow;
 	};
@@ -556,8 +558,20 @@ var Statechart = function(options, defer_initialization) {
 				.flatten(true)
 				.value();
 	};
-	proto.get_substate_with_name = function(name) { return this.$substates.get(name); };
-	proto.has_substate_with_name = function(name) { return this.$substates.has(name); };
+	proto.get_substate_with_name = function(name) {
+		if(name === "(start)") {
+			return this.get_start_state();
+		} else {
+			return this.$substates.get(name);
+		}
+	};
+	proto.has_substate_with_name = function(name) {
+		if(name === "(start)") {
+			return true;
+		} else {
+			return this.$substates.has(name);
+		}
+	};
 	proto.find_state = function(state_name, create_superstates, state_value, index) {
 		if(state_name instanceof State) {
 			return state_name;
@@ -777,7 +791,7 @@ var Statechart = function(options, defer_initialization) {
 		from_state._add_direct_outgoing_transition(transition);
 		to_state._add_direct_incoming_transition(transition);
 
-		this.emit("add_transition", {
+		this._emit("add_transition", {
 			target: this,
 			transition: transition
 		});
@@ -832,7 +846,7 @@ var Statechart = function(options, defer_initialization) {
 
 	proto.create_shadow = function(options) {
 		return new Statechart(_.extend({
-			basis: this
+			basis: this,
 		}, options));
 	};
 	/*

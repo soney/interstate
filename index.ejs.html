@@ -95,15 +95,13 @@
 					//var context = red.create("context", {stack: [dict]});
 
 					var sc = red.create("statechart");
-					var shadow = sc.create_shadow(red.create("context"));
+					var shadow = sc.create_shadow({context: red.create("context")});
 
 					sc	.add_state("INIT")
-						.add_state("a.b.c.d")
-						.add_state("a.x")
-						.add_state("a.y");
-					//	.starts_at("INIT")
+						.add_state("hover")
+						.add_transition("INIT", "hover", red.create_event("parsed", {str: "mouseover(div)", inert_super_event: true}))
+						.starts_at("INIT")
 					//	.add_state("hover")
-					//	.add_transition("INIT", "hover", red.create_event("parsed", {str: "mouseover(div)", inert_super_event: true}))
 					//	.run();
 
 					//shadow.run();
@@ -115,7 +113,7 @@
 					console.log(shadow.stringify());
 					//console.log(shadow.stringify());
 					window.sc = sc;
-					//window.shadow = shadow;
+					window.shadow = shadow;
 					/*
 					*/
 
