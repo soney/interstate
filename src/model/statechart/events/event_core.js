@@ -27,9 +27,19 @@ var EventQueue = function() {
 	proto.run_event_queue = function() {
 		if(this.running_event_queue === false) {
 			this.running_event_queue = true;
-			this._emit("begin_event_queue");
+			this._emit("begin_event_queue", {
+				type: "begin_event_queue",
+				target: this
+			});
 			this.do_run_event_queue();
-			this._emit("end_event_queue");
+			this._emit("end_event_queue", {
+				type: "end_event_queue",
+				target: this
+			});
+			this._emit("event_cycle_completed", {
+				type: "event_cycle_completed",
+				target: this
+			});
 			this.running_event_queue = false;
 		}
 	};
@@ -73,9 +83,9 @@ var RedEvent = function() {
 	proto.on_create = function() {};
 	proto.fire = function() {
 		if(red.event_queue.is_ready()) {
-			red.event_queue.push(this, arguments);
-		} else {
 			this._fire.apply(this, arguments);
+		} else {
+			red.event_queue.push(this, arguments);
 		}
 	};
 	proto.on_fire = proto.add_listener = function(listener) { this.listeners.push(listener); };

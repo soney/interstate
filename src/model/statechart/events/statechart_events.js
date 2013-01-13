@@ -32,6 +32,7 @@ red.StatechartEvent = StatechartEvent;
 			statecharts = [statecharts];
 		}
 		this.statecharts = statecharts;
+
 		_.each(this.statecharts, function(statechart) {
 			if(statechart) {
 				statechart.on(this._spec, this.$on_change);
