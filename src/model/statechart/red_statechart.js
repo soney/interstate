@@ -46,30 +46,30 @@ var matches_name = function(statechart, states, state) {
 	}
 };
 
-var add_transition_listener = function(str, statechart, user_listener, context) {
+var add_transition_listener = function(str, statechart, activation_listener, deactivation_listener, context) {
 	context = context || this;
 	var listener_info = get_state_listener_info(str);
 	var type = listener_info.type;
+	var event_type, listener;
 	if(type === "state") {
-		var event_type = "post_transition_fire";
-		var listener = function(event) {
+		event_type = "post_transition_fire";
+		var activated = false;
+		listener = function(event) {
 			var state = event.state;
 			if(matches_name(statechart, listener_info.states, event.state)) {
+				activated = true;
 				var listener_args = arguments;
 				red.event_queue.once("event_cycle_completed", function() {
-					user_listener.apply(context, listener_args);
+					activation_listener.apply(context, listener_args);
 				});
+			} else if(activated === true) {
+				activated = false;
+				deactivation_listener.apply(context, listener_args);
 			}
 		};
-		statechart.on(event_type, listener);
-		return {
-			destroy: function() { statechart.off(event_type, listener); },
-			user_listener: user_listener
-		};
 	} else if(type === "transition") {
-		var event_type = listener_info.pre ? "pre_transition_fire" : "post_transition_fire";
-
-		var listener = function(event) {
+		event_type = listener_info.pre ? "pre_transition_fire" : "post_transition_fire";
+		listener = function(event) {
 			var transition = event.transition,
 				from = transition.from(),
 				to = transition.to();
@@ -79,17 +79,35 @@ var add_transition_listener = function(str, statechart, user_listener, context) 
 						(listener_info.bidirectional && 
 								matches_name(statechart, listener_info.to, from) && 
 								matches_name(statechart, listener_info.from, to))) {
-				user_listener.apply(context, arguments);
+
+				var listener_args = arguments;
+				activation_listener.apply(context, listener_args);
+
+				if(listener_info.pre) {
+					var post_listener = function(e) {
+						if(e.transition === transition) {
+							deactivation_listener.apply(context, listener_args);
+							statechart.off("post_transition_fire", post_listener);
+						}
+					};
+					statechart.on("post_transition_fire", post_listener);
+				} else {
+					red.event_queue.once("event_cycle_completed", function() {
+						deactivation_listener.apply(context, listener_args);
+					});
+				}
 			}
-		};
-		statechart.on(event_type, listener);
-		return {
-			destroy: function() { statechart.off(event_type, listener); },
-			user_listener: user_listener
 		};
 	} else {
 		throw new Error("Unexpected type " + type);
 	}
+
+	statechart.on(event_type, listener);
+	return {
+		destroy: function() { statechart.off(event_type, listener); },
+		activation_listener: activation_listener,
+		deactivation_listener: deactivation_listener
+	};
 };
 
 
@@ -1046,8 +1064,8 @@ var Statechart = function(options) {
 		);
 	};
 
-	proto.on_transition = proto.on_state = function(str, listener, context) {
-		var info = add_transition_listener(str, this, listener, context);
+	proto.on_transition = proto.on_state = function(str, activation_listener, deactivaltion_listener, context) {
+		var info = add_transition_listener(str, this, activation_listener, deactivation_listener, context);
 
 		var tlisteners = this._transition_listeners[str];
 		if(_.isArray(tlisteners)) {
@@ -1057,12 +1075,13 @@ var Statechart = function(options) {
 		}
 		return this;
 	};
-	proto.off_transition = proto.on_state = function(str, listener, context) {
+	proto.off_transition = proto.on_state = function(str, activation_listener, deactivation_listener, context) {
 		var tlisteners = this._transition_listeners[str];
 		if(_.isArray(tlisteners)) {
 			for(var i = 0; i<tlisteners.length; i++) {
 				var tlistener = tlisteners[i];
-				if(tlistener.user_listener === listener) {
+				if(tlistener.activation_listener === activation_listener &&
+						tlistener.deactivation_listener === deactivation_listener) {
 					tlistener.destroy();
 					tlisteners.splice(i, 1);
 					i--;
