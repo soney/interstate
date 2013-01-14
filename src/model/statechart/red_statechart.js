@@ -1,6 +1,79 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+var any_state = {};
+var state_descriptor_regex = /\s*(([\w\.]+((\s*,\s*[\w\.]+)*))|\*)(\s*(>-|->|<-|-<|<->|>-<)\s*(([\w\.]+(\s*,\s*[\w\.]+)*)|\*))?\s*/;
+var get_state_description = function(str) {
+	return str === "*" ? any_state : _.map(str.split(","), function(str) { return str.trim(); });
+};
+var get_state_listener_info = function(str_descriptor) {
+	var matches = str_descriptor.match(state_descriptor_regex);
+	if(matches) {
+		var from_states = get_state_description(matches[1]);
+		var transition = matches[6];
+		if(transition) {
+			var to_states = get_state_description(matches[7]);
+
+			if(transition === "-<" || transition === "<-") {
+				transition = transition.split("").reverse().join("");
+				var tmp = from_states;
+				from_states = to_states;
+				to_states = tmp;
+			}
+
+			return {
+				type: "transition",
+				from: from_states,
+				to: to_states,
+				pre: transition[0] === ">",
+				bidirectional: transition.length === 3
+			};
+		} else {
+			return {
+				type: "state",
+				states: from_states
+			};
+		}
+	} else {
+		throw new Error(str_descriptor + " does not match format");
+	}
+};
+
+var get_listener_desc = function(str, statechart, listener, context) {
+	context = context || this;
+	var listener_info = get_state_listener_info(str);
+	var type = listener_info.type;
+	if(type === "state") {
+		var event_type = "post_transition_fire";
+		var listener = function() {
+			if(true) {
+				listener.apply(context, arguments);
+			}
+		};
+		statechart.on(event_type, listener);
+		return {
+			destroy: function() { statechart.off(event_type, listener); }
+		};
+	} else if(type === "transition") {
+		var event_type = listener_info.pre ? "pre_transition_fire" : "post_transition_fire";
+
+		var listener = function() {
+			if(listener_info.bidirectional) {
+				listener.apply(context, arguments);
+			} else {
+				listener.apply(context, arguments);
+			}
+		};
+		statechart.on(event_type, listener);
+		return {
+			destroy: function() { statechart.off(event_type, listener); }
+		};
+	} else {
+		throw new Error("Unexpected type " + type);
+	}
+};
+
+
 var find_equivalent_state = function(to_state, in_tree) {
 	var in_tree_basis = in_tree.basis();
 	var in_tree_basis_lineage = in_tree_basis.get_lineage();
@@ -574,9 +647,6 @@ var Statechart = function(options) {
 				pre_transition_listeners.push.apply(pre_transition_listeners, listeners);
 			}
 		});
-		var fsm = this;
-
-		_.each(pre_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, transition, fsm); });
 		*/
 
 		this._emit("pre_transition_fire", {
@@ -586,7 +656,6 @@ var Statechart = function(options) {
 		});
 		red.event_queue.once("end_event_queue", function() {
 			this.$local_state.set(state);
-		//	_.each(post_transition_listeners, function(listener) { listener(event, new_state_name, old_state_name, transition, fsm); });
 			this._emit("post_transition_fire", {
 				type: "post_transition_fire",
 				transition: transition,
