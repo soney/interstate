@@ -26,6 +26,7 @@
 
 
 					var thediv = document.getElementById("mydiv");
+					/*
 
 					env = red.create("environment");
 					root = env.get_pointer();
@@ -89,9 +90,19 @@
 
 					console.log(env.print());
 					*/
-					//var thediv = document.getElementById("mydiv");
-					//var dict = red.create("dict").set("div", thediv);
-					//var context = red.create("context", {stack: [dict]});
+					var thediv = document.getElementById("mydiv");
+					var dict = red.create("dict").set("mydiv", thediv);
+					var context = red.create("context", {stack: [dict]});
+					var sc = red.create("statechart")
+								.add_state("idle")
+								.add_state("hover")
+								.add_transition("idle", "hover", red.create_event("parsed", {str: "mouseover(mydiv)", context: context}))
+								.add_transition("hover", "idle", red.create_event("parsed", {str: "mouseout(mydiv)", context: context}))
+								.starts_at("idle")
+								.run();
+
+					window.sc = sc;
+					console.log(sc.stringify());
 
 					var storage_prefix = "_";
 					window.save = function(name) {
