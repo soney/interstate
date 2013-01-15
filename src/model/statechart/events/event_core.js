@@ -19,6 +19,7 @@ var EventQueue = function() {
 	this.is_ready = function() {
 		return semaphore >= 0;
 	};
+	this.num_post_event_queue_rounds = 7;
 };
 (function(my) {
 	var proto = my.prototype;
@@ -32,14 +33,14 @@ var EventQueue = function() {
 				target: this
 			});
 			this.do_run_event_queue();
-			this._emit("end_event_queue", {
-				type: "end_event_queue",
-				target: this
-			});
-			this._emit("event_cycle_completed", {
-				type: "event_cycle_completed",
-				target: this
-			});
+			for(var i = 0; i<this.num_post_event_queue_rounds; i++) {
+				var event_type = "end_event_queue_round_"+i;
+				this._emit(event_type, {
+					type: event_type,
+					target: this,
+					round: i
+				});
+			}
 			this.running_event_queue = false;
 		}
 	};

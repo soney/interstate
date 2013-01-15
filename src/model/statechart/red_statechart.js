@@ -1,7 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var any_state = {};
+var any_state = red.any_state = {};
 var state_descriptor_regex = /\s*(([\w\.]+((\s*,\s*[\w\.]+)*))|\*)(\s*(>-|->|<-|-<|<->|>-<)\s*(([\w\.]+(\s*,\s*[\w\.]+)*)|\*))?\s*/;
 var get_state_description = function(str) {
 	return str === "*" ? any_state : _.map(str.split(","), function(str) { return str.trim(); });
@@ -42,29 +42,47 @@ var matches_name = function(statechart, states, state) {
 		return true;
 	} else {
 		var state_name = state.get_name(statechart);
-		return _.contains(states, state_name);
+		var len = states.length;
+		for(var i = 0; i<len; i++) {
+			var s = states[i];
+			if(s === state || s === state_name) {
+				return true;
+			}
+		}
+		return false;
 	}
 };
 
 var add_transition_listener = function(str, statechart, activation_listener, deactivation_listener, context) {
 	context = context || this;
-	var listener_info = get_state_listener_info(str);
+
+	var listener_info;
+	if(_.isString(str)) {
+		listener_info = get_state_listener_info(str);
+	} else {
+		listener_info = str;
+	}
+
 	var type = listener_info.type;
 	var event_type, listener;
 	if(type === "state") {
-		event_type = "post_transition_fire";
+		event_type = "pre_transition_fire";
 		var activated = false;
 		listener = function(event) {
-			var state = event.state;
-			if(matches_name(statechart, listener_info.states, event.state)) {
+			var listener_args = arguments,
+				mname = matches_name(statechart, listener_info.states, event.state);
+			if(activated === false && mname) {
 				activated = true;
-				var listener_args = arguments;
-				red.event_queue.once("event_cycle_completed", function() {
+
+				red.event_queue.once("end_event_queue_round_6", function() {
 					activation_listener.apply(context, listener_args);
-				});
-			} else if(activated === true) {
+				}, this);
+			} else if(activated === true && !mname) {
 				activated = false;
-				deactivation_listener.apply(context, listener_args);
+
+				red.event_queue.once("end_event_queue_round_2", function() {
+					deactivation_listener.apply(context, listener_args);
+				}, this);
 			}
 		};
 	} else if(type === "transition") {
@@ -84,15 +102,11 @@ var add_transition_listener = function(str, statechart, activation_listener, dea
 				activation_listener.apply(context, listener_args);
 
 				if(listener_info.pre) {
-					var post_listener = function(e) {
-						if(e.transition === transition) {
-							deactivation_listener.apply(context, listener_args);
-							statechart.off("post_transition_fire", post_listener);
-						}
-					};
-					statechart.on("post_transition_fire", post_listener);
+					red.event_queue.once("end_event_queue_round_1", function() {
+						deactivation_listener.apply(context, listener_args);
+					});
 				} else {
-					red.event_queue.once("event_cycle_completed", function() {
+					red.event_queue.once("end_event_queue_round_5", function() {
 						deactivation_listener.apply(context, listener_args);
 					});
 				}
@@ -193,7 +207,7 @@ var StatechartTransition = function(options, defer_initialization) {
 		}
 		return this;
 	};
-	proto.id = function() { return this._id; }
+	proto.id = proto.hash = function() { return this._id; }
 	proto.from = function() { return this._from_state; }; 
 	proto.to = function() { return this._to_state; };
 	proto.setFrom = function(state) {
@@ -662,18 +676,24 @@ var Statechart = function(options) {
 	};
 
 	proto.set_active_substate = function(state, transition, event) {
-		this._emit("pre_transition_fire", {
-			type: "pre_transition_fire",
-			transition: transition,
-			target: this,
-			state: state
-		});
-		red.event_queue.once("end_event_queue", function() {
+		red.event_queue.once("end_event_queue_round_0", function() {
+			this._emit("pre_transition_fire", {
+				type: "pre_transition_fire",
+				transition: transition,
+				target: this,
+				event: event,
+				state: state
+			});
+		}, this);
+		red.event_queue.once("end_event_queue_round_3", function() {
 			this.$local_state.set(state);
+		}, this);
+		red.event_queue.once("end_event_queue_round_4", function() {
 			this._emit("post_transition_fire", {
 				type: "post_transition_fire",
 				transition: transition,
 				target: this,
+				event: event,
 				state: state
 			});
 		}, this);
@@ -1064,7 +1084,7 @@ var Statechart = function(options) {
 		);
 	};
 
-	proto.on_transition = proto.on_state = function(str, activation_listener, deactivaltion_listener, context) {
+	proto.on_transition = proto.on_state = function(str, activation_listener, deactivation_listener, context) {
 		var info = add_transition_listener(str, this, activation_listener, deactivation_listener, context);
 
 		var tlisteners = this._transition_listeners[str];

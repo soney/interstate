@@ -10,7 +10,7 @@ var cjs = red.cjs, _ = red._;
 var RedStatefulProp = function(options, defer_initialization) {
 	options = options || {};
 
-	this.transitory_value = cjs();
+	this._value = cjs();
 	this.id = _.uniqueId();
 
 	if(defer_initialization !== true) {
@@ -24,9 +24,7 @@ var RedStatefulProp = function(options, defer_initialization) {
 		this._direct_values = options.direct_values || cjs.map();
 		this._can_inherit = options.can_inherit !== false;
 		this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
-
-		red._set_descriptor(this._direct_values._keys,   "Direct values Keys " + this.id);
-		red._set_descriptor(this._direct_values._values, "Direct values Vals " + this.id);
+		this._direct_values.set_hash("hash");
 	};
 
 	//
@@ -164,6 +162,7 @@ var RedStatefulProp = function(options, defer_initialization) {
 			return undefined;
 		}
 	};
+	/*
 	proto.on_transition_fire = function(context, transition) {
 		if(!transition) { return; }
 		var inherits_from = this._get_inherits_from(context);
@@ -172,7 +171,10 @@ var RedStatefulProp = function(options, defer_initialization) {
 			this.transitory_value.set(red.get_contextualizable(val, context));
 		}
 	};
+		*/
 	proto.get = function(context) {
+		return this._value.get();
+		/*
 		var values = this.get_value_specs(context);
 		for(var i = 0; i<values.length; i++) {
 			var value = values[i];
@@ -182,6 +184,7 @@ var RedStatefulProp = function(options, defer_initialization) {
 			}
 		}
 		return this.transitory_value.get();
+		*/
 	};
 	proto.hash = function() {
 		return this.id;
