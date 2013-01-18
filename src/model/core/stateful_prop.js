@@ -22,6 +22,9 @@ var RedStatefulProp = function(options, defer_initialization) {
 
 	proto.do_initialize = function(options) {
 		this._direct_values = options.direct_values || cjs.map();
+		this._values_per_context = cjs.map({
+			hash: "hash"
+		});
 		this._can_inherit = options.can_inherit !== false;
 		this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
 		this._direct_values.set_hash("hash");
@@ -58,6 +61,16 @@ var RedStatefulProp = function(options, defer_initialization) {
 		}
 		return basis;
 	};
+
+	proto.get_statecharts = function(context) {
+		var SOandC = this.get_stateful_obj_and_context(context);
+		if(SOandC) {
+			return SOandC.stateful_obj.get_statecharts(SOandC.context);
+		} else {
+			return [];
+		}
+	};
+
 
 	//
 	// === DIRECT VALUES ===
@@ -162,29 +175,20 @@ var RedStatefulProp = function(options, defer_initialization) {
 			return undefined;
 		}
 	};
-	/*
-	proto.on_transition_fire = function(context, transition) {
-		if(!transition) { return; }
-		var inherits_from = this._get_inherits_from(context);
-		var val = get_value_for_state(transition, this, inherits_from);
-		if(val) {
-			this.transitory_value.set(red.get_contextualizable(val, context));
-		}
-	};
-		*/
 	proto.get = function(context) {
-		return this._value.get();
-		/*
-		var values = this.get_value_specs(context);
-		for(var i = 0; i<values.length; i++) {
-			var value = values[i];
-			if(value.using) {
-				var val = value.value;
-				return red.get_contextualizable(val, context);
-			}
-		}
-		return this.transitory_value.get();
-		*/
+		var value = this.get_value_for_context(context);
+		return value.get();
+	};
+	proto.get_value_for_context = function(context) {
+		return this._values_per_context.get_or_put(context, function() {
+			return this.create_contextual_value(context);
+		}, this);
+	};
+	proto.create_contextual_value = function(context) {
+		return new RedStatefulPropContextualVal({
+			context: context,
+			stateful_prop: this
+		});
 	};
 	proto.hash = function() {
 		return this.id;
@@ -216,5 +220,21 @@ red.define("stateful_prop", function(options) {
 	var prop = new RedStatefulProp(options);
 	return prop;
 });
+
+var RedStatefulPropContextualVal = function(options) {
+	options = options || {};
+	this.id = _.uniqueId();
+	this._context = options.context;
+	this._stateful_prop = options.stateful_prop;
+	this._value = null;
+};
+(function(my) {
+	var proto = my.prototype;
+	proto.hash = function() {
+		return this.id;
+	};
+}(RedStatefulPropContextualVal));
+
+red.RedStatefulProp = RedStatefulProp;
 
 }(red));

@@ -291,6 +291,7 @@ var State = function(options, defer_initialization) {
 	options = options || {};
 	able.make_this_listenable(this);
 	this._id = _.uniqueId();
+	this._active_transition = null;
 
 	this.$onBasisAddTransition = _.bind(function(event) {
 		var transition = event.transition;
@@ -675,7 +676,37 @@ var Statechart = function(options) {
 		})));
 	};
 
+	proto.get_active_transition = function() {
+		return this._active_transition;
+	};
+	proto.get_active_transitions = function() {
+		var rv;
+		var active_transition = this.get_active_transition();
+		var rv_size;
+		if(active_transition !== null) {
+			rv = [active_transition];
+			rv_size = 1;
+		} else {
+			rv = [];
+			rv_size = 0;
+		}
+
+		var substates = _.clone(this.get_substates());
+		for(var i = 0; i<substates.length; i++) {
+			var substate = substates[i];
+			substates.push.apply(substates, substate.get_substates());
+			active_transition = substate.get_active_transition();
+			if(active_transition !== null) {
+				rv[rv_size++] = active_transition;
+			}
+		}
+		return rv;
+	};
 	proto.set_active_substate = function(state, transition, event) {
+		if(this._active_transition) {
+			throw new Error("Active transition is already set");
+		}
+		this._active_transition = transition;
 		red.event_queue.once("end_event_queue_round_0", function() {
 			this._emit("pre_transition_fire", {
 				type: "pre_transition_fire",
@@ -696,6 +727,7 @@ var Statechart = function(options) {
 				event: event,
 				state: state
 			});
+			this._active_transition = null;
 		}, this);
 	};
 	proto.run = function() {

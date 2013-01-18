@@ -60,33 +60,6 @@ var RedStatefulObj = function(options, defer_initialization) {
 		var shadow_statechart = own_statechart.create_shadow({context: context});
 
 		shadow_statechart.run();
-		
-		/*
-		var sc_owner = context.last();
-		if(sc_owner instanceof my) {
-		//if(red.check_context_equality(this.get_default_context(), context)) {
-			shadow_statechart.on("*>-*", function(e, to_state_name) {
-				var to_state = shadow_statechart.find_state(to_state_name);
-				var event = sc_owner.get_event();
-				event.set(to_state, e);
-				//var e_prop = self._get_direct_prop("event");
-				//e_prop.set(to_state, e);
-			});
-			shadow_statechart.owner = sc_owner;
-		}
-
-		shadow_statechart.on("* >- *", function(event, to_state, from_state, transition, statechart) {
-			var prop_names = this.get_prop_names(context);
-			for(var i = 0; i<prop_names.length; i++) {
-				var prop_name = prop_names[i];
-				var prop = this.get_prop(prop_name, context);
-				if(prop instanceof red.RedStatefulProp) {
-					prop.on_transition_fire(context, transition);
-				}
-			}
-		}, this);
-		*/
-
 		cjs.signal();
 		return shadow_statechart;
 	};
