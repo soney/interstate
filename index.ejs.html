@@ -29,6 +29,20 @@
 
 					env = red.create("environment");
 					root = env.get_pointer();
+
+					env	.set("div", thediv)
+						.set("obj", "stateful")
+						.cd("obj")
+						.add_state("hover")
+						.set("prop1")
+						.set("prop1", "INIT", "1")
+						.set("prop1", "hover", "2")
+						.add_transition("INIT", "hover", "mouseover(div)")
+						;
+
+					env.print_on_return = true;
+					console.log(env.print());
+					/*
 					env.set("elem", thediv);
 					env.set("a", "stateful");
 					env.cd("a");

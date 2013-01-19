@@ -1,6 +1,5 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
-var print_on_return = false;
 
 var pad = function(str, len) {
 	if(str.length > len) {
@@ -112,6 +111,7 @@ var Env = function(options) {
 
 	//Context tracking
 	this._pointer = pointer_factory(this._root);
+	this.print_on_return = false;
 };
 
 (function(my) {
@@ -149,13 +149,15 @@ var Env = function(options) {
 		this._pointer.set_pointer(pointer);
 		this._pointer.set_context(context);
 
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 	proto.top = function() {
 		this._pointer.set_pointer(this._root);
 		this._pointer.set_context(red.create("context", {stack: [this._root]}));
 
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 	proto.up = function() {
 		var context = this.get_context();
@@ -164,7 +166,8 @@ var Env = function(options) {
 		var ptr = context.last() || this._root;
 		this._pointer.set_pointer(ptr);
 		this._pointer.set_context(context);
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 	proto.get_pointer = function() {
 		return this._pointer.get_pointer();
@@ -423,7 +426,8 @@ var Env = function(options) {
 		} else {
 			var command = this._get_set_prop_command.apply(this, arguments);
 			this._do(command);
-			if(print_on_return) return this.print();
+			if(this.print_on_return) return this.print();
+			else return this;
 		}
 	};
 	proto._get_unset_prop_command = function(prop_name) {
@@ -441,7 +445,7 @@ var Env = function(options) {
 	proto.unset = function() {
 		var command = this._get_unset_prop_command.apply(this, arguments);
 		this._do(command);
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
 	};
 
 	proto._get_rename_prop_command = function(from_name, to_name) {
@@ -456,7 +460,8 @@ var Env = function(options) {
 	proto.rename = function() {
 		var command = this._get_rename_prop_command.apply(this, arguments);
 		this._do(command);
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 	proto._get_move_prop_command = function(prop_name, index) {
 		var parent_obj = this.get_pointer();
@@ -470,7 +475,8 @@ var Env = function(options) {
 	proto.move = function() {
 		var command = this._get_move_prop_command.apply(this, arguments);
 		this._do(command);
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 
 	proto._get_set_cell_command = function(arg0, arg1, arg2) {
@@ -566,7 +572,8 @@ var Env = function(options) {
 	proto.set_cell = function() {
 		var command = this._get_set_cell_command.apply(this, arguments);
 		this._do(command);
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 
 	var get_state = function(state_name, states) {
@@ -617,7 +624,8 @@ var Env = function(options) {
 	proto.add_state = function() {
 		var command = this._get_add_state_command.apply(this, arguments);
 		this._do(command);
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 
 	proto._get_remove_state_command = function(state_name) {
@@ -632,7 +640,8 @@ var Env = function(options) {
 	proto.remove_state = function() {
 		var command = this._get_remove_state_command.apply(this, arguments);
 		this._do(command);
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 
 	proto._get_move_state_command = function(state_name, index) {
@@ -650,7 +659,8 @@ var Env = function(options) {
 	proto.move_state = function() {
 		var command = this._get_move_state_command.apply(this, arguments);
 		this._do(command);
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 
 
@@ -667,7 +677,8 @@ var Env = function(options) {
 	proto.rename_state = function() {
 		var command = this._get_rename_state_command.apply(this, arguments);
 		this._do(command);
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 
 
@@ -696,7 +707,8 @@ var Env = function(options) {
 		var command = this._get_add_transition_command.apply(this, arguments);
 		this._do(command);
 		this._last_transition = command._transition;
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 
 	proto._get_remove_transition_command = function(transition_id) {
@@ -711,7 +723,8 @@ var Env = function(options) {
 	proto.remove_transition = function() {
 		var command = this._get_remove_transition_command.apply(this, arguments);
 		this._do(command);
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 
 	proto._get_set_event_command = function(transition_id, event) {
@@ -727,37 +740,8 @@ var Env = function(options) {
 	proto.set_event = function() {
 		var command = this._get_set_event_command.apply(this, arguments);
 		this._do(command);
-		if(print_on_return) return this.print();
-	};
-
-	proto._get_set_basis_command = function(basis) {
-		var group = this.get_pointer();
-
-		var command = red.command("set_group_basis", {
-			group: group
-			, basis: basis
-		});
-		return command
-	};
-	proto.set_basis = function() {
-		var command = this._get_set_basis_command.apply(this, arguments);
-		this._do(command);
-		if(print_on_return) return this.print();
-	};
-
-	proto._get_set_template_command = function(template) {
-		var group = this.get_pointer();
-
-		var command = red.command("set_group_template", {
-			group: group
-			, template: template
-		});
-		return command
-	};
-	proto.set_template = function() {
-		var command = this._get_set_template_command.apply(this, arguments);
-		this._do(command);
-		if(print_on_return) return this.print();
+		if(this.print_on_return) return this.print();
+		else return this;
 	};
 }(Env));
 
