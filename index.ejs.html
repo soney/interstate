@@ -23,7 +23,7 @@
 					_ = red._;
 
 					red.__debug = false;
-
+					/*
 					env = red	.create("environment")
 								.cd("children")
 								.set("obj", "stateful")
@@ -42,6 +42,15 @@
 
 					env.print_on_return = true;
 					console.log(env.print());
+					*/
+					var context = red.create("context");
+					var d = red.create("dict");
+					cjs.liven(function() {
+						console.log(d.get("a", context));
+					});
+					d.set("a", 1);
+					d.rename("a", "b");
+					d.rename("b", "a");
 
 					var storage_prefix = "_";
 					window.save = function(name) {

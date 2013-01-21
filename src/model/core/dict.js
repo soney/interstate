@@ -147,7 +147,7 @@ var RedDict = function(options, defer_initialization) {
 	//
 
 	proto.set = proto.set_prop = proto._set_direct_prop = function(name, value, index) {
-		this.direct_props().item(name, value, index);
+		this.direct_props().put(name, value, index);
 		return this;
 	};
 	proto.unset = proto.unset_prop = proto._unset_direct_prop = function(name) {
@@ -155,7 +155,7 @@ var RedDict = function(options, defer_initialization) {
 		return this;
 	};
 	proto._get_direct_prop = function(name) {
-		return this.direct_props().item(name);
+		return this.direct_props().get(name);
 	};
 	proto._has_direct_prop = function(name) {
 		return this.direct_props().has(name);
@@ -181,6 +181,8 @@ var RedDict = function(options, defer_initialization) {
 							.put(to_name, prop_val, keyIndex)
 							.signal();
 				cjs.signal();
+			} else {
+				throw new Error("No such property " + from_name);
 			}
 		}
 	};

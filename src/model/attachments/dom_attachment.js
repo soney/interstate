@@ -166,7 +166,7 @@ var RedDomAttachmentInstance = function(options) {
 			var dom_obj = this.get_dom_obj();
 
 			var text = parent.prop_val("text", context);
-			console.log(text);
+			console.log("REFRESH", parent.id);
 			if(text) {
 				dom_obj.textContent = cjs.get(text);
 				window.dom_obj = dom_obj;

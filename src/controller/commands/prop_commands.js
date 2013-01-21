@@ -125,25 +125,12 @@ var RenamePropCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		this._prop_value = this._parent._get_direct_prop(this._to_name);
-		if(this._prop_value) {
-			this._parent.unset(this._to_name);
-		}
 		this._parent.rename(this._from_name, this._to_name);
 	};
 	proto._unexecute = function() {
 		this._parent.rename(this._to_name, this._from_name);
-		if(!_.isUndefined(this._prop_value)) {
-			this._parent.set_prop(this._from_name, this._prop_value);
-		}
 	};
-	proto._do_destroy = function(in_effect) {
-		if(in_effect) {
-			if(this._prop_value) {
-				this._prop_value.destroy();
-			}
-		}
-	};
+	proto._do_destroy = function(in_effect) { };
 }(RenamePropCommand));
 
 red._commands["rename_prop"] = function(options) {
