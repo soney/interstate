@@ -114,13 +114,6 @@ var RedDict = function(options, defer_initialization) {
 					})
 					.value();
 		return rv;
-		/*
-		protos = _.map(protos, function(proto) {
-			return red.get_contextualizable(proto, context);
-		});
-
-		return protos;
-		*/
 	};
 
 	//
