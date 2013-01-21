@@ -4,6 +4,7 @@ var cjs = red.cjs, _ = red._;
 var EventQueue = function() {
 	able.make_this_listenable(this);
 
+	this.end_queue_round = false;
 	this.queue = [];
 	this.running_event_queue = false;
 
@@ -34,6 +35,7 @@ var EventQueue = function() {
 			});
 			this.do_run_event_queue();
 			for(var i = 0; i<this.num_post_event_queue_rounds; i++) {
+				this.end_queue_round = i;
 				var event_type = "end_event_queue_round_"+i;
 				this._emit(event_type, {
 					type: event_type,
@@ -41,6 +43,7 @@ var EventQueue = function() {
 					round: i
 				});
 			}
+			this.end_queue_round = false;
 			this.running_event_queue = false;
 		}
 	};
@@ -115,7 +118,6 @@ var RedEvent = function() {
 	};
 }(RedEvent));
 red.event_queue = new EventQueue();
-
 
 var event_types = {};
 

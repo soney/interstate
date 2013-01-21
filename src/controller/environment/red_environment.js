@@ -550,7 +550,11 @@ var Env = function(options) {
 				for_state = get_state(for_state, pointer_states);
 			}
 			*/
-			for_state = statechart_pointer.find_state(for_state);
+			if(for_state instanceof red.StatechartTransition) {
+				for_state = for_state;
+			} else {
+				for_state = statechart_pointer.find_state(for_state);
+			}
 			cell = red.create("cell", {str: "", ignore_inherited_in_contexts: ignore_inherited_in_contexts });
 			combine_command = this._get_stateful_prop_set_value_command(prop, for_state, cell);
 		}

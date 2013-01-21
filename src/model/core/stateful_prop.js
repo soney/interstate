@@ -239,11 +239,12 @@ var RedStatefulPropContextualVal = function(options) {
 	this.id = _.uniqueId();
 	this._context = options.context;
 	this._stateful_prop = options.stateful_prop;
-	this._value = cjs.$(null, true, {auto_add_incoming_dependencies: false});
-	this._value_from_state = cjs.$(null, true, {auto_add_incoming_dependencies: false});
-	this.update_value();
-	this.$on_transition = _.bind(this.on_transition, this);
-	red.event_queue.on("end_event_queue_round_0", this.$on_transition);
+	this._value = cjs.$(_.bind(this.getter, this));
+	this._value.onChange(_.bind(function() {
+		if(red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
+			console.log(this._value.update());
+		}
+	}, this));
 };
 (function(my) {
 	var proto = my.prototype;
@@ -263,16 +264,31 @@ var RedStatefulPropContextualVal = function(options) {
 		var parent = this.get_stateful_prop();
 		return parent.get_statecharts(this.get_context());
 	};
-
-	proto.update_value = function() {
+	proto.getter = function() {
 		var parent = this.get_stateful_prop(),
 			context = this.get_context();
 		var statecharts = _.clone(parent.get_statecharts(context)),
 			inherits_from = parent._get_inherits_from(context);
 
+		var i = 0;
+		var leni = statecharts.length;
+		for(i = 0; i<leni; i++) {
+			var statechart = statecharts[i];
+			var active_transitions = statechart.get_active_transitions();
+			var lenj = active_transitions.length;
+			for(var j = 0; j < lenj; j++) {
+				var transition = active_transitions[i];
+				transition_val = get_value_for_state(transition, parent, inherits_from);
+
+				if(transition_val) {
+					return transition_val;
+				}
+			}
+		}
+
 		var state_val;
-		var i = 0,
-			get_substates_index = 0;
+		var get_substates_index = 0;
+		i = 0;
 		while(i < statecharts.length && get_substates_index < statecharts.length) {
 			if(i === statecharts.length-1) {
 				var get_substate_statechart = statecharts[get_substates_index];
@@ -285,56 +301,13 @@ var RedStatefulPropContextualVal = function(options) {
 			var statechart = statecharts[i];
 			state_val = get_value_for_state(statechart, parent, inherits_from);
 			if(state_val) {
-				this._value.set(state_val);
-				this._value_from_state.set(statechart);
-				break;
+				return state_val;
 			}
 			i++;
 		}
 	};
-	proto.on_transition = function(transition) {
-		var parent = this.get_stateful_prop(),
-			context = this.get_context();
-		var statecharts = _.clone(parent.get_statecharts(context)),
-			inherits_from = parent._get_inherits_from(context);
-
-		var transition_val;
-		var leni = statecharts.length;
-
-		var ttransition_happened = false;
-		outer_loop:
-		for(var i = 0; i<leni; i++) {
-			var statechart = statecharts[i];
-			var active_transitions = statechart.get_active_transitions();
-			var lenj = active_transitions.length;
-			if(lenj > 0) {
-				transition_happened = true;
-			}
-			for(var j = 0; j < lenj; j++) {
-				var transition = active_transitions[i];
-				transition_val = get_value_for_state(transition, parent, inherits_from);
-
-				if(transition_val) {
-					this._value.set(transition_val);
-					this._value_from_state.set(transition);
-
-					red.event_queue.once("end_event_queue_round_4", function() {
-						//  evaluate transition constraints
-					}, this);
-
-					break outer_loop;
-				}
-			}
-		}
-		if(ttransition_happened) {
-			red.event_queue.once("end_event_queue_round_5", function() {
-				this.update_value();
-			}, this);
-		}
-	};
-
 	proto.destroy = function() {
-		red.event_queue.off("end_event_queue_round_0", this.$on_transition);
+		this._value.destroy();
 	};
 }(RedStatefulPropContextualVal));
 
