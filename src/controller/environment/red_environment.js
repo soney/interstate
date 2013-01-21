@@ -129,8 +129,16 @@ var Env = function(options) {
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
-	proto.undo = function() { this._command_stack._undo(); };
-	proto.redo = function() { this._command_stack._redo(); };
+	proto.undo = function() {
+		this._command_stack._undo();
+		if(this.print_on_return) return this.print();
+		else return this;
+	};
+	proto.redo = function() {
+		this._command_stack._redo();
+		if(this.print_on_return) return this.print();
+		else return this;
+	};
 
 	proto.get_root = function() { return this._root; };
 	proto.get_root_context = function() { return this._root_context; };

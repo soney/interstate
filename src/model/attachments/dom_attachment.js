@@ -166,11 +166,12 @@ var RedDomAttachmentInstance = function(options) {
 			var dom_obj = this.get_dom_obj();
 
 			var text = parent.prop_val("text", context);
+			console.log(text);
 			if(text) {
 				dom_obj.textContent = cjs.get(text);
 				window.dom_obj = dom_obj;
 			} else {
-				var children = parent.get_prop("children", children_context);
+				var children = parent.get_prop("children", context);
 				var children_context = context.push(children);
 
 				var children_got = red.get_contextualizable(children, children_context);

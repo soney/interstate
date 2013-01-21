@@ -165,15 +165,26 @@ var RedDict = function(options, defer_initialization) {
 		return this;
 	};
 	proto.index = proto.prop_index = proto._direct_prop_index = function(name) {
-		return this.direct_props().keyIndex(name);
+		return this.direct_props().indexOf(name);
 	};
 	proto.rename = proto._rename_direct_prop = function(from_name, to_name) {
 		if(this._has_direct_prop(to_name)) {
 			throw new Error("Already a property with name " + to_name);
 		} else {
-			this.direct_props().rename(from_name, to_name);
+			var direct_props = this.direct_props();
+			var keyIndex = direct_props.indexOf(from_name);
+			if(keyIndex >= 0) {
+				var prop_val = direct_props.get(from_name);
+				cjs.wait();
+				direct_props.wait()
+							.remove(from_name)
+							.put(to_name, prop_val, keyIndex)
+							.signal();
+				cjs.signal();
+			}
 		}
 	};
+
 	proto._get_direct_prop_names = function() {
 		return this.direct_props().keys();
 	};

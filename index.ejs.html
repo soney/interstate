@@ -24,138 +24,24 @@
 
 					red.__debug = false;
 
+					env = red	.create("environment")
+								.cd("children")
+								.set("obj", "stateful")
+								.cd("obj")
+								.set("(protos)", "INIT", "dom")
+								.set("tag")
+								.set("tag", "INIT", "'div'")
+								.set("text")
+								.set("text", "INIT", "'hello world'")
+								;
 
-					var thediv = document.getElementById("mydiv");
-
-					env = red.create("environment");
-					root = env.get_pointer();
-
-					env	.set("div", thediv)
-						.set("obj", "stateful")
-						.cd("obj")
-						.add_state("hover")
-						.set("prop1")
-						.set("prop1", "INIT", "1")
-						.set("prop1", "hover", "2")
-						.add_transition("INIT", "hover", "mouseover(div)")
-						.set("prop1", env._last_transition, "3")
-						;
-
-					env.print_on_return = true;
-					console.log(env.print());
-					/*
-					env.set("elem", thediv);
-					env.set("a", "stateful");
-					env.cd("a");
-					env.add_state("hover");
-					env.add_transition("INIT", "hover", "mouseover(elem)");
-					console.log(env.print());
-					/*
-					env.cd("children");
-					var children = env.get_pointer();
-					env.set("obj", "dict");
-					env.cd("obj");
-					var obj = env.get_pointer();
-					env.set("(protos)", "dom");
-					env.set("(manifestations)", "20");
-					env.set("tag");
-					//env.set("text", "'hi'");
-					env.set("tag", "'div'");
-					//env.set("text", "'hi'+basis");
-					env.set("children", "dict");
-					env.cd("children");
-					env.set("0", "dict");
-					env.cd("0");
-					env.set("(protos)", "dom");
-					env.set("tag", "'span'");
-					env.set("text", "'yo'");
-					env.up();
-					env.set("1", "dict");
-					env.cd("1");
-					env.set("(protos)", "dom");
-					env.set("tag", "'span'");
-					env.set("text", "basis");
-					//obj.set("tag", "div");
-					//obj.set("text", "hi");
-
-					/*
-					var context = red.create("context", {stack: [root, children, obj]});
-					var mobjs = obj.get_manifestation_objs(context);
-					var mcontexts = _.map(mobjs, function(mobj) {
-						return context.push(mobj);
-					});
-					*/
-
-					/*
-					var stopwatch = new Stopwatch().start();
-					_.each(mcontexts, function(context) {
-						var dom_attachment = obj.get_attachment_instance("dom", context);
-					//	var protos = obj._get_direct_protos(context);
-					});
-					console.log(stopwatch.stop());
-					*/
-					
-					/*
 					output_view = $("<div />").dom_output({
 						root: env.get_root()
 						, context: env.get_root_context()
 					}).appendTo(document.body);
 
-
+					env.print_on_return = true;
 					console.log(env.print());
-					*/
-					/*
-					var thediv = document.getElementById("mydiv");
-					var dict = red.create("dict").set("mydiv", thediv);
-					var context = red.create("context", {stack: [dict]});
-					var sc = red.create("statechart")
-								.add_state("idle")
-								.add_state("hover")
-								.add_transition("idle", "hover", red.create_event("parsed", {str: "mouseover(mydiv)", context: context}))
-								.add_transition("hover", "idle", red.create_event("parsed", {str: "mouseout(mydiv)", context: context}))
-								.starts_at("idle");
-
-					var listeners = [
-						new Array("idle", function() {
-								console.log("activate i");
-							}, function() {
-								console.log("deactivate i");
-							}),
-						new Array("hover", function() {
-								console.log("activate h");
-							}, function() {
-								console.log("deactivate h");
-							}),
-						new Array("idle -> hover", function() {
-								console.log("activate i->h");
-							}, function() {
-								console.log("deactivate i->h");
-							}),
-						new Array("hover -> idle", function() {
-								console.log("activate h->i");
-							}, function() {
-								console.log("deactivate h->i");
-							}),
-						new Array("idle >- hover", function() {
-								console.log("activate i>-h");
-							}, function() {
-								console.log("deactivate i>-h");
-							}),
-						new Array("hover >- idle", function() {
-								console.log("activate h>-i");
-							}, function() {
-								console.log("deactivate h>-i");
-							})
-					];
-
-					_.times(100, function() {
-						var shadow = sc.create_shadow({ context: context }).run();
-						_.each(_.shuffle(listeners), function(largs) {
-							shadow.on_transition.apply(shadow, largs);
-						});
-					});
-					*/
-
 
 					var storage_prefix = "_";
 					window.save = function(name) {
@@ -203,6 +89,5 @@
 				});
 			</script>
 	  </div>
-	  <div id="mydiv" style="width:150px;height:150px;background-color:red;"></div>
   </body>
 </html>
