@@ -29,28 +29,56 @@
 								.set("obj", "stateful")
 								.cd("obj")
 								.set("(protos)", "INIT", "dom")
-								.set("(manifestations)", "5")
+								.set("(manifestations)", "1")
 								.set("tag")
 								.set("tag", "INIT", "'div'")
 								.set("text")
 								.set("text", "INIT", "'hello world'")
 								;
+					var obj = env.get_pointer();
 
 					output_view = $("<div />").dom_output({
 						root: env.get_root()
 						, context: env.get_root_context()
 					}).appendTo(document.body);
-
 					env.print_on_return = true;
 					console.log(env.print());
+					
+
+					//console.log(obj);
+					//console.log(manifestations);
+					/**/
 					/*
-					var d = red.create("dict");
+
+					var m = cjs.map({value: {a: 1}});
+					/*
+					var obj = red.create("dict");
+					var context = red.create("context");
+					var cell = red.create("cell");
+					obj.set_manifestations(cell);
+					*/
+					/*
+
 					cjs.liven(function() {
-						console.log(d.get_manifestation_objs(red.create("context")));
+						console.log(m.get_or_put("a"));
+					}, {
+						context: this
+						, pause_while_running: true
 					});
+					cjs.wait();
+					m.clear().get_or_put("a", function() { return 4; });
+					cjs.signal();
+					cjs.wait();
+					m.clear().get_or_put("a", function() { return 5; });
+					cjs.signal();
+					/*
+					cell.set_str("2");
+					cell.set_str("3");
+					cell.set_str("4");
+					/*
 					d.set_manifestations(3);
 					d.set_manifestations(5);
-					*/
+					/**/
 
 					var storage_prefix = "_";
 					window.save = function(name) {

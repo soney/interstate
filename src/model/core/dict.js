@@ -16,6 +16,7 @@ var RedDict = function(options, defer_initialization) {
 	} else {
 		this.do_initialize(options);
 	}
+	/*
 	this._get_direct_protos = cjs.memoize(this._get_direct_protos, {
 		hash: function(args) {
 			return args[0].hash()
@@ -25,6 +26,7 @@ var RedDict = function(options, defer_initialization) {
 		},
 		context: this
 	});
+	*/
 };
 
 (function(my) {
@@ -376,9 +378,9 @@ var RedDict = function(options, defer_initialization) {
 		var direct_attachment_instances = this.direct_attachment_instances();
 
 		var create_attachment_instance = function() {
-			var parent = context.last();
-			parent = parent.get_manifestation_of() || parent;
-			var attachment_instance = attachment.create_instance(parent, context);
+			var owner = context.last();
+			owner = owner.get_manifestation_of() || owner;
+			var attachment_instance = attachment.create_instance(owner, context);
 			return attachment_instance;
 		};
 

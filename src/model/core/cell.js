@@ -162,7 +162,13 @@ var RedCell = function(options, defer_initialization) {
 		"str": {
 			start_with: function() { return cjs.$(""); }
 			, getter: function(me) { return me.get(); }
-			, setter: function(me, str) { me.set(str, true); }
+			, setter: function(me, str) {
+				cjs.wait();
+				me.set(str, true);
+				var cvs = this.get_contextual_values();
+				if(cvs) { cvs.clear(); }
+				cjs.signal();
+			}
 		}
 		, "contextual_values": {
 			default: function() { return cjs.map({
@@ -190,14 +196,10 @@ var RedCell = function(options, defer_initialization) {
 		});
 	};
 	proto.get = function(context) {
-		var tree = this._tree.get();
 		var contextual_values = this.get_contextual_values();
-		if(tree !== this._last_tree) {
-			this._last_tree = tree;
-			contextual_values.clear();
-		}
 
 		var val = contextual_values.get_or_put(context, function() {
+			var tree = this._tree.get();
 			return get_$(tree, context, this.get_ignore_inherited_in_contexts());
 		}, this);
 

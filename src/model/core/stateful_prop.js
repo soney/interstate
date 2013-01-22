@@ -46,25 +46,27 @@ var RedStatefulProp = function(options, defer_initialization) {
 	//
 	// === PARENTAGE ===
 	//
-	var get_stateful_obj_context = function(context) {
+	proto.get_stateful_obj_and_context = function(context) {
+		var popped_item, last;
 		while(!context.is_empty()) {
-			if(context.last() instanceof red.RedStatefulObj) {
-				return context;
+			last = context.last();
+			if(last instanceof red.RedStatefulObj) {
+				if(popped_item && popped_item.get_manifestation_of() === last) {
+					return {
+							stateful_obj: last,
+							context: context.push(popped_item)
+						};
+				} else {
+					return {
+							stateful_obj: last,
+							context: context
+						};
+				}
 			}
+			popped_item = last;
 			context = context.pop();
 		}
 		return undefined;
-	};
-	proto.get_stateful_obj_and_context = function(context) {
-		var one_level_above_context = get_stateful_obj_context(context);
-		if(_.isUndefined(one_level_above_context)) {
-			return undefined;
-		} else {
-			return {
-				stateful_obj: one_level_above_context.last()
-				, context: one_level_above_context //.pop()
-			};
-		}
 	};
 
 	var state_basis = function(state) {
@@ -240,11 +242,13 @@ var RedStatefulPropContextualVal = function(options) {
 	this._context = options.context;
 	this._stateful_prop = options.stateful_prop;
 	this._value = cjs.$(_.bind(this.getter, this));
+	/*
 	this._value.onChange(_.bind(function() {
 		if(red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
 			console.log(this._value.update());
 		}
 	}, this));
+	*/
 };
 (function(my) {
 	var proto = my.prototype;

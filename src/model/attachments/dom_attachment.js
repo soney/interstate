@@ -28,6 +28,7 @@ var move = function(child_node, from_index, to_index) {
 
 // Red name: CSS name
 var changeable_css_props = {
+/*
 	"width": "width"
 	, "height": "height"
 	, "backgroundColor": "backgroundColor"
@@ -35,12 +36,15 @@ var changeable_css_props = {
 	, "left": "left"
 	, "top": "top"
 	, "position": "position"
+	*/
 };
 
 var changeable_attributes = {
+/*
 	"src": "src"
 	, "class": "class"
 	, "id": "id"
+	*/
 };
 
 var RedDomAttachmentInstance = function(options) {
@@ -99,12 +103,12 @@ var RedDomAttachmentInstance = function(options) {
 		return listeners;
 	};
 	proto.add_tag_change_listener = function() {
-		var parent = this.get_parent();
+		var owner = this.get_owner();
 		var context = this.get_context();
 
 		var old_tag = undefined;
 		return cjs.liven(function() {
-			var tag = parent.prop_val("tag", context);
+			var tag = owner.prop_val("tag", context);
 			if(tag !== old_tag) {
 				old_tag = tag;
 				if(_.isString(tag)) {
@@ -121,13 +125,13 @@ var RedDomAttachmentInstance = function(options) {
 		}).run();
 	};
 	proto.add_css_change_listener = function(red_attr_name, css_prop_name) {
-		var parent = this.get_parent();
+		var owner = this.get_owner();
 		var context = this.get_context();
 
 		return cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
-				var val = parent.prop_val(red_attr_name, context);
+				var val = owner.prop_val(red_attr_name, context);
 				if(val) {
 					dom_obj.style[css_prop_name] = val;
 				} else {
@@ -140,13 +144,13 @@ var RedDomAttachmentInstance = function(options) {
 		});
 	};
 	proto.add_attribute_change_listener = function(red_attr_name, attr_name) {
-		var parent = this.get_parent();
+		var owner = this.get_owner();
 		var context = this.get_context();
 
 		return cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
-				var val = parent.prop_val(red_attr_name, context);
+				var val = owner.prop_val(red_attr_name, context);
 				if(val) {
 					dom_obj[attr_name] = val;
 				} else {
@@ -159,17 +163,17 @@ var RedDomAttachmentInstance = function(options) {
 		});
 	};
 	proto.add_children_change_listener = function() {
-		var parent = this.get_parent();
+		var owner = this.get_owner();
 		var context = this.get_context();
 
-		return cjs.liven(function() {
+		var cc = cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
 
-			var text = parent.prop_val("text", context);
+			var text = owner.prop_val("text", context);
 			if(text) {
 				dom_obj.textContent = cjs.get(text);
 			} else {
-				var children = parent.get_prop("children", context);
+				var children = owner.get_prop("children", context);
 				var children_context = context.push(children);
 
 				var children_got = red.get_contextualizable(children, children_context);
@@ -192,7 +196,6 @@ var RedDomAttachmentInstance = function(options) {
 
 						var dom_attachments;
 
-						console.log(manifestations, prop_value.id);
 						if(_.isArray(manifestations)) {
 							dom_attachments = [];
 							_.each(manifestations, function(manifestation) {
@@ -235,6 +238,7 @@ var RedDomAttachmentInstance = function(options) {
 			context: this
 			, pause_while_running: true
 		});
+		return cc;
 	};
 }(RedDomAttachmentInstance));
 
