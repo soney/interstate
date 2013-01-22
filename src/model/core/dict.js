@@ -539,7 +539,7 @@ var RedDict = function(options, defer_initialization) {
 	proto.get_manifestation_obj = function(context, basis, index) {
 		var mm = this.get_manifestation_map_for_context(context);
 		cjs.wait();
-		var dict = mm.get_or_put(basis, _.bind(function() {
+		var dict = mm.get_or_put(basis, function() {
 			var dict = red.create("dict", {
 				manifestation_of: this,
 				value: {
@@ -548,7 +548,7 @@ var RedDict = function(options, defer_initialization) {
 				}
 			});
 			return dict;
-		}, this));
+		}, this);
 		cjs.signal();
 		return dict;
 	};

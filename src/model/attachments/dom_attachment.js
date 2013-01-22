@@ -166,10 +166,8 @@ var RedDomAttachmentInstance = function(options) {
 			var dom_obj = this.get_dom_obj();
 
 			var text = parent.prop_val("text", context);
-			console.log("REFRESH", parent.id);
 			if(text) {
 				dom_obj.textContent = cjs.get(text);
-				window.dom_obj = dom_obj;
 			} else {
 				var children = parent.get_prop("children", context);
 				var children_context = context.push(children);
@@ -190,11 +188,11 @@ var RedDomAttachmentInstance = function(options) {
 				_.each(prop_values, function(prop_value) {
 					if(prop_value instanceof red.RedDict) {
 						var pv_context = context.push(prop_value);
-
 						var manifestations = prop_value.get_manifestation_objs(pv_context);
 
 						var dom_attachments;
 
+						console.log(manifestations, prop_value.id);
 						if(_.isArray(manifestations)) {
 							dom_attachments = [];
 							_.each(manifestations, function(manifestation) {
@@ -220,7 +218,6 @@ var RedDomAttachmentInstance = function(options) {
 				});
 
 				var diff = _.diff(current_children, desired_children);
-				window.dc = desired_children;
 				_.forEach(diff.removed, function(info) {
 					var index = info.from, child = info.from_item;
 					remove(child);

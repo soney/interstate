@@ -29,6 +29,7 @@
 								.set("obj", "stateful")
 								.cd("obj")
 								.set("(protos)", "INIT", "dom")
+								.set("(manifestations)", "5")
 								.set("tag")
 								.set("tag", "INIT", "'div'")
 								.set("text")
@@ -42,6 +43,14 @@
 
 					env.print_on_return = true;
 					console.log(env.print());
+					/*
+					var d = red.create("dict");
+					cjs.liven(function() {
+						console.log(d.get_manifestation_objs(red.create("context")));
+					});
+					d.set_manifestations(3);
+					d.set_manifestations(5);
+					*/
 
 					var storage_prefix = "_";
 					window.save = function(name) {
