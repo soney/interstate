@@ -24,7 +24,7 @@ var RedDict = function(options, defer_initialization) {
 		},
 		context: this
 	});
-	*/
+	/**/
 };
 
 (function(my) {
@@ -39,7 +39,7 @@ var RedDict = function(options, defer_initialization) {
 		"direct_protos": {
 			default: function() { return cjs.array(); }
 			, getter_name: "direct_protos"
-			, prop_val: "_set_direct_protos"
+			, setter_name: "_set_direct_protos"
 			, env_visible: true
 			, env_name: "protos"
 		}

@@ -164,6 +164,9 @@ var RedDomAttachmentInstance = function(options) {
 
 		var cc = cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
+			if(!_.isElement(dom_obj)) {
+				return;
+			}
 
 			var text = owner.prop_val("text", context);
 			if(text) {

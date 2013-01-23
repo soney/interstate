@@ -454,6 +454,7 @@ var Env = function(options) {
 		var command = this._get_unset_prop_command.apply(this, arguments);
 		this._do(command);
 		if(this.print_on_return) return this.print();
+		else return this;
 	};
 
 	proto._get_rename_prop_command = function(from_name, to_name) {

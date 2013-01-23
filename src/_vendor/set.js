@@ -28,11 +28,9 @@ var isString = function(obj) {
 	return toString.call(obj) == '[object String]';
 };
 var extend = function(obj) {
-	var args = slice.call(arguments, 1)
-		, i
-		, len = args.length;
-	for(i = 0; i<len; i++) {
-		var source = args[i];
+	var i, len = arguments.length;
+	for(i = 1; i<len; i++) {
+		var source = arguments[i];
 		for (var prop in source) {
 			obj[prop] = source[prop];
 		}
