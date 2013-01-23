@@ -11,9 +11,7 @@ var RedDict = function(options, defer_initialization) {
 
 	this.type = "red_dict";
 	this.id = _.uniqueId();
-	if(defer_initialization === true) {
-		//this.initialize = _.bind(this.do_initialize, this, options);
-	} else {
+	if(defer_initialization !== true) {
 		this.do_initialize(options);
 	}
 	/*

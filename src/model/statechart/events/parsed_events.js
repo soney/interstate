@@ -142,8 +142,9 @@ var id  = 0;
 		this.options = options;
 		this._str = cjs.is_constraint(options.str) ? options.str : cjs(options.str);
 		if(options.inert_super_event !== true) {
-			var context = options.context;
-			var parent = context.last();
+			var SOandC = red.find_stateful_obj_and_context(options.context);
+			var context = SOandC.context;
+			var parent = SOandC.stateful_obj;
 
 			var self = this;
 			this._tree = cjs(function() {
@@ -178,7 +179,9 @@ var id  = 0;
 	proto.child_fired = function() { this.fire.apply(this, arguments); };
 	proto.get_str = function() { return this._str.get(); };
 	proto.set_str = function(str) { this._str.set(str); };
-	proto.create_shadow = function(parent_statechart, context) { return red.create_event("parsed", {str: this._str, context: context}); };
+	proto.create_shadow = function(parent_statechart, context) {
+		return red.create_event("parsed", {str: this._str, context: context});
+	};
 	proto.destroy = function() {
 		if(this._live_event_creator) {
 			this._live_event_creator.destroy();

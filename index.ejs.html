@@ -28,12 +28,17 @@
 								.cd("children")
 								.set("obj", "stateful")
 								.cd("obj")
+								.add_state("hover")
+								.add_transition("INIT", "hover", "mouseover(this)")
+								.add_transition("hover", "INIT", "mouseout(this)")
+								.set("(manifestations)", "2")
 								.set("(protos)", "INIT", "dom")
-								.set("(manifestations)", "1")
 								.set("tag")
 								.set("tag", "INIT", "'div'")
 								.set("text")
 								.set("text", "INIT", "'hello world'")
+								.set("text", "hover", "'hover'")
+					/**/
 								;
 					var obj = env.get_pointer();
 

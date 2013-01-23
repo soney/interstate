@@ -28,7 +28,6 @@ var move = function(child_node, from_index, to_index) {
 
 // Red name: CSS name
 var changeable_css_props = {
-/*
 	"width": "width"
 	, "height": "height"
 	, "backgroundColor": "backgroundColor"
@@ -36,15 +35,12 @@ var changeable_css_props = {
 	, "left": "left"
 	, "top": "top"
 	, "position": "position"
-	*/
 };
 
 var changeable_attributes = {
-/*
 	"src": "src"
 	, "class": "class"
 	, "id": "id"
-	*/
 };
 
 var RedDomAttachmentInstance = function(options) {
@@ -191,7 +187,7 @@ var RedDomAttachmentInstance = function(options) {
 				var desired_children = [];
 				_.each(prop_values, function(prop_value) {
 					if(prop_value instanceof red.RedDict) {
-						var pv_context = context.push(prop_value);
+						var pv_context = children_context.push(prop_value);
 						var manifestations = prop_value.get_manifestation_objs(pv_context);
 
 						var dom_attachments;

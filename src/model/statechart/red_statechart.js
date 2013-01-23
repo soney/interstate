@@ -291,7 +291,7 @@ var State = function(options, defer_initialization) {
 	options = options || {};
 	able.make_this_listenable(this);
 	this._id = _.uniqueId();
-		this.$active_transition = cjs.$(false);
+	this.$active_transition = cjs.$(false);
 
 	this.$onBasisAddTransition = _.bind(function(event) {
 		var transition = event.transition;
@@ -319,6 +319,9 @@ var State = function(options, defer_initialization) {
 			index = event.index;
 		this.move_state(state_name, index);
 	}, this);
+	this.$onBasisMakeConcurrent = _.bind(function(event) {
+		this.make_concurrent(event.concurrent);
+	}, this);
 	this.$onBasisDestroy = _.bind(function(event) {
 		this.destroy();
 	}, this);
@@ -339,6 +342,7 @@ var State = function(options, defer_initialization) {
 			this._basis.off("remove_substate", this.$onBasisRemoveSubstate);
 			this._basis.off("rename_substate", this.$onBasisRenameSubstate);
 			this._basis.off("move_substate", this.$onBasisMoveSubstate);
+			this._basis.off("make_concurrent", this.$onBasisMakeConcurrent);
 			this._basis.off("destroy", this.$onBasisDestroy);
 		}
 		this._basis = basis;
@@ -346,7 +350,8 @@ var State = function(options, defer_initialization) {
 			_.each(basis.get_substates(), function(substate) {
 				var shadow = substate.create_shadow({
 					context: this.context(),
-					parent: this
+					parent: this,
+					running: this.is_running()
 				});
 				var name = substate.get_name(basis);
 				this.add_substate(name, shadow);
@@ -382,6 +387,7 @@ var State = function(options, defer_initialization) {
 			this._basis.on("remove_substate", this.$onBasisRemoveSubstate);
 			this._basis.on("rename_substate", this.$onBasisRenameSubstate);
 			this._basis.on("move_substate", this.$onBasisMoveSubstate);
+			this._basis.on("make_concurrent", this.$onBasisMakeConcurrent);
 			this._basis.on("destroy", this.$onBasisDestroy);
 		}
 		return this;
@@ -522,7 +528,7 @@ red.State = State;
 
 var StartState = function(options) {
 	StartState.superclass.constructor.apply(this, arguments);
-	this._running = false;
+	this._running = options.running === true;
 };
 (function(my) {
 	_.proto_extend(my, State);
@@ -644,18 +650,44 @@ var Statechart = function(options) {
 		this.$substates = cjs.map({
 			valuehash: "hash"
 		});
-		this.$local_state = cjs.$(this._start_state);
-		this.$concurrent = cjs.$(false);
-		this._running = false;
+		this.$concurrent = cjs.$(options.concurrent === true);
 		this._parent = options.parent;
 		this.$incoming_transitions = cjs.array();
 		this.$outgoing_transitions = cjs.array();
 
+		this._running = options.running === true;
 		my.superclass.do_initialize.apply(this, arguments);
+
+		if(this._running) {
+			if(this._basis) {
+				var basis_start_state = this._basis.get_start_state();
+				var basis_start_state_to = basis_start_state.getTo();
+				
+				var my_start_state;
+				if(basis_start_state_to === basis_start_state) {
+					my_start_state = this._start_state;
+				} else {
+					my_start_state = find_equivalent_state(basis_start_state_to, this);
+				}
+				this.$local_state = cjs.$(my_start_state);
+			} else {
+				this.$local_state = cjs.$(this._start_state);
+			}
+		} else {
+			this.$local_state = cjs.$(this._start_state);
+		}
 	};
 
 	proto.is_concurrent = function() { return this.$concurrent.get(); };
-	proto.make_concurrent = function(is_concurrent) { this.$concurrent.set(is_concurrent===true); return this; };
+	proto.make_concurrent = function(is_concurrent) {
+		is_concurrent = is_concurrent === true;
+		this.$concurrent.set(is_concurrent);
+		this._emit("make_concurrent", {
+			target: this,
+			concurrent: is_concurrent
+		});
+		return this;
+	};
 	proto.get_substates = function(include_start) {
 		var substates = this.$substates.values();
 		if(include_start) {
@@ -1089,14 +1121,18 @@ var Statechart = function(options) {
 	proto.create_shadow = function(options) {
 		var start_state = new StartState({}, true);
 
+		var my_start_state = this.get_start_state();
+
 		var rv = new Statechart(_.extend({
 			basis: this,
-			start_state: start_state
+			start_state: start_state,
+			concurrent: this.is_concurrent()
 		}, options));
 
 		start_state.do_initialize({
 			parent: rv,
-			basis: this.get_start_state()
+			running: rv.is_running(),
+			basis: my_start_state
 		});
 
 		return rv;

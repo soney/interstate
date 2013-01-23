@@ -1,6 +1,29 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+red.find_stateful_obj_and_context = function(context) {
+	var popped_item, last;
+	while(!context.is_empty()) {
+		last = context.last();
+		if(last instanceof red.RedStatefulObj) {
+			if(popped_item && popped_item.get_manifestation_of() === last) {
+				return {
+						stateful_obj: last,
+						context: context.push(popped_item)
+					};
+			} else {
+				return {
+						stateful_obj: last,
+						context: context
+					};
+			}
+		}
+		popped_item = last;
+		context = context.pop();
+	}
+	return undefined;
+};
+
 var RedStatefulObj = function(options, defer_initialization) {
 	options = options || {};
 	RedStatefulObj.superclass.constructor.apply(this, arguments);
@@ -57,7 +80,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 	proto._create_statechart_for_context = function(context) {
 		var own_statechart = this.get_own_statechart();
 		cjs.wait();
-		var shadow_statechart = own_statechart.create_shadow({context: context});
+		var shadow_statechart = own_statechart.create_shadow({context: context, running: true});
 
 		shadow_statechart.run();
 		cjs.signal();
