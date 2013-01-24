@@ -740,7 +740,10 @@ var Statechart = function(options) {
 			throw new Error("Active transition is already set");
 		}
 		*/
+		var sw = new Stopwatch().start();
 		this.$active_transition.set(transition);
+		sw.lap("active_transition_set1");
+		sw.drop("sas");
 		red.event_queue.once("end_event_queue_round_0", function() {
 			this._emit("pre_transition_fire", {
 				type: "pre_transition_fire",
@@ -751,9 +754,13 @@ var Statechart = function(options) {
 			});
 		}, this);
 		red.event_queue.once("end_event_queue_round_3", function() {
+			var sw = new Stopwatch().start();
 			this.$local_state.set(state);
+			sw.lap("local_state_set_1");
+			sw.drop("sas");
 		}, this);
 		red.event_queue.once("end_event_queue_round_4", function() {
+			var sw = new Stopwatch().start();
 			this._emit("post_transition_fire", {
 				type: "post_transition_fire",
 				transition: transition,
@@ -761,7 +768,10 @@ var Statechart = function(options) {
 				event: event,
 				state: state
 			});
+			sw.lap("emit");
 			this.$active_transition.set(false);
+			sw.lap("active_transition_set2");
+			sw.drop("sas");
 		}, this);
 	};
 	proto.run = function() {

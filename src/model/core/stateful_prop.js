@@ -222,11 +222,13 @@ var RedStatefulPropContextualVal = function(options) {
 	this._stateful_prop = options.stateful_prop;
 	this._last_value = undefined;
 	this._value = cjs.$(_.bind(this.getter, this));
+	/*
 	this._value.onChange(_.bind(function() {
 		if(red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
 			this._value.update();
 		}
 	}, this));
+	*/
 };
 (function(my) {
 	var proto = my.prototype;
@@ -276,6 +278,7 @@ var RedStatefulPropContextualVal = function(options) {
 			var active_transitions = statechart.get_active_transitions();
 			var lenj = active_transitions.length;
 			for(var j = 0; j < lenj; j++) {
+				console.log(i,j);
 				var transition = active_transitions[i];
 				transition_val = get_value_for_state(transition, parent, inherits_from);
 
