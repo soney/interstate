@@ -23,6 +23,7 @@
 					_ = red._;
 
 					red.__debug = false;
+					/*
 
 					env = red	.create("environment")
 								.cd("children")
@@ -38,17 +39,96 @@
 								.set("text")
 								.set("text", "INIT", "'hello world'")
 								.set("text", "hover", "'hover'")
-					/**/
 								;
-					var obj = env.get_pointer();
 
-					output_view = $("<div />").dom_output({
-						root: env.get_root()
-						, context: env.get_root_context()
-					}).appendTo(document.body);
 					env.print_on_return = true;
 					console.log(env.print());
 					
+					var obj = env.get_pointer();
+					var root = env.get_root();
+					var root_context = env.get_root_context();
+					/**/
+					/*
+					var root = red.create("dict", {direct_attachments: [red.create("dom_attachment", {
+						instance_options: {
+							tag: "div"
+						}
+					})]});
+					var root_context = red.create("context", {stack: [root]});
+
+					var children = red.create("dict");
+					root.set("children", children);
+
+					window.text = cjs.$("hello world");
+
+					var obj = red.create("dict", {direct_attachments: [red.create("dom_attachment")]});
+					obj.set("tag", "div");
+					obj.set("text", text);
+					obj.set_manifestations(2000);
+					children.set("obj", obj);
+					window.obj = obj;
+					/**/
+
+					env = red	.create("environment")
+								.cd("children")
+								.set("obj", "stateful")
+								.cd("obj")
+								.add_state("hover")
+								.add_transition("INIT", "hover", "mouseover(this)")
+								.add_transition("hover", "INIT", "mouseout(this)")
+								.set("(manifestations)", "1000")
+								.set("(protos)", "INIT", "dom")
+								.set("tag")
+								.set("tag", "INIT", "'div'")
+								.set("text")
+								.set("text", "INIT", "'hello world'")
+								.set("text", "hover", "'hover'")
+								;
+
+					env.print_on_return = true;
+					console.log(env.print());
+					
+					var obj = env.get_pointer();
+					var root = env.get_root();
+					var root_context = env.get_root_context();
+
+
+					output_view = $("<div />").dom_output({
+						root: root
+						, context: root_context
+					}).appendTo(document.body);
+					/**/
+					/*
+					var a = window.a = cjs.$("A");
+					var b = window.b = cjs.$("B");
+					var c1 = window.c1 = cjs.$(1);
+					var c2 = window.c2 = cjs.$(function() {
+							var c1_val = c1.get();
+							if(c1_val === 1 || c1_val === 2) {
+								return a.get();
+							} else {
+								return b.get();
+							}
+						}, false, {
+							check_on_nullify: true
+						});
+					var c3 = window.c3 = cjs.$(function() {
+						console.log("Eval C3");
+						return "c2 is " + c2.get();
+					});
+
+					console.error("c3.get();");
+					console.log(c3.get());
+					console.error("c1.set(2);");
+					c1.set(2);
+					console.error("c3.get();");
+					console.log(c3.get());
+					console.error("c1.set(3);");
+					c1.set(3);
+					console.error("c3.get();");
+					console.log(c3.get());
+
+					*/
 
 					//console.log(obj);
 					//console.log(manifestations);

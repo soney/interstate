@@ -28,16 +28,12 @@ var EventQueue = function() {
 
 	proto.run_event_queue = function() {
 		if(this.running_event_queue === false) {
-			var sw = new Stopwatch().start();
-			console.log("begin running");
 			this.running_event_queue = true;
 			this._emit("begin_event_queue", {
 				type: "begin_event_queue",
 				target: this
 			});
-			sw.lap("begin_event_queue");
 			this.do_run_event_queue();
-			sw.lap("run_event_queue");
 			for(var i = 0; i<this.num_post_event_queue_rounds; i++) {
 				this.end_queue_round = i;
 				var event_type = "end_event_queue_round_"+i;
@@ -46,12 +42,9 @@ var EventQueue = function() {
 					target: this,
 					round: i
 				});
-				sw.lap("lap_"+i);
 			}
 			this.end_queue_round = false;
 			this.running_event_queue = false;
-			console.log("end running");
-			sw.drop("eq");
 		}
 	};
 

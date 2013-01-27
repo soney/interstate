@@ -125,7 +125,7 @@ var add_transition_listener = function(str, statechart, activation_listener, dea
 };
 
 
-var find_equivalent_state = function(to_state, in_tree) {
+var find_equivalent_state = red.find_equivalent_state = function(to_state, in_tree) {
 	var in_tree_basis = in_tree.basis();
 	var in_tree_basis_lineage = in_tree_basis.get_lineage();
 	var to_state_lineage = to_state.get_lineage();
@@ -158,6 +158,53 @@ var find_equivalent_state = function(to_state, in_tree) {
 	if(search_item.basis() !== to_state) { throw new Error("Could not find correct equivalent item"); }
 	return search_item;
 };
+var find_equivalent_transition = red.find_equivalent_transition = function(to_transition, in_tree) {
+	var from = to_transition.from();
+	var to = to_transition.to();
+	var in_tree_from = find_equivalent_state(from, in_tree);
+	var in_tree_from_outgoing = in_tree_from.get_outgoing_transitions();
+	var len = in_tree_from_outgoing.length;
+	for(var i = 0; i<len; i++) {
+		var t = in_tree_from_outgoing[i];
+		if(t.basis() === to_transition) {
+			return t;
+		}
+	}
+	throw new Error("Could not find equivalent transition");
+/*
+	var in_tree_basis = in_tree.basis();
+	var in_tree_basis_lineage = in_tree_basis.get_lineage();
+	var to_state_lineage = to_state.get_lineage();
+
+	var in_tree_basis_lineage_len = in_tree_basis_lineage.length;
+	var to_state_lineage_len = to_state_lineage.length;
+	
+	var in_tree_basis_index = in_tree_basis_lineage_len - 1;
+	var to_state_index;
+	outer_loop:
+	while(in_tree_basis_index < in_tree_basis_lineage_len) {
+		for(var i = to_state_lineage_len; i>=0; i--) {
+			if(to_state_lineage[i] === in_tree_basis_lineage[in_tree_basis_index]) {
+				to_state_index = i;
+				break outer_loop;
+			}
+		}
+		in_tree_basis_index--;
+	}
+	var search_item = in_tree;
+	var parentage_level = in_tree_basis_lineage_len - 1 - in_tree_basis_index;
+	_.times(parentage_level, function() {
+		search_item = search_item.parent();
+	});
+
+	for(var i = to_state_index+1; i < to_state_lineage_len; i++) {
+		var name = to_state_lineage[i].get_name(to_state_lineage[i-1]);
+		search_item = search_item.get_substate_with_name(name);
+	}
+	if(search_item.basis() !== to_state) { throw new Error("Could not find correct equivalent item"); }
+	return search_item;
+	*/
+};
 
 var StatechartTransition = function(options, defer_initialization) {
 	able.make_this_listenable(this);
@@ -183,6 +230,7 @@ var StatechartTransition = function(options, defer_initialization) {
 	var proto = my.prototype;
 	able.make_proto_listenable(proto);
 	proto.do_initialize = function(options) {
+		this.$active = cjs.$(false);
 		this._from_state = options.from;
 		this._to_state = options.to;
 		this.set_basis(options.basis);
@@ -190,6 +238,8 @@ var StatechartTransition = function(options, defer_initialization) {
 		this.do_fire = _.bind(this.fire, this);
 		this.set_event(options.event);
 	};
+	proto.set_active = function(to_active) { this.$active.set(to_active === true); };
+	proto.is_active = function(to_active) { return this.$active.get(); };
 	proto.basis = function() { return this._basis; };
 	proto.set_basis = function(basis) {
 		if(this._basis) {
@@ -239,9 +289,12 @@ var StatechartTransition = function(options, defer_initialization) {
 	proto.involves = function(state) { return this.from() === state || this.to() === state; };
 	proto.destroy = function() {
 		this._emit("destroy", {type: "destroy", target: this});
+		cjs.wait();
+		this.$active.destroy();
 		this.set_basis(undefined);
 		this._event.off_fire(this.do_fire);
 		this._event.destroy();
+		cjs.signal();
 	};
 	proto.fire = function(event) {
 		if(this.from().on_outgoing_transition_fire(this, event)) {
@@ -291,7 +344,6 @@ var State = function(options, defer_initialization) {
 	options = options || {};
 	able.make_this_listenable(this);
 	this._id = _.uniqueId();
-	this.$active_transition = cjs.$(false);
 
 	this.$onBasisAddTransition = _.bind(function(event) {
 		var transition = event.transition;
@@ -347,15 +399,22 @@ var State = function(options, defer_initialization) {
 		}
 		this._basis = basis;
 		if(this._basis) {
-			_.each(basis.get_substates(), function(substate) {
-				var shadow = substate.create_shadow({
-					context: this.context(),
-					parent: this,
-					running: this.is_running()
-				});
-				var name = substate.get_name(basis);
-				this.add_substate(name, shadow);
-			}, this);
+			if(this._basis instanceof Statechart) {
+				var basis_start_state = this._basis.get_start_state();
+				var basis_start_state_to = basis_start_state.getTo();
+				var is_running = this.is_running();
+				var my_context = this.context();
+				_.each(basis.get_substates(), function(substate) {
+					var shadow = substate.create_shadow({
+						context: my_context,
+						parent: this,
+						running: is_running,
+						active: is_running && basis_start_state_to === substate
+					});
+					var name = substate.get_name(basis);
+					this.add_substate(name, shadow);
+				}, this);
+			}
 			if(this.parent() === undefined) { // When all of the substates have been copied
 				var flat_substates = this.flatten_substates();
 
@@ -394,10 +453,13 @@ var State = function(options, defer_initialization) {
 	};
 
 	proto.do_initialize = function(options) {
+		this.$active = cjs.$(options.active === true);
 		this._parent = options.parent;
 		this._context = options.context;
 		this.set_basis(options.basis);
 	};
+	proto.set_active = function(to_active) { this.$active.set(to_active === true); };
+	proto.is_active = function(to_active) { return this.$active.get(); };
 	proto.get_name = function(relative_to) {
 		var parent = this.parent();
 		if(!relative_to) {
@@ -489,6 +551,10 @@ var State = function(options, defer_initialization) {
 			cjs.signal();
 		}
 		return false;
+	};
+
+	proto.destroy = function() {
+		this.$active.destroy();
 	};
 
 	proto.stringify = function(tab_level, punctuation) {
@@ -610,7 +676,10 @@ var StartState = function(options) {
 		return this;
 	};
 	proto.destroy = function() {
+		cjs.wait();
+		my.superclass.do_initialize.apply(this, arguments);
 		this.outgoingTransition.destroy();
+		cjs.signal();
 	};
 
 	proto.serialize = function() {
@@ -658,23 +727,17 @@ var Statechart = function(options) {
 		this._running = options.running === true;
 		my.superclass.do_initialize.apply(this, arguments);
 
-		if(this._running) {
-			if(this._basis) {
-				var basis_start_state = this._basis.get_start_state();
-				var basis_start_state_to = basis_start_state.getTo();
-				
-				var my_start_state;
-				if(basis_start_state_to === basis_start_state) {
-					my_start_state = this._start_state;
-				} else {
-					my_start_state = find_equivalent_state(basis_start_state_to, this);
-				}
-				this.$local_state = cjs.$(my_start_state);
+		if(this._running && this._basis) {
+			var basis_start_state = this._basis.get_start_state();
+			var basis_start_state_to = basis_start_state.getTo();
+			
+			if(basis_start_state_to === basis_start_state) {
+				this._local_state = this._start_state;
 			} else {
-				this.$local_state = cjs.$(this._start_state);
+				this._local_state = find_equivalent_state(basis_start_state_to, this);
 			}
 		} else {
-			this.$local_state = cjs.$(this._start_state);
+			this._local_state = this._start_state;
 		}
 	};
 
@@ -699,7 +762,7 @@ var Statechart = function(options) {
 	proto.get_start_state = function() { return this._start_state; };
 	proto.get_incoming_transitions = function() { return this.$incoming_transitions.toArray(); };
 	proto.get_outgoing_transitions = function() { return this.$outgoing_transitions.toArray(); };
-	proto.get_active_substate = function() { return this.$local_state.get(); };
+	proto.get_active_substate = function() { return this._local_state; };
 	proto.is_running = function() { return this._running; };
 
 	proto.flatten_substates = function(include_start) {
@@ -708,6 +771,7 @@ var Statechart = function(options) {
 		})));
 	};
 
+/*
 	proto.get_active_transition = function() {
 		return this.$active_transition.get();
 	};
@@ -734,16 +798,16 @@ var Statechart = function(options) {
 		}
 		return rv;
 	};
+	*/
 	proto.set_active_substate = function(state, transition, event) {
 	/*
 		if(this._active_transition) {
 			throw new Error("Active transition is already set");
 		}
 		*/
-		var sw = new Stopwatch().start();
-		this.$active_transition.set(transition);
-		sw.lap("active_transition_set1");
-		sw.drop("sas");
+		if(transition) {
+			transition.set_active(true);
+		}
 		red.event_queue.once("end_event_queue_round_0", function() {
 			this._emit("pre_transition_fire", {
 				type: "pre_transition_fire",
@@ -754,13 +818,17 @@ var Statechart = function(options) {
 			});
 		}, this);
 		red.event_queue.once("end_event_queue_round_3", function() {
-			var sw = new Stopwatch().start();
-			this.$local_state.set(state);
-			sw.lap("local_state_set_1");
-			sw.drop("sas");
+			cjs.wait();
+			if(this._local_state) {
+				this._local_state.set_active(false);
+			}
+			this._local_state = state;
+			if(this._local_state) {
+				this._local_state.set_active(true);
+			}
+			cjs.signal();
 		}, this);
 		red.event_queue.once("end_event_queue_round_4", function() {
-			var sw = new Stopwatch().start();
 			this._emit("post_transition_fire", {
 				type: "post_transition_fire",
 				transition: transition,
@@ -768,10 +836,9 @@ var Statechart = function(options) {
 				event: event,
 				state: state
 			});
-			sw.lap("emit");
-			this.$active_transition.set(false);
-			sw.lap("active_transition_set2");
-			sw.drop("sas");
+			if(transition) {
+				transition.set_active(false);
+			}
 		}, this);
 	};
 	proto.run = function() {
@@ -817,8 +884,7 @@ var Statechart = function(options) {
 		if(this.is_concurrent()) {
 			return this.get_substates();
 		} else {
-			var local_state = this.$local_state.get();
-			return [local_state];
+			return [this._local_state];
 		}
 	};
 	proto.get_active_states = function() {
@@ -1000,6 +1066,7 @@ var Statechart = function(options) {
 		});
 
 		cjs.wait();
+		my.superclass.do_initialize.apply(this, arguments);
 		_.forEach(this.get_incoming_transitions(), function(transition) {
 			transition.remove().destroy();
 		});
@@ -1010,7 +1077,6 @@ var Statechart = function(options) {
 			substate.destroy();
 		});
 		this.$substates.destroy();
-		this.$local_state.destroy();
 		this.$concurrent.destroy();
 		this.$incoming_transitions.destroy();
 		this.$outgoing_transitions.destroy();
@@ -1142,6 +1208,7 @@ var Statechart = function(options) {
 		start_state.do_initialize({
 			parent: rv,
 			running: rv.is_running(),
+			active: true,
 			basis: my_start_state
 		});
 
