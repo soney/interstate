@@ -76,7 +76,7 @@
 								.add_state("hover")
 								.add_transition("INIT", "hover", "mouseover(this)")
 								.add_transition("hover", "INIT", "mouseout(this)")
-								.set("(manifestations)", "1000")
+								.set("(manifestations)", "100")
 								.set("(protos)", "INIT", "dom")
 								.set("tag")
 								.set("tag", "INIT", "'div'")
@@ -85,8 +85,6 @@
 								.set("text", "hover", "'hover'")
 								;
 
-					env.print_on_return = true;
-					console.log(env.print());
 					
 					var obj = env.get_pointer();
 					var root = env.get_root();
@@ -97,6 +95,9 @@
 						root: root
 						, context: root_context
 					}).appendTo(document.body);
+
+					env.print_on_return = true;
+					console.log(env.print());
 					/**/
 					/*
 					var a = window.a = cjs.$("A");

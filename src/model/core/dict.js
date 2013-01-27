@@ -581,6 +581,9 @@ var RedDict = function(options, defer_initialization) {
 		}
 	};
 
+	proto.clean_manifestation_objs = function() {
+	};
+
 	proto.hash = function() {
 		return this.id;
 	};
