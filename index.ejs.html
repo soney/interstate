@@ -25,7 +25,7 @@
 		}
 		div.songs {
 			max-height: 300px;
-			overflow: scroll;
+			overflow-y: scroll;
 		}
 		div.songs > div.song:nth-child(odd) {
 			background-color: #FEFEFE;
@@ -217,8 +217,8 @@
 						, context: root_context
 					}).appendTo(document.body);
 
-					env.print_on_return = true;
-					console.log(env.print());
+				//	env.print_on_return = true;
+				//	console.log(env.print());
 
 					var storage_prefix = "_";
 					window.save = function(name) {

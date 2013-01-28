@@ -32,10 +32,27 @@ _.forEach(dom_events, function(dom_event) {
 			if(_.isElement(parent) || parent === window) {
 				dom_elem = parent;
 			} else if(parent instanceof red.RedDict) {
-				var dom_attachment = parent.get_attachment_instance("dom", context);
-				if(dom_attachment) {
-					dom_elem = dom_attachment.get_dom_obj();
+				var manifestations = parent.get_manifestation_objs(context);
+				var dom_attachments;
+
+				if(_.isArray(manifestations)) {
+					dom_attachments = [];
+					_.each(manifestations, function(manifestation) {
+						var dom_attachment = parent.get_attachment_instance("dom", context.push(manifestation));
+						if(dom_attachment) {
+							dom_attachments.push(dom_attachment);
+						}
+					});
+				} else {
+					var dom_attachment = parent.get_attachment_instance("dom", context);
+					if(dom_attachment) {
+						dom_attachments = [dom_attachment];
+					}
 				}
+
+				dom_elem = _.map(dom_attachments, function(dom_attachment) {
+					return dom_attachment.get_dom_obj();
+				});
 			}
 
 			if(dom_elem) {

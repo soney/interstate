@@ -371,7 +371,7 @@ var RedStatefulPropContextualVal = function(options) {
 				if(info_i.statechart_order < info.statechart_order) {
 					info = info_i;
 				} else if(info_i.statechart_order === info.statechart_order) {
-					if(info_i.state.order(info.state.order) < 0) {
+					if(info_i.state.order(info.state) < 0) {
 						info = info_i;
 					}
 				}

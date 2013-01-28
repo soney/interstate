@@ -554,23 +554,34 @@ var State = function(options, defer_initialization) {
 	};
 
 	proto.order = function(other_state) {
-		// return -1 if other_state is ">" me
-		// return 1 if other_state is "<" me
-		// return 0 if other_state is "==" me
+		// return 1 if other_state is ">" me (as in should be further right)
+		// return -1 if other_state is "<" me (as in should be further left)
+		// return 0 if other_state is "==" me (same thing)
+
 		var my_lineage = this.get_lineage();
 		var other_lineage = other_state.get_lineage();
 
 		var mli = my_lineage[0];
 		var oli = other_lineage[0];
 		var len = Math.min(my_lineage.length, other_lineage.length);
+		var index_me, index_o;
 		for(var i = 1; i<len; i++) {
+			index_me = mli.get_substate_index(my_lineage[i]);
+			index_o = oli.get_substate_index(other_lineage[i]);
+			if(index_me < index_o) {
+				return 1;
+			} else if(index_me > index_o) {
+				return -1;
+			}
 			mli = my_lineage[i];
 			oli = other_lineage[i];
 		}
 
 		if(other_lineage.length > my_lineage.length) { // It is more specific
-		} else if(other_lineage.length > my_lineage.length) {
-		} else {
+			return -1;
+		} else if(other_lineage.length < my_lineage.length) {
+			return 1;
+		} else { // We are exactly the same
 			return 0;
 		}
 	};
@@ -964,7 +975,11 @@ var Statechart = function(options) {
 		}
 	};
 	proto.get_substate_index = function(substate) {
+		var name = substate.get_name(this);
+		return this.$substates.indexOf(name);
+		/*
 		return this.$substates.values().indexOf(this.find_state(substate));
+		*/
 	};
 	proto.add_substate = function(state_name, state, index) {
 		if(state instanceof Statechart) {
