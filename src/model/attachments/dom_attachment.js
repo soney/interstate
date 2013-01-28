@@ -147,6 +147,7 @@ var RedDomAttachmentInstance = function(options) {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
 				var val = owner.prop_val(red_attr_name, context);
+				console.log(dom_obj, red_attr_name, val, context);
 				if(val) {
 					dom_obj[attr_name] = val;
 				} else {

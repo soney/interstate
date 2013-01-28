@@ -264,159 +264,110 @@ var RedStatefulPropContextualVal = function(options) {
 		var parent = this.get_stateful_prop(),
 			context = this.get_context();
 
-		var statecharts, inherits_from;
-		var SOandC = red.find_stateful_obj_and_context(context);
-		if(this._stateful_prop._can_inherit === false) {
-			if(SOandC) {
-				statecharts = [SOandC.stateful_obj.get_statechart_for_context(SOandC.context)];
-			} else {
-				statecharts = [];
-			}
-			inherits_from = [];
-		} else {
-			if(SOandC) {
-				statecharts = SOandC.stateful_obj.get_statecharts(SOandC.context);
-			} else {
-				statecharts = [];
-			}
-			inherits_from = parent._get_inherits_from(context);
-		}
-		var inherits_from_and_me = ([parent]).concat(inherits_from);
+		var rv = false;
+		var state_vals = [];
 
-		var i,
-			rv = false,
-			len = inherits_from_and_me.length,
-			state_rv = false;
-
-		// Look for transitions first
-		for(i = 0; i<len; i++) {
-			var parent = inherits_from_and_me[i];
-			var statechart = statecharts[i];
+		if(parent._can_inherit === false) {
+			var SOandC = red.find_stateful_obj_and_context(context);
+			var statechart = SOandC.stateful_obj.get_statechart_for_context(SOandC.context);
 			var direct_values = parent._direct_values;
 			direct_values.each_key(function(key) {
 				if(key instanceof red.State) {
-					var state = red.find_equivalent_state(key, statechart);
-					if(state_rv === false && state.is_active()) {
-						state_rv = direct_values.get(key);
+					try {
+						var state = red.find_equivalent_state(key, statechart);
+						if(state.is_active()) {
+							state_vals.push({
+								key: key,
+								state: state,
+								direct_values: direct_values
+							});
+						}
+					} catch(e) {
+						return true;
 					}
 				} else {
-					var transition = red.find_equivalent_transition(key, statechart);
-					if(transition.is_active()) {
-						rv = direct_values.get(key);
-						return false;
+					try {
+						var transition = red.find_equivalent_transition(key, statechart);
+						if(transition.is_active()) {
+							rv = direct_values.get(key);
+							return false;
+						}
+					} catch(e) {
+						return true;
 					}
 				}
 			});
+
 			if(rv) {
 				this._last_value = rv;
 				return rv;
 			}
+		} else {
+			var SOandC = red.find_stateful_obj_and_context(context);
+			var stateful_obj = SOandC.stateful_obj;
+			var my_name = stateful_obj.direct_props().keyForValue(parent);
+			var protos_and_me = ([stateful_obj]).concat(stateful_obj._get_all_protos(SOandC.context));
+			var statecharts = _.compact(_.map(protos_and_me, function(x) {
+				if(x instanceof red.RedStatefulObj) {
+					return x.get_statechart_for_context(context);
+				}
+			}));
+			var inherits_from = _.compact(_.map(protos_and_me, function(x) {
+				return x.direct_props().get(my_name);
+			}));
+
+			var i, j, leni = inherits_from.length, lenj = statecharts.length;
+			for(i = 0; i<leni; i++) {
+				var ifrom = inherits_from[i];
+				var direct_values = ifrom._direct_values;
+
+
+				direct_values.each_key(function(key) {
+					if(key instanceof red.State) {
+						for(j = 0; j<lenj; j++) {
+							try {
+								var state = red.find_equivalent_state(key, statecharts[j]);
+								if(state.is_active()) {
+									state_vals.push({
+										key: key,
+										state: state,
+										direct_values: direct_values
+									});
+								}
+							} catch(e) {
+								continue;
+							}
+						}
+					} else {
+						for(j = 0; j<lenj; j++) {
+							try {
+								var transition = red.find_equivalent_transition(key, statecharts[j]);
+								if(transition.is_active()) {
+									rv = direct_values.get(key);
+									return false;
+								}
+							} catch(e) {
+								continue;
+							}
+						}
+					}
+				});
+
+				if(rv) {
+					this._last_value = rv;
+					return rv;
+				}
+			}
 		}
 
-		if(state_rv) {
-			this._last_value = state_rv;
-			return state_rv;
+		if(state_vals.length > 0) {
+			var info = state_vals[0];
+			var rv = info.direct_values.get(info.key);
+			this._last_value = rv;
+			return rv;
 		} else {
 			return this._last_value;
 		}
-		/*
-		len = state_entries.length;
-		var state_entries = [];
-		var i;
-
-			/*
-
-		var i;
-		var len = entries.length;
-		// First search for transition entries
-		for(i = 0; i<len; i++) {
-			var entry = entries[i];
-			var key = entry.key;
-			if(key instanceof red.StatechartTransition) {
-				console.log("transition");
-			}
-		}
-
-		// Then, for state entries
-		for(i = 0; i<len; i++) {
-			var entry = entries[i];
-			var key = entry.key;
-			if(key instanceof red.State) {
-				console.log("state");
-				for(var j = 0; j<statecharts.length; j++) {
-					try {
-						var state = red.find_equivalent_state(key, statecharts[j]);
-						if(state.is_active()) {
-							return entry.value;
-						}
-					} catch(e) {
-					}
-				}
-			}
-		}
-		console.log(entries);
-
-	/*
-		var parent = this.get_stateful_prop(),
-			context = this.get_context();
-		var statecharts, inherits_from;
-
-		var SOandC = red.find_stateful_obj_and_context(context);
-		if(this._stateful_prop._can_inherit === false) {
-			if(SOandC) {
-				statecharts = [SOandC.stateful_obj.get_statechart_for_context(SOandC.context)];
-			} else {
-				statecharts = [];
-			}
-			inherits_from = [];
-		} else {
-			if(SOandC) {
-				statecharts = SOandC.stateful_obj.get_statecharts(SOandC.context);
-			} else {
-				statecharts = [];
-			}
-			inherits_from = parent._get_inherits_from(context);
-		}
-
-		var i = 0;
-		var leni = statecharts.length;
-		for(i = 0; i<leni; i++) {
-			var statechart = statecharts[i];
-			var active_transitions = statechart.get_active_transitions();
-			var lenj = active_transitions.length;
-			for(var j = 0; j < lenj; j++) {
-				var transition = active_transitions[i];
-				transition_val = get_value_for_state(transition, parent, inherits_from);
-
-				if(transition_val) {
-					this._last_value = transition_val;
-					return transition_val;
-				}
-			}
-		}
-
-		var state_val;
-		var get_substates_index = 0;
-		i = 0;
-		while(i < statecharts.length && get_substates_index < statecharts.length) {
-			if(i === statecharts.length-1) {
-				var get_substate_statechart = statecharts[get_substates_index];
-				if(get_substate_statechart instanceof red.Statechart) {
-					statecharts.push.apply(statecharts, get_substate_statechart.get_active_direct_substates());
-				}
-				get_substates_index++;
-				continue;
-			}
-			var statechart = statecharts[i];
-			state_val = get_value_for_state(statechart, parent, inherits_from);
-			if(state_val) {
-				this._last_value = state_val;
-				return state_val;
-			}
-			i++;
-		}
-		return this._last_value;
-		*/
 	};
 	proto.destroy = function() {
 		this._value.destroy();

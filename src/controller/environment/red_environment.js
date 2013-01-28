@@ -374,7 +374,7 @@ var Env = function(options) {
 				value.do_initialize({
 					default_context: parent_obj.get_default_context().push(value)
 					, direct_protos: red.create("stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]})
-					, manifestations: red.create("stateful_prop")
+					//, manifestations: red.create("cell")
 				});
 				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");
@@ -491,6 +491,7 @@ var Env = function(options) {
 	proto._get_set_cell_command = function(arg0, arg1, arg2) {
 		var combine_command = false;
 		var cell, str, for_state;
+		var commands = [];
 		if(arguments.length === 1) {
 			cell = this.get_pointer();
 			str = arg0;
@@ -531,9 +532,14 @@ var Env = function(options) {
 					prop = prop.get_prop(name, ptr_context);
 					ptr_context = ptr_context.push(prop);
 				});
+				/*
+				if(!prop) {
+					commands.push(this._get_set_prop_command(arg0));
+				}
+				*/
 			}
 
-			for_state = arg1;
+			var for_state_name = arg1;
 			str = arg2;
 
 			var statechart_pointer = this.get_statechart_pointer();
@@ -559,15 +565,44 @@ var Env = function(options) {
 				for_state = get_state(for_state, pointer_states);
 			}
 			*/
-			if(for_state instanceof red.StatechartTransition) {
-				for_state = for_state;
+			if(for_state_name instanceof red.StatechartTransition) {
+				for_state = for_state_name;
 			} else {
-				for_state = statechart_pointer.find_state(for_state);
+				for_state = statechart_pointer.find_state(for_state_name);
+				if(!for_state) {
+					var pointer = this.get_pointer();
+					var context = pointer.get_default_context();
+					var inherited_statecharts = pointer.get_inherited_statecharts(context);
+					for(var i = 0; i<inherited_statecharts.length; i++) {
+						var isc = inherited_statecharts[i];
+						for_state = isc.find_state(for_state_name);
+						if(for_state) {
+							break;
+						}
+					}
+				}
 			}
 			cell = red.create("cell", {str: "", ignore_inherited_in_contexts: ignore_inherited_in_contexts });
-			combine_command = this._get_stateful_prop_set_value_command(prop, for_state, cell);
+			commands.push(this._get_stateful_prop_set_value_command(prop,
+																	for_state,
+																	cell));
 		}
+
+		commands.push(red.command("change_cell", {
+			cell: cell
+			, str: str
+		}));
+
 		var command;
+		if(commands.length === 1) {
+			command = command[0];
+		} else {
+			command = red.command("combined", {
+				commands: commands
+			});
+		}
+		/*
+
 		var change_cell_command = red.command("change_cell", {
 			cell: cell
 			, str: str
@@ -579,6 +614,7 @@ var Env = function(options) {
 		} else {
 			command = change_cell_command;
 		}
+		*/
 		return command;
 	};
 

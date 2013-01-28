@@ -102,17 +102,22 @@ var RedDict = function(options, defer_initialization) {
 
 	proto._get_direct_protos = function(context) {
 		var protos = red.get_contextualizable(this.direct_protos(), context);
-		if(!_.isArray(protos)) {
-			protos = [protos];
-		}
-		var rv = _	.chain(protos)
-					.map(function(x) {
+		var rv;
+		if(_.isArray(protos)) {
+			rv = _.map(protos, function(x) {
 						return red.get_contextualizable(x, context);
-					})
-					.filter(function(x) {
-						return x instanceof red.RedDict;
-					})
-					.value();
+					});
+		} else {
+			rv = red.get_contextualizable(protos, context);
+
+			if(!_.isArray(rv)) {
+				rv = [rv];
+			}
+		}
+
+		rv = _.filter(rv, function(x) {
+			return x instanceof red.RedDict;
+		});
 		return rv;
 	};
 

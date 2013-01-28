@@ -130,8 +130,13 @@ var get_$ = function(node, context, ignore_inherited_in_contexts) {
 
 		return property;
 	} else if(type === "ArrayExpression") {
-		return _.map(node.elements, function(element) {
+		var elements = _.map(node.elements, function(element) {
 			return get_$(element, context, ignore_inherited_in_contexts);
+		});
+		return cjs.$(function() {
+			return _.map(elements, function(element) {
+				return cjs.get(element);
+			});
 		});
 	} else if(type === "BlockStatement") {
 		var rv = {};
