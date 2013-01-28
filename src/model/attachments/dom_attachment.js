@@ -147,11 +147,10 @@ var RedDomAttachmentInstance = function(options) {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
 				var val = owner.prop_val(red_attr_name, context);
-				console.log(dom_obj, red_attr_name, val, context);
 				if(val) {
-					dom_obj[attr_name] = val;
-				} else {
-					delete dom_obj[attr_name];
+					dom_obj.setAttribute(attr_name, val);
+				} else if(dom_obj.hasAttribute(attr_name)) {
+					dom_obj.removeAttribute(attr_name);
 				}
 			}
 		}, {
@@ -238,9 +237,6 @@ var RedDomAttachmentInstance = function(options) {
 			context: this
 			, pause_while_running: true
 		});
-		if(owner.id == 1) {
-			window.ccid = cc.node.id;
-		}
 		return cc;
 	};
 }(RedDomAttachmentInstance));

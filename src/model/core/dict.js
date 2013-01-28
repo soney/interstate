@@ -574,6 +574,10 @@ var RedDict = function(options, defer_initialization) {
 			}
 			manifestations = arr;
 		}
+		if(manifestations) {
+			manifestations = red.get_contextualizable(manifestations, context);
+		}
+
 
 		if(_.isArray(manifestations)) {
 			var manifest_objs = _.map(manifestations, function(manifestation, index) {

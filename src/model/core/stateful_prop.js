@@ -279,7 +279,8 @@ var RedStatefulPropContextualVal = function(options) {
 							state_vals.push({
 								key: key,
 								state: state,
-								direct_values: direct_values
+								direct_values: direct_values,
+								statechart_order: j
 							});
 						}
 					} catch(e) {
@@ -331,7 +332,8 @@ var RedStatefulPropContextualVal = function(options) {
 									state_vals.push({
 										key: key,
 										state: state,
-										direct_values: direct_values
+										direct_values: direct_values,
+										statechart_order: j
 									});
 								}
 							} catch(e) {
@@ -360,8 +362,20 @@ var RedStatefulPropContextualVal = function(options) {
 			}
 		}
 
-		if(state_vals.length > 0) {
+		var sv_len = state_vals.length;
+		if(sv_len > 0) {
 			var info = state_vals[0];
+			var info_i;
+			for(i = 1; i<sv_len; i++) {
+				info_i = state_vals[i];
+				if(info_i.statechart_order < info.statechart_order) {
+					info = info_i;
+				} else if(info_i.statechart_order === info.statechart_order) {
+					if(info_i.state.order(info.state.order) < 0) {
+						info = info_i;
+					}
+				}
+			}
 			var rv = info.direct_values.get(info.key);
 			this._last_value = rv;
 			return rv;

@@ -6,7 +6,8 @@ var cjs = red.cjs, _ = red._;
 		this.type = type;
 		this.target = target;
 
-		this._bubble_listener = _.bind(function() {
+		this._bubble_listener = _.bind(function(event) {
+			event.preventDefault();
 			red.event_queue.wait();
 			this.fire.apply(this, arguments);
 			_.defer(function() {

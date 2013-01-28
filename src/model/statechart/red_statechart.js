@@ -553,6 +553,28 @@ var State = function(options, defer_initialization) {
 		return false;
 	};
 
+	proto.order = function(other_state) {
+		// return -1 if other_state is ">" me
+		// return 1 if other_state is "<" me
+		// return 0 if other_state is "==" me
+		var my_lineage = this.get_lineage();
+		var other_lineage = other_state.get_lineage();
+
+		var mli = my_lineage[0];
+		var oli = other_lineage[0];
+		var len = Math.min(my_lineage.length, other_lineage.length);
+		for(var i = 1; i<len; i++) {
+			mli = my_lineage[i];
+			oli = other_lineage[i];
+		}
+
+		if(other_lineage.length > my_lineage.length) { // It is more specific
+		} else if(other_lineage.length > my_lineage.length) {
+		} else {
+			return 0;
+		}
+	};
+
 	proto.destroy = function() {
 		this.$active.destroy();
 	};

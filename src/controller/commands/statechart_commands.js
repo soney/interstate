@@ -180,7 +180,8 @@ var AddTransitionCommand = function(options) {
 	};
 
 	proto._unexecute = function() {
-		this._statechart.remove_transition(this._transition, false);
+		//this._statechart.remove_transition(this._transition, false);
+		this._transition.remove(false);
 	};
 
 	proto._do_destroy = function(in_effect) {
@@ -204,7 +205,6 @@ var RemoveTransitionCommand = function(options) {
 	}
 
 	this._statechart = this._options.statechart;
-
 	this._transition = this._options.transition || this._statechart.get_transition_by_id(this._options.id);
 };
 
@@ -213,7 +213,8 @@ var RemoveTransitionCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		this._statechart.remove_transition(this._transition, false);
+	//	this._statechart.remove_transition(this._transition, false);
+		this._transition.remove(false);
 	};
 
 	proto._unexecute = function() {

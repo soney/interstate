@@ -762,10 +762,19 @@ var Env = function(options) {
 
 	proto._get_remove_transition_command = function(transition_id) {
 		var statechart = this.get_statechart_pointer();
+		console.log(transition_id)
 
+		var id, transition
+		
+		if(transition_id instanceof red.StatechartTransition) {
+			transition = transition_id;
+		} else {
+			id = transition_id;
+		}
 		var command = red.command("remove_transition", {
 			statechart: statechart
-			, id: transition_id
+			, id: id
+			, transition: transition
 		});
 		return command;
 	};
