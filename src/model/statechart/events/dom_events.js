@@ -2,11 +2,15 @@
 var cjs = red.cjs, _ = red._;
 
 (function(proto) {
-	proto.on_create = function(type, target) {
+	proto.on_create = function(type, targets) {
 		this.type = type;
-		this.target = target;
+		if(!_.isArray(targets)) {
+			targets = [targets];
+		}
+		this.targets = targets;
 
 		this._bubble_listener = _.bind(function(event) {
+			console.log(event);
 			event.preventDefault();
 			red.event_queue.wait();
 			this.fire.apply(this, arguments);
@@ -15,29 +19,36 @@ var cjs = red.cjs, _ = red._;
 			});
 		}, this);
 
-		this.add_listener();
+		this.add_listeners();
 	};
 	proto.clone = function() {
-		return red.create_event("dom_event", this.type, this.target);
+		return red.create_event("dom_event", this.type, this.targets);
 	};
 	proto.set_type = function(type) {
-		this.remove_listener();
+		this.remove_listeners();
 		this.type = type;
-		this.add_listener();
+		this.add_listeners();
 	};
-	proto.set_target = function(target) {
-		this.remove_listener();
-		this.target = target;
-		this.add_listener();
+	proto.set_targets = function(targets) {
+		this.remove_listeners();
+		if(!_.isArray(targets)) {
+			targets = [targets];
+		}
+		this.targets = targets;
+		this.add_listeners();
 	};
-	proto.add_listener = function() {
-		this.target.addEventListener(this.type, this._bubble_listener, false); // Bubble
+	proto.add_listeners = function() {
+		_.each(this.targets, function(target) {
+			target.addEventListener(this.type, this._bubble_listener, false); // Bubble
+		}, this);
 	};
-	proto.remove_listener = function() {
-		this.target.removeEventListener(this.type, this._bubble_listener, false); // Bubble
+	proto.remove_listeners = function() {
+		_.each(this.targets, function(target) {
+			target.removeEventListener(this.type, this._bubble_listener, false); // Bubble
+		}, this);
 	};
 	proto.destroy = function() {
-		this.remove_listener();
+		this.remove_listeners();
 	};
 }(red._create_event_type("dom_event").prototype));
 }(red));
