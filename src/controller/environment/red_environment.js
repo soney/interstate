@@ -362,8 +362,10 @@ var Env = function(options) {
 		if(_.isUndefined(value)) {
 			if(parent_obj instanceof red.RedStatefulObj) {
 				value = red.create("stateful_prop");
+				value.set_default_context(parent_obj.get_default_context());
 			} else if(parent_obj instanceof red.RedDict) {
 				value = red.create("cell", {str: ""});
+				value.set_default_context(parent_obj.get_default_context());
 			}
 		} else if(_.isString(value)) {
 			if(value === "dict") {
@@ -409,6 +411,7 @@ var Env = function(options) {
 				} else {
 					if(_.isString(value)) {
 						value = red.create("cell", {str: value});
+						value.set_default_context(parent_obj.get_default_context());
 					}
 					var command = red.command("set_builtin", {
 						parent: parent_obj
@@ -420,6 +423,7 @@ var Env = function(options) {
 		} else {
 			if(_.isString(value)) {
 				value = red.create("cell", {str: value});
+				value.set_default_context(parent_obj.get_default_context());
 			}
 			var command = red.command("set_prop", {
 				parent: parent_obj

@@ -147,6 +147,14 @@ var get_event = function(node, parent, context) {
 		return parent;
 	} else if(type === "Literal") {
 		return node.value;
+	} else if(type === "BinaryExpression") {
+		var operator = node.operator;
+		if(_.indexOf(["==", "===", "<", "<=", ">", ">="], operator) >= 0) {
+			var left_identifier = get_event(node.left, parent, context);
+			var right_identifier = get_event(node.right, parent, context);
+
+			return red.create_event("constraint_event", operator, left_identifier, right_identifier);
+		}
 	} else if(type === "XXXXXXX") {
 	} else {
 		//console.log(type, node, parent);

@@ -103,6 +103,7 @@
 								.value()
 					});
 
+					/*
 					env			.set("button", "stateful")
 								.cd("button")
 								.rename_state("INIT", "idle")
@@ -212,13 +213,19 @@
 								.set("selected_song", env._last_transition, "event.target")
 								;
 								/**/
+					env	.set("a", "0")
+						.set("x", "stateful")
+						.cd("x")
+						.add_state("is_1")
+						.add_transition("INIT", "is_1", "a == 1")
+						.top();
 					output_view = $("<div />").dom_output({
 						root: root
 						, context: root_context
 					}).appendTo(document.body);
 
-					//env.print_on_return = true;
-					//console.log(env.print());
+					env.print_on_return = true;
+					console.log(env.print());
 
 					var storage_prefix = "_";
 					window.save = function(name) {
