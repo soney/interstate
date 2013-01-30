@@ -103,7 +103,6 @@
 								.value()
 					});
 
-					/*
 					env			.set("button", "stateful")
 								.cd("button")
 								.rename_state("INIT", "idle")
@@ -208,30 +207,18 @@
 								.top()
 								.set("selection_info", "stateful")
 								.cd("selection_info")
-								.add_transition("INIT", "INIT", "mousedown(children.songs.children.song)")
+								.add_transition("INIT", "INIT", "mousedown(root.children.songs.children.song)")
 								.set("selected_song")
 								.set("selected_song", env._last_transition, "event.target")
 								;
 								/**/
-					env	.cd("children")
-					.set("obj", "dict")
-					.cd("obj")
-					.set("(protos)", "dom")
-					.set("tag", "'div'")
-					.set("text", "'item_'+basis")
-					.set("(manifestations)", "2")
-					.top()
-					.set("abc", "stateful")
-					.cd("abc")
-					.add_transition("INIT", "INIT", "mousedown(root.children.obj)")
-					;
 					output_view = $("<div />").dom_output({
 						root: root
 						, context: root_context
 					}).appendTo(document.body);
 
-					env.print_on_return = true;
-					console.log(env.print());
+					//env.print_on_return = true;
+					//console.log(env.print());
 
 					var storage_prefix = "_";
 					window.save = function(name) {

@@ -318,6 +318,26 @@ var RedDict = function(options, defer_initialization) {
 		if(!(context instanceof red.RedContext)) {
 			context = this.get_default_context();
 		}
+		if(this instanceof red.RedStatefulObj && val instanceof red.RedStatefulProp) {
+			var stateful_val = val.get_value_for_context(context);
+			var entry = stateful_val.get();
+			var from_state = stateful_val.get_from_state();
+			if(from_state) {
+				context = context.push(red.create("dict", { value: {
+																event: from_state._last_run_event.get()
+															}
+														}));
+			}
+
+			val = entry;
+			/*
+			return red.get_contextualizable(value.get(), context);
+			
+			console.log(context);
+			console.log(val);
+			console.log("HI");
+			*/
+		}
 		return red.get_contextualizable(val, context);
 	};
 	proto.get_prop_names = function(context) {

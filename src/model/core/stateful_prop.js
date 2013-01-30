@@ -230,16 +230,15 @@ var RedStatefulPropContextualVal = function(options) {
 	this._context = options.context;
 	this._stateful_prop = options.stateful_prop;
 	this._last_value = undefined;
+	this._from_state = undefined;
 	this._value = new cjs.Constraint(_.bind(this.getter, this), false, {
 		check_on_nullify: true
 	});
-	/*
 	this._value.onChange(_.bind(function() {
 		if(red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
 			this._value.update();
 		}
 	}, this));
-	*/
 };
 (function(my) {
 	var proto = my.prototype;
@@ -249,6 +248,9 @@ var RedStatefulPropContextualVal = function(options) {
 	proto.get = function() {
 		var value = this._value.get();
 		return value;
+	};
+	proto.get_from_state = function() {
+		return this._from_state;
 	};
 	proto.get_stateful_prop = function() {
 		return this._stateful_prop;
@@ -264,7 +266,7 @@ var RedStatefulPropContextualVal = function(options) {
 		var parent = this.get_stateful_prop(),
 			context = this.get_context();
 
-		var rv = false;
+		var rv = false, from_state = false;
 		var state_vals = [];
 
 		if(parent._can_inherit === false) {
@@ -291,6 +293,7 @@ var RedStatefulPropContextualVal = function(options) {
 						var transition = red.find_equivalent_transition(key, statechart);
 						if(transition.is_active()) {
 							rv = direct_values.get(key);
+							from_state = transition;
 							return false;
 						}
 					} catch(e) {
@@ -299,10 +302,6 @@ var RedStatefulPropContextualVal = function(options) {
 				}
 			});
 
-			if(rv) {
-				this._last_value = rv;
-				return rv;
-			}
 		} else {
 			var SOandC = red.find_stateful_obj_and_context(context);
 			var stateful_obj = SOandC.stateful_obj;
@@ -321,7 +320,6 @@ var RedStatefulPropContextualVal = function(options) {
 			for(i = 0; i<leni; i++) {
 				var ifrom = inherits_from[i];
 				var direct_values = ifrom._direct_values;
-
 
 				direct_values.each_key(function(key) {
 					if(key instanceof red.State) {
@@ -346,6 +344,7 @@ var RedStatefulPropContextualVal = function(options) {
 								var transition = red.find_equivalent_transition(key, statecharts[j]);
 								if(transition.is_active()) {
 									rv = direct_values.get(key);
+									from_state = transition;
 									return false;
 								}
 							} catch(e) {
@@ -354,12 +353,13 @@ var RedStatefulPropContextualVal = function(options) {
 						}
 					}
 				});
-
-				if(rv) {
-					this._last_value = rv;
-					return rv;
-				}
 			}
+		}
+
+		if(rv) {
+			this._from_state = from_state;
+			this._last_value = rv;
+			return rv;
 		}
 
 		var sv_len = state_vals.length;
@@ -378,6 +378,7 @@ var RedStatefulPropContextualVal = function(options) {
 			}
 			var rv = info.direct_values.get(info.key);
 			this._last_value = rv;
+			this._from_state = info.state;
 			return rv;
 		} else {
 			return this._last_value;

@@ -12,6 +12,12 @@ var cjs = red.cjs, _ = red._;
 		this._bubble_listener = _.bind(function(event) {
 			event.preventDefault();
 			red.event_queue.wait();
+			if(event.target && event.target.__red_owner__) {
+				event = _.extend({}, event, {
+					target: event.target.__red_owner__
+				});
+				console.log(event);
+			}
 			this.fire.apply(this, arguments);
 			_.defer(function() {
 				red.event_queue.signal();

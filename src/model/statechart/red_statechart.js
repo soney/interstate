@@ -225,6 +225,7 @@ var StatechartTransition = function(options, defer_initialization) {
 	if(defer_initialization !== true) {
 		this.do_initialize(options);
 	}
+	this._last_run_event = cjs.$(false);
 };
 (function(my) {
 	var proto = my.prototype;
@@ -298,6 +299,7 @@ var StatechartTransition = function(options, defer_initialization) {
 	};
 	proto.fire = function(event) {
 		if(this.from().on_outgoing_transition_fire(this, event)) {
+			this._last_run_event.set(event);
 			this._emit("fire", {type: "fire", target: this, event: event});
 		}
 	};
@@ -344,6 +346,7 @@ var State = function(options, defer_initialization) {
 	options = options || {};
 	able.make_this_listenable(this);
 	this._id = _.uniqueId();
+	this._last_run_event = cjs.$(false);
 
 	this.$onBasisAddTransition = _.bind(function(event) {
 		var transition = event.transition;
@@ -540,6 +543,9 @@ var State = function(options, defer_initialization) {
 				}
 			}
 			cjs.wait();
+			if(i === to_len) { //if it is a self-transition. Just handle it on the lowest level possible
+				i-=2;
+			}
 			for(; i<to_len-1; i++) {
 				var parent = to_lineage[i];
 				var active_substate = to_lineage[i+1];
@@ -857,6 +863,7 @@ var Statechart = function(options) {
 				this._local_state.set_active(false);
 			}
 			this._local_state = state;
+			state._last_run_event.set(event);
 			if(this._local_state) {
 				this._local_state.set_active(true);
 			}

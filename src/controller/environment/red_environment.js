@@ -255,14 +255,16 @@ var Env = function(options) {
 			var prop_names = dict.get_prop_names(dictified_context);
 			_.forEach(prop_names, function(prop_name) {
 				var value = dict.get_prop(prop_name, dictified_context);
+				//var value_got = red.get_contextualizable(value, dictified_context);
+				var value_got = dict.prop_val(prop_name, dictified_context);
+				value_got = cjs.get(value_got);
+
 				var is_inherited = dict.is_inherited(prop_name, dictified_context);
 				prop_name = indent + prop_name;
 				if(is_inherited) { prop_name += " i" }
 				if(value === pointer) { prop_name = "> " + prop_name; }
 				else { prop_name = "  " + prop_name; }
 
-				var value_got = red.get_contextualizable(value, dictified_context);
-				value_got = cjs.get(value_got);
 
 				if(value instanceof red.RedStatefulObj) {
 					var state_specs = value.get_state_specs(dictified_context.push(value));
