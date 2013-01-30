@@ -10,6 +10,9 @@ var RedContext = function(options) {
 	proto.get_stack = function() {
 		return _.clone(this._stack);
 	};
+	proto.first = function() {
+		return _.first(this._stack);
+	};
 	proto.last = function() {
 		return _.last(this._stack);
 	};

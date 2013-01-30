@@ -198,7 +198,8 @@ var RedDomAttachmentInstance = function(options) {
 						if(_.isArray(manifestations)) {
 							dom_attachments = [];
 							_.each(manifestations, function(manifestation) {
-								var dom_attachment = prop_value.get_attachment_instance("dom", pv_context.push(manifestation));
+								var manifestation_context = pv_context.push(manifestation);
+								var dom_attachment = prop_value.get_attachment_instance("dom", manifestation_context);
 								if(dom_attachment) {
 									dom_attachments.push(dom_attachment);
 								}

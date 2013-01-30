@@ -10,7 +10,6 @@ var cjs = red.cjs, _ = red._;
 		this.targets = targets;
 
 		this._bubble_listener = _.bind(function(event) {
-			console.log(event);
 			event.preventDefault();
 			red.event_queue.wait();
 			this.fire.apply(this, arguments);

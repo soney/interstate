@@ -32,13 +32,15 @@ _.forEach(dom_events, function(dom_event) {
 			if(_.isElement(parent) || parent === window) {
 				dom_elem = parent;
 			} else if(parent instanceof red.RedDict) {
-				var manifestations = parent.get_manifestation_objs(context);
+				var parent_context = parent.get_default_context();
+				var manifestations = parent.get_manifestation_objs(parent_context);
 				var dom_attachments;
 
 				if(_.isArray(manifestations)) {
 					dom_attachments = [];
 					_.each(manifestations, function(manifestation) {
-						var dom_attachment = parent.get_attachment_instance("dom", context.push(manifestation));
+						var manifestation_context = parent_context.push(manifestation);
+						var dom_attachment = parent.get_attachment_instance("dom", manifestation_context);
 						if(dom_attachment) {
 							dom_attachments.push(dom_attachment);
 						}
@@ -107,6 +109,8 @@ var get_event = function(node, parent, context) {
 
 		if(_.has(event_types, name)) {
 			return event_types[name];
+		} else if(name === "root") {
+			return context.first();
 		} else if(name === "window") {
 			return window;
 		} else {
@@ -127,7 +131,7 @@ var get_event = function(node, parent, context) {
 		var object = get_event(node.object, parent, context);
 		var object_got = cjs.get(object);
 		if(object_got instanceof red.RedDict) {
-			//More cases here
+			// More cases here
 			variable_context = red.create("context", {stack: [object_got]});
 			if(!variable_context) { return undefined; }
 			var property = get_event(node.property, parent, variable_context);

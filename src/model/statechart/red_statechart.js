@@ -549,6 +549,7 @@ var State = function(options, defer_initialization) {
 				parent.set_active_substate(active_substate, transition, event);
 			}
 			cjs.signal();
+			return true;
 		}
 		return false;
 	};

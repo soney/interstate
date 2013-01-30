@@ -42,10 +42,15 @@ var get_op_$ = function(op_context, op) {
 
 var get_member_$ = function(key, context, ignore_inherited_in_contexts) {
 	return cjs.$(function() {
+		if(key === "root") {
+			return context.first();
+		}
+
 		var key_got = cjs.get(key);
 		var curr_context = context;
 		var context_item = curr_context.last();
 		var rv;
+
 		while(!curr_context.is_empty()) {
 			var context_item_got = cjs.get(context_item);
 			if(context_item_got instanceof red.RedDict) {
