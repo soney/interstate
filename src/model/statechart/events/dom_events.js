@@ -16,7 +16,6 @@ var cjs = red.cjs, _ = red._;
 				event = _.extend({}, event, {
 					target: event.target.__red_owner__
 				});
-				console.log(event);
 			}
 			this.fire.apply(this, arguments);
 			_.defer(function() {

@@ -362,7 +362,6 @@ var Env = function(options) {
 		if(_.isUndefined(value)) {
 			if(parent_obj instanceof red.RedStatefulObj) {
 				value = red.create("stateful_prop");
-				value.set_default_context(parent_obj.get_default_context());
 			} else if(parent_obj instanceof red.RedDict) {
 				value = red.create("cell", {str: ""});
 				value.set_default_context(parent_obj.get_default_context());

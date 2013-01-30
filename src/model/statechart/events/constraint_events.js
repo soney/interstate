@@ -30,11 +30,13 @@ var op_fns = {
 
 			var op_val = op_fn(left_val, right_val);
 			return op_val;
+		}, false, {
+			auto_add_outgoing_dependencies: false
 		});
 
 		this.constraint.onChange(function() {
 			if(this.constraint.get()) {
-			console.log("A");
+				console.log("FIRE");
 				red.event_queue.wait();
 				this.fire({
 					constraint: this.constraint
@@ -42,6 +44,14 @@ var op_fns = {
 				red.event_queue.signal();
 			}
 		}, this);
+		if(this.constraint.get()) {
+			console.log("FIRE");
+			red.event_queue.wait();
+			this.fire({
+				constraint: this.constraint
+			});
+			red.event_queue.signal();
+		}
 	};
 	proto.destroy = function() {
 		this.constraint.destroy();
