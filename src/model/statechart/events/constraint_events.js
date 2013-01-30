@@ -32,25 +32,30 @@ var op_fns = {
 			return op_val;
 		}, false, {
 			auto_add_outgoing_dependencies: false
+			//start_valid: true
 		});
 
-		this.constraint.onChange(function() {
-			if(this.constraint.get()) {
-				console.log("FIRE");
+		this._in_effect = false;
+
+		this.$check_constraint_val = _.bind(this.check_constraint_val, this);
+
+		this.constraint.onChange(this.$check_constraint_val);
+		this.$check_constraint_val();
+	};
+	proto.check_constraint_val = function() {
+		var val = this.constraint.get();
+		if(val) {
+			if(this._in_effect === false) {
+				this._in_effect = true;
 				red.event_queue.wait();
 				this.fire({
-					constraint: this.constraint
+					value: val,
+					timestamp: (new Date()).getTime()
 				});
 				red.event_queue.signal();
 			}
-		}, this);
-		if(this.constraint.get()) {
-			console.log("FIRE");
-			red.event_queue.wait();
-			this.fire({
-				constraint: this.constraint
-			});
-			red.event_queue.signal();
+		} else {
+			this._in_effect = false;
 		}
 	};
 	proto.destroy = function() {
