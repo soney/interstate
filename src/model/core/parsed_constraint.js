@@ -4,21 +4,23 @@ var esprima = window.esprima;
 
 
 var binary_operators = {
-	"+": function(a, b) { return a + b; }
-	, "-": function(a, b) { return a - b; }
-	, "*": function(a, b) { return a * b; }
-	, "/": function(a, b) { return a / b; }
-	, "%": function(a, b) { return a % b; }
-	, "||": function(a, b) { return a || b; }
-	, "&&": function(a, b) { return a && b; }
-	, "|": function(a, b) { return a | b; }
-	, "&": function(a, b) { return a & b; }
-	, "==": function(a, b) { return a == b; }
-	, "===": function(a, b) { return a === b; }
-	, ">": function(a, b) { return a > b; }
-	, ">=": function(a, b) { return a >= b; }
-	, "<": function(a, b) { return a < b; }
-	, "<=": function(a, b) { return a <= b; }
+	"===":	function(a, b) { return a === b; }
+	, "+":	function(a, b) { return a + b; }
+	, "-":	function(a, b) { return a - b; }
+	, "*":	function(a, b) { return a * b; }
+	, "/":	function(a, b) { return a / b; }
+	, "%":	function(a, b) { return a % b; }
+	, "||":	function(a, b) { return a || b; }
+	, "&&":	function(a, b) { return a && b; }
+	, "|":	function(a, b) { return a | b; }
+	, "&":	function(a, b) { return a & b; }
+	, "==":	function(a, b) { return a == b; }
+	, ">":	function(a, b) { return a > b; }
+	, ">=":	function(a, b) { return a >= b; }
+	, "<":	function(a, b) { return a < b; }
+	, "<=":	function(a, b) { return a <= b; }
+	, "<<":	function(a, b) { return a << b; }
+	, ">>":	function(a, b) { return a >> b; }
 };
 
 var unary_operators = {
@@ -40,7 +42,88 @@ var get_op_$ = function(calling_context, op) {
 	});
 };
 
+var get_conditional_$ = function(test, consequent, alternate) { // test ? consequent : alternate
+	return cjs.$(function() {
+		var test_got = cjs.get(test);
+		if(test_got) {
+			return cjs.get(consequent);
+		} else {
+			return cjs.get(alternate);
+		}
+	});
+};
+
+var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
+	if(key === "root") {
+		return context.first();
+	} else if(key === "window") {
+		return window;
+	}
+
+	ignore_inherited_in_contexts = ignore_inherited_in_contexts || [];
+
+	return cjs.$(function() {
+		var key_got = cjs.get(key);
+		var curr_context = context;
+		var context_item = curr_context.last();
+		var rv;
+
+		while(!curr_context.is_empty()) {
+			var context_item_got = cjs.get(context_item);
+			if(context_item_got instanceof red.RedDict) {
+				if(_.indexOf(ignore_inherited_in_contexts, context_item_got) >= 0) {
+					if(context_item_got._has_direct_prop(key_got)) {
+						rv = context_item_got._get_direct_prop(key_got, curr_context);
+						break;
+					}
+				} else {
+					if(context_item_got.has_prop(key_got, curr_context)) {
+						rv = context_item_got.get(key_got, curr_context);
+						break;
+					}
+				}
+			} else if(context_item_got && context_item_got[key_got]) {
+				return context_item_got[key_got];
+			}
+			curr_context = curr_context.pop();
+			context_item = curr_context.last();
+		}
+		return cjs.get(rv);
+	});
+};
+
+var get_this_$ = function(context) {
+	return cjs.$(function() {
+		var curr_context = context;
+		var context_item = curr_context.last();
+
+		while(!curr_context.is_empty()) {
+			if(context_item instanceof red.RedDict) {
+				return context_item;
+			}
+			curr_context = curr_context.pop();
+			context_item = curr_context.last();
+		}
+
+		return undefined;
+	});
+};
+
 var get_member_$ = function(key, context, ignore_inherited_in_contexts) {
+	/*
+		var object = get_$(node.object, options);
+		var variable_context = red.create("context", {stack: [object]});
+		var property;
+		if(node.computed) {
+			var key = get_$(node.property, options);
+			property = get_member_$(key, _.extend({}, options, { context: variable_context}));
+		} else {
+			property = get_$(node.property, _.extend({}, options, { context: variable_context}));
+		}
+
+		return property;
+		*/
+	/*
 	return cjs.$(function() {
 		if(key === "root") {
 			return context.first();
@@ -75,12 +158,19 @@ var get_member_$ = function(key, context, ignore_inherited_in_contexts) {
 		}
 		return cjs.get(rv);
 	});
+	*/
+};
+
+var get_array_$ = function(elements) {
+	return cjs.$(function() {
+		return _.map(elements, function(element) {
+			return cjs.get(element);
+		});
+	});
 };
 
 var get_$ = red.get_parsed_$ = function(node, options) {
 	if(!node) { return undefined; }
-	var context = options.context,
-		ignore_inherited_in_contexts = options.ignore_inherited_in_contexts || [];
 	var type = node.type;
 	if(type === "ExpressionStatement") {
 		return get_$(node.expression, options);
@@ -106,52 +196,18 @@ var get_$ = red.get_parsed_$ = function(node, options) {
 		});
 		return get_op_$.apply(this, ([op_context, callee]).concat(args))
 	} else if(type === "Identifier") {
-		var name = node.name;
-		return get_member_$(name, options);
+		return get_identifier_$(node.name, options.context, options.ignore_inherited_in_contexts);
 	} else if(type === "ThisExpression") {
-		return cjs.$(function() {
-			var curr_context = context;
-			var context_item = curr_context.last();
-			var rv;
-			while(!curr_context.is_empty()) {
-				if(context_item instanceof red.RedDict) {
-					rv = context_item;
-					break;
-				}
-				curr_context = curr_context.pop();
-				context_item = curr_context.last();
-			}
-			return rv;
-		});
+		return get_this_$(options.context);
 	} else if(type === "MemberExpression") {
-		var object = get_$(node.object, options);
-		var variable_context = red.create("context", {stack: [object]});
-		var property;
-		if(node.computed) {
-			var key = get_$(node.property, options);
-			property = get_member_$(key, _.extend({}, options, { context: variable_context}));
-		} else {
-			property = get_$(node.property, _.extend({}, options, { context: variable_context}));
-		}
-
-		return property;
+		return get_member_$(node.name, options.context, options.ignore_inherited_in_contexts);
 	} else if(type === "ArrayExpression") {
 		var elements = _.map(node.elements, function(element) {
 			return get_$(element, options);
 		});
-		return cjs.$(function() {
-			return _.map(elements, function(element) {
-				return cjs.get(element);
-			});
-		});
-	} else if(type === "BlockStatement") {
-		var rv = {};
-		_.forEach(node.body, function(key_value_pair) {
-			var key = key_value_pair.label.name;
-			var value = get_$(key_value_pair.body, options);
-			rv[key] = value;
-		});
-		return rv;
+		return get_array_$(elements);
+	} else if(type === "ConditionalExpression") {
+		return get_conditional_$(node.test, node.consequent, node.alternate);
 	} else if(type === "Program") {
 		return get_$(node.body[0], options);
 	} else {
