@@ -109,56 +109,22 @@ var get_this_$ = function(context) {
 	});
 };
 
-var get_member_$ = function(key, context, ignore_inherited_in_contexts) {
-	/*
-		var object = get_$(node.object, options);
-		var variable_context = red.create("context", {stack: [object]});
-		var property;
-		if(node.computed) {
-			var key = get_$(node.property, options);
-			property = get_member_$(key, _.extend({}, options, { context: variable_context}));
-		} else {
-			property = get_$(node.property, _.extend({}, options, { context: variable_context}));
-		}
-
-		return property;
-		*/
-	/*
+var get_member_$ = function(object, property, context) {
 	return cjs.$(function() {
-		if(key === "root") {
-			return context.first();
+		var obj_got = cjs.get(object);
+
+		if(!obj_got) {
+			throw new Error("Looking for property of " + obj_got);
 		}
 
-		var key_got = cjs.get(key);
-		var curr_context = context;
-		var context_item = curr_context.last();
-		var rv;
+		var prop_got = cjs.get(property);
 
-		while(!curr_context.is_empty()) {
-			var context_item_got = cjs.get(context_item);
-			if(context_item_got instanceof red.RedDict) {
-				if(_.indexOf(ignore_inherited_in_contexts, context_item_got) >= 0) {
-					if(context_item_got._has_direct_prop(key_got)) {
-						rv = context_item_got._get_direct_prop(key_got, curr_context);
-						break;
-					}
-				} else {
-					if(context_item_got.has_prop(key_got, curr_context)) {
-						rv = context_item_got.get(key_got, curr_context);
-						break;
-					}
-				}
-			} else if(context_item_got && context_item_got[key_got]) {
-				return context_item_got[key_got];
-			} else if(context_item && context_item[key_got]) {
-				return context_item[key_got];
-			}
-			curr_context = curr_context.pop();
-			context_item = curr_context.last();
+		if(obj_got instanceof red.RedDict) {
+			return obj_got.prop_val(prop_got, context);
+		} else {
+			return obj_got[prop_got];
 		}
-		return cjs.get(rv);
 	});
-	*/
 };
 
 var get_array_$ = function(elements) {
@@ -196,11 +162,18 @@ var get_$ = red.get_parsed_$ = function(node, options) {
 		});
 		return get_op_$.apply(this, ([op_context, callee]).concat(args))
 	} else if(type === "Identifier") {
-		return get_identifier_$(node.name, options.context, options.ignore_inherited_in_contexts);
+		if(options.is_property) {
+			var property_of = options.property_of;
+		} else {
+			return get_identifier_$(node.name, options.context, options.ignore_inherited_in_contexts);
+		}
 	} else if(type === "ThisExpression") {
 		return get_this_$(options.context);
 	} else if(type === "MemberExpression") {
-		return get_member_$(node.name, options.context, options.ignore_inherited_in_contexts);
+		var object = get_$(node.object, options);
+		var property = node.computed ? get_$(node.property, options) : node.property.name;
+
+		return get_member_$(object, property, options.context);
 	} else if(type === "ArrayExpression") {
 		var elements = _.map(node.elements, function(element) {
 			return get_$(element, options);

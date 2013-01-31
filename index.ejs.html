@@ -103,6 +103,16 @@
 								.value()
 					});
 
+					window.pc = function(str) {
+						var tree = esprima.parse(str);
+						var constraint = red.get_parsed_$(tree, {
+							context: env.get_context()
+						});
+						return constraint.get();
+					};
+
+
+
 					/*
 					env			.set("button", "stateful")
 								.cd("button")
@@ -213,12 +223,23 @@
 								.set("selected_song", env._last_transition, "event.target")
 								;
 								/**/
+					/*
 					env	.set("a", "0")
 						.set("x", "stateful")
 						.cd("x")
 						.add_state("is_1")
 						.add_transition("INIT", "is_1", "a == 1")
 						.top();
+								/**/
+					env	.set("a", "dict")
+						.cd("a")
+						.set("x", "dict")
+						.cd("x")
+						.set("e", "1");
+						//.set("x", "1")
+						//.set("y", "x+1")
+						//.set("z", "y+2")
+						//.top();
 								/**/
 					output_view = $("<div />").dom_output({
 						root: root
