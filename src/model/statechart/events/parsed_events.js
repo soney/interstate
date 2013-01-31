@@ -1,5 +1,15 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
+var on_event = function(event_type) {
+	var targets;
+	if(arguments.length <= 1) { // Ex: mouseup() <-> mouseup(window)
+		targets = window;
+	} else {
+		targets = _.rest(arguments);
+	}
+	return red.create_event("dom_event", event_type, targets);
+};
+/*
 var event_types = {};
 var dom_events = ["click", "dblclick", "mousedown", "mouseup", "mouseover", "mousemove", "mouseout",
 					"keydown", "keypress", "keyup", "load", "unload", "abort", "error", "resize",
@@ -160,6 +170,7 @@ var get_event = function(node, parent, context) {
 		//console.log(type, node, parent);
 	}
 };
+*/
 
 var ParsedEvent = red._create_event_type("parsed");
 red.ParsedEvent = ParsedEvent;
@@ -191,12 +202,11 @@ var id  = 0;
 
 				var tree = this._tree.get();
 				cjs.wait();
-				var event = get_event(tree.body[0], parent, context);
+				var event = get_event(tree, parent, context);
 				cjs.signal();
 
 				if(event) {
 					event.on_fire(this.$child_fired);
-					//console.log("re-constituted event", event);
 				}
 
 				this._old_event = event;
@@ -212,6 +222,10 @@ var id  = 0;
 		return red.create_event("parsed", {str: this._str, context: context});
 	};
 	proto.destroy = function() {
+		if(this._old_event) {
+			this._old_event.off_fire(this.$child_fired);
+			this._old_event.destroy();
+		}
 		if(this._live_event_creator) {
 			this._live_event_creator.destroy();
 		}
