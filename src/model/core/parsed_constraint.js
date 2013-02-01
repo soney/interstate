@@ -5,27 +5,30 @@ var esprima = window.esprima;
 
 var binary_operators = {
 	"===":	function(a, b) { return a === b; }
+	,"!==":	function(a, b) { return a !== b; }
+	, "==":	function(a, b) { return a == b; }
+	, "!=":	function(a, b) { return a != b; }
+	, ">":	function(a, b) { return a > b; }
+	, ">=":	function(a, b) { return a >= b; }
+	, "<":	function(a, b) { return a < b; }
+	, "<=":	function(a, b) { return a <= b; }
 	, "+":	function(a, b) { return a + b; }
 	, "-":	function(a, b) { return a - b; }
 	, "*":	function(a, b) { return a * b; }
 	, "/":	function(a, b) { return a / b; }
 	, "%":	function(a, b) { return a % b; }
-	, "||":	function(a, b) { return a || b; }
 	, "&&":	function(a, b) { return a && b; }
-	, "|":	function(a, b) { return a | b; }
+	, "||":	function(a, b) { return a || b; }
 	, "&":	function(a, b) { return a & b; }
-	, "==":	function(a, b) { return a == b; }
-	, ">":	function(a, b) { return a > b; }
-	, ">=":	function(a, b) { return a >= b; }
-	, "<":	function(a, b) { return a < b; }
-	, "<=":	function(a, b) { return a <= b; }
+	, "|":	function(a, b) { return a | b; }
+	, "^":	function(a, b) { return a ^ b; }
 	, "<<":	function(a, b) { return a << b; }
 	, ">>":	function(a, b) { return a >> b; }
-};
-
-var unary_operators = {
-	"-": function(a) { return -a; }
-	, "!": function(a) { return !a; }
+	,">>>":	function(a, b) { return a >>> b; }
+}, unary_operators = {
+	"-":	function(a) { return -a; }
+	, "!":	function(a) { return !a; }
+	, "~":	function(a) { return ~a; }
 };
 
 var get_op_$ = function(calling_context, op) {

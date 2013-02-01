@@ -14,17 +14,6 @@ var RedDict = function(options, defer_initialization) {
 	if(defer_initialization !== true) {
 		this.do_initialize(options);
 	}
-	/*
-	this._get_direct_protos = cjs.memoize(this._get_direct_protos, {
-		hash: function(args) {
-			return args[0].hash()
-		},
-		equals: function(args1, args2) {
-			return red.check_context_equality(args1[0], args2[0]);
-		},
-		context: this
-	});
-	/**/
 };
 
 (function(my) {
@@ -323,20 +312,14 @@ var RedDict = function(options, defer_initialization) {
 			var entry = stateful_val.get();
 			var from_state = stateful_val.get_from_state();
 			if(from_state) {
+				var state_event = from_state._last_run_event.get()
 				context = context.push(red.create("dict", { value: {
-																event: from_state._last_run_event.get()
+																event: state_event
 															}
 														}));
 			}
 
 			val = entry;
-			/*
-			return red.get_contextualizable(value.get(), context);
-			
-			console.log(context);
-			console.log(val);
-			console.log("HI");
-			*/
 		}
 		return red.get_contextualizable(val, context);
 	};
@@ -457,41 +440,6 @@ var RedDict = function(options, defer_initialization) {
 			}
 		});
 		return attachments_and_srcs.toArray();
-
-/*
-		var proto_attachments_and_srcs = _.map(protos, function(protoi) {
-			if(protoi instanceof red.RedDict) {
-				var attachments = protoi._get_direct_attachments(context);
-				return _.map(attachments, function(attachment) {
-					return {
-						attachment: attachment
-						, holder: protoi
-					};
-				});
-			} else {
-				return [];
-			}
-		});
-		var flattened_proto_attachments_and_srcs = _.flatten(proto_attachments_and_srcs, true);
-
-		var non_duplicate_attachments_and_srcs = [];
-		_.forEach(direct_attachments_and_srcs.concat(flattened_proto_attachments_and_srcs), function(attachment_and_src) {
-			var attachment = attachment_and_src.attachment;
-			var holder = attachment_and_src.holder;
-
-			if(!_.any(non_duplicate_attachments_and_srcs, function(a_and_src) {
-				if(a_and_src.attachment === attachment) {
-					return !attachment.multiple_allowed();
-				} else {
-					return false;
-				}
-			})) {
-				non_duplicate_attachments_and_srcs.push(attachment_and_src);
-			}
-		});
-
-		return non_duplicate_attachments_and_srcs;
-		*/
 	};
 	proto.get_attachment_instances = proto._get_all_attachment_instances = function(context) {
 		var attachments_and_srcs = this._get_all_attachments_and_srcs(context);

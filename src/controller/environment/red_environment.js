@@ -109,7 +109,6 @@ var Env = function(options) {
 		this.initialize_props();
 	}
 	this._root.set("on", red.on_event);
-	this._root.set("when", red.when_event);
 
 	//Context tracking
 	this._pointer = pointer_factory(this._root);
@@ -205,7 +204,7 @@ var Env = function(options) {
 				return "(undefined)";
 			} else if(_.isNull(val)) {
 				return "(null)";
-			} else if(_.isNumber(val)) {
+			} else if(_.isNumber(val) || _.isBoolean(val)) {
 				return val + "";
 			} else if(_.isString(val)) {
 				return '"' + val + '"';
@@ -235,7 +234,7 @@ var Env = function(options) {
 				return "(null)";
 			} else if(_.isString(val)) {
 				return '"' + val + '"';
-			} else if(_.isNumber(val)) {
+			} else if(_.isNumber(val) || _.isBoolean(val)) {
 				return val + "";
 			} else if(_.isFunction(val)) {
 				return 'function() {...}';

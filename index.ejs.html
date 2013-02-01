@@ -113,7 +113,6 @@
 
 
 
-					/*
 					env			.set("button", "stateful")
 								.cd("button")
 								.rename_state("INIT", "idle")
@@ -229,6 +228,8 @@
 						.cd("x")
 						.add_state("is_1")
 						.add_transition("INIT", "is_1", "a == 1")
+						.set("prop1")
+						.set("prop1", env._last_transition, "event.value")
 						.top();
 								/**/
 					/*
@@ -253,6 +254,7 @@
 						//.top();
 								/**/
 					
+					/*
 					env	.cd("children")
 						.set("elem", "stateful")
 						.cd("elem")
@@ -264,6 +266,7 @@
 						.add_transition("INIT", "INIT", "on('mousedown', this)")
 						.set("last_target")
 						.set("last_target", env._last_transition, "1")
+					/**/
 					output_view = $("<div />").dom_output({
 						root: root
 						, context: root_context
