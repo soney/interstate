@@ -102,7 +102,7 @@ var RedEvent = function() {
 			listener.apply(this, args);
 		}, this);
 	};
-	proto.guard = function(func) {
+	proto.guard = proto.when = function(func) {
 		var new_event = new RedEvent();
 		this.on_fire(function() {
 			if(func.apply(this, arguments)) {

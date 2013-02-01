@@ -18,6 +18,7 @@ var get_event = function(tree, options) {
 	event_constraint.setOption("auto_add_outgoing_dependencies", false);
 
 	var got_value = event_constraint.get();
+	console.log(got_value);
 	if(got_value instanceof red.RedEvent) {
 		return got_value;
 	} else {
@@ -53,6 +54,7 @@ var id  = 0;
 					this._old_event.destroy();
 				}
 
+				console.log(self.get_str());
 				var tree = this._tree.get();
 				cjs.wait();
 				var event = get_event(tree, {

@@ -119,13 +119,13 @@
 								.add_state("hover")
 								.add_state("active")
 								.add_state("active_out")
-								.add_transition("idle", "hover", "mouseover(this)")
-								.add_transition("hover", "idle", "mouseout(this)")
-								.add_transition("hover", "active", "mousedown(this)")
-								.add_transition("active", "hover", "mouseup()")
-								.add_transition("active", "active_out", "mouseout(this)")
-								.add_transition("active_out", "active", "mouseover(this)")
-								.add_transition("active_out", "idle", "mouseup()")
+								.add_transition("idle", "hover", "on('mouseover', this)")
+								.add_transition("hover", "idle", "on('mouseout', this)")
+								.add_transition("hover", "active", "on('mousedown', this)")
+								.add_transition("active", "hover", "on('mouseup')")
+								.add_transition("active", "active_out", "on('mouseout', this)")
+								.add_transition("active_out", "active", "on('mouseover', this)")
+								.add_transition("active_out", "idle", "on('mouseup')")
 								.set("(protos)", "idle", "[dom]")
 								.top()
 								.set("class", "'player'")
@@ -216,13 +216,15 @@
 								.up()
 								.top()
 								.set("selection_info", "stateful")
-								.cd("selection_info")
-								.add_transition("INIT", "INIT", "mousedown(root.children.songs.children.song)")
+								.cd("selection_info");
+								console.log("AAA");
+								env
+								.add_transition("INIT", "INIT", "on('mousedown', root.children.songs.children.song)")
 								.set("selected_song")
 								.set("selected_song", env._last_transition, "event.target")
 								;
 								/**/
-					/*
+								/*
 					env	.set("a", "0")
 						.set("x", "stateful")
 						.cd("x")
@@ -244,10 +246,11 @@
 						//.top();
 								/**/
 					/*
-					env	.set("elem", document.getElementById("square"))
+					env	.set("a", "1")
+						.set("elem", document.getElementById("square"))
 						.set("sobj", "stateful")
 						.cd("sobj")
-						//.add_transition("INIT", "INIT", "on('mousedown', elem)")
+						.add_transition("INIT", "INIT", "on('mousedown', elem).when(a > 5)")
 						//.set("x", "1")
 						//.set("y", "x+1")
 						//.set("z", "y+2")
@@ -272,8 +275,8 @@
 						, context: root_context
 					}).appendTo(document.body);
 
-					env.print_on_return = true;
-					console.log(env.print());
+					//env.print_on_return = true;
+					//console.log(env.print());
 
 					var storage_prefix = "_";
 					window.save = function(name) {

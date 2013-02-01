@@ -261,8 +261,14 @@ var Env = function(options) {
 			_.forEach(prop_names, function(prop_name) {
 				var value = dict.get_prop(prop_name, dictified_context);
 				//var value_got = red.get_contextualizable(value, dictified_context);
-				var value_got = dict.prop_val(prop_name, dictified_context);
-				value_got = cjs.get(value_got);
+				var value_got;
+
+				try {
+					value_got = dict.prop_val(prop_name, dictified_context);
+					value_got = cjs.get(value_got);
+				} catch(e) {
+				}
+
 
 				var is_inherited = dict.is_inherited(prop_name, dictified_context);
 				prop_name = indent + prop_name;

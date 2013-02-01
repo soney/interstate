@@ -54,6 +54,9 @@ var cjs = red.cjs, _ = red._;
 							})
 							.flatten(true)
 							.compact()
+							.tap(function() {
+								console.log(arguments);
+							})
 							.value();
 			this.add_listeners();
 		}, {
