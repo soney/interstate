@@ -108,6 +108,8 @@ var Env = function(options) {
 
 		this.initialize_props();
 	}
+	this._root.set("on", red.on_event);
+	this._root.set("when", red.when_event);
 
 	//Context tracking
 	this._pointer = pointer_factory(this._root);
@@ -207,6 +209,8 @@ var Env = function(options) {
 				return val + "";
 			} else if(_.isString(val)) {
 				return '"' + val + '"';
+			} else if(_.isFunction(val)) {
+				return '(func)';
 			} else if(_.isElement(val)) {
 				return "(dom)";
 			} else if(val instanceof red.RedStatefulObj) {
@@ -233,6 +237,8 @@ var Env = function(options) {
 				return '"' + val + '"';
 			} else if(_.isNumber(val)) {
 				return val + "";
+			} else if(_.isFunction(val)) {
+				return 'function() {...}';
 			} else if(val instanceof red.RedDict) {
 				return "";
 			} else if(val instanceof red.RedCell) {

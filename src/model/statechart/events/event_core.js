@@ -119,6 +119,8 @@ var RedEvent = function() {
 }(RedEvent));
 red.event_queue = new EventQueue();
 
+red.RedEvent = RedEvent;
+
 var event_types = {};
 
 red.create_event = function(event_type) {

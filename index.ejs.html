@@ -231,6 +231,7 @@
 						.add_transition("INIT", "is_1", "a == 1")
 						.top();
 								/**/
+					/*
 					env	.set("a", "dict")
 						.cd("a")
 						.set("x", "dict")
@@ -241,6 +242,28 @@
 						//.set("z", "y+2")
 						//.top();
 								/**/
+					/*
+					env	.set("elem", document.getElementById("square"))
+						.set("sobj", "stateful")
+						.cd("sobj")
+						//.add_transition("INIT", "INIT", "on('mousedown', elem)")
+						//.set("x", "1")
+						//.set("y", "x+1")
+						//.set("z", "y+2")
+						//.top();
+								/**/
+					
+					env	.cd("children")
+						.set("elem", "stateful")
+						.cd("elem")
+						.set("(protos)", "INIT", "[dom]")
+						.set("tag")
+						.set("tag", "INIT", "'div'")
+						.set("text")
+						.set("text", "INIT", "'hello'")
+						.add_transition("INIT", "INIT", "on('mousedown', this)")
+						.set("last_target")
+						.set("last_target", env._last_transition, "1")
 					output_view = $("<div />").dom_output({
 						root: root
 						, context: root_context

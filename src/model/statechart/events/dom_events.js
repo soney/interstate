@@ -3,12 +3,6 @@ var cjs = red.cjs, _ = red._;
 
 (function(proto) {
 	proto.on_create = function(type, targets) {
-		this.type = type;
-		if(!_.isArray(targets)) {
-			targets = [targets];
-		}
-		this.targets = targets;
-
 		this._bubble_listener = _.bind(function(event) {
 			event.preventDefault();
 			red.event_queue.wait();
@@ -23,23 +17,51 @@ var cjs = red.cjs, _ = red._;
 			});
 		}, this);
 
-		this.add_listeners();
+		this.live_fn = cjs.liven(function() {
+			this.remove_listeners();
+			this.type = cjs.get(type);
+			var targs = cjs.get(targets);
+			if(!_.isArray(targs)) {
+				targs = [targs];
+			}
+			this.targets = _.chain(targs)
+							.map(function(targ) {
+								if(_.isElement(targ) || targ === window) {
+									return targ;
+								} else if(targ instanceof red.RedDict) {
+									var targ_context = targ.get_default_context();
+									var manifestations = targ.get_manifestation_objs(targ_context);
+									var dom_attachments;
+
+									if(_.isArray(manifestations)) {
+										return _.map(manifestations, function(manifestation) {
+											var manifestation_context = targ_context.push(manifestation);
+											var dom_attachment = parent.get_attachment_instance("dom", manifestation_context);
+											if(dom_attachment) {
+												return dom_attachment.get_dom_obj();
+											} else {
+												return false;
+											}
+										});
+									} else {
+										var dom_attachment = targ.get_attachment_instance("dom", targ_context);
+										if(dom_attachment) {
+											return dom_attachment.get_dom_obj();
+										}
+									}
+								}
+								return false;
+							})
+							.flatten(true)
+							.compact()
+							.value();
+			this.add_listeners();
+		}, {
+			context: this
+		});
 	};
 	proto.clone = function() {
 		return red.create_event("dom_event", this.type, this.targets);
-	};
-	proto.set_type = function(type) {
-		this.remove_listeners();
-		this.type = type;
-		this.add_listeners();
-	};
-	proto.set_targets = function(targets) {
-		this.remove_listeners();
-		if(!_.isArray(targets)) {
-			targets = [targets];
-		}
-		this.targets = targets;
-		this.add_listeners();
 	};
 	proto.add_listeners = function() {
 		_.each(this.targets, function(target) {
@@ -52,6 +74,7 @@ var cjs = red.cjs, _ = red._;
 		}, this);
 	};
 	proto.destroy = function() {
+		this.live_fn.destroy();
 		this.remove_listeners();
 	};
 }(red._create_event_type("dom_event").prototype));

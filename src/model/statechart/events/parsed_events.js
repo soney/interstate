@@ -1,6 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
-var on_event = function(event_type) {
+var on_event = red.on_event = function(event_type) {
 	var targets;
 	if(arguments.length <= 1) { // Ex: mouseup() <-> mouseup(window)
 		targets = window;
@@ -9,70 +9,88 @@ var on_event = function(event_type) {
 	}
 	return red.create_event("dom_event", event_type, targets);
 };
-/*
-var event_types = {};
-var dom_events = ["click", "dblclick", "mousedown", "mouseup", "mouseover", "mousemove", "mouseout",
-					"keydown", "keypress", "keyup", "load", "unload", "abort", "error", "resize",
-					"scroll", "select", "change", "submit", "reset", "focus", "blur", "DOMFocusIn",
-					"DOMFocusOut", "DOMActivate", "DOMSubtreeModified", "DOMNodeInserted", "DOMNodeRemoved",
-					"DOMNodeRemovedFromDocument", "DOMNodeInsertedIntoDocument", "DOMAttrModified",
-					"DOMCharacterDataModified", "cut", "copy", "paste", "beforecut", "beforecopy",
-					"beforepaste", "afterupdate", "beforeupdate", "cellchange", "dataavailable",
-					"datasetchanged", "datasetcomplete", "errorupdate", "rowenter", "rowexit", "rowsdelete",
-					"rowinserted", "contextmenu", "drag", "dragstart", "dragenter", "dragover", "dragleave",
-					"dragend", "drop", "selectstart", "help", "beforeunload", "stop", "beforeeditfocus",
-					"start", "finish", "bounce", "beforeprint", "afterprint", "propertychange",
-					"filterchange", "readystatechange", "losecapture", "touchstart", "touchend",
-					"touchmove", "touchenter", "touchleave", "touchcancel"];
-var esprima = window.esprima;
 
-_.forEach(dom_events, function(dom_event) {
-	event_types[dom_event] = function(parent) {
-		var context = _.last(arguments);
-		if(arguments.length === 1) {
-			parent = window; // Ex: mouseup() <-> mouseup(window)
-		}
+var when_event = red.when_event = function(condition) {
+	return red.create_event("constraint", condition);
+};
 
-		if(!(context instanceof red.RedContext)) {
-			context = red.create("context");
-		}
+var get_event = function(tree, options) {
+	var event_constraint = red.get_parsed_$(tree, options);
+	var got_value = event_constraint.get();
+	if(got_value instanceof red.RedEvent) {
+		return got_value;
+	} else {
+		console.log(got_value);
+	}
+};
 
-		if(parent) {
-			var dom_elem;
-			if(_.isElement(parent) || parent === window) {
-				dom_elem = parent;
-			} else if(parent instanceof red.RedDict) {
-				var parent_context = parent.get_default_context();
-				var manifestations = parent.get_manifestation_objs(parent_context);
-				var dom_attachments;
+var ParsedEvent = red._create_event_type("parsed");
+red.ParsedEvent = ParsedEvent;
+var id  = 0;
+(function(my) {
+	var proto = my.prototype;
+	proto.on_create = function(options) {
+		this.id = id++;
+		this.options = options;
+		this._str = cjs.is_constraint(options.str) ? options.str : cjs(options.str);
+		if(options.inert_super_event !== true) {
+			var SOandC = red.find_stateful_obj_and_context(options.context);
+			var context = SOandC.context;
+			var parent = SOandC.stateful_obj;
 
-				if(_.isArray(manifestations)) {
-					dom_attachments = [];
-					_.each(manifestations, function(manifestation) {
-						var manifestation_context = parent_context.push(manifestation);
-						var dom_attachment = parent.get_attachment_instance("dom", manifestation_context);
-						if(dom_attachment) {
-							dom_attachments.push(dom_attachment);
-						}
-					});
-				} else {
-					var dom_attachment = parent.get_attachment_instance("dom", context);
-					if(dom_attachment) {
-						dom_attachments = [dom_attachment];
-					}
+			var self = this;
+			this._tree = cjs(function() {
+				return esprima.parse(self.get_str());
+			});
+
+			this.$child_fired = _.bind(this.child_fired, this);
+
+			this._old_event = null;
+			this._live_event_creator = cjs.liven(function() {
+				if(this._old_event) {
+					this._old_event.off_fire(this.$child_fired);
+					this._old_event.destroy();
 				}
 
-				dom_elem = _.map(dom_attachments, function(dom_attachment) {
-					return dom_attachment.get_dom_obj();
-				});
-			}
+				var tree = this._tree.get();
+				cjs.wait();
+				var event = get_event(tree, {
+						parent: parent,
+						context: context
+					});
+				cjs.signal();
 
-			if(dom_elem) {
-				return red.create_event("dom_event", dom_event, dom_elem);
-			}
+				if(event) {
+					event.on_fire(this.$child_fired);
+				}
+
+				this._old_event = event;
+			}, {
+				context: this
+			});
 		}
 	};
-});
+	proto.child_fired = function() { this.fire.apply(this, arguments); };
+	proto.get_str = function() { return this._str.get(); };
+	proto.set_str = function(str) { this._str.set(str); };
+	proto.create_shadow = function(parent_statechart, context) {
+		return red.create_event("parsed", {str: this._str, context: context});
+	};
+	proto.destroy = function() {
+		if(this._old_event) {
+			this._old_event.off_fire(this.$child_fired);
+			this._old_event.destroy();
+		}
+		if(this._live_event_creator) {
+			this._live_event_creator.destroy();
+		}
+	};
+	proto.stringify = function() { return "'" + this.get_str() + "'"; };
+	proto.serialize = function() { return { str: this.get_str() }; };
+	my.deserialize = function(obj) { return red.create_event("parsed", obj.str); };
+}(ParsedEvent));
+
+/*
 
 event_types["on_transition"] = function(sc_obj, event_spec) {
 	if(!_.isArray(sc_obj)) {
@@ -171,67 +189,4 @@ var get_event = function(node, parent, context) {
 	}
 };
 */
-
-var ParsedEvent = red._create_event_type("parsed");
-red.ParsedEvent = ParsedEvent;
-var id  = 0;
-(function(my) {
-	var proto = my.prototype;
-	proto.on_create = function(options) {
-		this.id = id++;
-		this.options = options;
-		this._str = cjs.is_constraint(options.str) ? options.str : cjs(options.str);
-		if(options.inert_super_event !== true) {
-			var SOandC = red.find_stateful_obj_and_context(options.context);
-			var context = SOandC.context;
-			var parent = SOandC.stateful_obj;
-
-			var self = this;
-			this._tree = cjs(function() {
-				return esprima.parse(self.get_str());
-			});
-
-			this.$child_fired = _.bind(this.child_fired, this);
-
-			this._old_event = null;
-			this._live_event_creator = cjs.liven(function() {
-				if(this._old_event) {
-					this._old_event.off_fire(this.$child_fired);
-					this._old_event.destroy();
-				}
-
-				var tree = this._tree.get();
-				cjs.wait();
-				var event = get_event(tree, parent, context);
-				cjs.signal();
-
-				if(event) {
-					event.on_fire(this.$child_fired);
-				}
-
-				this._old_event = event;
-			}, {
-				context: this
-			});
-		}
-	};
-	proto.child_fired = function() { this.fire.apply(this, arguments); };
-	proto.get_str = function() { return this._str.get(); };
-	proto.set_str = function(str) { this._str.set(str); };
-	proto.create_shadow = function(parent_statechart, context) {
-		return red.create_event("parsed", {str: this._str, context: context});
-	};
-	proto.destroy = function() {
-		if(this._old_event) {
-			this._old_event.off_fire(this.$child_fired);
-			this._old_event.destroy();
-		}
-		if(this._live_event_creator) {
-			this._live_event_creator.destroy();
-		}
-	};
-	proto.stringify = function() { return "'" + this.get_str() + "'"; };
-	proto.serialize = function() { return { str: this.get_str() }; };
-	my.deserialize = function(obj) { return red.create_event("parsed", obj.str); };
-}(ParsedEvent));
 }(red));
