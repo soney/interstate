@@ -237,7 +237,7 @@ var Env = function(options) {
 							state_name = "  " + state_name;
 						}
 
-						console.log(pad(state.id(), 4), state_name);
+						console.log(pad(state.id(), 5), state_name);
 					});
 					console.groupEnd();
 				}
@@ -265,7 +265,7 @@ var Env = function(options) {
 
 					if(value && value.id) { printed_prop_name += " ("+value.id+")"; }
 
-					printed_prop_name = pad(printed_prop_name, 35);
+					printed_prop_name = pad(printed_prop_name, 40);
 
 					if(value instanceof red.RedDict) {
 						var group_type = value instanceof red.RedStatefulObj ? "stateful" : "dict";
@@ -282,7 +282,7 @@ var Env = function(options) {
 							console.log(printed_prop_name + value_to_value_str(value_got));
 						} else {
 							var value_specs = value.get_value_specs(context);
-							var group_name = pad(printed_prop_name + " (" + value.id +")", 20);
+							var group_name = printed_prop_name + " (" + value.id +")";
 							if(context_pointer.has(value) || value === pointer) {
 								console.group(group_name, value_to_value_str(value_got));
 							} else {
