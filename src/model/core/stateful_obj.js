@@ -6,7 +6,7 @@ red.find_stateful_obj_and_context = function(context) {
 	while(!context.is_empty()) {
 		last = context.last();
 		if(last instanceof red.RedStatefulObj) {
-			if(popped_item && popped_item.get_manifestation_of() === last) {
+			if(popped_item && popped_item instanceof red.RedDict && popped_item.get_manifestation_of() === last) {
 				return {
 						stateful_obj: last,
 						context: context.push(popped_item)

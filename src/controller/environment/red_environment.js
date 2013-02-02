@@ -291,12 +291,9 @@ var Env = function(options) {
 					}
 				}
 			} else {
-				var ptr_context = this.get_context();
 				prop = this.get_pointer_obj();
-				_.forEach(arg0.split("."), function(name) {
-					prop = prop.get_prop(name, ptr_context);
-					ptr_context = ptr_context.push(prop);
-				});
+				var name = arg0;
+				prop = prop.get_prop(name, this.pointer);
 			}
 
 			var for_state_name = arg1;
@@ -548,7 +545,8 @@ var Env = function(options) {
 			} else if(val instanceof red.RedCell) {
 				return "(cell)";
 			} else if(val instanceof red.RedContext) {
-				return "(context)";
+				var last = val.last();
+				return value_to_value_str(last);
 			} else if(_.isArray(val)) {
 				return ("[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]").slice(0, 10);
 			} else {

@@ -58,7 +58,7 @@ var get_conditional_$ = function(test, consequent, alternate) { // test ? conseq
 
 var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 	if(key === "root") {
-		return context.first();
+		return context.slice(0, 1);
 	} else if(key === "window") {
 		return window;
 	}
@@ -66,35 +66,39 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 	ignore_inherited_in_contexts = ignore_inherited_in_contexts || [];
 
 	return cjs.$(function() {
-		var key_got = cjs.get(key);
 		var curr_context = context;
 		var context_item = curr_context.last();
 		var rv;
 
 		while(!curr_context.is_empty()) {
-			var context_item_got = cjs.get(context_item);
-			if(context_item_got instanceof red.RedDict) {
-				if(_.indexOf(ignore_inherited_in_contexts, context_item_got) >= 0) {
-					if(context_item_got._has_direct_prop(key_got)) {
+			if(context_item instanceof red.RedDict) {
+				if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
+					if(context_item_got._has_direct_prop(key)) {
 						//rv = context_item_got._get_direct_prop(key_got, curr_context);
-						rv = curr_context.prop(key_got);
+						rv = curr_context.prop(key);
 						break;
 					}
 				} else {
-					if(context_item_got.has_prop(key_got, curr_context)) {
+					if(context_item.has_prop(key, curr_context)) {
 						//rv = context_item_got.prop_val(key_got, curr_context);
-						rv = curr_context.prop(key_got);
+						rv = curr_context.prop(key);
 						break;
 					}
 				}
-			} else if(context_item_got && context_item_got[key_got]) {
-				return context_item_got[key_got];
+			} else if(context_item && context_item[key]) {
+				return context_item[key];
 			}
 			curr_context = curr_context.pop();
 			context_item = curr_context.last();
 		}
+
 		// rv is a context
-		return rv.val();
+		var rv_last_item = rv.last();
+		if(rv_last_item instanceof red.RedDict) {
+			return rv;
+		} else {
+			return red.get_contextualizable(rv_last_item, rv);
+		}
 	});
 };
 
@@ -124,10 +128,18 @@ var get_member_$ = function(object, property) {
 		}
 
 		var prop_got = cjs.get(property);
-
-		if(obj_got instanceof red.RedDict) {
-			var context = obj_got.get_default_context();
-			return obj_got.prop_val(prop_got, context);
+		if(obj_got instanceof red.RedContext) {
+			var prop_val = obj_got.prop(prop_got);
+			if(prop_val) {
+				var pv_last = prop_val.last();
+				if(pv_last instanceof red.RedDict) {
+					return curr_context;
+				} else {
+					return red.get_contextualizable(pv_last, prop_val);
+				}
+			} else {
+				return prop_val;
+			}
 		} else {
 			return obj_got[prop_got];
 		}

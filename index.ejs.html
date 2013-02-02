@@ -321,6 +321,15 @@
 						.cd("child")
 						.add_state("hover")
 						.add_transition("INIT", "hover", "on('mouseover', this)")
+						.set("a")
+						.set("a", "INIT", "1")
+						.set("b")
+						.set("b", "INIT", "a+2")
+						.top()
+						.set("x", "stateful")
+						.cd("x")
+						.set("y")
+						.set("y", "child")
 
 					env.print_on_return = true;
 					console.log(env.print());
