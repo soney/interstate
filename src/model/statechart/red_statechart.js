@@ -311,8 +311,8 @@ var StatechartTransition = function(options, defer_initialization) {
 	};
 	proto.stringify = function() {
 		var event = this.event();
-		var stringified_event = event ? ","+event.stringify() : "";
-		return "" + this.id() + stringified_event;
+		var stringified_event = event ? event.stringify() : "";
+		return "" + stringified_event;
 	};
 	proto.remove = function() {
 		var from = this.from();

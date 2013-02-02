@@ -21,6 +21,9 @@ var RedContext = function(options) {
 		stack.push(item); //It's a clone, so it doesn't affect my stack
 		return red.create("context", {stack: stack});
 	};
+	proto.has = function(item) {
+		return this._stack.indexOf(item) >= 0;
+	};
 	proto.pop = function() {
 		var stack = this.get_stack();
 		stack.pop(); //It's a clone, so it doesn't affect my stack

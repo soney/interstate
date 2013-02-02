@@ -64,7 +64,7 @@ var RedDict = function(options, defer_initialization) {
 
 		, "manifestations": {
 			start_with: function() { return cjs.$(); }
-			, env_visible: true
+			, env_visible: false
 			, getter: function(me) { return me.get(); }
 			, setter: function(me, val) { me.set(val, true); }
 		}
