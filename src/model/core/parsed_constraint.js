@@ -4,10 +4,10 @@ var esprima = window.esprima;
 
 
 var binary_operators = {
-	"===":	function(a, b) { return a === b; }
-	,"!==":	function(a, b) { return a !== b; }
-	, "==":	function(a, b) { return a == b; }
-	, "!=":	function(a, b) { return a != b; }
+	"===":	function(a, b) { return red.check_context_equality_eqeqeq(a,b); }
+	,"!==":	function(a, b) { return !red.check_context_equality_eqeqeq(a,b); }
+	, "==":	function(a, b) { return red.check_context_equality_eqeq(a, b); }
+	, "!=":	function(a, b) { return !red.check_context_equality_eqeq(a,b); }
 	, ">":	function(a, b) { return a > b; }
 	, ">=":	function(a, b) { return a >= b; }
 	, "<":	function(a, b) { return a < b; }

@@ -1,54 +1,34 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 var RedContext = function(options) {
-	options = options || {};
-	this._stack = options.stack || [];
-	this._stack_pointer_index = _.size(this.get_stack())-1;
+	this._stack = (options && options.stack) || [];
 };
 (function(my) {
 	var proto = my.prototype;
-	proto.get_stack = function() {
-		return _.clone(this._stack);
-	};
+	//proto.get_stack = function() { return _.clone(this._stack); };
 	proto.first = function() {
-		return _.first(this._stack);
+		return this._stack[0];
 	};
 	proto.last = function() {
-		return _.last(this._stack);
+		return this._stack[this._stack.length-1];
 	};
-	proto.push = function(item) {
-		var stack = this.get_stack();
-		stack.push(item); //It's a clone, so it doesn't affect my stack
-		return red.create("context", {stack: stack});
+	proto.push = function() {
+		return red.create("context", {stack: this._stack.concat.apply(this._stack, arguments)});
 	};
 	proto.has = function(item) {
 		return this._stack.indexOf(item) >= 0;
 	};
 	proto.pop = function() {
-		var stack = this.get_stack();
-		stack.pop(); //It's a clone, so it doesn't affect my stack
-		return red.create("context", {stack: stack});
+		return red.create("context", {stack: this._stack.slice(0, this._stack.length-1)});
 	};
-	proto.iter = function() {
-		if(this._stack_pointer_index >= 0) {
-			var stack = this.get_stack();
-			var rv = stack[this._stack_pointer_index];
-			this._stack_pointer_index--;
-			return rv;
-		} else {
-			return undefined;
-		}
-	};
-	proto.reset_iterator = function() {
-		this._stack_pointer_index = _.size(this.get_stack())-1;
-	};
-	proto.eq = function(other_context) {
-		var my_stack = this.get_stack();
-		var other_stack = other_context.get_stack();
+	proto.eq = function(other) {
+		var my_stack = this._stack;
+		var other_stack = other._stack;
+
 		if(my_stack.length !== other_stack.length) {
 			return false;
 		}
-		for(var i = 0; i<my_stack.length; i++) {
+		for(var i = my_stack.length; i>=0; i--) {
 			if(my_stack[i] !== other_stack[i]) {
 				return false;
 			}
@@ -56,13 +36,19 @@ var RedContext = function(options) {
 		return true;
 	};
 	proto.is_empty = function() {
-		return _.isEmpty(this._stack);
+		return this._stack.length === 0;
 	};
+	var num_to_hash = 3;
 	proto.hash = function() {
 		var hash = 0;
-		_.each(_.last(this._stack, 3), function(dict) {
-			hash +=  dict.hash();
-		});
+
+		var len = this._stack.length-1;
+		var mini = Math.max(0, len-num_to_hash);
+
+		for(var i = len; i>mini; i--) {
+			hash += this._stack[i].hash();
+		}
+
 		return hash;
 	};
 
@@ -73,6 +59,7 @@ var RedContext = function(options) {
 	my.deserialize = function(obj) {
 		return new RedContext({stack: _.map(obj.stack, red.deserialize)});
 	};
+	/*
 	proto.print = function() {
 		var rarr = [];
 		for(var i = 0; i<this._stack.length; i++) {
@@ -90,6 +77,7 @@ var RedContext = function(options) {
 		}
 		return rarr.join(" > ");
 	};
+	*/
 }(RedContext));
 
 red.RedContext = RedContext;
@@ -109,11 +97,18 @@ red.get_contextualizable = function(obj, context) {
 	return cjs.get(obj);
 };
 
-red.check_context_equality = function(itema, itemb) {
+red.check_context_equality =  red.check_context_equality_eqeqeq = function(itema, itemb) {
 	if(itema instanceof red.RedContext && itemb instanceof red.RedContext) {
 		return itema.eq(itemb);
 	} else {
 		return itema === itemb;
+	}
+};
+red.check_context_equality_eqeq = function(itema, itemb) {
+	if(itema instanceof red.RedContext && itemb instanceof red.RedContext) {
+		return itema.eq(itemb);
+	} else {
+		return itema == itemb;
 	}
 };
 
