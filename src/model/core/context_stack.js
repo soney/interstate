@@ -12,14 +12,41 @@ var RedContext = function(options) {
 	proto.last = function() {
 		return this._stack[this._stack.length-1];
 	};
-	proto.push = function() {
-		return red.create("context", {stack: this._stack.concat.apply(this._stack, arguments)});
+	proto.length = function() { return this._stack.length; };
+	proto.slice = function() { return new RedContext({ stack: this._stack.slice.apply(this._stack, arguments) }); };
+	proto.push = function() { return red.create("context", {stack: this._stack.concat.apply(this._stack, arguments)}); };
+	proto.has = function(item) { return this._stack.indexOf(item) >= 0; };
+	proto.pop = function() { return red.create("context", {stack: this._stack.slice(0, this._stack.length-1)}); };
+	proto.prop = function(prop_name) {
+		var dict = this.last();
+		return dict.get_prop_context(prop_name, this);
 	};
-	proto.has = function(item) {
-		return this._stack.indexOf(item) >= 0;
+	proto.val = function() {
+		var obj = this.last();
+		if(red.is_contextualizable(obj)) { return obj.get(this); }
+		return obj;
 	};
-	proto.pop = function() {
-		return red.create("context", {stack: this._stack.slice(0, this._stack.length-1)});
+	proto.prop_val = function(prop_name) {
+		var prop = this.prop(prop_name);
+		if(prop === undefined) { return undefined; }
+		else { return prop.get(); }
+	};
+	proto.manifestations = function() {
+		var dict = this.last();
+
+		var manifestation_objs = dict.get_manifestation_objs(this);
+
+		var manifestation_contexts =  _.map(manifestation_objs, function(manifestation_obj) {
+			var manifestation_context = this.push(manifestation_obj);
+			return manifestation_context;
+		}, this);
+
+		return manifestaiton_contexts;
+	};
+	proto.set = function() {
+		var obj = this.last();
+		obj.set.apply(obj, arguments);
+		return this;
 	};
 	proto.eq = function(other) {
 		var my_stack = this._stack;
@@ -59,7 +86,6 @@ var RedContext = function(options) {
 	my.deserialize = function(obj) {
 		return new RedContext({stack: _.map(obj.stack, red.deserialize)});
 	};
-	/*
 	proto.print = function() {
 		var rarr = [];
 		for(var i = 0; i<this._stack.length; i++) {
@@ -77,7 +103,6 @@ var RedContext = function(options) {
 		}
 		return rarr.join(" > ");
 	};
-	*/
 }(RedContext));
 
 red.RedContext = RedContext;

@@ -49,8 +49,7 @@ var RedDomAttachmentInstance = function(options) {
 	this.id = _.uniqueId();
 	if(options.tag) {
 		this._dom_obj = document.createElement(options.tag);
-		this._dom_obj.__red_owner__ = this.get_owner();
-		this._dom_obj.__red_context__ = this.get_context();
+		this._dom_obj.__red_pointer__ = this.get_context();
 	} else {
 		this._dom_obj = cjs.$();
 		this._tag_change_listener = this.add_tag_change_listener();
@@ -111,8 +110,7 @@ var RedDomAttachmentInstance = function(options) {
 				old_tag = tag;
 				if(_.isString(tag)) {
 					var dom_obj = document.createElement(tag);
-					dom_obj.__red_owner__ = this.get_owner();
-					dom_obj.__red_context__ = this.get_context();
+					dom_obj.__red_pointer__ = context;
 					this._dom_obj.set(dom_obj);
 				} else {
 					this._dom_obj.set(undefined);

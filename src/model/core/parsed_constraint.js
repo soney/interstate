@@ -76,12 +76,14 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 			if(context_item_got instanceof red.RedDict) {
 				if(_.indexOf(ignore_inherited_in_contexts, context_item_got) >= 0) {
 					if(context_item_got._has_direct_prop(key_got)) {
-						rv = context_item_got._get_direct_prop(key_got, curr_context);
+						//rv = context_item_got._get_direct_prop(key_got, curr_context);
+						rv = curr_context.prop(key_got);
 						break;
 					}
 				} else {
 					if(context_item_got.has_prop(key_got, curr_context)) {
-						rv = context_item_got.prop_val(key_got, curr_context);
+						//rv = context_item_got.prop_val(key_got, curr_context);
+						rv = curr_context.prop(key_got);
 						break;
 					}
 				}
@@ -91,7 +93,8 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 			curr_context = curr_context.pop();
 			context_item = curr_context.last();
 		}
-		return cjs.get(rv);
+		// rv is a context
+		return rv.val();
 	});
 };
 
@@ -102,7 +105,7 @@ var get_this_$ = function(context) {
 
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.RedDict) {
-				return context_item;
+				return curr_context;
 			}
 			curr_context = curr_context.pop();
 			context_item = curr_context.last();

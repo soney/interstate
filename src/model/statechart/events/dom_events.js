@@ -14,7 +14,7 @@ var cjs = red.cjs, _ = red._;
 				});
 
 				if(specified_target.__red_context__) {
-					var red_target = specified_target.__red_context__.last();
+					var red_target = specified_target.__red_context__;
 					event.red_target = red_target;
 				}
 				this.fire(event);

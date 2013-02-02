@@ -178,7 +178,6 @@ var RedDict = function(options, defer_initialization) {
 		return this.direct_props().keys();
 	};
 
-
 	//
 	// === FULLY INHERITED PROPERTIES ===
 	//
@@ -289,6 +288,14 @@ var RedDict = function(options, defer_initialization) {
 			return this._get_direct_prop(prop_name);
 		} else {
 			return this._get_inherited_prop(prop_name, context);
+		}
+	};
+	proto.get_prop_context = function(prop_name, context) {
+		var prop = this.get_prop(prop_name, context);
+		if(prop === undefined) {
+			return undefined;
+		} else {
+			return context.push(prop);
 		}
 	};
 	proto.has_prop = function(prop_name, context) {

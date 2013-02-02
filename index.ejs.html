@@ -87,11 +87,6 @@
 
 					env = red	.create("environment");
 					
-					var obj = env.get_pointer();
-					window.obj = obj;
-					var root = env.get_root();
-					var root_context = env.get_root_context();
-
 					window.songs = cjs.$(function() {
 						return _.chain(albums)
 								.map(function(x) {
@@ -108,16 +103,6 @@
 								})
 								.value()
 					});
-
-					window.pc = function(str) {
-						var tree = esprima.parse(str);
-						var constraint = red.get_parsed_$(tree, {
-							context: env.get_context()
-						});
-						return constraint.get();
-					};
-
-
 
 					/*
 					env.set("a", "stateful")
@@ -164,8 +149,6 @@
 					/**/
 
 
-					env	.set("a", "1")
-						.set("b", "a")
 					/*
 					env			.set("button", "stateful")
 								.cd("button")
@@ -328,10 +311,16 @@
 						.set("last_target")
 						.set("last_target", env._last_transition, "1")
 					/**/
+					/*
+					var root = env.get_pointer();
 					output_view = $("<div />").dom_output({
 						root: root
-						, context: root_context
 					}).appendTo(document.body);
+					*/
+					env	.set("child", "stateful")
+						.cd("child")
+						.add_state("hover")
+						.add_transition("INIT", "hover", "on('mouseover', this)")
 
 					env.print_on_return = true;
 					console.log(env.print());
