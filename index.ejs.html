@@ -37,6 +37,9 @@
 			padding-left: 4px;
 			cursor: default;
 		}
+		div.selected.song {
+			background-color: blue;
+		}
 		div.song span.name {
 			display: inline-block;
 			width: 190px;
@@ -113,6 +116,51 @@
 
 
 
+					/*
+					env.set("a", "stateful")
+						.cd("a")
+						.set("x")
+						.set("x", "INIT", "1")
+						.top()
+						.set("b", "stateful")
+						.cd("b")
+						.set("y")
+						.set("y")
+						.set("y", "INIT", "a.x")
+						.top()
+						.cd("a")
+					window.a = env.get_pointer()
+					/**/
+
+					/*
+					env	.cd("children")
+						.set("obj", "stateful")
+						.cd("obj")
+						.add_state("selected")
+						.add_transition("INIT", "selected", "sel.selected === this")
+						.add_transition("selected", "INIT", "sel.selected !== this")
+						.set("(protos)", "INIT", "[dom]")
+						.set("(manifestations)", "20")
+						.set("text")
+						.set("text", "INIT", "'hello_'+basis")
+						.set("tag")
+						.set("tag", "INIT", "'div'")
+						.set("backgroundColor")
+						.set("backgroundColor", "INIT", "'white'")
+						.set("backgroundColor", "selected", "'yellow'")
+						.top()
+						.set("sel", "stateful")
+						.cd("sel")
+						.add_transition("INIT", "INIT", "on('mousedown', root.children.obj)")
+						.set("selected")
+						.set("selected", env._last_transition, "event.target")
+						.top()
+						.cd("children")
+						.cd("obj")
+					window.obj = env.get_pointer();
+					/**/
+
+
 					env			.set("button", "stateful")
 								.cd("button")
 								.rename_state("INIT", "idle")
@@ -185,10 +233,14 @@
 								.cd("children")
 								.set("song_view", "stateful")
 								.cd("song_view")
+								.add_state("selected")
+								.add_transition("INIT", "selected", "selection_info.selected_song === this")
+								.add_transition("selected", "INIT", "selection_info.selected_song !== this")
 								.set("(protos)", "INIT", "[dom]")
 								.set("(manifestations)", songs)
 								.set("class")
 								.set("class", "INIT", "'song'")
+								.set("class", "selected", "'selected'")
 								.set("tag")
 								.set("tag", "INIT", "'div'")
 								.set("children", "dict")
@@ -216,12 +268,12 @@
 								.up()
 								.top()
 								.set("selection_info", "stateful")
-								.cd("selection_info");
-								console.log("AAA");
-								env
-								.add_transition("INIT", "INIT", "on('mousedown', root.children.songs.children.song)")
+								.cd("selection_info")
+								.add_transition("INIT", "INIT", "on('mousedown', root.children.songs.children.song_view)")
 								.set("selected_song")
 								.set("selected_song", env._last_transition, "event.target")
+								.top()
+								.set("x", "selection_info.selected_song")
 								;
 								/**/
 								/*
@@ -275,8 +327,8 @@
 						, context: root_context
 					}).appendTo(document.body);
 
-					//env.print_on_return = true;
-					//console.log(env.print());
+					env.print_on_return = true;
+					console.log(env.print());
 
 					var storage_prefix = "_";
 					window.save = function(name) {

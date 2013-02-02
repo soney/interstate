@@ -196,7 +196,8 @@ var Env = function(options) {
 		return statechart;
 	};
 
-	proto.print = function() {
+	proto.print = function(only_values) {
+		only_values = !!only_values;
 		var pointer = this.get_pointer();
 
 		var value_to_value_str = function(val) {
@@ -213,17 +214,19 @@ var Env = function(options) {
 			} else if(_.isElement(val)) {
 				return "(dom)";
 			} else if(val instanceof red.RedStatefulObj) {
-				return "(stateful)";
+				return "(stateful:"+val.id+")";
 			} else if(val instanceof red.RedDict) {
-				return "(dict)";
+				return "(dict:"+val.id+")";
 			} else if(val instanceof red.RedCell) {
 				return "(cell)";
+			} else if(val instanceof red.RedContext) {
+				return "(context)";
 			} else if(_.isArray(val)) {
 				return "[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]";
 			} else {
-				return "{ " + _.map(val, function(v, k) {
+				return ("{ " + _.map(val, function(v, k) {
 					return k + ": " + v;
-				}).join(", ") + " }";
+				}).join(", ") + " }").slice(10);
 			}
 		};
 
@@ -281,30 +284,32 @@ var Env = function(options) {
 					var state_specs = value.get_state_specs(dictified_context.push(value));
 					var row = [prop_name + " - " + value.id, value_to_value_str(value_got)];
 
-					var state_strs = _.map(state_specs, function(state_spec) {
-						var rv;
-						var state = state_spec.state;
-						if(state instanceof red.Statechart) {
-							rv = state.get_name(state.parent());
-							rv += " " + state.id();
-							if(state.basis()) {
-								rv += "<-"+state.basis().id();
+					if(!only_values) {
+						var state_strs = _.map(state_specs, function(state_spec) {
+							var rv;
+							var state = state_spec.state;
+							if(state instanceof red.Statechart) {
+								rv = state.get_name(state.parent());
+								rv += " " + state.id();
+								if(state.basis()) {
+									rv += "<-"+state.basis().id();
+								}
+								if(state_spec.active) {
+									rv = "* " + rv + " *";
+								}
+							} else if(state instanceof red.StatechartTransition) {
+								var transition = state
+									, to_state = transition.to();
+								
+								rv = "(" + transition.stringify() + ")-> " + to_state.get_name(to_state.parent());
 							}
-							if(state_spec.active) {
-								rv = "* " + rv + " *";
-							}
-						} else if(state instanceof red.StatechartTransition) {
-							var transition = state
-								, to_state = transition.to();
-							
-							rv = "(" + transition.stringify() + ")-> " + to_state.get_name(to_state.parent());
-						}
-						return rv;
-					});
+							return rv;
+						});
 
-					row.push.apply(row, state_strs);
-					to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(dictified_context.push(value)));
-					to_print_statecharts.push(value.get_own_statechart());
+						row.push.apply(row, state_strs);
+						to_print_statecharts.push.apply(to_print_statecharts, value.get_statecharts(dictified_context.push(value)));
+						to_print_statecharts.push(value.get_own_statechart());
+					}
 
 					rows.push(row);
 					
@@ -320,19 +325,21 @@ var Env = function(options) {
 					var value_specs = value.get_value_specs(dictified_context);
 					var row = [prop_name + " - " + value.id, value_to_value_str(value_got)];
 
-					var value_strs = _.map(value_specs, function(value_spec) {
-						var value = value_spec.value;
-						var rv = value_to_source_str(value);
-						if(value_spec.active) {
-							rv = rv + " *";
-						}
+					if(!only_values) {
+						var value_strs = _.map(value_specs, function(value_spec) {
+							var value = value_spec.value;
+							var rv = value_to_source_str(value);
+							if(value_spec.active) {
+								rv = rv + " *";
+							}
 
-						if(value_spec.using) {
-							rv = "* " + rv;
-						}
-						return rv;
-					});
-					row.push.apply(row, value_strs);
+							if(value_spec.using) {
+								rv = "* " + rv;
+							}
+							return rv;
+						});
+						row.push.apply(row, value_strs);
+					}
 
 					rows.push(row);
 				} else {
@@ -347,12 +354,14 @@ var Env = function(options) {
 
 		var table = tablify_dict(this._root);
 		var str = print_table(table);
-		str += "\n\n====\n";
-		_.forEach(_.uniq(to_print_statecharts), function(statechart) {
-			str += "\n"
-			str += statechart.stringify();
-			str += "\n"
-		});
+		if(!only_values) {
+			str += "\n\n====\n";
+			_.forEach(_.uniq(to_print_statecharts), function(statechart) {
+				str += "\n"
+				str += statechart.stringify();
+				str += "\n"
+			});
+		}
 		return "\n" + str;
 	};
 

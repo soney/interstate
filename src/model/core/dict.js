@@ -312,7 +312,7 @@ var RedDict = function(options, defer_initialization) {
 			var entry = stateful_val.get();
 			var from_state = stateful_val.get_from_state();
 			if(from_state) {
-				var state_event = from_state._last_run_event.get()
+				var state_event = from_state._last_run_event.get();
 				context = context.push(red.create("dict", { value: {
 																event: state_event
 															}

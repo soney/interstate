@@ -81,7 +81,7 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 					}
 				} else {
 					if(context_item_got.has_prop(key_got, curr_context)) {
-						rv = context_item_got.get(key_got, curr_context);
+						rv = context_item_got.prop_val(key_got, curr_context);
 						break;
 					}
 				}
@@ -112,7 +112,7 @@ var get_this_$ = function(context) {
 	});
 };
 
-var get_member_$ = function(object, property, context) {
+var get_member_$ = function(object, property) {
 	return cjs.$(function() {
 		var obj_got = cjs.get(object);
 
@@ -123,6 +123,7 @@ var get_member_$ = function(object, property, context) {
 		var prop_got = cjs.get(property);
 
 		if(obj_got instanceof red.RedDict) {
+			var context = obj_got.get_default_context();
 			return obj_got.prop_val(prop_got, context);
 		} else {
 			return obj_got[prop_got];
@@ -175,8 +176,7 @@ var get_$ = red.get_parsed_$ = function(node, options) {
 	} else if(type === "MemberExpression") {
 		var object = get_$(node.object, options);
 		var property = node.computed ? get_$(node.property, options) : node.property.name;
-
-		return get_member_$(object, property, options.context);
+		return get_member_$(object, property);
 	} else if(type === "ArrayExpression") {
 		var elements = _.map(node.elements, function(element) {
 			return get_$(element, options);

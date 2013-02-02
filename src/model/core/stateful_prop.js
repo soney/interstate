@@ -239,6 +239,9 @@ var RedStatefulPropContextualVal = function(options) {
 			this._value.update();
 		}
 	}, this));
+	_.defer(_.bind(function() {
+		this._value.update();
+	}, this));
 };
 (function(my) {
 	var proto = my.prototype;

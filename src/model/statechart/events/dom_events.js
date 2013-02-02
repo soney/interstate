@@ -6,12 +6,12 @@ var cjs = red.cjs, _ = red._;
 		this._bubble_listener = _.bind(function(event) {
 			event.preventDefault();
 			red.event_queue.wait();
-			if(event.target && event.target.__red_owner__) {
+			if(event.target && event.target.__red_context__) {
 				event = _.extend({}, event, {
-					target: event.target.__red_owner__
+					target: event.target.__red_context__.last()
 				});
 			}
-			this.fire.apply(this, arguments);
+			this.fire(event);
 			_.defer(function() {
 				red.event_queue.signal();
 			});
@@ -36,7 +36,7 @@ var cjs = red.cjs, _ = red._;
 									if(_.isArray(manifestations)) {
 										return _.map(manifestations, function(manifestation) {
 											var manifestation_context = targ_context.push(manifestation);
-											var dom_attachment = parent.get_attachment_instance("dom", manifestation_context);
+											var dom_attachment = targ.get_attachment_instance("dom", manifestation_context);
 											if(dom_attachment) {
 												return dom_attachment.get_dom_obj();
 											} else {
@@ -54,9 +54,6 @@ var cjs = red.cjs, _ = red._;
 							})
 							.flatten(true)
 							.compact()
-							.tap(function() {
-								console.log(arguments);
-							})
 							.value();
 			this.add_listeners();
 		}, {

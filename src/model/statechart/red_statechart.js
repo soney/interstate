@@ -299,7 +299,7 @@ var StatechartTransition = function(options, defer_initialization) {
 	};
 	proto.fire = function(event) {
 		if(this.from().on_outgoing_transition_fire(this, event)) {
-			this._last_run_event.set(event);
+			//this._last_run_event.set(event);
 			this._emit("fire", {type: "fire", target: this, event: event});
 		}
 	};
@@ -523,6 +523,7 @@ var State = function(options, defer_initialization) {
 
 	proto.on_outgoing_transition_fire = function(transition, event) {
 		if(this.is_running()) {
+			transition._last_run_event.set(event);
 			var my_lineage = this.get_lineage();
 			for(var i = 0; i<my_lineage.length-1; i++) {
 				if(!my_lineage[i].is(my_lineage[i+1])) {

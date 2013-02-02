@@ -10,15 +10,11 @@ var on_event = red.on_event = function(event_type) {
 	return red.create_event("dom_event", event_type, targets);
 };
 
-var when_event = function(condition) {
-};
-
 var get_event = function(tree, options) {
 	var event_constraint = red.get_parsed_$(tree, options);
 	event_constraint.setOption("auto_add_outgoing_dependencies", false);
 
 	var got_value = event_constraint.get();
-	console.log(got_value);
 	if(got_value instanceof red.RedEvent) {
 		return got_value;
 	} else {
@@ -54,7 +50,6 @@ var id  = 0;
 					this._old_event.destroy();
 				}
 
-				console.log(self.get_str());
 				var tree = this._tree.get();
 				cjs.wait();
 				var event = get_event(tree, {
