@@ -3,19 +3,28 @@ var cjs = red.cjs, _ = red._;
 
 (function(proto) {
 	proto.on_create = function(type, targets) {
-		this._bubble_listener = _.bind(function(event) {
-			event.preventDefault();
-			red.event_queue.wait();
-			if(event.target && event.target.__red_context__) {
+		var self = this;
+		this.get_target_listener = cjs.memoize(_.bind(function(specified_target) {
+			var listener = _.bind(function(event) {
+				event.preventDefault();
+				red.event_queue.wait();
+
 				event = _.extend({}, event, {
-					target: event.target.__red_context__.last()
+					specified_target: specified_target
 				});
-			}
-			this.fire(event);
-			_.defer(function() {
-				red.event_queue.signal();
-			});
-		}, this);
+
+				if(specified_target.__red_context__) {
+					var red_target = specified_target.__red_context__.last();
+					event.red_target = red_target;
+				}
+				this.fire(event);
+				_.defer(function() {
+					red.event_queue.signal();
+				});
+			}, this);
+			return listener;
+		}, this));
+
 
 		this.live_fn = cjs.liven(function() {
 			this.remove_listeners();
@@ -65,12 +74,12 @@ var cjs = red.cjs, _ = red._;
 	};
 	proto.add_listeners = function() {
 		_.each(this.targets, function(target) {
-			target.addEventListener(this.type, this._bubble_listener, false); // Bubble
+			target.addEventListener(this.type, this.get_target_listener(target), false); // Bubble
 		}, this);
 	};
 	proto.remove_listeners = function() {
 		_.each(this.targets, function(target) {
-			target.removeEventListener(this.type, this._bubble_listener, false); // Bubble
+			target.removeEventListener(this.type, this.get_target_listener(target), false); // Bubble
 		}, this);
 	};
 	proto.destroy = function() {

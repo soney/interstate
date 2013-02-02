@@ -26,21 +26,22 @@
 		div.songs {
 			max-height: 300px;
 			overflow-y: scroll;
+			border-bottom: rgb(237, 237, 237);
 		}
-		/*
 		div.songs > div.song:nth-child(odd) {
-			background-color: #FEFEFE;
+			background-color: rgb(250, 250, 250);
 		}
 		div.songs > div.song:nth-child(even) {
-			background-color: #F3F3F3;
+			background-color: rgb(241, 244, 247);
 		}
-		*/
+		
 		div.song {
 			padding-left: 4px;
 			cursor: default;
 		}
-		div.selected.song {
-			background-color: blue;
+		div.songs > div.selected.song {
+			background-color: rgb(139, 167, 198);
+			color: rgb(255, 255, 255);
 		}
 		div.song span.name {
 			display: inline-block;
@@ -242,7 +243,7 @@
 								.set("(manifestations)", songs)
 								.set("class")
 								.set("class", "INIT", "'song'")
-								.set("class", "selected", "'selected'")
+								.set("class", "selected", "'selected song'")
 								.set("tag")
 								.set("tag", "INIT", "'div'")
 								.set("children", "dict")
@@ -273,7 +274,7 @@
 								.cd("selection_info")
 								.add_transition("INIT", "INIT", "on('mousedown', root.children.songs.children.song_view)")
 								.set("selected_song")
-								.set("selected_song", env._last_transition, "event.target")
+								.set("selected_song", env._last_transition, "event.red_target")
 								.top()
 								.set("x", "selection_info.selected_song")
 								;
