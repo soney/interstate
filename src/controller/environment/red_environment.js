@@ -583,7 +583,7 @@ var Env = function(options) {
 			var manifestations = dict.get_manifestation_objs(context);
 
 			if(_.isArray(manifestations)) {
-				console.groupCollapsed("(manifestations)");
+				console.groupCollapsed(pad("(" + manifestations.length + " manifestation" + (manifestations.length === 1 ? "" : "s") + ")", 40) + value_to_source_str(dict.get_manifestations(context)));
 				_.each(manifestations, function(manifestation) {
 					console.groupCollapsed(pad(value_to_value_str(manifestation.prop_val("basis")), 20), " ("+manifestation.id+")");
 					var manifestation_context = context.push(manifestation);
@@ -599,12 +599,13 @@ var Env = function(options) {
 					_.each(state_specs, function(state_spec) {
 						var state = state_spec.state;
 						var state_name;
+
 						if(state instanceof red.State) {
 							state_name = state.get_name();
 						} else if(state instanceof red.StatechartTransition) { //transition
 							var from = state.from(),
 								to = state.to();
-							state_name = from.get_name() + "->" + to.get_name() + ": " + state.stringify();
+							state_name = pad(from.get_name() + "->" + to.get_name(), 25) + state.stringify();
 						}
 
 						if(state_spec.active) {
