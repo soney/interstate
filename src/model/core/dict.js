@@ -33,11 +33,13 @@ var RedDict = function(options, defer_initialization) {
 			, env_name: "protos"
 		}
 
+/*
 		, "default_context": {
 			start_with: function() { return cjs.$(); }
 			, getter: function(me) { return me.get(); }
 			, setter: function(me, context) { me.set(context, true); }
 		}
+		*/
 
 		, "direct_attachments": {
 			default: function() { return cjs.array(); }
@@ -91,13 +93,16 @@ var RedDict = function(options, defer_initialization) {
 
 	proto._get_direct_protos = function(context) {
 		var protos = red.get_contextualizable(this.direct_protos(), context);
+		protos = cjs.get(protos);
 		var rv;
 		if(_.isArray(protos)) {
 			rv = _.map(protos, function(x) {
-						return red.get_contextualizable(x, context);
+						//return red.get_contextualizable(x, context);
+						return x.val();
 					});
 		} else {
-			rv = red.get_contextualizable(protos, context);
+			//rv = red.get_contextualizable(protos, context);
+			rv = protos.val();
 
 			if(!_.isArray(rv)) {
 				rv = [rv];
@@ -311,9 +316,11 @@ var RedDict = function(options, defer_initialization) {
 	};
 	proto.get = proto.prop_val = function(prop_name, context) {
 		var val = this.get_prop(prop_name, context);
+		/*
 		if(!(context instanceof red.RedContext)) {
 			context = this.get_default_context();
 		}
+		*/
 		if(this instanceof red.RedStatefulObj && val instanceof red.RedStatefulProp) {
 			var stateful_val = val.get_value_for_context(context);
 			var entry = stateful_val.get();

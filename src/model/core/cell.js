@@ -34,11 +34,13 @@ var RedCell = function(options, defer_initialization) {
 		, "ignore_inherited_in_contexts": {
 			default: function() { return []; }
 		}
+		/*
 		, "default_context": {
 			start_with: function() { return cjs.$(); }
 			, getter: function(me) { return me.get(); }
 			, setter: function(me, context) { me.set(context, true); }
 		}
+		*/
 	};
 	red.install_proto_builtins(proto, my.builtins);
 	proto.do_initialize = function(options) {

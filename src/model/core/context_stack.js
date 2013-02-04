@@ -62,6 +62,18 @@ var RedContext = function(options) {
 		}
 		return true;
 	};
+	proto.type = function() {
+		var last = this.last();
+		if(last instanceof red.RedDict) {
+			return "dict";
+		} else if(last instanceof red.RedStatefulObj) {
+			return "obj";
+		} else if(last instanceof red.RedStatefulProp) {
+			return "prop";
+		} else if(last instanceof red.RedCell) {
+			return "cell";
+		}
+	};
 	proto.is_empty = function() {
 		return this._stack.length === 0;
 	};

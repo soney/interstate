@@ -149,7 +149,6 @@
 					/**/
 
 
-					/*
 					env			.set("button", "stateful")
 								.cd("button")
 								.rename_state("INIT", "idle")
@@ -286,37 +285,11 @@
 						//.set("z", "y+2")
 						//.top();
 								/**/
-					/*
-					env	.set("a", "1")
-						.set("elem", document.getElementById("square"))
-						.set("sobj", "stateful")
-						.cd("sobj")
-						.add_transition("INIT", "INIT", "on('mousedown', elem).when(a > 5)")
-						//.set("x", "1")
-						//.set("y", "x+1")
-						//.set("z", "y+2")
-						//.top();
-								/**/
-					
-					/*
-					env	.cd("children")
-						.set("elem", "stateful")
-						.cd("elem")
-						.set("(protos)", "INIT", "[dom]")
-						.set("tag")
-						.set("tag", "INIT", "'div'")
-						.set("text")
-						.set("text", "INIT", "'hello'")
-						.add_transition("INIT", "INIT", "on('mousedown', this)")
-						.set("last_target")
-						.set("last_target", env._last_transition, "1")
-					/**/
-					/*
-					var root = env.get_pointer();
+					var root = env.get_root_pointer();
 					output_view = $("<div />").dom_output({
 						root: root
 					}).appendTo(document.body);
-					*/
+					/*
 					env	.set("child", "stateful")
 						.cd("child")
 						.add_state("hover")
@@ -329,7 +302,8 @@
 						.set("x", "stateful")
 						.cd("x")
 						.set("y")
-						.set("y", "child")
+						.set("y", "INIT", "child.b")
+					*/
 
 					env.print_on_return = true;
 					console.log(env.print());

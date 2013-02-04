@@ -31,7 +31,7 @@ var Env = function(options) {
 		})]});
 
 		var root_context = red.create("context", {stack: [root]});
-		root.set_default_context(root_context);
+		//root.set_default_context(root_context);
 
 		this.initialize_props(root_context);
 	}
@@ -124,19 +124,19 @@ var Env = function(options) {
 				value = red.create("stateful_prop");
 			} else if(parent_obj instanceof red.RedDict) {
 				value = red.create("cell", {str: ""});
-				value.set_default_context(parent_obj.get_default_context());
+				//value.set_default_context(parent_obj.get_default_context());
 			}
 		} else if(_.isString(value)) {
 			if(value === "dict") {
 				value = red.create("dict");
-				value.set_default_context(parent_obj.get_default_context().push(value));
+				//value.set_default_context(parent_obj.get_default_context().push(value));
 				var direct_protos = red.create("cell", {str: "[]", ignore_inherited_in_contexts: [value]});
 				value._set_direct_protos(direct_protos);
 			} else if(value === "stateful") {
 				value = red.create("stateful_obj", undefined, true);
 				value.do_initialize({
-					default_context: parent_obj.get_default_context().push(value)
-					, direct_protos: red.create("stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]})
+					//default_context: parent_obj.get_default_context().push(value)
+					direct_protos: red.create("stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]})
 					//, manifestations: red.create("cell")
 				});
 				value.get_own_statechart()	.add_state("INIT")
@@ -170,7 +170,7 @@ var Env = function(options) {
 				} else {
 					if(_.isString(value)) {
 						value = red.create("cell", {str: value});
-						value.set_default_context(parent_obj.get_default_context());
+						//value.set_default_context(parent_obj.get_default_context());
 					}
 					var command = red.command("set_builtin", {
 						parent: parent_obj
@@ -182,7 +182,7 @@ var Env = function(options) {
 		} else {
 			if(_.isString(value)) {
 				value = red.create("cell", {str: value});
-				value.set_default_context(parent_obj.get_default_context());
+				//value.set_default_context(parent_obj.get_default_context());
 			}
 			var command = red.command("set_prop", {
 				parent: parent_obj
@@ -306,8 +306,8 @@ var Env = function(options) {
 				for_state = statechart_pointer.find_state(for_state_name);
 				if(!for_state) {
 					var pointer = this.get_pointer_obj();
-					var context = pointer.get_default_context();
-					var inherited_statecharts = pointer.get_inherited_statecharts(context);
+					//var context = pointer.get_default_context();
+					var inherited_statecharts = pointer.get_inherited_statecharts(this.pointer);
 					for(var i = 0; i<inherited_statecharts.length; i++) {
 						var isc = inherited_statecharts[i];
 						for_state = isc.find_state(for_state_name);

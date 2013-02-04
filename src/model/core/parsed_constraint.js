@@ -73,7 +73,7 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.RedDict) {
 				if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
-					if(context_item_got._has_direct_prop(key)) {
+					if(context_item._has_direct_prop(key)) {
 						//rv = context_item_got._get_direct_prop(key_got, curr_context);
 						rv = curr_context.prop(key);
 						break;
