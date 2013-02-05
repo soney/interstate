@@ -1,7 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var RedDict = function(options, defer_initialization) {
+red.Dict = function(options, defer_initialization) {
 	options = _.extend({
 		value: {},
 		keys: [],
@@ -32,14 +32,6 @@ var RedDict = function(options, defer_initialization) {
 			, env_visible: true
 			, env_name: "protos"
 		}
-
-/*
-		, "default_context": {
-			start_with: function() { return cjs.$(); }
-			, getter: function(me) { return me.get(); }
-			, setter: function(me, context) { me.set(context, true); }
-		}
-		*/
 
 		, "direct_attachments": {
 			default: function() { return cjs.array(); }
@@ -72,7 +64,7 @@ var RedDict = function(options, defer_initialization) {
 		}
 		, "contextual_manifestation_maps": {
 			default: function() { return cjs.map({
-				equals: red.check_context_equality,
+				equals: red.check_pointer_equality,
 				hash: "hash"
 			}); }
 			, settable: false
@@ -91,27 +83,35 @@ var RedDict = function(options, defer_initialization) {
 	// === DIRECT PROTOS ===
 	//
 
-	proto._get_direct_protos = function(context) {
-		var protos = red.get_contextualizable(this.direct_protos(), context);
-		protos = cjs.get(protos);
-		var rv;
-		if(_.isArray(protos)) {
-			rv = _.map(protos, function(x) {
-						//return red.get_contextualizable(x, context);
-						return x.val();
-					});
-		} else {
-			//rv = red.get_contextualizable(protos, context);
-			rv = protos.val();
-
-			if(!_.isArray(rv)) {
-				rv = [rv];
+	proto._get_direct_protos = function(pointer) {
+		var raw_direct_protos = this.direct_protos();
+		var direct_proto_pointers;
+		if(raw_direct_protos instanceof cjs.ArrayConstraint) {
+			direct_proto_pointers = raw_direct_protos.toArray();
+		} else if(raw_direct_protos instanceof red.Cell) {
+			var cell_value_constraint = prop_val.get(pointer);
+			direct_proto_pointers = cell_value_constraint.get();
+			if(!_.isArray(direct_proto_pointers)) { direct_proto_pointers = [direct_protos]; }
+		} else if(raw_direct_protos instanceof red.StatefulProp) {
+			var prop_val = raw_direct_protos.get(pointer);
+			if(prop_val instanceof red.Cell) {
+				var cell_value_constraint = prop_val.get(pointer);
+				direct_proto_pointers = cell_value_constraint.get();
+				if(!_.isArray(direct_proto_pointers)) { direct_proto_pointers = [direct_protos]; }
+			} else {
+				direct_proto_pointers = prop_val;
+				if(!_.isArray(direct_proto_pointers)) { direct_proto_pointers = [direct_protos]; }
 			}
+		} else if(_.isArray(raw_direct_protos)) {
+			direct_proto_pointers = raw_direct_protos;
+		} else {
+			direct_proto_pointers = [];
 		}
 
-		rv = _.filter(rv, function(x) {
-			return x instanceof red.RedDict;
+		var rv = _.filter(direct_proto_pointers, function(direct_proto_pointer) {
+			return (direct_proto_pointer instanceof red.Pointer) && (direct_proto_pointer.points_at() instanceof red.Dict);
 		});
+
 		return rv;
 	};
 
@@ -119,19 +119,27 @@ var RedDict = function(options, defer_initialization) {
 	// === ALL PROTOS ===
 	//
 
-	proto.get_protos = proto._get_all_protos = function(context) {
-		var direct_protos = this._get_direct_protos(context);
+	proto._get_all_protos = function(pointer) {
+		var direct_protos = this._get_direct_protos(pointer);
 		var proto_set = new Set({
 			value: direct_protos
 			, hash: "hash"
+			, equals: red.check_pointer_equality
 		});
-		proto_set.each(function(x, i) {
-			var c = x.get_default_context();
-			var dp = x._get_direct_protos(c);
-			proto_set.add_at.apply(proto_set, [i+1].concat(dp));
+		proto_set.each(function(proto_pointer, i) {
+			var dp = proto_pointer.val();
+			var dp_protos = dp._get_direct_protos(proto_pointer);
+			proto_set.add_at.apply(proto_set, [i+1].concat(dp_protos));
 		});
 		var protos = proto_set.toArray();
 		return protos;
+	};
+
+	proto._get_proto_vals = function(pointer) {
+		var proto_pointers = this._get_all_protos(pointer);
+		return _.map(proto_pointers, function(proto_pointer) {
+			return proto_pointer.val();
+		});
 	};
 	
 	//
@@ -187,8 +195,8 @@ var RedDict = function(options, defer_initialization) {
 	// === FULLY INHERITED PROPERTIES ===
 	//
 	
-	proto._get_inherited_prop = function(prop_name, context) {
-		var protos = this._get_all_protos(context);
+	proto._get_inherited_prop = function(prop_name, pointer) {
+		var protos = this._get_proto_vals(pointer);
 		for(var i = 0; i<protos.length; i++) {
 			var protoi = protos[i];
 			if(protoi._has_direct_prop(prop_name)) {
@@ -197,9 +205,9 @@ var RedDict = function(options, defer_initialization) {
 		}
 		return undefined;
 	};
-	proto._get_all_inherited_props = function(prop_name, context) {
+	proto._get_all_inherited_props = function(prop_name, pointer) {
 		var rv = [];
-		var protos = this._get_all_protos(context);
+		var protos = this._get_proto_vals(pointer);
 		for(var i = 0; i<protos.length; i++) {
 			var protoi = protos[i];
 			if(protoi._has_direct_prop(prop_name)) {
@@ -208,8 +216,8 @@ var RedDict = function(options, defer_initialization) {
 		}
 		return rv;
 	};
-	proto._has_inherited_prop = function(prop_name, context) {
-		var protos = this._get_all_protos(context);
+	proto._has_inherited_prop = function(prop_name, pointer) {
+		var protos = this._get_proto_vals(pointer);
 		for(var i = 0; i<protos.length; i++) {
 			var protoi = protos[i];
 			if(protoi._has_direct_prop(prop_name)) {
@@ -218,13 +226,15 @@ var RedDict = function(options, defer_initialization) {
 		}
 		return false;
 	};
-	proto._get_inherited_prop_names = function(context) {
-		var rv = [];
-		_.forEach(this._get_all_protos(context), function(protoi) {
-			rv.push.apply(rv, protoi._get_direct_prop_names());
+	proto._get_inherited_prop_names = function(pointer) {
+		var prop_name_set = new Set({});
+
+		_.forEach(this._get_proto_vals(pointer), function(protoi) {
+			prop_name_set.add.apply(prop_name_set, protoi._get_direct_prop_names());
 		});
-		rv = _.unique(rv);
-		rv = _.difference(rv, this._get_direct_prop_names());
+		prop_name_set.remove.apply(prop_name_set, this._get_direct_prop_names());
+
+		var rv = prop_name_set.toArray();
 		return rv;
 	};
 	
@@ -286,75 +296,50 @@ var RedDict = function(options, defer_initialization) {
 	// === PROPERTIES ===
 	//
 
-	proto.get_prop = function(prop_name, context) {
+	proto._get_prop = function(prop_name, pointer) {
 		if(this._has_builtin_prop(prop_name)) {
 			return this._get_builtin_prop(prop_name);
 		} else if(this._has_direct_prop(prop_name)) {
 			return this._get_direct_prop(prop_name);
 		} else {
-			return this._get_inherited_prop(prop_name, context);
+			return this._get_inherited_prop(prop_name, pointer);
 		}
 	};
-	proto.get_prop_context = function(prop_name, context) {
-		var prop = this.get_prop(prop_name, context);
+	proto.get_prop_pointer = function(prop_name, pointer) {
+		var prop = this._get_prop(prop_name, pointer);
 		if(prop === undefined) {
 			return undefined;
 		} else {
-			return context.push(prop);
+			return pointer.push(prop);
 		}
 	};
-	proto.has_prop = function(prop_name, context) {
+	proto._has_prop = function(prop_name, pcontext) {
 		if(this._has_builtin_prop(prop_name)) {
 			return true;
 		} else if(this._has_direct_prop(prop_name)) {
 			return true;
-		} else if(this._has_inherited_prop(prop_name, context)) {
+		} else if(this._has_inherited_prop(prop_name, pcontext)) {
 			return true;
 		} else {
 			return false;
 		}
 	};
-	proto.get = proto.prop_val = function(prop_name, context) {
-		var val = this.get_prop(prop_name, context);
-		/*
-		if(!(context instanceof red.RedContext)) {
-			context = this.get_default_context();
-		}
-		*/
-		if(this instanceof red.RedStatefulObj && val instanceof red.RedStatefulProp) {
-			var stateful_val = val.get_value_for_context(context);
-			var entry = stateful_val.get();
-			var from_state = stateful_val.get_from_state();
-			if(from_state) {
-				var state_event = from_state._last_run_event.get();
-				context = context.push(red.create("dict", { value: {
-																event: state_event
-															}
-														}));
-			}
-
-			val = entry;
-		}
-		return red.get_contextualizable(val, context);
-	};
-	proto.get_prop_names = function(context) {
+	proto.get_prop_names = function(pcontext) {
 		var builtin_prop_names = this._get_builtin_prop_names();
 		var direct_prop_names = this._get_direct_prop_names();
-		var inherited_prop_names = this._get_inherited_prop_names(context);
+		var inherited_prop_names = this._get_inherited_prop_names(pcontext);
 		return builtin_prop_names.concat(direct_prop_names, inherited_prop_names);
 	};
-	proto.get_prop_values = function(context) {
-		var prop_names = this.get_prop_names(context);
+	proto.get_prop_values = function(pcontext) {
+		var prop_names = this.get_prop_names(pcontext);
 		var prop_values = _.map(prop_names, function(prop_name) {
-			return this.get_prop(prop_name, context);
+			return this.get_prop(prop_name, pcontext);
 		}, this);
 		return prop_values;
 	};
-	proto.is_inherited = function(prop_name, context) {
-		var builtin_prop_names = this._get_builtin_prop_names();
-		var direct_prop_names = this._get_direct_prop_names();
-		var inherited_prop_names = this._get_inherited_prop_names(context);
-		return _.indexOf(direct_prop_names, prop_name) < 0 && _.indexOf(builtin_prop_names) < 0 && _.indexOf(inherited_prop_names, prop_name) >= 0;
+	proto.is_inherited = function(prop_name, pcontext) {
+		var inherited_prop_names = this._get_inherited_prop_names(pcontext);
+		return inherited_prop_names.indexOf(prop_name) >= 0;
 	};
 	proto.inherit = function(prop_name) {
 		if(!this.is_inherited(prop_name)) {
@@ -369,7 +354,7 @@ var RedDict = function(options, defer_initialization) {
 	proto.name_for_prop = function(value, context) {
 		var rv = this.direct_props().keyForValue(value);
 		if(_.isUndefined(rv) && context) {
-			var protos = this.get_protos(context);
+			var protos = this._get_proto_vals(context);
 			for(var i = 0; i<protos.length; i++) {
 				var protoi = protos[i];
 				rv = protoi.name_for_prop(value, false);
@@ -385,8 +370,16 @@ var RedDict = function(options, defer_initialization) {
 	// === DIRECT ATTACHMENTS ===
 	//
 
-	proto._get_direct_attachments = function(context) {
-		return red.get_contextualizable(this.direct_attachments(), context);
+	proto._get_direct_attachments = function() {
+		var direct_attachments = this.direct_attachments();
+		if(direct_attachments instanceof cjs.ArrayConstraint) {
+			return this.direct_attachments().toArray();
+		} else if(_.isArray(direct_attachments)) {
+			return direct_attachments;
+		} else {
+			return [direct_attachments];
+		}
+
 	};
 	
 	
@@ -394,26 +387,26 @@ var RedDict = function(options, defer_initialization) {
 	// === DIRECT ATTACHMENT INSTANCES ===
 	//
 
-	proto.create_or_get_direct_attachment_instance = function(attachment, context) {
+	proto.create_or_get_direct_attachment_instance = function(attachment, pcontext) {
 		var direct_attachment_instances = this.direct_attachment_instances();
 
 		var create_attachment_instance = function() {
-			var owner = context.last();
+			var owner = pcontext.points_at();
 			owner = owner.get_manifestation_of() || owner;
-			var attachment_instance = attachment.create_instance(owner, context);
+			var attachment_instance = attachment.create_instance(owner, pcontext);
 			return attachment_instance;
 		};
 
 		var attachment_instances = direct_attachment_instances.get_or_put(attachment, function() {
 			return cjs.map({
-						equals: red.check_context_equality,
+						equals: red.check_pointer_equality,
 						hash: "hash",
-						keys: [context],
+						keys: [pcontext],
 						values: [create_attachment_instance()]
 					});
 		}, this);
 
-		var attachment_instance = attachment_instances.get_or_put(context, create_attachment_instance);
+		var attachment_instance = attachment_instances.get_or_put(pcontext, create_attachment_instance);
 
 		return attachment_instance;
 	};
@@ -431,7 +424,7 @@ var RedDict = function(options, defer_initialization) {
 			};
 		}, this);
 
-		var protos = this.get_protos(context);
+		var protos = this._get_proto_vals(context);
 		var attachments_and_srcs = new Set({
 			hash: function(item) {
 				return item.attachment.hash();
@@ -443,7 +436,7 @@ var RedDict = function(options, defer_initialization) {
 		});
 
 		_.each(protos, function(protoi) {
-			if(protoi instanceof red.RedDict) {
+			if(protoi instanceof red.Dict) {
 				var attachments = protoi._get_direct_attachments(context);
 				attachments_and_srcs.add.apply(attachments_and_srcs, _.map(attachments, function(attachment) {
 					return {
@@ -496,7 +489,7 @@ var RedDict = function(options, defer_initialization) {
 			}
 		});
 
-		var rv = new RedDict(undefined, true);
+		var rv = new red.Dict(undefined, true);
 		rv.initialize = function() {
 			var options = {};
 			_.each(serialized_options, function(serialized_option, name) {
@@ -512,8 +505,8 @@ var RedDict = function(options, defer_initialization) {
 	// === MANIFESTATIONS ===
 	//
 	
-	proto.get_manifestation_map_for_context = function(context) {
-		var mm = this.get_contextual_manifestation_maps().get_or_put(context, function(context) {
+	proto.get_manifestation_map_for_context = function(pcontext) {
+		var mm = this.get_contextual_manifestation_maps().get_or_put(pcontext, function(context) {
 			return cjs.map({
 				hash: function(item) {
 					return item;
@@ -523,24 +516,27 @@ var RedDict = function(options, defer_initialization) {
 		return mm;
 	};
 
-	proto.get_manifestation_obj = function(context, basis, index) {
+	proto.get_manifestation_obj = function(pcontext, basis, index) {
 		var mm = this.get_manifestation_map_for_context(context);
 		cjs.wait();
 		var dict = mm.get_or_put(basis, function() {
-			var dict = red.create("dict", {
-				manifestation_of: this,
-				value: {
-					basis: basis,
-					basis_index: index
-				}
-			});
+			var dict = {
+				basis: basis,
+				basis_index: basis_index
+			};
 			return dict;
 		}, this);
 		cjs.signal();
 		return dict;
 	};
 
-	proto.get_manifestation_objs = function(context) {
+	proto.get_manifestation_objs = function(pcontext) {
+		return undefined;
+	/*
+		var manifestations = this.get_manifestations();
+		var manifestations_pointer = pcontext.push(manifestations);
+		var manifestations_value = manifestations_pointer.val();
+	/*
 		var manifestations = red.get_contextualizable(this.get_manifestations(), context);
 
 		for(var i = 0; i<context._stack.length; i++) {
@@ -570,6 +566,7 @@ var RedDict = function(options, defer_initialization) {
 		} else {
 			return null;
 		}
+		*/
 	};
 
 	proto.clean_manifestation_objs = function() {
@@ -590,11 +587,10 @@ var RedDict = function(options, defer_initialization) {
 		this._direct_attachment_instances.destroy();
 	};
 	
-}(RedDict));
+}(red.Dict));
 
-red.RedDict = RedDict;
 red.define("dict", function(options) {
-	var dict = new RedDict(options);
+	var dict = new red.Dict(options);
 	return dict;
 });
 }(red));

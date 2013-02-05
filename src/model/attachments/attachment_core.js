@@ -1,7 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var RedAttachmentInstance = function(options) {
+red.AttachmentInstance = function(options) {
 	options = options || {};
 	this._owner = options.owner;
 	this._context = options.context;
@@ -21,14 +21,14 @@ var RedAttachmentInstance = function(options) {
 	proto.hash = function() {
 		return this._context.hash();
 	};
-}(RedAttachmentInstance));
+}(red.AttachmentInstance));
 
-var RedAttachment = function(options) {
+red.Attachment = function(options) {
 	options = options || {};
 	if(options.multiple_allowed === true) {
 		this._multiple_allowed = true;
 	} else { this._multiple_allowed = false; }
-	this._InstanceClass = options.instance_class || RedAttachmentInstance;
+	this._InstanceClass = options.instance_class || red.AttachmentInstance;
 	this.type = "(generic)";
 	this.instance_options = options.instance_options || {};
 };
@@ -55,12 +55,10 @@ var RedAttachment = function(options) {
 	proto.hash = function() {
 		return this.type;
 	};
-}(RedAttachment));
+}(red.Attachment));
 
-red.RedAttachmentInstance = RedAttachmentInstance;
-red.RedAttachment = RedAttachment;
 red.define("attachment", function(options) {
-	var attachment = new RedAttachment(options);
+	var attachment = new red.Attachment(options);
 	return attachment;
 });
 }(red));

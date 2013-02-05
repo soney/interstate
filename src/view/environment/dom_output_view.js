@@ -18,10 +18,10 @@ $.widget("red.dom_output", {
 
 	, _add_change_listeners: function() {
 		var root_pointer = this.option("root");
-		var root = root_pointer.last();
+		var root_dict = root_pointer.points_at();
 
 		this._dom_tree_fn = cjs.liven(function() {
-			var dom_attachment = root.get_attachment_instance("dom", root_pointer);
+			var dom_attachment = root_dict.get_attachment_instance("dom", root_pointer);
 			var dom_element = dom_attachment.get_dom_obj();
 
 			if(this.element.children().is(dom_element)) {

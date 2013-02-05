@@ -30,30 +30,30 @@ var Env = function(options) {
 			}
 		})]});
 
-		var root_context = red.create("context", {stack: [root]});
-		//root.set_default_context(root_context);
+		var root_pointer = red.create("pointer", {stack: [root]});
 
-		this.initialize_props(root_context);
+		this.initialize_props(root_pointer);
 	}
 	root.set("on", red.on_event);
 
 	//Context tracking
-	this.pointer = red.create("context", { stack: [root] });
+	this.pointer = red.create("pointer", { stack: [root] });
 	this.print_on_return = false;
 };
 
 (function(my) {
 	var proto = my.prototype;
 
-	proto.initialize_props = function(root) {
+	proto.initialize_props = function(root_pointer) {
+		var root_dict = root_pointer.points_at();
+		/*
+
 		var dom = red.create("dict", {direct_attachments: [red.create("dom_attachment")]});
-		root.set("dom", dom);
-		//dom.set_default_context(this._root_context.push(dom));
+		root_dict.set("dom", dom);
 
 		var children = red.create("dict");
-		root.set("children", children);
-		//children.set_default_context(this._root_context.push(children));
-		/**/
+		root_dict.set("children", children);
+		*/
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };
@@ -90,7 +90,7 @@ var Env = function(options) {
 		return this.pointer.slice(0, 1);
 	};
 	proto.get_pointer_obj = function() {
-		return this.pointer.last();
+		return this.pointer.points_at();
 	};
 	proto.get_statechart_pointer = function() {
 		var pointer = this.get_pointer_obj();
@@ -124,25 +124,19 @@ var Env = function(options) {
 				value = red.create("stateful_prop");
 			} else if(parent_obj instanceof red.RedDict) {
 				value = red.create("cell", {str: ""});
-				//value.set_default_context(parent_obj.get_default_context());
 			}
 		} else if(_.isString(value)) {
 			if(value === "dict") {
 				value = red.create("dict");
-				//value.set_default_context(parent_obj.get_default_context().push(value));
 				var direct_protos = red.create("cell", {str: "[]", ignore_inherited_in_contexts: [value]});
 				value._set_direct_protos(direct_protos);
 			} else if(value === "stateful") {
 				value = red.create("stateful_obj", undefined, true);
 				value.do_initialize({
-					//default_context: parent_obj.get_default_context().push(value)
 					direct_protos: red.create("stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]})
-					//, manifestations: red.create("cell")
 				});
 				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");
-			} else {
-				//value = red.create("cell", {str: value});
 			}
 		}
 
@@ -170,7 +164,6 @@ var Env = function(options) {
 				} else {
 					if(_.isString(value)) {
 						value = red.create("cell", {str: value});
-						//value.set_default_context(parent_obj.get_default_context());
 					}
 					var command = red.command("set_builtin", {
 						parent: parent_obj
@@ -182,7 +175,6 @@ var Env = function(options) {
 		} else {
 			if(_.isString(value)) {
 				value = red.create("cell", {str: value});
-				//value.set_default_context(parent_obj.get_default_context());
 			}
 			var command = red.command("set_prop", {
 				parent: parent_obj
@@ -306,7 +298,6 @@ var Env = function(options) {
 				for_state = statechart_pointer.find_state(for_state_name);
 				if(!for_state) {
 					var pointer = this.get_pointer_obj();
-					//var context = pointer.get_default_context();
 					var inherited_statecharts = pointer.get_inherited_statecharts(this.pointer);
 					for(var i = 0; i<inherited_statecharts.length; i++) {
 						var isc = inherited_statecharts[i];
@@ -522,9 +513,7 @@ var Env = function(options) {
 		if(this.print_on_return) return this.print();
 		else return this;
 	};
-	proto.print = function(only_values) {
-		only_values = !!only_values;
-
+	proto.print = function() {
 		var value_to_value_str = function(val) {
 			if(_.isUndefined(val)) {
 				return "(undefined)";
@@ -545,8 +534,8 @@ var Env = function(options) {
 			} else if(val instanceof red.RedCell) {
 				return "(cell)";
 			} else if(val instanceof red.RedContext) {
-				var last = val.last();
-				return value_to_value_str(last);
+				var points_at = val.points_at();
+				return value_to_value_str(points_at);
 			} else if(_.isArray(val)) {
 				return ("[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]").slice(0, 10);
 			} else {
@@ -576,24 +565,28 @@ var Env = function(options) {
 			}
 		};
 
-		var pointer = this.pointer;
-		var tablify_dict = function(dict, context) {
-			if(_.isUndefined(context)) { context = red.create("context", {stack: [dict]}); }
+		var current_pointer = this.pointer;
+		var tablify = function(pointer) {
+			
+		};
+	/*
+		var tablify_dict = function(dict, pointer) {
+			if(_.isUndefined(pointer)) { pointer = red.create("pointer", {stack: [dict]}); }
 
-			var manifestations = dict.get_manifestation_objs(context);
+			var manifestations = dict.get_manifestation_objs(pointer);
 
 			if(_.isArray(manifestations)) {
-				console.groupCollapsed(pad("(" + manifestations.length + " manifestation" + (manifestations.length === 1 ? "" : "s") + ")", 40) + value_to_source_str(dict.get_manifestations(context)));
+				console.groupCollapsed(pad("(" + manifestations.length + " manifestation" + (manifestations.length === 1 ? "" : "s") + ")", 40) + value_to_source_str(dict.get_manifestations(pointer)));
 				_.each(manifestations, function(manifestation) {
 					console.groupCollapsed(pad(value_to_value_str(manifestation.prop_val("basis")), 20), " ("+manifestation.id+")");
-					var manifestation_context = context.push(manifestation);
-					tablify_dict(dict, manifestation_context);
+					var manifestation_pointer = pointer.push(manifestation);
+					tablify_dict(dict, manifestation_pointer);
 					console.groupEnd();
 				});
 				console.groupEnd();
 			} else {
 				if(dict instanceof red.RedStatefulObj) {
-					var state_specs = dict.get_state_specs(context);
+					var state_specs = dict.get_state_specs(pointer);
 					console.group("  Statechart:");
 					var state_obj = {};
 					_.each(state_specs, function(state_spec) {
@@ -618,26 +611,26 @@ var Env = function(options) {
 					});
 					console.groupEnd();
 				}
-				var prop_names = dict.get_prop_names(context);
+				var prop_names = dict.get_prop_names(pointer);
 
 				_.forEach(prop_names, function(prop_name) {
-					var value = dict.get_prop(prop_name, context);
+					var value = dict.get_prop(prop_name, pointer);
 					var value_got;
 
 					try {
-						value_got = dict.prop_val(prop_name, context);
+						value_got = dict.prop_val(prop_name, pointer);
 						value_got = cjs.get(value_got);
 					} catch(e) {
 					}
 
 
-					var is_inherited = dict.is_inherited(prop_name, context);
+					var is_inherited = dict.is_inherited(prop_name, pointer);
 					var printed_prop_name;
 
 					if(is_inherited) { printed_prop_name = prop_name + " i"; }
 					else { prinded_prop_name = prop_name; }
 
-					if(value === pointer.last()) { printed_prop_name = "> " + prop_name; }
+					if(value === pointer.points_at()) { printed_prop_name = "> " + prop_name; }
 					else { printed_prop_name = "  " + prop_name; }
 
 					if(value && value.id) { printed_prop_name += " ("+value.id+")"; }
@@ -652,13 +645,13 @@ var Env = function(options) {
 						} else {
 							console.groupCollapsed(group_name);
 						}
-						tablify_dict(value, context.push(value));
+						tablify_dict(value, pointer.push(value));
 						console.groupEnd();
 					} else if(value instanceof red.RedStatefulProp) {
 						if(only_values) {
 							console.log(printed_prop_name + value_to_value_str(value_got));
 						} else {
-							var value_specs = value.get_value_specs(context);
+							var value_specs = value.get_value_specs(pointer);
 							var group_name = printed_prop_name + " (" + value.id +")";
 							if(pointer.has(value)) {
 								console.group(group_name, value_to_value_str(value_got));
@@ -703,16 +696,18 @@ var Env = function(options) {
 				});
 			}
 		};
-		var root = pointer.first();
+		*/
 
+		var root = pointer.points_at(0);
 		var root_str;
-		if(pointer.last() === root) {
+		if(pointer.points_at() === root) {
 			root_str = ">root";
 		} else {
 			root_str = "root";
 		}
 		console.log(root_str + " (" + root.id + ")");
-		tablify_dict(root);
+		tablify(root);
+
 		return "ok...";
 	};
 }(Env));

@@ -80,6 +80,30 @@ var Set = function(options) {
 		}
 		return this;
 	};
+	proto.remove = function() {
+		var leni = arguments.length;
+		var i,j;
+		for(i = 0; i<leni; i++) {
+			var arg = arguments[i];
+			var hash_val = this._hash(arg);
+
+			var hashed_values = this._hashed_values[hash_val];
+			if(hashed_values) {
+				var lenj = hashed_values.length;
+				for(j = 0; j<lenj; j++) {
+					if(this._equality_check(hashed_values[j], arg)) {
+						if(lenj === 1) {
+							delete this._hashed_values[hash_val];
+						} else {
+							hashed_values.splice(j, 1);
+						}
+						break;
+					}
+				}
+			}
+		}
+		return this;
+	};
 	proto.contains = function(item) {
 		var hash_val = this._hash(item);
 		var hash_arr = this._hashed_values[hash_val];

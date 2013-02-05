@@ -2,12 +2,11 @@
 var cjs = red.cjs, _ = red._;
 var esprima = window.esprima;
 
-
 var binary_operators = {
-	"===":	function(a, b) { return red.check_context_equality_eqeqeq(a,b); }
-	,"!==":	function(a, b) { return !red.check_context_equality_eqeqeq(a,b); }
-	, "==":	function(a, b) { return red.check_context_equality_eqeq(a, b); }
-	, "!=":	function(a, b) { return !red.check_context_equality_eqeq(a,b); }
+	"===":	function(a, b) { return red.check_pointer_equality_eqeqeq(a,b); }
+	,"!==":	function(a, b) { return !red.check_pointer_equality_eqeqeq(a,b); }
+	, "==":	function(a, b) { return red.check_pointer_equality_eqeq(a, b); }
+	, "!=":	function(a, b) { return !red.check_pointer_equality_eqeq(a,b); }
 	, ">":	function(a, b) { return a > b; }
 	, ">=":	function(a, b) { return a >= b; }
 	, "<":	function(a, b) { return a < b; }
@@ -67,30 +66,36 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 
 	return cjs.$(function() {
 		var curr_context = context;
-		var context_item = curr_context.last();
+		var context_item = curr_context.points_at();
 		var rv;
 
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.RedDict) {
 				if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
 					if(context_item._has_direct_prop(key)) {
-						//rv = context_item_got._get_direct_prop(key_got, curr_context);
-						rv = curr_context.prop(key);
+						rv = context_item.get_prop_pointer(key, curr_context);
 						break;
 					}
 				} else {
 					if(context_item.has_prop(key, curr_context)) {
-						//rv = context_item_got.prop_val(key_got, curr_context);
-						rv = curr_context.prop(key);
+						rv = context_item.get_prop_pointer(key, curr_context);
 						break;
 					}
 				}
 			} else if(context_item && context_item[key]) {
-				return context_item[key];
+				rv = curr_context.push(context_item[key]);
 			}
 			curr_context = curr_context.pop();
 			context_item = curr_context.last();
 		}
+		// rv is a context
+		if(rv) {
+			return rv.val();
+		} else {
+			return undefined;
+		}
+
+		/*
 
 		// rv is a context
 		var rv_last_item = rv.last();
@@ -99,6 +104,7 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 		} else {
 			return red.get_contextualizable(rv_last_item, rv);
 		}
+		*/
 	});
 };
 
@@ -130,16 +136,7 @@ var get_member_$ = function(object, property) {
 		var prop_got = cjs.get(property);
 		if(obj_got instanceof red.RedContext) {
 			var prop_val = obj_got.prop(prop_got);
-			if(prop_val) {
-				var pv_last = prop_val.last();
-				if(pv_last instanceof red.RedDict) {
-					return curr_context;
-				} else {
-					return red.get_contextualizable(pv_last, prop_val);
-				}
-			} else {
-				return prop_val;
-			}
+			return prop_val;
 		} else {
 			return obj_got[prop_got];
 		}

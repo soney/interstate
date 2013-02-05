@@ -4,12 +4,12 @@ var cjs = red.cjs, _ = red._;
 // === SERIALIZE ===
 
 var serialization_funcs = [
-	  {name: "cell", type: red.RedCell }
-	, {name: "stateful_obj", type: red.RedStatefulObj }
-	, {name: "dict", type: red.RedDict }
-	, {name: "stateful_prop", type: red.RedStatefulProp }
-	, {name: "red_dom_attachment", type: red.RedDomAttachment }
-	, {name: "red_context", type: red.RedContext }
+	  {name: "cell", type: red.Cell }
+	, {name: "stateful_obj", type: red.StatefulObj }
+	, {name: "dict", type: red.Dict }
+	, {name: "stateful_prop", type: red.StatefulProp }
+	, {name: "red_dom_attachment", type: red.DomAttachment }
+	, {name: "red_context", type: red.Context }
 	, {name: "statechart_transition", type: red.StatechartTransition }
 	, {name: "statechart", type: red.Statechart }
 	, {name: "startstate", type: red.StartState }

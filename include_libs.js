@@ -58,7 +58,7 @@ exports.main_src = c(
 				, "model/statechart/events/statechart_events.js"
 				, "model/statechart/events/constraint_events.js"
 				, "model/statechart/events/parsed_events.js"
-				, "model/core/context_stack.js"
+				, "model/core/pointer.js"
 				, "model/core/cell.js"
 				, "model/core/dict.js"
 				, "model/core/stateful_obj.js"

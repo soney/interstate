@@ -43,8 +43,8 @@ var changeable_attributes = {
 	, "id": "id"
 };
 
-var RedDomAttachmentInstance = function(options) {
-	RedDomAttachmentInstance.superclass.constructor.apply(this, arguments);
+red.DomAttachmentInstance = function(options) {
+	red.DomAttachmentInstance.superclass.constructor.apply(this, arguments);
 	this.type = "dom";
 	this.id = _.uniqueId();
 	if(options.tag) {
@@ -62,7 +62,7 @@ var RedDomAttachmentInstance = function(options) {
 	this.on_ready();
 };
 (function(my) {
-	_.proto_extend(my, red.RedAttachmentInstance);
+	_.proto_extend(my, red.AttachmentInstance);
 	var proto = my.prototype;
 	proto.on_ready = function() { };
 	proto.destroy = function() {
@@ -242,30 +242,28 @@ var RedDomAttachmentInstance = function(options) {
 		});
 		return cc;
 	};
-}(RedDomAttachmentInstance));
+}(red.DomAttachmentInstance));
 
-var RedDomAttachment = function(options) {
+red.DomAttachment = function(options) {
 	options = _.extend({
-		instance_class: RedDomAttachmentInstance
+		instance_class: red.DomAttachmentInstance
 	}, options);
-	RedDomAttachment.superclass.constructor.call(this, options);
+	red.DomAttachment.superclass.constructor.call(this, options);
 	this.type = "dom";
 };
 (function(my) {
-	_.proto_extend(my, red.RedAttachment);
+	_.proto_extend(my, red.Attachment);
 	var proto = my.prototype;
 
 	proto.serialize = function() {
 		return {instance_options: red.serialize(this.instance_options)};
 	};
 	my.deserialize = function(obj) {
-		return new RedDomAttachment({instance_options: red.deserialize(obj.instance_options)});
+		return new red.DomAttachment({instance_options: red.deserialize(obj.instance_options)});
 	};
-}(RedDomAttachment));
+}(red.DomAttachment));
 
-red.RedDomAttachmentInstance = RedDomAttachmentInstance;
-red.RedDomAttachment = RedDomAttachment;
 red.define("dom_attachment", function(options) {
-	return new RedDomAttachment(options);
+	return new red.DomAttachment(options);
 });
 }(red));
