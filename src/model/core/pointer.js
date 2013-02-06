@@ -1,5 +1,10 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
+
+red.EventContext = function(event) {
+	this.event = event;
+};
+
 red.Pointer = function(options) {
 	this._stack = (options && options.stack) || [];
 };
@@ -22,11 +27,11 @@ red.Pointer = function(options) {
 	proto.is_empty = function() { return this._stack.length === 0; };
 	proto.val = function() {
 		var points_at = this.points_at();
-		if(points_at instanceof red.RedDict) {
+		if(points_at instanceof red.Dict) {
 			return this;
 		} else if(points_at instanceof red.Cell) {
-			var cell_constraint = points_at.get(this);
-			return cell_constraint.get();
+			var cell_constraint = points_at.constraint_in_context(this);
+			return cjs.get(cell_constraint);
 		} else if(points_at instanceof red.StatefulProp) {
 			var value_and_state = points_at.get_value_and_from_state(this);
 			var value = value_and_state.value;
@@ -34,15 +39,17 @@ red.Pointer = function(options) {
 				var state = value_and_state.state;
 				var event = state._last_run_event.get();
 
-				var pcontext = this.push({
-					event: event
-				});
+				var pcontext = this.push(new EventContext(event));
 
 				var cell_constraint = value.constraint_in_context(pcontext);
 				return cell_constraint.get();
 			} else {
 				return value;
 			}
+		} else if(points_at instanceof cjs.ArrayConstraint) {
+			return points_at.toArray();
+		} else if(points_at instanceof cjs.Constraint) {
+			return points_at.get();
 		} else {
 			return points_at;
 		}

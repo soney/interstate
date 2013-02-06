@@ -62,22 +62,31 @@ var Set = function(options) {
 	var proto = my.prototype;
 	proto.add = function() {
 		var lenj = arguments.length;
+		var value_len = this.value.length;
+		var info;
 		for(var j = 0; j<lenj; j++) {
 			var item = arguments[j];
-			if(this.add_to_hash(item)) {
-				this.value.push(item);
+			if(info = this.add_to_hash(item, value_len)) {
+				this.value[value_len++] = info;
 			}
 		}
 		return this;
 	};
 	proto.add_at = function(index) {
 		var lenj = arguments.length;
+		var info;
 		for(var j = 1; j<lenj; j++) {
 			var item = arguments[j];
-			if(this.add_to_hash(item)) {
-				this.value.splice(index, 0, item);
+			if(info = this.add_to_hash(item, index)) {
+				this.value.splice(index++, 0, info);
 			}
 		}
+
+		var len = this.value.length;
+		for(var i = index; i<len; i++) {
+			this.value[i].index = i;
+		}
+
 		return this;
 	};
 	proto.remove = function() {
@@ -91,11 +100,18 @@ var Set = function(options) {
 			if(hashed_values) {
 				var lenj = hashed_values.length;
 				for(j = 0; j<lenj; j++) {
-					if(this._equality_check(hashed_values[j], arg)) {
+					var hvj = hashed_values[j];
+					if(this._equality_check(hvj.item, arg)) {
 						if(lenj === 1) {
 							delete this._hashed_values[hash_val];
 						} else {
 							hashed_values.splice(j, 1);
+						}
+						var hvj_index = hvj.index;
+						this.value.splice(hvj_index, 1);
+						var len = this.value.length;
+						for(var k = hvj_index; k<len; k++) {
+							this.value[k].index = k;
 						}
 						break;
 					}
@@ -110,7 +126,7 @@ var Set = function(options) {
 		if(isArray(hash_arr)) {
 			var i, len = hash_arr.length, eq = this._equality_check;
 			for(i = 0; i<len; i++) {
-				if(eq(hash_arr[i], item)) {
+				if(eq(hash_arr[i].item, item)) {
 					return true;
 				}
 			}
@@ -119,33 +135,37 @@ var Set = function(options) {
 			return false;
 		}
 	};
-	proto.add_to_hash = function(item) {
+	proto.add_to_hash = function(item, index) {
 		var hash_val = this._hash(item);
 		var hash_arr = this._hashed_values[hash_val];
+
+		var info = {
+			item: item, index: index
+		};
 		if(isArray(hash_arr)) {
 			var i, len = hash_arr.length, eq = this._equality_check;
 			for(i = 0; i<len; i++) {
-				if(eq(hash_arr[i], item)) {
+				if(eq(hash_arr[i].item, item)) {
 					return false;
 				}
 			}
-			hash_arr[i] = item;
+			hash_arr[i] = info;
 		} else {
-			this._hashed_values[hash_val] = [item];
+			this._hashed_values[hash_val] = [info];
 		}
-		return true;
+		return info;
 	};
 	proto.each = function(func, context) {
 		var context = context || window;
 		for(var i = 0; i<this.value.length; i++) {
-			if(func.call(context, this.value[i], i) === false) {
+			if(func.call(context, this.value[i].item, i) === false) {
 				break;
 			}
 		}
 		return this;
 	};
 	proto.toArray = function() {
-		return this.value;
+		return _.pluck(this.value, "item");
 	};
 }(Set));
 

@@ -3,7 +3,7 @@ var cjs = red.cjs, _ = red._;
 
 var pad = function(str, len) {
 	if(str.length > len) {
-		return str.substring(0, len);
+		return str.substring(0, len-3) + "...";
 	} else if(str.length < len) {
 		var rv = str;
 		while(rv.length < len) {
@@ -69,7 +69,7 @@ var Env = function(options) {
 	};
 
 	proto.cd = proto.in = function(prop_name) {
-		this.pointer = this.pointer.prop(prop_name);
+		this.pointer = this.pointer.call("get_prop_pointer", prop_name);
 
 		if(this.print_on_return) return this.print();
 		else return this;
@@ -98,7 +98,7 @@ var Env = function(options) {
 		
 		if(red.is_statechart(pointer)) {
 			statechart = pointer;
-		} else if(pointer instanceof red.RedStatefulObj) {
+		} else if(pointer instanceof red.StatefulObj) {
 			statechart = pointer.get_own_statechart();
 		}
 		return statechart;
@@ -120,9 +120,9 @@ var Env = function(options) {
 		}
 
 		if(_.isUndefined(value)) {
-			if(parent_obj instanceof red.RedStatefulObj) {
+			if(parent_obj instanceof red.StatefulObj) {
 				value = red.create("stateful_prop");
-			} else if(parent_obj instanceof red.RedDict) {
+			} else if(parent_obj instanceof red.Dict) {
 				value = red.create("cell", {str: ""});
 			}
 		} else if(_.isString(value)) {
@@ -156,7 +156,7 @@ var Env = function(options) {
 			if(builtin_info) {
 				var getter_name = builtin_info._get_getter_name();
 				var curr_val = parent_obj[getter_name]();
-				if(curr_val instanceof red.RedCell) {
+				if(curr_val instanceof red.Cell) {
 					var command = red.command("change_cell", {
 						cell: curr_val
 						, str: value
@@ -527,17 +527,20 @@ var Env = function(options) {
 				return '(func)';
 			} else if(_.isElement(val)) {
 				return "(dom)";
-			} else if(val instanceof red.RedStatefulObj) {
+			} else if(val instanceof red.StatefulObj) {
 				return "(stateful:"+val.id+")";
-			} else if(val instanceof red.RedDict) {
+			} else if(val instanceof red.Dict) {
 				return "(dict:"+val.id+")";
-			} else if(val instanceof red.RedCell) {
+			} else if(val instanceof red.Cell) {
 				return "(cell)";
-			} else if(val instanceof red.RedContext) {
+			} else if(val instanceof red.Pointer) {
 				var points_at = val.points_at();
 				return value_to_value_str(points_at);
 			} else if(_.isArray(val)) {
-				return ("[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]").slice(0, 10);
+				return ("[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]");
+			} else if(val instanceof cjs.ArrayConstraint) {
+				var array_got = val.toArray();
+				return "$" + value_to_value_str(array_got);
 			} else {
 				return ("{ " + _.map(val, function(v, k) {
 					return k + ": " + v;
@@ -556,49 +559,43 @@ var Env = function(options) {
 				return val + "";
 			} else if(_.isFunction(val)) {
 				return 'function() {...}';
-			} else if(val instanceof red.RedDict) {
+			} else if(val instanceof red.Dict) {
 				return "";
-			} else if(val instanceof red.RedCell) {
+			} else if(val instanceof red.Cell) {
 				return "=(" + val.id + ")= " + val.get_str();
 			} else {
 				return val + "";
 			}
 		};
 
+		var PROP_NAME_WIDTH = 30;
+		var PROP_ID_WIDTH = 5;
+		var PROP_VALUE_WIDTH = 20;
+
+		var STATE_NAME_WIDTH = 30;
+		var STATE_ID_WIDTH = 5;
+		var TRANSITION_NAME_WIDTH = 40;
+		var TRANSITION_VALUE_WIDTH = 20;
+		var STATE_VALUE_WIDTH = 50;
+
 		var current_pointer = this.pointer;
 		var tablify = function(pointer) {
-			
-		};
-	/*
-		var tablify_dict = function(dict, pointer) {
-			if(_.isUndefined(pointer)) { pointer = red.create("pointer", {stack: [dict]}); }
+			var points_at = pointer.points_at();
 
-			var manifestations = dict.get_manifestation_objs(pointer);
-
-			if(_.isArray(manifestations)) {
-				console.groupCollapsed(pad("(" + manifestations.length + " manifestation" + (manifestations.length === 1 ? "" : "s") + ")", 40) + value_to_source_str(dict.get_manifestations(pointer)));
-				_.each(manifestations, function(manifestation) {
-					console.groupCollapsed(pad(value_to_value_str(manifestation.prop_val("basis")), 20), " ("+manifestation.id+")");
-					var manifestation_pointer = pointer.push(manifestation);
-					tablify_dict(dict, manifestation_pointer);
-					console.groupEnd();
-				});
-				console.groupEnd();
-			} else {
-				if(dict instanceof red.RedStatefulObj) {
-					var state_specs = dict.get_state_specs(pointer);
+			if(points_at instanceof red.Dict) {
+				if(points_at instanceof red.StatefulObj) {
+					var state_specs = points_at.get_state_specs(pointer);
 					console.group("  Statechart:");
-					var state_obj = {};
 					_.each(state_specs, function(state_spec) {
 						var state = state_spec.state;
 						var state_name;
 
 						if(state instanceof red.State) {
-							state_name = state.get_name();
+							state_name = pad(state.get_name(), STATE_NAME_WIDTH-2);
 						} else if(state instanceof red.StatechartTransition) { //transition
 							var from = state.from(),
 								to = state.to();
-							state_name = pad(from.get_name() + "->" + to.get_name(), 25) + state.stringify();
+							state_name = pad(pad(from.get_name() + "->" + to.get_name(), TRANSITION_NAME_WIDTH-2) + state.stringify(), TRANSITION_NAME_WIDTH-2 + TRANSITION_VALUE_WIDTH);
 						}
 
 						if(state_spec.active) {
@@ -607,106 +604,101 @@ var Env = function(options) {
 							state_name = "  " + state_name;
 						}
 
-						console.log(pad(state.id(), 5), state_name);
+						console.log(pad(state.id(), STATE_ID_WIDTH), state_name);
 					});
 					console.groupEnd();
 				}
-				var prop_names = dict.get_prop_names(pointer);
+				var prop_names = points_at.get_prop_names(pointer);
+				_.each(prop_names, function(prop_name) {
+					var is_inherited = points_at.is_inherited(prop_name, pointer);
+					var prop_pointer = points_at.get_prop_pointer(prop_name, pointer);
+					var prop_points_at = prop_pointer.points_at();
 
-				_.forEach(prop_names, function(prop_name) {
-					var value = dict.get_prop(prop_name, pointer);
-					var value_got;
+					var is_expanded = current_pointer.has(prop_points_at);
+					var is_pointed_at = current_pointer.eq(prop_pointer);
 
-					try {
-						value_got = dict.prop_val(prop_name, pointer);
-						value_got = cjs.get(value_got);
-					} catch(e) {
+					var prop_text = prop_name;
+					if(is_inherited) {
+						prop_text = prop_text + " (i)";
 					}
 
-
-					var is_inherited = dict.is_inherited(prop_name, pointer);
-					var printed_prop_name;
-
-					if(is_inherited) { printed_prop_name = prop_name + " i"; }
-					else { prinded_prop_name = prop_name; }
-
-					if(value === pointer.points_at()) { printed_prop_name = "> " + prop_name; }
-					else { printed_prop_name = "  " + prop_name; }
-
-					if(value && value.id) { printed_prop_name += " ("+value.id+")"; }
-
-					printed_prop_name = pad(printed_prop_name, 40);
-
-					if(value instanceof red.RedDict) {
-						var group_type = value instanceof red.RedStatefulObj ? "stateful" : "dict";
-						var group_name = printed_prop_name + " (" + group_type +")"
-						if(pointer.has(value)) {
-							console.group(group_name);
-						} else {
-							console.groupCollapsed(group_name);
-						}
-						tablify_dict(value, pointer.push(value));
-						console.groupEnd();
-					} else if(value instanceof red.RedStatefulProp) {
-						if(only_values) {
-							console.log(printed_prop_name + value_to_value_str(value_got));
-						} else {
-							var value_specs = value.get_value_specs(pointer);
-							var group_name = printed_prop_name + " (" + value.id +")";
-							if(pointer.has(value)) {
-								console.group(group_name, value_to_value_str(value_got));
-							} else {
-								console.groupCollapsed(group_name, value_to_value_str(value_got));
-							}
-							_.each(value_specs, function(value_spec) {
-								var value = value_spec.value;
-								var source_str = value_to_source_str(value);
-
-								var state = value_spec.state;
-								var state_name;
-								if(state instanceof red.State) {
-									state_name = state.get_name() + " (" + state.id() + ")";
-								} else if(state instanceof red.StatechartTransition) { //transition
-									var from = state.from(),
-										to = state.to();
-									state_name = from.get_name() + "->" + to.get_name() + " (" + state.id() + ")";
-								}
-
-								if(value_spec.active) {
-									state_name = "* " + state_name;
-								} else {
-									state_name = "  " + state_name;
-								}
-
-								if(value_spec.using) {
-									state_name = state_name + " *";
-								}
-
-								console.log(pad(state_name + ": ", 30), source_str);
-							});
-							console.groupEnd();
-						}
+					if(is_pointed_at) {
+						prop_text = "> " + prop_text;
 					} else {
-						if(only_values) {
-							console.log(printed_prop_name, value_to_value_str(value_got));
-						} else {
-							console.log(printed_prop_name, pad(value_to_value_str(value_got), 25), value_to_source_str(value));
-						}
+						prop_text = "  " + prop_text;
+					}
+
+					if((is_pointed_at instanceof red.Dict) || (is_pointed_at instanceof red.StatefulProp) ||
+							(is_pointed_at instanceof red.Cell)) {
+						prop_text = pad(
+										pad(prop_text, PROP_NAME_WIDTH) + " (" + prop_points_at.id + ")"
+										, PROP_NAME_WIDTH + PROP_ID_WIDTH);
+
+
+					} else {
+						prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
+					}
+
+					prop_text = pad(prop_text + value_to_value_str(prop_pointer.val()), PROP_NAME_WIDTH + PROP_ID_WIDTH + PROP_VALUE_WIDTH);
+
+					if((prop_points_at instanceof red.Dict) || (prop_points_at instanceof red.StatefulProp)) {
+						console[is_expanded ? "group" : "groupCollapsed"](prop_text);
+						tablify(prop_pointer);
+						console.groupEnd();
+					} else {
+						console.log(prop_text + value_to_source_str(prop_points_at));
 					}
 				});
+			} else if(points_at instanceof red.StatefulProp) {
+				var value_specs = points_at.get_value_specs(pointer);
+				var group_name = printed_prop_name + " (" + value.id +")";
+				if(pointer.has(value)) {
+					console.group(group_name, value_to_value_str(value_got));
+				} else {
+					console.groupCollapsed(group_name, value_to_value_str(value_got));
+				}
+				_.each(value_specs, function(value_spec) {
+					var value = value_spec.value;
+					var source_str = value_to_source_str(value);
+
+					var state = value_spec.state;
+					var state_name;
+					if(state instanceof red.State) {
+						state_name = pad(state.get_name(), STATE_NAME_WIDTH-2);
+					} else if(state instanceof red.StatechartTransition) { //transition
+						var from = state.from(),
+							to = state.to();
+						state_name = pad(pad(from.get_name() + "->" + to.get_name(), TRANSITION_NAME_WIDTH-4) + state.stringify(), TRANSITION_NAME_WIDTH-4 + TRANSITION_VALUE_WIDTH);
+					}
+
+					if(value_spec.active) {
+						state_name = "* " + state_name;
+					} else {
+						state_name = "  " + state_name;
+					}
+
+					if(value_spec.using) {
+						state_name = state_name + " *";
+					} else {
+						state_name = state_name + "  ";
+					}
+
+					state_name = pad(state.id(), STATE_ID_WIDTH) + state_name;
+					console.log(pad(state_name + source_str, STATE_ID_WIDTH + STATE_NAME_WIDTH + STATE_VALUE_WIDTH));
+				});
+				console.groupEnd();
 			}
 		};
-		*/
 
-		var root = pointer.points_at(0);
+		var root = this.pointer.points_at(0);
 		var root_str;
-		if(pointer.points_at() === root) {
+		if(this.pointer.points_at() === root) {
 			root_str = ">root";
 		} else {
 			root_str = "root";
 		}
 		console.log(root_str + " (" + root.id + ")");
-		tablify(root);
+		tablify(this.pointer.slice(0,1));
 
 		return "ok...";
 	};

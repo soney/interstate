@@ -1,6 +1,16 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+red.Manifestation = function(basis, basis_index) {
+	this.basis = basis;
+	this.basis_index = basis_index;
+};
+/*
+(function(my) {
+	var proto = my.prototype;
+}(red.Manifestation));
+*/
+
 red.Dict = function(options, defer_initialization) {
 	options = _.extend({
 		value: {},
@@ -84,7 +94,12 @@ red.Dict = function(options, defer_initialization) {
 	//
 
 	proto._get_direct_protos = function(pointer) {
-		var raw_direct_protos = this.direct_protos();
+		var protos_pointer = pointer.push(this.direct_protos());
+		var direct_proto_pointers = protos_pointer.val();
+		if(!_.isArray(direct_proto_pointers)) {
+			direct_proto_pointers = [direct_proto_pointers];
+		}
+		/*
 		var direct_proto_pointers;
 		if(raw_direct_protos instanceof cjs.ArrayConstraint) {
 			direct_proto_pointers = raw_direct_protos.toArray();
@@ -93,6 +108,7 @@ red.Dict = function(options, defer_initialization) {
 			direct_proto_pointers = cell_value_constraint.get();
 			if(!_.isArray(direct_proto_pointers)) { direct_proto_pointers = [direct_protos]; }
 		} else if(raw_direct_protos instanceof red.StatefulProp) {
+			var value_and_state = raw_direct_protos.get_value_and_from_state();
 			var prop_val = raw_direct_protos.get(pointer);
 			if(prop_val instanceof red.Cell) {
 				var cell_value_constraint = prop_val.get(pointer);
@@ -107,6 +123,7 @@ red.Dict = function(options, defer_initialization) {
 		} else {
 			direct_proto_pointers = [];
 		}
+		*/
 
 		var rv = _.filter(direct_proto_pointers, function(direct_proto_pointer) {
 			return (direct_proto_pointer instanceof red.Pointer) && (direct_proto_pointer.points_at() instanceof red.Dict);
@@ -127,9 +144,9 @@ red.Dict = function(options, defer_initialization) {
 			, equals: red.check_pointer_equality
 		});
 		proto_set.each(function(proto_pointer, i) {
-			var dp = proto_pointer.val();
-			var dp_protos = dp._get_direct_protos(proto_pointer);
-			proto_set.add_at.apply(proto_set, [i+1].concat(dp_protos));
+			var proto_dict = proto_pointer.points_at();
+			var proto_dict_protos = proto_dict._get_direct_protos(proto_pointer);
+			proto_set.add_at.apply(proto_set, [i+1].concat(proto_dict_protos));
 		});
 		var protos = proto_set.toArray();
 		return protos;
@@ -138,7 +155,7 @@ red.Dict = function(options, defer_initialization) {
 	proto._get_proto_vals = function(pointer) {
 		var proto_pointers = this._get_all_protos(pointer);
 		return _.map(proto_pointers, function(proto_pointer) {
-			return proto_pointer.val();
+			return proto_pointer.points_at();
 		});
 	};
 	
@@ -305,6 +322,7 @@ red.Dict = function(options, defer_initialization) {
 			return this._get_inherited_prop(prop_name, pointer);
 		}
 	};
+
 	proto.get_prop_pointer = function(prop_name, pointer) {
 		var prop = this._get_prop(prop_name, pointer);
 		if(prop === undefined) {
@@ -313,6 +331,7 @@ red.Dict = function(options, defer_initialization) {
 			return pointer.push(prop);
 		}
 	};
+
 	proto._has_prop = function(prop_name, pcontext) {
 		if(this._has_builtin_prop(prop_name)) {
 			return true;
@@ -347,14 +366,14 @@ red.Dict = function(options, defer_initialization) {
 		}
 		var prop_val = this.get(prop_name);
 		var cloned_prop_val;
-		if(prop_val instanceof red.RedCell) {
+		if(prop_val instanceof red.Cell) {
 			cloned_prop_val = prop_val.clone();
 		}
 	};
-	proto.name_for_prop = function(value, context) {
+	proto.name_for_prop = function(value, pcontext) {
 		var rv = this.direct_props().keyForValue(value);
-		if(_.isUndefined(rv) && context) {
-			var protos = this._get_proto_vals(context);
+		if(_.isUndefined(rv) && pcontext) {
+			var protos = this._get_proto_vals(pcontext);
 			for(var i = 0; i<protos.length; i++) {
 				var protoi = protos[i];
 				rv = protoi.name_for_prop(value, false);
@@ -379,7 +398,6 @@ red.Dict = function(options, defer_initialization) {
 		} else {
 			return [direct_attachments];
 		}
-
 	};
 	
 	
@@ -520,11 +538,8 @@ red.Dict = function(options, defer_initialization) {
 		var mm = this.get_manifestation_map_for_context(context);
 		cjs.wait();
 		var dict = mm.get_or_put(basis, function() {
-			var dict = {
-				basis: basis,
-				basis_index: basis_index
-			};
-			return dict;
+			var manifestation_obj = new red.Manifestation(basis, basis_index);
+			return manifestation_obj;
 		}, this);
 		cjs.signal();
 		return dict;

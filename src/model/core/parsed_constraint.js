@@ -70,14 +70,14 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 		var rv;
 
 		while(!curr_context.is_empty()) {
-			if(context_item instanceof red.RedDict) {
+			if(context_item instanceof red.Dict) {
 				if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
 					if(context_item._has_direct_prop(key)) {
 						rv = context_item.get_prop_pointer(key, curr_context);
 						break;
 					}
 				} else {
-					if(context_item.has_prop(key, curr_context)) {
+					if(context_item._has_prop(key, curr_context)) {
 						rv = context_item.get_prop_pointer(key, curr_context);
 						break;
 					}
@@ -86,7 +86,7 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 				rv = curr_context.push(context_item[key]);
 			}
 			curr_context = curr_context.pop();
-			context_item = curr_context.last();
+			context_item = curr_context.points_at();
 		}
 		// rv is a context
 		if(rv) {
@@ -94,31 +94,20 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 		} else {
 			return undefined;
 		}
-
-		/*
-
-		// rv is a context
-		var rv_last_item = rv.last();
-		if(rv_last_item instanceof red.RedDict) {
-			return rv;
-		} else {
-			return red.get_contextualizable(rv_last_item, rv);
-		}
-		*/
 	});
 };
 
 var get_this_$ = function(context) {
 	return cjs.$(function() {
 		var curr_context = context;
-		var context_item = curr_context.last();
+		var context_item = curr_context.points_at();
 
 		while(!curr_context.is_empty()) {
-			if(context_item instanceof red.RedDict) {
+			if(context_item instanceof red.Dict) {
 				return curr_context;
 			}
 			curr_context = curr_context.pop();
-			context_item = curr_context.last();
+			context_item = curr_context.points_at();
 		}
 
 		return undefined;
@@ -134,8 +123,8 @@ var get_member_$ = function(object, property) {
 		}
 
 		var prop_got = cjs.get(property);
-		if(obj_got instanceof red.RedContext) {
-			var prop_val = obj_got.prop(prop_got);
+		if(obj_got instanceof red.Pointer) {
+			var prop_val = obj_got.call("get_prop_pointer", prop_got);
 			return prop_val;
 		} else {
 			return obj_got[prop_got];

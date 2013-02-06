@@ -750,7 +750,7 @@ red.Statechart = function(options) {
 	var proto = my.prototype;
 
 	proto.do_initialize = function(options) {
-		this._start_state = options.start_state || new StartState({
+		this._start_state = options.start_state || new red.StartState({
 			parent: this,
 			to: options.start_at
 		});
@@ -949,7 +949,7 @@ red.Statechart = function(options) {
 		}
 	};
 	proto.find_state = function(state_name, create_superstates, state_value, index) {
-		if(state_name instanceof State) {
+		if(state_name instanceof red.State) {
 			return state_name;
 		} else if(_.isArray(state_name)) {
 			if(_.isEmpty(state_name)) {
@@ -1238,7 +1238,7 @@ red.Statechart = function(options) {
 	};
 
 	proto.create_shadow = function(options) {
-		var start_state = new StartState({}, true);
+		var start_state = new red.StartState({}, true);
 
 		var my_start_state = this.get_start_state();
 
