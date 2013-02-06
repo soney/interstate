@@ -1,15 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-red.Manifestation = function(basis, basis_index) {
-	this.basis = basis;
-	this.basis_index = basis_index;
-};
-/*
-(function(my) {
-	var proto = my.prototype;
-}(red.Manifestation));
-*/
 
 red.Dict = function(options, defer_initialization) {
 	options = _.extend({
@@ -80,11 +71,6 @@ red.Dict = function(options, defer_initialization) {
 			, settable: false
 			, serialize: false
 		}
-		, "manifestation_of": {
-			default: function() { return false; }
-			, settable: false
-			, serialize: false
-		}
 	};
 
 	red.install_proto_builtins(proto, my.builtins);
@@ -99,31 +85,6 @@ red.Dict = function(options, defer_initialization) {
 		if(!_.isArray(direct_proto_pointers)) {
 			direct_proto_pointers = [direct_proto_pointers];
 		}
-		/*
-		var direct_proto_pointers;
-		if(raw_direct_protos instanceof cjs.ArrayConstraint) {
-			direct_proto_pointers = raw_direct_protos.toArray();
-		} else if(raw_direct_protos instanceof red.Cell) {
-			var cell_value_constraint = prop_val.get(pointer);
-			direct_proto_pointers = cell_value_constraint.get();
-			if(!_.isArray(direct_proto_pointers)) { direct_proto_pointers = [direct_protos]; }
-		} else if(raw_direct_protos instanceof red.StatefulProp) {
-			var value_and_state = raw_direct_protos.get_value_and_from_state();
-			var prop_val = raw_direct_protos.get(pointer);
-			if(prop_val instanceof red.Cell) {
-				var cell_value_constraint = prop_val.get(pointer);
-				direct_proto_pointers = cell_value_constraint.get();
-				if(!_.isArray(direct_proto_pointers)) { direct_proto_pointers = [direct_protos]; }
-			} else {
-				direct_proto_pointers = prop_val;
-				if(!_.isArray(direct_proto_pointers)) { direct_proto_pointers = [direct_protos]; }
-			}
-		} else if(_.isArray(raw_direct_protos)) {
-			direct_proto_pointers = raw_direct_protos;
-		} else {
-			direct_proto_pointers = [];
-		}
-		*/
 
 		var rv = _.filter(direct_proto_pointers, function(direct_proto_pointer) {
 			return (direct_proto_pointer instanceof red.Pointer) && (direct_proto_pointer.points_at() instanceof red.Dict);
@@ -538,7 +499,7 @@ red.Dict = function(options, defer_initialization) {
 		var mm = this.get_manifestation_map_for_context(context);
 		cjs.wait();
 		var dict = mm.get_or_put(basis, function() {
-			var manifestation_obj = new red.Manifestation(basis, basis_index);
+			var manifestation_obj = new red.ManifestationContext(this, basis, basis_index);
 			return manifestation_obj;
 		}, this);
 		cjs.signal();
@@ -546,42 +507,34 @@ red.Dict = function(options, defer_initialization) {
 	};
 
 	proto.get_manifestation_objs = function(pcontext) {
-		return undefined;
-	/*
 		var manifestations = this.get_manifestations();
 		var manifestations_pointer = pcontext.push(manifestations);
 		var manifestations_value = manifestations_pointer.val();
-	/*
-		var manifestations = red.get_contextualizable(this.get_manifestations(), context);
 
-		for(var i = 0; i<context._stack.length; i++) {
-			if(context._stack[i].get_manifestation_of() === this) {
+		for(var i = pcontext.length() - 1; i>=0; i--) {
+			var itemi = pcontext.points_at(i);
+			if(itemi instanceof red.SpecialContext && itemi.get_owner() === this) {
 				return null;
 			}
 		}
 
-		if(_.isNumber(manifestations)) {
+		if(_.isNumber(manifestations_value)) {
 			var arr = []
-			for(var i = 0; i<manifestations; i++) {
+			for(var i = 0; i<manifestations_value; i++) {
 				arr.push(i);
 			}
-			manifestations = arr;
-		}
-		if(manifestations) {
-			manifestations = red.get_contextualizable(manifestations, context);
+			manifestations_value = arr;
 		}
 
-
-		if(_.isArray(manifestations)) {
-			var manifest_objs = _.map(manifestations, function(manifestation, index) {
-				return this.get_manifestation_obj(context, manifestation, index);
+		if(_.isArray(manifestations_value)) {
+			var manifest_objs = _.map(manifestations_value, function(manifestation_value, index) {
+				return this.get_manifestation_obj(context, manifestation_value, index);
 			}, this);
 
 			return manifest_objs;
 		} else {
 			return null;
 		}
-		*/
 	};
 
 	proto.clean_manifestation_objs = function() {

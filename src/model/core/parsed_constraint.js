@@ -82,6 +82,11 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 						break;
 					}
 				}
+			} else if(context_item instanceof red.SpecialContext) {
+				var context_obj = context_item.get_context_obj();
+				if(context_obj.hasOwnProperty(key)) {
+					return curr_context.push(context_obj[key]);
+				}
 			} else if(context_item && context_item[key]) {
 				rv = curr_context.push(context_item[key]);
 			}

@@ -93,7 +93,7 @@ red.StatefulObj = function(options, defer_initialization) {
 	proto.get_inherited_statecharts = function(context) {
 		var proto_pointers = this._get_all_protos(context);
 		var statecharts = _.map(proto_pointers, function(proto_pointer) {
-			var protoi = proto_pointer.val();
+			var protoi = proto_pointer.points_at();
 			if(protoi instanceof red.StatefulObj) {
 				return protoi.get_statechart_for_context(proto_pointer);
 			} else {

@@ -1,14 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-red.EventContext = function(event) {
-	this.event = event;
-};
-
-(function(my) {
-	var proto = my.prototype;
-}(red.EventContext));
-
 red.Pointer = function(options) {
 	this._stack = (options && options.stack) || [];
 };

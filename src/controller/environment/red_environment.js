@@ -631,13 +631,9 @@ var Env = function(options) {
 						prop_text = "  " + prop_text;
 					}
 
-					if((is_pointed_at instanceof red.Dict) || (is_pointed_at instanceof red.StatefulProp) ||
-							(is_pointed_at instanceof red.Cell)) {
-						prop_text = pad(
-										pad(prop_text, PROP_NAME_WIDTH) + " (" + prop_points_at.id + ")"
-										, PROP_NAME_WIDTH + PROP_ID_WIDTH);
-
-
+					if(prop_points_at instanceof red.StatefulProp) {
+						prop_text = pad(prop_text, PROP_NAME_WIDTH);
+						prop_text = prop_text + pad("(" + prop_points_at.id + ")", PROP_ID_WIDTH);
 					} else {
 						prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
 					}
@@ -661,7 +657,7 @@ var Env = function(options) {
 					var state = value_spec.state;
 					var state_name;
 					if(state instanceof red.State) {
-						state_name = pad(state.get_name(), STATE_NAME_WIDTH-2);
+						state_name = state.get_name();
 					} else if(state instanceof red.StatechartTransition) { //transition
 						var from = state.from(),
 							to = state.to();
@@ -679,6 +675,7 @@ var Env = function(options) {
 					} else {
 						state_name = state_name + "  ";
 					}
+					state_name = pad(state_name, STATE_NAME_WIDTH - 4);
 
 					state_name = pad(state.id(), STATE_ID_WIDTH) + state_name;
 					console.log(pad(state_name + source_str, STATE_ID_WIDTH + STATE_NAME_WIDTH + STATE_VALUE_WIDTH));
