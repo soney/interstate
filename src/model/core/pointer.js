@@ -5,6 +5,10 @@ red.EventContext = function(event) {
 	this.event = event;
 };
 
+(function(my) {
+	var proto = my.prototype;
+}(red.EventContext));
+
 red.Pointer = function(options) {
 	this._stack = (options && options.stack) || [];
 };
@@ -39,7 +43,7 @@ red.Pointer = function(options) {
 				var state = value_and_state.state;
 				var event = state._last_run_event.get();
 
-				var pcontext = this.push(new EventContext(event));
+				var pcontext = this.push(new red.EventContext(event));
 
 				var cell_constraint = value.constraint_in_context(pcontext);
 				return cell_constraint.get();

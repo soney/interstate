@@ -286,9 +286,9 @@ var Env = function(options) {
 					}
 				}
 			} else {
-				prop = this.get_pointer_obj();
+				var obj = this.get_pointer_obj();
 				var name = arg0;
-				prop = prop.get_prop(name, this.pointer);
+				prop = obj._get_prop(name, this.pointer);
 			}
 
 			var for_state_name = arg1;
