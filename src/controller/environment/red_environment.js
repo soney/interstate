@@ -101,6 +101,9 @@ var Env = function(options) {
 		} else if(pointer instanceof red.StatefulObj) {
 			statechart = pointer.get_own_statechart();
 		}
+		if(!statechart) {
+			throw new Error("Could not find statechart");
+		}
 		return statechart;
 	};
 
@@ -651,12 +654,6 @@ var Env = function(options) {
 				});
 			} else if(points_at instanceof red.StatefulProp) {
 				var value_specs = points_at.get_value_specs(pointer);
-				var group_name = printed_prop_name + " (" + value.id +")";
-				if(pointer.has(value)) {
-					console.group(group_name, value_to_value_str(value_got));
-				} else {
-					console.groupCollapsed(group_name, value_to_value_str(value_got));
-				}
 				_.each(value_specs, function(value_spec) {
 					var value = value_spec.value;
 					var source_str = value_to_source_str(value);
@@ -686,7 +683,6 @@ var Env = function(options) {
 					state_name = pad(state.id(), STATE_ID_WIDTH) + state_name;
 					console.log(pad(state_name + source_str, STATE_ID_WIDTH + STATE_NAME_WIDTH + STATE_VALUE_WIDTH));
 				});
-				console.groupEnd();
 			}
 		};
 

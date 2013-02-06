@@ -180,7 +180,7 @@ red.StatefulProp = function(options, defer_initialization) {
 		}, this);
 	};
 	proto.create_contextual_value = function(pcontext) {
-		return new red.StatefulPropContextualVal({
+		return new StatefulPropContextualVal({
 			context: pcontext,
 			stateful_prop: this
 		});

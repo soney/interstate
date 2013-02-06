@@ -15,7 +15,7 @@ var get_event = function(tree, options) {
 	event_constraint.setOption("auto_add_outgoing_dependencies", false);
 
 	var got_value = event_constraint.get();
-	if(got_value instanceof red.RedEvent) {
+	if(got_value instanceof red.Event) {
 		return got_value;
 	} else {
 		return red.create_event("constraint", event_constraint, got_value);

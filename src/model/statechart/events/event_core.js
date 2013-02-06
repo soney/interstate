@@ -67,7 +67,7 @@ var EventQueue = function() {
 red.event_queue = new EventQueue();
 
 var id = 0;
-var RedEvent = function() {
+red.Event = function() {
 	this._initialize();
 	this._transition = undefined;
 	this.on_create.apply(this, arguments);
@@ -116,10 +116,8 @@ var RedEvent = function() {
 	proto.stringify = function() {
 		return "" + this.id;
 	};
-}(RedEvent));
+}(red.Event));
 red.event_queue = new EventQueue();
-
-red.RedEvent = RedEvent;
 
 var event_types = {};
 
@@ -136,7 +134,7 @@ red._create_event_type = function(name) {
 	var Constructor = function() {
 		this._initialize();
 	};
-	_.proto_extend(Constructor, RedEvent);
+	_.proto_extend(Constructor, red.Event);
 	event_types[name] = Constructor;
 	return Constructor;
 };

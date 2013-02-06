@@ -4,9 +4,9 @@ var cjs = red.cjs, _ = red._;
 red.find_stateful_obj_and_context = function(context) {
 	var popped_item, last;
 	while(!context.is_empty()) {
-		last = context.last();
+		last = context.points_at();
 		if(last instanceof red.StatefulObj) {
-			if(popped_item && popped_item instanceof red.RedDict && popped_item.get_manifestation_of() === last) {
+			if(popped_item && popped_item instanceof red.Dict && popped_item.get_manifestation_of() === last) {
 				return {
 						stateful_obj: last,
 						context: context.push(popped_item)

@@ -37,7 +37,7 @@ var cjs = red.cjs, _ = red._;
 							.map(function(targ) {
 								if(_.isElement(targ) || targ === window) {
 									return targ;
-								} else if(targ instanceof red.RedDict) {
+								} else if(targ instanceof red.Dict) {
 									var targ_context = targ.get_default_context();
 									var manifestations = targ.get_manifestation_objs(targ_context);
 									var dom_attachments;
