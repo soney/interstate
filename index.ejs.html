@@ -71,22 +71,30 @@
 			<script type="text/javascript" src="album_data.js"></script>
 
 			<script type="text/javascript">
-				var format_duration = function(time) {
-					var minutes = Math.floor(time);
-					var seconds = Math.round((time - minutes) * 60);
-					if(seconds < 10) seconds = "0"+seconds;
-					else seconds = ""+seconds;
-					return minutes+":"+seconds;
-				};
 				var env, _, cjs;
+
 				$(function() {
 					cjs = red.cjs;
 					_ = red._;
 
 					env = red	.create("environment");
 
+					env	.cd("children")
+						.set("obj", "stateful")
+						.cd("obj")
+						.set("(protos)", "INIT", "dom")
+						.set("tag")
+						.set("tag", "INIT", "'div'")
+						.set("text")
+						.set("text", "INIT", "'hello'");
+
 					env.print_on_return = true;
 					console.log(env.print());
+
+					var root_pointer = env.get_root_pointer();
+					output_view = $("<div />").dom_output({
+						root: root_pointer
+					}).appendTo(document.body);
 
 					var storage_prefix = "_";
 					window.save = function(name) {

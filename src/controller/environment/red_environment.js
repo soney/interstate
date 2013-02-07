@@ -24,7 +24,7 @@ var Env = function(options) {
 	if(options && _.has(options, "root")) {
 		root = options.root;
 	} else {
-		root = red.create("dict", {direct_attachments: [red.create("dom_attachment", {
+		root = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment", {
 			instance_options: {
 				tag: "div"
 			}
@@ -46,14 +46,12 @@ var Env = function(options) {
 
 	proto.initialize_props = function(root_pointer) {
 		var root_dict = root_pointer.points_at();
-		/*
 
-		var dom = red.create("dict", {direct_attachments: [red.create("dom_attachment")]});
+		var dom = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment")]});
 		root_dict.set("dom", dom);
 
-		var children = red.create("dict");
+		var children = red.create("dict", {has_protos: false});
 		root_dict.set("children", children);
-		*/
 	};
 
 	proto._do = function(command) { this._command_stack._do(command); };

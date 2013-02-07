@@ -130,7 +130,7 @@ var get_member_$ = function(object, property) {
 		var prop_got = cjs.get(property);
 		if(obj_got instanceof red.Pointer) {
 			var prop_val = obj_got.call("get_prop_pointer", prop_got);
-			return prop_val;
+			return prop_val.val();
 		} else {
 			return obj_got[prop_got];
 		}

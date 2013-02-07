@@ -6,7 +6,8 @@ red.Dict = function(options, defer_initialization) {
 	options = _.extend({
 		value: {},
 		keys: [],
-		values: []
+		values: [],
+		has_protos: true
 	}, options);
 	this.options = options;
 
@@ -78,6 +79,10 @@ red.Dict = function(options, defer_initialization) {
 	//
 	// === DIRECT PROTOS ===
 	//
+
+	proto.has_protos = function() {
+		return this.options.has_protos;
+	};
 
 	proto._get_direct_protos = function(pointer) {
 		var protos_pointer = pointer.push(this.direct_protos());
@@ -234,10 +239,13 @@ red.Dict = function(options, defer_initialization) {
 		var rv = [];
 		_.each(this.get_builtins(), function(val, name) {
 			if(val.env_visible === true) {
+				if(name === "direct_protos" && !this.has_protos()) {
+					return;
+				}
 				name = val.env_name || name;
 				rv.push(name);
 			}
-		});
+		}, this);
 		return rv;
 	};
 	proto._get_builtin_prop = function(prop_name) {
@@ -371,7 +379,10 @@ red.Dict = function(options, defer_initialization) {
 
 		var create_attachment_instance = function() {
 			var owner = pcontext.points_at();
-			owner = owner.get_manifestation_of() || owner;
+			if(owner instanceof red.ManifestationContext) {
+				owner = owner.get_owner();
+			}
+			//owner = owner.get_manifestation_of() || owner;
 			var attachment_instance = attachment.create_instance(owner, pcontext);
 			return attachment_instance;
 		};

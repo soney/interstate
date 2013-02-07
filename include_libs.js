@@ -50,7 +50,6 @@ exports.main_src = c(
 				, "model/core/debug.js"
 				, "model/core/special_contexts.js"
 				, "model/core/parsed_constraint.js"
-				, "model/core/cjs_extensions.js"
 				, "model/statechart/red_statechart.js"
 				, "model/statechart/events/event_core.js"
 				, "model/statechart/events/manual_event.js"

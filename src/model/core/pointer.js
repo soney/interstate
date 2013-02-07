@@ -38,7 +38,7 @@ red.Pointer = function(options) {
 				var pcontext = this.push(new red.EventContext(event));
 
 				var cell_constraint = value.constraint_in_context(pcontext);
-				return cell_constraint.get();
+				return cjs.get(cell_constraint);
 			} else {
 				return value;
 			}
