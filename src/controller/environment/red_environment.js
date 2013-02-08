@@ -583,9 +583,39 @@ var Env = function(options) {
 		var tablify = function(pointer) {
 			var points_at = pointer.points_at();
 
-			if(points_at instanceof red.Dict) {
-				if(points_at instanceof red.StatefulObj) {
-					var state_specs = points_at.get_state_specs(pointer);
+			if(points_at instanceof red.Dict || points_at instanceof red.ManifestationContext) {
+				var dict;
+
+				if(points_at instanceof red.Dict) {
+					var manifestation_pointers = points_at.get_manifestation_pointers(pointer);
+					if(_.isArray(manifestation_pointers)) {
+						var is_expanded = current_pointer.has(points_at);
+
+						console[is_expanded ? "group" : "groupCollapsed"]("(manifestations)");
+						_.each(manifestation_pointers, function(manifestation_pointer) {
+							var manifestation_obj = manifestation_pointer.points_at();
+							var is_expanded2 = current_pointer.has(manifestation_obj);
+							var context_obj = manifestation_obj.get_context_obj();
+							var manifestation_text = pad("" + context_obj.basis_index, PROP_ID_WIDTH + PROP_NAME_WIDTH);
+							manifestation_text = manifestation_text + pad(value_to_value_str(context_obj.basis), PROP_VALUE_WIDTH)
+
+							console[is_expanded2 ? "group" : "groupCollapsed"](manifestation_text);
+							tablify(manifestation_pointer);
+							console.groupEnd();
+						});
+						console.groupEnd();
+						return;
+					}
+				}
+
+				if(points_at instanceof red.ManifestationContext) {
+					dict = pointer.points_at(-2);
+				} else {
+					dict = points_at;
+				}
+
+				if(dict instanceof red.StatefulObj) {
+					var state_specs = dict.get_state_specs(pointer);
 					console.group("  Statechart:");
 					_.each(state_specs, function(state_spec) {
 						var state = state_spec.state;
@@ -609,10 +639,20 @@ var Env = function(options) {
 					});
 					console.groupEnd();
 				}
-				var prop_names = points_at.get_prop_names(pointer);
+
+				if(points_at instanceof red.ManifestationContext) {
+					var context_obj = points_at.get_context_obj();
+					_.each(context_obj, function(value, key) {
+						var prop_text = "  " + key;
+						prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
+						prop_text = prop_text + pad(value_to_value_str(value), PROP_VALUE_WIDTH);
+						console.log(prop_text);
+					});
+				}
+				var prop_names = dict.get_prop_names(pointer);
 				_.each(prop_names, function(prop_name) {
-					var is_inherited = points_at.is_inherited(prop_name, pointer);
-					var prop_pointer = points_at.get_prop_pointer(prop_name, pointer);
+					var is_inherited = dict.is_inherited(prop_name, pointer);
+					var prop_pointer = dict.get_prop_pointer(prop_name, pointer);
 					var prop_points_at = prop_pointer.points_at();
 
 					var is_expanded = current_pointer.has(prop_points_at);

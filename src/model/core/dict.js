@@ -318,12 +318,12 @@ red.Dict = function(options, defer_initialization) {
 		var inherited_prop_names = this._get_inherited_prop_names(pcontext);
 		return builtin_prop_names.concat(direct_prop_names, inherited_prop_names);
 	};
-	proto.get_prop_values = function(pcontext) {
+	proto.get_prop_pointers = function(pcontext) {
 		var prop_names = this.get_prop_names(pcontext);
-		var prop_values = _.map(prop_names, function(prop_name) {
-			return this.get_prop(prop_name, pcontext);
+		var prop_pointers = _.map(prop_names, function(prop_name) {
+			return this.get_prop_pointer(prop_name, pcontext);
 		}, this);
-		return prop_values;
+		return prop_pointers;
 	};
 	proto.is_inherited = function(prop_name, pcontext) {
 		var inherited_prop_names = this._get_inherited_prop_names(pcontext);
@@ -378,12 +378,7 @@ red.Dict = function(options, defer_initialization) {
 		var direct_attachment_instances = this.direct_attachment_instances();
 
 		var create_attachment_instance = function() {
-			var owner = pcontext.points_at();
-			if(owner instanceof red.ManifestationContext) {
-				owner = owner.get_owner();
-			}
-			//owner = owner.get_manifestation_of() || owner;
-			var attachment_instance = attachment.create_instance(owner, pcontext);
+			var attachment_instance = attachment.create_instance(pcontext);
 			return attachment_instance;
 		};
 
@@ -507,42 +502,37 @@ red.Dict = function(options, defer_initialization) {
 	};
 
 	proto.get_manifestation_obj = function(pcontext, basis, index) {
-		var mm = this.get_manifestation_map_for_context(context);
+		var mm = this.get_manifestation_map_for_context(pcontext);
 		cjs.wait();
 		var dict = mm.get_or_put(basis, function() {
-			var manifestation_obj = new red.ManifestationContext(this, basis, basis_index);
+			var manifestation_obj = new red.ManifestationContext(this, basis, index);
 			return manifestation_obj;
 		}, this);
 		cjs.signal();
 		return dict;
 	};
 
-	proto.get_manifestation_objs = function(pcontext) {
+	proto.get_manifestation_pointers = function(pcontext) {
 		var manifestations = this.get_manifestations();
 		var manifestations_pointer = pcontext.push(manifestations);
 		var manifestations_value = manifestations_pointer.val();
 
-		for(var i = pcontext.length() - 1; i>=0; i--) {
-			var itemi = pcontext.points_at(i);
-			if(itemi instanceof red.SpecialContext && itemi.get_owner() === this) {
-				return null;
-			}
-		}
-
 		if(_.isNumber(manifestations_value)) {
 			var arr = []
 			for(var i = 0; i<manifestations_value; i++) {
-				arr.push(i);
+				arr[i] = i;
 			}
 			manifestations_value = arr;
 		}
 
 		if(_.isArray(manifestations_value)) {
-			var manifest_objs = _.map(manifestations_value, function(manifestation_value, index) {
-				return this.get_manifestation_obj(context, manifestation_value, index);
-			}, this);
+			var manifestation_pointers = _.map(manifestations_value, function(manifestation_value, index) {
+				var manifestation_obj = this.get_manifestation_obj(pcontext, manifestation_value, index);
+				var manifestation_pointer = pcontext.push(manifestation_obj);
 
-			return manifest_objs;
+				return manifestation_pointer;
+			}, this);
+			return manifestation_pointers;
 		} else {
 			return null;
 		}

@@ -83,10 +83,15 @@
 						.set("obj", "stateful")
 						.cd("obj")
 						.set("(protos)", "INIT", "dom")
+						//.set("(manifestations)", "10")
+						.add_state("hover")
+						.add_transition("INIT", "hover", "on('mouseover', this)")
 						.set("tag")
 						.set("tag", "INIT", "'div'")
 						.set("text")
-						.set("text", "INIT", "'hello'");
+						.set("text", "INIT", "'hello world'")
+						.set("text", "hover", "'goodbye cruel world'")
+						;
 
 					env.print_on_return = true;
 					console.log(env.print());

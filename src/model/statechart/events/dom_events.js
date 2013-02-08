@@ -14,7 +14,7 @@ var cjs = red.cjs, _ = red._;
 				});
 
 				if(specified_target.__red_context__) {
-					var red_target = specified_target.__red_context__;
+					var red_target = specified_target.__red_pointer__;
 					event.red_target = red_target;
 				}
 				this.fire(event);
@@ -34,18 +34,17 @@ var cjs = red.cjs, _ = red._;
 				targs = [targs];
 			}
 			this.targets = _.chain(targs)
-							.map(function(targ) {
-								if(_.isElement(targ) || targ === window) {
-									return targ;
-								} else if(targ instanceof red.Dict) {
-									var targ_context = targ.get_default_context();
-									var manifestations = targ.get_manifestation_objs(targ_context);
+							.map(function(target_pointer) {
+								if(_.isElement(target_pointer) || targ === window) {
+									return target_pointer;
+								} else if(target_pointer instanceof red.Pointer) {
+									var targ = target_pointer.points_at();
+									var manifestation_pointers = targ.get_manifestation_pointers(target_pointer);
 									var dom_attachments;
 
-									if(_.isArray(manifestations)) {
-										return _.map(manifestations, function(manifestation) {
-											var manifestation_context = targ_context.push(manifestation);
-											var dom_attachment = targ.get_attachment_instance("dom", manifestation_context);
+									if(_.isArray(manifestation_pointers)) {
+										return _.map(manifestation_pointers, function(manifestation_pointer) {
+											var dom_attachment = targ.get_attachment_instance("dom", manifestation_pointer);
 											if(dom_attachment) {
 												return dom_attachment.get_dom_obj();
 											} else {
@@ -53,7 +52,7 @@ var cjs = red.cjs, _ = red._;
 											}
 										});
 									} else {
-										var dom_attachment = targ.get_attachment_instance("dom", targ_context);
+										var dom_attachment = targ.get_attachment_instance("dom", target_pointer);
 										if(dom_attachment) {
 											return dom_attachment.get_dom_obj();
 										}

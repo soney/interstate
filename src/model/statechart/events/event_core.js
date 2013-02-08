@@ -56,7 +56,7 @@ var EventQueue = function() {
 	};
 
 	proto.do_run_event_queue = function() {
-		var fire = RedEvent.prototype._fire;
+		var fire = red.Event.prototype._fire;
 		while(this.queue.length > 0) {
 			var event_info = this.queue.shift();
 			fire.apply(event_info.context, event_info.args);
@@ -103,7 +103,7 @@ red.Event = function() {
 		}, this);
 	};
 	proto.guard = proto.when = function(func) {
-		var new_event = new RedEvent();
+		var new_event = new red.Event();
 		this.on_fire(function() {
 			if(func.apply(this, arguments)) {
 				new_event.fire.apply(new_event, arguments);
@@ -112,7 +112,7 @@ red.Event = function() {
 		return new_transition;
 	};
 	proto.destroy = function(){};
-	proto.create_shadow = function() { return new RedEvent(); };
+	proto.create_shadow = function() { return new red.Event(); };
 	proto.stringify = function() {
 		return "" + this.id;
 	};

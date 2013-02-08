@@ -3,8 +3,7 @@ var cjs = red.cjs, _ = red._;
 
 red.AttachmentInstance = function(options) {
 	options = options || {};
-	this._owner = options.owner;
-	this._context = options.context;
+	this._pointer = options.pointer;
 	this.type = "(generic)";
 };
 (function(my) {
@@ -16,8 +15,7 @@ red.AttachmentInstance = function(options) {
 	proto.set_context = function(context) {
 		this._context = context;
 	};
-	proto.get_context = function() { return this._context; };
-	proto.get_owner = function() { return this._owner; };
+	proto.get_pointer = function() { return this._pointer; };
 	proto.hash = function() {
 		return this._context.hash();
 	};
@@ -34,10 +32,9 @@ red.Attachment = function(options) {
 };
 (function(my) {
 	var proto = my.prototype;
-	proto.create_instance = function(owner, context) {
+	proto.create_instance = function(pointer) {
 		var options = _.extend({
-			owner: owner
-			, context: context
+			pointer: pointer
 		}, this.instance_options);
 		var instance = new this._InstanceClass(options);
 		return instance;

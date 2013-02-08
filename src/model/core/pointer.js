@@ -8,6 +8,7 @@ red.Pointer = function(options) {
 	var proto = my.prototype;
 	proto.points_at = function(index) {
 		if(!_.isNumber(index)) { index = this._stack.length-1; }
+		else if(index < 0) { index += this._stack.length; }
 		return this._stack[index];
 	};
 	proto.length = function() { return this._stack.length; };
