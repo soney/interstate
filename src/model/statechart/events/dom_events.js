@@ -13,7 +13,7 @@ var cjs = red.cjs, _ = red._;
 					specified_target: specified_target
 				});
 
-				if(specified_target.__red_context__) {
+				if(specified_target.__red_pointer__) {
 					var red_target = specified_target.__red_pointer__;
 					event.red_target = red_target;
 				}
