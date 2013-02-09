@@ -16,7 +16,6 @@ var cjs = red.cjs, _ = red._;
 				if(specified_target.__red_pointer__) {
 					var red_target = specified_target.__red_pointer__;
 					event.red_target = red_target;
-					console.log(red_target);
 				}
 				this.fire(event);
 				_.defer(function() {
@@ -39,22 +38,23 @@ var cjs = red.cjs, _ = red._;
 								if(_.isElement(target_pointer) || targ === window) {
 									return target_pointer;
 								} else if(target_pointer instanceof red.Pointer) {
+									var dict;
 									var targ = target_pointer.points_at();
-									/*
+
+									var manifestation_pointers;
+
 									if(targ instanceof red.ManifestationContext) {
-										targ = target_pointer.points_at(-2);
+										dict = target_pointer.points_at(-2);
+									} else if(targ instanceof red.Dict) {
+										dict = targ;
+										manifestation_pointers = dict.get_manifestation_pointers(target_pointer);
+									} else {
+										throw new Error("Unknown target");
 									}
-									var dom_attachment = targ.get_attachment_instance("dom", target_pointer);
-									if(dom_attachment) {
-										return dom_attachment.get_dom_obj();
-									}
-									/*
-									var manifestation_pointers = targ.get_manifestation_pointers(target_pointer);
-									var dom_attachments;
 
 									if(_.isArray(manifestation_pointers)) {
-										return _.map(manifestation_pointers, function(manifestation_pointer) {
-											var dom_attachment = targ.get_attachment_instance("dom", manifestation_pointer);
+										dom_attachments = _.map(manifestation_pointers, function(manifestation_pointer) {
+											var dom_attachment = dict.get_attachment_instance("dom", manifestation_pointer);
 											if(dom_attachment) {
 												return dom_attachment.get_dom_obj();
 											} else {
@@ -62,12 +62,11 @@ var cjs = red.cjs, _ = red._;
 											}
 										});
 									} else {
-										var dom_attachment = targ.get_attachment_instance("dom", target_pointer);
+										var dom_attachment = dict.get_attachment_instance("dom", target_pointer);
 										if(dom_attachment) {
 											return dom_attachment.get_dom_obj();
 										}
 									}
-									*/
 								}
 								return false;
 							})

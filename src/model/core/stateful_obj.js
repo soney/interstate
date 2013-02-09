@@ -78,7 +78,6 @@ red.StatefulObj = function(options, defer_initialization) {
 		return sc;
 	};
 	proto._create_statechart_for_context = function(pcontext) {
-		console.log(pcontext);
 		var own_statechart = this.get_own_statechart();
 		cjs.wait();
 		var shadow_statechart = own_statechart.create_shadow({context: pcontext, running: true});
