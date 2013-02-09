@@ -1,6 +1,11 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+var get_event_context = _.memoize(function(event) {
+	console.log(event)
+	return new red.EventContext(event);
+});
+
 red.Pointer = function(options) {
 	this._stack = (options && options.stack) || [];
 };
@@ -36,7 +41,7 @@ red.Pointer = function(options) {
 				var state = value_and_state.state;
 				var event = state._last_run_event.get();
 
-				var pcontext = this.push(new red.EventContext(event));
+				var pcontext = this.push(get_event_context(event));
 				//var pcontext = this;
 
 				var cell_constraint = value.constraint_in_context(pcontext);
