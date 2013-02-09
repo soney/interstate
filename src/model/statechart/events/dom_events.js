@@ -16,6 +16,7 @@ var cjs = red.cjs, _ = red._;
 				if(specified_target.__red_pointer__) {
 					var red_target = specified_target.__red_pointer__;
 					event.red_target = red_target;
+					console.log(red_target);
 				}
 				this.fire(event);
 				_.defer(function() {
@@ -39,6 +40,15 @@ var cjs = red.cjs, _ = red._;
 									return target_pointer;
 								} else if(target_pointer instanceof red.Pointer) {
 									var targ = target_pointer.points_at();
+									/*
+									if(targ instanceof red.ManifestationContext) {
+										targ = target_pointer.points_at(-2);
+									}
+									var dom_attachment = targ.get_attachment_instance("dom", target_pointer);
+									if(dom_attachment) {
+										return dom_attachment.get_dom_obj();
+									}
+									/*
 									var manifestation_pointers = targ.get_manifestation_pointers(target_pointer);
 									var dom_attachments;
 
@@ -57,6 +67,7 @@ var cjs = red.cjs, _ = red._;
 											return dom_attachment.get_dom_obj();
 										}
 									}
+									*/
 								}
 								return false;
 							})

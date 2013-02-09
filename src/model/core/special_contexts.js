@@ -4,13 +4,13 @@ var cjs = red.cjs, _ = red._;
 var scid = 0;
 
 red.SpecialContext = function() {
-	this.id = scid++;
+	this._id = scid++;
 	this.context_obj = {};
 };
 (function(my) {
 	var proto = my.prototype;
-	proto.hash = function() {
-		return this.id;
+	proto.id = proto.hash = function() {
+		return this._id;
 	};
 	proto.get_context_obj = function() {
 		return this.context_obj;
@@ -28,8 +28,8 @@ red.EventContext = function(event) {
 };
 
 (function(my) {
-	var proto = my.prototype;
 	_.proto_extend(my, red.SpecialContext);
+	var proto = my.prototype;
 }(red.EventContext));
 
 red.ManifestationContext = function(owner, basis, basis_index) {
@@ -41,8 +41,8 @@ red.ManifestationContext = function(owner, basis, basis_index) {
 	};
 };
 (function(my) {
-	var proto = my.prototype;
 	_.proto_extend(my, red.SpecialContext);
+	var proto = my.prototype;
 	proto.get_owner = function() {
 		return this.owner;
 	};

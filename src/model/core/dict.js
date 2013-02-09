@@ -1,7 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-
 red.Dict = function(options, defer_initialization) {
 	options = _.extend({
 		value: {},

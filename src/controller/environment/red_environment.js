@@ -596,7 +596,8 @@ var Env = function(options) {
 							var manifestation_obj = manifestation_pointer.points_at();
 							var is_expanded2 = current_pointer.has(manifestation_obj);
 							var context_obj = manifestation_obj.get_context_obj();
-							var manifestation_text = pad("" + context_obj.basis_index, PROP_ID_WIDTH + PROP_NAME_WIDTH);
+							var manifestation_text = pad("" + context_obj.basis_index, PROP_NAME_WIDTH);
+							manifestation_text = manifestation_text + pad("("+manifestation_obj.id()+")", PROP_ID_WIDTH)
 							manifestation_text = manifestation_text + pad(value_to_value_str(context_obj.basis), PROP_VALUE_WIDTH)
 
 							console[is_expanded2 ? "group" : "groupCollapsed"](manifestation_text);

@@ -6,7 +6,7 @@ red.find_stateful_obj_and_context = function(context) {
 	while(!context.is_empty()) {
 		last = context.points_at();
 		if(last instanceof red.StatefulObj) {
-			if(popped_item && popped_item instanceof red.Dict && popped_item.get_manifestation_of() === last) {
+			if(popped_item && popped_item instanceof red.ManifestationContext && popped_item.get_owner() === last) {
 				return {
 						stateful_obj: last,
 						context: context.push(popped_item)
@@ -77,10 +77,11 @@ red.StatefulObj = function(options, defer_initialization) {
 		var sc = this.contextual_statecharts().get_or_put(context, _.bind(this._create_statechart_for_context, this, context));
 		return sc;
 	};
-	proto._create_statechart_for_context = function(context) {
+	proto._create_statechart_for_context = function(pcontext) {
+		console.log(pcontext);
 		var own_statechart = this.get_own_statechart();
 		cjs.wait();
-		var shadow_statechart = own_statechart.create_shadow({context: context, running: true});
+		var shadow_statechart = own_statechart.create_shadow({context: pcontext, running: true});
 
 		shadow_statechart.run();
 		cjs.signal();
