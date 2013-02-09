@@ -4,7 +4,7 @@ var cjs = red.cjs, _ = red._;
 var scid = 0;
 
 red.SpecialContext = function() {
-	this._id = scid++;
+	this._id = "c"+scid++;
 	this.context_obj = {};
 };
 (function(my) {
