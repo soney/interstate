@@ -1,6 +1,16 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+red.on_event = function(event_type) {
+	var targets;
+	if(arguments.length <= 1) { // Ex: mouseup() <-> mouseup(window)
+		targets = window;
+	} else {
+		targets = _.rest(arguments);
+	}
+	return red.create_event("dom_event", event_type, targets);
+};
+
 (function(proto) {
 	proto.on_create = function(type, targets) {
 		var self = this;
@@ -35,7 +45,7 @@ var cjs = red.cjs, _ = red._;
 			}
 			this.targets = _.chain(targs)
 							.map(function(target_pointer) {
-								if(_.isElement(target_pointer) || targ === window) {
+								if(_.isElement(target_pointer) || target_pointer === window) {
 									return target_pointer;
 								} else if(target_pointer instanceof red.Pointer) {
 									var dict;
@@ -53,7 +63,7 @@ var cjs = red.cjs, _ = red._;
 									}
 
 									if(_.isArray(manifestation_pointers)) {
-										dom_attachments = _.map(manifestation_pointers, function(manifestation_pointer) {
+										var dom_objs = _.map(manifestation_pointers, function(manifestation_pointer) {
 											var dom_attachment = dict.get_attachment_instance("dom", manifestation_pointer);
 											if(dom_attachment) {
 												return dom_attachment.get_dom_obj();
@@ -61,6 +71,7 @@ var cjs = red.cjs, _ = red._;
 												return false;
 											}
 										});
+										return dom_objs;
 									} else {
 										var dom_attachment = dict.get_attachment_instance("dom", target_pointer);
 										if(dom_attachment) {

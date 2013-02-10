@@ -83,7 +83,7 @@
 						.set("obj", "stateful")
 						.cd("obj")
 						.set("(protos)", "INIT", "dom")
-						.set("(manifestations)", "10")
+						.set("(manifestations)", "100")
 						.add_state("hover")
 						.add_transition("INIT", "hover", "on('mouseover', this)")
 						.add_transition("hover", "INIT", "on('mouseout', this)")
@@ -94,8 +94,10 @@
 						.set("text", "hover", "'goodbye cruel world'")
 						;
 
+						/*
 					env.print_on_return = true;
 					console.log(env.print());
+						*/
 
 					var root_pointer = env.get_root_pointer();
 					output_view = $("<div />").dom_output({

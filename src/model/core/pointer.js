@@ -2,7 +2,6 @@
 var cjs = red.cjs, _ = red._;
 
 var get_event_context = _.memoize(function(event) {
-	console.log(event)
 	return new red.EventContext(event);
 });
 

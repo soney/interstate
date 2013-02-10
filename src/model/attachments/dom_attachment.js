@@ -26,7 +26,6 @@ var move = function(child_node, from_index, to_index) {
 	}
 };
 
-/*
 // Red name: CSS name
 var changeable_css_props = {
 	"width": "width"
@@ -43,8 +42,6 @@ var changeable_attributes = {
 	, "class": "class"
 	, "id": "id"
 };
-*/
-
 red.DomAttachmentInstance = function(options) {
 	red.DomAttachmentInstance.superclass.constructor.apply(this, arguments);
 	var pointer = this.get_pointer();
@@ -64,10 +61,8 @@ red.DomAttachmentInstance = function(options) {
 		this._tag_change_listener = this.add_tag_change_listener();
 	}
 
-/*
 	this._css_change_listeners = this.add_css_change_listeners();
 	this._attr_change_listeners = this.add_attribute_change_listeners();
-	*/
 	this._children_change_listener = this.add_children_change_listener();
 
 	this.on_ready();
@@ -97,7 +92,6 @@ red.DomAttachmentInstance = function(options) {
 		return cjs.get(this._dom_obj);
 	};
 
-/*
 	proto.add_css_change_listeners = function() {
 		var listeners = {};
 		var self = this;
@@ -114,7 +108,6 @@ red.DomAttachmentInstance = function(options) {
 		});
 		return listeners;
 	};
-	*/
 	proto.add_tag_change_listener = function() {
 		var pointer = this.get_pointer();
 		var owner = this.get_owner();
@@ -139,14 +132,15 @@ red.DomAttachmentInstance = function(options) {
 			, run_on_create: false
 		}).run();
 	};
-	/*
 	proto.add_css_change_listener = function(red_attr_name, css_prop_name) {
 		var pointer = this.get_pointer();
+		var owner = this.get_owner();
 
 		return cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
-				var val = owner.prop_val(red_attr_name, context);
+				var attr_pointer = owner.get_prop_pointer(red_attr_name, pointer);
+				var val = attr_pointer ? attr_pointer.val() : undefined;
 				if(val) {
 					dom_obj.style[css_prop_name] = val;
 				} else {
@@ -160,11 +154,13 @@ red.DomAttachmentInstance = function(options) {
 	};
 	proto.add_attribute_change_listener = function(red_attr_name, attr_name) {
 		var pointer = this.get_pointer();
+		var owner = this.get_owner();
 
 		return cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
-				var val = owner.prop_val(red_attr_name, context);
+				var attr_pointer = owner.get_prop_pointer(red_attr_name, pointer);
+				var val = attr_pointer ? attr_pointer.val() : undefined;
 				if(val) {
 					dom_obj.setAttribute(attr_name, val);
 				} else if(dom_obj.hasAttribute(attr_name)) {
@@ -176,7 +172,6 @@ red.DomAttachmentInstance = function(options) {
 			, pause_while_running: true
 		});
 	};
-	*/
 	proto.add_children_change_listener = function() {
 		var pointer = this.get_pointer();
 		var owner = this.get_owner();

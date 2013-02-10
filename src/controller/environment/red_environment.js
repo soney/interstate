@@ -571,13 +571,13 @@ var Env = function(options) {
 
 		var PROP_NAME_WIDTH = 30;
 		var PROP_ID_WIDTH = 5;
-		var PROP_VALUE_WIDTH = 20;
+		var PROP_VALUE_WIDTH = 40;
 
 		var STATE_NAME_WIDTH = 30;
 		var STATE_ID_WIDTH = 5;
 		var TRANSITION_NAME_WIDTH = 40;
-		var TRANSITION_VALUE_WIDTH = 20;
-		var STATE_VALUE_WIDTH = 50;
+		var TRANSITION_VALUE_WIDTH = 100;
+		var STATE_VALUE_WIDTH = 100;
 
 		var current_pointer = this.pointer;
 		var tablify = function(pointer) {

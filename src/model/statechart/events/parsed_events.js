@@ -1,14 +1,5 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
-var on_event = red.on_event = function(event_type) {
-	var targets;
-	if(arguments.length <= 1) { // Ex: mouseup() <-> mouseup(window)
-		targets = window;
-	} else {
-		targets = _.rest(arguments);
-	}
-	return red.create_event("dom_event", event_type, targets);
-};
 
 var get_event = function(tree, options) {
 	var event_constraint = red.get_parsed_$(tree, options);
