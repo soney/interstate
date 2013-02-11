@@ -575,7 +575,7 @@ var Env = function(options) {
 
 		var STATE_NAME_WIDTH = 30;
 		var STATE_ID_WIDTH = 5;
-		var TRANSITION_NAME_WIDTH = 40;
+		var TRANSITION_NAME_WIDTH = 20;
 		var TRANSITION_VALUE_WIDTH = 100;
 		var STATE_VALUE_WIDTH = 100;
 
@@ -627,7 +627,8 @@ var Env = function(options) {
 						} else if(state instanceof red.StatechartTransition) { //transition
 							var from = state.from(),
 								to = state.to();
-							state_name = pad(pad(from.get_name() + "->" + to.get_name(), TRANSITION_NAME_WIDTH-2) + state.stringify(), TRANSITION_NAME_WIDTH-2 + TRANSITION_VALUE_WIDTH);
+							state_name = pad(from.get_name() + "->" + to.get_name(), TRANSITION_NAME_WIDTH-2);
+							state_name = state_name + pad(state.stringify(), TRANSITION_VALUE_WIDTH);
 						}
 
 						if(state_spec.active) {
@@ -636,7 +637,8 @@ var Env = function(options) {
 							state_name = "  " + state_name;
 						}
 
-						console.log(pad(state.id(), STATE_ID_WIDTH), state_name);
+						state_name = pad(state.id(), STATE_ID_WIDTH) + state_name;
+						console.log(state_name);
 					});
 					console.groupEnd();
 				}
@@ -647,7 +649,6 @@ var Env = function(options) {
 						var prop_text = "  " + key;
 						prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
 						prop_text = prop_text + pad(value_to_value_str(value), PROP_VALUE_WIDTH);
-						console.log(prop_text);
 					});
 				}
 				var prop_names = dict.get_prop_names(pointer);
@@ -696,28 +697,28 @@ var Env = function(options) {
 					var state = value_spec.state;
 					var state_name;
 					if(state instanceof red.State) {
-						state_name = state.get_name();
+						state_name = pad(state.get_name(), STATE_NAME_WIDTH-2);
 					} else if(state instanceof red.StatechartTransition) { //transition
 						var from = state.from(),
 							to = state.to();
-						state_name = pad(pad(from.get_name() + "->" + to.get_name(), TRANSITION_NAME_WIDTH-4) + state.stringify(), TRANSITION_NAME_WIDTH-4 + TRANSITION_VALUE_WIDTH);
+						state_name = pad(from.get_name() + "->" + to.get_name(), TRANSITION_NAME_WIDTH-2);
+						state_name = state_name + pad(state.stringify(), TRANSITION_VALUE_WIDTH);
 					}
 
 					if(value_spec.active) {
-						state_name = "* " + state_name;
+						state_name = "*" + state_name;
 					} else {
-						state_name = "  " + state_name;
+						state_name = " " + state_name;
 					}
 
 					if(value_spec.using) {
-						state_name = state_name + " *";
+						state_name = "*" + state_name;
 					} else {
-						state_name = state_name + "  ";
+						state_name = " " + state_name;
 					}
-					state_name = pad(state_name, STATE_NAME_WIDTH - 4);
 
 					state_name = pad(state.id(), STATE_ID_WIDTH) + state_name;
-					console.log(pad(state_name + source_str, STATE_ID_WIDTH + STATE_NAME_WIDTH + STATE_VALUE_WIDTH));
+					console.log(state_name);
 				});
 			}
 		};

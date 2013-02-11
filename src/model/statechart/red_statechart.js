@@ -171,39 +171,6 @@ var find_equivalent_transition = red.find_equivalent_transition = function(to_tr
 		}
 	}
 	throw new Error("Could not find equivalent transition");
-/*
-	var in_tree_basis = in_tree.basis();
-	var in_tree_basis_lineage = in_tree_basis.get_lineage();
-	var to_state_lineage = to_state.get_lineage();
-
-	var in_tree_basis_lineage_len = in_tree_basis_lineage.length;
-	var to_state_lineage_len = to_state_lineage.length;
-	
-	var in_tree_basis_index = in_tree_basis_lineage_len - 1;
-	var to_state_index;
-	outer_loop:
-	while(in_tree_basis_index < in_tree_basis_lineage_len) {
-		for(var i = to_state_lineage_len; i>=0; i--) {
-			if(to_state_lineage[i] === in_tree_basis_lineage[in_tree_basis_index]) {
-				to_state_index = i;
-				break outer_loop;
-			}
-		}
-		in_tree_basis_index--;
-	}
-	var search_item = in_tree;
-	var parentage_level = in_tree_basis_lineage_len - 1 - in_tree_basis_index;
-	_.times(parentage_level, function() {
-		search_item = search_item.parent();
-	});
-
-	for(var i = to_state_index+1; i < to_state_lineage_len; i++) {
-		var name = to_state_lineage[i].get_name(to_state_lineage[i-1]);
-		search_item = search_item.get_substate_with_name(name);
-	}
-	if(search_item.basis() !== to_state) { throw new Error("Could not find correct equivalent item"); }
-	return search_item;
-	*/
 };
 
 red.StatechartTransition = function(options, defer_initialization) {
@@ -809,40 +776,7 @@ red.Statechart = function(options) {
 		})));
 	};
 
-/*
-	proto.get_active_transition = function() {
-		return this.$active_transition.get();
-	};
-	proto.get_active_transitions = function() {
-		var rv;
-		var active_transition = this.get_active_transition();
-		var rv_size;
-		if(active_transition) {
-			rv = [active_transition];
-			rv_size = 1;
-		} else {
-			rv = [];
-			rv_size = 0;
-		}
-
-		var substates = _.clone(this.get_substates());
-		for(var i = 0; i<substates.length; i++) {
-			var substate = substates[i];
-			substates.push.apply(substates, substate.get_substates());
-			active_transition = substate.get_active_transition();
-			if(active_transition) {
-				rv[rv_size++] = active_transition;
-			}
-		}
-		return rv;
-	};
-	*/
 	proto.set_active_substate = function(state, transition, event) {
-	/*
-		if(this._active_transition) {
-			throw new Error("Active transition is already set");
-		}
-		*/
 		if(transition) {
 			transition.set_active(true);
 		}
@@ -983,9 +917,6 @@ red.Statechart = function(options) {
 	proto.get_substate_index = function(substate) {
 		var name = substate.get_name(this);
 		return this.$substates.indexOf(name);
-		/*
-		return this.$substates.values().indexOf(this.find_state(substate));
-		*/
 	};
 	proto.add_substate = function(state_name, state, index) {
 		if(state instanceof red.Statechart) {

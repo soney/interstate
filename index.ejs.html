@@ -2,152 +2,40 @@
 <html lang="en">
   <head>
     <title>red</title>
-	<link rel="stylesheet" type="text/css" href="src/view/css/styles.css"></link>
-	<link rel="stylesheet" type="text/css" href="src/_vendor/bootstrap/css/bootstrap.css"></link>
-	<style type="text/css">
-		div.player {
-			margin: auto;
-			border: 1px solid black;
-			width: 500px;
-			margin-top: 10px;
-		}
-		div.header {
-			background-image: -webkit-linear-gradient(top, rgb(246,246,246), rgb(167,167,167));
-			padding-top: 10px;
-			padding-bottom: 10px;
-			padding-left: 10px;
-			border-top-left-radius: 5px;
-			border-top-right-radius: 5px;
-		}
-		div.header > img {
-			margin-left: 1px;
-			margin-right: 1px;
-		}
-		div.songs {
-			max-height: 300px;
-			overflow-y: scroll;
-			border-bottom: rgb(237, 237, 237);
-		}
-		div.songs > div.song:nth-child(odd) {
-			background-color: rgb(250, 250, 250);
-		}
-		div.songs > div.song:nth-child(even) {
-			background-color: rgb(241, 244, 247);
-		}
-		
-		div.song {
-			padding-left: 4px;
-			cursor: default;
-		}
-		div.songs > div.selected.song {
-			background-color: rgb(139, 167, 198);
-			color: rgb(255, 255, 255);
-		}
-		div.song span.name {
-			display: inline-block;
-			width: 190px;
-			font-weight: bold;
-		}
-		div.song span.artist {
-			display: inline-block;
-			width: 125px;
-		}
-		div.song span.duration {
-			display: inline-block;
-			width: 75px;
-			text-align: right;
-		}
-	</style>
   </head>
   <body>
-	  <!--<h1>red</h1>-->
-
 		<div class="content">
 		</div>
-
 	  <div>
 			<%- red_include(red_inc.main) %>
-			<script type="text/javascript" src="src/_vendor/bootstrap/js/bootstrap.js"></script>
-			<script type="text/javascript" src="album_data.js"></script>
-
 			<script type="text/javascript">
-				var env, _, cjs;
+				var env = red.create("environment");
 
-				$(function() {
-					cjs = red.cjs;
-					_ = red._;
+				env	.cd("children")
+					.set("obj", "stateful")
+					.cd("obj")
+					.set("(protos)", "INIT", "dom")
+					.set("(manifestations)", "10")
+					.add_state("hover")
+					.set("tag")
+					.set("text")
+					.set("text", "INIT", "'hello world'")
+					.set("tag", "INIT", "'div'")
+					.top()
+					.set("selection_info", "stateful")
+					.cd("selection_info")
+					.add_transition("INIT", "INIT", "on('mousedown', root.children.obj)")
+					.set("selected_object")
+					.set("selected_object", env._last_transition, "event.red_target");
+					;
 
-					env = red	.create("environment");
+				env.print_on_return = true;
+				console.log(env.print());
 
-					env	.cd("children")
-						.set("obj", "stateful")
-						.cd("obj")
-						.set("(protos)", "INIT", "dom")
-						.set("(manifestations)", "100")
-						.add_state("hover")
-						.add_transition("INIT", "hover", "on('mouseover', this)")
-						.add_transition("hover", "INIT", "on('mouseout', this)")
-						.set("tag")
-						.set("tag", "INIT", "'div'")
-						.set("text")
-						.set("text", "INIT", "'hello world'")
-						.set("text", "hover", "'goodbye cruel world'")
-						;
-
-						/*
-					env.print_on_return = true;
-					console.log(env.print());
-						*/
-
-					var root_pointer = env.get_root_pointer();
-					output_view = $("<div />").dom_output({
-						root: root_pointer
-					}).appendTo(document.body);
-
-					var storage_prefix = "_";
-					window.save = function(name) {
-						if(!_.isString(name)) {
-							name = "default";
-						}
-						name = storage_prefix+name;
-						localStorage[name] = red.stringify(root);
-						return ls();
-					};
-					window.open = window.load = function(name) {
-						if(!_.isString(name)) {
-							name = "default";
-						}
-						name = storage_prefix+name;
-						root_view.environment("destroy");
-						root.destroy();
-						root = red.destringify(localStorage[name]);
-						env = red.create("environment", {root: root});
-						root_view.environment({controller: env});
-						console.log(env.print());
-					};
-					window.ls = function() {
-						return _.chain(localStorage)
-								.keys()
-								.filter(function(key) {
-									return key.substr(0, storage_prefix.length) === storage_prefix
-								})
-								.map(function(key) {
-										return key.slice(storage_prefix.length);
-								})
-								.value();
-					};
-					window.rm = function(name) {
-						if(!_.isString(name)) {
-							name = "default";
-						}
-						name = storage_prefix+name;
-						delete localStorage[name];
-						return ls();
-					};
-					window.print = function() {
-						console.log(env.print());
-					};
-				});
+				var root_pointer = env.get_root_pointer();
+				output_view = $("<div />").dom_output({
+					root: root_pointer
+				}).appendTo(document.body);
 			</script>
 	  </div>
   </body>

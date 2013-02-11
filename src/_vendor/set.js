@@ -165,7 +165,12 @@ var Set = function(options) {
 		return this;
 	};
 	proto.toArray = function() {
-		return _.pluck(this.value, "item");
+		var len = this.value.length;
+		var rv = new Array(len);
+		for(var i = 0; i<len; i++) {
+			rv[i] = this.value[i].item;
+		}
+		return rv;
 	};
 }(Set));
 
