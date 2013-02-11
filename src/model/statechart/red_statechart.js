@@ -777,9 +777,6 @@ red.Statechart = function(options) {
 	};
 
 	proto.set_active_substate = function(state, transition, event) {
-		if(transition) {
-			transition.set_active(true);
-		}
 		red.event_queue.once("end_event_queue_round_0", function() {
 			this._emit("pre_transition_fire", {
 				type: "pre_transition_fire",
@@ -790,6 +787,7 @@ red.Statechart = function(options) {
 			});
 		}, this);
 		red.event_queue.once("end_event_queue_round_3", function() {
+			if(transition) { transition.set_active(true); }
 			cjs.wait();
 			if(this._local_state) {
 				this._local_state.set_active(false);
@@ -809,9 +807,7 @@ red.Statechart = function(options) {
 				event: event,
 				state: state
 			});
-			if(transition) {
-				transition.set_active(false);
-			}
+			if(transition) { transition.set_active(false); }
 		}, this);
 	};
 	proto.run = function() {
