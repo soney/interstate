@@ -32,9 +32,8 @@ red.EventContext = function(event) {
 	var proto = my.prototype;
 }(red.EventContext));
 
-red.ManifestationContext = function(owner, basis, basis_index) {
+red.ManifestationContext = function(basis, basis_index) {
 	red.EventContext.superclass.constructor.apply(this, arguments);
-	this.owner = owner;
 	this.context_obj = {
 		basis: basis,
 		basis_index: basis_index
@@ -43,9 +42,6 @@ red.ManifestationContext = function(owner, basis, basis_index) {
 (function(my) {
 	_.proto_extend(my, red.SpecialContext);
 	var proto = my.prototype;
-	proto.get_owner = function() {
-		return this.owner;
-	};
 }(red.ManifestationContext));
 
 }(red));

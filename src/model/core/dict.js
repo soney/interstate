@@ -275,19 +275,72 @@ red.Dict = function(options, defer_initialization) {
 		});
 	};
 
+
+	//
+	// === SPECIAL_CONTEXT_PROPERTIES ===
+	//
 	
+	proto._has_special_context_prop = function(prop_name, pcontext) {
+		return this.get_special_context_prop(prop_name, pcontext) !== undefined;
+	};
+
+	proto._get_special_context_prop_names = function(pcontext) {
+		var rv = [];
+		var my_index = pcontext.indexOf(this);
+		if(my_index >= 0) {
+			var special_contexts = pcontexts.special_contexts(my_index);
+			var len = special_contexts.length;
+			for(var i = 0; i<len; i++) {
+				var special_context = special_contexts[i];
+				var context_obj = special_context.get_context_obj();
+				rv.push.apply(rv, _.keys(context_obj));
+			}
+		}
+		return rv;
+	};
+
+	proto._get_special_context_prop = function(prop_name, pcontext) {
+		var my_index = pcontext.indexOf(this);
+		if(my_index >= 0) {
+			var special_contexts = pcontexts.special_contexts(my_index);
+			var len = special_contexts.length;
+			for(var i = 0; i<len; i++) {
+				var special_context = special_contexts[i];
+				var context_obj = special_context.get_context_obj();
+				if(context_obj.hasOwnProperty(prop_name)) {
+					return context_obj[prop_name];
+				}
+			}
+		}
+		return undefined;
+	};
+
+	proto.get_special_context_props = function(pcontext) {
+		var rv = {};
+		var my_index = pcontext.indexOf(this);
+		if(my_index >= 0) {
+			var special_contexts = pcontexts.special_contexts(my_index);
+			_.extend.apply(_, (rv).concat(_.map(special_contexts, function(special_context) {
+				var context_obj = special_context.get_context_obj();
+				rv.extend(context_obj);
+			})));
+		}
+		return rv;
+	};
 	
 	//
 	// === PROPERTIES ===
 	//
 
-	proto._get_prop = function(prop_name, pointer) {
+	proto._get_prop = function(prop_name, pcontext) {
 		if(this._has_builtin_prop(prop_name)) {
 			return this._get_builtin_prop(prop_name);
 		} else if(this._has_direct_prop(prop_name)) {
 			return this._get_direct_prop(prop_name);
+		} else if(this._has_special_context_prop(prop_name, pcontext)) {
+			return this._get_special_context_prop(prop_name, pcontext);
 		} else {
-			return this._get_inherited_prop(prop_name, pointer);
+			return this._get_inherited_prop(prop_name, pcontext);
 		}
 	};
 
@@ -307,6 +360,8 @@ red.Dict = function(options, defer_initialization) {
 			return true;
 		} else if(this._has_inherited_prop(prop_name, pcontext)) {
 			return true;
+		} else if(this._has_special_context_prop(prop_name, pcontext)) {
+			return true;
 		} else {
 			return false;
 		}
@@ -314,8 +369,9 @@ red.Dict = function(options, defer_initialization) {
 	proto.get_prop_names = function(pcontext) {
 		var builtin_prop_names = this._get_builtin_prop_names();
 		var direct_prop_names = this._get_direct_prop_names();
+		var special_context_prop_names = this._get_special_context_prop_names(pcontext);
 		var inherited_prop_names = this._get_inherited_prop_names(pcontext);
-		return builtin_prop_names.concat(direct_prop_names, inherited_prop_names);
+		return special_context_prop_names.concat(builtin_prop_names, direct_prop_names, inherited_prop_names);
 	};
 	proto.get_prop_pointers = function(pcontext) {
 		var prop_names = this.get_prop_names(pcontext);
@@ -399,8 +455,8 @@ red.Dict = function(options, defer_initialization) {
 	// === ALL ATTACHMENTS ===
 	//
 
-	proto._get_all_attachments_and_srcs = function(context) {
-		var direct_attachments = this._get_direct_attachments(context);
+	proto._get_all_attachments_and_srcs = function(pcontext) {
+		var direct_attachments = this._get_direct_attachments(pcontext);
 		var direct_attachments_and_srcs = _.map(direct_attachments, function(direct_attachment) {
 			return {
 						attachment: direct_attachment
@@ -408,7 +464,7 @@ red.Dict = function(options, defer_initialization) {
 			};
 		}, this);
 
-		var protos = this._get_proto_vals(context);
+		var protos = this._get_proto_vals(pcontext);
 		var attachments_and_srcs = new Set({
 			hash: function(item) {
 				return item.attachment.hash();
@@ -421,7 +477,7 @@ red.Dict = function(options, defer_initialization) {
 
 		_.each(protos, function(protoi) {
 			if(protoi instanceof red.Dict) {
-				var attachments = protoi._get_direct_attachments(context);
+				var attachments = protoi._get_direct_attachments(pcontext);
 				attachments_and_srcs.add.apply(attachments_and_srcs, _.map(attachments, function(attachment) {
 					return {
 						attachment: attachment
@@ -432,17 +488,17 @@ red.Dict = function(options, defer_initialization) {
 		});
 		return attachments_and_srcs.toArray();
 	};
-	proto.get_attachment_instances = proto._get_all_attachment_instances = function(context) {
-		var attachments_and_srcs = this._get_all_attachments_and_srcs(context);
+	proto.get_attachment_instances = proto._get_all_attachment_instances = function(pcontext) {
+		var attachments_and_srcs = this._get_all_attachments_and_srcs(pcontext);
 		return _.map(attachments_and_srcs, function(attachment_and_src) {
 			var holder = attachment_and_src.holder;
 			var attachment = attachment_and_src.attachment;
 
-			return holder.create_or_get_direct_attachment_instance(attachment, context);
+			return holder.create_or_get_direct_attachment_instance(attachment, pcontext);
 		});
 	};
-	proto.get_attachment_instance = function(type, context) {
-		var attachment_instances = this._get_all_attachment_instances(context);
+	proto.get_attachment_instance = function(type, pcontext) {
+		var attachment_instances = this._get_all_attachment_instances(pcontext);
 		for(var i = 0; i<attachment_instances.length; i++) {
 			var attachment_instance = attachment_instances[i];
 			if(attachment_instance.type === type) {
@@ -527,7 +583,7 @@ red.Dict = function(options, defer_initialization) {
 		if(_.isArray(manifestations_value)) {
 			var manifestation_pointers = _.map(manifestations_value, function(manifestation_value, index) {
 				var manifestation_obj = this.get_manifestation_obj(pcontext, manifestation_value, index);
-				var manifestation_pointer = pcontext.push(manifestation_obj);
+				var manifestation_pointer = pcontext.push_special_context(manifestation_obj);
 
 				return manifestation_pointer;
 			}, this);

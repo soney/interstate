@@ -9,6 +9,11 @@ var get_event_context = _.memoize(function(state, event) {
 
 red.Pointer = function(options) {
 	this._stack = (options && options.stack) || [];
+	this._special_contexts = (options && options.special_contexts) || new Array(this._stack.length);
+
+	if(this._stack.length !== this._special_contexts.length) {
+		throw new Error("Different lengths for stack and special contexts");
+	}
 };
 (function(my) {
 	var proto = my.prototype;
@@ -18,16 +23,57 @@ red.Pointer = function(options) {
 		return this._stack[index];
 	};
 	proto.length = function() { return this._stack.length; };
-	proto.slice = function() { return new red.Pointer({ stack: this._stack.slice.apply(this._stack, arguments) }); };
+	proto.special_contexts = function(index) {
+		return this._special_contexts[index] || [];
+	};
+	proto.slice = function() {
+		return new red.Pointer({
+						stack: this._stack.slice.apply(this._stack, arguments),
+						special_contexts: this._special_contexts.slice.apply(this._special_contexts, arguments)
+					});
+	};
 	proto.splice = function() {
 		var stack_copy = _.clone(this._stack);
+		var special_contexts_copy = _.clone(this._special_contexts);
 		stack_copy.splice.apply(stack_copy, arguments);
-		return new red.Pointer({ stack: stack_copy });
+		special_contexts_copy.splice.apply(special_contexts_copy, arguments);
+		return new red.Pointer({ stack: stack_copy, special_contexts: special_contexts_copy });
 	};
-	proto.push = function() { return new red.Pointer({stack: this._stack.concat.apply(this._stack, arguments)}); };
-	proto.pop = function() { return new red.Pointer({stack: this._stack.slice(0, this._stack.length-1)}); };
-	proto.has = function(item) { return this._stack.indexOf(item) >= 0; };
+	proto.push = function(onto_stack, onto_special_contexts) {
+		return new red.Pointer({
+						stack: this._stack.concat(onto_stack),
+						special_contexts: this._special_contexts.concat(onto_special_contexts)
+					});
+	};
+	proto.push_special_context = function(special_context) {
+		var new_special_contexts_obj = _.clone(this.special_contexts);
+		var len_m_1 = new_special_contexts_obj.length - 1;
+		var nscolm1 = new_special_contexts_obj[len_m_1];
+		if(nscolm1) {
+			new_special_contexts_obj[len_m_1] = nscolm1.concat(special_context);
+		} else {
+			new_special_contexts_obj[len_m_1] = [special_context];
+		}
+		return new red.Pointer({
+						stack: this._stack,
+						special_contexts: new_special_contexts_obj
+					});
+	};
+	proto.pop = function() {
+		return new red.Pointer({
+			stack: this._stack.slice(0, this._stack.length-1),
+			special_contexts: this._special_contexts.slice(0, this._stack.length-1)
+		});
+	};
+	proto.has = function(item) {
+		return this.indexOf(item) >= 0;
+	};
+	proto.indexOf = function(item) {
+		return this._stack.indexOf(item);
+	};
+
 	proto.is_empty = function() { return this._stack.length === 0; };
+
 	proto.val = function() {
 		var points_at = this.points_at();
 		if(points_at instanceof red.Dict) {
@@ -69,8 +115,24 @@ red.Pointer = function(options) {
 		if(my_stack.length !== other_stack.length) {
 			return false;
 		}
+		var j;
 		for(var i = my_stack.length; i>=0; i--) {
 			if(my_stack[i] !== other_stack[i]) {
+				return false;
+			}
+			var my_special_contexts = this._special_contexts[i],
+				other_special_contexts = other._special_contexts[i];
+			if(my_special_contexts && other_special_contexts) {
+				var my_len = my_special_contexts.length;
+				if(my_len !== other_special_contexts.length) {
+					return false;
+				}
+				for(j = 0; j<my_len; j++) {
+					if(my_special_contexts[j] !== other_special_contexts[j]) {
+						return false;
+					}
+				}
+			} else if(my_special_contexts || other_special_contexts) { // One is an array and the other is not, assumes the previous IF FAILED
 				return false;
 			}
 		}
@@ -83,16 +145,34 @@ red.Pointer = function(options) {
 
 		var len = this._stack.length-1;
 		var mini = Math.max(0, len-num_to_hash);
+		var sc;
+		var j, lenj;
 
 		for(var i = len; i>mini; i--) {
 			hash += this._stack[i].hash();
+			sc = this._special_contexts[i];
+			if(sc) {
+				for(j = 0; j<lenj && j<num_to_hash; j++) {
+					hash += sc[j].hash();
+				}
+			}
 		}
 
 		return hash;
 	};
 
-	proto.serialize = function() { return { stack: _.map(this._stack, red.serialize) }; };
-	my.deserialize = function(obj) { return new RedContext({stack: _.map(obj.stack, red.deserialize)}); };
+	proto.serialize = function() {
+		return {
+			stack: _.map(this._stack, red.serialize),
+			special_contexts: _.map(this._special_contexts, red.serialize)
+		};
+	};
+	my.deserialize = function(obj) {
+		return new RedContext({
+			stack: _.map(obj.stack, red.deserialize),
+			special_contexts: _.map(obj.special_contexts, red.deserialze)
+		});
+	};
 }(red.Pointer));
 
 red.define("pointer", function(options) {
