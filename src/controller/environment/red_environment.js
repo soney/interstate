@@ -540,7 +540,9 @@ var Env = function(options) {
 			} else if(val instanceof red.Dict) {
 				return "(dict:"+val.id+")";
 			} else if(val instanceof red.Cell) {
-				return "(cell)";
+				return "(cell:" + val.id + ")";
+			} else if(val instanceof red.StatefulProp) {
+				return "(prop:" + val.id + ")";
 			} else if(val instanceof red.Query) {
 				return value_to_value_str(val.value());
 			} else if(val instanceof red.Pointer) {

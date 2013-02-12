@@ -17,11 +17,11 @@ red.Query = function(options) {
 									if(_.isArray(manifestation_pointers)) {
 										return manifestation_pointers;
 									} else {
-										return points_at;
+										return pointer;
 									}
 								}
 								else {
-									return points_at;
+									return pointer;
 								}
 							})
 							.flatten(true)
@@ -79,22 +79,20 @@ red.Query = function(options) {
 	});
 
 	var map_funcs = {
-		"prop": function(pointer, name) {
+		"prop": function(pointer, index, arr, name) {
 			var owner = pointer.points_at();
 			if(owner instanceof red.ManifestationContext) {
 				owner = pointer.points_at(-2);
 			}
-			var prop_pointer = owner.get_prop_pointer(name);
+			var prop_pointer = owner.get_prop_pointer(name, pointer);
 			return prop_pointer;
 		},
 		"parent": function(pointer) {
-			var parent;
 			var owner = pointer.points_at();
 			if(owner instanceof red.ManifestationContext) {
-				owner = pointer.points_at(-2);
-				parent = pointer.points_at(-3);
+				return pointer.slice(0, pointer.length()-2);
 			}
-			return parent;
+			return pointer.slice(0, pointer.length()-1);
 		}
 	};
 
@@ -114,7 +112,7 @@ red.Query = function(options) {
 	};
 	proto.map = function(map_func, context) {
 		return this.op(function(values) {
-			return _.map(values, filter_func, context);
+			return _.map(values, map_func, context);
 		});
 	};
 
