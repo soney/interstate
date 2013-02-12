@@ -53,7 +53,6 @@ red.Query = function(options) {
 				var active_substates = statechart.get_active_states();
 				for(var j = 0; j<active_substates.length; j++) {
 					var active_substate = active_substates[j];
-					console.log(state_name);
 					if(active_substate.get_name() === state_name) {
 						return true;
 					}
