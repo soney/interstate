@@ -43,7 +43,6 @@ red.Pointer = function(options) {
 				var event = state._last_run_event;
 
 				var pcontext = this.push(get_event_context(state, event));
-				//var pcontext = this;
 
 				var cell_constraint = value.constraint_in_context(pcontext);
 				return cjs.get(cell_constraint);
@@ -118,6 +117,14 @@ red.check_pointer_equality_eqeq = function(itema, itemb) {
 		return itema.eq(itemb);
 	} else {
 		return itema == itemb;
+	}
+};
+
+red.pointer_hash = function(item) {
+	if(item && item.hash) {
+		return item.hash();
+	} else {
+		return "" + item;
 	}
 };
 

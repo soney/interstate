@@ -17,16 +17,21 @@
 					.set("(protos)", "INIT", "dom")
 					.set("(manifestations)", "10")
 					.add_state("hover")
+					.add_transition("INIT", "hover", "on('mouseover', this)")
+					.add_transition("hover", "INIT", "on('mouseout', this)")
 					.set("tag")
 					.set("text")
 					.set("text", "INIT", "'hello world'")
+					.set("text", "hover", "'goodbye, cruel world'")
 					.set("tag", "INIT", "'div'")
 					.top()
 					.set("selection_info", "stateful")
 					.cd("selection_info")
 					.add_transition("INIT", "INIT", "on('mousedown', root.children.obj)")
 					.set("selected_object")
-					.set("selected_object", env._last_transition, "event.red_target");
+					.set("selected_object", env._last_transition, "event.red_target")
+					.top()
+					.set("hover_object", "find(root.children.obj).in_state('hover')")
 					;
 
 				env.print_on_return = true;

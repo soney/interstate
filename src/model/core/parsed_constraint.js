@@ -38,7 +38,7 @@ var get_op_$ = function(calling_context, op) {
 		var calling_context_got = cjs.get(calling_context);
 
 		if(_.isFunction(op_got)) {
-			var rv = op_got.apply(calling_context, args_got);
+			var rv = op_got.apply(calling_context_got, args_got);
 			return rv;
 		}
 	});

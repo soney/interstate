@@ -64,6 +64,7 @@ exports.main_src = c(
 				, "model/core/special_contexts.js"
 				, "model/core/stateful_obj.js"
 				, "model/core/stateful_prop.js"
+				, "model/core/query.js"
 				, "model/attachments/attachment_core.js"
 				, "model/attachments/dom_attachment.js"
 				, "model/serialize.js"

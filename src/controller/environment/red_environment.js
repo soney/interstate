@@ -20,9 +20,10 @@ var Env = function(options) {
 	// Undo stack
 	this._command_stack = red.create("command_stack");
 
-	var root;
+	var root, root_pointer;
 	if(options && _.has(options, "root")) {
 		root = options.root;
+		root_pointer = red.create("pointer", {stack: [root]});
 	} else {
 		root = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment", {
 			instance_options: {
@@ -30,15 +31,21 @@ var Env = function(options) {
 			}
 		})]});
 
-		var root_pointer = red.create("pointer", {stack: [root]});
-
+		root_pointer = red.create("pointer", {stack: [root]});
 		this.initialize_props(root_pointer);
 	}
-	root.set("on", red.on_event);
 
 	//Context tracking
-	this.pointer = red.create("pointer", { stack: [root] });
+	this.pointer = root_pointer;
 	this.print_on_return = false;
+
+	root.set("on", red.on_event);
+	root.set("find", function(find_root) {
+		if(arguments.length === 0) {
+			find_root = root_pointer;
+		}
+		return new red.Query({value: find_root});
+	});
 };
 
 (function(my) {
@@ -534,9 +541,13 @@ var Env = function(options) {
 				return "(dict:"+val.id+")";
 			} else if(val instanceof red.Cell) {
 				return "(cell)";
+			} else if(val instanceof red.Query) {
+				return value_to_value_str(val.value());
 			} else if(val instanceof red.Pointer) {
 				var points_at = val.points_at();
 				return value_to_value_str(points_at);
+			} else if(val instanceof red.ManifestationContext) {
+				return val.id();
 			} else if(_.isArray(val)) {
 				return ("[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]");
 			} else if(val instanceof cjs.ArrayConstraint) {
