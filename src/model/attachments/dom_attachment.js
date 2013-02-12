@@ -42,15 +42,20 @@ var changeable_attributes = {
 	, "class": "class"
 	, "id": "id"
 };
+red.DomAttachmentInstance = function(options) {
+	red.DomAttachmentInstance.superclass.constructor.apply(this, arguments);
+	var pointer = this.get_pointer();
 
-var RedDomAttachmentInstance = function(options) {
-	RedDomAttachmentInstance.superclass.constructor.apply(this, arguments);
+	this._owner = pointer.points_at();
+	if(this._owner instanceof red.ManifestationContext) {
+		this._owner = pointer.points_at(-2);
+	}
+
 	this.type = "dom";
 	this.id = _.uniqueId();
 	if(options.tag) {
 		this._dom_obj = document.createElement(options.tag);
-		this._dom_obj.__red_owner__ = this.get_owner();
-		this._dom_obj.__red_context__ = this.get_context();
+		this._dom_obj.__red_pointer__ = this.get_pointer();
 	} else {
 		this._dom_obj = cjs.$();
 		this._tag_change_listener = this.add_tag_change_listener();
@@ -63,8 +68,11 @@ var RedDomAttachmentInstance = function(options) {
 	this.on_ready();
 };
 (function(my) {
-	_.proto_extend(my, red.RedAttachmentInstance);
+	_.proto_extend(my, red.AttachmentInstance);
 	var proto = my.prototype;
+	proto.get_owner = function() {
+		return this._owner;
+	};
 	proto.on_ready = function() { };
 	proto.destroy = function() {
 		if(_.has(this, "_tag_change_listener")) { this._tag_change_listener.destroy(); }
@@ -101,18 +109,18 @@ var RedDomAttachmentInstance = function(options) {
 		return listeners;
 	};
 	proto.add_tag_change_listener = function() {
+		var pointer = this.get_pointer();
 		var owner = this.get_owner();
-		var context = this.get_context();
 
 		var old_tag = undefined;
 		return cjs.liven(function() {
-			var tag = owner.prop_val("tag", context);
+			var tag_pointer = owner.get_prop_pointer("tag", pointer);
+			var tag = tag_pointer ? tag_pointer.val() : undefined;
 			if(tag !== old_tag) {
 				old_tag = tag;
 				if(_.isString(tag)) {
 					var dom_obj = document.createElement(tag);
-					dom_obj.__red_owner__ = this.get_owner();
-					dom_obj.__red_context__ = this.get_context();
+					dom_obj.__red_pointer__ = pointer;
 					this._dom_obj.set(dom_obj);
 				} else {
 					this._dom_obj.set(undefined);
@@ -125,13 +133,14 @@ var RedDomAttachmentInstance = function(options) {
 		}).run();
 	};
 	proto.add_css_change_listener = function(red_attr_name, css_prop_name) {
+		var pointer = this.get_pointer();
 		var owner = this.get_owner();
-		var context = this.get_context();
 
 		return cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
-				var val = owner.prop_val(red_attr_name, context);
+				var attr_pointer = owner.get_prop_pointer(red_attr_name, pointer);
+				var val = attr_pointer ? attr_pointer.val() : undefined;
 				if(val) {
 					dom_obj.style[css_prop_name] = val;
 				} else {
@@ -144,13 +153,14 @@ var RedDomAttachmentInstance = function(options) {
 		});
 	};
 	proto.add_attribute_change_listener = function(red_attr_name, attr_name) {
+		var pointer = this.get_pointer();
 		var owner = this.get_owner();
-		var context = this.get_context();
 
 		return cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
-				var val = owner.prop_val(red_attr_name, context);
+				var attr_pointer = owner.get_prop_pointer(red_attr_name, pointer);
+				var val = attr_pointer ? attr_pointer.val() : undefined;
 				if(val) {
 					dom_obj.setAttribute(attr_name, val);
 				} else if(dom_obj.hasAttribute(attr_name)) {
@@ -163,8 +173,8 @@ var RedDomAttachmentInstance = function(options) {
 		});
 	};
 	proto.add_children_change_listener = function() {
+		var pointer = this.get_pointer();
 		var owner = this.get_owner();
-		var context = this.get_context();
 
 		var cc = cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
@@ -172,57 +182,58 @@ var RedDomAttachmentInstance = function(options) {
 				return;
 			}
 
-			var text = owner.prop_val("text", context);
-			if(text) {
-				dom_obj.textContent = cjs.get(text);
+			var text_pointer = owner.get_prop_pointer("text", pointer);
+
+			if(text_pointer) {
+				var text = text_pointer.val();
+				dom_obj.textContent = text;
 			} else {
-				var children = owner.get_prop("children", context);
-				var children_context = context.push(children);
-
-				var children_got = red.get_contextualizable(children, children_context);
-				var prop_values = [];
-
-				if(children_got instanceof red.RedDict) {
-					prop_values = children.get_prop_values(children_context);
-				} else if(red.is_contextualizable(children)) {
-					prop_values = children_got;
-				} else if(_.isArray(children)) {
-					prop_values = children;
-				}
+				var children_pointer = owner.get_prop_pointer("children", pointer);
 
 				var current_children = _.toArray(dom_obj.childNodes);
 				var desired_children = [];
-				_.each(prop_values, function(prop_value) {
-					if(prop_value instanceof red.RedDict) {
-						var pv_context = children_context.push(prop_value);
-						var manifestations = prop_value.get_manifestation_objs(pv_context);
 
-						var dom_attachments;
+				if(children_pointer) {
+					var children = children_pointer.val() || [];
+					var children_pointers = [];
 
-						if(_.isArray(manifestations)) {
-							dom_attachments = [];
-							_.each(manifestations, function(manifestation) {
-								var manifestation_context = pv_context.push(manifestation);
-								var dom_attachment = prop_value.get_attachment_instance("dom", manifestation_context);
+					if(_.isArray(children)) {
+						children_pointers = children;
+					} else if(children instanceof red.Pointer) {
+						var dict = children.points_at();
+						children_pointers = dict.get_prop_pointers(children);
+					}
+
+					_.each(children_pointers, function(child_pointer) {
+						var child = child_pointer.points_at();
+						if(child instanceof red.Dict) {
+							var manifestation_pointers = child.get_manifestation_pointers(child_pointer);
+							var dom_attachments;
+
+							if(_.isArray(manifestation_pointers)) {
+								dom_attachments = [];
+								_.each(manifestation_pointers, function(manifestation_pointer) {
+									var dom_attachment = child.get_attachment_instance("dom", manifestation_pointer);
+									if(dom_attachment) {
+										dom_attachments.push(dom_attachment);
+									}
+								});
+							} else {
+								var dom_attachment = child.get_attachment_instance("dom", child_pointer);
 								if(dom_attachment) {
-									dom_attachments.push(dom_attachment);
+									dom_attachments = [dom_attachment];
+								}
+							}
+
+							_.each(dom_attachments, function(dom_attachment) {
+								var dom_element = dom_attachment.get_dom_obj();
+								if(dom_element) {
+									desired_children.push(dom_element);
 								}
 							});
-						} else {
-							var dom_attachment = prop_value.get_attachment_instance("dom", pv_context);
-							if(dom_attachment) {
-								dom_attachments = [dom_attachment];
-							}
 						}
-
-						_.each(dom_attachments, function(dom_attachment) {
-							var dom_element = dom_attachment.get_dom_obj();
-							if(dom_element) {
-								desired_children.push(dom_element);
-							}
-						});
-					}
-				});
+					});
+				}
 
 				var diff = _.diff(current_children, desired_children);
 				_.forEach(diff.removed, function(info) {
@@ -244,30 +255,28 @@ var RedDomAttachmentInstance = function(options) {
 		});
 		return cc;
 	};
-}(RedDomAttachmentInstance));
+}(red.DomAttachmentInstance));
 
-var RedDomAttachment = function(options) {
+red.DomAttachment = function(options) {
 	options = _.extend({
-		instance_class: RedDomAttachmentInstance
+		instance_class: red.DomAttachmentInstance
 	}, options);
-	RedDomAttachment.superclass.constructor.call(this, options);
+	red.DomAttachment.superclass.constructor.call(this, options);
 	this.type = "dom";
 };
 (function(my) {
-	_.proto_extend(my, red.RedAttachment);
+	_.proto_extend(my, red.Attachment);
 	var proto = my.prototype;
 
 	proto.serialize = function() {
 		return {instance_options: red.serialize(this.instance_options)};
 	};
 	my.deserialize = function(obj) {
-		return new RedDomAttachment({instance_options: red.deserialize(obj.instance_options)});
+		return new red.DomAttachment({instance_options: red.deserialize(obj.instance_options)});
 	};
-}(RedDomAttachment));
+}(red.DomAttachment));
 
-red.RedDomAttachmentInstance = RedDomAttachmentInstance;
-red.RedDomAttachment = RedDomAttachment;
 red.define("dom_attachment", function(options) {
-	return new RedDomAttachment(options);
+	return new red.DomAttachment(options);
 });
 }(red));

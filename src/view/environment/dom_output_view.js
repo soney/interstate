@@ -5,7 +5,6 @@ $.widget("red.dom_output", {
 	
 	options: {
 		root: undefined
-		, context: undefined
 	}
 
 	, _create: function() {
@@ -18,11 +17,11 @@ $.widget("red.dom_output", {
 	}
 
 	, _add_change_listeners: function() {
-		var root = this.option("root");
-		var root_context = this.option("context");
+		var root_pointer = this.option("root");
+		var root_dict = root_pointer.points_at();
 
 		this._dom_tree_fn = cjs.liven(function() {
-			var dom_attachment = root.get_attachment_instance("dom", root_context);
+			var dom_attachment = root_dict.get_attachment_instance("dom", root_pointer);
 			var dom_element = dom_attachment.get_dom_obj();
 
 			if(this.element.children().is(dom_element)) {

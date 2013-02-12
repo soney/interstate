@@ -4,12 +4,12 @@ var cjs = red.cjs, _ = red._;
 // === SERIALIZE ===
 
 var serialization_funcs = [
-	  {name: "cell", type: red.RedCell }
-	, {name: "stateful_obj", type: red.RedStatefulObj }
-	, {name: "dict", type: red.RedDict }
-	, {name: "stateful_prop", type: red.RedStatefulProp }
-	, {name: "red_dom_attachment", type: red.RedDomAttachment }
-	, {name: "red_context", type: red.RedContext }
+	  {name: "cell", type: red.Cell }
+	, {name: "stateful_obj", type: red.StatefulObj }
+	, {name: "dict", type: red.Dict }
+	, {name: "stateful_prop", type: red.StatefulProp }
+	, {name: "red_dom_attachment", type: red.DomAttachment }
+	, {name: "red_context", type: red.Context }
 	, {name: "statechart_transition", type: red.StatechartTransition }
 	, {name: "statechart", type: red.Statechart }
 	, {name: "startstate", type: red.StartState }
@@ -194,10 +194,53 @@ red.destringify = function(str) {
 	return red.deserialize(JSON.parse(lzw_decode(str)));
 };
 
-}(red));
+var storage_prefix = "_";
+window.save = function(name) {
+	if(!_.isString(name)) {
+		name = "default";
+	}
+	name = storage_prefix+name;
+	localStorage[name] = red.stringify(root);
+	return ls();
+};
+window.open = window.load = function(name) {
+	if(!_.isString(name)) {
+		name = "default";
+	}
+	name = storage_prefix+name;
+	root_view.environment("destroy");
+	root.destroy();
+	root = red.destringify(localStorage[name]);
+	env = red.create("environment", {root: root});
+	root_view.environment({controller: env});
+	console.log(env.print());
+};
+window.ls = function() {
+	return _.chain(localStorage)
+			.keys()
+			.filter(function(key) {
+				return key.substr(0, storage_prefix.length) === storage_prefix
+			})
+			.map(function(key) {
+					return key.slice(storage_prefix.length);
+			})
+			.value();
+};
+window.rm = function(name) {
+	if(!_.isString(name)) {
+		name = "default";
+	}
+	name = storage_prefix+name;
+	delete localStorage[name];
+	return ls();
+};
+window.print = function() {
+	console.log(env.print());
+};
+
 //http://stackoverflow.com/questions/294297/javascript-implementation-of-gzip
 // LZW-compress a string
-function lzw_encode(s) {
+var lzw_encode = function(s) {
     var dict = {};
     var data = (s + "").split("");
     var out = [];
@@ -224,7 +267,7 @@ function lzw_encode(s) {
 }
 
 // Decompress an LZW-encoded string
-function lzw_decode(s) {
+var lzw_decode = function(s) {
     var dict = {};
     var data = (s + "").split("");
     var currChar = data[0];
@@ -248,3 +291,5 @@ function lzw_decode(s) {
     }
     return out.join("");
 }
+
+}(red));

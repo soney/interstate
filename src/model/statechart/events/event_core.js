@@ -56,7 +56,7 @@ var EventQueue = function() {
 	};
 
 	proto.do_run_event_queue = function() {
-		var fire = RedEvent.prototype._fire;
+		var fire = red.Event.prototype._fire;
 		while(this.queue.length > 0) {
 			var event_info = this.queue.shift();
 			fire.apply(event_info.context, event_info.args);
@@ -67,7 +67,7 @@ var EventQueue = function() {
 red.event_queue = new EventQueue();
 
 var id = 0;
-var RedEvent = function() {
+red.Event = function() {
 	this._initialize();
 	this._transition = undefined;
 	this.on_create.apply(this, arguments);
@@ -103,7 +103,7 @@ var RedEvent = function() {
 		}, this);
 	};
 	proto.guard = proto.when = function(func) {
-		var new_event = new RedEvent();
+		var new_event = new red.Event();
 		this.on_fire(function() {
 			if(func.apply(this, arguments)) {
 				new_event.fire.apply(new_event, arguments);
@@ -112,14 +112,12 @@ var RedEvent = function() {
 		return new_transition;
 	};
 	proto.destroy = function(){};
-	proto.create_shadow = function() { return new RedEvent(); };
+	proto.create_shadow = function() { return new red.Event(); };
 	proto.stringify = function() {
 		return "" + this.id;
 	};
-}(RedEvent));
+}(red.Event));
 red.event_queue = new EventQueue();
-
-red.RedEvent = RedEvent;
 
 var event_types = {};
 
@@ -136,7 +134,7 @@ red._create_event_type = function(name) {
 	var Constructor = function() {
 		this._initialize();
 	};
-	_.proto_extend(Constructor, RedEvent);
+	_.proto_extend(Constructor, red.Event);
 	event_types[name] = Constructor;
 	return Constructor;
 };

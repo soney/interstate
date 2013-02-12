@@ -1,8 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var StatechartEvent = red._create_event_type("statechart");
-red.StatechartEvent = StatechartEvent;
+red.StatechartEvent = red._create_event_type("statechart");
 
 (function(my) {
 	var proto = my.prototype;
@@ -52,6 +51,6 @@ red.StatechartEvent = StatechartEvent;
 		return red.create_event("statechart", parent_statechart, this._spec);
 	};
 	proto.stringify = function() { return "" + this.statecharts[0].id() + ":" + this._spec + ""; };
-}(StatechartEvent));
+}(red.StatechartEvent));
 
 }(red));

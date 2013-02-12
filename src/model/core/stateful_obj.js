@@ -4,9 +4,9 @@ var cjs = red.cjs, _ = red._;
 red.find_stateful_obj_and_context = function(context) {
 	var popped_item, last;
 	while(!context.is_empty()) {
-		last = context.last();
-		if(last instanceof red.RedStatefulObj) {
-			if(popped_item && popped_item.get_manifestation_of() === last) {
+		last = context.points_at();
+		if(last instanceof red.StatefulObj) {
+			if(popped_item && popped_item instanceof red.ManifestationContext && popped_item.get_owner() === last) {
 				return {
 						stateful_obj: last,
 						context: context.push(popped_item)
@@ -24,9 +24,9 @@ red.find_stateful_obj_and_context = function(context) {
 	return undefined;
 };
 
-var RedStatefulObj = function(options, defer_initialization) {
+red.StatefulObj = function(options, defer_initialization) {
 	options = options || {};
-	RedStatefulObj.superclass.constructor.apply(this, arguments);
+	red.StatefulObj.superclass.constructor.apply(this, arguments);
 
 	this.type = "red_stateful_obj";
 
@@ -35,7 +35,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 	}
 };
 (function(my) {
-	_.proto_extend(my, red.RedDict);
+	_.proto_extend(my, red.Dict);
 	var proto = my.prototype;
 
 	proto.do_initialize = function(options) {
@@ -53,7 +53,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 		, "contextual_statecharts": {
 			default: function() { return cjs.map({
 				hash: "hash",
-				equals: red.check_context_equality
+				equals: red.check_pointer_equality
 			}); }
 			, getter_name: "contextual_statecharts"
 			, settable: false
@@ -77,10 +77,10 @@ var RedStatefulObj = function(options, defer_initialization) {
 		var sc = this.contextual_statecharts().get_or_put(context, _.bind(this._create_statechart_for_context, this, context));
 		return sc;
 	};
-	proto._create_statechart_for_context = function(context) {
+	proto._create_statechart_for_context = function(pcontext) {
 		var own_statechart = this.get_own_statechart();
 		cjs.wait();
-		var shadow_statechart = own_statechart.create_shadow({context: context, running: true});
+		var shadow_statechart = own_statechart.create_shadow({context: pcontext, running: true});
 
 		shadow_statechart.run();
 		cjs.signal();
@@ -91,10 +91,11 @@ var RedStatefulObj = function(options, defer_initialization) {
 	// === INHERITED STATECHARTS ===
 	//
 	proto.get_inherited_statecharts = function(context) {
-		var protos = this._get_all_protos(context);
-		var statecharts = _.map(protos, function(protoi) {
-			if(protoi instanceof red.RedStatefulObj) {
-				return protoi.get_statechart_for_context(context);
+		var proto_pointers = this._get_all_protos(context);
+		var statecharts = _.map(proto_pointers, function(proto_pointer) {
+			var protoi = proto_pointer.points_at();
+			if(protoi instanceof red.StatefulObj) {
+				return protoi.get_statechart_for_context(proto_pointer);
 			} else {
 				return false;
 			}
@@ -160,7 +161,7 @@ var RedStatefulObj = function(options, defer_initialization) {
 			}
 		});
 
-		var rv = new RedStatefulObj(undefined, true);
+		var rv = new red.StatefulObj(undefined, true);
 		rv.initialize = function() {
 			var options = {};
 			_.each(serialized_options, function(serialized_option, name) {
@@ -171,12 +172,10 @@ var RedStatefulObj = function(options, defer_initialization) {
 
 		return rv;
 	};
-}(RedStatefulObj));
-
-red.RedStatefulObj = RedStatefulObj;
+}(red.StatefulObj));
 
 red.define("stateful_obj", function(options, defer_init) {
-	var dict = new RedStatefulObj(options, defer_init);
+	var dict = new red.StatefulObj(options, defer_init);
 	return dict;
 });
 

@@ -1,6 +1,16 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+red.on_event = function(event_type) {
+	var targets;
+	if(arguments.length <= 1) { // Ex: mouseup() <-> mouseup(window)
+		targets = window;
+	} else {
+		targets = _.rest(arguments);
+	}
+	return red.create_event("dom_event", event_type, targets);
+};
+
 (function(proto) {
 	proto.on_create = function(type, targets) {
 		var self = this;
@@ -13,8 +23,8 @@ var cjs = red.cjs, _ = red._;
 					specified_target: specified_target
 				});
 
-				if(specified_target.__red_context__) {
-					var red_target = specified_target.__red_context__.last();
+				if(specified_target.__red_pointer__) {
+					var red_target = specified_target.__red_pointer__;
 					event.red_target = red_target;
 				}
 				this.fire(event);
@@ -34,26 +44,36 @@ var cjs = red.cjs, _ = red._;
 				targs = [targs];
 			}
 			this.targets = _.chain(targs)
-							.map(function(targ) {
-								if(_.isElement(targ) || targ === window) {
-									return targ;
-								} else if(targ instanceof red.RedDict) {
-									var targ_context = targ.get_default_context();
-									var manifestations = targ.get_manifestation_objs(targ_context);
-									var dom_attachments;
+							.map(function(target_pointer) {
+								if(_.isElement(target_pointer) || target_pointer === window) {
+									return target_pointer;
+								} else if(target_pointer instanceof red.Pointer) {
+									var dict;
+									var targ = target_pointer.points_at();
 
-									if(_.isArray(manifestations)) {
-										return _.map(manifestations, function(manifestation) {
-											var manifestation_context = targ_context.push(manifestation);
-											var dom_attachment = targ.get_attachment_instance("dom", manifestation_context);
+									var manifestation_pointers;
+
+									if(targ instanceof red.ManifestationContext) {
+										dict = target_pointer.points_at(-2);
+									} else if(targ instanceof red.Dict) {
+										dict = targ;
+										manifestation_pointers = dict.get_manifestation_pointers(target_pointer);
+									} else {
+										throw new Error("Unknown target");
+									}
+
+									if(_.isArray(manifestation_pointers)) {
+										var dom_objs = _.map(manifestation_pointers, function(manifestation_pointer) {
+											var dom_attachment = dict.get_attachment_instance("dom", manifestation_pointer);
 											if(dom_attachment) {
 												return dom_attachment.get_dom_obj();
 											} else {
 												return false;
 											}
 										});
+										return dom_objs;
 									} else {
-										var dom_attachment = targ.get_attachment_instance("dom", targ_context);
+										var dom_attachment = dict.get_attachment_instance("dom", target_pointer);
 										if(dom_attachment) {
 											return dom_attachment.get_dom_obj();
 										}

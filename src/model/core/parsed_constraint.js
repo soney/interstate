@@ -2,12 +2,11 @@
 var cjs = red.cjs, _ = red._;
 var esprima = window.esprima;
 
-
 var binary_operators = {
-	"===":	function(a, b) { return red.check_context_equality_eqeqeq(a,b); }
-	,"!==":	function(a, b) { return !red.check_context_equality_eqeqeq(a,b); }
-	, "==":	function(a, b) { return red.check_context_equality_eqeq(a, b); }
-	, "!=":	function(a, b) { return !red.check_context_equality_eqeq(a,b); }
+	"===":	function(a, b) { return red.check_pointer_equality_eqeqeq(a,b); }
+	,"!==":	function(a, b) { return !red.check_pointer_equality_eqeqeq(a,b); }
+	, "==":	function(a, b) { return red.check_pointer_equality_eqeq(a, b); }
+	, "!=":	function(a, b) { return !red.check_pointer_equality_eqeq(a,b); }
 	, ">":	function(a, b) { return a > b; }
 	, ">=":	function(a, b) { return a >= b; }
 	, "<":	function(a, b) { return a < b; }
@@ -39,7 +38,7 @@ var get_op_$ = function(calling_context, op) {
 		var calling_context_got = cjs.get(calling_context);
 
 		if(_.isFunction(op_got)) {
-			var rv = op_got.apply(calling_context, args_got);
+			var rv = op_got.apply(calling_context_got, args_got);
 			return rv;
 		}
 	});
@@ -58,7 +57,7 @@ var get_conditional_$ = function(test, consequent, alternate) { // test ? conseq
 
 var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 	if(key === "root") {
-		return context.first();
+		return context.slice(0, 1);
 	} else if(key === "window") {
 		return window;
 	}
@@ -66,46 +65,54 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 	ignore_inherited_in_contexts = ignore_inherited_in_contexts || [];
 
 	return cjs.$(function() {
-		var key_got = cjs.get(key);
 		var curr_context = context;
-		var context_item = curr_context.last();
+		var context_item = curr_context.points_at();
 		var rv;
 
 		while(!curr_context.is_empty()) {
-			var context_item_got = cjs.get(context_item);
-			if(context_item_got instanceof red.RedDict) {
-				if(_.indexOf(ignore_inherited_in_contexts, context_item_got) >= 0) {
-					if(context_item_got._has_direct_prop(key_got)) {
-						rv = context_item_got._get_direct_prop(key_got, curr_context);
+			if(context_item instanceof red.Dict) {
+				if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
+					if(context_item._has_direct_prop(key)) {
+						rv = context_item.get_prop_pointer(key, curr_context);
 						break;
 					}
 				} else {
-					if(context_item_got.has_prop(key_got, curr_context)) {
-						rv = context_item_got.prop_val(key_got, curr_context);
+					if(context_item._has_prop(key, curr_context)) {
+						rv = context_item.get_prop_pointer(key, curr_context);
 						break;
 					}
 				}
-			} else if(context_item_got && context_item_got[key_got]) {
-				return context_item_got[key_got];
+			} else if(context_item instanceof red.SpecialContext) {
+				var context_obj = context_item.get_context_obj();
+				if(context_obj.hasOwnProperty(key)) {
+					return context_obj[key];
+				}
+			} else if(context_item && context_item[key]) {
+				rv = curr_context.push(context_item[key]);
 			}
 			curr_context = curr_context.pop();
-			context_item = curr_context.last();
+			context_item = curr_context.points_at();
 		}
-		return cjs.get(rv);
+		// rv is a context
+		if(rv) {
+			return rv.val();
+		} else {
+			return undefined;
+		}
 	});
 };
 
 var get_this_$ = function(context) {
 	return cjs.$(function() {
 		var curr_context = context;
-		var context_item = curr_context.last();
+		var context_item = curr_context.points_at();
 
 		while(!curr_context.is_empty()) {
-			if(context_item instanceof red.RedDict) {
-				return context_item;
+			if(context_item instanceof red.Dict || context_item instanceof red.ManifestationContext) {
+				return curr_context;
 			}
 			curr_context = curr_context.pop();
-			context_item = curr_context.last();
+			context_item = curr_context.points_at();
 		}
 
 		return undefined;
@@ -121,10 +128,9 @@ var get_member_$ = function(object, property) {
 		}
 
 		var prop_got = cjs.get(property);
-
-		if(obj_got instanceof red.RedDict) {
-			var context = obj_got.get_default_context();
-			return obj_got.prop_val(prop_got, context);
+		if(obj_got instanceof red.Pointer) {
+			var prop_val = obj_got.call("get_prop_pointer", prop_got);
+			return prop_val.val();
 		} else {
 			return obj_got[prop_got];
 		}

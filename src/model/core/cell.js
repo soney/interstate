@@ -1,7 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var RedCell = function(options, defer_initialization) {
+red.Cell = function(options, defer_initialization) {
 	options = options || {};
 	this.id = _.uniqueId();
 	if(defer_initialization !== true) {
@@ -25,7 +25,7 @@ var RedCell = function(options, defer_initialization) {
 		}
 		, "contextual_values": {
 			default: function() { return cjs.map({
-				equals: red.check_context_equality,
+				equals: red.check_pointer_equality,
 				hash: "hash"
 			}); }
 			, settable: false
@@ -34,11 +34,7 @@ var RedCell = function(options, defer_initialization) {
 		, "ignore_inherited_in_contexts": {
 			default: function() { return []; }
 		}
-		, "default_context": {
-			start_with: function() { return cjs.$(); }
-			, getter: function(me) { return me.get(); }
-			, setter: function(me, context) { me.set(context, true); }
-		}
+
 	};
 	red.install_proto_builtins(proto, my.builtins);
 	proto.do_initialize = function(options) {
@@ -48,13 +44,13 @@ var RedCell = function(options, defer_initialization) {
 			return esprima.parse(self.get_str());
 		});
 	};
-	proto.get = function(context) {
+	proto.constraint_in_context = function(pcontext) {
 		var contextual_values = this.get_contextual_values();
 
-		var val = contextual_values.get_or_put(context, function() {
+		var val = contextual_values.get_or_put(pcontext, function() {
 			var tree = this._tree.get();
 			return red.get_parsed_$(tree, {
-				context: context, 
+				context: pcontext, 
 				ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts()
 			});
 		}, this);
@@ -86,7 +82,7 @@ var RedCell = function(options, defer_initialization) {
 			}
 		});
 
-		var rv = new RedCell(undefined, true);
+		var rv = new red.Cell(undefined, true);
 		rv.initialize = function() {
 			var options = {};
 			_.each(serialized_options, function(serialized_option, name) {
@@ -100,11 +96,10 @@ var RedCell = function(options, defer_initialization) {
 	proto.hash = function() {
 		return this.id;
 	};
-}(RedCell));
+}(red.Cell));
 
-red.RedCell = RedCell;
 red.define("cell", function(options) {
-	var cell = new RedCell(options);
+	var cell = new red.Cell(options);
 	return cell;
 });
 

@@ -171,42 +171,9 @@ var find_equivalent_transition = red.find_equivalent_transition = function(to_tr
 		}
 	}
 	throw new Error("Could not find equivalent transition");
-/*
-	var in_tree_basis = in_tree.basis();
-	var in_tree_basis_lineage = in_tree_basis.get_lineage();
-	var to_state_lineage = to_state.get_lineage();
-
-	var in_tree_basis_lineage_len = in_tree_basis_lineage.length;
-	var to_state_lineage_len = to_state_lineage.length;
-	
-	var in_tree_basis_index = in_tree_basis_lineage_len - 1;
-	var to_state_index;
-	outer_loop:
-	while(in_tree_basis_index < in_tree_basis_lineage_len) {
-		for(var i = to_state_lineage_len; i>=0; i--) {
-			if(to_state_lineage[i] === in_tree_basis_lineage[in_tree_basis_index]) {
-				to_state_index = i;
-				break outer_loop;
-			}
-		}
-		in_tree_basis_index--;
-	}
-	var search_item = in_tree;
-	var parentage_level = in_tree_basis_lineage_len - 1 - in_tree_basis_index;
-	_.times(parentage_level, function() {
-		search_item = search_item.parent();
-	});
-
-	for(var i = to_state_index+1; i < to_state_lineage_len; i++) {
-		var name = to_state_lineage[i].get_name(to_state_lineage[i-1]);
-		search_item = search_item.get_substate_with_name(name);
-	}
-	if(search_item.basis() !== to_state) { throw new Error("Could not find correct equivalent item"); }
-	return search_item;
-	*/
 };
 
-var StatechartTransition = function(options, defer_initialization) {
+red.StatechartTransition = function(options, defer_initialization) {
 	able.make_this_listenable(this);
 	this.$remove = _.bind(this.remove, this);
 	this.$destroy = _.bind(this.destroy, this);
@@ -306,7 +273,7 @@ var StatechartTransition = function(options, defer_initialization) {
 	proto.create_shadow = function(from_state, to_state, parent_statechart, context) {
 		var my_event = this.event()
 			, shadow_event = my_event.create_shadow(parent_statechart, context);
-		var shadow_transition = new StatechartTransition({from: from_state, to: to_state, event: shadow_event, basis: this});
+		var shadow_transition = new red.StatechartTransition({from: from_state, to: to_state, event: shadow_event, basis: this});
 		return shadow_transition;
 	};
 	proto.stringify = function() {
@@ -333,16 +300,15 @@ var StatechartTransition = function(options, defer_initialization) {
 		};
 	};
 	my.deserialize = function(obj) {
-		var rv = new StatechartTransition(undefined, true);
+		var rv = new red.StatechartTransition(undefined, true);
 		rv.initialize = function() {
 			this.do_initialize({from: red.deserialize(obj.from), to: red.deserialize(obj.to), event: red.deserialize(obj.event)});
 		};
 		return rv;
 	};
-}(StatechartTransition));
-red.StatechartTransition = StatechartTransition;
+}(red.StatechartTransition));
 
-var State = function(options, defer_initialization) {
+red.State = function(options, defer_initialization) {
 	options = options || {};
 	able.make_this_listenable(this);
 	this._id = _.uniqueId();
@@ -402,7 +368,7 @@ var State = function(options, defer_initialization) {
 		}
 		this._basis = basis;
 		if(this._basis) {
-			if(this._basis instanceof Statechart) {
+			if(this._basis instanceof red.Statechart) {
 				var basis_start_state = this._basis.get_start_state();
 				var basis_start_state_to = basis_start_state.getTo();
 				var is_running = this.is_running();
@@ -630,15 +596,14 @@ var State = function(options, defer_initialization) {
 		}
 		return rv;
 	};
-}(State));
-red.State = State;
+}(red.State));
 
-var StartState = function(options) {
-	StartState.superclass.constructor.apply(this, arguments);
+red.StartState = function(options) {
+	red.StartState.superclass.constructor.apply(this, arguments);
 	this._running = options.running === true;
 };
 (function(my) {
-	_.proto_extend(my, State);
+	_.proto_extend(my, red.State);
 	var proto = my.prototype;
 	proto.do_initialize = function(options) {
 		my.superclass.do_initialize.apply(this, arguments);
@@ -656,7 +621,7 @@ var StartState = function(options) {
 				this._transition_to_self = true;
 			}
 			
-			this.outgoingTransition = new StatechartTransition({
+			this.outgoingTransition = new red.StatechartTransition({
 				from: this,
 				to: to,
 				event: red.create_event("statechart", this.parent(), "run")
@@ -730,7 +695,7 @@ var StartState = function(options) {
 		};
 	};
 	my.deserialize = function(obj) {
-		var rv = new StartState(undefined, true);
+		var rv = new red.StartState(undefined, true);
 		rv.initialize = function() {
 			var options = {
 				outgoing_transition: red.deserialize(obj.outgoing_transition)
@@ -741,19 +706,18 @@ var StartState = function(options) {
 
 		return rv;
 	};
-}(StartState));
-red.StartState = StartState;
+}(red.StartState));
 
-var Statechart = function(options) {
-	Statechart.superclass.constructor.apply(this, arguments);
+red.Statechart = function(options) {
+	red.Statechart.superclass.constructor.apply(this, arguments);
 	this._transition_listeners = {};
 };
 (function(my) {
-	_.proto_extend(my, State);
+	_.proto_extend(my, red.State);
 	var proto = my.prototype;
 
 	proto.do_initialize = function(options) {
-		this._start_state = options.start_state || new StartState({
+		this._start_state = options.start_state || new red.StartState({
 			parent: this,
 			to: options.start_at
 		});
@@ -812,43 +776,7 @@ var Statechart = function(options) {
 		})));
 	};
 
-/*
-	proto.get_active_transition = function() {
-		return this.$active_transition.get();
-	};
-	proto.get_active_transitions = function() {
-		var rv;
-		var active_transition = this.get_active_transition();
-		var rv_size;
-		if(active_transition) {
-			rv = [active_transition];
-			rv_size = 1;
-		} else {
-			rv = [];
-			rv_size = 0;
-		}
-
-		var substates = _.clone(this.get_substates());
-		for(var i = 0; i<substates.length; i++) {
-			var substate = substates[i];
-			substates.push.apply(substates, substate.get_substates());
-			active_transition = substate.get_active_transition();
-			if(active_transition) {
-				rv[rv_size++] = active_transition;
-			}
-		}
-		return rv;
-	};
-	*/
 	proto.set_active_substate = function(state, transition, event) {
-	/*
-		if(this._active_transition) {
-			throw new Error("Active transition is already set");
-		}
-		*/
-		if(transition) {
-			transition.set_active(true);
-		}
 		red.event_queue.once("end_event_queue_round_0", function() {
 			this._emit("pre_transition_fire", {
 				type: "pre_transition_fire",
@@ -859,6 +787,7 @@ var Statechart = function(options) {
 			});
 		}, this);
 		red.event_queue.once("end_event_queue_round_3", function() {
+			if(transition) { transition.set_active(true); }
 			cjs.wait();
 			if(this._local_state) {
 				this._local_state.set_active(false);
@@ -878,9 +807,7 @@ var Statechart = function(options) {
 				event: event,
 				state: state
 			});
-			if(transition) {
-				transition.set_active(false);
-			}
+			if(transition) { transition.set_active(false); }
 		}, this);
 	};
 	proto.run = function() {
@@ -952,7 +879,7 @@ var Statechart = function(options) {
 		}
 	};
 	proto.find_state = function(state_name, create_superstates, state_value, index) {
-		if(state_name instanceof State) {
+		if(state_name instanceof red.State) {
 			return state_name;
 		} else if(_.isArray(state_name)) {
 			if(_.isEmpty(state_name)) {
@@ -986,15 +913,12 @@ var Statechart = function(options) {
 	proto.get_substate_index = function(substate) {
 		var name = substate.get_name(this);
 		return this.$substates.indexOf(name);
-		/*
-		return this.$substates.values().indexOf(this.find_state(substate));
-		*/
 	};
 	proto.add_substate = function(state_name, state, index) {
-		if(state instanceof Statechart) {
+		if(state instanceof red.Statechart) {
 			state.set_parent(this);
 		} else {
-			state = new Statechart({parent: this});
+			state = new red.Statechart({parent: this});
 		}
 		state.on("pre_transition_fire", this._forward);
 		state.on("post_transition_fire", this._forward);
@@ -1166,7 +1090,7 @@ var Statechart = function(options) {
 	proto.add_transition = function(arg0, arg1, arg2) {
 		var from_state, to_state, transition;
 		if(arguments.length === 1) {
-			if(arg0 instanceof StatechartTransition) {
+			if(arg0 instanceof red.StatechartTransition) {
 				transition = arg0;
 				from_state = transition.from();
 				to_state = transition.to();
@@ -1177,7 +1101,7 @@ var Statechart = function(options) {
 			to_state = this.find_state(arg1);
 			if(!to_state) { throw new Error("No state '" + arg1 + "'"); }
 			var event = arg2;
-			transition = new StatechartTransition({from: from_state, to: to_state, event: event});
+			transition = new red.StatechartTransition({from: from_state, to: to_state, event: event});
 			this._last_transition  = transition;
 		}
 		from_state._add_direct_outgoing_transition(transition);
@@ -1241,11 +1165,11 @@ var Statechart = function(options) {
 	};
 
 	proto.create_shadow = function(options) {
-		var start_state = new StartState({}, true);
+		var start_state = new red.StartState({}, true);
 
 		var my_start_state = this.get_start_state();
 
-		var rv = new Statechart(_.extend({
+		var rv = new red.Statechart(_.extend({
 			basis: this,
 			start_state: start_state,
 			concurrent: this.is_concurrent()
@@ -1318,7 +1242,7 @@ var Statechart = function(options) {
 		};
 	};
 	my.deserialize = function(obj) {
-		var rv = new Statechart(undefined, true);
+		var rv = new red.Statechart(undefined, true);
 		rv.initialize = function() {
 			var options = {
 				substates: red.deserialize(obj.substates)
@@ -1333,14 +1257,13 @@ var Statechart = function(options) {
 
 		return rv;
 	};
-}(Statechart));
-red.Statechart = Statechart;
+}(red.Statechart));
 
 red.define("statechart", function(options) {
-	return new Statechart(options);
+	return new red.Statechart(options);
 });
 red.is_statechart = function(obj) {
-	return obj instanceof Statechart;
+	return obj instanceof red.Statechart;
 };
 
 }(red));
