@@ -13,7 +13,7 @@ var get_value_for_state = function(state, stateful_prop, inherits_from) {
 	} else {
 		for(var i = 0; i<inherits_from.length; i++) {
 			var i_from = inherits_from[i];
-			if(i_from._has_direct_value_for_state(state)) {
+			if(i_from instanceof red.StatefulProp && i_from._has_direct_value_for_state(state)) {
 				return i_from._direct_value_for_state(state);
 			}
 		}
@@ -299,6 +299,7 @@ var StatefulPropContextualVal = function(options) {
 						var state = red.find_equivalent_state(key, statechart);
 						if(state.is_active()) {
 							state_vals.push({
+								type: "stateful",
 								key: key,
 								state: state,
 								direct_values: direct_values,
@@ -363,40 +364,49 @@ var StatefulPropContextualVal = function(options) {
 			var j, leni = inherits_from.length, lenj = statecharts.length;
 			for(i = 0; i<leni; i++) {
 				var ifrom = inherits_from[i];
-				var direct_values = ifrom._direct_values;
+				if(ifrom instanceof red.StatefulProp) {
+					var direct_values = ifrom._direct_values;
 
-				direct_values.each_key(function(key) {
-					if(key instanceof red.State) {
-						for(j = 0; j<lenj; j++) {
-							try {
-								var state = red.find_equivalent_state(key, statecharts[j]);
-								if(state.is_active()) {
-									state_vals.push({
-										key: key,
-										state: state,
-										direct_values: direct_values,
-										statechart_order: j
-									});
+					direct_values.each_key(function(key) {
+						if(key instanceof red.State) {
+							for(j = 0; j<lenj; j++) {
+								try {
+									var state = red.find_equivalent_state(key, statecharts[j]);
+									if(state.is_active()) {
+										state_vals.push({
+											type: "stateful",
+											key: key,
+											state: state,
+											direct_values: direct_values,
+											statechart_order: j
+										});
+									}
+								} catch(e) {
+									continue;
 								}
-							} catch(e) {
-								continue;
+							}
+						} else {
+							for(j = 0; j<lenj; j++) {
+								try {
+									var transition = red.find_equivalent_transition(key, statecharts[j]);
+									if(transition.is_active()) {
+										rv = direct_values.get(key);
+										from_state = transition;
+										return false;
+									}
+								} catch(e) {
+									continue;
+								}
 							}
 						}
-					} else {
-						for(j = 0; j<lenj; j++) {
-							try {
-								var transition = red.find_equivalent_transition(key, statecharts[j]);
-								if(transition.is_active()) {
-									rv = direct_values.get(key);
-									from_state = transition;
-									return false;
-								}
-							} catch(e) {
-								continue;
-							}
-						}
-					}
-				});
+					});
+				} else {
+					state_vals.push({
+						type: "non_stateful"
+						, value: ifrom
+						, statechart_order: lenj
+					});
+				}
 			}
 		}
 
@@ -420,10 +430,17 @@ var StatefulPropContextualVal = function(options) {
 					}
 				}
 			}
-			var rv = info.direct_values.get(info.key);
-			this._last_value = rv;
-			this._from_state = info.state;
-			return rv;
+			if(info.type === "stateful") {
+				var rv = info.direct_values.get(info.key);
+				this._last_value = rv;
+				this._from_state = info.state;
+				return rv;
+			} else if(info.type === "non_stateful") {
+				var rv = info.value;
+				this._last_value = rv;
+				this._from_state = undefined;
+				return rv;
+			}
 		} else {
 			return this._last_value;
 		}

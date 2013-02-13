@@ -45,22 +45,16 @@
 					.set("prop1", "1+2")
 					.top()
 				*/
-					env.set("s", "stateful")
-					.cd("s")
-					.set("prop1", "stateful_prop")
-					.set("prop1", "INIT", "1+2")
-					.set("inner_d", "dict")
-					.cd("inner_d")
-					.set("prop2", "stateful_prop")
-					.set("prop2", "INIT", "2+3")
-					//.set("(protos)", "INIT", "d")
 				env	.set("d", "dict")
 					.cd("d")
 					.set("a", "1+1")
 					.top()
 					.set("s", "stateful")
 					.cd("s")
-					.set("(protos)", "INIT", "d)
+					.add_state("hover")
+					.set("(protos)", "INIT", "d")
+					.set("a")
+					.set("a", "hover", "9")
 
 				env.print_on_return = true;
 				console.log(env.print());
