@@ -570,8 +570,9 @@ red.Dict = function(options, defer_initialization) {
 	proto.get_manifestation_pointers = function(pcontext) {
 		var my_index = pcontext.indexOf(this);
 		var special_contexts = pcontext.special_contexts(my_index);
+		console.log(my_index, special_contexts);
 
-		if(_.any(special_contexts, function(sc) { return sc instanceof red.ManifestationContext})) {
+		if(_.some(special_contexts, function(sc) { return sc instanceof red.ManifestationContext})) {
 			return null;
 		}
 

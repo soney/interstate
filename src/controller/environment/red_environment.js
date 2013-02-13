@@ -603,7 +603,6 @@ var Env = function(options) {
 					var manifestation_pointers = points_at.get_manifestation_pointers(pointer);
 					if(_.isArray(manifestation_pointers)) {
 						var is_expanded = current_pointer.has(points_at);
-
 						console[is_expanded ? "group" : "groupCollapsed"]("(manifestations)");
 						_.each(manifestation_pointers, function(manifestation_pointer) {
 							var scs = manifestation_pointer.special_contexts();
@@ -662,16 +661,6 @@ var Env = function(options) {
 					console.groupEnd();
 				}
 
-/*
-				if(points_at instanceof red.ManifestationContext) {
-					var context_obj = points_at.get_context_obj();
-					_.each(context_obj, function(value, key) {
-						var prop_text = "  " + key;
-						prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
-						prop_text = prop_text + pad(value_to_value_str(value), PROP_VALUE_WIDTH);
-					});
-				}
-				*/
 				var prop_names = dict.get_prop_names(pointer);
 				_.each(prop_names, function(prop_name) {
 					var is_inherited = dict.is_inherited(prop_name, pointer);
