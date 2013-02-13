@@ -166,7 +166,7 @@ red.StatefulProp = function(options, defer_initialization) {
 		return rv;
 	};
 	proto.get_value_for_state = function(state, context) {
-		return value_for_state(state, this, this._get_inherits_from(context));
+		return get_value_for_state(state, this, this._get_inherits_from(context));
 	};
 	proto._get_value_and_from_state = function(pcontext) {
 		var value_for_pcontext = this._get_value_for_context(pcontext);
@@ -326,18 +326,41 @@ var StatefulPropContextualVal = function(options) {
 			var SOandC = red.find_stateful_obj_and_context(my_context);
 			var stateful_obj = SOandC.stateful_obj;
 			var stateful_obj_context = SOandC.context;
-			var my_name = stateful_obj.direct_props().keyForValue(parent);
+			
+			var my_names = [];
+			var i = my_context.indexOf(stateful_obj);
+			var len = my_context.length();
+			var item_im1 = my_context.points_at(i),
+				item_i;
+
+			i++;
+			while(i<len) {
+				item_i = my_context.points_at(i);
+				var name = item_im1.direct_props().keyForValue(item_i);
+				my_names.push(name);
+				item_im1 = item_i;
+				i++;
+			}
 			var protos_and_me = ([stateful_obj]).concat(stateful_obj._get_proto_vals(stateful_obj_context));
 			var statecharts = _.compact(_.map(protos_and_me, function(x) {
 				if(x instanceof red.StatefulObj) {
 					return x.get_statechart_for_context(stateful_obj_context);
 				}
 			}));
+
+			var my_names_len = my_names.length;
 			var inherits_from = _.compact(_.map(protos_and_me, function(x) {
-				return x.direct_props().get(my_name);
+				var dict = x;
+				for(i = 0; i<my_names_len; i++) {
+					dict = dict.direct_props().get(my_names[i]);
+					if(!dict) {
+						return false;
+					}
+				}
+				return dict;
 			}));
 
-			var i, j, leni = inherits_from.length, lenj = statecharts.length;
+			var j, leni = inherits_from.length, lenj = statecharts.length;
 			for(i = 0; i<leni; i++) {
 				var ifrom = inherits_from[i];
 				var direct_values = ifrom._direct_values;

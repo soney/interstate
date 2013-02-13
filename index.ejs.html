@@ -47,10 +47,12 @@
 				*/
 					env.set("s", "stateful")
 					.cd("s")
+					.set("prop1", "stateful_prop")
+					.set("prop1", "INIT", "1+2")
 					.set("inner_d", "dict")
 					.cd("inner_d")
-					.set("abc", "stateful_prop")
-					.set("abc", "INIT", "1+5")
+					.set("prop2", "stateful_prop")
+					.set("prop2", "INIT", "2+3")
 					//.set("(protos)", "INIT", "d")
 
 				env.print_on_return = true;

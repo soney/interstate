@@ -743,7 +743,9 @@ var Env = function(options) {
 					}
 
 					state_name = pad(state.id(), STATE_ID_WIDTH) + state_name;
-					console.log(state_name);
+					var value_for_state = points_at.get_value_for_state(state, pointer);
+					var row = state_name + value_to_source_str(value_for_state);
+					console.log(row);
 				});
 			}
 		};
