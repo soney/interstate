@@ -50,6 +50,7 @@ var id  = 0;
 				cjs.signal();
 
 				if(event) {
+					event.set_transition(this.get_transition());
 					event.on_fire(this.$child_fired);
 				}
 

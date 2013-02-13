@@ -11,53 +11,26 @@
 			<script type="text/javascript">
 				var env = red.create("environment");
 
-				/*
 				env	.cd("children")
 					.set("obj", "stateful")
 					.cd("obj")
-					.set("(protos)", "INIT", "dom")
-					.add_state("hover")
-					.add_transition("INIT", "hover", "on('mouseover', this)")
-					.add_transition("hover", "INIT", "on('mouseout', this)")
+					.rename_state("INIT", "flash1")
+					.add_state("flash2")
+					.add_transition("flash1", "flash2", "on('timeout', interval)")
+					.add_transition("flash2", "flash1", "on('timeout', interval)")
+					.set("(protos)", "flash1", "dom")
 					.set("tag")
 					.set("text")
-					.set("b")
-					.set("text", "INIT", "'hello world'")
-					.set("text", "hover", "'goodbye, cruel world'")
-					.set("tag", "INIT", "'div'")
-					.set("b", "INIT", "basis")
-					.set("(manifestations)", "10")
+					.set("backgroundColor")
+					.set("tag", "flash1", "'div'")
+					.set("text", "flash1", "'hello'")
+					.set("backgroundColor", "flash1", "'red'")
+					.set("backgroundColor", "flash2", "'green'")
 					.top()
-					.set("selection_info", "stateful")
-					.cd("selection_info")
-					.add_transition("INIT", "INIT", "on('mousedown', root.children.obj)")
-					.set("selected_object")
-					.set("selected_object", env._last_transition, "event.red_target")
-					.top()
-					.set("hover_object", "find(root.children.obj).in_state('hover')")
-					.set("texts", "find(root.children.obj).prop('text')")
-					.set("bases", "find(root.children.obj).prop('b').lt(2).parent()")
+					.set("interval", "50")
 					;
-				*/
-				/*
-				env.set("d", "dict")
-					.cd("d")
-					.set("prop1", "1+2")
-					.top()
-				*/
-				env	.set("d", "dict")
-					.cd("d")
-					.set("a", "1+1")
-					.top()
-					.set("s", "stateful")
-					.cd("s")
-					.add_state("hover")
-					.set("(protos)", "INIT", "d")
-					.set("a")
-					.set("a", "hover", "9")
-
-				env.print_on_return = true;
-				console.log(env.print());
+				//env.print_on_return = true;
+				//console.log(env.print());
 
 				var root_pointer = env.get_root_pointer();
 				output_view = $("<div />").dom_output({

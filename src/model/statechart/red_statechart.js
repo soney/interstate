@@ -206,7 +206,10 @@ red.StatechartTransition = function(options, defer_initialization) {
 		this.do_fire = _.bind(this.fire, this);
 		this.set_event(options.event);
 	};
-	proto.set_active = function(to_active) { this.$active.set(to_active === true); };
+	proto.set_active = function(to_active) {
+		to_active = to_active === true;
+		this.$active.set(to_active);
+	};
 	proto.is_active = function(to_active) { return this.$active.get(); };
 	proto.basis = function() { return this._basis; };
 	proto.set_basis = function(basis) {
@@ -427,7 +430,15 @@ red.State = function(options, defer_initialization) {
 		this._context = options.context;
 		this.set_basis(options.basis);
 	};
-	proto.set_active = function(to_active) { this.$active.set(to_active === true); };
+	proto.set_active = function(to_active) {
+		to_active = to_active === true;
+		this.$active.set(to_active === true);
+		var event_type = to_active ? "active" : "inactive";
+		this._emit(event_type, {
+			type: event_type,
+			target: this
+		});
+	};
 	proto.is_active = function(to_active) { return this.$active.get(); };
 	proto.get_name = function(relative_to) {
 		var parent = this.parent();

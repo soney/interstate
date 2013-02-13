@@ -1,16 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-red.on_event = function(event_type) {
-	var targets;
-	if(arguments.length <= 1) { // Ex: mouseup() <-> mouseup(window)
-		targets = window;
-	} else {
-		targets = _.rest(arguments);
-	}
-	return red.create_event("dom_event", event_type, targets);
-};
-
 (function(proto) {
 	proto.on_create = function(type, targets) {
 		var self = this;

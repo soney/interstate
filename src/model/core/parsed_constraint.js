@@ -2,6 +2,22 @@
 var cjs = red.cjs, _ = red._;
 var esprima = window.esprima;
 
+red.on_event = function(event_type) {
+	if(event_type === "timeout" || event_type === "time") {
+		var time = arguments[1];
+		return red.create_event(event_type, time);
+	} else {
+		var targets;
+		if(arguments.length <= 1) { // Ex: mouseup() <-> mouseup(window)
+			targets = window;
+		} else {
+			targets = _.rest(arguments);
+		}
+		return red.create_event("dom_event", event_type, targets);
+	}
+};
+
+
 var binary_operators = {
 	"===":	function(a, b) { return red.check_pointer_equality_eqeqeq(a,b); }
 	,"!==":	function(a, b) { return !red.check_pointer_equality_eqeqeq(a,b); }
