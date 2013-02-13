@@ -6,17 +6,10 @@ red.find_stateful_obj_and_context = function(context) {
 	while(!context.is_empty()) {
 		last = context.points_at();
 		if(last instanceof red.StatefulObj) {
-			if(popped_item && popped_item instanceof red.ManifestationContext && popped_item.get_owner() === last) {
-				return {
-						stateful_obj: last,
-						context: context.push(popped_item)
-					};
-			} else {
-				return {
-						stateful_obj: last,
-						context: context
-					};
-			}
+			return {
+					stateful_obj: last,
+					context: context
+				};
 		}
 		popped_item = last;
 		context = context.pop();

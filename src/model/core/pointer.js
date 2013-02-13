@@ -87,21 +87,6 @@ red.Pointer = function(options) {
 		} else if(points_at instanceof red.StatefulProp) {
 			var pointer = points_at.get_pointer_for_context(this);
 			return pointer.val();
-			/*
-			var value_and_state = points_at.get_value_and_from_state(this);
-			var value = value_and_state.value;
-			if(value instanceof red.Cell) {
-				var state = value_and_state.state;
-				var event = state._last_run_event;
-
-				var pcontext = this.push(get_event_context(state, event));
-
-				var cell_constraint = value.constraint_in_context(pcontext);
-				return cjs.get(cell_constraint);
-			} else {
-				return value;
-			}
-			*/
 		} else if(points_at instanceof cjs.ArrayConstraint) {
 			return points_at.toArray();
 		} else if(points_at instanceof cjs.Constraint) {

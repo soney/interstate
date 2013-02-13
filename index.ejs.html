@@ -11,6 +11,7 @@
 			<script type="text/javascript">
 				var env = red.create("environment");
 
+				/*
 				env	.cd("children")
 					.set("obj", "stateful")
 					.cd("obj")
@@ -37,6 +38,20 @@
 					.set("texts", "find(root.children.obj).prop('text')")
 					.set("bases", "find(root.children.obj).prop('b').lt(2).parent()")
 					;
+				*/
+				/*
+				env.set("d", "dict")
+					.cd("d")
+					.set("prop1", "1+2")
+					.top()
+				*/
+					env.set("s", "stateful")
+					.cd("s")
+					.set("inner_d", "dict")
+					.cd("inner_d")
+					.set("abc", "stateful_prop")
+					.set("abc", "INIT", "1+5")
+					//.set("(protos)", "INIT", "d")
 
 				env.print_on_return = true;
 				console.log(env.print());

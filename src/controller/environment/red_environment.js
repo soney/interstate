@@ -98,14 +98,18 @@ var Env = function(options) {
 		return this.pointer.points_at();
 	};
 	proto.get_statechart_pointer = function() {
-		var pointer = this.get_pointer_obj();
 		var statechart;
-		
+		var SOandC = red.find_stateful_obj_and_context(this.pointer);
+		var owner = SOandC.stateful_obj;
+		var context = SOandC.context;
+		/*
 		if(red.is_statechart(pointer)) {
 			statechart = pointer;
 		} else if(pointer instanceof red.StatefulObj) {
 			statechart = pointer.get_own_statechart();
 		}
+		*/
+		statechart = owner.get_own_statechart();
 		if(!statechart) {
 			throw new Error("Could not find statechart");
 		}
@@ -145,6 +149,8 @@ var Env = function(options) {
 				});
 				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");
+			} else if(value === "stateful_prop") {
+				value = red.create("stateful_prop");
 			}
 		}
 
