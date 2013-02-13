@@ -37,9 +37,15 @@ red.Pointer = function(options) {
 		return new red.Pointer({ stack: stack_copy, special_contexts: special_contexts_copy });
 	};
 	proto.push = function(onto_stack, onto_special_contexts) {
+		var new_special_contexts;
+		if(onto_special_contexts) {
+			new_special_contexts = this._special_contexts.concat([[onto_special_contexts]]);
+		} else {
+			new_special_contexts = this._special_contexts.concat(undefined);
+		}
 		return new red.Pointer({
 						stack: this._stack.concat(onto_stack),
-						special_contexts: this._special_contexts.concat(onto_special_contexts)
+						special_contexts: new_special_contexts
 					});
 	};
 	proto.push_special_context = function(special_context) {
