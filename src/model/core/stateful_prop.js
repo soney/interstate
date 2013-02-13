@@ -168,7 +168,7 @@ red.StatefulProp = function(options, defer_initialization) {
 	proto.get_value_for_state = function(state, context) {
 		return value_for_state(state, this, this._get_inherits_from(context));
 	};
-	proto.get_value_and_from_state = function(pcontext) {
+	proto._get_value_and_from_state = function(pcontext) {
 		var value_for_pcontext = this._get_value_for_context(pcontext);
 		return value_for_pcontext.get_value_and_from_state();
 	};
@@ -180,10 +180,14 @@ red.StatefulProp = function(options, defer_initialization) {
 	proto.get_pointer_for_context = function(pcontext) {
 		var value_and_state = this._get_value_and_from_state(pcontext);
 		var state = value_and_state.state,
-			value = value_and_state.value,
-			event = state._last_run_event,
+			value = value_and_state.value;
+		if(state && value) {
+			var event = state._last_run_event,
 			event_context = get_event_context(state, event);
-		return pcontext.push_special_context(event_context);
+			return pcontext.push(value, event_context);
+		} else {
+			return pcontext.push(value);
+		}
 	};
 	proto.create_contextual_value = function(pcontext) {
 		return new StatefulPropContextualVal({

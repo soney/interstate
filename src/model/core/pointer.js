@@ -79,6 +79,9 @@ red.Pointer = function(options) {
 			var cell_constraint = points_at.constraint_in_context(this);
 			return cjs.get(cell_constraint);
 		} else if(points_at instanceof red.StatefulProp) {
+			var pointer = points_at.get_pointer_for_context(this);
+			return pointer.val();
+			/*
 			var value_and_state = points_at.get_value_and_from_state(this);
 			var value = value_and_state.value;
 			if(value instanceof red.Cell) {
@@ -92,6 +95,7 @@ red.Pointer = function(options) {
 			} else {
 				return value;
 			}
+			*/
 		} else if(points_at instanceof cjs.ArrayConstraint) {
 			return points_at.toArray();
 		} else if(points_at instanceof cjs.Constraint) {

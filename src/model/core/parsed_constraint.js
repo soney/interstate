@@ -82,10 +82,15 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 						break;
 					}
 				}
-			} else if(context_item instanceof red.SpecialContext) {
-				var context_obj = context_item.get_context_obj();
-				if(context_obj.hasOwnProperty(key)) {
-					return context_obj[key];
+			} else if(context_item instanceof red.Cell) {
+				var special_contexts = curr_context.special_contexts();
+				var len = special_contexts.length;
+				for(var i = 0; i<len; i++) {
+					var sc = special_contexts[i];
+					var context_obj = sc.get_context_obj();
+					if(context_obj.hasOwnProperty(key)) {
+						return context_obj[key];
+					}
 				}
 			} else if(context_item && context_item[key]) {
 				rv = curr_context.push(context_item[key]);
