@@ -54,6 +54,13 @@
 					.set("prop2", "stateful_prop")
 					.set("prop2", "INIT", "2+3")
 					//.set("(protos)", "INIT", "d")
+				env	.set("d", "dict")
+					.cd("d")
+					.set("a", "1+1")
+					.top()
+					.set("s", "stateful")
+					.cd("s")
+					.set("(protos)", "INIT", "d)
 
 				env.print_on_return = true;
 				console.log(env.print());
