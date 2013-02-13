@@ -597,7 +597,7 @@ var Env = function(options) {
 			var points_at = pointer.points_at();
 
 			if(points_at instanceof red.Dict || points_at instanceof red.ManifestationContext) {
-				var dict;
+				var dict = points_at;
 
 				if(points_at instanceof red.Dict) {
 					var manifestation_pointers = points_at.get_manifestation_pointers(pointer);
@@ -606,7 +606,19 @@ var Env = function(options) {
 
 						console[is_expanded ? "group" : "groupCollapsed"]("(manifestations)");
 						_.each(manifestation_pointers, function(manifestation_pointer) {
-							var manifestation_obj = manifestation_pointer.points_at();
+							var scs = manifestation_pointer.special_contexts();
+							var manifestation_obj;
+							for(var i = 0; i<scs.length; i++) {
+								if(scs[i] instanceof red.ManifestationContext) {
+									manifestation_obj = scs[i];
+									break;
+								}
+							}
+							if(!manifestation_obj) {
+								throw new Error("Manifestation object not found");
+							}
+
+							
 							var is_expanded2 = current_pointer.has(manifestation_obj);
 							var context_obj = manifestation_obj.get_context_obj();
 							var manifestation_text = pad("" + context_obj.basis_index, PROP_NAME_WIDTH);
@@ -620,12 +632,6 @@ var Env = function(options) {
 						console.groupEnd();
 						return;
 					}
-				}
-
-				if(points_at instanceof red.ManifestationContext) {
-					dict = pointer.points_at(-2);
-				} else {
-					dict = points_at;
 				}
 
 				if(dict instanceof red.StatefulObj) {
@@ -656,6 +662,7 @@ var Env = function(options) {
 					console.groupEnd();
 				}
 
+/*
 				if(points_at instanceof red.ManifestationContext) {
 					var context_obj = points_at.get_context_obj();
 					_.each(context_obj, function(value, key) {
@@ -664,6 +671,7 @@ var Env = function(options) {
 						prop_text = prop_text + pad(value_to_value_str(value), PROP_VALUE_WIDTH);
 					});
 				}
+				*/
 				var prop_names = dict.get_prop_names(pointer);
 				_.each(prop_names, function(prop_name) {
 					var is_inherited = dict.is_inherited(prop_name, pointer);

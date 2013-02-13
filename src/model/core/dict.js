@@ -281,14 +281,14 @@ red.Dict = function(options, defer_initialization) {
 	//
 	
 	proto._has_special_context_prop = function(prop_name, pcontext) {
-		return this.get_special_context_prop(prop_name, pcontext) !== undefined;
+		return this._get_special_context_prop(prop_name, pcontext) !== undefined;
 	};
 
 	proto._get_special_context_prop_names = function(pcontext) {
 		var rv = [];
 		var my_index = pcontext.indexOf(this);
 		if(my_index >= 0) {
-			var special_contexts = pcontexts.special_contexts(my_index);
+			var special_contexts = pcontext.special_contexts(my_index);
 			var len = special_contexts.length;
 			for(var i = 0; i<len; i++) {
 				var special_context = special_contexts[i];
@@ -302,7 +302,7 @@ red.Dict = function(options, defer_initialization) {
 	proto._get_special_context_prop = function(prop_name, pcontext) {
 		var my_index = pcontext.indexOf(this);
 		if(my_index >= 0) {
-			var special_contexts = pcontexts.special_contexts(my_index);
+			var special_contexts = pcontext.special_contexts(my_index);
 			var len = special_contexts.length;
 			for(var i = 0; i<len; i++) {
 				var special_context = special_contexts[i];
@@ -319,7 +319,7 @@ red.Dict = function(options, defer_initialization) {
 		var rv = {};
 		var my_index = pcontext.indexOf(this);
 		if(my_index >= 0) {
-			var special_contexts = pcontexts.special_contexts(my_index);
+			var special_contexts = pcontext.special_contexts(my_index);
 			_.extend.apply(_, (rv).concat(_.map(special_contexts, function(special_context) {
 				var context_obj = special_context.get_context_obj();
 				rv.extend(context_obj);
@@ -568,6 +568,13 @@ red.Dict = function(options, defer_initialization) {
 	};
 
 	proto.get_manifestation_pointers = function(pcontext) {
+		var my_index = pcontext.indexOf(this);
+		var special_contexts = pcontext.special_contexts(my_index);
+
+		if(_.any(special_contexts, function(sc) { return sc instanceof red.ManifestationContext})) {
+			return null;
+		}
+
 		var manifestations = this.get_manifestations();
 		var manifestations_pointer = pcontext.push(manifestations);
 		var manifestations_value = manifestations_pointer.val();

@@ -24,6 +24,8 @@ red.Pointer = function(options) {
 	};
 	proto.length = function() { return this._stack.length; };
 	proto.special_contexts = function(index) {
+		if(!_.isNumber(index)) { index = this._special_contexts.length-1; }
+		else if(index < 0) { index += this._special_contexts.length; }
 		return this._special_contexts[index] || [];
 	};
 	proto.slice = function() {
@@ -46,7 +48,7 @@ red.Pointer = function(options) {
 					});
 	};
 	proto.push_special_context = function(special_context) {
-		var new_special_contexts_obj = _.clone(this.special_contexts);
+		var new_special_contexts_obj = _.clone(this._special_contexts);
 		var len_m_1 = new_special_contexts_obj.length - 1;
 		var nscolm1 = new_special_contexts_obj[len_m_1];
 		if(nscolm1) {
