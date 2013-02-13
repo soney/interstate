@@ -47,9 +47,6 @@ red.DomAttachmentInstance = function(options) {
 	var pointer = this.get_pointer();
 
 	this._owner = pointer.points_at();
-	if(this._owner instanceof red.ManifestationContext) {
-		this._owner = pointer.points_at(-2);
-	}
 
 	this.type = "dom";
 	this.id = _.uniqueId();

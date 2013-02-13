@@ -108,7 +108,7 @@ var get_this_$ = function(context) {
 		var context_item = curr_context.points_at();
 
 		while(!curr_context.is_empty()) {
-			if(context_item instanceof red.Dict || context_item instanceof red.ManifestationContext) {
+			if(context_item instanceof red.Dict) {
 				return curr_context;
 			}
 			curr_context = curr_context.pop();

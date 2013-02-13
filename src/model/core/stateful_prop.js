@@ -1,5 +1,12 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
+
+var get_event_context = _.memoize(function(state, event) {
+	return new red.EventContext(event);
+}, function(state, event) {
+	return state.hash();
+});
+
 var get_value_for_state = function(state, stateful_prop, inherits_from) {
 	if(stateful_prop._has_direct_value_for_state(state)) {
 		return stateful_prop._direct_value_for_state(state);
@@ -162,13 +169,21 @@ red.StatefulProp = function(options, defer_initialization) {
 		return value_for_state(state, this, this._get_inherits_from(context));
 	};
 	proto.get_value_and_from_state = function(pcontext) {
-		var value_for_pcontext = this.get_value_for_context(pcontext);
+		var value_for_pcontext = this._get_value_for_context(pcontext);
 		return value_for_pcontext.get_value_and_from_state();
 	};
-	proto.get_value_for_context = function(pcontext) {
+	proto._get_value_for_context = function(pcontext) {
 		return this._values_per_context.get_or_put(pcontext, function() {
 			return this.create_contextual_value(pcontext);
 		}, this);
+	};
+	proto.get_pointer_for_context = function(pcontext) {
+		var value_and_state = this._get_value_and_from_state(pcontext);
+		var state = value_and_state.state,
+			value = value_and_state.value,
+			event = state._last_run_event,
+			event_context = get_event_context(state, event);
+		return pcontext.push_special_context(event_context);
 	};
 	proto.create_contextual_value = function(pcontext) {
 		return new StatefulPropContextualVal({

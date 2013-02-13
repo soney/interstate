@@ -315,6 +315,7 @@ red.Dict = function(options, defer_initialization) {
 		return undefined;
 	};
 
+/*
 	proto.get_special_context_props = function(pcontext) {
 		var rv = {};
 		var my_index = pcontext.indexOf(this);
@@ -327,6 +328,7 @@ red.Dict = function(options, defer_initialization) {
 		}
 		return rv;
 	};
+	*/
 	
 	//
 	// === PROPERTIES ===
@@ -344,12 +346,12 @@ red.Dict = function(options, defer_initialization) {
 		}
 	};
 
-	proto.get_prop_pointer = function(prop_name, pointer) {
-		var prop = this._get_prop(prop_name, pointer);
+	proto.get_prop_pointer = function(prop_name, pcontext) {
+		var prop = this._get_prop(prop_name, pcontext);
 		if(prop === undefined) {
 			return undefined;
 		} else {
-			return pointer.push(prop);
+			return pcontext.push(prop);
 		}
 	};
 
@@ -570,7 +572,6 @@ red.Dict = function(options, defer_initialization) {
 	proto.get_manifestation_pointers = function(pcontext) {
 		var my_index = pcontext.indexOf(this);
 		var special_contexts = pcontext.special_contexts(my_index);
-		console.log(my_index, special_contexts);
 
 		if(_.some(special_contexts, function(sc) { return sc instanceof red.ManifestationContext})) {
 			return null;

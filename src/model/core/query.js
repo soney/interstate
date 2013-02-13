@@ -81,17 +81,11 @@ red.Query = function(options) {
 	var map_funcs = {
 		"prop": function(pointer, index, arr, name) {
 			var owner = pointer.points_at();
-			if(owner instanceof red.ManifestationContext) {
-				owner = pointer.points_at(-2);
-			}
 			var prop_pointer = owner.get_prop_pointer(name, pointer);
 			return prop_pointer;
 		},
 		"parent": function(pointer) {
 			var owner = pointer.points_at();
-			if(owner instanceof red.ManifestationContext) {
-				return pointer.slice(0, pointer.length()-2);
-			}
 			return pointer.slice(0, pointer.length()-1);
 		}
 	};

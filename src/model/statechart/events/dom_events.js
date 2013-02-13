@@ -53,9 +53,7 @@ red.on_event = function(event_type) {
 
 									var manifestation_pointers;
 
-									if(targ instanceof red.ManifestationContext) {
-										dict = target_pointer.points_at(-2);
-									} else if(targ instanceof red.Dict) {
+									if(targ instanceof red.Dict) {
 										dict = targ;
 										manifestation_pointers = dict.get_manifestation_pointers(target_pointer);
 									} else {

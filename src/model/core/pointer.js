@@ -1,11 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var get_event_context = _.memoize(function(state, event) {
-	return new red.EventContext(event);
-}, function(state, event) {
-	return state.hash();
-});
 
 red.Pointer = function(options) {
 	this._stack = (options && options.stack) || [];
