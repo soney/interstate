@@ -75,7 +75,9 @@ red.Pointer = function(options) {
 		return this._stack.indexOf(item);
 	};
 
-	proto.is_empty = function() { return this._stack.length === 0; };
+	proto.is_empty = function() {
+		return this._stack.length === 0;
+	};
 
 	proto.val = function() {
 		var points_at = this.points_at();

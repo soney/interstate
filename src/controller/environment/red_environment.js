@@ -199,15 +199,31 @@ var Env = function(options) {
 		}
 		return command;
 	};
-	proto.set = function() {
-		if(arguments.length === 3) {
-			return this.set_cell.apply(this, arguments);
+	proto.set = function(key) {
+		var parent_obj = this.get_pointer_obj();
+		if(!parent_obj._has_direct_prop(key)) {
+			command = this._get_set_prop_command.apply(this, arguments);
 		} else {
-			var command = this._get_set_prop_command.apply(this, arguments);
+			command = this._get_set_cell_command.apply(this, arguments);
+		}
+		this._do(command);
+		if(this.print_on_return) return this.print();
+		else return this;
+
+
+
+/*
+		if(arguments.length === 3) {
+			commands.push(this._get_set_cell_command.apply(this, arguments));
+		//	return this.set_cell.apply(this, arguments);
+		} else {
+		//	var key = arguments[0];
+			this._get_set_prop_command.apply(this, arguments);
 			this._do(command);
 			if(this.print_on_return) return this.print();
 			else return this;
 		}
+			*/
 	};
 	proto._get_unset_prop_command = function(prop_name) {
 		var parent_obj = this.get_pointer_obj();
@@ -267,7 +283,8 @@ var Env = function(options) {
 			cell = this.get_pointer_obj();
 			str = arg0;
 		} else if(arguments.length === 2) {
-			cell = this._root;
+			var dict = this.get_pointer_obj();
+			cell = dict._get_direct_prop(arg0);
 			var pointer = this.get_pointer_obj();
 			var builtins = pointer.get_builtins();
 			for(var i = 0; i<builtins.lenth; i++) {
@@ -335,7 +352,7 @@ var Env = function(options) {
 
 		var command;
 		if(commands.length === 1) {
-			command = command[0];
+			command = commands[0];
 		} else {
 			command = red.command("combined", {
 				commands: commands
