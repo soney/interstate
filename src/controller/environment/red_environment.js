@@ -201,7 +201,7 @@ var Env = function(options) {
 	};
 	proto.set = function(key) {
 		var parent_obj = this.get_pointer_obj();
-		if(!parent_obj._has_direct_prop(key)) {
+		if(key[0] !== "(" && !parent_obj._has_direct_prop(key)) {
 			command = this._get_set_prop_command.apply(this, arguments);
 		} else {
 			command = this._get_set_cell_command.apply(this, arguments);
