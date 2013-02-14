@@ -1,21 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var pad = function(str, len) {
-	if(str.length > len) {
-		return str.substring(0, len-3) + "...";
-	} else if(str.length < len) {
-		var rv = str;
-		while(rv.length < len) {
-			rv += " ";
-		}
-		return rv;
-	} else {
-		return str;
-	}
-};
-
-
 var Env = function(options) {
 	// Undo stack
 	this._command_stack = red.create("command_stack");
@@ -61,59 +46,51 @@ var Env = function(options) {
 		root_dict.set("children", children);
 	};
 
-	proto._do = function(command) { this._command_stack._do(command); };
-	proto.undo = function() {
-		this._command_stack._undo();
-		if(this.print_on_return) { return this.print(); }
-		else { return this; }
-	};
-	proto.redo = function() {
-		this._command_stack._redo();
+	proto.default_return_value = function() {
 		if(this.print_on_return) { return this.print(); }
 		else { return this; }
 	};
 
-	proto.cd = proto.in = function(prop_name) {
-		this.pointer = this.pointer.call("get_prop_pointer", prop_name);
-
-		if(this.print_on_return) return this.print();
-		else return this;
-	};
-	proto.top = function() {
-		this.pointer = this.pointer.slice(0, 1);
-
-		if(this.print_on_return) return this.print();
-		else return this;
-	};
-	proto.up = function() {
-		this.pointer = this.pointer.pop();
-
-		if(this.print_on_return) return this.print();
-		else return this;
-	};
 	proto.get_root_pointer = function() {
 		return this.pointer.slice(0, 1);
 	};
 	proto.get_pointer_obj = function() {
 		return this.pointer.points_at();
 	};
-	proto.get_statechart_pointer = function() {
+	proto.get_current_statechart = function() {
 		var statechart;
 		var SOandC = red.find_stateful_obj_and_context(this.pointer);
 		var owner = SOandC.stateful_obj;
-		var context = SOandC.context;
-		/*
-		if(red.is_statechart(pointer)) {
-			statechart = pointer;
-		} else if(pointer instanceof red.StatefulObj) {
-			statechart = pointer.get_own_statechart();
-		}
-		*/
 		statechart = owner.get_own_statechart();
 		if(!statechart) {
 			throw new Error("Could not find statechart");
 		}
 		return statechart;
+	};
+
+	proto._do = function(command) {
+		this._command_stack._do(command);
+	};
+	proto.undo = function() {
+		this._command_stack._undo();
+		return this.default_return_value();
+	};
+	proto.redo = function() {
+		this._command_stack._redo();
+		return this.default_return_value();
+	};
+
+	proto.cd = proto.in = function(prop_name) {
+		this.pointer = this.pointer.call("get_prop_pointer", prop_name);
+		return this.default_return_value();
+	};
+	proto.top = function() {
+		this.pointer = this.pointer.slice(0, 1);
+		return this.default_return_value();
+	};
+	proto.up = function() {
+		this.pointer = this.pointer.pop();
+		return this.default_return_value();
 	};
 
 
@@ -209,21 +186,6 @@ var Env = function(options) {
 		this._do(command);
 		if(this.print_on_return) return this.print();
 		else return this;
-
-
-
-/*
-		if(arguments.length === 3) {
-			commands.push(this._get_set_cell_command.apply(this, arguments));
-		//	return this.set_cell.apply(this, arguments);
-		} else {
-		//	var key = arguments[0];
-			this._get_set_prop_command.apply(this, arguments);
-			this._do(command);
-			if(this.print_on_return) return this.print();
-			else return this;
-		}
-			*/
 	};
 	proto._get_unset_prop_command = function(prop_name) {
 		var parent_obj = this.get_pointer_obj();
@@ -322,7 +284,7 @@ var Env = function(options) {
 			var for_state_name = arg1;
 			str = arg2;
 
-			var statechart_pointer = this.get_statechart_pointer();
+			var statechart_pointer = this.get_current_statechart();
 			if(for_state_name instanceof red.StatechartTransition) {
 				for_state = for_state_name;
 			} else {
@@ -401,7 +363,7 @@ var Env = function(options) {
 	};
 
 	proto._get_add_state_command = function(state_name, index) {
-		var statechart = this.get_statechart_pointer();
+		var statechart = this.get_current_statechart();
 
 		if(_.isNumber(index)) { index++; } // Because of the pre_init state
 
@@ -421,7 +383,7 @@ var Env = function(options) {
 	};
 
 	proto._get_remove_state_command = function(state_name) {
-		var statechart = this.get_statechart_pointer();
+		var statechart = this.get_current_statechart();
 
 		var command = red.command("remove_state", {
 			name: state_name
@@ -437,7 +399,7 @@ var Env = function(options) {
 	};
 
 	proto._get_move_state_command = function(state_name, index) {
-		var statechart = this.get_statechart_pointer();
+		var statechart = this.get_current_statechart();
 
 		if(_.isNumber(index)) { index++; } // Because of the pre_init state
 		var command = red.command("move_state", {
@@ -457,7 +419,7 @@ var Env = function(options) {
 
 
 	proto._get_rename_state_command = function(from_state_name, to_state_name) {
-		var statechart = this.get_statechart_pointer();
+		var statechart = this.get_current_statechart();
 
 		var command = red.command("rename_state", {
 			from: from_state_name
@@ -475,7 +437,7 @@ var Env = function(options) {
 
 
 	proto._get_add_transition_command = function(from_state_name, to_state_name, event) {
-		var statechart = this.get_statechart_pointer();
+		var statechart = this.get_current_statechart();
 		var parent = this.get_pointer_obj();
 
 		var from_state = statechart.find_state(from_state_name);
@@ -504,9 +466,7 @@ var Env = function(options) {
 	};
 
 	proto._get_remove_transition_command = function(transition_id) {
-		var statechart = this.get_statechart_pointer();
-		console.log(transition_id)
-
+		var statechart = this.get_current_statechart();
 		var id, transition
 		
 		if(transition_id instanceof red.StatechartTransition) {
@@ -529,7 +489,7 @@ var Env = function(options) {
 	};
 
 	proto._get_set_event_command = function(transition_id, event) {
-		var statechart = this.get_statechart_pointer();
+		var statechart = this.get_current_statechart();
 
 		var command = red.command("set_transition_event", {
 			statechart: statechart
@@ -621,7 +581,7 @@ var Env = function(options) {
 		var STATE_NAME_WIDTH = 30;
 		var STATE_ID_WIDTH = 5;
 		var TRANSITION_NAME_WIDTH = 20;
-		var TRANSITION_VALUE_WIDTH = 100;
+		var TRANSITION_VALUE_WIDTH = 40;
 		var STATE_VALUE_WIDTH = 100;
 
 		var current_pointer = this.pointer;
@@ -785,4 +745,20 @@ red.define("environment", function(options) {
 	var env = new Env(options);
 	return env;
 });
+
+var pad = function(str, len) {
+	if(str.length > len) {
+		return str.substring(0, len-3) + "...";
+	} else if(str.length < len) {
+		var rv = str;
+		while(rv.length < len) {
+			rv += " ";
+		}
+		return rv;
+	} else {
+		return str;
+	}
+};
+
+
 }(red));

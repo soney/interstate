@@ -27,13 +27,7 @@ var SetPropCommand = function(options) {
 			index = this._prop_index;
 		}
 		this._old_prop_value = this._parent._get_direct_prop(this._prop_name);
-
 		this._parent.set_prop(this._prop_name, this._prop_value, index);
-		/*
-		if(this._prop_value instanceof red.RedDict) {
-			this._prop_value.set_default_context(this._parent.get_default_context().push(this._prop_value));
-		}
-		*/
 	};
 	proto._unexecute = function() {
 		if(!_.isUndefined(this._old_prop_value)) {

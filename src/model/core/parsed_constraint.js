@@ -95,6 +95,9 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 				} else {
 					if(context_item._has_prop(key, curr_context)) {
 						rv = context_item.get_prop_pointer(key, curr_context);
+						if(key == "i") {
+							console.log(rv, rv.val());
+						}
 						break;
 					}
 				}
