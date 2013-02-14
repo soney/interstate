@@ -240,6 +240,7 @@ var StatefulPropContextualVal = function(options) {
 	this._stateful_prop = options.stateful_prop;
 	this._last_value = undefined;
 	this._from_state = undefined;
+	this._used_start_transition = false;
 	this._value = new cjs.Constraint(_.bind(this.getter, this), false, {
 		check_on_nullify: true
 	});
@@ -286,7 +287,7 @@ var StatefulPropContextualVal = function(options) {
 		var parent = this.get_stateful_prop(),
 			my_context = this.get_context();
 
-		var rv = false, from_state = false;
+		var rv = false, from_state = false, using_start_transition = false;;
 		var state_vals = [];
 
 		if(parent._can_inherit === false) {
@@ -316,6 +317,11 @@ var StatefulPropContextualVal = function(options) {
 							rv = direct_values.get(key);
 							from_state = transition;
 							return false;
+						} else if(!self._used_start_transition && transition.from() instanceof red.StartState) {
+							rv = direct_values.get(key);
+							from_state = transition;
+							using_start_transition = self._used_start_transition = true;
+							return false;
 						}
 					} catch(e) {
 						return true;
@@ -327,6 +333,7 @@ var StatefulPropContextualVal = function(options) {
 			var SOandC = red.find_stateful_obj_and_context(my_context);
 			var stateful_obj = SOandC.stateful_obj;
 			var stateful_obj_context = SOandC.context;
+			var self = this;
 			
 			var my_names = [];
 			var i = my_context.indexOf(stateful_obj);
@@ -393,6 +400,11 @@ var StatefulPropContextualVal = function(options) {
 										rv = direct_values.get(key);
 										from_state = transition;
 										return false;
+									} else if(!self._used_start_transition && transition.from() instanceof red.StartState) {
+										rv = direct_values.get(key);
+										from_state = transition;
+										using_start_transition = self._used_start_transition = true;
+										return false;
 									}
 								} catch(e) {
 									continue;
@@ -413,6 +425,11 @@ var StatefulPropContextualVal = function(options) {
 		if(rv) {
 			this._from_state = from_state;
 			this._last_value = rv;
+			if(using_start_transition) {
+				_.defer(_.bind(function() {
+					this._value.invalidate();
+				}, this));
+			}
 			return rv;
 		}
 
