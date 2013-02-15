@@ -46,7 +46,7 @@
 				var scobj = env.get_current_statechart();
 				var start = scobj.get_start_state();
 				var outgoing = start.get_outgoing_transitions()[0];
-				env.set("i", "INIT", "1")
+				env.set("i", "INIT", 1)
 
 				env //.set("i", "INIT", "10")
 					.set("i", env._last_transition, "i+1")

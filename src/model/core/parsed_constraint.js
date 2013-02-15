@@ -71,6 +71,8 @@ var get_conditional_$ = function(test, consequent, alternate) { // test ? conseq
 	});
 };
 
+window.abcd = 1;
+
 var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 	if(key === "root") {
 		return context.slice(0, 1);
@@ -96,7 +98,9 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 					if(context_item._has_prop(key, curr_context)) {
 						rv = context_item.get_prop_pointer(key, curr_context);
 						if(key == "i") {
-							console.log(rv, rv.val());
+							window.abcd++;
+							console.log(window.abcd, rv, rv.val());
+							window.abcd++;
 						}
 						break;
 					}

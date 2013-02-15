@@ -399,7 +399,6 @@ var StatefulPropContextualVal = function(options) {
 									if(transition.is_active()) {
 										rv = direct_values.get(key);
 										from_state = transition;
-										console.log(rv);
 										return false;
 									} else if(!self._used_start_transition && transition.from() instanceof red.StartState) {
 										rv = direct_values.get(key);
@@ -421,6 +420,10 @@ var StatefulPropContextualVal = function(options) {
 					});
 				}
 			}
+		}
+
+		if(window.abcd === 5) {
+			debugger;
 		}
 
 		if(rv) {
