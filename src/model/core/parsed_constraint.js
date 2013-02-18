@@ -71,8 +71,6 @@ var get_conditional_$ = function(test, consequent, alternate) { // test ? conseq
 	});
 };
 
-window.abcd = 1;
-
 var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 	if(key === "root") {
 		return context.slice(0, 1);
@@ -85,24 +83,16 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 	return cjs.$(function() {
 		var curr_context = context;
 		var context_item = curr_context.points_at();
-		var rv;
 
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.Dict) {
 				if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
 					if(context_item._has_direct_prop(key)) {
-						rv = context_item.get_prop_pointer(key, curr_context);
-						break;
+						return context_item.prop_val(key, curr_context);
 					}
 				} else {
 					if(context_item._has_prop(key, curr_context)) {
-						rv = context_item.get_prop_pointer(key, curr_context);
-						if(key == "i") {
-							window.abcd++;
-							console.log(window.abcd, rv, rv.val());
-							window.abcd++;
-						}
-						break;
+						return context_item.prop_val(key, curr_context);
 					}
 				}
 			} else if(context_item instanceof red.Cell) {
@@ -116,17 +106,12 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 					}
 				}
 			} else if(context_item && context_item[key]) {
-				rv = curr_context.push(context_item[key]);
+				return context_item[key];
 			}
 			curr_context = curr_context.pop();
 			context_item = curr_context.points_at();
 		}
-		// rv is a context
-		if(rv) {
-			return rv.val();
-		} else {
-			return undefined;
-		}
+		return undefined;
 	});
 };
 
@@ -157,8 +142,8 @@ var get_member_$ = function(object, property) {
 
 		var prop_got = cjs.get(property);
 		if(obj_got instanceof red.Pointer) {
-			var prop_val = obj_got.call("get_prop_pointer", prop_got);
-			return prop_val.val();
+			var dict = obj_got.points_at();
+			return dict.prop_val(prop_got, obj_got);
 		} else {
 			return obj_got[prop_got];
 		}

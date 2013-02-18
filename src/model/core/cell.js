@@ -7,7 +7,6 @@ red.Cell = function(options, defer_initialization) {
 	if(defer_initialization !== true) {
 		this.do_initialize(options);
 	}
-	this._last_tree = undefined;
 };
 (function(my) {
 	var proto = my.prototype;

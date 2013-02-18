@@ -31,28 +31,19 @@
 					.set("interval", "500")
 					;
 				*/
-				env.cd("children")
-					.set("obj", "stateful")
+				env	.cd("children")
+					.set("obj", "<stateful>")
 					.cd("obj")
-					.add_state("state2")
-					.add_transition("INIT", "state2", "on('timeout', 1000)")
-					.set("tag")
-					.set("text")
+					.add_transition("INIT", "INIT", "on('timeout', 1000)")
 					.set("(protos)", "INIT", "dom")
 					.set("tag", "INIT", "'div'")
 					.set("text", "INIT", "i")
-					.set("i");
-
-				var scobj = env.get_current_statechart();
-				var start = scobj.get_start_state();
-				var outgoing = start.get_outgoing_transitions()[0];
-				env.set("i", "INIT", 1)
-
-				env //.set("i", "INIT", "10")
-					.set("i", env._last_transition, "i+1")
+					.set("i", "(start) -> INIT", "1")
+					.set("i", "INIT -> INIT", "i+1")
 					;
-				//env.print_on_return = true;
-				//console.log(env.print());
+
+				env.print_on_return = true;
+				console.log(env.print());
 
 				var root_pointer = env.get_root_pointer();
 				output_view = $("<div />").dom_output({

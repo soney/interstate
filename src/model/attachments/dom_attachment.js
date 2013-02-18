@@ -111,8 +111,7 @@ red.DomAttachmentInstance = function(options) {
 
 		var old_tag = undefined;
 		return cjs.liven(function() {
-			var tag_pointer = owner.get_prop_pointer("tag", pointer);
-			var tag = tag_pointer ? tag_pointer.val() : undefined;
+			var tag = owner.prop_val("tag", pointer);
 			if(tag !== old_tag) {
 				old_tag = tag;
 				if(_.isString(tag)) {
@@ -136,8 +135,7 @@ red.DomAttachmentInstance = function(options) {
 		return cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
-				var attr_pointer = owner.get_prop_pointer(red_attr_name, pointer);
-				var val = attr_pointer ? attr_pointer.val() : undefined;
+				var val = owner.prop_val(red_attr_name, pointer);
 				if(val) {
 					dom_obj.style[css_prop_name] = val;
 				} else {
@@ -156,8 +154,7 @@ red.DomAttachmentInstance = function(options) {
 		return cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
-				var attr_pointer = owner.get_prop_pointer(red_attr_name, pointer);
-				var val = attr_pointer ? attr_pointer.val() : undefined;
+				var val = owner.prop_val(red_attr_name, pointer);
 				if(val) {
 					dom_obj.setAttribute(attr_name, val);
 				} else if(dom_obj.hasAttribute(attr_name)) {
@@ -179,19 +176,17 @@ red.DomAttachmentInstance = function(options) {
 				return;
 			}
 
-			var text_pointer = owner.get_prop_pointer("text", pointer);
+			var text = owner.prop_val("text", pointer);
 
-			if(text_pointer) {
-				var text = text_pointer.val();
+			if(text) {
 				dom_obj.textContent = text;
 			} else {
-				var children_pointer = owner.get_prop_pointer("children", pointer);
+				var children = owner.prop_val("children", pointer) || [];
 
 				var current_children = _.toArray(dom_obj.childNodes);
 				var desired_children = [];
 
-				if(children_pointer) {
-					var children = children_pointer.val() || [];
+				if(children) {
 					var children_pointers = [];
 
 					if(_.isArray(children)) {

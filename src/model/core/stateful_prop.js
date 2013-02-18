@@ -43,6 +43,7 @@ red.StatefulProp = function(options, defer_initialization) {
 		this._can_inherit = options.can_inherit !== false;
 		this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
 		this._direct_values.set_hash("hash");
+		this._check_on_nullify = options.check_on_nullify === true;
 	};
 
 	//
@@ -235,6 +236,7 @@ red.define("stateful_prop", function(options) {
 
 var StatefulPropContextualVal = function(options) {
 	options = options || {};
+	this.transition_times_run = {};
 	this.id = _.uniqueId();
 	this._context = options.context;
 	this._stateful_prop = options.stateful_prop;
@@ -242,7 +244,7 @@ var StatefulPropContextualVal = function(options) {
 	this._from_state = undefined;
 	this._used_start_transition = false;
 	this._value = new cjs.Constraint(_.bind(this.getter, this), false, {
-		check_on_nullify: true
+		check_on_nullify: this._stateful_prop._check_on_nullify
 	});
 	this._value.onChange(_.bind(function() {
 		if(red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
@@ -252,60 +254,29 @@ var StatefulPropContextualVal = function(options) {
 	_.defer(_.bind(function() {
 		this._value.update();
 	}, this));
+	this.initialize();
 };
 (function(my) {
 	var proto = my.prototype;
 	proto.hash = function() {
 		return this.id;
 	};
-	proto.get_value_and_from_state = function() {
-		var value = this.get_value();
-		var from_state = this.get_from_state();
-		return {
-			value: value,
-			state: from_state
-		};
-	};
-	proto.get_value = function() {
-		var value = this._value.get();
-		return value;
-	};
-	proto.get_from_state = function() {
-		return this._from_state;
-	};
-	proto.get_stateful_prop = function() {
-		return this._stateful_prop;
-	};
-	proto.get_context = function() {
-		return this._context;
-	};
-	proto.get_statecharts = function() {
-		var parent = this.get_stateful_prop();
-		return parent.get_statecharts(this.get_context());
-	};
-	proto.getter = function() {
+	proto.traverse_values = function(on_state, on_transition, on_non_stateful) {
 		var parent = this.get_stateful_prop(),
-			my_context = this.get_context();
-
-		var rv = false, from_state = false, using_start_transition = false;;
+			my_context = this.get_context(),
+			SOandC = red.find_stateful_obj_and_context(my_context);
+		var do_break = false;
 		var state_vals = [];
-
 		if(parent._can_inherit === false) {
-			var SOandC = red.find_stateful_obj_and_context(my_context);
 			var statechart = SOandC.stateful_obj.get_statechart_for_context(SOandC.context);
 			var direct_values = parent._direct_values;
-			direct_values.each_key(function(key) {
+			direct_values.each_key(function(key, i) {
 				if(key instanceof red.State) {
 					try {
 						var state = red.find_equivalent_state(key, statechart);
-						if(state.is_active()) {
-							state_vals.push({
-								type: "stateful",
-								key: key,
-								state: state,
-								direct_values: direct_values,
-								statechart_order: j
-							});
+						if(on_state.call(this, state, key, i, direct_values) === false) {
+							do_break = true;
+							return false;
 						}
 					} catch(e) {
 						return true;
@@ -313,27 +284,21 @@ var StatefulPropContextualVal = function(options) {
 				} else {
 					try {
 						var transition = red.find_equivalent_transition(key, statechart);
-						if(transition.is_active()) {
-							rv = direct_values.get(key);
-							from_state = transition;
-							return false;
-						} else if(!self._used_start_transition && transition.from() instanceof red.StartState) {
-							rv = direct_values.get(key);
-							from_state = transition;
-							using_start_transition = self._used_start_transition = true;
+						if(on_transitiion.call(this, transition, key, i, direct_values) === false) {
+							do_break = true;
 							return false;
 						}
 					} catch(e) {
 						return true;
 					}
 				}
-			});
-
+			}, this);
+			if(do_break) {
+				return;
+			}
 		} else {
-			var SOandC = red.find_stateful_obj_and_context(my_context);
 			var stateful_obj = SOandC.stateful_obj;
 			var stateful_obj_context = SOandC.context;
-			var self = this;
 			
 			var my_names = [];
 			var i = my_context.indexOf(stateful_obj);
@@ -379,14 +344,9 @@ var StatefulPropContextualVal = function(options) {
 							for(j = 0; j<lenj; j++) {
 								try {
 									var state = red.find_equivalent_state(key, statecharts[j]);
-									if(state.is_active()) {
-										state_vals.push({
-											type: "stateful",
-											key: key,
-											state: state,
-											direct_values: direct_values,
-											statechart_order: j
-										});
+									if(on_state.call(this, state, key, j, direct_values) === false) {
+										do_break = true;
+										return false;
 									}
 								} catch(e) {
 									continue;
@@ -396,14 +356,8 @@ var StatefulPropContextualVal = function(options) {
 							for(j = 0; j<lenj; j++) {
 								try {
 									var transition = red.find_equivalent_transition(key, statecharts[j]);
-									if(transition.is_active()) {
-										rv = direct_values.get(key);
-										from_state = transition;
-										return false;
-									} else if(!self._used_start_transition && transition.from() instanceof red.StartState) {
-										rv = direct_values.get(key);
-										from_state = transition;
-										using_start_transition = self._used_start_transition = true;
+									if(on_transition.call(this, transition, key, j, direct_values) === false) {
+										do_break = true;
 										return false;
 									}
 								} catch(e) {
@@ -411,20 +365,96 @@ var StatefulPropContextualVal = function(options) {
 								}
 							}
 						}
-					});
+					}, this);
 				} else {
-					state_vals.push({
-						type: "non_stateful"
-						, value: ifrom
-						, statechart_order: lenj
-					});
+					if(on_non_stateful.call(this, ifrom) === false) {
+						do_break = true;
+						return false;
+					}
+				}
+				if(do_break) {
+					return;
 				}
 			}
 		}
+	};
+	proto.initialize = function() {
+		this.traverse_values(function(state, key, order, direct_values) {
+		}, function(transition, key, order, direct_values) {
+			if(transition.from() instanceof red.StartState) {
+			}
+			this.set_transition_times_run(transition, transition.get_times_run());
+		}, function() {
+		});
+	};
+	proto.get_transition_times_run = function(transition) {
+		var transition_id = transition.id();
+		return this.transition_times_run[transition_id];
+	};
+	proto.set_transition_times_run = function(transition, tr) {
+		var transition_id = transition.id();
+		this.transition_times_run[transition_id] = tr;
+	};
+	proto.get_value_and_from_state = function() {
+		var value = this.get_value();
+		var from_state = this.get_from_state();
+		return {
+			value: value,
+			state: from_state
+		};
+	};
+	proto.get_value = function() {
+		var value = this._value.get();
+		return value;
+	};
+	proto.get_from_state = function() {
+		return this._from_state;
+	};
+	proto.get_stateful_prop = function() {
+		return this._stateful_prop;
+	};
+	proto.get_context = function() {
+		return this._context;
+	};
+	proto.get_statecharts = function() {
+		var parent = this.get_stateful_prop();
+		return parent.get_statecharts(this.get_context());
+	};
+	proto.getter = function() {
+		var rv = false, from_state = false, using_start_transition = false;
+		var state_vals = [];
 
-		if(window.abcd === 5) {
-			debugger;
-		}
+		// on_state, on_transition, on_non_stateful
+		this.traverse_values(function(state, key, order, direct_values) {
+			if(state.is_active()) {
+				state_vals.push({
+					type: "stateful",
+					key: key,
+					state: state,
+					direct_values: direct_values,
+					statechart_order: order
+				});
+			}
+		}, function(transition, key, order, direct_values) {
+			var times_run = transition.get_times_run();
+			if(times_run > this.get_transition_times_run(transition)) {
+				this.set_transition_times_run(transition, times_run);
+				rv = direct_values.get(key);
+				from_state = transition;
+				return false;
+			} else if(!this._used_start_transition && transition.from() instanceof red.StartState) {
+				rv = direct_values.get(key);
+				from_state = transition;
+				using_start_transition = this._used_start_transition = true;
+				return false;
+			}
+		}, function(ifrom) {
+			state_vals.push({
+				type: "non_stateful"
+				, value: ifrom
+				, statechart_order: Infinity
+			});
+		});
 
 		if(rv) {
 			this._from_state = from_state;

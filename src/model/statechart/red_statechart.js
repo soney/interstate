@@ -199,12 +199,19 @@ red.StatechartTransition = function(options, defer_initialization) {
 	able.make_proto_listenable(proto);
 	proto.do_initialize = function(options) {
 		this.$active = cjs.$(false);
+		this.$times_run = cjs.$(0);
 		this._from_state = options.from;
 		this._to_state = options.to;
 		this.set_basis(options.basis);
 		this._id = _.uniqueId();
 		this.do_fire = _.bind(this.fire, this);
 		this.set_event(options.event);
+	};
+	proto.increment_times_run = function() {
+		this.$times_run.set(this.$times_run.get() + 1);
+	};
+	proto.get_times_run = function() {
+		return this.$times_run.get();
 	};
 	proto.set_active = function(to_active) {
 		to_active = to_active === true;
@@ -316,6 +323,7 @@ red.State = function(options, defer_initialization) {
 	able.make_this_listenable(this);
 	this._id = _.uniqueId();
 	this._last_run_event = cjs.$(false);
+	this._entrance_transition = cjs.$(false); 
 
 	this.$onBasisAddTransition = _.bind(function(event) {
 		var transition = event.transition;
@@ -464,6 +472,8 @@ red.State = function(options, defer_initialization) {
 	proto.context = function() { return this._context; };
 	proto.set_parent = function(parent) { this._parent = parent; return this; };
 	proto.set_context = function(context) { this._context = context; return this; };
+	proto.set_entrance_transition = function(transition) { this._entrance_transition.set(transition); };
+	proto.get_entrance_transition = function(transition) { return this._entrance_transition.get(); };
 
 	proto.is_based_on = function(state) {
 		return this.basis() === state;
@@ -699,6 +709,21 @@ red.StartState = function(options) {
 		cjs.signal();
 	};
 
+	proto.get_transitions_to = function(to) {
+		if(this.getTo() === to) {
+			return this.get_outgoing_transitions();
+		} else {
+			return [];
+		}
+	};
+	proto.get_transitions_from = function(from) {
+		if(from === this && this.getTo() === this) {
+			return this.get_outgoing_transitions();
+		} else {
+			return [];
+		}
+	};
+
 	proto.serialize = function() {
 		return {
 			outgoing_transition: red.serialize(this.outgoingTransition)
@@ -796,10 +821,10 @@ red.Statechart = function(options) {
 				event: event,
 				state: state
 			});
+			cjs.wait();
+			if(transition) { transition.set_active(true); }
 		}, this);
 		red.event_queue.once("end_event_queue_round_3", function() {
-			if(transition) { transition.set_active(true); }
-			cjs.wait();
 			var local_state = this.$local_state.get()
 			if(local_state) {
 				local_state.set_active(false);
@@ -809,10 +834,13 @@ red.Statechart = function(options) {
 			local_state._last_run_event.set(event);
 			if(local_state) {
 				local_state.set_active(true);
+				this.set_entrance_transition(transition)
 			}
-			cjs.signal();
+			transition.increment_times_run();
 		}, this);
 		red.event_queue.once("end_event_queue_round_4", function() {
+			if(transition) { transition.set_active(false); }
+			cjs.signal();
 			this._emit("post_transition_fire", {
 				type: "post_transition_fire",
 				transition: transition,
@@ -820,7 +848,6 @@ red.Statechart = function(options) {
 				event: event,
 				state: state
 			});
-			if(transition) { transition.set_active(false); }
 		}, this);
 	};
 	proto.run = function() {
@@ -921,6 +948,22 @@ red.Statechart = function(options) {
 			return this.find_state(state_name.split("."), create_superstates, state_value, index);
 		} else {
 			return undefined;
+		}
+	};
+	proto.find_transitions = function(from, to, index) {
+		from = this.find_state(from);
+		to = this.find_state(to);
+
+		if(!from || !to) {
+			return undefined;
+		}
+
+		var rv = from.get_transitions_to(to);
+
+		if(_.isNumber(index)) {
+			return rv[index];
+		} else {
+			return rv;
 		}
 	};
 	proto.get_substate_index = function(substate) {
