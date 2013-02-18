@@ -254,10 +254,10 @@ var Env = function(options) {
 					var val = parent_obj._get_direct_prop(prop_name);
 					if(val instanceof red.StatefulProp) {
 						if(val._has_direct_value_for_state(state)) {
-							var sp_val = val._get_direct_value_for_state(state);
+							var sp_val = val._direct_value_for_state(state);
 							if(sp_val instanceof red.Cell && _.isString(arg2)) {
 								commands.push(red.command("change_cell", {
-									cell: val
+									cell: sp_val
 									, str: arg2
 								}));
 								

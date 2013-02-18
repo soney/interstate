@@ -45,6 +45,14 @@ var EventQueue = function() {
 			}
 			this.end_queue_round = false;
 			this.running_event_queue = false;
+		} else {
+			if(this.deferred_req !== true) {
+				this.deferred_req = true;
+				_.defer(_.bind(function() {
+					this.deferred_req = false;
+					this.run_event_queue();
+				}, this));
+			}
 		}
 	};
 

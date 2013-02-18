@@ -1,13 +1,13 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var get_event = function(tree, options) {
+var get_event = function(tree, options, live_event_creator) {
 	var event_constraint = red.get_parsed_$(tree, options);
-
 	var got_value = event_constraint.get();
 	if(got_value instanceof red.Event) {
 		return got_value;
 	} else {
+		cjs.removeDependency(event_constraint, live_event_creator);
 		return red.create_event("constraint", event_constraint, got_value);
 	}
 };
@@ -37,7 +37,7 @@ var id  = 0;
 			this._live_event_creator = cjs.liven(function() {
 				if(this._old_event) {
 					this._old_event.off_fire(this.$child_fired);
-					this._old_event.destroy();
+					this._old_event.destroy(true); //destroy silently (without nullifying)
 				}
 
 				var tree = this._tree.get();
@@ -45,7 +45,7 @@ var id  = 0;
 				var event = get_event(tree, {
 						parent: parent,
 						context: context
-					});
+					}, this._live_event_creator);
 				cjs.signal();
 
 				if(event) {
@@ -59,7 +59,9 @@ var id  = 0;
 			});
 		}
 	};
-	proto.child_fired = function() { this.fire.apply(this, arguments); };
+	proto.child_fired = function() {
+		this.fire.apply(this, arguments);
+	};
 	proto.get_str = function() { return this._str.get(); };
 	proto.set_str = function(str) { this._str.set(str); };
 	proto.create_shadow = function(parent_statechart, context) {

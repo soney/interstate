@@ -26,8 +26,8 @@ var cjs = red.cjs, _ = red._;
 			this._in_effect = false;
 		}
 	};
-	proto.destroy = function() {
-		this.constraint.destroy();
+	proto.destroy = function(silent) {
+		this.constraint.destroy(silent);
 	};
 }(red._create_event_type("constraint").prototype));
 }(red));
