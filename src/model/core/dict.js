@@ -521,12 +521,6 @@ red.Dict = function(options, defer_initialization) {
 	proto._prop_val = function(name, pcontext) {
 		var prop_pointer = this.get_prop_pointer(name, pcontext);
 		if(prop_pointer) {
-		/*
-			if(name === "i" && this.id == 4) {
-			//	console.log("X");
-				debugger;
-			}
-			*/
 			return prop_pointer.val();
 		} else {
 			return undefined;

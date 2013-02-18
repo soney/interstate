@@ -148,8 +148,6 @@
 					window.obj = env.get_pointer();
 					/**/
 
-					console.log(songs.get());
-
 					env			.set("button", "<stateful>")
 								.cd("button")
 								.rename_state("INIT", "idle")
@@ -261,6 +259,7 @@
 								.add_transition("INIT", "INIT", "on('mousedown', root.children.songs.children.song_view)")
 								.set("selected_song")
 								.set("selected_song", "INIT -> INIT", "event.red_target")
+								/*
 								.top()
 								.set("x", "selection_info.selected_song")
 								;

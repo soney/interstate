@@ -141,36 +141,6 @@ var Env = function(options) {
 
 	proto._get_set_prop_command = function(prop_name, value, index) {
 		var parent_obj = this.get_pointer_obj();
-		if(_.isString(value)) {
-			if(value === "<dict>") {
-				value = red.create("dict");
-				var direct_protos = red.create("cell", {str: "[]", ignore_inherited_in_contexts: [value]});
-				value._set_direct_protos(direct_protos);
-			} else if(value === "<stateful>") {
-				value = red.create("stateful_obj", undefined, true);
-				value.do_initialize({
-					direct_protos: red.create("stateful_prop", {check_on_nullify:true, can_inherit: false, ignore_inherited_in_contexts: [value]})
-				});
-				value.get_own_statechart()	.add_state("INIT")
-											.starts_at("INIT");
-			} else if(value === "<stateful prop>") {
-				value = red.create("stateful_prop");
-			} else {
-				value = red.create("cell", {str: value});
-			}
-		} else {
-			var pointer_obj = this.get_pointer_obj();
-			if(pointer_obj instanceof red.StatefulObj) {
-				value = red.create("stateful_prop");
-			} else {
-				value = red.create("stateful_obj", undefined, true);
-				value.do_initialize({
-					direct_protos: red.create("stateful_prop", {can_inherit: false, ignore_inherited_in_contexts: [value]})
-				});
-				value.get_own_statechart()	.add_state("INIT")
-											.starts_at("INIT");
-			}
-		}
 
 		var command;
 		if(prop_name[0] === "(" && prop_name[prop_name.length-1] === ")") {
@@ -204,41 +174,200 @@ var Env = function(options) {
 		}
 		return command;
 	};
-	proto.set = function(key, state, value) {
+	proto.set = function(prop_name, arg1, arg2, arg3) {
+		var builtin_name;
+		var commands = [],
+			builtin_info = false;
+
 		var parent_obj = this.get_pointer_obj();
-		var command;
-		if(key[0] !== "(" && !parent_obj._has_direct_prop(key)) {
-			var commands = [];
-			var set_prop_command;
-			if(state === "<dict>" || state === "<stateful prop>" || state === "<stateful>") {
-				set_prop_command = this._get_set_prop_command(key, state);
-			} else {
-				set_prop_command = this._get_set_prop_command(key);
-			}
 
-			if(_.isString(arguments[arguments.length-1])) {
-				var pv = set_prop_command._prop_value;
-				commands.push(set_prop_command);
+		if(prop_name[0] === "(" && prop_name[prop_name.length-1] === ")") {
+			builtin_name = prop_name.slice(1, prop_name.length-1);
 
-				if(arguments.length > 1) {
-					var set_cell_command;
-					if(pv instanceof red.StatefulProp) {
-						set_cell_command = this._get_set_cell_command(pv, state, value);
-						commands.push(set_cell_command);
-					} else if(pv instanceof red.Cell) {
-						set_cell_command = this._get_set_cell_command(pv, state);
-						commands.push(set_cell_command);
-					}
+			var builtins = parent_obj.get_builtins();
+			for(var i in builtins) {
+				var builtin = builtins[i];
+				var env_name = builtin._get_env_name();
+				if(builtin_name === env_name) {
+					builtin_info = builtin;
+					break;
 				}
 			}
+		}
 
+		var value = _.last(arguments);
+		if(_.isString(value)) {
+			if(value === "<dict>") {
+				value = red.create("dict");
+				var direct_protos = red.create("cell", {str: "[]", ignore_inherited_in_contexts: [value]});
+				value._set_direct_protos(direct_protos);
+			} else if(value === "<stateful>") {
+				value = red.create("stateful_obj", undefined, true);
+				value.do_initialize({
+					direct_protos: red.create("stateful_prop", {check_on_nullify:true, can_inherit: false, ignore_inherited_in_contexts: [value]})
+				});
+				value.get_own_statechart()	.add_state("INIT")
+											.starts_at("INIT");
+			} else if(value === "<stateful prop>") {
+				value = red.create("stateful_prop");
+			} else {
+				value = red.create("cell", {str: value});
+			}
+		}
+
+		if(arguments.length === 3 || (arguments.length === 4 && _.isNumber(arg3))) { // prop_name, state, value
+			var state = this.find_state(arg1),
+						index = arg3;
+
+			if(value instanceof red.StatefulProp) {
+				throw new Error("Value is an instanceof a stateful prop");
+			}
+
+			if(builtin_info) {
+				var getter_name = builtin_info._get_getter_name();
+				var val = parent_obj[getter_name]();
+				if(val) {
+					if(val instanceof red.StatefulProp) {
+						commands.push(red.command("set_stateful_prop_value", {
+								stateful_prop: val
+								, state: state
+								, value: value
+							}));
+					} else {
+						throw new Error("Trying to set value for non stateful prop");
+					}
+				} else {
+					var val = red.create("stateful_prop");
+					commands.push(red.command("set_builtin", {
+						parent: parent_obj
+						, name: builtin_name
+						, value: value
+					}));
+					commands.push(red.command("set_stateful_prop_value", {
+							stateful_prop: val
+							, state: state
+							, value: value
+						}));
+				}
+			} else {
+				if(parent_obj._has_direct_prop(prop_name)) {
+					var val = parent_obj._get_direct_prop(prop_name);
+					if(val instanceof red.StatefulProp) {
+						if(val._has_direct_value_for_state(state)) {
+							var sp_val = val._get_direct_value_for_state(state);
+							if(sp_val instanceof red.Cell && _.isString(arg2)) {
+								commands.push(red.command("change_cell", {
+									cell: val
+									, str: arg2
+								}));
+								
+								value.destroy();
+							} else {
+								commands.push(red.command("set_stateful_prop_value", {
+										stateful_prop: val
+										, state: state
+										, value: value
+									}));
+							}
+						} else {
+							commands.push(red.command("set_stateful_prop_value", {
+									stateful_prop: val
+									, state: state
+									, value: value
+								}));
+						}
+					} else {
+						val = red.create("stateful_prop");
+						commands.push(red.command("set_prop", {
+							parent: parent_obj
+							, name: prop_name
+							, value: val
+							, index: index
+						}));
+						commands.push(red.command("set_stateful_prop_value", {
+								stateful_prop: val
+								, state: state
+								, value: value
+							}));
+				}
+				} else {
+					var val = red.create("stateful_prop");
+					commands.push(red.command("set_prop", {
+						parent: parent_obj
+						, name: prop_name
+						, value: val
+						, index: index
+					}));
+					commands.push(red.command("set_stateful_prop_value", {
+							stateful_prop: val
+							, state: state
+							, value: value
+						}));
+				}
+			}
+		} else if(arguments.length === 2 || (arguments.length === 3 && _.isNumber(arg2))) {
+			var index = arg2;
+
+			var parent_obj = this.get_pointer_obj();
+			if(builtin_info) {
+				var getter_name = builtin_info._get_getter_name();
+				var val = parent_obj[getter_name]();
+				if(val) {
+					if(val instanceof red.Cell && _.isString(arg1)) {
+						commands.push(red.command("change_cell", {
+							cell: val
+							, str: arg1
+						}));
+					} else {
+						commands.push(red.command("set_builtin", {
+							parent: parent_obj
+							, name: builtin_name
+							, value: value
+						}));
+					}
+				} else {
+					commands.push(red.command("set_builtin", {
+						parent: parent_obj
+						, name: builtin_name
+						, value: value
+					}));
+				}
+			} else {
+				if(parent_obj._has_direct_prop(prop_name)) {
+					var val = parent_obj._get_direct_prop(prop_name);
+					if(val instanceof red.Cell && _.isString(arg1)) {
+						commands.push(red.command("change_cell", {
+							cell: val
+							, str: arg1
+						}));
+						value.destroy();
+					} else {
+						commands.push(red.command("set_prop", {
+							parent: parent_obj
+							, name: prop_name
+							, value: value
+							, index: index
+						}));
+					}
+				} else {
+					commands.push(red.command("set_prop", {
+						parent: parent_obj
+						, name: prop_name
+						, value: value
+						, index: index
+					}));
+				}
+			}
+		} else if(arguments.length === 1) {
+			commands.push(this._get_set_prop_command.apply(this, arguments));
+		}
+		var command;
+		if(commands.length === 1) {
+			command = commands[0];
+		} else {
 			command = red.command("combined", {
 				commands: commands
 			});
-		} else if(_.isString(arguments[arguments.length-1])) { // value is a string
-			command = this._get_set_cell_command.apply(this, arguments);
-		} else {
-			command = this._get_set_prop_command.apply(this, arguments);
 		}
 		this._do(command);
 		if(this.print_on_return) return this.print();

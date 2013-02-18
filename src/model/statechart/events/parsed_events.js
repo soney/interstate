@@ -3,7 +3,6 @@ var cjs = red.cjs, _ = red._;
 
 var get_event = function(tree, options) {
 	var event_constraint = red.get_parsed_$(tree, options);
-	event_constraint.setOption("auto_add_outgoing_dependencies", false);
 
 	var got_value = event_constraint.get();
 	if(got_value instanceof red.Event) {

@@ -13,12 +13,12 @@
 
 				/*
 				env	.cd("children")
-					.set("obj", "stateful")
+					.set("obj", "<stateful>")
 					.cd("obj")
 					.rename_state("INIT", "flash1")
 					.add_state("flash2")
 					.add_transition("flash1", "flash2", "on('timeout', interval)")
-					.add_transition("flash2", "flash1", "on('timeout', interval)")
+					.add_transition("flash2", "flash1", "on('timeout', 2*interval)")
 					.set("(protos)", "flash1", "dom")
 					.set("tag")
 					.set("text")
@@ -42,13 +42,23 @@
 					.set("i", "INIT -> INIT", "i+1")
 					;
 
-				env.print_on_return = true;
-				console.log(env.print());
 
 				var root_pointer = env.get_root_pointer();
 				output_view = $("<div />").dom_output({
 					root: root_pointer
 				}).appendTo(document.body);
+
+				//env.set("interval", "10");
+				window.invalidate = function() {
+						debugger;
+						interval.invalidate();
+						interval.set(function() {
+							return 10;
+						});
+					};
+
+				env.print_on_return = true;
+				console.log(env.print());
 			</script>
 	  </div>
   </body>

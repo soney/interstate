@@ -58,7 +58,6 @@ red.Cell = function(options, defer_initialization) {
 	};
 	proto.destroy = function() {
 		this._tree.destroy();
-		this._str.destroy();
 	};
 	proto.serialize = function() {
 		var rv = {};
