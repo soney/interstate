@@ -11,7 +11,6 @@
 			<script type="text/javascript">
 				var env = red.create("environment");
 
-				/*
 				env	.cd("children")
 					.set("obj", "<stateful>")
 					.cd("obj")
@@ -32,36 +31,6 @@
 					.top()
 					.set("interval", "500")
 					;
-				*/
-				/*
-				env	.cd("children")
-					.set("obj", "<stateful>")
-					.cd("obj")
-					.add_transition("INIT", "INIT", "on('timeout', 1000)")
-					.set("(protos)", "INIT", "dom")
-					.set("tag", "INIT", "'div'")
-					.set("text", "INIT", "i")
-					.set("i", "(start) -> INIT", "1")
-					.set("i", "INIT -> INIT", "i+1")
-					;
-				*/
-				env	.set("dict1", "<dict>")
-					.cd("dict1")
-					.set("d1a", "<dict>")
-					.cd("d1a")
-					.set("x", "1")
-					.set("y", "1+1")
-					.top()
-					.set("dict2", "<dict>")
-					.cd("dict2")
-					.set("(protos)", "[dict1]")
-					.cd("d1a");
-
-
-
-
-
-
 				var root_pointer = env.get_root_pointer();
 				output_view = $("<div />").dom_output({
 					root: root_pointer

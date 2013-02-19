@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+	<style type="text/css">
+		div.player {
+			margin: auto;
+			border: 1px solid black;
+			width: 500px;
+			margin-top: 10px;
+		}
+		div.header {
+			background-image: -webkit-linear-gradient(top, rgb(246,246,246), rgb(167,167,167));
+			padding-top: 10px;
+			padding-bottom: 10px;
+			padding-left: 10px;
+			border-top-left-radius: 5px;
+			border-top-right-radius: 5px;
+		}
+		div.header > img {
+			margin-left: 1px;
+			margin-right: 1px;
+		}
+		div.songs {
+			max-height: 300px;
+			overflow-y: scroll;
+			border-bottom: rgb(237, 237, 237);
+		}
+		div.songs > div.song:nth-child(odd) {
+			background-color: rgb(250, 250, 250);
+		}
+		div.songs > div.song:nth-child(even) {
+			background-color: rgb(241, 244, 247);
+		}
+		
+		div.song {
+			padding-left: 4px;
+			cursor: default;
+		}
+		div.songs > div.selected.song {
+			background-color: rgb(139, 167, 198);
+			color: rgb(255, 255, 255);
+		}
+		div.song span.name {
+			display: inline-block;
+			width: 190px;
+			font-weight: bold;
+		}
+		div.song span.artist {
+			display: inline-block;
+			width: 125px;
+		}
+		div.song span.duration {
+			display: inline-block;
+			width: 75px;
+			text-align: right;
+		}
+	</style>
+  </head>
+  <body>
+	  <!--<h1>red</h1>-->
+
+		<div class="content">
+		</div>
+
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript" src="album_data.js"></script>
+
+			<script type="text/javascript">
+				var format_duration = function(time) {
+					var minutes = Math.floor(time);
+					var seconds = Math.round((time - minutes) * 60);
+					if(seconds < 10) seconds = "0"+seconds;
+					else seconds = ""+seconds;
+					return minutes+":"+seconds;
+				};
+				var root, env, cjs, _, root_view;
+				$(function() {
+					cjs = red.cjs;
+					_ = red._;
+
+					red.__debug = false;
+
+					env = red	.create("environment");
+					
+					window.songs = cjs.$(function() {
+						return _.chain(albums)
+								.map(function(x) {
+									return x.songs;
+								})
+								.flatten(true)
+								.map(function(x) {
+									var duration_str
+									return {
+										artist: x.album.artist,
+										duration: format_duration(x.duration),
+										name: x.title
+									};
+								})
+								.value()
+					});
+
+
+env			
+.set("button", "<stateful>")
+.cd("button")
+	.rename_state("INIT", "idle")
+	.add_state("hover")
+	.add_state("active")
+	.add_state("active_out")
+	.add_transition("idle", "hover", "on('mouseover', this)")
+	.add_transition("hover", "idle", "on('mouseout', this)")
+	.add_transition("hover", "active", "on('mousedown', this)")
+	.add_transition("active", "hover", "on('mouseup')")
+	.add_transition("active", "active_out", "on('mouseout', this)")
+	.add_transition("active_out", "active", "on('mouseover', this)")
+	.add_transition("active_out", "idle", "on('mouseup')")
+	.set("(protos)", "idle", "[dom]")
+	.top()
+.set("attr", "<dict>")
+.cd("attr")
+	.set("class", "'player'")
+	.up()
+.cd("children")
+	.set("header", "<stateful>")
+	.cd("header")
+		.set("(protos)", "INIT", "[dom]")
+		.set("tag")
+		.set("tag", "INIT", "'div'")
+		.set("attr", "<dict>")
+		.cd("attr")
+			.set("class", "<stateful prop>")
+			.set("class", "INIT", "'header'")
+			.up()
+		.set("children", "<dict>")
+		.cd("children")
+			.set("prev_button", "<stateful>")
+			.cd("prev_button")
+				.set("(protos)", "INIT", "[button]")
+				.set("tag")
+				.set("tag", "INIT", "'img'")
+				.set("attr", "<dict>")
+				.cd("attr")
+					.set("src", "<stateful prop>")
+					.set("src", "idle", "'buttons/prev.png'")
+					.set("src", "hover", "'buttons/prev.png'")
+					.set("src", "active", "'buttons/prev_active.png'")
+					.set("src", "active_out", "'buttons/prev.png'")
+					.up()
+				.up()
+			.set("play_button", "<stateful>")
+			.cd("play_button")
+				.set("(protos)", "INIT", "[button]")
+				.set("tag")
+				.set("tag", "INIT", "'img'")
+				.set("attr", "<dict>")
+				.cd("attr")
+					.set("src", "<stateful prop>")
+					.set("src", "idle", "'buttons/play.png'")
+					.set("src", "hover", "'buttons/play.png'")
+					.set("src", "active", "'buttons/play_active.png'")
+					.set("src", "active_out", "'buttons/play.png'")
+					.up()
+				.up()
+			.set("next_button", "<stateful>")
+			.cd("next_button")
+				.set("(protos)", "INIT", "[button]")
+				.set("tag")
+				.set("tag", "INIT", "'img'")
+				.set("attr", "<dict>")
+				.cd("attr")
+					.set("src", "<stateful prop>")
+					.set("src", "idle", "'buttons/next.png'")
+					.set("src", "hover", "'buttons/next.png'")
+					.set("src", "active", "'buttons/next_active.png'")
+					.set("src", "active_out", "'buttons/next.png'")
+					.up()
+				.up()
+			.up()
+		.up()
+	.set("albums", "<stateful>")
+	.cd("albums")
+		.up()
+	.set("songs", "<stateful>")
+	.cd("songs")
+		.set("(protos)", "INIT", "[dom]")
+		.set("tag")
+		.set("tag", "INIT", "'div'")
+		.set("attr", "<dict>")
+		.cd("attr")
+			.set("class", "<stateful prop>")
+			.set("class", "INIT", "'songs'")
+			.up()
+		.set("children", "<dict>")
+		.cd("children")
+			.set("song_view", "<stateful>")
+			.cd("song_view")
+				.rename_state("INIT", "not_selected")
+				.add_state("selected")
+				.add_transition("not_selected", "selected", "selection_info.selected_song === this")
+				.add_transition("selected", "not_selected", "selection_info.selected_song !== this")
+				.set("(protos)", "not_selected", "[dom]")
+				.set("(manifestations)", songs)
+				.set("attr", "<dict>")
+				.cd("attr")
+					.set("class", "<stateful prop>")
+					.set("class", "not_selected", "'song'")
+					.set("class", "selected", "'selected song'")
+					.up()
+				.set("tag")
+				.set("tag", "not_selected", "'div'")
+				.set("children", "<dict>")
+				.cd("children")
+					.set("song_name", "<dict>")
+					.cd("song_name")
+						.set("(protos)", "[dom]")
+						.set("tag", "'span'")
+						.set("text", "basis.name")
+						.set("attr", "<dict>")
+						.cd("attr")
+							.set("class", "'name'")
+							.up()
+						.up()
+					.set("artist", "<dict>")
+					.cd("artist")
+						.set("(protos)", "[dom]")
+						.set("tag", "'span'")
+						.set("text", "basis.artist")
+						.set("attr", "<dict>")
+						.cd("attr")
+							.set("class", "'artist'")
+						.up()
+					.up()
+				.set("duration", "<dict>")
+				.cd("duration")
+					.set("(protos)", "[dom]")
+					.set("tag", "'span'")
+					.set("text", "basis.duration")
+					.set("attr", "<dict>")
+					.cd("attr")
+						.set("class", "'duration'")
+						.up()
+					.up()
+				.top()
+	.set("selection_info", "<stateful>")
+	.cd("selection_info")
+		.add_transition("INIT", "INIT", "on('mousedown', root.children.songs.children.song_view)")
+		.set("selected_song")
+		.set("selected_song", "INIT -> INIT", "event.red_target")
+		.top()
+;
+					var root_pointer = env.get_root_pointer();
+					output_view = $("<div />").dom_output({
+						root: root_pointer
+					}).appendTo(document.body);
+
+					env.print_on_return = true;
+					//console.log(env.print());
+				});
+			</script>
+	  </div>
+  </body>
+</html>

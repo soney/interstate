@@ -490,6 +490,9 @@ var StatefulPropContextualVal = function(options) {
 				this._from_state = info.state;
 				return rv;
 			} else if(info.type === "non_stateful") {
+				if(this._last_value) {
+					return this._last_value;
+				}
 				var rv = info.value;
 				this._last_value = rv;
 				this._from_state = undefined;

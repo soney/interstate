@@ -644,12 +644,20 @@ var Env = function(options) {
 		});
 		return command;
 	};
+	proto.make_concurrent = function(state_name, concurrent) {
+		concurrent = concurrent !== false;
+		var state = this.find_state(state_name);
+		var command = red.command("make_concurrent", {
+			statechart: state,
+			concurrent: concurrent
+		});
+		this._do(command);
+		return this.default_return_value();
+	};
 	proto.add_transition = function() {
 		var command = this._get_add_transition_command.apply(this, arguments);
 		this._do(command);
-		this._last_transition = command._transition;
-		if(this.print_on_return) return this.print();
-		else return this;
+		return this.default_return_value();
 	};
 
 	proto._get_remove_transition_command = function(transition_id) {
@@ -671,8 +679,7 @@ var Env = function(options) {
 	proto.remove_transition = function() {
 		var command = this._get_remove_transition_command.apply(this, arguments);
 		this._do(command);
-		if(this.print_on_return) return this.print();
-		else return this;
+		return this.default_return_value();
 	};
 
 	proto._get_set_event_command = function(transition_id, event) {
@@ -688,8 +695,27 @@ var Env = function(options) {
 	proto.set_event = function() {
 		var command = this._get_set_event_command.apply(this, arguments);
 		this._do(command);
-		if(this.print_on_return) return this.print();
-		else return this;
+		return this.default_return_value();
+	};
+	proto.set_from = function(transition, to_state) {
+		transition = this.find_state(transition);
+		to_state = this.find_state(to_state);
+		var command = red.command("set_transition_from", {
+			transition: transition,
+			statechart: to_state
+		});
+		this._do(command);
+		return this.default_return_value();
+	};
+	proto.set_to = function(transition, to_state) {
+		transition = this.find_state(transition);
+		to_state = this.find_state(to_state);
+		var command = red.command("set_transition_to", {
+			transition: transition,
+			statechart: to_state
+		});
+		this._do(command);
+		return this.default_return_value();
 	};
 	proto.print = function() {
 		var value_to_value_str = function(val) {

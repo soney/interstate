@@ -1207,15 +1207,19 @@ red.Statechart = function(options) {
 			this.$incoming_transitions.splice(index, 1);
 		}
 	};
-	proto.starts_at = function(state) {
-		var start_at_state = this.find_state(state, false);
-		if(!start_at_state) {
+	proto.get_initial_state = function() {
+		var start_state = this.get_start_state();
+		return start_state.getTo();
+	};
+	proto.starts_at = proto.set_initial_state = function(state) {
+		state = this.find_state(state, false);
+		if(!state) {
 			throw new Error("Could not find state " + state);
 		}
 		var start_state = this.get_start_state();
-		start_state.setTo(start_at_state);
+		start_state.setTo(state);
 		if(this.is_running() && this.get_active_substate() === start_state) {
-			this.set_active_substate(start_at_state);
+			this.set_active_substate(state);
 		}
 		return this;
 	};

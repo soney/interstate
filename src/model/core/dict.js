@@ -11,7 +11,7 @@ red.inherited_root = function(pcontext) {
 		child_src;
 	for(var i = pcontext.length() - 2; i>= 0; i--) {
 		parent = pcontext.points_at(i);
-		child_src = parent.src_for_prop(child, pcontext.slice(0, i));
+		child_src = parent.src_for_prop(child, pcontext.slice(0, i+1));
 		if(child_src === parent) {
 			if(inh) {
 				return pcontext.slice(0, i+3);
@@ -538,7 +538,7 @@ red.Dict = function(options, defer_initialization) {
 		}
 	};
 
-	proto.clone = function() {
+	proto.clone = function(options) {
 	};
 
 	proto.serialize = function() {

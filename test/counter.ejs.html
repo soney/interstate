@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+  </head>
+  <body>
+		<div class="content">
+		</div>
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript">
+				var env = red.create("environment");
+				env	.cd("children")
+					.set("obj", "<stateful>")
+					.cd("obj")
+					.add_transition("INIT", "INIT", "on('timeout', 1000)")
+					.set("(protos)", "INIT", "dom")
+					.set("tag", "<stateful prop>")
+					.set("text", "<stateful prop>")
+					.set("tag", "INIT", "'div'")
+					.set("text", "INIT", "i")
+					.set("i", "(start) -> INIT", "1")
+					.set("i", "INIT -> INIT", "i+1")
+					;
+
+				var root_pointer = env.get_root_pointer();
+				output_view = $("<div />").dom_output({
+					root: root_pointer
+				}).appendTo(document.body);
+				env.print_on_return = true;
+				console.log(env.print());
+			</script>
+	  </div>
+  </body>
+</html>

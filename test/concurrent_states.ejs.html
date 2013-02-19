@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+  </head>
+  <body>
+		<div class="content">
+		</div>
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript">
+				var env = red.create("environment");
+				env	
+					.set("a", "<stateful>")
+					.cd("a")
+					.make_concurrent("INIT", true)
+					.add_state("INIT.selection_info.not_selected")
+					.add_state("INIT.selection_info.selected")
+					.set_to("INIT.selection_info.(start) -> INIT.selection_info.(start)", "INIT.selection_info.not_selected")
+					.add_state("INIT.playing_info.not_playing")
+					.add_state("INIT.playing_info.playing")
+					.set_to("INIT.playing_info.(start) -> INIT.playing_info.(start)", "INIT.playing_info.not_playing")
+					;
+
+				var root_pointer = env.get_root_pointer();
+				output_view = $("<div />").dom_output({
+					root: root_pointer
+				}).appendTo(document.body);
+				env.print_on_return = true;
+				console.log(env.print());
+			</script>
+	  </div>
+  </body>
+</html>

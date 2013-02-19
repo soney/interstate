@@ -152,6 +152,37 @@ red._commands["rename_state"] = function(options) {
 	return new RenameStateCommand(options);
 };
 
+var MakeConcurrentCommand = function(options) {
+	MakeConcurrentCommand.superclass.constructor.apply(this, arguments);
+	this._options = options || {};
+
+	if(!_.has(this._options, "statechart")) {
+		throw new Error("Must select a statechart");
+	}
+
+	this._statechart = this._options.statechart;
+	this._concurrent = !!this._options.concurrent;
+};
+
+(function(my) {
+	_.proto_extend(my, red.Command);
+	var proto = my.prototype;
+
+	proto._execute = function() {
+		this._statechart.make_concurrent(this._concurrent);
+	};
+
+	proto._unexecute = function() {
+		this._statechart.make_concurrent(!this._concurrent);
+	};
+
+	proto._do_destroy = function(in_effect) { };
+}(MakeConcurrentCommand));
+
+red._commands["make_concurrent"] = function(options) {
+	return new MakeConcurrentCommand(options);
+};
+
 var AddTransitionCommand = function(options) {
 	AddTransitionCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
@@ -263,6 +294,70 @@ var SetTransitionEventCommand = function(options) {
 
 red._commands["set_transition_event"] = function(options) {
 	return new SetTransitionEventCommand(options);
+};
+
+var SetTransitionFromCommand = function(options) {
+	SetTransitionFromCommand.superclass.constructor.apply(this, arguments);
+	this._options = options || {};
+
+	if(!_.has(this._options, "statechart")) {
+		throw new Error("Must select a statechart");
+	}
+
+	this._transition = this._options.transition;
+	this._statechart = this._options.statechart;
+	this._old_statechart = this._transition.from();
+};
+
+(function(my) {
+	_.proto_extend(my, red.Command);
+	var proto = my.prototype;
+
+	proto._execute = function() {
+		this._transition.setFrom(this._statechart);
+	};
+
+	proto._unexecute = function() {
+		this._transition.setFrom(this._old_statechart);
+	};
+
+	proto._do_destroy = function(in_effect) { };
+}(SetTransitionFromCommand));
+
+red._commands["set_transition_from"] = function(options) {
+	return new SetTransitionFromCommand(options);
+};
+
+var SetTransitionToCommand = function(options) {
+	SetTransitionToCommand.superclass.constructor.apply(this, arguments);
+	this._options = options || {};
+
+	if(!_.has(this._options, "statechart")) {
+		throw new Error("Must select a statechart");
+	}
+
+	this._transition = this._options.transition;
+	this._statechart = this._options.statechart;
+	this._old_statechart = this._transition.to();
+};
+
+(function(my) {
+	_.proto_extend(my, red.Command);
+	var proto = my.prototype;
+
+	proto._execute = function() {
+		this._transition.setTo(this._statechart);
+	};
+
+	proto._unexecute = function() {
+		this._transition.setTo(this._old_statechart);
+	};
+
+	proto._do_destroy = function(in_effect) { };
+}(SetTransitionToCommand));
+
+red._commands["set_transition_to"] = function(options) {
+	return new SetTransitionToCommand(options);
 };
 
 }(red));
