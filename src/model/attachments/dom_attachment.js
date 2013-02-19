@@ -90,20 +90,97 @@ red.DomAttachmentInstance = function(options) {
 	};
 
 	proto.add_css_change_listeners = function() {
-		var listeners = {};
-		var self = this;
-		_.forEach(changeable_css_props, function(css_prop_name, red_attr_name) {
-			listeners[red_attr_name] = self.add_css_change_listener(red_attr_name, css_prop_name);
+		var pointer = this.get_pointer(),
+			owner = this.get_owner(),
+			current_listener_prop_names = [],
+			current_listeners = {},
+			desired_listener_prop_names;
+
+		return cjs.liven(function() {
+			var css = owner.prop_val("css", pointer);
+			if(css instanceof red.Pointer) {
+				var css_dict = css.points_at();
+				if(css_dict instanceof red.Dict) {
+					desired_listener_prop_names = css_dict.get_prop_names(css, true);
+				} else {
+					desired_listener_prop_names = []
+				}
+			}  else {
+				desired_listener_prop_names = []
+			}
+
+			var diff = _.diff(current_listener_prop_names, desired_listener_prop_names);
+			current_listener_prop_names = desired_listener_prop_names;
+
+			var dom_obj;
+			if(diff.removed.length > 0) {
+				dom_obj = this.get_dom_obj();
+			}
+
+			_.each(diff.removed, function(info) {
+				var name = info.from_item;
+				var listener = current_listeners[name];
+				listener.destroy();
+				delete diff.removed[name];
+				if(dom_obj) {
+					dom_obj.style[name] = "";
+					delete dom_obj.style[name];
+				}
+			}, this);
+			_.each(diff.added, function(info) {
+				var name = info.item;
+				current_listeners[name] = this.add_css_change_listener(name);
+			}, this);
+		}, {
+			context: this
+			, pause_while_running: true
 		});
-		return listeners;
 	};
 	proto.add_attribute_change_listeners = function() {
-		var listeners = {};
-		var self = this;
-		_.forEach(changeable_attributes, function(prop_name, red_attr_name) {
-			listeners[red_attr_name] = self.add_attribute_change_listener(red_attr_name, prop_name);
+		var pointer = this.get_pointer(),
+			owner = this.get_owner(),
+			current_listener_prop_names = [],
+			current_listeners = {},
+			desired_listener_prop_names;
+
+		return cjs.liven(function() {
+			var css = owner.prop_val("attr", pointer);
+			if(css instanceof red.Pointer) {
+				var css_dict = css.points_at();
+				if(css_dict instanceof red.Dict) {
+					desired_listener_prop_names = css_dict.get_prop_names(css, true);
+				} else {
+					desired_listener_prop_names = []
+				}
+			}  else {
+				desired_listener_prop_names = []
+			}
+
+			var diff = _.diff(current_listener_prop_names, desired_listener_prop_names);
+			current_listener_prop_names = desired_listener_prop_names;
+
+			var dom_obj;
+			if(diff.removed.length > 0) {
+				dom_obj = this.get_dom_obj();
+			}
+
+			_.each(diff.removed, function(info) {
+				var name = info.from_item;
+				var listener = current_listeners[name];
+				listener.destroy();
+				delete diff.removed[name];
+				if(dom_obj) {
+					dom_obj.removeAttribute(name);
+				}
+			}, this);
+			_.each(diff.added, function(info) {
+				var name = info.item;
+				current_listeners[name] = this.add_attribute_change_listener(name);
+			}, this);
+		}, {
+			context: this
+			, pause_while_running: true
 		});
-		return listeners;
 	};
 	proto.add_tag_change_listener = function() {
 		var pointer = this.get_pointer();
@@ -128,18 +205,25 @@ red.DomAttachmentInstance = function(options) {
 			, run_on_create: false
 		}).run();
 	};
-	proto.add_css_change_listener = function(red_attr_name, css_prop_name) {
-		var pointer = this.get_pointer();
-		var owner = this.get_owner();
+	proto.add_css_change_listener = function(name) {
+		var pointer = this.get_pointer(),
+			owner = this.get_owner();
 
 		return cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
-				var val = owner.prop_val(red_attr_name, pointer);
-				if(val) {
-					dom_obj.style[css_prop_name] = val;
-				} else {
-					delete dom_obj.style[css_prop_name];
+				var css = owner.prop_val("css", pointer);
+				if(css instanceof red.Pointer) {
+					var css_dict = css.points_at();
+					if(css_dict instanceof red.Dict) {
+						var val = css_dict.prop_val(name, css);
+						if(val) {
+							dom_obj.style[name] = val;
+						} else {
+							dom_obj.style[name] = "";
+							delete dom_obj.style[name];
+						}
+					}
 				}
 			}
 		}, {
@@ -147,18 +231,24 @@ red.DomAttachmentInstance = function(options) {
 			, pause_while_running: true
 		});
 	};
-	proto.add_attribute_change_listener = function(red_attr_name, attr_name) {
-		var pointer = this.get_pointer();
-		var owner = this.get_owner();
+	proto.add_attribute_change_listener = function(name) {
+		var pointer = this.get_pointer(),
+			owner = this.get_owner();
 
 		return cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
-				var val = owner.prop_val(red_attr_name, pointer);
-				if(val) {
-					dom_obj.setAttribute(attr_name, val);
-				} else if(dom_obj.hasAttribute(attr_name)) {
-					dom_obj.removeAttribute(attr_name);
+				var css = owner.prop_val("attr", pointer);
+				if(css instanceof red.Pointer) {
+					var css_dict = css.points_at();
+					if(css_dict instanceof red.Dict) {
+						var val = css_dict.prop_val(name, css);
+						if(val) {
+							dom_obj.setAttribute(name, val);
+						} else {
+							dom_obj.removeAttribute(name);
+						}
+					}
 				}
 			}
 		}, {

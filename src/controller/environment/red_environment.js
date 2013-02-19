@@ -40,6 +40,7 @@ var Env = function(options) {
 		var root_dict = root_pointer.points_at();
 
 		var dom = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment")]});
+		dom.set("tag", red.create("cell", {str: "'div'"}));
 		root_dict.set("dom", dom);
 
 		var children = red.create("dict", {has_protos: false});
@@ -71,7 +72,9 @@ var Env = function(options) {
 		if(name instanceof red.State || name instanceof red.StatechartTransition) {
 			return name;
 		} else {
-			var statechart = this.get_current_statechart();
+			var SOandC = red.find_stateful_obj_and_context(this.pointer);
+			var owner = SOandC.stateful_obj;
+			var statechart = owner.get_own_statechart();
 
 			var states = name.split(/->|-(\d+)>/);
 			if(states.length > 1) { //transition
@@ -99,7 +102,7 @@ var Env = function(options) {
 
 				if(!state) {
 					var pointer = this.get_pointer_obj();
-					var inherited_statecharts = pointer.get_inherited_statecharts(this.pointer);
+					var inherited_statecharts = owner.get_inherited_statecharts(this.pointer);
 					for(var i = 0; i<inherited_statecharts.length; i++) {
 						var isc = inherited_statecharts[i];
 						state = isc.find_state(name);

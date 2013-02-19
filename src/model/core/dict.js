@@ -377,8 +377,8 @@ red.Dict = function(options, defer_initialization) {
 			return false;
 		}
 	};
-	proto.get_prop_names = function(pcontext) {
-		var builtin_prop_names = this._get_builtin_prop_names();
+	proto.get_prop_names = function(pcontext, exclude_builtins) {
+		var builtin_prop_names = exclude_builtins === true ? [] : this._get_builtin_prop_names();
 		var direct_prop_names = this._get_direct_prop_names();
 		var special_context_prop_names = this._get_special_context_prop_names(pcontext);
 		var inherited_prop_names = this._get_inherited_prop_names(pcontext);

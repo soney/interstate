@@ -11,6 +11,7 @@
 			<script type="text/javascript">
 				var env = red.create("environment");
 
+				/*
 				env	.cd("children")
 					.set("obj", "<stateful>")
 					.cd("obj")
@@ -21,15 +22,17 @@
 					.set("(protos)", "flash1", "dom")
 					.set("tag")
 					.set("text")
-					.set("backgroundColor")
 					.set("tag", "flash1", "'div'")
 					.set("text", "flash1", "'hello'")
+					.set("css", "<dict>")
+					.cd("css")
+					.set("backgroundColor", "<stateful prop>")
 					.set("backgroundColor", "flash1", "'red'")
 					.set("backgroundColor", "flash2", "'green'")
 					.top()
 					.set("interval", "500")
 					;
-				/*
+				*/
 				env	.cd("children")
 					.set("obj", "<stateful>")
 					.cd("obj")
@@ -40,7 +43,6 @@
 					.set("i", "(start) -> INIT", "1")
 					.set("i", "INIT -> INIT", "i+1")
 					;
-				*/
 
 
 
