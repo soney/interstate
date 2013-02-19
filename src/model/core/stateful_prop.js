@@ -208,6 +208,9 @@ red.StatefulProp = function(options, defer_initialization) {
 		this._direct_values.destroy();
 	};
 
+	proto.clone = function() {
+	};
+
 	proto.serialize = function() {
 		return {
 			direct_values: red.serialize(this._direct_values)

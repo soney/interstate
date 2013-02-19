@@ -1287,6 +1287,9 @@ red.Statechart = function(options) {
 	};
 
 
+	proto.clone = function() {
+	};
+
 	proto.serialize = function() {
 		return {
 			substates: red.serialize(this.$substates)

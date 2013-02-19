@@ -59,6 +59,8 @@ red.Cell = function(options, defer_initialization) {
 	proto.destroy = function() {
 		this._tree.destroy();
 	};
+	proto.clone = function() {
+	};
 	proto.serialize = function() {
 		var rv = {};
 

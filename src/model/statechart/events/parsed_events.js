@@ -76,7 +76,8 @@ var id  = 0;
 			this._live_event_creator.destroy();
 		}
 	};
-	proto.stringify = function() { return "'" + this.get_str() + "'"; };
+	proto.clone = function() {
+	};
 	proto.serialize = function() { return { str: this.get_str() }; };
 	my.deserialize = function(obj) { return red.create_event("parsed", obj.str); };
 }(ParsedEvent));

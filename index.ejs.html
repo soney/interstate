@@ -33,6 +33,7 @@
 					.set("interval", "500")
 					;
 				*/
+				/*
 				env	.cd("children")
 					.set("obj", "<stateful>")
 					.cd("obj")
@@ -43,6 +44,21 @@
 					.set("i", "(start) -> INIT", "1")
 					.set("i", "INIT -> INIT", "i+1")
 					;
+				*/
+				env	.set("dict1", "<dict>")
+					.cd("dict1")
+					.set("d1a", "<dict>")
+					.cd("d1a")
+					.set("x", "1")
+					.set("y", "1+1")
+					.top()
+					.set("dict2", "<dict>")
+					.cd("dict2")
+					.set("(protos)", "[dict1]")
+					.cd("d1a");
+
+
+
 
 
 

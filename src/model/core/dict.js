@@ -1,6 +1,30 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+red.is_inherited = function(pcontext) {
+	return red.inherited_root(pcontext) !== undefined;
+};
+red.inherited_root = function(pcontext) {
+	var child, parent;
+	child = pcontext.points_at();
+	var inh = false,
+		child_src;
+	for(var i = pcontext.length() - 2; i>= 0; i--) {
+		parent = pcontext.points_at(i);
+		child_src = parent.src_for_prop(child, pcontext.slice(0, i));
+		if(child_src === parent) {
+			if(inh) {
+				return pcontext.slice(0, i+3);
+			}
+		} else if(child_src !== undefined) {
+			inh = true;
+		}
+
+		child = parent;
+	}
+	return undefined;
+};
+
 red.Dict = function(options, defer_initialization) {
 	options = _.extend({
 		value: {},
@@ -324,21 +348,6 @@ red.Dict = function(options, defer_initialization) {
 		return undefined;
 	};
 
-/*
-	proto.get_special_context_props = function(pcontext) {
-		var rv = {};
-		var my_index = pcontext.indexOf(this);
-		if(my_index >= 0) {
-			var special_contexts = pcontext.special_contexts(my_index);
-			_.extend.apply(_, (rv).concat(_.map(special_contexts, function(special_context) {
-				var context_obj = special_context.get_context_obj();
-				rv.extend(context_obj);
-			})));
-		}
-		return rv;
-	};
-	*/
-	
 	//
 	// === PROPERTIES ===
 	//
@@ -391,20 +400,6 @@ red.Dict = function(options, defer_initialization) {
 		}, this);
 		return prop_pointers;
 	};
-	proto.is_inherited = function(prop_name, pcontext) {
-		var inherited_prop_names = this._get_inherited_prop_names(pcontext);
-		return inherited_prop_names.indexOf(prop_name) >= 0;
-	};
-	proto.inherit = function(prop_name) {
-		if(!this.is_inherited(prop_name)) {
-			throw new Error("Trying to inherit non-inherited property");
-		}
-		var prop_val = this.get(prop_name);
-		var cloned_prop_val;
-		if(prop_val instanceof red.Cell) {
-			cloned_prop_val = prop_val.clone();
-		}
-	};
 	proto.name_for_prop = function(value, pcontext) {
 		var rv = this.direct_props().keyForValue(value);
 		if(_.isUndefined(rv) && pcontext) {
@@ -418,6 +413,22 @@ red.Dict = function(options, defer_initialization) {
 			}
 		}
 		return rv;
+	};
+	proto.src_for_prop = function(value, pcontext) {
+		var rv = this.direct_props().keyForValue(value);
+		if(rv) {
+			return this;
+		} else if(pcontext) {
+			var protos = this._get_proto_vals(pcontext);
+			for(var i = 0; i<protos.length; i++) {
+				var protoi = protos[i];
+				rv = protoi.src_for_prop(value, false);
+				if(!_.isUndefined(rv)) {
+					return protoi;
+				}
+			}
+		}
+		return undefined;
 	};
 	
 	//
@@ -525,6 +536,9 @@ red.Dict = function(options, defer_initialization) {
 		} else {
 			return undefined;
 		}
+	};
+
+	proto.clone = function() {
 	};
 
 	proto.serialize = function() {

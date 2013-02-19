@@ -41,6 +41,10 @@ var Env = function(options) {
 
 		var dom = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment")]});
 		dom.set("tag", red.create("cell", {str: "'div'"}));
+		dom.set("text", red.create("cell", {str: "undefined"}));
+		dom.set("children", red.create("dict", {has_protos: false}));
+		dom.set("attr", red.create("dict", {has_protos: false}));
+		dom.set("css", red.create("dict", {has_protos: false}));
 		root_dict.set("dom", dom);
 
 		var children = red.create("dict", {has_protos: false});
@@ -838,8 +842,8 @@ var Env = function(options) {
 
 				var prop_names = dict.get_prop_names(pointer);
 				_.each(prop_names, function(prop_name) {
-					var is_inherited = dict.is_inherited(prop_name, pointer);
 					var prop_pointer = dict.get_prop_pointer(prop_name, pointer);
+					var is_inherited = red.is_inherited(prop_pointer);
 					var prop_points_at = prop_pointer.points_at();
 
 					var is_expanded = current_pointer.has(prop_points_at);
@@ -917,7 +921,7 @@ var Env = function(options) {
 		} else {
 			root_str = "root";
 		}
-		console.log(root_str + " (" + root.id + ")");
+		console.log(pad(root_str, PROP_NAME_WIDTH)  + value_to_value_str(root));
 		tablify(this.pointer.slice(0,1));
 
 		return "ok...";
