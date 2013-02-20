@@ -10,20 +10,29 @@
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
 				var env = red.create("environment");
+				window.select = red.create_event("manual");
+				window.deselect = red.create_event("manual");
+				window.play = red.create_event("manual");
+				window.unplay = red.create_event("manual");
 				env	
 					.set("a", "<stateful>")
 					.cd("a")
-					.make_concurrent("INIT", true)
-					.add_state("INIT.selection_info.not_selected")
-					.add_state("INIT.selection_info.selected")
-					.set_to("INIT.selection_info.(start) -> INIT.selection_info.(start)", "INIT.selection_info.not_selected")
-					.add_state("INIT.playing_info.not_playing")
-					.add_state("INIT.playing_info.playing")
-					.set_to("INIT.playing_info.(start) -> INIT.playing_info.(start)", "INIT.playing_info.not_playing")
-					.set("x", "INIT.selection_info.not_selected", "1+1")
-					.set("x", "INIT.selection_info.selected", "2+2")
-					.set("x", "INIT.playing_info.not_playing", "1+1")
-					.set("x", "INIT.playing_info.playing", "2+2")
+						.make_concurrent("INIT", true)
+						.add_state("INIT.selection_info.not_selected")
+						.add_state("INIT.selection_info.selected")
+						.add_state("INIT.playing_info.not_playing")
+						.add_state("INIT.playing_info.playing")
+						.set_to("INIT.selection_info.(start) -> INIT.selection_info.(start)", "INIT.selection_info.not_selected")
+						.set_to("INIT.playing_info.(start) -> INIT.playing_info.(start)", "INIT.playing_info.not_playing")
+						.add_transition("INIT.selection_info.not_selected", "INIT.selection_info.selected", select)
+						.add_transition("INIT.selection_info.selected", "INIT.selection_info.not_selected", deselect)
+						.add_transition("INIT.playing_info.not_playing", "INIT.playing_info.playing", play)
+						.add_transition("INIT.playing_info.playing", "INIT.playing_info.not_playing", unplay)
+
+						.set("x", "INIT.selection_info.not_selected", "1+1")
+						.set("x", "INIT.selection_info.selected", "2+2")
+						.set("x", "INIT.playing_info.not_playing", "3+3")
+						.set("x", "INIT.playing_info.playing", "4+4")
 					;
 
 				var root_pointer = env.get_root_pointer();

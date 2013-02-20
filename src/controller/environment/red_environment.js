@@ -632,8 +632,6 @@ var Env = function(options) {
 
 		if(_.isString(event)) {
 			event = red.create_event("parsed", {str: event, inert_super_event: true});
-		} else {
-			this._event = this._options.event;
 		}
 
 		var command = red.command("add_transition", {
@@ -791,9 +789,9 @@ var Env = function(options) {
 		var PROP_ID_WIDTH = 5;
 		var PROP_VALUE_WIDTH = 40;
 
-		var STATE_NAME_WIDTH = 30;
+		var STATE_NAME_WIDTH = 40;
 		var STATE_ID_WIDTH = 5;
-		var TRANSITION_NAME_WIDTH = 20;
+		var TRANSITION_NAME_WIDTH = 70;
 		var TRANSITION_VALUE_WIDTH = 40;
 		var STATE_VALUE_WIDTH = 100;
 
