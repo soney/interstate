@@ -790,7 +790,7 @@ var Env = function(options) {
 		var PROP_VALUE_WIDTH = 40;
 
 		var STATE_NAME_WIDTH = 40;
-		var STATE_ID_WIDTH = 5;
+		var STATE_ID_WIDTH = 8;
 		var TRANSITION_NAME_WIDTH = 70;
 		var TRANSITION_VALUE_WIDTH = 40;
 		var STATE_VALUE_WIDTH = 100;
@@ -858,7 +858,7 @@ var Env = function(options) {
 							state_name = "  " + state_name;
 						}
 
-						state_name = pad(state.id(), STATE_ID_WIDTH) + state_name;
+						state_name = pad(state.id() + (state.basis() ? ":" + state.basis().id() : ""), STATE_ID_WIDTH) + state_name;
 						console.log(state_name);
 					});
 					console.groupEnd();

@@ -80,7 +80,7 @@ red.StatefulProp = function(options, defer_initialization) {
 		if(val) {
 			val.destroy();
 		}
-		this._direct_values.unset(state);
+		this._direct_values.remove(state);
 	};
 	proto._direct_value_for_state = function(state) {
 		state = state_basis(state);

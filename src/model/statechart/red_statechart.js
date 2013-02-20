@@ -152,7 +152,7 @@ red.find_equivalent_state = function(to_state, in_tree) {
 	});
 
 	for(var i = to_state_index+1; i < to_state_lineage_len; i++) {
-		var name = to_state_lineage[i].get_name(to_state_lineage[i-1]);
+		var name = to_state_lineage[i-1].get_name_for_substate(to_state_lineage[i]);
 		search_item = search_item.get_substate_with_name(name);
 	}
 	if(search_item.basis() !== to_state) { throw new Error("Could not find correct equivalent item"); }
@@ -338,8 +338,7 @@ red.State = function(options, defer_initialization) {
 		this.add_substate(state_name, state.create_shadow(), index); 
 	}, this);
 	this.$onBasisRemoveSubstate = _.bind(function(event) {
-		var substate = event.state;
-		this.remove_substate(substate, false);
+		this.remove_substate_with_name(event.name, undefined, false);
 	}, this);
 	this.$onBasisRenameSubstate = _.bind(function(event) {
 		var from_name = event.from,
@@ -704,7 +703,7 @@ red.StartState = function(options) {
 	};
 	proto.destroy = function() {
 		cjs.wait();
-		my.superclass.do_initialize.apply(this, arguments);
+		my.superclass.destroy.apply(this, arguments);
 		this.outgoingTransition.destroy();
 		cjs.signal();
 	};
@@ -976,8 +975,8 @@ red.Statechart = function(options) {
 		} else {
 			state = new red.Statechart({parent: this});
 		}
-		state.on("pre_transition_fire", this._forward);
-		state.on("post_transition_fire", this._forward);
+		state.on("pre_transition_fire", this.forward);
+		state.on("post_transition_fire", this.forward);
 		this.$substates.put(state_name, state, index);
 		this._emit("add_substate", {
 			type: "add_substate",
@@ -989,24 +988,28 @@ red.Statechart = function(options) {
 	proto.remove_substate = function(state, also_destroy) {
 		var name = this.$substates.keyForValue(state);
 		if(name) {
-			cjs.wait();
-			if(this.get_active_substate() === state) {
-				this.set_active_substate(undefined);
-			}
-			this.$substates.remove(name);
-			cjs.signal();
-			state.on("pre_transition_fire", this._forward);
-			state.on("post_transition_fire", this._forward);
+			this.remove_substate_with_name(name, also_destroy, state);
+		}
+	};
+	proto.remove_substate_with_name = function(name, also_destroy, state) {
+		state = state || this.$substates.get(name);
+		cjs.wait();
+		if(this.get_active_substate() === state) {
+			this.set_active_substate(undefined);
+		}
+		this.$substates.remove(name);
+		cjs.signal();
+		state.off("pre_transition_fire", this.forward);
+		state.off("post_transition_fire", this.forward);
 
-			this._emit("remove_substate", {
-				type: "remove_substate",
-				state: state,
-				name: name
-			});
+		this._emit("remove_substate", {
+			type: "remove_substate",
+			state: state,
+			name: name
+		});
 
-			if(also_destroy !== false) {
-				state.destroy();
-			}
+		if(also_destroy !== false) {
+			state.destroy();
 		}
 	};
 	proto.rename_substate = function(from_name, to_name) {
@@ -1092,7 +1095,7 @@ red.Statechart = function(options) {
 		});
 
 		cjs.wait();
-		my.superclass.do_initialize.apply(this, arguments);
+		my.superclass.destroy.apply(this, arguments);
 		_.forEach(this.get_incoming_transitions(), function(transition) {
 			transition.remove().destroy();
 		});
