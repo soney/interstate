@@ -20,6 +20,10 @@
 					.add_state("INIT.playing_info.not_playing")
 					.add_state("INIT.playing_info.playing")
 					.set_to("INIT.playing_info.(start) -> INIT.playing_info.(start)", "INIT.playing_info.not_playing")
+					.set("x", "INIT.selection_info.not_selected", "1+1")
+					.set("x", "INIT.selection_info.selected", "2+2")
+					.set("x", "INIT.playing_info.not_playing", "1+1")
+					.set("x", "INIT.playing_info.playing", "2+2")
 					;
 
 				var root_pointer = env.get_root_pointer();
