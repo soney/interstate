@@ -84,7 +84,7 @@ var Env = function(options) {
 			if(states.length > 1) { //transition
 				var from_name = states[0].trim(),
 					to_name = states[2].trim(),
-					index = states[1] || 0;
+					index = parseInt(states[1]) || 0;
 
 				var transition = statechart.find_transitions(from_name, to_name, index);
 

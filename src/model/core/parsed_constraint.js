@@ -202,7 +202,7 @@ var get_$ = red.get_parsed_$ = function(node, options) {
 		});
 		return get_array_$(elements);
 	} else if(type === "ConditionalExpression") {
-		return get_conditional_$(node.test, node.consequent, node.alternate);
+		return get_conditional_$(get_$(node.test, options), get_$(node.consequent, options), get_$(node.alternate, options));
 	} else if(type === "Program") {
 		return get_$(node.body[0], options);
 	} else {
