@@ -6,7 +6,7 @@ var cjs = red.cjs, _ = red._;
 		var self = this;
 		this.get_target_listener = cjs.memoize(_.bind(function(specified_target) {
 			var listener = _.bind(function(event) {
-				event.preventDefault();
+				//event.preventDefault();
 				red.event_queue.wait();
 
 				event = _.extend({}, event, {

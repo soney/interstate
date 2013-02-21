@@ -203,6 +203,11 @@ var get_$ = red.get_parsed_$ = function(node, options) {
 		return get_array_$(elements);
 	} else if(type === "ConditionalExpression") {
 		return get_conditional_$(get_$(node.test, options), get_$(node.consequent, options), get_$(node.alternate, options));
+	} else if(type === "LogicalExpression") {
+		var op_func = binary_operators[node.operator];
+		var left_arg = get_$(node.left, options),
+			right_arg = get_$(node.right, options);
+		return get_op_$(window, op_func, left_arg, right_arg);
 	} else if(type === "Program") {
 		return get_$(node.body[0], options);
 	} else {
@@ -210,10 +215,10 @@ var get_$ = red.get_parsed_$ = function(node, options) {
 	}
 };
 
-var func_regex = /^\s*function\s*\((\s*[a-zA-Z_$][\w\$_]*\s*,)*\s*[a-zA-Z_$][\w\$_]*\s*\)\s*{.*}\s*$/;
+var func_regex = /^\s*function\s*\((\s*[a-zA-Z$][\w\$]*\s*,)*\s*[a-zA-Z$][\w\$]*\s*\)\s*{.*}\s*$/;
 
 red.parse = function(str) {
-	if(str.match(func_regex)) {
+	if((str.replace(/\n/g, "")).match(func_regex)) {
 		return (function() {
 			var rv;
 			eval("rv = " + str);
