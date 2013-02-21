@@ -209,4 +209,19 @@ var get_$ = red.get_parsed_$ = function(node, options) {
 		console.log(type, node);
 	}
 };
+
+var func_regex = /^\s*function\s*\((\s*[a-zA-Z_$][\w\$_]*\s*,)*\s*[a-zA-Z_$][\w\$_]*\s*\)\s*{.*}\s*$/;
+
+red.parse = function(str) {
+	if(str.match(func_regex)) {
+		return (function() {
+			var rv;
+			eval("rv = " + str);
+			return rv;
+		}());
+	} else {
+		return esprima.parse(str);
+	}
+};
+
 }(red));

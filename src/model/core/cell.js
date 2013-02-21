@@ -40,7 +40,8 @@ red.Cell = function(options, defer_initialization) {
 		var self = this;
 		red.install_instance_builtins(this, options, my);
 		this._tree = cjs.$(function() {
-			return esprima.parse(self.get_str());
+			var str = self.get_str();
+			return red.parse(str);
 		});
 	};
 	proto.constraint_in_context = function(pcontext) {
@@ -48,10 +49,14 @@ red.Cell = function(options, defer_initialization) {
 
 		var val = contextual_values.get_or_put(pcontext, function() {
 			var tree = this._tree.get();
-			return red.get_parsed_$(tree, {
-				context: pcontext, 
-				ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts()
-			});
+			if(_.isFunction(tree)) {
+				return tree;
+			} else {
+				return red.get_parsed_$(tree, {
+					context: pcontext, 
+					ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts()
+				});
+			}
 		}, this);
 
 		return val;
