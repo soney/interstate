@@ -63,8 +63,10 @@ env
 		.set("pw", "(start) -> INIT", "90")
 		.set("ph", "(start) -> INIT", "20")
 		.set("x", "(start) -> INIT", "(w-pw)/2")
-		.add_transition("INIT", "INIT", "on('keydown')")
-		.set("x", "INIT->INIT", "event.keyCode == 37 ? x-5 : x+5")
+		.add_transition("INIT", "INIT", "on('keydown').when_eq('keyCode', 37)")
+		.set("x", "INIT-0>INIT", "x-5")
+		.add_transition("INIT", "INIT", "on('keydown').when_eq('keyCode', 39)")
+		.set("x", "INIT-1>INIT", "x+5")
 
 		.set("attr", "<dict>")
 		.cd("attr")

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+  </head>
+  <body>
+	  <!--<h1>red</h1>-->
+
+		<div class="content">
+		</div>
+
+	  <div>
+			<%- red_include(red_inc.main) %>
+
+			<script type="text/javascript">
+				var root, env, cjs, _, root_view;
+				$(function() {
+					cjs = red.cjs;
+					_ = red._;
+
+					env = red	.create("environment");
+
+
+env			
+.cd("children")
+.set("obj", "<stateful>")
+.cd("obj")
+.set("(protos)", "INIT", "dom")
+.set("x", "(start) -> INIT", "1")
+.add_transition("INIT", "INIT", "z === 1")
+.set("x", "INIT -> INIT", "x+1")
+.set("z", "0")
+.set("text", "x")
+;
+					var root_pointer = env.get_root_pointer();
+					output_view = $("<div />").dom_output({
+						root: root_pointer
+					}).appendTo(document.body);
+
+					env.print_on_return = true;
+					//console.log(env.print());
+				});
+			</script>
+	  </div>
+  </body>
+</html>

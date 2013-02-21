@@ -117,7 +117,12 @@ red.Event = function() {
 				new_event.fire.apply(new_event, arguments);
 			}
 		});
-		return new_transition;
+		return new_event;
+	};
+	proto.when_eq = function(prop, val) {
+		return this.guard(function(event) {
+			return event && event[prop] === val;
+		});
 	};
 	proto.destroy = function(){};
 	proto.create_shadow = function() { return new red.Event(); };

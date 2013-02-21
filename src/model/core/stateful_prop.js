@@ -444,7 +444,6 @@ var StatefulPropContextualVal = function(options) {
 				this.set_transition_times_run(transition, times_run);
 				rv = direct_values.get(key);
 				from_state = transition;
-				return false;
 			} else if(!this._used_start_transition && transition.from() instanceof red.StartState) {
 				rv = direct_values.get(key);
 				from_state = transition;
