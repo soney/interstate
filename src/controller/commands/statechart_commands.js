@@ -369,6 +369,7 @@ var StatechartOnCommand = function(options) {
 	}
 
 	this._statechart = this._options.statechart;
+	this._listener = this._options.listener;
 };
 
 (function(my) {
@@ -388,6 +389,37 @@ var StatechartOnCommand = function(options) {
 
 red._commands["statechart_on"] = function(options) {
 	return new StatechartOnCommand(options);
+};
+
+var StatechartOff = function(options) {
+	StatechartOff.superclass.constructor.apply(this, arguments);
+	this._options = options || {};
+
+	if(!_.has(this._options, "statechart")) {
+		throw new Error("Must select a statechart");
+	}
+
+	this._statechart = this._options.statechart;
+	this._listener = this._options.listener;
+};
+
+(function(my) {
+	_.proto_extend(my, red.Command);
+	var proto = my.prototype;
+
+	proto._execute = function() {
+		this._transition.setTo(this._statechart);
+	};
+
+	proto._unexecute = function() {
+		this._transition.setTo(this._old_statechart);
+	};
+
+	proto._do_destroy = function(in_effect) { };
+}(StatechartOff));
+
+red._commands["statechart_off"] = function(options) {
+	return new StatechartOffCommand(options);
 };
 
 }(red));
