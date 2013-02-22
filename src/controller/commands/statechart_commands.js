@@ -360,4 +360,34 @@ red._commands["set_transition_to"] = function(options) {
 	return new SetTransitionToCommand(options);
 };
 
+var StatechartOnCommand = function(options) {
+	StatechartOnCommand.superclass.constructor.apply(this, arguments);
+	this._options = options || {};
+
+	if(!_.has(this._options, "statechart")) {
+		throw new Error("Must select a statechart");
+	}
+
+	this._statechart = this._options.statechart;
+};
+
+(function(my) {
+	_.proto_extend(my, red.Command);
+	var proto = my.prototype;
+
+	proto._execute = function() {
+		this._transition.setTo(this._statechart);
+	};
+
+	proto._unexecute = function() {
+		this._transition.setTo(this._old_statechart);
+	};
+
+	proto._do_destroy = function(in_effect) { };
+}(StatechartOnCommand));
+
+red._commands["statechart_on"] = function(options) {
+	return new StatechartOnCommand(options);
+};
+
 }(red));

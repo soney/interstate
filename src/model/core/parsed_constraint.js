@@ -6,6 +6,10 @@ red.on_event = function(event_type) {
 	if(event_type === "timeout" || event_type === "time") {
 		var time = arguments[1];
 		return red.create_event(event_type, time);
+	} else if(event_type === "transition") {
+		var spec = arguments[1];
+		var targets = _.rest(arguments, 2);
+		return red.create_event("statechart", targets, spec);
 	} else {
 		var targets;
 		if(arguments.length <= 1) { // Ex: mouseup() <-> mouseup(window)

@@ -5,50 +5,72 @@ red.StatechartEvent = red._create_event_type("statechart");
 
 (function(my) {
 	var proto = my.prototype;
-	proto.on_create = function(statecharts, spec) {
-		this._spec = spec;
-		this.$on_change = _.bind(this.on_change, this);
-		this.set_statecharts(statecharts);
+	proto.on_create = function(targets, spec) {
+		this.get_activation_listener = cjs.memoize(function(specified_target) {
+			var listener = function(event) {
+				red.event_queue.wait();
+				this.fire(event);
+				red.event_queue.signal();
+			};
+			return listener;
+		});
+		this.get_deactivation_listener = cjs.memoize(function(specified_target) {
+			var listener = function(event) { };
+			return listener;
+		});
+
+		this.live_fn = cjs.liven(function() {
+			this.remove_listeners();
+			this.spec = cjs.get(spec);
+			var targs = cjs.get(targets);
+			if(!_.isArray(targs)) {
+				targs = [targs];
+			}
+			this.targets = _.chain(targs)
+							.map(function(target_pointer) {
+								if(target_pointer instanceof red.Pointer) {
+									var dict = target_pointer.points_at();
+									if(dict instanceof red.StatefulObj) {
+										var manifestation_pointers = dict.get_manifestation_pointers(target_pointer);
+
+										if(_.isArray(manifestation_pointers)) {
+											var statecharts = _.map(manifestation_pointers, function(manifestation_pointer) {
+												return dict.get_statechart_for_context(manifestation_pointer);
+											});
+											return statecharts;
+										} else {
+											return dict.get_statechart_for_context(target_pointer);
+										}
+									}
+								}
+								return false;
+							})
+							.flatten(true)
+							.compact()
+							.value();
+			this.add_listeners();
+		}, {
+			context: this
+		});
 	};
 	proto.destroy = function() {
+		this.live_fn.destroy();
+		this.remove_listeners();
 		_.each(this.statecharts, function(statechart) {
 			if(statechart) {
 				statechart.off(this._spec, this.$on_change);
 			}
 		}, this);
 	};
-	proto.on_change = function(event, to_state_name, from_state_name, statechart) {
-		this.fire(event);
-	};
-	proto.set_statecharts = function(statecharts) {
-		_.each(this.statecharts, function(statechart) {
-			if(statechart) {
-				statechart.off(this._spec, this.$on_change);
-			}
-		}, this);
-
-		if(!_.isArray(statecharts)) {
-			statecharts = [statecharts];
-		}
-		this.statecharts = statecharts;
-
-		_.each(this.statecharts, function(statechart) {
-			if(statechart) {
-				statechart.on(this._spec, this.$on_change);
-			}
+	proto.add_listeners = function() {
+		_.each(this.targets, function(target) {
+			target.on_transition(this.spec, this.get_activation_listener(target), this.get_deactivation_listener(target), this);
 		}, this);
 	};
-	proto.serialize = function() {
-		return {
-			spec: this._spec,
-			statecharts: red.serialize(this.statecharts)
-		};
-	};
-	my.deserialize = function(obj) {
-		return red.create_event("statechart", red.deserialize(obj.statecharts), obj.spec);
-	};
-	proto.create_shadow = function(parent_statechart, context) {
-		return red.create_event("statechart", parent_statechart, this._spec);
+	proto.remove_listeners = function() {
+		_.each(this.targets, function(target) {
+			target.off_transition(this.spec, this.get_activation_listener(target), this.get_deactivation_listener(target), this);
+		}, this);
 	};
 	proto.stringify = function() { return "" + this.statecharts[0].id() + ":" + this._spec + ""; };
 }(red.StatechartEvent));
