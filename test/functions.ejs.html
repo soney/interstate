@@ -16,8 +16,14 @@
 				window.unplay = red.create_event("manual");
 				env	
 					.set("zz", "5")
-					.set("funca", "function(x, y) { var z = 1; z = 2; z += x+1; return z + zz; }")
-					.set("b", "funca(1)")
+					.set("x", "myfunc()")
+					.set("myfunc", "function() {\n" +
+						"var z = 1;\n" +
+						"for(var i = 0; i < 10; i++) {\n" +
+						" z+= i;break;\n" +
+						"}\n" +
+						"return z;\n" +
+						"}")
 					;
 
 				var root_pointer = env.get_root_pointer();

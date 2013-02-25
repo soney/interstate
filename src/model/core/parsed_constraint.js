@@ -69,6 +69,26 @@ var get_op_$ = function(calling_context, pcontext, op) {
 	});
 };
 
+var AND_OP = 0, OR_OP = 1;
+var get_logical_$ = function(op, left, right) {
+	var op_id;
+	if(op === "&&") {
+		op_id = AND_OP;
+	} else if(op === "||") {
+		op_id = OR_OP;
+	} else {
+		console.error("Unknown op " + op);
+	}
+	return cjs.$(function() {
+		switch(op_id) {
+			case AND_OP:
+				return left.get() && right.get();
+			case OR_OP:
+				return left.get() || right.get();
+		};
+	});
+};
+
 var get_conditional_$ = function(test, consequent, alternate) { // test ? consequent : alternate
 	return cjs.$(function() {
 		var test_got = cjs.get(test);
@@ -213,10 +233,9 @@ var get_$ = red.get_parsed_$ = function(node, options) {
 	} else if(type === "ConditionalExpression") {
 		return get_conditional_$(get_$(node.test, options), get_$(node.consequent, options), get_$(node.alternate, options));
 	} else if(type === "LogicalExpression") {
-		var op_func = red.binary_operators[node.operator];
 		var left_arg = get_$(node.left, options),
 			right_arg = get_$(node.right, options);
-		return get_op_$(window, options.context, op_func, left_arg, right_arg);
+		return get_logical_$(node.operator, left_arg, right_arg);
 	} else if(type === "FunctionExpression") {
 		return red.get_fn_$(node, options);
 	} else if(type === "Program") {
@@ -226,7 +245,7 @@ var get_$ = red.get_parsed_$ = function(node, options) {
 	}
 };
 
-var func_regex = /^\s*function\s*\((\s*[a-zA-Z$][\w\$]*\s*,)*\s*[a-zA-Z$][\w\$]*\s*\)\s*{.*}\s*$/;
+var func_regex = /^\s*function\s*\((\s*[a-zA-Z$][\w\$]*\s*,)*\s*([a-zA-Z$][\w\$]*\s*)?\)\s*{.*}\s*$/;
 
 red.parse = function(str) {
 	if((str.replace(/\n/g, "")).match(func_regex)) {

@@ -133,13 +133,14 @@ env
 			.up()
 		.up()
 	.up()
-.set("num_cols", "colors.length")
-.set("num_rows", "4")
+.set("num_cols", "colors.length*2+1")
+.set("num_rows", "6")
 .set("block_width", "w/num_cols")
 .set("block_height", "30")
 .set("colors", "['red', 'orange', 'yellow', 'green', 'blue', 'purple']")
 .set("ballWidth", "30")
 .set("ballHeight", "ballWidth")
+.set("abs", Math.abs)
 .set("hit", "function(x1,y1,w1,h1,x2,y2,w2,h2) {\n" +
 	"if((x1 + w1 >= x2) && (x1 <= x2 + w2) &&\n" + 
 	"	(y1 + h1 >= y2) && (y1 <= y2 + h2)) {\n" +
@@ -153,7 +154,7 @@ env
 	"	(y1 + h1 >= y2) && (y1 <= y2 + h2)) {\n" +
 		"	var cx1 = x1+w1/2, cy1 = y1+h1/2;\n" +
 		"	var cx2 = x2+w2/2, cy2 = y2+h2/2;\n" +
-		"	return Math.abs(cx1-cx2)/(w1+w2) > Math.abs(cy1-cy2)/(h1+h2);\n" +
+		"	return abs(cx1-cx2)/(w1+w2) > abs(cy1-cy2)/(h1+h2);\n" +
 		"} else {\n" +
 		"	return false;\n" +
 		"}\n"+
@@ -163,7 +164,7 @@ env
 		"	(y1 + h1 >= y2) && (y1 <= y2 + h2)) {\n" +
 				"	var cx1 = x1+w1/2, cy1 = y1+h1/2;\n" +
 				"	var cx2 = x2+w2/2, cy2 = y2+h2/2;\n" +
-				"	return Math.abs(cx1-cx2)/(w1+w2) <= Math.abs(cy1-cy2)/(h1+h2);\n" +
+				"	return abs(cx1-cx2)/(w1+w2) <= abs(cy1-cy2)/(h1+h2);\n" +
 			"} else {\n" +
 			"	return false;\n" +
 			"}\n"+
