@@ -353,6 +353,10 @@ red.State = function(options, defer_initialization) {
 	this.$onBasisMakeConcurrent = _.bind(function(event) {
 		this.make_concurrent(event.concurrent);
 	}, this);
+	this.$onBasisOnTransition = _.bind(function(event) {
+	}, this);
+	this.$onBasisOffTransition = _.bind(function(event) {
+	}, this);
 	this.$onBasisDestroy = _.bind(function(event) {
 		this.destroy();
 	}, this);
@@ -374,6 +378,8 @@ red.State = function(options, defer_initialization) {
 			this._basis.off("rename_substate", this.$onBasisRenameSubstate);
 			this._basis.off("move_substate", this.$onBasisMoveSubstate);
 			this._basis.off("make_concurrent", this.$onBasisMakeConcurrent);
+			this._basis.off("on_transition", this.$onBasisOnTransition);
+			this._basis.off("off_transition", this.$onBasisOffTransition);
 			this._basis.off("destroy", this.$onBasisDestroy);
 		}
 		this._basis = basis;
@@ -426,6 +432,8 @@ red.State = function(options, defer_initialization) {
 			this._basis.on("rename_substate", this.$onBasisRenameSubstate);
 			this._basis.on("move_substate", this.$onBasisMoveSubstate);
 			this._basis.on("make_concurrent", this.$onBasisMakeConcurrent);
+			this._basis.on("on_transition", this.$onBasisOnTransition);
+			this._basis.on("off_transition", this.$onBasisOffTransition);
 			this._basis.on("destroy", this.$onBasisDestroy);
 		}
 		return this;
@@ -1267,6 +1275,15 @@ red.Statechart = function(options) {
 	proto.on_transition = proto.on_state = function(str, activation_listener, deactivation_listener, context) {
 		var info = add_transition_listener(str, this, activation_listener, deactivation_listener, context);
 
+		this._emit("on_transition", {
+			type: "on_transition",
+			target: this,
+			str: str,
+			activation_listener: activation_listener,
+			deactivation_listener: deactivation_listener,
+			context: context
+		});
+
 		var tlisteners = this._transition_listeners[str];
 		if(_.isArray(tlisteners)) {
 			tlisteners.push(info);
@@ -1276,6 +1293,14 @@ red.Statechart = function(options) {
 		return this;
 	};
 	proto.off_transition = proto.on_state = function(str, activation_listener, deactivation_listener, context) {
+		this._emit("off_transition", {
+			type: "off_transition",
+			target: this,
+			str: str,
+			activation_listener: activation_listener,
+			deactivation_listener: deactivation_listener,
+			context: context
+		});
 		var tlisteners = this._transition_listeners[str];
 		if(_.isArray(tlisteners)) {
 			for(var i = 0; i<tlisteners.length; i++) {

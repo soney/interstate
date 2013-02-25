@@ -360,6 +360,8 @@ red._commands["set_transition_to"] = function(options) {
 	return new SetTransitionToCommand(options);
 };
 
+var null_fn = function(){};
+
 var StatechartOnCommand = function(options) {
 	StatechartOnCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
@@ -369,7 +371,9 @@ var StatechartOnCommand = function(options) {
 	}
 
 	this._statechart = this._options.statechart;
+	this._context = this._options.context;
 	this._listener = this._options.listener;
+	this._spec = this._options.spec;
 };
 
 (function(my) {
@@ -377,11 +381,11 @@ var StatechartOnCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		this._transition.setTo(this._statechart);
+		this._statechart.on_transition(this._spec, this._listener, null_fn, this._context);
 	};
 
 	proto._unexecute = function() {
-		this._transition.setTo(this._old_statechart);
+		this._statechart.off_transition(this._spec, this._listener, null_fn, this._context);
 	};
 
 	proto._do_destroy = function(in_effect) { };
@@ -400,7 +404,9 @@ var StatechartOff = function(options) {
 	}
 
 	this._statechart = this._options.statechart;
+	this._context = this._options.context;
 	this._listener = this._options.listener;
+	this._spec = this._options.spec;
 };
 
 (function(my) {
@@ -408,11 +414,11 @@ var StatechartOff = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		this._transition.setTo(this._statechart);
+		this._statechart.off_transition(this._spec, this._listener, null_fn, this._context);
 	};
 
 	proto._unexecute = function() {
-		this._transition.setTo(this._old_statechart);
+		this._statechart.on_transition(this._spec, this._listener, null_fn, this._context);
 	};
 
 	proto._do_destroy = function(in_effect) { };

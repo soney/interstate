@@ -715,6 +715,28 @@ var Env = function(options) {
 		this._do(command);
 		return this.default_return_value();
 	};
+	proto.on_state = function(spec, func, context) {
+		var statechart = this.get_current_statechart();
+		var command = red.command("statechart_on", {
+			statechart: statechart,
+			spec: spec,
+			listener: func,
+			context: context
+		});
+		this._do(command);
+		return this.default_return_value();
+	};
+	proto.off_state = function(spec, func, context) {
+		var statechart = this.get_current_statechart();
+		var command = red.command("statechart_off", {
+			statechart: statechart,
+			spec: spec,
+			listener: func,
+			context: context
+		});
+		this._do(command);
+		return this.default_return_value();
+	};
 	proto.print = function() {
 		var value_to_value_str = function(val) {
 			if(_.isUndefined(val)) {
