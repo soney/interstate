@@ -759,6 +759,8 @@ var Env = function(options) {
 				return "(cell:" + val.id + ")";
 			} else if(val instanceof red.StatefulProp) {
 				return "(prop:" + val.id + ")";
+			} else if(val instanceof red.ParsedFunction) {
+				return "(parsed fn)";
 			} else if(val instanceof red.Query) {
 				return value_to_value_str(val.value());
 			} else if(val instanceof red.Pointer) {

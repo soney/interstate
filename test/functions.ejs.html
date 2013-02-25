@@ -15,7 +15,8 @@
 				window.play = red.create_event("manual");
 				window.unplay = red.create_event("manual");
 				env	
-					.set("funca", "function(x) { var z = 1; z = 2; z += x+1; return z; }")
+					.set("zz", "5")
+					.set("funca", "function(x, y) { var z = 1; z = 2; z += x+1; return z + zz; }")
 					.set("b", "funca(1)")
 					;
 

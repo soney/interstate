@@ -118,9 +118,12 @@ var add_transition_listener = function(str, statechart, activation_listener, dea
 
 	statechart.on(event_type, listener);
 	return {
-		destroy: function() { statechart.off(event_type, listener); },
+		str: str,
+		statechart: statechart,
 		activation_listener: activation_listener,
-		deactivation_listener: deactivation_listener
+		deactivation_listener: deactivation_listener,
+		context: context,
+		destroy: function() { statechart.off(event_type, listener); },
 	};
 };
 
@@ -354,8 +357,10 @@ red.State = function(options, defer_initialization) {
 		this.make_concurrent(event.concurrent);
 	}, this);
 	this.$onBasisOnTransition = _.bind(function(event) {
+		this.on_transition(event.str, event.activation_listener, event.deactivation_listener, event.context);
 	}, this);
 	this.$onBasisOffTransition = _.bind(function(event) {
+		this.off_transition(event.str, event.activation_listener, event.deactivation_listener, event.context);
 	}, this);
 	this.$onBasisDestroy = _.bind(function(event) {
 		this.destroy();
@@ -398,6 +403,11 @@ red.State = function(options, defer_initialization) {
 					});
 					var name = substate.get_name(basis);
 					this.add_substate(name, shadow);
+				}, this);
+				_.each(this._basis._transition_listeners, function(listeners, name) {
+					_.each(listeners, function(info) {
+						this.on_transition(info.str, info.activation_listener, info.deactivation_listener, info.context);
+					}, this);
 				}, this);
 			}
 			if(this.parent() === undefined) { // When all of the substates have been copied
@@ -752,8 +762,8 @@ red.StartState = function(options) {
 }(red.StartState));
 
 red.Statechart = function(options) {
-	red.Statechart.superclass.constructor.apply(this, arguments);
 	this._transition_listeners = {};
+	red.Statechart.superclass.constructor.apply(this, arguments);
 };
 (function(my) {
 	_.proto_extend(my, red.State);
@@ -1288,7 +1298,7 @@ red.Statechart = function(options) {
 		if(_.isArray(tlisteners)) {
 			tlisteners.push(info);
 		} else {
-			tlisteners = [info];
+			tlisteners = this._transition_listeners[str] = [info];
 		}
 		return this;
 	};

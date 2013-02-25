@@ -22,7 +22,7 @@ red.on_event = function(event_type) {
 };
 
 
-var binary_operators = {
+red.binary_operators = {
 	"===":	function(a, b) { return red.check_pointer_equality_eqeqeq(a,b); }
 	,"!==":	function(a, b) { return !red.check_pointer_equality_eqeqeq(a,b); }
 	, "==":	function(a, b) { return red.check_pointer_equality_eqeq(a, b); }
@@ -44,22 +44,27 @@ var binary_operators = {
 	, "<<":	function(a, b) { return a << b; }
 	, ">>":	function(a, b) { return a >> b; }
 	,">>>":	function(a, b) { return a >>> b; }
-}, unary_operators = {
+};
+red.unary_operators = {
 	"-":	function(a) { return -a; }
 	, "!":	function(a) { return !a; }
 	, "~":	function(a) { return ~a; }
 };
 
-var get_op_$ = function(calling_context, op) {
-	var args = _.rest(arguments, 2);
+var get_op_$ = function(calling_context, pcontext, op) {
+	var args = _.rest(arguments, 3);
 	return cjs.$(function() {
 		var op_got = cjs.get(op);
-		var args_got = _.map(args, cjs.get);
-		var calling_context_got = cjs.get(calling_context);
 
 		if(_.isFunction(op_got)) {
+			var args_got = _.map(args, cjs.get);
+			var calling_context_got = cjs.get(calling_context);
 			var rv = op_got.apply(calling_context_got, args_got);
 			return rv;
+		} else if(op_got instanceof red.ParsedFunction) {
+			return op_got._apply(pcontext, args);
+		} else {
+			throw new Error("Calling a non-function");
 		}
 	});
 };
@@ -170,14 +175,14 @@ var get_$ = red.get_parsed_$ = function(node, options) {
 	} else if(type === "Literal") {
 		return node.value;
 	} else if(type === "BinaryExpression") {
-		var op_func = binary_operators[node.operator];
+		var op_func = red.binary_operators[node.operator];
 		var left_arg = get_$(node.left, options),
 			right_arg = get_$(node.right, options);
-		return get_op_$(window, op_func, left_arg, right_arg);
+		return get_op_$(window, options.context, op_func, left_arg, right_arg);
 	} else if(type === "UnaryExpression") {
-		var op_func = unary_operators[node.operator];
+		var op_func = red.unary_operators[node.operator];
 		var arg = get_$(node.argument, options);
-		return get_op_$(window, op_func, arg);
+		return get_op_$(window, options.context, op_func, arg);
 	} else if(type === "CallExpression") {
 		var callee = get_$(node.callee, options);
 		var op_context = window;
@@ -187,7 +192,7 @@ var get_$ = red.get_parsed_$ = function(node, options) {
 		var args = _.map(node.arguments, function(arg) {
 			return get_$(arg, options);
 		});
-		return get_op_$.apply(this, ([op_context, callee]).concat(args))
+		return get_op_$.apply(this, ([op_context, options.context, callee]).concat(args))
 	} else if(type === "Identifier") {
 		if(options.is_property) {
 			var property_of = options.property_of;
@@ -208,10 +213,12 @@ var get_$ = red.get_parsed_$ = function(node, options) {
 	} else if(type === "ConditionalExpression") {
 		return get_conditional_$(get_$(node.test, options), get_$(node.consequent, options), get_$(node.alternate, options));
 	} else if(type === "LogicalExpression") {
-		var op_func = binary_operators[node.operator];
+		var op_func = red.binary_operators[node.operator];
 		var left_arg = get_$(node.left, options),
 			right_arg = get_$(node.right, options);
-		return get_op_$(window, op_func, left_arg, right_arg);
+		return get_op_$(window, options.context, op_func, left_arg, right_arg);
+	} else if(type === "FunctionExpression") {
+		return red.get_fn_$(node, options);
 	} else if(type === "Program") {
 		return get_$(node.body[0], options);
 	} else {
@@ -223,11 +230,7 @@ var func_regex = /^\s*function\s*\((\s*[a-zA-Z$][\w\$]*\s*,)*\s*[a-zA-Z$][\w\$]*
 
 red.parse = function(str) {
 	if((str.replace(/\n/g, "")).match(func_regex)) {
-		return (function() {
-			var rv;
-			eval("rv = " + str);
-			return rv;
-		}());
+		return esprima.parse("("+str+")");
 	} else {
 		return esprima.parse(str);
 	}
