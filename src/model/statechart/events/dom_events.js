@@ -78,7 +78,7 @@ var cjs = red.cjs, _ = red._;
 		});
 	};
 	proto.clone = function() {
-		return red.create_event("dom_event", this.type, this.targets);
+		return red.create_event("dom", this.type, this.targets);
 	};
 	proto.add_listeners = function() {
 		_.each(this.targets, function(target) {
@@ -94,5 +94,5 @@ var cjs = red.cjs, _ = red._;
 		this.live_fn.destroy();
 		this.remove_listeners();
 	};
-}(red._create_event_type("dom_event").prototype));
+}(red._create_event_type("dom").prototype));
 }(red));

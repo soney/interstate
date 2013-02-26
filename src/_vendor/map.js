@@ -19,6 +19,22 @@ var index_of = function(arr, item, start_index, equality_check) {
 	equality_check = equality_check || eqeqeq;
 	return index_where(arr, function(x) { return equality_check(item, x); }, start_index);
 };
+var each = function(obj, iterator, context) {
+	if (obj == null) { return; }
+	if (nativeForEach && obj.forEach === nativeForEach) {
+		obj.forEach(iterator, context);
+	} else if (obj.length === +obj.length) {
+		for (var i = 0, l = obj.length; i < l; i++) {
+			if (i in obj && iterator.call(context, obj[i], i, obj) === breaker) { return; }
+		}
+	} else {
+		for (var key in obj) {
+			if (has(obj, key)) {
+				if (iterator.call(context, obj[key], key, obj) === breaker) { return; }
+			}
+		}
+	}
+};
 // Is a given value an array?
 // Delegates to ECMA5's native Array.isArray
 var isArray = Array.isArray || function(obj) {
@@ -81,7 +97,7 @@ var Map = function(options) {
 
 (function(my) {
 	var proto = my.prototype;
-	proto.set = function(key, value) {
+	proto.put = function(key, value) {
 		var hash = this._hash(k);
 		var hash_arr = this._khash[hash];
 		if(hash_arr) {
@@ -100,7 +116,7 @@ var Map = function(options) {
 			return this;
 		}
 	};
-	proto.unset = function(key, value) {
+	proto.unset = function(key) {
 		var hash = this._hash(k);
 		var hash_arr = this._khash[hash];
 		if(hash_arr) {
@@ -118,7 +134,7 @@ var Map = function(options) {
 		return this;
 	};
 	proto.get = function(key) {
-		var hash = this._hash(k);
+		var hash = this._hash(key);
 		var hash_arr = this._khash[hash];
 		if(hash_arr) {
 			var len = hash_arr.length;
@@ -130,6 +146,28 @@ var Map = function(options) {
 			}
 		}
 		return undefined;
+	};
+	proto.get_or_put = function(key, create_fn, create_fn_context) {
+		var hash = this._hash(key);
+		var hash_arr = this._khash[hash];
+		var context = create_fn_context || this;
+		var value;
+		if(hash_arr) {
+			var len = hash_arr.length;
+			for(var i = 0; i<len; i++) {
+				var item_i = hash_arr[i];
+				if(this._equality_check(item_i.key, key)) {
+					return item_i.value;
+				}
+			}
+			value = create_fn.call(context, key);
+			hash_arr.push({key: key, value: value});
+			return value;
+		} else {
+			value = create_fn.call(context, key);
+			this._khash[hash] = [{key: key, value: value}];
+			return value;
+		}
 	};
 }(Map));
 

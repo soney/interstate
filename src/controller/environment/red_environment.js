@@ -25,6 +25,7 @@ var Env = function(options) {
 	this.print_on_return = false;
 
 	root.set("on", red.on_event);
+	root.set("emit", red.emit);
 	root.set("find", function(find_root) {
 		if(arguments.length === 0) {
 			find_root = root_pointer;

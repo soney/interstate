@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+  </head>
+  <body>
+		<div class="content">
+		</div>
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript">
+				var env = red.create("environment");
+
+				env	.cd("children")
+					.set("obj", "<stateful>")
+					.cd("obj")
+					.add_transition("INIT", "INIT", "on('mousedown', this)")
+					.on_state("INIT->INIT", function(info, type) {
+							var event = info.event;
+							red.emit("xyz", env.pointer, {
+									prop1: 1
+							});
+						})
+					.add_state("abc")
+					.add_transition("INIT", "abc", "on('xyz', this)")
+					.set("(protos)", "INIT", "dom")
+					.set("tag")
+					.set("tag", "INIT", "'div'")
+					.set("css", "<dict>")
+					.cd("css")
+					.set("backgroundColor", "<stateful prop>")
+					.set("backgroundColor", "INIT", "'red'")
+					.set("backgroundColor", "abc", "'blue'")
+					.set("width", "<stateful prop>")
+					.set("width", "INIT", "'150px'")
+					.set("height", "<stateful prop>")
+					.set("height", "INIT", "'150px'")
+					.up()
+					;
+				var root_pointer = env.get_root_pointer();
+				output_view = $("<div />").dom_output({
+					root: root_pointer
+				}).appendTo(document.body);
+
+				//env.set("interval", "10");
+				window.invalidate = function() {
+						debugger;
+						interval.invalidate();
+						interval.set(function() {
+							return 10;
+						});
+					};
+
+				env.print_on_return = true;
+				console.log(env.print());
+			</script>
+	  </div>
+  </body>
+</html>

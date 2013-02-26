@@ -5,19 +5,28 @@ var esprima = window.esprima;
 red.on_event = function(event_type) {
 	if(event_type === "timeout" || event_type === "time") {
 		var time = arguments[1];
-		return red.create_event(event_type, time);
-	} else if(event_type === "transition") {
-		var spec = arguments[1];
-		var targets = _.rest(arguments, 2);
-		return red.create_event("statechart", targets, spec);
+		var timeout_event = red.create_event(event_type, time);
+		return timeout_event;
 	} else {
-		var targets;
-		if(arguments.length <= 1) { // Ex: mouseup() <-> mouseup(window)
-			targets = window;
-		} else {
-			targets = _.rest(arguments);
+		var targets = _.rest(arguments);
+		var events = [];
+
+		if(targets) {
+			var statechart_spec = event_type;
+			var statechart_event = red.create_event("statechart", targets, statechart_spec);
+			events.push(statechart_event);
+
+			var red_event_type = event_type;
+			var red_event = red.create_event("red_obj", red_event_type, targets);
+			events.push(red_event);
 		}
-		return red.create_event("dom_event", event_type, targets);
+		if(arguments.length <= 1) { // Ex: on('mouseup') <-> on('mouseup', window)
+			targets = window;
+		}
+		var dom_event = red.create_event("dom", event_type, targets);
+		events.push(dom_event);
+
+		return red.create_event("combination", events);
 	}
 };
 
