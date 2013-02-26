@@ -16,6 +16,7 @@
 					setTimeout(function() {
 						var channel = new MessageChannel();
 						editorWindow.postMessage("hello", "http://localhost:8000", [channel.port2]);
+							console.log(channel.port1);
 							channel.port1.onmessage = function (evt) {
 								alert(evt.origin + ": " + evt.data);
 							};

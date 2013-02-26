@@ -20,7 +20,7 @@
 					port = e.ports[0];
 					console.log(e.data);
 					console.log(source);
-					source.postMessage('yo', "http://localhost:8000", [port]);
+					source.postMessage('yo', "http://localhost:8000", [e.ports[1]]);
 					port.onmessage = function(ev) {
 						console.log(ev);
 					};
