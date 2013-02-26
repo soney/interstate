@@ -6,26 +6,46 @@
 	</style>
   </head>
   <body>
+	  <a href="javascript:void(0)" id="open">Open it</a>
 
 	  <div>
 			<%- red_include(red_inc.main) %>
 
 			<script type="text/javascript">
+				var port;
+				var post = function(str) {
+					port.postMessage(str);
+				};
+				var on_message = function(data) {
+					console.log("Meccage received", data);
+				};
 				$(function() {
-					var editorWindow = window.open("../src/view/editor.ejs.html", "red_editor", 'location=no,titlebar=no,status=no,directories=no,menubar=no,resizable=yes,width=900px,height=900px');
-					setTimeout(function() {
-						var channel = new MessageChannel();
-						editorWindow.postMessage("hello", "http://localhost:8000", [channel.port2]);
-							console.log(channel.port1);
-							channel.port1.onmessage = function (evt) {
-								alert(evt.origin + ": " + evt.data);
+					$("a#open").on("click", function() {
+						var editorWindow = window.open("../src/view/editor.ejs.html", "red_editor", "toolbar=yes, location=yes, directories=yes, status=yes, menubar=yes, scrollbars=yes, resizable=yes, width=800, height=600"); 
+						var initializePort = function() {
+							var channel = new MessageChannel();
+							port = channel.port2;
+							channel.port1.onmessage = function (event) {
+								on_message(event.data);
 							};
-						/*
-						console.log("send");
-						channel.port1.postMessage('hello');
-						*/
-					}, 900);
-					//console.log(editorWindow, channel);
+							editorWindow.postMessage("port", "http://localhost:8000", [channel.port2]);
+							window.addEventListener("unload", function() {
+								editorWindow.close();
+							});
+						};
+
+
+						$(editorWindow.document).ready(function() {
+								console.log("READY");
+								initializePort();
+								/*
+							if(editorWindow.document.readyState === "complete") {
+							} else {
+								editorWindow.addEventListener("load", initializePort);
+							}
+								*/
+						});
+					});
 				});
 			</script>
 	  </div>

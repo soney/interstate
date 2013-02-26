@@ -1,41 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>red</title>
-	<style type="text/css">
-	</style>
-  </head>
-  <body>
-	  <div>
-			this is the editor
+	<head>
+		<title>red</title>
+		<style type="text/css">
+		</style>
+	</head>
+	<body>
+		<div>
+			This is the editor
 		</div>
 
-	  <div>
-			<%- red_include(red_inc.main) %>
-
+		<div>
 			<script type="text/javascript">
 				var port;
-				window.addEventListener("message", function(e) {
-					var source = e.source;
-					port = e.ports[0];
-					console.log(e.data);
-					console.log(source);
-					source.postMessage('yo', "http://localhost:8000", [e.ports[1]]);
-					port.onmessage = function(ev) {
-						console.log(ev);
-					};
-					
+				var post = function(str) {
+					port.postMessage(str);
+				};
+				var on_message = function(data) {
+					console.log("Meccage received", data);
+				};
 
-					/*
-					console.log("MESSAGE!", e);
-					port = e.ports[0];
-					port.onmessage = function(e) {
-						port.addEventListener("message", function (evt) {alert("Received message \"" + evt.data + "\" from domain: " + evt.origin);
-							}, false);
+				window.addEventListener("message", function(event) {
+					if(event.data === "port") {
+						port = event.ports[0];
+					} else {
+						on_message(event.data);
 					}
-					*/
 				}, false);
 			</script>
-	  </div>
-  </body>
+		</div>
+	</body>
 </html>
