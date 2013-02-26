@@ -195,7 +195,7 @@ red.destringify = function(str) {
 };
 
 var storage_prefix = "_";
-window.save = function(name) {
+red.save = function(name) {
 	if(!_.isString(name)) {
 		name = "default";
 	}
@@ -203,7 +203,7 @@ window.save = function(name) {
 	localStorage[name] = red.stringify(root);
 	return ls();
 };
-window.open = window.load = function(name) {
+red.open = red.load = function(name) {
 	if(!_.isString(name)) {
 		name = "default";
 	}
@@ -215,7 +215,7 @@ window.open = window.load = function(name) {
 	root_view.environment({controller: env});
 	console.log(env.print());
 };
-window.ls = function() {
+red.ls = function() {
 	return _.chain(localStorage)
 			.keys()
 			.filter(function(key) {
@@ -226,7 +226,7 @@ window.ls = function() {
 			})
 			.value();
 };
-window.rm = function(name) {
+red.rm = function(name) {
 	if(!_.isString(name)) {
 		name = "default";
 	}
@@ -234,7 +234,7 @@ window.rm = function(name) {
 	delete localStorage[name];
 	return ls();
 };
-window.print = function() {
+red.print = function() {
 	console.log(env.print());
 };
 

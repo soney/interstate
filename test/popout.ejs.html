@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+	<style type="text/css">
+	</style>
+  </head>
+  <body>
+
+	  <div>
+			<%- red_include(red_inc.main) %>
+
+			<script type="text/javascript">
+				$(function() {
+					var editorWindow = window.open("../src/view/editor.ejs.html", "red_editor", 'location=no,titlebar=no,status=no,directories=no,menubar=no,resizable=yes,width=900px,height=900px');
+					setTimeout(function() {
+						var channel = new MessageChannel();
+						editorWindow.postMessage("hello", "http://localhost:8000", [channel.port2]);
+							channel.port1.onmessage = function (evt) {
+								alert(evt.origin + ": " + evt.data);
+							};
+						/*
+						console.log("send");
+						channel.port1.postMessage('hello');
+						*/
+					}, 900);
+					//console.log(editorWindow, channel);
+				});
+			</script>
+	  </div>
+  </body>
+</html>

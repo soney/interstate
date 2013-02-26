@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+	<style type="text/css">
+	</style>
+  </head>
+  <body>
+	  <div>
+			this is the editor
+		</div>
+
+	  <div>
+			<%- red_include(red_inc.main) %>
+
+			<script type="text/javascript">
+				var port;
+				window.addEventListener("message", function(e) {
+					var source = e.source;
+					port = e.ports[0];
+					console.log(e.data);
+					console.log(source);
+					source.postMessage('yo', "http://localhost:8000", [port]);
+					port.onmessage = function(ev) {
+						console.log(ev);
+					};
+					
+
+					/*
+					console.log("MESSAGE!", e);
+					port = e.ports[0];
+					port.onmessage = function(e) {
+						port.addEventListener("message", function (evt) {alert("Received message \"" + evt.data + "\" from domain: " + evt.origin);
+							}, false);
+					}
+					*/
+				}, false);
+			</script>
+	  </div>
+  </body>
+</html>
