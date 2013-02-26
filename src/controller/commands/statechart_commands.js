@@ -375,8 +375,9 @@ var StatechartOnCommand = function(options) {
 	this._pcontext = this._options.pcontext;
 	if(this._options.listener instanceof red.ParsedFunction) {
 		var func = this._options.listener;
+		var pcontext = this._pcontext;
 		this._listener = function() {
-			func._apply(this._pcontext, arguments);
+			func._apply(pcontext, arguments);
 		};
 	} else {
 		this._listener = this._options.listener;

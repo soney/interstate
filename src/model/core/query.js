@@ -109,6 +109,12 @@ red.Query = function(options) {
 			return _.map(values, map_func, context);
 		});
 	};
+	proto.size = function() {
+		return this.value().length;
+	};
+	proto.is_empty = function() {
+		return this.size() === 0;
+	};
 
 	var extract_items = function(args) {
 		var items = _	.chain(arguments)

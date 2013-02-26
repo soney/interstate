@@ -43,8 +43,8 @@ env
 			.up()
 		.set("x", "(start) -> INIT", "w/2")
 		.set("y", "(start) -> INIT", "h/2")
-		.set("vx", "(start) -> INIT", "490")
-		.set("vy", "(start) -> INIT", "-390")
+		.set("vx", "(start) -> INIT", "990")
+		.set("vy", "(start) -> INIT", "-890")
 		.set("FPS", "60")
 		.add_transition("INIT", "INIT", "on('timeout', 1000/FPS)")
 		.set("x", "INIT -0> INIT", "max(0, min(x+(vx/FPS), w-ballWidth))")
@@ -101,6 +101,8 @@ env
 		.set("(manifestations)", "num_cols*num_rows")
 		.add_transition("alive", "deadx", "hitleftright(ball.x, ball.y, ballWidth, ballHeight, x, y, block_width, block_height)")
 		.add_transition("alive", "deady", "hittopbottom(ball.x, ball.y, ballWidth, ballHeight, x, y, block_width, block_height)")
+		.add_transition("deadx", "alive", "on('level_up', root)")
+		.add_transition("deady", "alive", "on('level_up', root)")
 		.set("x", "(start) -> alive", "(col*block_width)")
 		.set("y", "(start) -> alive", "(row*block_height)")
 		.set("row", "(basis - (basis % num_cols))/num_cols")
@@ -122,6 +124,7 @@ env
 	.set("container", "<stateful>")
 	.cd("container")
 		.set("(protos)", "INIT", "dom")
+		.set("text", "'Level ' + level_track.level")
 		.set("css", "<dict>")
 		.cd("css")
 			.set("position", "INIT", "'absolute'")
@@ -130,11 +133,13 @@ env
 			.set("width", "INIT", "w+'px'")
 			.set("height", "INIT", "h+'px'")
 			.set("border", "INIT", "'1px solid black'")
+			.set("text-align", "INIT", "'right'")
+			.set("font-size", "INIT", "'2em'")
 			.up()
 		.up()
 	.up()
-.set("num_cols", "colors.length*2+1")
-.set("num_rows", "6")
+.set("num_cols", "colors.length+1")
+.set("num_rows", "3")
 .set("block_width", "w/num_cols")
 .set("block_height", "30")
 .set("colors", "['red', 'orange', 'yellow', 'green', 'blue', 'purple']")
@@ -169,6 +174,14 @@ env
 			"	return false;\n" +
 			"}\n"+
 	"}")
+.set("level_track", "<stateful>")
+.cd("level_track")
+	.add_transition("INIT", "INIT", "find(root.children.blocks).in_state('alive').is_empty()")
+	.on_state("INIT->INIT", "function() { red.emit('level_up', root); }")
+	.set("level", "<stateful prop>")
+	.set("level", "(start) -> INIT", "1")
+	.set("level", "INIT -> INIT", "level+1")
+	.up()
 .set("min", "function(a, b) { return a<b ? a : b }")
 .set("max", "function(a, b) { return a>b ? a : b }")
 ;
@@ -178,7 +191,7 @@ env
 					}).appendTo(document.body);
 
 					env.print_on_return = true;
-					//console.log(env.print());
+					console.log(env.print());
 				});
 			</script>
 	  </div>

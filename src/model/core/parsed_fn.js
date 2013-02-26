@@ -70,7 +70,9 @@ var call_fn = function(node, options) {
 		var arg = call_fn(node.argument, options);
 	} else if(type === "Identifier") {
 		var key = node.name;
-		if(_.has(options.var_map, key)) {
+		if(key === "root") {
+			return options.pcontext.slice(0, 1);
+		} else if(_.has(options.var_map, key)) {
 			return cjs.get(options.var_map[key]);
 		} else {
 			var curr_context = options.pcontext;

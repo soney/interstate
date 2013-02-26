@@ -719,13 +719,13 @@ var Env = function(options) {
 	proto.on_state = function(spec, func, context) {
 		var statechart = this.get_current_statechart();
 		if(_.isString(func)) {
-			func = parse(func);
+			func = red.get_parsed_$(red.parse(func), { });
 		}
 		var command = red.command("statechart_on", {
 			statechart: statechart,
 			spec: spec,
 			listener: func,
-			pcontext: this.pointer
+			pcontext: this.pointer,
 			context: context
 		});
 		this._do(command);
