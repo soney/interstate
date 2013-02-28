@@ -4,17 +4,23 @@
     <title>red</title>
 	<style type="text/css">
 	</style>
+	<%- red_include(red_inc.main) %>
   </head>
   <body>
 	  <a href="javascript:void(0)" id="edit">edit</a>
 
 	  <div>
-			<%- red_include(red_inc.main) %>
 
 			<script type="text/javascript">
 				$(function() {
+					var env = red.create("environment");
+					var root_pointer = env.get_root_pointer();
+					output_view = $("body").dom_output({
+						root: root_pointer
+					});
+					/*
 					$("a#edit").on("click", function() {
-						var editorWindow = window.open("../src/view/editor.ejs.html", "red_editor", "toolbar=yes, location=yes, directories=yes, status=yes, menubar=yes, scrollbars=yes, resizable=yes, width=800, height=600"); 
+						var editorWindow = window.open("../src/view/editor.ejs.html", "red_editor", "toolbar=no, location=no, directories=no, status=yes, menubar=no, scrollbars=yes, resizable=yes, width=800, height=600"); 
 						window.addEventListener("message", function(event) {
 							if(event.source === editorWindow) {
 								if(event.data === "ready") {
@@ -34,6 +40,29 @@
 							}
 						});
 					});
+
+					/*
+					var env = red.create("environment");
+					env	.cd("children")
+						.set("obj", "<stateful>")
+						.cd("obj")
+						.add_transition("INIT", "INIT", "on('timeout', 1000)")
+						.set("(protos)", "INIT", "dom")
+						.set("tag", "<stateful prop>")
+						.set("text", "<stateful prop>")
+						.set("tag", "INIT", "'div'")
+						.set("text", "INIT", "i")
+						.set("i", "(start) -> INIT", "1")
+						.set("i", "INIT -> INIT", "i+1")
+						;
+
+					var root_pointer = env.get_root_pointer();
+					output_view = $("<div />").dom_output({
+						root: root_pointer
+					}).appendTo(document.body);
+					env.print_on_return = true;
+					console.log(env.print());
+					*/
 				});
 			</script>
 	  </div>

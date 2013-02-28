@@ -1,5 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
+var do_compress = false;
 
 // === SERIALIZE ===
 
@@ -9,7 +10,7 @@ var serialization_funcs = [
 	, {name: "dict", type: red.Dict }
 	, {name: "stateful_prop", type: red.StatefulProp }
 	, {name: "red_dom_attachment", type: red.DomAttachment }
-	, {name: "red_context", type: red.Context }
+	, {name: "red_pointer", type: red.Pointer }
 	, {name: "statechart_transition", type: red.StatechartTransition }
 	, {name: "statechart", type: red.Statechart }
 	, {name: "startstate", type: red.StartState }
@@ -113,7 +114,8 @@ var do_serialize = function(obj) {
 };
 
 red.stringify = function(obj) {
-	return lzw_encode(JSON.stringify(red.serialize(obj)));
+	if(do_compress) { return lzw_encode(JSON.stringify(red.serialize(obj))); }
+	else { return JSON.stringify(red.serialize(obj)); }
 };
 
 // === DESERIALIZE ===
@@ -191,7 +193,8 @@ var deserialize_array = function(obj) {
 };
 
 red.destringify = function(str) {
-	return red.deserialize(JSON.parse(lzw_decode(str)));
+	if(do_compress) { return red.deserialize(JSON.parse(lzw_decode(str))); }
+	else { return red.deserialize(JSON.parse(str)); }
 };
 
 var storage_prefix = "_";
