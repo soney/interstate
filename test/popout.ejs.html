@@ -6,44 +6,32 @@
 	</style>
   </head>
   <body>
-	  <a href="javascript:void(0)" id="open">Open it</a>
+	  <a href="javascript:void(0)" id="edit">edit</a>
 
 	  <div>
 			<%- red_include(red_inc.main) %>
 
 			<script type="text/javascript">
-				var port;
-				var post = function(str) {
-					port.postMessage(str);
-				};
-				var on_message = function(data) {
-					console.log("Meccage received", data);
-				};
 				$(function() {
-					$("a#open").on("click", function() {
+					$("a#edit").on("click", function() {
 						var editorWindow = window.open("../src/view/editor.ejs.html", "red_editor", "toolbar=yes, location=yes, directories=yes, status=yes, menubar=yes, scrollbars=yes, resizable=yes, width=800, height=600"); 
-						var initializePort = function() {
-							var channel = new MessageChannel();
-							port = channel.port2;
-							channel.port1.onmessage = function (event) {
-								on_message(event.data);
-							};
-							editorWindow.postMessage("port", "http://localhost:8000", [channel.port2]);
-							window.addEventListener("unload", function() {
-								editorWindow.close();
-							});
-						};
-
-
-						$(editorWindow.document).ready(function() {
-								console.log("READY");
-								initializePort();
-								/*
-							if(editorWindow.document.readyState === "complete") {
-							} else {
-								editorWindow.addEventListener("load", initializePort);
+						window.addEventListener("message", function(event) {
+							if(event.source === editorWindow) {
+								if(event.data === "ready") {
+									$("a#edit").text("editing");
+									editorWindow.addEventListener("unload", function() {
+										$("a#edit").text("edit");
+									});
+									window.addEventListener("unload", function() {
+										editorWindow.close();
+									});
+									window.post = function(str) {
+										editorWindow.postMessage(str, window.location.origin);
+									};
+								} else {
+									console.log(event.data);
+								}
 							}
-								*/
 						});
 					});
 				});

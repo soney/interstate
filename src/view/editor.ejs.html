@@ -12,21 +12,15 @@
 
 		<div>
 			<script type="text/javascript">
-				var port;
-				var post = function(str) {
-					port.postMessage(str);
-				};
-				var on_message = function(data) {
-					console.log("Meccage received", data);
-				};
-
 				window.addEventListener("message", function(event) {
-					if(event.data === "port") {
-						port = event.ports[0];
-					} else {
-						on_message(event.data);
-					}
-				}, false);
+					console.log(event.data);
+				});
+				window.post = function(str) {
+					window.opener.postMessage(str, window.location.origin);
+				};
+				window.addEventListener("load", function() {
+					window.opener.postMessage("ready", window.location.origin);
+				});
 			</script>
 		</div>
 	</body>
