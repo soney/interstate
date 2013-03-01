@@ -102,26 +102,6 @@ $.widget("red.dom_output", {
 		this.close_editor();
 		this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options"));
 		$(window)	.on("unload", _.bind(this.close_editor, this))
-		/*
-						window.addEventListener("message", function(event) {
-							if(event.source === editorWindow) {
-								if(event.data === "ready") {
-									$("a#edit").text("editing");
-									editorWindow.addEventListener("unload", function() {
-										$("a#edit").text("edit");
-									});
-									window.addEventListener("unload", function() {
-										editorWindow.close();
-									});
-									window.post = function(str) {
-										editorWindow.postMessage(str, window.location.origin);
-									};
-								} else {
-									console.log(event.data);
-								}
-							}
-						});
-						*/
 	}
 	, close_editor: function() {
 		if(this.editor_window) {

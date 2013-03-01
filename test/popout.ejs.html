@@ -18,51 +18,6 @@
 					output_view = $("body").dom_output({
 						root: root_pointer
 					});
-					/*
-					$("a#edit").on("click", function() {
-						var editorWindow = window.open("../src/view/editor.ejs.html", "red_editor", "toolbar=no, location=no, directories=no, status=yes, menubar=no, scrollbars=yes, resizable=yes, width=800, height=600"); 
-						window.addEventListener("message", function(event) {
-							if(event.source === editorWindow) {
-								if(event.data === "ready") {
-									$("a#edit").text("editing");
-									editorWindow.addEventListener("unload", function() {
-										$("a#edit").text("edit");
-									});
-									window.addEventListener("unload", function() {
-										editorWindow.close();
-									});
-									window.post = function(str) {
-										editorWindow.postMessage(str, window.location.origin);
-									};
-								} else {
-									console.log(event.data);
-								}
-							}
-						});
-					});
-
-					/*
-					var env = red.create("environment");
-					env	.cd("children")
-						.set("obj", "<stateful>")
-						.cd("obj")
-						.add_transition("INIT", "INIT", "on('timeout', 1000)")
-						.set("(protos)", "INIT", "dom")
-						.set("tag", "<stateful prop>")
-						.set("text", "<stateful prop>")
-						.set("tag", "INIT", "'div'")
-						.set("text", "INIT", "i")
-						.set("i", "(start) -> INIT", "1")
-						.set("i", "INIT -> INIT", "i+1")
-						;
-
-					var root_pointer = env.get_root_pointer();
-					output_view = $("<div />").dom_output({
-						root: root_pointer
-					}).appendTo(document.body);
-					env.print_on_return = true;
-					console.log(env.print());
-					*/
 				});
 			</script>
 	  </div>
