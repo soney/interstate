@@ -5,17 +5,18 @@ var do_compress = false;
 // === SERIALIZE ===
 
 var serialization_funcs = [
-	  {name: "cell", type: red.Cell }
-	, {name: "stateful_obj", type: red.StatefulObj }
-	, {name: "dict", type: red.Dict }
-	, {name: "stateful_prop", type: red.StatefulProp }
-	, {name: "red_dom_attachment", type: red.DomAttachment }
-	, {name: "red_pointer", type: red.Pointer }
-	, {name: "statechart_transition", type: red.StatechartTransition }
-	, {name: "statechart", type: red.Statechart }
-	, {name: "startstate", type: red.StartState }
-	, {name: "parsed_event", type: red.ParsedEvent }
-	, {name: "statechart_event", type: red.StatechartEvent }
+	  { name: "cell", type: red.Cell }
+	, { name: "stateful_obj", type: red.StatefulObj }
+	, { name: "dict", type: red.Dict }
+	, { name: "stateful_prop", type: red.StatefulProp }
+	, { name: "red_dom_attachment", type: red.DomAttachment }
+	, { name: "red_pointer", type: red.Pointer }
+	, { name: "statechart_transition", type: red.StatechartTransition }
+	, { name: "statechart", type: red.Statechart }
+	, { name: "startstate", type: red.StartState }
+	, { name: "parsed_event", type: red.ParsedEvent }
+	, { name: "statechart_event", type: red.StatechartEvent }
+	, { name: "program_delta", type: red.ProgramDelta }
 ];
 
 var serializing = false;

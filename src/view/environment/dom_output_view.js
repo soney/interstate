@@ -90,12 +90,18 @@ $.widget("red.dom_output", {
 				var root = root_pointer.points_at();
 				var stringified_root = red.stringify(root);
 
-				this.editor_window.postMessage({
-					type: "stringified_root",
-					value: stringified_root
-				}, window.location.origin);
+				this.post_delta(new red.ProgramDelta({
+					str: stringified_root
+				}));
 			}
 		}
+	}
+	, post_delta: function(delta) {
+		var stringified_delta = red.stringify(delta);
+		this.editor_window.postMessage({
+			type: "delta",
+			value: stringified_delta
+		}, window.location.origin);
 	}
 
 	, open_editor: function() {

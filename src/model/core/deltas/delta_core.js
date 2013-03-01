@@ -10,13 +10,11 @@ red.Delta = function() {
 (function(my) {
 	var proto = my.prototype;
 	proto.serialize = function() {
-		return {
-			type: "delta"
-		};
+		return { };
 	};
 	my.deserialize = function() {
 		return new red.Delta();
 	};
-}(red.Delta);
+}(red.Delta));
 
 }(red));

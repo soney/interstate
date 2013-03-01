@@ -6,36 +6,19 @@
 		</style>
 	</head>
 	<body>
-		<div>
-			<input type="text" id="command"></input>
+		<div id="editor">
 		</div>
 
 		<div>
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
 
-				window.addEventListener("message", function(event) {
-					if(event.source === window.opener) {
-						var message = event.data;
-						var type = message.type;
-						if(type === "stringified_root") {
-							var stringified_root = message.value;
-							var root = red.destringify(stringified_root);
-							console.log(root);
-						}
-					}
-				});
 				window.addEventListener("load", function() {
 					window.opener.postMessage("ready", window.location.origin);
 				});
 
 				$(function() {
-					$("input#command").on("keydown", function(event) {
-						if(event.keyCode === 13) { //Enter
-							var val = $(this).val();
-							$(this).val("");
-						}
-					});
+					$("div#editor").command_view();
 				});
 			</script>
 		</div>

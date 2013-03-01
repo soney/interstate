@@ -69,6 +69,8 @@ exports.main_src = c(
 				, "model/core/stateful_obj.js"
 				, "model/core/stateful_prop.js"
 				, "model/core/query.js"
+				, "model/core/deltas/delta_core.js"
+				, "model/core/deltas/program.js"
 				, "model/attachments/attachment_core.js"
 				, "model/attachments/dom_attachment.js"
 				, "model/serialize.js"
@@ -80,6 +82,7 @@ exports.main_src = c(
 				, "controller/environment/command_stack.js"
 				, "controller/environment/red_environment.js"
 				, "view/environment/dom_output_view.js"
+				, "view/environment/command_view.js"
 			])
 );
 
