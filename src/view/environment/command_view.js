@@ -7,6 +7,8 @@ $.widget("red.command_view", {
 	}
 
 	, _create: function() {
+		this.pointer = undefined;
+		this.logger = this.get_logger();
 		this.input = $("<input />").appendTo(this.element)
 									.on("keydown", _.bind(function(event) {
 										if(event.keyCode === 13) { //Enter
@@ -41,8 +43,11 @@ $.widget("red.command_view", {
 		});
 
 		var command_name = tokens[0];
-		if(command_name === "set") {
-			
+		if(command_name === "cd") {
+			var prop_name = tokens[1];
+			this.pointer = this.pointer.call("get_prop_pointer", prop_name);
+			this.output.html("");
+			print(this.root, this.pointer, this.get_logger());
 		}
 		console.log(tokens);
 	}
@@ -50,9 +55,45 @@ $.widget("red.command_view", {
 	, on_delta: function(delta) {
 		if(delta instanceof red.ProgramDelta) {
 			var program_str = delta.get_str();
-			var root = red.destringify(program_str);
-			this.output.text(print(root, red.create("pointer", { stack: [root] }), console));
+			this.root = red.destringify(program_str);
+			this.pointer = red.create("pointer", {stack: [this.root]});
+			this.output.html("");
+			print(this.root, this.pointer, this.logger);
 		}
+	}
+
+	, get_logger: function() {
+		var current_parent = $(this.output);
+
+		return {
+			log: function() {
+				var text = _.toArray(arguments).join(", ");
+				var div = $("<div />")	.addClass("log")
+										.text(text);
+				current_parent.append(div);
+			},
+			group: function() {
+				var text = _.toArray(arguments).join(", ");
+				var div = $("<div />")	.addClass("group")
+											.text(text);
+				var children_div = $("<div />")	.addClass("children")
+												.appendTo(div);
+				current_parent.append(div);
+				current_parent = children_div;
+			},
+			groupCollapsed: function() {
+				var text = _.toArray(arguments).join(", ");
+				var div = $("<div />")	.addClass("collapsed group")
+											.text(text);
+				var children_div = $("<div />")	.addClass("children")
+												.appendTo(div);
+				current_parent.append(div);
+				current_parent = children_div;
+			},
+			groupEnd: function() {
+				current_parent = current_parent.parent().parent();
+			}
+		};
 	}
 });
 
