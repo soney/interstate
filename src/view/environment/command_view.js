@@ -7,9 +7,8 @@ $.widget("red.command_view", {
 	}
 
 	, _create: function() {
-		this.pointer = undefined;
-		this.logger = this.get_logger();
-		this.input = $("<input />").appendTo(this.element)
+		this.input = $("<input />")	.appendTo(this.element)
+									.focus()
 									.on("keydown", _.bind(function(event) {
 										if(event.keyCode === 13) { //Enter
 											var val = this.input.val();
@@ -17,7 +16,9 @@ $.widget("red.command_view", {
 											this.input.val("");
 										}
 									}, this));
-		this.output = $("<pre />").appendTo(this.element);
+		this.output = $("<pre />").addClass("output").appendTo(this.element);
+		this.pointer = undefined;
+		this.logger = this.get_logger();
 
 		window.addEventListener("message", _.bind(function(event) {
 			if(event.source === window.opener) {
@@ -48,8 +49,17 @@ $.widget("red.command_view", {
 			this.pointer = this.pointer.call("get_prop_pointer", prop_name);
 			this.output.html("");
 			print(this.root, this.pointer, this.get_logger());
+		} else if(command_name === "up") {
+			this.pointer = this.pointer.pop();
+			this.output.html("");
+			print(this.root, this.pointer, this.get_logger());
+		} else if(command_name === "top") {
+			this.pointer = this.pointer.slice(0, 1);
+			this.output.html("");
+			print(this.root, this.pointer, this.get_logger());
+		} else {
+			console.log(tokens);
 		}
-		console.log(tokens);
 	}
 
 	, on_delta: function(delta) {
