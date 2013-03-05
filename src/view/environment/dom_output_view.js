@@ -98,7 +98,8 @@ $.widget("red.dom_output", {
 				var type = data.type;
 				if(type === "command") {
 					var stringified_command = data.command;
-					console.log(stringified_command);
+					var command = red.destringify(stringified_command);
+					console.log(command);
 				}
 			}
 		}
