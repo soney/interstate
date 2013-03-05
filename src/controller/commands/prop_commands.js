@@ -40,7 +40,7 @@ red.SetPropCommand = function(options) {
 		return {
 			parent_uid: this._parent.uid,
 			name: this._prop_name,
-			value: red.serialize.apply(red, (this._prop_value).concat(arguments)),
+			value: red.serialize.apply(red, ([this._prop_value]).concat(arguments)),
 			index: this._prop_index
 		};
 	};

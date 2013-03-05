@@ -114,7 +114,7 @@ $.widget("red.command_view", {
 			if(tokens.length === 3 || (tokens.length === 4 && _.isNumber(tokens[3]))) {
 				// Formats: set <name> <val> <index?>
 				var index = _.isNumber(_.last(tokens)) ? _.last(tokens) : undefined;
-				this.post_command(red.command("set_prop", {
+				this.post_command(new red.SetPropCommand({
 					parent: this.pointer.points_at(),
 					name: prop_name,
 					value: value,
