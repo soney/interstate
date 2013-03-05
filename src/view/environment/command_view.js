@@ -134,6 +134,7 @@ $.widget("red.command_view", {
 		if(delta instanceof red.ProgramDelta) {
 			var program_str = delta.get_str();
 			this.root = red.destringify(program_str);
+			console.log(program_str);
 			this.root.set("on", red.on_event);
 			this.root.set("emit", red.emit);
 			this.pointer = red.create("pointer", {stack: [this.root]});

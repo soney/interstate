@@ -41,10 +41,10 @@ var get_or_create_serialized_obj_id = function(obj) {
 	return obj_id;
 };
 
-var create_or_get_serialized_obj = function(obj) {
+var create_or_get_serialized_obj = function() {
 	return {
 		type: "pointer"
-		, id: get_or_create_serialized_obj_id(obj)
+		, id: get_or_create_serialized_obj_id.apply(this, arguments)
 	};
 };
 
@@ -65,21 +65,22 @@ red.serialize = function(obj) {
 			return red.serialize.apply(red, ([o]).concat(serialize_args));
 		});
 	} else if(is_init_serial_call) {
-		var serialized_obj = create_or_get_serialized_obj(obj);
+		var serialized_obj = create_or_get_serialized_obj.apply(this, arguments);
 		serializing = false;
 		return {
 			serialized_objs: serialized_obj_values
 			, root: serialized_obj
 		};
 	} else {
-		return create_or_get_serialized_obj(obj);
+		return create_or_get_serialized_obj.apply(this, arguments);
 	}
 
 };
 
 var serialize_array = function(arr) {
+	var args = _.rest(arguments);
 	var serialized_values = _.map(arr.toArray(), function(x) {
-		return red.serialize(x);
+		return red.serialize.apply(red, ([x]).concat(args));
 	});
 
 	return ({
@@ -89,11 +90,12 @@ var serialize_array = function(arr) {
 };
 
 var serialize_map = function(map) {
+	var args = _.rest(arguments);
 	var serialized_keys = _.map(map.keys(), function(x) {
-		return red.serialize(x);
+		return red.serialize.apply(red, ([x]).concat(args));
 	});
 	var serialized_values = _.map(map.values(), function(x) {
-		return red.serialize(x);
+		return red.serialize.apply(red, ([x]).concat(args));
 	});
 
 	return ({
@@ -105,14 +107,14 @@ var serialize_map = function(map) {
 
 
 var do_serialize = function(obj) {
-	if(cjs.is_map(obj)) { return serialize_map(obj); }
-	else if(cjs.is_array(obj)) { return serialize_array(obj); }
+	if(cjs.is_map(obj)) { return serialize_map.apply(this, arguments); }
+	else if(cjs.is_array(obj)) { return serialize_array.apply(this, arguments); }
 
 	for(var i = 0; i<serialization_funcs.length; i++) {
 		var type_info = serialization_funcs[i];
 		var type = type_info.type;
 		if(obj instanceof type) {
-			return _.extend({ type: type_info.name }, obj.serialize());
+			return _.extend({ type: type_info.name }, obj.serialize.apply(obj, _.rest(arguments)));
 		}
 	}
 	return obj;

@@ -547,10 +547,11 @@ red.Dict = function(options, defer_initialization) {
 		if(include_uid) { rv.uid = this.uid; }
 
 		var self = this;
+		var args = arguments;
 		_.each(this.get_builtins(), function(builtin, name) {
 			if(builtin.serialize !== false) {
 				var getter_name = builtin.getter_name || "get_" + name;
-				rv[name] = red.serialize(self[getter_name]());
+				rv[name] = red.serialize.apply(red, ([self[getter_name]()]).concat(args));
 			}
 		});
 
@@ -564,11 +565,9 @@ red.Dict = function(options, defer_initialization) {
 			}
 		});
 
-		var rv = new red.Dict(undefined, true);
+		var rv = new red.Dict({uid: obj.uid}, true);
 		rv.initialize = function() {
-			var options = {
-				uid: obj.uid
-			};
+			var options = {};
 			_.each(serialized_options, function(serialized_option, name) {
 				options[name] = red.deserialize(serialized_option);
 			});
