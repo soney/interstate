@@ -221,10 +221,40 @@ var call_fn = function(node, options) {
 		return do_break;
 	} else if(type === "ContinueStatement") {
 		return do_continue;
+	} else if(type === "NewExpression") {
+		var op_context = window;
+		if(node.callee.type === "MemberExpression") {
+			op_context = call_fn(node.callee.object, options);
+		}
+		var op_func = call_fn(node.callee, options),
+			args = _.map(node.arguments, function(arg) {
+				return new call_fn(arg, options)
+			});
+		if(_.isFunction(op_func)) {
+			return construct(op_func, args);
+		} else if(op_func instanceof red.ParsedFunction) {
+			console.error("unhandled case");
+		}
+	} else if(type === "ObjectExpression") {
+		var rv = {};
+		_.each(node.properties, function(prop_node) {
+			var key = prop_node.key.name,
+				value = call_fn(prop_node.value, options);
+			rv[key] = value;
+		});
+		return rv;
 	} else {
 		console.log(type, node);
 	}
 };
+
+function construct(constructor, args) {
+    function F() {
+        return constructor.apply(this, args);
+    }
+    F.prototype = constructor.prototype;
+    return new F();
+}
 
 red.ParsedFunction = function(node, options) {
 	this.node = node;

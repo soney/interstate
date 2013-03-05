@@ -4,8 +4,7 @@ var origin = window.location.protocol + "//" + window.location.host;
 
 $.widget("red.command_view", {
 	
-	options: {
-	}
+	options: { }
 
 	, _create: function() {
 		this.input = $("<input />")	.appendTo(this.element)
@@ -17,8 +16,44 @@ $.widget("red.command_view", {
 											this.input.val("");
 										}
 									}, this));
-		this.output = $("<pre />").addClass("output").appendTo(this.element);
+		this.output = $("<div />").addClass("output").appendTo(this.element);
 
+		this.env = red.create("environment");
+		this.output_view = this.output.dom_output({
+			root: this.env.get_root_pointer()
+		});
+		this.env
+				.set("send_command", _.bind(function(command) {
+					this.post_command(command);
+				}, this))
+				.cd("children")
+					.set("simple_cell", "<stateful>")
+					.cd("simple_cell")
+						.rename_state("INIT", "idle")
+						.add_state("editing")
+						.add_transition("idle", "editing", "on('mousedown', this)")
+						.add_transition("editing", "idle", "on('keydown', this).when_eq('keyCode', 13)")
+						.set("(protos)", "idle", "dom")
+						.set("tag", "idle", "'span'")
+						.set("tag", "editing", "'input'")
+						.set("text", "idle", "'hello'")
+						.set("text", "editing", "''")
+						.on_state("editing >- idle", "function(info) {\n" +
+							"var target = info.event.red_target;\n" +
+							"var dom_attachment = target.call('get_attachment_instance', 'dom');\n" +
+							"if(dom_attachment) {\n" +
+								"var dom_obj = dom_attachment.get_dom_obj();\n" +
+								"var text = dom_obj.value;\n" +
+								"var command = new red.ChangeCellCommand({ cell: cell(), str: text });\n" +
+								"send_command(command, text);\n" +
+							"}\n" +
+						"}")
+					//	.up()
+					//.up()
+					;
+		window.env = this.env;
+
+/*
 		this.pointer = undefined;
 		var current_parent = $(this.output);
 		this.logger = {
@@ -50,6 +85,7 @@ $.widget("red.command_view", {
 				current_parent = current_parent.parent().parent();
 			}
 		};
+		*/
 
 		window.addEventListener("message", _.bind(function(event) {
 			if(event.source === window.opener) {
@@ -78,16 +114,22 @@ $.widget("red.command_view", {
 		if(command_name === "cd") {
 			var prop_name = tokens[1];
 			this.pointer = this.pointer.call("get_prop_pointer", prop_name);
+			/*
 			this.output.html("");
 			red.print(this.pointer, this.logger);
+			*/
 		} else if(command_name === "up") {
 			this.pointer = this.pointer.pop();
+			/*
 			this.output.html("");
 			red.print(this.pointer, this.logger);
+			*/
 		} else if(command_name === "top") {
 			this.pointer = this.pointer.slice(0, 1);
+			/*
 			this.output.html("");
 			red.print(this.pointer, this.logger);
+			*/
 		} else if(command_name === "set") {
 			var prop_name = tokens[1];
 
@@ -144,8 +186,8 @@ $.widget("red.command_view", {
 				}
 				return new red.Query({value: find_root});
 			});
-			this.output.html("");
-			red.print(this.pointer, this.logger);
+			//this.output.html("");
+			//red.print(this.pointer, this.logger);
 		} else if(delta instanceof red.CommandDelta) {
 			var command = delta.get_command();
 
@@ -154,9 +196,10 @@ $.widget("red.command_view", {
 			} else {
 				command._do();
 			}
+			env.set("cell", function() { return command._prop_value; });
 
-			this.output.html("");
-			red.print(this.pointer, this.logger);
+			//this.output.html("");
+			//red.print(this.pointer, this.logger);
 		} else {
 			console.error("Unhandled delta", delta);
 		}

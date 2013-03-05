@@ -16,9 +16,10 @@ var serialization_funcs = [
 	, { name: "startstate", type: red.StartState }
 	, { name: "parsed_event", type: red.ParsedEvent }
 	, { name: "statechart_event", type: red.StatechartEvent }
-	, { name: "set_prop_command", type: red.SetPropCommand }
 	, { name: "program_delta", type: red.ProgramDelta }
 	, { name: "command_delta", type: red.CommandDelta }
+	, { name: "set_prop_command", type: red.SetPropCommand }
+	, { name: "change_cell_command", type: red.ChangeCellCommand }
 ];
 
 var serializing = false;

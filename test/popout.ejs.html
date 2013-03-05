@@ -13,10 +13,11 @@
 					var env = red.create("environment");
 					var root_pointer = env.get_root_pointer();
 					output_view = $("body").dom_output({
-						root: root_pointer
+						root: root_pointer,
+						edit_on_open: true
 					});
 					window.print_pointer = function() {
-						red.print(root_pointer);
+						return red.print(root_pointer);
 					};
 				});
 			</script>

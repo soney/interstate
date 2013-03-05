@@ -193,8 +193,8 @@ red._commands["set_prop_parent"] = function(options) {
 
 // === STATEFUL PROPS ===
 
-var SetStatefulPropValueCommand = function(options) {
-	SetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
+red.SetStatefulPropValueCommand = function(options) {
+	red.SetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "stateful_prop")) {
@@ -222,11 +222,11 @@ var SetStatefulPropValueCommand = function(options) {
 			}
 		}
 	};
-}(SetStatefulPropValueCommand));
+}(red.SetStatefulPropValueCommand));
 
 
-var UnsetStatefulPropValueCommand = function(options) {
-	UnsetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
+red.UnsetStatefulPropValueCommand = function(options) {
+	red.UnsetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "stateful_prop")) {
@@ -254,7 +254,7 @@ var UnsetStatefulPropValueCommand = function(options) {
 			}
 		}
 	};
-}(UnsetStatefulPropValueCommand));
+}(red.UnsetStatefulPropValueCommand));
 
 
 red.SetBuiltinCommand = function(options) {

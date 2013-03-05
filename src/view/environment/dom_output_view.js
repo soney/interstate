@@ -6,9 +6,9 @@ $.widget("red.dom_output", {
 	options: {
 		root: undefined,
 		show_edit_button: true,
-		edit_on_open: true,
-		editor_url: "../src/view/editor.ejs.html",
-		editor_name: "red_editor",
+		edit_on_open: false,
+		editor_url: "http://localhost:8000/src/view/editor.ejs.html",
+		editor_name: uid.get_prefix() + "red_editor",
 		editor_window_options: "toolbar=no, location=no, directories=no, status=yes, menubar=no, scrollbars=yes, resizable=yes, width=800, height=600"
 	}
 
