@@ -543,7 +543,9 @@ red.Dict = function(options, defer_initialization) {
 	};
 
 	proto.serialize = function(include_uid) {
-		var rv = { };
+		var rv = {
+			has_protos: this.has_protos()
+		};
 		if(include_uid) { rv.uid = this.uid; }
 
 		var self = this;
@@ -565,7 +567,7 @@ red.Dict = function(options, defer_initialization) {
 			}
 		});
 
-		var rv = new red.Dict({uid: obj.uid}, true);
+		var rv = new red.Dict({uid: obj.uid, has_protos: obj.has_protos}, true);
 		rv.initialize = function() {
 			var options = {};
 			_.each(serialized_options, function(serialized_option, name) {

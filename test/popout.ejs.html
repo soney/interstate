@@ -10,15 +10,20 @@
 	  <div>
 			<script type="text/javascript">
 				$(function() {
-					var env = red.create("environment");
+					window.env = red.create("environment")
+					.cd("children")
+					.set("obj", "<dict>")
+					.cd("obj")
+					.set("(protos)", "dom")
+					.set("text", "'hello'");
+
+					env.print_on_return = true;
+					env.print();
 					var root_pointer = env.get_root_pointer();
 					output_view = $("body").dom_output({
 						root: root_pointer,
-						edit_on_open: true
+						//edit_on_open: true
 					});
-					window.print_pointer = function() {
-						return red.print(root_pointer);
-					};
 				});
 			</script>
 	  </div>

@@ -310,6 +310,21 @@ red.SetBuiltinCommand = function(options) {
 			}
 		}
 	};
+
+	proto.serialize = function() {
+		return {
+			parent_uid: this._parent.uid,
+			name: this._builtin_name,
+			value: red.serialize.apply(red, ([this._value]).concat(arguments))
+		};
+	};
+	my.deserialize = function(obj) {
+		return new red.SetBuiltinCommand({
+			parent: red.find_uid(obj.parent_uid),
+			name: obj.name,
+			value: red.deserialize(obj.value)
+		});
+	};
 }(red.SetBuiltinCommand));
 
 }(red));

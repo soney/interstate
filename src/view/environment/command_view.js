@@ -7,6 +7,7 @@ $.widget("red.command_view", {
 	options: { }
 
 	, _create: function() {
+	/*
 		this.input = $("<input />")	.appendTo(this.element)
 									.focus()
 									.on("keydown", _.bind(function(event) {
@@ -16,19 +17,41 @@ $.widget("red.command_view", {
 											this.input.val("");
 										}
 									}, this));
-		this.output = $("<div />").addClass("output").appendTo(this.element);
+									*/
+		this.red_view = $("<div />").addClass("red_view").appendTo(this.element);
 
 		this.env = red.create("environment");
-		this.output_view = this.output.dom_output({
+		this.output_view = this.red_view.dom_output({
 			root: this.env.get_root_pointer()
 		});
 		this.env
-				.set("send_command", _.bind(function(command) {
-					this.post_command(command);
-				}, this))
+				.set("on_enter", _.bind(this.on_enter, this))
+				//.set("post_command", _.bind(this.post_command, this))
 				.cd("children")
-					.set("simple_cell", "<stateful>")
-					.cd("simple_cell")
+					.set("input", "<stateful>")
+					.cd("input")
+						.add_transition("INIT", "INIT", "on('keydown', this).when_eq('keyCode', 13)")
+						.set("(protos)", "INIT", "dom")
+						.set("tag", "INIT", "'input'")
+						.on_state("INIT >- INIT", "function(info) {\n" +
+							"var target = info.event.red_target;\n" +
+							"var dom_attachment = target.call('get_attachment_instance', 'dom');\n" +
+							"if(dom_attachment) {\n" +
+								"var dom_obj = dom_attachment.get_dom_obj();\n" +
+								"var text = dom_obj.value;\n" +
+								"on_enter(text);\n" +
+							"}\n" +
+						"}")
+						.set("attr", "<dict>")
+						.cd("attr")
+							.set("value", "<stateful prop>")
+							//.set("value", "INIT -> INIT", "''")
+						/*
+							.up()
+						.up()
+						/*
+					.set("root", "<stateful>")
+					.cd("root")
 						.rename_state("INIT", "idle")
 						.add_state("editing")
 						.add_transition("idle", "editing", "on('mousedown', this)")
@@ -50,10 +73,11 @@ $.widget("red.command_view", {
 						"}")
 					//	.up()
 					//.up()
+					//*/
 					;
 		window.env = this.env;
 
-/*
+		this.output = $("<pre />").addClass("output").appendTo(this.element);
 		this.pointer = undefined;
 		var current_parent = $(this.output);
 		this.logger = {
@@ -85,7 +109,6 @@ $.widget("red.command_view", {
 				current_parent = current_parent.parent().parent();
 			}
 		};
-		*/
 
 		window.addEventListener("message", _.bind(function(event) {
 			if(event.source === window.opener) {
@@ -114,26 +137,22 @@ $.widget("red.command_view", {
 		if(command_name === "cd") {
 			var prop_name = tokens[1];
 			this.pointer = this.pointer.call("get_prop_pointer", prop_name);
-			/*
 			this.output.html("");
 			red.print(this.pointer, this.logger);
-			*/
 		} else if(command_name === "up") {
 			this.pointer = this.pointer.pop();
-			/*
 			this.output.html("");
 			red.print(this.pointer, this.logger);
-			*/
 		} else if(command_name === "top") {
 			this.pointer = this.pointer.slice(0, 1);
-			/*
 			this.output.html("");
 			red.print(this.pointer, this.logger);
-			*/
 		} else if(command_name === "set") {
 			var prop_name = tokens[1];
 
 			var value = _.isNumber(_.last(tokens)) ? tokens[tokens.length-2] : tokens[tokens.length-1];
+			var builtin_info = false, builtin_name;
+			var parent_obj = this.pointer.points_at();
 
 			if(_.isString(value)) {
 				if(value === "<dict>") {
@@ -153,15 +172,39 @@ $.widget("red.command_view", {
 					value = red.create("cell", {str: value});
 				}
 			}
+
+			if(prop_name[0] === "(" && prop_name[prop_name.length-1] === ")") {
+				builtin_name = prop_name.slice(1, prop_name.length-1);
+
+				var builtins = parent_obj.get_builtins();
+				for(var i in builtins) {
+					var builtin = builtins[i];
+					var env_name = builtin._get_env_name();
+					if(builtin_name === env_name) {
+						builtin_info = builtin;
+						break;
+					}
+				}
+			}
+
 			if(tokens.length === 3 || (tokens.length === 4 && _.isNumber(tokens[3]))) {
 				// Formats: set <name> <val> <index?>
-				var index = _.isNumber(_.last(tokens)) ? _.last(tokens) : undefined;
-				this.post_command(new red.SetPropCommand({
-					parent: this.pointer.points_at(),
-					name: prop_name,
-					value: value,
-					index: index
-				}));
+				if(builtin_info) {
+					console.log(builtin_name);
+					this.post_command(new red.SetBuiltinCommand({
+						parent: parent_obj
+						, name: builtin_name
+						, value: value
+					}));
+				} else {
+					var index = _.isNumber(_.last(tokens)) ? _.last(tokens) : undefined;
+					this.post_command(new red.SetPropCommand({
+						parent: this.pointer.points_at(),
+						name: prop_name,
+						value: value,
+						index: index
+					}));
+				}
 			} else if(tokens.length === 4) {
 				// Formats: set <name> <state> <val> <index?>
 				var index = _.isNumber(_.last(tokens)) ? _.last(tokens) : undefined;
@@ -186,8 +229,8 @@ $.widget("red.command_view", {
 				}
 				return new red.Query({value: find_root});
 			});
-			//this.output.html("");
-			//red.print(this.pointer, this.logger);
+			this.output.html("");
+			red.print(this.pointer, this.logger);
 		} else if(delta instanceof red.CommandDelta) {
 			var command = delta.get_command();
 
@@ -196,10 +239,9 @@ $.widget("red.command_view", {
 			} else {
 				command._do();
 			}
-			env.set("cell", function() { return command._prop_value; });
 
-			//this.output.html("");
-			//red.print(this.pointer, this.logger);
+			this.output.html("");
+			red.print(this.pointer, this.logger);
 		} else {
 			console.error("Unhandled delta", delta);
 		}

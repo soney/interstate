@@ -20,6 +20,7 @@ var serialization_funcs = [
 	, { name: "command_delta", type: red.CommandDelta }
 	, { name: "set_prop_command", type: red.SetPropCommand }
 	, { name: "change_cell_command", type: red.ChangeCellCommand }
+	, { name: "set_builtin_command", type: red.SetBuiltinCommand }
 ];
 
 var serializing = false;
