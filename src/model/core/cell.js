@@ -93,11 +93,9 @@ red.Cell = function(options, defer_initialization) {
 			}
 		});
 
-		var rv = new red.Cell(undefined, true);
+		var rv = new red.Cell({uid: obj.uid}, true);
 		rv.initialize = function() {
-			var options = {
-				uid: obj.uid
-			};
+			var options = { };
 			_.each(serialized_options, function(serialized_option, name) {
 				options[name] = red.deserialize(serialized_option);
 			});

@@ -99,7 +99,9 @@ $.widget("red.dom_output", {
 				if(type === "command") {
 					var stringified_command = data.command;
 					var command = red.destringify(stringified_command);
-					var delta = command._do();
+					command._do();
+					var delta = new red.CommandDelta({command: command, reverse: false});
+					this.post_delta(delta);
 				}
 			}
 		}

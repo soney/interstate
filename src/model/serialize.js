@@ -16,8 +16,9 @@ var serialization_funcs = [
 	, { name: "startstate", type: red.StartState }
 	, { name: "parsed_event", type: red.ParsedEvent }
 	, { name: "statechart_event", type: red.StatechartEvent }
-	, { name: "program_delta", type: red.ProgramDelta }
 	, { name: "set_prop_command", type: red.SetPropCommand }
+	, { name: "program_delta", type: red.ProgramDelta }
+	, { name: "command_delta", type: red.CommandDelta }
 ];
 
 var serializing = false;
@@ -246,9 +247,6 @@ red.rm = function(name) {
 	name = storage_prefix+name;
 	delete localStorage[name];
 	return ls();
-};
-red.print = function() {
-	console.log(env.print());
 };
 
 //http://stackoverflow.com/questions/294297/javascript-implementation-of-gzip
