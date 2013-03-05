@@ -28,8 +28,9 @@
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
 
+				var origin = window.location.protocol + "//" + window.location.host;
 				window.addEventListener("load", function() {
-					window.opener.postMessage("ready", window.location.origin);
+					window.opener.postMessage("ready", origin);
 				});
 
 				$(function() {

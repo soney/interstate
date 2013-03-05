@@ -1,8 +1,8 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var ChangeCellCommand = function(options) {
-	ChangeCellCommand.superclass.constructor.apply(this, arguments);
+red.ChangeCellCommand = function(options) {
+	red.ChangeCellCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "cell")) {
@@ -27,10 +27,7 @@ var ChangeCellCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
-}(ChangeCellCommand));
+}(red.ChangeCellCommand));
 
-red._commands["change_cell"] = function(options) {
-	return new ChangeCellCommand(options);
-};
 
 }(red));

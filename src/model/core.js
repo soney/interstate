@@ -18,5 +18,15 @@ var red = (function(root) {
 			return undefined;
 		}
 	};
+	var uid_objs = {};
+	red.register_uid = function(uid, obj) {
+		uid_objs[uid] = obj;
+	};
+	red.unregister_uid = function(uid) {
+		delete uid_objs[uid];
+	};
+	red.find_uid = function(uid) {
+		return uid_objs[uid];
+	};
 	return red;
 }(this));

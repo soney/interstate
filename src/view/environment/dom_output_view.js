@@ -85,23 +85,31 @@ $.widget("red.dom_output", {
 	, on_message: function(jq_event) {
 		var event = jq_event.originalEvent;
 		if(event.source === this.editor_window) {
-			if(event.data === "ready") {
+			var data = event.data;
+			if(data === "ready") {
 				var root_pointer = this.option("root");
 				var root = root_pointer.points_at();
-				var stringified_root = red.stringify(root);
+				var stringified_root = red.stringify(root, true);
 
 				this.post_delta(new red.ProgramDelta({
 					str: stringified_root
 				}));
+			} else {
+				var type = data.type;
+				if(type === "command") {
+					var stringified_command = data.command;
+					console.log(stringified_command);
+				}
 			}
 		}
 	}
 	, post_delta: function(delta) {
 		var stringified_delta = red.stringify(delta);
+		var origin = window.location.protocol + "//" + window.location.host;
 		this.editor_window.postMessage({
 			type: "delta",
 			value: stringified_delta
-		}, window.location.origin);
+		}, origin);
 	}
 
 	, open_editor: function() {

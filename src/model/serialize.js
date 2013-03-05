@@ -17,6 +17,7 @@ var serialization_funcs = [
 	, { name: "parsed_event", type: red.ParsedEvent }
 	, { name: "statechart_event", type: red.StatechartEvent }
 	, { name: "program_delta", type: red.ProgramDelta }
+	, { name: "set_prop_command", type: red.SetPropCommand }
 ];
 
 var serializing = false;
@@ -35,7 +36,7 @@ var get_or_create_serialized_obj_id = function(obj) {
 	if(obj_id < 0) {
 		obj_id = serialized_objs.length;
 		serialized_objs.push(obj);
-		serialized_obj_values[obj_id] = do_serialize(obj);
+		serialized_obj_values[obj_id] = do_serialize.apply(this, arguments);
 	}
 	return obj_id;
 };
@@ -48,6 +49,7 @@ var create_or_get_serialized_obj = function(obj) {
 };
 
 red.serialize = function(obj) {
+	var serialize_args = _.rest(arguments);
 	var is_init_serial_call = false;
 	if(!serializing) {
 		serializing = true;
@@ -59,7 +61,9 @@ red.serialize = function(obj) {
 	if(obj == null || typeof obj !== "object") {
 		return obj;
 	} else if(_.isArray(obj)) {
-		return _.map(obj, red.serialize);
+		return _.map(obj, function(o) {
+			return red.serialize.apply(red, ([o]).concat(serialize_args));
+		});
 	} else if(is_init_serial_call) {
 		var serialized_obj = create_or_get_serialized_obj(obj);
 		serializing = false;
@@ -114,9 +118,12 @@ var do_serialize = function(obj) {
 	return obj;
 };
 
-red.stringify = function(obj) {
-	if(do_compress) { return lzw_encode(JSON.stringify(red.serialize(obj))); }
-	else { return JSON.stringify(red.serialize(obj)); }
+red.stringify = function() {
+	var serialized_obj = red.serialize.apply(red, arguments);
+	var stringified_obj = JSON.stringify(serialized_obj);
+
+	if(do_compress) { return lzw_encode(stringified_obj); }
+	else { return stringified_obj; }
 };
 
 // === DESERIALIZE ===

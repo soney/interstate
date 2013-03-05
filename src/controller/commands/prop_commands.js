@@ -3,8 +3,8 @@ var cjs = red.cjs, _ = red._;
 
 // === SET ===
 
-var SetPropCommand = function(options) {
-	SetPropCommand.superclass.constructor.apply(this, arguments);
+red.SetPropCommand = function(options) {
+	red.SetPropCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "parent")) {
@@ -36,6 +36,22 @@ var SetPropCommand = function(options) {
 			this._parent.unset_prop(this._prop_name);
 		}
 	};
+	proto.serialize = function() {
+		return {
+			parent_uid: this._parent.uid,
+			name: this._prop_name,
+			value: red.serialize.apply(red, (this._prop_value).concat(arguments)),
+			index: this._prop_index
+		};
+	};
+	my.deserialize = function(obj) {
+		return new red.SetPropCommand({
+			parent: red.find_uid(obj.parent_uid),
+			name: obj.name,
+			value: red.deserialize(obj.value),
+			index: obj.index
+		});
+	};
 	proto._do_destroy = function(in_effect) {
 		if(in_effect) {
 			if(this._old_prop_value) {
@@ -47,16 +63,12 @@ var SetPropCommand = function(options) {
 			}
 		}
 	};
-}(SetPropCommand));
-
-red._commands["set_prop"] = function(options) {
-	return new SetPropCommand(options);
-};
+}(red.SetPropCommand));
 
 // === REMOVE ===
 
-var UnsetPropCommand = function(options) {
-	UnsetPropCommand.superclass.constructor.apply(this, arguments);
+red.UnsetPropCommand = function(options) {
+	red.UnsetPropCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "parent")) {
@@ -96,16 +108,13 @@ var UnsetPropCommand = function(options) {
 			}
 		}
 	};
-}(UnsetPropCommand));
+}(red.UnsetPropCommand));
 
-red._commands["unset_prop"] = function(options) {
-	return new UnsetPropCommand(options);
-};
 
 // === RENAME ===
 
-var RenamePropCommand = function(options) {
-	RenamePropCommand.superclass.constructor.apply(this, arguments);
+red.RenamePropCommand = function(options) {
+	red.RenamePropCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "parent")) {
@@ -127,16 +136,13 @@ var RenamePropCommand = function(options) {
 		this._parent.rename(this._to_name, this._from_name);
 	};
 	proto._do_destroy = function(in_effect) { };
-}(RenamePropCommand));
+}(red.RenamePropCommand));
 
-red._commands["rename_prop"] = function(options) {
-	return new RenamePropCommand(options);
-};
 
 // === MOVE ===
 
-var MovePropCommand = function(options) {
-	MovePropCommand.superclass.constructor.apply(this, arguments);
+red.MovePropCommand = function(options) {
+	red.MovePropCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "parent")) {
@@ -159,12 +165,10 @@ var MovePropCommand = function(options) {
 		this._parent.move_prop(this._prop_name, this._from_index);
 	};
 	proto._do_destroy = function(in_effect) { };
-}(MovePropCommand));
+}(red.MovePropCommand));
 
-red._commands["move_prop"] = function(options) {
-	return new MovePropCommand(options);
-};
 
+/*
 // === SET PARENT ===
 
 red._commands["set_prop_parent"] = function(options) {
@@ -185,6 +189,7 @@ red._commands["set_prop_parent"] = function(options) {
 
 	return combo_command;
 };
+*/
 
 // === STATEFUL PROPS ===
 
@@ -219,9 +224,6 @@ var SetStatefulPropValueCommand = function(options) {
 	};
 }(SetStatefulPropValueCommand));
 
-red._commands["set_stateful_prop_value"] = function(options) {
-	return new SetStatefulPropValueCommand(options);
-};
 
 var UnsetStatefulPropValueCommand = function(options) {
 	UnsetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
@@ -254,13 +256,9 @@ var UnsetStatefulPropValueCommand = function(options) {
 	};
 }(UnsetStatefulPropValueCommand));
 
-red._commands["unset_stateful_prop_value"] = function(options) {
-	return new UnsetStatefulPropValueCommand(options);
-};
 
-
-var SetBuiltinCommand = function(options) {
-	SetBuiltinCommand.superclass.constructor.apply(this, arguments);
+red.SetBuiltinCommand = function(options) {
+	red.SetBuiltinCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "parent")) {
@@ -312,10 +310,6 @@ var SetBuiltinCommand = function(options) {
 			}
 		}
 	};
-}(SetBuiltinCommand));
-
-red._commands["set_builtin"] = function(options) {
-	return new SetBuiltinCommand(options);
-};
+}(red.SetBuiltinCommand));
 
 }(red));

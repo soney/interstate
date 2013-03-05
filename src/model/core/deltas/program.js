@@ -2,6 +2,7 @@
 var cjs = red.cjs, _ = red._;
 
 red.ProgramDelta = function(options) {
+	red.ProgramDelta.superclass.constructor.apply(this, arguments);
 	this.str = options.str;
 };
 

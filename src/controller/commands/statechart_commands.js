@@ -1,8 +1,8 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var AddStateCommand = function(options) {
-	AddStateCommand.superclass.constructor.apply(this, arguments);
+red.AddStateCommand = function(options) {
+	red.AddStateCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "statechart")) {
@@ -36,14 +36,10 @@ var AddStateCommand = function(options) {
 			this._state.destroy();
 		}
 	};
-}(AddStateCommand));
+}(red.AddStateCommand));
 
-red._commands["add_state"] = function(options) {
-	return new AddStateCommand(options);
-};
-
-var RemoveStateCommand = function(options) {
-	RemoveStateCommand.superclass.constructor.apply(this, arguments);
+red.RemoveStateCommand = function(options) {
+	red.RemoveStateCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "statechart")) {
@@ -81,14 +77,10 @@ var RemoveStateCommand = function(options) {
 			});
 		}
 	};
-}(RemoveStateCommand));
+}(red.RemoveStateCommand));
 
-red._commands["remove_state"] = function(options) {
-	return new RemoveStateCommand(options);
-};
-
-var MoveStateCommand = function(options) {
-	MoveStateCommand.superclass.constructor.apply(this, arguments);
+red.MoveStateCommand = function(options) {
+	red.MoveStateCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "statechart")) {
@@ -114,14 +106,10 @@ var MoveStateCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
-}(MoveStateCommand));
+}(red.MoveStateCommand));
 
-red._commands["move_state"] = function(options) {
-	return new MoveStateCommand(options);
-};
-
-var RenameStateCommand = function(options) {
-	RenameStateCommand.superclass.constructor.apply(this, arguments);
+red.RenameStateCommand = function(options) {
+	red.RenameStateCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "statechart")) {
@@ -146,14 +134,10 @@ var RenameStateCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
-}(RenameStateCommand));
+}(red.RenameStateCommand));
 
-red._commands["rename_state"] = function(options) {
-	return new RenameStateCommand(options);
-};
-
-var MakeConcurrentCommand = function(options) {
-	MakeConcurrentCommand.superclass.constructor.apply(this, arguments);
+red.MakeConcurrentCommand = function(options) {
+	red.MakeConcurrentCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "statechart")) {
@@ -177,14 +161,11 @@ var MakeConcurrentCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
-}(MakeConcurrentCommand));
+}(red.MakeConcurrentCommand));
 
-red._commands["make_concurrent"] = function(options) {
-	return new MakeConcurrentCommand(options);
-};
 
-var AddTransitionCommand = function(options) {
-	AddTransitionCommand.superclass.constructor.apply(this, arguments);
+red.AddTransitionCommand = function(options) {
+	red.AddTransitionCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "statechart")) {
@@ -220,15 +201,11 @@ var AddTransitionCommand = function(options) {
 			this._transition.destroy();
 		}
 	};
-}(AddTransitionCommand));
-
-red._commands["add_transition"] = function(options) {
-	return new AddTransitionCommand(options);
-};
+}(red.AddTransitionCommand));
 
 
-var RemoveTransitionCommand = function(options) {
-	RemoveTransitionCommand.superclass.constructor.apply(this, arguments);
+red.RemoveTransitionCommand = function(options) {
+	red.RemoveTransitionCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "statechart")) {
@@ -257,13 +234,10 @@ var RemoveTransitionCommand = function(options) {
 			this._transition.destroy();
 		}
 	};
-}(RemoveTransitionCommand));
+}(red.RemoveTransitionCommand));
 
-red._commands["remove_transition"] = function(options) {
-	return new RemoveTransitionCommand(options);
-};
-var SetTransitionEventCommand = function(options) {
-	SetTransitionEventCommand.superclass.constructor.apply(this, arguments);
+red.SetTransitionEventCommand = function(options) {
+	red.SetTransitionEventCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "statechart")) {
@@ -290,13 +264,10 @@ var SetTransitionEventCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
-}(SetTransitionEventCommand));
+}(red.SetTransitionEventCommand));
 
-red._commands["set_transition_event"] = function(options) {
-	return new SetTransitionEventCommand(options);
-};
 
-var SetTransitionFromCommand = function(options) {
+red.SetTransitionFromCommand = function(options) {
 	SetTransitionFromCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
@@ -322,14 +293,11 @@ var SetTransitionFromCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
-}(SetTransitionFromCommand));
+}(red.SetTransitionFromCommand));
 
-red._commands["set_transition_from"] = function(options) {
-	return new SetTransitionFromCommand(options);
-};
 
-var SetTransitionToCommand = function(options) {
-	SetTransitionToCommand.superclass.constructor.apply(this, arguments);
+red.SetTransitionToCommand = function(options) {
+	red.SetTransitionToCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "statechart")) {
@@ -354,16 +322,12 @@ var SetTransitionToCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
-}(SetTransitionToCommand));
-
-red._commands["set_transition_to"] = function(options) {
-	return new SetTransitionToCommand(options);
-};
+}(red.SetTransitionToCommand));
 
 var null_fn = function(){};
 
-var StatechartOnCommand = function(options) {
-	StatechartOnCommand.superclass.constructor.apply(this, arguments);
+red.StatechartOnCommand = function(options) {
+	red.StatechartOnCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "statechart")) {
@@ -398,14 +362,10 @@ var StatechartOnCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
-}(StatechartOnCommand));
+}(red.StatechartOnCommand));
 
-red._commands["statechart_on"] = function(options) {
-	return new StatechartOnCommand(options);
-};
-
-var StatechartOff = function(options) {
-	StatechartOff.superclass.constructor.apply(this, arguments);
+red.StatechartOff = function(options) {
+	red.StatechartOff.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
 	if(!_.has(this._options, "statechart")) {
@@ -431,10 +391,6 @@ var StatechartOff = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
-}(StatechartOff));
-
-red._commands["statechart_off"] = function(options) {
-	return new StatechartOffCommand(options);
-};
+}(red.StatechartOff));
 
 }(red));

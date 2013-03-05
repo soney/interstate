@@ -1,6 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
-var Command = function() {
+
+red.Command = function() {
 	this._in_effect = false;
 };
 (function(my) {
@@ -29,14 +30,6 @@ var Command = function() {
 	proto.to_redo_string = function() {
 		return "Redo generic command";
 	};
-}(Command));
+}(red.Command));
 
-red.Command = Command;
-red._commands = {
-};
-red.command = function(command_name) {
-	var command = red._commands[command_name];
-	var args = _.rest(arguments);
-	return command.apply(command, args);
-};
 }(red));

@@ -34,6 +34,7 @@ exports.main_src = c(
 				, "array_diff.js"
 				, "set.js"
 				, "map.js"
+				, "uid.js"
 	])
 	, cp(cjs_path, cjs_inc.main_src)
 	, cp(vendor_src, [
@@ -73,12 +74,12 @@ exports.main_src = c(
 				, "model/core/deltas/program.js"
 				, "model/attachments/attachment_core.js"
 				, "model/attachments/dom_attachment.js"
-				, "model/serialize.js"
 				, "controller/commands/command_core.js"
 				, "controller/commands/prop_commands.js"
 				, "controller/commands/cell_commands.js"
 				, "controller/commands/statechart_commands.js"
 				, "controller/commands/combined_commands.js"
+				, "model/serialize.js"
 				, "controller/environment/command_stack.js"
 				, "controller/environment/red_environment.js"
 				, "view/environment/dom_output_view.js"

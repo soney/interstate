@@ -3,7 +3,8 @@ var cjs = red.cjs, _ = red._;
 
 red.Cell = function(options, defer_initialization) {
 	options = options || {};
-	this.id = _.uniqueId();
+	this.uid = options.uid || uid();
+	red.register_uid(this.uid, this);
 	if(defer_initialization !== true) {
 		this.do_initialize(options);
 	}
@@ -70,8 +71,9 @@ red.Cell = function(options, defer_initialization) {
 		}, options));
 		return rv;
 	};
-	proto.serialize = function() {
-		var rv = {};
+	proto.serialize = function(include_uid) {
+		var rv = { };
+		if(include_uid) { rv.uid = this.uid; }
 
 		var self = this;
 		_.each(my.builtins, function(builtin, name) {
@@ -93,7 +95,9 @@ red.Cell = function(options, defer_initialization) {
 
 		var rv = new red.Cell(undefined, true);
 		rv.initialize = function() {
-			var options = {};
+			var options = {
+				uid: obj.uid
+			};
 			_.each(serialized_options, function(serialized_option, name) {
 				options[name] = red.deserialize(serialized_option);
 			});
@@ -103,7 +107,7 @@ red.Cell = function(options, defer_initialization) {
 		return rv;
 	};
 	proto.hash = function() {
-		return this.id;
+		return this.uid;
 	};
 }(red.Cell));
 

@@ -1,8 +1,8 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var CombinedCommand = function(options) {
-	CombinedCommand.superclass.constructor.apply(this, arguments);
+red.CombinedCommand = function(options) {
+	red.CombinedCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 	this._commands = options.commands;
 };
@@ -25,10 +25,6 @@ var CombinedCommand = function(options) {
 			command.destroy(in_effect);
 		});
 	};
-}(CombinedCommand));
-
-red._commands["combined"] = function(options) {
-	return new CombinedCommand(options);
-};
+}(red.CombinedCommand));
 
 }(red));

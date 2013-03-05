@@ -35,7 +35,8 @@ red.Dict = function(options, defer_initialization) {
 	this.options = options;
 
 	this.type = "red_dict";
-	this.id = _.uniqueId();
+	this.uid = options.uid || uid();
+	red.register_uid(this.uid, this);
 	if(defer_initialization !== true) {
 		this.do_initialize(options);
 	}
@@ -541,8 +542,9 @@ red.Dict = function(options, defer_initialization) {
 	proto.clone = function(options) {
 	};
 
-	proto.serialize = function() {
-		var rv = {};
+	proto.serialize = function(include_uid) {
+		var rv = { };
+		if(include_uid) { rv.uid = this.uid; }
 
 		var self = this;
 		_.each(this.get_builtins(), function(builtin, name) {
@@ -564,7 +566,9 @@ red.Dict = function(options, defer_initialization) {
 
 		var rv = new red.Dict(undefined, true);
 		rv.initialize = function() {
-			var options = {};
+			var options = {
+				uid: obj.uid
+			};
 			_.each(serialized_options, function(serialized_option, name) {
 				options[name] = red.deserialize(serialized_option);
 			});
@@ -637,7 +641,7 @@ red.Dict = function(options, defer_initialization) {
 	};
 
 	proto.hash = function() {
-		return this.id;
+		return this.uid;
 	};
 
 	//

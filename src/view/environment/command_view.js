@@ -1,5 +1,6 @@
 (function(red, $) {
 var cjs = red.cjs, _ = red._;
+var origin = window.location.protocol + "//" + window.location.host;
 
 $.widget("red.command_view", {
 	
@@ -17,8 +18,38 @@ $.widget("red.command_view", {
 										}
 									}, this));
 		this.output = $("<pre />").addClass("output").appendTo(this.element);
+
 		this.pointer = undefined;
-		this.logger = this.get_logger();
+		var current_parent = $(this.output);
+		this.logger = {
+			log: function() {
+				var text = _.toArray(arguments).join(", ");
+				var div = $("<div />")	.addClass("log")
+										.text(text);
+				current_parent.append(div);
+			},
+			group: function() {
+				var text = _.toArray(arguments).join(", ");
+				var div = $("<div />")	.addClass("group")
+											.text(text);
+				var children_div = $("<div />")	.addClass("children")
+												.appendTo(div);
+				current_parent.append(div);
+				current_parent = children_div;
+			},
+			groupCollapsed: function() {
+				var text = _.toArray(arguments).join(", ");
+				var div = $("<div />")	.addClass("collapsed group")
+											.text(text);
+				var children_div = $("<div />")	.addClass("children")
+												.appendTo(div);
+				current_parent.append(div);
+				current_parent = children_div;
+			},
+			groupEnd: function() {
+				current_parent = current_parent.parent().parent();
+			}
+		};
 
 		window.addEventListener("message", _.bind(function(event) {
 			if(event.source === window.opener) {
@@ -48,15 +79,52 @@ $.widget("red.command_view", {
 			var prop_name = tokens[1];
 			this.pointer = this.pointer.call("get_prop_pointer", prop_name);
 			this.output.html("");
-			print(this.root, this.pointer, this.get_logger());
+			print(this.root, this.pointer, this.logger);
 		} else if(command_name === "up") {
 			this.pointer = this.pointer.pop();
 			this.output.html("");
-			print(this.root, this.pointer, this.get_logger());
+			print(this.root, this.pointer, this.logger);
 		} else if(command_name === "top") {
 			this.pointer = this.pointer.slice(0, 1);
 			this.output.html("");
-			print(this.root, this.pointer, this.get_logger());
+			print(this.root, this.pointer, this.logger);
+		} else if(command_name === "set") {
+			var prop_name = tokens[1];
+
+			var value = _.isNumber(_.last(tokens)) ? tokens[tokens.length-2] : tokens[tokens.length-1];
+
+			if(_.isString(value)) {
+				if(value === "<dict>") {
+					value = red.create("dict");
+					var direct_protos = red.create("cell", {str: "[]", ignore_inherited_in_contexts: [value]});
+					value._set_direct_protos(direct_protos);
+				} else if(value === "<stateful>") {
+					value = red.create("stateful_obj", undefined, true);
+					value.do_initialize({
+						direct_protos: red.create("stateful_prop", {check_on_nullify:true, can_inherit: false, ignore_inherited_in_contexts: [value]})
+					});
+					value.get_own_statechart()	.add_state("INIT")
+												.starts_at("INIT");
+				} else if(value === "<stateful prop>") {
+					value = red.create("stateful_prop");
+				} else {
+					value = red.create("cell", {str: value});
+				}
+			}
+			if(tokens.length === 3 || (tokens.length === 4 && _.isNumber(tokens[3]))) {
+				// Formats: set <name> <val> <index?>
+				var index = _.isNumber(_.last(tokens)) ? _.last(tokens) : undefined;
+				this.post_command(red.command("set_prop", {
+					parent: this.pointer.points_at(),
+					name: prop_name,
+					value: value,
+					index: index
+				}));
+			} else if(tokens.length === 4) {
+				// Formats: set <name> <state> <val> <index?>
+				var index = _.isNumber(_.last(tokens)) ? _.last(tokens) : undefined;
+			}
+
 		} else {
 			console.log(tokens);
 		}
@@ -66,44 +134,27 @@ $.widget("red.command_view", {
 		if(delta instanceof red.ProgramDelta) {
 			var program_str = delta.get_str();
 			this.root = red.destringify(program_str);
+			this.root.set("on", red.on_event);
+			this.root.set("emit", red.emit);
 			this.pointer = red.create("pointer", {stack: [this.root]});
+			var root_pointer = this.pointer;
+			this.root.set("find", function(find_root) {
+				if(arguments.length === 0) {
+					find_root = root_pointer;
+				}
+				return new red.Query({value: find_root});
+			});
 			this.output.html("");
 			print(this.root, this.pointer, this.logger);
 		}
 	}
-
-	, get_logger: function() {
-		var current_parent = $(this.output);
-
-		return {
-			log: function() {
-				var text = _.toArray(arguments).join(", ");
-				var div = $("<div />")	.addClass("log")
-										.text(text);
-				current_parent.append(div);
-			},
-			group: function() {
-				var text = _.toArray(arguments).join(", ");
-				var div = $("<div />")	.addClass("group")
-											.text(text);
-				var children_div = $("<div />")	.addClass("children")
-												.appendTo(div);
-				current_parent.append(div);
-				current_parent = children_div;
-			},
-			groupCollapsed: function() {
-				var text = _.toArray(arguments).join(", ");
-				var div = $("<div />")	.addClass("collapsed group")
-											.text(text);
-				var children_div = $("<div />")	.addClass("children")
-												.appendTo(div);
-				current_parent.append(div);
-				current_parent = children_div;
-			},
-			groupEnd: function() {
-				current_parent = current_parent.parent().parent();
-			}
-		};
+	
+	, post_command: function(command) {
+		var stringified_command = red.stringify(command);
+		window.opener.postMessage({
+			type: "command",
+			command: stringified_command
+		}, origin);
 	}
 });
 
@@ -137,13 +188,13 @@ var print = function(root, current_pointer, logging_mechanism) {
 		} else if(_.isElement(val)) {
 			return "(dom)";
 		} else if(val instanceof red.StatefulObj) {
-			return "(stateful:"+val.id+")";
+			return "(stateful:"+uid.strip_prefix(val.uid)+")";
 		} else if(val instanceof red.Dict) {
-			return "(dict:"+val.id+")";
+			return "(dict:"+uid.strip_prefix(val.uid)+")";
 		} else if(val instanceof red.Cell) {
-			return "(cell:" + val.id + ")";
+			return "(cell:" + uid.strip_prefix(val.uid) + ")";
 		} else if(val instanceof red.StatefulProp) {
-			return "(prop:" + val.id + ")";
+			return "(prop:" + uid.strip_prefix(val.uid) + ")";
 		} else if(val instanceof red.ParsedFunction) {
 			return "(parsed fn)";
 		} else if(val instanceof red.Query) {
