@@ -214,8 +214,10 @@ var Env = function(options) {
 				value.do_initialize({
 					direct_protos: red.create("stateful_prop", {check_on_nullify:true, can_inherit: false, ignore_inherited_in_contexts: [value]})
 				});
-				value.get_own_statechart()	.add_state("INIT")
+				/*
+				 * value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");
+				*/
 			} else if(value === "<stateful prop>") {
 				value = red.create("stateful_prop");
 			} else {
