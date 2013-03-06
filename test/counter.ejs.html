@@ -10,6 +10,12 @@
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
 				var env = red.create("environment");
+				env
+					.set("a", "1+2+3")
+				//	.set("a", "<stateful>")
+					;
+
+					/*
 				env	.cd("children")
 					.set("obj", "<stateful>")
 					.cd("obj")
@@ -21,6 +27,7 @@
 					.set("text", "INIT", "i")
 					.set("i", "(start) -> INIT", "1")
 					.set("i", "INIT -> INIT", "i+1")
+					*/
 					;
 
 				var root_pointer = env.get_root_pointer();
@@ -29,6 +36,18 @@
 				}).appendTo(document.body);
 				env.print_on_return = true;
 				console.log(env.print());
+
+				window.s = function() {
+					var stringified_root = red.stringify(root_pointer.points_at());
+					var new_root = red.destringify(stringified_root);
+					output_view.dom_output("destroy");
+					env = red.create("environment", {root: new_root});
+					root_pointer = env.get_root_pointer();
+					output_view.dom_output({
+						root: root_pointer
+					});
+					console.log(env.print());
+				};
 			</script>
 	  </div>
   </body>

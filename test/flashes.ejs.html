@@ -28,9 +28,6 @@
 					.set("backgroundColor", "<stateful prop>")
 					.set("backgroundColor", "flash1", "'red'")
 					.set("backgroundColor", "flash2", "'green'")
-					.on_state("flash1", function() {
-							console.log(arguments);
-						})
 					.top()
 					.set("interval", "500")
 					;
@@ -41,7 +38,6 @@
 
 				//env.set("interval", "10");
 				window.invalidate = function() {
-						debugger;
 						interval.invalidate();
 						interval.set(function() {
 							return 10;

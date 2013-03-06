@@ -549,7 +549,7 @@ red.Dict = function(options, defer_initialization) {
 		if(include_uid) { rv.uid = this.uid; }
 
 		var self = this;
-		var args = arguments;
+		var args = _.toArray(arguments);
 		_.each(this.get_builtins(), function(builtin, name) {
 			if(builtin.serialize !== false) {
 				var getter_name = builtin.getter_name || "get_" + name;

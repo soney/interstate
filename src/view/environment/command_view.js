@@ -7,7 +7,6 @@ $.widget("red.command_view", {
 	options: { }
 
 	, _create: function() {
-	/*
 		this.input = $("<input />")	.appendTo(this.element)
 									.focus()
 									.on("keydown", _.bind(function(event) {
@@ -17,7 +16,6 @@ $.widget("red.command_view", {
 											this.input.val("");
 										}
 									}, this));
-									*/
 		this.red_view = $("<div />").addClass("red_view").appendTo(this.element);
 
 		this.env = red.create("environment");
@@ -25,6 +23,7 @@ $.widget("red.command_view", {
 			root: this.env.get_root_pointer()
 		});
 		this.env
+		/*
 				.set("on_enter", _.bind(this.on_enter, this))
 				//.set("post_command", _.bind(this.post_command, this))
 				.cd("children")
@@ -45,7 +44,7 @@ $.widget("red.command_view", {
 						.set("attr", "<dict>")
 						.cd("attr")
 							.set("value", "<stateful prop>")
-							//.set("value", "INIT -> INIT", "''")
+							.set("value", "INIT -> INIT", "''")
 						/*
 							.up()
 						.up()
@@ -75,7 +74,7 @@ $.widget("red.command_view", {
 					//.up()
 					//*/
 					;
-		window.env = this.env;
+		//window.env = this.env;
 
 		this.output = $("<pre />").addClass("output").appendTo(this.element);
 		this.pointer = undefined;

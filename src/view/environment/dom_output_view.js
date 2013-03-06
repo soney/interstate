@@ -9,14 +9,14 @@ $.widget("red.dom_output", {
 		edit_on_open: false,
 		editor_url: "http://localhost:8000/src/view/editor.ejs.html",
 		editor_name: uid.get_prefix() + "red_editor",
-		editor_window_options: "toolbar=no, location=no, directories=no, status=yes, menubar=no, scrollbars=yes, resizable=yes, width=800, height=600"
+		editor_window_options: "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=800, height=600"
 	}
 
 	, _create: function() {
 		if(this.option("show_edit_button")) {
 			this.$on_message = _.bind(this.on_message, this);
 			$(window).on("message", this.$on_message);
-			var edit_button_css = {
+			this.edit_button_css = {
 					float: "right",
 					opacity: 0.3,
 					"text-decoration": "none",
@@ -27,23 +27,43 @@ $.widget("red.dom_output", {
 					right: "0px",
 					color: "#900",
 					"background-color": "",
-					"font-size": "0.9em"
+					"font-size": "0.9em",
+					cursor: "pointer"
 				};
-			var edit_hover_css = {
+			this.edit_hover_css = {
 					opacity: 1.0,
 					color: "white",
-					"background-color": "#900"
+					"background-color": "#900",
+					cursor: "pointer"
+				};
+			this.edit_active_css = {
+					opacity: 1.0,
+					color: "white",
+					"background-color": "green",
+					cursor: "default"
 				};
 			this.edit_button = $("<a />")	.attr("href", "javascript:void(0)")
 											.text("source")
-											.css(edit_button_css)
-											.hover(function() {
-												$(this).css(edit_hover_css);
-											}, function() {
-												$(this).css(edit_button_css);
-											})
-											.appendTo($(this.element).parent())
+											.css(this.edit_button_css)
+											.hover(_.bind(function() {
+												if(!this.edit_button.hasClass("active")) {
+													this.edit_button.addClass("hover").css(this.edit_hover_css);
+												}
+											}, this), _.bind(function() {
+												if(!this.edit_button.hasClass("active")) {
+													this.edit_button.removeClass("hover").css(this.edit_button_css);
+												}
+											}, this))
 											.on("click", _.bind(this.open_editor, this));
+
+			var append_interval = window.setInterval(_.bind(function() {
+				var parent = $(this.element).parent();
+				if(parent) {
+					parent.append(this.edit_button);
+					window.clearInterval(append_interval);
+				}
+			}, this), 100);
+
 			if(this.option("edit_on_open")) {
 				this.open_editor();
 			}
@@ -116,12 +136,21 @@ $.widget("red.dom_output", {
 	}
 
 	, open_editor: function() {
-		this.close_editor();
-		this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options"));
-		$(window)	.on("unload", _.bind(this.close_editor, this))
+		if(this.editor_window) {
+			this.editor_window.focus();
+		} else {
+			this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options"));
+			this.edit_button.addClass("active").css(this.edit_active_css);
+			$(window).on("unload", _.bind(this.close_editor, this));
+			this.editor_window.addEventListener("beforeunload", _.bind(function() {
+				this.edit_button.removeClass("active").css(this.edit_button_css);
+				delete this.editor_window;
+			}, this));
+		}
 	}
 	, close_editor: function() {
 		if(this.editor_window) {
+			this.edit_button.removeClass("active").css(this.edit_button_css);
 			this.editor_window.close();
 			delete this.editor_window;
 		}
