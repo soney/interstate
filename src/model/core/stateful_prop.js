@@ -36,13 +36,14 @@ red.StatefulProp = function(options, defer_initialization) {
 
 	proto.do_initialize = function(options) {
 		this._direct_values = options.direct_values || cjs.map();
+		this._direct_values.set_hash("hash");
+
 		this._values_per_context = cjs.map({
 			equals: red.check_pointer_equality,
 			hash: "hash"
 		});
 		this._can_inherit = options.can_inherit !== false;
 		this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
-		this._direct_values.set_hash("hash");
 		this._check_on_nullify = options.check_on_nullify === true;
 	};
 
@@ -212,10 +213,12 @@ red.StatefulProp = function(options, defer_initialization) {
 	};
 
 	proto.serialize = function() {
+		var arg_array = _.toArray(arguments);
 		return {
-			direct_values: red.serialize(this._direct_values)
-			, can_inherit: red.serialize(this._can_inherit)
-			, ignore_inherited_in_contexts: red.serialize(this._ignore_inherited_in_contexts)
+			direct_values: red.serialize.apply(red, ([this._direct_values]).concat(arg_array))
+			, can_inherit: red.serialize.apply(red, ([this._can_inherit]).concat(arg_array))
+			, ignore_inherited_in_contexts: red.serialize.apply(red, ([this._ignore_inherited_in_contexts]).concat(arg_array))
+			, check_on_nullify: red.serialize.apply(red, ([this._check_on_nullify]).concat(arg_array))
 		};
 	};
 	my.deserialize = function(obj) {
@@ -225,6 +228,7 @@ red.StatefulProp = function(options, defer_initialization) {
 				direct_values: red.deserialize(obj.direct_values)
 				, can_inherit: red.deserialize(obj.can_inherit)
 				, ignore_inherited_in_contexts: red.deserialize(obj.ignore_inherited_in_contexts)
+				, check_on_nullify: red.deserialize(obj.check_on_nullify)
 			};
 			this.do_initialize(options);
 		};

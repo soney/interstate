@@ -177,6 +177,7 @@ red.find_equivalent_transition = function(to_transition, in_tree) {
 };
 
 red.StatechartTransition = function(options, defer_initialization) {
+	options = options || {};
 	able.make_this_listenable(this);
 	this.$remove = _.bind(this.remove, this);
 	this.$destroy = _.bind(this.destroy, this);
@@ -307,15 +308,20 @@ red.StatechartTransition = function(options, defer_initialization) {
 
 	proto.serialize = function() {
 		return {
-			from: red.serialize(this.from())
-			, to: red.serialize(this.to())
-			, event: red.serialize(this.event())
+			from: red.serialize.apply(red, ([this.from()]).concat(arguments))
+			, to: red.serialize.apply(red, ([this.to()]).concat(arguments))
+			, event: red.serialize.apply(red, ([this.event()]).concat(arguments))
 		};
 	};
 	my.deserialize = function(obj) {
 		var rv = new red.StatechartTransition(undefined, true);
 		rv.initialize = function() {
-			this.do_initialize({from: red.deserialize(obj.from), to: red.deserialize(obj.to), event: red.deserialize(obj.event)});
+			var options = {
+				from: red.deserialize(obj.from),
+				to: red.deserialize(obj.to),
+				event: red.deserialize(obj.event)
+			};
+			this.do_initialize(options);
 		};
 		return rv;
 	};
@@ -394,15 +400,19 @@ red.State = function(options, defer_initialization) {
 				var basis_start_state_to = basis_start_state.getTo();
 				var is_running = this.is_running();
 				var my_context = this.context();
-				_.each(basis.get_substates(), function(substate) {
+				_.each(basis.get_substates(true), function(substate) {
 					var shadow = substate.create_shadow({
 						context: my_context,
 						parent: this,
 						running: is_running,
 						active: is_running && basis_start_state_to === substate
 					});
-					var name = substate.get_name(basis);
-					this.add_substate(name, shadow);
+					if(shadow instanceof red.StartState) {
+						this.set_start_state(shadow);
+					} else {
+						var name = substate.get_name(basis);
+						this.add_substate(name, shadow);
+					}
 				}, this);
 				_.each(this._basis._transition_listeners, function(listeners, name) {
 					_.each(listeners, function(info) {
@@ -411,7 +421,7 @@ red.State = function(options, defer_initialization) {
 				}, this);
 			}
 			if(this.parent() === undefined) { // When all of the substates have been copied
-				var flat_substates = this.flatten_substates();
+				var flat_substates = this.flatten_substates(true);
 
 				var parent_statechart = this,
 					context = this.context();
@@ -426,7 +436,7 @@ red.State = function(options, defer_initialization) {
 				_.each(flat_substates, function(substate) {
 					var basis = substate.basis();
 					var outgoing_transitions = basis.get_outgoing_transitions();
-					var incoming_transitions = basis.get_incoming_transitions();
+			//		var incoming_transitions = basis.get_incoming_transitions();
 
 					var shadow_outgoing = _.map(outgoing_transitions, create_transition_shadow);
 
@@ -463,6 +473,11 @@ red.State = function(options, defer_initialization) {
 			type: event_type,
 			target: this
 		});
+	};
+	proto.flatten_substates = function(include_start) {
+		return ([this]).concat(_.flatten(_.map(this.get_substates(include_start), function(substate) {
+			return substate.flatten_substates(include_start);
+		})));
 	};
 	proto.is_active = function(to_active) { return this.$active.get(); };
 	proto.get_name = function(relative_to) {
@@ -601,42 +616,10 @@ red.State = function(options, defer_initialization) {
 	proto.destroy = function() {
 		this.$active.destroy();
 	};
-
-	proto.stringify = function(tab_level, punctuation) {
-		var name_spacing = 15;
-		var rv = "";
-		if(!_.isString(punctuation)) { punctuation = ""; }
-		if(!_.isNumber(tab_level)) { tab_level = 0; }
-		_.times(tab_level, function() {
-			rv += "    ";
-		});
-		var name = punctuation + this.id() + ": " + this.get_name(this.parent());
-		rv += name;
-		_.times(Math.max(1, name_spacing - name.length), function() {
-			rv += " ";
-		});
-		rv += _.map(this.get_outgoing_transitions(), function(transition) {
-			var to = transition.to().get_name();
-			return " -(" + transition.stringify() + ")-> " + to;
-		}).join(", ");
-		var substates = this.get_substates(true);
-		if(substates.length > 1) { // move than the start state
-			_.each(substates, function(substate) {
-				rv += "\n";
-				var punctuation = "";
-				if(this.is_concurrent()) {
-					punctuation = "| ";
-				} else if(this.is(substate)) {
-					punctuation = "* ";
-				}
-				rv += substate.stringify(tab_level + 1, punctuation);
-			}, this);
-		}
-		return rv;
-	};
 }(red.State));
 
 red.StartState = function(options) {
+	options = options || {};
 	red.StartState.superclass.constructor.apply(this, arguments);
 	this._running = options.running === true;
 };
@@ -645,11 +628,7 @@ red.StartState = function(options) {
 	var proto = my.prototype;
 	proto.do_initialize = function(options) {
 		my.superclass.do_initialize.apply(this, arguments);
-		var basis = this.basis();
-		if(basis) {
-			var parent = this.parent();
-			this.outgoingTransition = basis.outgoingTransition.create_shadow(this, red.find_equivalent_state(basis.outgoingTransition.to(), parent), parent, this.context());
-		} else {
+		if(!this.basis()) { //If we have a basis, then whatever function shadowed us will create our outgoing transition too
 			var to;
 			if(options.to) {
 				to = options.to;
@@ -659,7 +638,7 @@ red.StartState = function(options) {
 				this._transition_to_self = true;
 			}
 			
-			this.outgoingTransition = new red.StatechartTransition({
+			this.outgoingTransition = options.outgoing_transition || new red.StatechartTransition({
 				from: this,
 				to: to,
 				event: red.create_event("statechart", this.parent(), "run")
@@ -705,7 +684,11 @@ red.StartState = function(options) {
 		this._transition_to_self = false;
 	};
 	proto._add_direct_outgoing_transition = function(transition) {
-		throw new Error("Should never have a transition other than outgoing transition");
+		if(this.outgoingTransition) { // I already have an outgoing transition
+			throw new Error("Should never have a transition other than outgoing transition");
+		}
+		this._transition_to_self = transition.to() === this;
+		this.outgoingTransition = transition;
 	};
 	proto._remove_direct_outgoing_transition = function(transition) {
 		throw new Error("Should never remove outgoing transition from start state");
@@ -741,18 +724,26 @@ red.StartState = function(options) {
 		}
 	};
 
+	proto.create_shadow = function(options) {
+		var rv = new red.StartState(_.extend({
+			basis: this,
+		}, options));
+
+		return rv;
+	};
+
 	proto.serialize = function() {
 		return {
-			outgoing_transition: red.serialize(this.outgoingTransition)
-			, parent: red.serialize(this.parent())
+			outgoing_transition: red.serialize.apply(red, ([this.outgoingTransition]).concat(arguments))
+			, parent: red.serialize.apply(red, ([this.parent()]).concat(arguments))
 		};
 	};
 	my.deserialize = function(obj) {
 		var rv = new red.StartState(undefined, true);
 		rv.initialize = function() {
 			var options = {
-				outgoing_transition: red.deserialize(obj.outgoing_transition)
-				, parent: red.deserialize(obj.parent)
+				outgoing_transition: red.deserialize(obj.outgoing_transition),
+				parent: red.deserialize(obj.parent)
 			};
 			this.do_initialize(options);
 		};
@@ -762,6 +753,7 @@ red.StartState = function(options) {
 }(red.StartState));
 
 red.Statechart = function(options) {
+	options = options || {};
 	this._transition_listeners = {};
 	red.Statechart.superclass.constructor.apply(this, arguments);
 };
@@ -774,13 +766,12 @@ red.Statechart = function(options) {
 			parent: this,
 			to: options.start_at
 		});
-		this.$substates = cjs.map({
-			valuehash: "hash"
-		});
+		this.$substates = options.substates || cjs.map();
+		this.$substates.set_value_hash("hash");
 		this.$concurrent = cjs.$(options.concurrent === true);
 		this._parent = options.parent;
-		this.$incoming_transitions = cjs.array();
-		this.$outgoing_transitions = cjs.array();
+		this.$incoming_transitions = options.incoming_transitions || cjs.array();
+		this.$outgoing_transitions = options.outgoing_transitions || cjs.array();
 
 		this._running = options.running === true;
 		my.superclass.do_initialize.apply(this, arguments);
@@ -818,16 +809,19 @@ red.Statechart = function(options) {
 		}
 	};
 	proto.get_start_state = function() { return this._start_state; };
+	proto.set_start_state = function(state) {
+		cjs.wait();
+		if(this.$local_state && this.$local_state.get() === this.get_start_state()) {
+			this.$local_state.set(state);
+		}
+		this._start_state = state;
+		cjs.signal();
+	};
 	proto.get_incoming_transitions = function() { return this.$incoming_transitions.toArray(); };
 	proto.get_outgoing_transitions = function() { return this.$outgoing_transitions.toArray(); };
 	proto.get_active_substate = function() { return this.$local_state.get(); };
 	proto.is_running = function() { return this._running; };
 
-	proto.flatten_substates = function(include_start) {
-		return ([this]).concat(_.flatten(_.map(this.get_substates(include_start), function(substate) {
-			return substate.flatten_substates(include_start);
-		})));
-	};
 
 	proto.set_active_substate = function(state, transition, event) {
 		red.event_queue.once("end_event_queue_round_0", function() {
@@ -1246,22 +1240,10 @@ red.Statechart = function(options) {
 	};
 
 	proto.create_shadow = function(options) {
-		var start_state = new red.StartState({}, true);
-
-		var my_start_state = this.get_start_state();
-
 		var rv = new red.Statechart(_.extend({
 			basis: this,
-			start_state: start_state,
 			concurrent: this.is_concurrent()
 		}, options));
-
-		start_state.do_initialize({
-			parent: rv,
-			running: rv.is_running(),
-			active: true,
-			basis: my_start_state
-		});
 
 		return rv;
 	};
@@ -1328,18 +1310,15 @@ red.Statechart = function(options) {
 		}
 	};
 
-
-	proto.clone = function() {
-	};
-
 	proto.serialize = function() {
+		var arg_array = _.toArray(arguments);
 		return {
-			substates: red.serialize(this.$substates)
+			substates: red.serialize.apply(red, ([this.$substates]).concat(arg_array))
 			, concurrent: this.is_concurrent()
-			, start_state: red.serialize(this.get_start_state())
-			, outgoing_transitions: red.serialize(this.$outgoing_transitions.get())
-			, incoming_transitions: red.serialize(this.$incoming_transitions.get())
-			, parent: red.serialize(this.parent())
+			, start_state: red.serialize.apply(red, ([this.get_start_state()]).concat(arg_array))
+			, outgoing_transitions: red.serialize.apply(red, ([this.$outgoing_transitions]).concat(arg_array))
+			, incoming_transitions: red.serialize.apply(red, ([this.$incoming_transitions]).concat(arg_array))
+			, parent: red.serialize.apply(red, ([this.parent()]).concat(arg_array))
 		};
 	};
 	my.deserialize = function(obj) {

@@ -82,13 +82,13 @@ red.serialize = function(obj) {
 
 var serialize_array = function(arr) {
 	var args = _.rest(arguments);
-	var serialized_values = _.map(arr.toArray(), function(x) {
+	var serialized_value = _.map(arr.toArray(), function(x) {
 		return red.serialize.apply(red, ([x]).concat(args));
 	});
 
 	return ({
 		type: "array"
-		, value: serialized_values
+		, value: serialized_value
 	});
 };
 
@@ -201,7 +201,7 @@ var deserialize_map = function(obj) {
 
 var deserialize_array = function(obj) {
 	return cjs.array({
-		value: _.map(obj.values, red.deserialize)
+		value: _.map(obj.value, red.deserialize)
 	});
 };
 

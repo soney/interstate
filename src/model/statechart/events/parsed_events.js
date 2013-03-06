@@ -78,7 +78,20 @@ var id  = 0;
 	};
 	proto.clone = function() {
 	};
-	proto.serialize = function() { return { str: this.get_str() }; };
-	my.deserialize = function(obj) { return red.create_event("parsed", obj.str); };
+	proto.stringify = function() {
+		return this._str.get();
+	};
+	proto.serialize = function() {
+		return {
+			str: this.get_str(),
+			inert_super_event: this.options.inert_super_event
+		};
+	};
+	my.deserialize = function(obj) {
+		return red.create_event("parsed", {
+			str: obj.str,
+			inert_super_event: obj.inert_super_event
+		});
+	};
 }(ParsedEvent));
 }(red));

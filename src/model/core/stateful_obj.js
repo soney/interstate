@@ -52,14 +52,6 @@ red.StatefulObj = function(options, defer_initialization) {
 			, settable: false
 			, serialize: false
 		}
-		, "event": {
-			default: function() {
-				return red.create("stateful_prop")
-			}
-			, serialize: false
-			, env_visible: false
-			, standard_prop: true
-		}
 	};
 	red.install_proto_builtins(proto, my.builtins);
 

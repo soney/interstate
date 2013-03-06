@@ -116,7 +116,7 @@ var print = function(current_pointer, logging_mechanism) {
 
 	var STATE_NAME_WIDTH = 40;
 	var STATE_ID_WIDTH = 8;
-	var TRANSITION_NAME_WIDTH = 70;
+	var TRANSITION_NAME_WIDTH = 60;
 	var TRANSITION_VALUE_WIDTH = 40;
 	var STATE_VALUE_WIDTH = 100;
 
@@ -238,8 +238,7 @@ var print = function(current_pointer, logging_mechanism) {
 				} else if(state instanceof red.StatechartTransition) { //transition
 					var from = state.from(),
 						to = state.to();
-					state_name = pad(from.get_name() + "->" + to.get_name(), TRANSITION_NAME_WIDTH-2);
-					state_name = state_name + pad(state.stringify(), TRANSITION_VALUE_WIDTH);
+					state_name = pad(from.get_name() + "->" + to.get_name(), STATE_NAME_WIDTH-2);
 				}
 
 				if(value_spec.active) {
