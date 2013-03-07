@@ -139,7 +139,7 @@ $.widget("red.dom_output", {
 		}
 	}
 	, post_delta: function(delta) {
-		var stringified_delta = red.stringify(delta);
+		var stringified_delta = red.stringify(delta, true);
 		var origin = window.location.protocol + "//" + window.location.host;
 		this.editor_window.postMessage({
 			type: "delta",

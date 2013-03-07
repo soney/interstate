@@ -134,10 +134,14 @@ $.widget("red.command_view", {
 		var command;
 		if(value === "undo" || value === "redo") {
 			command = value;
+			this.post_command(command);
 		} else {
 			command = this.external_env[tokens[0]].apply(this.external_env, _.rest(tokens));
+			if(command instanceof red.Command) {
+				this.post_command(command);
+			}
 		}
-		this.post_command(command);
+
 		this.output.html("");
 		this.external_env.print(this.logger);
 	}
