@@ -137,22 +137,17 @@ var event_types = {};
 red.create_event = function(event_type) {
 	var Constructor = event_types[event_type];
 
-	var rv;
-
-	//This is so stupid...
-	if(arguments.length === 0) {
-		rv = new Constructor();
-	} else if(arguments.length === 1) {
-		rv = new Constructor(arguments[1]);
-	} else if(arguments.length === 2) {
-		rv = new Constructor(arguments[1], arguments[2]);
-	} else if(arguments.length === 3) {
-		rv = new Constructor(arguments[1], arguments[2], arguments[3]);
-	}
-	//rv.on_create.apply(rv, _.rest(arguments));
+	var rv = construct(Constructor, _.rest(arguments));
 	rv.type = event_type;
 	return rv;
 };
+function construct(constructor, args) {
+    function F() {
+        return constructor.apply(this, args);
+    }
+    F.prototype = constructor.prototype;
+    return new F();
+}
 
 red._create_event_type = function(name) {
 	var Constructor = function() {
