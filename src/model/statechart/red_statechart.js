@@ -306,30 +306,35 @@ red.StatechartTransition = function(options, defer_initialization) {
 		return this;
 	};
 
-	proto.serialize = function(include_id) {
-		var args = _.toArray(arguments);
-		var rv = {
-			from: red.serialize.apply(red, ([this.from()]).concat(args))
-			, to: red.serialize.apply(red, ([this.to()]).concat(args))
-			, event: red.serialize.apply(red, ([this.event()]).concat(args))
-		};
-		if(include_id) {
-			rv.id = this.id();
-		}
-		return rv;
-	};
-	my.deserialize = function(obj) {
-		var rv = new red.StatechartTransition({id: obj.id}, true);
-		rv.initialize = function() {
-			var options = {
-				from: red.deserialize(obj.from),
-				to: red.deserialize(obj.to),
-				event: red.deserialize(obj.event)
-			};
-			this.do_initialize(options);
-		};
-		return rv;
-	};
+
+	red.register_serializable_type("statechart_transition",
+									function(x) { 
+										return x instanceof my;
+									},
+									function(include_id) {
+										var args = _.toArray(arguments);
+										var rv = {
+											from: red.serialize.apply(red, ([this.from()]).concat(args))
+											, to: red.serialize.apply(red, ([this.to()]).concat(args))
+											, event: red.serialize.apply(red, ([this.event()]).concat(args))
+										};
+										if(include_id) {
+											rv.id = this.id();
+										}
+										return rv;
+									},
+									function(obj) {
+										var rv = new my({id: obj.id}, true);
+										rv.initialize = function() {
+											var options = {
+												from: red.deserialize(obj.from),
+												to: red.deserialize(obj.to),
+												event: red.deserialize(obj.event)
+											};
+											this.do_initialize(options);
+										};
+										return rv;
+									});
 }(red.StatechartTransition));
 
 red.State = function(options, defer_initialization) {
@@ -737,29 +742,33 @@ red.StartState = function(options) {
 		return rv;
 	};
 
-	proto.serialize = function(include_id) {
-		var args = _.toArray(arguments);
-		var rv = {
-			outgoing_transition: red.serialize.apply(red, ([this.outgoingTransition]).concat(args))
-			, parent: red.serialize.apply(red, ([this.parent()]).concat(args))
-		};
-		if(include_id) {
-			rv.id = this.id();
-		}
-		return rv;
-	};
-	my.deserialize = function(obj) {
-		var rv = new red.StartState({id: obj.id}, true);
-		rv.initialize = function() {
-			var options = {
-				outgoing_transition: red.deserialize(obj.outgoing_transition),
-				parent: red.deserialize(obj.parent)
-			};
-			this.do_initialize(options);
-		};
+	red.register_serializable_type("start_state",
+									function(x) { 
+										return x instanceof my;
+									},
+									function(include_id) {
+										var args = _.toArray(arguments);
+										var rv = {
+											outgoing_transition: red.serialize.apply(red, ([this.outgoingTransition]).concat(args))
+											, parent: red.serialize.apply(red, ([this.parent()]).concat(args))
+										};
+										if(include_id) {
+											rv.id = this.id();
+										}
+										return rv;
+									},
+									function(obj) {
+										var rv = new my({id: obj.id}, true);
+										rv.initialize = function() {
+											var options = {
+												outgoing_transition: red.deserialize(obj.outgoing_transition),
+												parent: red.deserialize(obj.parent)
+											};
+											this.do_initialize(options);
+										};
 
-		return rv;
-	};
+										return rv;
+									});
 }(red.StartState));
 
 red.Statechart = function(options) {
@@ -1320,37 +1329,41 @@ red.Statechart = function(options) {
 		}
 	};
 
-	proto.serialize = function(include_id) {
-		var arg_array = _.toArray(arguments);
-		var rv = {
-			substates: red.serialize.apply(red, ([this.$substates]).concat(arg_array))
-			, concurrent: this.is_concurrent()
-			, start_state: red.serialize.apply(red, ([this.get_start_state()]).concat(arg_array))
-			, outgoing_transitions: red.serialize.apply(red, ([this.$outgoing_transitions]).concat(arg_array))
-			, incoming_transitions: red.serialize.apply(red, ([this.$incoming_transitions]).concat(arg_array))
-			, parent: red.serialize.apply(red, ([this.parent()]).concat(arg_array))
-		};
-		if(include_id) {
-			rv.id = this.id();
-		}
-		return rv;
-	};
-	my.deserialize = function(obj) {
-		var rv = new red.Statechart({id: obj.id}, true);
-		rv.initialize = function() {
-			var options = {
-				substates: red.deserialize(obj.substates)
-				, concurrent: obj.concurrent
-				, start_state: red.deserialize(obj.start_state)
-				, outgoing_transitions: red.deserialize(obj.outgoing_transitions)
-				, incoming_transitions: red.deserialize(obj.incoming_transitions)
-				, parent: red.deserialize(obj.parent)
-			};
-			this.do_initialize(options);
-		};
+	red.register_serializable_type("statechart",
+									function(x) { 
+										return x instanceof my;
+									},
+									function(include_id) {
+										var arg_array = _.toArray(arguments);
+										var rv = {
+											substates: red.serialize.apply(red, ([this.$substates]).concat(arg_array))
+											, concurrent: this.is_concurrent()
+											, start_state: red.serialize.apply(red, ([this.get_start_state()]).concat(arg_array))
+											, outgoing_transitions: red.serialize.apply(red, ([this.$outgoing_transitions]).concat(arg_array))
+											, incoming_transitions: red.serialize.apply(red, ([this.$incoming_transitions]).concat(arg_array))
+											, parent: red.serialize.apply(red, ([this.parent()]).concat(arg_array))
+										};
+										if(include_id) {
+											rv.id = this.id();
+										}
+										return rv;
+									},
+									function(obj) {
+										var rv = new my({id: obj.id}, true);
+										rv.initialize = function() {
+											var options = {
+												substates: red.deserialize(obj.substates)
+												, concurrent: obj.concurrent
+												, start_state: red.deserialize(obj.start_state)
+												, outgoing_transitions: red.deserialize(obj.outgoing_transitions)
+												, incoming_transitions: red.deserialize(obj.incoming_transitions)
+												, parent: red.deserialize(obj.parent)
+											};
+											this.do_initialize(options);
+										};
 
-		return rv;
-	};
+										return rv;
+									});
 }(red.Statechart));
 
 red.define("statechart", function(options) {

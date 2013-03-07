@@ -17,18 +17,23 @@ red.CommandDelta = function(options) {
 	proto.is_reverse = function() {
 		return this.reverse;
 	};
-	proto.serialize = function() {
-		return {
-			command: red.serialize.apply(red, ([this.get_command()]).concat(arguments)),
-			reverse: this.is_reverse()
-		};
-	};
-	my.deserialize = function(info) {
-		return new red.CommandDelta({
-			command: red.deserialize(info.command),
-			reverse: info.reverse
-		});
-	};
+
+	red.register_serializable_type("command_delta",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											command: red.serialize.apply(red, ([this.get_command()]).concat(arguments)),
+											reverse: this.is_reverse()
+										};
+									},
+									function(obj) {
+										return new red.CommandDelta({
+											command: red.deserialize(obj.command),
+											reverse: obj.reverse
+										});
+									});
 }(red.CommandDelta));
 
 }(red));

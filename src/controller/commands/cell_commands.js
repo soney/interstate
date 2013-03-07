@@ -26,19 +26,22 @@ red.ChangeCellCommand = function(options) {
 		this._cell.set_str(this._from_str);
 	};
 
-	proto.serialize = function() {
-		return {
-			cell_uid: this._cell.uid,
-			str: this._to_str,
-		};
-	};
-	my.deserialize = function(obj) {
-		return new red.ChangeCellCommand({
-			cell: red.find_uid(obj.cell_uid),
-			str: obj.str
-		});
-	};
-
+	red.register_serializable_type("change_cell_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											cell_uid: this._cell.uid,
+											str: this._to_str,
+										};
+									},
+									function(obj) {
+										return new my({
+											cell: red.find_uid(obj.cell_uid),
+											str: obj.str
+										});
+									});
 
 	proto._do_destroy = function(in_effect) { };
 }(red.ChangeCellCommand));

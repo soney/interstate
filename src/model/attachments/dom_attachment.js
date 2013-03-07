@@ -350,12 +350,20 @@ red.DomAttachment = function(options) {
 	_.proto_extend(my, red.Attachment);
 	var proto = my.prototype;
 
-	proto.serialize = function() {
-		return {instance_options: red.serialize(this.instance_options)};
-	};
-	my.deserialize = function(obj) {
-		return new red.DomAttachment({instance_options: red.deserialize(obj.instance_options)});
-	};
+	red.register_serializable_type("dom_attachment",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											instance_options: red.serialize(this.instance_options)
+										};
+									},
+									function(obj) {
+										return new my({
+											instance_options: red.deserialize(obj.instance_options)
+										});
+									});
 }(red.DomAttachment));
 
 red.define("dom_attachment", function(options) {

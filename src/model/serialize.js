@@ -4,24 +4,62 @@ var do_compress = false;
 
 // === SERIALIZE ===
 
-var serialization_funcs = [
-	  { name: "cell", type: red.Cell }
-	, { name: "stateful_obj", type: red.StatefulObj }
-	, { name: "dict", type: red.Dict }
-	, { name: "stateful_prop", type: red.StatefulProp }
-	, { name: "red_dom_attachment", type: red.DomAttachment }
-	, { name: "red_pointer", type: red.Pointer }
-	, { name: "statechart_transition", type: red.StatechartTransition }
-	, { name: "statechart", type: red.Statechart }
-	, { name: "startstate", type: red.StartState }
-	, { name: "parsed_event", type: red.ParsedEvent }
-	, { name: "statechart_event", type: red.StatechartEvent }
-	, { name: "program_delta", type: red.ProgramDelta }
-	, { name: "command_delta", type: red.CommandDelta }
-	, { name: "set_prop_command", type: red.SetPropCommand }
-	, { name: "change_cell_command", type: red.ChangeCellCommand }
-	, { name: "set_builtin_command", type: red.SetBuiltinCommand }
-];
+var serialization_funcs = [ ];
+
+red.register_serializable_type = function(name, instance_check, serialize, deserialize) {
+	serialization_funcs.push({
+		name: name,
+		instance_check: instance_check,
+		serialize: serialize,
+		deserialize: deserialize
+	});
+};
+
+red.register_serializable_type("cjs_array",
+								function(x) {
+									return cjs.is_array(x);
+								},
+								function() {
+									var args = _.rest(arguments);
+									var serialized_value = _.map(this.toArray(), function(x) {
+										return red.serialize.apply(red, ([x]).concat(args));
+									});
+
+									return {
+										value: serialized_value
+									};
+								},
+								function(obj) {
+									return cjs.array({
+										value: _.map(obj.value, red.deserialize)
+									});
+								});
+
+red.register_serializable_type("cjs_map",
+								function(x) {
+									return cjs.is_map(x);
+								},
+								function() {
+									var args = _.rest(arguments);
+									var serialized_keys = _.map(this.keys(), function(x) {
+										return red.serialize.apply(red, ([x]).concat(args));
+									});
+									var serialized_values = _.map(this.values(), function(x) {
+										return red.serialize.apply(red, ([x]).concat(args));
+									});
+
+									return {
+										keys: serialized_keys
+										, values: serialized_values
+									};
+								},
+								function(obj) {
+									return cjs.map({
+										keys: _.map(obj.keys, red.deserialize),
+										values: _.map(obj.values, red.deserialize)
+									});
+								});
+
 
 var serializing = false;
 var serialized_objs;
@@ -46,7 +84,7 @@ var get_or_create_serialized_obj_id = function(obj) {
 
 var create_or_get_serialized_obj = function() {
 	return {
-		type: "pointer"
+		type: "$$pointer"
 		, id: get_or_create_serialized_obj_id.apply(this, arguments)
 	};
 };
@@ -80,44 +118,12 @@ red.serialize = function(obj) {
 
 };
 
-var serialize_array = function(arr) {
-	var args = _.rest(arguments);
-	var serialized_value = _.map(arr.toArray(), function(x) {
-		return red.serialize.apply(red, ([x]).concat(args));
-	});
-
-	return ({
-		type: "array"
-		, value: serialized_value
-	});
-};
-
-var serialize_map = function(map) {
-	var args = _.rest(arguments);
-	var serialized_keys = _.map(map.keys(), function(x) {
-		return red.serialize.apply(red, ([x]).concat(args));
-	});
-	var serialized_values = _.map(map.values(), function(x) {
-		return red.serialize.apply(red, ([x]).concat(args));
-	});
-
-	return ({
-		type: "map"
-		, keys: serialized_keys
-		, values: serialized_values
-	});
-};
-
-
 var do_serialize = function(obj) {
-	if(cjs.is_map(obj)) { return serialize_map.apply(this, arguments); }
-	else if(cjs.is_array(obj)) { return serialize_array.apply(this, arguments); }
-
 	for(var i = 0; i<serialization_funcs.length; i++) {
-		var type_info = serialization_funcs[i];
-		var type = type_info.type;
-		if(obj instanceof type) {
-			return _.extend({ type: type_info.name }, obj.serialize.apply(obj, _.rest(arguments)));
+		var serialization_info = serialization_funcs[i];
+		var type = serialization_info.type;
+		if(serialization_info.instance_check(obj)) {
+			return _.extend({ type: serialization_info.name }, serialization_info.serialize.apply(obj, _.rest(arguments)));
 		}
 	}
 	return obj;
@@ -162,20 +168,17 @@ red.deserialize = function(serialized_obj) {
 var do_deserialize = function(serialized_obj) {
 	var serialized_obj_type = serialized_obj.type;
 
-	if(serialized_obj_type === "map") { return deserialize_map(serialized_obj); }
-	if(serialized_obj_type === "array") { return deserialize_array(serialized_obj); }
-
 	for(var i = 0; i<serialization_funcs.length; i++) {
-		var type_info = serialization_funcs[i];
-		if(serialized_obj_type === type_info.name) {
-			return type_info.type.deserialize(serialized_obj);
+		var serialization_info = serialization_funcs[i];
+		if(serialized_obj_type === serialization_info.name) {
+			return serialization_info.deserialize(serialized_obj);
 		}
 	}
 	return serialized_obj;
 };
 
 var get_deserialized_obj = function(serialized_obj) {
-	if(serialized_obj.type === "pointer") {
+	if(serialized_obj.type === "$$pointer") {
 		var id = serialized_obj.id;
 		var val = deserialized_obj_vals[id];
 		if(val === undefined) {
@@ -192,23 +195,11 @@ var get_deserialized_obj = function(serialized_obj) {
 };
 
 
-var deserialize_map = function(obj) {
-	return cjs.map({
-		keys: _.map(obj.keys, red.deserialize),
-		values: _.map(obj.values, red.deserialize)
-	});
-};
-
-var deserialize_array = function(obj) {
-	return cjs.array({
-		value: _.map(obj.value, red.deserialize)
-	});
-};
-
 red.destringify = function(str) {
 	if(do_compress) { return red.deserialize(JSON.parse(lzw_decode(str))); }
 	else { return red.deserialize(JSON.parse(str)); }
 };
+/*
 
 var storage_prefix = "_";
 red.save = function(name) {
@@ -250,6 +241,7 @@ red.rm = function(name) {
 	delete localStorage[name];
 	return ls();
 };
+*/
 
 //http://stackoverflow.com/questions/294297/javascript-implementation-of-gzip
 // LZW-compress a string

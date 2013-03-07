@@ -48,6 +48,7 @@ exports.main_src = c(
 			])
 	, cp(src, [
 				"model/core.js"
+				, "model/serialize.js"
 				, "model/core/obj_utils.js"
 				, "model/core/debug.js"
 				, "model/core/special_contexts.js"
@@ -80,7 +81,6 @@ exports.main_src = c(
 				, "controller/commands/cell_commands.js"
 				, "controller/commands/statechart_commands.js"
 				, "controller/commands/combined_commands.js"
-				, "model/serialize.js"
 				, "controller/environment/command_stack.js"
 				, "controller/environment/red_environment.js"
 				, "view/environment/dom_output_view.js"

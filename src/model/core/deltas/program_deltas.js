@@ -13,16 +13,20 @@ red.ProgramDelta = function(options) {
 	proto.get_str = function() {
 		return this.str;
 	};
-	proto.serialize = function() {
-		return {
-			str: this.str
-		};
-	};
-	my.deserialize = function(info) {
-		return new red.ProgramDelta({
-			str: info.str
-		});
-	};
+	red.register_serializable_type("program_delta",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											str: this.str
+										};
+									},
+									function(obj) {
+										return new my({
+											str: info.str
+										});
+									});
 }(red.ProgramDelta));
 
 }(red));

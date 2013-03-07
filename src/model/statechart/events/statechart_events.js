@@ -75,15 +75,19 @@ red.StatechartEvent = red._create_event_type("statechart");
 		}, this);
 	};
 	proto.stringify = function() { return "" + this.statecharts[0].id() + ":" + this._spec + ""; };
-	proto.serialize = function() {
-		return {
-			targets: red.serialize.apply(red, ([this.targets]).concat(arguments)),
-			spec: this.spec
-		};
-	};
-	my.deserialize = function(obj) {
-		return new red.StatechartEvent(red.deserialize(obj.targets), obj.spec);
-	};
+	red.register_serializable_type("statechart_event",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											targets: red.serialize.apply(red, ([this.targets]).concat(arguments)),
+											spec: this.spec
+										};
+									},
+									function(obj) {
+										return new my(red.deserialize(obj.targets), obj.spec);
+									});
 }(red.StatechartEvent));
 
 }(red));

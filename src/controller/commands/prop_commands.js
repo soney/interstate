@@ -36,22 +36,6 @@ red.SetPropCommand = function(options) {
 			this._parent.unset_prop(this._prop_name);
 		}
 	};
-	proto.serialize = function() {
-		return {
-			parent_uid: this._parent.uid,
-			name: this._prop_name,
-			value: red.serialize.apply(red, ([this._prop_value]).concat(arguments)),
-			index: this._prop_index
-		};
-	};
-	my.deserialize = function(obj) {
-		return new red.SetPropCommand({
-			parent: red.find_uid(obj.parent_uid),
-			name: obj.name,
-			value: red.deserialize(obj.value),
-			index: obj.index
-		});
-	};
 	proto._do_destroy = function(in_effect) {
 		if(in_effect) {
 			if(this._old_prop_value) {
@@ -63,6 +47,26 @@ red.SetPropCommand = function(options) {
 			}
 		}
 	};
+	red.register_serializable_type("set_prop_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											parent_uid: this._parent.uid,
+											name: this._prop_name,
+											value: red.serialize.apply(red, ([this._prop_value]).concat(arguments)),
+											index: this._prop_index
+										};
+									},
+									function(obj) {
+										return new my({
+											parent: red.find_uid(obj.parent_uid),
+											name: obj.name,
+											value: red.deserialize(obj.value),
+											index: obj.index
+										});
+									});
 }(red.SetPropCommand));
 
 // === REMOVE ===
@@ -311,20 +315,24 @@ red.SetBuiltinCommand = function(options) {
 		}
 	};
 
-	proto.serialize = function() {
-		return {
-			parent_uid: this._parent.uid,
-			name: this._builtin_name,
-			value: red.serialize.apply(red, ([this._value]).concat(arguments))
-		};
-	};
-	my.deserialize = function(obj) {
-		return new red.SetBuiltinCommand({
-			parent: red.find_uid(obj.parent_uid),
-			name: obj.name,
-			value: red.deserialize(obj.value)
-		});
-	};
+	red.register_serializable_type("set_builtin_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											parent_uid: this._parent.uid,
+											name: this._builtin_name,
+											value: red.serialize.apply(red, ([this._value]).concat(arguments))
+										};
+									},
+									function(obj) {
+										return new my({
+											parent: red.find_uid(obj.parent_uid),
+											name: obj.name,
+											value: red.deserialize(obj.value)
+										});
+									});
 }(red.SetBuiltinCommand));
 
 }(red));

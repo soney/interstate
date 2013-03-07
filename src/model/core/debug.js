@@ -182,7 +182,7 @@ var print = function(current_pointer, logging_mechanism) {
 						state_name = "  " + state_name;
 					}
 
-					state_name = pad(state.id() + (state.basis() ? ":" + state.basis().id() : ""), STATE_ID_WIDTH) + state_name;
+					state_name = pad(uid.strip_prefix(state.id()) + (state.basis() ? ":" + uid.strip_prefix(state.basis().id()) : ""), STATE_ID_WIDTH) + state_name;
 					logging_mechanism.log(state_name);
 				});
 				logging_mechanism.groupEnd();
@@ -210,7 +210,7 @@ var print = function(current_pointer, logging_mechanism) {
 
 				if(prop_points_at instanceof red.StatefulProp) {
 					prop_text = pad(prop_text, PROP_NAME_WIDTH);
-					prop_text = prop_text + pad("(" + prop_points_at.id + ")", PROP_ID_WIDTH);
+					prop_text = prop_text + pad("(" + uid.strip_prefix(prop_points_at.id) + ")", PROP_ID_WIDTH);
 				} else {
 					prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
 				}
@@ -253,7 +253,7 @@ var print = function(current_pointer, logging_mechanism) {
 					state_name = " " + state_name;
 				}
 
-				state_name = pad(state.id(), STATE_ID_WIDTH) + state_name;
+				state_name = pad(uid.strip_prefix(state.id()), STATE_ID_WIDTH) + state_name;
 				var value_for_state = points_at.get_value_for_state(state, pointer);
 				var row = state_name + value_to_source_str(value_for_state);
 				logging_mechanism.log(row);

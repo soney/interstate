@@ -542,43 +542,6 @@ red.Dict = function(options, defer_initialization) {
 	proto.clone = function(options) {
 	};
 
-	proto.serialize = function(include_uid) {
-		var rv = {
-			has_protos: this.has_protos()
-		};
-		if(include_uid) { rv.uid = this.uid; }
-
-		var self = this;
-		var args = _.toArray(arguments);
-		_.each(this.get_builtins(), function(builtin, name) {
-			if(builtin.serialize !== false) {
-				var getter_name = builtin.getter_name || "get_" + name;
-				rv[name] = red.serialize.apply(red, ([self[getter_name]()]).concat(args));
-			}
-		});
-
-		return rv;
-	};
-	my.deserialize = function(obj) {
-		var serialized_options = {};
-		_.each(my.builtins, function(builtin, name) {
-			if(builtin.serialize !== false) {
-				serialized_options[name] = obj[name];
-			}
-		});
-
-		var rv = new red.Dict({uid: obj.uid, has_protos: obj.has_protos}, true);
-		rv.initialize = function() {
-			var options = {};
-			_.each(serialized_options, function(serialized_option, name) {
-				options[name] = red.deserialize(serialized_option);
-			});
-			this.do_initialize(options);
-		};
-
-		return rv;
-	};
-
 	//
 	// === MANIFESTATIONS ===
 	//
@@ -655,7 +618,48 @@ red.Dict = function(options, defer_initialization) {
 		this._direct_attachments.destroy();
 		this._direct_attachment_instances.destroy();
 	};
-	
+
+	proto.serialize = function(include_uid) {
+		var rv = {
+			has_protos: this.has_protos()
+		};
+		if(include_uid) { rv.uid = this.uid; }
+
+		var self = this;
+		var args = _.toArray(arguments);
+		_.each(this.get_builtins(), function(builtin, name) {
+			if(builtin.serialize !== false) {
+				var getter_name = builtin.getter_name || "get_" + name;
+				rv[name] = red.serialize.apply(red, ([self[getter_name]()]).concat(args));
+			}
+		});
+
+		return rv;
+	};
+	red.register_serializable_type("dict",
+									function(x) { 
+										return x instanceof my && x.constructor === my;
+									},
+									proto.serialize,
+									function(obj) {
+										var serialized_options = {};
+										_.each(my.builtins, function(builtin, name) {
+											if(builtin.serialize !== false) {
+												serialized_options[name] = obj[name];
+											}
+										});
+
+										var rv = new my({uid: obj.uid, has_protos: obj.has_protos}, true);
+										rv.initialize = function() {
+											var options = {};
+											_.each(serialized_options, function(serialized_option, name) {
+												options[name] = red.deserialize(serialized_option);
+											});
+											this.do_initialize(options);
+										};
+
+										return rv;
+									});
 }(red.Dict));
 
 red.define("dict", function(options) {

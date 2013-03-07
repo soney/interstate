@@ -12,8 +12,7 @@ var get_event = function(tree, options, live_event_creator) {
 	}
 };
 
-var ParsedEvent = red._create_event_type("parsed");
-red.ParsedEvent = ParsedEvent;
+red.ParsedEvent = red._create_event_type("parsed");
 var id  = 0;
 (function(my) {
 	var proto = my.prototype;
@@ -81,17 +80,21 @@ var id  = 0;
 	proto.stringify = function() {
 		return this._str.get();
 	};
-	proto.serialize = function() {
-		return {
-			str: this.get_str(),
-			inert_super_event: this.options.inert_super_event
-		};
-	};
-	my.deserialize = function(obj) {
-		return red.create_event("parsed", {
-			str: obj.str,
-			inert_super_event: obj.inert_super_event
-		});
-	};
-}(ParsedEvent));
+	red.register_serializable_type("parsed_event",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											str: this.get_str(),
+											inert_super_event: this.options.inert_super_event
+										};
+									},
+									function(obj) {
+										return new my({
+											str: obj.str,
+											inert_super_event: obj.inert_super_event
+										});
+									});
+}(red.ParsedEvent));
 }(red));

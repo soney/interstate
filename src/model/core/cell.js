@@ -71,43 +71,49 @@ red.Cell = function(options, defer_initialization) {
 		}, options));
 		return rv;
 	};
-	proto.serialize = function(include_uid) {
-		var rv = { };
-		if(include_uid) { rv.uid = this.uid; }
-		if(include_uid) debugger;
 
-		var self = this;
-		_.each(my.builtins, function(builtin, name) {
-			if(builtin.serialize !== false) {
-				var getter_name = builtin.getter_name || "get_" + name;
-				rv[name] = red.serialize(self[getter_name]());
-			}
-		});
-
-		return rv;
-	};
-	my.deserialize = function(obj) {
-		var serialized_options = {};
-		_.each(my.builtins, function(builtin, name) {
-			if(builtin.serialize !== false) {
-				serialized_options[name] = obj[name];
-			}
-		});
-
-		var rv = new red.Cell({uid: obj.uid}, true);
-		rv.initialize = function() {
-			var options = { };
-			_.each(serialized_options, function(serialized_option, name) {
-				options[name] = red.deserialize(serialized_option);
-			});
-			this.do_initialize(options);
-		};
-
-		return rv;
-	};
 	proto.hash = function() {
 		return this.uid;
 	};
+
+	red.register_serializable_type("cell",
+									function(x) { 
+										return x instanceof my;
+									},
+									function(include_uid) {
+										var rv = { };
+										if(include_uid) { rv.uid = this.uid; }
+										if(include_uid) debugger;
+
+										var self = this;
+										_.each(my.builtins, function(builtin, name) {
+											if(builtin.serialize !== false) {
+												var getter_name = builtin.getter_name || "get_" + name;
+												rv[name] = red.serialize(self[getter_name]());
+											}
+										});
+
+										return rv;
+									},
+									function(obj) {
+										var serialized_options = {};
+										_.each(my.builtins, function(builtin, name) {
+											if(builtin.serialize !== false) {
+												serialized_options[name] = obj[name];
+											}
+										});
+
+										var rv = new red.Cell({uid: obj.uid}, true);
+										rv.initialize = function() {
+											var options = { };
+											_.each(serialized_options, function(serialized_option, name) {
+												options[name] = red.deserialize(serialized_option);
+											});
+											this.do_initialize(options);
+										};
+
+										return rv;
+									});
 }(red.Cell));
 
 red.define("cell", function(options) {

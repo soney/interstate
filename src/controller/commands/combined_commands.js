@@ -25,6 +25,22 @@ red.CombinedCommand = function(options) {
 			command.destroy(in_effect);
 		});
 	};
+
+	red.register_serializable_type("combined_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										var arg_array = _.toArray(arguments);
+										return {
+											commands: red.serialize.apply(red, ([this._commands]).concat(arg_array))
+										};
+									},
+									function(obj) {
+										return new my({
+											commands: red.deserialize(obj.commands)
+										});
+									});
 }(red.CombinedCommand));
 
 }(red));

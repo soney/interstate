@@ -137,26 +137,33 @@ red.StatefulObj = function(options, defer_initialization) {
 	};
 
 	my.deserialize = function(obj) {
-		var builtins = _.extend({}, my.builtins, my.superclass.constructor.builtins);
-
-		var serialized_options = {};
-		_.each(builtins, function(builtin, name) {
-			if(builtin.serialize !== false) {
-				serialized_options[name] = obj[name];
-			}
-		});
-
-		var rv = new red.StatefulObj(undefined, true);
-		rv.initialize = function() {
-			var options = {};
-			_.each(serialized_options, function(serialized_option, name) {
-				options[name] = red.deserialize(serialized_option);
-			});
-			this.do_initialize(options);
-		};
-
-		return rv;
 	};
+	red.register_serializable_type("stateful_obj",
+									function(x) { 
+										return x instanceof my;
+									},
+									my.superclass.serialize,
+									function(obj) {
+										var builtins = _.extend({}, my.builtins, my.superclass.constructor.builtins);
+
+										var serialized_options = {};
+										_.each(builtins, function(builtin, name) {
+											if(builtin.serialize !== false) {
+												serialized_options[name] = obj[name];
+											}
+										});
+
+										var rv = new my(undefined, true);
+										rv.initialize = function() {
+											var options = {};
+											_.each(serialized_options, function(serialized_option, name) {
+												options[name] = red.deserialize(serialized_option);
+											});
+											this.do_initialize(options);
+										};
+
+										return rv;
+									});
 }(red.StatefulObj));
 
 red.define("stateful_obj", function(options, defer_init) {
