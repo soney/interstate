@@ -1,13 +1,14 @@
 (function(red, $) {
 var cjs = red.cjs, _ = red._;
 
+var origin = window.location.protocol + "//" + window.location.host;
 $.widget("red.dom_output", {
 	
 	options: {
 		root: undefined,
 		show_edit_button: true,
 		edit_on_open: false,
-		editor_url: "http://localhost:8000/src/view/editor.ejs.html",
+		editor_url: origin + "/src/view/editor.ejs.html",
 		editor_name: uid.get_prefix() + "red_editor",
 		editor_window_options: "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=800, height=600"
 	}
@@ -140,7 +141,6 @@ $.widget("red.dom_output", {
 	}
 	, post_delta: function(delta) {
 		var stringified_delta = red.stringify(delta, true);
-		var origin = window.location.protocol + "//" + window.location.host;
 		this.editor_window.postMessage({
 			type: "delta",
 			value: stringified_delta
