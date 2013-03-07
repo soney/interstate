@@ -154,6 +154,7 @@ red.Pointer = function(options) {
 
 		return hash;
 	};
+	/*
 
 	proto.serialize = function() {
 		return {
@@ -167,6 +168,7 @@ red.Pointer = function(options) {
 			special_contexts: _.map(obj.special_contexts, red.deserialze)
 		});
 	};
+	*/
 }(red.Pointer));
 
 red.define("pointer", function(options) {

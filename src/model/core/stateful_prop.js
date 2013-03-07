@@ -25,7 +25,7 @@ red.StatefulProp = function(options, defer_initialization) {
 	options = options || {};
 
 	this._value = cjs();
-	this.id = _.uniqueId();
+	this.id = options.id || uid();
 
 	if(defer_initialization !== true) {
 		this.do_initialize(options);
@@ -212,17 +212,21 @@ red.StatefulProp = function(options, defer_initialization) {
 	proto.clone = function() {
 	};
 
-	proto.serialize = function() {
+	proto.serialize = function(include_id) {
 		var arg_array = _.toArray(arguments);
-		return {
+		var rv = {
 			direct_values: red.serialize.apply(red, ([this._direct_values]).concat(arg_array))
 			, can_inherit: red.serialize.apply(red, ([this._can_inherit]).concat(arg_array))
 			, ignore_inherited_in_contexts: red.serialize.apply(red, ([this._ignore_inherited_in_contexts]).concat(arg_array))
 			, check_on_nullify: red.serialize.apply(red, ([this._check_on_nullify]).concat(arg_array))
 		};
+		if(include_id) {
+			rv.id = this.id;
+		}
+		return rv;
 	};
 	my.deserialize = function(obj) {
-		var rv = new red.StatefulProp(undefined, true);
+		var rv = new red.StatefulProp({id: obj.id}, true);
 		rv.initialize = function() {
 			var options = {
 				direct_values: red.deserialize(obj.direct_values)

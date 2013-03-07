@@ -145,7 +145,7 @@ env
 .set("colors", "['red', 'orange', 'yellow', 'green', 'blue', 'purple']")
 .set("ballWidth", "30")
 .set("ballHeight", "ballWidth")
-.set("abs", Math.abs)
+.set("abs", "function(x) { if(x>0) { return x; } else { return -x; }}")
 .set("hit", "function(x1,y1,w1,h1,x2,y2,w2,h2) {\n" +
 	"if((x1 + w1 >= x2) && (x1 <= x2 + w2) &&\n" + 
 	"	(y1 + h1 >= y2) && (y1 <= y2 + h2)) {\n" +
@@ -193,6 +193,17 @@ env
 
 					env.print_on_return = true;
 					console.log(env.print());
+window.s = function() {
+	var stringified_root = red.stringify(root_pointer.points_at());
+	var new_root = red.destringify(stringified_root);
+	output_view.dom_output("destroy");
+	env = red.create("environment", {root: new_root});
+	root_pointer = env.get_root_pointer();
+	output_view.dom_output({
+		root: root_pointer
+	});
+	console.log(env.print());
+};
 				});
 			</script>
 	  </div>

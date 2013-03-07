@@ -179,6 +179,7 @@ red.find_equivalent_transition = function(to_transition, in_tree) {
 red.StatechartTransition = function(options, defer_initialization) {
 	options = options || {};
 	able.make_this_listenable(this);
+	this._id = options.id || uid();
 	this.$remove = _.bind(this.remove, this);
 	this.$destroy = _.bind(this.destroy, this);
 	this.$updateTo = _.bind(function(event) {
@@ -207,7 +208,6 @@ red.StatechartTransition = function(options, defer_initialization) {
 		this._from_state = options.from;
 		this._to_state = options.to;
 		this.set_basis(options.basis);
-		this._id = _.uniqueId();
 		this.do_fire = _.bind(this.fire, this);
 		this.set_event(options.event);
 	};
@@ -306,15 +306,20 @@ red.StatechartTransition = function(options, defer_initialization) {
 		return this;
 	};
 
-	proto.serialize = function() {
-		return {
-			from: red.serialize.apply(red, ([this.from()]).concat(arguments))
-			, to: red.serialize.apply(red, ([this.to()]).concat(arguments))
-			, event: red.serialize.apply(red, ([this.event()]).concat(arguments))
+	proto.serialize = function(include_id) {
+		var args = _.toArray(arguments);
+		var rv = {
+			from: red.serialize.apply(red, ([this.from()]).concat(args))
+			, to: red.serialize.apply(red, ([this.to()]).concat(args))
+			, event: red.serialize.apply(red, ([this.event()]).concat(args))
 		};
+		if(include_id) {
+			rv.id = this.id();
+		}
+		return rv;
 	};
 	my.deserialize = function(obj) {
-		var rv = new red.StatechartTransition(undefined, true);
+		var rv = new red.StatechartTransition({id: obj.id}, true);
 		rv.initialize = function() {
 			var options = {
 				from: red.deserialize(obj.from),
@@ -330,7 +335,7 @@ red.StatechartTransition = function(options, defer_initialization) {
 red.State = function(options, defer_initialization) {
 	options = options || {};
 	able.make_this_listenable(this);
-	this._id = _.uniqueId();
+	this._id = options.id || uid();
 	this._last_run_event = cjs.$(false);
 	this._entrance_transition = cjs.$(false); 
 
@@ -732,14 +737,19 @@ red.StartState = function(options) {
 		return rv;
 	};
 
-	proto.serialize = function() {
-		return {
-			outgoing_transition: red.serialize.apply(red, ([this.outgoingTransition]).concat(arguments))
-			, parent: red.serialize.apply(red, ([this.parent()]).concat(arguments))
+	proto.serialize = function(include_id) {
+		var args = _.toArray(arguments);
+		var rv = {
+			outgoing_transition: red.serialize.apply(red, ([this.outgoingTransition]).concat(args))
+			, parent: red.serialize.apply(red, ([this.parent()]).concat(args))
 		};
+		if(include_id) {
+			rv.id = this.id();
+		}
+		return rv;
 	};
 	my.deserialize = function(obj) {
-		var rv = new red.StartState(undefined, true);
+		var rv = new red.StartState({id: obj.id}, true);
 		rv.initialize = function() {
 			var options = {
 				outgoing_transition: red.deserialize(obj.outgoing_transition),
@@ -1310,9 +1320,9 @@ red.Statechart = function(options) {
 		}
 	};
 
-	proto.serialize = function() {
+	proto.serialize = function(include_id) {
 		var arg_array = _.toArray(arguments);
-		return {
+		var rv = {
 			substates: red.serialize.apply(red, ([this.$substates]).concat(arg_array))
 			, concurrent: this.is_concurrent()
 			, start_state: red.serialize.apply(red, ([this.get_start_state()]).concat(arg_array))
@@ -1320,9 +1330,13 @@ red.Statechart = function(options) {
 			, incoming_transitions: red.serialize.apply(red, ([this.$incoming_transitions]).concat(arg_array))
 			, parent: red.serialize.apply(red, ([this.parent()]).concat(arg_array))
 		};
+		if(include_id) {
+			rv.id = this.id();
+		}
+		return rv;
 	};
 	my.deserialize = function(obj) {
-		var rv = new red.Statechart(undefined, true);
+		var rv = new red.Statechart({id: obj.id}, true);
 		rv.initialize = function() {
 			var options = {
 				substates: red.deserialize(obj.substates)
