@@ -180,6 +180,7 @@ red.StatechartTransition = function(options, defer_initialization) {
 	options = options || {};
 	able.make_this_listenable(this);
 	this._id = options.id || uid();
+	red.register_uid(this._id, this);
 	this.$remove = _.bind(this.remove, this);
 	this.$destroy = _.bind(this.destroy, this);
 	this.$updateTo = _.bind(function(event) {
@@ -341,6 +342,7 @@ red.State = function(options, defer_initialization) {
 	options = options || {};
 	able.make_this_listenable(this);
 	this._id = options.id || uid();
+	red.register_uid(this._id, this);
 	this._last_run_event = cjs.$(false);
 	this._entrance_transition = cjs.$(false); 
 

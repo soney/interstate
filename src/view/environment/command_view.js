@@ -208,7 +208,17 @@ $.widget("red.command_view", {
 				// Formats: set <name> <state> <val> <index?>
 				var index = _.isNumber(_.last(tokens)) ? _.last(tokens) : undefined;
 			}
+		} else if(command_name === "add_state") {
+			var statechart = this.get_current_statechart();
+			var state_name = tokens[1];
+			var index = tokens[2];
 
+			if(_.isNumber(index)) { index++; } // Because of the pre_init state
+			this.post_command(new red.AddStateCommand({
+				name: state_name
+				, statechart: statechart
+				, index: index
+			}));
 		} else {
 			console.log(tokens);
 		}
@@ -252,6 +262,16 @@ $.widget("red.command_view", {
 			type: "command",
 			command: stringified_command
 		}, origin);
+	}
+	, get_current_statechart: function() {
+		var statechart;
+		var SOandC = red.find_stateful_obj_and_context(this.pointer);
+		var owner = SOandC.stateful_obj;
+		statechart = owner.get_own_statechart();
+		if(!statechart) {
+			throw new Error("Could not find statechart");
+		}
+		return statechart;
 	}
 });
 

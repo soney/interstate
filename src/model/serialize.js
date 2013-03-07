@@ -20,7 +20,7 @@ red.register_serializable_type("cjs_array",
 									return cjs.is_array(x);
 								},
 								function() {
-									var args = _.rest(arguments);
+									var args = _.toArray(arguments);
 									var serialized_value = _.map(this.toArray(), function(x) {
 										return red.serialize.apply(red, ([x]).concat(args));
 									});
@@ -40,7 +40,7 @@ red.register_serializable_type("cjs_map",
 									return cjs.is_map(x);
 								},
 								function() {
-									var args = _.rest(arguments);
+									var args = _.toArray(arguments);
 									var serialized_keys = _.map(this.keys(), function(x) {
 										return red.serialize.apply(red, ([x]).concat(args));
 									});

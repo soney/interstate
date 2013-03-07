@@ -1,32 +1,26 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-red.ProgramDelta = function(options) {
-	red.ProgramDelta.superclass.constructor.apply(this, arguments);
-	this.str = options.str;
+red.StateDelta = function(options) {
+	red.StateDelta.superclass.constructor.apply(this, arguments);
 };
 
 
 (function(my) {
 	_.proto_extend(my, red.Delta);
 	var proto = my.prototype;
-	proto.get_str = function() {
-		return this.str;
-	};
-	red.register_serializable_type("program_delta",
+	red.register_serializable_type("state_delta",
 									function(x) { 
 										return x instanceof my;
 									},
 									function() {
 										return {
-											str: this.str
 										};
 									},
 									function(obj) {
 										return new my({
-											str: obj.str
 										});
 									});
-}(red.ProgramDelta));
+}(red.StateDelta));
 
 }(red));
