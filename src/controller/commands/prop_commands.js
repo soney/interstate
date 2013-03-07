@@ -52,10 +52,11 @@ red.SetPropCommand = function(options) {
 										return x instanceof my;
 									},
 									function() {
+										var arg_array = _.toArray(arguments);
 										return {
 											parent_uid: this._parent.uid,
 											name: this._prop_name,
-											value: red.serialize.apply(red, ([this._prop_value]).concat(arguments)),
+											value: red.serialize.apply(red, ([this._prop_value]).concat(arg_array)),
 											index: this._prop_index
 										};
 									},
@@ -112,6 +113,22 @@ red.UnsetPropCommand = function(options) {
 			}
 		}
 	};
+	red.register_serializable_type("unset_prop_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											parent_uid: this._parent.uid,
+											name: this._prop_name
+										};
+									},
+									function(obj) {
+										return new my({
+											parent: red.find_uid(obj.parent_uid),
+											name: obj.name
+										});
+									});
 }(red.UnsetPropCommand));
 
 
@@ -140,6 +157,24 @@ red.RenamePropCommand = function(options) {
 		this._parent.rename(this._to_name, this._from_name);
 	};
 	proto._do_destroy = function(in_effect) { };
+	red.register_serializable_type("rename_prop_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											parent_uid: this._parent.uid,
+											from_name: this._from_name,
+											to_name: this._to_name
+										};
+									},
+									function(obj) {
+										return new my({
+											parent: red.find_uid(obj.parent_uid),
+											from: obj._from_name,
+											to: obj._to_name
+										});
+									});
 }(red.RenamePropCommand));
 
 
@@ -169,6 +204,24 @@ red.MovePropCommand = function(options) {
 		this._parent.move_prop(this._prop_name, this._from_index);
 	};
 	proto._do_destroy = function(in_effect) { };
+	red.register_serializable_type("move_prop_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											parent_uid: this._parent.uid,
+											name: this._prop_name,
+											to: this._to_index
+										};
+									},
+									function(obj) {
+										return new my({
+											parent: red.find_uid(obj.parent_uid),
+											name: obj.name,
+											to: obj.to
+										});
+									});
 }(red.MovePropCommand));
 
 
@@ -226,6 +279,25 @@ red.SetStatefulPropValueCommand = function(options) {
 			}
 		}
 	};
+	red.register_serializable_type("set_stateful_prop_value_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										var arg_array = _.toArray(arguments);
+										return {
+											parent_uid: this._stateful_prop.uid,
+											state_uid: this._state.id(),
+											value: red.serialize.apply(red, ([this._prop_value]).concat(arg_array))
+										};
+									},
+									function(obj) {
+										return new my({
+											stateful_prop: red.find_uid(obj.parent_uid),
+											name: obj.name,
+											to: obj.to
+										});
+									});
 }(red.SetStatefulPropValueCommand));
 
 
@@ -258,6 +330,22 @@ red.UnsetStatefulPropValueCommand = function(options) {
 			}
 		}
 	};
+	red.register_serializable_type("unset_stateful_prop_value_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											parent_uid: this._stateful_prop.uid,
+											state_uid: this._state.id()
+										};
+									},
+									function(obj) {
+										return new my({
+											stateful_prop: red.find_uid(obj.parent_uid),
+											state: red.find_uid(obj.state_uid)
+										});
+									});
 }(red.UnsetStatefulPropValueCommand));
 
 
@@ -320,10 +408,11 @@ red.SetBuiltinCommand = function(options) {
 										return x instanceof my;
 									},
 									function() {
+										var arg_array = _.toArray(arguments);
 										return {
 											parent_uid: this._parent.uid,
 											name: this._builtin_name,
-											value: red.serialize.apply(red, ([this._value]).concat(arguments))
+											value: red.serialize.apply(red, ([this._value]).concat(arg_array))
 										};
 									},
 									function(obj) {

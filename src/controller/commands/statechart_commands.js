@@ -36,6 +36,24 @@ red.AddStateCommand = function(options) {
 			this._state.destroy();
 		}
 	};
+	red.register_serializable_type("add_state_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											statechart: this._statechart.id(),
+											name: this._state_name,
+											index: this._index
+										};
+									},
+									function(obj) {
+										return new my({
+											statechart: red.find_uid(obj.statechart),
+											name: obj.name,
+											index: obj.index
+										});
+									});
 }(red.AddStateCommand));
 
 red.RemoveStateCommand = function(options) {
@@ -77,6 +95,22 @@ red.RemoveStateCommand = function(options) {
 			});
 		}
 	};
+	red.register_serializable_type("remove_state_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											statechart: this._statechart.id(),
+											name: this._state_name
+										};
+									},
+									function(obj) {
+										return new my({
+											statechart: red.find_uid(obj.statechart),
+											name: obj.name
+										});
+									});
 }(red.RemoveStateCommand));
 
 red.MoveStateCommand = function(options) {
@@ -106,6 +140,25 @@ red.MoveStateCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
+
+	red.register_serializable_type("move_state_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											statechart: this._statechart.id(),
+											name: this._state_name,
+											index: this._to_index
+										};
+									},
+									function(obj) {
+										return new my({
+											statechart: red.find_uid(obj.statechart),
+											name: obj.name,
+											index: obj.index
+										});
+									});
 }(red.MoveStateCommand));
 
 red.RenameStateCommand = function(options) {
@@ -134,6 +187,25 @@ red.RenameStateCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
+
+	red.register_serializable_type("rename_state_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											statechart: this._statechart.id(),
+											from: this._from_state_name,
+											to: this._to_state_name
+										};
+									},
+									function(obj) {
+										return new my({
+											statechart: red.find_uid(obj.statechart),
+											from: obj.from,
+											to: obj.to
+										});
+									});
 }(red.RenameStateCommand));
 
 red.MakeConcurrentCommand = function(options) {
@@ -161,6 +233,22 @@ red.MakeConcurrentCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
+	red.register_serializable_type("make_concurrent_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										return {
+											statechart: this._statechart.id(),
+											concurrent: this._concurrent
+										};
+									},
+									function(obj) {
+										return new my({
+											statechart: red.find_uid(obj.statechart),
+											concurrent: obj.concurrent
+										});
+									});
 }(red.MakeConcurrentCommand));
 
 
@@ -201,6 +289,27 @@ red.AddTransitionCommand = function(options) {
 			this._transition.destroy();
 		}
 	};
+	red.register_serializable_type("add_transition_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										var arg_array = _.toArray(arguments);
+										return {
+											statechart: this._statechart.id(),
+											from_state_name: this._from_state_name,
+											to_state_name: this._to_state_name,
+											event: red.serialize.apply(red, ([this._event]).concat(arg_array))
+										};
+									},
+									function(obj) {
+										return new my({
+											statechart: red.find_uid(obj.statechart),
+											from: obj.from_state_name,
+											to: obj.to-state_name,
+											event: red.deserialize(obj.event)
+										});
+									});
 }(red.AddTransitionCommand));
 
 
@@ -234,6 +343,23 @@ red.RemoveTransitionCommand = function(options) {
 			this._transition.destroy();
 		}
 	};
+	red.register_serializable_type("remove_transition_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										var arg_array = _.toArray(arguments);
+										return {
+											statechart: this._statechart.id(),
+											transition: this._transition.id()
+										};
+									},
+									function(obj) {
+										return new my({
+											statechart: red.find_uid(obj.statechart),
+											transition: red.find_uid(obj.transition)
+										});
+									});
 }(red.RemoveTransitionCommand));
 
 red.SetTransitionEventCommand = function(options) {
@@ -264,6 +390,23 @@ red.SetTransitionEventCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
+	red.register_serializable_type("set_transition_event_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										var arg_array = _.toArray(arguments);
+										return {
+											transition_id: this._transition.id(),
+											event_str: this._event_str
+										};
+									},
+									function(obj) {
+										return new my({
+											transition: red.find_uid(obj.transition_id),
+											event: obj.event_str
+										});
+									});
 }(red.SetTransitionEventCommand));
 
 
@@ -293,6 +436,23 @@ red.SetTransitionFromCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
+	red.register_serializable_type("set_transition_from_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										var arg_array = _.toArray(arguments);
+										return {
+											transition_id: this._transition.id(),
+											state_id: this._statechart.id()
+										};
+									},
+									function(obj) {
+										return new my({
+											transition: red.find_uid(obj.transition_id),
+											statechart: red.find_uid(obj.state_id)
+										});
+									});
 }(red.SetTransitionFromCommand));
 
 
@@ -322,6 +482,23 @@ red.SetTransitionToCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
+	red.register_serializable_type("set_transition_to_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										var arg_array = _.toArray(arguments);
+										return {
+											transition_id: this._transition.id(),
+											state_id: this._statechart.id()
+										};
+									},
+									function(obj) {
+										return new my({
+											transition: red.find_uid(obj.transition_id),
+											statechart: red.find_uid(obj.state_id)
+										});
+									});
 }(red.SetTransitionToCommand));
 
 var null_fn = function(){};
@@ -362,6 +539,29 @@ red.StatechartOnCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
+	red.register_serializable_type("set_transition_on_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										var arg_array = _.toArray(arguments);
+										return {
+											statechart_id: this._statechart.id(),
+											context: red.serialize.apply(red, ([this._context]).concat(arg_array)),
+											pcontext: red.serialize.apply(red, ([this._pcontext]).concat(arg_array)),
+											listener: red.serialize.apply(red, ([this._listener]).concat(arg_array)),
+											spec: this._spec
+										};
+									},
+									function(obj) {
+										return new my({
+											statechart: red.find_uid(obj.statechart_id),
+											context: red.deserialize(obj.context),
+											pcontext: red.deserialize(obj.pcontext),
+											listener: red.deserialize(obj.listener),
+											spec: obj._spec
+										});
+									});
 }(red.StatechartOnCommand));
 
 red.StatechartOff = function(options) {
@@ -391,6 +591,29 @@ red.StatechartOff = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) { };
+	red.register_serializable_type("set_transition_off_command",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										var arg_array = _.toArray(arguments);
+										return {
+											statechart_id: this._statechart.id(),
+											context: red.serialize.apply(red, ([this._context]).concat(arg_array)),
+											pcontext: red.serialize.apply(red, ([this._pcontext]).concat(arg_array)),
+											listener: red.serialize.apply(red, ([this._listener]).concat(arg_array)),
+											spec: this._spec
+										};
+									},
+									function(obj) {
+										return new my({
+											statechart: red.find_uid(obj.statechart_id),
+											context: red.deserialize(obj.context),
+											pcontext: red.deserialize(obj.pcontext),
+											listener: red.deserialize(obj.listener),
+											spec: obj._spec
+										});
+									});
 }(red.StatechartOff));
 
 }(red));
