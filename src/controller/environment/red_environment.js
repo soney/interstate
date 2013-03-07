@@ -127,11 +127,9 @@ var Env = function(options) {
 	};
 	proto.undo = function() {
 		this._command_stack._undo();
-		return this.default_return_value();
 	};
 	proto.redo = function() {
 		this._command_stack._redo();
-		return this.default_return_value();
 	};
 
 	proto.cd = proto.in = function(prop_name) {
@@ -377,9 +375,12 @@ var Env = function(options) {
 				commands: commands
 			});
 		}
-		this._do(command);
-		if(this.print_on_return) return this.print();
-		else return this;
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 	proto._get_unset_prop_command = function(prop_name) {
 		var parent_obj = this.get_pointer_obj();
@@ -395,9 +396,12 @@ var Env = function(options) {
 	};
 	proto.unset = function() {
 		var command = this._get_unset_prop_command.apply(this, arguments);
-		this._do(command);
-		if(this.print_on_return) return this.print();
-		else return this;
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 
 	proto._get_rename_prop_command = function(from_name, to_name) {
@@ -411,9 +415,12 @@ var Env = function(options) {
 	};
 	proto.rename = function() {
 		var command = this._get_rename_prop_command.apply(this, arguments);
-		this._do(command);
-		if(this.print_on_return) return this.print();
-		else return this;
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 	proto._get_move_prop_command = function(prop_name, index) {
 		var parent_obj = this.get_pointer_obj();
@@ -426,9 +433,12 @@ var Env = function(options) {
 	};
 	proto.move = function() {
 		var command = this._get_move_prop_command.apply(this, arguments);
-		this._do(command);
-		if(this.print_on_return) return this.print();
-		else return this;
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 
 	proto._get_set_cell_command = function(arg0, arg1, arg2) {
@@ -513,9 +523,12 @@ var Env = function(options) {
 
 	proto.set_cell = function() {
 		var command = this._get_set_cell_command.apply(this, arguments);
-		this._do(command);
-		if(this.print_on_return) return this.print();
-		else return this;
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 
 	var get_state = function(state_name, states) {
@@ -565,9 +578,12 @@ var Env = function(options) {
 
 	proto.add_state = function() {
 		var command = this._get_add_state_command.apply(this, arguments);
-		this._do(command);
-		if(this.print_on_return) return this.print();
-		else return this;
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 
 	proto._get_remove_state_command = function(state_name) {
@@ -581,9 +597,12 @@ var Env = function(options) {
 	};
 	proto.remove_state = function() {
 		var command = this._get_remove_state_command.apply(this, arguments);
-		this._do(command);
-		if(this.print_on_return) return this.print();
-		else return this;
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 
 	proto._get_move_state_command = function(state_name, index) {
@@ -600,9 +619,12 @@ var Env = function(options) {
 
 	proto.move_state = function() {
 		var command = this._get_move_state_command.apply(this, arguments);
-		this._do(command);
-		if(this.print_on_return) return this.print();
-		else return this;
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 
 
@@ -618,9 +640,12 @@ var Env = function(options) {
 	};
 	proto.rename_state = function() {
 		var command = this._get_rename_state_command.apply(this, arguments);
-		this._do(command);
-		if(this.print_on_return) return this.print();
-		else return this;
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 
 
@@ -650,13 +675,21 @@ var Env = function(options) {
 			statechart: state,
 			concurrent: concurrent
 		});
-		this._do(command);
-		return this.default_return_value();
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 	proto.add_transition = function() {
 		var command = this._get_add_transition_command.apply(this, arguments);
-		this._do(command);
-		return this.default_return_value();
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 
 	proto._get_remove_transition_command = function(transition_id) {
@@ -677,8 +710,12 @@ var Env = function(options) {
 	};
 	proto.remove_transition = function() {
 		var command = this._get_remove_transition_command.apply(this, arguments);
-		this._do(command);
-		return this.default_return_value();
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 
 	proto._get_set_event_command = function(transition_id, event) {
@@ -693,8 +730,12 @@ var Env = function(options) {
 	};
 	proto.set_event = function() {
 		var command = this._get_set_event_command.apply(this, arguments);
-		this._do(command);
-		return this.default_return_value();
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 	proto.set_from = function(transition, to_state) {
 		transition = this.find_state(transition);
@@ -703,8 +744,12 @@ var Env = function(options) {
 			transition: transition,
 			statechart: to_state
 		});
-		this._do(command);
-		return this.default_return_value();
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 	proto.set_to = function(transition, to_state) {
 		transition = this.find_state(transition);
@@ -713,8 +758,12 @@ var Env = function(options) {
 			transition: transition,
 			statechart: to_state
 		});
-		this._do(command);
-		return this.default_return_value();
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 	proto.on_state = function(spec, func, context) {
 		var statechart = this.get_current_statechart();
@@ -728,8 +777,12 @@ var Env = function(options) {
 			pcontext: this.pointer,
 			context: context
 		});
-		this._do(command);
-		return this.default_return_value();
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
 	proto.off_state = function(spec, func, context) {
 		var statechart = this.get_current_statechart();
@@ -739,11 +792,15 @@ var Env = function(options) {
 			listener: func,
 			context: context
 		});
-		this._do(command);
-		return this.default_return_value();
+		if(this.return_commands) {
+			return command;
+		} else {
+			this._do(command);
+			return this.default_return_value();
+		}
 	};
-	proto.print = function() {
-		return red.print(this.pointer);
+	proto.print = function(logging_mechanism) {
+		return red.print(this.pointer, logging_mechanism);
 	};
 }(Env));
 

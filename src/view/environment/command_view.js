@@ -128,136 +128,54 @@ $.widget("red.command_view", {
 	}
 
 	, on_enter: function(value) {
-		var tokens = value.split(" ").map(function(token) {
+		var tokens = aware_split(value).map(function(token) {
 			return token.trim();
 		});
-
-		var command_name = tokens[0];
-		if(command_name === "cd") {
-			var prop_name = tokens[1];
-			this.pointer = this.pointer.call("get_prop_pointer", prop_name);
-			this.output.html("");
-			red.print(this.pointer, this.logger);
-		} else if(command_name === "up") {
-			this.pointer = this.pointer.pop();
-			this.output.html("");
-			red.print(this.pointer, this.logger);
-		} else if(command_name === "top") {
-			this.pointer = this.pointer.slice(0, 1);
-			this.output.html("");
-			red.print(this.pointer, this.logger);
-		} else if(command_name === "set") {
-			var prop_name = tokens[1];
-
-			var value = _.isNumber(_.last(tokens)) ? tokens[tokens.length-2] : tokens[tokens.length-1];
-			var builtin_info = false, builtin_name;
-			var parent_obj = this.pointer.points_at();
-
-			if(_.isString(value)) {
-				if(value === "<dict>") {
-					value = red.create("dict");
-					var direct_protos = red.create("cell", {str: "[]", ignore_inherited_in_contexts: [value]});
-					value._set_direct_protos(direct_protos);
-				} else if(value === "<stateful>") {
-					value = red.create("stateful_obj", undefined, true);
-					value.do_initialize({
-						direct_protos: red.create("stateful_prop", {check_on_nullify:true, can_inherit: false, ignore_inherited_in_contexts: [value]})
-					});
-					value.get_own_statechart()	.add_state("INIT")
-												.starts_at("INIT");
-				} else if(value === "<stateful prop>") {
-					value = red.create("stateful_prop");
-				} else {
-					value = red.create("cell", {str: value});
-				}
-			}
-
-			if(prop_name[0] === "(" && prop_name[prop_name.length-1] === ")") {
-				builtin_name = prop_name.slice(1, prop_name.length-1);
-
-				var builtins = parent_obj.get_builtins();
-				for(var i in builtins) {
-					var builtin = builtins[i];
-					var env_name = builtin._get_env_name();
-					if(builtin_name === env_name) {
-						builtin_info = builtin;
-						break;
-					}
-				}
-			}
-
-			if(tokens.length === 3 || (tokens.length === 4 && _.isNumber(tokens[3]))) {
-				// Formats: set <name> <val> <index?>
-				if(builtin_info) {
-					console.log(builtin_name);
-					this.post_command(new red.SetBuiltinCommand({
-						parent: parent_obj
-						, name: builtin_name
-						, value: value
-					}));
-				} else {
-					var index = _.isNumber(_.last(tokens)) ? _.last(tokens) : undefined;
-					this.post_command(new red.SetPropCommand({
-						parent: this.pointer.points_at(),
-						name: prop_name,
-						value: value,
-						index: index
-					}));
-				}
-			} else if(tokens.length === 4) {
-				// Formats: set <name> <state> <val> <index?>
-				var index = _.isNumber(_.last(tokens)) ? _.last(tokens) : undefined;
-			}
-		} else if(command_name === "add_state") {
-			var statechart = this.get_current_statechart();
-			var state_name = tokens[1];
-			var index = tokens[2];
-
-			if(_.isNumber(index)) { index++; } // Because of the pre_init state
-			this.post_command(new red.AddStateCommand({
-				name: state_name
-				, statechart: statechart
-				, index: index
-			}));
+		var command;
+		if(value === "undo" || value === "redo") {
+			command = value;
 		} else {
-			console.log(tokens);
+			command = this.external_env[tokens[0]].apply(this.external_env, _.rest(tokens));
 		}
+		this.post_command(command);
+		this.output.html("");
+		this.external_env.print(this.logger);
 	}
 
 	, on_delta: function(delta) {
 		if(delta instanceof red.ProgramDelta) {
 			var program_str = delta.get_str();
-			this.root = red.destringify(program_str);
-			this.root.set("on", red.on_event);
-			this.root.set("emit", red.emit);
-			this.pointer = red.create("pointer", {stack: [this.root]});
-			var root_pointer = this.pointer;
-			this.root.set("find", function(find_root) {
-				if(arguments.length === 0) {
-					find_root = root_pointer;
-				}
-				return new red.Query({value: find_root});
+			this.external_env = red.create("environment", {
+				root: red.destringify(program_str)
 			});
+			this.external_env.return_commands = true;
+			
 			this.output.html("");
-			red.print(this.pointer, this.logger);
+			this.external_env.print(this.logger);
 		} else if(delta instanceof red.CommandDelta) {
 			var command = delta.get_command();
-
-			if(delta.is_reverse()) {
-				command._undo();
+			if(command === "undo") {
+				this.external_env.undo();
+			} else if(command === "redo") {
+				this.external_env.redo();
 			} else {
-				command._do();
+				this.external_env._do(command);
 			}
 
 			this.output.html("");
-			red.print(this.pointer, this.logger);
+			this.external_env.print(this.logger);
 		} else {
 			console.error("Unhandled delta", delta);
 		}
 	}
 	
 	, post_command: function(command) {
-		var stringified_command = red.stringify(command);
+		var stringified_command;
+		if(command === "undo" || command === "redo") {
+			stringified_command = command;
+		} else {
+			stringified_command = red.stringify(command);
+		}
 		window.opener.postMessage({
 			type: "command",
 			command: stringified_command

@@ -5,7 +5,7 @@ red.AddStateCommand = function(options) {
 	red.AddStateCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "statechart")) {
+	if(!this._options.statechart) {
 		throw new Error("Must select a statechart");
 	}
 
@@ -60,7 +60,7 @@ red.RemoveStateCommand = function(options) {
 	red.RemoveStateCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "statechart")) {
+	if(!this._options.statechart) {
 		throw new Error("Must select a statechart");
 	}
 
@@ -117,7 +117,7 @@ red.MoveStateCommand = function(options) {
 	red.MoveStateCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "statechart")) {
+	if(!this._options.statechart) {
 		throw new Error("Must select a statechart");
 	}
 
@@ -165,7 +165,7 @@ red.RenameStateCommand = function(options) {
 	red.RenameStateCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "statechart")) {
+	if(!this._options.statechart) {
 		throw new Error("Must select a statechart");
 	}
 
@@ -212,7 +212,7 @@ red.MakeConcurrentCommand = function(options) {
 	red.MakeConcurrentCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "statechart")) {
+	if(!this._options.statechart) {
 		throw new Error("Must select a statechart");
 	}
 
@@ -256,7 +256,7 @@ red.AddTransitionCommand = function(options) {
 	red.AddTransitionCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "statechart")) {
+	if(!this._options.statechart) {
 		throw new Error("Must select a statechart");
 	}
 
@@ -317,7 +317,7 @@ red.RemoveTransitionCommand = function(options) {
 	red.RemoveTransitionCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "statechart")) {
+	if(!this._options.statechart) {
 		throw new Error("Must select a statechart");
 	}
 
@@ -366,7 +366,7 @@ red.SetTransitionEventCommand = function(options) {
 	red.SetTransitionEventCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "statechart")) {
+	if(!this._options.statechart) {
 		throw new Error("Must select a statechart");
 	}
 
@@ -414,7 +414,7 @@ red.SetTransitionFromCommand = function(options) {
 	SetTransitionFromCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "statechart")) {
+	if(!this._options.statechart) {
 		throw new Error("Must select a statechart");
 	}
 
@@ -460,7 +460,7 @@ red.SetTransitionToCommand = function(options) {
 	red.SetTransitionToCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "statechart")) {
+	if(!this._options.statechart) {
 		throw new Error("Must select a statechart");
 	}
 
@@ -507,7 +507,7 @@ red.StatechartOnCommand = function(options) {
 	red.StatechartOnCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "statechart")) {
+	if(!this._options.statechart) {
 		throw new Error("Must select a statechart");
 	}
 
@@ -568,7 +568,7 @@ red.StatechartOff = function(options) {
 	red.StatechartOff.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "statechart")) {
+	if(!this._options.statechart) {
 		throw new Error("Must select a statechart");
 	}
 

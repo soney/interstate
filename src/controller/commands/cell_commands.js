@@ -5,7 +5,7 @@ red.ChangeCellCommand = function(options) {
 	red.ChangeCellCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "cell")) {
+	if(!this._options.cell) {
 		throw new Error("Must select a cell");
 	}
 

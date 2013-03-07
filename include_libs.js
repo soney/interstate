@@ -35,6 +35,7 @@ exports.main_src = c(
 				, "set.js"
 				, "map.js"
 				, "uid.js"
+				, "aware_split.js"
 	])
 	, cp(cjs_path, cjs_inc.main_src)
 	, cp(vendor_src, [
@@ -74,7 +75,7 @@ exports.main_src = c(
 				, "model/core/deltas/delta_core.js"
 				, "model/core/deltas/program_deltas.js"
 				, "model/core/deltas/command_deltas.js"
-				, "model/core/deltas/program_deltas.js"
+				, "model/core/deltas/state_deltas.js"
 				, "model/attachments/attachment_core.js"
 				, "model/attachments/dom_attachment.js"
 				, "controller/commands/command_core.js"

@@ -4,7 +4,6 @@ var cjs = red.cjs, _ = red._;
 red.CommandDelta = function(options) {
 	red.CommandDelta.superclass.constructor.apply(this, arguments);
 	this.command = options.command;
-	this.reverse = options.reverse === true;
 };
 
 
@@ -14,8 +13,14 @@ red.CommandDelta = function(options) {
 	proto.get_command = function() {
 		return this.command;
 	};
-	proto.is_reverse = function() {
-		return this.reverse;
+	proto.get_serialized_command = function() {
+		var arg_array = _.toArray(arguments);
+		var command = this.get_command();
+		if(command === "undo" || command === "redo") {
+			return command;
+		} else {
+			return red.serialize.apply(red, ([command]).concat(arg_array));
+		}
 	};
 
 	red.register_serializable_type("command_delta",
@@ -24,14 +29,12 @@ red.CommandDelta = function(options) {
 									},
 									function() {
 										return {
-											command: red.serialize.apply(red, ([this.get_command()]).concat(arguments)),
-											reverse: this.is_reverse()
+											command: this.get_serialized_command.apply(this, arguments)
 										};
 									},
 									function(obj) {
 										return new red.CommandDelta({
-											command: red.deserialize(obj.command),
-											reverse: obj.reverse
+											command: (obj.command === "undo" || obj.command === "redo") ? obj.command : red.deserialize(obj.command)
 										});
 									});
 }(red.CommandDelta));

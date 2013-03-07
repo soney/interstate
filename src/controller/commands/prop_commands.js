@@ -7,7 +7,7 @@ red.SetPropCommand = function(options) {
 	red.SetPropCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "parent")) {
+	if(!this._options.parent) {
 		throw new Error("Must select a parent object");
 	}
 
@@ -76,7 +76,7 @@ red.UnsetPropCommand = function(options) {
 	red.UnsetPropCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "parent")) {
+	if(!this._options.parent) {
 		throw new Error("Must select a parent object");
 	}
 
@@ -138,7 +138,7 @@ red.RenamePropCommand = function(options) {
 	red.RenamePropCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "parent")) {
+	if(!this._options.parent) {
 		throw new Error("Must select a parent object");
 	}
 
@@ -184,7 +184,7 @@ red.MovePropCommand = function(options) {
 	red.MovePropCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "parent")) {
+	if(!this._options.parent) {
 		throw new Error("Must select a parent object");
 	}
 
@@ -254,7 +254,7 @@ red.SetStatefulPropValueCommand = function(options) {
 	red.SetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "stateful_prop")) {
+	if(!this._options.stateful_prop) {
 		throw new Error("Must select a stateful_prop object");
 	}
 
@@ -305,7 +305,7 @@ red.UnsetStatefulPropValueCommand = function(options) {
 	red.UnsetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "stateful_prop")) {
+	if(!this._options.stateful_prop) {
 		throw new Error("Must select a stateful_prop object");
 	}
 
@@ -353,7 +353,7 @@ red.SetBuiltinCommand = function(options) {
 	red.SetBuiltinCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!_.has(this._options, "parent")) {
+	if(!this._options.parent) {
 		throw new Error("Must select a parent object");
 	}
 

@@ -13,6 +13,7 @@ $.widget("red.dom_output", {
 	}
 
 	, _create: function() {
+		this._command_stack = red.create("command_stack");
 		if(this.option("show_edit_button")) {
 			this.$on_message = _.bind(this.on_message, this);
 			$(window).on("message", this.$on_message);
@@ -118,10 +119,21 @@ $.widget("red.dom_output", {
 				var type = data.type;
 				if(type === "command") {
 					var stringified_command = data.command;
-					var command = red.destringify(stringified_command);
-					command._do();
-					var delta = new red.CommandDelta({command: command, reverse: false});
-					this.post_delta(delta);
+					if(stringified_command === "undo") {
+						this._command_stack._undo();
+						var delta = new red.CommandDelta({command: "undo" });
+						this.post_delta(delta);
+					} else if(stringified_command === "redo") {
+						this._command_stack._redo();
+						var delta = new red.CommandDelta({command: "redo" });
+						this.post_delta(delta);
+					} else {
+						var command = red.destringify(stringified_command);
+						this._command_stack._do(command);
+						var delta = new red.CommandDelta({command: command });
+						this.post_delta(delta);
+					}
+					red.print(this.option("root"));
 				}
 			}
 		}
