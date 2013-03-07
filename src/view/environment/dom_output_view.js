@@ -134,7 +134,6 @@ $.widget("red.dom_output", {
 						var delta = new red.CommandDelta({command: command });
 						this.post_delta(delta);
 					}
-					red.print(this.option("root"));
 				}
 			}
 		}

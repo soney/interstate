@@ -256,13 +256,13 @@ red.AddTransitionCommand = function(options) {
 	red.AddTransitionCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!this._options.statechart) {
-		throw new Error("Must select a statechart");
+	if(!this._options.from || !this._options.to || !this._options.statechart) {
+		throw new Error("Must specify statechart, from, and to");
 	}
 
 	this._statechart = this._options.statechart;
-	this._from_state_name = this._options.from;
-	this._to_state_name = this._options.to;
+	this._from_state = this._options.from;
+	this._to_state = this._options.to;
 	this._event = this._options.event;
 };
 
@@ -274,7 +274,7 @@ red.AddTransitionCommand = function(options) {
 		if(_.has(this, "_transition")) {
 			this._statechart.add_transition(this._transition);
 		} else {
-			this._statechart.add_transition(this._from_state_name, this._to_state_name, this._event);
+			this._statechart.add_transition(this._from_state, this._to_state, this._event);
 			this._transition = this._statechart._last_transition;
 		}
 	};
@@ -296,17 +296,17 @@ red.AddTransitionCommand = function(options) {
 									function() {
 										var arg_array = _.toArray(arguments);
 										return {
-											statechart: this._statechart.id(),
-											from_state_name: this._from_state_name,
-											to_state_name: this._to_state_name,
+											statechart_id: this._statechart.id(),
+											from_id: this._from_state.id(),
+											to_id: this._to_state.id(),
 											event: red.serialize.apply(red, ([this._event]).concat(arg_array))
 										};
 									},
 									function(obj) {
 										return new my({
-											statechart: red.find_uid(obj.statechart),
-											from: obj.from_state_name,
-											to: obj.to-state_name,
+											statechart: red.find_uid(obj.statechart_id),
+											from: red.find_uid(obj.from_id),
+											to: red.find_uid(obj.to_id),
 											event: red.deserialize(obj.event)
 										});
 									});

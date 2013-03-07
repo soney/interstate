@@ -37,6 +37,8 @@
 					if(counts[endCharIndex] === -1 && (char === "'" || char === '"')) {
 						counts[endCharIndex] = 1;
 						balanced = false;
+					} else {
+						balanced = is_balanced(counts);
 					}
 				} else {
 					var startCharIndex = start_chars.indexOf(char);

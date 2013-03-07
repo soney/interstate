@@ -11,19 +11,6 @@
 			<script type="text/javascript">
 				var env = red.create("environment");
 				env
-					.set("a", "<stateful>")
-					.cd("a")
-						.add_state("hover")
-						.add_transition("INIT", "hover", "on('mouseover', this)")
-						.set("prop1", "INIT", "1+2+3")
-				/*
-					.set("a", "1+2+3")
-					.add_state("a.b.c")
-					.add_state("a.b.d")
-					.add_transition("a.b.c", "a.b.d", "on('mouseover', this)")
-				*/
-					;
-
 					/*
 				env	.cd("children")
 					.set("obj", "<stateful>")
@@ -45,20 +32,6 @@
 				}).appendTo(document.body);
 				env.print_on_return = true;
 				//console.log(env.print());
-
-				window.s = function() {
-					var stringified_root = red.stringify(root_pointer.points_at());
-					var new_root = red.destringify(stringified_root);
-					output_view.dom_output("destroy");
-					env = red.create("environment", {root: new_root});
-					root_pointer = env.get_root_pointer();
-					output_view.dom_output({
-						root: root_pointer
-					});
-					console.log(env.print());
-				};
-				//s();
-				env.print();
 			</script>
 	  </div>
   </body>

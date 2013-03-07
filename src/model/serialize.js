@@ -2,6 +2,8 @@
 var cjs = red.cjs, _ = red._;
 var do_compress = false;
 
+var POINTER_TYPE = "$$pointer"
+
 // === SERIALIZE ===
 
 var serialization_funcs = [ ];
@@ -84,7 +86,7 @@ var get_or_create_serialized_obj_id = function(obj) {
 
 var create_or_get_serialized_obj = function() {
 	return {
-		type: "$$pointer"
+		type: POINTER_TYPE
 		, id: get_or_create_serialized_obj_id.apply(this, arguments)
 	};
 };
@@ -131,6 +133,7 @@ var do_serialize = function(obj) {
 
 red.stringify = function() {
 	var serialized_obj = red.serialize.apply(red, arguments);
+	console.log(serialized_obj);
 	var stringified_obj = JSON.stringify(serialized_obj);
 
 	if(do_compress) { return lzw_encode(stringified_obj); }
@@ -178,7 +181,7 @@ var do_deserialize = function(serialized_obj) {
 };
 
 var get_deserialized_obj = function(serialized_obj) {
-	if(serialized_obj.type === "$$pointer") {
+	if(serialized_obj.type === POINTER_TYPE) {
 		var id = serialized_obj.id;
 		var val = deserialized_obj_vals[id];
 		if(val === undefined) {
