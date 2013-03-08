@@ -33,6 +33,7 @@ var id  = 0;
 			this.$child_fired = _.bind(this.child_fired, this);
 
 			this._old_event = null;
+			cjs.wait(); // ensure our live event creator isn't immediately run
 			this._live_event_creator = cjs.liven(function() {
 				if(this._old_event) {
 					this._old_event.off_fire(this.$child_fired);
@@ -56,6 +57,7 @@ var id  = 0;
 			}, {
 				context: this
 			});
+			cjs.signal();
 		}
 	};
 	proto.child_fired = function() {
