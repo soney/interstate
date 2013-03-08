@@ -178,7 +178,7 @@ env
 .cd("level_track")
 	.add_transition("INIT", "INIT", "find(root.children.blocks).in_state('alive').is_empty()")
 	.on_state("INIT->INIT", "function() { red.emit('level_up', root); }")
-	.set("level", "<stateful prop>")
+	.set("level", "<stateful_prop>")
 	.set("level", "(start) -> INIT", "1")
 	.set("level", "INIT -> INIT", "level+1")
 	.up()

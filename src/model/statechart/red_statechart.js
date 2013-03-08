@@ -140,7 +140,7 @@ red.find_equivalent_state = function(to_state, in_tree) {
 	var to_state_index;
 	outer_loop:
 	while(in_tree_basis_index < in_tree_basis_lineage_len) {
-		for(var i = to_state_lineage_len; i>=0; i--) {
+		for(var i = to_state_lineage_len-1; i>=0; i--) {
 			if(to_state_lineage[i] === in_tree_basis_lineage[in_tree_basis_index]) {
 				to_state_index = i;
 				break outer_loop;

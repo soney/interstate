@@ -16,65 +16,6 @@ $.widget("red.command_view", {
 											this.input.val("");
 										}
 									}, this));
-		this.red_view = $("<div />").addClass("red_view").appendTo(this.element);
-
-		this.env = red.create("environment");
-		this.output_view = this.red_view.dom_output({
-			root: this.env.get_root_pointer()
-		});
-		this.env
-		/*
-				.set("on_enter", _.bind(this.on_enter, this))
-				//.set("post_command", _.bind(this.post_command, this))
-				.cd("children")
-					.set("input", "<stateful>")
-					.cd("input")
-						.add_transition("INIT", "INIT", "on('keydown', this).when_eq('keyCode', 13)")
-						.set("(protos)", "INIT", "dom")
-						.set("tag", "INIT", "'input'")
-						.on_state("INIT >- INIT", "function(info) {\n" +
-							"var target = info.event.red_target;\n" +
-							"var dom_attachment = target.call('get_attachment_instance', 'dom');\n" +
-							"if(dom_attachment) {\n" +
-								"var dom_obj = dom_attachment.get_dom_obj();\n" +
-								"var text = dom_obj.value;\n" +
-								"on_enter(text);\n" +
-							"}\n" +
-						"}")
-						.set("attr", "<dict>")
-						.cd("attr")
-							.set("value", "<stateful prop>")
-							.set("value", "INIT -> INIT", "''")
-						/*
-							.up()
-						.up()
-						/*
-					.set("root", "<stateful>")
-					.cd("root")
-						.rename_state("INIT", "idle")
-						.add_state("editing")
-						.add_transition("idle", "editing", "on('mousedown', this)")
-						.add_transition("editing", "idle", "on('keydown', this).when_eq('keyCode', 13)")
-						.set("(protos)", "idle", "dom")
-						.set("tag", "idle", "'span'")
-						.set("tag", "editing", "'input'")
-						.set("text", "idle", "'hello'")
-						.set("text", "editing", "''")
-						.on_state("editing >- idle", "function(info) {\n" +
-							"var target = info.event.red_target;\n" +
-							"var dom_attachment = target.call('get_attachment_instance', 'dom');\n" +
-							"if(dom_attachment) {\n" +
-								"var dom_obj = dom_attachment.get_dom_obj();\n" +
-								"var text = dom_obj.value;\n" +
-								"var command = new red.ChangeCellCommand({ cell: cell(), str: text });\n" +
-								"send_command(command, text);\n" +
-							"}\n" +
-						"}")
-					//	.up()
-					//.up()
-					//*/
-					;
-		//window.env = this.env;
 
 		this.output = $("<pre />").addClass("output").appendTo(this.element);
 		this.pointer = undefined;

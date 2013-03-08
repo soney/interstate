@@ -115,7 +115,7 @@ var print = function(current_pointer, logging_mechanism) {
 	var PROP_VALUE_WIDTH = 40;
 
 	var STATE_NAME_WIDTH = 40;
-	var STATE_ID_WIDTH = 8;
+	var STATE_ID_WIDTH = 18;
 	var TRANSITION_NAME_WIDTH = 60;
 	var TRANSITION_VALUE_WIDTH = 40;
 	var STATE_VALUE_WIDTH = 100;
@@ -210,7 +210,7 @@ var print = function(current_pointer, logging_mechanism) {
 
 				if(prop_points_at instanceof red.StatefulProp) {
 					prop_text = pad(prop_text, PROP_NAME_WIDTH);
-					prop_text = prop_text + pad("(" + uid.strip_prefix(prop_points_at.id) + ")", PROP_ID_WIDTH);
+					prop_text = prop_text + pad("(" + uid.strip_prefix(prop_points_at.uid) + ")", PROP_ID_WIDTH);
 				} else {
 					prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
 				}

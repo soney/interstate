@@ -19,7 +19,13 @@ var red = (function(root) {
 		}
 	};
 	var uid_objs = {};
+	var prefix = uid.get_prefix();
 	red.register_uid = function(uid, obj) {
+		if(opener && uid.slice(0, prefix.length) === prefix) {
+			if(obj instanceof red.State && !obj.basis()) {
+				//debugger;
+			}
+		}
 		uid_objs[uid] = obj;
 	};
 	red.unregister_uid = function(uid) {

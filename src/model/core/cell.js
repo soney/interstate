@@ -83,6 +83,7 @@ red.Cell = function(options, defer_initialization) {
 									function(include_uid) {
 										var rv = { };
 										if(include_uid) { rv.uid = this.uid; }
+										if(window.opener && include_uid) { debugger; }
 
 										var self = this;
 										_.each(my.builtins, function(builtin, name) {
@@ -102,7 +103,7 @@ red.Cell = function(options, defer_initialization) {
 											}
 										});
 
-										var rv = new red.Cell({uid: obj.uid}, true);
+										var rv = new my({uid: obj.uid}, true);
 										rv.initialize = function() {
 											var options = { };
 											_.each(serialized_options, function(serialized_option, name) {

@@ -133,7 +133,6 @@ var do_serialize = function(obj) {
 
 red.stringify = function() {
 	var serialized_obj = red.serialize.apply(red, arguments);
-	console.log(serialized_obj);
 	var stringified_obj = JSON.stringify(serialized_obj);
 
 	if(do_compress) { return lzw_encode(stringified_obj); }

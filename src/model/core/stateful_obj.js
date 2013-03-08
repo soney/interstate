@@ -153,7 +153,7 @@ red.StatefulObj = function(options, defer_initialization) {
 											}
 										});
 
-										var rv = new my(undefined, true);
+										var rv = new my({uid: obj.uid}, true);
 										rv.initialize = function() {
 											var options = {};
 											_.each(serialized_options, function(serialized_option, name) {

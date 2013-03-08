@@ -75,7 +75,7 @@ var Env = function(options) {
 	};
 	proto.find_state = function(name) {
 		if(name instanceof red.State || name instanceof red.StatechartTransition) {
-			return name;
+			return name.basis() || name;
 		} else {
 			var SOandC = red.find_stateful_obj_and_context(this.pointer);
 			var owner = SOandC.stateful_obj;
@@ -101,7 +101,7 @@ var Env = function(options) {
 					}
 				}
 
-				return transition;
+				return transition.basis() || transition;
 			} else {
 				var state = statechart.find_state(name);
 
@@ -117,7 +117,7 @@ var Env = function(options) {
 					}
 				}
 
-				return state;
+				return state.basis() || state;
 			}
 		}
 	};
@@ -145,41 +145,6 @@ var Env = function(options) {
 		return this.default_return_value();
 	};
 
-	proto._get_set_prop_command = function(prop_name, value, index) {
-		var parent_obj = this.get_pointer_obj();
-
-		var command;
-		if(prop_name[0] === "(" && prop_name[prop_name.length-1] === ")") {
-			var builtin_name = prop_name.slice(1, prop_name.length-1);
-
-			var builtin_info;
-			var builtins = parent_obj.get_builtins();
-			for(var i in builtins) {
-				var builtin = builtins[i];
-				var env_name = builtin._get_env_name();
-				if(builtin_name === env_name) {
-					builtin_info = builtin;
-					break;
-				}
-			}
-			if(builtin_info) {
-				var getter_name = builtin_info._get_getter_name();
-				command = new red.SetBuiltinCommand({
-					parent: parent_obj
-					, name: builtin_name
-					, value: value
-				});
-			}
-		} else {
-			command = new red.SetPropCommand( {
-				parent: parent_obj
-				, name: prop_name
-				, value: value
-				, index: index
-			});
-		}
-		return command;
-	};
 	proto.set = function(prop_name, arg1, arg2, arg3) {
 		var builtin_name;
 		var commands = [],
@@ -201,7 +166,17 @@ var Env = function(options) {
 			}
 		}
 
-		var value = _.last(arguments);
+		var value;
+		if(arguments.length === 1) {
+			if(parent_obj instanceof red.StatefulObj) {
+				value = "<stateful_prop>";
+			} else {
+				value = "<stateful>";
+			}
+		} else {
+			value = _.last(arguments);
+		}
+
 		if(_.isString(value)) {
 			if(value === "<dict>") {
 				value = red.create("dict");
@@ -214,7 +189,7 @@ var Env = function(options) {
 				});
 				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");
-			} else if(value === "<stateful prop>") {
+			} else if(value === "<stateful_prop>") {
 				value = red.create("stateful_prop");
 			} else {
 				value = red.create("cell", {str: value});
@@ -365,7 +340,21 @@ var Env = function(options) {
 				}
 			}
 		} else if(arguments.length === 1) {
-			commands.push(this._get_set_prop_command.apply(this, arguments));
+			if(builtin_info) {
+				var getter_name = builtin_info._get_getter_name();
+				commands.push(new red.SetBuiltinCommand({
+					parent: parent_obj
+					, name: builtin_name
+					, value: value
+				}));
+			} else {
+				commands.push(new red.SetPropCommand( {
+					parent: parent_obj
+					, name: prop_name
+					, value: value
+					, index: index
+				}));
+			}
 		}
 		var command;
 		if(commands.length === 1) {

@@ -7,7 +7,7 @@ red.SetPropCommand = function(options) {
 	red.SetPropCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!this._options.parent) {
+	if(!this._options.parent || !this._options.name || !this._options.value) {
 		throw new Error("Must select a parent object");
 	}
 
@@ -138,7 +138,7 @@ red.RenamePropCommand = function(options) {
 	red.RenamePropCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!this._options.parent) {
+	if(!this._options.parent || !this._options.from || !this._options.to) {
 		throw new Error("Must select a parent object");
 	}
 
@@ -171,8 +171,8 @@ red.RenamePropCommand = function(options) {
 									function(obj) {
 										return new my({
 											parent: red.find_uid(obj.parent_uid),
-											from: obj._from_name,
-											to: obj._to_name
+											from: obj.from_name,
+											to: obj.to_name
 										});
 									});
 }(red.RenamePropCommand));
@@ -254,7 +254,7 @@ red.SetStatefulPropValueCommand = function(options) {
 	red.SetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!this._options.stateful_prop) {
+	if(!this._options.stateful_prop || !this._options.state || !this._options.value) {
 		throw new Error("Must select a stateful_prop object");
 	}
 
@@ -285,17 +285,18 @@ red.SetStatefulPropValueCommand = function(options) {
 									},
 									function() {
 										var arg_array = _.toArray(arguments);
+										console.log(this._state.id(), this._stateful_prop.uid);
 										return {
-											parent_uid: this._stateful_prop.uid,
+											stateful_prop_uid: this._stateful_prop.uid,
 											state_uid: this._state.id(),
-											value: red.serialize.apply(red, ([this._prop_value]).concat(arg_array))
+											value: red.serialize.apply(red, ([this._value]).concat(arg_array))
 										};
 									},
 									function(obj) {
 										return new my({
-											stateful_prop: red.find_uid(obj.parent_uid),
-											name: obj.name,
-											to: obj.to
+											stateful_prop: red.find_uid(obj.stateful_prop_uid),
+											state: red.find_uid(obj.state_uid),
+											value: red.deserialize(obj.value)
 										});
 									});
 }(red.SetStatefulPropValueCommand));

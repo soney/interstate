@@ -11,6 +11,9 @@ red.AddStateCommand = function(options) {
 
 	this._statechart = this._options.statechart;
 	this._state_name = this._options.name;
+	if(this._options.state) {
+		this._state = this._options.state;
+	}
 	this._index = this._options.index;
 };
 
@@ -32,7 +35,7 @@ red.AddStateCommand = function(options) {
 	};
 
 	proto._do_destroy = function(in_effect) {
-		if(!in_effect) {
+		if(!in_effect){
 			this._state.destroy();
 		}
 	};
@@ -41,17 +44,20 @@ red.AddStateCommand = function(options) {
 										return x instanceof my;
 									},
 									function() {
+										var args = _.toArray(arguments);
 										return {
 											statechart: this._statechart.id(),
 											name: this._state_name,
-											index: this._index
+											index: this._index,
+											state: red.serialize.apply(red, ([this._state]).concat(args))
 										};
 									},
 									function(obj) {
 										return new my({
 											statechart: red.find_uid(obj.statechart),
 											name: obj.name,
-											index: obj.index
+											index: obj.index,
+											state: red.deserialize(obj.state)
 										});
 									});
 }(red.AddStateCommand));
@@ -260,6 +266,9 @@ red.AddTransitionCommand = function(options) {
 		throw new Error("Must specify statechart, from, and to");
 	}
 
+	if(this._options.transition) {
+		this._transition = this._options.transition;
+	}
 	this._statechart = this._options.statechart;
 	this._from_state = this._options.from;
 	this._to_state = this._options.to;
@@ -299,7 +308,8 @@ red.AddTransitionCommand = function(options) {
 											statechart_id: this._statechart.id(),
 											from_id: this._from_state.id(),
 											to_id: this._to_state.id(),
-											event: red.serialize.apply(red, ([this._event]).concat(arg_array))
+											event: red.serialize.apply(red, ([this._event]).concat(arg_array)),
+											transition: red.serialize.apply(red, ([this._transition]).concat(arg_array))
 										};
 									},
 									function(obj) {
@@ -307,7 +317,8 @@ red.AddTransitionCommand = function(options) {
 											statechart: red.find_uid(obj.statechart_id),
 											from: red.find_uid(obj.from_id),
 											to: red.find_uid(obj.to_id),
-											event: red.deserialize(obj.event)
+											event: red.deserialize(obj.event),
+											transition: red.deserialize(obj.transition)
 										});
 									});
 }(red.AddTransitionCommand));
