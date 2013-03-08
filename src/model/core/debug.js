@@ -115,7 +115,7 @@ var print = function(current_pointer, logging_mechanism) {
 	var PROP_VALUE_WIDTH = 40;
 
 	var STATE_NAME_WIDTH = 40;
-	var STATE_ID_WIDTH = 18;
+	var STATE_ID_WIDTH = 8;
 	var TRANSITION_NAME_WIDTH = 60;
 	var TRANSITION_VALUE_WIDTH = 40;
 	var STATE_VALUE_WIDTH = 100;

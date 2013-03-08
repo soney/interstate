@@ -285,7 +285,6 @@ red.SetStatefulPropValueCommand = function(options) {
 									},
 									function() {
 										var arg_array = _.toArray(arguments);
-										console.log(this._state.id(), this._stateful_prop.uid);
 										return {
 											stateful_prop_uid: this._stateful_prop.uid,
 											state_uid: this._state.id(),
@@ -386,7 +385,7 @@ red.SetBuiltinCommand = function(options) {
 			var builtin = builtins[i];
 			var env_name = builtin._get_env_name();
 			if(this._builtin_name === env_name) {
-				var getter_name = builtin._get_getter_name();
+				var setter_name = builtin._get_setter_name();
 				this._parent[setter_name](this._old_value);
 				break;
 			}
