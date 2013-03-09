@@ -180,7 +180,6 @@ red.StatechartTransition = function(options, defer_initialization) {
 	options = options || {};
 	able.make_this_listenable(this);
 	this._id = options.id || uid();
-	red.register_uid(this._id, this);
 	this.$remove = _.bind(this.remove, this);
 	this.$destroy = _.bind(this.destroy, this);
 	this.$updateTo = _.bind(function(event) {
@@ -208,15 +207,20 @@ red.StatechartTransition = function(options, defer_initialization) {
 		this.$times_run = cjs.$(0);
 		this._from_state = options.from;
 		this._to_state = options.to;
+		this._context = options.context;
 		this.set_basis(options.basis);
 		this.do_fire = _.bind(this.fire, this);
 		this.set_event(options.event);
+		red.register_uid(this._id, this);
 	};
 	proto.increment_times_run = function() {
 		this.$times_run.set(this.$times_run.get() + 1);
 	};
 	proto.get_times_run = function() {
 		return this.$times_run.get();
+	};
+	proto.get_context = function() {
+		return this._context;
 	};
 	proto.set_active = function(to_active) {
 		to_active = to_active === true;
@@ -288,7 +292,7 @@ red.StatechartTransition = function(options, defer_initialization) {
 	proto.create_shadow = function(from_state, to_state, parent_statechart, context) {
 		var my_event = this.event()
 			, shadow_event = my_event.create_shadow(parent_statechart, context);
-		var shadow_transition = new red.StatechartTransition({from: from_state, to: to_state, event: shadow_event, basis: this});
+		var shadow_transition = new red.StatechartTransition({from: from_state, to: to_state, event: shadow_event, basis: this, context: context});
 		return shadow_transition;
 	};
 	proto.stringify = function() {
@@ -342,7 +346,6 @@ red.State = function(options, defer_initialization) {
 	options = options || {};
 	able.make_this_listenable(this);
 	this._id = options.id || uid();
-	red.register_uid(this._id, this);
 	this._last_run_event = cjs.$(false);
 	this._entrance_transition = cjs.$(false); 
 
@@ -476,6 +479,7 @@ red.State = function(options, defer_initialization) {
 		this._parent = options.parent;
 		this._context = options.context;
 		this.set_basis(options.basis);
+		red.register_uid(this._id, this);
 	};
 	proto.set_active = function(to_active) {
 		to_active = to_active === true;
@@ -801,7 +805,6 @@ red.Statechart = function(options) {
 		this.$outgoing_transitions = options.outgoing_transitions || cjs.array();
 
 		this._running = options.running === true;
-		my.superclass.do_initialize.apply(this, arguments);
 
 		if(this._running && this._basis) {
 			var basis_start_state = this._basis.get_start_state();
@@ -815,6 +818,7 @@ red.Statechart = function(options) {
 		} else {
 			this.$local_state = cjs.$(this._start_state);
 		}
+		my.superclass.do_initialize.apply(this, arguments);
 	};
 
 	proto.is_concurrent = function() { return this.$concurrent.get(); };

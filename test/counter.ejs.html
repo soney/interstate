@@ -10,8 +10,6 @@
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
 				var env = red.create("environment");
-				env
-					/*
 				env	.cd("children")
 					.set("obj", "<stateful>")
 					.cd("obj")
@@ -23,8 +21,72 @@
 					.set("text", "INIT", "i")
 					.set("i", "(start) -> INIT", "1")
 					.set("i", "INIT -> INIT", "i+1")
-					*/
 					;
+
+					/*
+				var on_transition_fire = function(info) {
+					var transition = info.target;
+					var context = transition.get_context();
+					var basis = transition.basis();
+					console.log(basis, context);
+				};
+
+				var register_state = function(state) {
+					var context = state.context();
+					var active_substate = state.get_active_substate();
+
+					console.log(state, active_substate, context);
+				};
+				var unregister_state = function(state) {
+					console.log("unreg state", state);
+				};
+				var register_transition = function(transition) {
+					transition.on("fire", on_transition_fire);
+				};
+				var unregister_transition = function(transition) {
+					transition.off("fire", on_transition_fire);
+				};
+
+				var states = red.filter_registered_objs(function(x) { 
+						return x instanceof red.State;
+					}),
+					transitions = red.filter_registered_objs(function(x) {
+						return x instanceof red.StatechartTransition;
+					});
+
+				for(var i = 0; i<states.length; i++) {
+					register_state(states[i]);
+				}
+				for(var i = 0; i<transitions.length; i++) {
+					register_transition(transitions[i]);
+				}
+
+				red.on("uid_registered", function(uid, obj) {
+					if(obj instanceof red.Statechart) {
+						states.push(obj);
+						register_state(obj);
+					} else if(obj instanceof red.StatechartTransition) {
+						transitions.push(obj);
+						register_transition(obj);
+					}
+				});
+				red.on("uid_unregistered", function(uid, obj) {
+					if(obj instanceof red.Statechart) {
+						var index = states.indexOf(obj);
+						if(index >= 0) {
+							unregister_state(obj);
+							states.splice(index, 1);
+						}
+					} else if(obj instanceof red.StatechartTransition) {
+						var index = transitions.indexOf(obj);
+						if(index >= 0) {
+							unregister_transition(obj);
+							transitions.splice(index, 1);
+						}
+					}
+				});
+				*/
+
 
 				var root_pointer = env.get_root_pointer();
 				output_view = $("<div />").dom_output({

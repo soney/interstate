@@ -4,8 +4,8 @@ var cjs = red.cjs, _ = red._;
 red.CombinedCommand = function(options) {
 	red.CombinedCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
-	if(!this._options.cell || !this._options.str) {
-		throw new Error("Must select a cell");
+	if(!this._options.commands) {
+		throw new Error("Must specify commands!");
 	}
 	this._commands = options.commands;
 };

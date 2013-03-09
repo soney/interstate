@@ -384,7 +384,7 @@ red.Dict = function(options, defer_initialization) {
 				var context_obj = special_context.get_context_obj();
 				if(context_obj.hasOwnProperty(prop_name)) {
 					var info = context_obj[prop_name];
-					return info.value;
+					return info;
 				}
 			}
 		}
