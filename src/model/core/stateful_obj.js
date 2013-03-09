@@ -136,8 +136,6 @@ red.StatefulObj = function(options, defer_initialization) {
 		return active_states;
 	};
 
-	my.deserialize = function(obj) {
-	};
 	red.register_serializable_type("stateful_obj",
 									function(x) { 
 										return x instanceof my;

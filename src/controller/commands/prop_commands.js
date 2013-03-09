@@ -27,7 +27,7 @@ red.SetPropCommand = function(options) {
 			index = this._prop_index;
 		}
 		this._old_prop_value = this._parent._get_direct_prop(this._prop_name);
-		this._parent.set_prop(this._prop_name, this._prop_value, index);
+		this._parent.set_prop(this._prop_name, this._prop_value, {index: index});
 	};
 	proto._unexecute = function() {
 		if(!_.isUndefined(this._old_prop_value)) {

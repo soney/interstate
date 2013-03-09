@@ -121,14 +121,23 @@ red.serialize = function(obj) {
 };
 
 var do_serialize = function(obj) {
+	var rest_args = _.rest(arguments);
 	for(var i = 0; i<serialization_funcs.length; i++) {
 		var serialization_info = serialization_funcs[i];
 		var type = serialization_info.type;
 		if(serialization_info.instance_check(obj)) {
-			return _.extend({ type: serialization_info.name }, serialization_info.serialize.apply(obj, _.rest(arguments)));
+			return _.extend({ type: serialization_info.name }, serialization_info.serialize.apply(obj, rest_args));
 		}
 	}
-	return obj;
+	
+	//Nothing found...do serialization by hand
+	var rv = {};
+
+	_.each(obj, function(value, key) {
+		rv[key] = red.serialize.apply(red, ([value]).concat(rest_args));
+	});
+
+	return rv;
 };
 
 red.stringify = function() {
@@ -176,7 +185,14 @@ var do_deserialize = function(serialized_obj) {
 			return serialization_info.deserialize(serialized_obj);
 		}
 	}
-	return serialized_obj;
+
+	var rest_args = _.rest(arguments);
+	var rv = {};
+	_.each(serialized_obj, function(value, key) {
+		rv[key] = red.deserialize.apply(red, ([value]).concat(rest_args));
+	});
+
+	return rv;
 };
 
 var get_deserialized_obj = function(serialized_obj) {

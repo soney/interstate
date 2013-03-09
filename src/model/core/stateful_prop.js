@@ -325,7 +325,7 @@ var StatefulPropContextualVal = function(options) {
 			i++;
 			while(i<len) {
 				item_i = my_context.points_at(i);
-				var name = item_im1.direct_props().keyForValue(item_i);
+				var name = item_im1.name_for_prop(item_i, false);
 				my_names.push(name);
 				item_im1 = item_i;
 				i++;
@@ -341,7 +341,7 @@ var StatefulPropContextualVal = function(options) {
 			var inherits_from = _.compact(_.map(protos_and_me, function(x) {
 				var dict = x;
 				for(i = 0; i<my_names_len; i++) {
-					dict = dict.direct_props().get(my_names[i]);
+					dict = dict._get_direct_prop(my_names[i]);
 					if(!dict) {
 						return false;
 					}
