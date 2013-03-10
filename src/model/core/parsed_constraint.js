@@ -140,7 +140,7 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 					var sc = special_contexts[i];
 					var context_obj = sc.get_context_obj();
 					if(context_obj.hasOwnProperty(key)) {
-						return context_obj[key];
+						return context_obj[key].value;
 					}
 				}
 			} else if(context_item && context_item[key]) {

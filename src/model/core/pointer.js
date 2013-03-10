@@ -110,7 +110,7 @@ red.Pointer = function(options) {
 			return false;
 		}
 		var j;
-		for(var i = my_stack.length; i>=0; i--) {
+		for(var i = my_stack.length-1; i>=0; i--) {
 			if(my_stack[i] !== other_stack[i]) {
 				return false;
 			}

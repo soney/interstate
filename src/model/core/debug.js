@@ -163,7 +163,7 @@ var print = function(current_pointer, logging_mechanism) {
 			if(dict instanceof red.StatefulObj) {
 				var statecharts = dict.get_statecharts(pointer);
 				var stringified_statecharts = _.map(statecharts, function(sc) {
-					return sc.basis().id() + ":" + sc.id();
+					return uid.strip_prefix(sc.basis().id()) + ":" + uid.strip_prefix(sc.id());
 				}).join(" ");
 				logging_mechanism.group("  Statechart " + stringified_statecharts );
 

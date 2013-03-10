@@ -23,7 +23,7 @@ var ec_counter = 1;
 red.EventContext = function(event) {
 	red.EventContext.superclass.constructor.apply(this, arguments);
 	this.context_obj = {
-		event: {value: event}
+		event: { value: event }
 	};
 };
 
