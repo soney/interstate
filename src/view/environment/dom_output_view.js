@@ -79,6 +79,7 @@ $.widget("red.dom_output", {
 		}
 		$(window).off("message", this.$on_message);
 		this._remove_change_listeners();
+		this._remove_state_listeners();
 	}
 
 	, _add_change_listeners: function() {
@@ -100,10 +101,93 @@ $.widget("red.dom_output", {
 			, pause_while_running: true
 		});
 	}
-
 	, _remove_change_listeners: function() {
 		this._dom_tree_fn.destroy();
 	}
+
+	, _add_state_listeners: function() {
+		var on_transition_fire = function(info) {
+			var transition = info.target;
+			var context = transition.get_context();
+			var basis = transition.basis();
+		//	console.log(basis, context);
+		};
+
+		this.register_state = function(state) {
+			var context = state.context();
+			var active_substate = state.get_active_substate();
+
+		//	console.log(state, active_substate, context);
+		};
+		this.unregister_state = function(state) {
+			console.log("unreg state", state);
+		};
+		this.register_transition = function(transition) {
+			transition.on("fire", on_transition_fire);
+		};
+		this.unregister_transition = function(transition) {
+			transition.off("fire", on_transition_fire);
+		};
+
+		this._states = [];
+		this._transitions = [];
+		red.each_registered_obj(function(obj, uid) {
+			if(obj instanceof red.Statechart) {
+				this._states.push(obj);
+				this.register_state(obj);
+			} else if(obj instanceof red.StatechartTransition) {
+				this._transitions.push(obj);
+				this.register_transition(obj);
+			}
+		}, this);
+
+		for(var i = 0; i<this._states.length; i++) {
+			this.register_state(this._states[i]);
+		}
+		for(var i = 0; i<this._transitions.length; i++) {
+			this.register_transition(this._transitions[i]);
+		}
+
+		this.$on_uid_registered = function(uid, obj) {
+			if(obj instanceof red.Statechart) {
+				this._states.push(obj);
+				this.register_state(obj);
+			} else if(obj instanceof red.StatechartTransition) {
+				this._transitions.push(obj);
+				this.register_transition(obj);
+			}
+		};
+
+		this.$on_uid_unregistered = function(uid, obj) {
+			if(obj instanceof red.Statechart) {
+				var index = this._states.indexOf(obj);
+				if(index >= 0) {
+					this.unregister_state(obj);
+					this._states.splice(index, 1);
+				}
+			} else if(obj instanceof red.StatechartTransition) {
+				var index = this._transitions.indexOf(obj);
+				if(index >= 0) {
+					this.unregister_transition(obj);
+					this._transitions.splice(index, 1);
+				}
+			}
+		}
+
+		red.on("uid_registered", this.$on_uid_registered, this);
+		red.on("uid_unregistered", this.$on_uid_unregistered, this);
+	}
+	, _remove_state_listeners: function() {
+		red.off("uid_registered", this.$on_uid_registered);
+		red.off("uid_unregistered", this.$on_uid_unregistered);
+		for(var i = 0; i<this._states.length; i++) {
+			this.unregister_state(states[i]);
+		}
+		for(var i = 0; i<this._transitions.length; i++) {
+			this.unregister_transition(transitions[i]);
+		}
+	}
+
 	, on_message: function(jq_event) {
 		var event = jq_event.originalEvent;
 		if(event.source === this.editor_window) {
@@ -116,6 +200,8 @@ $.widget("red.dom_output", {
 				this.post_delta(new red.ProgramDelta({
 					str: stringified_root
 				}));
+				this._add_state_listeners();
+				console.log(this._states);
 			} else {
 				var type = data.type;
 				if(type === "command") {
@@ -161,6 +247,7 @@ $.widget("red.dom_output", {
 	}
 	, close_editor: function() {
 		if(this.editor_window) {
+			this._remove_state_listeners();
 			this.edit_button.removeClass("active").css(this.edit_button_css);
 			this.editor_window.close();
 			delete this.editor_window;

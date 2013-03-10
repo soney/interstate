@@ -34,8 +34,8 @@ var red = (function(root) {
 	red.find_uid = function(uid) {
 		return uid_objs[uid];
 	};
-	red.filter_registered_objs = function(filter) {
-		return red._.filter.apply(uid_objs, filter);
+	red.each_registered_obj = function(func, context) {
+		red._.each(uid_objs, func, context);
 	};
 	return red;
 }(this));

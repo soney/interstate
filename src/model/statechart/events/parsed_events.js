@@ -20,7 +20,7 @@ var id  = 0;
 		this.id = id++;
 		this.options = options;
 		this._str = cjs.is_constraint(options.str) ? options.str : cjs(options.str);
-		if(options.inert_super_event !== true) {
+		if(options.inert !== true) {
 			var SOandC = red.find_stateful_obj_and_context(options.context);
 			var context = SOandC.context;
 			var parent = SOandC.stateful_obj;
@@ -89,13 +89,13 @@ var id  = 0;
 									function() {
 										return {
 											str: this.get_str(),
-											inert_super_event: this.options.inert_super_event
+											inert: this.options.inert
 										};
 									},
 									function(obj) {
 										return new my({
 											str: obj.str,
-											inert_super_event: obj.inert_super_event
+											inert: obj.inert
 										});
 									});
 }(red.ParsedEvent));
