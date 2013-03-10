@@ -154,6 +154,64 @@ red.Pointer = function(options) {
 
 		return hash;
 	};
+
+	red.register_serializable_type("pointer",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										var stack_ids = _.map(this._stack, function(x) {
+											return x.uid;
+										});
+										var special_context_infos = _.map(this._special_contexts, function(sc) {
+											if(_.isArray(sc)) {
+												return _.map(sc, function(c) {
+													if(c instanceof red.ManifestationContext) {
+														return {
+															type: "manifestation_context",
+															index: c.get_basis_index()
+														};
+													} else if(c instanceof red.EventContext) {
+														return {
+															type: "event_context"
+														};
+													} else {
+														console.error("Unknown special context type");
+													}
+												});
+											} else {
+												return undefined;
+											}
+										});
+										return {
+											stack_ids: stack_ids,
+											special_context_info: special_context_infos
+										};
+									}, 
+									function(obj) {
+										var stack = _.map(obj.stack_ids, function(stack_id) {
+											return red.find_uid(stack_id);
+										});
+										var special_contexts = [];
+										var special_context_info = obj.special_context_info;
+										for(var i = 0; i<special_context_info.length; i++) {
+											if(_.isArray(special_context_info[i])) {
+												special_contexts[i] = _.map(special_context_info[i], function(info) {
+													if(info.type === "manifestation_context") {
+														var pointer = red.create("pointer", {stack: stack.slice(0, i)});
+														var dict = stack[i];
+														var manifestations = dict.get_manifestations(pointer); 
+													} else {
+														console.error("Unhandled special context type");
+													}
+												});
+											} else {
+												special_contexts[i] = undefined;
+											}
+										}
+										var rv = red.create("pointer", {stack: stack, special_contexts: special_contexts});
+										return rv;
+									});
 }(red.Pointer));
 
 red.define("pointer", function(options) {

@@ -22,6 +22,7 @@ var context_counter = 1;
 var ec_counter = 1;
 red.EventContext = function(event) {
 	red.EventContext.superclass.constructor.apply(this, arguments);
+	this.event = event;
 	this.context_obj = {
 		event: { value: event }
 	};
@@ -30,10 +31,15 @@ red.EventContext = function(event) {
 (function(my) {
 	_.proto_extend(my, red.SpecialContext);
 	var proto = my.prototype;
+	proto.get_event = function() {
+		return this.event;
+	};
 }(red.EventContext));
 
 red.ManifestationContext = function(owner, basis, basis_index, options) {
 	red.EventContext.superclass.constructor.apply(this, arguments);
+	this.basis = basis;
+	this.basis_index = basis_index;
 	this.context_obj = {
 		basis: _.extend({
 					value: basis,
@@ -49,6 +55,9 @@ red.ManifestationContext = function(owner, basis, basis_index, options) {
 (function(my) {
 	_.proto_extend(my, red.SpecialContext);
 	var proto = my.prototype;
+	proto.get_basis_index = function() {
+		return this.basis_index;
+	};
 }(red.ManifestationContext));
 
 }(red));

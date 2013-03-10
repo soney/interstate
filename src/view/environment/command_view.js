@@ -110,7 +110,11 @@ $.widget("red.command_view", {
 			this.output.html("");
 			this.external_env.print(this.logger);
 		} else if(delta instanceof red.CurrentStateDelta) {
-			console.log(delta);
+			var state_info = delta.get_state_info();
+			console.log(state_info);
+		} else if(delta instanceof red.TransitionFiredDelta) {
+			var transition = delta.get_transition();
+			console.log(transition.from(), transition.to());
 		} else {
 			console.error("Unhandled delta", delta);
 		}

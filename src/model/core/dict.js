@@ -634,8 +634,7 @@ red.Dict = function(options, defer_initialization) {
 		cjs.signal();
 		return dict;
 	};
-
-	proto.get_manifestation_pointers = function(pcontext) {
+	proto.get_manifestation_objs = function(pcontext) {
 		var my_index = pcontext.indexOf(this);
 		var special_contexts = pcontext.special_contexts(my_index);
 
@@ -654,12 +653,22 @@ red.Dict = function(options, defer_initialization) {
 			}
 			manifestations_value = arr;
 		}
-
 		if(_.isArray(manifestations_value)) {
-			var manifestation_pointers = _.map(manifestations_value, function(manifestation_value, index) {
+			var manifestation_objs = _.map(manifestations_value, function(manifestation_value, index) {
 				var manifestation_obj = this.get_manifestation_obj(pcontext, manifestation_value, index);
-				var manifestation_pointer = pcontext.push_special_context(manifestation_obj);
+				return manifestation_obj;
+			}, this);
+			return manifestation_objs;
+		} else {
+			return null;
+		}
+	};
 
+	proto.get_manifestation_pointers = function(pcontext) {
+		var manifestation_objs = this.get_manifestation_objs(pcontext);
+		if(_.isArray(manifestation_objs)) {
+			var manifestation_pointers = _.map(manifestation_objs, function(manifestation_obj, index) {
+				var manifestation_pointer = pcontext.push_special_context(manifestation_obj);
 				return manifestation_pointer;
 			}, this);
 			return manifestation_pointers;

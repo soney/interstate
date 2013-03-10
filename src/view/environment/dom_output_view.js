@@ -9,7 +9,7 @@ $.widget("red.dom_output", {
 		show_edit_button: true,
 		edit_on_open: false,
 		editor_url: origin + "/src/view/editor.ejs.html",
-		editor_name: uid.get_prefix() + "red_editor",
+		editor_name: /*uid.get_prefix() +*/ "red_editor",
 		editor_window_options: "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=800, height=600"
 	}
 
@@ -110,7 +110,11 @@ $.widget("red.dom_output", {
 			var transition = info.target;
 			var context = transition.get_context();
 			var basis = transition.basis();
-			console.log(basis, context);
+
+			this.post_delta(new red.TransitionFiredDelta({
+				transition_basis_id: transition.basis().id(),
+				context: red.stringify(context)
+			}));
 		}, this);
 
 		this.register_state = function(state) { };
@@ -134,13 +138,6 @@ $.widget("red.dom_output", {
 				this.register_transition(obj);
 			}
 		}, this);
-
-		for(var i = 0; i<this._states.length; i++) {
-			this.register_state(this._states[i]);
-		}
-		for(var i = 0; i<this._transitions.length; i++) {
-			this.register_transition(this._transitions[i]);
-		}
 
 		this.$on_uid_registered = function(uid, obj) {
 			if(obj instanceof red.Statechart) {
@@ -205,8 +202,8 @@ $.widget("red.dom_output", {
 													var active_substate = state.get_active_substate();
 
 													var rv = {
-														state_id: state.id(),
-														active_substate_id: active_substate.id(),
+														state_basis_id: state.basis().id(),
+														active_substate_basis_id: active_substate.basis().id(),
 														context: red.stringify(context)
 													};
 													return rv;
@@ -216,7 +213,6 @@ $.widget("red.dom_output", {
 				this.post_delta(new red.CurrentStateDelta({
 					state_info: stringified_state_info
 				}));
-				console.log(stringified_state_info);
 			} else {
 				var type = data.type;
 				if(type === "command") {
