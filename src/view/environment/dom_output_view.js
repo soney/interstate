@@ -106,22 +106,16 @@ $.widget("red.dom_output", {
 	}
 
 	, _add_state_listeners: function() {
-		var on_transition_fire = function(info) {
+		var on_transition_fire = _.bind(function(info) {
 			var transition = info.target;
 			var context = transition.get_context();
 			var basis = transition.basis();
-		//	console.log(basis, context);
-		};
+			console.log(basis, context);
+		}, this);
 
-		this.register_state = function(state) {
-			var context = state.context();
-			var active_substate = state.get_active_substate();
+		this.register_state = function(state) { };
+		this.unregister_state = function(state) { };
 
-		//	console.log(state, active_substate, context);
-		};
-		this.unregister_state = function(state) {
-			console.log("unreg state", state);
-		};
 		this.register_transition = function(transition) {
 			transition.on("fire", on_transition_fire);
 		};
@@ -181,10 +175,10 @@ $.widget("red.dom_output", {
 		red.off("uid_registered", this.$on_uid_registered);
 		red.off("uid_unregistered", this.$on_uid_unregistered);
 		for(var i = 0; i<this._states.length; i++) {
-			this.unregister_state(states[i]);
+			this.unregister_state(this._states[i]);
 		}
 		for(var i = 0; i<this._transitions.length; i++) {
-			this.unregister_transition(transitions[i]);
+			this.unregister_transition(this._transitions[i]);
 		}
 	}
 
@@ -201,7 +195,28 @@ $.widget("red.dom_output", {
 					str: stringified_root
 				}));
 				this._add_state_listeners();
-				console.log(this._states);
+
+				var stringified_state_info = _	.chain(this._states)
+												.map(function(state) {
+													var context = state.context();
+													if(!context) { // This is probably the inert super statechart
+														return false;
+													}
+													var active_substate = state.get_active_substate();
+
+													var rv = {
+														state_id: state.id(),
+														active_substate_id: active_substate.id(),
+														context: red.stringify(context)
+													};
+													return rv;
+												})
+												.compact()
+												.value();
+				this.post_delta(new red.CurrentStateDelta({
+					state_info: stringified_state_info
+				}));
+				console.log(stringified_state_info);
 			} else {
 				var type = data.type;
 				if(type === "command") {
@@ -240,6 +255,7 @@ $.widget("red.dom_output", {
 			this.edit_button.addClass("active").css(this.edit_active_css);
 			$(window).on("unload", _.bind(this.close_editor, this));
 			this.editor_window.addEventListener("beforeunload", _.bind(function() {
+				this._remove_state_listeners();
 				this.edit_button.removeClass("active").css(this.edit_button_css);
 				delete this.editor_window;
 			}, this));

@@ -109,6 +109,8 @@ $.widget("red.command_view", {
 
 			this.output.html("");
 			this.external_env.print(this.logger);
+		} else if(delta instanceof red.CurrentStateDelta) {
+			console.log(delta);
 		} else {
 			console.error("Unhandled delta", delta);
 		}

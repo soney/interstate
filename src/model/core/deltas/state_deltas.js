@@ -2,7 +2,8 @@
 var cjs = red.cjs, _ = red._;
 
 red.CurrentStateDelta = function(options) {
-	red.StateDelta.superclass.constructor.apply(this, arguments);
+	red.CurrentStateDelta.superclass.constructor.apply(this, arguments);
+	this.state_info = options.state_info;
 };
 
 
@@ -15,10 +16,12 @@ red.CurrentStateDelta = function(options) {
 									},
 									function() {
 										return {
+											state_info: this.state_info
 										};
 									},
 									function(obj) {
 										return new my({
+											state_info: obj.state_info
 										});
 									});
 }(red.CurrentStateDelta));
