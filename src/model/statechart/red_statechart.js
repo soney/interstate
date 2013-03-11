@@ -345,8 +345,8 @@ red.StatechartTransition = function(options, defer_initialization) {
 									function(include_id) {
 										var args = _.toArray(arguments);
 										var rv = {
-											from: red.serialize.apply(red, ([this.from()]).concat(args))
-											, to: red.serialize.apply(red, ([this.to()]).concat(args))
+											from: this.from().summarize()
+											, to: this.to().summarize()
 											, event: red.serialize.apply(red, ([this.event()]).concat(args))
 										};
 										if(include_id) {
@@ -358,8 +358,8 @@ red.StatechartTransition = function(options, defer_initialization) {
 										var rv = new my({id: obj.id}, true);
 										rv.initialize = function() {
 											var options = {
-												from: red.deserialize(obj.from),
-												to: red.deserialize(obj.to),
+												from: red.State.desummarize(obj.from),
+												to: red.State.desummarize(obj.to),
 												event: red.deserialize(obj.event)
 											};
 											this.do_initialize(options);
@@ -709,7 +709,7 @@ red.StartState = function(options) {
 				from: this,
 				to: to,
 				event: red.create_event("statechart", {
-					target: this.parent(),
+					target: "parent",
 					spec: "run"
 				})
 			});

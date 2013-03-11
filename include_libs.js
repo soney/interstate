@@ -76,6 +76,7 @@ exports.main_src = c(
 				, "model/core/deltas/program_deltas.js"
 				, "model/core/deltas/command_deltas.js"
 				, "model/core/deltas/state_deltas.js"
+				, "model/core/deltas/current_values_delta.js"
 				, "model/attachments/attachment_core.js"
 				, "model/attachments/dom_attachment.js"
 				, "controller/commands/command_core.js"
