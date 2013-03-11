@@ -37,5 +37,29 @@ var red = (function(root) {
 	red.each_registered_obj = function(func, context) {
 		red._.each(uid_objs, func, context);
 	};
+
+	red.get_feasible_pointers = function(root) {
+		var rv = [];
+		var current_pointer = root instanceof red.Pointer ? root : red.create("pointer", {stack: [root]});
+		var pointer_queue = [current_pointer];
+
+		for(var i = 0; i<pointer_queue.length; i++) {
+			var pointer = pointer_queue[i];
+			var obj = pointer.points_at();
+			if(obj instanceof red.Dict) {
+				var manifestation_pointers = obj.get_manifestation_pointers(pointer);
+				if(manifestation_pointers) {
+					pointer_queue.push.apply(pointer_queue, manifestation_pointers);
+				} else {
+					var prop_pointers = obj.get_prop_pointers(pointer);
+					pointer_queue.push.apply(pointer_queue, prop_pointers);
+				}
+			} else {
+				rv.push(pointer);
+			}
+		}
+		return rv;
+	};
+
 	return red;
 }(this));

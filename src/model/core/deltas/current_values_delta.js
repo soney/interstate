@@ -4,31 +4,20 @@ var cjs = red.cjs, _ = red._;
 red.CurrentValuesDelta = function(options) {
 	red.CurrentValuesDelta.superclass.constructor.apply(this, arguments);
 	if(options.root_pointer) {
-		var current_pointer = options.root_pointer;
-		var pointer_queue = [current_pointer];
+		var feasible_pointers = red.get_feasible_pointers(options.root_pointer);
+		var pointers = [],
+			values = [];
 
-		var pointers = [];
-		var values = [];
+		for(var i = 0; i<feasible_pointers.length; i++) {
+			var pointer = feasible_pointers[i];
 
-		for(var i = 0; i<pointer_queue.length; i++) {
-			var pointer = pointer_queue[i];
-			var obj = pointer.points_at();
-			if(obj instanceof red.Dict) {
-				var manifestation_pointers = obj.get_manifestation_pointers(pointer);
-				if(manifestation_pointers) {
-					pointer_queue.push.apply(pointer_queue, manifestation_pointers);
-				} else {
-					var prop_pointers = obj.get_prop_pointers(pointer);
-					pointer_queue.push.apply(pointer_queue, prop_pointers);
-				}
-			} else {
-				var value = pointer.val();
-				if(value === null || value === undefined || _.isNumber(value) || _.isString(value)) {
-					pointers.push(pointer);
-					values.push(value);
-				}
+			var value = pointer.val();
+			if(value === null || value === undefined || _.isNumber(value) || _.isString(value)) {
+				pointers.push(pointer);
+				values.push(value);
 			}
 		}
+
 		this.values = new Map({
 			keys: pointers,
 			values: values,
