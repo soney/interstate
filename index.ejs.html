@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+  </head>
+  <body>
+		<div class="content">
+		</div>
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript">
+				var env, the_div;
+				window.save = function(name) {
+					return red.save(root_pointer.points_at(), name);
+				};
+				window.load = function(name) {
+					var root = red.load(name);
+					if(the_div.data("dom_output")) {
+						the_div.dom_output("destroy")
+					}
+					if(env) {
+						env.destroy();
+					}
+					env = red.create("environment", {root: root});
+					env.print_on_return = true;
+					root_pointer = env.get_root_pointer();
+					the_div.dom_output({
+						root: root_pointer
+					});
+					return root;
+				};
+				window.ls = red.ls;
+
+				$(function() {
+					the_div = $("<div />").appendTo(document.body);
+					var root;
+					try {
+						root = load();
+					} catch(e) {
+						console.log("Creating a new project");
+						env = red.create("environment");
+						var root_pointer = env.get_root_pointer();
+						the_div.dom_output({
+							root: root_pointer
+						});
+						env.print_on_return = true;
+					}
+				});
+				$(window).on("unload", function() {
+					save();
+				});
+			</script>
+	  </div>
+  </body>
+</html>

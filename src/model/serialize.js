@@ -1,6 +1,5 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
-var do_compress = false;
 
 var POINTER_TYPE = "$$pointer"
 
@@ -143,9 +142,11 @@ var do_serialize = function(obj) {
 red.stringify = function() {
 	var serialized_obj = red.serialize.apply(red, arguments);
 	var stringified_obj = JSON.stringify(serialized_obj);
-
-	if(do_compress) { return lzw_encode(stringified_obj); }
-	else { return stringified_obj; }
+	return stringified_obj;
+};
+red.stringify_and_compress = function() {
+	var string = red.stringify.apply(red, arguments);
+	return lzw_encode(string);
 };
 
 // === DESERIALIZE ===
@@ -214,31 +215,29 @@ var get_deserialized_obj = function(serialized_obj) {
 
 
 red.destringify = function(str) {
-	if(do_compress) { return red.deserialize(JSON.parse(lzw_decode(str))); }
-	else { return red.deserialize(JSON.parse(str)); }
+	return red.deserialize(JSON.parse(str));
 };
-/*
+red.decompress_and_destringify = function(compressed_str) {
+	var str = lzw_decode(str);
+	return red.destringify(str);
+};
 
 var storage_prefix = "_";
-red.save = function(name) {
+red.save = function(root, name) {
 	if(!_.isString(name)) {
 		name = "default";
 	}
 	name = storage_prefix+name;
 	localStorage[name] = red.stringify(root);
-	return ls();
+	return red.ls();
 };
-red.open = red.load = function(name) {
+red.load = function(name) {
 	if(!_.isString(name)) {
 		name = "default";
 	}
 	name = storage_prefix+name;
-	root_view.environment("destroy");
-	root.destroy();
 	root = red.destringify(localStorage[name]);
-	env = red.create("environment", {root: root});
-	root_view.environment({controller: env});
-	console.log(env.print());
+	return root;
 };
 red.ls = function() {
 	return _.chain(localStorage)
@@ -257,9 +256,8 @@ red.rm = function(name) {
 	}
 	name = storage_prefix+name;
 	delete localStorage[name];
-	return ls();
+	return red.ls();
 };
-*/
 
 //http://stackoverflow.com/questions/294297/javascript-implementation-of-gzip
 // LZW-compress a string
