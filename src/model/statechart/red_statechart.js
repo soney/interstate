@@ -219,7 +219,7 @@ red.StatechartTransition = function(options, defer_initialization) {
 	proto.get_times_run = function() {
 		return this.$times_run.get();
 	};
-	proto.get_context = function() {
+	proto.context = function() {
 		return this._context;
 	};
 	proto.set_active = function(to_active) {
@@ -309,6 +309,32 @@ red.StatechartTransition = function(options, defer_initialization) {
 		cjs.signal();
 		this._emit("remove", {type: "remove", transition: this});
 		return this;
+	};
+
+	proto.summarize = function() {
+		var context = this.context();
+		var summarized_context;
+		if(context) {
+			summarized_context = context.summarize();
+		}
+		var my_basis = this.basis() || this;
+		return {
+			basis_id: my_basis.id(),
+			context: summarized_context
+		};
+	};
+	my.desummarize = function(obj) {
+		if(obj.context) {
+			var state_basis = red.find_uid(obj.basis_id);
+			var context = red.Pointer.desummarize(obj.context);
+			var dict = context.points_at();
+			var contextual_statechart = dict.get_statechart_for_context(context);
+
+			var state = red.find_equivalent_state(state_basis, contextual_statechart);
+			return state;
+		} else {
+			return red.find_uid(obj.basis_id);
+		}
 	};
 
 
@@ -628,6 +654,32 @@ red.State = function(options, defer_initialization) {
 		}
 	};
 
+	proto.summarize = function() {
+		var context = this.context();
+		var summarized_context;
+		if(context) {
+			summarized_context = context.summarize();
+		}
+		var my_basis = this.basis() || this;
+		return {
+			basis_id: my_basis.id(),
+			context: summarized_context
+		};
+	};
+	my.desummarize = function(obj) {
+		if(obj.context) {
+			var state_basis = red.find_uid(obj.basis_id);
+			var context = red.Pointer.desummarize(obj.context);
+			var dict = context.points_at();
+			var contextual_statechart = dict.get_statechart_for_context(context);
+
+			var state = red.find_equivalent_state(state_basis, contextual_statechart);
+			return state;
+		} else {
+			return red.find_uid(obj.basis_id);
+		}
+	};
+
 	proto.destroy = function() {
 		this.$active.destroy();
 	};
@@ -656,7 +708,10 @@ red.StartState = function(options) {
 			this.outgoingTransition = options.outgoing_transition || new red.StatechartTransition({
 				from: this,
 				to: to,
-				event: red.create_event("statechart", this.parent(), "run")
+				event: red.create_event("statechart", {
+					target: this.parent(),
+					spec: "run"
+				})
 			});
 
 			to._add_direct_incoming_transition(this.outgoingTransition);

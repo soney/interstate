@@ -108,12 +108,10 @@ $.widget("red.dom_output", {
 	, _add_state_listeners: function() {
 		var on_transition_fire = _.bind(function(info) {
 			var transition = info.target;
-			var context = transition.get_context();
-			var basis = transition.basis();
 
 			this.post_delta(new red.TransitionFiredDelta({
-				transition_basis_id: transition.basis().id(),
-				context: red.stringify(context)
+				transition: transition,
+				event: info.event
 			}));
 		}, this);
 
@@ -184,34 +182,12 @@ $.widget("red.dom_output", {
 		if(event.source === this.editor_window) {
 			var data = event.data;
 			if(data === "ready") {
-				var root_pointer = this.option("root");
-				var root = root_pointer.points_at();
-				var stringified_root = red.stringify(root, true);
-
 				this.post_delta(new red.ProgramDelta({
-					str: stringified_root
+					root_pointer: this.option("root")
 				}));
 				this._add_state_listeners();
-
-				var stringified_state_info = _	.chain(this._states)
-												.map(function(state) {
-													var context = state.context();
-													if(!context) { // This is probably the inert super statechart
-														return false;
-													}
-													var active_substate = state.get_active_substate();
-
-													var rv = {
-														state_basis_id: state.basis().id(),
-														active_substate_basis_id: active_substate.basis().id(),
-														context: red.stringify(context)
-													};
-													return rv;
-												})
-												.compact()
-												.value();
 				this.post_delta(new red.CurrentStateDelta({
-					state_info: stringified_state_info
+					states: this._states
 				}));
 			} else {
 				var type = data.type;

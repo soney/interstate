@@ -95,21 +95,24 @@ red.StatechartEvent = red._create_event_type("statechart");
 
 (function(my) {
 	var proto = my.prototype;
-	proto.on_create = function(target, spec) {
-		this.target = target;
-		this.spec = spec;
+	proto.on_create = function(options) {
+		this.target = options.target;
+		this.spec = options.spec;
 		this.$on_spec = _.bind(function() {
 			red.event_queue.wait();
-			this.fire(event);
+			this.fire.apply(this, arguments);
 			red.event_queue.signal();
 		}, this);
-		this.target.on(spec, this.$on_spec);
+		this.target.on(this.spec, this.$on_spec);
 	};
 	proto.destroy = function() {
 		target.off(spec, this.$on_spec);
 	};
 	proto.create_shadow = function(parent_statechart, context) {
-		return red.create_event("statechart", parent_statechart, this.spec);
+		return red.create_event("statechart", {
+				target: parent_statechart,
+				spec: this.spec
+			});
 	};
 	proto.stringify = function() { return "" + this.target.id() + ":" + this.spec + ""; };
 
@@ -118,14 +121,18 @@ red.StatechartEvent = red._create_event_type("statechart");
 										return x instanceof my;
 									},
 									function() {
-										var args = _.toArray(arguments);
 										return {
-											target: red.serialize.apply(red, ([this.target]).concat(args)),
+											target: this.target.summarize(),
 											spec: this.spec
 										};
 									},
 									function(obj) {
-										return new my(red.deserialize(obj.targets), obj.spec);
+										var target = red.State.desummarize(obj.target);
+										var spec = obj.spec;
+										return new my({
+											target: target,
+											spec: spec
+										});
 									});
 }(red.StatechartEvent));
 

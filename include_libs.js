@@ -85,8 +85,8 @@ exports.main_src = c(
 				, "controller/commands/combined_commands.js"
 				, "controller/environment/command_stack.js"
 				, "controller/environment/red_environment.js"
-				, "view/environment/dom_output_view.js"
-				, "view/environment/command_view.js"
+				, "view/running_app.js"
+				, "view/command_view.js"
 			])
 );
 

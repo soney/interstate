@@ -89,9 +89,9 @@ $.widget("red.command_view", {
 
 	, on_delta: function(delta) {
 		if(delta instanceof red.ProgramDelta) {
-			var program_str = delta.get_str();
+			var root = delta.get_root();
 			this.external_env = red.create("environment", {
-				root: red.destringify(program_str)
+				root: root
 			});
 			this.external_env.return_commands = true;
 			
