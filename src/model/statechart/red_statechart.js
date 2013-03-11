@@ -330,7 +330,7 @@ red.StatechartTransition = function(options, defer_initialization) {
 			var dict = context.points_at();
 			var contextual_statechart = dict.get_statechart_for_context(context);
 
-			var state = red.find_equivalent_state(state_basis, contextual_statechart);
+			var state = red.find_equivalent_transition(state_basis, contextual_statechart);
 			return state;
 		} else {
 			return red.find_uid(obj.basis_id);
@@ -345,8 +345,8 @@ red.StatechartTransition = function(options, defer_initialization) {
 									function(include_id) {
 										var args = _.toArray(arguments);
 										var rv = {
-											from: this.from().summarize()
-											, to: this.to().summarize()
+											from: red.serialize.apply(red, ([this.from()]).concat(args))
+											, to: red.serialize.apply(red, ([this.to()]).concat(args))
 											, event: red.serialize.apply(red, ([this.event()]).concat(args))
 										};
 										if(include_id) {
@@ -358,8 +358,8 @@ red.StatechartTransition = function(options, defer_initialization) {
 										var rv = new my({id: obj.id}, true);
 										rv.initialize = function() {
 											var options = {
-												from: red.State.desummarize(obj.from),
-												to: red.State.desummarize(obj.to),
+												from: red.deserialize(obj.from),
+												to: red.deserialize(obj.to),
 												event: red.deserialize(obj.event)
 											};
 											this.do_initialize(options);
@@ -709,7 +709,7 @@ red.StartState = function(options) {
 				from: this,
 				to: to,
 				event: red.create_event("statechart", {
-					target: "parent",
+					target: "me",
 					spec: "run"
 				})
 			});
@@ -932,6 +932,9 @@ red.Statechart = function(options) {
 			this.$local_state.set(local_state);
 			local_state._last_run_event.set(event);
 			if(local_state) {
+				if(!local_state.is_running()) {
+					local_state.run();
+				}
 				local_state.set_active(true);
 				this.set_entrance_transition(transition)
 			}

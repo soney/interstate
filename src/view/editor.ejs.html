@@ -32,11 +32,9 @@
 				window.ready = function() {
 					window.opener.postMessage("ready", origin);
 				};
-				/*
 				window.addEventListener("load", function() {
 					window.opener.postMessage("ready", origin);
 				});
-				*/
 
 				$(function() {
 					$("div#editor").command_view();

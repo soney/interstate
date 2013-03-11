@@ -73,7 +73,7 @@ $.widget("red.command_view", {
 			return token.trim();
 		});
 		var command;
-		if(value === "undo" || value === "redo") {
+		if(value === "undo" || value === "redo" || value === "reset") {
 			command = value;
 			this.post_command(command);
 		} else {
@@ -103,6 +103,8 @@ $.widget("red.command_view", {
 				this.external_env.undo();
 			} else if(command === "redo") {
 				this.external_env.redo();
+			} else if(command === "reset") {
+				this.external_env.reset();
 			} else {
 				this.external_env._do(command);
 			}
@@ -123,6 +125,8 @@ $.widget("red.command_view", {
 			} else {
 				console.error("Could not find transition");
 			}
+		} else if(delta instanceof red.CurrentValuesDelta) {
+			console.log(delta);
 		} else {
 			console.error("Unhandled delta", delta);
 		}
@@ -130,7 +134,7 @@ $.widget("red.command_view", {
 	
 	, post_command: function(command) {
 		var stringified_command;
-		if(command === "undo" || command === "redo") {
+		if(command === "undo" || command === "redo" || command === "reset") {
 			stringified_command = command;
 		} else {
 			stringified_command = red.stringify(command);

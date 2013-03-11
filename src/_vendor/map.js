@@ -92,6 +92,7 @@ var Map = function(options) {
 		} else {
 			this._khash[hash] = [info];
 		}
+		this._ordered_values[index++] = info;
 	}, this);
 };
 
@@ -168,6 +169,20 @@ var Map = function(options) {
 			this._khash[hash] = [{key: key, value: value}];
 			return value;
 		}
+	};
+	proto.keys = function() {
+		var rv = new Array(this._ordered_values.length);
+		for(var i = this._ordered_values.length-1; i>=0; i--) {
+			rv[i] = this._ordered_values[i].key;
+		}
+		return rv;
+	};
+	proto.values = function() {
+		var rv = new Array(this._ordered_values.length);
+		for(var i = this._ordered_values.length-1; i>=0; i--) {
+			rv[i] = this._ordered_values[i].value;
+		}
+		return rv;
 	};
 }(Map));
 

@@ -96,13 +96,42 @@ red.StatechartEvent = red._create_event_type("statechart");
 (function(my) {
 	var proto = my.prototype;
 	proto.on_create = function(options) {
-		this.target = options.target;
-		this.spec = options.spec;
 		this.$on_spec = _.bind(function() {
 			red.event_queue.wait();
 			this.fire.apply(this, arguments);
 			red.event_queue.signal();
 		}, this);
+
+		this.specified_target = options.target;
+		this.spec = options.spec;
+		if(_.isString(this.specified_target)) {
+			// will figure out when our transition is set
+		} else {
+			this.set_target(this.specified_target);
+		}
+	};
+	proto.set_transition = function(transition) {
+		my.superclass.set_transition.apply(this, arguments);
+		if(_.isString(this.specified_target)) {
+			if(this.specified_target === "parent") {
+				var transition = this.get_transition();
+				if(transition) {
+					var from = transition.from();
+					this.set_target(from.parent());
+				}
+			} else if(this.specified_target === "me") {
+				var transition = this.get_transition();
+				if(transition) {
+					var from = transition.from();
+					this.set_target(from);
+				}
+			} else {
+				console.error("Unknown target " + this.specified_target);
+			}
+		}
+	};
+	proto.set_target = function(target) {
+		this.target = target;
 		this.target.on(this.spec, this.$on_spec);
 	};
 	proto.destroy = function() {
@@ -121,13 +150,25 @@ red.StatechartEvent = red._create_event_type("statechart");
 										return x instanceof my;
 									},
 									function() {
+										var target_summarized;
+										if(_.isString(this.specified_target)) {
+											target_summarized = this.specified_target;
+										} else {
+											target_summarized = this.specified_target.summarize();
+										}
+
 										return {
-											target: this.target.summarize(),
+											specified_target: target_summarized,
 											spec: this.spec
 										};
 									},
 									function(obj) {
-										var target = red.State.desummarize(obj.target);
+										var target;
+										if(_.isString(obj.specified_target)) {
+											target = obj.specified_target;
+										} else {
+											target = red.State.desummarize(obj.specified_target);
+										}
 										var spec = obj.spec;
 										return new my({
 											target: target,

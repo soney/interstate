@@ -16,7 +16,7 @@ red.CommandDelta = function(options) {
 	proto.get_serialized_command = function() {
 		var arg_array = _.toArray(arguments);
 		var command = this.get_command();
-		if(command === "undo" || command === "redo") {
+		if(command === "undo" || command === "redo" || command === "reset") {
 			return command;
 		} else {
 			return red.serialize.apply(red, ([command]).concat(arg_array));
@@ -34,7 +34,7 @@ red.CommandDelta = function(options) {
 									},
 									function(obj) {
 										return new red.CommandDelta({
-											command: (obj.command === "undo" || obj.command === "redo") ? obj.command : red.deserialize(obj.command)
+											command: (obj.command === "undo" || obj.command === "redo" || obj.command === "reset") ? obj.command : red.deserialize(obj.command)
 										});
 									});
 }(red.CommandDelta));

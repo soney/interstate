@@ -169,11 +169,19 @@ $.widget("red.dom_output", {
 	, _remove_state_listeners: function() {
 		red.off("uid_registered", this.$on_uid_registered);
 		red.off("uid_unregistered", this.$on_uid_unregistered);
-		for(var i = 0; i<this._states.length; i++) {
-			this.unregister_state(this._states[i]);
+
+		if(this._states) {
+			for(var i = 0; i<this._states.length; i++) {
+				this.unregister_state(this._states[i]);
+			}
+			delete this._states;
 		}
-		for(var i = 0; i<this._transitions.length; i++) {
-			this.unregister_transition(this._transitions[i]);
+
+		if(this._transitions) {
+			for(var i = 0; i<this._transitions.length; i++) {
+				this.unregister_transition(this._transitions[i]);
+			}
+			delete this._transitions;
 		}
 	}
 
@@ -189,17 +197,26 @@ $.widget("red.dom_output", {
 				this.post_delta(new red.CurrentStateDelta({
 					states: this._states
 				}));
+				this.post_delta(new red.CurrentValuesDelta({
+					root_pointer: this.option("root")
+				}));
 			} else {
 				var type = data.type;
 				if(type === "command") {
 					var stringified_command = data.command;
 					if(stringified_command === "undo") {
 						this._command_stack._undo();
-						var delta = new red.CommandDelta({command: "undo" });
+						var delta = new red.CommandDelta({command: stringified_command });
 						this.post_delta(delta);
 					} else if(stringified_command === "redo") {
 						this._command_stack._redo();
-						var delta = new red.CommandDelta({command: "redo" });
+						var delta = new red.CommandDelta({command: stringified_command });
+						this.post_delta(delta);
+					} else if(stringified_command === "reset") {
+						var root_pointer = this.option("root"),
+							root = root_pointer.points_at(0);
+						root.reset();
+						var delta = new red.CommandDelta({command: stringified_command });
 						this.post_delta(delta);
 					} else {
 						var command = red.destringify(stringified_command);
