@@ -1,7 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-red.StatechartEvent = red._create_event_type("statechart");
+red.TransitionEvent = red._create_event_type("transition");
 
 (function(my) {
 	var proto = my.prototype;
@@ -75,13 +75,52 @@ red.StatechartEvent = red._create_event_type("statechart");
 		}, this);
 	};
 	proto.stringify = function() { return "" + this.statecharts[0].id() + ":" + this._spec + ""; };
+	red.register_serializable_type("transition_event",
+									function(x) { 
+										return x instanceof my;
+									},
+									function() {
+										var args = _.toArray(arguments);
+										return {
+											targets: red.serialize.apply(red, ([this.targets]).concat(args)),
+											spec: this.spec
+										};
+									},
+									function(obj) {
+										return new my(red.deserialize(obj.targets), obj.spec);
+									});
+}(red.TransitionEvent));
+
+red.StatechartEvent = red._create_event_type("statechart");
+
+(function(my) {
+	var proto = my.prototype;
+	proto.on_create = function(target, spec) {
+		this.target = target;
+		this.spec = spec;
+		this.$on_spec = _.bind(function() {
+			red.event_queue.wait();
+			this.fire(event);
+			red.event_queue.signal();
+		}, this);
+		this.target.on(spec, this.$on_spec);
+	};
+	proto.destroy = function() {
+		target.off(spec, this.$on_spec);
+	};
+	proto.create_shadow = function(parent_statechart, context) {
+		return red.create_event("statechart", parent_statechart, this.spec);
+	};
+	proto.stringify = function() { return "" + this.target.id() + ":" + this.spec + ""; };
+
 	red.register_serializable_type("statechart_event",
 									function(x) { 
 										return x instanceof my;
 									},
 									function() {
+										var args = _.toArray(arguments);
 										return {
-											targets: red.serialize.apply(red, ([this.targets]).concat(arguments)),
+											target: red.serialize.apply(red, ([this.target]).concat(args)),
 											spec: this.spec
 										};
 									},

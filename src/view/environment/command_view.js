@@ -111,10 +111,18 @@ $.widget("red.command_view", {
 			this.external_env.print(this.logger);
 		} else if(delta instanceof red.CurrentStateDelta) {
 			var state_info = delta.get_state_info();
-			console.log(state_info);
+			_.each(state_info, function(si) {
+				var substate = si.substate,
+					superstate = si.superstate;
+				superstate.set_active_substate(substate);
+			});
 		} else if(delta instanceof red.TransitionFiredDelta) {
 			var transition = delta.get_transition();
-			console.log(transition.from(), transition.to());
+			if(transition) {
+				transition.fire();
+			} else {
+				console.error("Could not find transition");
+			}
 		} else {
 			console.error("Unhandled delta", delta);
 		}

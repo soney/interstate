@@ -13,7 +13,7 @@
 				env	.cd("children")
 					.set("obj", "<stateful>")
 					.cd("obj")
-					.add_transition("INIT", "INIT", "on('timeout', 5000)")
+					.add_transition("INIT", "INIT", "on('timeout', 1000)")
 					.set("(protos)", "INIT", "dom")
 					.set("tag", "<stateful_prop>")
 					.set("text", "<stateful_prop>")

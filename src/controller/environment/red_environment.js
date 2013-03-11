@@ -144,6 +144,11 @@ var Env = function(options) {
 		this.pointer = this.pointer.pop();
 		return this.default_return_value();
 	};
+	proto.reset = function() {
+		var root = this.pointer.points_at(0);
+		root.reset();
+		return this.default_return_value();
+	};
 
 	proto.set = function(prop_name, arg1, arg2, arg3) {
 		var builtin_name;

@@ -880,7 +880,7 @@ red.Statechart = function(options) {
 				local_state.set_active(true);
 				this.set_entrance_transition(transition)
 			}
-			transition.increment_times_run();
+			if(transition) { transition.increment_times_run(); }
 		}, this);
 		red.event_queue.once("end_event_queue_round_4", function() {
 			if(transition) { transition.set_active(false); }

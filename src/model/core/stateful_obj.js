@@ -136,6 +136,15 @@ red.StatefulObj = function(options, defer_initialization) {
 		return active_states;
 	};
 
+	proto.reset = function() {
+		my.superclass.reset.apply(this, arguments);
+		var contextual_statecharts = this.contextual_statecharts();
+		contextual_statecharts.each(function(sc) {
+			sc.reset();
+		});
+		return this;
+	};
+
 	red.register_serializable_type("stateful_obj",
 									function(x) { 
 										return x instanceof my;

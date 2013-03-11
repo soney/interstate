@@ -13,7 +13,7 @@ red.on_event = function(event_type) {
 
 		if(targets) {
 			var statechart_spec = event_type;
-			var statechart_event = red.create_event("statechart", targets, statechart_spec);
+			var statechart_event = red.create_event("transition", targets, statechart_spec);
 			events.push(statechart_event);
 
 			var red_event_type = event_type;

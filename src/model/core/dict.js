@@ -684,6 +684,17 @@ red.Dict = function(options, defer_initialization) {
 		return this.uid;
 	};
 
+	proto.reset = function() {
+		var direct_props = this.direct_props();
+		direct_props.each(function(info, name) {
+			var value = info.value;
+			if(value instanceof red.Dict) {
+				value.reset();
+			}
+		});
+		return this;
+	};
+
 	//
 	// === BYE BYE ===
 	//
