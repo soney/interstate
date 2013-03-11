@@ -29,9 +29,14 @@
 			<script type="text/javascript">
 
 				var origin = window.location.protocol + "//" + window.location.host;
+				window.ready = function() {
+					window.opener.postMessage("ready", origin);
+				};
+				/*
 				window.addEventListener("load", function() {
 					window.opener.postMessage("ready", origin);
 				});
+				*/
 
 				$(function() {
 					$("div#editor").command_view();
