@@ -9,7 +9,7 @@
 	  <div>
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
-				var env, the_div;
+				var env, the_div, root_pointer;
 				window.save = function(name) {
 					return red.save(root_pointer.points_at(), name);
 				};
@@ -39,16 +39,19 @@
 					} catch(e) {
 						console.log("Creating a new project");
 						env = red.create("environment");
-						var root_pointer = env.get_root_pointer();
+						root_pointer = env.get_root_pointer();
 						the_div.dom_output({
 							root: root_pointer
 						});
 						env.print_on_return = true;
 					}
 				});
-				$(window).on("unload", function() {
-					save();
+				$(window).on("beforeunload", function() {
+					if(window.nosave !== true) {
+						save();
+					}
 				});
+				//nosave = true;
 			</script>
 	  </div>
   </body>

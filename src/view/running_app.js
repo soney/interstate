@@ -9,7 +9,7 @@ $.widget("red.dom_output", {
 		show_edit_button: true,
 		edit_on_open: false,
 		editor_url: origin + "/src/view/editor.ejs.html",
-		editor_name: /*uid.get_prefix() +*/ "red_editor",
+		editor_name: uid.get_prefix() + "red_editor",
 		editor_window_options: "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=800, height=600"
 	}
 
@@ -29,7 +29,8 @@ $.widget("red.dom_output", {
 					right: "0px",
 					color: "#900",
 					"background-color": "",
-					"font-size": "0.9em",
+					"font-size": "0.95em",
+					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif', 
 					cursor: "pointer"
 				};
 			this.edit_hover_css = {
@@ -45,7 +46,7 @@ $.widget("red.dom_output", {
 					cursor: "default"
 				};
 			this.edit_button = $("<a />")	.attr("href", "javascript:void(0)")
-											.text("source")
+											.text("edit")
 											.css(this.edit_button_css)
 											.hover(_.bind(function() {
 												if(!this.edit_button.hasClass("active")) {
@@ -242,8 +243,8 @@ $.widget("red.dom_output", {
 		} else {
 			this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options"));
 			this.edit_button.addClass("active").css(this.edit_active_css);
-			$(window).on("unload", _.bind(this.close_editor, this));
-			this.editor_window.addEventListener("beforeunload", _.bind(function() {
+			$(window).on("beforeunload", _.bind(this.close_editor, this));
+			$(this.editor_window).on("beforeunload", _.bind(function() {
 				this._remove_state_listeners();
 				this.edit_button.removeClass("active").css(this.edit_button_css);
 				delete this.editor_window;

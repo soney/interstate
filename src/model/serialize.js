@@ -157,14 +157,17 @@ var deserializing = false;
 red.deserialize = function(serialized_obj) {
 	if(deserializing === false) {
 		deserializing = true;
-		deserialized_objs = serialized_obj.serialized_objs;
-		deserialized_obj_vals = [];
 
-		var rv = red.deserialize(serialized_obj.root);
+		try {
+			deserialized_objs = serialized_obj.serialized_objs;
+			deserialized_obj_vals = [];
+			var rv = red.deserialize(serialized_obj.root);
 
-		delete deserialized_obj_vals;
-		delete deserialized_objs;
-		deserializing = false;
+			delete deserialized_obj_vals;
+			delete deserialized_objs;
+		} finally {
+			deserializing = false;
+		}
 
 		return rv;
 	}
@@ -218,7 +221,7 @@ red.destringify = function(str) {
 	return red.deserialize(JSON.parse(str));
 };
 red.decompress_and_destringify = function(compressed_str) {
-	var str = lzw_decode(str);
+	var str = lzw_decode(compressed_str);
 	return red.destringify(str);
 };
 
@@ -228,7 +231,7 @@ red.save = function(root, name) {
 		name = "default";
 	}
 	name = storage_prefix+name;
-	localStorage[name] = red.stringify(root);
+	window.localStorage.setItem(name, red.stringify(root));
 	return red.ls();
 };
 red.load = function(name) {
@@ -236,26 +239,26 @@ red.load = function(name) {
 		name = "default";
 	}
 	name = storage_prefix+name;
-	root = red.destringify(localStorage[name]);
+	root = red.destringify(localStorage.getItem(name));
 	return root;
 };
 red.ls = function() {
-	return _.chain(localStorage)
-			.keys()
-			.filter(function(key) {
-				return key.substr(0, storage_prefix.length) === storage_prefix
-			})
-			.map(function(key) {
-					return key.slice(storage_prefix.length);
-			})
-			.value();
+	var len = window.localStorage.length;
+	var rv = [];
+	for(var i = 0; i<len; i++) {
+		var key = window.localStorage.key(i);
+		if(key.substr(0, storage_prefix.length) === storage_prefix) {
+			rv.push(key.slice(storage_prefix.length));
+		}
+	}
+	return rv;
 };
 red.rm = function(name) {
 	if(!_.isString(name)) {
 		name = "default";
 	}
 	name = storage_prefix+name;
-	delete localStorage[name];
+	window.localStorage.removeItem(name);
 	return red.ls();
 };
 
