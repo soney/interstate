@@ -356,11 +356,12 @@ red.StatechartTransition = function(options, defer_initialization) {
 									},
 									function(obj) {
 										var rv = new my({id: obj.id}, true);
+										var rest_args = _.rest(arguments);
 										rv.initialize = function() {
 											var options = {
-												from: red.deserialize(obj.from),
-												to: red.deserialize(obj.to),
-												event: red.deserialize(obj.event)
+												from: red.deserialize.apply(red, ([obj.from]).concat(rest_args)),
+												to: red.deserialize.apply(red, ([obj.to]).concat(rest_args)),
+												event: red.deserialize.apply(red, ([obj.event]).concat(rest_args))
 											};
 											this.do_initialize(options);
 										};
@@ -828,8 +829,8 @@ red.StartState = function(options) {
 										rv = new my({id: obj.id}, true);
 										rv.initialize = function() {
 											var options = {
-												outgoing_transition: red.deserialize(obj.outgoing_transition),
-												parent: red.deserialize(obj.parent)
+												outgoing_transition: red.deserialize.apply(red, ([obj.outgoing_transition]).concat(rest_args)),
+												parent: red.deserialize.apply(red, ([obj.parent]).concat(rest_args))
 											};
 											this.do_initialize(options);
 										};
@@ -1430,12 +1431,12 @@ red.Statechart = function(options) {
 										rv = new my({id: obj.id}, true);
 										rv.initialize = function() {
 											var options = {
-												substates: red.deserialize(obj.substates)
+												substates: red.deserialize.apply(red, ([obj.substates]).concat(rest_args))
 												, concurrent: obj.concurrent
-												, start_state: red.deserialize(obj.start_state)
-												, outgoing_transitions: red.deserialize(obj.outgoing_transitions)
-												, incoming_transitions: red.deserialize(obj.incoming_transitions)
-												, parent: red.deserialize(obj.parent)
+												, start_state: red.deserialize.apply(red, ([obj.start_state]).concat(rest_args))
+												, outgoing_transitions: red.deserialize.apply(red, ([obj.outgoing_transitions]).concat(rest_args))
+												, incoming_transitions: red.deserialize.apply(red, ([obj.incoming_transitions]).concat(rest_args))
+												, parent: red.deserialize.apply(red, ([obj.parent]).concat(rest_args))
 											};
 											this.do_initialize(options);
 										};

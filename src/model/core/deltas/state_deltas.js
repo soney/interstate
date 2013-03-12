@@ -92,8 +92,9 @@ red.TransitionFiredDelta = function(options) {
 										};
 									},
 									function(obj) {
+										var rest_args = _.rest(arguments);
 										var transition = red.StatechartTransition.desummarize(obj.transition_summary),
-											event = red.deserialize(obj.event);
+											event = red.deserialize.apply(red, ([obj.event]).concat(rest_args));
 										return new my({
 											transition: transition,
 											event: event

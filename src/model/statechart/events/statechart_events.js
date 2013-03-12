@@ -87,7 +87,8 @@ red.TransitionEvent = red._create_event_type("transition");
 										};
 									},
 									function(obj) {
-										return new my(red.deserialize(obj.targets), obj.spec);
+										var rest_args = _.rest(arguments);
+										return new my(red.deserialize.apply(red, ([obj.targets]).concat(rest_args)), obj.spec);
 									});
 }(red.TransitionEvent));
 

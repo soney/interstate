@@ -232,12 +232,13 @@ red.StatefulProp = function(options, defer_initialization) {
 									},
 									function(obj) {
 										var rv = new my({uid: obj.uid}, true);
+										var rest_args = _.rest(arguments);
 										rv.initialize = function() {
 											var options = {
-												direct_values: red.deserialize(obj.direct_values)
-												, can_inherit: red.deserialize(obj.can_inherit)
-												, ignore_inherited_in_contexts: red.deserialize(obj.ignore_inherited_in_contexts)
-												, check_on_nullify: red.deserialize(obj.check_on_nullify)
+												direct_values: red.deserialize.apply(red, ([obj.direct_values]).concat(rest_args))
+												, can_inherit: red.deserialize.apply(red, ([obj.can_inherit]).concat(rest_args))
+												, ignore_inherited_in_contexts: red.deserialize.apply(red, ([obj.ignore_inherited_in_contexts]).concat(rest_args))
+												, check_on_nullify: red.deserialize.apply(red, ([obj.check_on_nullify]).concat(rest_args))
 											};
 											this.do_initialize(options);
 										};

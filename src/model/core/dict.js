@@ -695,6 +695,14 @@ red.Dict = function(options, defer_initialization) {
 		return this;
 	};
 
+	proto.set_cached_value = function(prop_name, value) {
+		if(!this.prop_val.has(prop_name)) {
+			this.prop_val.initialize(prop_name);
+		}
+		this.prop_val.set_cached_value.call(this, prop_name, value);
+		return this;
+	};
+
 	//
 	// === BYE BYE ===
 	//
@@ -704,6 +712,7 @@ red.Dict = function(options, defer_initialization) {
 		this._direct_protos.destroy();
 		this._direct_attachments.destroy();
 		this._direct_attachment_instances.destroy();
+		this.prop_val.destroy();
 	};
 
 	proto.serialize = function(include_uid) {
@@ -729,6 +738,7 @@ red.Dict = function(options, defer_initialization) {
 									},
 									proto.serialize,
 									function(obj) {
+										var rest_args = _.rest(arguments);
 										var serialized_options = {};
 										_.each(my.builtins, function(builtin, name) {
 											if(builtin.serialize !== false) {
@@ -740,7 +750,7 @@ red.Dict = function(options, defer_initialization) {
 										rv.initialize = function() {
 											var options = {};
 											_.each(serialized_options, function(serialized_option, name) {
-												options[name] = red.deserialize(serialized_option);
+												options[name] = red.deserialize.apply(red, ([serialized_option]).concat(rest_args));
 											});
 											this.do_initialize(options);
 										};

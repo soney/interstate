@@ -151,6 +151,7 @@ red.StatefulObj = function(options, defer_initialization) {
 									},
 									my.superclass.serialize,
 									function(obj) {
+										var rest_args = _.rest(arguments);
 										var builtins = _.extend({}, my.builtins, my.superclass.constructor.builtins);
 
 										var serialized_options = {};
@@ -164,7 +165,7 @@ red.StatefulObj = function(options, defer_initialization) {
 										rv.initialize = function() {
 											var options = {};
 											_.each(serialized_options, function(serialized_option, name) {
-												options[name] = red.deserialize(serialized_option);
+												options[name] = red.deserialize.apply(red, ([serialized_option]).concat(rest_args));
 											});
 											this.do_initialize(options);
 										};

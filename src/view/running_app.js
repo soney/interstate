@@ -254,20 +254,31 @@ $.widget("red.dom_output", {
 			this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options"));
 			this.edit_button.addClass("active").css(this.edit_active_css);
 			$(window).on("beforeunload", _.bind(this.close_editor, this));
+
+			var close_check_interval = window.setInterval(_.bind(function() {
+				if(this.editor_window.closed) {
+					window.clearInterval(close_check_interval);
+					this.cleanup_closed_editor();
+				}
+			}, this), 200);
+
 			$(this.editor_window).on("beforeunload", _.bind(function() {
-				this._remove_state_listeners();
-				this.edit_button.removeClass("active").css(this.edit_button_css);
-				delete this.editor_window;
+				window.clearInterval(close_check_interval);
+				this.cleanup_closed_editor();
 			}, this));
 		}
 	}
 	, close_editor: function() {
 		if(this.editor_window) {
-			this._remove_state_listeners();
-			this.edit_button.removeClass("active").css(this.edit_button_css);
 			this.editor_window.close();
-			delete this.editor_window;
+			this.cleanup_closed_editor();
 		}
+	}
+
+	, cleanup_closed_editor: function() {
+		this._remove_state_listeners();
+		this.edit_button.removeClass("active").css(this.edit_button_css);
+		delete this.editor_window;
 	}
 });
 

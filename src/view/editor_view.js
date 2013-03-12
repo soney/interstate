@@ -26,7 +26,7 @@ $.widget("red.editor", {
 	.cd("obj")
 		.set("(protos)", "INIT", "dom")
 		.set("text", "<stateful_prop>")
-		.set("text", "INIT", "external_root.uid")
+		.set("text", "INIT", "'euclase view'")
 		.up()
 	.up()
 ;
@@ -99,7 +99,17 @@ $.widget("red.editor", {
 				console.error("Could not find transition");
 			}
 		} else if(delta instanceof red.CurrentValuesDelta) {
-			console.log(delta);
+			var values = delta.get_values();
+			values.each(function(cached_value, pointer) {
+				var obj = pointer.points_at();
+				var obj_parent = pointer.points_at(-2);
+				if(obj_parent instanceof red.Dict) {
+					var prop_name = obj_parent.name_for_prop(obj, pointer.pop());
+					if(prop_name) {
+						obj_parent.set_cached_value(prop_name, cached_value);
+					}
+				}
+			}, this);
 		} else {
 			console.error("Unhandled delta", delta);
 		}

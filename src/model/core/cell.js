@@ -96,6 +96,8 @@ red.Cell = function(options, defer_initialization) {
 										return rv;
 									},
 									function(obj) {
+										var rest_args = _.rest(arguments);
+										
 										var serialized_options = {};
 										_.each(my.builtins, function(builtin, name) {
 											if(builtin.serialize !== false) {
@@ -107,7 +109,7 @@ red.Cell = function(options, defer_initialization) {
 										rv.initialize = function() {
 											var options = { };
 											_.each(serialized_options, function(serialized_option, name) {
-												options[name] = red.deserialize(serialized_option);
+												options[name] = red.deserialize.apply(red, ([serialized_option]).concat(rest_args));
 											});
 											this.do_initialize(options);
 										};

@@ -33,8 +33,9 @@ red.CommandDelta = function(options) {
 										};
 									},
 									function(obj) {
+										var rest_args = _.rest(arguments);
 										return new red.CommandDelta({
-											command: (obj.command === "undo" || obj.command === "redo" || obj.command === "reset") ? obj.command : red.deserialize(obj.command)
+											command: (obj.command === "undo" || obj.command === "redo" || obj.command === "reset") ? obj.command : red.deserialize.apply(red, ([obj.command]).concat(rest_args))
 										});
 									});
 }(red.CommandDelta));

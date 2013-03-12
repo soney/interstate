@@ -184,6 +184,13 @@ var Map = function(options) {
 		}
 		return rv;
 	};
+	proto.each = function(func, context) {
+		context = context || window;
+		each(this._ordered_values, function(ov) {
+			func.call(context, ov.value, ov.key, ov.index);
+		});
+		return this;
+	};
 }(Map));
 
 return Map;
