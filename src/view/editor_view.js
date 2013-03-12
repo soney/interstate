@@ -26,7 +26,7 @@ $.widget("red.editor", {
 	.cd("obj")
 		.set("(protos)", "INIT", "dom")
 		.set("text", "<stateful_prop>")
-		.set("text", "INIT", "'external_root.uid'")
+		.set("text", "INIT", "external_root.uid")
 		.up()
 	.up()
 ;
@@ -46,7 +46,7 @@ $.widget("red.editor", {
 				} else if(type === "color") {
 					var color = message.value;
 					$("html").css({
-						border: "2px dotted " + color,
+						"border-bottom": "10px solid " + color,
 						height: "100%",
 						"box-sizing": "border-box"
 					});

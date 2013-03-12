@@ -34,21 +34,25 @@ $.widget("red.dom_output", {
 					"background-color": "",
 					"font-size": "0.95em",
 					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif', 
-					cursor: "pointer"
+					cursor: "pointer",
+					"border-bottom": ""
 				};
 			this.edit_hover_css = {
 					opacity: 1.0,
 					color: "white",
 					//"background-color": "#900",
 					"background-color": this.button_color,
-					cursor: "pointer"
+					cursor: "pointer",
+					"border-bottom": ""
 				};
 			this.edit_active_css = {
 					opacity: 1.0,
-					color: "white",
+					//color: "white",
+					color: this.button_color,
 				//	"background-color": "green",
-					"background-color": this.button_color,
-					cursor: "default"
+					"background-color": "",
+					cursor: "default",
+					"border-bottom": "5px solid " + this.button_color
 				};
 
 			this.edit_button = $("<a />")	.attr("href", "javascript:void(0)")
