@@ -1,7 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-var POINTER_TYPE = "$$pointer"
+var POINTER_TYPE = "$$pointer";
 
 // === SERIALIZE ===
 
@@ -259,6 +259,11 @@ red.rm = function(name) {
 	}
 	name = storage_prefix+name;
 	window.localStorage.removeItem(name);
+	return red.ls();
+};
+red.nuke = function() {
+	var program_names = red.ls();
+	_.each(program_names, red.rm);
 	return red.ls();
 };
 
