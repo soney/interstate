@@ -144,16 +144,6 @@ $.widget("red.editor", {
 			command: stringified_command
 		}, origin);
 	}
-	, get_current_statechart: function() {
-		var statechart;
-		var SOandC = red.find_stateful_obj_and_context(this.pointer);
-		var owner = SOandC.stateful_obj;
-		statechart = owner.get_own_statechart();
-		if(!statechart) {
-			throw new Error("Could not find statechart");
-		}
-		return statechart;
-	}
 });
 
 }(red, jQuery));
