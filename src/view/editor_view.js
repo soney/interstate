@@ -47,6 +47,7 @@ $.widget("red.editor", {
 			}
 		}, this).on("root_loaded", function(root) {
 			this.root.set("external_root", root, {literal: true});
+			this.root.set("external_root_pointer", red.create("pointer", {stack: [root]}), {literal: true});
 			this.load_viewer();
 			window.eenv = this.client_socket.get_external_env();
 		}, this);

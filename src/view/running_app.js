@@ -136,7 +136,10 @@ $.widget("red.dom_output", {
 				this.cleanup_closed_editor();
 			}, this).on("command", function(command) {
 				if((["undo", "redo", "reset"]).indexOf(command) >= 0) {
-					this._command_stack[command]();
+					if(command === "undo") { this._command_stack._undo(); }
+					else if(command === "redo") { this._command_stack._redo(); }
+					else if(command === "reset") { root.reset(); }
+
 					this.server_socket.post_delta(new red.CommandDelta({
 						command: command
 					}));
