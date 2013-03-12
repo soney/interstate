@@ -90,7 +90,6 @@ exports.main_src = c(
 				"controller/environment/red_environment.js",
 				"view/inter_window_communication.js",
 				"view/running_app.js",
-				"view/command_view.js",
 				"view/editor_view.js"
 			]));
 
