@@ -30,7 +30,7 @@ $.widget("red.editor", {
 				});
 			}
 		}, this).on("root_loaded", function(root) {
-		//	this.root.set("external_root", root, {literal: true});
+			this.root.set("external_root", root, {literal: true});
 		}, this);
 	}
 
@@ -43,7 +43,7 @@ $.widget("red.editor", {
 	.cd("obj")
 		.set("(protos)", "INIT", "dom")
 		.set("text", "<stateful_prop>")
-		.set("text", "INIT", "'euclase view'")
+		.set("text", "INIT", "euclase_view.get_prop_names()")
 		.up()
 	.up()
 ;

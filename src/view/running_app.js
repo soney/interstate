@@ -93,14 +93,18 @@ $.widget("red.dom_output", {
 		var root_dict = root_pointer.points_at();
 
 		this._dom_tree_fn = cjs.liven(function() {
-			var dom_attachment = root_dict.get_attachment_instance("dom", root_pointer);
-			var dom_element = dom_attachment.get_dom_obj();
+			try {
+				var dom_attachment = root_dict.get_attachment_instance("dom", root_pointer);
+				var dom_element = dom_attachment.get_dom_obj();
 
-			if(this.element.children().is(dom_element)) {
-				this.element.children().not(dom_element).remove();
-			} else {
-				this.element.children().remove();
-				this.element.append(dom_element);
+				if(this.element.children().is(dom_element)) {
+					this.element.children().not(dom_element).remove();
+				} else {
+					this.element.children().remove();
+					this.element.append(dom_element);
+				}
+			} catch(e) {
+				console.error(e);
 			}
 		}, {
 			context: this
