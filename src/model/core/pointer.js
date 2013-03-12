@@ -85,7 +85,7 @@ red.Pointer = function(options) {
 	proto.val = function() {
 		var points_at = this.points_at();
 		if(points_at instanceof red.Dict) {
-			return this;
+			return new red.PointerValue({pointer: this});
 		} else if(points_at instanceof red.Cell) {
 			var cell_constraint = points_at.constraint_in_context(this);
 			return cjs.get(cell_constraint);
@@ -158,6 +158,10 @@ red.Pointer = function(options) {
 		}
 
 		return hash;
+	};
+
+	proto.toString = function() {
+		return "pointer:" + _.map(this._stack, function(x) { return x.uid});
 	};
 
 	proto.summarize = function() {
@@ -248,5 +252,14 @@ red.pointer_hash = function(item) {
 		return "" + item;
 	}
 };
+
+red.PointerValue = function(options) {
+	this.pointer = options.pointer;
+};
+
+(function(my) {
+	var proto = my.prototype;
+	proto.get_pointer = function() { return this.pointer; }
+}(red.PointerValue));
 
 }(red));

@@ -179,9 +179,11 @@ var get_member_$ = function(object, property) {
 		}
 
 		var prop_got = cjs.get(property);
-		if(obj_got instanceof red.Pointer) {
-			var dict = obj_got.points_at();
-			return dict.prop_val(prop_got, obj_got);
+		console.log(obj_got, prop_got);
+		if(obj_got instanceof red.PointerValue) {
+			var pointer = obj_got.get_pointer();
+			var dict = pointer.points_at();
+			return dict.prop_val(prop_got, pointer);
 		} else {
 			return obj_got[prop_got];
 		}

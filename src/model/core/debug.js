@@ -76,6 +76,19 @@ var print = function(current_pointer, logging_mechanism) {
 			}
 
 			return str;
+		} else if(val instanceof red.PointerValue) {
+			var ptr = val.get_pointer();
+			var points_at = ptr.points_at();
+			var special_contexts = ptr.special_contexts();
+			var str = value_to_value_str(points_at);
+
+			var special_contexts_str = _.map(special_contexts, function(sc) { return "" + sc.id(); }).join(",");
+
+			if(special_contexts.length > 0) {
+				str = str + " " + special_contexts_str;
+			}
+
+			return str;
 		} else if(val instanceof red.ManifestationContext) {
 			return val.id();
 		} else if(_.isArray(val)) {

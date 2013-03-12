@@ -98,10 +98,11 @@ red.DomAttachmentInstance = function(options) {
 
 		return cjs.liven(function() {
 			var css = owner.prop_val("css", pointer);
-			if(css instanceof red.Pointer) {
-				var css_dict = css.points_at();
+			if(css instanceof red.PointerValue) {
+				var ptr = css.get_pointer();
+				var css_dict = ptr.points_at();
 				if(css_dict instanceof red.Dict) {
-					desired_listener_prop_names = css_dict.get_prop_names(css, true);
+					desired_listener_prop_names = css_dict.get_prop_names(ptr, true);
 				} else {
 					desired_listener_prop_names = []
 				}
@@ -145,10 +146,11 @@ red.DomAttachmentInstance = function(options) {
 
 		return cjs.liven(function() {
 			var css = owner.prop_val("attr", pointer);
-			if(css instanceof red.Pointer) {
-				var css_dict = css.points_at();
+			if(css instanceof red.PointerValue) {
+				var ptr = css.get_pointer();
+				var css_dict = ptr.points_at();
 				if(css_dict instanceof red.Dict) {
-					desired_listener_prop_names = css_dict.get_prop_names(css, true);
+					desired_listener_prop_names = css_dict.get_prop_names(ptr, true);
 				} else {
 					desired_listener_prop_names = []
 				}
@@ -213,10 +215,11 @@ red.DomAttachmentInstance = function(options) {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
 				var css = owner.prop_val("css", pointer);
-				if(css instanceof red.Pointer) {
-					var css_dict = css.points_at();
+				if(css instanceof red.PointerValue) {
+					var ptr = css.get_pointer();
+					var css_dict = ptr.points_at();
 					if(css_dict instanceof red.Dict) {
-						var val = css_dict.prop_val(name, css);
+						var val = css_dict.prop_val(name, ptr);
 						if(val) {
 							dom_obj.style[name] = val;
 						} else {
@@ -239,10 +242,11 @@ red.DomAttachmentInstance = function(options) {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
 				var css = owner.prop_val("attr", pointer);
-				if(css instanceof red.Pointer) {
-					var css_dict = css.points_at();
+				if(css instanceof red.Pointervalue) {
+					var ptr = css.get_pointer();
+					var css_dict = ptr.points_at();
 					if(css_dict instanceof red.Dict) {
-						var val = css_dict.prop_val(name, css);
+						var val = css_dict.prop_val(name, ptr);
 						if(val) {
 							dom_obj.setAttribute(name, val);
 						} else {
@@ -295,9 +299,10 @@ red.DomAttachmentInstance = function(options) {
 
 					if(_.isArray(children)) {
 						children_pointers = children;
-					} else if(children instanceof red.Pointer) {
-						var dict = children.points_at();
-						children_pointers = dict.get_prop_pointers(children);
+					} else if(children instanceof red.PointerValue) {
+						var ptr = children.get_pointer();
+						var dict = ptr.points_at();
+						children_pointers = dict.get_prop_pointers(ptr);
 					}
 
 					_.each(children_pointers, function(child_pointer) {

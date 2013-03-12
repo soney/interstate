@@ -65,7 +65,7 @@ $.widget("red.editor", {
 	.set("pointer", "INIT", "basis")
 	.set("dict", "INIT", "pointer.points_at()")
 	.set("text", "<stateful_prop>")
-	.set("text", "INIT", "'hello'")
+	.set("text", "INIT", "dict.get_prop_names(pointer)")
 	.up()
 .cd("children")
 	.set("obj", "<stateful>")
