@@ -134,6 +134,18 @@ $.widget("red.dom_output", {
 				});
 			}, this).on("disconnected", function() {
 				this.cleanup_closed_editor();
+			}, this).on("command", function(command) {
+				if((["undo", "redo", "reset"]).indexOf(command) >= 0) {
+					this._command_stack[command]();
+					this.server_socket.post_delta(new red.CommandDelta({
+						command: command
+					}));
+				} else {
+					this._command_stack._do(command);
+					this.server_socket.post_delta(new red.CommandDelta({
+						command: command
+					}));
+				}
 			}, this);
 
 			if(this.server_socket.is_connected()) { // It connected immediately

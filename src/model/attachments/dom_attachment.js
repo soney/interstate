@@ -266,12 +266,26 @@ red.DomAttachmentInstance = function(options) {
 				return;
 			}
 
-			var text = owner.prop_val("text", pointer);
+			var text;
+			try {
+				text = owner.prop_val("text", pointer);
+			} catch(e) {
+				if(red.__debug) {
+					console.error(e);
+				}
+			}
 
 			if(text) {
 				dom_obj.textContent = text;
 			} else {
-				var children = owner.prop_val("children", pointer) || [];
+				var children;
+				try {
+					children = owner.prop_val("children", pointer) || [];
+				} catch(e) {
+					if(red.__debug) {
+						console.error(e);
+					}
+				}
 
 				var current_children = _.toArray(dom_obj.childNodes);
 				var desired_children = [];

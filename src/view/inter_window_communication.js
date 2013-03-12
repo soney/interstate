@@ -290,6 +290,10 @@ red.ProgramStateClient = function(options) {
 		return root;
 	};
 
+	proto.get_external_env = function() {
+		return this.external_env;
+	};
+
 	proto.destroy = function() {
 		able.destroy_this_listenable(this);
 		this.remove_message_listener();
@@ -297,6 +301,19 @@ red.ProgramStateClient = function(options) {
 
 	proto.post = function(message) {
 		this.server_window.postMessage(message, origin);
+	};
+
+	proto.post_command = function(command) {
+		var stringified_command;
+		if((["undo", "redo", "reset"]).indexOf(command) >= 0) {
+			stringified_command = command;
+		} else {
+			stringified_command = red.stringify(command);
+		}
+		this.post({
+			type: "command",
+			command: stringified_command
+		});
 	};
 }(red.ProgramStateClient));
 
