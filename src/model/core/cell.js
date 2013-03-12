@@ -83,7 +83,6 @@ red.Cell = function(options, defer_initialization) {
 									function(include_uid) {
 										var rv = { };
 										if(include_uid) { rv.uid = this.uid; }
-										if(window.opener && include_uid) { debugger; }
 
 										var self = this;
 										_.each(my.builtins, function(builtin, name) {
