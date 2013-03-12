@@ -59,12 +59,19 @@ $.widget("red.editor", {
 // ===== BEGIN EDITOR ===== 
 
 .top()
+.set("dict_view", "<stateful>")
+.cd("dict_view")
+	.set("(protos)", "INIT", "[dom]")
+	.set("pointer", "INIT", "basis")
+	.set("dict", "INIT", "pointer.points_at()")
+	.set("text", "<stateful_prop>")
+	.set("text", "INIT", "'hello'")
+	.up()
 .cd("children")
 	.set("obj", "<stateful>")
 	.cd("obj")
-		.set("(protos)", "INIT", "dom")
-		.set("text", "<stateful_prop>")
-		.set("text", "INIT", "external_root._get_direct_prop_names()")
+		.set("basis", "external_root_pointer")
+		.set("(protos)", "INIT", "dict_view")
 		.up()
 	.up()
 ;

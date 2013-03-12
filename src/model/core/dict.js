@@ -681,7 +681,7 @@ red.Dict = function(options, defer_initialization) {
 	};
 
 	proto.hash = function() {
-		return this.uid;
+		return parseInt(uid.strip_prefix(this.uid));
 	};
 
 	proto.reset = function() {

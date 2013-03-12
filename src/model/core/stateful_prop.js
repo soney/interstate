@@ -326,7 +326,7 @@ var StatefulPropContextualVal = function(options) {
 			i++;
 			while(i<len) {
 				item_i = my_context.points_at(i);
-				var name = item_im1.name_for_prop(item_i, false);
+				var name = item_im1.name_for_prop(item_i, my_context);
 				my_names.push(name);
 				item_im1 = item_i;
 				i++;
@@ -349,6 +349,7 @@ var StatefulPropContextualVal = function(options) {
 				}
 				return dict;
 			}));
+
 
 			var j, leni = inherits_from.length, lenj = statecharts.length;
 			for(i = 0; i<leni; i++) {

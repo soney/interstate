@@ -145,7 +145,7 @@ red.Pointer = function(options) {
 		var sc;
 		var j, lenj;
 
-		for(var i = len; i>mini; i--) {
+		for(var i = len; i>=mini; i--) {
 			if(this._stack[i].hash) {
 				hash += this._stack[i].hash();
 			}
