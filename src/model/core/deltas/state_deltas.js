@@ -84,8 +84,9 @@ red.TransitionFiredDelta = function(options) {
 										return x instanceof my;
 									},
 									function() {
+										var args = _.toArray(arguments);
 										var summarized_transition = this.transition.summarize(),
-											serialized_event = red.serialize(this.event);
+											serialized_event = red.serialize.apply(red, ([this.event]).concat(arguments));
 										return {
 											transition_summary: summarized_transition,
 											event: serialized_event

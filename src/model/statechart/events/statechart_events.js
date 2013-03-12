@@ -97,6 +97,7 @@ red.StatechartEvent = red._create_event_type("statechart");
 (function(my) {
 	var proto = my.prototype;
 	proto.on_create = function(options) {
+		this.options = options;
 		this.$on_spec = _.bind(function() {
 			red.event_queue.wait();
 			this.fire.apply(this, arguments);
@@ -133,7 +134,9 @@ red.StatechartEvent = red._create_event_type("statechart");
 	};
 	proto.set_target = function(target) {
 		this.target = target;
-		this.target.on(this.spec, this.$on_spec);
+		if(this.options.inert !== true) {
+			this.target.on(this.spec, this.$on_spec);
+		}
 	};
 	proto.destroy = function() {
 		target.off(spec, this.$on_spec);
@@ -141,7 +144,9 @@ red.StatechartEvent = red._create_event_type("statechart");
 	proto.create_shadow = function(parent_statechart, context) {
 		return red.create_event("statechart", {
 				target: parent_statechart,
-				spec: this.spec
+				spec: this.spec,
+				inert: this.options.inert_shadows,
+				inert_shadows: this.options.inert_shadows
 			});
 	};
 	proto.stringify = function() { return "" + this.target.id() + ":" + this.spec + ""; };

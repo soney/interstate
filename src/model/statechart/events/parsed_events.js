@@ -66,7 +66,7 @@ var id  = 0;
 	proto.get_str = function() { return this._str.get(); };
 	proto.set_str = function(str) { this._str.set(str); };
 	proto.create_shadow = function(parent_statechart, context) {
-		return red.create_event("parsed", {str: this._str, context: context});
+		return red.create_event("parsed", {str: this._str, context: context, inert_shadows: this.options.inert_shadows, inert: this.options.inert_shadows});
 	};
 	proto.destroy = function() {
 		if(this._old_event) {

@@ -40,7 +40,10 @@ $.widget("red.editor", {
 				var type = message.type;
 				if(type === "delta") {
 					var stringified_delta = message.value;
-					var delta = red.destringify(stringified_delta);
+					var delta = red.destringify(stringified_delta, {
+						inert: true,
+						inert_shadows: true
+					});
 
 					this.on_delta(delta);
 				} else if(type === "color") {
@@ -94,7 +97,8 @@ $.widget("red.editor", {
 		} else if(delta instanceof red.TransitionFiredDelta) {
 			var transition = delta.get_transition();
 			if(transition) {
-				transition.fire();
+				var event = delta.get_event();
+				transition.fire(event);
 			} else {
 				console.error("Could not find transition");
 			}

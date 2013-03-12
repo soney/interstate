@@ -354,7 +354,7 @@ red.StatechartTransition = function(options, defer_initialization) {
 										}
 										return rv;
 									},
-									function(obj) {
+									function(obj, deserialize_options) {
 										var rv = new my({id: obj.id}, true);
 										var rest_args = _.rest(arguments);
 										rv.initialize = function() {
@@ -820,6 +820,7 @@ red.StartState = function(options) {
 										return rv;
 									},
 									function(obj) {
+										var rest_args = _.rest(arguments);
 										var rv;
 										if(obj.id) {
 											if(rv = red.find_uid(obj.id)) {
@@ -1422,6 +1423,7 @@ red.Statechart = function(options) {
 										return rv;
 									},
 									function(obj) {
+										var rest_args = _.rest(arguments);
 										var rv;
 										if(obj.id) {
 											if(rv = red.find_uid(obj.id)) {
