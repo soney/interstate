@@ -29,7 +29,6 @@ $.widget("red.dom_output", {
 					position: "fixed",
 					top: "0px",
 					right: "0px",
-					//color: "#900",
 					color: this.button_color,
 					"background-color": "",
 					"font-size": "0.95em",
@@ -40,16 +39,13 @@ $.widget("red.dom_output", {
 			this.edit_hover_css = {
 					opacity: 1.0,
 					color: "white",
-					//"background-color": "#900",
 					"background-color": this.button_color,
 					cursor: "pointer",
 					"border-bottom": ""
 				};
 			this.edit_active_css = {
 					opacity: 1.0,
-					//color: "white",
 					color: this.button_color,
-				//	"background-color": "green",
 					"background-color": "",
 					cursor: "default",
 					"border-bottom": "5px solid " + this.button_color
