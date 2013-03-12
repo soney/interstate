@@ -74,6 +74,9 @@ red.Pointer = function(options) {
 	proto.indexOf = function(item) {
 		return this._stack.indexOf(item);
 	};
+	proto.root = function() {
+		return this._stack[0];
+	};
 
 	proto.is_empty = function() {
 		return this._stack.length === 0;

@@ -7,50 +7,31 @@ $.widget("red.editor", {
 	options: { }
 
 	, _create: function() {
-		this.input = $("<input />")	.appendTo(this.element)
-									.focus()
-									.on("keydown", _.bind(function(event) {
-										if(event.keyCode === 13) { //Enter
-											var val = this.input.val();
-											this.on_enter(val);
-											this.input.val("");
-										}
-									}, this));
+		this.add_message_listener();
+		this.env = red.create("environment");
+		var root_pointer = this.env.get_root_pointer();
+		this.root = root_pointer.root();
+		this.element.dom_output({
+			root: root_pointer
+		});
+	}
 
-		this.output = $("<pre />").addClass("output").appendTo(this.element);
-		this.pointer = undefined;
-		var current_parent = $(this.output);
-		this.logger = {
-			log: function() {
-				var text = _.toArray(arguments).join(", ");
-				var div = $("<div />")	.addClass("log")
-										.text(text);
-				current_parent.append(div);
-			},
-			group: function() {
-				var text = _.toArray(arguments).join(", ");
-				var div = $("<div />")	.addClass("group")
-											.text(text);
-				var children_div = $("<div />")	.addClass("children")
-												.appendTo(div);
-				current_parent.append(div);
-				current_parent = children_div;
-			},
-			groupCollapsed: function() {
-				var text = _.toArray(arguments).join(", ");
-				var div = $("<div />")	.addClass("collapsed group")
-											.text(text);
-				var children_div = $("<div />")	.addClass("children")
-												.appendTo(div);
-				current_parent.append(div);
-				current_parent = children_div;
-			},
-			groupEnd: function() {
-				current_parent = current_parent.parent().parent();
-			}
-		};
+	, load_viewer: function() {
+		this.env
 
-		window.addEventListener("message", _.bind(function(event) {
+.top()
+.set("dict_view", "<stateful>")
+.cd("dict_view")
+	.set("(protos)", "INIT", "[dom]")
+	.set("text", "<stateful_prop>")
+	.set("text", "INIT", "'hello'")
+	.up()
+;
+
+	}
+
+	, add_message_listener: function() {
+		this.$on_message = _.bind(function(event) {
 			if(event.source === window.opener) {
 				var message = event.data;
 				var type = message.type;
@@ -59,44 +40,30 @@ $.widget("red.editor", {
 					var delta = red.destringify(stringified_delta);
 
 					this.on_delta(delta);
+				} else {
+					console.error("Unhandled message type '" + type + "' for ", message);
 				}
 			}
-		}, this));
+		}, this);
+		window.addEventListener("message", this.$on_message);
+	}
+	, remove_message_listener: function() {
+		window.removeEventListener("message", this.$on_message);
 	}
 
 	, _destroy: function() {
-		this.input.remove();
-	}
-
-	, on_enter: function(value) {
-		var tokens = aware_split(value).map(function(token) {
-			return token.trim();
-		});
-		var command;
-		if(value === "undo" || value === "redo" || value === "reset") {
-			command = value;
-			this.post_command(command);
-		} else {
-			command = this.external_env[tokens[0]].apply(this.external_env, _.rest(tokens));
-			if(command instanceof red.Command) {
-				this.post_command(command);
-			}
-		}
-
-		this.output.html("");
-		this.external_env.print(this.logger);
+		this.remove_message_listener();
 	}
 
 	, on_delta: function(delta) {
 		if(delta instanceof red.ProgramDelta) {
-			var root = delta.get_root();
+			var external_root = delta.get_root();
 			this.external_env = red.create("environment", {
-				root: root
+				root: external_root
 			});
 			this.external_env.return_commands = true;
-			
-			this.output.html("");
-			this.external_env.print(this.logger);
+			this.root.set("external_root", external_root, {literal: true});
+			this.env.print();
 		} else if(delta instanceof red.CommandDelta) {
 			var command = delta.get_command();
 			if(command === "undo") {
@@ -108,9 +75,6 @@ $.widget("red.editor", {
 			} else {
 				this.external_env._do(command);
 			}
-
-			this.output.html("");
-			this.external_env.print(this.logger);
 		} else if(delta instanceof red.CurrentStateDelta) {
 			var state_info = delta.get_state_info();
 			_.each(state_info, function(si) {
