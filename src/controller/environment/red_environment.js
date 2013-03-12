@@ -123,13 +123,25 @@ var Env = function(options) {
 	};
 
 	proto._do = function(command) {
-		this._command_stack._do(command);
+		try {
+			this._command_stack._do(command);
+		} catch(e) {
+			console.error(e);
+		}
 	};
 	proto.undo = function() {
-		this._command_stack._undo();
+		try {
+			this._command_stack._undo();
+		} catch(e) {
+			console.error(e);
+		}
 	};
 	proto.redo = function() {
-		this._command_stack._redo();
+		try {
+			this._command_stack._redo();
+		} catch(e) {
+			console.error(e);
+		}
 	};
 
 	proto.cd = proto.in = function(prop_name) {

@@ -9,6 +9,7 @@ $.widget("red.editor", {
 	, _create: function() {
 		this.add_message_listener();
 		this.env = red.create("environment");
+		this.load_viewer();
 		var root_pointer = this.env.get_root_pointer();
 		this.root = root_pointer.root();
 		this.element.dom_output({
@@ -20,11 +21,13 @@ $.widget("red.editor", {
 		this.env
 
 .top()
-.set("dict_view", "<stateful>")
-.cd("dict_view")
-	.set("(protos)", "INIT", "[dom]")
-	.set("text", "<stateful_prop>")
-	.set("text", "INIT", "'hello'")
+.cd("children")
+	.set("obj", "<stateful>")
+	.cd("obj")
+		.set("(protos)", "INIT", "dom")
+		.set("text", "<stateful_prop>")
+		.set("text", "INIT", "'external_root.uid'")
+		.up()
 	.up()
 ;
 
@@ -40,6 +43,13 @@ $.widget("red.editor", {
 					var delta = red.destringify(stringified_delta);
 
 					this.on_delta(delta);
+				} else if(type === "color") {
+					var color = message.value;
+					$("html").css({
+						border: "2px dotted " + color,
+						height: "100%",
+						"box-sizing": "border-box"
+					});
 				} else {
 					console.error("Unhandled message type '" + type + "' for ", message);
 				}
@@ -63,7 +73,6 @@ $.widget("red.editor", {
 			});
 			this.external_env.return_commands = true;
 			this.root.set("external_root", external_root, {literal: true});
-			this.env.print();
 		} else if(delta instanceof red.CommandDelta) {
 			var command = delta.get_command();
 			if(command === "undo") {

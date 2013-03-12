@@ -18,16 +18,19 @@ $.widget("red.dom_output", {
 		if(this.option("show_edit_button")) {
 			this.$on_message = _.bind(this.on_message, this);
 			$(window).on("message", this.$on_message);
+			this.button_color = randomColor([0, 1], [0.1, 0.7], [0.4, 0.6]);
 			this.edit_button_css = {
 					float: "right",
-					opacity: 0.3,
+					opacity: 0.7,
 					"text-decoration": "none",
 					"font-variant": "small-caps",
 					padding: "3px",
+					"padding-top": "0px",
 					position: "fixed",
 					top: "0px",
 					right: "0px",
-					color: "#900",
+					//color: "#900",
+					color: this.button_color,
 					"background-color": "",
 					"font-size": "0.95em",
 					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif', 
@@ -36,15 +39,18 @@ $.widget("red.dom_output", {
 			this.edit_hover_css = {
 					opacity: 1.0,
 					color: "white",
-					"background-color": "#900",
+					//"background-color": "#900",
+					"background-color": this.button_color,
 					cursor: "pointer"
 				};
 			this.edit_active_css = {
 					opacity: 1.0,
 					color: "white",
-					"background-color": "green",
+				//	"background-color": "green",
+					"background-color": this.button_color,
 					cursor: "default"
 				};
+
 			this.edit_button = $("<a />")	.attr("href", "javascript:void(0)")
 											.text("edit")
 											.css(this.edit_button_css)
@@ -191,6 +197,10 @@ $.widget("red.dom_output", {
 		if(event.source === this.editor_window) {
 			var data = event.data;
 			if(data === "ready") {
+				this.editor_window.postMessage({
+					type: "color",
+					value: this.button_color
+				}, origin);
 				this.post_delta(new red.ProgramDelta({
 					root_pointer: this.option("root")
 				}));
@@ -260,5 +270,57 @@ $.widget("red.dom_output", {
 		}
 	}
 });
+
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+function randomColor(hrange, srange, lrange) {
+	var h = Math.random()*(hrange[1]-hrange[0]) + hrange[0],
+		s = Math.random()*(srange[1]-srange[0]) + srange[0],
+		l = Math.random()*(lrange[1]-lrange[0]) + lrange[0];
+	var rgb = hslToRgb(h, s, l);
+	return rgbToHex.apply(this, rgb);
+};
+
+/**
+ * Converts an HSL color value to RGB. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+ * Assumes h, s, and l are contained in the set [0, 1] and
+ * returns r, g, and b in the set [0, 255].
+ *
+ * @param   Number  h       The hue
+ * @param   Number  s       The saturation
+ * @param   Number  l       The lightness
+ * @return  Array           The RGB representation
+ */
+function hslToRgb (h, s, l) {
+    var r, g, b;
+
+    if (s == 0){
+        r = g = b = l; // achromatic
+    } else {
+        function hue2rgb (p, q, t) {
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return [Math.floor(r * 256), Math.floor(g * 256), Math.floor(b * 256)];
+}
 
 }(red, jQuery));
