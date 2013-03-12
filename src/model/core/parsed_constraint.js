@@ -179,7 +179,6 @@ var get_member_$ = function(object, property) {
 		}
 
 		var prop_got = cjs.get(property);
-		console.log(obj_got, prop_got);
 		if(obj_got instanceof red.PointerValue) {
 			var pointer = obj_got.get_pointer();
 			var dict = pointer.points_at();
