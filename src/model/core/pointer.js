@@ -245,6 +245,21 @@ red.check_pointer_equality_eqeq = function(itema, itemb) {
 	}
 };
 
+red.check_pointer_value_equality =  red.check_pointer_equality_eqeqeq = function(itema, itemb) {
+	if(itema instanceof red.PointerValue && itemb instanceof red.PointerValue) {
+		return itema.get_pointer().eq(itemb.get_pointer());
+	} else {
+		return itema === itemb;
+	}
+};
+red.check_pointer_value_equality_eqeq = function(itema, itemb) {
+	if(itema instanceof red.PointerValue && itemb instanceof red.PointerValue) {
+		return itema.get_pointer().eq(itemb.get_pointer());
+	} else {
+		return itema == itemb;
+	}
+};
+
 red.pointer_hash = function(item) {
 	if(item && item.hash) {
 		return item.hash();
@@ -260,6 +275,9 @@ red.PointerValue = function(options) {
 (function(my) {
 	var proto = my.prototype;
 	proto.get_pointer = function() { return this.pointer; }
+	proto.toString = function() {
+		return "p_" + this.get_pointer().toString();
+	};
 }(red.PointerValue));
 
 }(red));

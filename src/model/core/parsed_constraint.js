@@ -32,10 +32,10 @@ red.on_event = function(event_type) {
 
 
 red.binary_operators = {
-	"===":	function(a, b) { return red.check_pointer_equality_eqeqeq(a,b); }
-	,"!==":	function(a, b) { return !red.check_pointer_equality_eqeqeq(a,b); }
-	, "==":	function(a, b) { return red.check_pointer_equality_eqeq(a, b); }
-	, "!=":	function(a, b) { return !red.check_pointer_equality_eqeq(a,b); }
+	"===":	function(a, b) { return red.check_pointer_value_equality_eqeqeq(a,b); }
+	,"!==":	function(a, b) { return !red.check_pointer_value_equality_eqeqeq(a,b); }
+	, "==":	function(a, b) { return red.check_pointer_value_equality_eqeq(a, b); }
+	, "!=":	function(a, b) { return !red.check_pointer_value_equality_eqeq(a,b); }
 	, ">":	function(a, b) { return a > b; }
 	, ">=":	function(a, b) { return a >= b; }
 	, "<":	function(a, b) { return a < b; }
