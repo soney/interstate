@@ -131,16 +131,26 @@ red.Dict = function(options, defer_initialization) {
 
 	proto._get_direct_protos = function(pointer) {
 		var protos_pointer = pointer.push(this.direct_protos());
+
+
+		if(uid.strip_prefix(pointer.points_at().uid) == 29 && uid.strip_prefix(this.uid) == 20) {
+			window.xy = true;
+		}
 		var direct_proto_pointers = protos_pointer.val();
+		if(uid.strip_prefix(pointer.points_at().uid) == 29 && uid.strip_prefix(this.uid) == 20) {
+			delete window.xy;
+		}
 		if(!_.isArray(direct_proto_pointers)) {
 			direct_proto_pointers = [direct_proto_pointers];
 		}
+
 
 		var rv = _.filter(direct_proto_pointers, function(direct_proto_pointer) {
 			return (direct_proto_pointer instanceof red.PointerValue) && (direct_proto_pointer.get_pointer().points_at() instanceof red.Dict);
 		});
 		rv = _.map(rv, function(pointer_val) {
-			return pointer_val.get_pointer();
+			var ppointer = pointer_val.get_pointer();
+			return ppointer.points_at();
 		});
 
 		return rv;
@@ -155,22 +165,25 @@ red.Dict = function(options, defer_initialization) {
 		var proto_set = new Set({
 			value: direct_protos
 			, hash: "hash"
-			, equals: red.check_pointer_equality
 		});
-		proto_set.each(function(proto_pointer, i) {
-			var proto_dict = proto_pointer.points_at();
-			var proto_dict_protos = proto_dict._get_direct_protos(proto_pointer);
+		proto_set.each(function(proto_dict, i) {
+			//var proto_dict = proto_pointer.points_at();
+			var proto_dict_protos = proto_dict._get_all_protos(pointer);
 			proto_set.add_at.apply(proto_set, [i+1].concat(proto_dict_protos));
-		});
+		}, this);
+
 		var protos = proto_set.toArray();
 		return protos;
 	};
 
 	proto._get_proto_vals = function(pointer) {
 		var proto_pointers = this._get_all_protos(pointer);
+		/*
 		return _.map(proto_pointers, function(proto_pointer) {
 			return proto_pointer.points_at();
 		});
+		*/
+		return proto_pointers;
 	};
 	
 	//
@@ -732,7 +745,7 @@ red.Dict = function(options, defer_initialization) {
 		var args = _.toArray(arguments);
 		_.each(this.get_builtins(), function(builtin, name) {
 			if(builtin.serialize !== false) {
-				var getter_name = builtin.getter_name || "get_" + name;
+				var getter_name = builtin._get_getter_name();
 				rv[name] = red.serialize.apply(red, ([this[getter_name]()]).concat(args));
 			}
 		}, this);

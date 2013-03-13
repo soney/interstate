@@ -5,7 +5,21 @@ red.find_stateful_obj_and_context = function(context) {
 	var popped_item, last;
 	while(!context.is_empty()) {
 		last = context.points_at();
-		if(last instanceof red.StatefulObj) {
+		if(last instanceof red.StatefulProp) {
+			var statechart_parent = last.get_statechart_parent();
+			if(statechart_parent === "parent") {
+				//Behave like normal
+			} else if(statechart_parent instanceof red.Statechart) {
+				console.log(statechart_parent);
+			} else if(statechart_parent instanceof red.StatefulObj) {
+				return {
+					stateful_obj: statechart_parent,
+					context: context
+				};
+			} else {
+				console.log(statechart_parent);
+			}
+		} else if(last instanceof red.StatefulObj) {
 			return {
 					stateful_obj: last,
 					context: context
@@ -77,9 +91,9 @@ red.StatefulObj = function(options, defer_initialization) {
 	//
 	
 	proto.get_inherited_statecharts = function(context) {
-		var proto_pointers = this._get_all_protos(context);
-		var statecharts = _.map(proto_pointers, function(proto_pointer) {
-			var protoi = proto_pointer.points_at();
+		var proto_dicts = this._get_all_protos(context);
+		var statecharts = _.map(proto_dicts, function(protoi) {
+			//var protoi = proto_pointer.points_at();
 			if(protoi instanceof red.StatefulObj) {
 				return protoi.get_statechart_for_context(context);
 			} else {

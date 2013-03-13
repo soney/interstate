@@ -68,6 +68,10 @@ $.widget("red.editor", {
 "return v;\n" +
 "\n" +
 "}")
+.set("ambiguous_view", "<stateful>")
+.cd("ambiguous_view")
+	.set("(protos)", "INIT", "(pointer && pointer instanceof red.Pointer) ? (pointer.points_at() instanceof red.Dict ? [dict_view] : [dom]) : [dom]")
+	.up()
 .set("dict_view", "<stateful>")
 .cd("dict_view")
 	.set("(protos)", "INIT", "[dom]")
@@ -111,12 +115,7 @@ $.widget("red.editor", {
 				.cd("prop_src_view")
 					.set("pointer", "<stateful_prop>")
 					.set("pointer", "INIT", "prop_pointer")
-					.set("(protos)", "INIT", "(pointer && pointer.points_at() instanceof red.Dict) ? [dict_view] : []")
-					.set("attr", "<dict>")
-					.cd("attr")
-						.set("class", "INIT", "'prop_src'")
-						.up()
-					.up()
+					.set("(protos)", "INIT", "ambiguous_view")
 				.up()
 			.up()
 		.up()
@@ -126,10 +125,11 @@ $.widget("red.editor", {
 	.cd("obj")
 		.set("pointer", "<stateful_prop>")
 		.set("pointer", "INIT", "external_root_pointer")
-		.set("(protos)", "INIT", "dict_view")
+		.set("(protos)", "INIT", "ambiguous_view")
 		.up()
 	.up()
 ;
+
 
 // ===== END EDITOR ===== 
 		if(this.option("debug_env")) {

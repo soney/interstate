@@ -36,17 +36,43 @@ red.StatefulProp = function(options, defer_initialization) {
 	var proto = my.prototype;
 
 	proto.do_initialize = function(options) {
+		red.install_instance_builtins(this, options, my);
+		this.get_direct_values().set_hash("hash");
+
+		/*
 		this._direct_values = options.direct_values || cjs.map();
 		this._direct_values.set_hash("hash");
+		*/
 
-		this._values_per_context = cjs.map({
-			equals: red.check_pointer_equality,
-			hash: "hash"
-		});
 		this._can_inherit = options.can_inherit !== false;
 		this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
 		this._check_on_nullify = options.check_on_nullify === true;
 	};
+
+	my.builtins = {
+		"direct_values": {
+			default: function() { return cjs.map(); }
+			, env_visible: false
+		},
+
+		"values_per_context": {
+			default: function() {
+				return cjs.map({
+					equals: red.check_pointer_equality,
+					hash: "hash"
+				});
+			},
+			serializable: false
+		},
+
+		"statechart_parent": {
+			default: function() {
+				return "parent"
+			}
+		}
+	};
+
+	red.install_proto_builtins(proto, my.builtins);
 
 	//
 	// === PARENTAGE ===
@@ -74,23 +100,24 @@ red.StatefulProp = function(options, defer_initialization) {
 	//
 	proto.set = proto._set_direct_value_for_state = function(state, value) {
 		state = state_basis(state);
-		this._direct_values.put(state, value);
+		this.get_direct_values().put(state, value);
 	};
 	proto.unset = proto._unset_direct_value_for_state = function(state) {
+		var dvs = this.get_direct_values();
 		state = state_basis(state);
-		var val = this._direct_values.get(state);
+		var val = dvs.get(state);
 		if(val) {
 			val.destroy();
 		}
-		this._direct_values.remove(state);
+		dvs.remove(state);
 	};
 	proto._direct_value_for_state = function(state) {
 		state = state_basis(state);
-		return this._direct_values.get(state);
+		return this.get_direct_values().get(state);
 	};
 	proto._has_direct_value_for_state = function(state) {
 		state = state_basis(state);
-		return this._direct_values.has(state);
+		return this.get_direct_values().has(state);
 	};
 	
 	//
@@ -176,7 +203,7 @@ red.StatefulProp = function(options, defer_initialization) {
 		return value_for_pcontext.get_value_and_from_state();
 	};
 	proto._get_value_for_context = function(pcontext) {
-		return this._values_per_context.get_or_put(pcontext, function() {
+		return this.get_values_per_context().get_or_put(pcontext, function() {
 			return this.create_contextual_value(pcontext);
 		}, this);
 	};
@@ -202,12 +229,13 @@ red.StatefulProp = function(options, defer_initialization) {
 		return this.uid;
 	};
 	proto.destroy = function() {
-		var contextual_values = this._values_per_context.values();
+		var values_per_context = this.get_values_per_context();
+		var contextual_values = values_per_context.values();
 		_.each(contextual_values, function(cv) {
 			cv.destroy();
 		});
-		this._values_per_context.destroy();
-		this._direct_values.destroy();
+		values_per_context.destroy();
+		this.get_direct_values().destroy();
 	};
 
 	proto.clone = function() {
@@ -218,13 +246,19 @@ red.StatefulProp = function(options, defer_initialization) {
 										return x instanceof my;
 									},
 									function(include_uid) {
-										var arg_array = _.toArray(arguments);
+										var args = _.toArray(arguments);
 										var rv = {
-											direct_values: red.serialize.apply(red, ([this._direct_values]).concat(arg_array))
-											, can_inherit: red.serialize.apply(red, ([this._can_inherit]).concat(arg_array))
-											, ignore_inherited_in_contexts: red.serialize.apply(red, ([this._ignore_inherited_in_contexts]).concat(arg_array))
-											, check_on_nullify: red.serialize.apply(red, ([this._check_on_nullify]).concat(arg_array))
+											//direct_values: red.serialize.apply(red, ([this.get_direct_values()]).concat(arg_array))
+											can_inherit: red.serialize.apply(red, ([this._can_inherit]).concat(args))
+											, ignore_inherited_in_contexts: red.serialize.apply(red, ([this._ignore_inherited_in_contexts]).concat(args))
+											, check_on_nullify: red.serialize.apply(red, ([this._check_on_nullify]).concat(args))
 										};
+										_.each(my.builtins, function(builtin, name) {
+											if(builtin.serialize !== false) {
+												var getter_name = builtin._get_getter_name();
+												rv[name] = red.serialize.apply(red, ([this[getter_name]()]).concat(args));
+											}
+										}, this);
 										if(include_uid) {
 											rv.uid = this.uid;
 										}
@@ -233,13 +267,24 @@ red.StatefulProp = function(options, defer_initialization) {
 									function(obj) {
 										var rv = new my({uid: obj.uid}, true);
 										var rest_args = _.rest(arguments);
+
+										var serialized_options = {};
+										_.each(my.builtins, function(builtin, name) {
+											if(builtin.serialize !== false) {
+												serialized_options[name] = obj[name];
+											}
+										});
+
 										rv.initialize = function() {
 											var options = {
-												direct_values: red.deserialize.apply(red, ([obj.direct_values]).concat(rest_args))
-												, can_inherit: red.deserialize.apply(red, ([obj.can_inherit]).concat(rest_args))
+												//direct_values: red.deserialize.apply(red, ([obj.direct_values]).concat(rest_args))
+												can_inherit: red.deserialize.apply(red, ([obj.can_inherit]).concat(rest_args))
 												, ignore_inherited_in_contexts: red.deserialize.apply(red, ([obj.ignore_inherited_in_contexts]).concat(rest_args))
 												, check_on_nullify: red.deserialize.apply(red, ([obj.check_on_nullify]).concat(rest_args))
 											};
+											_.each(serialized_options, function(serialized_option, name) {
+												options[name] = red.deserialize.apply(red, ([serialized_option]).concat(rest_args));
+											});
 											this.do_initialize(options);
 										};
 										return rv;
@@ -284,9 +329,10 @@ var StatefulPropContextualVal = function(options) {
 			SOandC = red.find_stateful_obj_and_context(my_context);
 		var do_break = false;
 		var state_vals = [];
+
 		if(parent._can_inherit === false) {
 			var statechart = SOandC.stateful_obj.get_statechart_for_context(SOandC.context);
-			var direct_values = parent._direct_values;
+			var direct_values = parent.get_direct_values();
 			direct_values.each_key(function(key, i) {
 				if(key instanceof red.State) {
 					try {
@@ -355,7 +401,7 @@ var StatefulPropContextualVal = function(options) {
 			for(i = 0; i<leni; i++) {
 				var ifrom = inherits_from[i];
 				if(ifrom instanceof red.StatefulProp) {
-					var direct_values = ifrom._direct_values;
+					var direct_values = ifrom.get_direct_values();
 
 					direct_values.each_key(function(key) {
 						if(key instanceof red.State) {

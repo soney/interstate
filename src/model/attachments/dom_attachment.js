@@ -255,7 +255,6 @@ red.DomAttachmentInstance = function(options) {
 				return;
 			}
 
-			console.log(pointer, dom_obj, owner.prop_val("pointer", pointer));
 			var text;
 			if(red.__debug) {
 				text = owner.prop_val("text", pointer);
