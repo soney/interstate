@@ -123,24 +123,36 @@ var Env = function(options) {
 	};
 
 	proto._do = function(command) {
-		try {
+		if(red.__debug) {
 			this._command_stack._do(command);
-		} catch(e) {
-			console.error(e);
+		} else {
+			try {
+				this._command_stack._do(command);
+			} catch(e) {
+				console.error(e);
+			}
 		}
 	};
 	proto.undo = function() {
-		try {
+		if(red.__debug) {
 			this._command_stack._undo();
-		} catch(e) {
-			console.error(e);
+		} else {
+			try {
+				this._command_stack._undo();
+			} catch(e) {
+				console.error(e);
+			}
 		}
 	};
 	proto.redo = function() {
-		try {
+		if(red.__debug) {
 			this._command_stack._redo();
-		} catch(e) {
-			console.error(e);
+		} else {
+			try {
+				this._command_stack._redo();
+			} catch(e) {
+				console.error(e);
+			}
 		}
 	};
 

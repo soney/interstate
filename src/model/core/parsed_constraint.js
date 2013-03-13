@@ -53,11 +53,14 @@ red.binary_operators = {
 	, "<<":	function(a, b) { return a << b; }
 	, ">>":	function(a, b) { return a >> b; }
 	,">>>":	function(a, b) { return a >>> b; }
+	,">>>":	function(a, b) { return a >>> b; }
+	,"instanceof":	function(a, b) { return a instanceof b; }
 };
 red.unary_operators = {
 	"-":	function(a) { return -a; }
 	, "!":	function(a) { return !a; }
 	, "~":	function(a) { return ~a; }
+	, "typeof":	function(a) { return typeof a; }
 };
 
 var get_op_$ = function(calling_context, pcontext, op) {
@@ -118,7 +121,7 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 
 	ignore_inherited_in_contexts = ignore_inherited_in_contexts || [];
 
-	return cjs.$(function() {
+	var rv = cjs.$(function() {
 		var curr_context = context;
 		var context_item = curr_context.points_at();
 
@@ -149,12 +152,23 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 			curr_context = curr_context.pop();
 			context_item = curr_context.points_at();
 		}
-		return undefined;
+		if(window.hasOwnProperty(key)) {
+			return window[key];
+		} else {
+			return undefined;
+		}
 	});
+	if(red.__debug) {
+		rv.__debug_info = {
+			type: "identifier",
+			key: key
+		};
+	}
+	return rv;
 };
 
 var get_this_$ = function(context) {
-	return cjs.$(function() {
+	var rv = cjs.$(function() {
 		var curr_context = context;
 		var context_item = curr_context.points_at();
 
@@ -168,10 +182,18 @@ var get_this_$ = function(context) {
 
 		return undefined;
 	});
+
+	if(red.__debug) {
+		rv.__debug_info = {
+			type: "this"
+		};
+	}
+
+	return rv;
 };
 
 var get_member_$ = function(object, property) {
-	return cjs.$(function() {
+	var rv = cjs.$(function() {
 		var obj_got = cjs.get(object);
 
 		if(!obj_got) {
@@ -187,6 +209,15 @@ var get_member_$ = function(object, property) {
 			return obj_got[prop_got];
 		}
 	});
+
+	if(red.__debug) {
+		rv.__debug_info = {
+			type: "member",
+			property: property
+		};
+	}
+
+	return rv;
 };
 
 var get_array_$ = function(elements) {

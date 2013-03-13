@@ -242,7 +242,7 @@ red.DomAttachmentInstance = function(options) {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
 				var css = owner.prop_val("attr", pointer);
-				if(css instanceof red.Pointervalue) {
+				if(css instanceof red.PointerValue) {
 					var ptr = css.get_pointer();
 					var css_dict = ptr.points_at();
 					if(css_dict instanceof red.Dict) {
@@ -271,11 +271,15 @@ red.DomAttachmentInstance = function(options) {
 			}
 
 			var text;
-			try {
+			if(red.__debug) {
 				text = owner.prop_val("text", pointer);
-			} catch(e) {
-				if(red.__debug) {
-					console.error(e);
+			} else {
+				try {
+					text = owner.prop_val("text", pointer);
+				} catch(e) {
+					if(red.__debug) {
+						console.error(e);
+					}
 				}
 			}
 
@@ -283,11 +287,15 @@ red.DomAttachmentInstance = function(options) {
 				dom_obj.textContent = text;
 			} else {
 				var children;
-				try {
+				if(red.__debug) {
 					children = owner.prop_val("children", pointer) || [];
-				} catch(e) {
-					if(red.__debug) {
-						console.error(e);
+				} else {
+					try {
+						children = owner.prop_val("children", pointer) || [];
+					} catch(e) {
+						if(red.__debug) {
+							console.error(e);
+						}
 					}
 				}
 

@@ -59,6 +59,15 @@ $.widget("red.editor", {
 // ===== BEGIN EDITOR ===== 
 
 .top()
+.set("stringify_value", "function(v) {\n" +
+"if(red._.isUndefined(v)) { return '(undefined)'; }\n" +
+"else if(red._.isNull(v)) { return '(null)'; }\n" +
+"else if(red._.isNumber(v) || red._.isBoolean(v)) { return v+''; }\n" +
+"else if(red._.isString(v)) { return '\"' + v + '\"'; }\n" +
+"else if(red._.isFunction(v)) { return '(func)'; }\n" +
+"return v;\n" +
+"\n" +
+"}")
 .set("dict_view", "<stateful>")
 .cd("dict_view")
 	.set("(protos)", "INIT", "[dom]")
@@ -70,9 +79,40 @@ $.widget("red.editor", {
 		.cd("child_view")
 			.set("(manifestations)", "dict.get_prop_names(pointer)")
 			.set("(protos)", "INIT", "[dom]")
-			.set("text", "<stateful_prop>")
-			.set("text", "INIT", "name + dict.prop_val(name, pointer)")
 			.set("name", "INIT", "basis")
+			.set("value", "INIT", "dict.prop_val(name, pointer)")
+			.set("children", "<dict>")
+			.cd("children")
+				.set("prop_name_view", "<stateful>")
+				.cd("prop_name_view")
+					.set("(protos)", "INIT", "[dom]")
+					.set("tag", "<stateful_prop>")
+					.set("tag", "INIT", "'span'")
+					.set("text", "<stateful_prop>")
+					.set("text", "INIT", "name")
+					.set("attr", "<dict>")
+					.cd("attr")
+						.set("class", "INIT", "'prop_name'")
+						.up()
+					.up()
+				.set("prop_value_view", "<stateful>")
+				.cd("prop_value_view")
+					.set("(protos)", "INIT", "[dom]")
+					.set("tag", "<stateful_prop>")
+					.set("tag", "INIT", "'span'")
+					.set("text", "<stateful_prop>")
+					.set("text", "INIT", "stringify_value(value)")
+					.set("attr", "<dict>")
+					.cd("attr")
+						.set("class", "INIT", "'prop_value'")
+						.up()
+					.up()
+				.set("prop_src_view", "<stateful>")
+				.cd("prop_src_view")
+					.set("(protos)", "INIT", "value instanceof red.Dict ? [dict_view] : []")
+					.set("basis", "value")
+					.up()
+				.up()
 			.up()
 		.up()
 	.up()
