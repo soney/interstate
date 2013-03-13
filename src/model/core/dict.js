@@ -588,7 +588,6 @@ red.Dict = function(options, defer_initialization) {
 		for(var i = 0; i<attachment_instances.length; i++) {
 			var attachment_instance = attachment_instances[i];
 			if(attachment_instance.type === type) {
-				console.log(pcontext, attachment_instance.get_dom_obj());
 				return attachment_instance;
 			}
 		}

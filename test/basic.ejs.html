@@ -10,14 +10,19 @@
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
 				var env = red.create("environment");
-				env	.cd("children")
+				env	
+					.set("a", "<stateful>")
+					.cd("a")
+						.set("(protos)", "INIT", "dom")
+						.set("tag", "<stateful_prop>")
+						.set("text", "<stateful_prop>")
+						.set("tag", "INIT", "'div'")
+						.set("text", "INIT", "'hello world'")
+						.up()
+					.cd("children")
 					.set("obj", "<stateful>")
 					.cd("obj")
-					.set("(protos)", "INIT", "dom")
-					.set("tag", "<stateful_prop>")
-					.set("text", "<stateful_prop>")
-					.set("tag", "INIT", "'div'")
-					.set("text", "INIT", "'hello world'")
+						.set("(protos)", "INIT", "false ? [a] : []")
 					;
 
 
