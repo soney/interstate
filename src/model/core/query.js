@@ -16,13 +16,13 @@ red.Query = function(options) {
 								if(points_at instanceof red.Dict) {
 									var manifestation_pointers = points_at.get_manifestation_pointers(pointer);
 									if(_.isArray(manifestation_pointers)) {
-										return manifestation_pointers;
+										return _.map(manifestation_pointers, function(x) { return new red.PointerValue({ pointer: x }); });
 									} else {
-										return pointer;
+										new red.PointerValue({pointer: pointer});
 									}
 								}
 								else {
-									return pointer;
+									new red.PointerValue({pointer: pointer});
 								}
 							})
 							.flatten(true)
@@ -41,7 +41,8 @@ red.Query = function(options) {
 	};
 
 	var filter_funcs = {
-		"in_state": function(pointer, index, arr, state_name) {
+		"in_state": function(pointer_val, index, arr, state_name) {
+			var pointer = pointer_val.get_pointer();
 			var SOandC = red.find_stateful_obj_and_context(pointer);
 			if(!SOandC) { return false; }
 			var stateful_obj = SOandC.stateful_obj;
@@ -64,9 +65,10 @@ red.Query = function(options) {
 	};
 
 	_.each(raw_filter_funcs, function(func, name) {
-		filter_funcs[name] = function(pointer, index, arr, other_val) {
-			var pointer_val = pointer.val();
-			return func(pointer_val, other_val);
+		filter_funcs[name] = function(pointer_val, index, arr, other_val) {
+			var pointer = pointer_val.get_pointer();
+			var p_val = pointer.val();
+			return func(p_val, other_val);
 		};
 	});
 
@@ -80,13 +82,15 @@ red.Query = function(options) {
 	});
 
 	var map_funcs = {
-		"prop": function(pointer, index, arr, name) {
+		"prop": function(pointer_val, index, arr, name) {
+			var pointer = pointer_val.get_pointer();
 			var owner = pointer.points_at();
 			var prop_pointer = owner.get_prop_pointer(name, pointer);
 			return prop_pointer;
 		},
-		"parent": function(pointer) {
-			var owner = pointer.points_at();
+		"parent": function(pointer_val) {
+			var pointer = pointer_val.get_pointer();
+			var owner = pointer_val.points_at();
 			return pointer.slice(0, pointer.length()-1);
 		}
 	};
@@ -136,7 +140,7 @@ red.Query = function(options) {
 	};
 
 	proto.add = function() {
-		var my_value_set = new Set({value: this.value(), equals: red.check_pointer_equality, hash: red.pointer_hash});
+		var my_value_set = new Set({value: this.value(), equals: red.check_pointer_value_equality, hash: "hash"});
 		var items = extract_items(args);
 		
 		var new_value_set = my_value_set.add.apply(my_value_set, items);
@@ -149,7 +153,7 @@ red.Query = function(options) {
 	};
 
 	proto.remove = function() {
-		var my_value_set = new Set({value: this.value(), equals: red.check_pointer_equality, hash: red.pointer_hash});
+		var my_value_set = new Set({value: this.value(), equals: red.check_pointer_value_equality, hash: "hash"});
 		var items = extract_items(args);
 
 		var new_value_set = my_value_set.remove.apply(my_value_set, items);

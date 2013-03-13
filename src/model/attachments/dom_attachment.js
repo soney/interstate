@@ -26,22 +26,6 @@ var move = function(child_node, from_index, to_index) {
 	}
 };
 
-// Red name: CSS name
-var changeable_css_props = {
-	"width": "width"
-	, "height": "height"
-	, "backgroundColor": "backgroundColor"
-	, "color": "color"
-	, "left": "left"
-	, "top": "top"
-	, "position": "position"
-};
-
-var changeable_attributes = {
-	"src": "src"
-	, "class": "class"
-	, "id": "id"
-};
 red.DomAttachmentInstance = function(options) {
 	red.DomAttachmentInstance.superclass.constructor.apply(this, arguments);
 	var pointer = this.get_pointer();
@@ -86,7 +70,8 @@ red.DomAttachmentInstance = function(options) {
 		if(_.has(this, "_children_change_listener")) { this._children_change_listener.destroy(); }
 	};
 	proto.get_dom_obj = function() {
-		return cjs.get(this._dom_obj);
+		var rv = cjs.get(this._dom_obj);
+		return rv;
 	};
 
 	proto.add_css_change_listeners = function() {

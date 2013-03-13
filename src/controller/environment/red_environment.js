@@ -28,7 +28,7 @@ var Env = function(options) {
 	root.set("emit", red.emit);
 	root.set("find", function(find_root) {
 		if(arguments.length === 0) {
-			find_root = root_pointer;
+			find_root = new red.PointerValue({pointer: root_pointer});
 		}
 		return new red.Query({value: find_root});
 	});
