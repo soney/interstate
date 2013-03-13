@@ -15,7 +15,7 @@ red.emit = function(type, target) {
 };
 
 var listener_map = new Map({
-	equals: red.check_pointer_equality,
+	equals: red.check_pointer_value_equality,
 	hash: "hash"
 });
 

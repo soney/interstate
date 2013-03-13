@@ -14,7 +14,7 @@ var cjs = red.cjs, _ = red._;
 				});
 
 				if(specified_target.__red_pointer__) {
-					var red_target = specified_target.__red_pointer__;
+					var red_target = new red.PointerValue({ pointer: specified_target.__red_pointer__ });
 					event.red_target = red_target;
 				}
 				this.fire(event);
@@ -37,15 +37,16 @@ var cjs = red.cjs, _ = red._;
 							.map(function(target_pointer) {
 								if(_.isElement(target_pointer) || target_pointer === window) {
 									return target_pointer;
-								} else if(target_pointer instanceof red.Pointer) {
+								} else if(target_pointer instanceof red.PointerValue) {
+									var ptr = target_pointer.get_pointer();
 									var dict;
-									var targ = target_pointer.points_at();
+									var targ = ptr.points_at();
 
 									var manifestation_pointers;
 
 									if(targ instanceof red.Dict) {
 										dict = targ;
-										manifestation_pointers = dict.get_manifestation_pointers(target_pointer);
+										manifestation_pointers = dict.get_manifestation_pointers(ptr);
 									} else {
 										throw new Error("Unknown target");
 									}
@@ -61,7 +62,7 @@ var cjs = red.cjs, _ = red._;
 										});
 										return dom_objs;
 									} else {
-										var dom_attachment = dict.get_attachment_instance("dom", target_pointer);
+										var dom_attachment = dict.get_attachment_instance("dom", ptr);
 										if(dom_attachment) {
 											return dom_attachment.get_dom_obj();
 										}

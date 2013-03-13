@@ -42,12 +42,12 @@ red.ManifestationContext = function(owner, basis, basis_index, options) {
 	this.basis_index = basis_index;
 	this.context_obj = {
 		basis: _.extend({
-					value: basis,
-					literal: true
+					value: basis
+		//			literal: true
 				}, options),
 		basis_index: _.extend({
-						value: basis_index,
-						literal: true
+						value: basis_index
+						//literal: true
 					}, options)
 	};
 	this._owner = owner;

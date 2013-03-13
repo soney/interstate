@@ -245,7 +245,10 @@ red.check_pointer_equality_eqeq = function(itema, itemb) {
 	}
 };
 
-red.check_pointer_value_equality =  red.check_pointer_equality_eqeqeq = function(itema, itemb) {
+red.check_pointer_value_equality =  red.check_pointer_value_equality_eqeqeq = function(itema, itemb) {
+	if(itema instanceof red.Pointer|| itemb instanceof red.Pointer) {
+		debugger;
+	}
 	if(itema instanceof red.PointerValue && itemb instanceof red.PointerValue) {
 		return itema.get_pointer().eq(itemb.get_pointer());
 	} else {
@@ -277,6 +280,9 @@ red.PointerValue = function(options) {
 	proto.get_pointer = function() { return this.pointer; }
 	proto.toString = function() {
 		return "p_" + this.get_pointer().toString();
+	};
+	proto.hash = function() {
+		return this.get_pointer().hash();
 	};
 }(red.PointerValue));
 

@@ -277,9 +277,7 @@ red.DomAttachmentInstance = function(options) {
 				try {
 					text = owner.prop_val("text", pointer);
 				} catch(e) {
-					if(red.__debug) {
-						console.error(e);
-					}
+					console.error(e);
 				}
 			}
 
@@ -293,9 +291,7 @@ red.DomAttachmentInstance = function(options) {
 					try {
 						children = owner.prop_val("children", pointer) || [];
 					} catch(e) {
-						if(red.__debug) {
-							console.error(e);
-						}
+						console.error(e);
 					}
 				}
 

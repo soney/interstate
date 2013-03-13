@@ -114,7 +114,7 @@ var get_conditional_$ = function(test, consequent, alternate) { // test ? conseq
 
 var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 	if(key === "root") {
-		return context.slice(0, 1);
+		return new red.PointerValue({pointer: context.slice(0, 1)});
 	} else if(key === "window") {
 		return window;
 	}
@@ -174,7 +174,7 @@ var get_this_$ = function(context) {
 
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.Dict) {
-				return curr_context;
+				return new red.PointerValue({pointer: curr_context});
 			}
 			curr_context = curr_context.pop();
 			context_item = curr_context.points_at();
@@ -204,7 +204,8 @@ var get_member_$ = function(object, property) {
 		if(obj_got instanceof red.PointerValue) {
 			var pointer = obj_got.get_pointer();
 			var dict = pointer.points_at();
-			return dict.prop_val(prop_got, pointer);
+			var rv = dict.prop_val(prop_got, pointer);
+			return rv;
 		} else {
 			return obj_got[prop_got];
 		}

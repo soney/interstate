@@ -605,7 +605,9 @@ red.Dict = function(options, defer_initialization) {
 				pcontext = red.create("pointer");
 			}
 			var prop_pointer = pcontext.push(value);
-			return prop_pointer.val();
+			var rv = prop_pointer.val();
+			if(rv instanceof red.Pointer) { debugger; }
+			return rv;
 		}
 	};
 
@@ -728,14 +730,13 @@ red.Dict = function(options, defer_initialization) {
 		};
 		if(include_uid) { rv.uid = this.uid; }
 
-		var self = this;
 		var args = _.toArray(arguments);
 		_.each(this.get_builtins(), function(builtin, name) {
 			if(builtin.serialize !== false) {
 				var getter_name = builtin.getter_name || "get_" + name;
-				rv[name] = red.serialize.apply(red, ([self[getter_name]()]).concat(args));
+				rv[name] = red.serialize.apply(red, ([this[getter_name]()]).concat(args));
 			}
-		});
+		}, this);
 
 		return rv;
 	};

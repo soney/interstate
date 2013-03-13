@@ -10,7 +10,8 @@ red.Query = function(options) {
 		this.options.value = [this.options.value];
 	}
 	this.options.value = _	.chain(this.options.value)
-							.map(function(pointer) {
+							.map(function(pointer_value) {
+								var pointer = pointer_value.get_pointer();
 								var points_at = pointer.points_at();
 								if(points_at instanceof red.Dict) {
 									var manifestation_pointers = points_at.get_manifestation_pointers(pointer);
