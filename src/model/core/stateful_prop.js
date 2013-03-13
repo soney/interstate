@@ -62,7 +62,7 @@ red.StatefulProp = function(options, defer_initialization) {
 					hash: "hash"
 				});
 			},
-			serializable: false
+			serialize: false
 		},
 
 		"statechart_parent": {

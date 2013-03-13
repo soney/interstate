@@ -13,25 +13,15 @@
 				env	
 					.set("a", "<stateful>")
 					.cd("a")
-						.set("(protos)", "INIT", "[]")
 						.set("x")
 						.set("x", "INIT", "1")
-						.set("(protos)", "INIT", "[dom]")
-						.set("text", "<stateful_prop>")
-						.set("text", "INIT", "'hello world'")
 						.up()
 					.set("b", "<stateful>")
 					.cd("b")
 						.set("(protos)", "INIT", "[a]")
+						/*
 						.up()
-					.set("c", "<stateful>")
-					.cd("c")
-						.set("(protos)", "INIT", "[b]")
-						.up()
-					.cd("children")
-					.set("obj", "<stateful>")
-					.cd("obj")
-						.set("(protos)", "INIT", "[c]")
+						*/
 					;
 
 
