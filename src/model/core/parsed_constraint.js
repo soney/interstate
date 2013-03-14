@@ -141,6 +141,7 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 		var curr_context = context;
 		var context_item = curr_context.points_at();
 
+		
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.Dict) {
 				if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {

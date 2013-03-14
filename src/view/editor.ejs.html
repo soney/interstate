@@ -21,17 +21,18 @@
 		</style>
 	</head>
 	<body>
-		<div id="editor">
-		</div>
+		<div id="editor"></div>
 
 		<div>
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
 				$(function() {
 					$("div#editor").editor({
+						/*
 						debug_ready: true,
 						debug_env: true,
 						command_box: true
+						*/
 					});
 				});
 			</script>

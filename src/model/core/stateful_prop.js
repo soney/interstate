@@ -374,13 +374,17 @@ var StatefulPropContextualVal = function(options) {
 				item_i;
 
 			i++;
+
+
 			while(i<len) {
 				item_i = my_context.points_at(i);
-				var name = item_im1.name_for_prop(item_i, my_context);
+				var name = item_im1.name_for_prop(item_i, my_context.slice(0, i));
+				//console.log(name, my_context.slice(0, i), item_i, item_im1)
 				my_names.push(name);
 				item_im1 = item_i;
 				i++;
 			}
+
 			var protos_and_me = ([stateful_obj]).concat(stateful_obj._get_proto_vals(stateful_obj_context));
 			var statecharts = _.compact(_.map(protos_and_me, function(x) {
 				if(x instanceof red.StatefulObj) {
@@ -388,17 +392,20 @@ var StatefulPropContextualVal = function(options) {
 				}
 			}));
 
+
+			var soc_length = stateful_obj_context.length();
+
 			var my_names_len = my_names.length;
 			var inherits_from = _.compact(_.map(protos_and_me, function(x) {
 				var dict = x;
 				for(i = 0; i<my_names_len; i++) {
-					dict = dict._get_direct_prop(my_names[i]);
+					dict = dict._get_prop(my_names[i], my_context.slice(0, soc_length+i));
 					if(!dict) {
 						return false;
 					}
 				}
 				return dict;
-			}));
+			}, this));
 
 
 			var j, leni = inherits_from.length, lenj = statecharts.length;
@@ -449,8 +456,6 @@ var StatefulPropContextualVal = function(options) {
 	proto.initialize = function() {
 		this.traverse_values(function(state, key, order, direct_values) {
 		}, function(transition, key, order, direct_values) {
-			if(transition.from() instanceof red.StartState) {
-			}
 			this.set_transition_times_run(transition, transition.get_times_run());
 		}, function() {
 		});
@@ -491,6 +496,8 @@ var StatefulPropContextualVal = function(options) {
 	proto.getter = function() {
 		var rv = false, from_state = false, using_start_transition = false;
 		var state_vals = [];
+		var context = this.get_context();
+
 
 		// on_state, on_transition, on_non_stateful
 		this.traverse_values(function(state, key, order, direct_values) {

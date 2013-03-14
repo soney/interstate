@@ -13,25 +13,25 @@ red.Cell = function(options, defer_initialization) {
 	var proto = my.prototype;
 	my.builtins = {
 		"str": {
-			start_with: function() { return cjs.$(""); }
-			, getter: function(me) { return me.get(); }
-			, setter: function(me, str) {
+			start_with: function() { return cjs.$(""); },
+			getter: function(me) { return me.get(); },
+			setter: function(me, str) {
 				cjs.wait();
 				me.set(str, true);
 				var cvs = this.get_contextual_values();
 				if(cvs) { cvs.clear(); }
 				cjs.signal();
 			}
-		}
-		, "contextual_values": {
+		},
+		"contextual_values": {
 			default: function() { return cjs.map({
 				equals: red.check_pointer_equality,
 				hash: "hash"
-			}); }
-			, settable: false
-			, serialize: false
-		}
-		, "ignore_inherited_in_contexts": {
+			}); },
+			settable: false,
+			serialize: false
+		},
+		"ignore_inherited_in_contexts": {
 			default: function() { return []; }
 		}
 

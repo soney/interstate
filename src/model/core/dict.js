@@ -619,7 +619,18 @@ red.Dict = function(options, defer_initialization) {
 				pcontext = red.create("pointer");
 			}
 			var prop_pointer = pcontext.push(value);
+			if(name === 'name') {
+				if(pcontext.length() === 9) {
+					window.xyz = true;
+				}
+			}
 			var rv = prop_pointer.val();
+
+			if(name === 'name') {
+				if(pcontext.length() === 9) {
+					delete window.xyz;
+				}
+			}
 			return rv;
 		}
 	};
@@ -655,6 +666,8 @@ red.Dict = function(options, defer_initialization) {
 	proto.get_manifestation_objs = function(pcontext) {
 		var my_index = pcontext.lastIndexOf(this);
 		var special_contexts = pcontext.special_contexts(my_index);
+
+
 
 		if(_.some(special_contexts, function(sc) { return sc instanceof red.ManifestationContext})) {
 			return null;

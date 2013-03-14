@@ -7,7 +7,8 @@ $.widget("red.editor", {
 	options: {
 		debug_ready: false,
 		debug_env: false,
-		command_box: false
+		command_box: false,
+		server_window: window.opener
 	}
 
 	, _create: function() {
@@ -35,7 +36,8 @@ $.widget("red.editor", {
 
 
 		this.client_socket = new red.ProgramStateClient({
-			ready_func: this.option("debug_ready")
+			ready_func: this.option("debug_ready"),
+			server_window: this.option("server_window")
 		}).on("message", function(data) {
 			if(data.type === "color") {
 				var color = data.value;

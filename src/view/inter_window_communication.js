@@ -186,7 +186,7 @@ red.ProgramStateServer = function(options) {
 
 red.ProgramStateClient = function(options) {
 	able.make_this_listenable(this);
-	this.server_window = window.opener;
+	this.server_window = options.server_window;
 
 	if(options.ready_func === true) {
 		var old_ready = window.ready;

@@ -10,6 +10,7 @@ $.widget("red.dom_output", {
 		edit_on_open: false,
 		editor_url: origin + "/src/view/editor.ejs.html",
 		editor_name: uid.get_prefix() + "red_editor",
+		open_separate_client_window: true,
 		editor_window_options: "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=800, height=600"
 	}
 
@@ -119,7 +120,12 @@ $.widget("red.dom_output", {
 		if(this.editor_window) {
 			this.editor_window.focus();
 		} else {
-			this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options"));
+			if(this.option("open_separate_client_window")) {
+				this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options"));
+			} else {
+				this.editor_window = window;
+			}
+
 			var root_pointer = this.option("root"),
 				root = root_pointer.root();
 
