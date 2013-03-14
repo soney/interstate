@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+  </head>
+  <body>
+		<div class="output"></div>
+		<div class="editor"></div>
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript">
+				var root = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment", {
+					instance_options: {
+						tag: "div"
+					}
+				})]});
+				var dict1 = red.create("dict", {has_protos: false});
+				root.set("dict", dict1);
+
+				var cell1 = red.create("cell", {str: "1+1"});
+				dict1.set("c", cell1);
+
+				//var cell2 = red.create("cell", {str: "2+3"});
+				//root.set("cell", cell2);
+
+				$("div.editor").editor({
+					//debug_ready: true,
+					debug_env: true,
+					command_box: true,
+					server_window: window
+				});
+
+				$("div.output").dom_output({
+					root: red.create("pointer", {stack: [root]}),
+					open_separate_client_window: false,
+					edit_on_open: true
+				});
+			</script>
+	  </div>
+  </body>
+</html>

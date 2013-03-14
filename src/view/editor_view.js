@@ -131,8 +131,6 @@ $.widget("red.editor", {
 					.set("pointer", "<stateful_prop>")
 					.set("pointer", "INIT", "parent.parent.prop_pointer")
 					.set("(protos)", "INIT", "[ambiguous_view]")
-					//.set("text")
-					//.set("text", "INIT", "pointer")
 					.up()
 				.up()
 			.up()

@@ -118,6 +118,7 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 	} else if(key === "window") {
 		return window;
 	} else if(key === "parent") {
+		console.log(context.toString());
 		var found_this = false;
 		var curr_context = context;
 		var context_item = curr_context.points_at();
