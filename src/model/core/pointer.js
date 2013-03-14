@@ -74,6 +74,9 @@ red.Pointer = function(options) {
 	proto.indexOf = function(item) {
 		return this._stack.indexOf(item);
 	};
+	proto.lastIndexOf = function(item) {
+		return this._stack.lastIndexOf(item);
+	};
 	proto.root = function() {
 		return this._stack[0];
 	};
@@ -161,7 +164,7 @@ red.Pointer = function(options) {
 	};
 
 	proto.toString = function() {
-		return "pointer:" + _.map(this._stack, function(x) { return x.uid});
+		return "pointer (" + _.map(this._stack, function(x) { return uid.strip_prefix(x.uid)}).join(", ") + ")";
 	};
 
 	proto.summarize = function() {

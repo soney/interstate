@@ -117,6 +117,22 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 		return new red.PointerValue({pointer: context.slice(0, 1)});
 	} else if(key === "window") {
 		return window;
+	} else if(key === "parent") {
+		var found_this = false;
+		var curr_context = context;
+		var context_item = curr_context.points_at();
+
+		while(!curr_context.is_empty()) {
+			if(context_item instanceof red.Dict) {
+				if(found_this) {
+					return new red.PointerValue({pointer: curr_context});
+				} else {
+					found_this = true;
+				}
+			}
+			curr_context = curr_context.pop();
+			context_item = curr_context.points_at();
+		}
 	}
 
 	ignore_inherited_in_contexts = ignore_inherited_in_contexts || [];
@@ -161,7 +177,8 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 	if(red.__debug) {
 		rv.__debug_info = {
 			type: "identifier",
-			key: key
+			key: key,
+			context: context
 		};
 	}
 	return rv;
@@ -185,7 +202,8 @@ var get_this_$ = function(context) {
 
 	if(red.__debug) {
 		rv.__debug_info = {
-			type: "this"
+			type: "this",
+			context: context
 		};
 	}
 
@@ -201,7 +219,26 @@ var get_member_$ = function(object, property) {
 		}
 
 		var prop_got = cjs.get(property);
+
+
 		if(obj_got instanceof red.PointerValue) {
+			if(prop_got === "parent") {
+				var found_this = false;
+				var curr_context = obj_got.get_pointer();
+				var context_item = curr_context.points_at();
+
+				while(!curr_context.is_empty()) {
+					if(context_item instanceof red.Dict) {
+						if(found_this) {
+							return new red.PointerValue({pointer: curr_context});
+						} else {
+							found_this = true;
+						}
+					}
+					curr_context = curr_context.pop();
+					context_item = curr_context.points_at();
+				}
+			}
 			var pointer = obj_got.get_pointer();
 			var dict = pointer.points_at();
 			var rv = dict.prop_val(prop_got, pointer);
@@ -214,7 +251,8 @@ var get_member_$ = function(object, property) {
 	if(red.__debug) {
 		rv.__debug_info = {
 			type: "member",
-			property: property
+			property: property,
+			object: object
 		};
 	}
 

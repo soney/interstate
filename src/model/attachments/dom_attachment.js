@@ -266,7 +266,7 @@ red.DomAttachmentInstance = function(options) {
 				}
 			}
 
-			if(text) {
+			if(text !== undefined) {
 				dom_obj.textContent = text;
 			} else {
 				var children;

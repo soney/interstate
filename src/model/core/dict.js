@@ -378,10 +378,11 @@ red.Dict = function(options, defer_initialization) {
 
 	proto._get_special_context_prop_names = function(pcontext) {
 		var rv = [];
-		var my_index = pcontext.indexOf(this);
+		var my_index = pcontext.lastIndexOf(this);
 		if(my_index >= 0) {
 			var special_contexts = pcontext.special_contexts(my_index);
 			var len = special_contexts.length;
+
 			for(var i = 0; i<len; i++) {
 				var special_context = special_contexts[i];
 				var context_obj = special_context.get_context_obj();
@@ -391,7 +392,7 @@ red.Dict = function(options, defer_initialization) {
 		return rv;
 	};
 	proto._get_special_context_prop_info = function(prop_name, pcontext) {
-		var my_index = pcontext.indexOf(this);
+		var my_index = pcontext.lastIndexOf(this);
 		if(my_index >= 0) {
 			var special_contexts = pcontext.special_contexts(my_index);
 			var len = special_contexts.length;
@@ -652,7 +653,7 @@ red.Dict = function(options, defer_initialization) {
 		return dict;
 	};
 	proto.get_manifestation_objs = function(pcontext) {
-		var my_index = pcontext.indexOf(this);
+		var my_index = pcontext.lastIndexOf(this);
 		var special_contexts = pcontext.special_contexts(my_index);
 
 		if(_.some(special_contexts, function(sc) { return sc instanceof red.ManifestationContext})) {

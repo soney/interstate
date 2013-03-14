@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+  </head>
+  <body>
+		<div class="content">
+		</div>
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript">
+				var env = red.create("environment");
+				env	
+					.cd("children")
+						.set("obj", "<dict>")
+						.cd("obj")
+							.set("(manifestations)", "3")
+							.set("(protos)", "dom")
+							.set("objbasis", "basis")
+							.set("children", "<dict>")
+							.cd("children")
+								.set("o2", "<dict>")
+								.cd("o2")
+									.set("(protos)", "dom")
+									.set("(manifestations)", "4")
+									.set("text", "basis + ',' + objbasis")
+									.up()
+								.up()
+							.up()
+						.up()
+					;
+
+
+
+				var root_pointer = env.get_root_pointer();
+				output_view = $("<div />").dom_output({
+					root: root_pointer
+				}).appendTo(document.body);
+				env.print_on_return = true;
+				//console.log(env.print());
+			</script>
+	  </div>
+  </body>
+</html>
