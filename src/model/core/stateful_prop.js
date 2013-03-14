@@ -200,12 +200,16 @@ red.StatefulProp = function(options, defer_initialization) {
 	};
 	proto._get_value_and_from_state = function(pcontext) {
 		var value_for_pcontext = this._get_value_for_context(pcontext);
-		return value_for_pcontext.get_value_and_from_state();
+		var rv = value_for_pcontext.get_value_and_from_state();
+ 
+		return rv;
 	};
 	proto._get_value_for_context = function(pcontext) {
-		return this.get_values_per_context().get_or_put(pcontext, function() {
+		var rv = this.get_values_per_context().get_or_put(pcontext, function() {
 			return this.create_contextual_value(pcontext);
 		}, this);
+
+		return rv;
 	};
 	proto.get_pointer_for_context = function(pcontext) {
 		var value_and_state = this._get_value_and_from_state(pcontext);
@@ -518,6 +522,7 @@ var StatefulPropContextualVal = function(options) {
 				, statechart_order: Infinity
 			});
 		});
+
 
 		if(rv) {
 			this._from_state = from_state;
