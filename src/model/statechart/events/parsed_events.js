@@ -42,7 +42,8 @@ var id  = 0;
 
 				var tree = this._tree.get();
 				cjs.wait();
-				var event = get_event(tree, {
+				var event;
+				event = get_event(tree, {
 						parent: parent,
 						context: context
 					}, this._live_event_creator);

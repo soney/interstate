@@ -368,22 +368,21 @@ var StatefulPropContextualVal = function(options) {
 			var stateful_obj_context = SOandC.context;
 			
 			var my_names = [];
-			var i = my_context.indexOf(stateful_obj);
+			var i = my_context.lastIndexOf(stateful_obj);
 			var len = my_context.length();
 			var item_im1 = my_context.points_at(i),
 				item_i;
 
 			i++;
 
-
 			while(i<len) {
 				item_i = my_context.points_at(i);
 				var name = item_im1.name_for_prop(item_i, my_context.slice(0, i));
-				//console.log(name, my_context.slice(0, i), item_i, item_im1)
 				my_names.push(name);
 				item_im1 = item_i;
 				i++;
 			}
+
 
 			var protos_and_me = ([stateful_obj]).concat(stateful_obj._get_proto_vals(stateful_obj_context));
 			var statecharts = _.compact(_.map(protos_and_me, function(x) {
@@ -392,21 +391,17 @@ var StatefulPropContextualVal = function(options) {
 				}
 			}));
 
-
-			var soc_length = stateful_obj_context.length();
-
 			var my_names_len = my_names.length;
 			var inherits_from = _.compact(_.map(protos_and_me, function(x) {
 				var dict = x;
 				for(i = 0; i<my_names_len; i++) {
-					dict = dict._get_prop(my_names[i], my_context.slice(0, soc_length+i));
+					dict = dict._get_prop(my_names[i], my_context.slice(0, my_names_len+i));
 					if(!dict) {
 						return false;
 					}
 				}
 				return dict;
 			}, this));
-
 
 			var j, leni = inherits_from.length, lenj = statecharts.length;
 			for(i = 0; i<leni; i++) {
@@ -550,7 +545,7 @@ var StatefulPropContextualVal = function(options) {
 				info_i = state_vals[i];
 				if(info_i.statechart_order < info.statechart_order) {
 					info = info_i;
-				} else if(info_i.statechart_order === info.statechart_order) {
+				} else if(info_i.statechart_order === info.statechart_order && info.statechart_order < Infinity) {
 					if(info_i.state.order(info.state) > 0) {
 						info = info_i;
 					}

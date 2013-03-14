@@ -140,7 +140,12 @@ var print = function(current_pointer, logging_mechanism) {
 			var dict = points_at;
 
 			if(points_at instanceof red.Dict) {
-				var manifestation_pointers = points_at.get_manifestation_pointers(pointer);
+				var manifestation_pointers;
+				try {
+					manifestation_pointers = points_at.get_manifestation_pointers(pointer);
+				} catch (e) {
+					console.error(e);
+				}
 				if(_.isArray(manifestation_pointers)) {
 					var is_expanded = current_pointer.has(points_at);
 					logging_mechanism[is_expanded ? "group" : "groupCollapsed"]("(manifestations)");
@@ -233,7 +238,12 @@ var print = function(current_pointer, logging_mechanism) {
 					prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
 				}
 
-				prop_text = pad(prop_text + value_to_value_str(prop_pointer.val()), PROP_NAME_WIDTH + PROP_ID_WIDTH + PROP_VALUE_WIDTH);
+				try {
+					var pp_val = prop_pointer.val();
+					prop_text = pad(prop_text + value_to_value_str(pp_val), PROP_NAME_WIDTH + PROP_ID_WIDTH + PROP_VALUE_WIDTH);
+				} catch(e) {
+					prop_text = e;
+				}
 
 				if((prop_points_at instanceof red.Dict) || (prop_points_at instanceof red.StatefulProp)) {
 					logging_mechanism[is_expanded ? "group" : "groupCollapsed"](prop_text);

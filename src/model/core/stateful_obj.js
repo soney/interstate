@@ -122,7 +122,7 @@ red.StatefulObj = function(options, defer_initialization) {
 		var active_states = get_active_states(statecharts);
 
 		var flattened_statecharts = _.flatten(_.map(statecharts, function(statechart) {
-			return _.without(statechart.flatten_substates(true), statechart);
+			return _.without(statechart.flatten_substates(/*true*/), statechart);
 		}), true);
 
 		var flattened_states_and_transitions = _.flatten(_.map(flattened_statecharts, function(state) {

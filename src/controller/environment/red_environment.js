@@ -24,7 +24,6 @@ var Env = function(options) {
 	this.pointer = root_pointer;
 	this.print_on_return = false;
 
-/*
 	root.set("on", red.on_event);
 	root.set("emit", red.emit);
 	root.set("find", function(find_root) {
@@ -33,7 +32,6 @@ var Env = function(options) {
 		}
 		return new red.Query({value: find_root});
 	});
-	*/
 };
 
 (function(my) {
