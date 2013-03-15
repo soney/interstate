@@ -391,11 +391,12 @@ var StatefulPropContextualVal = function(options) {
 				}
 			}));
 
+			var stateful_obj_context_len = stateful_obj_context.length();
 			var my_names_len = my_names.length;
 			var inherits_from = _.compact(_.map(protos_and_me, function(x) {
 				var dict = x;
 				for(i = 0; i<my_names_len; i++) {
-					dict = dict._get_prop(my_names[i], my_context.slice(0, my_names_len+i));
+					dict = dict._get_prop(my_names[i], my_context.slice(0, stateful_obj_context_len + my_names_len-i));
 					if(!dict) {
 						return false;
 					}

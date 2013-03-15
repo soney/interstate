@@ -133,13 +133,7 @@ red.Dict = function(options, defer_initialization) {
 		var protos_pointer = pointer.push(this.direct_protos());
 
 
-		if(uid.strip_prefix(pointer.points_at().uid) == 29 && uid.strip_prefix(this.uid) == 20) {
-			window.xy = true;
-		}
 		var direct_proto_pointers = protos_pointer.val();
-		if(uid.strip_prefix(pointer.points_at().uid) == 29 && uid.strip_prefix(this.uid) == 20) {
-			delete window.xy;
-		}
 		if(!_.isArray(direct_proto_pointers)) {
 			direct_proto_pointers = [direct_proto_pointers];
 		}
@@ -619,18 +613,7 @@ red.Dict = function(options, defer_initialization) {
 				pcontext = red.create("pointer");
 			}
 			var prop_pointer = pcontext.push(value);
-			if(name === 'name') {
-				if(pcontext.length() === 9) {
-					window.xyz = true;
-				}
-			}
 			var rv = prop_pointer.val();
-
-			if(name === 'name') {
-				if(pcontext.length() === 9) {
-					delete window.xyz;
-				}
-			}
 			return rv;
 		}
 	};

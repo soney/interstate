@@ -42,7 +42,7 @@ var id  = 0;
 
 				var tree = this._tree.get();
 				cjs.wait();
-				var event;
+				var event = false;
 				event = get_event(tree, {
 						parent: parent,
 						context: context

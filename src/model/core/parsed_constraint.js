@@ -76,7 +76,8 @@ var get_op_$ = function(calling_context, pcontext, op) {
 		} else if(op_got instanceof red.ParsedFunction) {
 			return op_got._apply(pcontext, args);
 		} else {
-			throw new Error("Calling a non-function");
+			//throw new Error("Calling a non-function");
+			return undefined;
 		}
 	});
 };
@@ -192,6 +193,7 @@ var get_this_$ = function(context) {
 
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.Dict) {
+				//if(uid.strip_prefix(context_item.uid) == 1) debugger;
 				return new red.PointerValue({pointer: curr_context});
 			}
 			curr_context = curr_context.pop();
@@ -216,7 +218,8 @@ var get_member_$ = function(object, property) {
 		var obj_got = cjs.get(object);
 
 		if(!obj_got) {
-			throw new Error("Looking for property of " + obj_got);
+			//throw new Error("Looking for property of " + obj_got);
+			return undefined;
 		}
 
 		var prop_got = cjs.get(property);
