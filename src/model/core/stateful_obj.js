@@ -13,7 +13,9 @@ red.find_stateful_obj_and_context = function(context) {
 			} else if(statechart_parent instanceof red.Statechart) {
 				console.log(statechart_parent);
 			} else if(statechart_parent instanceof red.StatefulObj) {
-				set_statechart = statechart_parent;
+				if(!set_statechart) {
+					set_statechart = statechart_parent;
+				}
 			} else {
 				console.log(statechart_parent);
 			}
