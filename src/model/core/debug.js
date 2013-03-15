@@ -239,7 +239,7 @@ var print = function(current_pointer, logging_mechanism) {
 				}
 
 				try {
-					var pp_val = prop_pointer.val();
+					var pp_val = dict.prop_val(prop_name, pointer);
 					prop_text = pad(prop_text + value_to_value_str(pp_val), PROP_NAME_WIDTH + PROP_ID_WIDTH + PROP_VALUE_WIDTH);
 				} catch(e) {
 					prop_text = e;

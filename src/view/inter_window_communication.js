@@ -39,6 +39,8 @@ red.ProgramStateServer = function(options) {
 		if(event.source === this.client_window) {
 			var data = event.data;
 			if(data === "ready") {
+				red.event_queue.wait();
+				cjs.wait();
 				this.connected = true;
 				this.post_delta(new red.ProgramDelta({
 					root_pointer: red.create("pointer", {stack: [this.root]})
@@ -51,6 +53,8 @@ red.ProgramStateServer = function(options) {
 					root_pointer: red.create("pointer", {stack: [this.root]})
 				}));
 				this._emit("connected");
+				cjs.signal();
+				red.event_queue.signal();
 			} else {
 				var type = data.type;
 				if(type === "command") {
@@ -271,9 +275,10 @@ red.ProgramStateClient = function(options) {
 				var obj = pointer.points_at();
 				var obj_parent = pointer.points_at(-2);
 				if(obj_parent instanceof red.Dict) {
-					var prop_name = obj_parent.name_for_prop(obj, pointer.pop());
+					var dict_pointer = pointer.pop();
+					var prop_name = obj_parent.name_for_prop(obj, dict_pointer);
 					if(prop_name) {
-						obj_parent.set_cached_value(prop_name, cached_value);
+						obj_parent.set_cached_value(prop_name, dict_pointer, cached_value);
 					}
 				}
 			}, this);

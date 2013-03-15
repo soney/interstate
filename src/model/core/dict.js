@@ -709,11 +709,14 @@ red.Dict = function(options, defer_initialization) {
 		return this;
 	};
 
-	proto.set_cached_value = function(prop_name, value) {
-		if(!this.prop_val.has(prop_name)) {
-			this.prop_val.initialize(prop_name);
+	proto.set_cached_value = function(name, pcontext, value) {
+		this.prop_val.set_cached_value.call(this, name, pcontext, value);
+		var ptr = this.get_prop_pointer(name, pcontext);
+		var pat = ptr.points_at();
+		if(pat instanceof red.StatefulProp) {
+			var contextual_value = pat._get_value_for_context(ptr);
+			contextual_value._last_value = value;
 		}
-		this.prop_val.set_cached_value.call(this, prop_name, value);
 		return this;
 	};
 

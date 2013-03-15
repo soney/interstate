@@ -13,13 +13,13 @@
 				env	.cd("children")
 					.set("obj", "<stateful>")
 					.cd("obj")
-					.add_transition("INIT", "INIT", "on('timeout', 1000)")
+					.add_transition("INIT", "INIT", "on('timeout', 5000)")
 					.set("(protos)", "INIT", "dom")
 					.set("tag", "<stateful_prop>")
 					.set("text", "<stateful_prop>")
 					.set("tag", "INIT", "'div'")
 					.set("text", "INIT", "i")
-					.set("i", "(start) -> INIT", "1")
+					.set("i", "(start) -> INIT", "100")
 					.set("i", "INIT -> INIT", "i+1")
 					;
 

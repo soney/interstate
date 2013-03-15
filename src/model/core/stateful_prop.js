@@ -38,6 +38,7 @@ red.StatefulProp = function(options, defer_initialization) {
 	proto.do_initialize = function(options) {
 		red.install_instance_builtins(this, options, my);
 		this.get_direct_values().set_hash("hash");
+		this.used_start_transition = options.used_start_transition === true;
 
 		/*
 		this._direct_values = options.direct_values || cjs.map();
@@ -226,7 +227,8 @@ red.StatefulProp = function(options, defer_initialization) {
 	proto.create_contextual_value = function(pcontext) {
 		return new StatefulPropContextualVal({
 			context: pcontext,
-			stateful_prop: this
+			stateful_prop: this,
+			used_start_transition: this.used_start_transition 
 		});
 	};
 	proto.hash = function() {
@@ -268,9 +270,8 @@ red.StatefulProp = function(options, defer_initialization) {
 										}
 										return rv;
 									},
-									function(obj) {
+									function(obj, options) {
 										var rv = new my({uid: obj.uid}, true);
-										var rest_args = _.rest(arguments);
 
 										var serialized_options = {};
 										_.each(my.builtins, function(builtin, name) {
@@ -279,15 +280,16 @@ red.StatefulProp = function(options, defer_initialization) {
 											}
 										});
 
+										var rest_args = _.rest(arguments, 2);
 										rv.initialize = function() {
-											var options = {
+											options = _.extend({
 												//direct_values: red.deserialize.apply(red, ([obj.direct_values]).concat(rest_args))
-												can_inherit: red.deserialize.apply(red, ([obj.can_inherit]).concat(rest_args))
-												, ignore_inherited_in_contexts: red.deserialize.apply(red, ([obj.ignore_inherited_in_contexts]).concat(rest_args))
-												, check_on_nullify: red.deserialize.apply(red, ([obj.check_on_nullify]).concat(rest_args))
-											};
+												can_inherit: red.deserialize.apply(red, ([obj.can_inherit, options]).concat(rest_args))
+												, ignore_inherited_in_contexts: red.deserialize.apply(red, ([obj.ignore_inherited_in_contexts, options]).concat(rest_args))
+												, check_on_nullify: red.deserialize.apply(red, ([obj.check_on_nullify, options]).concat(rest_args))
+											}, options);
 											_.each(serialized_options, function(serialized_option, name) {
-												options[name] = red.deserialize.apply(red, ([serialized_option]).concat(rest_args));
+												options[name] = red.deserialize.apply(red, ([serialized_option, options]).concat(rest_args));
 											});
 											this.do_initialize(options);
 										};
@@ -308,7 +310,7 @@ var StatefulPropContextualVal = function(options) {
 	this._stateful_prop = options.stateful_prop;
 	this._last_value = undefined;
 	this._from_state = undefined;
-	this._used_start_transition = false;
+	this._used_start_transition = options.used_start_transition === true;
 	this._value = new cjs.Constraint(_.bind(this.getter, this), false, {
 		check_on_nullify: this._stateful_prop._check_on_nullify
 	});

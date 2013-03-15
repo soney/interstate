@@ -29,10 +29,14 @@ red.ProgramDelta = function(options) {
 											root: serialized_root
 										};
 									},
-									function(obj) {
-										var rest_args = _.rest(arguments);
+									function(obj, options) {
+										//var rest_args = _.rest(arguments);
 
-										var root = red.deserialize.apply(red, ([obj.root]).concat(rest_args));
+										options = _.extend({
+											used_start_transition: true
+										}, options);
+
+										var root = red.deserialize.apply(red, ([obj.root, options]).concat(_.rest(arguments,2)));
 										return new my({
 											root: root
 										});
