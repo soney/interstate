@@ -40,7 +40,14 @@
 					} catch(e) {
 						console.log("Creating a new project");
 						env = red.create("environment");
-						env.set("a", "<stateful>")
+						env	.set("a", "<stateful>")
+							.cd("a")
+								.add_state("stateb")
+								.set("x")
+								.set("x", "INIT", "1+1")
+								.set("x", "stateb", "2+2")
+								.up()
+
 
 						root_pointer = env.get_root_pointer();
 						the_div.dom_output({

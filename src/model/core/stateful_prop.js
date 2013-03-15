@@ -148,14 +148,6 @@ red.StatefulProp = function(options, defer_initialization) {
 	// === VALUES ===
 	//
 	
-	proto.get_entries = function(context) {
-		var inherits_from = this._get_inherits_from(context);
-		var entries = this._get_direct_entries();
-		entries.concat.apply(entries, _.map(inherits_from, function(i_from) {
-			return inherits_from._get_direct_entries();
-		}));
-		return entries;
-	};
 	proto.get_state_specs = function(pcontext) {
 		var stateful_obj_and_context = red.find_stateful_obj_and_context(pcontext);
 		var stateful_obj_context = stateful_obj_and_context.context;
