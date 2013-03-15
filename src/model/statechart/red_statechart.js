@@ -467,6 +467,7 @@ red.State = function(options, defer_initialization) {
 
 				var parent_statechart = this,
 					context = this.context();
+
 				var create_transition_shadow = _.memoize(function(transition) {
 					var from = red.find_equivalent_state(transition.from(), parent_statechart);
 					var to = red.find_equivalent_state(transition.to(), parent_statechart);

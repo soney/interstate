@@ -528,8 +528,9 @@ red.StatechartOnCommand = function(options) {
 	if(this._options.listener instanceof red.ParsedFunction) {
 		var func = this._options.listener;
 		var pcontext = this._pcontext;
-		this._listener = function() {
-			func._apply(pcontext, arguments);
+		this._listener = function(info, type) {
+			var event = info.event;
+			func._call(pcontext, event);
 		};
 	} else {
 		this._listener = this._options.listener;

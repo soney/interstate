@@ -243,6 +243,8 @@ var call_fn = function(node, options) {
 			rv[key] = value;
 		});
 		return rv;
+	} else if(type === "DebuggerStatement") {
+		debugger;
 	} else {
 		console.log(type, node);
 	}
@@ -287,7 +289,7 @@ red.ParsedFunction = function(node, options) {
 		}
 	};
 	proto._call = function(pcontext) {
-		return this._apply.apply(pcontext, _.rest(arguments));
+		return this._apply.apply(this, [pcontext, _.rest(arguments)]);
 	};
 }(red.ParsedFunction));
 

@@ -93,7 +93,7 @@ $.widget("red.editor", {
 		.set("type", "editing", "'text'")
 		.set("value", "idle->editing", "obj.get_str()")
 		.up()
-	.on_state("idle -0> editing", "function(){console.log('hi');}")
+	.on_state("idle -0> editing", "function(event){var text = event.target.value; console.log(obj, text);}")
 	.up()
 .set("stateful_prop_view", "<stateful>")
 .cd("stateful_prop_view")

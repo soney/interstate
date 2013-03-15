@@ -3,6 +3,7 @@ var cjs = red.cjs, _ = red._;
 
 red.find_stateful_obj_and_context = function(context) {
 	var popped_item, last;
+	var set_statechart = false;
 	while(!context.is_empty()) {
 		last = context.points_at();
 		if(last instanceof red.StatefulProp) {
@@ -12,16 +13,13 @@ red.find_stateful_obj_and_context = function(context) {
 			} else if(statechart_parent instanceof red.Statechart) {
 				console.log(statechart_parent);
 			} else if(statechart_parent instanceof red.StatefulObj) {
-				return {
-					stateful_obj: statechart_parent,
-					context: context
-				};
+				set_statechart = statechart_parent;
 			} else {
 				console.log(statechart_parent);
 			}
 		} else if(last instanceof red.StatefulObj) {
 			return {
-					stateful_obj: last,
+					stateful_obj: set_statechart ? set_statechart : last,
 					context: context
 				};
 		}
@@ -77,6 +75,7 @@ red.StatefulObj = function(options, defer_initialization) {
 		return sc;
 	};
 	proto._create_statechart_for_context = function(pcontext) {
+		if(pcontext.points_at() instanceof red.StatefulProp) debugger;
 		var own_statechart = this.get_own_statechart();
 		cjs.wait();
 		var shadow_statechart = own_statechart.create_shadow({context: pcontext, running: true});
