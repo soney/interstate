@@ -40,11 +40,12 @@
 					} catch(e) {
 						console.log("Creating a new project");
 						env = red.create("environment");
+						env.set("a", "<stateful>")
 
 						root_pointer = env.get_root_pointer();
 						the_div.dom_output({
 							root: root_pointer,
-							//edit_on_open: true
+							edit_on_open: true
 						});
 						env.print_on_return = true;
 					}
