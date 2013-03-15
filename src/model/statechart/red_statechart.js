@@ -527,7 +527,10 @@ red.State = function(options, defer_initialization) {
 		var parent = this.parent();
 		if(!relative_to) {
 			relative_to = this.root();
+		} else if(relative_to === 'parent') {
+			relative_to = parent;
 		}
+		console.log("GET NAME", relative_to, this, parent);
 
 		var my_name = parent ? parent.get_name_for_substate(this) : "";
 		if(parent === relative_to) {
