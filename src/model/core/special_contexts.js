@@ -39,6 +39,25 @@ red.EventContext = function(event) {
 	};
 }(red.EventContext));
 
+red.StateContext = function(state) {
+	red.StateContext.superclass.constructor.apply(this, arguments);
+	this.state = state;
+	this.context_obj = {
+	};
+};
+
+(function(my) {
+	_.proto_extend(my, red.SpecialContext);
+	var proto = my.prototype;
+	proto.get_state = function() {
+		return this.state;
+	};
+	proto.get_event = function() {
+		var state = this.get_state();
+		return state.get_event();
+	};
+}(red.StateContext));
+
 red.ManifestationContext = function(owner, basis, basis_index, options) {
 	red.EventContext.superclass.constructor.apply(this, arguments);
 	this.basis = basis;

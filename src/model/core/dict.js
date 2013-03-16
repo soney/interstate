@@ -85,12 +85,6 @@ red.Dict = function(options, defer_initialization) {
 			, getter_name: "direct_attachments"
 		}
 
-		, "direct_attachment_instances": {
-			default: function() { return cjs.map(); }
-			, getter_name: "direct_attachment_instances"
-			, serialize: false
-		}
-
 		, "direct_props": {
 			default: function() {
 				var rv = cjs.map({
@@ -108,6 +102,12 @@ red.Dict = function(options, defer_initialization) {
 			, env_visible: false
 			, getter: function(me) { return me.get(); }
 			, setter: function(me, val) { me.set(val, true); }
+		}
+		
+		, "direct_attachment_instances": {
+			default: function() { return cjs.map(); }
+			, getter_name: "direct_attachment_instances"
+			, serialize: false
 		}
 		, "contextual_manifestation_maps": {
 			default: function() { return cjs.map({
