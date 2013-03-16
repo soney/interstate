@@ -28,7 +28,7 @@ var Env = function(options) {
 	root.set("emit", red.emit);
 	root.set("find", function(find_root) {
 		if(arguments.length === 0) {
-			find_root = new red.PointerValue({pointer: root_pointer});
+			find_root = new red.PointerObject({pointer: root_pointer});
 		}
 		return new red.Query({value: find_root});
 	});
@@ -157,7 +157,8 @@ var Env = function(options) {
 	};
 
 	proto.cd = proto.in = function(prop_name) {
-		this.pointer = this.pointer.call("get_prop_pointer", prop_name);
+		var dict = this.pointer.points_at();
+		this.pointer = dict.get_prop_pointer(prop_name, this.pointer);
 		return this.default_return_value();
 	};
 	proto.top = function() {

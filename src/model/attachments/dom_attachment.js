@@ -83,7 +83,7 @@ red.DomAttachmentInstance = function(options) {
 
 		return cjs.liven(function() {
 			var css = owner.prop_val("css", pointer);
-			if(css instanceof red.PointerValue) {
+			if(css instanceof red.PointerObject) {
 				var ptr = css.get_pointer();
 				var css_dict = ptr.points_at();
 				if(css_dict instanceof red.Dict) {
@@ -131,7 +131,7 @@ red.DomAttachmentInstance = function(options) {
 
 		return cjs.liven(function() {
 			var css = owner.prop_val("attr", pointer);
-			if(css instanceof red.PointerValue) {
+			if(css instanceof red.PointerObject) {
 				var ptr = css.get_pointer();
 				var css_dict = ptr.points_at();
 				if(css_dict instanceof red.Dict) {
@@ -200,7 +200,7 @@ red.DomAttachmentInstance = function(options) {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
 				var css = owner.prop_val("css", pointer);
-				if(css instanceof red.PointerValue) {
+				if(css instanceof red.PointerObject) {
 					var ptr = css.get_pointer();
 					var css_dict = ptr.points_at();
 					if(css_dict instanceof red.Dict) {
@@ -227,7 +227,7 @@ red.DomAttachmentInstance = function(options) {
 			var dom_obj = this.get_dom_obj();
 			if(dom_obj) {
 				var css = owner.prop_val("attr", pointer);
-				if(css instanceof red.PointerValue) {
+				if(css instanceof red.PointerObject) {
 					var ptr = css.get_pointer();
 					var css_dict = ptr.points_at();
 					if(css_dict instanceof red.Dict) {
@@ -291,7 +291,7 @@ red.DomAttachmentInstance = function(options) {
 												.map(function(child) {
 													if(child instanceof red.Pointer) {
 														return child;
-													} else if(child instanceof red.PointerValue) {
+													} else if(child instanceof red.PointerObject) {
 														return child.get_pointer();
 													} else {
 														return false;
@@ -299,7 +299,7 @@ red.DomAttachmentInstance = function(options) {
 												}, this)
 												.compact()
 												.value();
-					} else if(children instanceof red.PointerValue) {
+					} else if(children instanceof red.PointerObject) {
 						var ptr = children.get_pointer();
 						var dict = ptr.points_at();
 						children_pointers = dict.get_prop_pointers(ptr);

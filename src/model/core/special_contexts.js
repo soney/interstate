@@ -15,6 +15,9 @@ red.SpecialContext = function() {
 	proto.get_context_obj = function() {
 		return this.context_obj;
 	};
+	proto.eq = function(other_context) {
+		return this === other_context;
+	};
 }(red.SpecialContext));
 
 var context_counter = 1;

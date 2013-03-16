@@ -66,7 +66,7 @@ $.widget("red.editor", {
 "else if(red._.isString(v)) { return '\"' + v + '\"'; }\n" +
 "else if(red._.isFunction(v)) { return '(func)'; }\n" +
 "else if(v instanceof red.Pointer) { return stringify_value(v.points_at()); }\n" +
-"else if(v instanceof red.PointerValue) { return stringify_value(v.get_pointer()); }\n" +
+"else if(v instanceof red.PointerObject) { return stringify_value(v.get_pointer()); }\n" +
 "else if(v instanceof red.Dict) { return v.uid; }\n" +
 "return v;\n" +
 "\n" +

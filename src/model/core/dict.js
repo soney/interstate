@@ -57,6 +57,16 @@ red.Dict = function(options, defer_initialization) {
 			}
 		}
 	});
+	/*
+	this._proto_vals = cjs.memoize(this._get_all_protos, {
+		hash: function(args) { // pcontext
+			return args[0].hash();
+		},
+		equals: function(args1, args2) {
+			return red.check_pointer_equality(args1[0], args2[0]);
+		}
+	});
+	*/
 };
 
 (function(my) {
@@ -140,7 +150,7 @@ red.Dict = function(options, defer_initialization) {
 
 
 		var rv = _.filter(direct_proto_pointers, function(direct_proto_pointer) {
-			return (direct_proto_pointer instanceof red.PointerValue) && (direct_proto_pointer.get_pointer().points_at() instanceof red.Dict);
+			return (direct_proto_pointer instanceof red.PointerObject) && (direct_proto_pointer.get_pointer().points_at() instanceof red.Dict);
 		});
 		rv = _.map(rv, function(pointer_val) {
 			var ppointer = pointer_val.get_pointer();

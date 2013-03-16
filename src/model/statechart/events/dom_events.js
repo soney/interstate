@@ -14,7 +14,7 @@ var cjs = red.cjs, _ = red._;
 				});
 
 				if(specified_target.__red_pointer__) {
-					var red_target = new red.PointerValue({ pointer: specified_target.__red_pointer__ });
+					var red_target = new red.PointerObject({ pointer: specified_target.__red_pointer__ });
 					event.red_target = red_target;
 				}
 				this.fire(event);
@@ -37,7 +37,7 @@ var cjs = red.cjs, _ = red._;
 							.map(function(target_pointer) {
 								if(_.isElement(target_pointer) || target_pointer === window) {
 									return target_pointer;
-								} else if(target_pointer instanceof red.PointerValue) {
+								} else if(target_pointer instanceof red.PointerObject) {
 									var ptr = target_pointer.get_pointer();
 									var dict;
 									var targ = ptr.points_at();

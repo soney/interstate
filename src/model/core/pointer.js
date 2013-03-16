@@ -88,7 +88,7 @@ red.Pointer = function(options) {
 	proto.val = function() {
 		var points_at = this.points_at();
 		if(points_at instanceof red.Dict) {
-			return new red.PointerValue({pointer: this});
+			return new red.PointerObject({pointer: this});
 		} else if(points_at instanceof red.Cell) {
 			var cell_constraint = points_at.constraint_in_context(this);
 			return cjs.get(cell_constraint);
@@ -103,11 +103,7 @@ red.Pointer = function(options) {
 			return points_at;
 		}
 	};
-	proto.call = function(func_name) {
-		var args = _.rest(arguments).concat(this);
-		var points_at = this.points_at();
-		return points_at[func_name].apply(points_at, args);
-	};
+
 	proto.eq = function(other) {
 		var my_stack = this._stack;
 		var other_stack = other._stack;
@@ -128,7 +124,7 @@ red.Pointer = function(options) {
 					return false;
 				}
 				for(j = 0; j<my_len; j++) {
-					if(my_special_contexts[j] !== other_special_contexts[j]) {
+					if(!my_special_contexts[j].eq(other_special_contexts[j])) {
 						return false;
 					}
 				}
@@ -248,21 +244,6 @@ red.check_pointer_equality_eqeq = function(itema, itemb) {
 	}
 };
 
-red.check_pointer_value_equality =  red.check_pointer_value_equality_eqeqeq = function(itema, itemb) {
-	if(itema instanceof red.PointerValue && itemb instanceof red.PointerValue) {
-		return itema.get_pointer().eq(itemb.get_pointer());
-	} else {
-		return itema === itemb;
-	}
-};
-red.check_pointer_value_equality_eqeq = function(itema, itemb) {
-	if(itema instanceof red.PointerValue && itemb instanceof red.PointerValue) {
-		return itema.get_pointer().eq(itemb.get_pointer());
-	} else {
-		return itema == itemb;
-	}
-};
-
 red.pointer_hash = function(item) {
 	if(item && item.hash) {
 		return item.hash();
@@ -271,7 +252,7 @@ red.pointer_hash = function(item) {
 	}
 };
 
-red.PointerValue = function(options) {
+red.PointerObject = function(options) {
 	this.pointer = options.pointer;
 };
 
@@ -284,6 +265,21 @@ red.PointerValue = function(options) {
 	proto.hash = function() {
 		return this.get_pointer().hash();
 	};
-}(red.PointerValue));
+}(red.PointerObject));
+
+red.check_pointer_object_equality =  red.check_pointer_object_equality_eqeqeq = function(itema, itemb) {
+	if(itema instanceof red.PointerObject && itemb instanceof red.PointerObject) {
+		return itema.get_pointer().eq(itemb.get_pointer());
+	} else {
+		return itema === itemb;
+	}
+};
+red.check_pointer_object_equality_eqeq = function(itema, itemb) {
+	if(itema instanceof red.PointerObject && itemb instanceof red.PointerObject) {
+		return itema.get_pointer().eq(itemb.get_pointer());
+	} else {
+		return itema == itemb;
+	}
+};
 
 }(red));

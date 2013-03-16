@@ -32,10 +32,10 @@ red.on_event = function(event_type) {
 
 
 red.binary_operators = {
-	"===":	function(a, b) { return red.check_pointer_value_equality_eqeqeq(a,b); }
-	,"!==":	function(a, b) { return !red.check_pointer_value_equality_eqeqeq(a,b); }
-	, "==":	function(a, b) { return red.check_pointer_value_equality_eqeq(a, b); }
-	, "!=":	function(a, b) { return !red.check_pointer_value_equality_eqeq(a,b); }
+	"===":	function(a, b) { return red.check_pointer_object_equality_eqeqeq(a,b); }
+	,"!==":	function(a, b) { return !red.check_pointer_object_equality_eqeqeq(a,b); }
+	, "==":	function(a, b) { return red.check_pointer_object_equality_eqeq(a, b); }
+	, "!=":	function(a, b) { return !red.check_pointer_object_equality_eqeq(a,b); }
 	, ">":	function(a, b) { return a > b; }
 	, ">=":	function(a, b) { return a >= b; }
 	, "<":	function(a, b) { return a < b; }
@@ -115,7 +115,7 @@ var get_conditional_$ = function(test, consequent, alternate) { // test ? conseq
 
 var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 	if(key === "root") {
-		return new red.PointerValue({pointer: context.slice(0, 1)});
+		return new red.PointerObject({pointer: context.slice(0, 1)});
 	} else if(key === "window") {
 		return window;
 	} else if(key === "parent") {
@@ -126,7 +126,7 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.Dict) {
 				if(found_this) {
-					return new red.PointerValue({pointer: curr_context});
+					return new red.PointerObject({pointer: curr_context});
 				} else {
 					found_this = true;
 				}
@@ -194,7 +194,7 @@ var get_this_$ = function(context) {
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.Dict) {
 				//if(uid.strip_prefix(context_item.uid) == 1) debugger;
-				return new red.PointerValue({pointer: curr_context});
+				return new red.PointerObject({pointer: curr_context});
 			}
 			curr_context = curr_context.pop();
 			context_item = curr_context.points_at();
@@ -224,7 +224,7 @@ var get_member_$ = function(object, property) {
 
 		var prop_got = cjs.get(property);
 
-		if(obj_got instanceof red.PointerValue) {
+		if(obj_got instanceof red.PointerObject) {
 			if(prop_got === "parent") {
 				var found_this = false;
 				var curr_context = obj_got.get_pointer();
@@ -233,7 +233,7 @@ var get_member_$ = function(object, property) {
 				while(!curr_context.is_empty()) {
 					if(context_item instanceof red.Dict) {
 						if(found_this) {
-							return new red.PointerValue({pointer: curr_context});
+							return new red.PointerObject({pointer: curr_context});
 						} else {
 							found_this = true;
 						}

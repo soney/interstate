@@ -30,7 +30,7 @@ red.TransitionEvent = red._create_event_type("transition");
 			}
 			this.processed_targets = _	.chain(targs)
 										.map(function(target_pointer) {
-											if(target_pointer instanceof red.PointerValue) {
+											if(target_pointer instanceof red.PointerObject) {
 												var ptr = target_pointer.get_pointer();
 												var dict = ptr.points_at();
 												if(dict instanceof red.StatefulObj) {
