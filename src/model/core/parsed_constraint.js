@@ -68,13 +68,13 @@ var get_op_$ = function(calling_context, pcontext, op) {
 	return cjs.$(function() {
 		var op_got = cjs.get(op);
 
+		var calling_context_got = cjs.get(calling_context);
 		if(_.isFunction(op_got)) {
 			var args_got = _.map(args, cjs.get);
-			var calling_context_got = cjs.get(calling_context);
 			var rv = op_got.apply(calling_context_got, args_got);
 			return rv;
 		} else if(op_got instanceof red.ParsedFunction) {
-			return op_got._apply(pcontext, args);
+			return op_got._apply(calling_context_got, pcontext, args);
 		} else {
 			//throw new Error("Calling a non-function");
 			return undefined;

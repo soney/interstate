@@ -34,7 +34,6 @@ $.widget("red.editor", {
 			root: root_pointer
 		});
 
-
 		this.client_socket = new red.ProgramStateClient({
 			ready_func: this.option("debug_ready"),
 			server_window: this.option("server_window")
@@ -51,7 +50,6 @@ $.widget("red.editor", {
 			this.root.set("external_root", root, {literal: true});
 			this.root.set("external_root_pointer", red.create("pointer", {stack: [root]}), {literal: true});
 			this.load_viewer();
-			window.eenv = this.client_socket.get_external_env();
 		}, this);
 	}
 
@@ -96,7 +94,15 @@ $.widget("red.editor", {
 		.set("type", "editing", "'text'")
 		.set("value", "idle->editing", "obj.get_str()")
 		.up()
-	.on_state("idle -0> editing", "function(event){var text = event.target.value; console.log(obj, text);}")
+	.on_state("editing -0> idle", "function(event) {\n" +
+		"var text = event.target.value;\n" +
+		"var command = new red.ChangeCellCommand({\n" +
+			"cell: obj,\n" +
+			"str: text\n" +
+		"});\n" +
+		"post_command(command);\n" +
+		"\n" +
+	"}")
 	.up()
 .set("stateful_prop_view", "<stateful>")
 .cd("stateful_prop_view")
@@ -170,6 +176,36 @@ $.widget("red.editor", {
 			.set("prop_pointer", "INIT", "dict.get_prop_pointer(name, pointer)")
 			.set("children", "<dict>")
 			.cd("children")
+				.set("prop_ops", "<stateful>")
+				.cd("prop_ops")
+					.set("(protos)", "INIT", "[dom]")
+					.set("tag", "<stateful_prop>")
+					.set("tag", "INIT", "'span'")
+					.set("children", "<dict>")
+					.cd("children")
+						.set("remove", "<stateful>")
+						.cd("remove")
+							.set("(protos)", "INIT", "[dom]")
+							.add_transition("INIT", "INIT", "on('click', this)")
+							.set("tag")
+							.set("tag", "INIT", "'a'")
+							.set("text")
+							.set("text", "INIT", "'(-)'")
+							.set("attr", "<dict>")
+							.cd("attr")
+								.set("href", "'javascript:void(0)'")
+								.up()
+							.on_state("INIT -> INIT", "function() {\n" +
+							"var command = new red.UnsetPropCommand({\n" +
+								"parent: dict,\n" +
+								"name: name\n" +
+							"});\n" +
+							"post_command(command);\n" +
+							"\n" +
+							"}")
+							.up()
+						.up()
+					.up()
 				.set("prop_name_view", "<stateful>")
 				.cd("prop_name_view")
 					.set("(protos)", "INIT", "[dom]")
@@ -226,6 +262,9 @@ $.widget("red.editor", {
 			.up()
 		.up()
 	.up()
+.set("post_command", _.bind(function(command) {
+	this.client_socket.post_command(command);
+}, this))
 ;
 
 

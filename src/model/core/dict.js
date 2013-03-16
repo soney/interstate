@@ -161,7 +161,6 @@ red.Dict = function(options, defer_initialization) {
 			, hash: "hash"
 		});
 		proto_set.each(function(proto_dict, i) {
-			//var proto_dict = proto_pointer.points_at();
 			var proto_dict_protos = proto_dict._get_all_protos(pointer);
 			proto_set.add_at.apply(proto_set, [i+1].concat(proto_dict_protos));
 		}, this);
@@ -172,11 +171,6 @@ red.Dict = function(options, defer_initialization) {
 
 	proto._get_proto_vals = function(pointer) {
 		var proto_pointers = this._get_all_protos(pointer);
-		/*
-		return _.map(proto_pointers, function(proto_pointer) {
-			return proto_pointer.points_at();
-		});
-		*/
 		return proto_pointers;
 	};
 	

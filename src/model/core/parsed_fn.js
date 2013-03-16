@@ -180,7 +180,7 @@ var call_fn = function(node, options) {
 		if(_.isFunction(op_func)) {
 			return op_func.apply(op_context, args);
 		} else if(op_func instanceof red.ParsedFunction) {
-			return op_func._apply(options.pcontext, args);
+			return op_func._apply(options.js_context, options.pcontext, args);
 		}
 	} else if(type === "LogicalExpression") {
 		var op = node.operator;
@@ -217,6 +217,8 @@ var call_fn = function(node, options) {
 		}
 		
 		console.log(node);
+	} else if(type === "ThisExpression") {
+		return options.pcontext;
 	} else if(type === "BreakStatement") {
 		return do_break;
 	} else if(type === "ContinueStatement") {
@@ -265,7 +267,7 @@ red.ParsedFunction = function(node, options) {
 
 (function(my) {
 	var proto = my.prototype;
-	proto._apply = function(pcontext, args) {
+	proto._apply = function(js_context, pcontext, args) {
 		var node = this.node;
 
 		var var_map = {};
@@ -278,6 +280,7 @@ red.ParsedFunction = function(node, options) {
 
 		var opts = {
 			var_map: var_map,
+			js_context: js_context,
 			pcontext: pcontext,
 			ignore_inherited_in_contexts: this.options.ignore_inherited_in_contexts
 		};
@@ -288,8 +291,8 @@ red.ParsedFunction = function(node, options) {
 			return undefined;
 		}
 	};
-	proto._call = function(pcontext) {
-		return this._apply.apply(this, [pcontext, _.rest(arguments)]);
+	proto._call = function(js_context, pcontext) {
+		return this._apply.apply(this, [js_context, pcontext, _.rest(arguments, 2)]);
 	};
 }(red.ParsedFunction));
 

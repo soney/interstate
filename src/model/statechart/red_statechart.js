@@ -2,7 +2,7 @@
 var cjs = red.cjs, _ = red._;
 
 var any_state = red.any_state = {};
-var state_descriptor_regex = /\s*(([\w\.]+((\s*,\s*[\w\.]+)*))|\*)(\s*(>-|->|<-|-<|<->|>-<)\s*(([\w\.]+(\s*,\s*[\w\.]+)*)|\*))?\s*/;
+var state_descriptor_regex = /\s*(([\w\.]+((\s*,\s*[\w\.]+)*))|\*)(\s*(>(\d+)?-|-(\d+)?>|<(\d+)?-|-(\d+)?<|<-(\d+)?->|>-(\d+)?-<)\s*(([\w\.]+(\s*,\s*[\w\.]+)*)|\*))?\s*/;
 var get_state_description = function(str) {
 	return str === "*" ? any_state : _.map(str.split(","), function(str) { return str.trim(); });
 };
@@ -12,11 +12,16 @@ var get_state_listener_info = function(str_descriptor) {
 		var from_states = get_state_description(matches[1]);
 		var transition = matches[6];
 		if(transition) {
-			var to_states = get_state_description(matches[7]);
+			var to_states = get_state_description(matches[13]);
 
-			if(transition === "-<" || transition === "<-") {
+			if(transition.indexOf("<") >= 0 && transition.indexOf(">") < 0) {
 				transition = transition.split("").reverse().join("");
 				var tmp = from_states; from_states = to_states; to_states = tmp;
+			}
+
+			var transition_no = matches[7] || matches[8] || matches[9] || matches[10] || matches[11] || matches[12] || false;
+			if(_.isString(transition_no)) {
+				transition_no = parseInt(transition_no);
 			}
 
 			return {
@@ -24,7 +29,8 @@ var get_state_listener_info = function(str_descriptor) {
 				from: from_states,
 				to: to_states,
 				pre: transition[0] === ">",
-				bidirectional: transition.length === 3
+				bidirectional: (transition[0] === ">" && transition[transition.length-1] === "<") || (transition[0] === ">" && transition[transition.length-1] === "<"),
+				transition_no: transition_no
 			};
 		} else {
 			return {
@@ -92,23 +98,32 @@ var add_transition_listener = function(str, statechart, activation_listener, dea
 				from = transition.from(),
 				to = transition.to();
 
-			if((matches_name(statechart, listener_info.from, from) && 
-					matches_name(statechart, listener_info.to, to)) ||
-						(listener_info.bidirectional && 
-								matches_name(statechart, listener_info.to, from) && 
-								matches_name(statechart, listener_info.from, to))) {
+			var desired_transition = false;
+			if(listener_info.transition_no) {
+				var transitions_between = from.get_transitions_to(to);
+				desired_transition = transitions_between[listener_info.transition_no];
+			}
 
-				var listener_args = arguments;
-				activation_listener.apply(context, listener_args);
 
-				if(listener_info.pre) {
-					red.event_queue.once("end_event_queue_round_1", function() {
-						deactivation_listener.apply(context, listener_args);
-					});
-				} else {
-					red.event_queue.once("end_event_queue_round_5", function() {
-						deactivation_listener.apply(context, listener_args);
-					});
+			if(!desired_transition || transition === desired_transition) {
+				if((matches_name(statechart, listener_info.from, from) && 
+						matches_name(statechart, listener_info.to, to)) ||
+							(listener_info.bidirectional && 
+									matches_name(statechart, listener_info.to, from) && 
+									matches_name(statechart, listener_info.from, to))) {
+
+					var listener_args = arguments;
+					activation_listener.apply(context, listener_args);
+
+					if(listener_info.pre) {
+						red.event_queue.once("end_event_queue_round_1", function() {
+							deactivation_listener.apply(context, listener_args);
+						});
+					} else {
+						red.event_queue.once("end_event_queue_round_5", function() {
+							deactivation_listener.apply(context, listener_args);
+						});
+					}
 				}
 			}
 		};

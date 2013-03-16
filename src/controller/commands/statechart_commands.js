@@ -527,10 +527,13 @@ red.StatechartOnCommand = function(options) {
 	this._pcontext = this._options.pcontext;
 	if(this._options.listener instanceof red.ParsedFunction) {
 		var func = this._options.listener;
-		var pcontext = this._pcontext;
+		//var pcontext = this._pcontext;
+		var js_context = this._context;
 		this._listener = function(info, type) {
+			var state = info.state;
+			var pcontext = state.context();
 			var event = info.event;
-			func._call(pcontext, event);
+			func._call(js_context, pcontext, event);
 		};
 	} else {
 		this._listener = this._options.listener;
