@@ -287,7 +287,18 @@ red.DomAttachmentInstance = function(options) {
 					var children_pointers = [];
 
 					if(_.isArray(children)) {
-						children_pointers = children;
+						children_pointers = _	.chain(children)
+												.map(function(child) {
+													if(child instanceof red.Pointer) {
+														return child;
+													} else if(child instanceof red.PointerValue) {
+														return child.get_pointer();
+													} else {
+														return false;
+													}
+												}, this)
+												.compact()
+												.value();
 					} else if(children instanceof red.PointerValue) {
 						var ptr = children.get_pointer();
 						var dict = ptr.points_at();
