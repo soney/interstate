@@ -247,6 +247,34 @@ $.widget("red.editor", {
 					.up()
 				.up()
 			.up()
+		.set("dict_ops", "<stateful>")
+		.cd("dict_ops")
+			.set("(protos)", "INIT", "[dom]")
+			.add_transition("INIT", "INIT", "on('click', this)")
+			.set("tag")
+			.set("tag", "INIT", "'a'")
+			.set("text")
+			.set("text", "INIT", "'(+ add property)'")
+			.set("attr", "<dict>")
+			.cd("attr")
+				.set("href", "'javascript:void(0)'")
+				.up()
+			.on_state("INIT -> INIT", "function() {\n" +
+			"var prop_name = 'prop_' + dict.get_prop_names(pointer).length;\n" +
+			"var orig_prop_name = prop_name;\n" +
+			"var i = 0;\n" +
+			"while(dict._has_prop(prop_name, pointer)) {\n" + 
+			"prop_name = orig_prop_name+'_'+i;\n" +
+			"i++\n" +
+			"}\n" +
+			"var command = new red.SetPropCommand({\n" +
+			"parent: dict,\n" + 
+			"name: prop_name,\n" + 
+			"value: red.create('cell')\n" + 
+			"});\n" + 
+			"post_command(command);\n" +
+			"}")
+			.up()
 		.up()
 	.up()
 .cd("children")
