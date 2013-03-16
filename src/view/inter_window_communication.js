@@ -72,10 +72,11 @@ red.ProgramStateServer = function(options) {
 	proto.add_state_listeners = function() {
 		var on_transition_fire = _.bind(function(info) {
 			var transition = info.target;
+			var event = info.event;
 
 			this.post_delta(new red.TransitionFiredDelta({
 				transition: transition,
-				event: info.event
+				event: {}
 			}));
 		}, this);
 

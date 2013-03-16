@@ -42,7 +42,7 @@ $.widget("red.editor", {
 				var color = data.value;
 				$("html").css({
 					"border-bottom": "10px solid " + color,
-					height: "100%",
+					"min-height": "100%",
 					"box-sizing": "border-box"
 				});
 			}
@@ -208,20 +208,32 @@ $.widget("red.editor", {
 					.up()
 				.set("prop_name_view", "<stateful>")
 				.cd("prop_name_view")
-					.set("(protos)", "INIT", "[dom]")
-					.set("tag", "<stateful_prop>")
-					.set("tag", "INIT", "'span'")
-					.set("text", "<stateful_prop>")
-					.set("text", "INIT", "name")
+					.rename_state("INIT", "idle")
+					.add_state("renaming")
+					.add_transition("idle", "renaming", "on('mousedown', this)")
+					.add_transition("renaming", "idle", "on('keydown', this).when_eq('keyCode', 13)") //enter
+					.add_transition("renaming", "idle", "on('keydown', this).when_eq('keyCode', 27)") //esc
+					.set("(protos)", "idle", "[dom]")
+					.set("text")
+					.set("text", "idle", "name")
+					.set("tag")
+					.set("tag", "idle", "'span'")
+					.set("tag", "renaming", "'input'")
 					.set("attr", "<dict>")
 					.cd("attr")
-						.set("class", "INIT", "'prop_name'")
+						.set("type", "renaming", "'text'")
+						.set("value", "idle->renaming", "name")
 						.up()
-					.set("css", "<dict>")
-					.cd("css")
-						.set("display", "'inline-block'")
-						.set("width", "'90px'")
-						.up()
+					.on_state("renaming -0> idle", "function(event) {\n" +
+						"var text = event.target.value;\n" +
+						"var command = new red.RenamePropCommand({\n" +
+							"from: name,\n" +
+							"to: text,\n" +
+							"parent: dict\n" +
+						"});\n" +
+						"post_command(command);\n" +
+						"\n" +
+					"}")
 					.up()
 				.set("prop_value_view", "<stateful>")
 				.cd("prop_value_view")
