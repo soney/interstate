@@ -57,16 +57,6 @@ red.Dict = function(options, defer_initialization) {
 			}
 		}
 	});
-	/*
-	this._proto_vals = cjs.memoize(this._get_all_protos, {
-		hash: function(args) { // pcontext
-			return args[0].hash();
-		},
-		equals: function(args1, args2) {
-			return red.check_pointer_equality(args1[0], args2[0]);
-		}
-	});
-	*/
 };
 
 (function(my) {
