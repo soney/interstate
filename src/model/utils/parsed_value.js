@@ -168,8 +168,8 @@ var get_this_val = function(context) {
 
 	while(!curr_context.is_empty()) {
 		if(context_item instanceof red.Dict) {
-			//if(uid.strip_prefix(context_item.uid) == 1) debugger;
-			return new red.ContextualObject({pointer: curr_context});
+			var contextual_obj = red.find_or_put_contextual_obj(context_item, curr_context);
+			return contextual_obj;
 		}
 		curr_context = curr_context.pop();
 		context_item = curr_context.points_at();
@@ -183,7 +183,8 @@ var get_member_val = function(object, property) {
 		return undefined;
 	}
 
-	if(obj_got instanceof red.ContextualObject) {
+	if(object instanceof red.ContextualObject) {
+	/*
 		if(property === "parent") {
 			var found_this = false;
 			var curr_context = object.get_pointer();
@@ -201,10 +202,10 @@ var get_member_val = function(object, property) {
 				context_item = curr_context.points_at();
 			}
 		}
-		var pointer = object.get_pointer();
-		var dict = pointer.points_at();
-		var rv = dict.prop_val(property, pointer);
-		return rv;
+		*/
+		var rv = object.get(property);
+		var val = rv.val();
+		return val;
 	} else {
 		return object[property];
 	}

@@ -79,10 +79,10 @@ red.ContextualDict = function(options) {
 		if(protos instanceof cjs.ArrayConstraint) {
 			rv = protos.toArray();
 		} else if(protos instanceof red.Cell) {
-			var ptr_obj = red.find_pointer_obj(this.pointer.push(protos));
+			var ptr_obj = red.find_or_put_contextual_obj(this.pointer.push(protos));
 			rv = ptr_obj.val();
 		} else if(protos instanceof red.StatefulProp) {
-			var ptr_obj = red.find_pointer_obj(this.pointer.push(protos));
+			var ptr_obj = red.find_or_put_contextual_obj(this.pointer.push(protos));
 			rv = ptr_obj.val();
 		}
 		return [];
@@ -145,12 +145,8 @@ red.ContextualDict = function(options) {
 			name: name
 		}, info);
 		var value = info.value;
-		if(value instanceof red.Dict || value instanceof red.StatefulProp || value instanceof red.Cell) {
-			var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value), options);
-			return contextual_object;
-		} else {
-			return value;
-		}
+		var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value), options);
+		return contextual_object;
 	};
 
 	proto.destroy = function() {
