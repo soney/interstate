@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+  </head>
+  <body>
+		<div class="content">
+		</div>
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript">
+				var root = red.create("dict");
+
+				var pointer_bucket = new red.PointerBucket({
+						root: root
+					});
+				//console.log(root);
+
+				root.set("a", red.create("cell", {str: "1+1"}));
+
+				var root_pointer_obj = pointer_bucket.get_root_pointer_obj();
+				var children = root_pointer_obj.get_child_pointer_objects();
+				console.log(children);
+
+			</script>
+	  </div>
+  </body>
+</html>

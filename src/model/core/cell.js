@@ -16,25 +16,12 @@ red.Cell = function(options, defer_initialization) {
 			start_with: function() { return cjs.$(""); },
 			getter: function(me) { return me.get(); },
 			setter: function(me, str) {
-				cjs.wait();
 				me.set(str, true);
-				var cvs = this.get_contextual_values();
-				if(cvs) { cvs.clear(); }
-				cjs.signal();
 			}
-		},
-		"contextual_values": {
-			default: function() { return cjs.map({
-				equals: red.check_pointer_equality,
-				hash: "hash"
-			}); },
-			settable: false,
-			serialize: false
 		},
 		"ignore_inherited_in_contexts": {
 			default: function() { return []; }
 		}
-
 	};
 	red.install_proto_builtins(proto, my.builtins);
 	proto.do_initialize = function(options) {
@@ -45,22 +32,13 @@ red.Cell = function(options, defer_initialization) {
 			return red.parse(str);
 		});
 	};
-	proto.constraint_in_context = function(pcontext) {
-		var contextual_values = this.get_contextual_values();
-
-		var val = contextual_values.get_or_put(pcontext, function() {
+	proto.get_constraint_for_context = function(pcontext) {
+		return cjs.$(function() {
 			var tree = this._tree.get();
-			if(_.isFunction(tree)) {
-				return tree;
-			} else {
-				return red.get_parsed_$(tree, {
-					context: pcontext, 
-					ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts()
-				});
-			}
+			return red.get_parsed_$(tree, {
+				context: pcontext
+			});
 		}, this);
-
-		return val;
 	};
 	proto.destroy = function() {
 		this._tree.destroy();

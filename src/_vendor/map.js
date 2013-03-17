@@ -99,7 +99,7 @@ var Map = function(options) {
 (function(my) {
 	var proto = my.prototype;
 	proto.put = function(key, value) {
-		var hash = this._hash(k);
+		var hash = this._hash(key);
 		var hash_arr = this._khash[hash];
 		if(hash_arr) {
 			for(var i = 0; i<len; i++) {

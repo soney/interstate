@@ -76,7 +76,7 @@ var print = function(current_pointer, logging_mechanism) {
 			}
 
 			return str;
-		} else if(val instanceof red.PointerObject) {
+		} else if(val instanceof red.ContextualObject) {
 			var ptr = val.get_pointer();
 			var points_at = ptr.points_at();
 			var special_contexts = ptr.special_contexts();

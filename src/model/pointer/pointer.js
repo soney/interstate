@@ -85,25 +85,6 @@ red.Pointer = function(options) {
 		return this._stack.length === 0;
 	};
 
-	proto.val = function() {
-		var points_at = this.points_at();
-		if(points_at instanceof red.Dict) {
-			return new red.PointerObject({pointer: this});
-		} else if(points_at instanceof red.Cell) {
-			var cell_constraint = points_at.constraint_in_context(this);
-			return cjs.get(cell_constraint);
-		} else if(points_at instanceof red.StatefulProp) {
-			var pointer = points_at.get_pointer_for_context(this);
-			return pointer.val();
-		} else if(points_at instanceof cjs.ArrayConstraint) {
-			return points_at.toArray();
-		} else if(points_at instanceof cjs.Constraint) {
-			return points_at.get();
-		} else {
-			return points_at;
-		}
-	};
-
 	proto.eq = function(other) {
 		var my_stack = this._stack;
 		var other_stack = other._stack;
@@ -244,41 +225,26 @@ red.check_pointer_equality_eqeq = function(itema, itemb) {
 	}
 };
 
+red.check_special_context_equality = function(sc1, sc2) {
+	var sc1_len = sc1.length,
+		sc2_len = sc2.length;
+	if(sc1_len === sc2_len) {
+		for(var i = sc1_len-1; i>=0; i--) {
+			if(!sc1[i].eq(sc2[i])) {
+				return false;
+			}
+		}
+		return true;
+	} else {
+		return false;
+	}
+};
+
 red.pointer_hash = function(item) {
 	if(item && item.hash) {
 		return item.hash();
 	} else {
 		return "" + item;
-	}
-};
-
-red.PointerObject = function(options) {
-	this.pointer = options.pointer;
-};
-
-(function(my) {
-	var proto = my.prototype;
-	proto.get_pointer = function() { return this.pointer; }
-	proto.toString = function() {
-		return "p_" + this.get_pointer().toString();
-	};
-	proto.hash = function() {
-		return this.get_pointer().hash();
-	};
-}(red.PointerObject));
-
-red.check_pointer_object_equality =  red.check_pointer_object_equality_eqeqeq = function(itema, itemb) {
-	if(itema instanceof red.PointerObject && itemb instanceof red.PointerObject) {
-		return itema.get_pointer().eq(itemb.get_pointer());
-	} else {
-		return itema === itemb;
-	}
-};
-red.check_pointer_object_equality_eqeq = function(itema, itemb) {
-	if(itema instanceof red.PointerObject && itemb instanceof red.PointerObject) {
-		return itema.get_pointer().eq(itemb.get_pointer());
-	} else {
-		return itema == itemb;
 	}
 };
 

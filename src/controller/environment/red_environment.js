@@ -210,12 +210,12 @@ var Env = function(options) {
 		if(_.isString(value)) {
 			if(value === "<dict>") {
 				value = red.create("dict");
-				var direct_protos = red.create("cell", {str: "[]", ignore_inherited_in_contexts: [value]});
+				var direct_protos = red.create("cell", {/*str: "[]", ignore_inherited_in_contexts: [value]*/});
 				value._set_direct_protos(direct_protos);
 			} else if(value === "<stateful>") {
 				value = red.create("stateful_obj", undefined, true);
 				value.do_initialize({
-					direct_protos: red.create("stateful_prop", {statechart_parent: value, check_on_nullify: true, can_inherit: false, ignore_inherited_in_contexts: [value]})
+					direct_protos: red.create("stateful_prop", {/*statechart_parent: value, check_on_nullify: true, can_inherit: false, ignore_inherited_in_contexts: [value]*/})
 				});
 				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");

@@ -1,6 +1,9 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+red.POINTERS_PROPERTY = {};
+red.MANIFESTATIONS_PROPERTY = {};
+
 red.is_inherited = function(pcontext) {
 	return red.inherited_root(pcontext) !== undefined;
 };
@@ -40,23 +43,6 @@ red.Dict = function(options, defer_initialization) {
 	if(defer_initialization !== true) {
 		this.do_initialize(options);
 	}
-	this.prop_val = cjs.memoize(this._prop_val, {
-		hash: function(args) { // name, pcontext
-			if(arguments.length >= 2) {
-				return args[0] + args[1].hash();
-			} else {
-				return args[0];
-			}
-		},
-		equals: function(args1, args2) { // name, pcontext
-			if(arguments.length >= 2) {
-				return args1[0] === args2[0] &&
-						red.check_pointer_equality(args1[1], args2[1]);
-			} else {
-				return args1[0] === args2[0];
-			}
-		}
-	});
 };
 
 (function(my) {
@@ -64,7 +50,6 @@ red.Dict = function(options, defer_initialization) {
 
 	proto.do_initialize = function(options) {
 		red.install_instance_builtins(this, options, my);
-		this.direct_attachment_instances().set_hash("hash");
 		var direct_props = this.direct_props();
 		direct_props.set_value_equality_check(function(info1, info2) {
 			return info1.value === info2.value;
@@ -103,20 +88,6 @@ red.Dict = function(options, defer_initialization) {
 			, getter: function(me) { return me.get(); }
 			, setter: function(me, val) { me.set(val, true); }
 		}
-		
-		, "direct_attachment_instances": {
-			default: function() { return cjs.map(); }
-			, getter_name: "direct_attachment_instances"
-			, serialize: false
-		}
-		, "contextual_manifestation_maps": {
-			default: function() { return cjs.map({
-				equals: red.check_pointer_equality,
-				hash: "hash"
-			}); }
-			, settable: false
-			, serialize: false
-		}
 	};
 
 	red.install_proto_builtins(proto, my.builtins);
@@ -129,50 +100,16 @@ red.Dict = function(options, defer_initialization) {
 		return this.options.has_protos;
 	};
 
-	proto._get_direct_protos = function(pointer) {
-		var protos_pointer = pointer.push(this.direct_protos());
-
-
-		var direct_proto_pointers = protos_pointer.val();
-		if(!_.isArray(direct_proto_pointers)) {
-			direct_proto_pointers = [direct_proto_pointers];
-		}
-
-
-		var rv = _.filter(direct_proto_pointers, function(direct_proto_pointer) {
-			return (direct_proto_pointer instanceof red.PointerObject) && (direct_proto_pointer.get_pointer().points_at() instanceof red.Dict);
-		});
-		rv = _.map(rv, function(pointer_val) {
-			var ppointer = pointer_val.get_pointer();
-			return ppointer.points_at();
-		});
-
-		return rv;
-	};
 
 	//
 	// === ALL PROTOS ===
 	//
 
 	proto._get_all_protos = function(pointer) {
-		var direct_protos = this._get_direct_protos(pointer);
-		var proto_set = new Set({
-			value: direct_protos
-			, hash: "hash"
-		});
-		proto_set.each(function(proto_dict, i) {
-			var proto_dict_protos = proto_dict._get_all_protos(pointer);
-			proto_set.add_at.apply(proto_set, [i+1].concat(proto_dict_protos));
-		}, this);
-
-		var protos = proto_set.toArray();
-		return protos;
+		var pointer_contextual_obj = red.find_contextual_obj(this.direct_protos(), pointer);
+		return pointer_obj.get_all_protos();
 	};
 
-	proto._get_proto_vals = function(pointer) {
-		var proto_pointers = this._get_all_protos(pointer);
-		return proto_pointers;
-	};
 	
 	//
 	// === DIRECT PROPERTIES ===
@@ -240,7 +177,7 @@ red.Dict = function(options, defer_initialization) {
 	//
 	
 	proto._get_inherited_prop_info = function(prop_name, pointer) {
-		var protos = this._get_proto_vals(pointer);
+		var protos = this._get_all_protos(pointer);
 		for(var i = 0; i<protos.length; i++) {
 			var protoi = protos[i];
 			if(protoi._has_direct_prop(prop_name)) {
@@ -261,7 +198,7 @@ red.Dict = function(options, defer_initialization) {
 
 	proto._get_all_inherited_props = function(prop_name, pointer) {
 		var rv = [];
-		var protos = this._get_proto_vals(pointer);
+		var protos = this._get_all_protos(pointer);
 		for(var i = 0; i<protos.length; i++) {
 			var protoi = protos[i];
 			if(protoi._has_direct_prop(prop_name)) {
@@ -271,7 +208,7 @@ red.Dict = function(options, defer_initialization) {
 		return rv;
 	};
 	proto._has_inherited_prop = function(prop_name, pointer) {
-		var protos = this._get_proto_vals(pointer);
+		var protos = this._get_all_protos(pointer);
 		for(var i = 0; i<protos.length; i++) {
 			var protoi = protos[i];
 			if(protoi._has_direct_prop(prop_name)) {
@@ -283,7 +220,7 @@ red.Dict = function(options, defer_initialization) {
 	proto._get_inherited_prop_names = function(pointer) {
 		var prop_name_set = new Set({});
 
-		_.forEach(this._get_proto_vals(pointer), function(protoi) {
+		_.forEach(this._get_all_protos(pointer), function(protoi) {
 			prop_name_set.add.apply(prop_name_set, protoi._get_direct_prop_names());
 		});
 		prop_name_set.remove.apply(prop_name_set, this._get_direct_prop_names());
@@ -469,7 +406,7 @@ red.Dict = function(options, defer_initialization) {
 	proto.name_for_prop = function(value, pcontext) {
 		var rv = this.direct_props().keyForValue({value: value});
 		if(_.isUndefined(rv) && pcontext) {
-			var protos = this._get_proto_vals(pcontext);
+			var protos = this._get_all_protos(pcontext);
 			for(var i = 0; i<protos.length; i++) {
 				var protoi = protos[i];
 				rv = protoi.name_for_prop(value, false);
@@ -485,7 +422,7 @@ red.Dict = function(options, defer_initialization) {
 		if(rv) {
 			return this;
 		} else if(pcontext) {
-			var protos = this._get_proto_vals(pcontext);
+			var protos = this._get_all_protos(pcontext);
 			for(var i = 0; i<protos.length; i++) {
 				var protoi = protos[i];
 				rv = protoi.src_for_prop(value, false);
@@ -552,7 +489,7 @@ red.Dict = function(options, defer_initialization) {
 			};
 		}, this);
 
-		var protos = this._get_proto_vals(pcontext);
+		var protos = this._get_all_protos(pcontext);
 		var attachments_and_srcs = new Set({
 			hash: function(item) {
 				return item.attachment.hash();
@@ -595,22 +532,6 @@ red.Dict = function(options, defer_initialization) {
 		}
 		return undefined;
 	};
-	proto._prop_val = function(name, pcontext) {
-		var prop_info = this._get_prop_info(name, pcontext);
-		if(prop_info === undefined) {
-			return undefined;
-		} else if(prop_info.literal) {
-			return prop_info.value;
-		} else {
-			var value = prop_info.value;
-			if(!pcontext) {
-				pcontext = red.create("pointer");
-			}
-			var prop_pointer = pcontext.push(value);
-			var rv = prop_pointer.val();
-			return rv;
-		}
-	};
 
 	proto.clone = function(options) {
 	};
@@ -619,6 +540,7 @@ red.Dict = function(options, defer_initialization) {
 	// === MANIFESTATIONS ===
 	//
 	
+	/*
 	proto.get_manifestation_map_for_context = function(pcontext) {
 		var mm = this.get_contextual_manifestation_maps().get_or_put(pcontext, function(context) {
 			return cjs.map({
@@ -643,8 +565,6 @@ red.Dict = function(options, defer_initialization) {
 	proto.get_manifestation_objs = function(pcontext) {
 		var my_index = pcontext.lastIndexOf(this);
 		var special_contexts = pcontext.special_contexts(my_index);
-
-
 
 		if(_.some(special_contexts, function(sc) { return sc instanceof red.ManifestationContext})) {
 			return null;
@@ -687,6 +607,7 @@ red.Dict = function(options, defer_initialization) {
 
 	proto.clean_manifestation_objs = function() {
 	};
+	*/
 
 	proto.hash = function() {
 		return parseInt(uid.strip_prefix(this.uid));
