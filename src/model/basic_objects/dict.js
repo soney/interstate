@@ -453,6 +453,7 @@ red.Dict = function(options, defer_initialization) {
 	// === DIRECT ATTACHMENT INSTANCES ===
 	//
 
+/*
 	proto.create_or_get_direct_attachment_instance = function(attachment, pcontext) {
 		var direct_attachment_instances = this.direct_attachment_instances();
 
@@ -474,6 +475,7 @@ red.Dict = function(options, defer_initialization) {
 
 		return attachment_instance;
 	};
+	*/
 	
 	//
 	// === ALL ATTACHMENTS ===
@@ -512,6 +514,7 @@ red.Dict = function(options, defer_initialization) {
 		});
 		return attachments_and_srcs.toArray();
 	};
+	/*
 	proto.get_attachment_instances = proto._get_all_attachment_instances = function(pcontext) {
 		var attachments_and_srcs = this._get_all_attachments_and_srcs(pcontext);
 		return _.map(attachments_and_srcs, function(attachment_and_src) {
@@ -534,6 +537,7 @@ red.Dict = function(options, defer_initialization) {
 
 	proto.clone = function(options) {
 	};
+	*/
 
 	//
 	// === MANIFESTATIONS ===

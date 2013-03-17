@@ -302,6 +302,43 @@ var print = function(current_pointer, logging_mechanism) {
 
 	var tablify = function(contextual_object) {
 		if(contextual_object instanceof red.ContextualDict) {
+			if(contextual_object instanceof red.ContextualStatefulObj) {
+				var statecharts = contextual_object.get_statecharts();
+				var stringified_statecharts = _.map(statecharts, function(sc) {
+					return uid.strip_prefix(sc.id()) + ":" + uid.strip_prefix(sc.basis().id());
+				}).join(" ");
+				logging_mechanism.group("  Statechart " + stringified_statecharts );
+				_.each(statecharts, function(statechart) {
+					var flattened_statechart = _.without(statechart.flatten_substates(), statechart);
+
+					var flattened_state_and_transitions = _.flatten(_.map(flattened_statechart, function(statechart) {
+						return ([statechart]).concat(statechart.get_outgoing_transitions());
+					}), true);
+
+					_.each(flattened_state_and_transitions, function(state) {
+						var state_name;
+
+						if(state instanceof red.State) {
+							state_name = pad(state.get_name(), STATE_NAME_WIDTH-2);
+						} else if(state instanceof red.StatechartTransition) { //transition
+							var from = state.from(),
+								to = state.to();
+							state_name = pad(from.get_name() + "->" + to.get_name(), TRANSITION_NAME_WIDTH-2);
+							state_name = state_name + pad(state.stringify(), TRANSITION_VALUE_WIDTH);
+						}
+
+						if(state.is_active()) {
+							state_name = "* " + state_name;
+						} else {
+							state_name = "  " + state_name;
+						}
+
+						state_name = pad(uid.strip_prefix(state.id()) + (state.basis() ? ":" + uid.strip_prefix(state.basis().id()) : ""), STATE_ID_WIDTH) + state_name;
+						logging_mechanism.log(state_name);
+					});
+				});
+				logging_mechanism.groupEnd();
+			}
 			var children = contextual_object.get_children();
 			_.each(children, function(child) {
 				var prop_name = child.get_name();
@@ -339,6 +376,39 @@ var print = function(current_pointer, logging_mechanism) {
 				} else {
 					logging_mechanism.log(prop_text + value_to_source_str(prop_points_at));
 				}
+			});
+		} else if(contextual_object instanceof red.ContextualStatefulProp) {
+			var value_specs = contextual_object.get_values();
+			_.each(value_specs, function(value_spec) {
+				var value = value_spec.value;
+				var source_str = value_to_source_str(value);
+
+				var state = value_spec.state;
+				var state_name;
+				if(state instanceof red.State) {
+					state_name = pad(state.get_name(), STATE_NAME_WIDTH-2);
+				} else if(state instanceof red.StatechartTransition) { //transition
+					var from = state.from(),
+						to = state.to();
+					state_name = pad(from.get_name() + "->" + to.get_name(), STATE_NAME_WIDTH-2);
+				}
+
+				if(value_spec.active) {
+					state_name = "*" + state_name;
+				} else {
+					state_name = " " + state_name;
+				}
+
+				if(value_spec.using) {
+					state_name = "*" + state_name;
+				} else {
+					state_name = " " + state_name;
+				}
+
+				state_name = pad(uid.strip_prefix(state.id()), STATE_ID_WIDTH) + state_name;
+				var value_for_state = value_spec.value;
+				var row = state_name + value_to_source_str(value_for_state);
+				logging_mechanism.log(row);
 			});
 		}
 	};

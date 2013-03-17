@@ -40,11 +40,6 @@ red.StatefulProp = function(options, defer_initialization) {
 		this.get_direct_values().set_hash("hash");
 		this.used_start_transition = options.used_start_transition === true;
 
-		/*
-		this._direct_values = options.direct_values || cjs.map();
-		this._direct_values.set_hash("hash");
-		*/
-
 		this._can_inherit = options.can_inherit !== false;
 		this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
 		this._check_on_nullify = options.check_on_nullify === true;
@@ -87,6 +82,7 @@ red.StatefulProp = function(options, defer_initialization) {
 		return basis;
 	};
 
+/*
 	proto.get_statecharts = function(context) {
 		var SOandC = red.find_stateful_obj_and_context(context);
 		if(SOandC) {
@@ -95,6 +91,7 @@ red.StatefulProp = function(options, defer_initialization) {
 			return [];
 		}
 	};
+	*/
 
 	//
 	// === DIRECT VALUES ===
@@ -148,6 +145,8 @@ red.StatefulProp = function(options, defer_initialization) {
 	// === VALUES ===
 	//
 	
+	
+	/*
 	proto.get_state_specs = function(pcontext) {
 		var stateful_obj_and_context = red.find_stateful_obj_and_context(pcontext);
 		var stateful_obj_context = stateful_obj_and_context.context;
@@ -223,11 +222,11 @@ red.StatefulProp = function(options, defer_initialization) {
 			used_start_transition: this.used_start_transition 
 		});
 	};
+	*/
 	proto.hash = function() {
 		return this.uid;
 	};
 	proto.destroy = function() {
-		var values_per_context = this.get_values_per_context();
 		var contextual_values = values_per_context.values();
 		_.each(contextual_values, function(cv) {
 			cv.destroy();
@@ -293,6 +292,7 @@ red.define("stateful_prop", function(options) {
 	var prop = new red.StatefulProp(options);
 	return prop;
 });
+/*
 
 var StatefulPropContextualVal = function(options) {
 	options = options || {};
@@ -568,5 +568,6 @@ var StatefulPropContextualVal = function(options) {
 		this._value.destroy();
 	};
 }(StatefulPropContextualVal));
+*/
 
 }(red));

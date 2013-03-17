@@ -141,7 +141,7 @@ red.Pointer = function(options) {
 	};
 
 	proto.toString = function() {
-		return "pointer (" + _.map(this._stack, function(x) { return uid.strip_prefix(x.uid)}).join(", ") + ")";
+		return "pointer (" + _.map(this._stack, function(x) { return x.uid ? uid.strip_prefix(x.uid) : x.toString(); }).join(", ") + ")";
 	};
 
 	proto.summarize = function() {

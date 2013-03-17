@@ -10,28 +10,23 @@
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
 				var env = red.create("environment");
+				/*
+				env.cd("children")
+					.set("obj", "<dict>")
+					.cd("obj")
+					.set("(protos)", "dom")
+					.set("text", "'hello world'")
+				*/
+				env	.set("obj", "<stateful>")
+					.cd("obj")
+					.set("prop1", "<stateful_prop>")
+					.set("prop1", "INIT", "1+2")
 				env.print_on_return = true;
 				env.print();
 				/*
-				var root = red.create("dict");
-				root.set("a", red.create("cell", {str: "1+1"}));
-				root.set("b", red.create("cell", {str: "a+1"}));
-				var cobj = red.find_or_put_contextual_obj(root);
-				window.cobj = cobj;
-				window.a = cobj.get("a")
-				console.log(cobj);
-				console.log(cobj.get_children());
-				/*
-
-				var pointer_bucket = new red.PointerBucket({
-						root: root
-					});
-				//console.log(root);
-
-
-				var root_pointer_obj = pointer_bucket.get_root_pointer_obj();
-				var children = root_pointer_obj.get_child_pointer_objects();
-				console.log(children);
+				output_view = $("body").dom_output({
+					root: env.get_root()
+				});
 				*/
 
 			</script>

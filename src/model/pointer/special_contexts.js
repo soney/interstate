@@ -39,8 +39,25 @@ red.StateContext = function(state) {
 	};
 }(red.StateContext));
 
-red.ManifestationContext = function(owner, basis, basis_index, options) {
+var ec_counter = 1;
+red.EventContext = function(event) {
 	red.EventContext.superclass.constructor.apply(this, arguments);
+	this.event = event;
+	this.context_obj = {
+		event: { value: event }
+	};
+};
+
+(function(my) {
+	_.proto_extend(my, red.SpecialContext);
+	var proto = my.prototype;
+	proto.get_event = function() {
+		return this.event;
+	};
+}(red.EventContext));
+
+red.ManifestationContext = function(owner, basis, basis_index, options) {
+	red.ManifestationContext.superclass.constructor.apply(this, arguments);
 	this.basis = basis;
 	this.basis_index = basis_index;
 	this.context_obj = {

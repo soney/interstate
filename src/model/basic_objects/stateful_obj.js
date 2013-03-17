@@ -58,6 +58,7 @@ red.StatefulObj = function(options, defer_initialization) {
 		}
 	};
 	red.install_proto_builtins(proto, my.builtins);
+	/*
 
 	//
 	// === STATECHART SHADOWS ===
@@ -96,6 +97,7 @@ red.StatefulObj = function(options, defer_initialization) {
 	//
 	// === STATECHARTS ===
 	//
+	/*
 	proto.get_statecharts = function(context) {
 		var own_statechart = this.get_statechart_for_context(context);
 		var inherited_statecharts = this.get_inherited_statecharts(context);
@@ -112,7 +114,7 @@ red.StatefulObj = function(options, defer_initialization) {
 		var active_states = get_active_states(statecharts);
 
 		var flattened_statecharts = _.flatten(_.map(statecharts, function(statechart) {
-			return _.without(statechart.flatten_substates(/*true*/), statechart);
+			return _.without(statechart.flatten_substates(), statechart);
 		}), true);
 
 		var flattened_states_and_transitions = _.flatten(_.map(flattened_statecharts, function(state) {
@@ -149,6 +151,7 @@ red.StatefulObj = function(options, defer_initialization) {
 		});
 		return this;
 	};
+	*/
 
 	red.register_serializable_type("stateful_obj",
 									function(x) { 

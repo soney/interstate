@@ -48,6 +48,9 @@ red.ContextualObject = function(options) {
 	proto.is_inherited = function() {
 		return this.inherited;
 	};
+	proto.get_object = function() {
+		return this.object;
+	};
 
 	proto.activate = function() {
 	};
@@ -73,19 +76,42 @@ red.ContextualDict = function(options) {
 	var proto = my.prototype;
 
 	proto.get_all_protos = function() {
-		var dict = this.object;
-		var protos = dict.direct_protos();
-		var rv;
-		if(protos instanceof cjs.ArrayConstraint) {
-			rv = protos.toArray();
-		} else if(protos instanceof red.Cell) {
-			var ptr_obj = red.find_or_put_contextual_obj(this.pointer.push(protos));
-			rv = ptr_obj.val();
-		} else if(protos instanceof red.StatefulProp) {
-			var ptr_obj = red.find_or_put_contextual_obj(this.pointer.push(protos));
-			rv = ptr_obj.val();
+		var rv = new Set({
+			value: [this.get_object()],
+			hash: "hash"
+		});
+
+		var pointer = this.get_pointer();
+		var i = 0;
+		while(i < rv.len()) {
+			var dict = rv.item(i);
+			var proto_obj = dict.direct_protos();
+			var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj));
+			var proto_val = proto_contextual_obj.val();
+			proto_val = _	.chain(_.isArray(proto_val) ? proto_val : [proto_val])
+							.map(function(x) {
+								if(x && x instanceof red.ContextualDict) {
+									return x.get_object();
+								} else {
+									return false;
+								}
+							})
+							.compact()
+							.value();
+			rv.add_at.apply(rv, ([i+1].concat(proto_val)));
+			i++;
 		}
-		return [];
+		var rv_arr = rv.toArray();
+		return rv_arr.slice(1); // don't include me
+	};
+
+	proto.get_contextual_protos = function() {
+		var proto_objects = this.get_all_protos();
+		var rv = _.map(proto_objects, function(proto_object) {
+			return red.find_or_put_contextual_obj(proto_object, this.pointer)
+		}, this);
+
+		return rv;
 	};
 
 	proto.get_children = function() {
@@ -138,6 +164,10 @@ red.ContextualDict = function(options) {
 
 		return rv;
 	};
+	proto.has = function(name) {
+		var pointer = this.get_pointer();
+		return this.object._has_prop(name);
+	};
 	proto.get = function(name) {
 		var pointer = this.get_pointer();
 		var info = this.object._get_prop_info(name, pointer);
@@ -163,12 +193,12 @@ red.ContextualDict = function(options) {
 red.ContextualStatefulObj = function(options) {
 	red.ContextualStatefulObj.superclass.constructor.apply(this, arguments);
 	var own_statechart = this.object.get_own_statechart();
-	var shadow_statechart = own_statechart.create_shadow({context: pcontext, running: true});
+	var shadow_statechart = own_statechart.create_shadow({context: this.get_pointer(), running: true});
 	this.statechart = shadow_statechart;
 };
 
 (function(my) {
-	_.proto_extend(my, red.ContextualObject);
+	_.proto_extend(my, red.ContextualDict);
 	var proto = my.prototype;
 
 	proto.get_own_statechart = function() {
@@ -176,11 +206,24 @@ red.ContextualStatefulObj = function(options) {
 	};
 
 	proto.get_statecharts = function() {
-		return [this.get_own_statechart()];
+		var contextual_protos = this.get_contextual_protos();
+		var proto_statecharts = _	.chain(contextual_protos)
+									.map(function(x) {
+										if(x instanceof red.ContextualStatefulObject) {
+											return x.get_own_statechart();
+										} else {
+											return false;
+										}
+									})
+									.compact()
+									.value();
+
+		return ([this.get_own_statechart()]).concat(proto_statecharts);
 	};
 
 	proto.destroy = function() {
 		my.superclass.destroy.apply(this, arguments);
+		this.statechart.destroy();
 	};
 }(red.ContextualStatefulObj));
 
@@ -194,6 +237,7 @@ red.ContextualCell = function(options) {
 	var proto = my.prototype;
 	proto.destroy = function() {
 		my.superclass.destroy.apply(this, arguments);
+		this.value_constraint.destroy();
 	};
 	proto._getter = function() {
 		return this.value_constraint.get();
@@ -202,11 +246,103 @@ red.ContextualCell = function(options) {
 
 red.ContextualStatefulProp = function(options) {
 	red.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
+	this.transition_times_run = {};
+	this.used_start_transition = false;
 };
 
 (function(my) {
 	_.proto_extend(my, red.ContextualObject);
 	var proto = my.prototype;
+
+	proto.get_parent = function() {
+		var context = this.get_pointer();
+		var popped_item, last;
+
+		while(!context.is_empty()) {
+			last = context.points_at();
+			if(last instanceof red.StatefulObj) {
+				var contextual_object = red.find_or_put_contextual_obj(last, context);
+				return contextual_object;
+			}
+			popped_item = last;
+			context = context.pop();
+		}
+		return undefined;
+	};
+
+	proto.get_all_protos = function() {
+		var parent = this.get_parent();
+		var parent_protos = parent.get_all_protos();
+		return [];
+	};
+
+	proto._get_direct_values = function() {
+		var parent = this.get_parent();
+		var statechart = parent.get_own_statechart();
+		var stateful_prop = this.get_object();
+		var direct_values = stateful_prop.get_direct_values();
+
+		var entries = direct_values.entries();
+		var rv = _.map(entries, function(entry) {
+			var state = red.find_equivalent_state(entry.key, statechart);
+			return {
+				state: state,
+				value: entry.value
+			};
+		});
+		return rv;
+	};
+
+	proto.get_values = function() {
+		var direct_values = this._get_direct_values();
+		var rv = direct_values;
+
+		return rv;
+	};
+
+	proto.get_transition_times_run = function(transition) {
+		var transition_id = transition.id();
+		return this.transition_times_run[transition_id];
+	};
+	proto.set_transition_times_run = function(transition, tr) {
+		var transition_id = transition.id();
+		this.transition_times_run[transition_id] = tr;
+	};
+
+	proto._getter = function() {
+		var values = this.get_values();
+		var len = values.length;
+		var info;
+
+		var using_val, using_state;
+		for(var i = 0; i<len; i++){
+			info = values[i];
+			var state = info.state,
+				val = info.value;
+			if(state instanceof red.State) {
+				if(!using_val && state.is_active()) {
+					using_val = val;
+					using_state = state;
+				}
+			} else if(state instanceof red.Transition) {
+
+			}
+		}
+		if(using_val) {
+			if(using_val instanceof red.Cell) {
+				var pointer = this.get_pointer();
+				var event = state._last_run_event
+
+				var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
+
+				var rv = using_val.get_constraint_for_context(eventized_pointer);
+				return rv.get();
+			} else {
+				return using_val;
+			}
+		}
+		return undefined;
+	};
 
 	proto.destroy = function() {
 		my.superclass.destroy.apply(this, arguments);

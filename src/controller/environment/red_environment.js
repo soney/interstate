@@ -60,6 +60,9 @@ var Env = function(options) {
 	proto.get_root_pointer = function() {
 		return this.pointer.slice(0, 1);
 	};
+	proto.get_root = function() {
+		return this.pointer.root();
+	};
 	proto.get_pointer_obj = function() {
 		return this.pointer.points_at();
 	};
