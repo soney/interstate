@@ -123,6 +123,7 @@ var print = function(current_pointer, logging_mechanism) {
 		}
 	};
 
+/*
 	var PROP_NAME_WIDTH = 30;
 	var PROP_ID_WIDTH = 5;
 	var PROP_VALUE_WIDTH = 40;
@@ -288,6 +289,59 @@ var print = function(current_pointer, logging_mechanism) {
 			});
 		}
 	};
+	*/
+	var PROP_NAME_WIDTH = 30;
+	var PROP_ID_WIDTH = 5;
+	var PROP_VALUE_WIDTH = 40;
+
+	var STATE_NAME_WIDTH = 40;
+	var STATE_ID_WIDTH = 8;
+	var TRANSITION_NAME_WIDTH = 60;
+	var TRANSITION_VALUE_WIDTH = 40;
+	var STATE_VALUE_WIDTH = 100;
+
+	var tablify = function(contextual_object) {
+		if(contextual_object instanceof red.ContextualDict) {
+			var children = contextual_object.get_children();
+			_.each(children, function(child) {
+				var prop_name = child.get_name();
+				var prop_pointer = child.get_pointer();
+				var prop_points_at = prop_pointer.points_at();
+				var is_expanded = current_pointer.has(prop_points_at);
+				var is_inherited = child.is_inherited();
+				var is_pointed_at = current_pointer.eq(prop_pointer);
+				var prop_text = prop_name;
+
+				if(is_inherited) {
+					prop_text = prop_text + " (i)";
+				}
+
+				if(is_pointed_at) {
+					prop_text = "> " + prop_text;
+				} else {
+					prop_text = "  " + prop_text;
+				}
+
+				if(prop_points_at instanceof red.StatefulProp) {
+					prop_text = pad(prop_text, PROP_NAME_WIDTH);
+					prop_text = prop_text + pad("(" + uid.strip_prefix(prop_points_at.uid) + ")", PROP_ID_WIDTH);
+				} else {
+					prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
+				}
+
+				var pp_val = child.val();
+				prop_text = pad(prop_text + value_to_value_str(pp_val), PROP_NAME_WIDTH + PROP_ID_WIDTH + PROP_VALUE_WIDTH);
+
+				if((prop_points_at instanceof red.Dict) || (prop_points_at instanceof red.StatefulProp)) {
+					logging_mechanism[is_expanded ? "group" : "groupCollapsed"](prop_text);
+					tablify(child);
+					logging_mechanism.groupEnd();
+				} else {
+					logging_mechanism.log(prop_text + value_to_source_str(prop_points_at));
+				}
+			});
+		}
+	};
 
 	var root = current_pointer.points_at(0);
 	var root_str;
@@ -297,7 +351,8 @@ var print = function(current_pointer, logging_mechanism) {
 		root_str = "root";
 	}
 	logging_mechanism.log(pad(root_str, PROP_NAME_WIDTH)  + value_to_value_str(root));
-	tablify(current_pointer.slice(0,1));
+	var contextual_root = red.find_or_put_contextual_obj(root);
+	tablify(contextual_root);
 
 	return "ok...";
 };

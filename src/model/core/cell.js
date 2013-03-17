@@ -33,12 +33,12 @@ red.Cell = function(options, defer_initialization) {
 		});
 	};
 	proto.get_constraint_for_context = function(pcontext) {
-		return cjs.$(function() {
+		return cjs.$(_.bind(function() {
 			var tree = this._tree.get();
-			return red.get_parsed_$(tree, {
+			return red.get_parsed_val(tree, {
 				context: pcontext
 			});
-		}, this);
+		}, this));
 	};
 	proto.destroy = function() {
 		this._tree.destroy();

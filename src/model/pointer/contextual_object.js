@@ -2,16 +2,31 @@
 var cjs = red.cjs, _ = red._;
 
 red.ContextualObject = function(options) {
-	this.object = options.object;
-	this.pcontext = options.pcontext;
-	this.inherited = options.inherited;
+	this.set_options(options);
 
-	this.$value = options.value || cjs.$(_.bind(this._getter, this));
+	this.$value = new cjs.Constraint(_.bind(this._getter, this));
 };
 
 (function(my) {
 	var proto = my.prototype;
 	proto.get_pointer = function() { return this.pointer; }
+	proto.set_options = function(options) {
+		if(options) {
+			if(options.object) {
+				this.object = options.object;
+			}
+			if(options.pointer) {
+				this.pointer = options.pointer;
+			}
+
+			if(options.name) {
+				this.name = options.name || "";
+			}
+			if(options.inherited) {
+				this.inherited = options.inherited === true;
+			}
+		}
+	};
 	proto.toString = function() {
 		return "p_" + this.get_pointer().toString();
 	};
@@ -27,6 +42,13 @@ red.ContextualObject = function(options) {
 		this.$value.destroy();
 	};
 
+	proto.get_name = function() {
+		return this.name;
+	};
+	proto.is_inherited = function() {
+		return this.inherited;
+	};
+
 	proto.activate = function() {
 	};
 
@@ -34,13 +56,12 @@ red.ContextualObject = function(options) {
 	};
 
 	proto._getter = function() {
-		return this;
+		return this.object;
 	};
 }(red.ContextualObject));
 
 red.ContextualDict = function(options) {
 	red.ContextualDict.superclass.constructor.apply(this, arguments);
-	this.dict = options.dict;
 	this.attachments = cjs.map({
 		hash: "hash"
 	});
@@ -52,7 +73,7 @@ red.ContextualDict = function(options) {
 	var proto = my.prototype;
 
 	proto.get_all_protos = function() {
-		var dict = this.dict;
+		var dict = this.object;
 		var protos = dict.direct_protos();
 		var rv;
 		if(protos instanceof cjs.ArrayConstraint) {
@@ -67,8 +88,8 @@ red.ContextualDict = function(options) {
 		return [];
 	};
 
-	proto._get_child_pointer_objects = function() {
-		var dict = this.dict;
+	proto.get_children = function() {
+		var dict = this.object;
 		var pointer = this.pointer;
 
 		var builtin_names = dict._get_builtin_prop_names(pointer);
@@ -101,16 +122,35 @@ red.ContextualDict = function(options) {
 				return dict[getter_fn](name, pointer);
 			}, this);
 
-			var names_plus_infos = _.map(infos, function(info, i) {
-				return _.extend({
+			var contextual_objects = _.map(infos, function(info, i) {
+				var options = _.extend({
 					name: names[i],
 					type: type
 				}, info);
+
+				var value = info.value;
+				var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value), options);
+				return contextual_object;
 			});
-			rv.push.apply(rv, names_plus_infos);
+
+			rv.push.apply(rv, contextual_objects);
 		}, this);
 
 		return rv;
+	};
+	proto.get = function(name) {
+		var pointer = this.get_pointer();
+		var info = this.object._get_prop_info(name, pointer);
+		var options = _.extend({
+			name: name
+		}, info);
+		var value = info.value;
+		if(value instanceof red.Dict || value instanceof red.StatefulProp || value instanceof red.Cell) {
+			var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value), options);
+			return contextual_object;
+		} else {
+			return value;
+		}
 	};
 
 	proto.destroy = function() {
@@ -118,11 +158,15 @@ red.ContextualDict = function(options) {
 		this.attachments.destroy();
 		this.get_child_pointer_objects.destroy();
 	};
+
+	proto._getter = function() {
+		return this;
+	};
 }(red.ContextualDict));
 
 red.ContextualStatefulObj = function(options) {
 	red.ContextualStatefulObj.superclass.constructor.apply(this, arguments);
-	var own_statechart = this.dict.get_own_statechart();
+	var own_statechart = this.object.get_own_statechart();
 	var shadow_statechart = own_statechart.create_shadow({context: pcontext, running: true});
 	this.statechart = shadow_statechart;
 };
@@ -144,46 +188,36 @@ red.ContextualStatefulObj = function(options) {
 	};
 }(red.ContextualStatefulObj));
 
-red.CellPointerObject = function(options) {
-	red.CellPointerObject.superclass.constructor.apply(this, arguments);
+red.ContextualCell = function(options) {
+	red.ContextualCell.superclass.constructor.apply(this, arguments);
+	this.value_constraint = this.object.get_constraint_for_context(this.get_pointer());
 };
 
 (function(my) {
-	_.proto_extend(my, red.PointerObject);
+	_.proto_extend(my, red.ContextualObject);
 	var proto = my.prototype;
 	proto.destroy = function() {
 		my.superclass.destroy.apply(this, arguments);
 	};
-}(red.CellPointerObject));
+	proto._getter = function() {
+		return this.value_constraint.get();
+	};
+}(red.ContextualCell));
 
-red.ContextualStatefulPropPointer = function(options) {
-	red.ContextualStatefulPropPointer.superclass.constructor.apply(this, arguments);
+red.ContextualStatefulProp = function(options) {
+	red.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
 };
 
 (function(my) {
-	_.proto_extend(my, red.PointerObject);
+	_.proto_extend(my, red.ContextualObject);
 	var proto = my.prototype;
 
 	proto.destroy = function() {
 		my.superclass.destroy.apply(this, arguments);
 	};
-}(red.ContextualStatefulPropPointer));
+}(red.ContextualStatefulProp));
 
-red.get_pointer_object = function(obj, pointer) {
-	if(!pointer) {
-		pointer = new red.Pointer({stack: [obj]});
-	}
-
-	switch(obj.constructor) {
-		case red.Dict:
-			return new red.DictPointerObject({
-				pointer: pointer,
-				dict: obj
-			})
-	}
-};
-
-red.check_contextual_object_equality =  red.check_pointer_object_equality_eqeqeq = function(itema, itemb) {
+red.check_contextual_object_equality =  red.check_contextual_object_equality_eqeqeq = function(itema, itemb) {
 	if(itema instanceof red.ContextualObject && itemb instanceof red.ContextualObject) {
 		return itema.get_pointer().eq(itemb.get_pointer()) && itema.get_object() === itemb.get_object();
 	} else {
@@ -196,6 +230,28 @@ red.check_contextual_object_equality_eqeq = function(itema, itemb) {
 	} else {
 		return itema == itemb;
 	}
+};
+
+red.create_contextual_object = function(object, pointer, options) {
+	options = _.extend({
+		object: object,
+		pointer: pointer,
+	}, options);
+
+	var rv;
+	if(object instanceof red.Cell) {
+		rv = new red.ContextualCell(options);
+	} else if(object instanceof red.StatefulProp) {
+		rv = new red.ContextualStatefulProp(options);
+	} else if(object instanceof red.StatefulObj) {
+		rv = new red.ContextualStatefulObj(options);
+	} else if(object instanceof red.Dict) {
+		rv = new red.ContextualDict(options);
+	} else {
+		rv = new red.ContextualObject(options);
+	}
+
+	return rv;
 };
 
 }(red));

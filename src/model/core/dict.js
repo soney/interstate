@@ -106,10 +106,9 @@ red.Dict = function(options, defer_initialization) {
 	//
 
 	proto._get_all_protos = function(pointer) {
-		var pointer_contextual_obj = red.find_contextual_obj(this.direct_protos(), pointer);
-		return pointer_obj.get_all_protos();
+		var contextual_obj = red.find_or_put_contextual_obj(this, pointer);
+		return contextual_obj.get_all_protos();
 	};
-
 	
 	//
 	// === DIRECT PROPERTIES ===

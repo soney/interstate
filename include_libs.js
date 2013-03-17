@@ -58,7 +58,7 @@ exports.main_src = c(
 				"model/core/parsed_fn.js",
 				"model/core/parsed_constraint.js",
 				"model/pointer/pointer.js",
-				"model/pointer/object_in_context.js",
+				"model/pointer/contextual_object.js",
 				"model/pointer/pointer_bucket.js",
 				"model/statechart/red_statechart.js",
 				"model/statechart/events/event_core.js",

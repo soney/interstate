@@ -1,21 +1,23 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-red.PointerTree = function(node) {
-	this.nodes = new Map({
+red.PointerTree = function(options) {
+	this.objects = new Map({
 		hash: function(obj) {
-			return obj.hash();
+			return red.pointer_hash(obj);
 		},
 		equals: function(a, b) {
 			return a === b;
-		}
+		},
+		keys: options.object_keys,
+		values: options.object_values
 	});
 	this.children = new Map({
 		hash: function(info) {
 			var child = info.child,
 				special_contexts = info.special_contexts;
 
-			var hash = child.hash();
+			var hash = red.pointer_hash(child);
 			for(var i = special_contexts.length-1; i>=0; i--) {
 				hash += special_contexts[i].hash();
 			}
@@ -30,68 +32,78 @@ red.PointerTree = function(node) {
 			} else {
 				return false;
 			}
-		}
+		},
+		keys: options.pointer_keys,
+		values: options.pointer_values
 	});
 };
 
 (function(my) {
 	var proto = my.prototype;
-	proto.get_node = function() {
-		return this.node;
+	proto.get_or_put_obj = function(object, pointer, options) {
+		var set_options = true;
+		var rv = this.objects.get_or_put(object, function() {
+			set_options = false
+			return red.create_contextual_object(object, pointer, options);
+		});
+		if(set_options) {
+			rv.set_options(options);
+		}
+		return rv;
 	};
-
-	proto.find_or_put = function(pointer) {
-		var unrooted_pointer = pointer.slice(1);
-		if(unrooted_pointer.is_empty()) {
-			return this.get_node();
-		} else {
-			var child = unrooted_pointer.root(),
-				special_contexts = unrooted_pointer.get_special_contexts(0);
-			var child_tree = this.children.get({
+	proto.get_or_put_child = function(child, special_contexts) {
+			var child_tree = this.children.get_or_put({
 				child: child,
 				special_contexts: special_contexts
+			}, function() {
+				var tree = new red.PointerTree({
+					object_keys: [],
+					object_values: [],
+					pointer_keys: [],
+					pointer_values: []
+				});
+
+				return tree;
 			});
-
-			if(child_tree) {
-				return child_tree.find_or_put(unrooted_pointer);
-			} else {
-				var my_pointer = this.node.get_pointer();
-				var sliced_pointer = pointer.slice(0, my_pointer.length()+1);
-
-				var child = sliced_pointer.points_at();
-				var special_contexts = slided_pointer.get_special_contexts();
-
-				var sliced_pointer_obj = red.get_pointer_object(child, sliced_pointer);
-
-				this.children.put({
-					child: child,
-					special_contexts: special_contexts
-				}, sliced_pointer_obj);
-
-				return sliced_pointer_obj.find_or_put(unrooted_pointer);
-			}
-		}
+			return child_tree;
 	};
 }(red.PointerTree));
-/*
 
 red.PointerBucket = function(options) {
-	this.root = options.root;
-	red.pointer_buckets.put(this.root, this);
+	var root = options.root;
+	var root_pointer = new red.Pointer({stack: [root]});
+	this.contextual_root = new red.ContextualDict({
+		object: root,
+		pointer: root_pointer
+	});
 
-	this.root_pointer_obj = red.get_pointer_object(this.root);
-	this.tree = new red.PointerTree(this.root_pointer_obj);
+	this.tree = new red.PointerTree({
+		object_keys: [root],
+		object_values: [this.contextual_root],
+		pointer_keys: [],
+		pointer_values: [],
+		pointer: root_pointer
+	});
 };
 
 (function(my) {
 	var proto = my.prototype;
 
-	proto.get_root_pointer_obj = function() {
-		return this.root_pointer_obj;
+	proto.get_contextual_root = function() {
+		return this.contextual_root;
 	};
 
-	proto.find_or_put = function(pointer) {
-		var rv = this.tree.find_or_put(pointer);
+	proto.find_or_put = function(obj, pointer, options) {
+		var node = this.tree;
+		var i = 1, len = pointer.length(), ptr_i, sc_i;
+
+		while(i < len) {
+			ptr_i = pointer.points_at(i);
+			sc_i = pointer.special_contexts(i);
+			node = node.get_or_put_child(ptr_i, sc_i);
+			i++;
+		}
+		var rv = node.get_or_put_obj(obj, pointer, options);
 		return rv;
 	};
 }(red.PointerBucket));
@@ -100,17 +112,24 @@ red.pointer_buckets = new Map({
 	hash: "hash"
 });
 
-red.find_pointer_obj = function(pointer) {
-	var pointer_root = pointer.root();
-	var pointer_bucket = red.pointer_buckets.get(pointer_root);
-	if(!pointer_bucket) {
-		pointer_bucket = new red.PointerBucket({
+red.find_or_put_contextual_obj = function(obj, pointer, options) {
+	var pointer_root;
+
+	if(pointer) {
+		pointer_root = pointer.root();
+	} else {
+		pointer = new red.Pointer({stack: [obj]});
+		pointer_root = obj;
+	}
+
+	var pointer_bucket = red.pointer_buckets.get_or_put(pointer_root, function() {
+		return new red.PointerBucket({
 			root: pointer_root
 		});
-	}
-	return pointer_bucket.find_or_put(pointer);
-};
+	});
 
-*/
+	var rv = pointer_bucket.find_or_put(obj, pointer, options);
+	return rv;
+};
 
 }(red));

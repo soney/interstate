@@ -32,10 +32,10 @@ red.on_event = function(event_type) {
 
 
 red.binary_operators = {
-	"===":	function(a, b) { return red.check_pointer_object_equality_eqeqeq(a,b); }
-	,"!==":	function(a, b) { return !red.check_pointer_object_equality_eqeqeq(a,b); }
-	, "==":	function(a, b) { return red.check_pointer_object_equality_eqeq(a, b); }
-	, "!=":	function(a, b) { return !red.check_pointer_object_equality_eqeq(a,b); }
+	"===":	function(a, b) { return red.check_contextual_object_equality_eqeqeq(a,b); }
+	,"!==":	function(a, b) { return !red.check_contextual_object_equality_eqeqeq(a,b); }
+	, "==":	function(a, b) { return red.check_contextual_object_equality_eqeq(a, b); }
+	, "!=":	function(a, b) { return !red.check_contextual_object_equality_eqeq(a,b); }
 	, ">":	function(a, b) { return a > b; }
 	, ">=":	function(a, b) { return a >= b; }
 	, "<":	function(a, b) { return a < b; }
@@ -63,61 +63,43 @@ red.unary_operators = {
 	, "typeof":	function(a) { return typeof a; }
 };
 
-var get_op_$ = function(calling_context, pcontext, op) {
+var get_op_val = function(calling_context, pcontext, op) {
 	var args = _.rest(arguments, 3);
-	return cjs.$(function() {
-		var op_got = cjs.get(op);
-
-		var calling_context_got = cjs.get(calling_context);
-		if(_.isFunction(op_got)) {
-			var args_got = _.map(args, cjs.get);
-			var rv = op_got.apply(calling_context_got, args_got);
-			return rv;
-		} else if(op_got instanceof red.ParsedFunction) {
-			return op_got._apply(calling_context_got, pcontext, args);
-		} else {
-			//throw new Error("Calling a non-function");
-			return undefined;
-		}
-	});
+	if(_.isFunction(op)) {
+		var rv = op.apply(calling_context, args);
+		return rv;
+	} else if(op instanceof red.ParsedFunction) {
+		return op._apply(calling_context, pcontext, args);
+	} else {
+		//throw new Error("Calling a non-function");
+		return undefined;
+	}
 };
 
-var AND_OP = 0, OR_OP = 1;
-var get_logical_$ = function(op, left, right) {
-	var op_id;
+var get_logical_val = function(op, left, right) {
 	if(op === "&&") {
-		op_id = AND_OP;
+		return left && right;
 	} else if(op === "||") {
-		op_id = OR_OP;
+		return left || right;
 	} else {
 		console.error("Unknown op " + op);
 	}
-	return cjs.$(function() {
-		switch(op_id) {
-			case AND_OP:
-				return left.get() && right.get();
-			case OR_OP:
-				return left.get() || right.get();
-		};
-	});
 };
 
-var get_conditional_$ = function(test, consequent, alternate) { // test ? consequent : alternate
-	return cjs.$(function() {
-		var test_got = cjs.get(test);
-		if(test_got) {
-			return cjs.get(consequent);
-		} else {
-			return cjs.get(alternate);
-		}
-	});
+var get_conditional_val = function(test, consequent, alternate) { // test ? consequent : alternate
+	if(test) {
+		return consequent;
+	} else {
+		return alternate;
+	}
 };
 
-var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
+var get_identifier_val = function(key, context, ignore_inherited_in_contexts) {
 	if(key === "root") {
-		return new red.PointerObject({pointer: context.slice(0, 1)});
+		return red.find_or_put_contextual_obj(context.root(), context.slice(0, 1));
 	} else if(key === "window") {
 		return window;
+		/*
 	} else if(key === "parent") {
 		var found_this = false;
 		var curr_context = context;
@@ -126,7 +108,7 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.Dict) {
 				if(found_this) {
-					return new red.PointerObject({pointer: curr_context});
+					return new red.ContextualObject({pointer: curr_context});
 				} else {
 					found_this = true;
 				}
@@ -134,195 +116,157 @@ var get_identifier_$ = function(key, context, ignore_inherited_in_contexts) {
 			curr_context = curr_context.pop();
 			context_item = curr_context.points_at();
 		}
+		*/
 	}
 
 	ignore_inherited_in_contexts = ignore_inherited_in_contexts || [];
 
-	var rv = cjs.$(function() {
-		var curr_context = context;
-		var context_item = curr_context.points_at();
-
+	var curr_context = context;
+	var context_item = curr_context.points_at();
 		
-		while(!curr_context.is_empty()) {
-			if(context_item instanceof red.Dict) {
-				if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
-					if(context_item._has_direct_prop(key)) {
-						return context_item.prop_val(key, curr_context);
-					}
-				} else {
-					if(context_item._has_prop(key, curr_context)) {
-						return context_item.prop_val(key, curr_context);
-					}
+	while(!curr_context.is_empty()) {
+		if(context_item instanceof red.Dict) {
+			if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
+				if(context_item._has_direct_prop(key)) {
+					var contextual_obj = red.find_or_put_contextual_obj(context_item, curr_context);
+					var contextual_prop = contextual_obj.get(key);
+					return contextual_prop;
 				}
-			} else if(context_item instanceof red.Cell) {
-				var special_contexts = curr_context.special_contexts();
-				var len = special_contexts.length;
-				for(var i = 0; i<len; i++) {
-					var sc = special_contexts[i];
-					var context_obj = sc.get_context_obj();
-					if(context_obj.hasOwnProperty(key)) {
-						return context_obj[key].value;
-					}
+			} else {
+				if(context_item._has_prop(key, curr_context)) {
+					var contextual_obj = red.find_or_put_contextual_obj(context_item, curr_context);
+					var contextual_prop = contextual_obj.get(key);
+					return contextual_prop.val();
 				}
-			} else if(context_item && context_item[key]) {
-				return context_item[key];
 			}
-			curr_context = curr_context.pop();
-			context_item = curr_context.points_at();
+		} else if(context_item instanceof red.Cell) {
+		/*
+			var special_contexts = curr_context.special_contexts();
+			var len = special_contexts.length;
+			for(var i = 0; i<len; i++) {
+				var sc = special_contexts[i];
+				var context_obj = sc.get_context_obj();
+				if(context_obj.hasOwnProperty(key)) {
+					return context_obj[key].value;
+				}
+			}
+			*/
 		}
-		if(window.hasOwnProperty(key)) {
-			return window[key];
-		} else {
-			return undefined;
-		}
-	});
-	if(red.__debug) {
-		rv.__debug_info = {
-			type: "identifier",
-			key: key,
-			context: context
-		};
+		curr_context = curr_context.pop();
+		context_item = curr_context.points_at();
 	}
-	return rv;
-};
-
-var get_this_$ = function(context) {
-	var rv = cjs.$(function() {
-		var curr_context = context;
-		var context_item = curr_context.points_at();
-
-		while(!curr_context.is_empty()) {
-			if(context_item instanceof red.Dict) {
-				//if(uid.strip_prefix(context_item.uid) == 1) debugger;
-				return new red.PointerObject({pointer: curr_context});
-			}
-			curr_context = curr_context.pop();
-			context_item = curr_context.points_at();
-		}
-
+	if(window.hasOwnProperty(key)) {
+		return window[key];
+	} else {
 		return undefined;
-	});
-
-	if(red.__debug) {
-		rv.__debug_info = {
-			type: "this",
-			context: context
-		};
 	}
-
-	return rv;
 };
 
-var get_member_$ = function(object, property) {
-	var rv = cjs.$(function() {
-		var obj_got = cjs.get(object);
+var get_this_val = function(context) {
+	var curr_context = context;
+	var context_item = curr_context.points_at();
 
-		if(!obj_got) {
-			//throw new Error("Looking for property of " + obj_got);
-			return undefined;
+	while(!curr_context.is_empty()) {
+		if(context_item instanceof red.Dict) {
+			//if(uid.strip_prefix(context_item.uid) == 1) debugger;
+			return new red.ContextualObject({pointer: curr_context});
 		}
+		curr_context = curr_context.pop();
+		context_item = curr_context.points_at();
+	}
 
-		var prop_got = cjs.get(property);
+	return undefined;
+};
 
-		if(obj_got instanceof red.PointerObject) {
-			if(prop_got === "parent") {
-				var found_this = false;
-				var curr_context = obj_got.get_pointer();
-				var context_item = curr_context.points_at();
+var get_member_val = function(object, property) {
+	if(!object) {
+		return undefined;
+	}
 
-				while(!curr_context.is_empty()) {
-					if(context_item instanceof red.Dict) {
-						if(found_this) {
-							return new red.PointerObject({pointer: curr_context});
-						} else {
-							found_this = true;
-						}
+	if(obj_got instanceof red.ContextualObject) {
+		if(property === "parent") {
+			var found_this = false;
+			var curr_context = object.get_pointer();
+			var context_item = curr_context.points_at();
+
+			while(!curr_context.is_empty()) {
+				if(context_item instanceof red.Dict) {
+					if(found_this) {
+						return new red.ContextualObject({pointer: curr_context});
+					} else {
+						found_this = true;
 					}
-					curr_context = curr_context.pop();
-					context_item = curr_context.points_at();
 				}
+				curr_context = curr_context.pop();
+				context_item = curr_context.points_at();
 			}
-			var pointer = obj_got.get_pointer();
-			var dict = pointer.points_at();
-			var rv = dict.prop_val(prop_got, pointer);
-			return rv;
-		} else {
-			return obj_got[prop_got];
 		}
-	});
-
-	if(red.__debug) {
-		rv.__debug_info = {
-			type: "member",
-			property: property,
-			object: object
-		};
+		var pointer = object.get_pointer();
+		var dict = pointer.points_at();
+		var rv = dict.prop_val(property, pointer);
+		return rv;
+	} else {
+		return object[property];
 	}
-
-	return rv;
 };
 
-var get_array_$ = function(elements) {
-	return cjs.$(function() {
-		return _.map(elements, function(element) {
-			return cjs.get(element);
-		});
-	});
+var get_array_val = function(elements) {
+	return elements;
 };
 
-var get_$ = red.get_parsed_$ = function(node, options) {
+var get_val = red.get_parsed_val = function(node, options) {
 	if(!node) { return undefined; }
 	var type = node.type;
 	if(type === "ExpressionStatement") {
-		return get_$(node.expression, options);
+		return get_val(node.expression, options);
 	} else if(type === "Literal") {
 		return node.value;
 	} else if(type === "BinaryExpression") {
 		var op_func = red.binary_operators[node.operator];
-		var left_arg = get_$(node.left, options),
-			right_arg = get_$(node.right, options);
-		return get_op_$(window, options.context, op_func, left_arg, right_arg);
+		var left_arg = get_val(node.left, options),
+			right_arg = get_val(node.right, options);
+		return get_op_val(window, options.context, op_func, left_arg, right_arg);
 	} else if(type === "UnaryExpression") {
 		var op_func = red.unary_operators[node.operator];
-		var arg = get_$(node.argument, options);
-		return get_op_$(window, options.context, op_func, arg);
+		var arg = get_val(node.argument, options);
+		return get_op_val(window, options.context, op_func, arg);
 	} else if(type === "CallExpression") {
-		var callee = get_$(node.callee, options);
+		var callee = get_val(node.callee, options);
 		var op_context = window;
 		if(node.callee.type === "MemberExpression") {
-			op_context = get_$(node.callee.object, options);
+			op_context = get_val(node.callee.object, options);
 		}
 		var args = _.map(node.arguments, function(arg) {
-			return get_$(arg, options);
+			return get_val(arg, options);
 		});
-		return get_op_$.apply(this, ([op_context, options.context, callee]).concat(args))
+		return get_op_val.apply(this, ([op_context, options.context, callee]).concat(args))
 	} else if(type === "Identifier") {
 		if(options.is_property) {
 			var property_of = options.property_of;
 		} else {
-			return get_identifier_$(node.name, options.context, options.ignore_inherited_in_contexts);
+			return get_identifier_val(node.name, options.context, options.ignore_inherited_in_contexts);
 		}
 	} else if(type === "ThisExpression") {
-		return get_this_$(options.context);
+		return get_this_val(options.context);
 	} else if(type === "MemberExpression") {
-		var object = get_$(node.object, options);
-		var property = node.computed ? get_$(node.property, options) : node.property.name;
-		return get_member_$(object, property);
+		var object = get_val(node.object, options);
+		var property = node.computed ? get_val(node.property, options) : node.property.name;
+		return get_member_val(object, property);
 	} else if(type === "ArrayExpression") {
 		var elements = _.map(node.elements, function(element) {
-			return get_$(element, options);
+			return get_val(element, options);
 		});
-		return get_array_$(elements);
+		return get_array_val(elements);
 	} else if(type === "ConditionalExpression") {
-		return get_conditional_$(get_$(node.test, options), get_$(node.consequent, options), get_$(node.alternate, options));
+		return get_conditional_val(get_val(node.test, options), get_val(node.consequent, options), get_val(node.alternate, options));
 	} else if(type === "LogicalExpression") {
-		var left_arg = get_$(node.left, options),
-			right_arg = get_$(node.right, options);
-		return get_logical_$(node.operator, left_arg, right_arg);
+		var left_arg = get_val(node.left, options),
+			right_arg = get_val(node.right, options);
+		return get_logical_val(node.operator, left_arg, right_arg);
 	} else if(type === "FunctionExpression") {
-		return red.get_fn_$(node, options);
+		return red.get_fn_val(node, options);
 	} else if(type === "Program") {
-		return get_$(node.body[0], options);
+		return get_val(node.body[0], options);
 	} else {
 		console.log(type, node);
 	}

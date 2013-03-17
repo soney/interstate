@@ -16,13 +16,13 @@ red.Query = function(options) {
 								if(points_at instanceof red.Dict) {
 									var manifestation_pointers = points_at.get_manifestation_pointers(pointer);
 									if(_.isArray(manifestation_pointers)) {
-										return _.map(manifestation_pointers, function(x) { return new red.PointerObject({ pointer: x }); });
+										return _.map(manifestation_pointers, function(x) { return new red.ContextualObject({ pointer: x }); });
 									} else {
-										new red.PointerObject({pointer: pointer});
+										new red.ContextualObject({pointer: pointer});
 									}
 								}
 								else {
-									new red.PointerObject({pointer: pointer});
+									new red.ContextualObject({pointer: pointer});
 								}
 							})
 							.flatten(true)
@@ -140,7 +140,7 @@ red.Query = function(options) {
 	};
 
 	proto.add = function() {
-		var my_value_set = new Set({value: this.value(), equals: red.check_pointer_object_equality, hash: "hash"});
+		var my_value_set = new Set({value: this.value(), equals: red.check_contextual_object_equality, hash: "hash"});
 		var items = extract_items(args);
 		
 		var new_value_set = my_value_set.add.apply(my_value_set, items);
@@ -153,7 +153,7 @@ red.Query = function(options) {
 	};
 
 	proto.remove = function() {
-		var my_value_set = new Set({value: this.value(), equals: red.check_pointer_object_equality, hash: "hash"});
+		var my_value_set = new Set({value: this.value(), equals: red.check_contextual_object_equality, hash: "hash"});
 		var items = extract_items(args);
 
 		var new_value_set = my_value_set.remove.apply(my_value_set, items);
