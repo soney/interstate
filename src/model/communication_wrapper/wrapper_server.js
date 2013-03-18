@@ -39,11 +39,9 @@ sdc.on("message", function(message, event) {
 		var cobj_id = event.data.cobj_id;
 		var cobj = red.find_uid(cobj_id);
 		var server = red.get_wrapper_server(cobj);
-		var req_name = message.name,
-			req_args = message.arguments || [];
 
 		var request_id = event.data.message_id;
-		server.on_request(req_name, req_args, function(response) {
+		server.on_request(message.getting, function(response) {
 			client_window.postMessage({
 				type: "response",
 				request_id: request_id,
@@ -77,6 +75,25 @@ red.WrapperServer = function(options) {
 	red.register_wrapper_server(this.object, this);
 	this._type = "none";
 	this.client_listeners = [];
+
+	this.fn_call_constraints = cjs.map({
+		hash: function(args) {
+			return args[0];
+		},
+		equals: function(args1, args2) {
+			var len = args1.length
+			if(len !== args2.length) {
+				return false;
+			} else {
+				for(var i = 0; i<len; i++) {
+					if(!argeq(args1[i], args2[i])) {
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+	});
 };
 
 (function(my) {
@@ -91,14 +108,31 @@ red.WrapperServer = function(options) {
 	proto.get_object = function(){
 		return this.object;
 	};
-
-	proto.on_request = function(name, args, callback) {
-		this[name].apply(this, (args).concat(callback));
-	};
-
 	proto.register_listener = function(listener_info) {
 		this.client_listeners.push(listener_info);
 	};
+
+	proto.on_request = function(getting, callback) {
+		var constraint = this.fn_call_constraints.get_or_put(getting, function() {
+			var fn_name = getting[0];
+			var args = _.rest(getting);
+			var object = this.get_object();
+			var constraint = new cjs.Constraint(function() {
+				var rv = object[fn_name].apply(object, args);
+				return rv;
+			});
+			constraint.onChange(_.bind(function() {
+				this.post({
+					type: "changed",
+					getting: getting
+				});
+			}, this));
+			return constraint;
+		}, this);
+
+		callback(constraint.get());
+	};
+
 	proto.post = function(data) {
 		var len = this.client_listeners.length;
 		var full_message = {
@@ -135,137 +169,9 @@ red.WrapperServer = function(options) {
 
 }(red.WrapperServer));
 
-
-//=========
-
-
-red.StateWrapperServer = function(options) {
-	red.StateWrapperServer.superclass.constructor.apply(this, arguments);
-	this._type = "state";
+var argeq = function(arg1, arg2) {
+	return arg1 === arg2;
 };
-
-(function(my) {
-	_.proto_extend(my, red.WrapperServer);
-	var proto = my.prototype;
-	proto.destroy = function() {
-		my.superclass.destroy.apply(this, arguments);
-	};
-	proto._is_active = make_async("is_active");
-}(red.StateWrapperServer));
-
-//=========
-
-red.TransitionWrapperServer = function(options) {
-	red.TransitionWrapperServer.superclass.constructor.apply(this, arguments);
-	this._type = "transition";
-	this.object.on("fire");
-};
-
-(function(my) {
-	_.proto_extend(my, red.WrapperServer);
-	var proto = my.prototype;
-	proto.destroy = function() {
-		my.superclass.destroy.apply(this, arguments);
-	};
-
-	proto.on_fire = function() {
-		this.post("fire");
-	};
-}(red.TransitionWrapperServer));
-
-//=========
-
-red.DictWrapperServer = function(options) {
-	red.DictWrapperServer.superclass.constructor.apply(this, arguments);
-	this._type = "dict";
-	this.$get_children = new cjs.Constraint(_.bind(function() {
-		var object = this.get_object();
-		var children = object.get_children();
-		return children;
-	}, this));
-
-	this.$get_children.onChange(_.bind(function() {
-		this.post({
-			type: "changed",
-			object: "children"
-		});
-	}, this));
-};
-
-(function(my) {
-	_.proto_extend(my, red.WrapperServer);
-	var proto = my.prototype;
-	proto.destroy = function() {
-		my.superclass.destroy.apply(this, arguments);
-	};
-
-	proto.get_children = make_async("get_children");
-	proto.get_children = function() {
-		var args = chop(arguments),
-			callback = last(arguments);
-
-		var value = this.$get_children.get();
-		callback(value);
-	};
-
-	proto._has = make_async("has");
-	proto._get = make_async("get");
-	proto._getget = make_async("getget");
-}(red.DictWrapperServer));
-
-
-//=========
-
-red.StatefulObjectWrapperServer = function(options) {
-	red.StatefulObjectWrapperServer.superclass.constructor.apply(this, arguments);
-	this._type = "stateful";
-};
-
-(function(my) {
-	_.proto_extend(my, red.DictWrapperServer);
-	var proto = my.prototype;
-	proto.destroy = function() {
-		my.superclass.destroy.apply(this, arguments);
-	};
-}(red.StatefulObjectWrapperServer));
-
-
-//=========
-
-
-red.CellWrapperServer = function(options) {
-	red.CellWrapperServer.superclass.constructor.apply(this, arguments);
-	this._type = "cell";
-};
-
-(function(my) {
-	_.proto_extend(my, red.WrapperServer);
-	var proto = my.prototype;
-	proto.destroy = function() {
-		my.superclass.destroy.apply(this, arguments);
-	};
-	proto._val = make_async("val");
-}(red.CellWrapperServer));
-
-
-//=========
-
-red.StatefulPropWrapperServer = function(options) {
-	red.StatefulPropWrapperServer.superclass.constructor.apply(this, arguments);
-	this._type = "stateful_prop";
-};
-
-(function(my) {
-	_.proto_extend(my, red.WrapperServer);
-	var proto = my.prototype;
-	proto.destroy = function() {
-		my.superclass.destroy.apply(this, arguments);
-	};
-	proto._val = make_async("val");
-}(red.StatefulPropWrapperServer));
-
-
-//=========
 
 var wrapper_servers = {};
 
@@ -279,12 +185,10 @@ red.get_wrapper_server = function(object) {
 		return wrapper_servers[id];
 	} else {
 		var rv;
-
-		if(object instanceof red.ContextualDict) {
-			rv = new red.DictWrapperServer({
-					object: object
-				});
-		}
+		
+		rv = new red.WrapperServer({
+			object: object
+		});
 
 		wrapper_servers[id] = rv;
 		return rv;

@@ -33,7 +33,7 @@ var MessageDistributionCenter = function() {
 			var type = server_message.type;
 			if(type === "changed") {
 				var client = clients[client_id];
-				client.on_change(server_message.object);
+				client.on_change.apply(client, server_message.getting);
 			}
 		} else if(data.type === "response") {
 			var data = event.data,
@@ -57,12 +57,32 @@ var clients = {};
 
 var client_id = 0;
 var message_id = 0;
+
 red.WrapperClient = function(options) {
 	this.server_window = options.server_window;
 	this.cobj_id = options.cobj_id;
 
 	this._id = client_id++;
 	clients[this._id] = this;
+
+	this.fn_call_constraints = new Map({
+		hash: function(args) {
+			return args[0];
+		},
+		equals: function(args1, args2) {
+			var len = args1.length
+			if(len !== args2.length) {
+				return false;
+			} else {
+				for(var i = 0; i<len; i++) {
+					if(!argeq(args1[i], args2[i])) {
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+	});
 
 	this.post({
 		type: "register_listener",
@@ -84,51 +104,66 @@ red.WrapperClient = function(options) {
 		}, origin);
 		return m_id;
 	};
-	proto.on_change = function(prop_name) {
-	};
 	proto.id = function() {
 		return this._id;
 	};
-}(red.WrapperClient));
 
-//=========
-
-red.DictWrapperClient = function(options) {
-	red.DictWrapperClient.superclass.constructor.apply(this, arguments);
-	this._type = "dict";
-	this.$children = new cjs.SettableConstraint();
-	this.update_children();
-};
-
-(function(my) {
-	_.proto_extend(my, red.WrapperClient);
-	var proto = my.prototype;
-	proto.destroy = function() {
-		my.superclass.destroy.apply(this, arguments);
+	proto.get = function() {
+		var args = summarize_args(arguments);
+		var to_update = false;
+		var constraint = this.fn_call_constraints.get_or_put(args, function() {
+			var rv = new cjs.SettableConstraint();
+			to_update = true;
+			return rv;
+		});
+		if(to_update) {
+			this.update(args);
+		}
+		return constraint.get();
 	};
 
-	proto.get_children = function() {
-		return this.$children.get();
-	};
 
-	proto.update_children = function() {
-		var callback = last(arguments);
+	proto.update = function(args) {
+		var constraint = this.fn_call_constraints.get_or_put(args, function() {
+			return new cjs.SettableConstraint();
+		});
+
 		var request_id = this.post({
 			type: "get",
-			name: "get_children",
-			arguments: []
+			getting: args
 		});
 		register_response_listener(request_id, _.bind(function(value) {
-			this.$children.set(value);
+			constraint.set(value);
 		}, this));
 	};
-	proto.on_change = function(prop_name) {
-		if(prop_name === "children") {
-			this.$children.invalidate();
-			this.update_children();
-		}
+
+	proto.on_change = function() {
+		var args = summarize_args(arguments);
+		//var constraint = this.fn_call_constraints.get(args);
+		//if(constraint) { constraint.invalidate(); }
+		// Why update now when you can update when ready?
+		
+		this.update(args);
 	};
-}(red.DictWrapperClient));
+}(red.WrapperClient));
+
+var summarize_args = function(args) {
+	var rv = _.map(args, function(arg) {
+		var v = summarize_arg(arg);
+		return v;
+	});
+
+	return rv;
+};
+var summarize_arg = function(arg) {
+	return arg;
+};
+var argeq = function(arg1, arg2) {
+	return arg1 === arg2;
+};
+var process_value = function(value) {
+	return value;
+};
 
 
 red.get_wrapper_client = function(object_summary, server_window) {
@@ -136,12 +171,11 @@ red.get_wrapper_client = function(object_summary, server_window) {
 	var cobj_id = object_summary.id;
 	var rv;
 
-	if(otype === "dict") {
-		rv = new red.DictWrapperClient({
-			server_window: server_window,
-			cobj_id: cobj_id
-		});
-	}
+	rv = new red.WrapperClient({
+		server_window: server_window,
+		cobj_id: cobj_id,
+		type: otype
+	});
 
 	return rv;
 };

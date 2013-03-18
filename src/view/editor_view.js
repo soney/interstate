@@ -60,7 +60,7 @@ $.widget("red.editor", {
 	.set("obj", "<dict>")
 	.cd("obj")
 		.set("(protos)", "dom")
-		.set("text", "root_client.get_children()")
+		.set("text", "root_client.get('get_children')")
 		.up()
 	.up()
 /*

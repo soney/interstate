@@ -137,10 +137,6 @@ red.ProgramStateClient = function(options) {
 
 				this.root_client = red.get_wrapper_client(summary, this.server_window);
 
-				this.root_client.get_children(function(value) {
-					console.log(value);
-				});
-
 				this._emit("loaded", this.root_client);
 				this.post("loaded");
 			}
