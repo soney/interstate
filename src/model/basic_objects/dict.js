@@ -38,8 +38,8 @@ red.Dict = function(options, defer_initialization) {
 	this.options = options;
 
 	this.type = "red_dict";
-	this.uid = options.uid || uid();
-	red.register_uid(this.uid, this);
+	this._id = options.uid || uid();
+	red.register_uid(this._id, this);
 	if(defer_initialization !== true) {
 		this.do_initialize(options);
 	}
@@ -242,9 +242,7 @@ red.Dict = function(options, defer_initialization) {
 		}
 	};
 
-	proto.hash = function() {
-		return parseInt(uid.strip_prefix(this.uid));
-	};
+	proto.id = proto.hash = function() { return this._id; };
 
 	//
 	// === BYE BYE ===
@@ -266,7 +264,7 @@ red.Dict = function(options, defer_initialization) {
 		var rv = {
 			has_protos: this.has_protos()
 		};
-		if(include_uid) { rv.uid = this.uid; }
+		if(include_uid) { rv.uid = this.id(); }
 
 		var args = _.toArray(arguments);
 		_.each(this.get_builtins(), function(builtin, name) {

@@ -84,6 +84,8 @@ exports.main_src = c(
 				"model/deltas/current_values_delta.js",
 				"model/attachments/attachment_core.js",
 				"model/attachments/dom_attachment.js",
+				"model/communication_wrapper/wrapper_server.js",
+				"model/communication_wrapper/wrapper_client.js",
 				"controller/commands/command_core.js",
 				"controller/commands/prop_commands.js",
 				"controller/commands/cell_commands.js",

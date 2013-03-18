@@ -25,8 +25,8 @@ red.StatefulProp = function(options, defer_initialization) {
 	options = options || {};
 
 	this._value = cjs();
-	this.uid = options.uid || uid();
-	red.register_uid(this.uid, this);
+	this._id = options.uid || uid();
+	red.register_uid(this._id, this);
 
 	if(defer_initialization !== true) {
 		this.do_initialize(options);
@@ -108,9 +108,8 @@ red.StatefulProp = function(options, defer_initialization) {
 		return this.get_direct_values().has(state);
 	};
 	
-	proto.hash = function() {
-		return this.uid;
-	};
+	proto.id = proto.hash = function() { return this._id; };
+
 	proto.destroy = function() {
 		var contextual_values = values_per_context.values();
 		_.each(contextual_values, function(cv) {
@@ -142,7 +141,7 @@ red.StatefulProp = function(options, defer_initialization) {
 											}
 										}, this);
 										if(include_uid) {
-											rv.uid = this.uid;
+											rv.uid = this.id();
 										}
 										return rv;
 									},

@@ -4,7 +4,7 @@ var cjs = red.cjs, _ = red._;
 red.ContextualObject = function(options) {
 	this.set_options(options);
 
-	this.$value = new cjs.Constraint(_.bind(this._getter, this));
+	this.$value = new cjs.Constraint(_.bind(this._getter, this), false, { check_on_nullify: options.check_on_nullify === true });
 };
 
 (function(my) {
@@ -18,15 +18,26 @@ red.ContextualObject = function(options) {
 			if(_.has(options, "pointer")) {
 				this.pointer = options.pointer;
 			}
-
-			if(_.has(options, "name")) {
-				this.name = options.name || "";
-			}
-			if(_.has(options, "inherited")) {
-				this.inherited = options.inherited === true;
-			}
 		}
 	};
+
+	proto.summarize = function() {
+		var pointer = this.get_pointer();
+		var object = this.get_object();
+		var summarized_pointer = pointer.summarize();
+		var summarized_object = object.id();
+		return {
+			pointer: summarized_pointer,
+			object_uid: summarized_object
+		};
+	};
+
+	proto.desummarize = function(obj) {
+		var pointer = red.Pointer.desummarize(obj.pointer);
+		var object = red.find_uid(obj.object_uid);
+		return red.find_or_put_contextual_obj(object, pointer);
+	};
+
 	proto.toString = function() {
 		return "p_" + this.get_pointer().toString();
 	};
@@ -52,11 +63,8 @@ red.ContextualObject = function(options) {
 		return this.object;
 	};
 
-	proto.activate = function() {
-	};
-
-	proto.deactivate = function() {
-	};
+	proto.activate = function() { };
+	proto.deactivate = function() { };
 
 	proto._getter = function() {
 		return this.object;

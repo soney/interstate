@@ -53,13 +53,13 @@ var print = function(current_pointer, logging_mechanism) {
 		} else if(_.isElement(val)) {
 			return "(dom)";
 		} else if(val instanceof red.StatefulObj) {
-			return "(stateful:"+uid.strip_prefix(val.uid)+")";
+			return "(stateful:"+uid.strip_prefix(val.id())+")";
 		} else if(val instanceof red.Dict) {
-			return "(dict:"+uid.strip_prefix(val.uid)+")";
+			return "(dict:"+uid.strip_prefix(val.id())+")";
 		} else if(val instanceof red.Cell) {
-			return "(cell:" + uid.strip_prefix(val.uid) + ")";
+			return "(cell:" + uid.strip_prefix(val.id()) + ")";
 		} else if(val instanceof red.StatefulProp) {
-			return "(prop:" + uid.strip_prefix(val.uid) + ")";
+			return "(prop:" + uid.strip_prefix(val.id()) + ")";
 		} else if(val instanceof red.ParsedFunction) {
 			return "(parsed fn)";
 		} else if(val instanceof red.Query) {
@@ -117,179 +117,12 @@ var print = function(current_pointer, logging_mechanism) {
 		} else if(val instanceof red.Dict) {
 			return "";
 		} else if(val instanceof red.Cell) {
-			return "=(" + uid.strip_prefix(val.uid) + ")= " + val.get_str();
+			return "=(" + uid.strip_prefix(val.id()) + ")= " + val.get_str();
 		} else {
 			return val + "";
 		}
 	};
 
-/*
-	var PROP_NAME_WIDTH = 30;
-	var PROP_ID_WIDTH = 5;
-	var PROP_VALUE_WIDTH = 40;
-
-	var STATE_NAME_WIDTH = 40;
-	var STATE_ID_WIDTH = 8;
-	var TRANSITION_NAME_WIDTH = 60;
-	var TRANSITION_VALUE_WIDTH = 40;
-	var STATE_VALUE_WIDTH = 100;
-
-	var tablify = function(pointer) {
-		var points_at = pointer.points_at();
-
-		if(points_at instanceof red.Dict || points_at instanceof red.ManifestationContext) {
-			var dict = points_at;
-
-			if(points_at instanceof red.Dict) {
-				var manifestation_pointers;
-				try {
-					manifestation_pointers = points_at.get_manifestation_pointers(pointer);
-				} catch (e) {
-					console.error(e);
-				}
-				if(_.isArray(manifestation_pointers)) {
-					var is_expanded = current_pointer.has(points_at);
-					logging_mechanism[is_expanded ? "group" : "groupCollapsed"]("(manifestations)");
-					_.each(manifestation_pointers, function(manifestation_pointer) {
-						var scs = manifestation_pointer.special_contexts();
-						var manifestation_obj;
-						for(var i = 0; i<scs.length; i++) {
-							if(scs[i] instanceof red.ManifestationContext) {
-								manifestation_obj = scs[i];
-								break;
-							}
-						}
-						if(!manifestation_obj) {
-							throw new Error("Manifestation object not found");
-						}
-
-						
-						var is_expanded2 = current_pointer.has(manifestation_obj);
-						var context_obj = manifestation_obj.get_context_obj();
-						var manifestation_text = pad("" + context_obj.basis_index.value, PROP_NAME_WIDTH);
-						manifestation_text = manifestation_text + pad("("+manifestation_obj.id()+")", PROP_ID_WIDTH)
-						manifestation_text = manifestation_text + pad(value_to_value_str(context_obj.basis.value), PROP_VALUE_WIDTH)
-
-						logging_mechanism[is_expanded2 ? "group" : "groupCollapsed"](manifestation_text);
-						tablify(manifestation_pointer);
-						logging_mechanism.groupEnd();
-					});
-					logging_mechanism.groupEnd();
-					return;
-				}
-			}
-
-			if(dict instanceof red.StatefulObj) {
-				var statecharts = dict.get_statecharts(pointer);
-				var stringified_statecharts = _.map(statecharts, function(sc) {
-					return uid.strip_prefix(sc.id()) + ":" + uid.strip_prefix(sc.basis().id());
-				}).join(" ");
-				logging_mechanism.group("  Statechart " + stringified_statecharts );
-
-				var state_specs = dict.get_state_specs(pointer);
-				_.each(state_specs, function(state_spec) {
-					var state = state_spec.state;
-					var state_name;
-
-					if(state instanceof red.State) {
-						state_name = pad(state.get_name(), STATE_NAME_WIDTH-2);
-					} else if(state instanceof red.StatechartTransition) { //transition
-						var from = state.from(),
-							to = state.to();
-						state_name = pad(from.get_name() + "->" + to.get_name(), TRANSITION_NAME_WIDTH-2);
-						state_name = state_name + pad(state.stringify(), TRANSITION_VALUE_WIDTH);
-					}
-
-					if(state_spec.active) {
-						state_name = "* " + state_name;
-					} else {
-						state_name = "  " + state_name;
-					}
-
-					state_name = pad(uid.strip_prefix(state.id()) + (state.basis() ? ":" + uid.strip_prefix(state.basis().id()) : ""), STATE_ID_WIDTH) + state_name;
-					logging_mechanism.log(state_name);
-				});
-				logging_mechanism.groupEnd();
-			}
-
-			var prop_names = dict.get_prop_names(pointer);
-			_.each(prop_names, function(prop_name) {
-				var prop_pointer = dict.get_prop_pointer(prop_name, pointer);
-				var is_inherited = red.is_inherited(prop_pointer);
-				var prop_points_at = prop_pointer.points_at();
-
-				var is_expanded = current_pointer.has(prop_points_at);
-				var is_pointed_at = current_pointer.eq(prop_pointer);
-
-				var prop_text = prop_name;
-				if(is_inherited) {
-					prop_text = prop_text + " (i)";
-				}
-
-				if(is_pointed_at) {
-					prop_text = "> " + prop_text;
-				} else {
-					prop_text = "  " + prop_text;
-				}
-
-				if(prop_points_at instanceof red.StatefulProp) {
-					prop_text = pad(prop_text, PROP_NAME_WIDTH);
-					prop_text = prop_text + pad("(" + uid.strip_prefix(prop_points_at.uid) + ")", PROP_ID_WIDTH);
-				} else {
-					prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
-				}
-
-				try {
-					var pp_val = dict.prop_val(prop_name, pointer);
-					prop_text = pad(prop_text + value_to_value_str(pp_val), PROP_NAME_WIDTH + PROP_ID_WIDTH + PROP_VALUE_WIDTH);
-				} catch(e) {
-					prop_text = e;
-				}
-
-				if((prop_points_at instanceof red.Dict) || (prop_points_at instanceof red.StatefulProp)) {
-					logging_mechanism[is_expanded ? "group" : "groupCollapsed"](prop_text);
-					tablify(prop_pointer);
-					logging_mechanism.groupEnd();
-				} else {
-					logging_mechanism.log(prop_text + value_to_source_str(prop_points_at));
-				}
-			});
-		} else if(points_at instanceof red.StatefulProp) {
-			var value_specs = points_at.get_value_specs(pointer);
-			_.each(value_specs, function(value_spec) {
-				var value = value_spec.value;
-				var source_str = value_to_source_str(value);
-
-				var state = value_spec.state;
-				var state_name;
-				if(state instanceof red.State) {
-					state_name = pad(state.get_name(), STATE_NAME_WIDTH-2);
-				} else if(state instanceof red.StatechartTransition) { //transition
-					var from = state.from(),
-						to = state.to();
-					state_name = pad(from.get_name() + "->" + to.get_name(), STATE_NAME_WIDTH-2);
-				}
-
-				if(value_spec.active) {
-					state_name = "*" + state_name;
-				} else {
-					state_name = " " + state_name;
-				}
-
-				if(value_spec.using) {
-					state_name = "*" + state_name;
-				} else {
-					state_name = " " + state_name;
-				}
-
-				state_name = pad(uid.strip_prefix(state.id()), STATE_ID_WIDTH) + state_name;
-				var value_for_state = points_at.get_value_for_state(state, pointer);
-				var row = state_name + value_to_source_str(value_for_state);
-				logging_mechanism.log(row);
-			});
-		}
-	};
-	*/
 	var PROP_NAME_WIDTH = 30;
 	var PROP_ID_WIDTH = 5;
 	var PROP_VALUE_WIDTH = 40;
@@ -375,7 +208,7 @@ var print = function(current_pointer, logging_mechanism) {
 
 					if(prop_points_at instanceof red.StatefulProp) {
 						prop_text = pad(prop_text, PROP_NAME_WIDTH);
-						prop_text = prop_text + pad("(" + uid.strip_prefix(prop_points_at.uid) + ")", PROP_ID_WIDTH);
+						prop_text = prop_text + pad("(" + uid.strip_prefix(prop_points_at.id()) + ")", PROP_ID_WIDTH);
 					} else {
 						prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
 					}

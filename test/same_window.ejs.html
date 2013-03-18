@@ -14,6 +14,7 @@
 						tag: "div"
 					}
 				})]});
+				/*
 				var dict1 = red.create("dict", {has_protos: false});
 				root.set("dict", dict1);
 
@@ -24,16 +25,16 @@
 				//root.set("cell", cell2);
 				/*
 
+
+				*/
 				$("div.editor").editor({
 					//debug_ready: true,
 					debug_env: true,
 					command_box: true,
 					server_window: window
 				});
-
-				*/
 				$("div.output").dom_output({
-					root: red.create("pointer", {stack: [root]}),
+					root: root,
 					open_separate_client_window: false,
 				//	edit_on_open: true
 				});

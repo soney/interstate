@@ -42,6 +42,7 @@ red.ProgramStateServer = function(options) {
 				red.event_queue.wait();
 				cjs.wait();
 				this.connected = true;
+				/*
 				this.post_delta(new red.ProgramDelta({
 					root_pointer: red.create("pointer", {stack: [this.root]})
 				}));
@@ -52,6 +53,7 @@ red.ProgramStateServer = function(options) {
 				this.post_delta(new red.CurrentValuesDelta({
 					root_pointer: red.create("pointer", {stack: [this.root]})
 				}));
+				*/
 				this._emit("connected");
 				cjs.signal();
 				red.event_queue.signal();
@@ -215,6 +217,7 @@ red.ProgramStateClient = function(options) {
 	proto.on_loaded = function() {
 		this.add_message_listener();
 		this.post("ready");
+		this._emit("loaded");
 	};
 
 	proto.add_message_listener = function() {
@@ -248,6 +251,7 @@ red.ProgramStateClient = function(options) {
 				root: external_root
 			});
 			this.external_env.return_commands = true;
+			/*
 		} else if(delta instanceof red.CommandDelta) {
 			var command = delta.get_command();
 			if((["undo", "redo", "reset"]).indexOf(command) >= 0) {
@@ -283,21 +287,11 @@ red.ProgramStateClient = function(options) {
 					}
 				}
 			}, this);
-			this._emit("root_loaded", this.get_root());
+			*/
 		} else {
 			console.error("Unhandled delta", delta);
 		}
 		this._emit("delta", delta);
-	};
-
-	proto.get_root = function() {
-		var root_pointer = this.external_env.get_root_pointer();
-		var root = root_pointer.root();
-		return root;
-	};
-
-	proto.get_external_env = function() {
-		return this.external_env;
 	};
 
 	proto.destroy = function() {

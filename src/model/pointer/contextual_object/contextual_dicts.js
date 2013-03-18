@@ -20,7 +20,7 @@ red.ContextualDict = function(options) {
 		while(i < rv.len()) {
 			var dict = rv.item(i);
 			var proto_obj = dict.direct_protos();
-			var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj));
+			var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), { check_on_nullify: true });
 			var proto_val = proto_contextual_obj.val();
 			proto_val = _	.chain(_.isArray(proto_val) ? proto_val : [proto_val])
 							.map(function(x) {
@@ -41,8 +41,10 @@ red.ContextualDict = function(options) {
 
 	proto.get_contextual_protos = function() {
 		var proto_objects = this.get_all_protos();
+		var pointer = this.get_pointer();
+
 		var rv = _.map(proto_objects, function(proto_object) {
-			return red.find_or_put_contextual_obj(proto_object, this.pointer)
+			return red.find_or_put_contextual_obj(proto_object, pointer.push(proto_object));
 		}, this);
 
 		return rv;

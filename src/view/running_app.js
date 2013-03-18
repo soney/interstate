@@ -122,8 +122,7 @@ $.widget("red.dom_output", {
 				this.editor_window = window;
 			}
 
-			var root_pointer = this.option("root"),
-				root = root_pointer.root();
+			var root = this.option("root");
 
 			this.server_socket = new red.ProgramStateServer({
 				root: root,

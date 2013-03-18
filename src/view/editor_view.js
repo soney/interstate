@@ -1,6 +1,5 @@
 (function(red, $) {
 var cjs = red.cjs, _ = red._;
-var origin = window.location.protocol + "//" + window.location.host;
 
 $.widget("red.editor", {
 	
@@ -28,10 +27,8 @@ $.widget("red.editor", {
 		if(this.option("debug_env")) {
 			window.env = this.env;
 		}
-		var root_pointer = this.env.get_root_pointer();
-		this.root = root_pointer.root();
 		this.element.dom_output({
-			root: root_pointer
+			root: this.env.get_root()
 		});
 
 		this.client_socket = new red.ProgramStateClient({
@@ -46,9 +43,11 @@ $.widget("red.editor", {
 					"box-sizing": "border-box"
 				});
 			}
-		}, this).on("root_loaded", function(root) {
+		}, this).on("loaded", function() {
+		/*
 			this.root.set("external_root", root, {literal: true});
 			this.root.set("external_root_pointer", red.create("pointer", {stack: [root]}), {literal: true});
+			*/
 			this.load_viewer();
 		}, this);
 	}
@@ -58,6 +57,7 @@ $.widget("red.editor", {
 
 // ===== BEGIN EDITOR ===== 
 
+/*
 .top()
 .set("stringify_value", "function(v) {\n" +
 "if(red._.isUndefined(v)) { return '(undefined)'; }\n" +
@@ -380,6 +380,7 @@ $.widget("red.editor", {
 	this.client_socket.post_command(command);
 }, this))
 ;
+*/
 
 
 // ===== END EDITOR ===== 
