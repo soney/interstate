@@ -99,7 +99,6 @@ var get_identifier_val = function(key, context, ignore_inherited_in_contexts) {
 		return red.find_or_put_contextual_obj(context.root(), context.slice(0, 1));
 	} else if(key === "window") {
 		return window;
-		/*
 	} else if(key === "parent") {
 		var found_this = false;
 		var curr_context = context;
@@ -108,7 +107,8 @@ var get_identifier_val = function(key, context, ignore_inherited_in_contexts) {
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.Dict) {
 				if(found_this) {
-					return new red.ContextualObject({pointer: curr_context});
+					var rv = red.find_or_put_contextual_obj(context_item, curr_context);
+					return rv;
 				} else {
 					found_this = true;
 				}
@@ -116,7 +116,6 @@ var get_identifier_val = function(key, context, ignore_inherited_in_contexts) {
 			curr_context = curr_context.pop();
 			context_item = curr_context.points_at();
 		}
-		*/
 	}
 
 	ignore_inherited_in_contexts = ignore_inherited_in_contexts || [];
@@ -131,24 +130,7 @@ var get_identifier_val = function(key, context, ignore_inherited_in_contexts) {
 				var contextual_prop = contextual_obj.get(key);
 				return contextual_prop.val();
 			}
-			
-			/*
-			if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
-				if(context_item._has_direct_prop(key)) {
-					var contextual_obj = red.find_or_put_contextual_obj(context_item, curr_context);
-					var contextual_prop = contextual_obj.get(key);
-					return contextual_prop;
-				}
-			} else {
-				if(context_item._has_prop(key, curr_context)) {
-					var contextual_obj = red.find_or_put_contextual_obj(context_item, curr_context);
-					var contextual_prop = contextual_obj.get(key);
-					return contextual_prop.val();
-				}
-			}
-				*/
 		} else if(context_item instanceof red.Cell) {
-		/*
 			var special_contexts = curr_context.special_contexts();
 			var len = special_contexts.length;
 			for(var i = 0; i<len; i++) {
@@ -158,7 +140,6 @@ var get_identifier_val = function(key, context, ignore_inherited_in_contexts) {
 					return context_obj[key].value;
 				}
 			}
-			*/
 		}
 		curr_context = curr_context.pop();
 		context_item = curr_context.points_at();
@@ -192,7 +173,6 @@ var get_member_val = function(object, property) {
 	}
 
 	if(object instanceof red.ContextualObject) {
-	/*
 		if(property === "parent") {
 			var found_this = false;
 			var curr_context = object.get_pointer();
@@ -201,7 +181,8 @@ var get_member_val = function(object, property) {
 			while(!curr_context.is_empty()) {
 				if(context_item instanceof red.Dict) {
 					if(found_this) {
-						return new red.ContextualObject({pointer: curr_context});
+						var rv = red.find_or_put_contextual_obj(context_item, curr_context);
+						return rv;
 					} else {
 						found_this = true;
 					}
@@ -210,10 +191,13 @@ var get_member_val = function(object, property) {
 				context_item = curr_context.points_at();
 			}
 		}
-		*/
 		var rv = object.get(property);
-		var val = rv.val();
-		return val;
+		if(rv) {
+			var val = rv.val();
+			return val;
+		} else {
+			return undefined;
+		}
 	} else {
 		return object[property];
 	}

@@ -1,27 +1,24 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-red.ContextualCell = function(options) {
-	red.ContextualCell.superclass.constructor.apply(this, arguments);
-	this.value_constraint = this.object.get_constraint_for_context(this.get_pointer());
-};
-
-(function(my) {
-	_.proto_extend(my, red.ContextualObject);
-	var proto = my.prototype;
-	proto.destroy = function() {
-		my.superclass.destroy.apply(this, arguments);
-		this.value_constraint.destroy();
-	};
-	proto._getter = function() {
-		return this.value_constraint.get();
-	};
-}(red.ContextualCell));
-
 red.ContextualStatefulProp = function(options) {
 	red.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
 	this.transition_times_run = {};
 	this.used_start_transition = false;
+
+	var values = this.get_values();
+	var len = values.length;
+	var info;
+
+	var using_val, using_state;
+	for(var i = 0; i<len; i++){
+		info = values[i];
+		var state = info.state,
+			val = info.value;
+		if(state instanceof red.Transition) {
+			this.set_transition_times_run(state.get_times_run());
+		}
+	}
 };
 
 (function(my) {
@@ -99,9 +96,19 @@ red.ContextualStatefulProp = function(options) {
 					using_state = state;
 				}
 			} else if(state instanceof red.Transition) {
+				var tr = state.get_times_run();
+				if(tr > this.get_transition_times_run(state)) {
+					var pointer = this.get_pointer();
+					this.set_transition_times_run(tr);
+					var event = state._last_run_event
+					var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
 
+					var rv = using_val.get_constraint_for_context(eventized_pointer);
+					return rv.get();
+				}
 			}
 		}
+
 		if(using_val) {
 			if(using_val instanceof red.Cell) {
 				var pointer = this.get_pointer();
@@ -122,5 +129,22 @@ red.ContextualStatefulProp = function(options) {
 		my.superclass.destroy.apply(this, arguments);
 	};
 }(red.ContextualStatefulProp));
+
+red.ContextualCell = function(options) {
+	red.ContextualCell.superclass.constructor.apply(this, arguments);
+	this.value_constraint = this.object.get_constraint_for_context(this.get_pointer());
+};
+
+(function(my) {
+	_.proto_extend(my, red.ContextualObject);
+	var proto = my.prototype;
+	proto.destroy = function() {
+		my.superclass.destroy.apply(this, arguments);
+		this.value_constraint.destroy();
+	};
+	proto._getter = function() {
+		return this.value_constraint.get();
+	};
+}(red.ContextualCell));
 
 }(red));

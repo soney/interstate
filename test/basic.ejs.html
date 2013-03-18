@@ -25,7 +25,7 @@
 					.set("values", function(x) { /*console.log("v", x);*/ return x ? red._.values(x) : []; })
 					.set("disp", "<dict>")
 					.cd("disp")
-						.set("(protos)", "[dom]")
+						//.set("(protos)", "[dom]")
 						.set("node", "val")
 						.set("ks", "keys(node)")
 						.set("vs", "values(node)")
@@ -33,7 +33,7 @@
 						.cd("children")
 							.set("my_name", "<dict>")
 							.cd("my_name")
-								.set("(protos)", "dom")
+				//				.set("(protos)", "dom")
 								.set("text", "name")
 								.up()
 							.set("child_disp", "<dict>")
@@ -45,24 +45,26 @@
 								.up()
 							.up()
 						.up()
-					.cd("children")
-						.set("root_disp", "<dict>")
-						.cd("root_disp")
-							.set("(protos)", "disp")
-							.set("val", "tree")
-							.set("name", "'root'")
-							.up()
+					//.cd("children")
+					.set("root_disp", "<dict>")
+					.cd("root_disp")
+						.set("(protos)", "disp")
+						.set("val", "tree")
+						.set("name", "'root'")
 						.up()
+					//.up()
 					;
 
 
+					/*
 
 				var root_pointer = env.get_root_pointer();
 				output_view = $("<div />").dom_output({
 					root: root_pointer
 				}).appendTo(document.body);
+					*/
 				env.print_on_return = true;
-				//console.log(env.print());
+				console.log(env.print());
 			</script>
 	  </div>
   </body>
