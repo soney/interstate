@@ -40,8 +40,13 @@ red.ProgramStateServer = function(options) {
 		if(event.source === this.client_window) {
 			var data = event.data;
 			if(data === "ready") {
-			} else if(data === "loaded") {
 				this.connected = true;
+				var croot = this.contextual_root;
+				this.post({
+					type: "croot",
+					summary: croot.summarize()
+				});
+			} else if(data === "loaded") {
 				this._emit("connected");
 			} else {
 				var type = data.type;
@@ -127,8 +132,10 @@ red.ProgramStateClient = function(options) {
 		if(event.source === this.server_window) {
 			var data = event.data;
 			var type = data.type;
-			if(type === "root_comm_id") {
-				console.log(data);
+			if(type === "croot") {
+				var summary = data.summary;
+
+				this.root_client = red.get_wrapper_client(summary, this.server_window);
 
 				this.post("loaded");
 				this._emit("loaded");

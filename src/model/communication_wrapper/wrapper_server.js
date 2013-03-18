@@ -1,6 +1,27 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+var origin = window.location.protocol + "//" + window.location.host;
+var MessageDistributionCenter = function() {
+	able.make_this_listenable(this);
+	window.addEventListener("message", _.bind(function(event) {
+		var data = event.data;
+		if(data.type === "wrapper_client") {
+			this._emit("message", data.message, event.source);
+		}
+	}, this));
+};
+able.make_proto_listenable(MessageDistributionCenter.prototype);
+
+var sdc = new MessageDistributionCenter();
+
+sdc.on
+
+var post = function(to_window, message) {
+	to_window.postMessage(message, origin);
+};
+
+
 var chop = function(args) {
 	return _.first(args, args.length-1);
 };
@@ -19,13 +40,40 @@ var make_async = function(object_func_name) {
 };
 
 red.WrapperServer = function(options) {
+	able.make_this_listenable(this);
 	this.object = options.object;
 	red.register_wrapper_server(this.object, this);
+	this._type = "none";
 };
 
 (function(my) {
 	var proto = my.prototype;
+	able.make_proto_listenable(proto);
+
 	proto.destroy = function() { };
+
+	proto.type = function() {
+		return this._type;
+	};
+	proto.get_object = function(){
+		return this.object();
+	};
+
+	proto.summarize = function() {
+		var object = this.get_object();
+		var summarized_object = object.summarize();
+		var type = this.get_type();
+		return {
+			cobject: summarized_object,
+			type: type
+		};
+	};
+
+	my.desummarize = function(obj) {
+		var pointer = red.Pointer.desummarize(obj.pointer);
+		var object = red.find_uid(obj.object_uid);
+		return red.find_or_put_contextual_obj(object, pointer);
+	};
 
 }(red.WrapperServer));
 
@@ -35,6 +83,7 @@ red.WrapperServer = function(options) {
 
 red.StateWrapperServer = function(options) {
 	red.StateWrapperServer.superclass.constructor.apply(this, arguments);
+	this._type = "state";
 };
 
 (function(my) {
@@ -50,6 +99,7 @@ red.StateWrapperServer = function(options) {
 
 red.TransitionWrapperServer = function(options) {
 	red.TransitionWrapperServer.superclass.constructor.apply(this, arguments);
+	this._type = "transition";
 	this.object.on("fire");
 };
 
@@ -70,6 +120,7 @@ red.TransitionWrapperServer = function(options) {
 red.DictWrapperServer = function(options) {
 	red.DictWrapperServer.superclass.constructor.apply(this, arguments);
 	this.$children = new cjs.Constraint(this._children);
+	this._type = "dict";
 };
 
 (function(my) {
@@ -90,6 +141,7 @@ red.DictWrapperServer = function(options) {
 
 red.StatefulObjectWrapperServer = function(options) {
 	red.StatefulObjectWrapperServer.superclass.constructor.apply(this, arguments);
+	this._type = "stateful";
 };
 
 (function(my) {
@@ -106,6 +158,7 @@ red.StatefulObjectWrapperServer = function(options) {
 
 red.CellWrapperServer = function(options) {
 	red.CellWrapperServer.superclass.constructor.apply(this, arguments);
+	this._type = "cell";
 };
 
 (function(my) {
@@ -122,6 +175,7 @@ red.CellWrapperServer = function(options) {
 
 red.StatefulPropWrapperServer = function(options) {
 	red.StatefulPropWrapperServer.superclass.constructor.apply(this, arguments);
+	this._type = "stateful_prop";
 };
 
 (function(my) {
@@ -150,7 +204,7 @@ red.get_wrapper_server = function(object) {
 		var rv;
 
 		if(object instanceof red.ContextualDict) {
-			rv = new DictWrapperServer(object);
+			rv = new red.DictWrapperServer(object);
 		}
 
 		wrapper_servers[id] = rv;

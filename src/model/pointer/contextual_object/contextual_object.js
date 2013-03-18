@@ -6,6 +6,7 @@ red.ContextualObject = function(options) {
 
 	this.$value = new cjs.Constraint(_.bind(this._getter, this), false, { check_on_nullify: options.check_on_nullify === true });
 	this._id = uid();
+	this._type = "none";
 };
 
 (function(my) {
@@ -31,8 +32,10 @@ red.ContextualObject = function(options) {
 		var summarized_pointer = pointer.summarize();
 		var summarized_object = object.id();
 		return {
+			id: this.id(),
 			pointer: summarized_pointer,
-			object_uid: summarized_object
+			object_uid: summarized_object,
+			type: this.type()
 		};
 	};
 
@@ -72,6 +75,9 @@ red.ContextualObject = function(options) {
 
 	proto._getter = function() {
 		return this.object;
+	};
+	proto.type = function() {
+		return this._type;
 	};
 }(red.ContextualObject));
 

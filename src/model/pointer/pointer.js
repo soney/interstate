@@ -156,12 +156,12 @@ red.Pointer = function(options) {
 	};
 
 	proto.toString = function() {
-		return "pointer (" + _.map(this._stack, function(x) { return x.uid ? uid.strip_prefix(x.uid) : x.toString(); }).join(", ") + ")";
+		return "pointer (" + _.map(this._stack, function(x) { return x.id ? uid.strip_prefix(x.id()) : x.toString(); }).join(", ") + ")";
 	};
 
 	proto.summarize = function() {
 		var stack_ids = _.map(this._stack, function(x) {
-			return x.uid;
+			return x.id();
 		});
 		var special_context_infos = _.map(this._special_contexts, function(sc) {
 			if(_.isArray(sc)) {

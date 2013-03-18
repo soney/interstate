@@ -31,6 +31,7 @@ red.ContextualStatefulProp = function(options) {
 	_.defer(_.bind(function() {
 		this.$value.update();
 	}, this));
+	this._type = "stateful_prop";
 };
 
 (function(my) {
@@ -169,6 +170,7 @@ red.ContextualStatefulProp = function(options) {
 red.ContextualCell = function(options) {
 	red.ContextualCell.superclass.constructor.apply(this, arguments);
 	this.value_constraint = this.object.get_constraint_for_context(this.get_pointer());
+	this._type = "cell";
 };
 
 (function(my) {

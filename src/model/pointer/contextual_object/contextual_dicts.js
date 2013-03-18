@@ -3,6 +3,7 @@ var cjs = red.cjs, _ = red._;
 
 red.ContextualDict = function(options) {
 	red.ContextualDict.superclass.constructor.apply(this, arguments);
+	this._type = "dict";
 };
 
 (function(my) {
@@ -360,6 +361,7 @@ red.ContextualStatefulObj = function(options) {
 	var own_statechart = this.object.get_own_statechart();
 	var shadow_statechart = own_statechart.create_shadow({context: this.get_pointer(), running: true});
 	this.statechart = shadow_statechart;
+	this._type = "stateful";
 };
 
 (function(my) {
