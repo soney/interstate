@@ -1,6 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+/*
 red.find_stateful_obj_and_context = function(context) {
 	var popped_item, last;
 	var set_statechart = false;
@@ -30,6 +31,7 @@ red.find_stateful_obj_and_context = function(context) {
 	}
 	return undefined;
 };
+*/
 
 red.StatefulObj = function(options, defer_initialization) {
 	options = options || {};
@@ -152,6 +154,11 @@ red.StatefulObj = function(options, defer_initialization) {
 		return this;
 	};
 	*/
+	proto.destroy = function() {
+		my.superclass.destroy.apply(this, arguments);
+		var own_statechart = this.get_own_statechart();
+		own_statechart.destroy();
+	};
 
 	red.register_serializable_type("stateful_obj",
 									function(x) { 
@@ -164,9 +171,7 @@ red.StatefulObj = function(options, defer_initialization) {
 
 										var serialized_options = {};
 										_.each(builtins, function(builtin, name) {
-											if(builtin.serialize !== false) {
-												serialized_options[name] = obj[name];
-											}
+											serialized_options[name] = obj[name];
 										});
 
 										var rv = new my({uid: obj.uid}, true);

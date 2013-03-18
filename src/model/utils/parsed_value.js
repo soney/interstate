@@ -126,6 +126,13 @@ var get_identifier_val = function(key, context, ignore_inherited_in_contexts) {
 		
 	while(!curr_context.is_empty()) {
 		if(context_item instanceof red.Dict) {
+			var contextual_obj = red.find_or_put_contextual_obj(context_item, curr_context);
+			if(contextual_obj.has(key)) {
+				var contextual_prop = contextual_obj.get(key);
+				return contextual_prop.val();
+			}
+			
+			/*
 			if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
 				if(context_item._has_direct_prop(key)) {
 					var contextual_obj = red.find_or_put_contextual_obj(context_item, curr_context);
@@ -139,6 +146,7 @@ var get_identifier_val = function(key, context, ignore_inherited_in_contexts) {
 					return contextual_prop.val();
 				}
 			}
+				*/
 		} else if(context_item instanceof red.Cell) {
 		/*
 			var special_contexts = curr_context.special_contexts();

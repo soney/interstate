@@ -161,7 +161,11 @@ var Env = function(options) {
 
 	proto.cd = proto.in = function(prop_name) {
 		var dict = this.pointer.points_at();
-		this.pointer = dict.get_prop_pointer(prop_name, this.pointer);
+		var pv = dict._get_direct_prop(prop_name);
+		if(pv) {
+			this.pointer = this.pointer.push(pv);
+		} else {
+		}
 		return this.default_return_value();
 	};
 	proto.top = function() {

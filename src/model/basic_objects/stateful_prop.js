@@ -121,6 +121,7 @@ red.StatefulProp = function(options, defer_initialization) {
 	//
 	// === INHERITED VALUES ===
 	//
+	/*
 	proto._get_inherits_from = function(context) {
 		if(!this._can_inherit) {
 			return [];
@@ -140,6 +141,7 @@ red.StatefulProp = function(options, defer_initialization) {
 		var inherited_props = stateful_obj._get_all_inherited_props(my_name, stateful_obj_context);
 		return inherited_props;
 	};
+	*/
 
 	//
 	// === VALUES ===

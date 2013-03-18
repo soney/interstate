@@ -9,7 +9,30 @@
 	  <div>
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
+				/*
+				var root = red.create("dict");
+				var croot = red.find_or_put_contextual_obj(root);
+				var children = croot.get_children();
+
+
+				console.log(children);
+				/*
+				*/
 				var env = red.create("environment");
+				env	.set("a", "<dict>")
+					.cd("a")
+						.set("x", "1+1")
+						.up()
+					.set("b", "<dict>")
+					.cd("b")
+						.set("(protos)", "a")
+						.set("y", "x+1")
+						.up()
+					.set("c", "<dict>")
+					.cd("c")
+						.set("(protos)", "b")
+						.set("z", "y+1")
+				env.print();
 				/*
 				env.cd("children")
 					.set("obj", "<dict>")
@@ -17,10 +40,16 @@
 					.set("(protos)", "dom")
 					.set("text", "'hello world'")
 				*/
+				/*
 				env	.set("obj", "<stateful>")
 					.cd("obj")
-					.set("prop1", "<stateful_prop>")
-					.set("prop1", "INIT", "1+2")
+						.set("prop1", "<stateful_prop>")
+						.set("prop1", "INIT", "1+2")
+						.up()
+					.set("o2", "<stateful>")
+					.cd("o2")
+						.set("(protos)", "INIT", "obj")
+						.up()
 				env.print_on_return = true;
 				env.print();
 				/*

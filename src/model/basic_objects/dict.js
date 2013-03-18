@@ -101,6 +101,7 @@ red.Dict = function(options, defer_initialization) {
 	};
 
 
+/*
 	//
 	// === ALL PROTOS ===
 	//
@@ -109,6 +110,7 @@ red.Dict = function(options, defer_initialization) {
 		var contextual_obj = red.find_or_put_contextual_obj(this, pointer);
 		return contextual_obj.get_all_protos();
 	};
+	*/
 	
 	//
 	// === DIRECT PROPERTIES ===
@@ -117,7 +119,8 @@ red.Dict = function(options, defer_initialization) {
 	proto.set = proto.set_prop = proto._set_direct_prop = function(name, value, options) {
 		var index;
 		var info = _.extend({
-			value: value
+			value: value,
+			owner: this
 		}, options);
 		this.direct_props().put(name, info, info.index);
 		return this;
@@ -170,6 +173,7 @@ red.Dict = function(options, defer_initialization) {
 	proto._get_direct_prop_names = function() {
 		return this.direct_props().keys();
 	};
+	/*
 
 	//
 	// === FULLY INHERITED PROPERTIES ===
@@ -227,6 +231,7 @@ red.Dict = function(options, defer_initialization) {
 		var rv = prop_name_set.toArray();
 		return rv;
 	};
+	*/
 	
 	//
 	// === BUILTIN PROPERTIES ===
@@ -290,12 +295,28 @@ red.Dict = function(options, defer_initialization) {
 			return false;
 		});
 	};
+	
+	//
+	// === DIRECT ATTACHMENTS ===
+	//
+
+	proto._get_direct_attachments = function() {
+		var direct_attachments = this.direct_attachments();
+		if(direct_attachments instanceof cjs.ArrayConstraint) {
+			return this.direct_attachments().toArray();
+		} else if(_.isArray(direct_attachments)) {
+			return direct_attachments;
+		} else {
+			return [direct_attachments];
+		}
+	};
 
 
 	//
 	// === SPECIAL_CONTEXT_PROPERTIES ===
 	//
 	
+	/*
 	proto._has_special_context_prop = function(prop_name, pcontext) {
 		return this._get_special_context_prop(prop_name, pcontext) !== undefined;
 	};
@@ -432,21 +453,8 @@ red.Dict = function(options, defer_initialization) {
 		}
 		return undefined;
 	};
+	*/
 	
-	//
-	// === DIRECT ATTACHMENTS ===
-	//
-
-	proto._get_direct_attachments = function() {
-		var direct_attachments = this.direct_attachments();
-		if(direct_attachments instanceof cjs.ArrayConstraint) {
-			return this.direct_attachments().toArray();
-		} else if(_.isArray(direct_attachments)) {
-			return direct_attachments;
-		} else {
-			return [direct_attachments];
-		}
-	};
 	
 	
 	//
@@ -615,6 +623,7 @@ red.Dict = function(options, defer_initialization) {
 	proto.hash = function() {
 		return parseInt(uid.strip_prefix(this.uid));
 	};
+	/*
 
 	proto.reset = function() {
 		var direct_props = this.direct_props();
@@ -637,6 +646,7 @@ red.Dict = function(options, defer_initialization) {
 		}
 		return this;
 	};
+	*/
 
 	//
 	// === BYE BYE ===
@@ -662,10 +672,8 @@ red.Dict = function(options, defer_initialization) {
 
 		var args = _.toArray(arguments);
 		_.each(this.get_builtins(), function(builtin, name) {
-			if(builtin.serialize !== false) {
-				var getter_name = builtin._get_getter_name();
-				rv[name] = red.serialize.apply(red, ([this[getter_name]()]).concat(args));
-			}
+			var getter_name = builtin._get_getter_name();
+			rv[name] = red.serialize.apply(red, ([this[getter_name]()]).concat(args));
 		}, this);
 
 		return rv;
@@ -679,9 +687,7 @@ red.Dict = function(options, defer_initialization) {
 										var rest_args = _.rest(arguments);
 										var serialized_options = {};
 										_.each(my.builtins, function(builtin, name) {
-											if(builtin.serialize !== false) {
-												serialized_options[name] = obj[name];
-											}
+											serialized_options[name] = obj[name];
 										});
 
 										var rv = new my({uid: obj.uid, has_protos: obj.has_protos}, true);
