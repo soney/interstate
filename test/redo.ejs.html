@@ -20,13 +20,14 @@
 				*/
 				var env = red.create("environment");
 env
+.set("a", "1")
 .cd("children")
 	.set("obj", "<stateful>")				
 	.cd("obj")
 		.set("(protos)", "INIT", "dom")
 		.set("(manifestations)", "3")
 		.set("text")
-		.set("text", "INIT", "'hello'")
+		.set("text", "INIT", "'hello ' + parent.parent.a")
 		.up()
 	.set("obj2", "<stateful>")				
 	.cd("obj2")

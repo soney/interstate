@@ -252,8 +252,15 @@ red.DomAttachmentInstance = function(options) {
 				return;
 			}
 
+			var text;
+
+
 			if(contextual_object.has("text")) {
-				dom_obj.textContent = contextual_object.getget("text");
+				text = contextual_object.getget("text");
+			}
+			
+			if(text!== undefined) {
+				dom_obj.textContent = text;
 			} else {
 				var children = contextual_object.get("children");
 

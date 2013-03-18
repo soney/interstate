@@ -18,7 +18,7 @@ red.ContextualStatefulProp = function(options) {
 		var state = info.state,
 			val = info.value;
 		if(state instanceof red.StatechartTransition) {
-			this.set_transition_times_run(state.get_times_run());
+			this.set_transition_times_run(state, state.get_times_run());
 		}
 	}
 
@@ -67,7 +67,13 @@ red.ContextualStatefulProp = function(options) {
 
 		var entries = direct_values.entries();
 		var rv = _.map(entries, function(entry) {
-			var state = red.find_equivalent_state(entry.key, statechart);
+			var key = entry.key;
+			var state;
+			if(key instanceof red.State) {
+				state = red.find_equivalent_state(key, statechart);
+			} else if(key instanceof red.StatechartTransition) {
+				state = red.find_equivalent_transition(key, statechart);
+			}
 			return {
 				state: state,
 				value: entry.value
@@ -92,18 +98,20 @@ red.ContextualStatefulProp = function(options) {
 		this.transition_times_run[transition_id] = tr;
 	};
 
+	var NO_VAL = {};
+
 	proto._getter = function() {
 		var values = this.get_values();
 		var len = values.length;
 		var info;
 
-		var using_val, using_state;
+		var using_val = NO_VAL, using_state;
 		for(var i = 0; i<len; i++){
 			info = values[i];
 			var state = info.state,
 				val = info.value;
 			if(state instanceof red.State) {
-				if(!using_val && state.is_active()) {
+				if(using_val === NO_VAL && state.is_active()) {
 					using_val = val;
 					using_state = state;
 				}
@@ -111,37 +119,46 @@ red.ContextualStatefulProp = function(options) {
 				var tr = state.get_times_run() || 0;
 				if(tr > this.get_transition_times_run(state)) {
 					var pointer = this.get_pointer();
-					this.set_transition_times_run(tr);
+					this.set_transition_times_run(state, tr);
 					var event = state._last_run_event
 					var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
 
-					var rv = using_val.get_constraint_for_context(eventized_pointer);
-					_.defer(_.bind(function() {
-						this.$value.invalidate();
-					}, this));
-					this._last_value = rv;
-					this._from_state = state;
-					return this._last_value.get();
+					using_val = val;
+					using_state = state;
+					break;
+				} else if(!this._used_start_transition && state.from() instanceof red.StartState) {
+					this._used_start_transition = true;
+					using_val = val;
+					using_state = state;
 				}
 			}
 		}
 
-		if(using_val) {
-			if(using_val instanceof red.Cell) {
-				var pointer = this.get_pointer();
-				var event = state._last_run_event
-
-				var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
-
-				var rv = using_val.get_constraint_for_context(eventized_pointer);
-				this._last_value = rv;
-				this._from_state = using_state;
-				return this._last_value.get();
-			} else {
-				return using_val;
-			}
+		if(using_val === NO_VAL) {
+			using_val = this._last_value;
+			using_state = this._from_state;
+		} else {
+			this._last_value = using_val;
+			this._from_state = using_state;
 		}
-		return this._last_value.get();
+
+
+		if(using_val instanceof red.Cell) {
+			var pointer = this.get_pointer();
+			var event = using_state._last_run_event;
+
+			var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
+
+			var rv = using_val.get_constraint_for_context(eventized_pointer);
+			rv = rv.get();
+
+			this._last_rv = rv;
+			return rv;
+		} else {
+			var rv = using_val instanceof red.ContextualObject ? using_val.val() : using_val;
+			this._last_rv = rv;
+			return rv;
+		}
 	};
 
 	proto.destroy = function() {

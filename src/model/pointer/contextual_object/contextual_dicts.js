@@ -128,9 +128,10 @@ red.ContextualDict = function(options) {
 				var value = info.value;
 				var name = names[i];
 				var manifestation_pointers = false;
+				var value_ptr = pointer.push(value);
 				if(value instanceof red.Dict) {
 					var manifestations = value.get_manifestations();
-					var manifestations_pointer = pointer.push(manifestations);
+					var manifestations_pointer = value_ptr.push(manifestations);
 					var manifestations_contextual_object = red.find_or_put_contextual_obj(manifestations, manifestations_pointer);
 					var manifestations_value = manifestations_contextual_object.val();
 
@@ -158,7 +159,7 @@ red.ContextualDict = function(options) {
 					return {name: name, value: contextual_objects, inherited: type === "inherited"};
 				} else {
 					if(value instanceof red.Dict || value instanceof red.Cell || value instanceof red.StatefulProp) {
-						var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value));
+						var contextual_object = red.find_or_put_contextual_obj(value, value_ptr);
 						return {name: name, value: contextual_object, inherited: type === "inherited"};
 					} else {
 						return {name: name, value: value, inherited: type === "inherited"};

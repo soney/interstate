@@ -64,7 +64,6 @@ red.ContextualObject = function(options) {
 }(red.ContextualObject));
 
 
-
 red.check_contextual_object_equality =  red.check_contextual_object_equality_eqeqeq = function(itema, itemb) {
 	if(itema instanceof red.ContextualObject && itemb instanceof red.ContextualObject) {
 		return itema.get_pointer().eq(itemb.get_pointer()) && itema.get_object() === itemb.get_object();
