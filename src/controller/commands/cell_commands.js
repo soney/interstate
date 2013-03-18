@@ -32,7 +32,7 @@ red.ChangeCellCommand = function(options) {
 									},
 									function() {
 										return {
-											cell_uid: this._cell.uid,
+											cell_uid: this._cell.id(),
 											str: this._to_str,
 										};
 									},

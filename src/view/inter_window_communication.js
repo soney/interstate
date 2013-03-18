@@ -7,6 +7,7 @@ red.ProgramStateServer = function(options) {
 	able.make_this_listenable(this);
 	this.add_message_listeners();
 	this.root = options.root;
+	this.contextual_root = red.find_or_put_contextual_obj(this.root);
 	this.client_window = options.client_window;
 	this.connected = false;
 
@@ -39,24 +40,9 @@ red.ProgramStateServer = function(options) {
 		if(event.source === this.client_window) {
 			var data = event.data;
 			if(data === "ready") {
-				red.event_queue.wait();
-				cjs.wait();
+			} else if(data === "loaded") {
 				this.connected = true;
-				/*
-				this.post_delta(new red.ProgramDelta({
-					root_pointer: red.create("pointer", {stack: [this.root]})
-				}));
-				this.add_state_listeners();
-				this.post_delta(new red.CurrentStateDelta({
-					states: this._states
-				}));
-				this.post_delta(new red.CurrentValuesDelta({
-					root_pointer: red.create("pointer", {stack: [this.root]})
-				}));
-				*/
 				this._emit("connected");
-				cjs.signal();
-				red.event_queue.signal();
 			} else {
 				var type = data.type;
 				if(type === "command") {
@@ -71,86 +57,6 @@ red.ProgramStateServer = function(options) {
 			}
 		}
 	};
-	proto.add_state_listeners = function() {
-		var on_transition_fire = _.bind(function(info) {
-			var transition = info.target;
-			var event = info.event;
-
-			this.post_delta(new red.TransitionFiredDelta({
-				transition: transition,
-				event: {}
-			}));
-		}, this);
-
-		this.register_state = function(state) { };
-		this.unregister_state = function(state) { };
-
-		this.register_transition = function(transition) {
-			transition.on("fire", on_transition_fire);
-		};
-		this.unregister_transition = function(transition) {
-			transition.off("fire", on_transition_fire);
-		};
-
-		this._states = [];
-		this._transitions = [];
-		red.each_registered_obj(function(obj, uid) {
-			if(obj instanceof red.Statechart) {
-				this._states.push(obj);
-				this.register_state(obj);
-			} else if(obj instanceof red.StatechartTransition) {
-				this._transitions.push(obj);
-				this.register_transition(obj);
-			}
-		}, this);
-
-		this.$on_uid_registered = function(uid, obj) {
-			if(obj instanceof red.Statechart) {
-				this._states.push(obj);
-				this.register_state(obj);
-			} else if(obj instanceof red.StatechartTransition) {
-				this._transitions.push(obj);
-				this.register_transition(obj);
-			}
-		};
-
-		this.$on_uid_unregistered = function(uid, obj) {
-			if(obj instanceof red.Statechart) {
-				var index = this._states.indexOf(obj);
-				if(index >= 0) {
-					this.unregister_state(obj);
-					this._states.splice(index, 1);
-				}
-			} else if(obj instanceof red.StatechartTransition) {
-				var index = this._transitions.indexOf(obj);
-				if(index >= 0) {
-					this.unregister_transition(obj);
-					this._transitions.splice(index, 1);
-				}
-			}
-		}
-
-		red.on("uid_registered", this.$on_uid_registered, this);
-		red.on("uid_unregistered", this.$on_uid_unregistered, this);
-	};
-	proto.remove_state_listeners = function() {
-		red.off("uid_registered", this.$on_uid_registered);
-		red.off("uid_unregistered", this.$on_uid_unregistered);
-
-		if(this._states) {
-			for(var i = 0; i<this._states.length; i++) {
-				this.unregister_state(this._states[i]);
-			}
-			delete this._states;
-		}
-
-		if(this._transitions) {
-			for(var i = 0; i<this._transitions.length; i++) {
-				this.unregister_transition(this._transitions[i]);
-			}
-			delete this._transitions;
-		}
-	}
 
 	proto.post = function(message) {
 		if(this.connected) {
@@ -158,15 +64,6 @@ red.ProgramStateServer = function(options) {
 		} else {
 			throw new Error("Trying to send a message to a disconnected client");
 		}
-	};
-
-	proto.post_delta = function(delta) {
-		var stringified_delta = red.stringify(delta, true);
-
-		this.post({
-			type: "delta",
-			value: stringified_delta
-		});
 	};
 
 	proto.on_client_closed = function() {
@@ -180,7 +77,6 @@ red.ProgramStateServer = function(options) {
 
 	proto.cleanup_closed_client = function() {
 		this.connected = false;
-		this.remove_state_listeners();
 	};
 
 	proto.destroy = function() {
@@ -217,7 +113,6 @@ red.ProgramStateClient = function(options) {
 	proto.on_loaded = function() {
 		this.add_message_listener();
 		this.post("ready");
-		this._emit("loaded");
 	};
 
 	proto.add_message_listener = function() {
@@ -232,66 +127,14 @@ red.ProgramStateClient = function(options) {
 		if(event.source === this.server_window) {
 			var data = event.data;
 			var type = data.type;
-			if(type === "delta") {
-				var stringified_delta = data.value;
-				var delta = red.destringify(stringified_delta, {
-					inert: true,
-					inert_shadows: true
-				});
-				this.on_delta(delta);
+			if(type === "root_comm_id") {
+				console.log(data);
+
+				this.post("loaded");
+				this._emit("loaded");
 			}
 			this._emit("message", data);
 		}
-	};
-
-	proto.on_delta = function(delta) {
-		if(delta instanceof red.ProgramDelta) {
-			var external_root = delta.get_root();
-			this.external_env = red.create("environment", {
-				root: external_root
-			});
-			this.external_env.return_commands = true;
-			/*
-		} else if(delta instanceof red.CommandDelta) {
-			var command = delta.get_command();
-			if((["undo", "redo", "reset"]).indexOf(command) >= 0) {
-				this.external_env[command]();
-			} else {
-				this.external_env._do(command);
-			}
-		} else if(delta instanceof red.CurrentStateDelta) {
-			var state_info = delta.get_state_info();
-			_.each(state_info, function(si) {
-				var substate = si.substate,
-					superstate = si.superstate;
-				superstate.set_active_substate(substate);
-			});
-		} else if(delta instanceof red.TransitionFiredDelta) {
-			var transition = delta.get_transition();
-			if(transition) {
-				var event = delta.get_event();
-				transition.fire(event);
-			} else {
-				console.error("Could not find transition");
-			}
-		} else if(delta instanceof red.CurrentValuesDelta) {
-			var values = delta.get_values();
-			values.each(function(cached_value, pointer) {
-				var obj = pointer.points_at();
-				var obj_parent = pointer.points_at(-2);
-				if(obj_parent instanceof red.Dict) {
-					var dict_pointer = pointer.pop();
-					var prop_name = obj_parent.name_for_prop(obj, dict_pointer);
-					if(prop_name) {
-						obj_parent.set_cached_value(prop_name, dict_pointer, cached_value);
-					}
-				}
-			}, this);
-			*/
-		} else {
-			console.error("Unhandled delta", delta);
-		}
-		this._emit("delta", delta);
 	};
 
 	proto.destroy = function() {

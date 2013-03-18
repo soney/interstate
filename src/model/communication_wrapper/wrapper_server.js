@@ -27,9 +27,6 @@ red.WrapperServer = function(options) {
 	var proto = my.prototype;
 	proto.destroy = function() { };
 
-	proto.post = function() {
-	};
-	
 }(red.WrapperServer));
 
 
@@ -46,7 +43,7 @@ red.StateWrapperServer = function(options) {
 	proto.destroy = function() {
 		my.superclass.destroy.apply(this, arguments);
 	};
-	proto.async = make_async("is_active");
+	proto._is_active = make_async("is_active");
 }(red.StateWrapperServer));
 
 //=========
@@ -72,6 +69,7 @@ red.TransitionWrapperServer = function(options) {
 
 red.DictWrapperServer = function(options) {
 	red.DictWrapperServer.superclass.constructor.apply(this, arguments);
+	this.$children = new cjs.Constraint(this._children);
 };
 
 (function(my) {
@@ -80,6 +78,11 @@ red.DictWrapperServer = function(options) {
 	proto.destroy = function() {
 		my.superclass.destroy.apply(this, arguments);
 	};
+
+	proto._children = make_async("children");
+	proto._has = make_async("has");
+	proto._get = make_async("get");
+	proto._getget = make_async("getget");
 }(red.DictWrapperServer));
 
 
@@ -111,6 +114,7 @@ red.CellWrapperServer = function(options) {
 	proto.destroy = function() {
 		my.superclass.destroy.apply(this, arguments);
 	};
+	proto._val = make_async("val");
 }(red.CellWrapperServer));
 
 
@@ -126,6 +130,7 @@ red.StatefulPropWrapperServer = function(options) {
 	proto.destroy = function() {
 		my.superclass.destroy.apply(this, arguments);
 	};
+	proto._val = make_async("val");
 }(red.StatefulPropWrapperServer));
 
 
@@ -134,9 +139,22 @@ red.StatefulPropWrapperServer = function(options) {
 var wrapper_servers = {};
 
 red.register_wrapper_server = function(object, server) {
-	wrapper_servers[object] = server;
+	wrapper_servers[object.id()] = server;
 };
 
 red.get_wrapper_server = function(object) {
+	var id = object.id();
+	if(wrapper_servers.hasOwnProperty(id)) {
+		return wrapper_servers[id];
+	} else {
+		var rv;
+
+		if(object instanceof red.ContextualDict) {
+			rv = new DictWrapperServer(object);
+		}
+
+		wrapper_servers[id] = rv;
+		return rv;
+	}
 };
 }(red));

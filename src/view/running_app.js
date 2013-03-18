@@ -83,7 +83,6 @@ $.widget("red.dom_output", {
 		if(this.edit_button) {
 			this.edit_button.remove();
 		}
-		this._remove_state_listeners();
 		if(this.server_socket) {
 			this.server_socket.destroy();
 		}

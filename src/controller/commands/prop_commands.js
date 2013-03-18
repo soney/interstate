@@ -54,7 +54,7 @@ red.SetPropCommand = function(options) {
 									function() {
 										var arg_array = _.toArray(arguments);
 										return {
-											parent_uid: this._parent.uid,
+											parent_uid: this._parent.id(),
 											name: this._prop_name,
 											value: red.serialize.apply(red, ([this._prop_value]).concat(arg_array)),
 											index: this._prop_index
@@ -119,7 +119,7 @@ red.UnsetPropCommand = function(options) {
 									},
 									function() {
 										return {
-											parent_uid: this._parent.uid,
+											parent_uid: this._parent.id(),
 											name: this._prop_name
 										};
 									},
@@ -163,7 +163,7 @@ red.RenamePropCommand = function(options) {
 									},
 									function() {
 										return {
-											parent_uid: this._parent.uid,
+											parent_uid: this._parent.id(),
 											from_name: this._from_name,
 											to_name: this._to_name
 										};
@@ -210,7 +210,7 @@ red.MovePropCommand = function(options) {
 									},
 									function() {
 										return {
-											parent_uid: this._parent.uid,
+											parent_uid: this._parent.id(),
 											name: this._prop_name,
 											to: this._to_index
 										};
@@ -286,7 +286,7 @@ red.SetStatefulPropValueCommand = function(options) {
 									function() {
 										var arg_array = _.toArray(arguments);
 										return {
-											stateful_prop_uid: this._stateful_prop.uid,
+											stateful_prop_uid: this._stateful_prop.id(),
 											state_uid: this._state.id(),
 											value: red.serialize.apply(red, ([this._value]).concat(arg_array))
 										};
@@ -336,7 +336,7 @@ red.UnsetStatefulPropValueCommand = function(options) {
 									},
 									function() {
 										return {
-											parent_uid: this._stateful_prop.uid,
+											parent_uid: this._stateful_prop.id(),
 											state_uid: this._state.id()
 										};
 									},
@@ -410,7 +410,7 @@ red.SetBuiltinCommand = function(options) {
 									function() {
 										var arg_array = _.toArray(arguments);
 										return {
-											parent_uid: this._parent.uid,
+											parent_uid: this._parent.id(),
 											name: this._builtin_name,
 											value: red.serialize.apply(red, ([this._value]).concat(arg_array))
 										};

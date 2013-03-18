@@ -5,10 +5,14 @@ red.ContextualObject = function(options) {
 	this.set_options(options);
 
 	this.$value = new cjs.Constraint(_.bind(this._getter, this), false, { check_on_nullify: options.check_on_nullify === true });
+	this._id = uid();
 };
 
 (function(my) {
 	var proto = my.prototype;
+
+	proto.id = proto.hash = function() { return this._id; };
+
 	proto.get_pointer = function() { return this.pointer; }
 	proto.set_options = function(options) {
 		if(options) {
