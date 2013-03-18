@@ -173,7 +173,7 @@ red.DomAttachmentInstance = function(options) {
 
 		var old_tag = undefined;
 		return cjs.liven(function() {
-			var tag = "" + contextual_object.getget("tag");
+			var tag = "" + contextual_object.prop_val("tag");
 			if(tag !== old_tag) {
 				old_tag = tag;
 				if(_.isString(tag)) {
@@ -256,13 +256,13 @@ red.DomAttachmentInstance = function(options) {
 
 
 			if(contextual_object.has("text")) {
-				text = contextual_object.getget("text");
+				text = contextual_object.prop_val("text");
 			}
 			
 			if(text!== undefined) {
 				dom_obj.textContent = text;
 			} else {
-				var children = contextual_object.get("children");
+				var children = contextual_object.prop("children");
 
 				var current_children = _.toArray(dom_obj.childNodes);
 				var desired_children = [];
@@ -270,7 +270,7 @@ red.DomAttachmentInstance = function(options) {
 				if(children) {
 					var cc;
 					if(children instanceof red.ContextualDict) {
-						cc = children.get_children();
+						cc = children.children();
 					} else if(children instanceof red.ContextualObj) {
 						cc = children.val();
 						if(!_.isArray(cc)) {

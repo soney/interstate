@@ -61,6 +61,7 @@ var message_id = 0;
 red.WrapperClient = function(options) {
 	this.server_window = options.server_window;
 	this.cobj_id = options.cobj_id;
+	this._type = options.type;
 
 	this._id = client_id++;
 	clients[this._id] = this;
@@ -104,9 +105,8 @@ red.WrapperClient = function(options) {
 		}, origin);
 		return m_id;
 	};
-	proto.id = function() {
-		return this._id;
-	};
+	proto.id = function() { return this._id; };
+	proto.type = function() { return this._type; };
 
 	proto.get = function() {
 		var args = summarize_args(arguments);

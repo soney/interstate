@@ -325,6 +325,9 @@ red.StatechartTransition = function(options, defer_initialization) {
 		this._emit("remove", {type: "remove", transition: this});
 		return this;
 	};
+	proto.root = function() {
+		return this.from().root();
+	};
 
 	proto.summarize = function() {
 		var context = this.context();

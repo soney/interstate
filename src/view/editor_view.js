@@ -45,7 +45,7 @@ $.widget("red.editor", {
 				});
 			}
 		}, this).on("loaded", function(root_client) {
-			this.root.set("root_client", root_client);
+			this.root.set("root_client", root_client, {literal: true});
 			window.rc = root_client;
 			this.load_viewer();
 		}, this);
@@ -60,9 +60,29 @@ $.widget("red.editor", {
 	.set("obj", "<dict>")
 	.cd("obj")
 		.set("(protos)", "dom")
-		.set("text", "root_client.get('get_children')")
-		.up()
+		.set("text", "root_client.get('children')")
+/*
+.set("ambiguous_view", "<stateful>")
+.cd("ambiguous_view")
+	.set("(protos)", "INIT", "type === 'dict' ? [dict_view] : []")
+	.set("client")
+	.set("client", "INIT", "false")
+	.set("type", "INIT", "client ? client.type() : ''")
 	.up()
+.set("dict_view", "<stateful>")
+.cd("dict_view")
+	.set("(protos)", "INIT", "[dom]")
+	.set("text")
+	.set("text", "INIT", "client.get('get_children')")
+	.up()
+	*/
+/*
+.cd("children")
+	.set("obj", "<dict>")
+	.cd("obj")
+		.set("(protos)", "[dom]")
+		.set("text", "'hi'")
+		.up()
 /*
 .set("stringify_value", "function(v) {\n" +
 "if(red._.isUndefined(v)) { return '(undefined)'; }\n" +

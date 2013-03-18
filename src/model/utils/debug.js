@@ -172,7 +172,7 @@ var print = function(current_pointer, logging_mechanism) {
 				});
 				logging_mechanism.groupEnd();
 			}
-			var children = contextual_object.get_children();
+			var children = contextual_object.children();
 			_.each(children, function(child_info) {
 				var is_manifestations;
 				var c_arr;

@@ -127,7 +127,7 @@ var get_identifier_val = function(key, context, ignore_inherited_in_contexts) {
 		if(context_item instanceof red.Dict) {
 			var contextual_obj = red.find_or_put_contextual_obj(context_item, curr_context);
 			if(contextual_obj.has(key)) {
-				var rv = contextual_obj.getget(key);
+				var rv = contextual_obj.prop_val(key);
 				return rv;
 			}
 		} else if(context_item instanceof red.Cell) {
@@ -191,13 +191,8 @@ var get_member_val = function(object, property) {
 				context_item = curr_context.points_at();
 			}
 		}
-		var rv = object.get(property);
-		if(rv) {
-			var val = rv.val();
-			return val;
-		} else {
-			return undefined;
-		}
+		var rv = object.prop_val(property);
+		return rv;
 	} else {
 		return object[property];
 	}

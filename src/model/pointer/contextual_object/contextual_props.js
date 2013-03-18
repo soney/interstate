@@ -62,18 +62,27 @@ red.ContextualStatefulProp = function(options) {
 
 	proto._get_direct_values = function() {
 		var parent = this.get_parent();
-		var statechart = parent.get_own_statechart();
+		var statecharts = parent.get_statecharts();
 		var stateful_prop = this.get_object();
 		var direct_values = stateful_prop.get_direct_values();
+
+		var statecharts_len = statecharts.length;
 
 		var entries = direct_values.entries();
 		var rv = _.map(entries, function(entry) {
 			var key = entry.key;
 			var state;
-			if(key instanceof red.State) {
-				state = red.find_equivalent_state(key, statechart);
-			} else if(key instanceof red.StatechartTransition) {
-				state = red.find_equivalent_transition(key, statechart);
+			for(var i = 0; i<statecharts_len; i++) {
+				console.log(key.root(), state.basis);
+				if(key.root() === statechart.basis()) {
+					console.log("YAY");
+					if(key instanceof red.State) {
+						state = red.find_equivalent_state(key, statechart);
+					} else if(key instanceof red.StatechartTransition) {
+						state = red.find_equivalent_transition(key, statechart);
+					}
+					break;
+				}
 			}
 			return {
 				state: state,

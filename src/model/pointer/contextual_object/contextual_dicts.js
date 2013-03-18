@@ -51,7 +51,7 @@ red.ContextualDict = function(options) {
 		return rv;
 	};
 
-	proto.get_children = function() {
+	proto.children = function() {
 		var dict = this.object;
 		var pointer = this.pointer;
 
@@ -204,7 +204,7 @@ red.ContextualDict = function(options) {
 			}
 		}
 	};
-	proto.get = function(name) {
+	proto.prop = function(name) {
 		var dict = this.get_object(),
 			info;
 		if(dict._has_builtin_prop(name)) {
@@ -286,8 +286,8 @@ red.ContextualDict = function(options) {
 			return undefined;
 		}
 	};
-	proto.getget = function(name) {
-		var value = this.get(name);
+	proto.prop_val = function(name) {
+		var value = this.prop(name);
 		if(value instanceof red.ContextualObject) {
 			return value.val();
 		} else {
