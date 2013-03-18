@@ -6,6 +6,7 @@ red.ContextualObject = function(options) {
 
 	this.$value = new cjs.Constraint(_.bind(this._getter, this), false, { check_on_nullify: options.check_on_nullify === true });
 	this._id = uid();
+	red.register_uid(this._id, this);
 	this._type = "none";
 };
 

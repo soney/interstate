@@ -7,15 +7,52 @@ var MessageDistributionCenter = function() {
 	window.addEventListener("message", _.bind(function(event) {
 		var data = event.data;
 		if(data.type === "wrapper_client") {
-			this._emit("message", data.message, event.source);
+			var client_id = data.client_id;
+			this._emit("message", data.message, event);
 		}
 	}, this));
 };
 able.make_proto_listenable(MessageDistributionCenter.prototype);
 
-var sdc = new MessageDistributionCenter();
 
-sdc.on
+var get_channel_listener = function(client_window, client_id) {
+	return {
+		type: "channel",
+		client_window: client_window,
+		client_id: client_id
+	};
+};
+
+var sdc = new MessageDistributionCenter();
+sdc.on("message", function(message, event) {
+	var type = message.type;
+
+	var client_window = event.source,
+		client_id = event.data.client_id;
+	if(type === "register_listener") {
+		var cobj_id = message.cobj_id;
+		var cobj = red.find_uid(cobj_id);
+		var server = red.get_wrapper_server(cobj);
+
+		server.register_listener(get_channel_listener(client_window, client_id));
+	} else if(type === "get") { // async request
+		var cobj_id = event.data.cobj_id;
+		var cobj = red.find_uid(cobj_id);
+		var server = red.get_wrapper_server(cobj);
+		var req_name = message.name,
+			req_args = message.arguments || [];
+
+		var request_id = event.data.message_id;
+		server.on_request(req_name, req_args, function(response) {
+			client_window.postMessage({
+				type: "response",
+				request_id: request_id,
+				client_id: client_id,
+				response: response
+			}, origin);
+		});
+	}
+});
 
 var post = function(to_window, message) {
 	to_window.postMessage(message, origin);
@@ -44,6 +81,7 @@ red.WrapperServer = function(options) {
 	this.object = options.object;
 	red.register_wrapper_server(this.object, this);
 	this._type = "none";
+	this.client_listeners = [];
 };
 
 (function(my) {
@@ -57,6 +95,14 @@ red.WrapperServer = function(options) {
 	};
 	proto.get_object = function(){
 		return this.object();
+	};
+
+	proto.on_request = function(name, args, callback) {
+		this[name].apply(this, (args).concat(callback));
+	};
+
+	proto.register_listener = function(listener_info) {
+		this.client_listeners.push(listener_info);
 	};
 
 	proto.summarize = function() {
@@ -119,7 +165,6 @@ red.TransitionWrapperServer = function(options) {
 
 red.DictWrapperServer = function(options) {
 	red.DictWrapperServer.superclass.constructor.apply(this, arguments);
-	this.$children = new cjs.Constraint(this._children);
 	this._type = "dict";
 };
 
@@ -130,7 +175,7 @@ red.DictWrapperServer = function(options) {
 		my.superclass.destroy.apply(this, arguments);
 	};
 
-	proto._children = make_async("children");
+	proto.get_children = make_async("get_children");
 	proto._has = make_async("has");
 	proto._get = make_async("get");
 	proto._getget = make_async("getget");
@@ -204,7 +249,9 @@ red.get_wrapper_server = function(object) {
 		var rv;
 
 		if(object instanceof red.ContextualDict) {
-			rv = new red.DictWrapperServer(object);
+			rv = new red.DictWrapperServer({
+					object: object
+				});
 		}
 
 		wrapper_servers[id] = rv;
