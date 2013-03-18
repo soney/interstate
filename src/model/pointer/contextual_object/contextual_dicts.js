@@ -3,10 +3,6 @@ var cjs = red.cjs, _ = red._;
 
 red.ContextualDict = function(options) {
 	red.ContextualDict.superclass.constructor.apply(this, arguments);
-
-	this.attachment_instances = cjs.map({
-		hash: "hash"
-	});
 };
 
 (function(my) {
@@ -137,8 +133,39 @@ red.ContextualDict = function(options) {
 				}, info);
 
 				var value = info.value;
-				var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value), options);
-				return contextual_object;
+				var manifestation_pointers = false;
+				if(value instanceof red.Dict) {
+					var manifestations = value.get_manifestations();
+					var manifestations_pointer = pointer.push(manifestations);
+					var manifestations_contextual_object = red.find_or_put_contextual_obj(manifestations, manifestations_pointer);
+					var manifestations_value = manifestations_contextual_object.val();
+
+					if(_.isNumber(manifestations_value)) {
+						var arr = []
+						for(var i = 0; i<manifestations_value; i++) {
+							arr[i] = i;
+						}
+						manifestations_value = arr;
+					}
+
+					if(_.isArray(manifestations_value)) {
+						manifestations_pointers = _.map(manifestations_value, function(manifestation_value, index) {
+							var manifestation_obj = this.get_manifestation_obj(pcontext, manifestation_value, index);
+							return pointer.push(value, manifestation_obj);
+						}, this);
+					}
+				}
+
+				if(manifestation_pointers) {
+					var contextual_objects = _.map(manifestation_pointers, function(manifestation_pointer) {
+						var rv = red.find_or_put_contextual_obj(value, manifestation_pointer, options);
+						return rv;
+					});
+					return contextual_objects;
+				} else {
+					var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value), options);
+					return contextual_object;
+				}
 			});
 			rv.push.apply(rv, contextual_objects);
 		}, this);
@@ -218,8 +245,89 @@ red.ContextualDict = function(options) {
 				name: name
 			}, info);
 			var value = info.value;
-			var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value), options);
-			return contextual_object;
+			var manifestation_pointers = false;
+			if(value instanceof red.Dict) {
+				var manifestations = value.get_manifestations();
+				var manifestations_pointer = pointer.push(manifestations);
+				var manifestations_contextual_object = red.find_or_put_contextual_obj(manifestations, manifestations_pointer);
+				var manifestations_value = manifestations_contextual_object.val();
+
+				if(_.isNumber(manifestations_value)) {
+					var arr = []
+					for(var i = 0; i<manifestations_value; i++) {
+						arr[i] = i;
+					}
+					manifestations_value = arr;
+				}
+
+				if(_.isArray(manifestations_value)) {
+					manifestations_pointers = _.map(manifestations_value, function(manifestation_value, index) {
+						var manifestation_obj = this.get_manifestation_obj(pcontext, manifestation_value, index);
+						return pointer.push(value, manifestation_obj);
+					}, this);
+				}
+			}
+
+			if(manifestation_pointers) {
+				var contextual_objects = _.map(manifestation_pointers, function(manifestation_pointer) {
+					var rv = red.find_or_put_contextual_obj(value, manifestation_pointer, options);
+					return rv;
+				});
+				return contextual_objects;
+			} else {
+				var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value), options);
+				return contextual_object;
+			}
+		} else {
+			return undefined;
+		}
+	};
+
+	proto.get_attachment_instance = function(type) {
+		var dict = this.get_object();
+		var direct_attachments = dict.direct_attachments();
+		var len = direct_attachments.length;
+		var attachment;
+		var info;
+
+		for(var i = 0; i<len; i++) {
+			attachment = direct_attachments[i];
+			if(attachment.get_type() === type) {
+				info = {
+					attachment: attachment,
+					owner: dict
+				}
+				break;
+			}
+		}
+
+		if(!info) {
+			var proto_objects = this.get_all_protos();
+			var plen = proto_objects.length;
+			var proto_obj, j;
+
+			outer_loop:
+			for(var i = 0; i<plen; i++) {
+				proto_obj = proto_objects[i];
+				direct_attachments = proto_obj.direct_attachments();
+				len = direct_attachments.length;
+				for(var j = 0; j<len; j++) {
+					attachment = direct_attachments[j];
+					if(attachment.get_type() === type) {
+						info = {
+							attachment: attachment,
+							owner: dict
+						}
+						break outer_loop;
+					}
+				}
+			}
+		}
+
+		if(info) {
+			attachment = info.attachment;
+			var attachment_instance = attachment.create_instance(this.get_pointer());
+			return attachment_instance;
 		} else {
 			return undefined;
 		}

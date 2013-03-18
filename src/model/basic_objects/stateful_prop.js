@@ -82,16 +82,6 @@ red.StatefulProp = function(options, defer_initialization) {
 		return basis;
 	};
 
-/*
-	proto.get_statecharts = function(context) {
-		var SOandC = red.find_stateful_obj_and_context(context);
-		if(SOandC) {
-			return SOandC.stateful_obj.get_statecharts(SOandC.context);
-		} else {
-			return [];
-		}
-	};
-	*/
 
 	//
 	// === DIRECT VALUES ===
@@ -118,113 +108,6 @@ red.StatefulProp = function(options, defer_initialization) {
 		return this.get_direct_values().has(state);
 	};
 	
-	//
-	// === INHERITED VALUES ===
-	//
-	/*
-	proto._get_inherits_from = function(context) {
-		if(!this._can_inherit) {
-			return [];
-		}
-		var stateful_obj_and_context = red.find_stateful_obj_and_context(context);
-		var stateful_obj_context = context;
-		var stateful_obj = stateful_obj_and_context.stateful_obj;
-
-
-		if(_.isUndefined(stateful_obj_context)) {
-			return [];
-		}
-		var my_name = stateful_obj.name_for_prop(this, stateful_obj_context);
-		if(_.isUndefined(my_name)) {
-			return [];
-		}
-		var inherited_props = stateful_obj._get_all_inherited_props(my_name, stateful_obj_context);
-		return inherited_props;
-	};
-	*/
-
-	//
-	// === VALUES ===
-	//
-	
-	
-	/*
-	proto.get_state_specs = function(pcontext) {
-		var stateful_obj_and_context = red.find_stateful_obj_and_context(pcontext);
-		var stateful_obj_context = stateful_obj_and_context.context;
-		var stateful_obj = stateful_obj_and_context.stateful_obj;
-		return stateful_obj.get_state_specs(stateful_obj_context, this._can_inherit);
-	};
-	proto.get_value_specs = function(context) {
-		var inherits_from = this._get_inherits_from(context);
-		var state_specs = this.get_state_specs(context);
-		var values = _.map(state_specs, function(state_spec) {
-			return get_value_for_state(state_spec.state, this, inherits_from);
-		}, this);
-		var is_inheriteds = _.map(state_specs, function(state_spec) {
-			return !this._has_direct_value_for_state(state_spec.state);
-		}, this);
-
-		var rv = [];
-		var found_using_value = false;
-		for(var i = 0; i<state_specs.length; i++) {
-			var state_spec = state_specs[i];
-
-			var state = state_spec.state;
-			var active = state_spec.active;
-			var value = values[i];
-			var using = false;
-
-			if(active && !_.isUndefined(value) && !found_using_value) {
-				found_using_value = using = true;
-			}
-
-			rv.push({
-				state: state
-				, active: active
-				, value: value
-				, using: using
-			});
-		}
-
-		return rv;
-	};
-	proto.get_value_for_state = function(state, context) {
-		return get_value_for_state(state, this, this._get_inherits_from(context));
-	};
-	proto._get_value_and_from_state = function(pcontext) {
-		var value_for_pcontext = this._get_value_for_context(pcontext);
-		var rv = value_for_pcontext.get_value_and_from_state();
- 
-		return rv;
-	};
-	proto._get_value_for_context = function(pcontext) {
-		var rv = this.get_values_per_context().get_or_put(pcontext, function() {
-			return this.create_contextual_value(pcontext);
-		}, this);
-
-		return rv;
-	};
-	proto.get_pointer_for_context = function(pcontext) {
-		var value_and_state = this._get_value_and_from_state(pcontext);
-		var state = value_and_state.state,
-			value = value_and_state.value;
-		if(state && value) {
-			var event = state._last_run_event,
-			event_context = get_event_context(state, event);
-			return pcontext.push(value, event_context);
-		} else {
-			return pcontext.push(value);
-		}
-	};
-	proto.create_contextual_value = function(pcontext) {
-		return new StatefulPropContextualVal({
-			context: pcontext,
-			stateful_prop: this,
-			used_start_transition: this.used_start_transition 
-		});
-	};
-	*/
 	proto.hash = function() {
 		return this.uid;
 	};
