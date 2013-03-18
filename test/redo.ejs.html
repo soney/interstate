@@ -20,15 +20,11 @@
 				*/
 				var env = red.create("environment");
 env
-.set("x", "<dict>")
-.cd("x")
-	.set("a", "1+1")
-	.up()
 .cd("children")
-	.set("y", "<dict>")
-	.cd("y")
-		.set("(protos)", "[dom]")
-		.set("text", "1+1")
+	.set("obj", "<dict>")
+	.cd("obj")
+		.set("(protos)", "dom")
+		.set("text", "'hi'")
 				/*
 env
 .set("a", "1")

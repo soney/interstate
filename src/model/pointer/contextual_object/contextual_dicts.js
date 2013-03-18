@@ -37,6 +37,8 @@ red.ContextualDict = function(options) {
 			i++;
 		}
 		var rv_arr = rv.toArray();
+		console.log(rv_arr);
+		debugger;
 		return rv_arr.slice(1); // don't include me
 	};
 
@@ -175,11 +177,11 @@ red.ContextualDict = function(options) {
 
 		return rv;
 	};
-	proto.has = function(name) {
+	proto.has = function(name, ignore_inherited) {
 		var dict = this.get_object();
 		if(dict._has_direct_prop(name) || dict._has_builtin_prop(name)) {
 			return true;
-		} else {
+		} else if(ignore_inherited !== true){
 			var proto_objects = this.get_all_protos();
 			if(_.any(proto_objects, function(d) { return d._has_direct_prop(name); })) {
 				return true;
@@ -202,16 +204,18 @@ red.ContextualDict = function(options) {
 			} else {
 				return false;
 			}
+		} else {
+			return false;
 		}
 	};
-	proto.prop = function(name) {
+	proto.prop = function(name, ignore_inherited) {
 		var dict = this.get_object(),
 			info;
 		if(dict._has_builtin_prop(name)) {
 			info = dict._get_builtin_info(name);
 		} else if(dict._has_direct_prop(name)) {
 			info = dict._get_direct_prop_info(name);
-		} else {
+		} else if(ignore_inherited !== true) {
 			var proto_objects = this.get_all_protos();
 			var len = proto_objects.length;
 			var d;

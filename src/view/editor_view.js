@@ -46,7 +46,7 @@ $.widget("red.editor", {
 			}
 		}, this).on("loaded", function(root_client) {
 			this.root.set("root_client", root_client, {literal: true});
-			window.rc = root_client;
+			//window.rc = root_client;
 			this.load_viewer();
 		}, this);
 	}
@@ -59,8 +59,8 @@ $.widget("red.editor", {
 .cd("children")
 	.set("obj", "<dict>")
 	.cd("obj")
-		.set("(protos)", "dom")
-		.set("text", "root_client.get('children')")
+		.set("(protos)", "[dom]")
+		.set("text", "'hi'")
 /*
 .set("ambiguous_view", "<stateful>")
 .cd("ambiguous_view")
