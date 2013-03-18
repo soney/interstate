@@ -85,6 +85,7 @@ red.Dict = function(options, defer_initialization) {
 		, "manifestations": {
 			start_with: function() { return cjs.$(); }
 			, env_visible: false
+			, env_name: "manifestations"
 			, getter: function(me) { return me.get(); }
 			, setter: function(me, val) { me.set(val, true); }
 		}

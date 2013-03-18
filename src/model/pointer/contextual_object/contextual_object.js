@@ -12,17 +12,17 @@ red.ContextualObject = function(options) {
 	proto.get_pointer = function() { return this.pointer; }
 	proto.set_options = function(options) {
 		if(options) {
-			if(options.object) {
+			if(_.has(options, "object")) {
 				this.object = options.object;
 			}
-			if(options.pointer) {
+			if(_.has(options, "pointer")) {
 				this.pointer = options.pointer;
 			}
 
-			if(options.name) {
+			if(_.has(options, "name")) {
 				this.name = options.name || "";
 			}
-			if(options.inherited) {
+			if(_.has(options, "inherited")) {
 				this.inherited = options.inherited === true;
 			}
 		}

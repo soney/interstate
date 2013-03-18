@@ -63,6 +63,25 @@ red.ContextualDict = function(options) {
 			owners[name] = dict;
 		}, this);
 
+
+		var my_ptr_index = pointer.lastIndexOf(dict);
+		var special_context_names = [];
+		if(my_ptr_index >= 0) {
+			var special_contexts = pointer.special_contexts(my_ptr_index);
+			var len = special_contexts.length;
+			var sc, co;
+			for(var i = 0; i<len; i++) {
+				sc = special_contexts[i];
+				co = sc.get_context_obj();
+				_.each(co, function(v, k) {
+					if(!owners.hasOwnProperty(k)) {
+						owners[k] = sc;
+						special_context_names.push(k);
+					}
+				});
+			}
+		}
+
 		var proto_objects = this.get_all_protos();
 
 		var inherited_names = [];
@@ -76,32 +95,12 @@ red.ContextualDict = function(options) {
 			});
 		});
 
-		var my_ptr_index = pointer.lastIndexOf(dict);
-		var special_context_names;
-		if(my_ptr_index >= 0) {
-			var special_contexts = pointer.special_contexts(my_ptr_index);
-			var len = special_contexts.length;
-			var sc, co;
-			for(var i = 0; i<len; i++) {
-				sc = special_contexts[i];
-				co = sc.get_context_obj();
-				_.each(co, function(v, k) {
-					if(!owners.hasOwnProperty(name)) {
-						owners[name] = sc;
-						special_context_names.push(name);
-					}
-				});
-			}
-		} else {
-			special_context_names = [];
-		}
-
 		var rv = [];
 		_.each([
 			["builtin", builtin_names],
 			["direct", direct_names],
-			["inherited", inherited_names],
-			["special_context", special_context_names]
+			["special_context", special_context_names],
+			["inherited", inherited_names]
 		], function(info) {
 			var type = info[0];
 			var names = info[1];
@@ -126,13 +125,8 @@ red.ContextualDict = function(options) {
 			}
 
 			var contextual_objects = _.map(infos, function(info, i) {
-				var options = _.extend({
-					name: names[i],
-					type: type,
-					inherited: type === "inherited"
-				}, info);
-
 				var value = info.value;
+				var name = names[i];
 				var manifestation_pointers = false;
 				if(value instanceof red.Dict) {
 					var manifestations = value.get_manifestations();
@@ -149,8 +143,8 @@ red.ContextualDict = function(options) {
 					}
 
 					if(_.isArray(manifestations_value)) {
-						manifestations_pointers = _.map(manifestations_value, function(manifestation_value, index) {
-							var manifestation_obj = this.get_manifestation_obj(pcontext, manifestation_value, index);
+						manifestation_pointers = _.map(manifestations_value, function(basis, index) {
+							var manifestation_obj = new red.ManifestationContext(this, basis, index);
 							return pointer.push(value, manifestation_obj);
 						}, this);
 					}
@@ -158,13 +152,17 @@ red.ContextualDict = function(options) {
 
 				if(manifestation_pointers) {
 					var contextual_objects = _.map(manifestation_pointers, function(manifestation_pointer) {
-						var rv = red.find_or_put_contextual_obj(value, manifestation_pointer, options);
+						var rv = red.find_or_put_contextual_obj(value, manifestation_pointer);
 						return rv;
 					});
-					return contextual_objects;
+					return {name: name, value: contextual_objects, inherited: type === "inherited"};
 				} else {
-					var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value), options);
-					return contextual_object;
+					if(value instanceof red.Dict || value instanceof red.Cell || value instanceof red.StatefulProp) {
+						var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value));
+						return {name: name, value: contextual_object, inherited: type === "inherited"};
+					} else {
+						return {name: name, value: value, inherited: type === "inherited"};
+					}
 				}
 			});
 			rv.push.apply(rv, contextual_objects);
@@ -241,10 +239,8 @@ red.ContextualDict = function(options) {
 
 		if(info) {
 			var pointer = this.get_pointer();
-			var options = _.extend({
-				name: name
-			}, info);
 			var value = info.value;
+
 			var manifestation_pointers = false;
 			if(value instanceof red.Dict) {
 				var manifestations = value.get_manifestations();
@@ -261,8 +257,8 @@ red.ContextualDict = function(options) {
 				}
 
 				if(_.isArray(manifestations_value)) {
-					manifestations_pointers = _.map(manifestations_value, function(manifestation_value, index) {
-						var manifestation_obj = this.get_manifestation_obj(pcontext, manifestation_value, index);
+					manifestation_pointers = _.map(manifestations_value, function(basis, index) {
+						var manifestation_obj = new red.ManifestationContext(this, basis, index);
 						return pointer.push(value, manifestation_obj);
 					}, this);
 				}
@@ -270,16 +266,28 @@ red.ContextualDict = function(options) {
 
 			if(manifestation_pointers) {
 				var contextual_objects = _.map(manifestation_pointers, function(manifestation_pointer) {
-					var rv = red.find_or_put_contextual_obj(value, manifestation_pointer, options);
+					var rv = red.find_or_put_contextual_obj(value, manifestation_pointer);
 					return rv;
 				});
 				return contextual_objects;
 			} else {
-				var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value), options);
-				return contextual_object;
+				if(value instanceof red.Dict || value instanceof red.Cell || value instanceof red.StatefulProp) {
+					var contextual_object = red.find_or_put_contextual_obj(value, pointer.push(value));
+					return contextual_object;
+				} else {
+					return value;
+				}
 			}
 		} else {
 			return undefined;
+		}
+	};
+	proto.getget = function(name) {
+		var value = this.get(name);
+		if(value instanceof red.ContextualObject) {
+			return value.val();
+		} else {
+			return value;
 		}
 	};
 
@@ -326,7 +334,7 @@ red.ContextualDict = function(options) {
 
 		if(info) {
 			attachment = info.attachment;
-			var attachment_instance = attachment.create_instance(this.get_pointer());
+			var attachment_instance = attachment.create_instance(this);
 			return attachment_instance;
 		} else {
 			return undefined;

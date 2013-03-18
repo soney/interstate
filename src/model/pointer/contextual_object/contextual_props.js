@@ -9,16 +9,28 @@ red.ContextualStatefulProp = function(options) {
 	var values = this.get_values();
 	var len = values.length;
 	var info;
+	this._last_value = undefined;
+	this._from_state = undefined;
 
 	var using_val, using_state;
 	for(var i = 0; i<len; i++){
 		info = values[i];
 		var state = info.state,
 			val = info.value;
-		if(state instanceof red.Transition) {
+		if(state instanceof red.StatechartTransition) {
 			this.set_transition_times_run(state.get_times_run());
 		}
 	}
+
+	this.$value.onChange(_.bind(function() {
+		if(red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
+			this.$value.update();
+		}
+	}, this));
+
+	_.defer(_.bind(function() {
+		this.$value.update();
+	}, this));
 };
 
 (function(my) {
@@ -95,8 +107,8 @@ red.ContextualStatefulProp = function(options) {
 					using_val = val;
 					using_state = state;
 				}
-			} else if(state instanceof red.Transition) {
-				var tr = state.get_times_run();
+			} else if(state instanceof red.StatechartTransition) {
+				var tr = state.get_times_run() || 0;
 				if(tr > this.get_transition_times_run(state)) {
 					var pointer = this.get_pointer();
 					this.set_transition_times_run(tr);
@@ -104,7 +116,12 @@ red.ContextualStatefulProp = function(options) {
 					var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
 
 					var rv = using_val.get_constraint_for_context(eventized_pointer);
-					return rv.get();
+					_.defer(_.bind(function() {
+						this.$value.invalidate();
+					}, this));
+					this._last_value = rv;
+					this._from_state = state;
+					return this._last_value.get();
 				}
 			}
 		}
@@ -117,12 +134,14 @@ red.ContextualStatefulProp = function(options) {
 				var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
 
 				var rv = using_val.get_constraint_for_context(eventized_pointer);
-				return rv.get();
+				this._last_value = rv;
+				this._from_state = using_state;
+				return this._last_value.get();
 			} else {
 				return using_val;
 			}
 		}
-		return undefined;
+		return this._last_value.get();
 	};
 
 	proto.destroy = function() {

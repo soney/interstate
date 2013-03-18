@@ -28,22 +28,21 @@ var move = function(child_node, from_index, to_index) {
 
 red.DomAttachmentInstance = function(options) {
 	red.DomAttachmentInstance.superclass.constructor.apply(this, arguments);
-	var pointer = this.get_pointer();
-
-	this._owner = pointer.points_at();
 
 	this.type = "dom";
 	this.id = _.uniqueId();
 	if(options.tag) {
 		this._dom_obj = document.createElement(options.tag);
-		this._dom_obj.__red_pointer__ = this.get_pointer();
+		this._dom_obj.__red_contextual_object__ = this.contextual_object;
 	} else {
 		this._dom_obj = cjs.$();
 		this._tag_change_listener = this.add_tag_change_listener();
 	}
 
+/*
 	this._css_change_listeners = this.add_css_change_listeners();
 	this._attr_change_listeners = this.add_attribute_change_listeners();
+	*/
 	this._children_change_listener = this.add_children_change_listener();
 
 	this.on_ready();
@@ -170,17 +169,16 @@ red.DomAttachmentInstance = function(options) {
 		});
 	};
 	proto.add_tag_change_listener = function() {
-		var pointer = this.get_pointer();
-		var owner = this.get_owner();
+		var contextual_object = this.get_contextual_object();
 
 		var old_tag = undefined;
 		return cjs.liven(function() {
-			var tag = owner.prop_val("tag", pointer);
+			var tag = "" + contextual_object.getget("tag");
 			if(tag !== old_tag) {
 				old_tag = tag;
 				if(_.isString(tag)) {
 					var dom_obj = document.createElement(tag);
-					dom_obj.__red_pointer__ = pointer;
+					dom_obj.__red_contextual_object__ = contextual_object;
 					this._dom_obj.set(dom_obj);
 				} else {
 					this._dom_obj.set(undefined);
@@ -246,8 +244,7 @@ red.DomAttachmentInstance = function(options) {
 		});
 	};
 	proto.add_children_change_listener = function() {
-		var pointer = this.get_pointer();
-		var owner = this.get_owner();
+		var contextual_object = this.get_contextual_object();
 
 		var cc = cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
@@ -255,85 +252,42 @@ red.DomAttachmentInstance = function(options) {
 				return;
 			}
 
-			var text;
-			if(red.__debug) {
-				text = owner.prop_val("text", pointer);
+			if(contextual_object.has("text")) {
+				dom_obj.textContent = contextual_object.getget("text");
 			} else {
-				try {
-					text = owner.prop_val("text", pointer);
-				} catch(e) {
-					console.error(e);
-				}
-			}
-
-			if(text !== undefined) {
-				dom_obj.textContent = text;
-			} else {
-				var children;
-				if(red.__debug) {
-					children = owner.prop_val("children", pointer) || [];
-				} else {
-					try {
-						children = owner.prop_val("children", pointer) || [];
-					} catch(e) {
-						console.error(e);
-					}
-				}
+				var children = contextual_object.get("children");
 
 				var current_children = _.toArray(dom_obj.childNodes);
 				var desired_children = [];
 
 				if(children) {
-					var children_pointers = [];
-
-					if(_.isArray(children)) {
-						children_pointers = _	.chain(children)
-												.map(function(child) {
-													if(child instanceof red.Pointer) {
-														return child;
-													} else if(child instanceof red.ContextualObject) {
-														return child.get_pointer();
-													} else {
-														return false;
-													}
-												}, this)
-												.compact()
-												.value();
-					} else if(children instanceof red.ContextualObject) {
-						var ptr = children.get_pointer();
-						var dict = ptr.points_at();
-						children_pointers = dict.get_prop_pointers(ptr);
+					var cc;
+					if(children instanceof red.ContextualDict) {
+						cc = children.get_children();
+					} else if(children instanceof red.ContextualObj) {
+						cc = children.val();
+						if(!_.isArray(cc)) {
+							cc = [cc];
+						}
 					}
 
-					_.each(children_pointers, function(child_pointer) {
-						var child = child_pointer.points_at();
-						if(child instanceof red.Dict) {
-							var manifestation_pointers = child.get_manifestation_pointers(child_pointer);
-							var dom_attachments;
-
-							if(_.isArray(manifestation_pointers)) {
-								dom_attachments = [];
-								_.each(manifestation_pointers, function(manifestation_pointer) {
-									var dom_attachment = child.get_attachment_instance("dom", manifestation_pointer);
-									if(dom_attachment) {
-										dom_attachments.push(dom_attachment);
-									}
-								});
-							} else {
-								var dom_attachment = child.get_attachment_instance("dom", child_pointer);
+					_.each(cc, function(c) {
+						var v = c.value;
+						if(!_.isArray(v)) { //Might be array because of manifestations
+							v = [v];
+						}
+						_.each(v, function(contextual_dict) {
+							if(contextual_dict instanceof red.ContextualDict) {
+								var dom_attachment = contextual_dict.get_attachment_instance("dom");
 								if(dom_attachment) {
-									dom_attachments = [dom_attachment];
+									var dom_obj = dom_attachment.get_dom_obj();
+									if(dom_obj) {
+										desired_children.push(dom_obj);
+									}
 								}
 							}
-
-							_.each(dom_attachments, function(dom_attachment) {
-								var dom_element = dom_attachment.get_dom_obj();
-								if(dom_element) {
-									desired_children.push(dom_element);
-								}
-							});
-						}
-					});
+						});
+					}, this);
 				}
 
 				var diff = _.diff(current_children, desired_children);

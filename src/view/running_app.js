@@ -90,12 +90,11 @@ $.widget("red.dom_output", {
 	}
 
 	, _add_change_listeners: function() {
-		var root_pointer = this.option("root");
-		var root_dict = root_pointer.points_at();
+		var root_dict = this.option("root");
+		var root_contextual_object = red.find_or_put_contextual_obj(root_dict);
 
 		this._dom_tree_fn = cjs.liven(function() {
-			try {
-				var dom_attachment = root_dict.get_attachment_instance("dom", root_pointer);
+				var dom_attachment = root_contextual_object.get_attachment_instance("dom");
 				var dom_element = dom_attachment.get_dom_obj();
 
 				if(this.element.children().is(dom_element)) {
@@ -104,9 +103,6 @@ $.widget("red.dom_output", {
 					this.element.children().remove();
 					this.element.append(dom_element);
 				}
-			} catch(e) {
-				console.error(e);
-			}
 		}, {
 			context: this
 			, pause_while_running: true

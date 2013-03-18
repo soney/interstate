@@ -1,6 +1,21 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+red.find_stateful_obj_and_context = function(context) {
+	var popped_item, last;
+	while(!context.is_empty()) {
+		last = context.points_at();
+		if(last instanceof red.StatefulObj) {
+			return {
+					stateful_obj: last,
+					context: context
+				};
+		}
+		popped_item = last;
+		context = context.pop();
+	}
+	return undefined;
+};
 
 red.Pointer = function(options) {
 	this._stack = (options && options.stack) || [];

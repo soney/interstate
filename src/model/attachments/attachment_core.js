@@ -31,9 +31,9 @@ red.Attachment = function(options) {
 };
 (function(my) {
 	var proto = my.prototype;
-	proto.create_instance = function(pointer) {
+	proto.create_instance = function(contextual_object) {
 		var options = _.extend({
-			pointer: pointer
+			contextual_object: contextual_object
 		}, this.instance_options);
 		var instance = new this._InstanceClass(options);
 		return instance;

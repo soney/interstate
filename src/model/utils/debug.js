@@ -340,41 +340,59 @@ var print = function(current_pointer, logging_mechanism) {
 				logging_mechanism.groupEnd();
 			}
 			var children = contextual_object.get_children();
-			_.each(children, function(child) {
-				var prop_name = child.get_name();
-				var prop_pointer = child.get_pointer();
-				var prop_points_at = prop_pointer.points_at();
-				var is_expanded = current_pointer.has(prop_points_at);
-				var is_inherited = child.is_inherited();
-				var is_pointed_at = current_pointer.eq(prop_pointer);
-				var prop_text = prop_name;
-
-				if(is_inherited) {
-					prop_text = prop_text + " (i)";
+			_.each(children, function(child_info) {
+				var is_manifestations;
+				var c_arr;
+				if(_.isArray(child_info.value)) {
+					c_arr = child_info.value;
+					is_manifestations = true;
+				} else {
+					c_arr = [child_info.value];
+					is_manifestations = false;
+				}
+				if(is_manifestations) {
+					console.group("(" + c_arr.length + " manifestations)");
 				}
 
-				if(is_pointed_at) {
-					prop_text = "> " + prop_text;
-				} else {
-					prop_text = "  " + prop_text;
-				}
+				var prop_name = child_info.name;
+				var is_inherited = child_info.inherited;
+				_.each(c_arr, function(child) {
+					var prop_pointer = child instanceof red.ContextualObject ? child.get_pointer() : false;
+					var prop_points_at = prop_pointer ? prop_pointer.points_at() : child;
+					var is_expanded = prop_points_at && current_pointer.has(prop_points_at);
+					var is_pointed_at = prop_pointer && current_pointer.eq(prop_pointer);
+					var prop_text = prop_name;
 
-				if(prop_points_at instanceof red.StatefulProp) {
-					prop_text = pad(prop_text, PROP_NAME_WIDTH);
-					prop_text = prop_text + pad("(" + uid.strip_prefix(prop_points_at.uid) + ")", PROP_ID_WIDTH);
-				} else {
-					prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
-				}
+					if(is_inherited) {
+						prop_text = prop_text + " (i)";
+					}
 
-				var pp_val = child.val();
-				prop_text = pad(prop_text + value_to_value_str(pp_val), PROP_NAME_WIDTH + PROP_ID_WIDTH + PROP_VALUE_WIDTH);
+					if(is_pointed_at) {
+						prop_text = "> " + prop_text;
+					} else {
+						prop_text = "  " + prop_text;
+					}
 
-				if((prop_points_at instanceof red.Dict) || (prop_points_at instanceof red.StatefulProp)) {
-					logging_mechanism[is_expanded ? "group" : "groupCollapsed"](prop_text);
-					tablify(child);
-					logging_mechanism.groupEnd();
-				} else {
-					logging_mechanism.log(prop_text + value_to_source_str(prop_points_at));
+					if(prop_points_at instanceof red.StatefulProp) {
+						prop_text = pad(prop_text, PROP_NAME_WIDTH);
+						prop_text = prop_text + pad("(" + uid.strip_prefix(prop_points_at.uid) + ")", PROP_ID_WIDTH);
+					} else {
+						prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
+					}
+
+					var pp_val = child instanceof red.ContextualObject ? child.val() : child;
+					prop_text = pad(prop_text + value_to_value_str(pp_val), PROP_NAME_WIDTH + PROP_ID_WIDTH + PROP_VALUE_WIDTH);
+
+					if((prop_points_at instanceof red.Dict) || (prop_points_at instanceof red.StatefulProp)) {
+						logging_mechanism[is_expanded ? "group" : "groupCollapsed"](prop_text);
+						tablify(child);
+						logging_mechanism.groupEnd();
+					} else {
+						logging_mechanism.log(prop_text + value_to_source_str(prop_points_at));
+					}
+				});
+				if(is_manifestations) {
+					console.groupEnd();
 				}
 			});
 		} else if(contextual_object instanceof red.ContextualStatefulProp) {
