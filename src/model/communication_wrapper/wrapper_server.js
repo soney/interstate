@@ -54,11 +54,6 @@ sdc.on("message", function(message, event) {
 	}
 });
 
-var post = function(to_window, message) {
-	to_window.postMessage(message, origin);
-};
-
-
 var chop = function(args) {
 	return _.first(args, args.length-1);
 };
@@ -94,7 +89,7 @@ red.WrapperServer = function(options) {
 		return this._type;
 	};
 	proto.get_object = function(){
-		return this.object();
+		return this.object;
 	};
 
 	proto.on_request = function(name, args, callback) {
@@ -103,6 +98,23 @@ red.WrapperServer = function(options) {
 
 	proto.register_listener = function(listener_info) {
 		this.client_listeners.push(listener_info);
+	};
+	proto.post = function(data) {
+		var len = this.client_listeners.length;
+		var full_message = {
+			type: "wrapper_server",
+			server_message: data
+		};
+		for(var i = 0; i<len; i++) {
+			var cl = this.client_listeners[i];
+			if(cl.type === "channel") {
+				var client_window = cl.client_window,
+					client_id = cl.client_id;
+				client_window.postMessage(_.extend({
+					client_id: client_id
+				}, full_message), origin);
+			}
+		}
 	};
 
 	proto.summarize = function() {
@@ -166,6 +178,18 @@ red.TransitionWrapperServer = function(options) {
 red.DictWrapperServer = function(options) {
 	red.DictWrapperServer.superclass.constructor.apply(this, arguments);
 	this._type = "dict";
+	this.$get_children = new cjs.Constraint(_.bind(function() {
+		var object = this.get_object();
+		var children = object.get_children();
+		return children;
+	}, this));
+
+	this.$get_children.onChange(_.bind(function() {
+		this.post({
+			type: "changed",
+			object: "children"
+		});
+	}, this));
 };
 
 (function(my) {
@@ -176,6 +200,14 @@ red.DictWrapperServer = function(options) {
 	};
 
 	proto.get_children = make_async("get_children");
+	proto.get_children = function() {
+		var args = chop(arguments),
+			callback = last(arguments);
+
+		var value = this.$get_children.get();
+		callback(value);
+	};
+
 	proto._has = make_async("has");
 	proto._get = make_async("get");
 	proto._getget = make_async("getget");

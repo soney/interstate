@@ -27,6 +27,14 @@ var MessageDistributionCenter = function() {
 		var data = event.data;
 		if(data.type === "wrapper_server") {
 			this._emit("message", data.message, event.source);
+			var client_id = data.client_id;
+			var server_message = data.server_message;
+
+			var type = server_message.type;
+			if(type === "changed") {
+				var client = clients[client_id];
+				client.on_change(server_message.object);
+			}
 		} else if(data.type === "response") {
 			var data = event.data,
 				request_id = data.request_id,
@@ -44,6 +52,9 @@ able.make_proto_listenable(MessageDistributionCenter.prototype);
 
 var cdc = new MessageDistributionCenter();
 
+
+var clients = {};
+
 var client_id = 0;
 var message_id = 0;
 red.WrapperClient = function(options) {
@@ -51,6 +62,7 @@ red.WrapperClient = function(options) {
 	this.cobj_id = options.cobj_id;
 
 	this._id = client_id++;
+	clients[this._id] = this;
 
 	this.post({
 		type: "register_listener",
@@ -72,6 +84,8 @@ red.WrapperClient = function(options) {
 		}, origin);
 		return m_id;
 	};
+	proto.on_change = function(prop_name) {
+	};
 	proto.id = function() {
 		return this._id;
 	};
@@ -82,6 +96,8 @@ red.WrapperClient = function(options) {
 red.DictWrapperClient = function(options) {
 	red.DictWrapperClient.superclass.constructor.apply(this, arguments);
 	this._type = "dict";
+	this.$children = new cjs.SettableConstraint();
+	this.update_children();
 };
 
 (function(my) {
@@ -92,13 +108,25 @@ red.DictWrapperClient = function(options) {
 	};
 
 	proto.get_children = function() {
+		return this.$children.get();
+	};
+
+	proto.update_children = function() {
 		var callback = last(arguments);
 		var request_id = this.post({
 			type: "get",
 			name: "get_children",
 			arguments: []
 		});
-		register_response_listener(request_id, callback);
+		register_response_listener(request_id, _.bind(function(value) {
+			this.$children.set(value);
+		}, this));
+	};
+	proto.on_change = function(prop_name) {
+		if(prop_name === "children") {
+			this.$children.invalidate();
+			this.update_children();
+		}
 	};
 }(red.DictWrapperClient));
 

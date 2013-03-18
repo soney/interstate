@@ -27,8 +27,9 @@ $.widget("red.editor", {
 		if(this.option("debug_env")) {
 			window.env = this.env;
 		}
+		this.root = this.env.get_root();
 		this.element.dom_output({
-			root: this.env.get_root()
+			root: this.root
 		});
 
 		this.client_socket = new red.ProgramStateClient({
@@ -43,22 +44,26 @@ $.widget("red.editor", {
 					"box-sizing": "border-box"
 				});
 			}
-		}, this).on("loaded", function() {
-		/*
-			this.root.set("external_root", root, {literal: true});
-			this.root.set("external_root_pointer", red.create("pointer", {stack: [root]}), {literal: true});
-			*/
+		}, this).on("loaded", function(root_client) {
+			this.root.set("root_client", root_client);
+			window.rc = root_client;
 			this.load_viewer();
 		}, this);
 	}
 
 	, load_viewer: function() {
-		this.env
+		this.env.top()
 
 // ===== BEGIN EDITOR ===== 
 
+.cd("children")
+	.set("obj", "<dict>")
+	.cd("obj")
+		.set("(protos)", "dom")
+		.set("text", "root_client.get_children()")
+		.up()
+	.up()
 /*
-.top()
 .set("stringify_value", "function(v) {\n" +
 "if(red._.isUndefined(v)) { return '(undefined)'; }\n" +
 "else if(red._.isNull(v)) { return '(null)'; }\n" +
@@ -384,6 +389,7 @@ $.widget("red.editor", {
 
 
 // ===== END EDITOR ===== 
+this.env.print();
 		if(this.option("debug_env")) {
 			this.env.print_on_return = true;
 		}

@@ -136,12 +136,13 @@ red.ProgramStateClient = function(options) {
 				var summary = data.summary;
 
 				this.root_client = red.get_wrapper_client(summary, this.server_window);
+
 				this.root_client.get_children(function(value) {
 					console.log(value);
 				});
 
+				this._emit("loaded", this.root_client);
 				this.post("loaded");
-				this._emit("loaded");
 			}
 			this._emit("message", data);
 		}
@@ -150,6 +151,7 @@ red.ProgramStateClient = function(options) {
 	proto.destroy = function() {
 		able.destroy_this_listenable(this);
 		this.remove_message_listener();
+		this.root_client.destroy();
 	};
 
 	proto.post = function(message) {
