@@ -303,8 +303,8 @@ red.ContextualDict = function(options) {
 			return undefined;
 		}
 	};
-	proto.prop_val = function(name) {
-		var value = this.prop(name);
+	proto.prop_val = function(name, ignore_inherited) {
+		var value = this.prop(name, ignore_inherited);
 		if(value instanceof red.ContextualObject) {
 			return value.val();
 		} else {

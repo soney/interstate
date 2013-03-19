@@ -6,22 +6,6 @@ red.ContextualStatefulProp = function(options) {
 	this.transition_times_run = {};
 	this.used_start_transition = false;
 
-	var values = this.get_values();
-	var len = values.length;
-	var info;
-	this._last_value = undefined;
-	this._from_state = undefined;
-
-	var using_val, using_state;
-	for(var i = 0; i<len; i++){
-		info = values[i];
-		var state = info.state,
-			val = info.value;
-		if(state instanceof red.StatechartTransition) {
-			this.set_transition_times_run(state, state.get_times_run());
-		}
-	}
-
 	this.$value.onChange(_.bind(function() {
 		if(red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
 			this.$value.update();
@@ -29,6 +13,21 @@ red.ContextualStatefulProp = function(options) {
 	}, this));
 
 	_.defer(_.bind(function() {
+		var values = this.get_values();
+		var len = values.length;
+		var info;
+		this._last_value = undefined;
+		this._from_state = undefined;
+
+		var using_val, using_state;
+		for(var i = 0; i<len; i++){
+			info = values[i];
+			var state = info.state,
+				val = info.value;
+			if(state instanceof red.StatechartTransition) {
+				this.set_transition_times_run(state, state.get_times_run());
+			}
+		}
 		this.$value.update();
 	}, this));
 	this._type = "stateful_prop";
@@ -73,9 +72,7 @@ red.ContextualStatefulProp = function(options) {
 			var key = entry.key;
 			var state;
 			for(var i = 0; i<statecharts_len; i++) {
-				console.log(key.root(), state.basis);
 				if(key.root() === statechart.basis()) {
-					console.log("YAY");
 					if(key instanceof red.State) {
 						state = red.find_equivalent_state(key, statechart);
 					} else if(key instanceof red.StatechartTransition) {
