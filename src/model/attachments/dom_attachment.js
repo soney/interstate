@@ -39,10 +39,9 @@ red.DomAttachmentInstance = function(options) {
 		this._tag_change_listener = this.add_tag_change_listener();
 	}
 
-/*
 	this._css_change_listeners = this.add_css_change_listeners();
 	this._attr_change_listeners = this.add_attribute_change_listeners();
-	*/
+
 	this._children_change_listener = this.add_children_change_listener();
 
 	this.on_ready();
@@ -74,14 +73,13 @@ red.DomAttachmentInstance = function(options) {
 	};
 
 	proto.add_css_change_listeners = function() {
-		var pointer = this.get_pointer(),
-			owner = this.get_owner(),
+		var contextual_object = this.get_contextual_object(),
 			current_listener_prop_names = [],
 			current_listeners = {},
 			desired_listener_prop_names;
 
 		return cjs.liven(function() {
-			var css = owner.prop_val("css", pointer);
+			var css = contextual_object.prop("css");
 			if(css instanceof red.ContextualObject) {
 				var ptr = css.get_pointer();
 				var css_dict = ptr.points_at();
@@ -93,6 +91,7 @@ red.DomAttachmentInstance = function(options) {
 			}  else {
 				desired_listener_prop_names = []
 			}
+
 
 			var diff = _.diff(current_listener_prop_names, desired_listener_prop_names);
 			current_listener_prop_names = desired_listener_prop_names;

@@ -6,17 +6,12 @@ var cjs = red.cjs, _ = red._;
 		var self = this;
 		this.get_target_listener = cjs.memoize(_.bind(function(specified_target) {
 			var listener = _.bind(function(event) {
-				//event.preventDefault();
 				red.event_queue.wait();
 
 				event = _.extend({}, event, {
 					specified_target: specified_target
 				});
 
-				if(specified_target.__red_pointer__) {
-					var red_target = new red.PointerObject({ pointer: specified_target.__red_pointer__ });
-					event.red_target = red_target;
-				}
 				this.fire(event);
 				_.defer(function() {
 					red.event_queue.signal();

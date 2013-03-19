@@ -154,8 +154,7 @@ red.WrapperClient = function(options) {
 			} else if(val === "contextual_obj") {
 				var object_summary = value.object_summary;
 				var wrapper_client = red.get_wrapper_client(object_summary, this.server_window);
-				return "ABC";
-				//return wrapper_client;
+				return wrapper_client;
 			}
 			return val;
 		} else if(_.isArray(value)) {

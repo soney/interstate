@@ -9,105 +9,14 @@
 	  <div>
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
-				/*
-				var root = red.create("dict");
-				var croot = red.find_or_put_contextual_obj(root);
-				var children = croot.get_children();
+var env = red.create("environment");
 
-
-				console.log(children);
-				/*
-				*/
-				var env = red.create("environment");
-				env
-.set("a", "<stateful>")
-.cd("a")
-	//.rename_state("INIT", "state1")
-	//.set("x")
-	//.set("x", "state1", "3+3")
-	.up()
-.set("b", "<stateful>")
-.cd("b")
-	.set("(protos)", "INIT", "a")
-	//.set("x")
-	//.set("x", "INIT", "2+2")
-	.up()
-.set("c", "<stateful>")
-.cd("c")
-	.set("(protos)", "INIT", "b")
-	//.set("x")
-	//.set("x", "INIT", "1+1")
-				;
-				/*
-env
-.cd("children")
-	.set("obj", "<dict>")
-	.cd("obj")
-		.set("(protos)", "dom")
-		.set("text", "'hi'")
-				/*
-env
-.set("a", "1")
-.cd("children")
-	.set("obj", "<stateful>")				
-	.cd("obj")
-		.set("(protos)", "INIT", "dom")
-		.set("(manifestations)", "3")
-		.set("text")
-		.set("text", "INIT", "'hello ' + parent.parent.a")
-		.up()
-	.set("obj2", "<stateful>")				
-	.cd("obj2")
-		.set("(protos)", "INIT", "dom")
-		.set("text")
-		.set("text", "INIT", "'world'")
-		.up()
-;
-				*/
 
 env.print_on_return = true;
 env.print();
-				output_view = $("body").dom_output({
-					root: env.get_root()
-				});
-				/*
-				env	.set("a", "<dict>")
-					.cd("a")
-						.set("x", "1+1")
-						.up()
-					.set("b", "<dict>")
-					.cd("b")
-						.set("(protos)", "a")
-						.set("y", "x+1")
-						.up()
-					.set("c", "<dict>")
-					.cd("c")
-						.set("(protos)", "b")
-						.set("z", "y+1")
-						.up()
-					.set("xyz", "a.x+b.y+c.z")
-				env.print();
-				/*
-				env.cd("children")
-					.set("obj", "<dict>")
-					.cd("obj")
-					.set("(protos)", "dom")
-					.set("text", "'hello world'")
-				*/
-				/*
-				env	.set("obj", "<stateful>")
-					.cd("obj")
-						.set("prop1", "<stateful_prop>")
-						.set("prop1", "INIT", "1+2")
-						.up()
-					.set("o2", "<stateful>")
-					.cd("o2")
-						.set("(protos)", "INIT", "obj")
-						.up()
-				env.print_on_return = true;
-				env.print();
-				/*
-				*/
+output_view = $("body").dom_output({
+	root: env.get_root()
+});
 
 			</script>
 	  </div>

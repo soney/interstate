@@ -56,6 +56,7 @@ $.widget("red.editor", {
 
 // ===== BEGIN EDITOR ===== 
 
+/*
 .set("ambiguous_view", "<stateful>")
 .cd("ambiguous_view")
 	.set("(protos)", "INIT", "type === 'dict' ? [dict_view] : [value_view]")
@@ -98,8 +99,6 @@ $.widget("red.editor", {
 				.up()
 			.up()
 		.up()
-	//.set("text")
-	//.set("text", "INIT", "client.get('children')")
 	.up()
 .cd("children")
 	.set("obj", "<stateful>")
