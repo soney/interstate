@@ -154,7 +154,8 @@ red.WrapperClient = function(options) {
 			} else if(val === "contextual_obj") {
 				var object_summary = value.object_summary;
 				var wrapper_client = red.get_wrapper_client(object_summary, this.server_window);
-				return wrapper_client;
+				return "ABC";
+				//return wrapper_client;
 			}
 			return val;
 		} else if(_.isArray(value)) {
@@ -177,18 +178,29 @@ var argeq = function(arg1, arg2) {
 };
 var summarize_args = function(args) { return _.map(args, summarize_arg); };
 
+var wrapper_clients = {};
+
+red.register_wrapper_client = function(object, client) {
+	wrapper_clients[object.id()] = client;
+};
+
 red.get_wrapper_client = function(object_summary, server_window) {
-	var otype = object_summary.type;
 	var cobj_id = object_summary.id;
-	var rv;
+	if(wrapper_clients.hasOwnProperty(cobj_id)) {
+		return wrapper_clients[cobj_id];
+	} else {
+		var otype = object_summary.type;
+		var rv;
 
-	rv = new red.WrapperClient({
-		server_window: server_window,
-		cobj_id: cobj_id,
-		type: otype
-	});
+		rv = new red.WrapperClient({
+			server_window: server_window,
+			cobj_id: cobj_id,
+			type: otype
+		});
 
-	return rv;
+		wrapper_clients[cobj_id] = rv;
+		return rv;
+	}
 };
 
 

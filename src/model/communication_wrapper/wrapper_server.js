@@ -79,7 +79,6 @@ var argeq = function(arg1, arg2) {
 red.WrapperServer = function(options) {
 	able.make_this_listenable(this);
 	this.object = options.object;
-	red.register_wrapper_server(this.object, this);
 	this._type = "none";
 	this.client_listeners = [];
 
