@@ -56,11 +56,6 @@ $.widget("red.editor", {
 
 // ===== BEGIN EDITOR ===== 
 
-.cd("children")
-	.set("obj", "<dict>")
-	.cd("obj")
-		.set("(protos)", "[dom]")
-		.set("text", "'hi'")
 /*
 .set("ambiguous_view", "<stateful>")
 .cd("ambiguous_view")
@@ -75,12 +70,16 @@ $.widget("red.editor", {
 	.set("text")
 	.set("text", "INIT", "client.get('get_children')")
 	.up()
-	*/
-/*
+.cd("children")
+	.set("obj", "<stateful>")
+	.cd("obj")
+		.set("(protos)", "[ambiguous_view]")
+		.set("text", "root_client.get('children')")
+*/
 .cd("children")
 	.set("obj", "<dict>")
 	.cd("obj")
-		.set("(protos)", "[dom]")
+		.set("(protos)", "dom")
 		.set("text", "'hi'")
 		.up()
 /*

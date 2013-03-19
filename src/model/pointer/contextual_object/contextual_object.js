@@ -4,7 +4,7 @@ var cjs = red.cjs, _ = red._;
 red.ContextualObject = function(options) {
 	this.set_options(options);
 
-	this.$value = new cjs.Constraint(_.bind(this._getter, this), false, { check_on_nullify: options.check_on_nullify === true });
+	this.$value = new cjs.Constraint(_.bind(this._getter, this), false, { check_on_nullify: options.check_on_nullify === true , equals: options.equals || undefined });
 	this._id = uid();
 	red.register_uid(this._id, this);
 	this._type = "none";

@@ -21,7 +21,23 @@ red.ContextualDict = function(options) {
 		while(i < rv.len()) {
 			var dict = rv.item(i);
 			var proto_obj = dict.direct_protos();
-			var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), { check_on_nullify: true });
+			var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj)/*, { check_on_nullify: true , equals: function(a,b) {
+				if(_.isArray(a) && _.isArray(b)) {
+					var len = a.length;
+					if(len !== b.length) {
+						return false;
+					}
+				
+					for(var i = 0; i<len; i++) {
+						if(a[i] !== b[i]) {
+							return false;
+						}
+					}
+					return true;
+				} else {
+					return a === b;
+				}
+			}}*/);
 			var proto_val = proto_contextual_obj.val();
 			proto_val = _	.chain(_.isArray(proto_val) ? proto_val : [proto_val])
 							.map(function(x) {
@@ -37,8 +53,6 @@ red.ContextualDict = function(options) {
 			i++;
 		}
 		var rv_arr = rv.toArray();
-		console.log(rv_arr);
-		debugger;
 		return rv_arr.slice(1); // don't include me
 	};
 

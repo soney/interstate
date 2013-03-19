@@ -126,9 +126,16 @@ var get_identifier_val = function(key, context, ignore_inherited_in_contexts) {
 	while(!curr_context.is_empty()) {
 		if(context_item instanceof red.Dict) {
 			var contextual_obj = red.find_or_put_contextual_obj(context_item, curr_context);
-			if(contextual_obj.has(key)) {
-				var rv = contextual_obj.prop_val(key);
-				return rv;
+			if(_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
+				if(contextual_obj.has(key, true)) {
+					var rv = contextual_obj.prop_val(key);
+					return rv;
+				}
+			} else {
+				if(contextual_obj.has(key)) {
+					var rv = contextual_obj.prop_val(key);
+					return rv;
+				}
 			}
 		} else if(context_item instanceof red.Cell) {
 			var special_contexts = curr_context.special_contexts();
