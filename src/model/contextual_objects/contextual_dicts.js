@@ -16,9 +16,8 @@ red.Dict.get_proto_vals = function(dict, ptr) {
 		if(proto_obj instanceof cjs.ArrayConstraint) {
 			proto_val = proto_obj.toArray();
 		} else {
-			var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {});
-
-			/*, { check_on_nullify: true , equals: function(a,b) {
+			var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), 
+			{ check_on_nullify: true , equals: function(a,b) {
 				if(_.isArray(a) && _.isArray(b)) {
 					var len = a.length;
 					if(len !== b.length) {
@@ -34,7 +33,7 @@ red.Dict.get_proto_vals = function(dict, ptr) {
 				} else {
 					return a === b;
 				}
-			}}*/
+			}});
 			proto_val = proto_contextual_obj.val();
 		}
 		proto_val = _	.chain(_.isArray(proto_val) ? proto_val : [proto_val])
@@ -95,6 +94,8 @@ red.Dict.get_prop = function(dict, prop_name, pcontext) {
 
 red.ContextualDict = function(options) {
 	red.ContextualDict.superclass.constructor.apply(this, arguments);
+	this._attachment_instances = {
+	};
 	this._type = "dict";
 };
 
@@ -409,9 +410,19 @@ red.ContextualDict = function(options) {
 
 		if(info) {
 			attachment = info.attachment;
-			var attachment_instance = attachment.create_instance(this);
+			var attachment_instance;
+			if(this._attachment_instances.hasOwnProperty(name)) {
+				attachment_instance = this._attachment_instances[name];
+			} else {
+				attachment_instance = this._attachment_instances[name] = attachment.create_instance(this);
+			}
 			return attachment_instance;
 		} else {
+			if(this._attachment_instances.hasOwnProperty(name)) {
+				var attachment_instance = this._attachment_instances[name];
+				attachment_instance.destroy();
+				delete this._attachment_instances[name];
+			}
 			return undefined;
 		}
 	};
