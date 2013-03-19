@@ -222,7 +222,7 @@ var Env = function(options) {
 			} else if(value === "<stateful>") {
 				value = red.create("stateful_obj", undefined, true);
 				value.do_initialize({
-					direct_protos: red.create("stateful_prop", { can_inherit: false /*ignore_inherited_in_first_dict: true/*statechart_parent: value, check_on_nullify: true, can_inherit: false, ignore_inherited_in_contexts: [value]*/})
+					direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value, /*ignore_inherited_in_first_dict: true/*statechart_parent: value, check_on_nullify: true, can_inherit: false, ignore_inherited_in_contexts: [value]*/})
 				});
 				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");

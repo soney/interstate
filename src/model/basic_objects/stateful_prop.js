@@ -53,6 +53,12 @@ red.StatefulProp = function(options, defer_initialization) {
 
 		"can_inherit": {
 			default: function() { return true; }
+		},
+
+		"statechart_parent": {
+			default: function() {
+				return "parent"
+			}
 		}
 	};
 

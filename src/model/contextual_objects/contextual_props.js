@@ -1,5 +1,37 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
+/*
+
+red.find_stateful_obj_and_context = function(context) {
+	var popped_item, last;
+	var set_statechart = false;
+	while(!context.is_empty()) {
+		last = context.points_at();
+		if(last instanceof red.StatefulProp) {
+			var statechart_parent = last.get_statechart_parent();
+			if(statechart_parent === "parent") {
+				//Behave like normal
+			} else if(statechart_parent instanceof red.Statechart) {
+				console.log(statechart_parent);
+			} else if(statechart_parent instanceof red.StatefulObj) {
+				if(!set_statechart) {
+					set_statechart = statechart_parent;
+				}
+			} else {
+				console.log(statechart_parent);
+			}
+		} else if(last instanceof red.StatefulObj) {
+			return {
+					stateful_obj: set_statechart ? set_statechart : last,
+					context: context
+				};
+		}
+		popped_item = last;
+		context = context.pop();
+	}
+	return undefined;
+};
+*/
 
 red.ContextualStatefulProp = function(options) {
 	red.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
@@ -133,7 +165,12 @@ red.ContextualStatefulProp = function(options) {
 		} else {
 			var values = stateful_prop.get_direct_values();
 			entries = values.entries();
-			statecharts = [parent.get_own_statechart()];
+
+			var sc_parent = stateful_prop.get_statechart_parent();
+			if(sc_parent === "parent") {
+				sc_parent = parent.get_object();
+			}
+			statecharts = [parent.get_statechart_for_proto(sc_parent)];
 		}
 
 		var statecharts_len = statecharts.length;
