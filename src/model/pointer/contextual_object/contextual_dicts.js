@@ -82,7 +82,6 @@ red.ContextualDict = function(options) {
 			owners[name] = dict;
 		}, this);
 
-
 		var my_ptr_index = pointer.lastIndexOf(dict);
 		var special_context_names = [];
 		if(my_ptr_index >= 0) {

@@ -37,7 +37,7 @@ red.Cell = function(options, defer_initialization) {
 			var tree = this._tree.get();
 			var ignore_inherited_in_contexts;
 			if(this.get_ignore_inherited_in_first_dict()) {
-				for(var i = pcontext.length() - 1; i>=0; i++) {
+				for(var i = pcontext.length() - 1; i>=0; i--) {
 					var item = pcontext.points_at(i);
 					if(item instanceof red.Dict) {
 						ignore_inherited_in_contexts = [item];
