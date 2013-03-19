@@ -131,7 +131,7 @@ red.ContextualStatefulProp = function(options) {
 													if(!(obj instanceof red.Dict)) {
 														return false;
 													} else {
-														cdict = red.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len + i));
+														cdict = red.find_or_put_contextual_obj(obj, pointer.slice(0, stateful_obj_context_len + i + 1));
 													}
 												}
 											} else {

@@ -46,7 +46,7 @@ $.widget("red.editor", {
 			}
 		}, this).on("loaded", function(root_client) {
 			this.root.set("root_client", root_client, {literal: true});
-			//window.rc = root_client;
+			window.rc = root_client;
 			this.load_viewer();
 		}, this);
 	}

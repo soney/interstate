@@ -150,7 +150,7 @@ red.WrapperClient = function(options) {
 		if(value && value.__type__ && value.__type__ === "summarized_obj") {
 			var val = value.__value__;
 			if(val === "function") {
-				return "JS FUNC";
+				return "(native JavaScript function)";
 			} else if(val === "contextual_obj") {
 				var object_summary = value.object_summary;
 				var wrapper_client = red.get_wrapper_client(object_summary, this.server_window);
