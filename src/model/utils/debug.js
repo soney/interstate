@@ -61,6 +61,8 @@ var print = function(current_pointer, logging_mechanism) {
 			return "(prop:" + uid.strip_prefix(val.id()) + ")";
 		} else if(val instanceof red.ParsedFunction) {
 			return "(parsed fn)";
+		} else if(val instanceof red.WrapperClient) {
+			return "(" + val.type() + " client wrapper " + val.cobj_id + ")";
 		} else if(val instanceof red.Query) {
 			return value_to_value_str(val.value());
 		} else if(val instanceof red.Pointer) {

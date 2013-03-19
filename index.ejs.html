@@ -9,12 +9,12 @@
 	  <div>
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
-				var env, the_div, root_pointer;
+				var env, the_div, root;
 				window.save = function(name) {
 					return red.save(root_pointer.points_at(), name);
 				};
 				window.load = function(name) {
-					var root = red.load(name);
+					root = red.load(name);
 					if(the_div.data("dom_output")) {
 						the_div.dom_output("destroy")
 					}
@@ -23,9 +23,8 @@
 					}
 					env = red.create("environment", {root: root});
 					env.print_on_return = true;
-					root_pointer = env.get_root_pointer();
 					the_div.dom_output({
-						root: root_pointer,
+						root: root,
 						//edit_on_open: true
 					});
 					return root;
@@ -48,11 +47,11 @@
 								.set("x", "stateb", "2+2")
 								.up()
 
+						var root = env.get_root();
 
-						root_pointer = env.get_root_pointer();
 						the_div.dom_output({
-							root: root_pointer,
-							edit_on_open: true
+							root: root,
+							//edit_on_open: true
 						});
 						env.print_on_return = true;
 					}

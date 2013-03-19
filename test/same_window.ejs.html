@@ -26,6 +26,14 @@
 
 
 				*/
+				root.unset("dom");
+				root.unset("children");
+env
+.set("a", "1+1")
+.set("b", "<dict>")
+.cd("b")
+	.up()
+console.log(env.print());
 				$("div.editor").editor({
 					//debug_ready: true,
 					//debug_env: true,
@@ -37,11 +45,6 @@
 					open_separate_client_window: false,
 					edit_on_open: true
 				});
-
-				window.setTimeout(function() {
-				//	env.print();
-					root.set("b", 2);
-				}, 200);
 			</script>
 	  </div>
   </body>

@@ -16,24 +16,26 @@ red.Dict.get_proto_vals = function(dict, ptr) {
 		if(proto_obj instanceof cjs.ArrayConstraint) {
 			proto_val = proto_obj.toArray();
 		} else {
-			var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), 
-			{ check_on_nullify: true , equals: function(a,b) {
-				if(_.isArray(a) && _.isArray(b)) {
-					var len = a.length;
-					if(len !== b.length) {
-						return false;
-					}
-				
-					for(var i = 0; i<len; i++) {
-						if(a[i] !== b[i]) {
-							return false;
+			var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {
+					check_on_nullify: true,
+					equals: function(a,b) {
+						if(_.isArray(a) && _.isArray(b)) {
+							var len = a.length;
+							if(len !== b.length) {
+								return false;
+							}
+						
+							for(var i = 0; i<len; i++) {
+								if(a[i] !== b[i]) {
+									return false;
+								}
+							}
+							return true;
+						} else {
+							return a === b;
 						}
 					}
-					return true;
-				} else {
-					return a === b;
-				}
-			}});
+				});
 			proto_val = proto_contextual_obj.val();
 		}
 		proto_val = _	.chain(_.isArray(proto_val) ? proto_val : [proto_val])
@@ -94,8 +96,8 @@ red.Dict.get_prop = function(dict, prop_name, pcontext) {
 
 red.ContextualDict = function(options) {
 	red.ContextualDict.superclass.constructor.apply(this, arguments);
-	this._attachment_instances = {
-	};
+	this._attachment_instances = { };
+	this._manifestation_objects = new Map({ });
 	this._type = "dict";
 };
 
@@ -214,7 +216,9 @@ red.ContextualDict = function(options) {
 
 					if(_.isArray(manifestations_value)) {
 						manifestation_pointers = _.map(manifestations_value, function(basis, index) {
-							var manifestation_obj = new red.ManifestationContext(this, basis, index);
+							var manifestation_obj = this._manifestation_objects.get_or_put(basis, function() {
+								return new red.ManifestationContext(this, basis, index);
+							}, this);
 							return pointer.push(value, manifestation_obj);
 						}, this);
 					}
@@ -234,7 +238,7 @@ red.ContextualDict = function(options) {
 						return {name: name, value: value, inherited: type === "inherited"};
 					}
 				}
-			});
+			}, this);
 			rv.push.apply(rv, contextual_objects);
 		}, this);
 		delete owners;
@@ -334,7 +338,9 @@ red.ContextualDict = function(options) {
 
 				if(_.isArray(manifestations_value)) {
 					manifestation_pointers = _.map(manifestations_value, function(basis, index) {
-						var manifestation_obj = new red.ManifestationContext(this, basis, index);
+						var manifestation_obj = this._manifestation_objects.get_or_put(basis, function() {
+							return new red.ManifestationContext(this, basis, index);
+						}, this);
 						return pointer.push(value, manifestation_obj);
 					}, this);
 				}
