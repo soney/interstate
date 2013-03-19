@@ -36,7 +36,6 @@ var pad = function(str, len) {
 	}
 };
 
-
 var print = function(current_pointer, logging_mechanism) {
 	logging_mechanism = logging_mechanism || console;
 	var value_to_value_str = function(val) {
