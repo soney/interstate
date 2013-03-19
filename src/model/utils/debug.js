@@ -235,27 +235,31 @@ var print = function(current_pointer, logging_mechanism) {
 
 				var state = value_spec.state;
 				var state_name;
-				if(state instanceof red.State) {
-					state_name = pad(state.get_name(), STATE_NAME_WIDTH-2);
-				} else if(state instanceof red.StatechartTransition) { //transition
-					var from = state.from(),
-						to = state.to();
-					state_name = pad(from.get_name() + "->" + to.get_name(), STATE_NAME_WIDTH-2);
-				}
+				if(state) {
+					if(state instanceof red.State) {
+						state_name = pad(state.get_name(), STATE_NAME_WIDTH-2);
+					} else if(state instanceof red.StatechartTransition) { //transition
+						var from = state.from(),
+							to = state.to();
+						state_name = pad(from.get_name() + "->" + to.get_name(), STATE_NAME_WIDTH-2);
+					}
 
-				if(value_spec.active) {
-					state_name = "*" + state_name;
+					if(value_spec.active) {
+						state_name = "*" + state_name;
+					} else {
+						state_name = " " + state_name;
+					}
+
+					if(value_spec.using) {
+						state_name = "*" + state_name;
+					} else {
+						state_name = " " + state_name;
+					}
+
+					state_name = pad(uid.strip_prefix(state.id()), STATE_ID_WIDTH) + state_name;
 				} else {
-					state_name = " " + state_name;
+					state_name = pad("", STATE_ID_WIDTH + STATE_NAME_WIDTH);
 				}
-
-				if(value_spec.using) {
-					state_name = "*" + state_name;
-				} else {
-					state_name = " " + state_name;
-				}
-
-				state_name = pad(uid.strip_prefix(state.id()), STATE_ID_WIDTH) + state_name;
 				var value_for_state = value_spec.value;
 				var row = state_name + value_to_source_str(value_for_state);
 				logging_mechanism.log(row);

@@ -120,7 +120,7 @@ red.ContextualStatefulProp = function(options) {
 				} else if(ifrom instanceof red.Cell) {
 					entries.push({
 						key: undefined,
-						value: inherits_from
+						value: ifrom
 					});
 				}
 			}
