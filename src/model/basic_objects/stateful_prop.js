@@ -1,6 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
+/*
 var get_event_context = _.memoize(function(state, event) {
 	return new red.EventContext(event);
 }, function(state, event) {
@@ -20,11 +21,11 @@ var get_value_for_state = function(state, stateful_prop, inherits_from) {
 		return undefined;
 	}
 };
+*/
 
 red.StatefulProp = function(options, defer_initialization) {
 	options = options || {};
 
-	this._value = cjs();
 	this._id = options.uid || uid();
 	red.register_uid(this._id, this);
 
@@ -38,11 +39,10 @@ red.StatefulProp = function(options, defer_initialization) {
 	proto.do_initialize = function(options) {
 		red.install_instance_builtins(this, options, my);
 		this.get_direct_values().set_hash("hash");
-		this.used_start_transition = options.used_start_transition === true;
-
-		this._can_inherit = options.can_inherit !== false;
-		this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
-		this._check_on_nullify = options.check_on_nullify === true;
+		//this.used_start_transition = options.used_start_transition === true;
+		//this._can_inherit = options.can_inherit !== false;
+		//this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
+		//this._check_on_nullify = options.check_on_nullify === true;
 	};
 
 	my.builtins = {
@@ -51,20 +51,8 @@ red.StatefulProp = function(options, defer_initialization) {
 			, env_visible: false
 		},
 
-		"values_per_context": {
-			default: function() {
-				return cjs.map({
-					equals: red.check_pointer_equality,
-					hash: "hash"
-				});
-			},
-			serialize: false
-		},
-
-		"statechart_parent": {
-			default: function() {
-				return "parent"
-			}
+		"can_inherit": {
+			default: function() { return true; }
 		}
 	};
 
@@ -130,9 +118,9 @@ red.StatefulProp = function(options, defer_initialization) {
 										var args = _.toArray(arguments);
 										var rv = {
 											//direct_values: red.serialize.apply(red, ([this.get_direct_values()]).concat(arg_array))
-											can_inherit: red.serialize.apply(red, ([this._can_inherit]).concat(args))
-											, ignore_inherited_in_contexts: red.serialize.apply(red, ([this._ignore_inherited_in_contexts]).concat(args))
-											, check_on_nullify: red.serialize.apply(red, ([this._check_on_nullify]).concat(args))
+											//can_inherit: red.serialize.apply(red, ([this._can_inherit]).concat(args))
+											//ignore_inherited_in_contexts: red.serialize.apply(red, ([this._ignore_inherited_in_contexts]).concat(args))
+											//, check_on_nullify: red.serialize.apply(red, ([this._check_on_nullify]).concat(args))
 										};
 										_.each(my.builtins, function(builtin, name) {
 											if(builtin.serialize !== false) {
@@ -159,9 +147,9 @@ red.StatefulProp = function(options, defer_initialization) {
 										rv.initialize = function() {
 											options = _.extend({
 												//direct_values: red.deserialize.apply(red, ([obj.direct_values]).concat(rest_args))
-												can_inherit: red.deserialize.apply(red, ([obj.can_inherit, options]).concat(rest_args))
-												, ignore_inherited_in_contexts: red.deserialize.apply(red, ([obj.ignore_inherited_in_contexts, options]).concat(rest_args))
-												, check_on_nullify: red.deserialize.apply(red, ([obj.check_on_nullify, options]).concat(rest_args))
+											//	can_inherit: red.deserialize.apply(red, ([obj.can_inherit, options]).concat(rest_args))
+											//	, ignore_inherited_in_contexts: red.deserialize.apply(red, ([obj.ignore_inherited_in_contexts, options]).concat(rest_args))
+											//	, check_on_nullify: red.deserialize.apply(red, ([obj.check_on_nullify, options]).concat(rest_args))
 											}, options);
 											_.each(serialized_options, function(serialized_option, name) {
 												options[name] = red.deserialize.apply(red, ([serialized_option, options]).concat(rest_args));

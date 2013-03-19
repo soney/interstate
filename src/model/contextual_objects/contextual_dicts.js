@@ -1,27 +1,23 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-red.ContextualDict = function(options) {
-	red.ContextualDict.superclass.constructor.apply(this, arguments);
-	this._type = "dict";
-};
+red.Dict.get_proto_vals = function(dict, ptr) {
+	var rv = new Set({
+		value: [dict],
+		hash: "hash"
+	});
 
-(function(my) {
-	_.proto_extend(my, red.ContextualObject);
-	var proto = my.prototype;
-
-	proto.get_all_protos = function() {
-		var rv = new Set({
-			value: [this.get_object()],
-			hash: "hash"
-		});
-
-		var pointer = this.get_pointer();
-		var i = 0;
-		while(i < rv.len()) {
-			var dict = rv.item(i);
-			var proto_obj = dict.direct_protos();
-			var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj)/*, { check_on_nullify: true , equals: function(a,b) {
+	var pointer = ptr;
+	var i = 0;
+	while(i < rv.len()) {
+		var dict = rv.item(i);
+		var proto_obj = dict.direct_protos();
+		var proto_val;
+		if(proto_obj instanceof cjs.ArrayConstraint) {
+			proto_val = proto_obj.toArray();
+		} else {
+			var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {});
+			/*, { check_on_nullify: true , equals: function(a,b) {
 				if(_.isArray(a) && _.isArray(b)) {
 					var len = a.length;
 					if(len !== b.length) {
@@ -37,23 +33,55 @@ red.ContextualDict = function(options) {
 				} else {
 					return a === b;
 				}
-			}}*/);
-			var proto_val = proto_contextual_obj.val();
-			proto_val = _	.chain(_.isArray(proto_val) ? proto_val : [proto_val])
-							.map(function(x) {
-								if(x && x instanceof red.ContextualDict) {
-									return x.get_object();
-								} else {
-									return false;
-								}
-							})
-							.compact()
-							.value();
-			rv.add_at.apply(rv, ([i+1].concat(proto_val)));
-			i++;
+			}}*/
+			proto_val = proto_contextual_obj.val();
 		}
-		var rv_arr = rv.toArray();
-		return rv_arr.slice(1); // don't include me
+		proto_val = _	.chain(_.isArray(proto_val) ? proto_val : [proto_val])
+						.map(function(x) {
+							if(x && x instanceof red.ContextualDict) {
+								return x.get_object();
+							} else {
+								return false;
+							}
+						})
+						.compact()
+						.value();
+		rv.add_at.apply(rv, ([i+1].concat(proto_val)));
+		i++;
+	}
+	var rv_arr = rv.toArray();
+	return rv_arr.slice(1); // don't include the original dict
+};
+
+red.Dict.get_prop_name = function(dict, value, pcontext) {
+	var direct_props = dict.direct_props();
+
+	var rv = direct_props.keyForValue({value: value});
+	if(_.isUndefined(rv) && pcontext) {
+		var protos = red.Dict.get_proto_vals(dict, pcontext);
+		for(var i = 0; i<protos.length; i++) {
+			var protoi = protos[i];
+			direct_props = protoi.direct_props();
+			rv = direct_props.key_for_value({value: value});
+			if(!_.isUndefined(rv)) {
+				break;
+			}
+		}
+	}
+	return rv;
+};
+
+red.ContextualDict = function(options) {
+	red.ContextualDict.superclass.constructor.apply(this, arguments);
+	this._type = "dict";
+};
+
+(function(my) {
+	_.proto_extend(my, red.ContextualObject);
+	var proto = my.prototype;
+
+	proto.get_all_protos = function() {
+		return red.Dict.get_proto_vals(this.get_object(), this.get_pointer());
 	};
 
 	proto.get_contextual_protos = function() {
