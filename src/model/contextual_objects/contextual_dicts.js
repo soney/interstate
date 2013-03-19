@@ -270,7 +270,7 @@ red.ContextualDict = function(options) {
 			return false;
 		}
 	};
-	proto.prop = function(name, ignore_inherited) {
+	proto.prop_info = function(name, ignore_inherited) {
 		var dict = this.get_object(),
 			info;
 		if(dict._has_builtin_prop(name)) {
@@ -306,6 +306,10 @@ red.ContextualDict = function(options) {
 				}
 			}
 		}
+		return info;
+	};
+	proto.prop = function(name, ignore_inherited) {
+		var info = this.prop_info(name, ignore_inherited);
 
 		if(info) {
 			var pointer = this.get_pointer();

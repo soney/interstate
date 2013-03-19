@@ -92,9 +92,8 @@ red.ContextualStatefulProp = function(options) {
 				for(var i = 0; i<my_names_len; i++) {
 					name = my_names[i];
 					if(cdict.has(name)) {
-						console.log(name);
-						cdict = cdict.prop(name);
-						obj = cdict.get_object();
+						var info = cdict.prop_info(name);
+						obj = info.value;
 						if(i < my_names_len - 1) {
 							if(!(obj instanceof red.Dict)) {
 								return false;
@@ -109,16 +108,16 @@ red.ContextualStatefulProp = function(options) {
 				return obj;
 			}, this));
 
-
 			var values;
 			var entries = [];
 			var ifrom;
-			for(var i = 0; i<inherits_from.length; i++) {
+			var inherits_from_len = inherits_from.length;
+			for(var i = 0; i<inherits_from_len; i++) {
 				ifrom = inherits_from[i];
-				if(inherits_from instanceof red.StatefulProp) {
+				if(ifrom instanceof red.StatefulProp) {
 					var dvs = ifrom.get_direct_values();
 					entries.push.apply(entries, dvs.entries());
-				} else if(inherits_from instanceof red.Cell) {
+				} else if(ifrom instanceof red.Cell) {
 					entries.push({
 						key: undefined,
 						value: inherits_from
