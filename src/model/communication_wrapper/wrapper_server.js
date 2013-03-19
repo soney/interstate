@@ -41,12 +41,16 @@ sdc.on("message", function(message, event) {
 		var server = red.get_wrapper_server(cobj);
 
 		var request_id = event.data.message_id;
-		server.on_request(message.getting, function(response) {
+
+		var processed_getting = process_args(message.getting);
+
+		server.on_request(processed_getting, function(response) {
+			var summarized_response = summarize_value(response);
 			client_window.postMessage({
 				type: "response",
 				request_id: request_id,
 				client_id: client_id,
-				response: response
+				response: summarized_response
 			}, origin);
 		});
 	}
@@ -69,6 +73,9 @@ var make_async = function(object_func_name) {
 	};
 };
 
+var argeq = function(arg1, arg2) {
+	return arg1 === arg2;
+};
 red.WrapperServer = function(options) {
 	able.make_this_listenable(this);
 	this.object = options.object;
@@ -169,8 +176,35 @@ red.WrapperServer = function(options) {
 
 }(red.WrapperServer));
 
-var argeq = function(arg1, arg2) {
-	return arg1 === arg2;
+
+
+var process_args = function(args) { return _.map(args, process_arg); };
+var process_arg = function(arg) {
+	return arg;
+};
+var summarize_value = function(value) {
+	var rv;
+	if(value instanceof red.ContextualObject) {
+		var id = value.id();
+		rv = {
+			__type__: "summarized_obj",
+			__value__: "contextual_obj",
+			object_summary: value.summarize()
+		};
+	} else if(_.isArray(value)) {
+		rv = _.map(value, summarize_value);
+	} else if(_.isFunction(value)) {
+		rv = {
+			__type__: "summarized_obj",
+			__value__: "function"
+		};
+	} else if(_.isObject(value)) {
+		rv = {};
+		_.each(value, function(v, k) { rv[k] = summarize_value(v); })
+	} else {
+		rv = value;
+	}
+	return rv;
 };
 
 var wrapper_servers = {};

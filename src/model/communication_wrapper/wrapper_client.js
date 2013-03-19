@@ -133,7 +133,8 @@ red.WrapperClient = function(options) {
 			getting: args
 		});
 		register_response_listener(request_id, _.bind(function(value) {
-			constraint.set(value);
+			var processed_value = this.process_value(value);
+			constraint.set(processed_value);
 		}, this));
 	};
 
@@ -145,26 +146,36 @@ red.WrapperClient = function(options) {
 		
 		this.update(args);
 	};
+	proto.process_value = function(value) {
+		if(value && value.__type__ && value.__type__ === "summarized_obj") {
+			var val = value.__value__;
+			if(val === "function") {
+				return "JS FUNC";
+			} else if(val === "contextual_obj") {
+				var object_summary = value.object_summary;
+				var wrapper_client = red.get_wrapper_client(object_summary, this.server_window);
+				return wrapper_client;
+			}
+			return val;
+		} else if(_.isArray(value)) {
+			return _.map(value, _.bind(this.process_value, this));
+		} else if(_.isObject(value)) {
+			var rv = {};
+			_.each(value, function(v, k) { rv[k] = this.process_value(v); }, this)
+			return rv;
+		} else {
+			return value;
+		}
+	};
 }(red.WrapperClient));
 
-var summarize_args = function(args) {
-	var rv = _.map(args, function(arg) {
-		var v = summarize_arg(arg);
-		return v;
-	});
-
-	return rv;
-};
 var summarize_arg = function(arg) {
 	return arg;
 };
 var argeq = function(arg1, arg2) {
 	return arg1 === arg2;
 };
-var process_value = function(value) {
-	return value;
-};
-
+var summarize_args = function(args) { return _.map(args, summarize_arg); };
 
 red.get_wrapper_client = function(object_summary, server_window) {
 	var otype = object_summary.type;

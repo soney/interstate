@@ -9,11 +9,9 @@
 	  <div>
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
-				var root = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment", {
-					instance_options: {
-						tag: "div"
-					}
-				})]});
+				var env = red.create("environment");
+				var root = env.get_root();
+				/*
 				root.set("a", 1);
 				/*
 				var dict1 = red.create("dict", {has_protos: false});
