@@ -55,17 +55,16 @@ red.ContextualStatefulProp = function(options) {
 	};
 
 	proto.get_values = function() {
+		var parent = this.get_parent();
 		var stateful_prop = this.get_object();
-		var rv;
+		var statecharts;
+		var entries;
+
 		if(stateful_prop.get_can_inherit()) {
-			var direct_values = this._get_direct_values();
-			rv = direct_values;
-		} else {
-			var parent = this.get_parent();
 			var pointer = this.get_pointer();
 
 			var stateful_obj = parent.get_object();
-			var stateful_obj_context = pointer.slice(0, pointer.lastIndexOf(stateful_obj));
+			var stateful_obj_context = pointer.slice(0, pointer.lastIndexOf(stateful_obj) + 1);
 
 			var my_names = [];
 			var i = pointer.lastIndexOf(stateful_obj);
@@ -82,54 +81,76 @@ red.ContextualStatefulProp = function(options) {
 				i++;
 			}
 
-			var protos_and_me = ([stateful_obj]).concat(red.Dict.get_proto_vals(stateful_obj_context))
-			var statecharts = _.compact(_.map(protos_and_me, function(x) {
-				if(x instanceof red.StatefulObj) {
-					return x.get_statechart_for_context(stateful_obj_context);
-				}
-			}));
-
 			var stateful_obj_context_len = stateful_obj_context.length();
 			var my_names_len = my_names.length;
+			var protos_and_me = ([stateful_obj]).concat(red.Dict.get_proto_vals(stateful_obj, stateful_obj_context))
+
+			var name;
 			var inherits_from = _.compact(_.map(protos_and_me, function(x) {
-				var dict = x;
-				for(i = 0; i<my_names_len; i++) {
-					dict = dict._get_prop(my_names[i], my_context.slice(0, stateful_obj_context_len + my_names_len-i));
-					if(!dict) {
+				var cdict = red.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len));
+				var obj;
+				for(var i = 0; i<my_names_len; i++) {
+					name = my_names[i];
+					if(cdict.has(name)) {
+						console.log(name);
+						cdict = cdict.prop(name);
+						obj = cdict.get_object();
+						if(i < my_names_len - 1) {
+							if(!(obj instanceof red.Dict)) {
+								return false;
+							} else {
+								cdict = red.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len + i));
+							}
+						}
+					} else {
 						return false;
 					}
 				}
-				return dict;
+				return obj;
 			}, this));
-		}
 
-		var parent = this.get_parent();
-		var stateful_prop = this.get_object();
 
-		var statecharts;
-		if(stateful_prop.get_can_inherit()) {
+			var values;
+			var entries = [];
+			var ifrom;
+			for(var i = 0; i<inherits_from.length; i++) {
+				ifrom = inherits_from[i];
+				if(inherits_from instanceof red.StatefulProp) {
+					var dvs = ifrom.get_direct_values();
+					entries.push.apply(entries, dvs.entries());
+				} else if(inherits_from instanceof red.Cell) {
+					entries.push({
+						key: undefined,
+						value: inherits_from
+					});
+				}
+			}
+
 			statecharts = parent.get_statecharts();
 		} else {
+			var values = stateful_prop.get_direct_values();
+			entries = values.entries();
 			statecharts = [parent.get_own_statechart()];
 		}
-		var direct_values = stateful_prop.get_direct_values();
 
 		var statecharts_len = statecharts.length;
-
-		var entries = direct_values.entries();
 		var rv = _.map(entries, function(entry) {
 			var key = entry.key;
 			var state;
-			for(var i = 0; i<statecharts_len; i++) {
-				var statechart = statecharts[i];
-				if(key.root() === statechart.basis()) {
-					if(key instanceof red.State) {
-						state = red.find_equivalent_state(key, statechart);
-					} else if(key instanceof red.StatechartTransition) {
-						state = red.find_equivalent_transition(key, statechart);
+			if(key) {
+				for(var i = 0; i<statecharts_len; i++) {
+					var statechart = statecharts[i];
+					if(key.root() === statechart.basis()) {
+						if(key instanceof red.State) {
+							state = red.find_equivalent_state(key, statechart);
+						} else if(key instanceof red.StatechartTransition) {
+							state = red.find_equivalent_transition(key, statechart);
+						}
+						break;
 					}
-					break;
 				}
+			} else {
+				state = undefined;
 			}
 			return {
 				state: state,
@@ -137,9 +158,6 @@ red.ContextualStatefulProp = function(options) {
 			};
 		});
 		rv = _.compact(rv);
-		return rv;
-		console.log(direct_values);
-
 		return rv;
 	};
 

@@ -71,6 +71,27 @@ red.Dict.get_prop_name = function(dict, value, pcontext) {
 	return rv;
 };
 
+red.Dict.get_prop_info = function(dict, prop_name, pcontext) {
+	if(dict._has_builtin_prop(prop_name)) {
+		return dict._get_builtin_prop_info(prop_name);
+	} else if(dict._has_direct_prop(prop_name)) {
+		return dict._get_direct_prop_info(prop_name);
+	} else if(dict._has_special_context_prop(prop_name, pcontext)) {
+		return dict._get_special_context_prop_info(prop_name, pcontext);
+	} else {
+		return this._get_inherited_prop_info(prop_name, pcontext);
+	}
+};
+
+red.Dict.get_prop = function(dict, prop_name, pcontext) {
+	var info = red.Dict.get_prop_info(dict, prop_name, pcontext);
+	if(info) {
+		return info.value;
+	} else {
+		return undefined;
+	}
+};
+
 red.ContextualDict = function(options) {
 	red.ContextualDict.superclass.constructor.apply(this, arguments);
 	this._type = "dict";
@@ -256,31 +277,31 @@ red.ContextualDict = function(options) {
 			info = dict._get_builtin_info(name);
 		} else if(dict._has_direct_prop(name)) {
 			info = dict._get_direct_prop_info(name);
-		} else if(ignore_inherited !== true) {
-			var proto_objects = this.get_all_protos();
-			var len = proto_objects.length;
-			var d;
-			for(var i = 0; i<len; i++) {
-				d = proto_objects[i];
-				if(d._has_direct_prop(name)) {
-					info = d._get_direct_prop_info(name);
-					break;
+		} else {
+			var pointer = this.get_pointer();
+			var my_ptr_index = pointer.lastIndexOf(dict);
+			if(my_ptr_index >= 0) {
+				var special_contexts = pointer.special_contexts(my_ptr_index);
+				var len = special_contexts.length;
+				var sc, co;
+				for(var i = 0; i<len; i++) {
+					sc = special_contexts[i];
+					co = sc.get_context_obj();
+					if(co.hasOwnProperty(name)) {
+						info = co[name];
+						break;
+					}
 				}
 			}
-			if(!info) {
-				var pointer = this.get_pointer();
-				var my_ptr_index = pointer.lastIndexOf(dict);
-				if(my_ptr_index >= 0) {
-					var special_contexts = pointer.special_contexts(my_ptr_index);
-					var len = special_contexts.length;
-					var sc, co;
-					for(var i = 0; i<len; i++) {
-						sc = special_contexts[i];
-						co = sc.get_context_obj();
-						if(co.hasOwnProperty(name)) {
-							info = co[name];
-							break;
-						}
+			if(!info && ignore_inherited !== true) {
+				var proto_objects = this.get_all_protos();
+				var len = proto_objects.length;
+				var d;
+				for(var i = 0; i<len; i++) {
+					d = proto_objects[i];
+					if(d._has_direct_prop(name)) {
+						info = d._get_direct_prop_info(name);
+						break;
 					}
 				}
 			}
