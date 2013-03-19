@@ -22,15 +22,21 @@
 				env
 .set("a", "<stateful>")
 .cd("a")
-	.rename_state("INIT", "state1")
-	.set("x")
-	.set("x", "state1", "2+2")
+	//.rename_state("INIT", "state1")
+	//.set("x")
+	//.set("x", "state1", "3+3")
 	.up()
 .set("b", "<stateful>")
 .cd("b")
 	.set("(protos)", "INIT", "a")
-	.set("x")
-	.set("x", "INIT", "1+1")
+	//.set("x")
+	//.set("x", "INIT", "2+2")
+	.up()
+.set("c", "<stateful>")
+.cd("c")
+	.set("(protos)", "INIT", "b")
+	//.set("x")
+	//.set("x", "INIT", "1+1")
 				;
 				/*
 env

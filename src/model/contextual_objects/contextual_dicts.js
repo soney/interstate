@@ -17,6 +17,7 @@ red.Dict.get_proto_vals = function(dict, ptr) {
 			proto_val = proto_obj.toArray();
 		} else {
 			var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {});
+
 			/*, { check_on_nullify: true , equals: function(a,b) {
 				if(_.isArray(a) && _.isArray(b)) {
 					var len = a.length;
@@ -62,7 +63,7 @@ red.Dict.get_prop_name = function(dict, value, pcontext) {
 		for(var i = 0; i<protos.length; i++) {
 			var protoi = protos[i];
 			direct_props = protoi.direct_props();
-			rv = direct_props.key_for_value({value: value});
+			rv = direct_props.keyForValue({value: value});
 			if(!_.isUndefined(rv)) {
 				break;
 			}

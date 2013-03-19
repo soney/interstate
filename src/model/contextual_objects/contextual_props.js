@@ -86,27 +86,31 @@ red.ContextualStatefulProp = function(options) {
 			var protos_and_me = ([stateful_obj]).concat(red.Dict.get_proto_vals(stateful_obj, stateful_obj_context))
 
 			var name;
-			var inherits_from = _.compact(_.map(protos_and_me, function(x) {
-				var cdict = red.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len));
-				var obj;
-				for(var i = 0; i<my_names_len; i++) {
-					name = my_names[i];
-					if(cdict.has(name)) {
-						var info = cdict.prop_info(name);
-						obj = info.value;
-						if(i < my_names_len - 1) {
-							if(!(obj instanceof red.Dict)) {
-								return false;
-							} else {
-								cdict = red.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len + i));
-							}
-						}
-					} else {
-						return false;
-					}
-				}
-				return obj;
-			}, this));
+			var inherits_from = _	.chain(protos_and_me)
+									.map(function(x) {
+										var obj;
+										var cdict = red.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len));
+										for(var i = 0; i<my_names_len; i++) {
+											name = my_names[i];
+											if(cdict.has(name)) {
+												var info = cdict.prop_info(name);
+												obj = info.value;
+												if(i < my_names_len - 1) {
+													if(!(obj instanceof red.Dict)) {
+														return false;
+													} else {
+														cdict = red.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len + i));
+													}
+												}
+											} else {
+												return false;
+											}
+										}
+										return obj;
+									})
+									.compact()
+									.uniq()
+									.value();
 
 			var values;
 			var entries = [];

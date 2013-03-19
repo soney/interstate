@@ -222,6 +222,14 @@ var print = function(current_pointer, logging_mechanism) {
 					} else {
 						logging_mechanism.log(prop_text + value_to_source_str(prop_points_at));
 					}
+
+					if(prop_name === "protos") {
+						var actual_val = contextual_object.get_all_protos();
+						var actual_text = pad("  inherits from", PROP_NAME_WIDTH + PROP_ID_WIDTH) + "[" + _.map(actual_val, function(av) {
+							return value_to_value_str(av);
+						}).join(", ")+"]";
+						console.log(actual_text);
+					}
 				});
 				if(is_manifestations) {
 					console.groupEnd();

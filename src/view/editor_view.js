@@ -56,27 +56,27 @@ $.widget("red.editor", {
 
 // ===== BEGIN EDITOR ===== 
 
-/*
 .set("ambiguous_view", "<stateful>")
 .cd("ambiguous_view")
-	//.set("(protos)", "INIT", "type === 'dict' ? [dict_view] : []")
-	//.set("client")
-	//.set("client", "INIT", "false")
-	//.set("type", "INIT", "client ? client.type() : ''")
+	.set("(protos)", "INIT", "type === 'dict' ? [dict_view] : []")
+	.set("client")
+	.set("client", "INIT", "false")
+	.set("type", "INIT", "client ? client.type() : ''")
+	.set("abc")
+	.set("abc", "INIT", "type === 'dict' ? [dict_view] : []")
 	.up()
-	/*
 .set("dict_view", "<stateful>")
 .cd("dict_view")
 	.set("(protos)", "INIT", "[dom]")
 	.set("text")
-	.set("text", "INIT", "client.get('get_children')")
+	.set("text", "INIT", "client.get('children')")
 	.up()
-	*/
 .cd("children")
-	.set("obj", "<dict>")
+	.set("obj", "<stateful>")
 	.cd("obj")
-		.set("(protos)",  "[dom]")
-		.set("text",  "'hi'")
+		.set("(protos)", "INIT", "[ambiguous_view]")
+		.set("client")
+		.set("client", "INIT", "root_client")
 /*
 .set("stringify_value", "function(v) {\n" +
 "if(red._.isUndefined(v)) { return '(undefined)'; }\n" +
