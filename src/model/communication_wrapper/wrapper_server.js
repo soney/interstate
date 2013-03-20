@@ -219,6 +219,15 @@ var summarize_value = function(value) {
 					id: value.id()
 				}
 		};
+	} else if(value instanceof red.Event) {
+		rv = {
+			__type__: "summarized_obj",
+			__value__: "event",
+			object_summary: {
+					type: 'event',
+					id: value.id()
+				}
+		};
 	} else if(value instanceof red.Cell) {
 		rv = {
 			__type__: "summarized_obj",

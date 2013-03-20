@@ -26,7 +26,9 @@ var id  = 0;
 	};
 
 	proto.on_create = function(options) {
-		this.id = id++;
+		this._id = uid();
+		red.register_uid(this._id, this);
+
 		this.options = options;
 		this._str = cjs.is_constraint(options.str) ? options.str : cjs(options.str);
 		if(options.inert !== true) {
@@ -69,6 +71,9 @@ var id  = 0;
 			});
 			cjs.signal();
 		}
+	};
+	proto.id = function() {
+		return this._id;
 	};
 	proto.child_fired = function() {
 		this.fire.apply(this, arguments);

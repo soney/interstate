@@ -74,12 +74,10 @@ var EventQueue = function() {
 
 red.event_queue = new EventQueue();
 
-var id = 0;
 red.Event = function() {
 	this._initialize();
 	this._transition = undefined;
 	this.on_create.apply(this, arguments);
-	this.id = id++;
 };
 
 (function(my) {
@@ -127,7 +125,7 @@ red.Event = function() {
 	proto.destroy = function(){};
 	proto.create_shadow = function() { return new red.Event(); };
 	proto.stringify = function() {
-		return "" + this.id;
+		return "";
 	};
 }(red.Event));
 red.event_queue = new EventQueue();

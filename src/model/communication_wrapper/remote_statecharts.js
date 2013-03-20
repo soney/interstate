@@ -120,7 +120,10 @@ red.create_remote_transition = function(wrapper_client) {
 
 			cjs.liven(function() {
 				var new_event_wrapper = wrapper_client.get('event') || false;
-				var new_event = red.create_remote_event(new_event_wrapper);
+				var new_event = false;
+				if(new_event_wrapper) {
+					new_event = red.create_remote_event(new_event_wrapper);
+				}
 				if(new_event) {
 					transition.set_event(new_event);
 					event = new_event;
@@ -136,12 +139,12 @@ var events = {};
 red.create_remote_event = function(wrapper_client) {
 	var id = wrapper_client.cobj_id;
 	var event = red.find_uid(id);
-	event = red.create_event("parsed", {str: "", inert: true});
+	event = null;
 	if(!event) {
 		if(events.hasOwnProperty(id)) {
 			event = events[id];
 		} else {
-			var event = new red.StatechartTransition({});
+			event = red.create_event("parsed", {str: "", inert: true});
 			events[id] = event;
 			var str = ""
 			cjs.liven(function() {
