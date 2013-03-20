@@ -23,9 +23,6 @@ red.ContextualObject = function(options) {
 			}
 			if(_.has(options, "pointer")) {
 				this.pointer = options.pointer;
-				if(this.pointer.length() > 30) {
-					debugger;
-				}
 			}
 		}
 	};
