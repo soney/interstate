@@ -459,7 +459,7 @@ red.ContextualStatefulObj = function(options) {
 	var proto = my.prototype;
 
 	proto.get_own_statechart = function() {
-		return this.statechart;
+		return this.get_statechart_for_proto(this.get_object());
 	};
 
 	proto.get_statechart_for_proto = function(proto) {

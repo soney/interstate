@@ -181,9 +181,6 @@ red.ContextualStatefulProp = function(options) {
 	var NO_VAL = {};
 
 	proto._getter = function() {
-		if(uid.strip_prefix(this.object.id()) == 23) {
-			console.log("A");
-		}
 		var values = this.get_values();
 		var len = values.length;
 		var info;
@@ -200,9 +197,6 @@ red.ContextualStatefulProp = function(options) {
 				}
 			} else if(state instanceof red.StatechartTransition) {
 				var tr = state.get_times_run();
-				if(uid.strip_prefix(this.object.id()) == 23) {
-					console.log("B");
-				}
 				if(tr > this.get_transition_times_run(state)) {
 					var pointer = this.get_pointer();
 					this.set_transition_times_run(state, tr);
