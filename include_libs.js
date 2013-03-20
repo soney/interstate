@@ -90,7 +90,11 @@ exports.main_src = c(
 				"controller/environment/red_environment.js",
 				"view/inter_window_communication.js",
 				"view/running_app.js",
-				"view/editor_view.js"
+				"view/editor_view.js",
+				"view/raphael/raphael_utils.js",
+				"view/raphael/editable_text.js",
+				"view/raphael/state.js",
+				"view/raphael/transition.js"
 			]));
 
 var ends_with = function(str1, str2) {
