@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+	<style type="text/css">
+	</style>
+	<%- red_include(red_inc.main) %>
+  </head>
+  <body>
+	  <div>
+			<script type="text/javascript">
+				$(function() {
+					window.env = red.create("environment")
+					/*
+					.cd("children")
+					.set("obj", "<dict>")
+					.cd("obj")
+					.set("(protos)", "dom")
+					.set("text", "'hello'");
+					*/
+
+					env.print_on_return = true;
+					env.print();
+					var root_pointer = env.get_root_pointer();
+					output_view = $("body").dom_output({
+						root: root_pointer,
+						//edit_on_open: true
+					});
+				});
+			</script>
+	  </div>
+  </body>
+</html>
