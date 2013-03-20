@@ -188,6 +188,7 @@ var Transition = function(transition, paper, options) {
 	this.paper = paper;
 	var from_view = this.option("from_view");
 	var to_view = this.option("to_view");
+	console.log(from_view, to_view);
 
 	//console.log(to_view.option("state_name"), to_view.option("x"));
 	//console.log("from_x: " + from_view.option("x"), "from_width: " + from_view.option("width"), "to_x: " + to_view.option("x") , "to_width: " + to_view.option("width"));

@@ -192,19 +192,28 @@ var summarize_value = function(value) {
 			__value__: "contextual_obj",
 			object_summary: value.summarize()
 		};
-	} else if(value instanceof red.State) {
+	} else if(value instanceof red.StartState) {
 		rv = {
 			__type__: "summarized_obj",
-			__value__: "contextual_obj",
+			__value__: "state",
 			object_summary: {
-					type: 'state',
+					type: 'start_state',
+					id: value.id()
+				}
+		};
+	} else if(value instanceof red.Statechart) {
+		rv = {
+			__type__: "summarized_obj",
+			__value__: "state",
+			object_summary: {
+					type: 'statechart',
 					id: value.id()
 				}
 		};
 	} else if(value instanceof red.StatechartTransition) {
 		rv = {
 			__type__: "summarized_obj",
-			__value__: "contextual_obj",
+			__value__: "transition",
 			object_summary: {
 					type: 'transition',
 					id: value.id()

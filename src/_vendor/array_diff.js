@@ -11,6 +11,7 @@ var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Funct
 var slice = ArrayProto.slice,
 	toString = ObjProto.toString,
     nativeForEach      = ArrayProto.forEach,
+    nativeKeys         = Object.keys,
     nativeMap          = ArrayProto.map;
 
 // Establish the object that gets returned to break out of a loop iteration.
@@ -46,6 +47,20 @@ var eqeqeq = function(a, b) { return a === b; };
 var index_of = function(arr, item, start_index, equality_check) {
 	equality_check = equality_check || eqeqeq;
 	return index_where(arr, function(x) { return equality_check(item, x); }, start_index);
+};
+
+var keys = nativeKeys || function(obj) {
+	if (obj !== Object(obj)) throw new TypeError('Invalid object');
+	var keys = [];
+	for (var key in obj) if (_.has(obj, key)) keys[keys.length] = key;
+	return keys;
+};
+
+// Retrieve the values of an object's properties.
+var values = function(obj) {
+	var values = [];
+	for (var key in obj) if (_.has(obj, key)) values.push(obj[key]);
+	return values;
 };
 
 // Remove an item in an array
@@ -354,9 +369,8 @@ var get_array_diff = function(from_val, to_val, equality_check) {
 	});
 	return { added: added, removed: removed, moved: moved, index_changed: index_changed , mapping: source_map};
 };
-/*
 
-var get_map_diff = function(key_diff, value_diff, keys) {
+var get_map_diff = function(key_diff, value_diff) {
 	key_diff = clone(key_diff);
 	value_diff = clone(value_diff);
 	var set = [], unset = [], key_change = [], value_change = [], index_changed = [], moved = [];
@@ -436,8 +450,18 @@ var get_map_diff = function(key_diff, value_diff, keys) {
 	}
 	return { set: set, unset: unset, key_change: key_change, value_change: value_change, index_changed: index_changed, moved: moved}
 };
-*/
 
+window.get_obj_diff = function(from_obj, to_obj) {
+	var from_keys = keys(from_obj),
+		to_keys = keys(to_obj),
+		from_values = values(from_obj),
+		to_values = values(to_obj);
+	var key_diff = get_array_diff(from_keys, to_keys),
+		value_diff = get_array_diff(from_values, to_values);
+
+	return get_map_diff(key_diff, value_diff);
+	
+};
 
 /*
 var array_differ = function(val, equality_check) {

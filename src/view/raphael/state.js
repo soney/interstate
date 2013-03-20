@@ -541,7 +541,16 @@ var StatechartView = function(statechart, paper, options) {
 		state_view.on("add_state", this.forward);
 		state_view.on("set_event_str", this.forward);
 	};
-	proto.onUnset = function(state, state_name, index) {
+	proto.onUnset = function(event) {
+		var state = event.state,
+			name = event.name,
+			index = -1;
+		for(var i = 0; i<this.substate_views.length; i++) {
+			if(this.substate_views[i].statechart === state) {
+				index = i;
+				break;
+			}
+		}
 		var state_view = this.substate_views[index];
 		this.substate_views.splice(index, 1);
 		state_view.remove(true);

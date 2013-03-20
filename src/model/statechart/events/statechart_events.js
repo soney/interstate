@@ -144,7 +144,7 @@ red.StatechartEvent = red._create_event_type("statechart");
 		}
 	};
 	proto.destroy = function() {
-		target.off(spec, this.$on_spec);
+		this.target.off(this.spec, this.$on_spec);
 	};
 	proto.create_shadow = function(parent_statechart, context) {
 		return red.create_event("statechart", {

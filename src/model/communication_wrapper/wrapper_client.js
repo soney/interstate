@@ -207,7 +207,8 @@ red.get_wrapper_client = function(object_summary, server_window) {
 		rv = new red.WrapperClient({
 			server_window: server_window,
 			cobj_id: cobj_id,
-			type: otype
+			type: otype,
+			object_summary: object_summary
 		});
 
 		wrapper_clients[cobj_id] = rv;

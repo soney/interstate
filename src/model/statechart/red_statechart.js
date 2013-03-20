@@ -263,14 +263,18 @@ red.StatechartTransition = function(options, defer_initialization) {
 	proto.from = function() { return this._from_state; }; 
 	proto.to = function() { return this._to_state; };
 	proto.setFrom = function(state) {
-		this._from_state._remove_direct_outgoing_transition(this);
+		if(this._from_state) {
+			this._from_state._remove_direct_outgoing_transition(this);
+		}
 		this._from_state = state;
 		this._from_state._add_direct_outgoing_transition(this);
 		this._emit("setFrom", {type: "setFrom", target: this, state: state});
 		return this;
 	};
 	proto.setTo = function(state) {
-		this._to_state._remove_direct_incoming_transition(this);
+		if(this._to_state) {
+			this._to_state._remove_direct_incoming_transition(this);
+		}
 		this._to_state = state;
 		this._to_state._add_direct_incoming_transition(this);
 		this._emit("setTo", {type: "setTo", target: this, state: state});
@@ -916,12 +920,17 @@ red.Statechart = function(options) {
 		return this;
 	};
 	proto.get_substates = function(include_start) {
-		var substates = this.$substates.values();
+		var rv = {};
+
+		this.$substates.each(function(substate, name) {
+			rv[name] = substate;
+		});
+
 		if(include_start) {
-			return ([this.get_start_state()]).concat(substates);
-		} else {
-			return substates;
+			rv["(start)"] = this.get_start_state();
 		}
+
+		return rv;
 	};
 	proto.get_start_state = function() { return this._start_state; };
 	proto.set_start_state = function(state) {
@@ -1115,14 +1124,13 @@ red.Statechart = function(options) {
 			index: index
 		});
 	};
-	proto.remove_substate = function(state, also_destroy) {
-		var name = this.$substates.keyForValue(state);
+	proto.remove_substate = function(name, state, also_destroy) {
 		if(name) {
-			this.remove_substate_with_name(name, also_destroy, state);
+			this.remove_substate_with_name(name, state, also_destroy);
 		}
 	};
 	proto.remove_substate_with_name = function(name, also_destroy, state) {
-		state = state || this.$substates.get(name);
+		//state = state || this.$substates.get(name);
 		cjs.wait();
 		if(this.get_active_substate() === state) {
 			this.set_active_substate(undefined);
@@ -1180,7 +1188,7 @@ red.Statechart = function(options) {
 		if(!_.isUndefined(state)) {
 			var parent = state.parent();
 			if(!_.isUndefined(parent)) {
-				parent.remove_substate(state, also_destroy);
+				parent.remove_substate(state_name, state, also_destroy);
 			}
 		}
 		return this;
@@ -1426,6 +1434,9 @@ red.Statechart = function(options) {
 				delete this._transition_listeners[str];
 			}
 		}
+	};
+	proto.print = function() {
+		red.print_statechart(this);
 	};
 
 	red.register_serializable_type("statechart",
