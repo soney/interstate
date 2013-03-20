@@ -451,7 +451,6 @@ red.ContextualStatefulObj = function(options) {
 		hash: "hash"
 	});
 
-	this.statechart = this.get_statechart_for_proto(this.get_object());
 	this._type = "stateful";
 };
 

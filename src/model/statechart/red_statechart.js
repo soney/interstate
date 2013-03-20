@@ -481,6 +481,8 @@ red.State = function(options, defer_initialization) {
 				}, this);
 			}
 			if(this.parent() === undefined) { // When all of the substates have been copied
+				console.log(this.id(), this._context);
+				debugger;
 				var flat_substates = this.flatten_substates(true);
 
 				var parent_statechart = this,

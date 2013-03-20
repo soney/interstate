@@ -1,37 +1,5 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
-/*
-
-red.find_stateful_obj_and_context = function(context) {
-	var popped_item, last;
-	var set_statechart = false;
-	while(!context.is_empty()) {
-		last = context.points_at();
-		if(last instanceof red.StatefulProp) {
-			var statechart_parent = last.get_statechart_parent();
-			if(statechart_parent === "parent") {
-				//Behave like normal
-			} else if(statechart_parent instanceof red.Statechart) {
-				console.log(statechart_parent);
-			} else if(statechart_parent instanceof red.StatefulObj) {
-				if(!set_statechart) {
-					set_statechart = statechart_parent;
-				}
-			} else {
-				console.log(statechart_parent);
-			}
-		} else if(last instanceof red.StatefulObj) {
-			return {
-					stateful_obj: set_statechart ? set_statechart : last,
-					context: context
-				};
-		}
-		popped_item = last;
-		context = context.pop();
-	}
-	return undefined;
-};
-*/
 
 red.ContextualStatefulProp = function(options) {
 	red.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
@@ -54,13 +22,13 @@ red.ContextualStatefulProp = function(options) {
 		}
 	}
 
-	_.defer(_.bind(function() {
-		this.$value.update();
-	}, this));
 	this.$value.onChange(_.bind(function() {
 		if(red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
 			this.$value.update();
 		}
+	}, this));
+	_.defer(_.bind(function() {
+		this.$value.update();
 	}, this));
 
 	this._type = "stateful_prop";
@@ -213,6 +181,9 @@ red.ContextualStatefulProp = function(options) {
 	var NO_VAL = {};
 
 	proto._getter = function() {
+		if(uid.strip_prefix(this.object.id()) == 23) {
+			console.log("A");
+		}
 		var values = this.get_values();
 		var len = values.length;
 		var info;
@@ -228,18 +199,20 @@ red.ContextualStatefulProp = function(options) {
 					using_state = state;
 				}
 			} else if(state instanceof red.StatechartTransition) {
-				var tr = state.get_times_run() || 0;
+				var tr = state.get_times_run();
+				if(uid.strip_prefix(this.object.id()) == 23) {
+					console.log("B");
+				}
 				if(tr > this.get_transition_times_run(state)) {
 					var pointer = this.get_pointer();
 					this.set_transition_times_run(state, tr);
-					var event = state._last_run_event
+					var event = state._last_run_event;
 					var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
 
 					using_val = val;
 					using_state = state;
 					break;
 				} else if(!this._used_start_transition && state.from() instanceof red.StartState) {
-					this._used_start_transition = true;
 					using_val = val;
 					using_state = state;
 					_.defer(_.bind(function() {
@@ -249,6 +222,7 @@ red.ContextualStatefulProp = function(options) {
 			}
 		}
 
+		this._used_start_transition = true;
 		if(using_val === NO_VAL) {
 			using_val = this._last_value;
 			using_state = this._from_state;
@@ -256,7 +230,7 @@ red.ContextualStatefulProp = function(options) {
 			this._last_value = using_val;
 			this._from_state = using_state;
 		}
-
+		
 
 		if(using_val instanceof red.Cell) {
 			var pointer = this.get_pointer();
