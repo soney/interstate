@@ -30,7 +30,10 @@ red.TransitionEvent = red._create_event_type("transition");
 			}
 			this.processed_targets = _	.chain(targs)
 										.map(function(target_pointer) {
-											if(target_pointer instanceof red.PointerObject) {
+											if(target_pointer instanceof red.ContextualStatefulObj) {
+												var statecharts = target_pointer.get_statecharts();
+												return statecharts;
+												/*
 												var ptr = target_pointer.get_pointer();
 												var dict = ptr.points_at();
 												if(dict instanceof red.StatefulObj) {
@@ -45,6 +48,7 @@ red.TransitionEvent = red._create_event_type("transition");
 														return dict.get_statechart_for_context(ptr);
 													}
 												}
+												*/
 											}
 											return false;
 										})

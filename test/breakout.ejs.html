@@ -186,10 +186,11 @@ env
 .set("max", "function(a, b) { return a>b ? a : b }")
 .top()
 ;
-					var root_pointer = env.get_root_pointer();
-					output_view = $("<div />").dom_output({
-						root: root_pointer
-					}).appendTo(document.body);
+root = env.get_root();
+
+output_view = $("<div />").dom_output({
+	root: root
+}).appendTo(document.body);
 
 					env.print_on_return = true;
 					console.log(env.print());

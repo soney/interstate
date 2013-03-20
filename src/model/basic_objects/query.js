@@ -14,15 +14,21 @@ red.Query = function(options) {
 								var pointer = pointer_object.get_pointer();
 								var points_at = pointer.points_at();
 								if(points_at instanceof red.Dict) {
+									var cobj = red.find_or_put_contextual_obj(points_at, pointer);
+									/*
 									var manifestation_pointers = points_at.get_manifestation_pointers(pointer);
 									if(_.isArray(manifestation_pointers)) {
 										return _.map(manifestation_pointers, function(x) { return new red.ContextualObject({ pointer: x }); });
 									} else {
 										new red.ContextualObject({pointer: pointer});
 									}
+									*/
+									return cobj;
 								}
 								else {
-									new red.ContextualObject({pointer: pointer});
+									var cobj = red.find_or_put_contextual_obj(points_at, pointer);
+									//new red.ContextualObject({pointer: pointer});
+									return cobj;
 								}
 							})
 							.flatten(true)

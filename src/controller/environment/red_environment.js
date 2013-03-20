@@ -794,7 +794,7 @@ var Env = function(options) {
 	proto.on_state = function(spec, func, context) {
 		var statechart = this.get_current_statechart();
 		if(_.isString(func)) {
-			func = red.get_parsed_$(red.parse(func), { });
+			func = red.get_parsed_val(red.parse(func), { });
 		}
 		var command = new red.StatechartOnCommand({
 			statechart: statechart,

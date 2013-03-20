@@ -22,7 +22,7 @@ var listener_map = new Map({
 (function(proto) {
 	proto.on_create = function(type, targets) {
 		this.type = type;
-		this.targets = targets;
+		this.targets = _.flatten(targets);
 		this.add_listeners();
 	};
 

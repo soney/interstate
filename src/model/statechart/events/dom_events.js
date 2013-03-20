@@ -32,7 +32,8 @@ var cjs = red.cjs, _ = red._;
 							.map(function(target_pointer) {
 								if(_.isElement(target_pointer) || target_pointer === window) {
 									return target_pointer;
-								} else if(target_pointer instanceof red.PointerObject) {
+								} else if(target_pointer instanceof red.ContextualDict) {
+								/*
 									var ptr = target_pointer.get_pointer();
 									var dict;
 									var targ = ptr.points_at();
@@ -61,6 +62,11 @@ var cjs = red.cjs, _ = red._;
 										if(dom_attachment) {
 											return dom_attachment.get_dom_obj();
 										}
+									}
+									*/
+									var dom_attachment = target_pointer.get_attachment_instance("dom");
+									if(dom_attachment) {
+										return dom_attachment.get_dom_obj();
 									}
 								}
 								return false;
