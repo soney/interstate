@@ -27,8 +27,10 @@
 
 				*/
 env
+
 .cd("children")
 	.set("obj", "<stateful>")
+
 	.cd("obj")
 		.add_transition("INIT", "INIT", "on('timeout', 500)")
 		.set("(protos)", "INIT", "dom")
