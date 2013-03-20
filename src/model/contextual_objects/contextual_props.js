@@ -27,9 +27,11 @@ red.ContextualStatefulProp = function(options) {
 			this.$value.update();
 		}
 	}, this));
+	/*
 	_.defer(_.bind(function() {
 		this.$value.update();
 	}, this));
+	*/
 
 	this._type = "stateful_prop";
 };
