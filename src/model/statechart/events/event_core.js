@@ -127,6 +127,9 @@ red.Event = function() {
 	proto.stringify = function() {
 		return "";
 	};
+	proto.type = function() {
+		return this._type;
+	};
 }(red.Event));
 red.event_queue = new EventQueue();
 
@@ -136,7 +139,7 @@ red.create_event = function(event_type) {
 	var Constructor = event_types[event_type];
 
 	var rv = construct(Constructor, _.rest(arguments));
-	rv.type = event_type;
+	rv._type = event_type;
 	return rv;
 };
 function construct(constructor, args) {

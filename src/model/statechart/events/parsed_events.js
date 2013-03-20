@@ -15,7 +15,6 @@ var get_event = function(tree, options, live_event_creator) {
 };
 
 red.ParsedEvent = red._create_event_type("parsed");
-var id  = 0;
 (function(my) {
 	var proto = my.prototype;
 	proto.set_transition = function(transition) {
@@ -72,9 +71,7 @@ var id  = 0;
 			cjs.signal();
 		}
 	};
-	proto.id = function() {
-		return this._id;
-	};
+	proto.id = function() { return this._id; };
 	proto.child_fired = function() {
 		this.fire.apply(this, arguments);
 	};

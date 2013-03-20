@@ -225,7 +225,8 @@ var summarize_value = function(value) {
 			__value__: "event",
 			object_summary: {
 					type: 'event',
-					id: value.id()
+					id: value.id(),
+					event_type: value.type()
 				}
 		};
 	} else if(value instanceof red.Cell) {

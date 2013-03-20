@@ -102,6 +102,9 @@ red.StatechartEvent = red._create_event_type("statechart");
 (function(my) {
 	var proto = my.prototype;
 	proto.on_create = function(options) {
+		this._id = uid();
+		red.register_uid(this._id, this);
+
 		this.options = options;
 		this.$on_spec = _.bind(function() {
 			red.event_queue.wait();
@@ -137,6 +140,7 @@ red.StatechartEvent = red._create_event_type("statechart");
 			}
 		}
 	};
+	proto.id = function() { return this._id; };
 	proto.set_target = function(target) {
 		this.target = target;
 		if(this.options.inert !== true) {

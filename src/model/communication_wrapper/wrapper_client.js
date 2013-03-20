@@ -62,6 +62,7 @@ red.WrapperClient = function(options) {
 	this.server_window = options.server_window;
 	this.cobj_id = options.cobj_id;
 	this._type = options.type;
+	this.object_summary = options.object_summary;
 
 	this._id = client_id++;
 	clients[this._id] = this;

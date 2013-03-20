@@ -129,6 +129,15 @@ red.create_remote_transition = function(wrapper_client) {
 					event = new_event;
 				}
 			});
+
+			var times_run = 0;
+			cjs.liven(function() {
+				var new_times_run = wrapper_client.get('get_times_run')|| 0;
+				if(new_times_run > times_run) {
+					times_run = new_times_run;
+					transition._emit("fire", {type: "fire", target: transition, event: {}});
+				}
+			});
 		}
 	}
 	return transition;
@@ -144,16 +153,19 @@ red.create_remote_event = function(wrapper_client) {
 		if(events.hasOwnProperty(id)) {
 			event = events[id];
 		} else {
-			event = red.create_event("parsed", {str: "", inert: true});
+			var event_type = wrapper_client.object_summary.event_type;
+			event = red.create_event(event_type, {str: "", inert: true});
 			events[id] = event;
-			var str = ""
-			cjs.liven(function() {
-				var new_str = wrapper_client.get('get_str') || "";
-				if(str !== new_str) {
-					event.set_str(new_str);
-					str = new_str;
-				}
-			});
+			if(event_type === "parsed") {
+				var str = ""
+				cjs.liven(function() {
+					var new_str = wrapper_client.get('get_str') || "";
+					if(str !== new_str) {
+						event.set_str(new_str);
+						str = new_str;
+					}
+				});
+			}
 		}
 	}
 	return event;
