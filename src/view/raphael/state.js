@@ -120,44 +120,6 @@ var Antenna = function(paper, options) {
 }(Antenna));
 red.define("antenna", function(a, b) { return new Antenna(a,b); });
 
-var simple_map = function() {
-	var keys = [];
-	var values = [];
-	return {
-		set: function(key, value) {
-			var key_index = _.indexOf(keys, key);
-			if(key_index < 0) {
-				keys.push(key);
-				values.push(value);
-			} else {
-				values[key_index] = value;
-			}
-		}
-		, unset: function(key) {
-			var key_index = _.indexOf(keys, key);
-			while(key_index >= 0) {
-				keys.splice(key_index, 1);
-				values.splice(key_index, 1);
-				key_index = _.indexOf(keys, key);
-			}
-			
-		}
-		, get: function(key) {
-			var key_index = _.indexOf(keys, key);
-			if(key_index >= 0) {
-				return values[key_index];
-			}
-		}
-		, each: function(callback, context) {
-			context = context || this;
-			for(var i = 0; i<keys.length; i++) {
-				var key = keys[i], value = values[i];
-				callback.call(context, value, key, i);
-			}
-		}
-	};
-};
-
 var TransitionLayoutManager = function(root_view) {
 	this.root_view = root_view;
 	this.root = this.root_view.statechart;
@@ -255,7 +217,9 @@ var TransitionLayoutManager = function(root_view) {
 	};
 }(TransitionLayoutManager));
 
-var statechart_view_map = simple_map();
+var statechart_view_map = new Map({
+	hash: "hash"
+});
 
 var StatechartView = function(statechart, paper, options) {
 	able.make_this_listenable(this);
@@ -283,7 +247,7 @@ var StatechartView = function(statechart, paper, options) {
 
 	this.paper = paper;
 	this.statechart = statechart;
-	statechart_view_map.set(this.statechart, this);
+	statechart_view_map.put(this.statechart, this);
 	
 	this.column_layout_manager = this.option("column_layout_manager") || new red.ColumnLayout();
 	this.transition_layout_manager = this.option("transition_layout_manager") || new TransitionLayoutManager(this);
@@ -327,8 +291,8 @@ var StatechartView = function(statechart, paper, options) {
 				var made_active_views = _.map(made_active, function(state) { return statechart_view_map.get(state); });
 				var made_inactive_views = _.map(made_inactive, function(state) { return statechart_view_map.get(state); });
 
-				_.each(made_active_views, function(view) { view.highlight(); });
-				_.each(made_inactive_views, function(view) { view.dim(); });
+				_.each(made_active_views, function(view) { if(view) view.highlight(); });
+				_.each(made_inactive_views, function(view) { if(view) view.dim(); });
 
 				last_active_substates = active_substates;
 			});
@@ -479,8 +443,12 @@ var StatechartView = function(statechart, paper, options) {
 	this.$onValueChange = _.bind(this.onValueChange, this);
 	this.$onKeyChange = _.bind(this.onKeyChange, this);
 
-	this.$substates.each(function(a,b,c) {
-		this.$onSet(a,b,c,false);
+	this.$substates.each(function(statechart, name, index) {
+		this.$onSet({
+			state: statechart,
+			state_name: name,
+			index: index
+		}, false);
 	}, this);
 
 	this.statechart.on("add_substate", this.$onSet);
@@ -504,7 +472,11 @@ var StatechartView = function(statechart, paper, options) {
 		this.$onTransitionRemoved = _.bind(this.onTransitionRemoved, this);
 		this.$onTransitionMoved = _.bind(this.onTransitionMoved, this);
 
-		this.$outgoing_transitions.each(this.$onTransitionAdded);
+		this.$outgoing_transitions.each(function(transition) {
+			this.$onTransitionAdded({
+				transition: transition
+			});
+		}, this);
 
 		this.statechart.on("add_transition", this.$onTransitionAdded);
 
@@ -513,7 +485,10 @@ var StatechartView = function(statechart, paper, options) {
 			view.onStatesReady();
 		});
 	};
-	proto.onTransitionAdded = function(transition, index) {
+	proto.onTransitionAdded = function(event) {
+		var transition = event.transition,
+			index = event.index;
+
 		var to = transition.to();
 		var to_view = statechart_view_map.get(to);
 		var transition_view = red.create("transition", transition, this.paper, {
@@ -521,7 +496,11 @@ var StatechartView = function(statechart, paper, options) {
 			, to_view: to_view
 			, animate_creation: true
 		});
-		this.transition_views.splice(index, 0, transition_view);
+		if(_.isNumber(index)) {
+			this.transition_views.splice(index, 0, transition_view);
+		} else {
+			this.transition_views.push(index);
+		}
 
 		this.transition_layout_manager	.add_transition_view(transition_view);
 		this.update_transition_layout();
@@ -537,7 +516,10 @@ var StatechartView = function(statechart, paper, options) {
 		console.log("moved", arguments);
 	};
 
-	proto.onSet = function(state, state_name, index, also_initialize) {
+	proto.onSet = function(event, also_initialize) {
+		var state = event.state,
+			state_name = event.state_name,
+			index = event.index;
 		var state_parent = state.parent();
 		var state_view = red.create("statechart_view", state, this.paper, {
 			parent: this
@@ -546,7 +528,11 @@ var StatechartView = function(statechart, paper, options) {
 			, transition_layout_manager: this.transition_layout_manager
 			, column_layout_manager: this.children_layout_manager.push({own_width: false})
 		});
-		this.substate_views.splice(index, 0, state_view);
+		if(_.isNumber(index)) {
+			this.substate_views.splice(index, 0, state_view);
+		} else {
+			this.substate_views.push(state_view);
+		}
 		if(also_initialize !== false) {
 			state_view.onStatesReady();
 		}
@@ -712,13 +698,13 @@ var StatechartView = function(statechart, paper, options) {
 			this.option("antenna_shaft_height", transition_height * rows.length + top_offset);
 			var top_padding = this.option("antenna_top_radius")*2 + transition_height;
 
-			var transition_positions = simple_map();
+			var transition_positions = new Map({ });
 			for(var i = 0; i<rows.length; i++) {
 				var transition_row = rows[i];
 				for(var j = 0; j<transition_row.length; j++) {
 					var transition = transition_row[j];
 					if(transition !== false) {
-						transition_positions.set(transition, i);
+						transition_positions.put(transition, i);
 					}
 				}
 			}

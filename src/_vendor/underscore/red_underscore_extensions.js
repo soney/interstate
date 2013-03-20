@@ -1,5 +1,6 @@
 /*jslint unparam: true */
 (function() {
+	var _ = window._;
 	var rdashAlpha = /-([a-z]|[0-9])/ig, rmsPrefix = /^-ms-/;
 	var fcamelCase = function(all, letter) {
 		return String(letter).toUpperCase();

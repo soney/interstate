@@ -792,6 +792,10 @@ red.StartState = function(options) {
 	proto.run = function() {
 		if(!this.is_running()) {
 			this._running = true;
+			this._emit("run", {
+				target: this,
+				type: "run"
+			});
 		}
 		return this;
 	};

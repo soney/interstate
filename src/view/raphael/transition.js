@@ -232,7 +232,7 @@ var Transition = function(transition, paper, options) {
 
 	this.$onSetEventRequest = _.bind(this.onSetEventRequest, this);
 	this.label.on("change", this.$onSetEventRequest);
-	this.transition.on("fired", function() {
+	this.transition.on("fire", function() {
 		this.arrow.flash();
 	}, this);
 };

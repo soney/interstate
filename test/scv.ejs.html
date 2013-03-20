@@ -8,14 +8,15 @@
 	  <div>
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
-					var sc = new red.Statechart();
 					var el = document.createElement("div");
 					el.style.position = "relative";
 					var content = document.getElementById("content");
 					content.appendChild(el);
 					var paper = Raphael(el, 600, 200);
 
-					var statechart = window.statechart = red.create("statechart");
+					var pe = red.create_event("parsed", {str: "", context: red.create("pointer"), inert: true});
+					var statechart = window.statechart = red.create("statechart").add_state("INIT").starts_at("INIT").run()
+																				.add_state("b").add_transition("INIT", "b", pe).run();
 
 					var scv = red.create("statechart_view", statechart, paper, {root: true});
 					scv.on("add_state", function(event) {
@@ -23,7 +24,7 @@
 						var child_name = "state_" + statechart.get_substates().length;
 						statechart.add_state(child_name);
 					}).on("add_transition", function(event) {
-						statechart.add_transition(event.from_state, event.to_state, red.create_event("parsed", "", dict, red.create("context", {stack: [dict]})));
+						statechart.add_transition(event.from_state, event.to_state, red.create_event("parsed", {str: "", context: statechart.get_context()}));
 					}).on("set_event_str", function(event) {
 						var str = event.str;
 						var transition_event = event.transition_event;
