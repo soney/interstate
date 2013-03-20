@@ -190,6 +190,11 @@ var summarize_value = function(value) {
 			__value__: "contextual_obj",
 			object_summary: value.summarize()
 		};
+	} else if(value instanceof red.WrapperClient) {
+		rv = {
+			__type__: "summarized_obj",
+			__value__: "client_wrapper"
+		};
 	} else if(_.isArray(value)) {
 		rv = _.map(value, summarize_value);
 	} else if(_.isFunction(value)) {

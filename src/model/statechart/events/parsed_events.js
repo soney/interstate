@@ -18,6 +18,13 @@ red.ParsedEvent = red._create_event_type("parsed");
 var id  = 0;
 (function(my) {
 	var proto = my.prototype;
+	proto.set_transition = function(transition) {
+		my.superclass.set_transition.apply(this, arguments);
+		if(this._old_event) {
+			this._old_event.set_transition(this.get_transition());
+		}
+	};
+
 	proto.on_create = function(options) {
 		this.id = id++;
 		this.options = options;

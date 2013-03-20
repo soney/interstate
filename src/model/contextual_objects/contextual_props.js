@@ -6,6 +6,7 @@ red.ContextualStatefulProp = function(options) {
 	this.transition_times_run = {};
 	this.used_start_transition = false;
 
+/*
 	var values = this.get_values();
 	var len = values.length;
 	var info;
@@ -21,6 +22,7 @@ red.ContextualStatefulProp = function(options) {
 			this.set_transition_times_run(state, state.get_times_run());
 		}
 	}
+	*/
 
 	this.$value.onChange(_.bind(function() {
 		if(red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
@@ -168,7 +170,7 @@ red.ContextualStatefulProp = function(options) {
 
 	proto.get_transition_times_run = function(transition) {
 		var transition_id = transition.id();
-		return this.transition_times_run[transition_id];
+		return this.transition_times_run[transition_id] || 0;
 	};
 	proto.set_transition_times_run = function(transition, tr) {
 		var transition_id = transition.id();
@@ -194,21 +196,34 @@ red.ContextualStatefulProp = function(options) {
 				}
 			} else if(state instanceof red.StatechartTransition) {
 				var tr = state.get_times_run();
-				if(tr > this.get_transition_times_run(state)) {
-					var pointer = this.get_pointer();
-					this.set_transition_times_run(state, tr);
-					var event = state._last_run_event;
-					var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
-
-					using_val = val;
-					using_state = state;
-					break;
-				} else if(!this._used_start_transition && state.from() instanceof red.StartState) {
+				if(!this._used_start_transition && state.from() instanceof red.StartState) {
 					using_val = val;
 					using_state = state;
 					_.defer(_.bind(function() {
 						this.$value.invalidate();
 					}, this));
+				}
+
+				if(tr > this.get_transition_times_run(state)) {
+					this.set_transition_times_run(state, tr);
+
+					if(using_val === NO_VAL) {
+						var pointer = this.get_pointer();
+						var event = state._last_run_event;
+						var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
+						using_val = val;
+						using_state = state;
+					}
+					//break;
+					/*
+				} else if(!this._used_start_transition && state.from() instanceof red.StartState) {
+					using_val = val;
+					using_state = state;
+					/*
+					_.defer(_.bind(function() {
+						this.$value.invalidate();
+					}, this));
+					*/
 				}
 			}
 		}
