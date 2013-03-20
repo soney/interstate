@@ -105,7 +105,7 @@ red.DomAttachmentInstance = function(options) {
 			var css = contextual_object.prop("css");
 			var child_vals = {};
 			if(css instanceof red.ContextualDict) {
-				var children = css.children();
+				var children = css.children(true);
 				var prop_names = _.pluck(children, "name");
 				_.each(children, function(child) {
 					child_vals[child.name] = child.value;
@@ -172,7 +172,7 @@ red.DomAttachmentInstance = function(options) {
 			var css = contextual_object.prop("attr");
 			var child_vals = {};
 			if(css instanceof red.ContextualDict) {
-				var children = css.children();
+				var children = css.children(true);
 				var prop_names = _.pluck(children, "name");
 				_.each(children, function(child) {
 					child_vals[child.name] = child.value;
@@ -255,7 +255,7 @@ red.DomAttachmentInstance = function(options) {
 				if(children) {
 					var cc;
 					if(children instanceof red.ContextualDict) {
-						cc = children.children();
+						cc = children.children(true);
 					} else if(children instanceof red.ContextualObj) {
 						cc = children.val();
 						if(!_.isArray(cc)) {

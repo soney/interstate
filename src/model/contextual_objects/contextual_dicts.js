@@ -120,11 +120,11 @@ red.ContextualDict = function(options) {
 		return rv;
 	};
 
-	proto.children = function() {
+	proto.children = function(exclude_builtins) {
 		var dict = this.object;
 		var pointer = this.pointer;
 
-		var builtin_names = dict._get_builtin_prop_names();
+		var builtin_names = exclude_builtins === true ? [] : dict._get_builtin_prop_names();
 		var direct_names = dict._get_direct_prop_names();
 
 		var owners = {};

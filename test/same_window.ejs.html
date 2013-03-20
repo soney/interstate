@@ -26,17 +26,32 @@
 
 
 				*/
-				root.unset("dom");
-				root.unset("children");
+env
+.cd("children")
+	.set("obj", "<stateful>")
+	.cd("obj")
+		.add_transition("INIT", "INIT", "on('timeout', 500)")
+		.set("(protos)", "INIT", "dom")
+		.set("tag", "<stateful_prop>")
+		.set("text", "<stateful_prop>")
+		.set("tag", "INIT", "'div'")
+		.set("text", "INIT", "i")
+		.set("i", "(start) -> INIT", "50")
+		.set("i", "INIT -> INIT", "i+1")
+;
+	/*
 env
 .set("a", "1+1")
 .set("b", "<dict>")
 .cd("b")
+	.set("x", "a+2")
+	.set("y", "x+2")
 	.up()
 console.log(env.print());
+/**/
 				$("div.editor").editor({
 					//debug_ready: true,
-					//debug_env: true,
+					debug_env: true,
 					//command_box: true,
 					server_window: window
 				});

@@ -25,7 +25,7 @@ $.widget("red.editor", {
 
 		this.env = red.create("environment");
 		if(this.option("debug_env")) {
-			window.env = this.env;
+			window.output_env = this.env;
 		}
 		this.root = this.env.get_root();
 		this.element.dom_output({
@@ -58,10 +58,18 @@ $.widget("red.editor", {
 
 .set("ambiguous_view", "<stateful>")
 .cd("ambiguous_view")
-	.set("(protos)", "INIT", "type === 'dict' ? [dict_view] : type === 'cell' ? [cell_view] : [value_view]")
+	.set("(protos)", "INIT", "type === 'stateful' ? [dict_view] : type === 'dict' ? [dict_view] : type === 'stateful_prop' ? [stateful_prop_view] : type === 'cell' ? [cell_view] : [value_view]")
 	.set("client")
 	.set("client", "INIT", "false")
 	.set("type", "INIT", "client && client.type ? client.type() : ''")
+	.up()
+.set("stateful_prop_view", "<stateful>")
+.cd("stateful_prop_view")
+	.set("(protos)", "INIT", "[dom]")
+	.set("tag")
+	.set("tag", "INIT", "'span'")
+	.set("text")
+	.set("text", "INIT", "client.get('val')")
 	.up()
 .set("value_view", "<stateful>")
 .cd("value_view")
@@ -87,7 +95,7 @@ $.widget("red.editor", {
 		.set("child_disp", "<stateful>")
 		.cd("child_disp")
 			.set("(protos)", "INIT", "[dom]")
-			.set("(manifestations)", "parent.parent.client.get('children')")
+			.set("(manifestations)", "client.get('children')")
 			.set("children", "<dict>")
 			.cd("children")
 				.set("prop_name", "<stateful>")
@@ -101,7 +109,7 @@ $.widget("red.editor", {
 				.set("prop_value", "<stateful>")
 				.cd("prop_value")
 					.set("(protos)", "[ambiguous_view]")
-					.set("client", "basis.value")
+					.set("client", "parent.parent.basis.value || false")
 					.up()
 				.up()
 			.up()

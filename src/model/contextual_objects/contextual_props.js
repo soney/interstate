@@ -242,6 +242,9 @@ red.ContextualStatefulProp = function(options) {
 					this._used_start_transition = true;
 					using_val = val;
 					using_state = state;
+					_.defer(_.bind(function() {
+						this.$value.invalidate();
+					}, this));
 				}
 			}
 		}
@@ -293,6 +296,10 @@ red.ContextualCell = function(options) {
 	};
 	proto._getter = function() {
 		return this.value_constraint.get();
+	};
+	proto.str = function() {
+		var cell = this.get_object();
+		return cell.get_str();
 	};
 }(red.ContextualCell));
 
