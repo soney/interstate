@@ -185,12 +185,16 @@ $.widget("red.editor", {
 		var statechart = red.find_uid(id);
 		//var statechart = cobj.get_own_statechart();
 		var content = document.createElement("div");
-		var el = document.createElement("div");
-		el.style.position = "relative";
-		el.style.left = "300px";
-		content.appendChild(el);
-		var paper = Raphael(el, 600, 200);
-		var scv = red.create("statechart_view", statechart, paper, {root: true});
+		if(statechart) {
+			var el = document.createElement("div");
+			el.style.position = "relative";
+			el.style.left = "300px";
+			content.appendChild(el);
+			var paper = Raphael(el, 600, 200);
+			var scv = red.create("statechart_view", statechart, paper, {root: true});
+		} else {
+			content.textContent = "(waiting for statechart to load)";
+		}
 		return content;
 	}
 })
