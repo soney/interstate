@@ -181,8 +181,7 @@ $.widget("red.editor", {
 	.up()
 .set("get_statechart_view", function(cobj) {
 	if(cobj) {
-		var id = cobj.cobj_id;
-		var statechart = red.find_uid(id);
+		var statechart = red.create_remote_statechart(cobj);
 		//var statechart = cobj.get_own_statechart();
 		var content = document.createElement("div");
 		if(statechart) {

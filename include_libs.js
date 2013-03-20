@@ -81,6 +81,7 @@ exports.main_src = c(
 				"model/attachments/dom_attachment.js",
 				"model/communication_wrapper/wrapper_server.js",
 				"model/communication_wrapper/wrapper_client.js",
+				"model/communication_wrapper/remote_statecharts.js",
 				"controller/commands/command_core.js",
 				"controller/commands/prop_commands.js",
 				"controller/commands/cell_commands.js",
