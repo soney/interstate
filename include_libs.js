@@ -94,7 +94,8 @@ exports.main_src = c(
 				"view/raphael/raphael_utils.js",
 				"view/raphael/editable_text.js",
 				"view/raphael/state.js",
-				"view/raphael/transition.js"
+				"view/raphael/transition.js",
+				"view/editor_style.css"
 			]));
 
 var ends_with = function(str1, str2) {

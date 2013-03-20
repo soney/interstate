@@ -256,7 +256,7 @@ red.DomAttachmentInstance = function(options) {
 					var cc;
 					if(children instanceof red.ContextualDict) {
 						cc = children.children(true);
-					} else if(children instanceof red.ContextualObj) {
+					} else if(children instanceof red.ContextualObject) {
 						cc = children.val();
 						if(!_.isArray(cc)) {
 							cc = [cc];
@@ -264,6 +264,13 @@ red.DomAttachmentInstance = function(options) {
 					}
 
 					_.each(cc, function(c) {
+						if(!c) return;
+
+						if(_.isElement(c)) {
+							desired_children.push(c);
+							return;
+						}
+
 						var v = c.value;
 						if(!_.isArray(v)) { //Might be array because of manifestations
 							v = [v];

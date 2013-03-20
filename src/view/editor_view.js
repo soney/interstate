@@ -58,7 +58,7 @@ $.widget("red.editor", {
 
 .set("ambiguous_view", "<stateful>")
 .cd("ambiguous_view")
-	.set("(protos)", "INIT", "type === 'stateful' ? [dict_view] : type === 'dict' ? [dict_view] : type === 'stateful_prop' ? [stateful_prop_view] : type === 'cell' ? [cell_view] : [value_view]")
+	.set("(protos)", "INIT", "type === 'stateful' ? [dict_view] : type === 'dict' ? [dict_view] : type === 'stateful_prop' ? [stateful_prop_view] : type === 'cell' ? [cell_view] : type === 'statechart' ? [statecuart_view] : [value_view]")
 	.set("client")
 	.set("client", "INIT", "false")
 	.set("type", "INIT", "client && client.type ? client.type() : ''")
@@ -107,11 +107,27 @@ $.widget("red.editor", {
 		.set("class", "'cell' + (parent.inherited ? ' inherited' : '')")
 		.up()
 	.up()
+.set("statechart_view", "<stateful>")
+.cd("statechart_view")
+	.set("(protos)", "INIT", "[dom]")
+	.set("tag")
+	.set("tag", "INIT", "'div'")
+	.set("children", "<stateful_prop>")
+	.set("children", "INIT", "get_statechart_view(client.get('get_own_statechart'))")
+	.set("attr", "<dict>")
+	.cd("attr")
+		.set("class", "'statechart'")
+		.up()
+	.up()
 .set("dict_view", "<stateful>")
 .cd("dict_view")
 	.set("(protos)", "INIT", "[dom]")
 	.set("children", "<dict>")
 	.cd("children")
+		.set("statechart_disp", "<stateful>")
+		.cd("statechart_disp")
+			.set("(protos)", "client.type() === 'stateful' ? [statechart_view] : []")
+			.up()
 		.set("child_disp", "<stateful>")
 		.cd("child_disp")
 			.set("(protos)", "INIT", "[dom]")
@@ -163,6 +179,21 @@ $.widget("red.editor", {
 		.set("client", "INIT", "root_client")
 		.up()
 	.up()
+.set("get_statechart_view", function(cobj) {
+	if(cobj) {
+		var id = cobj.cobj_id;
+		var statechart = red.find_uid(id);
+		//var statechart = cobj.get_own_statechart();
+		var content = document.createElement("div");
+		var el = document.createElement("div");
+		el.style.position = "relative";
+		el.style.left = "300px";
+		content.appendChild(el);
+		var paper = Raphael(el, 600, 200);
+		var scv = red.create("statechart_view", statechart, paper, {root: true});
+		return content;
+	}
+})
 .set("print_value",
 "function(client) {\n" +
 	"var type = client && client.type ? client.type() : '';\n"+

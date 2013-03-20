@@ -155,6 +155,14 @@ red.WrapperClient = function(options) {
 				var object_summary = value.object_summary;
 				var wrapper_client = red.get_wrapper_client(object_summary, this.server_window);
 				return wrapper_client;
+			} else if(val === "state") {
+				var object_summary = value.object_summary;
+				var wrapper_client = red.get_wrapper_client(object_summary, this.server_window);
+				return wrapper_client;
+			} else if(val === "transition") {
+				var object_summary = value.object_summary;
+				var wrapper_client = red.get_wrapper_client(object_summary, this.server_window);
+				return wrapper_client;
 			} else if(val === "client_wrapper") {
 				return "(communication wrapper)";
 			} else if(val === "constraint") {

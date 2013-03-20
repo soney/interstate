@@ -1,0 +1,47 @@
+div#editor {
+	font-family: Courier New, Courier, monospace;
+	font-size: 0.8em;
+	font-weight: normal;
+	white-space: pre;
+}
+div#editor .prop_name {
+	display: inline-block;
+	width: 110px;
+	font-style:italic;
+}
+div#editor .dict_child {
+	padding-left: 20px;
+	outline:1px dotted #EEE;
+}
+
+div#editor .dict_child.inherited {
+	color: #AAA;
+}
+
+div#editor .dict_child.inherited .value {
+	background-color: #CCCC88;
+}
+
+div#editor .value {
+	font-weight: bold;
+	display: inline-block;
+	width: 150px;
+	max-width: 150px;
+	overflow: hidden;
+	background-color: #CCCC00;
+	padding-left: 3px;
+	padding-right: 3px;
+}
+
+div#editor .cell {
+	display: inline-block;
+	width: 70px;
+	max-width: 70px;
+	overflow: hidden;
+	padding-left: 3px;
+	padding-right: 3px;
+	border-right: 1px dotted #BBB;
+}
+div#editor .cell.inherited {
+	color: #AAA;
+}

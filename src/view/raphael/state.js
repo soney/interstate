@@ -434,7 +434,6 @@ var StatechartView = function(statechart, paper, options) {
 	}
 
 	this.$substates = this.statechart.$substates;
-	this.$outgoing_transitions = this.statechart.$outgoing_transitions;
 
 	this.$onSet = _.bind(this.onSet, this);
 	this.$onUnset = _.bind(this.onUnset, this);
@@ -472,7 +471,7 @@ var StatechartView = function(statechart, paper, options) {
 		this.$onTransitionRemoved = _.bind(this.onTransitionRemoved, this);
 		this.$onTransitionMoved = _.bind(this.onTransitionMoved, this);
 
-		this.$outgoing_transitions.each(function(transition) {
+		_.each(this.statechart.get_outgoing_transitions(), function(transition) {
 			this.$onTransitionAdded({
 				transition: transition
 			});

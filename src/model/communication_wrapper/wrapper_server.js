@@ -193,9 +193,23 @@ var summarize_value = function(value) {
 			object_summary: value.summarize()
 		};
 	} else if(value instanceof red.State) {
-		rv = "state";
+		rv = {
+			__type__: "summarized_obj",
+			__value__: "contextual_obj",
+			object_summary: {
+					type: 'state',
+					id: value.id()
+				}
+		};
 	} else if(value instanceof red.StatechartTransition) {
-		rv = "transition";
+		rv = {
+			__type__: "summarized_obj",
+			__value__: "contextual_obj",
+			object_summary: {
+					type: 'transition',
+					id: value.id()
+				}
+		};
 	} else if(value instanceof red.Cell) {
 		rv = {
 			__type__: "summarized_obj",
