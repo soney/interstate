@@ -150,14 +150,17 @@ red.WrapperClient = function(options) {
 		if(value && value.__type__ && value.__type__ === "summarized_obj") {
 			var val = value.__value__;
 			if(val === "function") {
-				return "(native JavaScript function)";
+				return "(native function)";
 			} else if(val === "contextual_obj") {
 				var object_summary = value.object_summary;
 				var wrapper_client = red.get_wrapper_client(object_summary, this.server_window);
 				return wrapper_client;
 			} else if(val === "client_wrapper") {
 				return "(communication wrapper)";
+			} else if(val === "constraint") {
+				return "(cjs constraint)";
 			}
+
 			return val;
 		} else if(_.isArray(value)) {
 			return _.map(value, _.bind(this.process_value, this));

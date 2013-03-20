@@ -68,6 +68,7 @@ var call_fn = function(node, options) {
 	} else if(type === "UnaryExpression") {
 		var op_func = red.unary_operators[node.operator];
 		var arg = call_fn(node.argument, options);
+		return op_func.call(window, arg);
 	} else if(type === "Identifier") {
 		var key = node.name;
 		if(key === "root") {

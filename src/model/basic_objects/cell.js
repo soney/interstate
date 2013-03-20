@@ -64,6 +64,9 @@ red.Cell = function(options, defer_initialization) {
 	};
 
 	proto.id = proto.hash = function() { return this._id; };
+	proto.summarize = function() {
+		return this.id();
+	};
 
 	red.register_serializable_type("cell",
 									function(x) { 

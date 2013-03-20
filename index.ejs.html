@@ -39,8 +39,12 @@
 					} catch(e) {
 						console.log("Creating a new project");
 						env = red.create("environment");
-						env	.set("a", "<stateful>")
+						env	.cd("children")
+							.set("a", "<stateful>")
 							.cd("a")
+								.set("(protos)", "INIT", "dom")
+								.set("text")
+								.set("text", "INIT", "'hello'")
 								.add_state("stateb")
 								.set("x")
 								.set("x", "INIT", "1+1")
@@ -51,7 +55,7 @@
 
 						the_div.dom_output({
 							root: root,
-							//edit_on_open: true
+							edit_on_open: true
 						});
 						env.print_on_return = true;
 					}

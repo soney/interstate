@@ -157,6 +157,7 @@ red.WrapperServer = function(options) {
 		}
 	};
 
+/*
 	proto.summarize = function() {
 		var object = this.get_object();
 		var summarized_object = object.summarize();
@@ -172,6 +173,7 @@ red.WrapperServer = function(options) {
 		var object = red.find_uid(obj.object_uid);
 		return red.find_or_put_contextual_obj(object, pointer);
 	};
+	*/
 
 }(red.WrapperServer));
 
@@ -190,10 +192,28 @@ var summarize_value = function(value) {
 			__value__: "contextual_obj",
 			object_summary: value.summarize()
 		};
+	} else if(value instanceof red.State) {
+		rv = "state";
+	} else if(value instanceof red.StatechartTransition) {
+		rv = "transition";
+	} else if(value instanceof red.Cell) {
+		rv = {
+			__type__: "summarized_obj",
+			__value__: "contextual_obj",
+			object_summary: {
+					type: 'raw_cell',
+					id: value.id()
+				}
+		};
 	} else if(value instanceof red.WrapperClient) {
 		rv = {
 			__type__: "summarized_obj",
 			__value__: "client_wrapper"
+		};
+	} else if(cjs.is_$(value)) {
+		rv = {
+			__type__: "summarized_obj",
+			__value__: "constraint"
 		};
 	} else if(_.isArray(value)) {
 		rv = _.map(value, summarize_value);

@@ -68,8 +68,20 @@ $.widget("red.editor", {
 	.set("(protos)", "INIT", "[dom]")
 	.set("tag")
 	.set("tag", "INIT", "'span'")
-	.set("text")
-	.set("text", "INIT", "client.get('val')")
+	.set("children", "<dict>")
+	.cd("children")
+		.set("values", "<stateful>")
+		.cd("values")
+			.set("(protos)", "INIT", "[cell_view]")
+			.set("(manifestations)", "INIT", "parent.parent.client.get('get_values')")
+			.set("client", "this.basis.value")
+			.set("inherited", "this.basis.inherited")
+			.up()
+		.up()
+	.set("attr", "<dict>")
+	.cd("attr")
+		.set("class", "'stateful_prop'")
+		.up()
 	.up()
 .set("value_view", "<stateful>")
 .cd("value_view")
@@ -77,7 +89,11 @@ $.widget("red.editor", {
 	.set("tag")
 	.set("tag", "INIT", "'span'")
 	.set("text")
-	.set("text", "INIT", "client")
+	.set("text", "INIT", "''")
+	.set("attr", "<dict>")
+	.cd("attr")
+		.set("class", "'&nbsp;'")
+		.up()
 	.up()
 .set("cell_view", "<stateful>")
 .cd("cell_view")
@@ -85,7 +101,11 @@ $.widget("red.editor", {
 	.set("tag")
 	.set("tag", "INIT", "'span'")
 	.set("text")
-	.set("text", "INIT", "client.get('val')")
+	.set("text", "INIT", "client.get('get_str')")
+	.set("attr", "<dict>")
+	.cd("attr")
+		.set("class", "'cell' + (parent.inherited ? ' inherited' : '')")
+		.up()
 	.up()
 .set("dict_view", "<stateful>")
 .cd("dict_view")
@@ -96,6 +116,10 @@ $.widget("red.editor", {
 		.cd("child_disp")
 			.set("(protos)", "INIT", "[dom]")
 			.set("(manifestations)", "client.get('children')")
+			.set("attr", "<dict>")
+			.cd("attr")
+				.set("class", "'dict_child' + (parent.basis.inherited ? ' inherited' : '')")
+				.up()
 			.set("children", "<dict>")
 			.cd("children")
 				.set("prop_name", "<stateful>")
@@ -104,10 +128,26 @@ $.widget("red.editor", {
 					.set("tag")
 					.set("tag", "INIT", "'span'")
 					.set("text")
-					.set("text", "INIT", "basis.name")
+					.set("text", "INIT", "parent.parent.basis.value && (parent.parent.basis.value.type() === 'dict' ||  parent.parent.basis.value.type() === 'stateful') ? basis.name + ':' : basis.name")
+					.set("attr", "<dict>")
+					.cd("attr")
+						.set("class", "'prop_name'")
+						.up()
 					.up()
 				.set("prop_value", "<stateful>")
 				.cd("prop_value")
+					.set("(protos)", "[dom]")
+					.set("tag")
+					.set("tag", "INIT", "'span'")
+					.set("text")
+					.set("text", "INIT", "print_value(parent.parent.basis.value)")
+					.set("attr", "<dict>")
+					.cd("attr")
+						.set("class", "'value'")
+						.up()
+					.up()
+				.set("prop_src", "<stateful>")
+				.cd("prop_src")
 					.set("(protos)", "[ambiguous_view]")
 					.set("client", "parent.parent.basis.value || false")
 					.up()
@@ -121,10 +161,45 @@ $.widget("red.editor", {
 		.set("(protos)", "INIT", "[ambiguous_view]")
 		.set("client")
 		.set("client", "INIT", "root_client")
+		.up()
+	.up()
+.set("print_value",
+"function(client) {\n" +
+	"var type = client && client.type ? client.type() : '';\n"+
+	"var rv;\n"+
+
+	"if(type === 'cell' || type === 'stateful_prop') {\n"+
+		"rv = client.get('val');\n"+
+	"} else if(type === 'dict' || type === 'stateful') {\n"+
+		"return '';\n"+
+	"} else if(type === '') {\n"+
+	/*
+		"if(client === undefined) {\n"+
+			"rv = '(undefined)';\n"+
+		"} else if(client === null) {\n"+
+			"rv = '(null)';\n"+
+		"} else if(client === true) {\n"+
+			"rv = '(true)';\n"+
+		"} else if(client === false) {\n"+
+			"rv = '(false)';\n"+
+		"} else {\n"+
+		*/
+			"rv = client;\n"+
+			/*
+		"}\n"+
+		*/
+	"}\n"+
+
+	"if(typeof rv === 'string' && rv[0] !== '(') {\n"+
+		"return '\"' + rv + '\"';\n"+
+	"} else {\n"+
+		"return ''+rv;\n"+
+	"}\n"+
+"}");
 
 
 // ===== END EDITOR ===== 
-this.env.print();
+//this.env.print();
 		if(this.option("debug_env")) {
 			this.env.print_on_return = true;
 		}

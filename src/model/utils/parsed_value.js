@@ -259,7 +259,7 @@ var get_val = red.get_parsed_val = function(node, options) {
 			right_arg = get_val(node.right, options);
 		return get_logical_val(node.operator, left_arg, right_arg);
 	} else if(type === "FunctionExpression") {
-		return red.get_fn_val(node, options);
+		return red.get_fn_$(node, options);
 	} else if(type === "Program") {
 		return get_val(node.body[0], options);
 	} else {

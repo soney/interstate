@@ -44,8 +44,8 @@ var Env = function(options) {
 		dom.set("tag", red.create("cell", {str: "'div'"}));
 		dom.set("text", red.create("cell", {str: "undefined"}));
 		//dom.set("children", red.create("dict", {has_protos: false}));
-		dom.set("attr", red.create("dict", {has_protos: false}));
-		dom.set("css", red.create("dict", {has_protos: false}));
+	//	dom.set("attr", red.create("dict", {has_protos: false}));
+	//	dom.set("css", red.create("dict", {has_protos: false}));
 		root_dict.set("dom", dom);
 
 		var children = red.create("dict", {has_protos: false});

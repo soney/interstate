@@ -119,11 +119,20 @@ red.ContextualStatefulProp = function(options) {
 				ifrom = inherits_from[i];
 				if(ifrom instanceof red.StatefulProp) {
 					var dvs = ifrom.get_direct_values();
-					entries.push.apply(entries, dvs.entries());
+					var dv_entries = dvs.entries();
+					dv_entries = _.map(dv_entries, function(x) {
+						return {
+							key: x.key,
+							value: x.value,
+							inherited: i>0
+						};
+					});
+					entries.push.apply(entries, dv_entries);
 				} else if(ifrom instanceof red.Cell) {
 					entries.push({
 						key: undefined,
-						value: ifrom
+						value: ifrom,
+						inherited: true
 					});
 				}
 			}
@@ -277,7 +286,7 @@ red.ContextualCell = function(options) {
 	proto._getter = function() {
 		return this.value_constraint.get();
 	};
-	proto.str = function() {
+	proto.get_str = function() {
 		var cell = this.get_object();
 		return cell.get_str();
 	};
