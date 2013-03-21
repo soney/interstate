@@ -1,5 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
+var origin = window.location.protocol + "//" + window.location.host;
 
 var chop = function(args) {
 	return _.first(args, args.length-1);
@@ -20,7 +21,6 @@ var register_response_listener = function(id, listener) {
 	}
 };
 
-var origin = window.location.protocol + "//" + window.location.host;
 var MessageDistributionCenter = function() {
 	able.make_this_listenable(this);
 	window.addEventListener("message", _.bind(function(event) {
@@ -34,6 +34,9 @@ var MessageDistributionCenter = function() {
 			if(type === "changed") {
 				var client = clients[client_id];
 				client.on_change.apply(client, server_message.getting);
+			} else if(type === "emit") {
+				var client = clients[client_id];
+				client.on_emit.call(client, server_message.args);
 			}
 		} else if(data.type === "response") {
 			var data = event.data,
@@ -59,6 +62,7 @@ var client_id = 0;
 var message_id = 0;
 
 red.WrapperClient = function(options) {
+	able.make_this_listenable(this);
 	this.server_window = options.server_window;
 	this.cobj_id = options.cobj_id;
 	this._type = options.type;
@@ -94,6 +98,8 @@ red.WrapperClient = function(options) {
 
 (function(my) {
 	var proto = my.prototype;
+	able.make_proto_listenable(proto);
+
 	proto.destroy = function() { };
 	proto.post = function(message) {
 		var m_id = message_id++;
@@ -146,6 +152,11 @@ red.WrapperClient = function(options) {
 		// Why update now when you can update when ready?
 		
 		this.update(args);
+	};
+	proto.on_emit = function(args) {
+		var args = this.process_value(args);
+		console.log("EMIT", args);
+		this._emit.apply(this, args);
 	};
 	proto.process_value = function(value) {
 		if(value && value.__type__ && value.__type__ === "summarized_obj") {

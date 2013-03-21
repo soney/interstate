@@ -1,7 +1,7 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
-
 var origin = window.location.protocol + "//" + window.location.host;
+
 var MessageDistributionCenter = function() {
 	able.make_this_listenable(this);
 	window.addEventListener("message", _.bind(function(event) {
@@ -77,10 +77,11 @@ var argeq = function(arg1, arg2) {
 	return arg1 === arg2;
 };
 red.WrapperServer = function(options) {
-	able.make_this_listenable(this);
 	this.object = options.object;
 	this._type = "none";
 	this.client_listeners = [];
+	this._event_type_listeners = options.listen_to || [];
+	this.$on_emit = _.bind(this.on_emit, this);
 
 	this.fn_call_constraints = cjs.map({
 		hash: function(args) {
@@ -104,9 +105,26 @@ red.WrapperServer = function(options) {
 
 (function(my) {
 	var proto = my.prototype;
-	able.make_proto_listenable(proto);
 
-	proto.destroy = function() { };
+	proto.add_emission_listeners = function() {
+		var object = this.get_object();
+		var listener = this.$on_emit;
+		_.each(this._event_type_listeners, function(event_type) {
+			object.on(event_type, listener);
+		});
+	};
+
+	proto.remove_emission_listeners = function() {
+		var object = this.get_object();
+		var listener = this.$on_emit;
+		_.each(this._event_type_listeners, function(event_type) {
+			object.off(event_type, listener);
+		});
+	};
+
+	proto.destroy = function() {
+		this.remove_emission_listeners();
+	};
 
 	proto.type = function() {
 		return this._type;
@@ -116,6 +134,18 @@ red.WrapperServer = function(options) {
 	};
 	proto.register_listener = function(listener_info) {
 		this.client_listeners.push(listener_info);
+	};
+
+	proto.on_emit = function() {
+		this.remote_emit.apply(this, arguments);
+	};
+
+	proto.remote_emit = function() {
+		var args = _.map(summarize_value, arguments);
+		this.post({
+			type: "emit",
+			args: args
+		});
 	};
 
 	proto.on_request = function(getting, callback) {
@@ -156,24 +186,6 @@ red.WrapperServer = function(options) {
 			}
 		}
 	};
-
-/*
-	proto.summarize = function() {
-		var object = this.get_object();
-		var summarized_object = object.summarize();
-		var type = this.get_type();
-		return {
-			cobject: summarized_object,
-			type: type
-		};
-	};
-
-	my.desummarize = function(obj) {
-		var pointer = red.Pointer.desummarize(obj.pointer);
-		var object = red.find_uid(obj.object_uid);
-		return red.find_or_put_contextual_obj(object, pointer);
-	};
-	*/
 
 }(red.WrapperServer));
 
