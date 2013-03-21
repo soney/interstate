@@ -55,7 +55,9 @@ red.TransitionEvent = red._create_event_type("transition");
 										.flatten(true)
 										.compact()
 										.value();
-			this.add_listeners();
+			if(this.is_enabled()) {
+				this.add_listeners();
+			}
 		}, {
 			context: this
 		});
@@ -95,6 +97,14 @@ red.TransitionEvent = red._create_event_type("transition");
 										var rest_args = _.rest(arguments);
 										return new my(red.deserialize.apply(red, ([obj.targets]).concat(rest_args)), obj.spec);
 									});
+	proto.enable = function() {
+		my.superclass.enable.apply(this, arguments);
+		this.add_listeners();
+	};
+	proto.disable = function() {
+		my.superclass.disable.apply(this, arguments);
+		this.remove_listeners();
+	};
 }(red.TransitionEvent));
 
 red.StatechartEvent = red._create_event_type("statechart");
@@ -143,7 +153,7 @@ red.StatechartEvent = red._create_event_type("statechart");
 	proto.id = function() { return this._id; };
 	proto.set_target = function(target) {
 		this.target = target;
-		if(this.options.inert !== true) {
+		if(this.options.inert !== true && this.is_enabled()) {
 			this.target.on(this.spec, this.$on_spec);
 		}
 	};
@@ -190,6 +200,16 @@ red.StatechartEvent = red._create_event_type("statechart");
 											spec: spec
 										});
 									});
+	proto.enable = function() {
+		my.superclass.enable.apply(this, arguments);
+		if(this.options.inert !== true) {
+			this.target.on(this.spec, this.$on_spec);
+		}
+	};
+	proto.disable = function() {
+		my.superclass.disable.apply(this, arguments);
+		this.target.off(this.spec, this.$on_spec);
+	};
 }(red.StatechartEvent));
 
 }(red));

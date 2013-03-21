@@ -7,7 +7,6 @@ var cjs = red.cjs, _ = red._;
 		this._in_effect = !!in_effect;
 
 		this.$check_constraint_val = _.bind(this.check_constraint_val, this);
-		this.constraint.onChange(this.$check_constraint_val);
 	};
 
 	proto.check_constraint_val = function() {
@@ -28,6 +27,15 @@ var cjs = red.cjs, _ = red._;
 	};
 	proto.destroy = function(silent) {
 		this.constraint.destroy(silent);
+	};
+
+	proto.enable = function() {
+		my.superclass.enable.apply(this, arguments);
+		this.constraint.onChange(this.$check_constraint_val);
+	};
+	proto.disable = function() {
+		my.superclass.disable.apply(this, arguments);
+		this.constraint.offChange(this.$check_constraint_val);
 	};
 }(red._create_event_type("constraint").prototype));
 }(red));

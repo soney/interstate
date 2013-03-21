@@ -62,6 +62,9 @@ red.ParsedEvent = red._create_event_type("parsed");
 				if(event) {
 					event.set_transition(this.get_transition());
 					event.on_fire(this.$child_fired);
+					if(this.is_enabled()) {
+						event.enable();
+					}
 				}
 
 				this._old_event = event;
@@ -110,5 +113,17 @@ red.ParsedEvent = red._create_event_type("parsed");
 											inert: obj.inert
 										});
 									});
+	proto.enable = function() {
+		my.superclass.enable.apply(this, arguments);
+		if(this._old_event) {
+			this._old_event.enable();
+		}
+	};
+	proto.disable = function() {
+		my.superclass.disable.apply(this, arguments);
+		if(this._old_event) {
+			this._old_event.disable();
+		}
+	};
 }(red.ParsedEvent));
 }(red));

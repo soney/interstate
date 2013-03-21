@@ -26,6 +26,10 @@ var EventQueue = function() {
 	var proto = my.prototype;
 	able.make_proto_listenable(proto);
 
+	proto.is_running = function() {
+		return this.running_event_queue === false;
+	};
+
 	proto.run_event_queue = function() {
 		if(this.running_event_queue === false) {
 			this.running_event_queue = true;
@@ -77,6 +81,7 @@ red.event_queue = new EventQueue();
 red.Event = function() {
 	this._initialize();
 	this._transition = undefined;
+	this._enabled = false;
 	this.on_create.apply(this, arguments);
 };
 
@@ -130,8 +135,16 @@ red.Event = function() {
 	proto.type = function() {
 		return this._type;
 	};
+	proto.enable = function() {
+		this._enabled = true;
+	};
+	proto.disable = function() {
+		this._enabled = false;
+	};
+	proto.is_enabled = function() {
+		return this._enabled;
+	};
 }(red.Event));
-red.event_queue = new EventQueue();
 
 var event_types = {};
 

@@ -63,6 +63,13 @@ var cjs = red.cjs, _ = red._;
 		});
 		red.event_queue.signal();
 	};
+
+	proto.enable = function() {
+		my.superclass.enable.apply(this, arguments);
+	};
+	proto.disable = function() {
+		my.superclass.disable.apply(this, arguments);
+	};
 }(red._create_event_type("timeout").prototype));
 
 }(red));
