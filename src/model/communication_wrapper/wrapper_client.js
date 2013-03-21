@@ -36,7 +36,7 @@ var MessageDistributionCenter = function() {
 				client.on_change.apply(client, server_message.getting);
 			} else if(type === "emit") {
 				var client = clients[client_id];
-				client.on_emit.call(client, server_message.args);
+				client.on_emit.apply(client, ([server_message.type]).concat(server_message.args));
 			}
 		} else if(data.type === "response") {
 			var data = event.data,
@@ -153,9 +153,11 @@ red.WrapperClient = function(options) {
 		
 		this.update(args);
 	};
-	proto.on_emit = function(args) {
-		var args = this.process_value(args);
-		this._emit.apply(this, args);
+	proto.on_emit = function(event_type) {
+		var args = _.rest(arguments);
+		args = this.process_value(args);
+
+		this._emit.apply(this, ([event_type]).concat(args));
 	};
 	proto.process_value = function(value) {
 		if(value && value.__type__ && value.__type__ === "summarized_obj") {

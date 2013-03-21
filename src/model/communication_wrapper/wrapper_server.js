@@ -81,7 +81,9 @@ red.WrapperServer = function(options) {
 	this._type = "none";
 	this.client_listeners = [];
 	this._event_type_listeners = options.listen_to || [];
+
 	this.$on_emit = _.bind(this.on_emit, this);
+	this.add_emission_listeners();
 
 	this.fn_call_constraints = cjs.map({
 		hash: function(args) {
@@ -137,13 +139,17 @@ red.WrapperServer = function(options) {
 	};
 
 	proto.on_emit = function() {
+		console.log(arguments);
 		this.remote_emit.apply(this, arguments);
 	};
 
 	proto.remote_emit = function() {
-		var args = _.map(summarize_value, arguments);
+		var event_type = _.last(arguments);
+		var args = _.first(arguments, arguments.length-1);
+		args = _.map(args, summarize_value);
 		this.post({
 			type: "emit",
+			event_type: event_type,
 			args: args
 		});
 	};
@@ -294,11 +300,11 @@ red.get_wrapper_server = function(object) {
 
 		var listen_to;
 		if(object instanceof red.State) {
-			listen_to = ["setTo", "setFrom", "remove", "destroy", "fire"];
-		} else if(object instanceof red.StatechartTransition) {
 			listen_to = ["add_transition", "add_substate", "remove_substate",
 								"rename_substate", "move_substate", "make_concurrent",
 								"on_transition", "off_transition", "destroy"];
+		} else if(object instanceof red.StatechartTransition) {
+			listen_to = ["setTo", "setFrom", "remove", "destroy", "fire"];
 		} else {
 			listen_to = [];
 		}
