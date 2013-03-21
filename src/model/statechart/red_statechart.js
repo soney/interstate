@@ -787,12 +787,18 @@ red.StartState = function(options) {
 	};
 	proto.get_substates = function() { return []; };
 	proto.get_active_states = function() { return []; };
-	proto.get_outgoing_transitions = function() { return [this.outgoingTransition]; };
-	proto.get_incoming_transitions = function() { 
-		if(this._transition_to_self) {
+	proto.get_outgoing_transitions = function() {
+		if(this.outgoingTransition) {
 			return [this.outgoingTransition];
 		} else {
-			return {};
+			return [];
+		}
+	};
+	proto.get_incoming_transitions = function() { 
+		if(this._transition_to_self && this.outgoingTransition) {
+			return [this.outgoingTransition];
+		} else {
+			return [];
 		}
 	};
 	proto._add_direct_incoming_transition = function(transition) {
