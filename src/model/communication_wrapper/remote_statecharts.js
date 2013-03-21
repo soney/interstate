@@ -1,7 +1,6 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-
 var statecharts = {};
 
 red.create_remote_statechart = function(wrapper_client) {
