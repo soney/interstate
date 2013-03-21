@@ -69,7 +69,6 @@ exports.main_src = c(
 				"model/contextual_objects/contextual_cell.js",
 				"model/contextual_objects/contextual_stateful.js",
 				"model/contextual_objects/contextual_stateful_prop.js",
-				"model/contextual_objects/contextual_template.js",
 				"model/statechart/red_statechart.js",
 				"model/statechart/events/event_core.js",
 				"model/statechart/events/red_obj_events.js",

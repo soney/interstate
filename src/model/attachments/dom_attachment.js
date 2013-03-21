@@ -228,6 +228,16 @@ red.DomAttachmentInstance = function(options) {
 			, pause_while_running: true
 		});
 	};
+
+	var get_dom_obj = function(contextual_dict) {
+		var dom_obj = false;
+		var dom_attachment = contextual_dict.get_attachment_instance("dom");
+		if(dom_attachment) {
+			dom_obj = dom_attachment.get_dom_obj();
+		}
+		return dom_obj;
+	};
+
 	proto.add_children_change_listener = function() {
 		var contextual_object = this.get_contextual_object();
 
@@ -255,7 +265,7 @@ red.DomAttachmentInstance = function(options) {
 				if(children) {
 					var cc;
 					if(children instanceof red.ContextualDict) {
-						cc = children.children(true);
+						cc = _.pluck(children.children(true), "value");
 					} else if(children instanceof red.ContextualObject) {
 						cc = children.val();
 						if(!_.isArray(cc)) {
@@ -263,29 +273,25 @@ red.DomAttachmentInstance = function(options) {
 						}
 					}
 
-					_.each(cc, function(c) {
-						if(!c) return;
 
+					_.each(cc, function(c) {
 						if(_.isElement(c)) {
 							desired_children.push(c);
-							return;
-						}
-
-						var v = c.value;
-						if(!_.isArray(v)) { //Might be array because of manifestations
-							v = [v];
-						}
-						_.each(v, function(contextual_dict) {
-							if(contextual_dict instanceof red.ContextualDict) {
-								var dom_attachment = contextual_dict.get_attachment_instance("dom");
-								if(dom_attachment) {
-									var dom_obj = dom_attachment.get_dom_obj();
-									if(dom_obj) {
-										desired_children.push(dom_obj);
-									}
+						} else if(c instanceof red.ContextualDict) {
+							if(c.is_template()) {
+								var instances = c.instances();
+								var dom_objs = _.chain(instances)
+												.map(get_dom_obj)
+												.compact()
+												.value();
+								desired_children.push.apply(desired_children, dom_objs);
+							} else {
+								var dom_obj = get_dom_obj(c);
+								if(dom_obj) {
+									desired_children.push(dom_obj);
 								}
 							}
-						});
+						}
 					}, this);
 				}
 

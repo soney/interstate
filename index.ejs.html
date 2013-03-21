@@ -43,12 +43,9 @@
 							.set("a", "<stateful>")
 							.cd("a")
 								.set("(protos)", "INIT", "dom")
+								.set("(manifestations)", "20")
 								.set("text")
 								.set("text", "INIT", "'hello'")
-								.add_state("stateb")
-								.set("x")
-								.set("x", "INIT", "1+1")
-								.set("x", "stateb", "2+2")
 								.up()
 
 						var root = env.get_root();
