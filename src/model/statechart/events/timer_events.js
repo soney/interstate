@@ -69,7 +69,7 @@ var cjs = red.cjs, _ = red._;
 		my.superclass.enable.apply(this, arguments);
 	};
 	proto.disable = function() {
-		my.superclass.prototype.disable.apply(this, arguments);
+		my.superclass.disable.apply(this, arguments);
 	};
 }(red._create_event_type("timeout")));
 

@@ -1,7 +1,8 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-(function(proto) {
+(function(my) {
+	var proto = my.prototype;
 	proto.on_create = function(events) {
 		this.events = events;
 		_.each(this.events, function(event) {
@@ -30,5 +31,5 @@ var cjs = red.cjs, _ = red._;
 			event.disable();
 		});
 	};
-}(red._create_event_type("combination").prototype));
+}(red._create_event_type("combination")));
 }(red));

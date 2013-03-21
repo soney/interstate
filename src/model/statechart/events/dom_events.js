@@ -1,7 +1,8 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-(function(proto) {
+(function(my) {
+	var proto = my.prototype;
 	proto.on_create = function(type, targets) {
 		var self = this;
 		this.get_target_listener = cjs.memoize(_.bind(function(specified_target) {
@@ -103,5 +104,5 @@ var cjs = red.cjs, _ = red._;
 	proto.disable = function() {
 		my.superclass.disable.apply(this, arguments);
 	};
-}(red._create_event_type("dom").prototype));
+}(red._create_event_type("dom")));
 }(red));

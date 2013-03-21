@@ -1,7 +1,8 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-(function(proto) {
+(function(my) {
+	var proto = my.prototype;
 	proto.on_create = function(constraint, in_effect) {
 		this.constraint = constraint;
 		this._in_effect = !!in_effect;
@@ -37,5 +38,5 @@ var cjs = red.cjs, _ = red._;
 		my.superclass.disable.apply(this, arguments);
 		this.constraint.offChange(this.$check_constraint_val);
 	};
-}(red._create_event_type("constraint").prototype));
+}(red._create_event_type("constraint")));
 }(red));

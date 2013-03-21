@@ -49,7 +49,7 @@ var STATE_VALUE_WIDTH = 100;
 var print_statechart = function() {
 	var last_arg = _.last(arguments);
 	var statecharts, logging_mechanism;
-	if(_.every(["log", "group", "groupCollapsed", "groupEnd"], _.bind(_.has, _, _.last(arguments)))) {
+	if(_.every(["log", "group", "groupCollapsed", "groupEnd"], _.bind(_.has, _, last_arg.constructor.prototype))) {
 		logging_mechanism = last_arg;
 		statecharts = _.first(arguments, arguments.length-1);
 	} else {
