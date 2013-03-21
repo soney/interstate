@@ -155,7 +155,6 @@ red.WrapperClient = function(options) {
 	};
 	proto.on_emit = function(args) {
 		var args = this.process_value(args);
-		console.log("EMIT", args);
 		this._emit.apply(this, args);
 	};
 	proto.process_value = function(value) {

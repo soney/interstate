@@ -19,7 +19,8 @@ var listener_map = new Map({
 	hash: "hash"
 });
 
-(function(proto) {
+(function(my) {
+	var proto = my.prototype;
 	proto.on_create = function(type, targets) {
 		this.type = type;
 		this.targets = _.flatten(targets);
@@ -90,6 +91,6 @@ var listener_map = new Map({
 		my.superclass.disable.apply(this, arguments);
 		this.remove_listeners();
 	};
-}(red._create_event_type("red_obj").prototype));
+}(red._create_event_type("red_obj")));
 
 }(red));

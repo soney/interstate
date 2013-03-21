@@ -202,7 +202,10 @@ var summarize_value = function(value) {
 		rv = {
 			__type__: "summarized_obj",
 			__value__: "contextual_obj",
-			object_summary: value.summarize()
+			object_summary: {
+				type: value.type(),
+				id: value.id()
+			}
 		};
 	} else if(value instanceof red.StartState) {
 		rv = {
@@ -288,9 +291,21 @@ red.get_wrapper_server = function(object) {
 		return wrapper_servers[id];
 	} else {
 		var rv;
+
+		var listen_to;
+		if(object instanceof red.State) {
+			listen_to = ["setTo", "setFrom", "remove", "destroy", "fire"];
+		} else if(object instanceof red.StatechartTransition) {
+			listen_to = ["add_transition", "add_substate", "remove_substate",
+								"rename_substate", "move_substate", "make_concurrent",
+								"on_transition", "off_transition", "destroy"];
+		} else {
+			listen_to = [];
+		}
 		
 		rv = new red.WrapperServer({
-			object: object
+			object: object,
+			listen_to: listen_to
 		});
 
 		wrapper_servers[id] = rv;

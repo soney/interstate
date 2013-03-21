@@ -413,7 +413,6 @@ red.State = function(options, defer_initialization) {
 	able.make_this_listenable(this);
 	this._id = options.id || uid();
 	this._last_run_event = cjs.$(false);
-	this._entrance_transition = cjs.$(false); 
 
 	this.$onBasisAddTransition = _.bind(function(event) {
 		var transition = event.transition;
@@ -523,6 +522,10 @@ red.State = function(options, defer_initialization) {
 					var shadow_outgoing = _.map(outgoing_transitions, create_transition_shadow);
 
 					_.each(shadow_outgoing, function(transition) {
+						var from = transition.from();
+						var to = transition.to();
+						from._add_direct_outgoing_transition(transition);
+						to._add_direct_incoming_transition(transition);
 						this.add_transition(transition);
 					}, this);
 				}, this);
@@ -588,8 +591,6 @@ red.State = function(options, defer_initialization) {
 	proto.context = function() { return this._context; };
 	proto.set_parent = function(parent) { this._parent = parent; return this; };
 	proto.set_context = function(context) { this._context = context; return this; };
-	proto.set_entrance_transition = function(transition) { this._entrance_transition.set(transition); };
-	proto.get_entrance_transition = function(transition) { return this._entrance_transition.get(); };
 
 	proto.is_based_on = function(state) {
 		return this.basis() === state;
@@ -740,6 +741,7 @@ red.State = function(options, defer_initialization) {
 
 red.StartState = function(options) {
 	options = options || {};
+	this.outgoingTransition = false;
 	red.StartState.superclass.constructor.apply(this, arguments);
 	this._running = options.running === true;
 };
@@ -984,7 +986,6 @@ red.Statechart = function(options) {
 	proto.get_active_substate = function() { return this.$local_state.get(); };
 	proto.is_running = function() { return this._running; };
 
-
 	proto.set_active_substate = function(state, transition, event) {
 		red.event_queue.once("end_event_queue_round_0", function() {
 			this._emit("pre_transition_fire", {
@@ -1000,7 +1001,7 @@ red.Statechart = function(options) {
 		red.event_queue.once("end_event_queue_round_3", function() {
 			var local_state = this.$local_state.get()
 			if(local_state) {
-				this.$local_state.disable_outgoing_transitions();
+				local_state.disable_outgoing_transitions();
 				local_state.set_active(false);
 			}
 			local_state = state;
@@ -1011,8 +1012,7 @@ red.Statechart = function(options) {
 					local_state.run();
 				}
 				local_state.set_active(true);
-				this.$local_state.enable_outgoing_transitions();
-				this.set_entrance_transition(transition)
+				local_state.enable_outgoing_transitions();
 			}
 			if(transition) { transition.increment_times_run(); }
 		}, this);
