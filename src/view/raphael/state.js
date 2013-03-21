@@ -475,22 +475,29 @@ var StatechartView = function(statechart, paper, options) {
 	able.make_proto_listenable(proto);
 	able.make_proto_optionable(proto);
 	proto.onStatesReady = function() {
-		this.$onTransitionAdded = _.bind(this.onTransitionAdded, this);
-		this.$onTransitionRemoved = _.bind(this.onTransitionRemoved, this);
-		this.$onTransitionMoved = _.bind(this.onTransitionMoved, this);
+		var do_on_ready = function() {
+			this.$onTransitionAdded = _.bind(this.onTransitionAdded, this);
+			this.$onTransitionRemoved = _.bind(this.onTransitionRemoved, this);
+			this.$onTransitionMoved = _.bind(this.onTransitionMoved, this);
 
-		_.each(this.statechart.get_outgoing_transitions(), function(transition) {
-			this.$onTransitionAdded({
-				transition: transition
+			_.each(this.statechart.get_outgoing_transitions(), function(transition) {
+				this.$onTransitionAdded({
+					transition: transition
+				});
+			}, this);
+
+			this.statechart.on("add_transition", this.$onTransitionAdded);
+
+			this.$substates.each(function(substate) {
+				var view = statechart_view_map.get(substate);
+				view.onStatesReady();
 			});
-		}, this);
-
-		this.statechart.on("add_transition", this.$onTransitionAdded);
-
-		this.$substates.each(function(substate) {
-			var view = statechart_view_map.get(substate);
-			view.onStatesReady();
-		});
+		};
+		if(this.statechart.is_initialized()) {
+			do_on_ready.call(this);
+		} else {
+			this.statechart.once("initialized", _.bind(do_on_ready, this));
+		}
 	};
 	proto.onTransitionAdded = function(event) {
 		var transition = event.transition,
@@ -527,20 +534,20 @@ var StatechartView = function(statechart, paper, options) {
 		var state = event.state,
 			state_name = event.state_name,
 			index = event.index;
+		var state_parent = state.parent();
+		var state_view = red.create("statechart_view", state, this.paper, {
+			parent: this
+			, state_name: state_name
+			, antenna_shaft_height: this.option("antenna_shaft_height")
+			, transition_layout_manager: this.transition_layout_manager
+			, column_layout_manager: this.children_layout_manager.push({own_width: false})
+		});
+		if(_.isNumber(index)) {
+			this.substate_views.splice(index, 0, state_view);
+		} else {
+			this.substate_views.push(state_view);
+		}
 		var on_initialized = function() {
-			var state_parent = state.parent();
-			var state_view = red.create("statechart_view", state, this.paper, {
-				parent: this
-				, state_name: state_name
-				, antenna_shaft_height: this.option("antenna_shaft_height")
-				, transition_layout_manager: this.transition_layout_manager
-				, column_layout_manager: this.children_layout_manager.push({own_width: false})
-			});
-			if(_.isNumber(index)) {
-				this.substate_views.splice(index, 0, state_view);
-			} else {
-				this.substate_views.push(state_view);
-			}
 			if(also_initialize !== false) {
 				state_view.onStatesReady();
 			}
