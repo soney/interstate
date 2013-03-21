@@ -197,6 +197,9 @@ $.widget("red.editor", {
 		return content;
 	}
 })
+.set("post_command", _.bind(function(command) {
+	this.client_socket.post_command(command);
+}, this))
 .set("print_value",
 "function(client) {\n" +
 	"var type = client && client.type ? client.type() : '';\n"+
