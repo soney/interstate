@@ -79,6 +79,7 @@ var EventQueue = function() {
 red.event_queue = new EventQueue();
 
 red.Event = function() {
+	able.make_this_listenable(this);
 	this._initialize();
 	this._transition = undefined;
 	this._enabled = false;
@@ -87,6 +88,7 @@ red.Event = function() {
 
 (function(my) {
 	var proto = my.prototype;
+	able.make_proto_listenable(proto);
 	proto._initialize = function() {
 		this.listeners = [];
 		this.$fire_and_signal = _.bind(this.fire_and_signal, this);

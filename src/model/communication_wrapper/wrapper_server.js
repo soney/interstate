@@ -313,6 +313,8 @@ red.get_wrapper_server = function(object) {
 								"active", "inactive"];
 		} else if(object instanceof red.StatechartTransition) {
 			listen_to = ["setTo", "setFrom", "remove", "destroy", "fire"];
+		} else if(object instanceof red.ParsedEvent) {
+			listen_to = ["setString"];
 		} else {
 			listen_to = [];
 		}

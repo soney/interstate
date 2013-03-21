@@ -79,7 +79,12 @@ red.ParsedEvent = red._create_event_type("parsed");
 		this.fire.apply(this, arguments);
 	};
 	proto.get_str = function() { return this._str.get(); };
-	proto.set_str = function(str) { this._str.set(str); };
+	proto.set_str = function(str) {
+		this._str.set(str);
+		this._emit("setString", {
+			to: str
+		});
+	};
 	proto.create_shadow = function(parent_statechart, context) {
 		return red.create_event("parsed", {str: this._str, context: context, inert_shadows: this.options.inert_shadows, inert: this.options.inert_shadows});
 	};

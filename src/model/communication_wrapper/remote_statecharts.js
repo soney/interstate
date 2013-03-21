@@ -13,7 +13,7 @@ red.create_remote_statechart = function(wrapper_client, statechart_parent) {
 		} else {
 			var type = wrapper_client.type();
 			if(type === "statechart") {
-				statechart = new red.Statechart({inert: true}, true);
+				statechart = new red.Statechart(null, true);
 				var substates = _.Deferred();
 				var substates_value;
 				wrapper_client.async_get('get_substates', function(substate_wrappers) {
@@ -79,7 +79,8 @@ red.create_remote_statechart = function(wrapper_client, statechart_parent) {
 						incoming_transitions: incoming_transitions_value,
 						parent: statechart_parent,
 						start_state: start_state_value,
-						active: is_active_value
+						active: is_active_value,
+						puppet: true
 					});
 
 					wrapper_client.on("add_substate", function(event) {
@@ -129,11 +130,12 @@ red.create_remote_statechart = function(wrapper_client, statechart_parent) {
 					});
 				});
 			} else {
-				statechart = new red.StartState({inert: true}, true);
+				statechart = new red.StartState(null, true);
 
 				var outgoing_transition = _.Deferred();
 				var outgoing_transition_value;
 				wrapper_client.async_get('get_outgoing_transition', function(transition_wrapper) {
+					outgoing_transition_value = red.create_remote_transition(transition_wrapper);
 					outgoing_transition.resolve();
 				});
 
@@ -149,7 +151,8 @@ red.create_remote_statechart = function(wrapper_client, statechart_parent) {
 					statechart.do_initialize({
 						outgoing_transition: outgoing_transition_value,
 						parent: statechart_parent,
-						active: is_active_value
+						active: is_active_value,
+						puppet: true
 					});
 				});
 			}
@@ -169,40 +172,55 @@ red.create_remote_transition = function(wrapper_client) {
 		if(transitions.hasOwnProperty(id)) {
 			transition = transitions[id];
 		} else {
-			var event = red.create_event("parsed", {str: "", inert: true});
-			var transition = new red.StatechartTransition({from: false, to: false, event: event});
+			var transition = new red.StatechartTransition(null, true);
 
-			cjs.liven(function() {
-				var new_event_wrapper = wrapper_client.get_$('event') || false;
-				var new_event = false;
-				if(new_event_wrapper) {
-					new_event = red.create_remote_event(new_event_wrapper);
-				}
-				if(new_event) {
-					transition.set_event(new_event);
-					event = new_event;
-				}
+			var from = _.Deferred();
+			var from_value;
+			wrapper_client.async_get('from', function(state_wrapper) {
+				from_value = red.create_remote_statechart(state_wrapper);
+				from.resolve();
 			});
 
-			wrapper_client.on("setTo", function(event) {
-				var state_client_wrapper = event.state,
-					state = red.create_remote_statechart(state_client_wrapper);
-				transition.setTo(state);
+			var to = _.Deferred();
+			var to_value;
+			wrapper_client.async_get('to', function(state_wrapper) {
+				to_value = red.create_remote_statechart(state_wrapper);
+				to.resolve();
 			});
-			wrapper_client.on("setFrom", function(event) {
-				var state_client_wrapper = event.state,
-					state = red.create_remote_statechart(state_client_wrapper);
-				transition.setFrom(state);
+
+			var event = _.Deferred();
+			var event_value;
+			wrapper_client.async_get('event', function(event_wrapper) {
+				event_value = red.create_remote_event(event_wrapper);
+				event.resolve();
 			});
-			wrapper_client.on("remove", function(event) {
-				transition.remove();
-			});
-			wrapper_client.on("destroy", function(event) {
-				transition.destroy();
-			});
-			wrapper_client.on("fire", function(event) {
-				var e = event.event;
-				transition.fire(e);
+			var promises = [from.promise(), to.promise(), event.promise()];
+			_.when(promises).done(function() {
+				transition.do_initialize({
+					from: from_value,
+					to: to_value,
+					event: event_value
+				});
+				wrapper_client.on("setTo", function(event) {
+					var state_client_wrapper = event.state,
+						state = red.create_remote_statechart(state_client_wrapper);
+					transition.setTo(state);
+				});
+				wrapper_client.on("setFrom", function(event) {
+					var state_client_wrapper = event.state,
+						state = red.create_remote_statechart(state_client_wrapper);
+					transition.setFrom(state);
+				});
+				wrapper_client.on("remove", function(event) {
+					transition.remove();
+				});
+				wrapper_client.on("destroy", function(event) {
+					transition.destroy();
+				});
+				wrapper_client.on("fire", function(event) {
+					var e = event.event;
+					transition.fire(e);
+				});
 			});
 		}
 	}
@@ -220,16 +238,15 @@ red.create_remote_event = function(wrapper_client) {
 			event = events[id];
 		} else {
 			var event_type = wrapper_client.object_summary.event_type;
-			event = red.create_event(event_type, {str: "", inert: true});
-			events[id] = event;
+			event = red.create_event(event_type, {inert: true});
 			if(event_type === "parsed") {
-				var str = ""
-				cjs.liven(function() {
-					var new_str = wrapper_client.get_$('get_str') || "";
-					if(str !== new_str) {
-						event.set_str(new_str);
-						str = new_str;
-					}
+				var str_val = "";
+				wrapper_client.async_get("get_str", function(str) {
+					event.set_str(str);
+				});
+
+				wrapper_client.on("setString", function(str) {
+					event.set_str(str);
 				});
 			}
 		}
