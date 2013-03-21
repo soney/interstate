@@ -186,55 +186,63 @@ var Transition = function(transition, paper, options) {
 
 	this.transition = transition;
 	this.paper = paper;
-	var from_view = this.option("from_view");
-	var to_view = this.option("to_view");
+	var do_draw = function() {
+		var from_view = this.option("from_view");
+		var to_view = this.option("to_view");
 
-	//console.log(to_view.option("state_name"), to_view.option("x"));
-	//console.log("from_x: " + from_view.option("x"), "from_width: " + from_view.option("width"), "to_x: " + to_view.option("x") , "to_width: " + to_view.option("width"));
-	//console.log(to_view.antenna.rrcompound.find("circle")._element.node);
+		//console.log(to_view.option("state_name"), to_view.option("x"));
+		//console.log("from_x: " + from_view.option("x"), "from_width: " + from_view.option("width"), "to_x: " + to_view.option("x") , "to_width: " + to_view.option("width"));
+		//console.log(to_view.antenna.rrcompound.find("circle")._element.node);
 
-	this.arrow = red.create("arrow", this.paper, {
-		fromX: from_view.option("ownStateMiddleX")
-		, toX: to_view.option("ownStateMiddleX")
-		, animate_creation: this.option("animate_creation")
-		, fromY: this.option("y")
-		, toY: this.option("y")
-	});
-	var event = this.transition.event();
-	this.label = red.create("editable_text", this.paper, {
-		x: (this.arrow.option("fromX") + this.arrow.option("toX"))/2
-		, y: (this.arrow.option("fromY") + this.arrow.option("toY"))/2 - this.option("y_offset")
-		, width: Math.max(from_view.option("width"), Math.abs(this.arrow.option("fromX") - this.arrow.option("toX")) - this.arrow.option("radius") - this.arrow.option("arrowLength"))
-		, "text-anchor": "middle"
-		, text: event.get_str()
-		, default: "<event>"
-	});
-
-	var update_position = _.bind(function() {
-		this.arrow.option({
+		this.arrow = red.create("arrow", this.paper, {
 			fromX: from_view.option("ownStateMiddleX")
 			, toX: to_view.option("ownStateMiddleX")
 			, animate_creation: this.option("animate_creation")
 			, fromY: this.option("y")
 			, toY: this.option("y")
 		});
-		this.label.option({
+		var event = this.transition.event();
+		this.label = red.create("editable_text", this.paper, {
 			x: (this.arrow.option("fromX") + this.arrow.option("toX"))/2
 			, y: (this.arrow.option("fromY") + this.arrow.option("toY"))/2 - this.option("y_offset")
 			, width: Math.max(from_view.option("width"), Math.abs(this.arrow.option("fromX") - this.arrow.option("toX")) - this.arrow.option("radius") - this.arrow.option("arrowLength"))
+			, "text-anchor": "middle"
+			, text: event.get_str()
+			, default: "<event>"
 		});
-	}, this);
 
-	from_view.state_column.on("move", update_position);
-	to_view.state_column.on("move", update_position);
-	from_view.state_column.on("resize", update_position);
-	to_view.state_column.on("resize", update_position);
+		var update_position = _.bind(function() {
+			this.arrow.option({
+				fromX: from_view.option("ownStateMiddleX")
+				, toX: to_view.option("ownStateMiddleX")
+				, animate_creation: this.option("animate_creation")
+				, fromY: this.option("y")
+				, toY: this.option("y")
+			});
+			this.label.option({
+				x: (this.arrow.option("fromX") + this.arrow.option("toX"))/2
+				, y: (this.arrow.option("fromY") + this.arrow.option("toY"))/2 - this.option("y_offset")
+				, width: Math.max(from_view.option("width"), Math.abs(this.arrow.option("fromX") - this.arrow.option("toX")) - this.arrow.option("radius") - this.arrow.option("arrowLength"))
+			});
+		}, this);
 
-	this.$onSetEventRequest = _.bind(this.onSetEventRequest, this);
-	this.label.on("change", this.$onSetEventRequest);
-	this.transition.on("fire", function() {
-		this.arrow.flash();
-	}, this);
+		from_view.state_column.on("move", update_position);
+		to_view.state_column.on("move", update_position);
+		from_view.state_column.on("resize", update_position);
+		to_view.state_column.on("resize", update_position);
+
+		this.$onSetEventRequest = _.bind(this.onSetEventRequest, this);
+		this.label.on("change", this.$onSetEventRequest);
+		this.transition.on("fire", function() {
+			this.arrow.flash();
+		}, this);
+	};
+
+	if(this.transition.is_initialized()) {
+		do_draw.call(this);
+	} else {
+		this.transition.once("initialized", _.bind(do_draw, this));
+	}
 };
 
 (function(my) {

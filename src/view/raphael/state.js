@@ -265,201 +265,209 @@ var StatechartView = function(statechart, paper, options) {
 	}).hide();
 
 	var self = this;
-	if(this.option("root")) {
-		var add_state_layout_manager = this.column_layout_manager.push({own_width: this.option("state_width")});
-		this.add_state_button = paper.text(add_state_layout_manager.get_x(), 10, "+");
-		this.add_state_button.click(function(event) {
-			self._emit("add_state", {
-				originalEvent: event
-				, statechart: self.statechart
+	var do_draw = function() {
+		if(this.option("root")) {
+			var add_state_layout_manager = this.column_layout_manager.push({own_width: this.option("state_width")});
+			this.add_state_button = paper.text(add_state_layout_manager.get_x(), 10, "+");
+			this.add_state_button.click(function(event) {
+				self._emit("add_state", {
+					originalEvent: event
+					, statechart: self.statechart
+				});
+			}).attr({
+				"font-size": 30
+				, "cursor": "pointer"
+				, "text-anchor": "start"
 			});
-		}).attr({
-			"font-size": 30
-			, "cursor": "pointer"
-			, "text-anchor": "start"
-		});
-		add_state_layout_manager.on("move", function(col, x) {
-			self.add_state_button.attr("x", x);
-		});
-
-		var last_active_substates = [];
-		cjs.liven(function() {
-			var active_substates = this.statechart.get_active_states();
-			var made_active = _.difference(active_substates, last_active_substates);
-			var made_inactive = _.difference(last_active_substates, active_substates);
-			_.defer(function() {
-				var made_active_views = _.map(made_active, function(state) { return statechart_view_map.get(state); });
-				var made_inactive_views = _.map(made_inactive, function(state) { return statechart_view_map.get(state); });
-
-				_.each(made_active_views, function(view) { if(view) view.highlight(); });
-				_.each(made_inactive_views, function(view) { if(view) view.dim(); });
-
-				last_active_substates = active_substates;
+			add_state_layout_manager.on("move", function(col, x) {
+				self.add_state_button.attr("x", x);
 			});
-		}, {context: this});
-	} else {
-		this.state_column = this.column_layout_manager.insert_at(0, {own_width: this.option("state_width")});
 
-		this.state_label = red.create("editable_text", this.paper, {
-			x: this.state_column.get_x() + this.state_column.get_width()/2
-			, y: this.option("height")
-			, text: this.option("state_name")
-			, "text-anchor": "middle"
-			, width: this.option("width")
-		});
-		this.$onRenameRequested = _.bind(this.onRenameRequested, this);
-		this.state_label.on("change", this.$onRenameRequested);
+			var last_active_substates = [];
+			cjs.liven(function() {
+				var active_substates = this.statechart.get_active_states();
+				var made_active = _.difference(active_substates, last_active_substates);
+				var made_inactive = _.difference(last_active_substates, active_substates);
+				_.defer(function() {
+					var made_active_views = _.map(made_active, function(state) { return statechart_view_map.get(state); });
+					var made_inactive_views = _.map(made_inactive, function(state) { return statechart_view_map.get(state); });
 
-		this.state_outline = red.create("rrrect", this.paper, {
-			r: 3
-			, fill: "rgba(100, 100, 100, 0.1)"
-			, stroke: "none"
-		}).hide();
-		this.outline = red.create("rrrect", this.paper, {
-			r: 3
-			, fill: "rgba(100, 100, 100, 0.1)"
-		}).hide();
+					_.each(made_active_views, function(view) { if(view) view.highlight(); });
+					_.each(made_inactive_views, function(view) { if(view) view.dim(); });
 
-		this.antenna = red.create("antenna", this.paper, { x: this.option("ownStateMiddleX")
-															, shaft_height: 0
-															, animate_creation: false
-															, radius: this.option("antenna_top_radius")
-															, y: this.option("y")
-															});
+					last_active_substates = active_substates;
+				});
+			}, {context: this});
+		} else {
+			this.state_column = this.column_layout_manager.insert_at(0, {own_width: this.option("state_width")});
 
-		this.$update_outlines = _.bind(this.update_outlines, this);
-		this.$update_antenna = _.bind(this.update_antenna, this);
-		this.column_layout_manager	.on("resize", this.$update_outlines)
-									.on("move", this.$update_outlines);
-		this.state_column	.on("resize", this.$update_antenna)
-							.on("move", this.$update_antenna)
-							.on("resize", this.$update_outlines)
-							.on("move", this.$update_outlines);
+			this.state_label = red.create("editable_text", this.paper, {
+				x: this.state_column.get_x() + this.state_column.get_width()/2
+				, y: this.option("height")
+				, text: this.option("state_name")
+				, "text-anchor": "middle"
+				, width: this.option("width")
+			});
+			this.$onRenameRequested = _.bind(this.onRenameRequested, this);
+			this.state_label.on("change", this.$onRenameRequested);
 
-		//this.transition_layout_manager.update_layout();
-		this.antenna.rrcompound.find("circle").mousedown(_.bind(function(event) {
-			var sc_root = this.statechart.root();
-			var substates = sc_root.flatten_substates();
-			var sc_root_view = statechart_view_map.get(sc_root);
+			this.state_outline = red.create("rrrect", this.paper, {
+				r: 3
+				, fill: "rgba(100, 100, 100, 0.1)"
+				, stroke: "none"
+			}).hide();
+			this.outline = red.create("rrrect", this.paper, {
+				r: 3
+				, fill: "rgba(100, 100, 100, 0.1)"
+			}).hide();
 
-			var nearest_target_index = function(x, y) {
-				var min_distance = -1;
-				var min_distance_index = -1;
-				for(var i = 0; i<substates.length; i++) {
-					var substate = substates[i];
-					var substate_view = statechart_view_map.get(substate);
-					if(_.has(substate_view, "antenna")) {
-						var target = substate_view.antenna.rrcompound.find("circle");
-						var distance = Math.pow(target.option("cx") - x, 2) + Math.pow(target.option("cy") - y, 2);
-						if(min_distance_index < 0 || distance < min_distance) {
-							min_distance = distance;
-							min_distance_index = i;
+			this.antenna = red.create("antenna", this.paper, { x: this.option("ownStateMiddleX")
+																, shaft_height: 0
+																, animate_creation: false
+																, radius: this.option("antenna_top_radius")
+																, y: this.option("y")
+																});
+
+			this.$update_outlines = _.bind(this.update_outlines, this);
+			this.$update_antenna = _.bind(this.update_antenna, this);
+			this.column_layout_manager	.on("resize", this.$update_outlines)
+										.on("move", this.$update_outlines);
+			this.state_column	.on("resize", this.$update_antenna)
+								.on("move", this.$update_antenna)
+								.on("resize", this.$update_outlines)
+								.on("move", this.$update_outlines);
+
+			//this.transition_layout_manager.update_layout();
+			this.antenna.rrcompound.find("circle").mousedown(_.bind(function(event) {
+				var sc_root = this.statechart.root();
+				var substates = sc_root.flatten_substates();
+				var sc_root_view = statechart_view_map.get(sc_root);
+
+				var nearest_target_index = function(x, y) {
+					var min_distance = -1;
+					var min_distance_index = -1;
+					for(var i = 0; i<substates.length; i++) {
+						var substate = substates[i];
+						var substate_view = statechart_view_map.get(substate);
+						if(_.has(substate_view, "antenna")) {
+							var target = substate_view.antenna.rrcompound.find("circle");
+							var distance = Math.pow(target.option("cx") - x, 2) + Math.pow(target.option("cy") - y, 2);
+							if(min_distance_index < 0 || distance < min_distance) {
+								min_distance = distance;
+								min_distance_index = i;
+							}
 						}
 					}
+					return min_distance_index;
+				};
+				var nearest_target = function(x, y) {
+					var nti = nearest_target_index(x, y);
+					return statechart_view_map.get(substates[nti]).antenna.rrcompound.find("circle");
+				};
+				var get_dest_point = function(x, y) {
+					var target = nearest_target(x,y);
+					if(!target) {
+						return {x: x, y: y};
+					} else {
+						return {x: target.option("cx"), y: target.option("cy")};
+					}
 				}
-				return min_distance_index;
-			};
-			var nearest_target = function(x, y) {
-				var nti = nearest_target_index(x, y);
-				return statechart_view_map.get(substates[nti]).antenna.rrcompound.find("circle");
-			};
-			var get_dest_point = function(x, y) {
-				var target = nearest_target(x,y);
-				if(!target) {
-					return {x: x, y: y};
-				} else {
-					return {x: target.option("cx"), y: target.option("cy")};
-				}
-			}
+					
+				var dest_point = get_dest_point(event.clientX, event.clientY);
+
+				var circle = this.antenna.rrcompound.find("circle");
 				
-			var dest_point = get_dest_point(event.clientX, event.clientY);
-
-			var circle = this.antenna.rrcompound.find("circle");
-			
-			var arrow = red.create("arrow", paper, {
-				fromX: circle.option("cx")
-				, fromY: circle.option("cy")
-				, toX: dest_point.x
-				, toY: dest_point.y
-			});
-			var old_dest = {x:-1, y:-1};
-			var onmousemove = _.bind(function(event) {
-				var x = event.clientX - this.paper.canvas.offsetLeft;
-				var y = event.clientY - this.paper.canvas.offsetTop;
-				var dest_point = get_dest_point(x, y);
-				if(dest_point.x !== old_dest.x || dest_point.y !== old_dest.y) {
-					arrow.option("toX", dest_point.x); arrow.option("toY", dest_point.y);
-					old_dest = dest_point;
-				}
-				event.stopPropagation();
-				event.preventDefault();
-			}, this);
-
-			window.addEventListener("mousemove", onmousemove);
-
-			var remove_event_listeners = function() {
-				window.removeEventListener("mousemove", onmousemove);
-				window.removeEventListener("mouseup", onmouseup);
-				window.removeEventListener("keydown", onkeydown);
-			};
-
-			var onmouseup = _.bind(function(event) {
-				arrow.remove();
-				remove_event_listeners();
-				var x = event.clientX - this.paper.canvas.offsetLeft;
-				var y = event.clientY - this.paper.canvas.offsetTop;
-				var substate_index = nearest_target_index(x, y);
-				var to_state = substates[substate_index];
-				var from_state = this.statechart;
-
-				self._emit("add_transition", {
-					originalevent: event,
-					from_state: from_state,
-					to_state: to_state
+				var arrow = red.create("arrow", paper, {
+					fromX: circle.option("cx")
+					, fromY: circle.option("cy")
+					, toX: dest_point.x
+					, toY: dest_point.y
 				});
-			}, this);
+				var old_dest = {x:-1, y:-1};
+				var onmousemove = _.bind(function(event) {
+					var x = event.clientX - this.paper.canvas.offsetLeft;
+					var y = event.clientY - this.paper.canvas.offsetTop;
+					var dest_point = get_dest_point(x, y);
+					if(dest_point.x !== old_dest.x || dest_point.y !== old_dest.y) {
+						arrow.option("toX", dest_point.x); arrow.option("toY", dest_point.y);
+						old_dest = dest_point;
+					}
+					event.stopPropagation();
+					event.preventDefault();
+				}, this);
 
-			var onkeydown = _.bind(function(event) {
-				if(event.keycode === 27) { // esc
+				window.addEventListener("mousemove", onmousemove);
+
+				var remove_event_listeners = function() {
+					window.removeEventListener("mousemove", onmousemove);
+					window.removeEventListener("mouseup", onmouseup);
+					window.removeEventListener("keydown", onkeydown);
+				};
+
+				var onmouseup = _.bind(function(event) {
 					arrow.remove();
 					remove_event_listeners();
-				}
-			}, this);
+					var x = event.clientX - this.paper.canvas.offsetLeft;
+					var y = event.clientY - this.paper.canvas.offsetTop;
+					var substate_index = nearest_target_index(x, y);
+					var to_state = substates[substate_index];
+					var from_state = this.statechart;
 
-			window.addEventListener("mouseup", onmouseup);
-			window.addEventListener("keydown", onkeydown);
-			event.stopPropagation();
-			event.preventDefault();
-		}, this));
+					self._emit("add_transition", {
+						originalevent: event,
+						from_state: from_state,
+						to_state: to_state
+					});
+				}, this);
+
+				var onkeydown = _.bind(function(event) {
+					if(event.keycode === 27) { // esc
+						arrow.remove();
+						remove_event_listeners();
+					}
+				}, this);
+
+				window.addEventListener("mouseup", onmouseup);
+				window.addEventListener("keydown", onkeydown);
+				event.stopPropagation();
+				event.preventDefault();
+			}, this));
+		}
+
+		this.$substates = this.statechart.$substates;
+
+		this.$onSet = _.bind(this.onSet, this);
+		this.$onUnset = _.bind(this.onUnset, this);
+		this.$onIndexChange = _.bind(this.onIndexChange, this);
+		this.$onMove = _.bind(this.onMove, this);
+		this.$onValueChange = _.bind(this.onValueChange, this);
+		this.$onKeyChange = _.bind(this.onKeyChange, this);
+
+		this.$substates.each(function(statechart, name, index) {
+			this.$onSet({
+				state: statechart,
+				state_name: name,
+				index: index
+			}, false);
+		}, this);
+
+		this.statechart.on("add_substate", this.$onSet);
+		this.statechart.on("remove_substate", this.$onUnset);
+		this.statechart.on("move_substate", this.$onMove);
+		this.statechart.on("rename_substate", this.$onKeyChange);
+
+		if(this.option("root")) {
+			this.onStatesReady();
+		}
+
+		this.update_outlines();
+	};
+
+	if(this.statechart.is_initialized()) {
+		do_draw.call(this);
+	} else {
+		this.statechart.once("initialized", _.bind(do_draw, this));
 	}
-
-	this.$substates = this.statechart.$substates;
-
-	this.$onSet = _.bind(this.onSet, this);
-	this.$onUnset = _.bind(this.onUnset, this);
-	this.$onIndexChange = _.bind(this.onIndexChange, this);
-	this.$onMove = _.bind(this.onMove, this);
-	this.$onValueChange = _.bind(this.onValueChange, this);
-	this.$onKeyChange = _.bind(this.onKeyChange, this);
-
-	this.$substates.each(function(statechart, name, index) {
-		this.$onSet({
-			state: statechart,
-			state_name: name,
-			index: index
-		}, false);
-	}, this);
-
-	this.statechart.on("add_substate", this.$onSet);
-	this.statechart.on("remove_substate", this.$onUnset);
-	this.statechart.on("move_substate", this.$onMove);
-	this.statechart.on("rename_substate", this.$onKeyChange);
-
-	if(this.option("root")) {
-		this.onStatesReady();
-	}
-
-	this.update_outlines();
 };
 
 (function(my) {
@@ -519,27 +527,35 @@ var StatechartView = function(statechart, paper, options) {
 		var state = event.state,
 			state_name = event.state_name,
 			index = event.index;
-		var state_parent = state.parent();
-		var state_view = red.create("statechart_view", state, this.paper, {
-			parent: this
-			, state_name: state_name
-			, antenna_shaft_height: this.option("antenna_shaft_height")
-			, transition_layout_manager: this.transition_layout_manager
-			, column_layout_manager: this.children_layout_manager.push({own_width: false})
-		});
-		if(_.isNumber(index)) {
-			this.substate_views.splice(index, 0, state_view);
-		} else {
-			this.substate_views.push(state_view);
-		}
-		if(also_initialize !== false) {
-			state_view.onStatesReady();
-		}
-		state_view.update_transition_layout();
+		var on_initialized = function() {
+			var state_parent = state.parent();
+			var state_view = red.create("statechart_view", state, this.paper, {
+				parent: this
+				, state_name: state_name
+				, antenna_shaft_height: this.option("antenna_shaft_height")
+				, transition_layout_manager: this.transition_layout_manager
+				, column_layout_manager: this.children_layout_manager.push({own_width: false})
+			});
+			if(_.isNumber(index)) {
+				this.substate_views.splice(index, 0, state_view);
+			} else {
+				this.substate_views.push(state_view);
+			}
+			if(also_initialize !== false) {
+				state_view.onStatesReady();
+			}
+			state_view.update_transition_layout();
 
-		state_view.on("add_transition", this.forward);
-		state_view.on("add_state", this.forward);
-		state_view.on("set_event_str", this.forward);
+			state_view.on("add_transition", this.forward);
+			state_view.on("add_state", this.forward);
+			state_view.on("set_event_str", this.forward);
+		};
+
+		if(state.is_initialized()) {
+			on_initialized.call(this);
+		} else {
+			state.once("initialized", _.bind(on_initialized, this))
+		}
 	};
 	proto.onUnset = function(event) {
 		var state = event.state,

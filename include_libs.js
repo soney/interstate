@@ -44,6 +44,7 @@ exports.main_src = c(
 				"esprima/esprima.js",
 				"ablejs/able.js",
 				"underscore/underscore.js",
+				"underscore/underscore.deferred.js",
 				"underscore/red_underscore_extensions.js",
 				"jquery-ui-1.9.1.custom/js/jquery-1.8.2.js",
 				"jquery-ui-1.9.1.custom/js/jquery-ui-1.9.1.custom.js",

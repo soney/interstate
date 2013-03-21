@@ -73,7 +73,7 @@ $.widget("red.editor", {
 		.set("values", "<stateful>")
 		.cd("values")
 			.set("(protos)", "INIT", "[cell_view]")
-			.set("(manifestations)", "INIT", "parent.parent.client.get('get_values')")
+			.set("(manifestations)", "INIT", "parent.parent.client.get_$('get_values')")
 			.set("client", "this.basis.value")
 			.set("inherited", "this.basis.inherited")
 			.up()
@@ -101,7 +101,7 @@ $.widget("red.editor", {
 	.set("tag")
 	.set("tag", "INIT", "'span'")
 	.set("text")
-	.set("text", "INIT", "client.get('get_str')")
+	.set("text", "INIT", "client.get_$('get_str')")
 	.set("attr", "<dict>")
 	.cd("attr")
 		.set("class", "'cell' + (parent.inherited ? ' inherited' : '')")
@@ -113,7 +113,7 @@ $.widget("red.editor", {
 	.set("tag")
 	.set("tag", "INIT", "'div'")
 	.set("children", "<stateful_prop>")
-	.set("children", "INIT", "get_statechart_view(client.get('get_own_statechart'))")
+	.set("children", "INIT", "get_statechart_view(client.get_$('get_own_statechart'))")
 	.set("attr", "<dict>")
 	.cd("attr")
 		.set("class", "'statechart'")
@@ -131,7 +131,7 @@ $.widget("red.editor", {
 		.set("child_disp", "<stateful>")
 		.cd("child_disp")
 			.set("(protos)", "INIT", "[dom]")
-			.set("(manifestations)", "client.get('children')")
+			.set("(manifestations)", "client.get_$('children')")
 			.set("attr", "<dict>")
 			.cd("attr")
 				.set("class", "'dict_child' + (parent.basis.inherited ? ' inherited' : '')")
@@ -206,7 +206,7 @@ $.widget("red.editor", {
 	"var rv;\n"+
 
 	"if(type === 'cell' || type === 'stateful_prop') {\n"+
-		"rv = client.get('val');\n"+
+		"rv = client.get_$('val');\n"+
 	"} else if(type === 'dict' || type === 'stateful') {\n"+
 		"return '';\n"+
 	"} else if(type === '') {\n"+

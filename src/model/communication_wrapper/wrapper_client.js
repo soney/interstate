@@ -36,7 +36,7 @@ var MessageDistributionCenter = function() {
 				client.on_change.apply(client, server_message.getting);
 			} else if(type === "emit") {
 				var client = clients[client_id];
-				client.on_emit.apply(client, ([server_message.type]).concat(server_message.args));
+				client.on_emit.apply(client, ([server_message.event_type]).concat(server_message.args));
 			}
 		} else if(data.type === "response") {
 			var data = event.data,
@@ -115,7 +115,21 @@ red.WrapperClient = function(options) {
 	proto.id = function() { return this._id; };
 	proto.type = function() { return this._type; };
 
-	proto.get = function() {
+	proto.async_get = function() { // doesn't store the value in a constraint; uses a callback when it's ready instead
+		var args = summarize_args(_.first(arguments, arguments.length-1));
+		var callback = _.last(arguments);
+
+		var request_id = this.post({
+			type: "async_get",
+			getting: args
+		});
+		register_response_listener(request_id, _.bind(function(value) {
+			var processed_value = this.process_value(value);
+			callback(processed_value);
+		}, this));
+	};
+
+	proto.get_$ = function() {
 		var args = summarize_args(arguments);
 		var to_update = false;
 		var constraint = this.fn_call_constraints.get_or_put(args, function() {
@@ -136,7 +150,7 @@ red.WrapperClient = function(options) {
 		});
 
 		var request_id = this.post({
-			type: "get",
+			type: "get_$",
 			getting: args
 		});
 		register_response_listener(request_id, _.bind(function(value) {

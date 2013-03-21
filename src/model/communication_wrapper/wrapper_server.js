@@ -35,7 +35,7 @@ sdc.on("message", function(message, event) {
 		var server = red.get_wrapper_server(cobj);
 
 		server.register_listener(get_channel_listener(client_window, client_id));
-	} else if(type === "get") { // async request
+	} else if(type === "get_$" || type === "async_get") { // async request
 		var cobj_id = event.data.cobj_id;
 		var cobj = red.find_uid(cobj_id);
 		var server = red.get_wrapper_server(cobj);
@@ -43,6 +43,8 @@ sdc.on("message", function(message, event) {
 		var request_id = event.data.message_id;
 
 		var processed_getting = process_args(message.getting);
+
+		var create_constraint = type === "get_$";
 
 		server.on_request(processed_getting, function(response) {
 			var summarized_response = summarize_value(response);
@@ -52,7 +54,7 @@ sdc.on("message", function(message, event) {
 				client_id: client_id,
 				response: summarized_response
 			}, origin);
-		});
+		}, create_constraint);
 	}
 });
 
@@ -139,7 +141,6 @@ red.WrapperServer = function(options) {
 	};
 
 	proto.on_emit = function() {
-		console.log(arguments);
 		this.remote_emit.apply(this, arguments);
 	};
 
@@ -154,25 +155,31 @@ red.WrapperServer = function(options) {
 		});
 	};
 
-	proto.on_request = function(getting, callback) {
-		var constraint = this.fn_call_constraints.get_or_put(getting, function() {
-			var fn_name = getting[0];
-			var args = _.rest(getting);
-			var object = this.get_object();
-			var constraint = new cjs.Constraint(function() {
-				var rv = object[fn_name].apply(object, args);
-				return rv;
-			});
-			constraint.onChange(_.bind(function() {
-				this.post({
-					type: "changed",
-					getting: getting
-				});
-			}, this));
-			return constraint;
-		}, this);
+	proto.on_request = function(getting, callback, create_constraint) {
+		var fn_name = getting[0];
+		var args = _.rest(getting);
+		var object = this.get_object();
 
-		callback(constraint.get());
+		if(create_constraint) {
+			var constraint = this.fn_call_constraints.get_or_put(getting, function() {
+				var constraint = new cjs.Constraint(function() {
+					var rv = object[fn_name].apply(object, args);
+					return rv;
+				});
+				constraint.onChange(_.bind(function() {
+					this.post({
+						type: "changed",
+						getting: getting
+					});
+				}, this));
+				return constraint;
+			}, this);
+
+			callback(constraint.get());
+		} else {
+			var rv = object[fn_name].apply(object, args);
+			callback(rv);
+		}
 	};
 
 	proto.post = function(data) {
@@ -302,7 +309,8 @@ red.get_wrapper_server = function(object) {
 		if(object instanceof red.State) {
 			listen_to = ["add_transition", "add_substate", "remove_substate",
 								"rename_substate", "move_substate", "make_concurrent",
-								"on_transition", "off_transition", "destroy"];
+								"on_transition", "off_transition", "destroy",
+								"active", "inactive"];
 		} else if(object instanceof red.StatechartTransition) {
 			listen_to = ["setTo", "setFrom", "remove", "destroy", "fire"];
 		} else {
