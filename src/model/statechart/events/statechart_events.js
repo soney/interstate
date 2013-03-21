@@ -158,7 +158,9 @@ red.StatechartEvent = red._create_event_type("statechart");
 		}
 	};
 	proto.destroy = function() {
-		this.target.off(this.spec, this.$on_spec);
+		if(this.target) {
+			this.target.off(this.spec, this.$on_spec);
+		}
 	};
 	proto.create_shadow = function(parent_statechart, context) {
 		return red.create_event("statechart", {
@@ -203,12 +205,16 @@ red.StatechartEvent = red._create_event_type("statechart");
 	proto.enable = function() {
 		my.superclass.enable.apply(this, arguments);
 		if(this.options.inert !== true) {
-			this.target.on(this.spec, this.$on_spec);
+			if(this.target) {
+				this.target.on(this.spec, this.$on_spec);
+			}
 		}
 	};
 	proto.disable = function() {
 		my.superclass.disable.apply(this, arguments);
-		this.target.off(this.spec, this.$on_spec);
+		if(this.target) {
+			this.target.off(this.spec, this.$on_spec);
+		}
 	};
 }(red.StatechartEvent));
 

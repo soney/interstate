@@ -434,7 +434,7 @@ red.State = function(options, defer_initialization) {
 		this.add_substate(state_name, state.create_shadow(), index); 
 	}, this);
 	this.$onBasisRemoveSubstate = _.bind(function(event) {
-		this.remove_substate_with_name(event.name, undefined, false);
+		this.remove_substate(event.name, undefined, false);
 	}, this);
 	this.$onBasisRenameSubstate = _.bind(function(event) {
 		var from_name = event.from,
@@ -1185,12 +1185,7 @@ red.Statechart = function(options) {
 		});
 	};
 	proto.remove_substate = function(name, state, also_destroy) {
-		if(name) {
-			this.remove_substate_with_name(name, state, also_destroy);
-		}
-	};
-	proto.remove_substate_with_name = function(name, also_destroy, state) {
-		//state = state || this.$substates.get(name);
+		state = state || this.$substates.get(name);
 		cjs.wait();
 		if(this.get_active_substate() === state) {
 			this.set_active_substate(undefined);
@@ -1203,7 +1198,8 @@ red.Statechart = function(options) {
 		this._emit("remove_substate", {
 			type: "remove_substate",
 			state: state,
-			name: name
+			name: name,
+			also_destroy: also_destroy
 		});
 
 		if(also_destroy !== false) {
@@ -1309,6 +1305,8 @@ red.Statechart = function(options) {
 		});
 		this.$substates.destroy();
 		this.$concurrent.destroy();
+
+
 		this.$incoming_transitions.destroy();
 		this.$outgoing_transitions.destroy();
 		this.get_start_state().destroy();

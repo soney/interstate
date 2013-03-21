@@ -10,6 +10,9 @@ red.create_remote_statechart = function(wrapper_client, statechart_parent) {
 	if(!statechart) {
 		if(statecharts.hasOwnProperty(id)) {
 			statechart = statecharts[id];
+			if(statechart_parent && statechart.parent() !== statechart_parent) {
+				statechart.set_parent(statechart_parent);
+			}
 		} else {
 			var type = wrapper_client.type();
 			if(type === "statechart") {
@@ -87,12 +90,12 @@ red.create_remote_statechart = function(wrapper_client, statechart_parent) {
 						var state_name = event.state_name,
 							index = event.index,
 							state_wrapper_client = event.state;
-						var substate = red.create_remote_statechart(state_wrapper_client);
+						var substate = red.create_remote_statechart(state_wrapper_client, statechart);
 						statechart.add_substate(state_name, substate, index);
 					});
 					wrapper_client.on("remove_substate", function(event) {
-						var state_name = event.state_name;
-						statechart.remove_substate_with_name(state_name);
+						var state_name = event.name;
+						statechart.remove_substate(state_name, undefined, false);
 					});
 
 					wrapper_client.on("rename_substate", function(event) {

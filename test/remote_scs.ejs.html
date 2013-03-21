@@ -33,7 +33,7 @@ var parsed_event = red.create_event("parsed", {str: "hello", inert: true});
 var commands = [
 	["add_state", "state1"],
 	["add_state", "state2"],
-//	["remove_state", "state1"],
+	["remove_state", "state1"],
 	["add_transition", "INIT", "state2", parsed_event]
 ];
 window.setInterval(function() {
