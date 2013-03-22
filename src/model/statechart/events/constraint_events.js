@@ -33,6 +33,9 @@ var cjs = red.cjs, _ = red._;
 	proto.enable = function() {
 		my.superclass.enable.apply(this, arguments);
 		this.constraint.onChange(this.$check_constraint_val);
+		if(!this.constraint.is_valid()) {
+			this.$check_constraint_val();
+		}
 	};
 	proto.disable = function() {
 		my.superclass.disable.apply(this, arguments);

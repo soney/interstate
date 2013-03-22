@@ -252,7 +252,7 @@ red.ContextualStatefulProp = function(options) {
 
 		if(using_val instanceof red.Cell) {
 			var pointer = this.get_pointer();
-			var event = using_state._last_run_event;
+			var event = using_state._last_run_event.get();
 
 			var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
 

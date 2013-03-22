@@ -314,11 +314,14 @@ red.ContextualDict = function(options) {
 		var pointer = this.get_pointer();
 
 		var manifestations = object.get_manifestations();
-		var manifestations_pointer = pointer.push(manifestations);
-		var manifestations_contextual_object = red.find_or_put_contextual_obj(manifestations, manifestations_pointer);
-		var manifestations_value = manifestations_contextual_object.val();
-
-		return manifestations_value;
+		if(manifestations instanceof red.Cell) {
+			var manifestations_pointer = pointer.push(manifestations);
+			var manifestations_contextual_object = red.find_or_put_contextual_obj(manifestations, manifestations_pointer);
+			var manifestations_value = manifestations_contextual_object.val();
+			return manifestations_value;
+		} else {
+			return cjs.get(manifestations);
+		}
 	};
 
 	proto.is_template = function() {

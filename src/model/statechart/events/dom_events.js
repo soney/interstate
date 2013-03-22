@@ -10,7 +10,7 @@ var cjs = red.cjs, _ = red._;
 				red.event_queue.wait();
 
 				event = _.extend({}, event, {
-					specified_target: specified_target
+					red_target: specified_target
 				});
 
 				this.fire(event);
@@ -32,21 +32,27 @@ var cjs = red.cjs, _ = red._;
 			this.targets = _.chain(targs)
 							.map(function(target_cobj) {
 								if(_.isElement(target_cobj) || target_cobj === window) {
-									return target_cobj;
+									return {dom_obj: target_cobj, cobj: target_cobj};
 								} else if(target_cobj instanceof red.ContextualDict) {
 									if(target_cobj.is_template()) {
 										var instances = target_cobj.instances();
 										return _.map(instances, function(instance) {
 											var dom_attachment = instance.get_attachment_instance("dom");
 											if(dom_attachment) {
-												return instance.get_dom_obj();
+												var dom_obj = dom_attachment.get_dom_obj();
+												if(dom_obj) {
+													return {dom_obj: dom_obj, cobj: instance};
+												}
 											}
 											return false;
 										});
 									} else {
 										var dom_attachment = target_cobj.get_attachment_instance("dom");
 										if(dom_attachment) {
-											return dom_attachment.get_dom_obj();
+											var dom_obj = dom_attachment.get_dom_obj();
+											if(dom_obj) {
+												return {dom_obj: dom_obj, cobj: target_cobj};
+											}
 										}
 									}
 								}
@@ -64,13 +70,17 @@ var cjs = red.cjs, _ = red._;
 		return red.create_event("dom", this.type, this.targets);
 	};
 	proto.add_listeners = function() {
-		_.each(this.targets, function(target) {
-			target.addEventListener(this.type, this.get_target_listener(target), false); // Bubble
+		_.each(this.targets, function(target_info) {
+			var dom_obj = target_info.dom_obj,
+				cobj = target_info.cobj;
+			dom_obj.addEventListener(this.type, this.get_target_listener(cobj), false); // Bubble
 		}, this);
 	};
 	proto.remove_listeners = function() {
-		_.each(this.targets, function(target) {
-			target.removeEventListener(this.type, this.get_target_listener(target), false); // Bubble
+		_.each(this.targets, function(target_info) {
+			var dom_obj = target_info.dom_obj,
+				cobj = target_info.cobj;
+			dom_obj.removeEventListener(this.type, this.get_target_listener(cobj), false); // Bubble
 		}, this);
 	};
 	proto.destroy = function() {

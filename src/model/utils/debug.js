@@ -195,17 +195,20 @@ var print = function(current_pointer, logging_mechanism) {
 			}
 			var children = contextual_object.children();
 			_.each(children, function(child_info) {
+				var value = child_info.value;
+
 				var is_manifestations;
-				var c_arr;
-				if(_.isArray(child_info.value)) {
-					c_arr = child_info.value;
-					is_manifestations = true;
+				if(value instanceof red.ContextualDict) {
+					is_manifestations = value.is_template();
 				} else {
-					c_arr = [child_info.value];
 					is_manifestations = false;
 				}
+
 				if(is_manifestations) {
+					c_arr = value.instances();
 					console.group("(" + c_arr.length + " manifestations)");
+				} else {
+					c_arr = [value];
 				}
 
 				var prop_name = child_info.name;
