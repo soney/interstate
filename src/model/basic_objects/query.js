@@ -87,16 +87,17 @@ red.Query = function(options) {
 	});
 
 	var map_funcs = {
-		"prop": function(pointer_val, index, arr, name) {
-			var pointer = pointer_val.get_pointer();
-			var owner = pointer.points_at();
-			var prop_pointer = owner.get_prop_pointer(name, pointer);
-			return prop_pointer;
+		"prop": function(cobj, index, arr, name) {
+			var prop_cobj = cobj.prop(name);
+			return prop_cobj;
 		},
-		"parent": function(pointer_val) {
-			var pointer = pointer_val.get_pointer();
-			var owner = pointer_val.points_at();
-			return pointer.slice(0, pointer.length()-1);
+		"parent": function(cobj) {
+			var pointer = cobj.get_pointer();
+			var new_ptr = pointer.pop();
+			var new_ptr_obj = new_ptr.points_at();
+
+			var cobj = red.find_or_put_contextual_obj(new_ptr_obj, new_ptr);
+			return cobj;
 		}
 	};
 
