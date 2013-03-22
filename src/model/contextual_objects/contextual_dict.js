@@ -341,7 +341,7 @@ red.ContextualDict = function(options) {
 		}
 
 		var manifestations_value = this.get_manifestations_value();
-		return _.isNumber(manifestations_value) || _.isArray(manifestations_value);
+		return (_.isNumber(manifestations_value) && !isNaN(manifestations_value)) || _.isArray(manifestations_value);
 	};
 
 	proto.instances = function() {

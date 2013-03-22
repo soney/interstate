@@ -3,7 +3,7 @@ var cjs = red.cjs, _ = red._;
 
 red.ContextualCell = function(options) {
 	red.ContextualCell.superclass.constructor.apply(this, arguments);
-	this.value_constraint = this.object.get_constraint_for_context(this.get_pointer());
+	this.value_constraint = this.object.constraint_in_context(this.get_pointer());
 	this._type = "cell";
 };
 
@@ -15,7 +15,7 @@ red.ContextualCell = function(options) {
 		this.value_constraint.destroy();
 	};
 	proto._getter = function() {
-		return this.value_constraint.get();
+		return cjs.get(this.value_constraint);
 	};
 	proto.get_str = function() {
 		var cell = this.get_object();

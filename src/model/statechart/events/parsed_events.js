@@ -2,9 +2,7 @@
 var cjs = red.cjs, _ = red._;
 
 var get_event = function(tree, options, live_event_creator) {
-	var event_constraint = cjs.$(function() {
-		return red.get_parsed_val(tree, options);
-	});
+	var event_constraint = red.get_parsed_$(tree, options);
 	var got_value = event_constraint.get();
 	if(got_value instanceof red.Event) {
 		return got_value;

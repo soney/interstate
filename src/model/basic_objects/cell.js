@@ -21,6 +21,14 @@ red.Cell = function(options, defer_initialization) {
 		},
 		"ignore_inherited_in_first_dict": {
 			default: function() { false; }
+		},
+		"contextual_values": {
+			default: function() { return cjs.map({
+				equals: red.check_pointer_equality,
+				hash: "hash"
+			}); }
+			, settable: false
+			, serialize: false
 		}
 	};
 	red.install_proto_builtins(proto, my.builtins);
@@ -32,29 +40,51 @@ red.Cell = function(options, defer_initialization) {
 			return red.parse(str);
 		});
 	};
-	proto.get_value = function(pcontext) {
-		var tree = this._tree.get();
-		var ignore_inherited_in_contexts;
+
+	proto.get_ignore_inherited_in_contexts = function(pcontext) {
 		if(this.get_ignore_inherited_in_first_dict()) {
 			for(var i = pcontext.length() - 1; i>=0; i--) {
 				var item = pcontext.points_at(i);
 				if(item instanceof red.Dict) {
-					ignore_inherited_in_contexts = [item];
-					break;
+					return [item];
 				}
 			}
-		} else {
-			ignore_inherited_in_contexts = [];
 		}
+		return [];
+	};
+
+	proto.get_value = function(pcontext) {
+		var tree = this._tree.get();
 		return red.get_parsed_val(tree, {
 			context: pcontext,
-			ignore_inherited_in_contexts: ignore_inherited_in_contexts
+			ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext)
 		});
 	};
-	proto.get_constraint_for_context = function(pcontext) {
-		return cjs.$(_.bind(this.get_value, this, pcontext));
+	proto.constraint_in_context = function(pcontext) {
+		var contextual_values = this.get_contextual_values();
+		var node_constraint = this._tree;
+
+		var val = contextual_values.get_or_put(pcontext, function() {
+			var ignore_inherited_in_contexts = this.get_ignore_inherited_in_contexts(pcontext)
+
+			var rv = cjs.$(function() {
+				var node = cjs.get(node_constraint);
+				return red.get_parsed_$(node, {
+					context: pcontext, 
+					ignore_inherited_in_contexts: ignore_inherited_in_contexts
+				});
+			});
+			return rv;
+		}, this);
+
+		return val;
 	};
 	proto.destroy = function() {
+		var contextual_values = this.get_contextual_values();
+		contextual_values.each(function(value) {
+			value.destroy();
+		});
+		contextual_values.destroy();
 		this._tree.destroy();
 	};
 	proto.clone = function(options) {
