@@ -115,7 +115,7 @@ $.widget("red.editor", {
 	.set("tag")
 	.set("tag", "INIT", "'div'")
 	.set("children", "<stateful_prop>")
-	.set("children", "INIT", "get_statechart_view(client.get_$('get_own_statechart'))")
+	.set("children", "INIT", "get_statechart_view(client.get_$('get_statecharts'))")
 	.set("attr", "<dict>")
 	.cd("attr")
 		.set("class", "'statechart'")
@@ -181,18 +181,22 @@ $.widget("red.editor", {
 		.set("client", "INIT", "root_client")
 		.up()
 	.up()
-.set("get_statechart_view", function(cobj) {
-	if(cobj) {
-		var statechart = red.create_remote_statechart(cobj);
+.set("get_statechart_view", function(wrappers) {
+	if(wrappers) {
+		var statecharts = _.map(wrappers, function(wrapper) {
+			return red.create_remote_statechart(wrapper);
+		});
 		//var statechart = cobj.get_own_statechart();
 		var content = document.createElement("div");
-		if(statechart) {
-			var el = document.createElement("div");
-			el.style.position = "relative";
-			el.style.left = "300px";
-			content.appendChild(el);
-			var paper = Raphael(el, 600, 200);
-			var scv = red.create("statechart_view", statechart, paper, {root: true});
+		if(statecharts) {
+			_.map(statecharts, function(statechart) {
+				var el = document.createElement("div");
+				el.style.position = "relative";
+				el.style.left = "300px";
+				content.appendChild(el);
+				var paper = Raphael(el, 600, 200);
+				var scv = red.create("statechart_view", statechart, paper, {root: true});
+			});
 		} else {
 			content.textContent = "(waiting for statechart to load)";
 		}
