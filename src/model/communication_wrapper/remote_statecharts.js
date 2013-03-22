@@ -202,7 +202,8 @@ red.create_remote_transition = function(wrapper_client) {
 				transition.do_initialize({
 					from: from_value,
 					to: to_value,
-					event: event_value
+					event: event_value,
+					puppet: true
 				});
 				wrapper_client.on("setTo", function(event) {
 					var state_client_wrapper = event.state,

@@ -220,6 +220,7 @@ red.StatechartTransition = function(options, defer_initialization) {
 	var proto = my.prototype;
 	able.make_proto_listenable(proto);
 	proto.do_initialize = function(options) {
+		this._puppet = options.puppet === true;
 		this.$active = cjs.$(false);
 		this.$times_run = cjs.$(0);
 		this._from_state = options.from;
@@ -231,6 +232,9 @@ red.StatechartTransition = function(options, defer_initialization) {
 		red.register_uid(this._id, this);
 		this._initialized = true;
 		this._emit("initialized");
+	};
+	proto.is_puppet = function() { 
+		return this._puppet;
 	};
 	proto.is_initialized = function(){
 		return this._initialized;
@@ -310,7 +314,9 @@ red.StatechartTransition = function(options, defer_initialization) {
 		cjs.signal();
 	};
 	proto.fire = function(event) {
-		if(this.from().on_outgoing_transition_fire(this, event)) {
+		if(this.is_puppet()) {
+			this._emit("fire", {type: "fire", target: this, event: event});
+		} else if(this.from().on_outgoing_transition_fire(this, event)) {
 			//this._last_run_event.set(event);
 			this._emit("fire", {type: "fire", target: this, event: event});
 		}
@@ -472,6 +478,10 @@ red.State = function(options, defer_initialization) {
 		return this._initialized;
 	};
 
+	proto.is_puppet = function() { 
+		return this._puppet;
+	};
+
 	proto.set_basis = function(basis) {
 		if(this._basis) {
 			this._basis.off("add_transition", this.$onBasisAddTransition);
@@ -556,6 +566,7 @@ red.State = function(options, defer_initialization) {
 	};
 
 	proto.do_initialize = function(options) {
+		this._puppet = options.puppet === true;
 		this.$active = cjs.$(options.active === true);
 		this._parent = options.parent;
 		this._context = options.context;

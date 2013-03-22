@@ -210,6 +210,10 @@ var Transition = function(transition, paper, options) {
 			, text: event.get_str()
 			, default: "<event>"
 		});
+		event.on("setString", _.bind(function(event) {
+			var str = event.to;
+			this.label.option("text", str);
+		}, this));
 
 		var update_position = _.bind(function() {
 			this.arrow.option({

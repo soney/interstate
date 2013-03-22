@@ -503,22 +503,29 @@ var StatechartView = function(statechart, paper, options) {
 		var transition = event.transition,
 			index = event.index;
 
-		var to = transition.to();
-		var to_view = statechart_view_map.get(to);
-		var transition_view = red.create("transition", transition, this.paper, {
-			from_view: this
-			, to_view: to_view
-			, animate_creation: true
-		});
-		if(_.isNumber(index)) {
-			this.transition_views.splice(index, 0, transition_view);
-		} else {
-			this.transition_views.push(index);
-		}
+		var do_on_ready = function() {
+			var to = transition.to();
+			var to_view = statechart_view_map.get(to);
+			var transition_view = red.create("transition", transition, this.paper, {
+				from_view: this
+				, to_view: to_view
+				, animate_creation: true
+			});
+			if(_.isNumber(index)) {
+				this.transition_views.splice(index, 0, transition_view);
+			} else {
+				this.transition_views.push(index);
+			}
 
-		this.transition_layout_manager	.add_transition_view(transition_view);
-		this.update_transition_layout();
-		transition_view.on("set_event_str", this.forward);
+			this.transition_layout_manager	.add_transition_view(transition_view);
+			this.update_transition_layout();
+			transition_view.on("set_event_str", this.forward);
+		};
+		if(transition.is_initialized()) {
+			do_on_ready.call(this);
+		} else {
+			transition.once("initialized", _.bind(do_on_ready, this));
+		}
 	};
 	proto.onTransitionRemoved = function(transition, index) {
 		var transition_view = this.transition_views[index];
