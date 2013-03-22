@@ -47,14 +47,13 @@ red.Query = function(options) {
 	};
 
 	var filter_funcs = {
-		"in_state": function(pointer_val, index, arr, state_name) {
-			var pointer = pointer_val.get_pointer();
-			var SOandC = red.find_stateful_obj_and_context(pointer);
-			if(!SOandC) { return false; }
-			var stateful_obj = SOandC.stateful_obj;
-			var pcontext = SOandC.context;
-
-			var statecharts = stateful_obj.get_statecharts(pcontext);
+		"in_state": function(cobj, index, arr, state_name) {
+			var statecharts;
+			if(cobj instanceof red.ContextualStatefulObj) {
+				statecharts = cobj.get_statecharts();
+			} else {
+				statecharts = [];
+			}
 
 			for(var i = 0; i<statecharts.length; i++) {
 				var statechart = statecharts[i];

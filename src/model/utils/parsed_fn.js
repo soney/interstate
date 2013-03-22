@@ -76,38 +76,7 @@ var call_fn = function(node, options) {
 		} else if(_.has(options.var_map, key)) {
 			return cjs.get(options.var_map[key]);
 		} else {
-			var curr_context = options.pcontext;
-			var context_item = curr_context.points_at();
-
-			while(!curr_context.is_empty()) {
-				if(context_item instanceof red.Dict) {
-					if(_.indexOf(options.ignore_inherited_in_contexts, context_item) >= 0) {
-						if(context_item._has_direct_prop(key)) {
-							return context_item.prop_val(key, curr_context);
-						}
-					} else {
-						if(context_item._has_prop(key, curr_context)) {
-							return context_item.prop_val(key, curr_context);
-						}
-					}
-				} else if(context_item instanceof red.Cell) {
-					var special_contexts = curr_context.special_contexts();
-					var len = special_contexts.length;
-					for(var i = 0; i<len; i++) {
-						var sc = special_contexts[i];
-						var context_obj = sc.get_context_obj();
-						if(context_obj.hasOwnProperty(key)) {
-							return context_obj[key];
-						}
-					}
-				} else if(context_item && context_item[key]) {
-					return context_item[key];
-				}
-				curr_context = curr_context.pop();
-				context_item = curr_context.points_at();
-			}
-
-			return window[key];
+			return red.get_parsed_val(node, {context: options.pcontext});
 		}
 	} else if(type === "ReturnStatement") {
 		options.rv = call_fn(node.argument, options);

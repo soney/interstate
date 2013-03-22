@@ -31,8 +31,17 @@ red.TransitionEvent = red._create_event_type("transition");
 			this.processed_targets = _	.chain(targs)
 										.map(function(target_pointer) {
 											if(target_pointer instanceof red.ContextualStatefulObj) {
-												var statecharts = target_pointer.get_statecharts();
-												return statecharts;
+												if(target_pointer.is_template()) {
+													var instances = target_pointer.instances();
+													var statecharts = _.map(instances, function(instance) {
+														var scs = instance.get_statecharts();
+														return scs;
+													});
+													return _.flatten(statecharts, true);
+												} else {
+													var statecharts = target_pointer.get_statecharts();
+													return statecharts;
+												}
 												/*
 												var ptr = target_pointer.get_pointer();
 												var dict = ptr.points_at();
