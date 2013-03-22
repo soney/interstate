@@ -28,9 +28,6 @@ $.widget("red.editor", {
 			window.output_env = this.env;
 		}
 		this.root = this.env.get_root();
-		this.element.dom_output({
-			root: this.root
-		});
 
 		this.client_socket = new red.ProgramStateClient({
 			ready_func: this.option("debug_ready"),
@@ -49,9 +46,14 @@ $.widget("red.editor", {
 			window.rc = root_client;
 			this.load_viewer();
 		}, this);
+		this.element.text("Loading...");
 	}
 
 	, load_viewer: function() {
+		this.element.html("")
+					.dom_output({
+						root: this.root
+					});
 		this.env.top()
 
 // ===== BEGIN EDITOR ===== 

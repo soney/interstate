@@ -828,6 +828,8 @@ var Env = function(options) {
 	proto.print = function(logging_mechanism) {
 		return red.print(this.pointer, logging_mechanism);
 	};
+	proto.destroy = function() {
+	};
 }(Env));
 
 red.define("environment", function(options) {

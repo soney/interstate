@@ -11,7 +11,7 @@
 			<script type="text/javascript">
 				var env, the_div, root;
 				window.save = function(name) {
-					return red.save(root_pointer.points_at(), name);
+					return red.save(root, name);
 				};
 				window.load = function(name) {
 					root = red.load(name);
@@ -33,7 +33,6 @@
 
 				$(function() {
 					the_div = $("<div />").appendTo(document.body);
-					var root;
 					try {
 						root = load();
 					} catch(e) {
@@ -48,7 +47,7 @@
 								.set("text", "INIT", "'item ' + basis_index + ': ' + basis")
 								.up()
 
-						var root = env.get_root();
+						root = env.get_root();
 
 						the_div.dom_output({
 							root: root,
@@ -66,7 +65,7 @@
 					nosave = true;
 					red.nuke();
 				};
-				nosave = true;
+				//nosave = true;
 			</script>
 	  </div>
   </body>
