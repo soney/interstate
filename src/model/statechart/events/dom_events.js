@@ -30,44 +30,24 @@ var cjs = red.cjs, _ = red._;
 				targs = [targs];
 			}
 			this.targets = _.chain(targs)
-							.map(function(target_pointer) {
-								if(_.isElement(target_pointer) || target_pointer === window) {
-									return target_pointer;
-								} else if(target_pointer instanceof red.ContextualDict) {
-								/*
-									var ptr = target_pointer.get_pointer();
-									var dict;
-									var targ = ptr.points_at();
-
-									var manifestation_pointers;
-
-									if(targ instanceof red.Dict) {
-										dict = targ;
-										manifestation_pointers = dict.get_manifestation_pointers(ptr);
-									} else {
-										throw new Error("Unknown target");
-									}
-
-									if(_.isArray(manifestation_pointers)) {
-										var dom_objs = _.map(manifestation_pointers, function(manifestation_pointer) {
-											var dom_attachment = dict.get_attachment_instance("dom", manifestation_pointer);
+							.map(function(target_cobj) {
+								if(_.isElement(target_cobj) || target_cobj === window) {
+									return target_cobj;
+								} else if(target_cobj instanceof red.ContextualDict) {
+									if(target_cobj.is_template()) {
+										var instances = target_cobj.instances();
+										return _.map(instances, function(instance) {
+											var dom_attachment = instance.get_attachment_instance("dom");
 											if(dom_attachment) {
-												return dom_attachment.get_dom_obj();
-											} else {
-												return false;
+												return instance.get_dom_obj();
 											}
+											return false;
 										});
-										return dom_objs;
 									} else {
-										var dom_attachment = dict.get_attachment_instance("dom", ptr);
+										var dom_attachment = target_cobj.get_attachment_instance("dom");
 										if(dom_attachment) {
 											return dom_attachment.get_dom_obj();
 										}
-									}
-									*/
-									var dom_attachment = target_pointer.get_attachment_instance("dom");
-									if(dom_attachment) {
-										return dom_attachment.get_dom_obj();
 									}
 								}
 								return false;

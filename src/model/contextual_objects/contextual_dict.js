@@ -52,6 +52,7 @@ red.Dict.get_proto_vals = function(dict, ptr) {
 		i++;
 	}
 	var rv_arr = rv.toArray();
+
 	return rv_arr.slice(1); // don't include the original dict
 };
 
@@ -404,6 +405,7 @@ red.ContextualDict = function(options) {
 				}
 			}
 		}
+
 
 		if(info) {
 			attachment = info.attachment;

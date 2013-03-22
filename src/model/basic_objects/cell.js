@@ -32,26 +32,27 @@ red.Cell = function(options, defer_initialization) {
 			return red.parse(str);
 		});
 	};
-	proto.get_constraint_for_context = function(pcontext) {
-		return cjs.$(_.bind(function() {
-			var tree = this._tree.get();
-			var ignore_inherited_in_contexts;
-			if(this.get_ignore_inherited_in_first_dict()) {
-				for(var i = pcontext.length() - 1; i>=0; i--) {
-					var item = pcontext.points_at(i);
-					if(item instanceof red.Dict) {
-						ignore_inherited_in_contexts = [item];
-						break;
-					}
+	proto.get_value = function(pcontext) {
+		var tree = this._tree.get();
+		var ignore_inherited_in_contexts;
+		if(this.get_ignore_inherited_in_first_dict()) {
+			for(var i = pcontext.length() - 1; i>=0; i--) {
+				var item = pcontext.points_at(i);
+				if(item instanceof red.Dict) {
+					ignore_inherited_in_contexts = [item];
+					break;
 				}
-			} else {
-				ignore_inherited_in_contexts = [];
 			}
-			return red.get_parsed_val(tree, {
-				context: pcontext,
-				ignore_inherited_in_contexts: ignore_inherited_in_contexts
-			});
-		}, this));
+		} else {
+			ignore_inherited_in_contexts = [];
+		}
+		return red.get_parsed_val(tree, {
+			context: pcontext,
+			ignore_inherited_in_contexts: ignore_inherited_in_contexts
+		});
+	};
+	proto.get_constraint_for_context = function(pcontext) {
+		return cjs.$(_.bind(this.get_value, this, pcontext));
 	};
 	proto.destroy = function() {
 		this._tree.destroy();

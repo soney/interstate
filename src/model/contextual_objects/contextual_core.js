@@ -2,9 +2,8 @@
 var cjs = red.cjs, _ = red._;
 
 red.ContextualObject = function(options) {
-	this.set_options(options);
-
 	this.$value = new cjs.Constraint(_.bind(this._getter, this), false, { check_on_nullify: options.check_on_nullify === true , equals: options.equals || undefined });
+	this.set_options(options);
 	this._id = uid();
 	red.register_uid(this._id, this);
 	this._type = "none";
@@ -54,6 +53,8 @@ red.ContextualObject = function(options) {
 	};
 
 	proto.val = function() {
+		if(uid.strip_prefix(this.id()) == 120) {
+		}
 		return this.$value.get();
 	};
 

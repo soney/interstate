@@ -101,7 +101,6 @@
 								.value()
 					});
 
-
 env			
 .set("button", "<stateful>")
 .cd("button")
@@ -179,6 +178,7 @@ env
 				.up()
 			.up()
 		.up()
+				/*
 	.set("albums", "<stateful>")
 	.cd("albums")
 		.up()
@@ -249,10 +249,10 @@ env
 		.set("selected_song")
 		.set("selected_song", "INIT -> INIT", "event.red_target")
 		.top()
+				*/
 ;
-					var root_pointer = env.get_root_pointer();
 					output_view = $("<div />").dom_output({
-						root: root_pointer
+						root: env.get_root()
 					}).appendTo(document.body);
 
 					env.print_on_return = true;

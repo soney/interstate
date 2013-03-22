@@ -109,8 +109,9 @@ var Env = function(options) {
 				var state = statechart.find_state(name);
 
 				if(!state) {
-					var pointer = this.get_pointer_obj();
-					var inherited_statecharts = owner.get_inherited_statecharts(this.pointer);
+					var contextual_object = red.find_or_put_contextual_obj(SOandC.stateful_obj, SOandC.context);
+					var statecharts = contextual_object.get_statecharts();
+					var inherited_statecharts = statecharts.slice(1);
 					for(var i = 0; i<inherited_statecharts.length; i++) {
 						var isc = inherited_statecharts[i];
 						state = isc.find_state(name);

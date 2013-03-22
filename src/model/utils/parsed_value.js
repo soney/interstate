@@ -118,6 +118,7 @@ var get_identifier_val = function(key, context, ignore_inherited_in_contexts) {
 		}
 	}
 
+
 	ignore_inherited_in_contexts = ignore_inherited_in_contexts || [];
 
 	var curr_context = context;

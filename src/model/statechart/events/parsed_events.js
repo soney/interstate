@@ -43,7 +43,7 @@ red.ParsedEvent = red._create_event_type("parsed");
 			this.$child_fired = _.bind(this.child_fired, this);
 
 			this._old_event = null;
-			cjs.wait(); // ensure our live event creator isn't immediately run
+			//cjs.wait(); // ensure our live event creator isn't immediately run
 			this._live_event_creator = cjs.liven(function() {
 				if(this._old_event) {
 					this._old_event.off_fire(this.$child_fired);
@@ -69,9 +69,13 @@ red.ParsedEvent = red._create_event_type("parsed");
 
 				this._old_event = event;
 			}, {
-				context: this
+				context: this,
+				run_on_create: false
 			});
-			cjs.signal();
+			//cjs.signal();
+			_.delay(_.bind(function() { //Delay it because parsed events can run up the dictionary tree and create all sorts of contextual objects that they shouldn't
+				this._live_event_creator.run();
+			}, this));
 		}
 	};
 	proto.id = function() { return this._id; };

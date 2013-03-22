@@ -309,7 +309,7 @@ red.get_wrapper_server = function(object) {
 		if(object instanceof red.State) {
 			listen_to = ["add_transition", "add_substate", "remove_substate",
 								"rename_substate", "move_substate", "make_concurrent",
-								"on_transition", "off_transition", "destroy",
+								/*"on_transition", "off_transition",*/ "destroy",
 								"active", "inactive"];
 		} else if(object instanceof red.StatechartTransition) {
 			listen_to = ["setTo", "setFrom", "remove", "destroy", "fire"];

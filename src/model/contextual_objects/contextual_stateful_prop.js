@@ -59,6 +59,7 @@ red.ContextualStatefulProp = function(options) {
 		var statecharts;
 		var entries;
 
+
 		if(stateful_prop.get_can_inherit()) {
 			var pointer = this.get_pointer();
 
@@ -141,6 +142,7 @@ red.ContextualStatefulProp = function(options) {
 		} else {
 			var values = stateful_prop.get_direct_values();
 			entries = values.entries();
+
 
 			var sc_parent = stateful_prop.get_statechart_parent();
 			if(sc_parent === "parent") {
@@ -245,6 +247,7 @@ red.ContextualStatefulProp = function(options) {
 			this._last_value = using_val;
 			this._from_state = using_state;
 		}
+
 		
 
 		if(using_val instanceof red.Cell) {
@@ -253,8 +256,7 @@ red.ContextualStatefulProp = function(options) {
 
 			var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
 
-			var rv = using_val.get_constraint_for_context(eventized_pointer);
-			rv = rv.get();
+			var rv = using_val.get_value(eventized_pointer);
 
 			this._last_rv = rv;
 			return rv;
