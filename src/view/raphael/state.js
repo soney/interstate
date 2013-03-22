@@ -432,6 +432,9 @@ var StatechartView = function(statechart, paper, options) {
 				event.stopPropagation();
 				event.preventDefault();
 			}, this));
+			if(this.statechart.is_active()) {
+				this.highlight();
+			}
 		}
 
 		this.$substates = this.statechart.$substates;

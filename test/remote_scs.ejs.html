@@ -11,7 +11,7 @@
 			<script type="text/javascript">
 var sc = new red.Statechart();
 
-sc.add_state("INIT");
+sc.add_state("INIT").starts_at("INIT").run();
 
 var sc_client_wrapper = red.get_wrapper_client({
 			type: 'statechart',
