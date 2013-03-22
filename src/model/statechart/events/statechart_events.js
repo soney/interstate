@@ -42,22 +42,6 @@ red.TransitionEvent = red._create_event_type("transition");
 													var statecharts = target_pointer.get_statecharts();
 													return statecharts;
 												}
-												/*
-												var ptr = target_pointer.get_pointer();
-												var dict = ptr.points_at();
-												if(dict instanceof red.StatefulObj) {
-													var manifestation_pointers = dict.get_manifestation_pointers(ptr);
-
-													if(_.isArray(manifestation_pointers)) {
-														var statecharts = _.map(manifestation_pointers, function(manifestation_pointer) {
-															return dict.get_statechart_for_context(manifestation_pointer);
-														});
-														return statecharts;
-													} else {
-														return dict.get_statechart_for_context(ptr);
-													}
-												}
-												*/
 											}
 											return false;
 										})
