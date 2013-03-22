@@ -15,6 +15,11 @@ red.Query = function(options) {
 								var points_at = pointer.points_at();
 								if(points_at instanceof red.Dict) {
 									var cobj = red.find_or_put_contextual_obj(points_at, pointer);
+									if(cobj.is_template()) {
+										return cobj.instances();
+									} else {
+										return cobj;
+									}
 									/*
 									var manifestation_pointers = points_at.get_manifestation_pointers(pointer);
 									if(_.isArray(manifestation_pointers)) {

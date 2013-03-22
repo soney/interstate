@@ -72,7 +72,7 @@ var call_fn = function(node, options) {
 	} else if(type === "Identifier") {
 		var key = node.name;
 		if(key === "root") {
-			return options.pcontext.slice(0, 1);
+			return red.find_or_put_contextual_obj(options.pcontext.root(), options.pcontext.slice(0, 1));
 		} else if(_.has(options.var_map, key)) {
 			return cjs.get(options.var_map[key]);
 		} else {
