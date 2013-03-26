@@ -57,6 +57,15 @@ var call_fn = function(node, options) {
 				old_value.destroy();
 			}
 			var_map[id] = assignments[node.operator](old_value, right_val);
+		} else if(left.type === "MemberExpression") {
+			var object = call_fn(left.object, options);
+			var prop;
+			if(left.computed) {
+				prop = call_fn(left.property, options);
+			} else {
+				prop = left.property.name;
+			}
+			object[prop] = right_val;
 		} else {
 			console.error("Unset");
 		}
@@ -188,7 +197,7 @@ var call_fn = function(node, options) {
 		
 		console.log(node);
 	} else if(type === "ThisExpression") {
-		return options.pcontext;
+		return options.js_context;
 	} else if(type === "BreakStatement") {
 		return do_break;
 	} else if(type === "ContinueStatement") {

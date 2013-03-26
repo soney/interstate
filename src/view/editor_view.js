@@ -116,7 +116,8 @@ $.widget("red.editor", {
 	.add_state("editing")
 	.add_transition("idle", "editing", "on('mousedown', this)")
 	.add_transition("editing", "idle", "on('keydown', this).when_eq('keyCode', 13)")
-	//.add_transition("editing", "idle", "on('keydown', this).when_eq('keyCode', 27)")
+	.add_transition("editing", "idle", "on('keydown', this).when_eq('keyCode', 27)")
+	.add_transition("editing", "idle", "on('blur', this)")
 	.set("(protos)", "idle", "[dom]")
 	.set("tag")
 	.set("tag", "idle", "'span'")
@@ -125,9 +126,19 @@ $.widget("red.editor", {
 	.set("text", "idle", "cell.get_$('get_str')")
 	.set("attr", "<dict>")
 	.cd("attr")
-		.set("value", "<stateful_prop>")
-		.set("value", "idle -> editing", "text")
+		.set("class", "'raw_cell'")
 		.up()
+	.on_state("idle -> editing", "function(event) {\n" +
+		"var dom_attachment = get_attachment(this, 'dom');\n" +
+		"if(dom_attachment) {\n" +
+			"var dom_obj = dom_attachment.get_dom_obj();\n" +
+			"if(dom_obj) {\n" +
+				"dom_obj.focus();\n" +
+				"dom_obj.value = text;\n" +
+				"dom_obj.select();\n" +
+			"}\n" +
+		"}\n" +
+	"}")
 	.on_state("editing >0- idle", "function(event) {\n" +
 		"var value = event.target.value;\n" +
 		"post_command('set_str', cell, value);\n" +
@@ -240,6 +251,13 @@ $.widget("red.editor", {
 		}
 	}
 }, this))
+.set("get_attachment", function(obj, attachment_name) {
+	if(obj instanceof red.ContextualDict) {
+		var attachment = obj.get_attachment_instance(attachment_name);
+		return attachment || false;
+	}
+	return false;
+})
 .set("print_value",
 "function(client) {\n" +
 	"var type = client && client.type ? client.type() : '';\n"+

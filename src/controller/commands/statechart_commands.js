@@ -524,15 +524,17 @@ red.StatechartOnCommand = function(options) {
 
 	this._statechart = this._options.statechart;
 	this._context = this._options.context;
-	this._pcontext = this._options.pcontext;
+	//this._pcontext = this._options.pcontext;
 	if(this._options.listener instanceof red.ParsedFunction) {
 		var func = this._options.listener;
-		//var pcontext = this._pcontext;
-		var js_context = this._context;
 		this._listener = function(info, type) {
 			var state = info.state;
-			var pcontext = state.context();
 			var event = info.event;
+			var pcontext = state.context();
+			var js_context;
+			if(pcontext) {
+				js_context = red.find_or_put_contextual_obj(pcontext.points_at(), pcontext);
+			}
 			func._call(js_context, pcontext, event);
 		};
 	} else {

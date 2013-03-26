@@ -174,6 +174,7 @@ var get_identifier_val = function(key, options) {
 
 		var curr_context = context;
 		var context_item = curr_context.points_at();
+
 			
 		while(!curr_context.is_empty()) {
 			if(context_item instanceof red.Dict) {

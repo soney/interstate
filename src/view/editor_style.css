@@ -44,3 +44,6 @@ div#editor .cell {
 div#editor .cell.inherited {
 	color: #AAA;
 }
+div#editor input.raw_cell, div#editor .raw_cell {
+	font-family: Courier New, Courier, monospace;
+}

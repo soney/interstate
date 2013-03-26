@@ -42,6 +42,7 @@ var get_state_listener_info = function(str_descriptor) {
 		throw new Error(str_descriptor + " does not match format");
 	}
 };
+window.gsi = get_state_listener_info;
 
 var matches_name = function(statechart, states, state) {
 	if(states === any_state) {
@@ -99,7 +100,7 @@ var add_transition_listener = function(str, statechart, activation_listener, dea
 				to = transition.to();
 
 			var desired_transition = false;
-			if(listener_info.transition_no) {
+			if(_.isNumber(listener_info.transition_no)) {
 				var transitions_between = from.get_transitions_to(to);
 				desired_transition = transitions_between[listener_info.transition_no];
 			}
