@@ -42,16 +42,15 @@
 							.set("a", "<stateful>")
 							.cd("a")
 								.set("(protos)", "INIT", "dom")
-								.set("(manifestations)", "2")
 								.set("text")
-								.set("text", "INIT", "'item ' + basis_index + ': ' + basis")
+								.set("text", "INIT", "'hello world'")
 								.up()
 
 						root = env.get_root();
 
 						the_div.dom_output({
-							root: root,
-							edit_on_open: true
+							root: root
+				//			edit_on_open: true
 						});
 						env.print_on_return = true;
 					}
