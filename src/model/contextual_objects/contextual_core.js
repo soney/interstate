@@ -35,6 +35,7 @@ red.ContextualObject = function(options) {
 			id: this.id(),
 			pointer: summarized_pointer,
 			object_uid: summarized_object,
+			obj_id: object.id(),
 			type: this.type()
 		};
 	};
