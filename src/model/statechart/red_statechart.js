@@ -315,10 +315,10 @@ red.StatechartTransition = function(options, defer_initialization) {
 	};
 	proto.fire = function(event) {
 		if(this.is_puppet()) {
-			this._emit("fire", {type: "fire", target: this, event: event});
+			this._emit("fire", {type: "fire", target: this});
 		} else if(this.from().on_outgoing_transition_fire(this, event)) {
 			//this._last_run_event.set(event);
-			this._emit("fire", {type: "fire", target: this, event: event});
+			this._emit("fire", {type: "fire", target: this});
 		}
 	};
 	proto.create_shadow = function(from_state, to_state, parent_statechart, context) {
@@ -538,7 +538,7 @@ red.State = function(options, defer_initialization) {
 				_.each(flat_substates, function(substate) {
 					var basis = substate.basis();
 					var outgoing_transitions = basis.get_outgoing_transitions();
-			//		var incoming_transitions = basis.get_incoming_transitions();
+					//var incoming_transitions = basis.get_incoming_transitions();
 
 					var shadow_outgoing = _.map(outgoing_transitions, create_transition_shadow);
 
@@ -573,7 +573,6 @@ red.State = function(options, defer_initialization) {
 		this.set_basis(options.basis);
 	};
 	proto.set_active = function(to_active) {
-		to_active = to_active === true;
 		this.$active.set(to_active === true);
 		var event_type = to_active ? "active" : "inactive";
 		this._emit(event_type, {

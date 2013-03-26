@@ -283,6 +283,7 @@ var StatechartView = function(statechart, paper, options) {
 				self.add_state_button.attr("x", x);
 			});
 
+/*
 			var last_active_substates = [];
 			cjs.liven(function() {
 				var active_substates = this.statechart.get_active_states();
@@ -298,6 +299,7 @@ var StatechartView = function(statechart, paper, options) {
 					last_active_substates = active_substates;
 				});
 			}, {context: this});
+			*/
 		} else {
 			this.state_column = this.column_layout_manager.insert_at(0, {own_width: this.option("state_width")});
 
@@ -458,6 +460,8 @@ var StatechartView = function(statechart, paper, options) {
 		this.statechart.on("remove_substate", this.$onUnset);
 		this.statechart.on("move_substate", this.$onMove);
 		this.statechart.on("rename_substate", this.$onKeyChange);
+		this.statechart.on("active", _.bind(this.highlight, this));
+		this.statechart.on("inactive", _.bind(this.dim, this));
 
 		if(this.option("root")) {
 			this.onStatesReady();

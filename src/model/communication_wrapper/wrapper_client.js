@@ -178,6 +178,8 @@ red.WrapperClient = function(options) {
 			var val = value.__value__;
 			if(val === "function") {
 				return "(native function)";
+			} else if(val === "cjs_object") {
+				return "(native object)";
 			} else if(val === "contextual_obj") {
 				var object_summary = value.object_summary;
 				var wrapper_client = red.get_wrapper_client(object_summary, this.server_window);

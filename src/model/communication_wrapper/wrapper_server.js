@@ -283,6 +283,11 @@ var summarize_value = function(value) {
 			__type__: "summarized_obj",
 			__value__: "function"
 		};
+	} else if(cjs.is_$(value)) {
+		rv = {
+			__type__: "summarized_obj",
+			__value__: "cjs_object"
+		};
 	} else if(_.isObject(value)) {
 		rv = {};
 		_.each(value, function(v, k) { rv[k] = summarize_value(v); })
