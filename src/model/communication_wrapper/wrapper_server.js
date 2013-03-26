@@ -217,7 +217,8 @@ var summarize_value = function(value) {
 			__value__: "contextual_obj",
 			object_summary: {
 				type: value.type(),
-				id: value.id()
+				id: value.id(),
+				obj_id: value.get_object().id()
 			}
 		};
 	} else if(value instanceof red.StartState) {

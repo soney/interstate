@@ -139,17 +139,8 @@ $.widget("red.dom_output", {
 					if(command === "undo") { this._command_stack._undo(); }
 					else if(command === "redo") { this._command_stack._redo(); }
 					else if(command === "reset") { root.reset(); }
-
-					this.server_socket.post_delta(new red.CommandDelta({
-						command: command
-					}));
 				} else {
 					this._command_stack._do(command);
-					/*
-					this.server_socket.post_delta(new red.CommandDelta({
-						command: command
-					}));
-					*/
 				}
 			}, this);
 

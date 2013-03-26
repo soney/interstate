@@ -82,6 +82,23 @@ var call_fn = function(node, options) {
 		var key = node.name;
 		if(key === "root") {
 			return red.find_or_put_contextual_obj(options.pcontext.root(), options.pcontext.slice(0, 1));
+		} else if(key === "parent") {
+			var found_this = false;
+			var curr_context = options.pcontext;
+			var context_item = curr_context.points_at();
+
+			while(!curr_context.is_empty()) {
+				if(context_item instanceof red.Dict) {
+					if(found_this) {
+						var rv = red.find_or_put_contextual_obj(context_item, curr_context);
+						return rv;
+					} else {
+						found_this = true;
+					}
+				}
+				curr_context = curr_context.pop();
+				context_item = curr_context.points_at();
+			}
 		} else if(_.has(options.var_map, key)) {
 			return cjs.get(options.var_map[key]);
 		} else {
@@ -140,13 +157,35 @@ var call_fn = function(node, options) {
 		return call_fn(node.test, options) ? call_fn(node.consequent, options) : call_fn(node.alternate, options);
 	} else if(type === "MemberExpression") {
 		var prop;
+		var object = call_fn(node.object, options);
 		if(node.computed) {
 			prop = call_fn(node.property, options);
 		} else {
 			prop = node.property.name;
+			if(object instanceof red.ContextualObject && prop === "parent") {
+				var found_this = false;
+				var curr_context = object.get_pointer();
+				var context_item = curr_context.points_at();
+
+				while(!curr_context.is_empty()) {
+					if(context_item instanceof red.Dict) {
+						if(found_this) {
+							var rv = red.find_or_put_contextual_obj(context_item, curr_context);
+							return rv;
+						} else {
+							found_this = true;
+						}
+					}
+					curr_context = curr_context.pop();
+					context_item = curr_context.points_at();
+				}
+			}
 		}
-		var object = call_fn(node.object, options);
-		return object[prop];
+		if(object instanceof red.ContextualObject) {
+			return object.prop_val(prop);
+		} else {
+			return object[prop];
+		}
 	} else if(type === "CallExpression") {
 		var op_context = window;
 		if(node.callee.type === "MemberExpression") {
@@ -226,6 +265,9 @@ var call_fn = function(node, options) {
 		return rv;
 	} else if(type === "DebuggerStatement") {
 		debugger;
+	} else if(type === "EmptyStatement") {
+		// do nothing
+		;
 	} else {
 		console.log(type, node);
 	}

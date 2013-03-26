@@ -7,12 +7,30 @@ red.SetPropCommand = function(options) {
 	red.SetPropCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!this._options.parent || !this._options.name || !this._options.value) {
+	if(!this._options.parent || !this._options.value) {
 		throw new Error("Must select a parent object");
 	}
 
+
 	this._parent = this._options.parent;
-	this._prop_name = this._options.name;
+	if(!this._options.name && this._parent instanceof red.Dict) {
+		var parent = this._parent;
+		var prop_names = parent._get_direct_prop_names();
+		var prefix = "prop";
+		if(this._options.value instanceof red.Dict) {
+			prefix = "obj";
+		}
+		var original_new_prop_name = prefix + "_" +  prop_names.length;
+		var new_prop_name = original_new_prop_name;
+		var i = 0;
+		while(_.indexOf(prop_names, new_prop_name) >= 0) {
+			new_prop_name = original_new_prop_name + "_" + i;
+			i++;
+		}
+		this._prop_name = new_prop_name;
+	} else {
+		this._prop_name = this._options.name;
+	}
 	this._prop_value = this._options.value;
 	this._prop_index = this._options.index;
 };

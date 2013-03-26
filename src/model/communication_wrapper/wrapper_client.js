@@ -65,6 +65,7 @@ red.WrapperClient = function(options) {
 	able.make_this_listenable(this);
 	this.server_window = options.server_window;
 	this.cobj_id = options.cobj_id;
+	this.obj_id = options.obj_id;
 	this._type = options.type;
 	this.object_summary = options.object_summary;
 
@@ -237,9 +238,11 @@ red.get_wrapper_client = function(object_summary, server_window) {
 		var otype = object_summary.type;
 		var rv;
 
+		var obj_id = object_summary.obj_id;
 		rv = new red.WrapperClient({
 			server_window: server_window,
 			cobj_id: cobj_id,
+			obj_id: obj_id,
 			type: otype,
 			object_summary: object_summary
 		});

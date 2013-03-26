@@ -57,7 +57,7 @@ var cjs = red.cjs, _ = red._;
 									}
 								}
 								return false;
-							})
+							}, this)
 							.flatten(true)
 							.compact()
 							.value();

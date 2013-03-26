@@ -53,8 +53,6 @@ red.ContextualObject = function(options) {
 	};
 
 	proto.val = function() {
-		if(uid.strip_prefix(this.id()) == 120) {
-		}
 		return this.$value.get();
 	};
 
