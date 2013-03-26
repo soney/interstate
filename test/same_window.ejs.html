@@ -32,14 +32,14 @@ env
 	.set("obj", "<stateful>")
 
 	.cd("obj")
-		.add_transition("INIT", "INIT", "on('timeout', 500)")
+		//.add_transition("INIT", "INIT", "on('timeout', 500)")
 		.set("(protos)", "INIT", "dom")
 		.set("tag", "<stateful_prop>")
 		.set("text", "<stateful_prop>")
 		.set("tag", "INIT", "'div'")
 		.set("text", "INIT", "i")
-		.set("i", "(start) -> INIT", "50")
-		.set("i", "INIT -> INIT", "i+1")
+		.set("i", "INIT", "'hello'")
+//		.set("i", "INIT -> INIT", "i+1")
 ;
 	/*
 env

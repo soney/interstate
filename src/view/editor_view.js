@@ -74,9 +74,9 @@ $.widget("red.editor", {
 	.cd("children")
 		.set("values", "<stateful>")
 		.cd("values")
-			.set("(protos)", "INIT", "[cell_view]")
+			.set("(protos)", "INIT", "[primitive_cell_view]")
 			.set("(manifestations)", "INIT", "parent.parent.client.get_$('get_values')")
-			.set("client", "this.basis.value")
+			.set("cell", "this.basis.value")
 			.set("inherited", "this.basis.inherited")
 			.up()
 		.up()
@@ -100,6 +100,7 @@ $.widget("red.editor", {
 .set("cell_view", "<stateful>")
 .cd("cell_view")
 	.set("(protos)", "INIT", "[dom]")
+	.set("cell", "client.get_$('get_object')")
 	.set("tag")
 	.set("tag", "INIT", "'span'")
 	.set("text")
@@ -108,6 +109,29 @@ $.widget("red.editor", {
 	.cd("attr")
 		.set("class", "'cell' + (parent.inherited ? ' inherited' : '')")
 		.up()
+	.up()
+.set("primitive_cell_view", "<stateful>")
+.cd("primitive_cell_view")
+	.rename_state("INIT", "idle")
+	.add_state("editing")
+	.add_transition("idle", "editing", "on('mousedown', this)")
+	.add_transition("editing", "idle", "on('keydown', this).when_eq('keyCode', 13)")
+	//.add_transition("editing", "idle", "on('keydown', this).when_eq('keyCode', 27)")
+	.set("(protos)", "idle", "[dom]")
+	.set("tag")
+	.set("tag", "idle", "'span'")
+	.set("tag", "editing", "'input'")
+	.set("text")
+	.set("text", "idle", "cell.get_$('get_str')")
+	.set("attr", "<dict>")
+	.cd("attr")
+		.set("value", "<stateful_prop>")
+		.set("value", "idle -> editing", "text")
+		.up()
+	.on_state("editing >0- idle", "function(event) {\n" +
+		"var value = event.target.value;\n" +
+		"post_command('set_str', cell, value);\n" +
+	"}")
 	.up()
 .set("statechart_view", "<stateful>")
 .cd("statechart_view")
@@ -203,8 +227,18 @@ $.widget("red.editor", {
 		return content;
 	}
 })
-.set("post_command", _.bind(function(command) {
-	this.client_socket.post_command(command);
+.set("post_command", _.bind(function(type) {
+	if(type === 'set_str') {
+		var cwrapper = arguments[1],
+			to_text = arguments[2];
+		if(cwrapper) {
+			var command = new red.ChangeCellCommand({
+				cell: {id: function() { return cwrapper.cobj_id;}},
+				str: to_text
+			});
+			this.client_socket.post_command(command);
+		}
+	}
 }, this))
 .set("print_value",
 "function(client) {\n" +

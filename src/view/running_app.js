@@ -145,9 +145,11 @@ $.widget("red.dom_output", {
 					}));
 				} else {
 					this._command_stack._do(command);
+					/*
 					this.server_socket.post_delta(new red.CommandDelta({
 						command: command
 					}));
+					*/
 				}
 			}, this);
 
