@@ -15,7 +15,13 @@ red.ContextualCell = function(options) {
 		this.value_constraint.destroy();
 	};
 	proto._getter = function() {
-		return cjs.get(this.value_constraint);
+		var value;
+		try {
+			value = cjs.get(this.value_constraint);
+		} catch(e) {
+			console.error(e);
+		}
+		return value;
 	};
 	proto.get_str = function() {
 		var cell = this.get_object();

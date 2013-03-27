@@ -10,7 +10,6 @@ div#editor .prop_name {
 	font-style:italic;
 }
 div#editor .dict_child {
-	padding-left: 20px;
 }
 
 div#editor .dict_child.inherited {
@@ -32,18 +31,38 @@ div#editor .value {
 	padding-right: 3px;
 }
 
-div#editor .cell {
-	display: inline-block;
-	width: 70px;
-	max-width: 70px;
+div#editor .raw_cell {
 	overflow: hidden;
-	padding-left: 3px;
-	padding-right: 3px;
-	border-right: 1px dotted #BBB;
 }
 div#editor .cell.inherited {
 	color: #AAA;
 }
 div#editor input.raw_cell, div#editor .raw_cell {
+	display: inline-block;
+	width: 70px;
+	max-width: 70px;
+	border: 1px solid #EEE;
 	font-family: Courier New, Courier, monospace;
+	font-size: inherit;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	padding-left: 3px;
+	padding-right: 3px;
+	outline: none;
+	background-color: #F9F9F9;
+}
+
+.dict {
+	background: url(tree_imgs/vline.png) repeat-y;
+}
+
+.dict_child, .add_prop_row {
+	padding-left: 12px;
+}
+.dict_child {
+	background: url(tree_imgs/node.png) no-repeat;
+}
+
+.dict .add_prop_row:last-child {
+	background: #fff url(tree_imgs/lastnode.png) no-repeat;
 }

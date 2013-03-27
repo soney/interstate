@@ -256,12 +256,23 @@ red.ContextualStatefulProp = function(options) {
 
 			var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
 
-			var rv = using_val.get_value(eventized_pointer);
+			var rv;
+
+			try {
+				rv = using_val.get_value(eventized_pointer);
+			} catch(e) {
+				console.error(e);
+			}
 
 			this._last_rv = rv;
 			return rv;
 		} else {
-			var rv = using_val instanceof red.ContextualObject ? using_val.val() : using_val;
+			var rv;
+			try {
+				rv = using_val instanceof red.ContextualObject ? using_val.val() : using_val;
+			} catch(e) {
+				console.error(e);
+			}
 			this._last_rv = rv;
 			return rv;
 		}
