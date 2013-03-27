@@ -299,7 +299,7 @@ $.widget("red.editor", {
 				el.style.position = "relative";
 				el.style.left = "300px";
 				content.appendChild(el);
-				var paper = Raphael(el, 600, 200);
+				var paper = Raphael(el, 400, 200);
 				var scv = red.create("statechart_view", statechart, paper, {root: true});
 			});
 		} else {
