@@ -313,7 +313,7 @@ red.ContextualDict = function(options) {
 		var object = this.get_object();
 		var pointer = this.get_pointer();
 
-		var manifestations = object.get_manifestations();
+		var manifestations = object.get_copies();
 		if(manifestations instanceof red.Cell) {
 			var manifestations_pointer = pointer.push(manifestations);
 			var manifestations_contextual_object = red.find_or_put_contextual_obj(manifestations, manifestations_pointer);
@@ -334,7 +334,7 @@ red.ContextualDict = function(options) {
 			var special_context;
 			for(var i = special_contexts.length-1; i>=0; i--) {
 				special_context = special_contexts[i];
-				if(special_context instanceof red.ManifestationContext) {
+				if(special_context instanceof red.CopyContext) {
 					return false;
 				}
 			}
@@ -349,7 +349,7 @@ red.ContextualDict = function(options) {
 		if(_.isNumber(manifestations_value)) {
 			var len = manifestations_value;
 			manifestations_value = new Array(len);
-			for(var i = 0; i<len; i++) {
+			for(var i = 1; i<=len; i++) {
 				manifestations_value[i] = i;
 			}
 		}
@@ -358,7 +358,7 @@ red.ContextualDict = function(options) {
 		var object = this.get_object();
 		var manifestation_contextual_objects = _.map(manifestations_value, function(basis, index) {
 							var manifestation_obj = this._manifestation_objects.get_or_put(basis, function() {
-								return new red.ManifestationContext(this, basis, index);
+								return new red.CopyContext(this, basis, index+1);
 							}, this);
 							var manifestation_pointer = pointer.push_special_context(manifestation_obj);
 							var contextual_object = red.find_or_put_contextual_obj(object, manifestation_pointer);

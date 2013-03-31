@@ -82,10 +82,10 @@ red.Dict = function(options, defer_initialization) {
 			, getter_name: "direct_props"
 		}
 
-		, "manifestations": {
+		, "copies": {
 			start_with: function() { return cjs.$(); }
 			, env_visible: false
-			, env_name: "manifestations"
+			, env_name: "copies"
 			, getter: function(me) { return me.get(); }
 			, setter: function(me, val) { me.set(val, true); }
 		}

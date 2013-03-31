@@ -70,9 +70,9 @@ $.widget("red.editor", {
 		.set("values", "<stateful>")
 		.cd("values")
 			.set("(protos)", "INIT", "[primitive_cell_view]")
-			.set("(manifestations)", "INIT", "parent.parent.client.get_$('get_values')")
-			.set("cell", "this.basis.value")
-			.set("inherited", "this.basis.inherited")
+			.set("(copies)", "INIT", "parent.parent.client.get_$('get_values')")
+			.set("cell", "this.my_copy.value")
+			.set("inherited", "this.my_copy.inherited")
 			.up()
 		.up()
 	.set("attr", "<dict>")
@@ -155,10 +155,10 @@ $.widget("red.editor", {
 		.set("child_disp", "<stateful>")
 		.cd("child_disp")
 			.set("(protos)", "INIT", "[dom]")
-			.set("(manifestations)", "client.get_$('children')")
+			.set("(copies)", "client.get_$('children')")
 			.set("attr", "<dict>")
 			.cd("attr")
-				.set("class", "'dict_child' + (parent.basis.inherited ? ' inherited' : '')")
+				.set("class", "'dict_child' + (parent.my_copy.inherited ? ' inherited' : '')")
 				.up()
 			.set("children", "<dict>")
 			.cd("children")
@@ -175,8 +175,8 @@ $.widget("red.editor", {
 					.set("tag", "idle", "'span'")
 					.set("tag", "editing", "'input'")
 					.set("text")
-					//.set("text", "idle", "parent.parent.basis.value && (parent.parent.basis.value.type() === 'dict' ||  parent.parent.basis.value.type() === 'stateful') ? basis.name + ':' : basis.name")
-					.set("text", "idle", "basis.name")
+					//.set("text", "idle", "parent.parent.my_copy.value && (parent.parent.my_copy.value.type() === 'dict' ||  parent.parent.my_copy.value.type() === 'stateful') ? my_copy.name + ':' : my_copy.name")
+					.set("text", "idle", "my_copy.name")
 					.set("attr", "<dict>")
 					.cd("attr")
 						.set("class", "'prop_name'")
@@ -195,9 +195,9 @@ $.widget("red.editor", {
 					.on_state("editing >0- idle", "function(event) {\n" +
 						"var value = event.target.value;\n" +
 						"if(value === '') {\n" +
-							"post_command('unset', parent.parent.parent.parent.client, parent.parent.basis);\n" +
+							"post_command('unset', parent.parent.parent.parent.client, parent.parent.my_copy);\n" +
 						"} else {\n" +
-							"post_command('rename', parent.parent.parent.parent.client, parent.parent.basis, value);\n" +
+							"post_command('rename', parent.parent.parent.parent.client, parent.parent.my_copy, value);\n" +
 						"}\n" +
 					"}")
 					.up()
@@ -207,7 +207,7 @@ $.widget("red.editor", {
 					.set("tag")
 					.set("tag", "INIT", "'span'")
 					.set("text")
-					.set("text", "INIT", "print_value(parent.parent.basis.value)")
+					.set("text", "INIT", "print_value(parent.parent.my_copy.value)")
 					.set("attr", "<dict>")
 					.cd("attr")
 						.set("class", "'value'")
@@ -216,7 +216,7 @@ $.widget("red.editor", {
 				.set("prop_src", "<stateful>")
 				.cd("prop_src")
 					.set("(protos)", "[ambiguous_view]")
-					.set("client", "parent.parent.basis.value || false")
+					.set("client", "parent.parent.my_copy.value || false")
 					.up()
 				.up()
 			.up()

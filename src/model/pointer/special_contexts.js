@@ -56,17 +56,17 @@ red.EventContext = function(event) {
 	};
 }(red.EventContext));
 
-red.ManifestationContext = function(owner, basis, basis_index, options) {
-	red.ManifestationContext.superclass.constructor.apply(this, arguments);
-	this.basis = basis;
-	this.basis_index = basis_index;
+red.CopyContext = function(owner, my_copy, copy_num, options) {
+	red.CopyContext.superclass.constructor.apply(this, arguments);
+	this.my_copy = my_copy;
+	this.copy_num = copy_num;
 	this.context_obj = {
-		basis: _.extend({
-					value: basis
+		my_copy: _.extend({
+					value: my_copy
 		//			literal: true
 				}, options),
-		basis_index: _.extend({
-						value: basis_index
+		copy_num: _.extend({
+						value: copy_num
 						//literal: true
 					}, options)
 	};
@@ -75,9 +75,9 @@ red.ManifestationContext = function(owner, basis, basis_index, options) {
 (function(my) {
 	_.proto_extend(my, red.SpecialContext);
 	var proto = my.prototype;
-	proto.get_basis_index = function() {
-		return this.basis_index;
+	proto.get_copy_num = function() {
+		return this.copy_num;
 	};
-}(red.ManifestationContext));
+}(red.CopyContext));
 
 }(red));

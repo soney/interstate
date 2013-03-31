@@ -99,6 +99,7 @@ exports.main_src = c(
 				"view/raphael/editable_text.js",
 				"view/raphael/state.js",
 				"view/raphael/transition.js",
+				"view/statechart/layout_engine.js",
 				"view/editor_style.css"
 			]));
 
