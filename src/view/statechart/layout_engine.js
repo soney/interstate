@@ -51,6 +51,7 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 
 	proto._compute_transition_rows = function() {
 		var sc_tree = this.get_statechart_tree();
+		var rows = [];
 		var columns = [];
 
 		var col_indicies = new Map({
@@ -69,6 +70,15 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 			columns.push({ state: statechart, lr: "r"});
 
 			col_indicies.put(statechart, {l: li, r: ri});
+			var row;
+			if(rows[depth]) {
+				row = rows[depth];
+			} else {
+				rows[depth] = row = [];
+			}
+			for(var i = li; i<=ri; i++) {
+				row[i] = statechart;
+			}
 		};
 		push_node_columns(sc_tree, 0);
 
@@ -110,12 +120,11 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 					}
 				}
 			});
-			from_to.push.apply(targets_from_to);
+			from_to.push.apply(from_to, targets_from_to);
 			_.each(node.children, collect_from_to);
 		};
 		collect_from_to(sc_tree);
 
-		var rows = [];
 		_.each(from_to, function(info) {
 			var from = info.from,
 				to = info.to;
@@ -137,7 +146,7 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 				}
 			}
 			if(!curr_row) {
-				curr_row = _.map(states, function() { return false; });
+				curr_row = []
 				rows.push(curr_row);
 			}
 
