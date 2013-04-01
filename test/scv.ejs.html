@@ -47,7 +47,8 @@
 								.add_transition("hover", "INIT", red.create_event("parsed", {str: "on_init", inert: true}))
 								.run();
 					var le = window.le = new red.RootStatechartLayoutEngine(statechart);
-					var rows = le._compute_transition_rows();
+					var view = new red.RootStatechartView(statechart, le);
+					var rows = le._compute_rows();
 
 					statechart.print();
 					var curr_element, curr_element_start_col;

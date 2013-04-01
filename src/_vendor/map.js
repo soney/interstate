@@ -161,6 +161,20 @@ var Map = function(options) {
 		}
 		return undefined;
 	};
+	proto.has = function(key) {
+		var hash = this._hash(key);
+		var hash_arr = this._khash[hash];
+		if(hash_arr) {
+			var len = hash_arr.length;
+			for(var i = 0; i<len; i++) {
+				var item_i = hash_arr[i];
+				if(this._equality_check(item_i.key, key)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	};
 	proto.get_or_put = function(key, create_fn, create_fn_context) {
 		var hash = this._hash(key);
 		var hash_arr = this._khash[hash];

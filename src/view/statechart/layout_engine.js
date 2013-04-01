@@ -5,7 +5,8 @@ var cjs = red.cjs, _ = red._;
 var THETA_DEGREES = 30,
 	TRANSITION_HEIGHT = 15,
 	TRANSITION_MARGIN = 1,
-	STATE_NAME_WIDTH = 20, // each side
+	STATE_NAME_WIDTH = 120, // each side
+	STATE_NAME_HEIGHT = TRANSITION_HEIGHT,
 	STATE_PADDING = 2; // each side
 
 var THETA_RADIANS = THETA_DEGREES * Math.PI / 180,
@@ -13,9 +14,6 @@ var THETA_RADIANS = THETA_DEGREES * Math.PI / 180,
 
 red.RootStatechartLayoutEngine = function(statecharts) {
 	this.statechart = statechart;
-	this.state_layout_engines = new Map({
-		hash: "hash"
-	});
 };
 (function(my) {
 	var proto = my.prototype;
@@ -34,22 +32,7 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 		return curr_node;
 	};
 
-	proto.get_layout_engine = function(statechart) {
-		return this.state_layout_engine.get_or_put(statechart, function() {
-			return new red.StatechartLayoutEngine(statechart, this);
-		}, this);
-	};
-
-	proto.compute_left_crossing_transitions = function(statechart) {
-		var sc_tree = this.get_statechart_tree();
-		return [];
-	};
-	proto.compute_right_crossing_transitions = function(statechart) {
-		var sc_tree = this.get_statechart_tree();
-		return [];
-	};
-
-	proto._compute_transition_rows = function() {
+	proto._compute_rows = function() {
 		var sc_tree = this.get_statechart_tree();
 		var rows = [];
 		var columns = [];
@@ -60,14 +43,25 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 		var depth = 0;
 		var push_node_columns = function(node, depth) {
 			var statechart = node.statechart;
-			var li = columns.length;
 			var children = node.children;
-			columns.push({ state: statechart, lr: "l" });
-			_.each(children, function(childnode) {
+			var children_split_index = Math.floor(children.length/2);
+
+			var li = columns.length;
+			columns.push({ state: statechart, lr: "l", depth: depth});
+
+			_.each(children.slice(0, children_split_index), function(childnode) {
 				push_node_columns(childnode, depth+1);
 			});
+
+			var ci = columns.length;
+			columns.push({ state: statechart, lr: "c", depth: depth});
+
+			_.each(children.slice(children_split_index), function(childnode) {
+				push_node_columns(childnode, depth+1);
+			});
+
 			var ri = columns.length;
-			columns.push({ state: statechart, lr: "r" });
+			columns.push({ state: statechart, lr: "r", depth: depth});
 
 			col_indicies.put(statechart, {l: li, r: ri });
 			var row;
@@ -116,6 +110,7 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 
 			var has_enough_space;
 			var curr_row = false;
+			var row_index;
 			for(var i = 0; i<rows.length; i++) {
 				has_enough_space = true;
 				var row = rows[i];
@@ -127,117 +122,107 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 				}
 				if(has_enough_space) {
 					curr_row = rows[i];
+					row_index = i;
 					break;
 				}
 			}
 			if(!curr_row) {
 				curr_row = []
+				row_index = rows.length;
 				rows.push(curr_row);
 			}
 
+			var transition = info.transition
 			for(var i = from; i<=to; i++) {
-				curr_row[i] = info.transition;
+				curr_row[i] = transition;
 			}
+		});
+
+
+		// So far, we have poles for each state's left transitions, the state itself, and its right transitions.
+		// Now, we have to figure out how far to spread each state's left poles
+
+		var location_info_map = new Map({
+			hash: "hash"
+		});
+
+		var x = 0;
+		var y = 0;
+		var column_widths = [];
+		for(var i = 0; i<columns.length; i++) {
+			var column = columns[i];
+			var state = column.state;
+			if(column.lr === "l" || column.lr === "r") { //it's a transition pole
+				var transitions = _	.chain(rows)
+									.pluck(i)
+									.filter(function(x) {
+										return x instanceof red.StatechartTransition;
+									})
+									.value();
+				
+				var dy = TRANSITION_MARGIN + TRANSITION_HEIGHT/2;
+				if(column.lr === "l") {
+					y = column.depth * STATE_NAME_HEIGHT + 2 * dy * transitions.length;
+				} else {
+					y = column.depth * STATE_NAME_HEIGHT;
+				}
+
+				var init_x = x,
+					init_y = y;
+				for(var j = 0; j<transitions.length; j++) {
+					var transition = transitions[j];
+					if(column.lr === "l") {
+						y -= dy;
+					} else {
+						y += dy;
+					}
+					x += dy / TAN_THETA;
+					if(location_info_map.has(transition)) {
+						var prop_name = transition.from() === state ? "from" : "to";
+						var location_info = location_info_map.get(transition);
+						location_info[prop_name] = {x: x, y: y};
+					} else {
+						if(transition.from() === transition.to()) {
+							location_info_map.put(transition, {from: {x: x, y: y}, to: {x: x, y: y}});
+						} else {
+							var prop_name = transition.from() === state ? "from" : "to";
+							var info = {};
+							info[prop_name] = {x: x, y: y};
+							location_info_map.put(transition, info);
+						}
+					}
+					if(column.lr === "l") {
+						y -= dy;
+					} else {
+						y += dy;
+					}
+					x += dy / TAN_THETA;
+				}
+
+				if(column.lr === "l") {
+					var location_info = {};
+					location_info.left_wing_start = { x: init_x, y: init_y };
+					location_info.left_wing_end = { x: x, y: y };
+					location_info_map.put(state, location_info);
+				} else {
+					var location_info = location_info_map.get(state);
+					location_info.right_wing_start = { x: init_x, y: init_y };
+					location_info.right_wing_end = { x: x, y: y };
+				}
+			} else {
+				x+= STATE_NAME_WIDTH/2;
+				y = column.depth * STATE_NAME_HEIGHT;
+				var location_info = location_info_map.get(state);
+				location_info.center = { x: x, y: y };
+				x+= STATE_NAME_WIDTH/2;
+			}
+		}
+
+		location_info_map.each(function(location_info, state) {
+			console.log(state.id(), location_info);
 		});
 
 		return rows;
 	};
 }(red.RootStatechartLayoutEngine));
-
-
-red.StatechartLayoutEngine = function(statechart, root_layout_engine) {
-	this.statechart = statechart;
-	this.root_layout_engine = root_engine;
-
-	this.$central_left_width = cjs.$(_.bind(this._compute_central_left_width, this));
-	this.$central_right_width = cjs.$(_.bind(this._compute_central_right_width, this));
-	this.$central_width = cjs.$(_.bind(this._compute_central_width, this));
-	this.$left_width = cjs.$(_.bind(this._compute_left_width, this));
-	this.$right_width = cjs.$(_.bind(this._compute_right_width, this));
-	this.$total_width = cjs.$(_.bind(this._compute_total_width, this));
-	this.$left_crossing_transitions = cjs.$(_.bind(this._compute_left_crossing_transitions, this));
-	this.$right_crossing_transitions = cjs.$(_.bind(this._compute_right_crossing_transitions, this));
-};
-(function(my) {
-	var proto = my.prototype;
-
-	proto.get_central_width = function() { return this.$central_width.get(); };
-	proto.get_left_width = function() { return this.$left_width.get(); };
-	proto.get_right_width = function() { return this.$right_width.get(); };
-	proto.get_total_width = function() { return this.$total_width.get(); };
-	proto.get_left_crossing_transitions = function() { return this.$left_crossing_transitions.get(); };
-	proto.get_right_crossing_transitions = function() { return this.$right_crossing_transitions.get(); };
-
-	proto._compute_central_left_width = function() {
-		var substates = _.toArray(this.statechart.get_substates());
-		var side_substates = substates.slice(0, Math.ceil(substates.length/2));
-		var width = 0;
-		_.each(side_substates, function(substate) {
-			var layout_engine = red.get_state_layout_engine(substate);
-			width += layout_engine.get_total_width();
-		});
-
-		if(width < STATE_NAME_WIDTH / 2) {
-			width = STATE_NAME_WIDTH/2;
-		}
-		return width;
-	};
-
-	proto._compute_central_right_width = function() {
-		var substates = _.toArray(this.statechart.get_substates());
-		var side_substates = substates.slice(Math.ceil(substates.length/2));
-		var width = 0;
-		_.each(side_substates, function(substate) {
-			var layout_engine = red.get_state_layout_engine(substate);
-			width += layout_engine.get_total_width();
-		});
-		if(width < STATE_NAME_WIDTH / 2) {
-			width = STATE_NAME_WIDTH/2;
-		}
-		return width;
-	};
-
-	proto._compute_central_width = function() {
-		if(this.statechart.is_initialized()) {
-			return this.$central_left_width.get() + this.$central_right_width.get();
-		} else {
-			return STATE_NAME_WIDTH;
-		}
-	};
-
-	proto._compute_left_width = function() {
-		var crossing_transitions = this.get_left_crossing_transitions();
-
-		var N = crossing_transitions.length;
-		var height = 2*N*TRANSITION_MARGIN + N * TRANSITION_HEIGHT;
-		var width = height / TAN_THETA;
-		return width;
-	};
-
-	proto._compute_right_width = function() {
-		var crossing_transitions = this.get_right_crossing_transitions();
-
-		var N = crossing_transitions.length;
-		var height = 2*N*TRANSITION_MARGIN + N * TRANSITION_HEIGHT;
-		var width = height / TAN_THETA;
-		return width;
-	};
-
-	proto._compute_total_width = function() { return this.get_left_width() + this.get_central_width() + this.get_right_width(); };
-
-	proto._compute_left_crossing_transitions = function() {
-		return this.root_layout_engine.compute_left_crossing_transitions(this.statechart);
-	};
-	proto._compute_right_crossing_transitions = function() {
-		return this.root_layout_engine.compute_right_crossing_transitions(this.statechart);
-	};
-}(red.StatechartLayoutEngine));
-
-
-red.get_state_layout_engine = function(statechart) {
-	return state_layout_engines.get_or_put(statechart, function() {
-		return new red.StatechartLayoutEngine(statechart);
-	});
-};
-
 }(red));
