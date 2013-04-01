@@ -5,7 +5,7 @@ var cjs = red.cjs, _ = red._;
 var THETA_DEGREES = 30,
 	TRANSITION_HEIGHT = 15,
 	TRANSITION_MARGIN = 1,
-	STATE_NAME_WIDTH = 120, // each side
+	STATE_NAME_WIDTH = 70,
 	STATE_NAME_HEIGHT = TRANSITION_HEIGHT,
 	STATE_PADDING = 2; // each side
 
@@ -32,7 +32,7 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 		return curr_node;
 	};
 
-	proto._compute_rows = function() {
+	proto._compute_layout = function() {
 		var sc_tree = this.get_statechart_tree();
 		var rows = [];
 		var columns = [];
@@ -44,7 +44,7 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 		var push_node_columns = function(node, depth) {
 			var statechart = node.statechart;
 			var children = node.children;
-			var children_split_index = Math.floor(children.length/2);
+			var children_split_index = Math.ceil(children.length/2);
 
 			var li = columns.length;
 			columns.push({ state: statechart, lr: "l", depth: depth});
@@ -149,6 +149,7 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 		var x = 0;
 		var y = 0;
 		var column_widths = [];
+		var num_rows = rows.length;
 		for(var i = 0; i<columns.length; i++) {
 			var column = columns[i];
 			var state = column.state;
@@ -162,20 +163,18 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 				
 				var dy = TRANSITION_MARGIN + TRANSITION_HEIGHT/2;
 				if(column.lr === "l") {
-					y = column.depth * STATE_NAME_HEIGHT + 2 * dy * transitions.length;
+					y = (num_rows - column.depth) * STATE_NAME_HEIGHT - 2 * dy * transitions.length;
+					transitions.reverse();
 				} else {
-					y = column.depth * STATE_NAME_HEIGHT;
+					y = (num_rows - column.depth) * STATE_NAME_HEIGHT;
 				}
 
 				var init_x = x,
 					init_y = y;
+
 				for(var j = 0; j<transitions.length; j++) {
 					var transition = transitions[j];
-					if(column.lr === "l") {
-						y -= dy;
-					} else {
-						y += dy;
-					}
+					if(column.lr === "l") { y += dy; } else { y -= dy; }
 					x += dy / TAN_THETA;
 					if(location_info_map.has(transition)) {
 						var prop_name = transition.from() === state ? "from" : "to";
@@ -185,17 +184,19 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 						if(transition.from() === transition.to()) {
 							location_info_map.put(transition, {from: {x: x, y: y}, to: {x: x, y: y}});
 						} else {
-							var prop_name = transition.from() === state ? "from" : "to";
+							var tfrom = transition.from();
+							var prop_name;
+							if(tfrom instanceof red.StartState) {
+								prop_name = "to";
+							} else {
+								prop_name = transition.from() === state ? "from" : "to";
+							}
 							var info = {};
 							info[prop_name] = {x: x, y: y};
 							location_info_map.put(transition, info);
 						}
 					}
-					if(column.lr === "l") {
-						y -= dy;
-					} else {
-						y += dy;
-					}
+					if(column.lr === "l") { y += dy; } else { y -= dy; }
 					x += dy / TAN_THETA;
 				}
 
@@ -211,18 +212,14 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 				}
 			} else {
 				x+= STATE_NAME_WIDTH/2;
-				y = column.depth * STATE_NAME_HEIGHT;
+				y = (num_rows - column.depth) * STATE_NAME_HEIGHT;
 				var location_info = location_info_map.get(state);
 				location_info.center = { x: x, y: y };
 				x+= STATE_NAME_WIDTH/2;
 			}
 		}
 
-		location_info_map.each(function(location_info, state) {
-			console.log(state.id(), location_info);
-		});
-
-		return rows;
+		return location_info_map;
 	};
 }(red.RootStatechartLayoutEngine));
 }(red));

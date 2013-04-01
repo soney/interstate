@@ -9,6 +9,27 @@ red.RootStatechartView = function(statechart, layout_engine, paper) {
 		hash: "hash"
 	});
 	this.paper = paper;
+	var layout = this.layout_engine._compute_layout();
+	layout.each(function(layout_info, state) {
+		console.log(layout_info);
+		if(state instanceof red.Statechart) {
+			var pts = [layout_info.left_wing_start, layout_info.left_wing_end, layout_info.right_wing_start, layout_info.right_wing_end];
+			var path_str = "M" + _.map(pts, function(pt) {
+				return pt.x+","+pt.y
+			}).join("L");
+			this.paper.path(path_str).attr("stroke", "green");
+			this.paper.circle(layout_info.center.x, layout_info.center.y, 10).attr("stroke", "red");
+		} else {
+			if(layout_info.from && layout_info.to) {
+				var pts = [layout_info.from, layout_info.to];
+				var path_str = "M" + _.map(pts, function(pt) {
+					return pt.x+","+pt.y
+				}).join("L");
+				this.paper.path(path_str).attr("stroke", "blue");
+				this.paper.circle(layout_info.from.x, layout_info.from.y, 10).attr("stroke", "orange");
+			}
+		}
+	}, this);
 };
 
 (function(my) {
