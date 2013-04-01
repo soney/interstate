@@ -14,6 +14,7 @@
 					content.appendChild(el);
 					var paper = Raphael(el, 600, 200);
 
+					/*
 					var pe = red.create_event("parsed", {str: "", context: red.create("pointer"), inert: true});
 					var statechart = window.statechart = red.create("statechart").add_state("INIT").starts_at("INIT").run()
 																				.add_state("b").add_transition("INIT", "b", pe).run();
@@ -31,6 +32,17 @@
 
 						transition_event.set_str(str);
 					});
+					*/
+					var statechart = window.statechart = red.create("statechart");
+					/*
+					statechart.add_state("A.b.x");
+					statechart.add_state("A.b.y");
+					statechart.add_state("A.c");
+					statechart.add_state("B.z");
+					*/
+					statechart.add_state("A");
+					var le = window.le = new red.RootStatechartLayoutEngine(statechart);
+					console.log(le._compute_transition_rows());
 			</script>
 	  </div>
   </body>
