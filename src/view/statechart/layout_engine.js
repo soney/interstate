@@ -62,14 +62,14 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 			var statechart = node.statechart;
 			var li = columns.length;
 			var children = node.children;
-			columns.push({ state: statechart, lr: "l"});
+			columns.push({ state: statechart, lr: "l" });
 			_.each(children, function(childnode) {
 				push_node_columns(childnode, depth+1);
 			});
 			var ri = columns.length;
-			columns.push({ state: statechart, lr: "r"});
+			columns.push({ state: statechart, lr: "r" });
 
-			col_indicies.put(statechart, {l: li, r: ri});
+			col_indicies.put(statechart, {l: li, r: ri });
 			var row;
 			if(rows[depth]) {
 				row = rows[depth];
@@ -82,7 +82,6 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 		};
 		push_node_columns(sc_tree, 0);
 
-
 		var from_to = [];
 		var collect_from_to = function(node) {
 			var statechart = node.statechart,
@@ -90,23 +89,9 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 				li = indicies.l,
 				ri = indicies.r;
 
-			var incoming_transitions = statechart.get_incoming_transitions(),
-				outgoing_transitions = statechart.get_outgoing_transitions();
-
-			// filter out the outgoing transitions to self (as they will be counted in the incoming as well
-			outgoing_transitions = _.filter(outgoing_transitions, function(x) { return x.to() !== statechart; });
-
-			var transition_targets = [];
-			_.each(incoming_transitions, function(x) {
-				transition_targets.push({transition: x, target: x.from()});
-			});
-			_.each(outgoing_transitions, function(x) {
-				transition_targets.push({transition: x, target: x.to()});
-			});
-
-			var targets_from_to = _.map(transition_targets, function(info) {
-				var x = info.target,
-					t = info.transition;
+			var incoming_transitions = statechart.get_incoming_transitions();
+			var targets_from_to = _.map(incoming_transitions, function(t) {
+				var x = t.from();
 				if(x instanceof red.StartState) {
 					return {from: li, to: li, transition: t};
 				} else if(x === statechart) {
@@ -114,9 +99,9 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 				} else {
 					var x_indicies = col_indicies.get(x);
 					if(statechart.order(x) < 0) {
-						return {from: x_indicies.r, to: ri, transition: t};
+						return {from: x_indicies.r, to: li, transition: t };
 					} else {
-						return {from: ri, to: x_indicies.l, transition: t};
+						return {from: ri, to: x_indicies.l, transition: t };
 					}
 				}
 			});
@@ -153,7 +138,6 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 			for(var i = from; i<=to; i++) {
 				curr_row[i] = info.transition;
 			}
-
 		});
 
 		return rows;

@@ -47,7 +47,43 @@
 								.add_transition("hover", "INIT", red.create_event("parsed", {str: "on_init", inert: true}))
 								.run();
 					var le = window.le = new red.RootStatechartLayoutEngine(statechart);
-					console.log(le._compute_transition_rows());
+					var rows = le._compute_transition_rows();
+
+					statechart.print();
+					var curr_element, curr_element_start_col;
+					for(var i = rows.length-1; i>=0; i--) {
+						var row = rows[i];
+						var row_arr = [];
+						for(var j = 0; j<=row.length; j++) {
+							if(row[j] !== curr_element) {
+								if(curr_element) {
+									var col_length = j - curr_element_start_col;
+									var cl_2 = Math.floor(col_length/2);
+									var id = "-" + uid.strip_prefix(curr_element.id());
+									while(id.length < 4) {
+										id += "-";
+									}
+									for(var k = curr_element_start_col; k<j; k++) {
+										if(k === curr_element_start_col + cl_2) {
+											row_arr[k] = id;
+										} else {
+											row_arr[k] = "----";
+										}
+									}
+									row_arr[curr_element_start_col] = "|" + row_arr[curr_element_start_col].slice(1);
+									row_arr[j-1] = row_arr[j-1].slice(0, 3) + "|";
+								}
+								curr_element_start_col = j;
+								curr_element = row[j];
+							}
+							if(!curr_element) {
+								row_arr[j] = "    ";
+							}
+						}
+						var row_str = row_arr.join("");
+						console.log(row_str);
+						curr_element = false;
+					}
 			</script>
 	  </div>
   </body>
