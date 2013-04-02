@@ -336,13 +336,13 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 				}
 			} else {
 				if(state === FAKE_ROOT_STATECHART) {
-					x += 2*STATE_PADDING_X;
-				} else if(_.indexOf(this.statecharts, state) >= 0) {
 					x += STATE_PADDING_X;
+				} else if(_.indexOf(this.statecharts, state) >= 0) {
+					//x += STATE_PADDING_X/2;
 					y = H * (num_rows - column.depth) + H/2;
 					var location_info = location_info_map.get(state);
 					location_info.center = { x: x, y: y };
-					x += STATE_PADDING_X;
+					//x += STATE_PADDING_X/2;
 				} else {
 					x+= STATE_NAME_WIDTH/2;
 					y = H * (num_rows - column.depth) + H/2;
