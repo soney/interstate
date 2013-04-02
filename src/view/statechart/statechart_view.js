@@ -120,7 +120,7 @@ red.StateView = function(options) {
 		var name = state.get_name("parent");
 		this.label = paper.text(center.x, center.y, name);
 		this.label.attr({
-			"font-size": "15px",
+			"font-size": "12px",
 			"font-family": FONT_FAMILY_STR
 		});
 		var bbox = this.label.getBBox();
@@ -129,6 +129,26 @@ red.StateView = function(options) {
 			fill: "white",
 			"fill-opacity": 0.7,
 			stroke: "none"
+		});
+	};
+
+	proto._on_options_set = function(values) {
+		var path_str = this.get_path_str();
+		this.path.attr({
+			"path": path_str
+		});
+		this.label.attr({
+			cx: center.x,
+			cy: center.y,
+			text: name
+		});
+
+		var bbox = this.label.getBBox();
+		this.label_background.attr({
+			x: bbox.x,
+			y: bbox.y,
+			width: bbox.width,
+			height: bbox.height
 		});
 	};
 
@@ -240,6 +260,10 @@ red.TransitionView = function(options) {
 	}
 	var c = center(this.option("from"), this.option("to"));
 	this.label = paper.text(c.x, c.y+7, str);
+	this.label.attr({
+		"font-size": "10px",
+		"font-family": FONT_FAMILY_STR
+	});
 
 	var bbox = this.label.getBBox();
 	this.label_background = paper.rect(bbox.x, bbox.y, bbox.width, bbox.height).insertBefore(this.label);
@@ -253,6 +277,16 @@ red.TransitionView = function(options) {
 (function(my) {
 	var proto = my.prototype;
 	able.make_proto_optionable(proto);
+	proto._on_options_set = function(values) {
+		var paths = this.get_paths();
+		this.line_path.attr("path", paths.line.path);
+		this.arrow_path.attr("path", paths.line.path);
+		this.circle.attr({
+			cx: paths.circle.cx,
+			cy: paths.circle.cy, 
+			r: paths.circle.r
+		});
+	};
 
 	proto.get_paths = function() {
 		var from = this.option("from"),
@@ -301,6 +335,17 @@ red.StartTransitionView = function(options) {
 		var from = {x: to.x - this.option("arrowLength") - this.option("radius") - this.option("line_len"), y: to.y};
 
 		return get_arrow_paths(from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians);
+	};
+
+	proto._on_options_set = function(values) {
+		var paths = this.get_paths();
+		this.line_path.attr("path", paths.line.path);
+		this.arrow_path.attr("path", paths.line.path);
+		this.circle.attr({
+			cx: paths.circle.cx,
+			cy: paths.circle.cy, 
+			r: paths.circle.r
+		});
 	};
 }(red.StartTransitionView));
 
