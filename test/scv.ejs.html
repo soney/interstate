@@ -33,23 +33,47 @@
 						transition_event.set_str(str);
 					});
 					*/
-					var statechart = window.statechart = red.create("statechart");
 					/*
 					statechart.add_state("A.b.x");
 					statechart.add_state("A.b.y");
 					statechart.add_state("A.c");
 					statechart.add_state("B.z");
 					*/
+					var statechart = window.statechart = red.create("statechart");
 					statechart	.add_state("INIT")
-								.starts_at("INIT")
 								.add_state("hover")
-								.add_state("s3")
 								.add_transition("INIT", "hover", red.create_event("parsed", {str: "on_hover", inert: true}))
 								.add_transition("hover", "INIT", red.create_event("parsed", {str: "on_init", inert: true}))
-								.add_transition("INIT", "hover", red.create_event("parsed", {str: "on_init", inert: true}))
+								.starts_at("INIT")
+								.add_state("x")
+					/*
+								.add_state("INIT.a")
+								.add_state("INIT.b")
+								.add_state("INIT.b.x")
+								.add_state("INIT.b.y")
+								.add_transition("INIT.a", "INIT.b.y", red.create_event("parsed", {str:"blahblah", inert:true}))
+					/*
+					/*
+								.add_state("INIT.a")
+								.add_state("INIT.b")
+					/*
+								.add_state("hover")
+								.add_transition("INIT", "hover", red.create_event("parsed", {str: "on_hover", inert: true}))
+								.add_transition("hover", "INIT", red.create_event("parsed", {str: "on_init", inert: true}))
+								/*
+								*/
 								.run();
-					var le = window.le = new red.RootStatechartLayoutEngine(statechart);
-					var view = new red.RootStatechartView(statechart, le, paper);
+								/*
+					var statechart2 = window.statechart2 = red.create("statechart");
+					statechart2	.add_state("INIT")
+								.starts_at("INIT")
+								.add_state("hover")
+								.add_transition("INIT", "hover", red.create_event("parsed", {str: "on_hover", inert: true}))
+								.add_transition("hover", "INIT", red.create_event("parsed", {str: "on_init", inert: true}))
+								.run();
+								*/
+					var le = window.le = new red.RootStatechartLayoutEngine([statechart]);
+					var view = new red.RootStatechartView([statechart], le, paper);
 					/*
 					var rows = le._compute_rows();
 

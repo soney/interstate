@@ -42,7 +42,6 @@ var get_state_listener_info = function(str_descriptor) {
 		throw new Error(str_descriptor + " does not match format");
 	}
 };
-window.gsi = get_state_listener_info;
 
 var matches_name = function(statechart, states, state) {
 	if(states === any_state) {
@@ -193,7 +192,7 @@ red.find_equivalent_transition = function(to_transition, in_tree) {
 };
 
 red.StatechartTransition = function(options, defer_initialization) {
-	this._initialized = false;
+	this._initialized = cjs.$(false);
 	options = options || {};
 	able.make_this_listenable(this);
 	this._id = options.id || uid();
@@ -231,14 +230,14 @@ red.StatechartTransition = function(options, defer_initialization) {
 		this.do_fire = _.bind(this.fire, this);
 		this.set_event(options.event);
 		red.register_uid(this._id, this);
-		this._initialized = true;
+		this._initialized.set(true);
 		this._emit("initialized");
 	};
 	proto.is_puppet = function() { 
 		return this._puppet;
 	};
 	proto.is_initialized = function(){
-		return this._initialized;
+		return this._initialized.get();
 	};
 	proto.increment_times_run = function() {
 		this.$times_run.set(this.$times_run.get() + 1);
@@ -422,7 +421,7 @@ red.StatechartTransition = function(options, defer_initialization) {
 }(red.StatechartTransition));
 
 red.State = function(options, defer_initialization) {
-	this._initialized = false;
+	this._initialized = cjs.$(false);
 	options = options || {};
 	able.make_this_listenable(this);
 	this._id = options.id || uid();
@@ -476,7 +475,7 @@ red.State = function(options, defer_initialization) {
 	able.make_proto_listenable(proto);
 
 	proto.is_initialized = function(){
-		return this._initialized;
+		return this._initialized.get();
 	};
 
 	proto.is_puppet = function() { 
@@ -794,7 +793,7 @@ red.StartState = function(options) {
 			to._add_direct_incoming_transition(this.outgoingTransition);
 		}
 		red.register_uid(this._id, this);
-		this._initialized = true;
+		this._initialized.set(true);
 		this._emit("initialized");
 	};
 	proto.setTo = function(toNode) {
@@ -973,7 +972,7 @@ red.Statechart = function(options) {
 		my_starting_state.enable_outgoing_transitions();
 
 		red.register_uid(this._id, this);
-		this._initialized = true;
+		this._initialized.set(true);
 		this._emit("initialized");
 	};
 

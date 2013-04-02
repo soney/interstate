@@ -61,7 +61,7 @@ red.create_remote_statechart = function(wrapper_client, statechart_parent) {
 				wrapper_client.async_get('get_incoming_transitions', function(transition_wrappers) {
 					var incoming_transitions_value_arr = _.map(transition_wrappers, function(transition_wrapper, name) {
 						var transition = red.create_remote_transition(transition_wrapper);
-						return transitions;
+						return transition;
 					});
 					incoming_transitions_value = cjs.array({value: incoming_transitions_value_arr});
 					incoming_transitions.resolve();

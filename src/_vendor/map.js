@@ -189,11 +189,15 @@ var Map = function(options) {
 				}
 			}
 			value = create_fn.call(context, key);
-			hash_arr.push({key: key, value: value});
+			var info = {key: key, value: value}
+			hash_arr.push(info);
+			this._ordered_values.push(info);
 			return value;
 		} else {
 			value = create_fn.call(context, key);
-			this._khash[hash] = [{key: key, value: value}];
+			var info = {key: key, value: value}
+			this._khash[hash] = [info];
+			this._ordered_values.push(info);
 			return value;
 		}
 	};

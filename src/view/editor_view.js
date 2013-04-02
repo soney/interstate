@@ -294,14 +294,14 @@ $.widget("red.editor", {
 		//var statechart = cobj.get_own_statechart();
 		var content = document.createElement("div");
 		if(statecharts) {
-			_.map(statecharts, function(statechart) {
-				var el = document.createElement("div");
-				el.style.position = "relative";
-				el.style.left = "300px";
-				content.appendChild(el);
-				var paper = Raphael(el, 400, 200);
-				var scv = red.create("statechart_view", statechart, paper, {root: true});
-			});
+			var el = document.createElement("div");
+			el.style.position = "relative";
+			el.style.left = "300px";
+			content.appendChild(el);
+			var paper = Raphael(el, 400, 200);
+
+			var le =  new red.RootStatechartLayoutEngine(statecharts);
+			var view = new red.RootStatechartView(statecharts, le, paper);
 		} else {
 			content.textContent = "(waiting for statechart to load)";
 		}
