@@ -150,7 +150,7 @@ var get_arrow_paths = function(from, to, self_pointing_theta, radius, arrowLengt
 	var lineStartX, lineStartY, lineEndX, lineEndY, theta, arrow_theta;
 
 	if(Math.pow(xDiff, 2) + Math.pow(yDiff, 2) <= Math.pow(radius + arrowLength, 2)) {
-		var curve_radius = 2*radius * radius;
+		var curve_radius = 2*radius * radius + 25;
 
 		theta = self_pointing_theta * Math.PI/180;
 		arrow_theta = theta - (90 * Math.PI/180);
@@ -208,9 +208,9 @@ red.TransitionView = function(options) {
 		from: {x:0, y:0},
 		to: {x:0, y:0},
 		arrowLength: 8,
-		radius: 0,
+		radius: 1,
 		arrowAngle: 25,
-		self_pointing_theta: 45
+		self_pointing_theta: 40
 	}, options);
 	var paper = this.option("paper");
 	var paths = this.get_paths();

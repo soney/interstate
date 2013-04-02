@@ -13,6 +13,8 @@ var THETA_DEGREES = 45,
 var THETA_RADIANS = THETA_DEGREES * Math.PI / 180,
 	TAN_THETA = Math.tan(THETA_RADIANS);
 
+var STATE_LINE_PADDING_FACTOR = 1/2;
+
 var FAKE_ROOT_STATECHART = {
 		hash: function() {
 					return "null";
@@ -171,7 +173,7 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 		});
 
 // FOR DEBUGGING
-/*
+ /*
 		_.each(this.statecharts, function(statechart) {
 			statechart.print();
 		});
@@ -248,8 +250,8 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 						//if(found_relevant_transition) {x += dx; y += dy; }
 						if(cell === state) {
 							if(!found_relevant_transition) {
-								wing_start_x = x - dx;
-								wing_start_y = y - dy;
+								wing_start_x = x - dx * STATE_LINE_PADDING_FACTOR;
+								wing_start_y = y - dy * STATE_LINE_PADDING_FACTOR;
 							}
 							break;
 						} else {
@@ -260,8 +262,8 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 									var to_continue = false;
 									if(!found_relevant_transition) {
 										found_relevant_transition = true;
-										wing_start_x = x - H/2;
-										wing_start_y = y - H/2;
+										wing_start_x = x - dx*STATE_LINE_PADDING_FACTOR;
+										wing_start_y = y - dy*STATE_LINE_PADDING_FACTOR;
 										to_continue = true;
 									}
 									var location_info = location_info_map.get_or_put(cell, function() { return {}; });
@@ -289,32 +291,41 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 				} else {
 					var found_state;
 					y = H * (num_rows - column.depth) + H/2;
-					var wing_start_x = x, wing_start_y = y, wing_end_x = x + dx, wing_end_y = y - dy;
+					var wing_start_x = x, wing_start_y = y, wing_end_x = x + dx*STATE_LINE_PADDING_FACTOR, wing_end_y = y - dy*STATE_LINE_PADDING_FACTOR;
+					var last_relevant_transition_index = -1;
+					for(var row = column_values.length-1; row >= column.depth; row--) {
+						var cell = column_values[row];
+						if(cell instanceof red.StatechartTransition && (cell.from() === state || cell.to() === state)) {
+							last_relevant_transition_index  = row;
+							break;
+						}
+					}
 					for(var row = column.depth; row < column_values.length; row++) {
 						var cell = column_values[row];
 						if(cell === state) {
 							wing_start_x = x;
 							wing_start_y = y;
-						} else if(cell instanceof red.StatechartTransition) {
-							x += 2*dx;
-							is_from = cell.from() === state;
-							is_to = cell.to() === state;
-							if(is_from || is_to) {
+						} else {
+							if(cell instanceof red.StatechartTransition) {
+								is_from = cell.from() === state;
+								is_to = cell.to() === state;
+								if(is_from || is_to) {
+									wing_end_x = x + dx * STATE_LINE_PADDING_FACTOR;
+									wing_end_y = y - dy * STATE_LINE_PADDING_FACTOR;
 
-								wing_end_x = x + dx;
-								wing_end_y = y - dy;
+									var location_info = location_info_map.get_or_put(cell, function() { return {}; });
 
-								var location_info = location_info_map.get_or_put(cell, function() { return {}; });
-
-								if(is_from && is_to) {
-									location_info.from = location_info.to = {x: x, y: y};
-								} else if(is_from) {
-									location_info.from = {x: x, y: y};
-								} else { // includes start state
-									location_info.to = {x: x, y: y};
+									if(is_from && is_to) {
+										location_info.from = location_info.to = {x: x, y: y};
+									} else if(is_from) {
+										location_info.from = {x: x, y: y};
+									} else { // includes start state
+										location_info.to = {x: x, y: y};
+									}
 								}
 							}
 						}
+						if(row <= last_relevant_transition_index) { x += 2 * dx; }
 						y -= H;
 					}
 					var location_info = location_info_map.get(state);
