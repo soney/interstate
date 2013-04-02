@@ -91,7 +91,8 @@ red.StateView = function(options) {
 		rws: {x:0, y:0},
 		rwe: {x:0, y:0},
 		c: {x:0, y:0},
-		default_stroke: "green"
+		default_stroke: "#777",
+		default_fill: "#F9F9F9"
 	}, options);
 
 	var state = this.option("state");
@@ -110,7 +111,10 @@ red.StateView = function(options) {
 		var state = this.option("state");
 		var paper = this.option("paper");
 		this.path = paper.path(this.get_path_str());
-		this.path.attr("stroke", this.option("default_stroke"));
+		this.path.attr({
+			"stroke": this.option("default_stroke"),
+			"fill": this.option("default_fill")
+		}).toBack();
 		var center = this.option("c");
 
 		var name = state.get_name("parent");
@@ -130,9 +134,10 @@ red.StateView = function(options) {
 
 	proto.get_path_str = function() {
 		var pts = [this.option("lws"), this.option("lwe"), this.option("rws"), this.option("rwe")];
-		var path_str = "M" + _.map(pts, function(pt) {
+		var x0 = pts[0].x;
+		var path_str = "M" + x0 + ",0" + "L" + _.map(pts, function(pt) {
 			return pt.x+","+pt.y
-		}).join("L");
+		}).join("L") + "V0Z";
 		return path_str;
 	};
 }(red.StateView));
@@ -150,7 +155,7 @@ var get_arrow_paths = function(from, to, self_pointing_theta, radius, arrowLengt
 	var lineStartX, lineStartY, lineEndX, lineEndY, theta, arrow_theta;
 
 	if(Math.pow(xDiff, 2) + Math.pow(yDiff, 2) <= Math.pow(radius + arrowLength, 2)) {
-		var curve_radius = 2*radius * radius + 25;
+		var curve_radius = 2*radius * radius + arrowLength + 2;
 
 		theta = self_pointing_theta * Math.PI/180;
 		arrow_theta = theta - (90 * Math.PI/180);
@@ -201,6 +206,11 @@ var get_arrow_paths = function(from, to, self_pointing_theta, radius, arrowLengt
 	};
 };
 
+var center = function(p1, p2) {
+	return { x: (p1.x + p2.x) / 2,
+				y: (p1.y + p2.y) / 2 };
+};
+
 red.TransitionView = function(options) {
 	able.make_this_optionable(this, {
 		transition: null,
@@ -221,6 +231,22 @@ red.TransitionView = function(options) {
 	this.circle.attr({
 		"fill": "black",
 		"stroke": "none"
+	});
+	var transition = this.option("transition");
+	var event = transition.event();
+	var str = "";
+	if(event instanceof red.ParsedEvent) {
+		str = event.get_str();
+	}
+	var c = center(this.option("from"), this.option("to"));
+	this.label = paper.text(c.x, c.y+7, str);
+
+	var bbox = this.label.getBBox();
+	this.label_background = paper.rect(bbox.x, bbox.y, bbox.width, bbox.height).insertBefore(this.label);
+	this.label_background.attr({
+		fill: "white",
+		"fill-opacity": 0.8,
+		stroke: "none"
 	});
 };
 
