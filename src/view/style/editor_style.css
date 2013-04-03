@@ -4,7 +4,8 @@ div#editor {
 	font-weight: normal;
 	white-space: pre;
 }
-div#editor .prop_name {
+div#editor .prop_name, div#editor input.prop_name {
+	font-family: Courier New, Courier, monospace;
 	display: inline-block;
 	width: 110px;
 	font-style:italic;
@@ -75,6 +76,10 @@ div#editor input.raw_cell, div#editor .raw_cell {
 }
 
 .stateful_prop {
+}
+
+.dict_child {
+	position: relative;
 }
 
 .no_cell {

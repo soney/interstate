@@ -82,11 +82,11 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 				}
 			}
 		} else {
-			return full_layout_info.width + 350;
+			return full_layout_info.width + 300;
 		}
 	};
 
-	proto.get_width = function(state) {
+	proto.get_width = function(state_wrapper) {
 		if(state_wrapper.type() === "statechart") {
 			return STATE_NAME_WIDTH;
 		} else if(state_wrapper.type() === "transition") {
