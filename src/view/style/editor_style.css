@@ -67,12 +67,14 @@ div#editor input.raw_cell, div#editor .raw_cell {
 	background: url(tree_imgs/node.png) no-repeat;
 }
 
+.dict_child:has(.stateful_prop) {
+}
+
 .dict .add_prop_row:last-child {
 	background: #fff url(tree_imgs/lastnode.png) no-repeat;
 }
 
 .stateful_prop {
-	background: url(dots/dot1.png) 0px 10px repeat-x;
 }
 
 .no_cell {

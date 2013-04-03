@@ -53,6 +53,33 @@ red.ContextualStatefulProp = function(options) {
 		return undefined;
 	};
 
+	proto.get_states = function() {
+		var parent = this.get_parent();
+		var stateful_prop = this.get_object();
+		var statecharts;
+		if(stateful_prop.get_can_inherit()) {
+			statecharts = parent.get_statecharts();
+		} else {
+			var sc_parent = stateful_prop.get_statechart_parent();
+			if(sc_parent === "parent") {
+				sc_parent = parent.get_object();
+			}
+			statecharts = [parent.get_statechart_for_proto(sc_parent)];
+		}
+		var substates = _	.chain(statecharts)
+							.map(function(sc) {
+								return _.rest(sc.flatten_substates());
+							})
+							.flatten(true)
+							.map(function(state) {
+								return ([state]).concat(state.get_incoming_transitions());
+							})
+							.flatten(true)
+							.value();
+
+		return substates; // includes transitions
+	};
+
 	proto.get_values = function() {
 		var parent = this.get_parent();
 		var stateful_prop = this.get_object();
@@ -142,7 +169,6 @@ red.ContextualStatefulProp = function(options) {
 		} else {
 			var values = stateful_prop.get_direct_values();
 			entries = values.entries();
-
 
 			var sc_parent = stateful_prop.get_statechart_parent();
 			if(sc_parent === "parent") {

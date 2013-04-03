@@ -42,7 +42,7 @@ var Env = function(options) {
 
 		var dom = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment")]});
 		dom.set("tag", red.create("cell", {str: "'div'"}));
-		dom.set("text", red.create("cell", {str: "undefined"}));
+	//	dom.set("text", red.create("cell", {str: "undefined"}));
 		//dom.set("children", red.create("dict", {has_protos: false}));
 	//	dom.set("attr", red.create("dict", {has_protos: false}));
 	//	dom.set("css", red.create("dict", {has_protos: false}));

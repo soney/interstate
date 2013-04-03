@@ -61,21 +61,29 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 	};
 
 	proto.get_x = function(state_wrapper) {
-		var id = state_wrapper.cobj_id;
-		var layout = this.get_layout();
-		var keys = _.map(layout.keys(), function(x) { return x.puppet_master_id || -1} ),
-			values = layout.values();
+		var full_layout_info = this.get_layout();
+		if(state_wrapper) {
+			var id = state_wrapper.cobj_id;
+			var layout = full_layout_info.locations;
+			var keys = _.map(layout.keys(), function(x) { return x.puppet_master_id || -1} ),
+				values = layout.values();
 
-		var i = _.indexOf(keys, id);
-		var layout_info = values[i];
-		if(layout_info) {
-			if(state_wrapper.type() === "statechart") {
-				return layout_info.center.x + 300;
-			} else if(state_wrapper.type() === "transition") {
-				return layout_info.from.x + 300;
+			var i = _.indexOf(keys, id);
+			var layout_info = values[i];
+			if(layout_info) {
+				if(state_wrapper.type() === "statechart") {
+					return layout_info.center.x + 300;
+				} else if(state_wrapper.type() === "transition") {
+					if(layout_info.from) {
+						return layout_info.from.x + 300;
+					} else { // start transition
+						return (layout_info.to.x - 15) + 300;
+					}
+				}
 			}
+		} else {
+			return full_layout_info.width + 350;
 		}
-		return undefined;
 	};
 
 	proto.get_width = function(state) {
@@ -92,7 +100,8 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 			bg_positions = [],
 			bg_repeats = [];
 
-		var layout_info = this.get_layout();
+		var full_layout_info = this.get_layout();
+		var layout_info = full_layout_info.locations;
 		var url_prefix = window.location.protocol + "//" + window.location.host + "/src/view/style/dots/";
 
 		layout_info.each(function(info, state) {
@@ -426,7 +435,10 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 			}
 		}
 
-		return location_info_map;
+		var width = x;
+		var height = (num_rows-1) * H;
+
+		return {width: width, height: height, locations: location_info_map};
 	};
 }(red.RootStatechartLayoutEngine));
 }(red));

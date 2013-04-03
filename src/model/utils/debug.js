@@ -152,7 +152,7 @@ var print = function(current_pointer, logging_mechanism) {
 			}
 
 			return str;
-		} else if(val instanceof red.ManifestationContext) {
+		} else if(val instanceof red.CopyContext) {
 			return val.id();
 		} else if(_.isArray(val)) {
 			return ("[" + _.map(val, function(v) { return value_to_value_str(v);}).join(", ") + "]");

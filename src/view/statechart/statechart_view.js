@@ -11,8 +11,14 @@ red.RootStatechartView = function(statecharts, layout_engine, paper) {
 		hash: "hash"
 	});
 	this.paper = paper;
+	var curr_items = [];
 	cjs.liven(function() {
-		var layout = this.layout_engine.get_layout();
+		var layout_info = this.layout_engine.get_layout();
+		var width = layout_info.width,
+			height = layout_info.height,
+			layout = layout_info.locations;
+		this.paper.setSize(width, height);
+		var new_items = [];
 		layout.each(function(layout_info, state) {
 			if(state instanceof red.Statechart) {
 				if(_.indexOf(this.statecharts, state) >= 0) {
@@ -27,8 +33,10 @@ red.RootStatechartView = function(statecharts, layout_engine, paper) {
 						rwe: layout_info.right_wing_end,
 						c: layout_info.center
 					});
+					new_items.push(view);
 				} else {
 					var view = this.get_view(state, layout_info);
+					new_items.push(view);
 				}
 			} else if(state instanceof red.StatechartTransition) {
 				if(this.object_views.has(state)) {
@@ -37,11 +45,20 @@ red.RootStatechartView = function(statecharts, layout_engine, paper) {
 						from: layout_info.from,
 						to: layout_info.to
 					});
+					new_items.push(view);
 				} else {
 					var view = this.get_view(state, layout_info);
+					new_items.push(view);
 				}
 			}
 		}, this);
+
+		_.each(curr_items, function(ci) {
+			if(new_items.indexOf(ci) < 0) {
+				ci.remove();
+			}
+		});
+		curr_items = new_items;
 	}, {
 		context: this
 	});
@@ -165,6 +182,11 @@ red.StateView = function(options) {
 		}).join("L") + "V0Z";
 		return path_str;
 	};
+	proto.remove = function() {
+		this.path.remove();
+		this.label.remove();
+		this.label_background.remove();
+	};
 }(red.StateView));
 
 var get_arrow_paths = function(from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians) {
@@ -283,9 +305,16 @@ red.TransitionView = function(options) {
 	var proto = my.prototype;
 	able.make_proto_optionable(proto);
 	proto._on_options_set = function(values) {
+		var transition = this.option("transition");
 		var paths = this.get_paths();
 		this.line_path.attr("path", paths.line.path);
-		this.arrow_path.attr("path", paths.line.path);
+		this.arrow_path.attr("path", paths.arrow.path);
+		var event = transition.event();
+		var str = "";
+		if(event instanceof red.ParsedEvent) {
+			str = event.get_str();
+		}
+		this.label.attr("text", str);
 		this.circle.attr({
 			cx: paths.circle.cx,
 			cy: paths.circle.cy, 
@@ -301,6 +330,14 @@ red.TransitionView = function(options) {
 			arrowLength = this.option("arrowLength"),
 			arrowAngleRadians = this.option("arrowAngle") * Math.PI / 180;
 		return get_arrow_paths(from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians);
+	};
+
+	proto.remove = function() {
+		this.label_background.remove();
+		this.label.remove();
+		this.circle.remove();
+		this.line_path.remove();
+		this.arrow_path.remove();
 	};
 }(red.TransitionView));
 
@@ -351,6 +388,11 @@ red.StartTransitionView = function(options) {
 			cy: paths.circle.cy, 
 			r: paths.circle.r
 		});
+	};
+	proto.remove = function() {
+		this.line_path.remove();
+		this.arrow_path.remove();
+		this.circle.remove();
 	};
 }(red.StartTransitionView));
 

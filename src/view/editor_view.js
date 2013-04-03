@@ -60,6 +60,7 @@ $.widget("red.editor", {
 	.set("client", "INIT", "false")
 	.set("type", "INIT", "client && client.type ? client.type() : ''")
 	.up()
+
 .set("stateful_prop_view", "<stateful>")
 .cd("stateful_prop_view")
 	.set("(protos)", "INIT", "[dom]")
@@ -67,12 +68,18 @@ $.widget("red.editor", {
 	.set("tag", "INIT", "'span'")
 	.set("children", "<dict>")
 	.cd("children")
+		.set("unset_values", "<stateful>")
+		.cd("unset_values")
+			.set("(protos)", "INIT", "[unset_cell_view]")
+			.set("(copies)", "INIT", "parent.parent.client.get_$('get_states') || 0")
+			.set("my_state", "this.my_copy")
+			.up()
 		.set("values", "<stateful>")
 		.cd("values")
 			.set("(protos)", "INIT", "[stateful_cell_view]")
 			.set("(copies)", "INIT", "parent.parent.client.get_$('get_values')")
 			.set("cell", "this.my_copy.value")
-			.set("state", "this.my_copy.state")
+			.set("my_state", "this.my_copy.state")
 			.set("inherited", "this.my_copy.inherited")
 			.up()
 		.up()
@@ -80,6 +87,7 @@ $.widget("red.editor", {
 	.cd("attr")
 		.set("class", "'stateful_prop'")
 		.up()
+	.set("css", "<dict>")
 	.up()
 .set("value_view", "<stateful>")
 .cd("value_view")
@@ -98,15 +106,35 @@ $.widget("red.editor", {
 	.set("(protos)", "INIT", "[primitive_cell_view]")
 	.set("cell", "client.get_$('get_object')")
 	.up()
+.set("unset_cell_view", "<stateful>")
+.cd("unset_cell_view")
+	.set("(protos)", "INIT", "[dom]")
+	.add_transition("INIT", "INIT", "on('mousedown', this)")
+	.set("tag", "INIT", "'span'")
+	.set("css", "<dict>")
+	.cd("css")
+		.set("cursor", "'pointer'")
+		.set("position", "'absolute'")
+		.set("left", "(25 + parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_x(my_state)) + 'px'")
+		.set("width", "'12px'")
+		.set("height", "'12px'")
+		.set("borderRadius", "'6px'")
+		.set("backgroundColor", "'#EEE'")
+		.set("border", "'1px solid #777'")
+		.up()
+	.on_state("INIT -> INIT", "function(event) {\n" +
+		"post_command('set_stateful_prop_for_state', parent.parent.client, my_state);\n" +
+	"}")
+	.up()
 .set("stateful_cell_view", "<stateful>")
 .cd("stateful_cell_view")
 	.set("(protos)", "INIT", "[primitive_cell_view]")
 	.set("css", "<dict>")
 	.cd("css")
 		.set("position", "'absolute'")
-		.set("left", "parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_x(state) + 'px'")
-		.set("width", "parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_width(state) + 'px'")
-		.set("background", "parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_background_css()")
+		.set("left", "parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_x(my_state) + 'px'")
+		.set("width", "parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_width(my_state) + 'px'")
+		//.set("background", "parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_background_css()")
 		.up()
 	.up()
 .set("primitive_cell_view", "<stateful>")
@@ -381,7 +409,7 @@ $.widget("red.editor", {
 			if(dict_wrapper.type() === "stateful") {
 				value = red.create('stateful_prop');
 			} else {
-				value = red.create('cell', {str: '1+2'});
+				value = red.create('cell', {str: ''});
 			}
 		}
 
@@ -389,6 +417,19 @@ $.widget("red.editor", {
 			parent: { id: to_func(dict_wrapper.obj_id) },
 			value: value
 		});
+		this.client_socket.post_command(command);
+	} else if(type === 'set_stateful_prop_for_state') {
+		var stateful_prop = arguments[1],
+			state = arguments[2];
+
+		var value = red.create('cell', {str: ''});
+
+		var command = new red.SetStatefulPropValueCommand({
+			stateful_prop: { id: to_func(stateful_prop.obj_id) },
+			state: { id: to_func(state.cobj_id) },
+			value: value
+		});
+
 		this.client_socket.post_command(command);
 	} else {
 		console.log(arguments);
