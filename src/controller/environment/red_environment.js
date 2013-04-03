@@ -49,7 +49,7 @@ var Env = function(options) {
 		root_dict.set("dom", dom);
 
 		var children = red.create("dict", {has_protos: false});
-		root_dict.set("children", children);
+		root_dict.set("child_nodes", children);
 	};
 
 	proto.default_return_value = function() {

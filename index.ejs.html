@@ -38,7 +38,7 @@
 					} catch(e) {
 						console.log("Creating a new project");
 						env = red.create("environment");
-						env	.cd("children")
+						env	.cd("child_nodes")
 							.set("a", "<stateful>")
 							.cd("a")
 								.set("(protos)", "INIT", "dom")

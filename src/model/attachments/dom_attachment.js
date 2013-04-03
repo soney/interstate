@@ -263,7 +263,7 @@ red.DomAttachmentInstance = function(options) {
 			if(text!== undefined) {
 				dom_obj.textContent = text;
 			} else {
-				var children = contextual_object.prop("children");
+				var children = contextual_object.prop("child_nodes");
 
 				var current_children = _.toArray(dom_obj.childNodes);
 				var desired_children = [];
