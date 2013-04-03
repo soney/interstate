@@ -109,8 +109,19 @@ red.StateView = function(options) {
 		rwe: {x:0, y:0},
 		c: {x:0, y:0},
 		default_stroke: "#777",
-		default_fill: "#F9F9F9"
+		default_fill: "#F9F9F9",
+		active_fill: "#F99999"
 	}, options);
+	this.active_fn = cjs.liven(function() {
+		var state = this.option("state");
+		if(state.is_initialized() && state.is_active()) {
+			if(this.path) { this.path.attr("fill", this.option("active_fill")); } 
+		} else {
+			if(this.path) { this.path.attr("fill", this.option("default_fill")); }
+		}
+	}, {
+		context: this
+	});
 
 	var state = this.option("state");
 
@@ -130,7 +141,7 @@ red.StateView = function(options) {
 		this.path = paper.path(this.get_path_str());
 		this.path.attr({
 			"stroke": this.option("default_stroke"),
-			"fill": this.option("default_fill")
+			"fill": this.option(state.is_active() ? "active_fill" : "default_fill")
 		}).toBack();
 		var center = this.option("c");
 

@@ -349,11 +349,11 @@ $.widget("red.editor", {
 		//var statechart = cobj.get_own_statechart();
 		var content = document.createElement("div");
 		if(statecharts) {
-			var el = document.createElement("div");
+			var el = document.createElement("span");
 			el.style.position = "relative";
 			el.style.left = "300px";
 			content.appendChild(el);
-			var paper = Raphael(el, 400, 200);
+			var paper = Raphael(el, 0, 0);
 
 			var view = new red.RootStatechartView(statecharts, le, paper);
 		} else {
