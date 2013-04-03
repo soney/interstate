@@ -62,7 +62,7 @@ red.Dict = function(options, defer_initialization) {
 			, getter_name: "direct_protos"
 			, setter_name: "_set_direct_protos"
 			, env_visible: true
-			, env_name: "protos"
+			, env_name: "prototypes"
 		}
 
 		, "direct_attachments": {

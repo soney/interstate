@@ -236,6 +236,7 @@ red.ContextualStatefulProp = function(options) {
 				if(!this._used_start_transition && state.from() instanceof red.StartState) {
 					using_val = val;
 					using_state = state;
+					console.log(val);
 					_.defer(_.bind(function() {
 						this.$value.invalidate();
 					}, this));
