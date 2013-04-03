@@ -69,9 +69,10 @@ $.widget("red.editor", {
 	.cd("children")
 		.set("values", "<stateful>")
 		.cd("values")
-			.set("(protos)", "INIT", "[primitive_cell_view]")
+			.set("(protos)", "INIT", "[stateful_cell_view]")
 			.set("(copies)", "INIT", "parent.parent.client.get_$('get_values')")
 			.set("cell", "this.my_copy.value")
+			.set("state", "this.my_copy.state")
 			.set("inherited", "this.my_copy.inherited")
 			.up()
 		.up()
@@ -96,6 +97,17 @@ $.widget("red.editor", {
 .cd("cell_view")
 	.set("(protos)", "INIT", "[primitive_cell_view]")
 	.set("cell", "client.get_$('get_object')")
+	.up()
+.set("stateful_cell_view", "<stateful>")
+.cd("stateful_cell_view")
+	.set("(protos)", "INIT", "[primitive_cell_view]")
+	.set("css", "<dict>")
+	.cd("css")
+		.set("position", "'absolute'")
+		.set("left", "parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_x(state) + 'px'")
+		.set("width", "parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_width(state) + 'px'")
+		.set("background", "parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_background_css()")
+		.up()
 	.up()
 .set("primitive_cell_view", "<stateful>")
 .cd("primitive_cell_view")
@@ -136,11 +148,16 @@ $.widget("red.editor", {
 	.set("(protos)", "INIT", "[dom]")
 	.set("tag")
 	.set("tag", "INIT", "'div'")
+	.set("layout_engine", "INIT", "get_layout_engine(client.get_$('get_statecharts'))")
 	.set("children", "<stateful_prop>")
-	.set("children", "INIT", "get_statechart_view(client.get_$('get_statecharts'))")
+	.set("children", "INIT", "get_statechart_view(client.get_$('get_statecharts'), layout_engine)")
 	.set("attr", "<dict>")
 	.cd("attr")
 		.set("class", "'statechart'")
+		.up()
+	.set("css", "<dict>")
+	.cd("css")
+		.set("background", "parent.layout_engine ? parent.layout_engine.get_background_css() : ''")
 		.up()
 	.up()
 .set("dict_view", "<stateful>")
@@ -286,7 +303,17 @@ $.widget("red.editor", {
 		.set("client", "INIT", "root_client")
 		.up()
 	.up()
-.set("get_statechart_view", function(wrappers) {
+.set("get_layout_engine", function(wrappers) {
+	if(wrappers) {
+		var statecharts = _.map(wrappers, function(wrapper) {
+			return red.create_remote_statechart(wrapper);
+		});
+		var le =  new red.RootStatechartLayoutEngine(statecharts);
+		return le;
+	}
+	return false;
+})
+.set("get_statechart_view", function(wrappers, le) {
 	if(wrappers) {
 		var statecharts = _.map(wrappers, function(wrapper) {
 			return red.create_remote_statechart(wrapper);
@@ -300,7 +327,6 @@ $.widget("red.editor", {
 			content.appendChild(el);
 			var paper = Raphael(el, 400, 200);
 
-			var le =  new red.RootStatechartLayoutEngine(statecharts);
 			var view = new red.RootStatechartView(statecharts, le, paper);
 		} else {
 			content.textContent = "(waiting for statechart to load)";

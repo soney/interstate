@@ -155,7 +155,7 @@ red.DomAttachmentInstance = function(options) {
 			if(dom_obj) {
 				var val = child_val.val();
 				if(val) {
-					dom_obj.style[name] = val;
+					dom_obj.style[name] = ""+val;
 				} else {
 					dom_obj.style[name] = "";
 					delete dom_obj.style[name];

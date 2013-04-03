@@ -98,7 +98,7 @@ exports.main_src = c(
 				"view/statechart/raphael_utils.js",
 				"view/statechart/layout_engine.js",
 				"view/statechart/statechart_view.js",
-				"view/editor_style.css"
+				"view/style/editor_style.css"
 			]));
 
 var ends_with = function(str1, str2) {

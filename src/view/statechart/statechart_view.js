@@ -12,7 +12,7 @@ red.RootStatechartView = function(statecharts, layout_engine, paper) {
 	});
 	this.paper = paper;
 	cjs.liven(function() {
-		var layout = this.layout_engine._compute_layout();
+		var layout = this.layout_engine.get_layout();
 		layout.each(function(layout_info, state) {
 			if(state instanceof red.Statechart) {
 				if(_.indexOf(this.statecharts, state) >= 0) {
@@ -133,23 +133,28 @@ red.StateView = function(options) {
 	};
 
 	proto._on_options_set = function(values) {
-		var path_str = this.get_path_str();
-		this.path.attr({
-			"path": path_str
-		});
-		this.label.attr({
-			cx: center.x,
-			cy: center.y,
-			text: name
-		});
+		if(this.path) {
+			var path_str = this.get_path_str();
+			this.path.attr({
+				"path": path_str
+			});
+			var center = this.option("c");
+			var state = this.option("state");
+			var name = state.get_name("parent");
+			this.label.attr({
+				x: center.x,
+				y: center.y,
+				text: name
+			});
 
-		var bbox = this.label.getBBox();
-		this.label_background.attr({
-			x: bbox.x,
-			y: bbox.y,
-			width: bbox.width,
-			height: bbox.height
-		});
+			var bbox = this.label.getBBox();
+			this.label_background.attr({
+				x: bbox.x,
+				y: bbox.y,
+				width: bbox.width,
+				height: bbox.height
+			});
+		}
 	};
 
 	proto.get_path_str = function() {

@@ -17,6 +17,7 @@ red.create_remote_statechart = function(wrapper_client, statechart_parent) {
 			var type = wrapper_client.type();
 			if(type === "statechart") {
 				statechart = new red.Statechart(null, true);
+				statechart.puppet_master_id = id;
 				var substates = _.Deferred();
 				var substates_value;
 				var substate_promises = [];
@@ -147,6 +148,7 @@ red.create_remote_statechart = function(wrapper_client, statechart_parent) {
 				});
 			} else {
 				statechart = new red.StartState(null, true);
+				statechart.puppet_master_id = id;
 
 				var outgoing_transition = _.Deferred();
 				var outgoing_transition_value;
@@ -189,6 +191,7 @@ red.create_remote_transition = function(wrapper_client) {
 			transition = transitions[id];
 		} else {
 			var transition = new red.StatechartTransition(null, true);
+			transition.puppet_master_id = id;
 
 			var from = _.Deferred();
 			var from_value;

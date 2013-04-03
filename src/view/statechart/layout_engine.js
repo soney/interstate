@@ -10,8 +10,11 @@ var THETA_DEGREES = 45,
 	STATE_PADDING_Y = TRANSITION_MARGIN, 
 	STATE_PADDING_X = 8;
 
+
 var THETA_RADIANS = THETA_DEGREES * Math.PI / 180,
 	TAN_THETA = Math.tan(THETA_RADIANS);
+
+var TRANSITION_WIDTH = TRANSITION_HEIGHT / TAN_THETA;
 
 var STATE_LINE_PADDING_FACTOR = 1/2;
 
@@ -25,11 +28,13 @@ var FAKE_ROOT_STATECHART = {
 		id: function() {
 					return "FAKE";
 				},
-		is_initialized: function() { return true; }
+		is_initialized: function() { return true; },
+		basis: function() { return false; }
 	};
 
 red.RootStatechartLayoutEngine = function(statecharts) {
 	this.statecharts = statecharts;
+	this.$layout = cjs.$(_.bind(this._compute_layout, this));
 };
 (function(my) {
 	var proto = my.prototype;
@@ -53,6 +58,74 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 			return node;
 		})};
 		return curr_node;
+	};
+
+	proto.get_x = function(state_wrapper) {
+		var id = state_wrapper.cobj_id;
+		var layout = this.get_layout();
+		var keys = _.map(layout.keys(), function(x) { return x.puppet_master_id || -1} ),
+			values = layout.values();
+
+		var i = _.indexOf(keys, id);
+		var layout_info = values[i];
+		if(layout_info) {
+			if(state_wrapper.type() === "statechart") {
+				return layout_info.center.x + 300;
+			} else if(state_wrapper.type() === "transition") {
+				return layout_info.from.x + 300;
+			}
+		}
+		return undefined;
+	};
+
+	proto.get_width = function(state) {
+		if(state_wrapper.type() === "statechart") {
+			return STATE_NAME_WIDTH;
+		} else if(state_wrapper.type() === "transition") {
+			return TRANSITION_WIDTH;
+		}
+		return 0;
+	};
+
+	proto.get_background_css = function() {
+		var bg_images = [],
+			bg_positions = [],
+			bg_repeats = [];
+
+		var layout_info = this.get_layout();
+		var url_prefix = window.location.protocol + "//" + window.location.host + "/src/view/style/dots/";
+
+		layout_info.each(function(info, state) {
+			if(state instanceof red.State) {
+				if(_.indexOf(this.statecharts, state) < 0) {
+					bg_images.push("url(" + url_prefix + "dot2.png)");
+					bg_positions.push((info.center.x + 300) + "px");
+					bg_repeats.push("repeat-y");
+				}
+			} else if(state instanceof red.StatechartTransition) {
+				if(info.from) {
+					bg_images.push("url(" + url_prefix + "dot3.png)");
+					bg_positions.push((info.from.x + 300) + "px");
+					bg_repeats.push("repeat-y");
+				} else { // start transition
+					bg_images.push("url(" + url_prefix + "dot3.png)");
+					bg_positions.push((info.to.x + 300 - 15) + "px");
+					bg_repeats.push("repeat-y");
+				}
+			}
+		}, this);
+
+		var weaved = [];
+		for(var i = 0; i<bg_images.length; i++) {
+			weaved.push(bg_images[i] + " " + bg_repeats[i] + " " + bg_positions[i]);
+		}
+
+		var rv = weaved.join(", ");
+		return rv;
+	};
+
+	proto.get_layout = function() {
+		return this.$layout.get();
 	};
 
 	proto._compute_layout = function() {
