@@ -28,12 +28,16 @@
 				*/
 env
 
-.cd("children")
+.cd("child_nodes")
 	.set("obj", "<stateful>")
-
 	.cd("obj")
+		.set("(prototypes)", "INIT", "dom")
+		.add_state("hover")
+		.add_transition("INIT", "hover", "on('mouseover', this)")
+		.add_transition("hover", "INIT", "on('mouseout', this)")
 		.set("text", "<stateful_prop>")
 		.set("text", "INIT", "'hello world'")
+		.set("text", "hover", "'goodbye cruel world'")
 		/*
 		.add_state("hover")
 		.add_transition("INIT", "hover", "on('timeout', 500)")

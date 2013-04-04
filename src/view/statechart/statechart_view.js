@@ -110,14 +110,25 @@ red.StateView = function(options) {
 		c: {x:0, y:0},
 		default_stroke: "#777",
 		default_fill: "#F9F9F9",
-		active_fill: "#F99999"
+		active_fill: "#CCC",
+		active_stroke: "red"
 	}, options);
 	this.active_fn = cjs.liven(function() {
 		var state = this.option("state");
 		if(state.is_initialized() && state.is_active()) {
-			if(this.path) { this.path.attr("fill", this.option("active_fill")); } 
+			if(this.path) {
+				this.path.animate({
+					"fill": this.option("active_fill"),
+					"stroke": this.option("active_stroke")
+				}, 300, "ease-out");
+			} 
 		} else {
-			if(this.path) { this.path.attr("fill", this.option("default_fill")); }
+			if(this.path) {
+				this.path.animate({
+					"fill": this.option("default_fill"),
+					"stroke": this.option("default_stroke")
+				}, 300, "ease-out");
+			}
 		}
 	}, {
 		context: this
@@ -140,7 +151,7 @@ red.StateView = function(options) {
 		var paper = this.option("paper");
 		this.path = paper.path(this.get_path_str());
 		this.path.attr({
-			"stroke": this.option("default_stroke"),
+			"stroke": this.option(state.is_active() ? "active_stroke" : "default_stroke"),
 			"fill": this.option(state.is_active() ? "active_fill" : "default_fill")
 		}).toBack();
 		var center = this.option("c");
@@ -277,7 +288,7 @@ red.TransitionView = function(options) {
 		to: {x:0, y:0},
 		arrowLength: 8,
 		radius: 1,
-		arrowAngle: 25,
+		arrowAngle: 20,
 		self_pointing_theta: 40
 	}, options);
 	var paper = this.option("paper");
@@ -285,6 +296,9 @@ red.TransitionView = function(options) {
 
 	this.line_path = paper.path(paths.line.path);
 	this.arrow_path = paper.path(paths.arrow.path);
+	this.arrow_path.attr({
+		fill: "black"
+	});
 	this.circle = paper.circle(paths.circle.cx, paths.circle.cy, paths.circle.r);
 	this.circle.attr({
 		"fill": "black",
@@ -297,7 +311,7 @@ red.TransitionView = function(options) {
 		str = event.get_str();
 	}
 	var c = center(this.option("from"), this.option("to"));
-	this.label = paper.text(c.x, c.y+7, str);
+	this.label = paper.text(c.x, c.y+8, str);
 	this.label.attr({
 		"font-size": "10px",
 		"font-family": FONT_FAMILY_STR
@@ -310,6 +324,9 @@ red.TransitionView = function(options) {
 		"fill-opacity": 0.8,
 		stroke: "none"
 	});
+	
+	this.$flash = _.bind(this.flash, this);
+	transition.on("fire", this.$flash);
 };
 
 (function(my) {
@@ -325,7 +342,19 @@ red.TransitionView = function(options) {
 		if(event instanceof red.ParsedEvent) {
 			str = event.get_str();
 		}
-		this.label.attr("text", str);
+		var c = center(this.option("from"), this.option("to"));
+		this.label.attr({
+			"text": str,
+			x: c.x,
+			y: c.y + 8
+		});
+		var bbox = this.label.getBBox();
+		this.label_background.attr({
+			x: bbox.x,
+			y: bbox.y,
+			width: bbox.width,
+			height: bbox.height
+		});
 		this.circle.attr({
 			cx: paths.circle.cx,
 			cy: paths.circle.cy, 
@@ -343,12 +372,43 @@ red.TransitionView = function(options) {
 		return get_arrow_paths(from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians);
 	};
 
+	proto.flash = function() {
+		var paper = this.option("paper");
+		var line_elem = this.line_path;
+		var arrow = this.arrow_path;
+		var len = line_elem.getTotalLength();
+
+		var the_flash = paper.path(line_elem.getSubpath(0, 0));
+		the_flash.attr({
+			stroke: "red"
+			, "stroke-width": 3
+			, guide: line_elem
+			, along: [0, 0]
+		});
+		the_flash.animate({
+			path: line_elem.getSubpath(0, len)
+		}, 200, "ease-in", function() {
+			the_flash.animate({
+				path: line_elem.getSubpath(4*len/4.1, len)
+			}, 200, "ease-out", function() {
+				the_flash.remove();
+			});
+			arrow.attr({"fill": "red"});
+			window.setTimeout(function() {
+				arrow.animate({
+					fill: "black"
+				}, 200, "ease-out");
+			}, 200);
+		});
+	};
+
 	proto.remove = function() {
 		this.label_background.remove();
 		this.label.remove();
 		this.circle.remove();
 		this.line_path.remove();
 		this.arrow_path.remove();
+		transition.off("fire", this.$flash);
 	};
 }(red.TransitionView));
 
@@ -360,7 +420,7 @@ red.StartTransitionView = function(options) {
 		arrowLength: 8,
 		radius: 4,
 		line_len: 2,
-		arrowAngle: 25
+		arrowAngle: 20
 	}, options);
 
 	var paper = this.option("paper");
@@ -368,6 +428,9 @@ red.StartTransitionView = function(options) {
 
 	this.line_path = paper.path(paths.line.path);
 	this.arrow_path = paper.path(paths.arrow.path);
+	this.arrow_path.attr({
+		"fill": "black"
+	});
 	this.circle = paper.circle(paths.circle.cx, paths.circle.cy, paths.circle.r);
 	this.circle.attr({
 		"fill": "black",
@@ -393,7 +456,7 @@ red.StartTransitionView = function(options) {
 	proto._on_options_set = function(values) {
 		var paths = this.get_paths();
 		this.line_path.attr("path", paths.line.path);
-		this.arrow_path.attr("path", paths.line.path);
+		this.arrow_path.attr("path", paths.arrow.path);
 		this.circle.attr({
 			cx: paths.circle.cx,
 			cy: paths.circle.cy, 

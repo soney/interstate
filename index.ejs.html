@@ -42,8 +42,12 @@
 							.set("a", "<stateful>")
 							.cd("a")
 								.set("(prototypes)", "INIT", "dom")
+								.add_state("hover")
+								.add_transition("INIT", "hover", "on('mouseover', this)")
+								.add_transition("hover", "INIT", "on('mouseout', this)")
 								.set("text")
 								.set("text", "INIT", "'hello world'")
+								.set("text", "hover", "'goodbye cruel world'")
 								.up()
 
 						root = env.get_root();
