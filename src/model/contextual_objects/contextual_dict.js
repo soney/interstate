@@ -311,7 +311,8 @@ red.ContextualDict = function(options) {
 
 	proto.copies_obj = function() {
 		var object = this.get_object();
-		return object.get_copies();
+		var copies = object.get_copies();
+		return copies;
 	};
 
 	proto.get_manifestations_value = function() {
@@ -354,7 +355,7 @@ red.ContextualDict = function(options) {
 			var len = manifestations_value;
 			manifestations_value = new Array(len);
 			for(var i = 1; i<=len; i++) {
-				manifestations_value[i] = i;
+				manifestations_value[i-1] = i;
 			}
 		}
 

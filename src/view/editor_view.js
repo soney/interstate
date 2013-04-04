@@ -193,21 +193,42 @@ $.widget("red.editor", {
 .set("copies_manager", "<stateful>")
 .cd("copies_manager")
 	.set("(prototypes)", "[dom]")
+	.rename_state("INIT", "idle")
 	.add_state("editing")
+	.add_transition("idle", "editing", "on('mousedown', this)")
+	.add_transition("editing", "idle", "on('keydown', this).when_eq('keyCode', 13)")
+	.add_transition("editing", "idle", "on('keydown', this).when_eq('keyCode', 27)")
+	.add_transition("editing", "idle", "on('blur', this)")
 
 	.set("text")
-	.set("copies", "client.get_$('is_template')")
-	.set("copies_obj", "client.get_$('is_template')")
+	.set("copies_obj", "client.get_$('copies_obj')")
+	.set("copies_str", "copies_obj ? copies_obj.get_$('get_str') : ''")
+	.set("copies_values", "client.get_$('get_manifestaitons_value')")
 
-	.set("text", "INIT", "client.get_$('is_template') ? (client.get_$('get_manifestations_value').length + 'copies') : 'no copies' ")
+	.set("text", "idle", "client.get_$('is_template') ? (client.get_$('instances').length + ' copies') : 'no copies' ")
 	.set("css", "<dict>")
 	.set("tag")
-	.set("tag", "INIT", "'span'")
+	.set("tag", "idle", "'span'")
 	.set("tag", "editing", "'input'")
 	.cd("css")
 		.set("position", "'absolute'")
 		.set("left", "'30px'")
 		.up()
+	.on_state("idle -> editing", "function(event) {\n" +
+		"var dom_attachment = get_attachment(this, 'dom');\n" +
+		"if(dom_attachment) {\n" +
+			"var dom_obj = dom_attachment.get_dom_obj();\n" +
+			"if(dom_obj) {\n" +
+				"dom_obj.focus();\n" +
+				"dom_obj.value = copies_str;\n" +
+				"dom_obj.select();\n" +
+			"}\n" +
+		"}\n" +
+	"}")
+	.on_state("editing >0- idle", "function(event) {\n" +
+		"var value = event.target.value;\n" +
+		"post_command('set_builtin', client, 'copies', value);\n" +
+	"}")
 	.up()
 .set("dict_view", "<stateful>")
 .cd("dict_view")
@@ -453,6 +474,19 @@ $.widget("red.editor", {
 		var command = new red.SetStatefulPropValueCommand({
 			stateful_prop: { id: to_func(stateful_prop.obj_id) },
 			state: { id: to_func(state.cobj_id) },
+			value: value
+		});
+
+		this.client_socket.post_command(command);
+	} else if(type === 'set_builtin') {
+		var obj = arguments[1],
+			builtin_name = arguments[2],
+			value_str = arguments[3];
+		var value = red.create('cell', {str: value_str});
+
+		var command = new red.SetBuiltinCommand({
+			parent: { id: to_func(obj.obj_id) },
+			name: "copies",
 			value: value
 		});
 
