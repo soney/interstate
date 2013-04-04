@@ -429,8 +429,8 @@ red.State = function(options, defer_initialization) {
 
 	this.$onBasisAddTransition = _.bind(function(event) {
 		var transition = event.transition;
-		var new_from = red.find_equivalent_state(transition.from(), this);
-		var new_to = red.find_equivalent_state(transition.to(), this);
+		var new_from = red.find_equivalent_state(event.from_state, this);
+		var new_to = red.find_equivalent_state(event.to_state, this);
 		this.add_transition(transition.create_shadow(new_from, new_to, this, this.context()));
 	}, this);
 	this.$onBasisAddSubstate = _.bind(function(event) {
@@ -1361,6 +1361,8 @@ red.Statechart = function(options) {
 		if(arguments.length === 1) {
 			if(arg0 instanceof red.StatechartTransition) {
 				transition = arg0;
+				from_state = transition.from(),
+				to_state = transition.to();
 			}
 		} else {
 			from_state = this.find_state(arg0);

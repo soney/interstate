@@ -115,7 +115,7 @@ red.ParsedEvent = red._create_event_type("parsed");
 										};
 									},
 									function(obj) {
-										return new my({
+										return red.create_event("parsed", {
 											str: obj.str,
 											inert: obj.inert
 										});

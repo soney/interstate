@@ -167,6 +167,21 @@ $.widget("red.editor", {
 					event: str
 				});
 				this.client_socket.post_command(command);
+			} else if(type === 'add_transition') {
+				var from_state = arguments[1],
+					to_state = arguments[2];
+				var statechart = from_state.root();
+				var statechart_puppet_id = statechart.puppet_master_id; 
+				var from_puppet_id = from_state.puppet_master_id,
+					to_puppet_id = to_state.puppet_master_id;
+				var event = red.create_event("parsed", {str: "(event)", inert: true});
+				var command = new red.AddTransitionCommand({
+					from: { id: to_func(from_puppet_id) },
+					to: { id: to_func(to_puppet_id) },
+					event: event,
+					statechart: { id: to_func(statechart_puppet_id) }
+				});
+				this.client_socket.post_command(command);
 			} else {
 				console.log(arguments);
 			}
@@ -536,6 +551,10 @@ this.env.top()
 			}).on("remove_transition", function(event) {
 				var transition = event.transition;
 				post_command("remove_transition", transition);
+			}).on("add_transition", function(e) {
+				var from = e.from,
+					to = e.to;
+				post_command("add_transition", from, to);
 			});
 		} else {
 			content.textContent = "(waiting for statechart to load)";

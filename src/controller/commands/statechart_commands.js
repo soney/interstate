@@ -273,6 +273,16 @@ red.AddTransitionCommand = function(options) {
 	this._from_state = this._options.from;
 	this._to_state = this._options.to;
 	this._event = this._options.event;
+
+	if(this._statechart.basis && this._statechart.basis()) {
+		this._statechart = this._statechart.basis();
+	}
+	if(this._from_state.basis && this._from_state.basis()) {
+		this._from_state = this._from_state.basis();
+	}
+	if(this._to_state.basis && this._to_state.basis()) {
+		this._to_state = this._to_state.basis();
+	}
 };
 
 (function(my) {
@@ -384,6 +394,9 @@ red.SetTransitionEventCommand = function(options) {
 	this._event_str = this._options.event;
 
 	this._transition = this._options.transition || this._options.statechart.get_transition_by_id(this.options.id);
+	if(this._transition.basis && this._transition.basis()) {
+		this._transition = this._transition.basis();
+	}
 };
 
 (function(my) {

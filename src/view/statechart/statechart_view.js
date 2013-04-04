@@ -112,6 +112,15 @@ red.RootStatechartView = function(statecharts, layout_engine, paper) {
 					} else {
 						this._emit("rename_state", {state: obj, str: value});
 					}
+				}, this).on("mousedown", function() {
+					this._from_state = obj;
+				}, this).on("mouseup", function() {
+					var to_state = obj,
+						from_state = this._from_state;
+					delete this._from_state;
+					if(from_state && to_state) {
+						this._emit("add_transition", {from: from_state, to: to_state});
+					}
 				}, this);
 				return rv;
 			}
@@ -177,6 +186,12 @@ red.StateView = function(options) {
 			"stroke": this.option(state.is_active() ? "active_stroke" : "default_stroke"),
 			"fill": this.option(state.is_active() ? "active_fill" : "default_fill")
 		}).toBack();
+		this.path.mousedown(_.bind(function() {
+			this._emit("mousedown");
+		}, this));
+		this.path.mouseup(_.bind(function() {
+			this._emit("mouseup");
+		}, this));
 		var center = this.option("c");
 
 		var name = state.get_name("parent");
