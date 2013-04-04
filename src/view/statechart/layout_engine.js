@@ -87,6 +87,10 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 			return full_layout_info.width + 300;
 		}
 	};
+	proto.total_width = function() {
+		var full_layout_info = this.get_layout();
+		return full_layout_info.width;
+	};
 
 	proto.get_width = function(state_wrapper) {
 		if(state_wrapper.type() === "statechart") {

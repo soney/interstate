@@ -85,3 +85,6 @@ div#editor input.raw_cell, div#editor .raw_cell {
 .no_cell {
 	border-radius: 40px;
 }
+
+.prop_name {
+}

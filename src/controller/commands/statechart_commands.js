@@ -76,6 +76,9 @@ red.RemoveStateCommand = function(options) {
 
 	this._statechart = this._options.statechart;
 	this._state_name = this._options.name;
+	if(this._statechart.basis && this._statechart.basis()) {
+		this._statechart = this._statechart.basis();
+	}
 };
 
 (function(my) {
@@ -352,6 +355,12 @@ red.RemoveTransitionCommand = function(options) {
 
 	this._statechart = this._options.statechart;
 	this._transition = this._options.transition || this._statechart.get_transition_by_id(this._options.id);
+	if(this._statechart.basis && this._statechart.basis()) {
+		this._statechart = this._statechart.basis();
+	}
+	if(this._transition.basis && this._transition.basis()) {
+		this._transition = this._transition.basis();
+	}
 };
 
 (function(my) {

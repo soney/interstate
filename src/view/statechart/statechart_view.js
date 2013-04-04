@@ -215,6 +215,7 @@ red.StateView = function(options) {
 			"font-family": FONT_FAMILY_STR
 		});
 		this.label.on("change", this.forward);
+		this.vline = paper.path("M"+center.x+","+(center.y+5)+"V9999");
 	};
 
 	proto._on_options_set = function(values) {
@@ -231,6 +232,7 @@ red.StateView = function(options) {
 				y: center.y,
 				text: name
 			});
+			this.vline.attr({path:"M"+center.x+","+(center.y+5)+"V9999"});
 		}
 	};
 
@@ -358,6 +360,13 @@ red.TransitionView = function(options) {
 	this.$flash = _.bind(this.flash, this);
 	transition.on("fire", this.$flash);
 	this.label.on("change", this.forward);
+	var from = this.option("from");
+	this.vline = paper.path("M"+from.x+","+(from.y)+"V9999");
+	this.vline.toBack();
+	this.vline.attr({
+		stroke: "#999",
+		"stroke-dasharray": ". "
+	});
 };
 
 (function(my) {
@@ -384,6 +393,10 @@ red.TransitionView = function(options) {
 			cx: paths.circle.cx,
 			cy: paths.circle.cy, 
 			r: paths.circle.r
+		});
+		var from = this.option("from");
+		this.vline.attr({
+			path: "M"+from.x+","+(from.y)+"V9999"
 		});
 	};
 
@@ -461,6 +474,15 @@ red.StartTransitionView = function(options) {
 		"fill": "black",
 		"stroke": "none"
 	});
+
+	var to = this.option("to")
+	var from = {x: to.x - this.option("arrowLength") - this.option("radius") - this.option("line_len"), y: to.y};
+	this.vline = paper.path("M"+from.x+","+(from.y)+"V9999");
+	this.vline.toBack();
+	this.vline.attr({
+		stroke: "#999",
+		"stroke-dasharray": ". "
+	});
 };
 
 (function(my) {
@@ -474,7 +496,6 @@ red.StartTransitionView = function(options) {
 			arrowAngleRadians = this.option("arrowAngle") * Math.PI / 180;
 
 		var from = {x: to.x - this.option("arrowLength") - this.option("radius") - this.option("line_len"), y: to.y};
-
 		return get_arrow_paths(from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians);
 	};
 
@@ -487,6 +508,12 @@ red.StartTransitionView = function(options) {
 			cy: paths.circle.cy, 
 			r: paths.circle.r
 		});
+		var to = this.option("to")
+		var from = {x: to.x - this.option("arrowLength") - this.option("radius") - this.option("line_len"), y: to.y};
+		this.vline.attr({
+			path:"M"+from.x+","+(from.y)+"V9999"
+		});
+		this.vline.toBack();
 	};
 	proto.remove = function() {
 		this.line_path.remove();
