@@ -12,6 +12,14 @@ red.RootStatechartView = function(statecharts, layout_engine, paper) {
 		hash: "hash"
 	});
 	this.paper = paper;
+	var add_state_button = paper.text(0, 20, "+");
+	add_state_button.attr({
+		"font-size": "30px",
+		"cursor": "pointer"
+	});
+	add_state_button.click(_.bind(function() {
+		this._emit("add_state", {statechart: this.statecharts[0]});
+	}, this));
 	var curr_items = [];
 	cjs.liven(function() {
 		var layout_info = this.layout_engine.get_layout();
@@ -23,6 +31,12 @@ red.RootStatechartView = function(statecharts, layout_engine, paper) {
 		layout.each(function(layout_info, state) {
 			if(state instanceof red.Statechart) {
 				if(_.indexOf(this.statecharts, state) >= 0) {
+					if(layout_info.add_state_button_x) {
+						add_state_button.attr({
+							x: layout_info.add_state_button_x,
+							y: height/2
+						});
+					}
 					return; //it's a root statechart
 				}
 				if(this.object_views.has(state)) {
@@ -414,11 +428,11 @@ red.TransitionView = function(options) {
 	};
 
 	proto.remove = function() {
-		this.label_background.remove();
 		this.label.remove();
 		this.circle.remove();
 		this.line_path.remove();
 		this.arrow_path.remove();
+		var transition = this.option("transition");
 		transition.off("fire", this.$flash);
 	};
 }(red.TransitionView));

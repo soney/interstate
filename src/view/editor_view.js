@@ -182,6 +182,17 @@ $.widget("red.editor", {
 					statechart: { id: to_func(statechart_puppet_id) }
 				});
 				this.client_socket.post_command(command);
+			} else if(type === 'add_state') {
+				var statechart = arguments[1];
+				var statechart_puppet_id = statechart.puppet_master_id; 
+				var substates = statechart.get_substates();
+				var state_name = "state_" + _.size(substates);
+				var command = new red.AddStateCommand({
+					statechart: { id: to_func(statechart_puppet_id) },
+					name: state_name
+				});
+
+				this.client_socket.post_command(command);
 			} else {
 				console.log(arguments);
 			}
@@ -555,6 +566,9 @@ this.env.top()
 				var from = e.from,
 					to = e.to;
 				post_command("add_transition", from, to);
+			}).on("add_state", function(e) {
+				var statechart = e.statechart;
+				post_command("add_state", statechart);
 			});
 		} else {
 			content.textContent = "(waiting for statechart to load)";

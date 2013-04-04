@@ -8,7 +8,8 @@ var THETA_DEGREES = 45,
 	STATE_NAME_WIDTH = 50,
 	STATE_NAME_HEIGHT = TRANSITION_HEIGHT,
 	STATE_PADDING_Y = TRANSITION_MARGIN, 
-	STATE_PADDING_X = 8;
+	STATE_PADDING_X = 8,
+	ADD_STATE_WIDTH = 50;
 
 
 var THETA_RADIANS = THETA_DEGREES * Math.PI / 180,
@@ -34,6 +35,7 @@ var FAKE_ROOT_STATECHART = {
 
 red.RootStatechartLayoutEngine = function(statecharts) {
 	this.statecharts = statecharts;
+	this.statecharts_with_add_state_button = [this.statecharts[0]];
 	this.$layout = cjs.$(_.bind(this._compute_layout, this));
 };
 (function(my) {
@@ -415,6 +417,11 @@ red.RootStatechartLayoutEngine = function(statecharts) {
 					location_info.right_wing_end = { x: wing_end_x, y: wing_end_y };
 
 					x += STATE_PADDING_X/2;
+					if(_.indexOf(this.statecharts_with_add_state_button, state) >= 0) {
+						x += ADD_STATE_WIDTH/2;
+						location_info.add_state_button_x = x;
+						x += ADD_STATE_WIDTH/2;
+					}
 				}
 			} else {
 				if(state === FAKE_ROOT_STATECHART) {

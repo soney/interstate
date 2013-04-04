@@ -15,6 +15,10 @@ red.AddStateCommand = function(options) {
 		this._state = this._options.state;
 	}
 	this._index = this._options.index;
+
+	if(this._statechart.basis && this._statechart.basis()) {
+		this._statechart = this._statechart.basis();
+	}
 };
 
 (function(my) {
@@ -178,6 +182,10 @@ red.RenameStateCommand = function(options) {
 	this._statechart = this._options.statechart;
 	this._from_state_name = this._options.from;
 	this._to_state_name = this._options.to;
+
+	if(this._statechart.basis && this._statechart.basis()) {
+		this._statechart = this._statechart.basis();
+	}
 };
 
 (function(my) {
