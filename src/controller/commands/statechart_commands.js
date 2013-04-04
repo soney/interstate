@@ -87,8 +87,15 @@ red.RemoveStateCommand = function(options) {
 
 	proto._execute = function() {
 		this._index = this._statechart.get_state_index(this._state_name);
-		this._state = this._statechart._find_state(this._state_name);
-		this._transitions = this._statechart.transitions_involving(this._state);
+		this._state = this._statechart.find_state(this._state_name);
+		var transitions = new Set({
+			hash: "hash"
+		});
+		var incoming_transitions = this._state.get_incoming_transitions(),
+			outgoing_transitions = this._state.get_outgoing_transitions();
+		transitions.add.apply(transitions, incoming_transitions);
+		transitions.add.apply(transitions, outgoing_transitions);
+		this._transitions = transitions.toArray();
 		this._statechart.remove_state(this._state_name, false); //don't destroy
 	};
 

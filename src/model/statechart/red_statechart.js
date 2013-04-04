@@ -1014,6 +1014,10 @@ red.Statechart = function(options) {
 	proto.get_active_substate = function() { return this.$local_state.get(); };
 	proto.is_running = function() { return this._running; };
 
+	proto.get_state_index = function(state_name) {
+		return this.$substates.indexOf(state_name);
+	};
+
 	proto.set_active_substate = function(state, transition, event) {
 		red.event_queue.once("end_event_queue_round_0", function() {
 			this._emit("pre_transition_fire", {

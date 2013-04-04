@@ -93,6 +93,11 @@ $.widget("red.editor", {
 					});
 					value.get_own_statechart()	.add_state("INIT")
 												.starts_at("INIT");
+				} else if(prop_type === 'dict') {
+					value = red.create("dict", undefined, true);
+					value.do_initialize({
+						has_protos: false
+					});
 				} else {
 					if(dict_wrapper.type() === "stateful") {
 						value = red.create('stateful_prop');
@@ -305,7 +310,7 @@ this.env.top()
 	.set("tag", "idle", "'span'")
 	.set("tag", "editing", "'input'")
 	.set("text")
-	.set("text", "idle", "cell.get_$('get_str')")
+	.set("text", "idle", "cell.get_$('get_str') || ' '")
 	.set("attr", "<dict>")
 	.cd("attr")
 		.set("class", "'raw_cell'")
@@ -465,11 +470,14 @@ this.env.top()
 		.set("add_prop_disp", "<stateful>")
 		.cd("add_prop_disp")
 			.set("(prototypes)", "INIT", "[dom]")
+			.add_state("add_field")
+			.add_transition("INIT", "add_field", "on('clicked', this.add_field)")
+			.add_transition("add_field", "INIT", "on('clicked', this.add_prop, this.add_obj, this.add_dict)")
 			.set("add_prop", "<stateful>")
 			.cd("add_prop")
 				.set("(prototypes)", "INIT", "[dom]")
 				.add_transition("INIT", "INIT", "on('click', this)")
-				.set("text", "INIT", "'+prop'")
+				.set("text", "INIT", "' (Property) '")
 				.set("tag", "<stateful_prop>")
 				.set("tag", "INIT", "'a'")
 				.set("attr", "<dict>")
@@ -478,6 +486,7 @@ this.env.top()
 					.set("href", "INIT", "'javascript:void(0)'")
 					.up()
 				.on_state("INIT -> INIT", "function() {\n" +
+					"emit('clicked', this);\n" +
 					"post_command('add_prop', 'prop', parent.parent.parent.client);\n" +
 				"}")
 				.up()
@@ -485,7 +494,7 @@ this.env.top()
 			.cd("add_obj")
 				.set("(prototypes)", "INIT", "[dom]")
 				.add_transition("INIT", "INIT", "on('click', this)")
-				.set("text", "INIT", "'+obj'")
+				.set("text", "INIT", "' (Object) '")
 				.set("tag", "<stateful_prop>")
 				.set("tag", "INIT", "'a'")
 				.set("attr", "<dict>")
@@ -494,11 +503,46 @@ this.env.top()
 					.set("href", "INIT", "'javascript:void(0)'")
 					.up()
 				.on_state("INIT -> INIT", "function() {\n" +
+					"emit('clicked', this);\n" +
 					"post_command('add_prop', 'obj', parent.parent.parent.client);\n" +
 				"}")
 				.up()
+			.set("add_dict", "<stateful>")
+			.cd("add_dict")
+				.set("(prototypes)", "INIT", "[dom]")
+				.add_transition("INIT", "INIT", "on('click', this)")
+				.set("text", "INIT", "' (Empty Object) '")
+				.set("tag", "<stateful_prop>")
+				.set("tag", "INIT", "'a'")
+				.set("attr", "<dict>")
+				.cd("attr")
+					.set("href", "<stateful_prop>")
+					.set("href", "INIT", "'javascript:void(0)'")
+					.up()
+				.on_state("INIT -> INIT", "function() {\n" +
+					"emit('clicked', this);\n" +
+					"post_command('add_prop', 'dict', parent.parent.parent.client);\n" +
+				"}")
+				.up()
+			.set("add_field", "<stateful>")
+			.cd("add_field")
+				.set("(prototypes)", "INIT", "[dom]")
+				.add_transition("INIT", "INIT", "on('click', this)")
+				.set("text", "INIT", "'Add field'")
+				.set("tag", "<stateful_prop>")
+				.set("tag", "INIT", "'a'")
+				.set("attr", "<dict>")
+				.cd("attr")
+					.set("href", "<stateful_prop>")
+					.set("href", "INIT", "'javascript:void(0)'")
+					.up()
+				.on_state("INIT -> INIT", "function() {\n" +
+					"emit('clicked', this);\n" +
+				"}")
+				.up()
 			.set("child_nodes", "<stateful_prop>")
-			.set("child_nodes", "INIT", "[add_prop, add_obj]")
+			.set("child_nodes", "INIT", "[add_field]")
+			.set("child_nodes", "add_field", "[add_prop, add_obj, add_dict]")
 			.set("attr", "<dict>")
 			.cd("attr")
 				.set("class", "'add_prop_row'")
