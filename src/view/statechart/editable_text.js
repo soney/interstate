@@ -14,25 +14,25 @@ var match_styles = function(textbox, text) {
 	textbox.style.fontFamily = text.attr("font-family");
 	textbox.style.fontWeight = text.attr("font-weight");
 	textbox.style.fontStyle = text.attr("font-style");
-	textbox.style.fontSize = text.attr("font-size")+"px";
+	textbox.style.fontSize = text.attr("font-size");
 	var box = text.getBBox();
 	textbox.style.top = box.y + "px";
 	textbox.style.outline = "none";
-	textbox.style.border = "1px solid black";
+	textbox.style.border = "none";
 	textbox.style.padding = "0px";
 	textbox.style.margin = "0px";
 	textbox.style.boxSizing = "border-box";
-	textbox.style.background = "none";
+	textbox.style.background = "rgba(255, 255, 255, 0.7)";
 };
 
-var EditableText = function(paper, options) {
+red.EditableText = function(paper, options) {
 	able.make_this_listenable(this);
 	able.make_this_optionable(this, {
 		x: 0
 		, y: 0
 		, text: ""
 		, width: 100
-		, "text-anchor": "start"
+		, "text-anchor": "middle"
 		, animation_duration: 600
 		, default: ""
 		, font: ""
@@ -41,6 +41,8 @@ var EditableText = function(paper, options) {
 		, "font-weight": "normal"
 		, color: "#000000"
 		, default_color: "#AAAAAA"
+		, fill: "white"
+		, "fill-opacity": 0.7
 	}, options);
 
 	this.text = paper	.text(this.option("x"), this.option("y"), this.get_text())
@@ -57,6 +59,13 @@ var EditableText = function(paper, options) {
 	} else {
 		this.text.attr("fill", this.option("color"))
 	}
+	var bbox = this.getBBox();
+	this.label_background = paper.rect(bbox.x, bbox.y, bbox.width, bbox.height).insertBefore(this.text);
+	this.label_background.attr({
+		fill: this.option("fill"),
+		"fill-opacity": this.option("fill-opacity"),
+		stroke: "none"
+	});
 
 	this.$onClick = _.bind(this.onClick, this);
 	this.$onKeydown = _.bind(this.onKeydown, this);
@@ -69,6 +78,10 @@ var EditableText = function(paper, options) {
 	var proto = my.prototype;
 	able.make_proto_listenable(proto);
 	able.make_proto_optionable(proto);
+
+	proto.get_raphael_object = function() {
+		return this.text;
+	};
 
 	proto.show_default = function() {
 		return this.option("text") === "";
@@ -87,17 +100,19 @@ var EditableText = function(paper, options) {
 		var textbox = document.createElement("input");
 		textbox.type = "text"
 		textbox.style.zIndex = 2;
+		var bbox = this.getBBox();
+		var width = bbox.width;
 
 		var anchor = this.text.attr("text-anchor");
 		if(anchor === "start") {
 			textbox.style.left = this.option("x") + "px";
 		} else if(anchor === "middle") {
-			textbox.style.left = (this.option("x") - this.option("width")/2) + "px";
+			textbox.style.left = (this.option("x") - width/2) + "px";
 		} else {
-			textbox.style.left = (this.option("x") - this.option("width")) + "px";
+			textbox.style.left = (this.option("x") - width) + "px";
 		}
 
-		textbox.style.width = this.option("width") + "px";
+		textbox.style.width = width + "px";
 		match_styles(textbox, this.text);
 		this.paper.canvas.parentNode.insertBefore(textbox, this.paper.canvas);
 		textbox.value = this.option("text");
@@ -111,6 +126,15 @@ var EditableText = function(paper, options) {
 	};
 	proto.getBBox = function() {
 		return this.text.getBBox();
+	};
+	proto.update_label_background = function() {
+		var bbox = this.getBBox();
+		this.label_background.attr({
+			x: bbox.x,
+			y: bbox.y,
+			width: bbox.width,
+			height: bbox.height
+		});
 	};
 	proto.onKeydown = function(event) {
 		var textbox = event.srcElement;
@@ -129,6 +153,7 @@ var EditableText = function(paper, options) {
 		} else {
 			this.text.attr("fill", this.option("color"))
 		}
+		this.update_label_background();
 		this._emit("change", {
 			value: value
 			, target: this
@@ -158,10 +183,10 @@ var EditableText = function(paper, options) {
 			fill: this.show_default() ? this.option("default_color") : this.option("color"),
 			text: this.option("text")
 		});
+		this.update_label_background();
 	};
 	proto.remove = function() {
 		this.text.remove();
 	};
-}(EditableText));
-red.define("editable_text", function(a, b) { return new EditableText(a,b); });
+}(red.EditableText));
 }(red));

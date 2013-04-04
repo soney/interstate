@@ -96,6 +96,7 @@ exports.main_src = c(
 				"view/running_app.js",
 				"view/editor_view.js",
 				"view/statechart/raphael_utils.js",
+				"view/statechart/editable_text.js",
 				"view/statechart/layout_engine.js",
 				"view/statechart/statechart_view.js",
 				"view/style/editor_style.css"

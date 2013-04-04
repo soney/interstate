@@ -49,7 +49,130 @@ $.widget("red.editor", {
 	}
 
 	, load_viewer: function() {
-		this.env.top()
+
+		var post_command = _.bind(function(type) {
+			if(type === 'set_str') {
+				var cwrapper = arguments[1],
+					to_text = arguments[2];
+				if(cwrapper) {
+					var command = new red.ChangeCellCommand({
+						cell: { id: to_func(cwrapper.cobj_id) },
+						str: to_text
+					});
+					this.client_socket.post_command(command);
+				}
+			} else if(type === 'rename') {
+				var dict_wrapper = arguments[1],
+					prop_info = arguments[2],
+					from_name = prop_info.name,
+					to_name = arguments[3];
+				var command = new red.RenamePropCommand({
+					parent: { id: to_func(dict_wrapper.obj_id) },
+					from: from_name,
+					to: to_name
+				});
+				this.client_socket.post_command(command);
+			} else if(type === 'unset') {
+				var dict_wrapper = arguments[1],
+					prop_info = arguments[2],
+					name = prop_info.name;
+				var command = new red.UnsetPropCommand({
+					parent: { id: to_func(dict_wrapper.obj_id) },
+					name: name
+				});
+				this.client_socket.post_command(command);
+			} else if(type === 'add_prop') {
+				var prop_type = arguments[1],
+					dict_wrapper = arguments[2];
+
+				var value;
+				if(prop_type === 'obj') {
+					value = red.create("stateful_obj", undefined, true);
+					value.do_initialize({
+						direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value })
+					});
+					value.get_own_statechart()	.add_state("INIT")
+												.starts_at("INIT");
+				} else {
+					if(dict_wrapper.type() === "stateful") {
+						value = red.create('stateful_prop');
+					} else {
+						value = red.create('cell', {str: ''});
+					}
+				}
+
+				var command = new red.SetPropCommand({
+					parent: { id: to_func(dict_wrapper.obj_id) },
+					value: value
+				});
+				this.client_socket.post_command(command);
+			} else if(type === 'set_stateful_prop_for_state') {
+				var stateful_prop = arguments[1],
+					state = arguments[2];
+
+				var value = red.create('cell', {str: ''});
+
+				var command = new red.SetStatefulPropValueCommand({
+					stateful_prop: { id: to_func(stateful_prop.obj_id) },
+					state: { id: to_func(state.cobj_id) },
+					value: value
+				});
+
+				this.client_socket.post_command(command);
+			} else if(type === 'set_builtin') {
+				var obj = arguments[1],
+					builtin_name = arguments[2],
+					value_str = arguments[3];
+				var value = red.create('cell', {str: value_str});
+
+				var command = new red.SetBuiltinCommand({
+					parent: { id: to_func(obj.obj_id) },
+					name: "copies",
+					value: value
+				});
+
+				this.client_socket.post_command(command);
+			} else if(type === 'rename_state') {
+				var state = arguments[1],
+					new_name = arguments[2];
+				var old_name = state.get_name("parent");
+				var parent_puppet_id = state.parent().puppet_master_id;
+				var command = new red.RenameStateCommand({
+					statechart: { id: to_func(parent_puppet_id) },
+					from: old_name,
+					to: new_name
+				});
+				this.client_socket.post_command(command);
+			} else if(type === 'remove_state') {
+				var state = arguments[1];
+				var name = state.get_name("parent");
+				var parent_puppet_id = state.parent().puppet_master_id;
+				var command = new red.RemoveStateCommand({
+					statechart: { id: to_func(parent_puppet_id) },
+					name: name
+				});
+				this.client_socket.post_command(command);
+			} else if(type === 'remove_transition') {
+				var transition = arguments[1];
+				/*
+				var command = new red.RemoveTransitionCommand({
+				});
+				*/
+			} else if(type === 'set_transition_str') {
+				var transition = arguments[1],
+					str = arguments[2];
+				var transition_id = transition.puppet_master_id;
+				var command = new red.SetTransitionEventCommand({
+					transition: { id: to_func(transition_id) },
+					event: str
+				});
+				this.client_socket.post_command(command);
+			} else {
+				console.log(arguments);
+			}
+		}, this);
+
+this.env.top()
 
 // ===== BEGIN EDITOR ===== 
 
@@ -184,11 +307,6 @@ $.widget("red.editor", {
 		.set("class", "'statechart'")
 		.up()
 	.set("css", "<dict>")
-	/*
-	.cd("css")
-		.set("background", "parent.layout_engine ? parent.layout_engine.get_background_css() : ''")
-		.up()
-		*/
 	.up()
 .set("copies_manager", "<stateful>")
 .cd("copies_manager")
@@ -205,7 +323,7 @@ $.widget("red.editor", {
 	.set("copies_str", "copies_obj ? copies_obj.get_$('get_str') : ''")
 	.set("copies_values", "client.get_$('get_manifestaitons_value')")
 
-	.set("text", "idle", "client.get_$('is_template') ? (client.get_$('instances').length + ' copies') : 'no copies' ")
+	.set("text", "idle", "client.get_$('is_template') ? 'copies: ' + ( copies_str + ( isNaN(parseInt(copies_str)) ?  ' (' +  client.get_$('instances').length + ')' : '')) : '(1 copy)' ")
 	.set("css", "<dict>")
 	.set("tag")
 	.set("tag", "idle", "'span'")
@@ -234,6 +352,7 @@ $.widget("red.editor", {
 .cd("dict_view")
 	.set("(prototypes)", "INIT", "[dom]")
 	.set("child_nodes", "<dict>")
+	.set("copy_client", "INIT", "client")
 	.cd("child_nodes")
 		.set("copies_disp", "<stateful>")
 		.cd("copies_disp")
@@ -247,7 +366,7 @@ $.widget("red.editor", {
 		.set("child_disp", "<stateful>")
 		.cd("child_disp")
 			.set("(prototypes)", "INIT", "[dom]")
-			.set("(copies)", "client.get_$('children')")
+			.set("(copies)", "copy_client.get_$('children')")
 			.set("attr", "<dict>")
 			.cd("attr")
 				.set("class", "'dict_child' + (parent.my_copy.inherited ? ' inherited' : '')")
@@ -267,7 +386,6 @@ $.widget("red.editor", {
 					.set("tag", "idle", "'span'")
 					.set("tag", "editing", "'input'")
 					.set("text")
-					//.set("text", "idle", "parent.parent.my_copy.value && (parent.parent.my_copy.value.type() === 'dict' ||  parent.parent.my_copy.value.type() === 'stateful') ? my_copy.name + ':' : my_copy.name")
 					.set("text", "idle", "my_copy.name")
 					.set("attr", "<dict>")
 					.cd("attr")
@@ -396,105 +514,36 @@ $.widget("red.editor", {
 		//var statechart = cobj.get_own_statechart();
 		var content = document.createElement("div");
 		if(statecharts) {
-			var el = document.createElement("span");
+			var el = document.createElement("div");
 			el.style.position = "relative";
 			el.style.left = "300px";
+			el.style.width="0px";
 			content.appendChild(el);
 			var paper = Raphael(el, 0, 0);
 
 			var view = new red.RootStatechartView(statecharts, le, paper);
+			view.on("rename_state", function(event) {
+				var state = event.state,
+					to_name = event.str;
+				post_command("rename_state", state, to_name);
+			}).on("remove_state", function(event) {
+				var state = event.state;
+				post_command("remove_state", state);
+			}).on("change_transition_event", function(event) {
+				var transition = event.transition,
+					event_str = event.str;
+				post_command("set_transition_str", transition, event_str);
+			}).on("remove_transition", function(event) {
+				var transition = event.transition;
+				post_command("remove_transition", transition);
+			});
 		} else {
 			content.textContent = "(waiting for statechart to load)";
 		}
 		return content;
 	}
 })
-.set("post_command", _.bind(function(type) {
-	if(type === 'set_str') {
-		var cwrapper = arguments[1],
-			to_text = arguments[2];
-		if(cwrapper) {
-			var command = new red.ChangeCellCommand({
-				cell: { id: to_func(cwrapper.cobj_id) },
-				str: to_text
-			});
-			this.client_socket.post_command(command);
-		}
-	} else if(type === 'rename') {
-		var dict_wrapper = arguments[1],
-			prop_info = arguments[2],
-			from_name = prop_info.name,
-			to_name = arguments[3];
-		var command = new red.RenamePropCommand({
-			parent: { id: to_func(dict_wrapper.obj_id) },
-			from: from_name,
-			to: to_name
-		});
-		this.client_socket.post_command(command);
-	} else if(type === 'unset') {
-		var dict_wrapper = arguments[1],
-			prop_info = arguments[2],
-			name = prop_info.name;
-		var command = new red.UnsetPropCommand({
-			parent: { id: to_func(dict_wrapper.obj_id) },
-			name: name
-		});
-		this.client_socket.post_command(command);
-	} else if(type === 'add_prop') {
-		var prop_type = arguments[1],
-			dict_wrapper = arguments[2];
-
-		var value;
-		if(prop_type === 'obj') {
-			value = red.create("stateful_obj", undefined, true);
-			value.do_initialize({
-				direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value })
-			});
-			value.get_own_statechart()	.add_state("INIT")
-										.starts_at("INIT");
-		} else {
-			if(dict_wrapper.type() === "stateful") {
-				value = red.create('stateful_prop');
-			} else {
-				value = red.create('cell', {str: ''});
-			}
-		}
-
-		var command = new red.SetPropCommand({
-			parent: { id: to_func(dict_wrapper.obj_id) },
-			value: value
-		});
-		this.client_socket.post_command(command);
-	} else if(type === 'set_stateful_prop_for_state') {
-		var stateful_prop = arguments[1],
-			state = arguments[2];
-
-		var value = red.create('cell', {str: ''});
-
-		var command = new red.SetStatefulPropValueCommand({
-			stateful_prop: { id: to_func(stateful_prop.obj_id) },
-			state: { id: to_func(state.cobj_id) },
-			value: value
-		});
-
-		this.client_socket.post_command(command);
-	} else if(type === 'set_builtin') {
-		var obj = arguments[1],
-			builtin_name = arguments[2],
-			value_str = arguments[3];
-		var value = red.create('cell', {str: value_str});
-
-		var command = new red.SetBuiltinCommand({
-			parent: { id: to_func(obj.obj_id) },
-			name: "copies",
-			value: value
-		});
-
-		this.client_socket.post_command(command);
-	} else {
-		console.log(arguments);
-	}
-}, this))
+.set("post_command", post_command)
 .set("get_attachment", function(obj, attachment_name) {
 	if(obj instanceof red.ContextualDict) {
 		var attachment = obj.get_attachment_instance(attachment_name);

@@ -1225,13 +1225,13 @@ red.Statechart = function(options) {
 							.remove(from_name)
 							.put(to_name, substate, keyIndex)
 							.signal();
-			cjs.signal();
 			this._emit("rename_substate", {
 				type: "rename_substate",
 				state: substate,
 				from: from_name,
 				to: to_name
 			});
+			cjs.signal();
 		}
 	};
 	proto.move_substate = function(state_name, index) {

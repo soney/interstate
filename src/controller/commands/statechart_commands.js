@@ -377,14 +377,13 @@ red.SetTransitionEventCommand = function(options) {
 	red.SetTransitionEventCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!this._options.statechart) {
-		throw new Error("Must select a statechart");
+	if(!this._options.transition) {
+		throw new Error("Must select a transition");
 	}
 
 	this._event_str = this._options.event;
 
 	this._transition = this._options.transition || this._options.statechart.get_transition_by_id(this.options.id);
-	this._event = this._transition.event();
 };
 
 (function(my) {
@@ -392,12 +391,14 @@ red.SetTransitionEventCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		this._from_str = this._event.get_str();
-		this._event.set_str(this._event_str);
+		var event = this._transition.event();
+		this._from_str = event.get_str();
+		event.set_str(this._event_str);
 	};
 
 	proto._unexecute = function() {
-		this._event.set_str(this._from_str);
+		var event = this._transition.event();
+		event.set_str(this._from_str);
 	};
 
 	proto._do_destroy = function(in_effect) { };

@@ -265,7 +265,8 @@ red.create_remote_event = function(wrapper_client) {
 					event.set_str(str);
 				});
 
-				wrapper_client.on("setString", function(str) {
+				wrapper_client.on("setString", function(e) {
+					var str = e.to;
 					event.set_str(str);
 				});
 			}

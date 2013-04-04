@@ -5,6 +5,7 @@ var FONT_FAMILY_STR = "Tahoma, Geneva, sans-serif";
 
 
 red.RootStatechartView = function(statecharts, layout_engine, paper) {
+	able.make_this_listenable(this);
 	this.statecharts = statecharts;
 	this.layout_engine = layout_engine;
 	this.object_views = new Map({
@@ -66,25 +67,36 @@ red.RootStatechartView = function(statecharts, layout_engine, paper) {
 
 (function(my) {
 	var proto = my.prototype;
+	able.make_proto_listenable(proto);
 	proto.get_view = function(obj, layout_info) {
 		return this.object_views.get_or_put(obj, function() {
 			if(obj instanceof red.StatechartTransition) {
 				if(obj.from() instanceof red.StartState) {
-					return new red.StartTransitionView({
+					var rv  = new red.StartTransitionView({
 							paper: this.paper,
 							transition: obj,
 							to: layout_info.to
 						});
+					return rv;
 				} else {
-					return new red.TransitionView({
+					var rv = new red.TransitionView({
 							paper: this.paper,
 							transition: obj,
 							from: layout_info.from,
 							to: layout_info.to
 						});
+					rv.on("change", function(event) {
+						var value = event.value;
+						if(value === "") {
+							this._emit("remove_transition", {transition: obj});
+						} else {
+							this._emit("change_transition_event", {transition: obj, str: value});
+						}
+					}, this);
+					return rv;
 				}
 			} else {
-				return new red.StateView({
+				var rv = new red.StateView({
 						state: obj,
 						paper: this.paper,
 						lws: layout_info.left_wing_start,
@@ -93,6 +105,15 @@ red.RootStatechartView = function(statecharts, layout_engine, paper) {
 						rwe: layout_info.right_wing_end,
 						c: layout_info.center
 					});
+				rv.on("change", function(event) {
+					var value = event.value;
+					if(value === "") {
+						this._emit("remove_state", {state: obj});
+					} else {
+						this._emit("rename_state", {state: obj, str: value});
+					}
+				}, this);
+				return rv;
 			}
 		}, this);
 	};
@@ -100,6 +121,7 @@ red.RootStatechartView = function(statecharts, layout_engine, paper) {
 
 
 red.StateView = function(options) {
+	able.make_this_listenable(this);
 	able.make_this_optionable(this, {
 		state: null,
 		paper: null,
@@ -145,6 +167,7 @@ red.StateView = function(options) {
 
 (function(my) {
 	var proto = my.prototype;
+	able.make_proto_listenable(proto);
 	able.make_proto_optionable(proto);
 	proto.initialize = function() {
 		var state = this.option("state");
@@ -157,18 +180,12 @@ red.StateView = function(options) {
 		var center = this.option("c");
 
 		var name = state.get_name("parent");
-		this.label = paper.text(center.x, center.y, name);
-		this.label.attr({
+		this.label = new red.EditableText(paper, {x: center.x, y: center.y, text:name});
+		this.label.option({
 			"font-size": "12px",
 			"font-family": FONT_FAMILY_STR
 		});
-		var bbox = this.label.getBBox();
-		this.label_background = paper.rect(bbox.x, bbox.y, bbox.width, bbox.height).insertBefore(this.label);
-		this.label_background.attr({
-			fill: "white",
-			"fill-opacity": 0.7,
-			stroke: "none"
-		});
+		this.label.on("change", this.forward);
 	};
 
 	proto._on_options_set = function(values) {
@@ -180,18 +197,10 @@ red.StateView = function(options) {
 			var center = this.option("c");
 			var state = this.option("state");
 			var name = state.get_name("parent");
-			this.label.attr({
+			this.label.option({
 				x: center.x,
 				y: center.y,
 				text: name
-			});
-
-			var bbox = this.label.getBBox();
-			this.label_background.attr({
-				x: bbox.x,
-				y: bbox.y,
-				width: bbox.width,
-				height: bbox.height
 			});
 		}
 	};
@@ -207,7 +216,6 @@ red.StateView = function(options) {
 	proto.remove = function() {
 		this.path.remove();
 		this.label.remove();
-		this.label_background.remove();
 	};
 }(red.StateView));
 
@@ -281,6 +289,7 @@ var center = function(p1, p2) {
 };
 
 red.TransitionView = function(options) {
+	able.make_this_listenable(this);
 	able.make_this_optionable(this, {
 		transition: null,
 		paper: null,
@@ -311,26 +320,20 @@ red.TransitionView = function(options) {
 		str = event.get_str();
 	}
 	var c = center(this.option("from"), this.option("to"));
-	this.label = paper.text(c.x, c.y+8, str);
-	this.label.attr({
+	this.label = new red.EditableText(paper, {x: c.x, y: c.y+8, text: str});
+	this.label.option({
 		"font-size": "10px",
 		"font-family": FONT_FAMILY_STR
-	});
-
-	var bbox = this.label.getBBox();
-	this.label_background = paper.rect(bbox.x, bbox.y, bbox.width, bbox.height).insertBefore(this.label);
-	this.label_background.attr({
-		fill: "white",
-		"fill-opacity": 0.8,
-		stroke: "none"
 	});
 	
 	this.$flash = _.bind(this.flash, this);
 	transition.on("fire", this.$flash);
+	this.label.on("change", this.forward);
 };
 
 (function(my) {
 	var proto = my.prototype;
+	able.make_proto_listenable(proto);
 	able.make_proto_optionable(proto);
 	proto._on_options_set = function(values) {
 		var transition = this.option("transition");
@@ -343,17 +346,10 @@ red.TransitionView = function(options) {
 			str = event.get_str();
 		}
 		var c = center(this.option("from"), this.option("to"));
-		this.label.attr({
+		this.label.option({
 			"text": str,
 			x: c.x,
 			y: c.y + 8
-		});
-		var bbox = this.label.getBBox();
-		this.label_background.attr({
-			x: bbox.x,
-			y: bbox.y,
-			width: bbox.width,
-			height: bbox.height
 		});
 		this.circle.attr({
 			cx: paths.circle.cx,
