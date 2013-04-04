@@ -309,11 +309,15 @@ red.ContextualDict = function(options) {
 		}
 	};
 
-	proto.get_manifestations_value = function() {
+	proto.copies_obj = function() {
 		var object = this.get_object();
+		return object.get_copies();
+	};
+
+	proto.get_manifestations_value = function() {
 		var pointer = this.get_pointer();
 
-		var manifestations = object.get_copies();
+		var manifestations = this.copies_obj();
 		if(manifestations instanceof red.Cell) {
 			var manifestations_pointer = pointer.push(manifestations);
 			var manifestations_contextual_object = red.find_or_put_contextual_obj(manifestations, manifestations_pointer);
