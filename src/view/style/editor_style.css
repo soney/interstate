@@ -1,0 +1,101 @@
+div#editor {
+	font-family: Courier New, Courier, monospace;
+	font-size: 0.8em;
+	font-weight: normal;
+	white-space: pre;
+}
+div#editor .prop_name, div#editor input.prop_name {
+	font-family: Courier New, Courier, monospace;
+	display: inline-block;
+	width: 110px;
+	font-style:italic;
+	height: 16px;
+	box-sizing: border-box;
+}
+div#editor .dict_child {
+}
+
+div#editor .dict_child.inherited {
+	color: #AAA;
+}
+
+div#editor .dict_child.inherited .value {
+	background-color: #CCCC88;
+}
+
+div#editor .value {
+	font-weight: bold;
+	display: inline-block;
+	width: 150px;
+	max-width: 150px;
+	overflow: hidden;
+	background-color: #CCCC00;
+	padding-left: 3px;
+	padding-right: 3px;
+}
+
+div#editor .raw_cell {
+	overflow: hidden;
+}
+div#editor .cell.inherited {
+	color: #AAA;
+}
+div#editor input.raw_cell, div#editor .raw_cell {
+	display: inline-block;
+	width: 70px;
+	/*max-width: 70px;*/
+	border: 1px solid #EEE;
+	font-family: Courier New, Courier, monospace;
+	font-size: inherit;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	padding-left: 3px;
+	padding-right: 3px;
+	outline: none;
+	background-color: #F9F9F9;
+	height: 16px;
+	box-sizing: border-box;
+	-webkit-transition: border-color 0.2s ease-out; /* Safari and Chrome */
+}
+
+.dict {
+	background: url(tree_imgs/vline.png) repeat-y;
+}
+
+.dict_child, .add_prop_row {
+	padding-left: 12px;
+}
+.dict_child {
+	background: url(tree_imgs/node.png) no-repeat;
+}
+
+.dict_child:has(.stateful_prop) {
+}
+
+.dict .add_prop_row:last-child {
+	background: #fff url(tree_imgs/lastnode.png) no-repeat;
+}
+
+.stateful_prop {
+}
+
+.dict_child {
+	position: relative;
+}
+
+.no_cell {
+	border-radius: 40px;
+	width: 12px;
+	height: 12px;
+	border-radius: 6px;
+	background-color: #EEE;
+	border: 1px solid #888;
+}
+
+.prop_name {
+}
+
+.add_prop_row a {
+	text-decoration: none;
+	color: #007;
+}

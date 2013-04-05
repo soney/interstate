@@ -99,9 +99,10 @@ var Map = function(options) {
 (function(my) {
 	var proto = my.prototype;
 	proto.put = function(key, value) {
-		var hash = this._hash(k);
+		var hash = this._hash(key);
 		var hash_arr = this._khash[hash];
 		if(hash_arr) {
+			var len = hash_arr.length;
 			for(var i = 0; i<len; i++) {
 				var item_i = hash_arr[i];
 				if(this._equality_check(item_i.key, key)) {
@@ -110,14 +111,26 @@ var Map = function(options) {
 				}
 			}
 
-			hash_arr.push({key: key, value: value});
+			var info = {key: key, value: value};
+			hash_arr.push(info);
+			this._ordered_values.push(info);
 			return this;
 		} else {
-			this._khash[hash] = [{key: key, value: value}];
+			var info = {key: key, value: value};
+			this._khash[hash] = [info];
+			this._ordered_values.push(info);
 			return this;
 		}
 	};
 	proto.unset = function(key) {
+		var len = this._ordered_values.length;
+		for(var i = 0; i<len; i++) {
+			var item_i = this._ordered_values[i];
+			if(this._equality_check(item_i.key, key)) {
+				this._ordered_values.splice(i, 1);
+			}
+		}
+
 		var hash = this._hash(k);
 		var hash_arr = this._khash[hash];
 		if(hash_arr) {
@@ -148,6 +161,20 @@ var Map = function(options) {
 		}
 		return undefined;
 	};
+	proto.has = function(key) {
+		var hash = this._hash(key);
+		var hash_arr = this._khash[hash];
+		if(hash_arr) {
+			var len = hash_arr.length;
+			for(var i = 0; i<len; i++) {
+				var item_i = hash_arr[i];
+				if(this._equality_check(item_i.key, key)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	};
 	proto.get_or_put = function(key, create_fn, create_fn_context) {
 		var hash = this._hash(key);
 		var hash_arr = this._khash[hash];
@@ -162,11 +189,15 @@ var Map = function(options) {
 				}
 			}
 			value = create_fn.call(context, key);
-			hash_arr.push({key: key, value: value});
+			var info = {key: key, value: value}
+			hash_arr.push(info);
+			this._ordered_values.push(info);
 			return value;
 		} else {
 			value = create_fn.call(context, key);
-			this._khash[hash] = [{key: key, value: value}];
+			var info = {key: key, value: value}
+			this._khash[hash] = [info];
+			this._ordered_values.push(info);
 			return value;
 		}
 	};
@@ -183,6 +214,13 @@ var Map = function(options) {
 			rv[i] = this._ordered_values[i].value;
 		}
 		return rv;
+	};
+	proto.each = function(func, context) {
+		context = context || window;
+		each(this._ordered_values, function(ov) {
+			func.call(context, ov.value, ov.key, ov.index);
+		});
+		return this;
 	};
 }(Map));
 

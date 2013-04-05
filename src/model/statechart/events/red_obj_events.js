@@ -15,15 +15,15 @@ red.emit = function(type, target) {
 };
 
 var listener_map = new Map({
-	equals: red.check_pointer_equality,
+	equals: red.check_contextual_object_equality,
 	hash: "hash"
 });
 
-(function(proto) {
+(function(my) {
+	var proto = my.prototype;
 	proto.on_create = function(type, targets) {
 		this.type = type;
-		this.targets = targets;
-		this.add_listeners();
+		this.targets = _.flatten(targets);
 	};
 
 	proto.destroy = function() {
@@ -80,7 +80,17 @@ var listener_map = new Map({
 		return shadow;
 	};
 	proto.destroy = function() {
+		my.superclass.destroy.apply(this, arguments);
 	};
-}(red._create_event_type("red_obj").prototype));
+
+	proto.enable = function() {
+		my.superclass.enable.apply(this, arguments);
+		this.add_listeners();
+	};
+	proto.disable = function() {
+		my.superclass.disable.apply(this, arguments);
+		this.remove_listeners();
+	};
+}(red._create_event_type("red_obj")));
 
 }(red));

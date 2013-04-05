@@ -30,19 +30,17 @@ red.TransitionEvent = red._create_event_type("transition");
 			}
 			this.processed_targets = _	.chain(targs)
 										.map(function(target_pointer) {
-											if(target_pointer instanceof red.Pointer) {
-												var dict = target_pointer.points_at();
-												if(dict instanceof red.StatefulObj) {
-													var manifestation_pointers = dict.get_manifestation_pointers(target_pointer);
-
-													if(_.isArray(manifestation_pointers)) {
-														var statecharts = _.map(manifestation_pointers, function(manifestation_pointer) {
-															return dict.get_statechart_for_context(manifestation_pointer);
-														});
-														return statecharts;
-													} else {
-														return dict.get_statechart_for_context(target_pointer);
-													}
+											if(target_pointer instanceof red.ContextualStatefulObj) {
+												if(target_pointer.is_template()) {
+													var instances = target_pointer.instances();
+													var statecharts = _.map(instances, function(instance) {
+														var scs = instance.get_statecharts();
+														return scs;
+													});
+													return _.flatten(statecharts, true);
+												} else {
+													var statecharts = target_pointer.get_statecharts();
+													return statecharts;
 												}
 											}
 											return false;
@@ -50,7 +48,9 @@ red.TransitionEvent = red._create_event_type("transition");
 										.flatten(true)
 										.compact()
 										.value();
-			this.add_listeners();
+			if(this.is_enabled()) {
+				this.add_listeners();
+			}
 		}, {
 			context: this
 		});
@@ -87,8 +87,17 @@ red.TransitionEvent = red._create_event_type("transition");
 										};
 									},
 									function(obj) {
-										return new my(red.deserialize(obj.targets), obj.spec);
+										var rest_args = _.rest(arguments);
+										return new my(red.deserialize.apply(red, ([obj.targets]).concat(rest_args)), obj.spec);
 									});
+	proto.enable = function() {
+		my.superclass.enable.apply(this, arguments);
+		this.add_listeners();
+	};
+	proto.disable = function() {
+		my.superclass.disable.apply(this, arguments);
+		this.remove_listeners();
+	};
 }(red.TransitionEvent));
 
 red.StatechartEvent = red._create_event_type("statechart");
@@ -96,6 +105,10 @@ red.StatechartEvent = red._create_event_type("statechart");
 (function(my) {
 	var proto = my.prototype;
 	proto.on_create = function(options) {
+		this._id = uid();
+		red.register_uid(this._id, this);
+
+		this.options = options;
 		this.$on_spec = _.bind(function() {
 			red.event_queue.wait();
 			this.fire.apply(this, arguments);
@@ -130,17 +143,24 @@ red.StatechartEvent = red._create_event_type("statechart");
 			}
 		}
 	};
+	proto.id = function() { return this._id; };
 	proto.set_target = function(target) {
 		this.target = target;
-		this.target.on(this.spec, this.$on_spec);
+		if(this.options.inert !== true && this.is_enabled()) {
+			this.target.on(this.spec, this.$on_spec);
+		}
 	};
 	proto.destroy = function() {
-		target.off(spec, this.$on_spec);
+		if(this.target) {
+			this.target.off(this.spec, this.$on_spec);
+		}
 	};
 	proto.create_shadow = function(parent_statechart, context) {
 		return red.create_event("statechart", {
 				target: parent_statechart,
-				spec: this.spec
+				spec: this.spec,
+				inert: this.options.inert_shadows,
+				inert_shadows: this.options.inert_shadows
 			});
 	};
 	proto.stringify = function() { return "" + this.target.id() + ":" + this.spec + ""; };
@@ -175,6 +195,20 @@ red.StatechartEvent = red._create_event_type("statechart");
 											spec: spec
 										});
 									});
+	proto.enable = function() {
+		my.superclass.enable.apply(this, arguments);
+		if(this.options.inert !== true) {
+			if(this.target) {
+				this.target.on(this.spec, this.$on_spec);
+			}
+		}
+	};
+	proto.disable = function() {
+		my.superclass.disable.apply(this, arguments);
+		if(this.target) {
+			this.target.off(this.spec, this.$on_spec);
+		}
+	};
 }(red.StatechartEvent));
 
 }(red));

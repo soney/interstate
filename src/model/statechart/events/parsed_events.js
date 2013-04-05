@@ -13,11 +13,19 @@ var get_event = function(tree, options, live_event_creator) {
 };
 
 red.ParsedEvent = red._create_event_type("parsed");
-var id  = 0;
 (function(my) {
 	var proto = my.prototype;
+	proto.set_transition = function(transition) {
+		my.superclass.set_transition.apply(this, arguments);
+		if(this._old_event) {
+			this._old_event.set_transition(this.get_transition());
+		}
+	};
+
 	proto.on_create = function(options) {
-		this.id = id++;
+		this._id = uid();
+		red.register_uid(this._id, this);
+
 		this.options = options;
 		this._str = cjs.is_constraint(options.str) ? options.str : cjs(options.str);
 		if(options.inert !== true) {
@@ -33,7 +41,7 @@ var id  = 0;
 			this.$child_fired = _.bind(this.child_fired, this);
 
 			this._old_event = null;
-			cjs.wait(); // ensure our live event creator isn't immediately run
+			//cjs.wait(); // ensure our live event creator isn't immediately run
 			this._live_event_creator = cjs.liven(function() {
 				if(this._old_event) {
 					this._old_event.off_fire(this.$child_fired);
@@ -42,7 +50,8 @@ var id  = 0;
 
 				var tree = this._tree.get();
 				cjs.wait();
-				var event = get_event(tree, {
+				var event = false;
+				event = get_event(tree, {
 						parent: parent,
 						context: context
 					}, this._live_event_creator);
@@ -51,22 +60,35 @@ var id  = 0;
 				if(event) {
 					event.set_transition(this.get_transition());
 					event.on_fire(this.$child_fired);
+					if(this.is_enabled()) {
+						event.enable();
+					}
 				}
 
 				this._old_event = event;
 			}, {
-				context: this
+				context: this,
+				run_on_create: false
 			});
-			cjs.signal();
+			//cjs.signal();
+			_.delay(_.bind(function() { //Delay it because parsed events can run up the dictionary tree and create all sorts of contextual objects that they shouldn't
+				this._live_event_creator.run();
+			}, this));
 		}
 	};
+	proto.id = function() { return this._id; };
 	proto.child_fired = function() {
 		this.fire.apply(this, arguments);
 	};
 	proto.get_str = function() { return this._str.get(); };
-	proto.set_str = function(str) { this._str.set(str); };
+	proto.set_str = function(str) {
+		this._str.set(str);
+		this._emit("setString", {
+			to: str
+		});
+	};
 	proto.create_shadow = function(parent_statechart, context) {
-		return red.create_event("parsed", {str: this._str, context: context});
+		return red.create_event("parsed", {str: this._str, context: context, inert_shadows: this.options.inert_shadows, inert: this.options.inert_shadows});
 	};
 	proto.destroy = function() {
 		if(this._old_event) {
@@ -93,10 +115,22 @@ var id  = 0;
 										};
 									},
 									function(obj) {
-										return new my({
+										return red.create_event("parsed", {
 											str: obj.str,
 											inert: obj.inert
 										});
 									});
+	proto.enable = function() {
+		my.superclass.enable.apply(this, arguments);
+		if(this._old_event) {
+			this._old_event.enable();
+		}
+	};
+	proto.disable = function() {
+		my.superclass.disable.apply(this, arguments);
+		if(this._old_event) {
+			this._old_event.disable();
+		}
+	};
 }(red.ParsedEvent));
 }(red));

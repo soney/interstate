@@ -3,41 +3,20 @@
 	<head>
 		<title>red</title>
 		<style type="text/css">
-			div#editor pre.output {
-				font-family: Courier New, Courier, monospace;
-				font-size: 0.8em;
-				font-weight: normal;
-				white-space: pre;
-			}
-			.group {
-				font-weight: bold;
-			}
-			.group > .children {
-				padding-left: 1em;
-			}
-			.collapsed.group > .children {
-				display: none;
-			}
 		</style>
 	</head>
 	<body>
-		<div id="editor">
-		</div>
+		<div id="editor"></div>
 
 		<div>
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
-
-				var origin = window.location.protocol + "//" + window.location.host;
-				window.ready = function() {
-					window.opener.postMessage("ready", origin);
-				};
-				window.addEventListener("load", function() {
-					window.opener.postMessage("ready", origin);
-				});
-
 				$(function() {
-					$("div#editor").editor();
+					$("div#editor").editor({
+					//	debug_ready: true,
+					//	debug_env: true,
+					//	command_box: true
+					});
 				});
 			</script>
 		</div>

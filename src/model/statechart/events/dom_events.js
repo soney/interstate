@@ -1,22 +1,18 @@
 (function(red) {
 var cjs = red.cjs, _ = red._;
 
-(function(proto) {
+(function(my) {
+	var proto = my.prototype;
 	proto.on_create = function(type, targets) {
 		var self = this;
 		this.get_target_listener = cjs.memoize(_.bind(function(specified_target) {
 			var listener = _.bind(function(event) {
-				//event.preventDefault();
 				red.event_queue.wait();
 
 				event = _.extend({}, event, {
-					specified_target: specified_target
+					red_target: specified_target
 				});
 
-				if(specified_target.__red_pointer__) {
-					var red_target = specified_target.__red_pointer__;
-					event.red_target = red_target;
-				}
 				this.fire(event);
 				_.defer(function() {
 					red.event_queue.signal();
@@ -34,41 +30,34 @@ var cjs = red.cjs, _ = red._;
 				targs = [targs];
 			}
 			this.targets = _.chain(targs)
-							.map(function(target_pointer) {
-								if(_.isElement(target_pointer) || target_pointer === window) {
-									return target_pointer;
-								} else if(target_pointer instanceof red.Pointer) {
-									var dict;
-									var targ = target_pointer.points_at();
-
-									var manifestation_pointers;
-
-									if(targ instanceof red.Dict) {
-										dict = targ;
-										manifestation_pointers = dict.get_manifestation_pointers(target_pointer);
-									} else {
-										throw new Error("Unknown target");
-									}
-
-									if(_.isArray(manifestation_pointers)) {
-										var dom_objs = _.map(manifestation_pointers, function(manifestation_pointer) {
-											var dom_attachment = dict.get_attachment_instance("dom", manifestation_pointer);
+							.map(function(target_cobj) {
+								if(_.isElement(target_cobj) || target_cobj === window) {
+									return {dom_obj: target_cobj, cobj: target_cobj};
+								} else if(target_cobj instanceof red.ContextualDict) {
+									if(target_cobj.is_template()) {
+										var instances = target_cobj.instances();
+										return _.map(instances, function(instance) {
+											var dom_attachment = instance.get_attachment_instance("dom");
 											if(dom_attachment) {
-												return dom_attachment.get_dom_obj();
-											} else {
-												return false;
+												var dom_obj = dom_attachment.get_dom_obj();
+												if(dom_obj) {
+													return {dom_obj: dom_obj, cobj: instance};
+												}
 											}
+											return false;
 										});
-										return dom_objs;
 									} else {
-										var dom_attachment = dict.get_attachment_instance("dom", target_pointer);
+										var dom_attachment = target_cobj.get_attachment_instance("dom");
 										if(dom_attachment) {
-											return dom_attachment.get_dom_obj();
+											var dom_obj = dom_attachment.get_dom_obj();
+											if(dom_obj) {
+												return {dom_obj: dom_obj, cobj: target_cobj};
+											}
 										}
 									}
 								}
 								return false;
-							})
+							}, this)
 							.flatten(true)
 							.compact()
 							.value();
@@ -81,18 +70,29 @@ var cjs = red.cjs, _ = red._;
 		return red.create_event("dom", this.type, this.targets);
 	};
 	proto.add_listeners = function() {
-		_.each(this.targets, function(target) {
-			target.addEventListener(this.type, this.get_target_listener(target), false); // Bubble
+		_.each(this.targets, function(target_info) {
+			var dom_obj = target_info.dom_obj,
+				cobj = target_info.cobj;
+			dom_obj.addEventListener(this.type, this.get_target_listener(cobj), false); // Bubble
 		}, this);
 	};
 	proto.remove_listeners = function() {
-		_.each(this.targets, function(target) {
-			target.removeEventListener(this.type, this.get_target_listener(target), false); // Bubble
+		_.each(this.targets, function(target_info) {
+			var dom_obj = target_info.dom_obj,
+				cobj = target_info.cobj;
+			dom_obj.removeEventListener(this.type, this.get_target_listener(cobj), false); // Bubble
 		}, this);
 	};
 	proto.destroy = function() {
 		this.live_fn.destroy();
 		this.remove_listeners();
 	};
-}(red._create_event_type("dom").prototype));
+
+	proto.enable = function() {
+		my.superclass.enable.apply(this, arguments);
+	};
+	proto.disable = function() {
+		my.superclass.disable.apply(this, arguments);
+	};
+}(red._create_event_type("dom")));
 }(red));

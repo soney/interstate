@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+  </head>
+  <body>
+		<div class="content">
+		</div>
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript">
+var env = red.create("environment");
+env
+.cd("children")
+.set("obj", "<stateful>")
+.cd("obj")
+	.set("(protos)", "INIT", "[dom]")
+	.set("text")
+	.set("text", "INIT", "'hi'")
+	.set("css", "<dict>")
+	.cd("css")
+		.set("color", "<stateful_prop>")
+		.set("color", "INIT", "'red'")
+
+
+env.print_on_return = true;
+env.print();
+output_view = $("body").dom_output({
+	root: env.get_root()
+});
+
+			</script>
+	  </div>
+  </body>
+</html>

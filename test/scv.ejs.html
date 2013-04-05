@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+  </head>
+  <body>
+		<div id="content"></div>
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript">
+					var el = document.createElement("div");
+					el.style.position = "relative";
+					var content = document.getElementById("content");
+					content.appendChild(el);
+					var paper = Raphael(el, 600, 200);
+
+					/*
+					var pe = red.create_event("parsed", {str: "", context: red.create("pointer"), inert: true});
+					var statechart = window.statechart = red.create("statechart").add_state("INIT").starts_at("INIT").run()
+																				.add_state("b").add_transition("INIT", "b", pe).run();
+
+					var scv = red.create("statechart_view", statechart, paper, {root: true});
+					scv.on("add_state", function(event) {
+						var statechart = event.statechart;
+						var child_name = "state_" + statechart.get_substates().length;
+						statechart.add_state(child_name);
+					}).on("add_transition", function(event) {
+						statechart.add_transition(event.from_state, event.to_state, red.create_event("parsed", {str: "", context: statechart.get_context()}));
+					}).on("set_event_str", function(event) {
+						var str = event.str;
+						var transition_event = event.transition_event;
+
+						transition_event.set_str(str);
+					});
+					*/
+					/*
+					statechart.add_state("A.b.x");
+					statechart.add_state("A.b.y");
+					statechart.add_state("A.c");
+					statechart.add_state("B.z");
+					*/
+					var statechart = window.statechart = red.create("statechart");
+					statechart.add_state("idle")
+								.add_state("click1")
+								.add_state("click2")
+								.add_transition("idle", "click1", red.create_event("parsed", {str: "on('click', this)", inert: true}))
+								.add_transition("click1", "idle", red.create_event("parsed", {str: "on('timeout', 250)", inert: true}))
+								.add_transition("click1", "click2", red.create_event("parsed", {str: "on('click', this)", inert: true}))
+								.add_transition("click2", "idle", red.create_event("parsed", {str: "on('timeout', 250)", inert: true}))
+								.add_transition("click2", "idle", red.create_event("parsed", {str: "on('click', this); emit('tplclick', this)", inert: true}))
+								.starts_at("idle")
+					/*
+					statechart	.add_state("INIT")
+								.add_state("hover")
+								.add_transition("INIT", "hover", red.create_event("parsed", {str: "on_hover", inert: true}))
+								.add_transition("hover", "INIT", red.create_event("parsed", {str: "on_init", inert: true}))
+								.starts_at("INIT")
+								/*
+								.add_state("x")
+								.add_state("y")
+								.add_state("INIT.a")
+								.add_state("INIT.b")
+								.add_state("INIT.b.x")
+								.add_state("INIT.b.y")
+								.add_transition("INIT.a", "INIT.b.y", red.create_event("parsed", {str:"blahblah", inert:true}))
+					/*
+					/*
+								.add_state("INIT.a")
+								.add_state("INIT.b")
+					/*
+								.add_state("hover")
+								.add_transition("INIT", "hover", red.create_event("parsed", {str: "on_hover", inert: true}))
+								.add_transition("hover", "INIT", red.create_event("parsed", {str: "on_init", inert: true}))
+								/*
+								*/
+								.run();
+								/*
+					var statechart2 = window.statechart2 = red.create("statechart");
+					statechart2	.add_state("INIT")
+								.starts_at("INIT")
+								.add_state("hover")
+								.add_transition("INIT", "hover", red.create_event("parsed", {str: "on_hover", inert: true}))
+								.add_transition("hover", "INIT", red.create_event("parsed", {str: "on_init", inert: true}))
+								.run();
+								*/
+					var le = window.le = new red.RootStatechartLayoutEngine([statechart]);
+					var view = new red.RootStatechartView([statechart], le, paper);
+					/*
+					var rows = le._compute_rows();
+
+					statechart.print();
+					var curr_element, curr_element_start_col;
+					for(var i = rows.length-1; i>=0; i--) {
+						var row = rows[i];
+						var row_arr = [];
+						for(var j = 0; j<=row.length; j++) {
+							if(row[j] !== curr_element) {
+								if(curr_element) {
+									var col_length = j - curr_element_start_col;
+									var cl_2 = Math.floor(col_length/2);
+									var id = "-" + uid.strip_prefix(curr_element.id());
+									while(id.length < 4) {
+										id += "-";
+									}
+									for(var k = curr_element_start_col; k<j; k++) {
+										if(k === curr_element_start_col + cl_2) {
+											row_arr[k] = id;
+										} else {
+											row_arr[k] = "----";
+										}
+									}
+									row_arr[curr_element_start_col] = "|" + row_arr[curr_element_start_col].slice(1);
+									row_arr[j-1] = row_arr[j-1].slice(0, 3) + "|";
+								}
+								curr_element_start_col = j;
+								curr_element = row[j];
+							}
+							if(!curr_element) {
+								row_arr[j] = "    ";
+							}
+						}
+						var row_str = row_arr.join("");
+						console.log(row_str);
+						curr_element = false;
+					}
+					*/
+			</script>
+	  </div>
+  </body>
+</html>

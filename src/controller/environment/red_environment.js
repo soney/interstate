@@ -28,7 +28,7 @@ var Env = function(options) {
 	root.set("emit", red.emit);
 	root.set("find", function(find_root) {
 		if(arguments.length === 0) {
-			find_root = root_pointer;
+			find_root = new red.ContextualObject({pointer: root_pointer});
 		}
 		return new red.Query({value: find_root});
 	});
@@ -42,14 +42,14 @@ var Env = function(options) {
 
 		var dom = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment")]});
 		dom.set("tag", red.create("cell", {str: "'div'"}));
-		dom.set("text", red.create("cell", {str: "undefined"}));
-		dom.set("children", red.create("dict", {has_protos: false}));
-		dom.set("attr", red.create("dict", {has_protos: false}));
-		dom.set("css", red.create("dict", {has_protos: false}));
+	//	dom.set("text", red.create("cell", {str: "undefined"}));
+		//dom.set("children", red.create("dict", {has_protos: false}));
+	//	dom.set("attr", red.create("dict", {has_protos: false}));
+	//	dom.set("css", red.create("dict", {has_protos: false}));
 		root_dict.set("dom", dom);
 
 		var children = red.create("dict", {has_protos: false});
-		root_dict.set("children", children);
+		root_dict.set("child_nodes", children);
 	};
 
 	proto.default_return_value = function() {
@@ -59,6 +59,9 @@ var Env = function(options) {
 
 	proto.get_root_pointer = function() {
 		return this.pointer.slice(0, 1);
+	};
+	proto.get_root = function() {
+		return this.pointer.root();
 	};
 	proto.get_pointer_obj = function() {
 		return this.pointer.points_at();
@@ -106,8 +109,9 @@ var Env = function(options) {
 				var state = statechart.find_state(name);
 
 				if(!state) {
-					var pointer = this.get_pointer_obj();
-					var inherited_statecharts = owner.get_inherited_statecharts(this.pointer);
+					var contextual_object = red.find_or_put_contextual_obj(SOandC.stateful_obj, SOandC.context);
+					var statecharts = contextual_object.get_statecharts();
+					var inherited_statecharts = statecharts.slice(1);
 					for(var i = 0; i<inherited_statecharts.length; i++) {
 						var isc = inherited_statecharts[i];
 						state = isc.find_state(name);
@@ -123,17 +127,46 @@ var Env = function(options) {
 	};
 
 	proto._do = function(command) {
-		this._command_stack._do(command);
+		if(red.__debug) {
+			this._command_stack._do(command);
+		} else {
+			try {
+				this._command_stack._do(command);
+			} catch(e) {
+				console.error(e);
+			}
+		}
 	};
 	proto.undo = function() {
-		this._command_stack._undo();
+		if(red.__debug) {
+			this._command_stack._undo();
+		} else {
+			try {
+				this._command_stack._undo();
+			} catch(e) {
+				console.error(e);
+			}
+		}
 	};
 	proto.redo = function() {
-		this._command_stack._redo();
+		if(red.__debug) {
+			this._command_stack._redo();
+		} else {
+			try {
+				this._command_stack._redo();
+			} catch(e) {
+				console.error(e);
+			}
+		}
 	};
 
 	proto.cd = proto.in = function(prop_name) {
-		this.pointer = this.pointer.call("get_prop_pointer", prop_name);
+		var dict = this.pointer.points_at();
+		var pv = dict._get_direct_prop(prop_name);
+		if(pv) {
+			this.pointer = this.pointer.push(pv);
+		} else {
+		}
 		return this.default_return_value();
 	};
 	proto.top = function() {
@@ -185,12 +218,12 @@ var Env = function(options) {
 		if(_.isString(value)) {
 			if(value === "<dict>") {
 				value = red.create("dict");
-				var direct_protos = red.create("cell", {str: "[]", ignore_inherited_in_contexts: [value]});
+				var direct_protos = red.create("cell", { ignore_inherited_in_first_dict: true/*str: "[]", ignore_inherited_in_contexts: [value]*/});
 				value._set_direct_protos(direct_protos);
 			} else if(value === "<stateful>") {
 				value = red.create("stateful_obj", undefined, true);
 				value.do_initialize({
-					direct_protos: red.create("stateful_prop", {check_on_nullify:true, can_inherit: false, ignore_inherited_in_contexts: [value]})
+					direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value, /*ignore_inherited_in_first_dict: true/*statechart_parent: value, check_on_nullify: true, can_inherit: false, ignore_inherited_in_contexts: [value]*/})
 				});
 				value.get_own_statechart()	.add_state("INIT")
 											.starts_at("INIT");
@@ -493,7 +526,7 @@ var Env = function(options) {
 			var for_state = this.find_state(arg1);
 			str = arg2;
 
-			cell = red.create("cell", {str: "", ignore_inherited_in_contexts: ignore_inherited_in_contexts });
+			cell = red.create("cell", {str: "", ignore_inherited_in_first_dict: true });
 			commands.push(this._get_stateful_prop_set_value_command(prop,
 																	for_state,
 																	cell));
@@ -762,7 +795,7 @@ var Env = function(options) {
 	proto.on_state = function(spec, func, context) {
 		var statechart = this.get_current_statechart();
 		if(_.isString(func)) {
-			func = red.get_parsed_$(red.parse(func), { });
+			func = red.get_parsed_val(red.parse(func), { });
 		}
 		var command = new red.StatechartOnCommand({
 			statechart: statechart,
@@ -795,6 +828,8 @@ var Env = function(options) {
 	};
 	proto.print = function(logging_mechanism) {
 		return red.print(this.pointer, logging_mechanism);
+	};
+	proto.destroy = function() {
 	};
 }(Env));
 

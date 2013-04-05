@@ -15,6 +15,10 @@ red.AddStateCommand = function(options) {
 		this._state = this._options.state;
 	}
 	this._index = this._options.index;
+
+	if(this._statechart.basis && this._statechart.basis()) {
+		this._statechart = this._statechart.basis();
+	}
 };
 
 (function(my) {
@@ -72,6 +76,9 @@ red.RemoveStateCommand = function(options) {
 
 	this._statechart = this._options.statechart;
 	this._state_name = this._options.name;
+	if(this._statechart.basis && this._statechart.basis()) {
+		this._statechart = this._statechart.basis();
+	}
 };
 
 (function(my) {
@@ -80,8 +87,15 @@ red.RemoveStateCommand = function(options) {
 
 	proto._execute = function() {
 		this._index = this._statechart.get_state_index(this._state_name);
-		this._state = this._statechart._find_state(this._state_name);
-		this._transitions = this._statechart.transitions_involving(this._state);
+		this._state = this._statechart.find_state(this._state_name);
+		var transitions = new Set({
+			hash: "hash"
+		});
+		var incoming_transitions = this._state.get_incoming_transitions(),
+			outgoing_transitions = this._state.get_outgoing_transitions();
+		transitions.add.apply(transitions, incoming_transitions);
+		transitions.add.apply(transitions, outgoing_transitions);
+		this._transitions = transitions.toArray();
 		this._statechart.remove_state(this._state_name, false); //don't destroy
 	};
 
@@ -178,6 +192,10 @@ red.RenameStateCommand = function(options) {
 	this._statechart = this._options.statechart;
 	this._from_state_name = this._options.from;
 	this._to_state_name = this._options.to;
+
+	if(this._statechart.basis && this._statechart.basis()) {
+		this._statechart = this._statechart.basis();
+	}
 };
 
 (function(my) {
@@ -273,6 +291,16 @@ red.AddTransitionCommand = function(options) {
 	this._from_state = this._options.from;
 	this._to_state = this._options.to;
 	this._event = this._options.event;
+
+	if(this._statechart.basis && this._statechart.basis()) {
+		this._statechart = this._statechart.basis();
+	}
+	if(this._from_state.basis && this._from_state.basis()) {
+		this._from_state = this._from_state.basis();
+	}
+	if(this._to_state.basis && this._to_state.basis()) {
+		this._to_state = this._to_state.basis();
+	}
 };
 
 (function(my) {
@@ -334,6 +362,12 @@ red.RemoveTransitionCommand = function(options) {
 
 	this._statechart = this._options.statechart;
 	this._transition = this._options.transition || this._statechart.get_transition_by_id(this._options.id);
+	if(this._statechart.basis && this._statechart.basis()) {
+		this._statechart = this._statechart.basis();
+	}
+	if(this._transition.basis && this._transition.basis()) {
+		this._transition = this._transition.basis();
+	}
 };
 
 (function(my) {
@@ -346,6 +380,8 @@ red.RemoveTransitionCommand = function(options) {
 	};
 
 	proto._unexecute = function() {
+		this._transition.from()._add_direct_outgoing_transition(this._transition);
+		this._transition.to()._add_direct_incoming_transition(this._transition);
 		this._statechart.add_transition(this._transition);
 	};
 
@@ -377,14 +413,16 @@ red.SetTransitionEventCommand = function(options) {
 	red.SetTransitionEventCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!this._options.statechart) {
-		throw new Error("Must select a statechart");
+	if(!this._options.transition) {
+		throw new Error("Must select a transition");
 	}
 
 	this._event_str = this._options.event;
 
 	this._transition = this._options.transition || this._options.statechart.get_transition_by_id(this.options.id);
-	this._event = this._transition.event();
+	if(this._transition.basis && this._transition.basis()) {
+		this._transition = this._transition.basis();
+	}
 };
 
 (function(my) {
@@ -392,12 +430,14 @@ red.SetTransitionEventCommand = function(options) {
 	var proto = my.prototype;
 
 	proto._execute = function() {
-		this._from_str = this._event.get_str();
-		this._event.set_str(this._event_str);
+		var event = this._transition.event();
+		this._from_str = event.get_str();
+		event.set_str(this._event_str);
 	};
 
 	proto._unexecute = function() {
-		this._event.set_str(this._from_str);
+		var event = this._transition.event();
+		event.set_str(this._from_str);
 	};
 
 	proto._do_destroy = function(in_effect) { };
@@ -524,12 +564,18 @@ red.StatechartOnCommand = function(options) {
 
 	this._statechart = this._options.statechart;
 	this._context = this._options.context;
-	this._pcontext = this._options.pcontext;
+	//this._pcontext = this._options.pcontext;
 	if(this._options.listener instanceof red.ParsedFunction) {
 		var func = this._options.listener;
-		var pcontext = this._pcontext;
-		this._listener = function() {
-			func._apply(pcontext, arguments);
+		this._listener = function(info, type) {
+			var state = info.state;
+			var event = info.event;
+			var pcontext = state.context();
+			var js_context;
+			if(pcontext) {
+				js_context = red.find_or_put_contextual_obj(pcontext.points_at(), pcontext);
+			}
+			func._call(js_context, pcontext, event);
 		};
 	} else {
 		this._listener = this._options.listener;

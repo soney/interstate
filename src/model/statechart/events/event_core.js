@@ -26,6 +26,10 @@ var EventQueue = function() {
 	var proto = my.prototype;
 	able.make_proto_listenable(proto);
 
+	proto.is_running = function() {
+		return this.running_event_queue === false;
+	};
+
 	proto.run_event_queue = function() {
 		if(this.running_event_queue === false) {
 			this.running_event_queue = true;
@@ -74,16 +78,17 @@ var EventQueue = function() {
 
 red.event_queue = new EventQueue();
 
-var id = 0;
 red.Event = function() {
+	able.make_this_listenable(this);
 	this._initialize();
 	this._transition = undefined;
+	this._enabled = false;
 	this.on_create.apply(this, arguments);
-	this.id = id++;
 };
 
 (function(my) {
 	var proto = my.prototype;
+	able.make_proto_listenable(proto);
 	proto._initialize = function() {
 		this.listeners = [];
 		this.$fire_and_signal = _.bind(this.fire_and_signal, this);
@@ -127,10 +132,21 @@ red.Event = function() {
 	proto.destroy = function(){};
 	proto.create_shadow = function() { return new red.Event(); };
 	proto.stringify = function() {
-		return "" + this.id;
+		return "";
+	};
+	proto.type = function() {
+		return this._type;
+	};
+	proto.enable = function() {
+		this._enabled = true;
+	};
+	proto.disable = function() {
+		this._enabled = false;
+	};
+	proto.is_enabled = function() {
+		return this._enabled;
 	};
 }(red.Event));
-red.event_queue = new EventQueue();
 
 var event_types = {};
 
@@ -138,7 +154,7 @@ red.create_event = function(event_type) {
 	var Constructor = event_types[event_type];
 
 	var rv = construct(Constructor, _.rest(arguments));
-	rv.type = event_type;
+	rv._type = event_type;
 	return rv;
 };
 function construct(constructor, args) {

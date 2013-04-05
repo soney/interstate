@@ -14,9 +14,10 @@ var command_stack_factory = function() {
 
 	return {
 		_do: function(command) {
+			command._do();
+
 			var discarded_commands = stack.splice(index + 1, stack.length - index);
 
-			command._do();
 			_.forEach(discarded_commands, function(discarded_command) {
 				if(cjs.is_constraint(discarded_command)) {
 					discarded_command.destroy();

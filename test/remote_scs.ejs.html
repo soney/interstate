@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>red</title>
+  </head>
+  <body>
+		<div id="content">
+		</div>
+	  <div>
+			<%- red_include(red_inc.main) %>
+			<script type="text/javascript">
+var sc = new red.Statechart();
+
+sc.add_state("INIT").starts_at("INIT").run();
+
+var sc_client_wrapper = red.get_wrapper_client({
+			type: 'statechart',
+			id: sc.id()
+		}, window);
+
+var shadow_sc = red.create_remote_statechart(sc_client_wrapper);
+
+var el = document.createElement("div");
+el.style.position = "relative";
+var content = document.getElementById("content");
+content.appendChild(el);
+var paper = Raphael(el, 600, 200);
+
+var scv = red.create("statechart_view", shadow_sc, paper, {root: true});
+
+var parsed_event = red.create_event("parsed", {str: "hello", inert: true});
+
+var commands = [
+	["add_state", "state1"],
+	["add_state", "state2"],
+	["remove_state", "state1"],
+	["add_transition", "INIT", "state2", parsed_event]
+];
+window.setInterval(function() {
+		var command = commands.shift();
+		if(command) {
+				sc[command[0]].apply(sc, command.slice(1));
+		}
+	}, 500);
+			</script>
+	  </div>
+  </body>
+</html>

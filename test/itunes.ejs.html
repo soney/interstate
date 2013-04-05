@@ -101,7 +101,6 @@
 								.value()
 					});
 
-
 env			
 .set("button", "<stateful>")
 .cd("button")
@@ -201,7 +200,7 @@ env
 				.add_transition("not_selected", "selected", "selection_info.selected_song === this")
 				.add_transition("selected", "not_selected", "selection_info.selected_song !== this")
 				.set("(protos)", "not_selected", "[dom]")
-				.set("(manifestations)", songs)
+				.set("(copies)", songs)
 				.set("attr", "<dict>")
 				.cd("attr")
 					.set("class", "<stateful_prop>")
@@ -216,7 +215,7 @@ env
 					.cd("song_name")
 						.set("(protos)", "[dom]")
 						.set("tag", "'span'")
-						.set("text", "basis.name")
+						.set("text", "my_copy.name")
 						.set("attr", "<dict>")
 						.cd("attr")
 							.set("class", "'name'")
@@ -226,7 +225,7 @@ env
 					.cd("artist")
 						.set("(protos)", "[dom]")
 						.set("tag", "'span'")
-						.set("text", "basis.artist")
+						.set("text", "my_copy.artist")
 						.set("attr", "<dict>")
 						.cd("attr")
 							.set("class", "'artist'")
@@ -236,7 +235,7 @@ env
 				.cd("duration")
 					.set("(protos)", "[dom]")
 					.set("tag", "'span'")
-					.set("text", "basis.duration")
+					.set("text", "my_copy.duration")
 					.set("attr", "<dict>")
 					.cd("attr")
 						.set("class", "'duration'")
@@ -250,9 +249,8 @@ env
 		.set("selected_song", "INIT -> INIT", "event.red_target")
 		.top()
 ;
-					var root_pointer = env.get_root_pointer();
 					output_view = $("<div />").dom_output({
-						root: root_pointer
+						root: env.get_root()
 					}).appendTo(document.body);
 
 					env.print_on_return = true;

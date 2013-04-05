@@ -18,7 +18,8 @@ var cjs = red.cjs, _ = red._;
 	};
 }(red._create_event_type("time").prototype));
 
-(function(proto) {
+(function(my) {
+	var proto = my.prototype;
 	proto.on_create = function(delay) {
 		this.delay = delay;
 		this.created_at = (new Date()).getTime();
@@ -63,6 +64,13 @@ var cjs = red.cjs, _ = red._;
 		});
 		red.event_queue.signal();
 	};
-}(red._create_event_type("timeout").prototype));
+
+	proto.enable = function() {
+		my.superclass.enable.apply(this, arguments);
+	};
+	proto.disable = function() {
+		my.superclass.disable.apply(this, arguments);
+	};
+}(red._create_event_type("timeout")));
 
 }(red));

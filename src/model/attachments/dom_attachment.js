@@ -26,40 +26,22 @@ var move = function(child_node, from_index, to_index) {
 	}
 };
 
-// Red name: CSS name
-var changeable_css_props = {
-	"width": "width"
-	, "height": "height"
-	, "backgroundColor": "backgroundColor"
-	, "color": "color"
-	, "left": "left"
-	, "top": "top"
-	, "position": "position"
-};
-
-var changeable_attributes = {
-	"src": "src"
-	, "class": "class"
-	, "id": "id"
-};
 red.DomAttachmentInstance = function(options) {
 	red.DomAttachmentInstance.superclass.constructor.apply(this, arguments);
-	var pointer = this.get_pointer();
-
-	this._owner = pointer.points_at();
 
 	this.type = "dom";
 	this.id = _.uniqueId();
 	if(options.tag) {
 		this._dom_obj = document.createElement(options.tag);
-		this._dom_obj.__red_pointer__ = this.get_pointer();
+		this._dom_obj.__red_contextual_object__ = this.contextual_object;
 	} else {
 		this._dom_obj = cjs.$();
 		this._tag_change_listener = this.add_tag_change_listener();
 	}
 
-	this._css_change_listeners = this.add_css_change_listeners();
-	this._attr_change_listeners = this.add_attribute_change_listeners();
+	this._css_change_listener = this.add_css_change_listeners();
+	this._attr_change_listener = this.add_attribute_change_listeners();
+
 	this._children_change_listener = this.add_children_change_listener();
 
 	this.on_ready();
@@ -73,39 +55,68 @@ red.DomAttachmentInstance = function(options) {
 	proto.on_ready = function() { };
 	proto.destroy = function() {
 		if(_.has(this, "_tag_change_listener")) { this._tag_change_listener.destroy(); }
+		if(_.has(this, "_css_change_listener")) { this._css_change_listener.destroy(); }
+		if(_.has(this, "_attr_change_listener")) { this._attr_change_listener.destroy(); }
 		if(_.has(this, "_css_change_listeners")) {
-			this._css_change_listeners.forEach(function(change_listener) {
-				change_listener.destroy();
+			_.each(this._css_change_listeners, function(x) {
+				x.destroy();
 			});
 		}
 		if(_.has(this, "_attr_change_listeners")) {
-			this._attr_change_listeners.forEach(function(change_listener) {
-				change_listener.destroy();
+			_.each(this._attr_change_listeners, function(x) {
+				x.destroy();
 			});
 		}
 		if(_.has(this, "_children_change_listener")) { this._children_change_listener.destroy(); }
 	};
 	proto.get_dom_obj = function() {
-		return cjs.get(this._dom_obj);
+		var rv = cjs.get(this._dom_obj);
+		return rv;
+	};
+
+	proto.add_tag_change_listener = function() {
+		var contextual_object = this.get_contextual_object();
+
+		var old_tag = undefined;
+		return cjs.liven(function() {
+			var tag = "" + contextual_object.prop_val("tag");
+			if(tag !== old_tag) {
+				old_tag = tag;
+				if(_.isString(tag)) {
+					var dom_obj = document.createElement(tag);
+					dom_obj.__red_contextual_object__ = contextual_object;
+					this._dom_obj.set(dom_obj);
+				} else {
+					this._dom_obj.set(undefined);
+				}
+			}
+		}, {
+			context: this
+			, pause_while_running: true
+			, run_on_create: false
+		}).run();
 	};
 
 	proto.add_css_change_listeners = function() {
-		var pointer = this.get_pointer(),
-			owner = this.get_owner(),
+		var contextual_object = this.get_contextual_object(),
 			current_listener_prop_names = [],
 			current_listeners = {},
 			desired_listener_prop_names;
 
+		this._css_change_listeners = current_listeners;
+
 		return cjs.liven(function() {
-			var css = owner.prop_val("css", pointer);
-			if(css instanceof red.Pointer) {
-				var css_dict = css.points_at();
-				if(css_dict instanceof red.Dict) {
-					desired_listener_prop_names = css_dict.get_prop_names(css, true);
-				} else {
-					desired_listener_prop_names = []
-				}
+			var css = contextual_object.prop("css");
+			var child_vals = {};
+			if(css instanceof red.ContextualDict) {
+				var children = css.children(true);
+				var prop_names = _.pluck(children, "name");
+				_.each(children, function(child) {
+					child_vals[child.name] = child.value;
+				});
+				desired_listener_prop_names = prop_names;
 			}  else {
+				children = [];
 				desired_listener_prop_names = []
 			}
 
@@ -129,30 +140,52 @@ red.DomAttachmentInstance = function(options) {
 			}, this);
 			_.each(diff.added, function(info) {
 				var name = info.item;
-				current_listeners[name] = this.add_css_change_listener(name);
+				current_listeners[name] = this.add_css_change_listener(name, child_vals[name]);
 			}, this);
 		}, {
 			context: this
 			, pause_while_running: true
 		});
 	};
+	proto.add_css_change_listener = function(name, child_val) {
+		var contextual_object = this.get_contextual_object();
+
+		return cjs.liven(function() {
+			var dom_obj = this.get_dom_obj();
+			if(dom_obj) {
+				var val = child_val.val();
+				if(val) {
+					dom_obj.style[name] = ""+val;
+				} else {
+					dom_obj.style[name] = "";
+					delete dom_obj.style[name];
+				}
+			}
+		}, {
+			context: this
+			, pause_while_running: true
+		});
+	};
 	proto.add_attribute_change_listeners = function() {
-		var pointer = this.get_pointer(),
-			owner = this.get_owner(),
+		var contextual_object = this.get_contextual_object(),
 			current_listener_prop_names = [],
 			current_listeners = {},
 			desired_listener_prop_names;
 
+		this._attr_change_listeners = current_listeners;
+
 		return cjs.liven(function() {
-			var css = owner.prop_val("attr", pointer);
-			if(css instanceof red.Pointer) {
-				var css_dict = css.points_at();
-				if(css_dict instanceof red.Dict) {
-					desired_listener_prop_names = css_dict.get_prop_names(css, true);
-				} else {
-					desired_listener_prop_names = []
-				}
+			var css = contextual_object.prop("attr");
+			var child_vals = {};
+			if(css instanceof red.ContextualDict) {
+				var children = css.children(true);
+				var prop_names = _.pluck(children, "name");
+				_.each(children, function(child) {
+					child_vals[child.name] = child.value;
+				});
+				desired_listener_prop_names = prop_names;
 			}  else {
+				children = [];
 				desired_listener_prop_names = []
 			}
 
@@ -170,60 +203,30 @@ red.DomAttachmentInstance = function(options) {
 				listener.destroy();
 				delete diff.removed[name];
 				if(dom_obj) {
-					dom_obj.removeAttribute(name);
+					dom_obj.style[name] = "";
+					delete dom_obj.style[name];
 				}
 			}, this);
 			_.each(diff.added, function(info) {
 				var name = info.item;
-				current_listeners[name] = this.add_attribute_change_listener(name);
+				current_listeners[name] = this.add_attribute_change_listener(name, child_vals[name]);
 			}, this);
 		}, {
 			context: this
 			, pause_while_running: true
 		});
 	};
-	proto.add_tag_change_listener = function() {
-		var pointer = this.get_pointer();
-		var owner = this.get_owner();
+	proto.add_attribute_change_listener = function(name, child_val) {
+		var contextual_object = this.get_contextual_object();
 
-		var old_tag = undefined;
 		return cjs.liven(function() {
-			var tag = owner.prop_val("tag", pointer);
-			if(tag !== old_tag) {
-				old_tag = tag;
-				if(_.isString(tag)) {
-					var dom_obj = document.createElement(tag);
-					dom_obj.__red_pointer__ = pointer;
-					this._dom_obj.set(dom_obj);
+			var dom_obj = this.get_dom_obj();
+			if(dom_obj) {
+				var val = child_val.val();
+				if(val) {
+					dom_obj.setAttribute(name, val);
 				} else {
-					this._dom_obj.set(undefined);
-				}
-			}
-		}, {
-			context: this
-			, pause_while_running: true
-			, run_on_create: false
-		}).run();
-	};
-	proto.add_css_change_listener = function(name) {
-		var pointer = this.get_pointer(),
-			owner = this.get_owner();
-
-		return cjs.liven(function() {
-			var dom_obj = this.get_dom_obj();
-			if(dom_obj) {
-				var css = owner.prop_val("css", pointer);
-				if(css instanceof red.Pointer) {
-					var css_dict = css.points_at();
-					if(css_dict instanceof red.Dict) {
-						var val = css_dict.prop_val(name, css);
-						if(val) {
-							dom_obj.style[name] = val;
-						} else {
-							dom_obj.style[name] = "";
-							delete dom_obj.style[name];
-						}
-					}
+					dom_obj.removeAttribute(name);
 				}
 			}
 		}, {
@@ -231,34 +234,18 @@ red.DomAttachmentInstance = function(options) {
 			, pause_while_running: true
 		});
 	};
-	proto.add_attribute_change_listener = function(name) {
-		var pointer = this.get_pointer(),
-			owner = this.get_owner();
 
-		return cjs.liven(function() {
-			var dom_obj = this.get_dom_obj();
-			if(dom_obj) {
-				var css = owner.prop_val("attr", pointer);
-				if(css instanceof red.Pointer) {
-					var css_dict = css.points_at();
-					if(css_dict instanceof red.Dict) {
-						var val = css_dict.prop_val(name, css);
-						if(val) {
-							dom_obj.setAttribute(name, val);
-						} else {
-							dom_obj.removeAttribute(name);
-						}
-					}
-				}
-			}
-		}, {
-			context: this
-			, pause_while_running: true
-		});
+	var get_dom_obj = function(contextual_dict) {
+		var dom_obj = false;
+		var dom_attachment = contextual_dict.get_attachment_instance("dom");
+		if(dom_attachment) {
+			dom_obj = dom_attachment.get_dom_obj();
+		}
+		return dom_obj;
 	};
+
 	proto.add_children_change_listener = function() {
-		var pointer = this.get_pointer();
-		var owner = this.get_owner();
+		var contextual_object = this.get_contextual_object();
 
 		var cc = cjs.liven(function() {
 			var dom_obj = this.get_dom_obj();
@@ -266,55 +253,52 @@ red.DomAttachmentInstance = function(options) {
 				return;
 			}
 
-			var text = owner.prop_val("text", pointer);
+			var text;
 
-			if(text) {
+
+			if(contextual_object.has("text")) {
+				text = contextual_object.prop_val("text");
+			}
+			
+			if(text!== undefined) {
 				dom_obj.textContent = text;
 			} else {
-				var children = owner.prop_val("children", pointer) || [];
+				var children = contextual_object.prop("child_nodes");
 
 				var current_children = _.toArray(dom_obj.childNodes);
 				var desired_children = [];
 
 				if(children) {
-					var children_pointers = [];
-
-					if(_.isArray(children)) {
-						children_pointers = children;
-					} else if(children instanceof red.Pointer) {
-						var dict = children.points_at();
-						children_pointers = dict.get_prop_pointers(children);
+					var cc;
+					if(children instanceof red.ContextualDict) {
+						cc = _.pluck(children.children(true), "value");
+					} else if(children instanceof red.ContextualObject) {
+						cc = children.val();
+						if(!_.isArray(cc)) {
+							cc = [cc];
+						}
 					}
 
-					_.each(children_pointers, function(child_pointer) {
-						var child = child_pointer.points_at();
-						if(child instanceof red.Dict) {
-							var manifestation_pointers = child.get_manifestation_pointers(child_pointer);
-							var dom_attachments;
 
-							if(_.isArray(manifestation_pointers)) {
-								dom_attachments = [];
-								_.each(manifestation_pointers, function(manifestation_pointer) {
-									var dom_attachment = child.get_attachment_instance("dom", manifestation_pointer);
-									if(dom_attachment) {
-										dom_attachments.push(dom_attachment);
-									}
-								});
+					_.each(cc, function(c) {
+						if(_.isElement(c)) {
+							desired_children.push(c);
+						} else if(c instanceof red.ContextualDict) {
+							if(c.is_template()) {
+								var instances = c.instances();
+								var dom_objs = _.chain(instances)
+												.map(get_dom_obj)
+												.compact()
+												.value();
+								desired_children.push.apply(desired_children, dom_objs);
 							} else {
-								var dom_attachment = child.get_attachment_instance("dom", child_pointer);
-								if(dom_attachment) {
-									dom_attachments = [dom_attachment];
+								var dom_obj = get_dom_obj(c);
+								if(dom_obj) {
+									desired_children.push(dom_obj);
 								}
 							}
-
-							_.each(dom_attachments, function(dom_attachment) {
-								var dom_element = dom_attachment.get_dom_obj();
-								if(dom_element) {
-									desired_children.push(dom_element);
-								}
-							});
 						}
-					});
+					}, this);
 				}
 
 				var diff = _.diff(current_children, desired_children);

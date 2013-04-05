@@ -7,12 +7,30 @@ red.SetPropCommand = function(options) {
 	red.SetPropCommand.superclass.constructor.apply(this, arguments);
 	this._options = options || {};
 
-	if(!this._options.parent || !this._options.name || !this._options.value) {
+	if(!this._options.parent || !this._options.value) {
 		throw new Error("Must select a parent object");
 	}
 
+
 	this._parent = this._options.parent;
-	this._prop_name = this._options.name;
+	if(!this._options.name && this._parent instanceof red.Dict) {
+		var parent = this._parent;
+		var prop_names = parent._get_direct_prop_names();
+		var prefix = "prop";
+		if(this._options.value instanceof red.Dict) {
+			prefix = "obj";
+		}
+		var original_new_prop_name = prefix + "_" +  prop_names.length;
+		var new_prop_name = original_new_prop_name;
+		var i = 0;
+		while(_.indexOf(prop_names, new_prop_name) >= 0) {
+			new_prop_name = original_new_prop_name + "_" + i;
+			i++;
+		}
+		this._prop_name = new_prop_name;
+	} else {
+		this._prop_name = this._options.name;
+	}
 	this._prop_value = this._options.value;
 	this._prop_index = this._options.index;
 };
@@ -54,7 +72,7 @@ red.SetPropCommand = function(options) {
 									function() {
 										var arg_array = _.toArray(arguments);
 										return {
-											parent_uid: this._parent.uid,
+											parent_uid: this._parent.id(),
 											name: this._prop_name,
 											value: red.serialize.apply(red, ([this._prop_value]).concat(arg_array)),
 											index: this._prop_index
@@ -119,7 +137,7 @@ red.UnsetPropCommand = function(options) {
 									},
 									function() {
 										return {
-											parent_uid: this._parent.uid,
+											parent_uid: this._parent.id(),
 											name: this._prop_name
 										};
 									},
@@ -163,7 +181,7 @@ red.RenamePropCommand = function(options) {
 									},
 									function() {
 										return {
-											parent_uid: this._parent.uid,
+											parent_uid: this._parent.id(),
 											from_name: this._from_name,
 											to_name: this._to_name
 										};
@@ -210,7 +228,7 @@ red.MovePropCommand = function(options) {
 									},
 									function() {
 										return {
-											parent_uid: this._parent.uid,
+											parent_uid: this._parent.id(),
 											name: this._prop_name,
 											to: this._to_index
 										};
@@ -286,7 +304,7 @@ red.SetStatefulPropValueCommand = function(options) {
 									function() {
 										var arg_array = _.toArray(arguments);
 										return {
-											stateful_prop_uid: this._stateful_prop.uid,
+											stateful_prop_uid: this._stateful_prop.id(),
 											state_uid: this._state.id(),
 											value: red.serialize.apply(red, ([this._value]).concat(arg_array))
 										};
@@ -336,7 +354,7 @@ red.UnsetStatefulPropValueCommand = function(options) {
 									},
 									function() {
 										return {
-											parent_uid: this._stateful_prop.uid,
+											parent_uid: this._stateful_prop.id(),
 											state_uid: this._state.id()
 										};
 									},
@@ -410,7 +428,7 @@ red.SetBuiltinCommand = function(options) {
 									function() {
 										var arg_array = _.toArray(arguments);
 										return {
-											parent_uid: this._parent.uid,
+											parent_uid: this._parent.id(),
 											name: this._builtin_name,
 											value: red.serialize.apply(red, ([this._value]).concat(arg_array))
 										};

@@ -164,6 +164,12 @@ var Set = function(options) {
 		}
 		return this;
 	};
+	proto.len = function() {
+		return this.value.length;
+	};
+	proto.item = function(i) {
+		return this.value[i] ? this.value[i].item : undefined;
+	};
 	proto.toArray = function() {
 		var len = this.value.length;
 		var rv = new Array(len);
