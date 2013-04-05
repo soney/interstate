@@ -101,7 +101,7 @@ red.EditableText = function(paper, options) {
 		textbox.type = "text"
 		textbox.style.zIndex = 2;
 		var bbox = this.getBBox();
-		var width = bbox.width;
+		var width = Math.max(bbox.width, this.option("width"));
 
 		var anchor = this.text.attr("text-anchor");
 		if(anchor === "start") {

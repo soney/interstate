@@ -8,7 +8,7 @@ var cjs = red.cjs, _ = red._;
 		this.get_target_listener = cjs.memoize(_.bind(function(specified_target) {
 			var listener = _.bind(function(event) {
 				red.event_queue.wait();
-				if(event.type === "mousedown") { event.preventDefault(); }
+				if(event.type === 'mousedown') event.preventDefault();
 
 				event = _.extend({}, event, {
 					red_target: specified_target

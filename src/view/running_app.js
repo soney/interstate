@@ -11,13 +11,16 @@ $.widget("red.dom_output", {
 		editor_url: origin + "/src/view/editor.ejs.html",
 		editor_name: uid.get_prefix() + "red_editor",
 		open_separate_client_window: true,
-		editor_window_options: "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=800, height=600"
+		editor_window_options: function() {
+			return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + innerWidth + ", height=" + innerHeight + ", left=" + screenX + ", top=" + (screenY+outerHeight);
+		}
 	}
 
 	, _create: function() {
 		this._command_stack = red.create("command_stack");
 		if(this.option("show_edit_button")) {
 			this.button_color = randomColor([0, 1], [0.1, 0.7], [0.4, 0.6]);
+			this.button_color = "#990000";
 			this.edit_button_css = {
 					float: "right",
 					opacity: 0.7,
@@ -116,7 +119,7 @@ $.widget("red.dom_output", {
 			this.editor_window.focus();
 		} else {
 			if(this.option("open_separate_client_window")) {
-				this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options"));
+				this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options")());
 			} else {
 				this.editor_window = window;
 			}
