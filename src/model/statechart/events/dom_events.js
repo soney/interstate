@@ -90,9 +90,13 @@ var cjs = red.cjs, _ = red._;
 
 	proto.enable = function() {
 		my.superclass.enable.apply(this, arguments);
+		this.add_listeners();
+		this.live_fn.resume();
 	};
 	proto.disable = function() {
 		my.superclass.disable.apply(this, arguments);
+		this.remove_listeners();
+		this.live_fn.pause();
 	};
 }(red._create_event_type("dom")));
 }(red));
