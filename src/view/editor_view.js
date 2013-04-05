@@ -158,11 +158,13 @@ $.widget("red.editor", {
 				});
 				this.client_socket.post_command(command);
 			} else if(type === 'remove_transition') {
-				var transition = arguments[1];
-				/*
+				var transition = arguments[1],
+					statechart = transition.root();
 				var command = new red.RemoveTransitionCommand({
+					transition: { id: to_func(transition.puppet_master_id) },
+					statechart: { id: to_func(statechart.puppet_master_id) }
 				});
-				*/
+				this.client_socket.post_command(command);
 			} else if(type === 'set_transition_str') {
 				var transition = arguments[1],
 					str = arguments[2];
@@ -220,6 +222,7 @@ this.env.top()
 	.set("(prototypes)", "INIT", "[dom]")
 	.set("tag")
 	.set("tag", "INIT", "'span'")
+	.set("active_value", "INIT", "client.get_$('active_value')")
 	.set("child_nodes", "<dict>")
 	.cd("child_nodes")
 		.set("unset_values", "<stateful>")
@@ -230,11 +233,12 @@ this.env.top()
 			.up()
 		.set("values", "<stateful>")
 		.cd("values")
-			.set("(prototypes)", "INIT", "[stateful_cell_view]")
+			.set("(prototypes)", "INIT", "my_state ? [stateful_cell_view] : []")
 			.set("(copies)", "INIT", "parent.parent.client.get_$('get_values')")
 			.set("cell", "this.my_copy.value")
 			.set("my_state", "this.my_copy.state")
 			.set("inherited", "this.my_copy.inherited")
+			.set("active", "active_value.value === cell")
 			.up()
 		.up()
 	.set("attr", "<dict>")
@@ -257,9 +261,6 @@ this.env.top()
 	.set("text")
 	.set("text", "INIT", "''")
 	.set("attr", "<dict>")
-	.cd("attr")
-		.set("class", "'&nbsp;'")
-		.up()
 	.up()
 .set("cell_view", "<stateful>")
 .cd("cell_view")
@@ -271,16 +272,15 @@ this.env.top()
 	.set("(prototypes)", "INIT", "[dom]")
 	.add_transition("INIT", "INIT", "on('mousedown', this)")
 	.set("tag", "INIT", "'span'")
+	.set("attr", "<dict>")
+	.cd("attr")
+		.set("class", "'no_cell'")
+		.up()
 	.set("css", "<dict>")
 	.cd("css")
 		.set("cursor", "'pointer'")
 		.set("position", "'absolute'")
 		.set("left", "(parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_x(my_state) - (12/2)) + 'px'")
-		.set("width", "'12px'")
-		.set("height", "'12px'")
-		.set("borderRadius", "'6px'")
-		.set("backgroundColor", "'#EEE'")
-		.set("border", "'1px solid #777'")
 		.up()
 	.on_state("INIT -> INIT", "function(event) {\n" +
 		"post_command('set_stateful_prop_for_state', parent.parent.client, my_state);\n" +
@@ -292,8 +292,9 @@ this.env.top()
 	.set("css", "<dict>")
 	.cd("css")
 		.set("position", "'absolute'")
-		.set("left", "(parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_x(my_state)-(50/2)) + 'px'")
+		.set("left", "(parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_x(my_state)-(parseInt(width)/2)) + 'px'")
 		.set("width", "(parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_width(my_state)) + 'px'")
+		.set("border", "active ? '1px solid red' : '1px solid #EEE'")
 		//.set("background", "parent.parent.parent.parent.parent.parent.statechart_disp.layout_engine.get_background_css()")
 		.up()
 	.up()

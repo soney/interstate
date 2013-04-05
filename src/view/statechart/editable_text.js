@@ -186,6 +186,7 @@ red.EditableText = function(paper, options) {
 		this.update_label_background();
 	};
 	proto.remove = function() {
+		this.label_background.remove();
 		this.text.remove();
 	};
 }(red.EditableText));

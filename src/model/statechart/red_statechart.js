@@ -335,6 +335,7 @@ red.StatechartTransition = function(options, defer_initialization) {
 	proto.remove = function() {
 		var from = this.from();
 		var to = this.to();
+		this.disable();
 		cjs.wait();
 		from._remove_direct_outgoing_transition(this);
 		to._remove_direct_incoming_transition(this);
@@ -431,7 +432,10 @@ red.State = function(options, defer_initialization) {
 		var transition = event.transition;
 		var new_from = red.find_equivalent_state(event.from_state, this);
 		var new_to = red.find_equivalent_state(event.to_state, this);
-		this.add_transition(transition.create_shadow(new_from, new_to, this, this.context()));
+		var transition_shadow = transition.create_shadow(new_from, new_to, this, this.context());
+		new_from._add_direct_outgoing_transition(transition_shadow);
+		new_to._add_direct_incoming_transition(transition_shadow);
+		this.add_transition(transition_shadow);
 	}, this);
 	this.$onBasisAddSubstate = _.bind(function(event) {
 		var state_name = event.state_name,
@@ -647,7 +651,7 @@ red.State = function(options, defer_initialization) {
 	};
 
 	proto.on_outgoing_transition_fire = function(transition, event) {
-		if(this.is_running()) {
+		if(this.is_running() && _.indexOf(this.get_outgoing_transitions(), transition) >= 0) {
 			transition._last_run_event.set(event);
 			var my_lineage = this.get_lineage();
 			for(var i = 0; i<my_lineage.length-1; i++) {
@@ -1381,8 +1385,10 @@ red.Statechart = function(options) {
 			to_state._add_direct_incoming_transition(transition);
 		}
 
-		if(this.is_active()) {
+		if(from_state.is_active()) {
 			transition.enable();
+		} else {
+			transition.disable();
 		}
 
 		this._emit("add_transition", {

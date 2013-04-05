@@ -39,16 +39,23 @@
 						console.log("Creating a new project");
 						env = red.create("environment");
 						env	.cd("child_nodes")
-							.set("a", "<stateful>")
-							.cd("a")
+							.set("OBJ", "<stateful>")
+							.cd("OBJ")
 								.set("(prototypes)", "INIT", "dom")
 								.add_state("hover")
+								/*
 								.add_transition("INIT", "hover", "on('mouseover', this)")
 								.add_transition("hover", "INIT", "on('mouseout', this)")
+								*/
 								.set("text")
 								.set("text", "INIT", "'hello world'")
+								.set("text", "hover", "'bye'")
+								.set("tag")
+								.set("tag", "INIT", "'div'")
+								/*
 								.set("text", "hover", "'goodbye cruel world'")
 								.up()
+								*/
 
 						root = env.get_root();
 
@@ -68,7 +75,7 @@
 					nosave = true;
 					red.nuke();
 				};
-				//nosave = true;
+				nosave = true;
 			</script>
 	  </div>
   </body>

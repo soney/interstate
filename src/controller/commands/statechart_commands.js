@@ -380,6 +380,8 @@ red.RemoveTransitionCommand = function(options) {
 	};
 
 	proto._unexecute = function() {
+		this._transition.from()._add_direct_outgoing_transition(this._transition);
+		this._transition.to()._add_direct_incoming_transition(this._transition);
 		this._statechart.add_transition(this._transition);
 	};
 

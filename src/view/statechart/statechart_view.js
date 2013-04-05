@@ -93,6 +93,7 @@ red.RootStatechartView = function(statecharts, layout_engine, paper) {
 						});
 					return rv;
 				} else {
+					var event = obj.event();
 					var rv = new red.TransitionView({
 							paper: this.paper,
 							transition: obj,
@@ -126,7 +127,7 @@ red.RootStatechartView = function(statecharts, layout_engine, paper) {
 					} else {
 						this._emit("rename_state", {state: obj, str: value});
 					}
-				}, this).on("mousedown", function() {
+				}, this).on("mousedown", function(event) {
 					this._from_state = obj;
 				}, this).on("mouseup", function() {
 					var to_state = obj,
@@ -200,10 +201,14 @@ red.StateView = function(options) {
 			"stroke": this.option(state.is_active() ? "active_stroke" : "default_stroke"),
 			"fill": this.option(state.is_active() ? "active_fill" : "default_fill")
 		}).toBack();
-		this.path.mousedown(_.bind(function() {
+		this.path.mousedown(_.bind(function(e) {
+			e.preventDefault();
+			e.stopPropagation();
 			this._emit("mousedown");
 		}, this));
-		this.path.mouseup(_.bind(function() {
+		this.path.mouseup(_.bind(function(e) {
+			e.preventDefault();
+			e.stopPropagation();
 			this._emit("mouseup");
 		}, this));
 		var center = this.option("c");
@@ -247,6 +252,7 @@ red.StateView = function(options) {
 	proto.remove = function() {
 		this.path.remove();
 		this.label.remove();
+		this.vline.remove();
 	};
 }(red.StateView));
 
@@ -367,6 +373,18 @@ red.TransitionView = function(options) {
 		stroke: "#999",
 		"stroke-dasharray": ". "
 	});
+	var event = transition.event();
+	var str;
+	if(event instanceof red.ParsedEvent) {
+		event.on("setString", function(e) {
+			var str = e.to;
+			this.label.option("text", str);
+		}, this);
+		str = event.get_str();
+	} else {
+		str = "";
+	}
+	this.label.option("text", str);
 };
 
 (function(my) {
@@ -379,13 +397,8 @@ red.TransitionView = function(options) {
 		this.line_path.attr("path", paths.line.path);
 		this.arrow_path.attr("path", paths.arrow.path);
 		var event = transition.event();
-		var str = "";
-		if(event instanceof red.ParsedEvent) {
-			str = event.get_str();
-		}
 		var c = center(this.option("from"), this.option("to"));
 		this.label.option({
-			"text": str,
 			x: c.x,
 			y: c.y + 8
 		});
@@ -445,6 +458,7 @@ red.TransitionView = function(options) {
 		this.circle.remove();
 		this.line_path.remove();
 		this.arrow_path.remove();
+		this.vline.remove();
 		var transition = this.option("transition");
 		transition.off("fire", this.$flash);
 	};
@@ -516,6 +530,7 @@ red.StartTransitionView = function(options) {
 		this.vline.toBack();
 	};
 	proto.remove = function() {
+		this.vline.remove();
 		this.line_path.remove();
 		this.arrow_path.remove();
 		this.circle.remove();

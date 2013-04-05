@@ -43,7 +43,7 @@ div#editor .cell.inherited {
 div#editor input.raw_cell, div#editor .raw_cell {
 	display: inline-block;
 	width: 70px;
-	max-width: 70px;
+	/*max-width: 70px;*/
 	border: 1px solid #EEE;
 	font-family: Courier New, Courier, monospace;
 	font-size: inherit;
@@ -55,6 +55,7 @@ div#editor input.raw_cell, div#editor .raw_cell {
 	background-color: #F9F9F9;
 	height: 16px;
 	box-sizing: border-box;
+	-webkit-transition: border-color 0.2s ease-out; /* Safari and Chrome */
 }
 
 .dict {
@@ -84,6 +85,11 @@ div#editor input.raw_cell, div#editor .raw_cell {
 
 .no_cell {
 	border-radius: 40px;
+	width: 12px;
+	height: 12px;
+	border-radius: 6px;
+	background-color: #EEE;
+	border: 1px solid #888;
 }
 
 .prop_name {

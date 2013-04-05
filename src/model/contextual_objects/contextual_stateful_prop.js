@@ -229,8 +229,8 @@ red.ContextualStatefulProp = function(options) {
 	};
 
 	var NO_VAL = {};
-
-	proto._getter = function() {
+	
+	proto.active_value = function() {
 		var values = this.get_values();
 		var len = values.length;
 		var info;
@@ -279,7 +279,6 @@ red.ContextualStatefulProp = function(options) {
 				}
 			}
 		}
-
 		this._used_start_transition = true;
 		if(using_val === NO_VAL) {
 			using_val = this._last_value;
@@ -289,7 +288,16 @@ red.ContextualStatefulProp = function(options) {
 			this._from_state = using_state;
 		}
 
-		
+		return {
+			value: using_val,
+			state: using_state
+		};
+	};
+
+	proto._getter = function() {
+		var active_value_info = this.active_value();
+		var using_val = active_value_info.value;
+		var using_state = active_value_info.state;
 
 		if(using_val instanceof red.Cell) {
 			var pointer = this.get_pointer();

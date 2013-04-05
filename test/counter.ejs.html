@@ -10,11 +10,11 @@
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
 				var env = red.create("environment");
-				env	.cd("children")
+				env	.cd("child_nodes")
 					.set("obj", "<stateful>")
 					.cd("obj")
 					.add_transition("INIT", "INIT", "on('timeout', 500)")
-					.set("(protos)", "INIT", "dom")
+					.set("(prototypes)", "INIT", "dom")
 					.set("tag", "<stateful_prop>")
 					.set("text", "<stateful_prop>")
 					.set("tag", "INIT", "'div'")
