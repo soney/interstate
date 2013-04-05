@@ -88,7 +88,11 @@ red.ParsedEvent = red._create_event_type("parsed");
 		});
 	};
 	proto.create_shadow = function(parent_statechart, context) {
-		return red.create_event("parsed", {str: this._str, context: context, inert_shadows: this.options.inert_shadows, inert: this.options.inert_shadows});
+		var rv = red.create_event("parsed", {str: this.get_str(), context: context, inert_shadows: this.options.inert_shadows, inert: this.options.inert_shadows});
+		this.on("setString", function(e) {
+			rv.set_str(e.to);
+		});
+		return rv;
 	};
 	proto.destroy = function() {
 		if(this._old_event) {
