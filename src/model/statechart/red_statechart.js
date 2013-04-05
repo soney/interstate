@@ -652,6 +652,7 @@ red.State = function(options, defer_initialization) {
 
 	proto.on_outgoing_transition_fire = function(transition, event) {
 		if(this.is_running() && _.indexOf(this.get_outgoing_transitions(), transition) >= 0) {
+			cjs.wait();
 			transition._last_run_event.set(event);
 			var my_lineage = this.get_lineage();
 			for(var i = 0; i<my_lineage.length-1; i++) {
@@ -672,7 +673,6 @@ red.State = function(options, defer_initialization) {
 					break;
 				}
 			}
-			cjs.wait();
 			if(i === to_len) { //if it is a self-transition. Just handle it on the lowest level possible
 				i-=2;
 			}
@@ -1023,6 +1023,7 @@ red.Statechart = function(options) {
 	};
 
 	proto.set_active_substate = function(state, transition, event) {
+		cjs.wait();
 		red.event_queue.once("end_event_queue_round_0", function() {
 			this._emit("pre_transition_fire", {
 				type: "pre_transition_fire",
@@ -1031,7 +1032,7 @@ red.Statechart = function(options) {
 				event: event,
 				state: state
 			});
-			cjs.wait();
+			//cjs.wait();
 			if(transition) { transition.set_active(true); }
 		}, this);
 		red.event_queue.once("end_event_queue_round_3", function() {

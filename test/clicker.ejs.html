@@ -10,11 +10,11 @@
 			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
 				var env = red.create("environment");
-				env	.cd("children")
+				env	.cd("child_nodes")
 						.set("obj", "<stateful>")
 						.cd("obj")
 							.add_transition("INIT", "INIT", "on('timeout', 500)")
-							.set("(protos)", "INIT", "dom")
+							.set("(prototypes)", "INIT", "dom")
 							.set("tag", "<stateful_prop>")
 							.set("text", "<stateful_prop>")
 							.set("tag", "INIT", "'div'")
@@ -22,14 +22,14 @@
 							.up()
 						.set("clicker", "<stateful>")
 						.cd("clicker")
-							.set("(protos)", "INIT", "dom")
+							.set("(prototypes)", "INIT", "dom")
 							.add_transition("INIT", "INIT", "on('click', this)")
 							.set("tag")
 							.set("tag", "INIT", "'a'")
 							.set("text")
 							.set("text", "INIT", "'increment'")
-							.set("i", "(start) -> INIT", "1")
-							.set("i", "INIT -> INIT", "i+1")
+							.set("i", "(start) -> INIT", "[]")
+							.set("i", "INIT -> INIT", "i.concat(i.length)")
 							.set("attr", "<dict>")
 							.cd("attr")
 								.set("href", "'javascript:void(0)'")
@@ -37,9 +37,8 @@
 
 
 
-				var root_pointer = env.get_root_pointer();
 				output_view = $("<div />").dom_output({
-					root: root_pointer
+					root: env.get_root()
 				}).appendTo(document.body);
 				env.print_on_return = true;
 				//console.log(env.print());

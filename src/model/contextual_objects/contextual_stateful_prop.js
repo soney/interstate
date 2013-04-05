@@ -24,11 +24,13 @@ red.ContextualStatefulProp = function(options) {
 	}
 	*/
 
+/*
 	this.$value.onChange(_.bind(function() {
 		if(red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
 			this.$value.update();
 		}
 	}, this));
+	*/
 
 	this._type = "stateful_prop";
 };
@@ -250,7 +252,6 @@ red.ContextualStatefulProp = function(options) {
 				if(!this._used_start_transition && state.from() instanceof red.StartState) {
 					using_val = val;
 					using_state = state;
-					console.log(val);
 					_.defer(_.bind(function() {
 						this.$value.invalidate();
 					}, this));
@@ -298,6 +299,9 @@ red.ContextualStatefulProp = function(options) {
 		var active_value_info = this.active_value();
 		var using_val = active_value_info.value;
 		var using_state = active_value_info.state;
+
+		if(uid.strip_prefix(this.get_object().id()) == 23) {
+		}
 
 		if(using_val instanceof red.Cell) {
 			var pointer = this.get_pointer();
