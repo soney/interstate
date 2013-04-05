@@ -8,6 +8,7 @@ var cjs = red.cjs, _ = red._;
 		this.get_target_listener = cjs.memoize(_.bind(function(specified_target) {
 			var listener = _.bind(function(event) {
 				red.event_queue.wait();
+				if(event.type === "mousedown") { event.preventDefault(); }
 
 				event = _.extend({}, event, {
 					red_target: specified_target
@@ -91,7 +92,7 @@ var cjs = red.cjs, _ = red._;
 	proto.enable = function() {
 		my.superclass.enable.apply(this, arguments);
 		this.add_listeners();
-		this.live_fn.resume();
+		this.live_fn.resume().run();
 	};
 	proto.disable = function() {
 		my.superclass.disable.apply(this, arguments);

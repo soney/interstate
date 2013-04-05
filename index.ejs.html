@@ -42,17 +42,14 @@
 							.set("OBJ", "<stateful>")
 							.cd("OBJ")
 								.set("(prototypes)", "INIT", "dom")
-								.add_state("hover")
-								/*
-								.add_transition("INIT", "hover", "on('mouseover', this)")
-								.add_transition("hover", "INIT", "on('mouseout', this)")
-								*/
 								.set("text")
-								.set("text", "INIT", "'hello world'")
-								.set("text", "hover", "'bye'")
+								.set("text", "INIT", "''")
 								.set("tag")
 								.set("tag", "INIT", "'div'")
 								/*
+								.add_state("hover")
+								.add_transition("INIT", "hover", "on('mouseover', this)")
+								.add_transition("hover", "INIT", "on('mouseout', this)")
 								.set("text", "hover", "'goodbye cruel world'")
 								.up()
 								*/

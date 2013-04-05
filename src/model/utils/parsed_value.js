@@ -266,6 +266,9 @@ var get_member_val = function(obj, prop, options) {
 					curr_context = curr_context.pop();
 					context_item = curr_context.points_at();
 				}
+			} else if(_.isNumber(property) && object.is_template()) {
+				var instances = object.instances();
+				return instances[property];
 			}
 			var rv = object.prop_val(property);
 			return rv;
