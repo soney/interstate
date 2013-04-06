@@ -217,7 +217,7 @@ var Env = function(options) {
 
 		if(_.isString(value)) {
 			if(value === "<dict>") {
-				value = red.create("dict");
+				value = red.create("dict", {has_protos: false});
 				var direct_protos = red.create("cell", { ignore_inherited_in_first_dict: true/*str: "[]", ignore_inherited_in_contexts: [value]*/});
 				value._set_direct_protos(direct_protos);
 			} else if(value === "<stateful>") {

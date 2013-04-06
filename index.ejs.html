@@ -39,13 +39,35 @@
 						console.log("Creating a new project");
 						env = red.create("environment");
 						env	.cd("child_nodes")
-							.set("OBJ", "<stateful>")
-							.cd("OBJ")
-								.set("(prototypes)", "INIT", "dom")
+						/*
+							.set("button", "<stateful>")
+							.cd("button")
+								.rename_state("INIT", "idle")
+								.add_state("selected")
+								.add_transition("idle", "selected", "on('mousedown', this)")
+								.add_transition("selected", "idle", "on('mousedown', find(buttons).not(this))")
+								.set("color")
+								.set("color", "idle", "'black'")
+								.set("color", "selected", "'yellow'")
 								.set("text")
-								.set("text", "INIT", "''")
-								.set("tag")
-								.set("tag", "INIT", "'div'")
+								.set("text", "idle", "'Confirm'")
+
+
+								.set("(prototypes)", "idle", "dom")
+								.up()
+							.up()
+							/*
+						.set("draggable", "<stateful>")
+						.cd("draggable")
+							.add_state("drag")
+							.add_transition("drag", "INIT", "on('mouseup')")
+							.add_transition("INIT", "drag", "on('mousedown', this)")
+							.add_transition("drag", "drag", "on('mousemove')")
+							.set("x")
+							.set("x", "drag->drag", "event.clientX")
+							.set("y", "drag->drag", "event.clientY")
+							.set("x", "drag->INIT", "x")
+							.set("y", "drag->INIT", "y")
 								/*
 								.add_state("hover")
 								.add_transition("INIT", "hover", "on('mouseover', this)")
@@ -72,7 +94,7 @@
 					nosave = true;
 					red.nuke();
 				};
-	//			nosave = true;
+				//nosave = true;
 			</script>
 	  </div>
   </body>

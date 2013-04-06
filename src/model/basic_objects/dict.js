@@ -35,10 +35,10 @@ red.Dict = function(options, defer_initialization) {
 		values: [],
 		has_protos: true
 	}, options);
-	this.options = options;
 
 	this.type = "red_dict";
 	this._id = options.uid || uid();
+	this.options = options;
 	red.register_uid(this._id, this);
 	if(defer_initialization !== true) {
 		this.do_initialize(options);

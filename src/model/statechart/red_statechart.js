@@ -652,7 +652,6 @@ red.State = function(options, defer_initialization) {
 
 	proto.on_outgoing_transition_fire = function(transition, event) {
 		if(this.is_running() && _.indexOf(this.get_outgoing_transitions(), transition) >= 0) {
-			cjs.wait();
 			transition._last_run_event.set(event);
 			var my_lineage = this.get_lineage();
 			for(var i = 0; i<my_lineage.length-1; i++) {
@@ -676,6 +675,7 @@ red.State = function(options, defer_initialization) {
 			if(i === to_len) { //if it is a self-transition. Just handle it on the lowest level possible
 				i-=2;
 			}
+			cjs.wait();
 			for(; i<to_len-1; i++) {
 				var parent = to_lineage[i];
 				var active_substate = to_lineage[i+1];

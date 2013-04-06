@@ -23,7 +23,7 @@
 
 env			
 .set("w", "600")
-.set("h", "600")
+.set("h", "400")
 .cd("child_nodes")
 	.set("ball", "<stateful>")
 	.cd("ball")
@@ -138,8 +138,8 @@ env
 			.up()
 		.up()
 	.up()
-.set("num_cols", "colors.length+1")
-.set("num_rows", "4")
+.set("num_cols", "colors.length-1")
+.set("num_rows", "2")
 .set("block_width", "w/num_cols")
 .set("block_height", "30")
 .set("colors", "['red', 'orange', 'yellow', 'green', 'blue', 'purple']")

@@ -24,13 +24,11 @@ red.ContextualStatefulProp = function(options) {
 	}
 	*/
 
-/*
 	this.$value.onChange(_.bind(function() {
 		if(red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
 			this.$value.update();
 		}
 	}, this));
-	*/
 
 	this._type = "stateful_prop";
 };

@@ -94,14 +94,13 @@ $.widget("red.editor", {
 					value.get_own_statechart()	.add_state("INIT")
 												.starts_at("INIT");
 				} else if(prop_type === 'dict') {
-					value = red.create("dict", undefined, true);
-					value.do_initialize({
-						has_protos: false
-					});
+					value = red.create("dict", {has_protos: false}, true);
+					value.do_initialize({ });
 				} else {
 					if(dict_wrapper.type() === "stateful") {
 						value = red.create('stateful_prop');
 					} else {
+						//value = red.create('stateful_prop');
 						value = red.create('cell', {str: ''});
 					}
 				}
