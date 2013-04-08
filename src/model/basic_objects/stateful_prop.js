@@ -1,20 +1,25 @@
-(function(red) {
-var cjs = red.cjs, _ = red._;
+/*jslint nomen: true  vars: true */
+/*global red,esprima,able,uid,console */
+
+(function (red) {
+    "use strict";
+    var cjs = red.cjs,
+        _ = red._;
 
 /*
-var get_event_context = _.memoize(function(state, event) {
+var get_event_context = _.memoize(function (state, event) {
 	return new red.EventContext(event);
-}, function(state, event) {
+}, function (state, event) {
 	return state.hash();
 });
 
-var get_value_for_state = function(state, stateful_prop, inherits_from) {
-	if(stateful_prop._has_direct_value_for_state(state)) {
+var get_value_for_state = function (state, stateful_prop, inherits_from) {
+	if (stateful_prop._has_direct_value_for_state(state)) {
 		return stateful_prop._direct_value_for_state(state);
 	} else {
-		for(var i = 0; i<inherits_from.length; i++) {
+		for (var i = 0; i<inherits_from.length; i += 1) {
 			var i_from = inherits_from[i];
-			if(i_from instanceof red.StatefulProp && i_from._has_direct_value_for_state(state)) {
+			if (i_from instanceof red.StatefulProp && i_from._has_direct_value_for_state(state)) {
 				return i_from._direct_value_for_state(state);
 			}
 		}
@@ -23,20 +28,20 @@ var get_value_for_state = function(state, stateful_prop, inherits_from) {
 };
 */
 
-red.StatefulProp = function(options, defer_initialization) {
+red.StatefulProp = function (options, defer_initialization) {
 	options = options || {};
 
 	this._id = options.uid || uid();
 	red.register_uid(this._id, this);
 
-	if(defer_initialization !== true) {
+	if (defer_initialization !== true) {
 		this.do_initialize(options);
 	}
 };
-(function(my) {
+(function (my) {
 	var proto = my.prototype;
 
-	proto.do_initialize = function(options) {
+	proto.do_initialize = function (options) {
 		red.install_instance_builtins(this, options, my);
 		this.get_direct_values().set_hash("hash");
 		//this.used_start_transition = options.used_start_transition === true;
@@ -47,16 +52,16 @@ red.StatefulProp = function(options, defer_initialization) {
 
 	my.builtins = {
 		"direct_values": {
-			default: function() { return cjs.map(); }
+			default: function () { return cjs.map(); }
 			, env_visible: false
 		},
 
 		"can_inherit": {
-			default: function() { return true; }
+			default: function () { return true; }
 		},
 
 		"statechart_parent": {
-			default: function() {
+			default: function () {
 				return "parent"
 			}
 		}
@@ -68,9 +73,9 @@ red.StatefulProp = function(options, defer_initialization) {
 	// === PARENTAGE ===
 	//
 
-	var state_basis = function(state) {
+	var state_basis = function (state) {
 		var basis = state.basis();
-		if(_.isUndefined(basis)) {
+		if (_.isUndefined(basis)) {
 			basis = state;
 		}
 		return basis;
@@ -80,47 +85,47 @@ red.StatefulProp = function(options, defer_initialization) {
 	//
 	// === DIRECT VALUES ===
 	//
-	proto.set = proto._set_direct_value_for_state = function(state, value) {
+	proto.set = proto._set_direct_value_for_state = function (state, value) {
 		state = state_basis(state);
 		this.get_direct_values().put(state, value);
 	};
-	proto.unset = proto._unset_direct_value_for_state = function(state) {
+	proto.unset = proto._unset_direct_value_for_state = function (state) {
 		var dvs = this.get_direct_values();
 		state = state_basis(state);
 		var val = dvs.get(state);
-		if(val) {
+		if (val) {
 			val.destroy();
 		}
 		dvs.remove(state);
 	};
-	proto._direct_value_for_state = function(state) {
+	proto._direct_value_for_state = function (state) {
 		state = state_basis(state);
 		return this.get_direct_values().get(state);
 	};
-	proto._has_direct_value_for_state = function(state) {
+	proto._has_direct_value_for_state = function (state) {
 		state = state_basis(state);
 		return this.get_direct_values().has(state);
 	};
 	
-	proto.id = proto.hash = function() { return this._id; };
+	proto.id = proto.hash = function () { return this._id; };
 
-	proto.destroy = function() {
+	proto.destroy = function () {
 		var contextual_values = values_per_context.values();
-		_.each(contextual_values, function(cv) {
+		_.each(contextual_values, function (cv) {
 			cv.destroy();
 		});
 		values_per_context.destroy();
 		this.get_direct_values().destroy();
 	};
 
-	proto.clone = function() {
+	proto.clone = function () {
 	};
 
 	red.register_serializable_type("stateful_prop",
-									function(x) { 
+									function (x) { 
 										return x instanceof my;
 									},
-									function(include_uid) {
+									function (include_uid) {
 										var args = _.toArray(arguments);
 										var rv = {
 											//direct_values: red.serialize.apply(red, ([this.get_direct_values()]).concat(arg_array))
@@ -128,36 +133,36 @@ red.StatefulProp = function(options, defer_initialization) {
 											//ignore_inherited_in_contexts: red.serialize.apply(red, ([this._ignore_inherited_in_contexts]).concat(args))
 											//, check_on_nullify: red.serialize.apply(red, ([this._check_on_nullify]).concat(args))
 										};
-										_.each(my.builtins, function(builtin, name) {
-											if(builtin.serialize !== false) {
+										_.each(my.builtins, function (builtin, name) {
+											if (builtin.serialize !== false) {
 												var getter_name = builtin._get_getter_name();
 												rv[name] = red.serialize.apply(red, ([this[getter_name]()]).concat(args));
 											}
 										}, this);
-										if(include_uid) {
+										if (include_uid) {
 											rv.uid = this.id();
 										}
 										return rv;
 									},
-									function(obj, options) {
+									function (obj, options) {
 										var rv = new my({uid: obj.uid}, true);
 
 										var serialized_options = {};
-										_.each(my.builtins, function(builtin, name) {
-											if(builtin.serialize !== false) {
+										_.each(my.builtins, function (builtin, name) {
+											if (builtin.serialize !== false) {
 												serialized_options[name] = obj[name];
 											}
 										});
 
 										var rest_args = _.rest(arguments, 2);
-										rv.initialize = function() {
+										rv.initialize = function () {
 											options = _.extend({
 												//direct_values: red.deserialize.apply(red, ([obj.direct_values]).concat(rest_args))
 											//	can_inherit: red.deserialize.apply(red, ([obj.can_inherit, options]).concat(rest_args))
 											//	, ignore_inherited_in_contexts: red.deserialize.apply(red, ([obj.ignore_inherited_in_contexts, options]).concat(rest_args))
 											//	, check_on_nullify: red.deserialize.apply(red, ([obj.check_on_nullify, options]).concat(rest_args))
 											}, options);
-											_.each(serialized_options, function(serialized_option, name) {
+											_.each(serialized_options, function (serialized_option, name) {
 												options[name] = red.deserialize.apply(red, ([serialized_option, options]).concat(rest_args));
 											});
 											this.do_initialize(options);
@@ -166,7 +171,7 @@ red.StatefulProp = function(options, defer_initialization) {
 									});
 }(red.StatefulProp));
 
-red.define("stateful_prop", function(options) {
+red.define("stateful_prop", function (options) {
 	var prop = new red.StatefulProp(options);
 	return prop;
 });

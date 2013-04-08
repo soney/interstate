@@ -1,12 +1,12 @@
-(function(red) {
+(function (red) {
 var cjs = red.cjs, _ = red._;
 
-var match_styles = function(textbox, text) {
+var match_styles = function (textbox, text) {
 	textbox.style.position = "absolute";
 	var anchor = text.attr("text-anchor");
-	if(anchor === "start") {
+	if (anchor === "start") {
 		textbox.style.textAlign = "left";
-	} else if(anchor === "middle") {
+	} else if (anchor === "middle") {
 		textbox.style.textAlign = "center";
 	} else {
 		textbox.style.textAlign = "right";
@@ -25,7 +25,7 @@ var match_styles = function(textbox, text) {
 	textbox.style.background = "rgba(255, 255, 255, 0.7)";
 };
 
-red.EditableText = function(paper, options) {
+red.EditableText = function (paper, options) {
 	able.make_this_listenable(this);
 	able.make_this_optionable(this, {
 		x: 0
@@ -54,7 +54,7 @@ red.EditableText = function(paper, options) {
 							, "text-anchor": this.option("text-anchor")
 						});
 
-	if(this.show_default()) {
+	if (this.show_default()) {
 		this.text.attr("fill", this.option("default_color"))
 	} else {
 		this.text.attr("fill", this.option("color"))
@@ -74,29 +74,29 @@ red.EditableText = function(paper, options) {
 	this.text.click(this.$onClick);
 	this.paper = paper;
 };
-(function(my) {
+(function (my) {
 	var proto = my.prototype;
 	able.make_proto_listenable(proto);
 	able.make_proto_optionable(proto);
 
-	proto.get_raphael_object = function() {
+	proto.get_raphael_object = function () {
 		return this.text;
 	};
 
-	proto.show_default = function() {
+	proto.show_default = function () {
 		return this.option("text") === "";
 	};
-	proto.get_text = function() {
-		if(this.show_default()) {
+	proto.get_text = function () {
+		if (this.show_default()) {
 			return this.option("default");
 		} else {
 			return this.option("text");
 		}
 	};
-	proto.onClick = function(event) {
+	proto.onClick = function (event) {
 		this.edit();
 	};
-	proto.edit = function() {
+	proto.edit = function () {
 		var textbox = document.createElement("input");
 		textbox.type = "text"
 		textbox.style.zIndex = 2;
@@ -104,9 +104,9 @@ red.EditableText = function(paper, options) {
 		var width = Math.max(bbox.width, this.option("width"));
 
 		var anchor = this.text.attr("text-anchor");
-		if(anchor === "start") {
+		if (anchor === "start") {
 			textbox.style.left = this.option("x") + "px";
-		} else if(anchor === "middle") {
+		} else if (anchor === "middle") {
 			textbox.style.left = (this.option("x") - width/2) + "px";
 		} else {
 			textbox.style.left = (this.option("x") - width) + "px";
@@ -124,10 +124,10 @@ red.EditableText = function(paper, options) {
 		textbox.addEventListener("keydown", this.$onKeydown);
 		textbox.addEventListener("blur", this.$onBlur);
 	};
-	proto.getBBox = function() {
+	proto.getBBox = function () {
 		return this.text.getBBox();
 	};
-	proto.update_label_background = function() {
+	proto.update_label_background = function () {
 		var bbox = this.getBBox();
 		this.label_background.attr({
 			x: bbox.x,
@@ -136,19 +136,19 @@ red.EditableText = function(paper, options) {
 			height: bbox.height
 		});
 	};
-	proto.onKeydown = function(event) {
+	proto.onKeydown = function (event) {
 		var textbox = event.srcElement;
-		if(event.keyCode === 27) { //esc
+		if (event.keyCode === 27) { //esc
 			this.showText(textbox);
-		} else if(event.keyCode === 13) { // enter
+		} else if (event.keyCode === 13) { // enter
 			this.onTextChange(textbox.value);
 			this.showText(textbox);
 		}
 	};
-	proto.onTextChange = function(value) {
+	proto.onTextChange = function (value) {
 		this.option("text", value);
 		this.text.attr("text", this.get_text());
-		if(this.show_default()) {
+		if (this.show_default()) {
 			this.text.attr("fill", this.option("default_color"))
 		} else {
 			this.text.attr("fill", this.option("color"))
@@ -159,18 +159,18 @@ red.EditableText = function(paper, options) {
 			, target: this
 		});
 	};
-	proto.onBlur = function(event) {
+	proto.onBlur = function (event) {
 		var textbox = event.srcElement;
 		this.onTextChange(textbox.value);
 		this.showText(textbox);
 	};
-	proto.showText = function(textbox) {
+	proto.showText = function (textbox) {
 		this.text.show();
 		textbox.removeEventListener("keydown", this.$onKeydown);
 		textbox.removeEventListener("blur", this.$onBlur);
 		textbox.parentNode.removeChild(textbox);
 	};
-	proto._on_options_set = function(values, animated) {
+	proto._on_options_set = function (values, animated) {
 		this.text.attr({
 			x: this.option("x"),
 			y: this.option("y"),
@@ -185,7 +185,7 @@ red.EditableText = function(paper, options) {
 		});
 		this.update_label_background();
 	};
-	proto.remove = function() {
+	proto.remove = function () {
 		this.label_background.remove();
 		this.text.remove();
 	};

@@ -1,20 +1,25 @@
-(function (red) {
-var cjs = red.cjs, _ = red._;
+/*jslint nomen: true  vars: true */
+/*global red,esprima,able,uid,console */
 
-red.ContextualCell = function(options) {
+(function (red) {
+    "use strict";
+    var cjs = red.cjs,
+        _ = red._;
+
+red.ContextualCell = function (options) {
 	red.ContextualCell.superclass.constructor.apply(this, arguments);
 	this.value_constraint = this.object.constraint_in_context(this.get_pointer());
 	this._type = "cell";
 };
 
-(function(my) {
+(function (my) {
 	_.proto_extend(my, red.ContextualObject);
 	var proto = my.prototype;
-	proto.destroy = function() {
+	proto.destroy = function () {
 		my.superclass.destroy.apply(this, arguments);
 		this.value_constraint.destroy();
 	};
-	proto._getter = function() {
+	proto._getter = function () {
 		var value;
 		try {
 			value = cjs.get(this.value_constraint);
@@ -23,7 +28,7 @@ red.ContextualCell = function(options) {
 		}
 		return value;
 	};
-	proto.get_str = function() {
+	proto.get_str = function () {
 		var cell = this.get_object();
 		return cell.get_str();
 	};
