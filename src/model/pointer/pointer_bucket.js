@@ -8,9 +8,7 @@
 
     red.PointerTree = function (options) {
         this.objects = new Map({
-            hash: function (obj) {
-                return red.pointer_hash(obj);
-            },
+            hash: "hash",
             equals: function (a, b) {
                 return a === b;
             },
