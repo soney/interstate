@@ -1,7 +1,7 @@
-/*jslint nomen: true  vars: true */
+/*jslint nomen: true, vars: true */
 /*global window */
 
-var Map = (function (root) {
+var RedMap = (function (root) {
     "use strict";
     
     //
@@ -228,8 +228,8 @@ var Map = (function (root) {
         }, this);
     };
     
-    (function (my) {
-        var proto = my.prototype;
+    (function (My) {
+        var proto = My.prototype;
         var i, info;
         proto.put = function (key, value) {
             var hash = this._hash(key);

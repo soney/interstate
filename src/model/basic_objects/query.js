@@ -1,5 +1,5 @@
-/*jslint nomen: true  vars: true */
-/*global red,esprima,able,uid,console,window,Set */
+/*jslint nomen: true, vars: true */
+/*global red,esprima,able,uid,console,window,RedSet */
 
 (function (red) {
     "use strict";
@@ -148,7 +148,7 @@
         };
     
         proto.add = function () {
-            var my_value_set = new Set({value: this.value(), equals: red.check_contextual_object_equality, hash: "hash"});
+            var my_value_set = new RedSet({value: this.value(), equals: red.check_contextual_object_equality, hash: "hash"});
             var items = extract_items.apply(this, arguments);
             
             var new_value_set = my_value_set.add.apply(my_value_set, items);
@@ -161,7 +161,7 @@
         };
     
         proto.remove = function () {
-            var my_value_set = new Set({value: this.value(), equals: red.check_contextual_object_equality, hash: "hash"});
+            var my_value_set = new RedSet({value: this.value(), equals: red.check_contextual_object_equality, hash: "hash"});
             var items = extract_items.apply(this, arguments);
     
             var new_value_set = my_value_set.remove.apply(my_value_set, items);

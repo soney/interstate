@@ -1,4 +1,4 @@
-/*jslint nomen: true  vars: true */
+/*jslint nomen: true, vars: true */
 /*global window */
 
 (function () {
@@ -27,29 +27,29 @@
         var rv = [];
         var rv_len = 0;
         var str_len = str.length;
-        var char;
+        var the_char;
         var balanced = true;
         var curr_str = "";
         for (i = 0; i < str_len; i += 1) {
-            char = str[i];
+            the_char = str[i];
     
-            if (char === " " && balanced) {
+            if (the_char === " " && balanced) {
                 rv_len += 1;
                 rv[rv_len] = curr_str;
                 curr_str = "";
             } else {
-                curr_str += char;
-                var endCharIndex = end_chars.indexOf(char);
+                curr_str += the_char;
+                var endCharIndex = end_chars.indexOf(the_char);
                 if (endCharIndex >= 0) {
                     counts[endCharIndex] -= 1;
-                    if (counts[endCharIndex] === -1 && (char === "'" || char === '"')) {
+                    if (counts[endCharIndex] === -1 && (the_char === "'" || the_char === '"')) {
                         counts[endCharIndex] = 1;
                         balanced = false;
                     } else {
                         balanced = is_balanced(counts);
                     }
                 } else {
-                    var startCharIndex = start_chars.indexOf(char);
+                    var startCharIndex = start_chars.indexOf(the_char);
                     if (startCharIndex >= 0) {
                         counts[startCharIndex] += 1;
                         balanced = is_balanced(counts);

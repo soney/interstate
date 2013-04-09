@@ -1,7 +1,7 @@
-/*jslint nomen: true  vars: true */
+/*jslint nomen: true, vars: true */
 /*global red,esprima,able,uid,console,window */
 
-var Set = (function (root) {
+var RedSet = (function (root) {
     "use strict";
     //
     // ============== UTILITY FUNCTIONS ============== 
@@ -58,8 +58,8 @@ var Set = (function (root) {
         this.add.apply(this, options.value);
     };
     
-    (function (my) {
-        var proto = my.prototype;
+    (function (My) {
+        var proto = My.prototype;
         proto.add = function () {
             var lenj = arguments.length;
             var value_len = this.value.length;

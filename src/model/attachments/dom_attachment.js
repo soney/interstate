@@ -1,4 +1,4 @@
-/*jslint nomen: true  vars: true */
+/*jslint nomen: true, vars: true */
 /*global red,esprima,able,uid,console,window */
 
 (function (red) {
