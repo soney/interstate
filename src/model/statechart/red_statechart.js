@@ -31,7 +31,7 @@
                     transition_no = parseInt(transition_no, 10);
                 }
                 var is_bidirectional = ((transition[0] === ">") && (transition[transition.length - 1] === "<")) ||
-                                    ((transition[0] === ">") && (transition[transition.length - 1] === "<"));
+                                        ((transition[0] === "<") && (transition[transition.length - 1] === ">"));
                 return {
                     type: "transition",
                     from: from_states,

@@ -1,9 +1,64 @@
-/*jslint nomen: true  vars: true */
-/*global red,esprima,able,uid,console */
+/*jslint nomen: true  vars: true, eqeq: true */
+/*global red,esprima,able,uid,console,window */
 
 (function (red) {
     "use strict";
     var cjs = red.cjs, _ = red._;
+    
+       
+    //http://stackoverflow.com/questions/294297/javascript-implementation-of-gzip
+    // LZW-compress a string
+    function lzw_encode(s) {
+        var dict = {},
+            data = s.split(""),
+            out = [],
+            currChar,
+            phrase = data[0],
+            code = 256,
+            i;
+        for (i = 1; i < data.length; i += 1) {
+            currChar = data[i];
+            if (dict[phrase + currChar] != null) {
+                phrase += currChar;
+            } else {
+                out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
+                dict[phrase + currChar] = code;
+                code += 1;
+                phrase = currChar;
+            }
+        }
+        out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
+        for (i = 0; i < out.length; i += 1) {
+            out[i] = String.fromCharCode(out[i]);
+        }
+        return out.join("");
+    }
+    
+    // Decompress an LZW-encoded string
+    function lzw_decode(s) {
+        var dict = {},
+            data = (s).split(""),
+            currChar = data[0],
+            oldPhrase = currChar,
+            out = [currChar],
+            code = 256,
+            phrase,
+            i;
+        for (i = 1; i < data.length; i += 1) {
+            var currCode = data[i].charCodeAt(0);
+            if (currCode < 256) {
+                phrase = data[i];
+            } else {
+                phrase = dict[currCode] || (oldPhrase + currChar);
+            }
+            out.push(phrase);
+            currChar = phrase.charAt(0);
+            dict[code] = oldPhrase + currChar;
+            code += 1;
+            oldPhrase = phrase;
+        }
+        return out.join("");
+    }
     
     var POINTER_TYPE = "$$pointer";
     
@@ -78,6 +133,51 @@
     var serialized_objs;
     var serialized_obj_values;
     
+    
+    var find_serialized_obj_id = function (obj) {
+        return _.indexOf(serialized_objs, obj);
+    };
+    
+
+    
+
+    function do_serialize(obj) {
+        var rest_args = _.rest(arguments),
+            i;
+        for (i = 0; i < serialization_funcs.length; i += 1) {
+            var serialization_info = serialization_funcs[i];
+            var type = serialization_info.type;
+            if (serialization_info.instance_check(obj)) {
+                return _.extend({ type: serialization_info.name }, serialization_info.serialize.apply(obj, rest_args));
+            }
+        }
+        
+        //Nothing found...do serialization by hand
+        var rv = {};
+    
+        _.each(obj, function (value, key) {
+            rv[key] = red.serialize.apply(red, ([value]).concat(rest_args));
+        });
+    
+        return rv;
+    }
+    var get_or_create_serialized_obj_id = function (obj) {
+        var obj_id = find_serialized_obj_id(obj);
+        if (obj_id < 0) {
+            obj_id = serialized_objs.length;
+            serialized_objs.push(obj);
+            serialized_obj_values[obj_id] = do_serialize.apply(this, arguments);
+        }
+        return obj_id;
+    };
+    
+    var create_or_get_serialized_obj = function () {
+        return {
+            type: POINTER_TYPE,
+            id: get_or_create_serialized_obj_id.apply(this, arguments)
+        };
+    };
+      
     red.serialize = function (obj) {
         var serialize_args = _.rest(arguments);
         var is_init_serial_call = false;
@@ -105,48 +205,8 @@
             return create_or_get_serialized_obj.apply(this, arguments);
         }
     };
-    
-    var find_serialized_obj_id = function (obj) {
-        return _.indexOf(serialized_objs, obj);
-    };
-    
-    var get_or_create_serialized_obj_id = function (obj) {
-        var obj_id = find_serialized_obj_id(obj);
-        if (obj_id < 0) {
-            obj_id = serialized_objs.length;
-            serialized_objs.push(obj);
-            serialized_obj_values[obj_id] = do_serialize.apply(this, arguments);
-        }
-        return obj_id;
-    };
-    
-    var create_or_get_serialized_obj = function () {
-        return {
-            type: POINTER_TYPE,
-            id: get_or_create_serialized_obj_id.apply(this, arguments)
-        };
-    };
-    
-    function do_serialize(obj) {
-        var rest_args = _.rest(arguments),
-            i;
-        for (i = 0; i < serialization_funcs.length; i += 1) {
-            var serialization_info = serialization_funcs[i];
-            var type = serialization_info.type;
-            if (serialization_info.instance_check(obj)) {
-                return _.extend({ type: serialization_info.name }, serialization_info.serialize.apply(obj, rest_args));
-            }
-        }
-        
-        //Nothing found...do serialization by hand
-        var rv = {};
-    
-        _.each(obj, function (value, key) {
-            rv[key] = red.serialize.apply(red, ([value]).concat(rest_args));
-        });
-    
-        return rv;
-    }
+
+  
     
     red.stringify = function () {
         var serialized_obj = red.serialize.apply(red, arguments);
@@ -163,38 +223,13 @@
     var deserialized_objs;
     var deserialized_obj_vals;
     var deserializing = false;
-    red.deserialize = function (serialized_obj) {
-        var rest_args = _.rest(arguments);
-        if (deserializing === false) {
-            deserializing = true;
-    
-            try {
-                deserialized_objs = serialized_obj.serialized_objs;
-                deserialized_obj_vals = [];
-                var rv = red.deserialize.apply(red, ([serialized_obj.root]).concat(rest_args));
-            } finally {
-                deserializing = false;
-            }
-    
-            return rv;
-        }
         
-        if (serialized_obj == null || typeof serialized_obj !== "object") { return serialized_obj; }
-        else if (_.isArray(serialized_obj)) {
-            return _.map(serialized_obj, function (x) {
-                    return red.deserialize.apply(red, ([x]).concat(rest_args));
-                });
-        } else {
-            return get_deserialized_obj.apply(this, ([serialized_obj]).concat(rest_args));
-        }
-    };
-    
     var do_deserialize = function (serialized_obj) {
         var rest_args = _.rest(arguments);
         var serialized_obj_type = serialized_obj.type;
         var i;
     
-        for (i = 0; i<serialization_funcs.length; i += 1) {
+        for (i = 0; i < serialization_funcs.length; i += 1) {
             var serialization_info = serialization_funcs[i];
             if (serialized_obj_type === serialization_info.name) {
                 return serialization_info.deserialize.apply(serialization_info, ([serialized_obj]).concat(rest_args));
@@ -227,6 +262,34 @@
         }
     };
     
+    red.deserialize = function (serialized_obj) {
+        var rest_args = _.rest(arguments);
+        var rv;
+        if (deserializing === false) {
+            deserializing = true;
+    
+            try {
+                deserialized_objs = serialized_obj.serialized_objs;
+                deserialized_obj_vals = [];
+                rv = red.deserialize.apply(red, ([serialized_obj.root]).concat(rest_args));
+            } finally {
+                deserializing = false;
+            }
+    
+            return rv;
+        }
+        
+        if (serialized_obj == null || typeof serialized_obj !== "object") {
+            return serialized_obj;
+        } else if (_.isArray(serialized_obj)) {
+            return _.map(serialized_obj, function (x) {
+                return red.deserialize.apply(red, ([x]).concat(rest_args));
+            });
+        } else {
+            return get_deserialized_obj.apply(this, ([serialized_obj]).concat(rest_args));
+        }
+    };
+
     
     red.destringify = function (str) {
         var rest_args = _.rest(arguments);
@@ -251,14 +314,15 @@
         if (!_.isString(name)) {
             name = "default";
         }
-        name = storage_prefix+name;
-        root = red.destringify(localStorage.getItem(name));
+        name = storage_prefix + name;
+        var root = red.destringify(window.localStorage.getItem(name));
         return root;
     };
     red.ls = function () {
         var len = window.localStorage.length;
         var rv = [];
-        for (var i = 0; i<len; i += 1) {
+        var i;
+        for (i = 0; i < len; i += 1) {
             var key = window.localStorage.key(i);
             if (key.substr(0, storage_prefix.length) === storage_prefix) {
                 rv.push(key.slice(storage_prefix.length));
@@ -270,7 +334,7 @@
         if (!_.isString(name)) {
             name = "default";
         }
-        name = storage_prefix+name;
+        name = storage_prefix + name;
         window.localStorage.removeItem(name);
         return red.ls();
     };
@@ -279,61 +343,5 @@
         _.each(program_names, red.rm);
         return red.ls();
     };
-    
-    //http://stackoverflow.com/questions/294297/javascript-implementation-of-gzip
-    // LZW-compress a string
-    function lzw_encode(s) {
-        var dict = {},
-            data = s.split(""),
-            out = [],
-            currChar,
-            phrase = data[0],
-            code = 256,
-            i;
-        for (i=1; i<data.length; i += 1) {
-            currChar=data[i];
-            if (dict[phrase + currChar] != null) {
-                phrase += currChar;
-            }
-            else {
-                out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
-                dict[phrase + currChar] = code;
-                code += 1;
-                phrase=currChar;
-            }
-        }
-        out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
-        for (var i=0; i<out.length; i += 1) {
-            out[i] = String.fromCharCode(out[i]);
-        }
-        return out.join("");
-    }
-    
-    // Decompress an LZW-encoded string
-    function lzw_decode(s) {
-        var dict = {},
-            data = (s).split(""),
-            currChar = data[0],
-            oldPhrase = currChar,
-            out = [currChar],
-            code = 256,
-            phrase,
-            i;
-        for (i = 1; i < data.length; i += 1) {
-            var currCode = data[i].charCodeAt(0);
-            if (currCode < 256) {
-                phrase = data[i];
-            }
-            else {
-               phrase = dict[currCode] ? dict[currCode] : (oldPhrase + currChar);
-            }
-            out.push(phrase);
-            currChar = phrase.charAt(0);
-            dict[code] = oldPhrase + currChar;
-            code += 1;
-            oldPhrase = phrase;
-        }
-        return out.join("");
-    }
 
 }(red));
