@@ -45,10 +45,10 @@
     
                 var type = server_message.type;
                 if (type === "changed") {
-                    client = wrapper_clients[client_id];
+                    client = clients[client_id];
                     client.on_change.apply(client, server_message.getting);
                 } else if (type === "emit") {
-                    client = wrapper_clients[client_id];
+                    client = clients[client_id];
                     client.on_emit.apply(client, ([server_message.event_type]).concat(server_message.args));
                 }
             } else if (data.type === "response") {
