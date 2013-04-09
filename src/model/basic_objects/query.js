@@ -36,6 +36,7 @@
             .flatten(true)
             .value();
     };
+
     (function (My) {
         var proto = My.prototype;
     

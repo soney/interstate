@@ -82,8 +82,8 @@
         this._type = options.type;
         this.object_summary = options.object_summary;
     
-		client_id += 1;
         this._id = client_id;
+		client_id += 1;
         clients[this._id] = this;
     
         this.fn_call_constraints = new Map({
@@ -117,8 +117,8 @@
     
         proto.destroy = function () { };
         proto.post = function (message) {
-			message_id += 1;
             var m_id = message_id;
+			message_id += 1;
             this.server_window.postMessage({
                 type: "wrapper_client",
                 client_id: this.id(),
@@ -232,10 +232,6 @@
         };
     }(red.WrapperClient));
         
-    red.register_wrapper_client = function (object, client) {
-        wrapper_clients[object.id()] = client;
-    };
-    
     red.get_wrapper_client = function (object_summary, server_window) {
         var cobj_id = object_summary.id;
         if (wrapper_clients.hasOwnProperty(cobj_id)) {
