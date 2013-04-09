@@ -1,4 +1,4 @@
-/*jslint nomen: true  vars: true */
+/*jslint nomen: true  vars: true, plusplus:true */
 /*global red,esprima,able,uid,console,window */
 
 var getArrayDiff = (function (root) {
@@ -39,7 +39,7 @@ var getArrayDiff = (function (root) {
         var keys = [];
         var key;
         for (key in obj) {
-            if (has(obj, key)) {
+            if (obj.hasOwnProperty(key)) {
                 keys[keys.length] = key;
             }
         }
@@ -51,18 +51,11 @@ var getArrayDiff = (function (root) {
         var values = [];
         var key;
         for (key in obj) {
-            if (has(obj, key)) {
+            if (obj.hasOwnProperty(key)) {
                 values.push(obj[key]);
             }
         }
         return values;
-    };
-    
-    // Remove an item in an array
-    var remove = function (arr, obj) {
-        var index = index_of(arr, obj);
-        if (index >= 0) { arr.splice(index, 1); }
-        return index;
     };
     
     // Remove every item from an array
@@ -148,16 +141,18 @@ var getArrayDiff = (function (root) {
         return obj;
     };
     var each = function (obj, iterator, context) {
+        var i, l, key;
         if (!obj) { return; }
         if (nativeForEach && obj.forEach === nativeForEach) {
             obj.forEach(iterator, context);
         } else if (obj.length === +obj.length) {
-            for (var i = 0, l = obj.length; i < l; i++) {
-                if (i in obj && iterator.call(context, obj[i], i, obj) === breaker) { return; }
+            l = obj.length;
+            for (i = 0; i < l; i += 1) {
+                if (obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj) === breaker) { return; }
             }
         } else {
-            for (var key in obj) {
-                if (has(obj, key)) {
+            for (key in obj) {
+                if (obj.hasOwnProperty(key)) {
                     if (iterator.call(context, obj[key], key, obj) === breaker) { return; }
                 }
             }
@@ -165,7 +160,7 @@ var getArrayDiff = (function (root) {
     };
     var map = function (obj, iterator, context) {
         var results = [];
-        if (obj == null) { return results; }
+        if (!obj) { return results; }
         if (nativeMap && obj.map === nativeMap) { return obj.map(iterator, context); }
         each(obj, function (value, index, list) {
             results[results.length] = iterator.call(context, value, index, list);
@@ -181,10 +176,10 @@ var getArrayDiff = (function (root) {
     var nativeFilter = Array.prototype.filter;
     var filter = function (obj, iterator, context) {
         var results = [];
-        if (obj == null) { return results; }
+        if (!obj) { return results; }
         if (nativeFilter && obj.filter === nativeFilter) { return obj.filter(iterator, context); }
         var i, len = obj.length, value;
-        for(i = 0; i<len; i++) {
+        for (i = 0; i < len; i += 1) {
             value = obj[i];
             if (iterator.call(context, value, i, obj)) { results.push(value); }
         }
@@ -206,7 +201,7 @@ var getArrayDiff = (function (root) {
         } else {
             start_index = 0;
         }
-        for(i = start_index; i<len; i++) {
+        for (i = start_index; i < len; i += 1) {
             if (test(arr[i], i)) { return i; }
         }
         return -1;
@@ -219,33 +214,39 @@ var getArrayDiff = (function (root) {
         return index_where(arr, function (x) { return equality_check(item, x); }, start_index);
     };
     
+    // Remove an item in an array
+    var remove = function (arr, obj) {
+        var index = index_of(arr, obj);
+        if (index >= 0) { arr.splice(index, 1); }
+        return index;
+    };
+    
+    
     //Longest common subsequence
     //http://rosettacode.org/wiki/Longest_common_subsequence#JavaScript
     var indexed_lcs = (function () {
         var popsym = function (index, x, y, symbols, r, n, equality_check) {
             var s = x[index],
-                pos = symbols[s]+1;
-            pos = index_of(y, s, pos>r?pos:r, equality_check);
-            if (pos===-1){pos=n;}
-            symbols[s]=pos;
+                pos = symbols[s] + 1;
+            pos = index_of(y, s, pos > r ? pos : r, equality_check);
+            if (pos === -1) { pos = n; }
+            symbols[s] = pos;
             return pos;
         };
         return function (x, y, equality_check) {
-            var symbols = {},
-                r=0,p=0,p1,L=0,idx,i,
-                m=x.length,n=y.length,
-                S = new Array(m<n?n:m);
+            var symbols = {}, r = 0, p = 0, p1, L = 0, idx, i, m = x.length, n = y.length, S = new Array(m < n ? n : m);
             if (n === 0 || m === 0) { return []; }
             p1 = popsym(0, x, y, symbols, r, n, equality_check);
-            for(i=0;i < m;i++){
-                p = (r===p)?p1:popsym(i, x, y, symbols, r, n, equality_check);
-                p1 = popsym(i+1, x, y, symbols, r, n, equality_check);
-                idx=(p > p1)?(i++,p1):p;
-                if (idx===n || i===m) {
+            for (i = 0; i < m; i += 1) {
+                p = (r === p) ? p1 : popsym(i, x, y, symbols, r, n, equality_check);
+                p1 = popsym(i + 1, x, y, symbols, r, n, equality_check);
+                idx = (p > p1) ? (i++, p1) : p;
+                if (idx === n || i === m) {
                     p=popsym(i, x, y, symbols, r, n, equality_check);
                 } else {
-                    r=idx;
-                    S[L++]={item: x[i], indicies: [i, idx]};
+                    r = idx;
+                    S[L] = {item: x[i], indicies: [i, idx]};
+                    L += 1;
                 }
             }
             return S.slice(0,L);
@@ -258,7 +259,7 @@ var getArrayDiff = (function (root) {
         var x_clone = x.slice(),
             y_clone = y.slice();
         var d = [], xi, yj, x_len = x_clone.length, found;
-        for(i = 0; i<x_len; i++) {
+        for (i = 0; i < x_len; i += 1) {
             found = false;
             xi = x_clone[i];
             for(j = 0; j<y_clone.length; j++) {
@@ -279,10 +280,10 @@ var getArrayDiff = (function (root) {
         var x_clone = x.slice(),
             y_clone = y.slice();
         var d = [], xi, yj, x_len = x_clone.length, found;
-        for(i = 0; i<x_len; i++) {
+        for (i = 0; i < x_len; i += 1) {
             found = false;
             xi = x_clone[i];
-            for(j = 0; j<y_clone.length; j++) {
+            for (j = 0; j < y_clone.length; j += 1) {
                 yj = y_clone[j];
                 if (equality_check(xi, yj)) {
                     d.push([xi, yj]);
@@ -396,10 +397,12 @@ var getArrayDiff = (function (root) {
                 var removed_key = key_diff.removed[j];
                 if (added_key.to === removed_key.from) {
                     key_change.push({index: added_key.to, from: removed_key.from_item, to: added_key.item});
-					i -= 1;
-					j -= 1;
+					
                     key_diff.added.splice(i, 1);
                     key_diff.removed.splice(j, 1);
+                    
+                    i -= 1;
+					j -= 1;
                     break;
                 }
             }
@@ -410,10 +413,12 @@ var getArrayDiff = (function (root) {
                 var removed_value = value_diff.removed[j];
                 if (added_value.to === removed_value.from) {
                     value_change.push({index: added_value.to, from: removed_value.from_item, to: added_value.item});
-					i -= 1;
-					j -= 1;
+					
                     value_diff.added.splice(i, 1);
                     value_diff.removed.splice(j, 1);
+                    
+                    i -= 1;
+					j -= 1;
                     break;
                 }
             }
@@ -424,10 +429,12 @@ var getArrayDiff = (function (root) {
                 var added_val = value_diff.added[j];
                 if (added_key.to === added_val.to) {
                     set.push({index: added_key.to, key: added_key.item, value: added_val.item});
-					i -= 1;
-					j -= 1;
+		
                     key_diff.added.splice(i, 1);
                     value_diff.added.splice(j, 1);
+                    
+                    i -= 1;
+					j -= 1;
                     break;
                 }
             }
@@ -438,39 +445,45 @@ var getArrayDiff = (function (root) {
                 var removed_val = value_diff.removed[j];
                 if (removed_key.to === removed_val.to) {
                     unset.push({from: removed_key.from, key: removed_key.from_item, value: removed_val.from_item});
-					i -= 1;
-					j -= 1;
+
                     key_diff.removed.splice(i, 1);
                     value_diff.removed.splice(j, 1);
+                    
+                    i -= 1;
+					j -= 1;
                     break;
                 }
             }
         }
     
-        for(i = 0; i<key_diff.moved.length; i++) {
+        for (i = 0; i<key_diff.moved.length; i++) {
             var moved_key = key_diff.moved[i];
-            for(j = 0; j<value_diff.moved.length; j++) {
+            for (j = 0; j<value_diff.moved.length; j++) {
                 var moved_val = value_diff.moved[j];
                 if (moved_key.to === moved_val.to && moved_key.from === moved_val.from) {
                     moved.push({from: moved_key.from, to: moved_key.to, key: moved_key.item, value: moved_val.item, insert_at: moved_key.insert_at});
-					i -= 1;
-					j -= 1;
+
                     key_diff.moved.splice(i, 1);
                     value_diff.moved.splice(j, 1);
+                    
+                    i -= 1;
+					j -= 1;
                     break;
                 }
             }
         }
-        for(i = 0; i<key_diff.index_changed.length; i++) {
+        for (i = 0; i<key_diff.index_changed.length; i++) {
             var index_changed_key = key_diff.index_changed[i];
-            for(j = 0; j<value_diff.index_changed.length; j++) {
+            for (j = 0; j<value_diff.index_changed.length; j++) {
                 var index_changed_val = value_diff.index_changed[j];
                 if (index_changed_key.to === index_changed_val.to && index_changed_key.from === index_changed_val.from) {
                     index_changed.push({from: index_changed_key.from, to: index_changed_key.to, key: index_changed_key.item, value: index_changed_val.item});
-					i -= 1;
-					j -= 1;
+
                     key_diff.index_changed.splice(i, 1);
                     value_diff.index_changed.splice(j, 1);
+                    
+                    i -= 1;
+					j -= 1;
                     break;
                 }
             }

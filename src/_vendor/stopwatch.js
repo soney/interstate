@@ -3,7 +3,6 @@
 
 (function (root) {
     "use strict";
-
 	var get_time = function () { return (new Date()).getTime(); };
 
 	var buckets = {};
