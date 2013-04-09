@@ -11,6 +11,8 @@
     red.create_remote_statechart = function (wrapper_client, statechart_parent) {
         var id = wrapper_client.cobj_id;
         var statechart = red.find_uid(id);
+        var is_active, is_active_value, promises;
+        
         statechart = null;
         if (!statechart) {
             if (statecharts.hasOwnProperty(id)) {
@@ -80,14 +82,13 @@
                         is_concurrent.resolve();
                     });
     
-                    var is_active = _.Deferred();
-                    var is_active_value;
+                    is_active = _.Deferred();
                     wrapper_client.async_get('is_active', function (is_it) {
                         is_active_value = is_it;
                         is_active.resolve();
                     });
     
-                    var promises = [substates.promise(), outgoing_transitions.promise(),
+                    promises = [substates.promise(), outgoing_transitions.promise(),
                                     incoming_transitions.promise(), is_concurrent.promise(),
                                     is_active.promise(), start_state.promise()];
     
@@ -162,14 +163,13 @@
                         outgoing_transition.resolve();
                     });
     
-                    var is_active = _.Deferred();
-                    var is_active_value;
+                    is_active = _.Deferred();
                     wrapper_client.async_get('is_active', function (is_it) {
                         is_active_value = is_it;
                         is_active.resolve();
                     });
     
-                    var promises = [outgoing_transition.promise(), is_active.promise()];
+                    promises = [outgoing_transition.promise(), is_active.promise()];
                     _.when(promises).done(function () {
                         statechart.do_initialize({
                             outgoing_transition: outgoing_transition_value,
@@ -195,7 +195,7 @@
             if (transitions.hasOwnProperty(id)) {
                 transition = transitions[id];
             } else {
-                var transition = new red.StatechartTransition(null, true);
+                transition = new red.StatechartTransition(null, true);
                 transition.puppet_master_id = id;
     
                 var from = _.Deferred();

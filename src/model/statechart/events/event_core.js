@@ -45,9 +45,9 @@
                     target: this
                 });
                 this.do_run_event_queue();
-                for (i = 0; i<this.num_post_event_queue_rounds; i += 1) {
+                for (i = 0; i < this.num_post_event_queue_rounds; i += 1) {
                     this.end_queue_round = i;
-                    var event_type = "end_event_queue_round_"+i;
+                    var event_type = "end_event_queue_round_" + i;
                     this._emit(event_type, {
                         type: event_type,
                         target: this,
@@ -136,7 +136,7 @@
                 return event && event[prop] === val;
             });
         };
-        proto.destroy = function (){};
+        proto.destroy = function () {};
         proto.create_shadow = function () { return new red.Event(); };
         proto.stringify = function () {
             return "";
@@ -157,13 +157,7 @@
     
     var event_types = {};
     
-    red.create_event = function (event_type) {
-        var Constructor = event_types[event_type];
-    
-        var rv = construct(Constructor, _.rest(arguments));
-        rv._type = event_type;
-        return rv;
-    };
+
     function construct(constructor, args) {
         function F() {
             return constructor.apply(this, args);
@@ -171,7 +165,13 @@
         F.prototype = constructor.prototype;
         return new F();
     }
+    red.create_event = function (event_type) {
+        var Constructor = event_types[event_type];
     
+        var rv = construct(Constructor, _.rest(arguments));
+        rv._type = event_type;
+        return rv;
+    };
     red._create_event_type = function (name) {
         var Constructor = function () {
             red.Event.apply(this, arguments);

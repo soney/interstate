@@ -1,5 +1,5 @@
 /*jslint nomen: true  vars: true */
-/*global red,esprima,able,uid,console */
+/*global red,esprima,able,uid,console,window */
 
 (function (red) {
     "use strict";
@@ -13,7 +13,6 @@
             this.get_target_listener = cjs.memoize(_.bind(function (specified_target) {
                 var listener = _.bind(function (event) {
                     red.event_queue.wait();
-                    if (event.type === 'mousedown') event.preventDefault();
     
                     event = _.extend({}, event, {
                         red_target: specified_target
@@ -36,37 +35,37 @@
                     targs = [targs];
                 }
                 this.targets = _.chain(targs)
-                                .map(function (target_cobj) {
-                                    if (_.isElement(target_cobj) || target_cobj === window) {
-                                        return {dom_obj: target_cobj, cobj: target_cobj};
-                                    } else if (target_cobj instanceof red.ContextualDict) {
-                                        if (target_cobj.is_template()) {
-                                            var instances = target_cobj.instances();
-                                            return _.map(instances, function (instance) {
-                                                var dom_attachment = instance.get_attachment_instance("dom");
-                                                if (dom_attachment) {
-                                                    var dom_obj = dom_attachment.get_dom_obj();
-                                                    if (dom_obj) {
-                                                        return {dom_obj: dom_obj, cobj: instance};
-                                                    }
-                                                }
-                                                return false;
-                                            });
-                                        } else {
-                                            var dom_attachment = target_cobj.get_attachment_instance("dom");
-                                            if (dom_attachment) {
-                                                var dom_obj = dom_attachment.get_dom_obj();
-                                                if (dom_obj) {
-                                                    return {dom_obj: dom_obj, cobj: target_cobj};
-                                                }
-                                            }
+                    .map(function (target_cobj) {
+                        if (_.isElement(target_cobj) || target_cobj === window) {
+                            return {dom_obj: target_cobj, cobj: target_cobj};
+                        } else if (target_cobj instanceof red.ContextualDict) {
+                            if (target_cobj.is_template()) {
+                                var instances = target_cobj.instances();
+                                return _.map(instances, function (instance) {
+                                    var dom_attachment = instance.get_attachment_instance("dom");
+                                    if (dom_attachment) {
+                                        var dom_obj = dom_attachment.get_dom_obj();
+                                        if (dom_obj) {
+                                            return {dom_obj: dom_obj, cobj: instance};
                                         }
                                     }
                                     return false;
-                                }, this)
-                                .flatten(true)
-                                .compact()
-                                .value();
+                                });
+                            } else {
+                                var dom_attachment = target_cobj.get_attachment_instance("dom");
+                                if (dom_attachment) {
+                                    var dom_obj = dom_attachment.get_dom_obj();
+                                    if (dom_obj) {
+                                        return {dom_obj: dom_obj, cobj: target_cobj};
+                                    }
+                                }
+                            }
+                        }
+                        return false;
+                    }, this)
+                    .flatten(true)
+                    .compact()
+                    .value();
                 this.add_listeners();
             }, {
                 context: this

@@ -85,6 +85,7 @@
             return statechart;
         };
         proto.find_state = function (name) {
+            var i, inherited_statecharts, isc;
             if (name instanceof red.State || name instanceof red.StatechartTransition) {
                 return name.basis() || name;
             } else {
@@ -96,15 +97,15 @@
                 if (states.length > 1) { //transition
                     var from_name = states[0].trim(),
                         to_name = states[2].trim(),
-                        index = parseInt(states[1]) || 0;
+                        index = parseInt(states[1], 10) || 0;
     
                     var transition = statechart.find_transitions(from_name, to_name, index);
     
                     if (!transition) {
                         var pointer = this.get_pointer_obj();
-                        var inherited_statecharts = pointer.get_inherited_statecharts(this.pointer);
-                        for (var i = 0; i<inherited_statecharts.length; i += 1) {
-                            var isc = inherited_statecharts[i];
+                        inherited_statecharts = pointer.get_inherited_statecharts(this.pointer);
+                        for (i = 0; i < inherited_statecharts.length; i += 1) {
+                            isc = inherited_statecharts[i];
                             transition = isc.find_transitions(from_name, to_name, index);
                             if (transition) {
                                 break;
@@ -119,9 +120,9 @@
                     if (!state) {
                         var contextual_object = red.find_or_put_contextual_obj(SOandC.stateful_obj, SOandC.context);
                         var statecharts = contextual_object.get_statecharts();
-                        var inherited_statecharts = statecharts.slice(1);
-                        for (var i = 0; i<inherited_statecharts.length; i += 1) {
-                            var isc = inherited_statecharts[i];
+                        inherited_statecharts = statecharts.slice(1);
+                        for (i = 0; i < inherited_statecharts.length; i += 1) {
+                            isc = inherited_statecharts[i];
                             state = isc.find_state(name);
                             if (state) {
                                 break;
@@ -140,7 +141,7 @@
             } else {
                 try {
                     this._command_stack._do(command);
-                } catch(e) {
+                } catch (e) {
                     console.error(e);
                 }
             }
@@ -151,7 +152,7 @@
             } else {
                 try {
                     this._command_stack._undo();
-                } catch(e) {
+                } catch (e) {
                     console.error(e);
                 }
             }
@@ -162,18 +163,17 @@
             } else {
                 try {
                     this._command_stack._redo();
-                } catch(e) {
+                } catch (e) {
                     console.error(e);
                 }
             }
         };
     
-        proto.cd = proto.in = function (prop_name) {
+        proto.cd = function (prop_name) {
             var dict = this.pointer.points_at();
             var pv = dict._get_direct_prop(prop_name);
             if (pv) {
                 this.pointer = this.pointer.push(pv);
-            } else {
             }
             return this.default_return_value();
         };
@@ -192,27 +192,27 @@
         };
     
         proto.set = function (prop_name, arg1, arg2, arg3) {
-            var builtin_name;
+            var builtin_name, i, index, getter_name, val, value;
             var commands = [],
                 builtin_info = false;
     
             var parent_obj = this.get_pointer_obj();
     
-            if (prop_name[0] === "(" && prop_name[prop_name.length-1] === ")") {
-                builtin_name = prop_name.slice(1, prop_name.length-1);
+            if (prop_name[0] === "(" && prop_name[prop_name.length - 1] === ")") {
+                builtin_name = prop_name.slice(1, prop_name.length - 1);
     
                 var builtins = parent_obj.get_builtins();
-                for (var i in builtins) {
-                    var builtin = builtins[i];
-                    var env_name = builtin._get_env_name();
-                    if (builtin_name === env_name) {
-                        builtin_info = builtin;
-                        break;
+                for (i in builtins) {
+                    if (builtins.hasOwnProperty(i)) {
+                        var builtin = builtins[i];
+                        var env_name = builtin._get_env_name();
+                        if (builtin_name === env_name) {
+                            builtin_info = builtin;
+                            break;
+                        }
                     }
                 }
             }
-    
-            var value;
             if (arguments.length === 1) {
                 if (parent_obj instanceof red.StatefulObj) {
                     value = "<stateful_prop>";
@@ -231,10 +231,10 @@
                 } else if (value === "<stateful>") {
                     value = red.create("stateful_obj", undefined, true);
                     value.do_initialize({
-                        direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value, /*ignore_inherited_in_first_dict: true/*statechart_parent: value, check_on_nullify: true, can_inherit: false, ignore_inherited_in_contexts: [value]*/})
+                        direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value })
                     });
-                    value.get_own_statechart()	.add_state("INIT")
-                                                .starts_at("INIT");
+                    value.get_own_statechart().add_state("INIT")
+                                              .starts_at("INIT");
                 } else if (value === "<stateful_prop>") {
                     value = red.create("stateful_prop");
                 } else {
@@ -243,162 +243,162 @@
             }
     
             if (arguments.length === 3 || (arguments.length === 4 && _.isNumber(arg3))) { // prop_name, state, value
-                var state = this.find_state(arg1),
-                            index = arg3;
+                var state = this.find_state(arg1);
+                index = arg3;
     
                 if (value instanceof red.StatefulProp) {
                     throw new Error("Value is an instanceof a stateful prop");
                 }
     
                 if (builtin_info) {
-                    var getter_name = builtin_info._get_getter_name();
-                    var val = parent_obj[getter_name]();
+                    getter_name = builtin_info._get_getter_name();
+                    val = parent_obj[getter_name]();
                     if (val) {
                         if (val instanceof red.StatefulProp) {
                             commands.push(new red.SetStatefulPropValueCommand({
-                                    stateful_prop: val
-                                    , state: state
-                                    , value: value
-                                }));
+                                stateful_prop: val,
+                                state: state,
+                                value: value
+                            }));
                         } else {
                             throw new Error("Trying to set value for non stateful prop");
                         }
                     } else {
-                        var val = red.create("stateful_prop");
+                        val = red.create("stateful_prop");
                         commands.push(new red.SetBuiltinCommand({
-                            parent: parent_obj
-                            , name: builtin_name
-                            , value: value
+                            parent: parent_obj,
+                            name: builtin_name,
+                            value: value
                         }));
                         commands.push(new red.SetStatefulPropValueCommand({
-                                stateful_prop: val
-                                , state: state
-                                , value: value
-                            }));
+                            stateful_prop: val,
+                            state: state,
+                            value: value
+                        }));
                     }
                 } else {
                     if (parent_obj._has_direct_prop(prop_name)) {
-                        var val = parent_obj._get_direct_prop(prop_name);
+                        val = parent_obj._get_direct_prop(prop_name);
                         if (val instanceof red.StatefulProp) {
                             if (val._has_direct_value_for_state(state)) {
                                 var sp_val = val._direct_value_for_state(state);
                                 if (sp_val instanceof red.Cell && _.isString(arg2)) {
                                     commands.push(new red.ChangeCellCommand({
-                                        cell: sp_val
-                                        , str: arg2
+                                        cell: sp_val,
+                                        str: arg2
                                     }));
                                     
                                     value.destroy();
                                 } else {
                                     commands.push(new red.SetStatefulPropValueCommand({
-                                            stateful_prop: val
-                                            , state: state
-                                            , value: value
-                                        }));
+                                        stateful_prop: val,
+                                        state: state,
+                                        value: value
+                                    }));
                                 }
                             } else {
                                 commands.push(new red.SetStatefulPropValueCommand({
-                                        stateful_prop: val
-                                        , state: state
-                                        , value: value
-                                    }));
+                                    stateful_prop: val,
+                                    state: state,
+                                    value: value
+                                }));
                             }
                         } else {
                             val = red.create("stateful_prop");
                             commands.push(new red.SetPropCommand({
-                                parent: parent_obj
-                                , name: prop_name
-                                , value: val
-                                , index: index
+                                parent: parent_obj,
+                                name: prop_name,
+                                value: val,
+                                index: index
                             }));
                             commands.push(new red.SetStatefulPropValueCommand({
-                                    stateful_prop: val
-                                    , state: state
-                                    , value: value
-                                }));
-                    }
+                                stateful_prop: val,
+                                state: state,
+                                value: value
+                            }));
+                        }
                     } else {
-                        var val = red.create("stateful_prop");
+                        val = red.create("stateful_prop");
                         commands.push(new red.SetPropCommand({
-                            parent: parent_obj
-                            , name: prop_name
-                            , value: val
-                            , index: index
+                            parent: parent_obj,
+                            name: prop_name,
+                            value: val,
+                            index: index
                         }));
                         commands.push(new red.SetStatefulPropValueCommand({
-                                stateful_prop: val
-                                , state: state
-                                , value: value
-                            }));
+                            stateful_prop: val,
+                            state: state,
+                            value: value
+                        }));
                     }
                 }
             } else if (arguments.length === 2 || (arguments.length === 3 && _.isNumber(arg2))) {
-                var index = arg2;
+                index = arg2;
     
-                var parent_obj = this.get_pointer_obj();
+                parent_obj = this.get_pointer_obj();
                 if (builtin_info) {
-                    var getter_name = builtin_info._get_getter_name();
-                    var val = parent_obj[getter_name]();
+                    getter_name = builtin_info._get_getter_name();
+                    val = parent_obj[getter_name]();
                     if (val) {
                         if (val instanceof red.Cell && _.isString(arg1)) {
                             commands.push(new red.ChangeCellCommand({
-                                cell: val
-                                , str: arg1
+                                cell: val,
+                                str: arg1
                             }));
                         } else {
                             commands.push(new red.SetBuiltinCommand({
-                                parent: parent_obj
-                                , name: builtin_name
-                                , value: value
+                                parent: parent_obj,
+                                name: builtin_name,
+                                value: value
                             }));
                         }
                     } else {
                         commands.push(new red.SetBuiltinCommand({
-                            parent: parent_obj
-                            , name: builtin_name
-                            , value: value
+                            parent: parent_obj,
+                            name: builtin_name,
+                            value: value
                         }));
                     }
                 } else {
                     if (parent_obj._has_direct_prop(prop_name)) {
-                        var val = parent_obj._get_direct_prop(prop_name);
+                        val = parent_obj._get_direct_prop(prop_name);
                         if (val instanceof red.Cell && _.isString(arg1)) {
                             commands.push(new red.ChangeCellCommand({
-                                cell: val
-                                , str: arg1
+                                cell: val,
+                                str: arg1
                             }));
                             value.destroy();
                         } else {
                             commands.push(new red.SetPropCommand({
-                                parent: parent_obj
-                                , name: prop_name
-                                , value: value
-                                , index: index
+                                parent: parent_obj,
+                                name: prop_name,
+                                value: value,
+                                index: index
                             }));
                         }
                     } else {
                         commands.push(new red.SetPropCommand({
-                            parent: parent_obj
-                            , name: prop_name
-                            , value: value
-                            , index: index
+                            parent: parent_obj,
+                            name: prop_name,
+                            value: value,
+                            index: index
                         }));
                     }
                 }
             } else if (arguments.length === 1) {
                 if (builtin_info) {
-                    var getter_name = builtin_info._get_getter_name();
+                    getter_name = builtin_info._get_getter_name();
                     commands.push(new red.SetBuiltinCommand({
-                        parent: parent_obj
-                        , name: builtin_name
-                        , value: value
+                        parent: parent_obj,
+                        name: builtin_name,
+                        value: value
                     }));
                 } else {
-                    commands.push(new red.SetPropCommand( {
-                        parent: parent_obj
-                        , name: prop_name
-                        , value: value
-                        , index: index
+                    commands.push(new red.SetPropCommand({
+                        parent: parent_obj,
+                        name: prop_name,
+                        value: value,
+                        index: index
                     }));
                 }
             }
@@ -424,8 +424,8 @@
                 return;
             }
             var command = new red.UnsetPropCommand({
-                parent: parent_obj
-                , name: prop_name
+                parent: parent_obj,
+                name: prop_name
             });
             return command;
         };
@@ -442,9 +442,9 @@
         proto._get_rename_prop_command = function (from_name, to_name) {
             var parent_obj = this.get_pointer_obj();
             var command = new red.RenamePropCommand({
-                parent: parent_obj
-                , from: from_name
-                , to: to_name
+                parent: parent_obj,
+                from: from_name,
+                to: to_name
             });
             return command;
         };
@@ -460,9 +460,9 @@
         proto._get_move_prop_command = function (prop_name, index) {
             var parent_obj = this.get_pointer_obj();
             var command = new red.MovePropCommand({
-                parent: parent_obj
-                , name: prop_name
-                , to: index
+                parent: parent_obj,
+                name: prop_name,
+                to: index
             });
             return command;
         };
@@ -477,24 +477,26 @@
         };
     
         proto._get_set_cell_command = function (arg0, arg1, arg2) {
-            var cell,str,for_state,commands = [];
+            var cell, str, for_state, i, dict, builtin_name, builtins, env_name, builtin, commands = [];
             if (arguments.length === 1) {
-                cell = this.get_pointer_obj(),
+                cell = this.get_pointer_obj();
                 str = arg0;
             } else if (arguments.length === 2) {
-                var dict = this.get_pointer_obj();
+                dict = this.get_pointer_obj();
     
                 if (_.isString(arg0)) {
-                    if (arg0[0] === "(" && arg0[arg0.length-1] === ")") {
-                        var builtin_name = arg0.slice(1, arg0.length-1);
+                    if (arg0[0] === "(" && arg0[arg0.length - 1] === ")") {
+                        builtin_name = arg0.slice(1, arg0.length - 1);
     
-                        var builtins = dict.get_builtins();
-                        for (var i in builtins) {
-                            var builtin = builtins[i];
-                            var env_name = builtin._get_env_name();
-                            if (builtin_name === env_name) {
-                                cell = dict[builtin._get_getter_name()]();
-                                break;
+                        builtins = dict.get_builtins();
+                        for (i in builtins) {
+                            if (builtins.hasOwnProperty(i)) {
+                                builtin = builtins[i];
+                                env_name = builtin._get_env_name();
+                                if (builtin_name === env_name) {
+                                    cell = dict[builtin._get_getter_name()]();
+                                    break;
+                                }
                             }
                         }
                     } else {
@@ -505,23 +507,25 @@
                 }
             } else {
                 var prop, ignore_inherited_in_contexts = [];
-                var dict = this.get_pointer_obj();
+                dict = this.get_pointer_obj();
     
                 if (_.isString(arg0)) {
-                    if (arg0[0] === "(" && arg0[arg0.length-1] === ")") {
-                        var builtin_name = arg0.slice(1, arg0.length-1);
+                    if (arg0[0] === "(" && arg0[arg0.length - 1] === ")") {
+                        builtin_name = arg0.slice(1, arg0.length - 1);
     
                         if (arg0 === "(protos)") {
                             ignore_inherited_in_contexts = [dict];
                         }
     
-                        var builtins = dict.get_builtins();
-                        for (var i in builtins) {
-                            var builtin = builtins[i];
-                            var env_name = builtin._get_env_name();
-                            if (builtin_name === env_name) {
-                                prop = dict[builtin._get_getter_name()]();
-                                break;
+                        builtins = dict.get_builtins();
+                        for (i in builtins) {
+                            if (builtins.hasOwnProperty(i)) {
+                                builtin = builtins[i];
+                                env_name = builtin._get_env_name();
+                                if (builtin_name === env_name) {
+                                    prop = dict[builtin._get_getter_name()]();
+                                    break;
+                                }
                             }
                         }
                     } else {
@@ -531,7 +535,7 @@
                     prop = arg0;
                 }
     
-                var for_state = this.find_state(arg1);
+                for_state = this.find_state(arg1);
                 str = arg2;
     
                 cell = red.create("cell", {str: "", ignore_inherited_in_first_dict: true });
@@ -541,8 +545,8 @@
             }
     
             commands.push(new red.ChangeCellCommand({
-                cell: cell
-                , str: str
+                cell: cell,
+                str: str
             }));
     
             var command;
@@ -567,33 +571,35 @@
         };
     
         var get_state = function (state_name, states) {
-            for (var i = 0; i<states.length; i += 1) {
-                var state = states[i];
-                if (!(state instanceof red.Statechart)) { continue; }
-                if (state === state_name) {
-                    return state;
-                } else if (state.get_name() === state_name) {
-                    return state;
-                } else if (state.get_name(state.parent()) === state_name) {
-                    return state;
+            var i, state;
+            for (i = 0; i < states.length; i += 1) {
+                state = states[i];
+                if (state instanceof red.Statechart) {
+                    if (state === state_name) {
+                        return state;
+                    } else if (state.get_name() === state_name) {
+                        return state;
+                    } else if (state.get_name(state.parent()) === state_name) {
+                        return state;
+                    }
                 }
             }
-            return undefined
+            return undefined;
         };
     
         proto._get_stateful_prop_set_value_command = function (stateful_prop, state, value) {
             var command = new red.SetStatefulPropValueCommand({
-                stateful_prop: stateful_prop
-                , state: state
-                , value: value
+                stateful_prop: stateful_prop,
+                state: state,
+                value: value
             });
             return command;
         };
     
         proto._get_stateful_prop_unset_value_command = function (stateful_prop, state) {
             var command = new red.UnsetStatefulPropValueCommand({
-                stateful_prop: stateful_prop
-                , state: state
+                stateful_prop: stateful_prop,
+                state: state
             });
             return command;
         };
@@ -604,9 +610,9 @@
             if (_.isNumber(index)) { index += 1; } // Because of the pre_init state
     
             var command = new red.AddStateCommand({
-                name: state_name
-                , statechart: statechart
-                , index: index
+                name: state_name,
+                statechart: statechart,
+                index: index
             });
             return command;
         };
@@ -625,8 +631,8 @@
             var statechart = this.get_current_statechart();
     
             var command = new red.RemoveStateCommand({
-                name: state_name
-                , statechart: statechart
+                name: state_name,
+                statechart: statechart
             });
             return command;
         };
@@ -645,9 +651,9 @@
     
             if (_.isNumber(index)) { index += 1; } // Because of the pre_init state
             var command = new red.MoveStateCommand({
-                name: state_name
-                , statechart: statechart
-                , index: index
+                name: state_name,
+                statechart: statechart,
+                index: index
             });
             return command;
         };
@@ -667,9 +673,9 @@
             var statechart = this.get_current_statechart();
     
             var command = new red.RenameStateCommand({
-                from: from_state_name
-                , to: to_state_name
-                , statechart: statechart
+                from: from_state_name,
+                to: to_state_name,
+                statechart: statechart
             });
             return command;
         };
@@ -696,10 +702,10 @@
             }
     
             var command = new red.AddTransitionCommand({
-                statechart: statechart
-                , event: event
-                , from: from_state
-                , to: to_state
+                statechart: statechart,
+                event: event,
+                from: from_state,
+                to: to_state
             });
             return command;
         };
@@ -729,7 +735,7 @@
     
         proto._get_remove_transition_command = function (transition_id) {
             var statechart = this.get_current_statechart();
-            var id, transition
+            var id, transition;
             
             if (transition_id instanceof red.StatechartTransition) {
                 transition = transition_id;
@@ -737,9 +743,9 @@
                 id = transition_id;
             }
             var command = new red.RemoveTransitionCommand({
-                statechart: statechart
-                , id: id
-                , transition: transition
+                statechart: statechart,
+                id: id,
+                transition: transition
             });
             return command;
         };
@@ -757,11 +763,11 @@
             var statechart = this.get_current_statechart();
     
             var command = new red.SetTransitionEventCommand({
-                statechart: statechart
-                , id: transition_id
-                , event: event
+                statechart: statechart,
+                id: transition_id,
+                event: event
             });
-            return command
+            return command;
         };
         proto.set_event = function () {
             var command = this._get_set_event_command.apply(this, arguments);
@@ -848,7 +854,7 @@
     
     var pad = function (str, len) {
         if (str.length > len) {
-            return str.substring(0, len-3) + "...";
+            return str.substring(0, len - 3) + "...";
         } else if (str.length < len) {
             var rv = str;
             while (rv.length < len) {

@@ -18,10 +18,10 @@
     };
     
     red.ParsedEvent = red._create_event_type("parsed");
-    (function (my) {
-        var proto = my.prototype;
+    (function (My) {
+        var proto = My.prototype;
         proto.set_transition = function (transition) {
-            my.superclass.set_transition.apply(this, arguments);
+            My.superclass.set_transition.apply(this, arguments);
             if (this._old_event) {
                 this._old_event.set_transition(this.get_transition());
             }
@@ -57,9 +57,9 @@
                     cjs.wait();
                     var event = false;
                     event = get_event(tree, {
-                            parent: parent,
-                            context: context
-                        }, this._live_event_creator);
+                        parent: parent,
+                        context: context
+                    }, this._live_event_creator);
                     cjs.signal();
     
                     if (event) {
@@ -114,29 +114,29 @@
             return this._str.get();
         };
         red.register_serializable_type("parsed_event",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            return {
-                                                str: this.get_str(),
-                                                inert: this.options.inert
-                                            };
-                                        },
-                                        function (obj) {
-                                            return red.create_event("parsed", {
-                                                str: obj.str,
-                                                inert: obj.inert
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                return {
+                    str: this.get_str(),
+                    inert: this.options.inert
+                };
+            },
+            function (obj) {
+                return red.create_event("parsed", {
+                    str: obj.str,
+                    inert: obj.inert
+                });
+            });
         proto.enable = function () {
-            my.superclass.enable.apply(this, arguments);
+            My.superclass.enable.apply(this, arguments);
             if (this._old_event) {
                 this._old_event.enable();
             }
         };
         proto.disable = function () {
-            my.superclass.disable.apply(this, arguments);
+            My.superclass.disable.apply(this, arguments);
             if (this._old_event) {
                 this._old_event.disable();
             }

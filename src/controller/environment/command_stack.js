@@ -9,14 +9,7 @@
     var command_stack_factory = function () {
         var stack = [];
         var index = -1; // Points at the next thing to undo
-    
-        var can_undo = function () {
-            return index >= 0;
-        };
-        var can_redo = function () {
-            return index < stack.length - 1;
-        };
-    
+
         return {
             _do: function (command) {
                 command._do();
@@ -31,26 +24,30 @@
     
                 stack.push(command);
                 index += 1;
-            }
-            , _undo: function () {
-                if (can_undo()) {
+            },
+            _undo: function () {
+                if (this.can_undo()) {
                     var last_command = stack[index];
                     last_command._undo();
                     index -= 1;
                 }
-            }
-            , _redo: function () {
-                if (can_redo()) {
-                    var last_command = stack[index+1];
-                    last_command._do()
+            },
+            _redo: function () {
+                if (this.can_redo()) {
+                    var last_command = stack[index + 1];
+                    last_command._do();
                     index += 1;
                 }
-            }
-            , print: function () {
+            },
+            print: function () {
                 console.log(stack, index);
+            },
+            can_undo: function () {
+                return index >= 0;
+            },
+            can_redo: function () {
+                return index < stack.length - 1;
             }
-            , can_undo: can_undo
-            , can_redo: can_redo
         };
     };
     

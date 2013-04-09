@@ -1,31 +1,34 @@
-/*jslint nomen: true  vars: true */
-/*global red,esprima,able,uid,console */
+/*jslint nomen: true, vars: true, white: false*/
+/*global red,esprima,able,uid,console,window */
 
 (function (red, $) {
     "use strict";
     var cjs = red.cjs,
         _ = red._;
     
+    var to_func = function (value) {
+        return function () { return value; };
+    };
+    
     $.widget("red.editor", {
-        
         options: {
             debug_ready: false,
             debug_env: false,
             command_box: false,
             server_window: window.opener
-        }
+        },
     
-        , _create: function () {
+        _create: function () {
             if (this.options.command_box) {
-                this.command_box = $("<input />")	.prependTo(this.element.parent())
-                                                    .focus()
-                                                    .on("keydown", _.bind(function (event) {
-                                                        if (event.keyCode === 13) {
-                                                            var val = this.command_box.val();
-                                                            this.command_box.val("");
-                                                            this.on_input_command(val);
-                                                        }
-                                                    }, this));
+                this.command_box = $("<input />").prependTo(this.element.parent())
+                    .focus()
+                    .on("keydown", _.bind(function (event) {
+                        if (event.keyCode === 13) {
+                            var val = this.command_box.val();
+                            this.command_box.val("");
+                            this.on_input_command(val);
+                        }
+                    }, this));
             }
     
             this.env = red.create("environment");
@@ -51,13 +54,14 @@
                 this.load_viewer();
             }, this);
             this.element.text("Loading...");
-        }
+        },
     
-        , load_viewer: function () {
-            var post_command = _.bind(function (type) {
+        load_viewer: function () {
+            var post_command = _.bind(function (type, arg1, arg2, arg3) {
+                var command, parent, name, from_name, to_name, state, value;
                 if (type === 'set_str') {
-                    var cwrapper = arguments[1],
-                        to_text = arguments[2];
+                    var cwrapper = arg1,
+                        to_text = arg2;
                     if (cwrapper) {
                         var command = new red.ChangeCellCommand({
                             cell: { id: to_func(cwrapper.cobj_id) },
@@ -66,10 +70,10 @@
                         this.client_socket.post_command(command);
                     }
                 } else if (type === 'rename') {
-                    var dict_wrapper = arguments[1],
-                        prop_info = arguments[2],
+                    var dict_wrapper = arg1,
+                        prop_info = arg2,
                         from_name = prop_info.name,
-                        to_name = arguments[3];
+                        to_name = arg3;
                     var command = new red.RenamePropCommand({
                         parent: { id: to_func(dict_wrapper.obj_id) },
                         from: from_name,
@@ -77,8 +81,8 @@
                     });
                     this.client_socket.post_command(command);
                 } else if (type === 'unset') {
-                    var dict_wrapper = arguments[1],
-                        prop_info = arguments[2],
+                    var dict_wrapper = arg1,
+                        prop_info = arg2,
                         name = prop_info.name;
                     var command = new red.UnsetPropCommand({
                         parent: { id: to_func(dict_wrapper.obj_id) },
@@ -86,8 +90,8 @@
                     });
                     this.client_socket.post_command(command);
                 } else if (type === 'add_prop') {
-                    var prop_type = arguments[1],
-                        dict_wrapper = arguments[2];
+                    var prop_type = arg1,
+                        dict_wrapper = arg2;
     
                     var value;
                     if (prop_type === 'obj') {
@@ -129,8 +133,8 @@
                     this.client_socket.post_command(command);
                 } else if (type === 'set_builtin') {
                     var obj = arguments[1],
-                        builtin_name = arguments[2],
-                        value_str = arguments[3];
+                        builtin_name = arg2,
+                        value_str = arg3;
                     var value = red.create('cell', {str: value_str});
     
                     var command = new red.SetBuiltinCommand({
@@ -141,8 +145,8 @@
     
                     this.client_socket.post_command(command);
                 } else if (type === 'rename_state') {
-                    var state = arguments[1],
-                        new_name = arguments[2];
+                    var state = arg1,
+                        new_name = arg2;
                     var old_name = state.get_name("parent");
                     var parent_puppet_id = state.parent().puppet_master_id;
                     var command = new red.RenameStateCommand({
@@ -152,7 +156,7 @@
                     });
                     this.client_socket.post_command(command);
                 } else if (type === 'remove_state') {
-                    var state = arguments[1];
+                    var state = arg1;
                     var name = state.get_name("parent");
                     var parent_puppet_id = state.parent().puppet_master_id;
                     var command = new red.RemoveStateCommand({
@@ -161,7 +165,7 @@
                     });
                     this.client_socket.post_command(command);
                 } else if (type === 'remove_transition') {
-                    var transition = arguments[1],
+                    var transition = arg2,
                         statechart = transition.root();
                     var command = new red.RemoveTransitionCommand({
                         transition: { id: to_func(transition.puppet_master_id) },
@@ -169,8 +173,8 @@
                     });
                     this.client_socket.post_command(command);
                 } else if (type === 'set_transition_str') {
-                    var transition = arguments[1],
-                        str = arguments[2];
+                    var transition = arg1,
+                        str = arg2;
                     var transition_id = transition.puppet_master_id;
                     var command = new red.SetTransitionEventCommand({
                         transition: { id: to_func(transition_id) },
@@ -178,10 +182,10 @@
                     });
                     this.client_socket.post_command(command);
                 } else if (type === 'add_transition') {
-                    var from_state = arguments[1],
-                        to_state = arguments[2];
+                    var from_state = arg1,
+                        to_state = arg2;
                     var statechart = from_state.root();
-                    var statechart_puppet_id = statechart.puppet_master_id; 
+                    var statechart_puppet_id = statechart.puppet_master_id;
                     var from_puppet_id = from_state.puppet_master_id,
                         to_puppet_id = to_state.puppet_master_id;
                     var event = red.create_event("parsed", {str: "(event)", inert: true});
@@ -193,7 +197,7 @@
                     });
                     this.client_socket.post_command(command);
                 } else if (type === 'add_state') {
-                    var statechart = arguments[1];
+                    var statechart = arg1;
                     var statechart_puppet_id = statechart.puppet_master_id; 
                     var substates = statechart.get_substates();
                     var state_name = "state_" + _.size(substates);
@@ -671,11 +675,6 @@
         "}\n"+
     "}");
     
-    var to_func = function (value) {
-        return function () { return value; };
-    };
-    
-    
     // ===== END EDITOR ===== 
     
             $(window).on("keydown", _.bind(function (event) {
@@ -697,17 +696,17 @@
             if (this.option("debug_env")) {
                 this.env.print_on_return = true;
             }
-        }
+        },
     
-        , _destroy: function () {
+        _destroy: function () {
             this.remove_message_listener();
             this.client_socket.destroy();
             if (this.command_box) {
                 this.command_box.remove();
             }
-        }
+        },
     
-        , on_input_command: function (value) {
+        on_input_command: function (value) {
             var tokens = aware_split(value).map(function (token) {
                 return token.trim();
             });

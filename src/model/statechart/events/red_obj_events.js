@@ -1,10 +1,15 @@
 /*jslint nomen: true  vars: true */
-/*global red,esprima,able,uid,console */
+/*global red,esprima,able,uid,console,Map */
 
 (function (red) {
     "use strict";
     var cjs = red.cjs,
         _ = red._;
+        
+    var listener_map = new Map({
+        equals: red.check_contextual_object_equality,
+        hash: "hash"
+    });
     
     red.emit = function (type, target) {
         var target_listeners = listener_map.get(target);
@@ -18,11 +23,7 @@
             red.event_queue.signal();
         }
     };
-    
-    var listener_map = new Map({
-        equals: red.check_contextual_object_equality,
-        hash: "hash"
-    });
+
     
     (function (my) {
         var proto = my.prototype;

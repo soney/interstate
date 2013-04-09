@@ -1,5 +1,5 @@
-/*jslint nomen: true  vars: true */
-/*global red,esprima,able,uid,console */
+/*jslint nomen: true, vars: true, bitwise:true, debug:true */
+/*global red,esprima,able,uid,console,window */
 
 (function (red) {
     "use strict";
@@ -18,23 +18,34 @@
         "/=": function (a, b) { return a / b; },
         "|=": function (a, b) { return a | b; },
         "&=": function (a, b) { return a & b; },
-        "^=": function (a, b) { return a ^ b; },
+        "^=": function (a, b) { return a ^ b; }
     };
     
+    function construct(constructor, args) {
+        function F() {
+            return constructor.apply(this, args);
+        }
+        F.prototype = constructor.prototype;
+        return new F();
+    }
+    
     var call_fn = function (node, options) {
+        var i, var_map, op_func, rv, test, body, prop, object,
+            found_this, curr_context, context_item, id, op_context,
+            args;
         if (!node) { return undefined; }
         var type = node.type;
         if (type === "BlockStatement") {
             var len = node.body.length;
-            for (var i = 0; i < len; i += 1) {
+            for (i = 0; i < len; i += 1) {
                 var statement = node.body[i];
-                var rv = call_fn(statement, options);
+                rv = call_fn(statement, options);
                 if (rv === do_return || rv === do_break || rv === do_continue) {
                     return rv;
                 }
             }
         } else if (type === "VariableDeclaration") {
-            var var_map = options.var_map;
+            var_map = options.var_map;
             _.each(node.declarations, function (declaration) {
                 var id = declaration.id.name,
                     init = call_fn(declaration.init, options);
@@ -52,19 +63,18 @@
             return call_fn(node.expression, options);
         } else if (type === "AssignmentExpression") {
             var left = node.left,
-                right_val = call_fn(node.right, options),
-                var_map = options.var_map;
+                right_val = call_fn(node.right, options);
+            var_map = options.var_map;
     
             if (left.type === "Identifier") {
-                var id = left.name;
+                id = left.name;
                 var old_value = var_map[id];
                 if (old_value && cjs.is_$(old_value)) {
                     old_value.destroy();
                 }
                 var_map[id] = assignments[node.operator](old_value, right_val);
             } else if (left.type === "MemberExpression") {
-                var object = call_fn(left.object, options);
-                var prop;
+                object = call_fn(left.object, options);
                 if (left.computed) {
                     prop = call_fn(left.property, options);
                 } else {
@@ -75,12 +85,12 @@
                 console.error("Unset");
             }
         } else if (type === "BinaryExpression") {
-            var op_func = red.binary_operators[node.operator];
+            op_func = red.binary_operators[node.operator];
             var left_arg = call_fn(node.left, options),
                 right_arg = call_fn(node.right, options);
             return op_func.call(window, left_arg, right_arg);
         } else if (type === "UnaryExpression") {
-            var op_func = red.unary_operators[node.operator];
+            op_func = red.unary_operators[node.operator];
             var arg = call_fn(node.argument, options);
             return op_func.call(window, arg);
         } else if (type === "Identifier") {
@@ -88,14 +98,14 @@
             if (key === "root") {
                 return red.find_or_put_contextual_obj(options.pcontext.root(), options.pcontext.slice(0, 1));
             } else if (key === "parent") {
-                var found_this = false;
-                var curr_context = options.pcontext;
-                var context_item = curr_context.points_at();
+                found_this = false;
+                curr_context = options.pcontext;
+                context_item = curr_context.points_at();
     
                 while (!curr_context.is_empty()) {
                     if (context_item instanceof red.Dict) {
                         if (found_this) {
-                            var rv = red.find_or_put_contextual_obj(context_item, curr_context);
+                            rv = red.find_or_put_contextual_obj(context_item, curr_context);
                             return rv;
                         } else {
                             found_this = true;
@@ -119,63 +129,59 @@
                 return call_fn(node.alternate, options);
             }
         } else if (type === "WhileStatement") {
-            var test = node.test, body = node.body;
+            test = node.test;
+            body = node.body;
             while (call_fn(test, options)) {
-                var rv = call_fn(body, options);
-                if (rv === do_return ) {
+                rv = call_fn(body, options);
+                if (rv === do_return) {
                     return rv;
                 } else if (rv === do_break) {
                     break;
-                } else if (rv === do_continue) {
-                    continue;
                 }
             }
         } else if (type === "ForStatement") {
             var init = node.init,
-                test = node.test,
-                update = node.update,
-                body = node.body;
+                update = node.update;
+            
+            body = node.body;
+            test = node.test;
+
             for (call_fn(init, options); call_fn(test, options); call_fn(update, options)) {
-                var rv = call_fn(body, options);
-                if (rv === do_return ) {
+                rv = call_fn(body, options);
+                if (rv === do_return) {
                     return rv;
                 } else if (rv === do_break) {
                     break;
-                } else if (rv === do_continue) {
-                    continue;
                 }
             }
         } else if (type === "DoWhileStatement") {
-            var test = node.test,
-                body = node.body;
+            test = node.test;
+            body = node.body;
             do {
-                var rv = call_fn(body, options);
-                if (rv === do_return ) {
+                rv = call_fn(body, options);
+                if (rv === do_return) {
                     return rv;
                 } else if (rv === do_break) {
                     break;
-                } else if (rv === do_continue) {
-                    continue;
                 }
             } while (call_fn(test, options));
         } else if (type === "ConditionalExpression") {
             return call_fn(node.test, options) ? call_fn(node.consequent, options) : call_fn(node.alternate, options);
         } else if (type === "MemberExpression") {
-            var prop;
-            var object = call_fn(node.object, options);
+            object = call_fn(node.object, options);
             if (node.computed) {
                 prop = call_fn(node.property, options);
             } else {
                 prop = node.property.name;
                 if (object instanceof red.ContextualObject && prop === "parent") {
-                    var found_this = false;
-                    var curr_context = object.get_pointer();
-                    var context_item = curr_context.points_at();
+                    found_this = false;
+                    curr_context = object.get_pointer();
+                    context_item = curr_context.points_at();
     
                     while (!curr_context.is_empty()) {
                         if (context_item instanceof red.Dict) {
                             if (found_this) {
-                                var rv = red.find_or_put_contextual_obj(context_item, curr_context);
+                                rv = red.find_or_put_contextual_obj(context_item, curr_context);
                                 return rv;
                             } else {
                                 found_this = true;
@@ -192,14 +198,14 @@
                 return object[prop];
             }
         } else if (type === "CallExpression") {
-            var op_context = window;
+            op_context = window;
             if (node.callee.type === "MemberExpression") {
                 op_context = call_fn(node.callee.object, options);
             }
-            var op_func = call_fn(node.callee, options),
-                args = _.map(node.arguments, function (arg) {
-                    return call_fn(arg, options)
-                });
+            op_func = call_fn(node.callee, options);
+            args = _.map(node["arguments"], function (arg) {
+                return call_fn(arg, options);
+            });
             if (_.isFunction(op_func)) {
                 return op_func.apply(op_context, args);
             } else if (op_func instanceof red.ParsedFunction) {
@@ -219,15 +225,15 @@
             var operator = node.operator;
             var resulting_value;
             if (operator === " += 1") {
-                resulting_value = value+1;
+                resulting_value = value + 1;
             } else if (operator === " -= 1") {
-                resulting_value = value-1;
+                resulting_value = value - 1;
             } else {
                 console.error("Unknown operator ", operator);
             }
     
             if (node.argument.type === "Identifier") {
-                var id = node.argument.name;
+                id = node.argument.name;
                 options.var_map[id] = resulting_value;
             } else {
                 console.error("Unset");
@@ -238,8 +244,6 @@
             } else {
                 return resulting_value;
             }
-            
-            console.log(node);
         } else if (type === "ThisExpression") {
             return options.js_context;
         } else if (type === "BreakStatement") {
@@ -247,21 +251,21 @@
         } else if (type === "ContinueStatement") {
             return do_continue;
         } else if (type === "NewExpression") {
-            var op_context = window;
+            op_context = window;
             if (node.callee.type === "MemberExpression") {
                 op_context = call_fn(node.callee.object, options);
             }
-            var op_func = call_fn(node.callee, options),
-                args = _.map(node.arguments, function (arg) {
-                    return new call_fn(arg, options)
-                });
+            op_func = call_fn(node.callee, options);
+            args = _.map(node["arguments"], function (arg) {
+                return call_fn(arg, options);
+            });
             if (_.isFunction(op_func)) {
                 return construct(op_func, args);
             } else if (op_func instanceof red.ParsedFunction) {
                 console.error("unhandled case");
             }
         } else if (type === "ObjectExpression") {
-            var rv = {};
+            rv = {};
             _.each(node.properties, function (prop_node) {
                 var key = prop_node.key.name,
                     value = call_fn(prop_node.value, options);
@@ -270,21 +274,13 @@
             return rv;
         } else if (type === "DebuggerStatement") {
             debugger;
-        } else if (type === "EmptyStatement") {
+        } else if (type !== "EmptyStatement") {
             // do nothing
-            ;
+            return;
         } else {
             console.log(type, node);
         }
     };
-    
-    function construct(constructor, args) {
-        function F() {
-            return constructor.apply(this, args);
-        }
-        F.prototype = constructor.prototype;
-        return new F();
-    }
     
     red.ParsedFunction = function (node, options) {
         this.node = node;
@@ -300,7 +296,7 @@
             var_map["arguments"] = args;
             _.each(node.params, function (param, index) {
                 var name = param.name;
-                var value = args[index]
+                var value = args[index];
                 var_map[name] = value;
             });
     

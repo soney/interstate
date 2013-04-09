@@ -1,5 +1,5 @@
 /*jslint nomen: true  vars: true */
-/*global red,esprima,able,uid,console,jQuery */
+/*global red,esprima,able,uid,console,jQuery,window */
 
 (function (red, $) {
     "use strict";
@@ -80,7 +80,7 @@
             this._emit("disconnected");
         };
     
-        proto.is_connected = function () { 
+        proto.is_connected = function () {
             return this.connected;
         };
     

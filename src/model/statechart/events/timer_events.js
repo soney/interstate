@@ -1,5 +1,5 @@
 /*jslint nomen: true  vars: true */
-/*global red,esprima,able,uid,console */
+/*global red,esprima,able,uid,console,window */
 
 (function (red) {
     "use strict";
@@ -11,13 +11,13 @@
             this.time = time;
             var creation_time = (new Date()).getTime();
             var time_diff = this.time - creation_time;
-    
+            var self = this;
             window.setTimeout(function () {
                 self.fire({
-                    type: "time"
-                    , time: time
-                    , current_time: (new Date()).getTime()
-                    , created_at: creation_time
+                    type: "time",
+                    time: time,
+                    current_time: (new Date()).getTime(),
+                    created_at: creation_time
                 });
             }, time_diff);
         };
@@ -62,10 +62,10 @@
         proto.notify = function () {
             red.event_queue.wait();
             this.fire({
-                type: "timeout"
-                , delay: this.delay
-                , current_time: (new Date()).getTime()
-                , created_at: this.created_at
+                type: "timeout",
+                delay: this.delay,
+                current_time: (new Date()).getTime(),
+                created_at: this.created_at
             });
             red.event_queue.signal();
         };

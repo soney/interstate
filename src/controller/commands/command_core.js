@@ -9,8 +9,9 @@
     red.Command = function () {
         this._in_effect = false;
     };
-    (function (my) {
-        var proto = my.prototype;
+    
+    (function (My) {
+        var proto = My.prototype;
         proto._do = function () {
             this._in_effect = true;
             this._execute();

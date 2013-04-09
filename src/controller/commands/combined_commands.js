@@ -14,9 +14,9 @@
         }
         this._commands = options.commands;
     };
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             _.forEach(this._commands, function (command) {
@@ -35,20 +35,20 @@
         };
     
         red.register_serializable_type("combined_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            var arg_array = _.toArray(arguments);
-                                            return {
-                                                commands: red.serialize.apply(red, ([this._commands]).concat(arg_array))
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                commands: red.deserialize(obj.commands)
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var arg_array = _.toArray(arguments);
+                return {
+                    commands: red.serialize.apply(red, ([this._commands]).concat(arg_array))
+                };
+            },
+            function (obj) {
+                return new My({
+                    commands: red.deserialize(obj.commands)
+                });
+            });
     }(red.CombinedCommand));
 
 }(red));

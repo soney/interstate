@@ -1,5 +1,5 @@
 /*jslint nomen: true  vars: true */
-/*global red,esprima,able,uid,console */
+/*global red,esprima,able,uid,console,Map,window */
 
 (function (red) {
     "use strict";
@@ -34,18 +34,19 @@
             this.paper.setSize(width, height);
             var new_items = [];
             layout.each(function (layout_info, state) {
+                var view;
                 if (state instanceof red.Statechart) {
                     if (_.indexOf(this.statecharts, state) >= 0) {
                         if (layout_info.add_state_button_x) {
                             add_state_button.attr({
                                 x: layout_info.add_state_button_x,
-                                y: height/2
+                                y: height / 2
                             });
                         }
                         return; //it's a root statechart
                     }
                     if (this.object_views.has(state)) {
-                        var view = this.get_view(state, layout_info);
+                        view = this.get_view(state, layout_info);
                         view.option({
                             lws: layout_info.left_wing_start,
                             lwe: layout_info.left_wing_end,
@@ -55,19 +56,19 @@
                         });
                         new_items.push(view);
                     } else {
-                        var view = this.get_view(state, layout_info);
+                        view = this.get_view(state, layout_info);
                         new_items.push(view);
                     }
                 } else if (state instanceof red.StatechartTransition) {
                     if (this.object_views.has(state)) {
-                        var view = this.get_view(state, layout_info);
+                        view = this.get_view(state, layout_info);
                         view.option({
                             from: layout_info.from,
                             to: layout_info.to
                         });
                         new_items.push(view);
                     } else {
-                        var view = this.get_view(state, layout_info);
+                        view = this.get_view(state, layout_info);
                         new_items.push(view);
                     }
                 }
@@ -89,22 +90,23 @@
         able.make_proto_listenable(proto);
         proto.get_view = function (obj, layout_info) {
             return this.object_views.get_or_put(obj, function () {
+                var rv;
                 if (obj instanceof red.StatechartTransition) {
                     if (obj.from() instanceof red.StartState) {
-                        var rv  = new red.StartTransitionView({
-                                paper: this.paper,
-                                transition: obj,
-                                to: layout_info.to
-                            });
+                        rv  = new red.StartTransitionView({
+                            paper: this.paper,
+                            transition: obj,
+                            to: layout_info.to
+                        });
                         return rv;
                     } else {
                         var event = obj.event();
-                        var rv = new red.TransitionView({
-                                paper: this.paper,
-                                transition: obj,
-                                from: layout_info.from,
-                                to: layout_info.to
-                            });
+                        rv = new red.TransitionView({
+                            paper: this.paper,
+                            transition: obj,
+                            from: layout_info.from,
+                            to: layout_info.to
+                        });
                         rv.on("change", function (event) {
                             var value = event.value;
                             if (value === "") {
@@ -116,15 +118,15 @@
                         return rv;
                     }
                 } else {
-                    var rv = new red.StateView({
-                            state: obj,
-                            paper: this.paper,
-                            lws: layout_info.left_wing_start,
-                            lwe: layout_info.left_wing_end,
-                            rws: layout_info.right_wing_start,
-                            rwe: layout_info.right_wing_end,
-                            c: layout_info.center
-                        });
+                    rv = new red.StateView({
+                        state: obj,
+                        paper: this.paper,
+                        lws: layout_info.left_wing_start,
+                        lwe: layout_info.left_wing_end,
+                        rws: layout_info.right_wing_start,
+                        rwe: layout_info.right_wing_end,
+                        c: layout_info.center
+                    });
                     rv.on("change", function (event) {
                         var value = event.value;
                         if (value === "") {
@@ -154,11 +156,11 @@
         able.make_this_optionable(this, {
             state: null,
             paper: null,
-            lws: {x:0, y:0},
-            lwe: {x:0, y:0},
-            rws: {x:0, y:0},
-            rwe: {x:0, y:0},
-            c: {x:0, y:0},
+            lws: {x: 0, y: 0},
+            lwe: {x: 0, y: 0},
+            rws: {x: 0, y: 0},
+            rwe: {x: 0, y: 0},
+            c: {x: 0, y: 0},
             default_stroke: "#777",
             default_fill: "#F9F9F9",
             active_fill: "#CCC",
@@ -172,7 +174,7 @@
                         "fill": this.option("active_fill"),
                         "stroke": this.option("active_stroke")
                     }, 300, "ease-out");
-                } 
+                }
             } else {
                 if (this.path) {
                     this.path.animate({
@@ -219,13 +221,13 @@
             var center = this.option("c");
     
             var name = state.get_name("parent");
-            this.label = new red.EditableText(paper, {x: center.x, y: center.y, text:name});
+            this.label = new red.EditableText(paper, {x: center.x, y: center.y, text: name});
             this.label.option({
                 "font-size": "12px",
                 "font-family": FONT_FAMILY_STR
             });
             this.label.on("change", this.forward);
-            this.vline = paper.path("M"+center.x+","+(center.y+5)+"V9999");
+            this.vline = paper.path("M" + center.x + "," + (center.y + 5) + "V9999");
         };
     
         proto._on_options_set = function (values) {
@@ -242,7 +244,7 @@
                     y: center.y,
                     text: name
                 });
-                this.vline.attr({path:"M"+center.x+","+(center.y+5)+"V9999"});
+                this.vline.attr({path: "M" + center.x + "," + (center.y + 5) + "V9999" });
             }
         };
     
@@ -250,7 +252,7 @@
             var pts = [this.option("lws"), this.option("lwe"), this.option("rws"), this.option("rwe")];
             var x0 = pts[0].x;
             var path_str = "M" + x0 + ",0" + "L" + _.map(pts, function (pt) {
-                return pt.x+","+pt.y
+                return pt.x + "," + pt.y;
             }).join("L") + "V0Z";
             return path_str;
         };
@@ -262,22 +264,22 @@
     }(red.StateView));
     
     var get_arrow_paths = function (from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians) {
-        var fromX = from.x
-            , fromY = from.y
-            , toX = to.x
-            , toY = to.y;
+        var fromX = from.x,
+            fromY = from.y,
+            toX = to.x,
+            toY = to.y;
     
-        var xDiff = toX - fromX
-            , yDiff = toY - fromY;
+        var xDiff = toX - fromX,
+            yDiff = toY - fromY;
     
         var line_path_str;
         var lineStartX, lineStartY, lineEndX, lineEndY, theta, arrow_theta;
     
         if (Math.pow(xDiff, 2) + Math.pow(yDiff, 2) <= Math.pow(radius + arrowLength, 2)) {
-            var curve_radius = 2*radius * radius + arrowLength + 2;
+            var curve_radius = 2 * radius * radius + arrowLength + 2;
     
-            theta = self_pointing_theta * Math.PI/180;
-            arrow_theta = theta - (90 * Math.PI/180);
+            theta = self_pointing_theta * Math.PI / 180;
+            arrow_theta = theta - (90 * Math.PI / 180);
     
             lineStartX = fromX + radius * Math.cos(theta);
             lineStartY = fromY + radius * Math.sin(theta);
@@ -301,27 +303,27 @@
             lineEndX = toX - Math.cos(theta) * arrowLength;
             lineEndY = toY - Math.sin(theta) * arrowLength;
     
-            line_path_str = "M" + lineStartX + "," + lineStartY + "L" + lineEndX + "," + lineEndY
+            line_path_str = "M" + lineStartX + "," + lineStartY + "L" + lineEndX + "," + lineEndY;
         }
     
         var off_line = arrowLength * Math.tan(arrowAngleRadians);
         var arrow_path = [
-            {x: toX, y:toY}
-            , {x: lineEndX + off_line * Math.cos(arrow_theta - Math.PI/2)
-                , y: lineEndY + off_line * Math.sin(arrow_theta - Math.PI/2)
-            }
-            , {x: lineEndX + off_line * Math.cos(arrow_theta + Math.PI/2)
-                , y: lineEndY + off_line * Math.sin(arrow_theta + Math.PI/2)
-            }
+            { x: toX, y: toY},
+            { x: lineEndX + off_line * Math.cos(arrow_theta - Math.PI / 2),
+                y: lineEndY + off_line * Math.sin(arrow_theta - Math.PI / 2)
+                },
+            { x: lineEndX + off_line * Math.cos(arrow_theta + Math.PI / 2),
+                y: lineEndY + off_line * Math.sin(arrow_theta + Math.PI / 2)
+                }
         ];
         var arrow_path_str = "M" + _.map(arrow_path, function (point) {
-                        return point.x+","+point.y;
-                    }).join("L") + "Z";
+            return point.x + "," + point.y;
+        }).join("L") + "Z";
     
         return {
-            line: { path: line_path_str }
-            , arrow: { path: arrow_path_str }
-            , circle: { cx: fromX, cy: fromY, r: radius }
+            line: { path: line_path_str },
+            arrow: { path: arrow_path_str },
+            circle: { cx: fromX, cy: fromY, r: radius }
         };
     };
     
@@ -335,8 +337,8 @@
         able.make_this_optionable(this, {
             transition: null,
             paper: null,
-            from: {x:0, y:0},
-            to: {x:0, y:0},
+            from: {x: 0, y: 0},
+            to: {x: 0, y: 0},
             arrowLength: 8,
             radius: 1,
             arrowAngle: 20,
@@ -362,7 +364,7 @@
             str = event.get_str();
         }
         var c = center(this.option("from"), this.option("to"));
-        this.label = new red.EditableText(paper, {x: c.x, y: c.y+8, text: str});
+        this.label = new red.EditableText(paper, {x: c.x, y: c.y + 8, text: str});
         this.label.option({
             "font-size": "10px",
             "font-family": FONT_FAMILY_STR
@@ -372,14 +374,13 @@
         transition.on("fire", this.$flash);
         this.label.on("change", this.forward);
         var from = this.option("from");
-        this.vline = paper.path("M"+from.x+","+(from.y)+"V9999");
+        this.vline = paper.path("M" + from.x + "," + (from.y) + "V9999");
         this.vline.toBack();
         this.vline.attr({
             stroke: "#999",
             "stroke-dasharray": ". "
         });
-        var event = transition.event();
-        var str;
+
         if (event instanceof red.ParsedEvent) {
             event.on("setString", function (e) {
                 var str = e.to;
@@ -409,12 +410,12 @@
             });
             this.circle.attr({
                 cx: paths.circle.cx,
-                cy: paths.circle.cy, 
+                cy: paths.circle.cy,
                 r: paths.circle.r
             });
             var from = this.option("from");
             this.vline.attr({
-                path: "M"+from.x+","+(from.y)+"V9999"
+                path: "M" + from.x + "," + (from.y) + "V9999"
             });
         };
     
@@ -436,16 +437,16 @@
     
             var the_flash = paper.path(line_elem.getSubpath(0, 0));
             the_flash.attr({
-                stroke: "red"
-                , "stroke-width": 3
-                , guide: line_elem
-                , along: [0, 0]
+                stroke: "red",
+                "stroke-width": 3,
+                guide: line_elem,
+                along: [0, 0]
             });
             the_flash.animate({
                 path: line_elem.getSubpath(0, len)
             }, 200, "ease-in", function () {
                 the_flash.animate({
-                    path: line_elem.getSubpath(4*len/4.1, len)
+                    path: line_elem.getSubpath(4 * len / 4.1, len)
                 }, 200, "ease-out", function () {
                     the_flash.remove();
                 });
@@ -473,7 +474,7 @@
         able.make_this_optionable(this, {
             transition: null,
             paper: null,
-            to: {x:0, y:0},
+            to: {x: 0, y: 0},
             arrowLength: 8,
             radius: 4,
             line_len: 2,
@@ -494,9 +495,9 @@
             "stroke": "none"
         });
     
-        var to = this.option("to")
+        var to = this.option("to");
         var from = {x: to.x - this.option("arrowLength") - this.option("radius") - this.option("line_len"), y: to.y};
-        this.vline = paper.path("M"+from.x+","+(from.y)+"V9999");
+        this.vline = paper.path("M" + from.x + "," + (from.y) + "V9999");
         this.vline.toBack();
         this.vline.attr({
             stroke: "#999",
@@ -524,13 +525,13 @@
             this.arrow_path.attr("path", paths.arrow.path);
             this.circle.attr({
                 cx: paths.circle.cx,
-                cy: paths.circle.cy, 
+                cy: paths.circle.cy,
                 r: paths.circle.r
             });
-            var to = this.option("to")
+            var to = this.option("to");
             var from = {x: to.x - this.option("arrowLength") - this.option("radius") - this.option("line_len"), y: to.y};
             this.vline.attr({
-                path:"M"+from.x+","+(from.y)+"V9999"
+                path: "M" + from.x + "," + (from.y) + "V9999"
             });
             this.vline.toBack();
         };

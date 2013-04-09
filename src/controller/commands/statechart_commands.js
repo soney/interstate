@@ -1,5 +1,5 @@
 /*jslint nomen: true  vars: true */
-/*global red,esprima,able,uid,console */
+/*global red,esprima,able,uid,console,Set */
 
 (function (red) {
     "use strict";
@@ -26,9 +26,9 @@
         }
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             if (_.has(this, "_state")) {
@@ -49,26 +49,26 @@
             }
         };
         red.register_serializable_type("add_state_command",
-                                        function (x) {
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            var args = _.toArray(arguments);
-                                            return {
-                                                statechart: this._statechart.id(),
-                                                name: this._state_name,
-                                                index: this._index,
-                                                state: red.serialize.apply(red, ([this._state]).concat(args))
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                statechart: red.find_uid(obj.statechart),
-                                                name: obj.name,
-                                                index: obj.index,
-                                                state: red.deserialize(obj.state)
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var args = _.toArray(arguments);
+                return {
+                    statechart: this._statechart.id(),
+                    name: this._state_name,
+                    index: this._index,
+                    state: red.serialize.apply(red, ([this._state]).concat(args))
+                };
+            },
+            function (obj) {
+                return new My({
+                    statechart: red.find_uid(obj.statechart),
+                    name: obj.name,
+                    index: obj.index,
+                    state: red.deserialize(obj.state)
+                });
+            });
     }(red.AddStateCommand));
     
     red.RemoveStateCommand = function (options) {
@@ -86,9 +86,9 @@
         }
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             this._index = this._statechart.get_state_index(this._state_name);
@@ -121,21 +121,21 @@
             }
         };
         red.register_serializable_type("remove_state_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            return {
-                                                statechart: this._statechart.id(),
-                                                name: this._state_name
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                statechart: red.find_uid(obj.statechart),
-                                                name: obj.name
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                return {
+                    statechart: this._statechart.id(),
+                    name: this._state_name
+                };
+            },
+            function (obj) {
+                return new My({
+                    statechart: red.find_uid(obj.statechart),
+                    name: obj.name
+                });
+            });
     }(red.RemoveStateCommand));
     
     red.MoveStateCommand = function (options) {
@@ -151,9 +151,9 @@
         this._to_index = this._options.index;
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             this._from_index = this._statechart.get_substate_index(this._state_name);
@@ -167,23 +167,23 @@
         proto._do_destroy = function (in_effect) { };
     
         red.register_serializable_type("move_state_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            return {
-                                                statechart: this._statechart.id(),
-                                                name: this._state_name,
-                                                index: this._to_index
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                statechart: red.find_uid(obj.statechart),
-                                                name: obj.name,
-                                                index: obj.index
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                return {
+                    statechart: this._statechart.id(),
+                    name: this._state_name,
+                    index: this._to_index
+                };
+            },
+            function (obj) {
+                return new My({
+                    statechart: red.find_uid(obj.statechart),
+                    name: obj.name,
+                    index: obj.index
+                });
+            });
     }(red.MoveStateCommand));
     
     red.RenameStateCommand = function (options) {
@@ -203,9 +203,9 @@
         }
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             this._statechart.rename_state(this._from_state_name, this._to_state_name);
@@ -218,23 +218,23 @@
         proto._do_destroy = function (in_effect) { };
     
         red.register_serializable_type("rename_state_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            return {
-                                                statechart: this._statechart.id(),
-                                                from: this._from_state_name,
-                                                to: this._to_state_name
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                statechart: red.find_uid(obj.statechart),
-                                                from: obj.from,
-                                                to: obj.to
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                return {
+                    statechart: this._statechart.id(),
+                    from: this._from_state_name,
+                    to: this._to_state_name
+                };
+            },
+            function (obj) {
+                return new My({
+                    statechart: red.find_uid(obj.statechart),
+                    from: obj.from,
+                    to: obj.to
+                });
+            });
     }(red.RenameStateCommand));
     
     red.MakeConcurrentCommand = function (options) {
@@ -249,9 +249,9 @@
         this._concurrent = !!this._options.concurrent;
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             this._statechart.make_concurrent(this._concurrent);
@@ -263,21 +263,21 @@
     
         proto._do_destroy = function (in_effect) { };
         red.register_serializable_type("make_concurrent_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            return {
-                                                statechart: this._statechart.id(),
-                                                concurrent: this._concurrent
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                statechart: red.find_uid(obj.statechart),
-                                                concurrent: obj.concurrent
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                return {
+                    statechart: this._statechart.id(),
+                    concurrent: this._concurrent
+                };
+            },
+            function (obj) {
+                return new My({
+                    statechart: red.find_uid(obj.statechart),
+                    concurrent: obj.concurrent
+                });
+            });
     }(red.MakeConcurrentCommand));
     
     
@@ -308,9 +308,9 @@
         }
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             if (_.has(this, "_transition")) {
@@ -332,28 +332,28 @@
             }
         };
         red.register_serializable_type("add_transition_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            var arg_array = _.toArray(arguments);
-                                            return {
-                                                statechart_id: this._statechart.id(),
-                                                from_id: this._from_state.id(),
-                                                to_id: this._to_state.id(),
-                                                event: red.serialize.apply(red, ([this._event]).concat(arg_array)),
-                                                transition: red.serialize.apply(red, ([this._transition]).concat(arg_array))
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                statechart: red.find_uid(obj.statechart_id),
-                                                from: red.find_uid(obj.from_id),
-                                                to: red.find_uid(obj.to_id),
-                                                event: red.deserialize(obj.event),
-                                                transition: red.deserialize(obj.transition)
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var arg_array = _.toArray(arguments);
+                return {
+                    statechart_id: this._statechart.id(),
+                    from_id: this._from_state.id(),
+                    to_id: this._to_state.id(),
+                    event: red.serialize.apply(red, ([this._event]).concat(arg_array)),
+                    transition: red.serialize.apply(red, ([this._transition]).concat(arg_array))
+                };
+            },
+            function (obj) {
+                return new My({
+                    statechart: red.find_uid(obj.statechart_id),
+                    from: red.find_uid(obj.from_id),
+                    to: red.find_uid(obj.to_id),
+                    event: red.deserialize(obj.event),
+                    transition: red.deserialize(obj.transition)
+                });
+            });
     }(red.AddTransitionCommand));
     
     
@@ -375,9 +375,9 @@
         }
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
         //	this._statechart.remove_transition(this._transition, false);
@@ -396,22 +396,22 @@
             }
         };
         red.register_serializable_type("remove_transition_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            var arg_array = _.toArray(arguments);
-                                            return {
-                                                statechart: this._statechart.id(),
-                                                transition: this._transition.id()
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                statechart: red.find_uid(obj.statechart),
-                                                transition: red.find_uid(obj.transition)
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var arg_array = _.toArray(arguments);
+                return {
+                    statechart: this._statechart.id(),
+                    transition: this._transition.id()
+                };
+            },
+            function (obj) {
+                return new My({
+                    statechart: red.find_uid(obj.statechart),
+                    transition: red.find_uid(obj.transition)
+                });
+            });
     }(red.RemoveTransitionCommand));
     
     red.SetTransitionEventCommand = function (options) {
@@ -430,9 +430,9 @@
         }
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             var event = this._transition.event();
@@ -447,27 +447,27 @@
     
         proto._do_destroy = function (in_effect) { };
         red.register_serializable_type("set_transition_event_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            var arg_array = _.toArray(arguments);
-                                            return {
-                                                transition_id: this._transition.id(),
-                                                event_str: this._event_str
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                transition: red.find_uid(obj.transition_id),
-                                                event: obj.event_str
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var arg_array = _.toArray(arguments);
+                return {
+                    transition_id: this._transition.id(),
+                    event_str: this._event_str
+                };
+            },
+            function (obj) {
+                return new My({
+                    transition: red.find_uid(obj.transition_id),
+                    event: obj.event_str
+                });
+            });
     }(red.SetTransitionEventCommand));
     
     
     red.SetTransitionFromCommand = function (options) {
-        SetTransitionFromCommand.superclass.constructor.apply(this, arguments);
+        red.SetTransitionFromCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.statechart) {
@@ -479,9 +479,9 @@
         this._old_statechart = this._transition.from();
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             this._transition.setFrom(this._statechart);
@@ -493,22 +493,22 @@
     
         proto._do_destroy = function (in_effect) { };
         red.register_serializable_type("set_transition_from_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            var arg_array = _.toArray(arguments);
-                                            return {
-                                                transition_id: this._transition.id(),
-                                                state_id: this._statechart.id()
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                transition: red.find_uid(obj.transition_id),
-                                                statechart: red.find_uid(obj.state_id)
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var arg_array = _.toArray(arguments);
+                return {
+                    transition_id: this._transition.id(),
+                    state_id: this._statechart.id()
+                };
+            },
+            function (obj) {
+                return new My({
+                    transition: red.find_uid(obj.transition_id),
+                    statechart: red.find_uid(obj.state_id)
+                });
+            });
     }(red.SetTransitionFromCommand));
     
     
@@ -525,9 +525,9 @@
         this._old_statechart = this._transition.to();
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             this._transition.setTo(this._statechart);
@@ -539,25 +539,25 @@
     
         proto._do_destroy = function (in_effect) { };
         red.register_serializable_type("set_transition_to_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            var arg_array = _.toArray(arguments);
-                                            return {
-                                                transition_id: this._transition.id(),
-                                                state_id: this._statechart.id()
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                transition: red.find_uid(obj.transition_id),
-                                                statechart: red.find_uid(obj.state_id)
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var arg_array = _.toArray(arguments);
+                return {
+                    transition_id: this._transition.id(),
+                    state_id: this._statechart.id()
+                };
+            },
+            function (obj) {
+                return new My({
+                    transition: red.find_uid(obj.transition_id),
+                    statechart: red.find_uid(obj.state_id)
+                });
+            });
     }(red.SetTransitionToCommand));
     
-    var null_fn = function (){};
+    var null_fn = function () {};
     
     red.StatechartOnCommand = function (options) {
         red.StatechartOnCommand.superclass.constructor.apply(this, arguments);
@@ -588,9 +588,9 @@
         this._spec = this._options.spec;
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             this._statechart.on_transition(this._spec, this._listener, null_fn, this._context);
@@ -602,28 +602,28 @@
     
         proto._do_destroy = function (in_effect) { };
         red.register_serializable_type("set_transition_on_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            var arg_array = _.toArray(arguments);
-                                            return {
-                                                statechart_id: this._statechart.id(),
-                                                context: red.serialize.apply(red, ([this._context]).concat(arg_array)),
-                                                pcontext: red.serialize.apply(red, ([this._pcontext]).concat(arg_array)),
-                                                listener: red.serialize.apply(red, ([this._listener]).concat(arg_array)),
-                                                spec: this._spec
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                statechart: red.find_uid(obj.statechart_id),
-                                                context: red.deserialize(obj.context),
-                                                pcontext: red.deserialize(obj.pcontext),
-                                                listener: red.deserialize(obj.listener),
-                                                spec: obj._spec
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var arg_array = _.toArray(arguments);
+                return {
+                    statechart_id: this._statechart.id(),
+                    context: red.serialize.apply(red, ([this._context]).concat(arg_array)),
+                    pcontext: red.serialize.apply(red, ([this._pcontext]).concat(arg_array)),
+                    listener: red.serialize.apply(red, ([this._listener]).concat(arg_array)),
+                    spec: this._spec
+                };
+            },
+            function (obj) {
+                return new My({
+                    statechart: red.find_uid(obj.statechart_id),
+                    context: red.deserialize(obj.context),
+                    pcontext: red.deserialize(obj.pcontext),
+                    listener: red.deserialize(obj.listener),
+                    spec: obj._spec
+                });
+            });
     }(red.StatechartOnCommand));
     
     red.StatechartOff = function (options) {
@@ -640,9 +640,9 @@
         this._spec = this._options.spec;
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             this._statechart.off_transition(this._spec, this._listener, null_fn, this._context);
@@ -654,28 +654,28 @@
     
         proto._do_destroy = function (in_effect) { };
         red.register_serializable_type("set_transition_off_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            var arg_array = _.toArray(arguments);
-                                            return {
-                                                statechart_id: this._statechart.id(),
-                                                context: red.serialize.apply(red, ([this._context]).concat(arg_array)),
-                                                pcontext: red.serialize.apply(red, ([this._pcontext]).concat(arg_array)),
-                                                listener: red.serialize.apply(red, ([this._listener]).concat(arg_array)),
-                                                spec: this._spec
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                statechart: red.find_uid(obj.statechart_id),
-                                                context: red.deserialize(obj.context),
-                                                pcontext: red.deserialize(obj.pcontext),
-                                                listener: red.deserialize(obj.listener),
-                                                spec: obj._spec
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var arg_array = _.toArray(arguments);
+                return {
+                    statechart_id: this._statechart.id(),
+                    context: red.serialize.apply(red, ([this._context]).concat(arg_array)),
+                    pcontext: red.serialize.apply(red, ([this._pcontext]).concat(arg_array)),
+                    listener: red.serialize.apply(red, ([this._listener]).concat(arg_array)),
+                    spec: this._spec
+                };
+            },
+            function (obj) {
+                return new My({
+                    statechart: red.find_uid(obj.statechart_id),
+                    context: red.deserialize(obj.context),
+                    pcontext: red.deserialize(obj.pcontext),
+                    listener: red.deserialize(obj.listener),
+                    spec: obj._spec
+                });
+            });
     }(red.StatechartOff));
 
 }(red));

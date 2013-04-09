@@ -18,9 +18,9 @@
         this._to_str = this._options.str;
     };
     
-    (function (my) {
-        _.proto_extend(my, red.Command);
-        var proto = my.prototype;
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
     
         proto._execute = function () {
             this._from_str = this._cell.get_str();
@@ -32,21 +32,21 @@
         };
     
         red.register_serializable_type("change_cell_command",
-                                        function (x) { 
-                                            return x instanceof my;
-                                        },
-                                        function () {
-                                            return {
-                                                cell_uid: this._cell.id(),
-                                                str: this._to_str,
-                                            };
-                                        },
-                                        function (obj) {
-                                            return new my({
-                                                cell: red.find_uid(obj.cell_uid),
-                                                str: obj.str
-                                            });
-                                        });
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                return {
+                    cell_uid: this._cell.id(),
+                    str: this._to_str
+                };
+            },
+            function (obj) {
+                return new My({
+                    cell: red.find_uid(obj.cell_uid),
+                    str: obj.str
+                });
+            });
     
         proto._do_destroy = function (in_effect) { };
     }(red.ChangeCellCommand));
