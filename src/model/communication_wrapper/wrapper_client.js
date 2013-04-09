@@ -82,7 +82,8 @@
         this._type = options.type;
         this.object_summary = options.object_summary;
     
-        this._id = client_id += 1;
+		client_id += 1;
+        this._id = client_id;
         clients[this._id] = this;
     
         this.fn_call_constraints = new Map({
@@ -116,7 +117,8 @@
     
         proto.destroy = function () { };
         proto.post = function (message) {
-            var m_id = message_id += 1;
+			message_id += 1;
+            var m_id = message_id;
             this.server_window.postMessage({
                 type: "wrapper_client",
                 client_id: this.id(),

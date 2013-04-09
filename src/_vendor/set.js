@@ -68,8 +68,8 @@ var Set = (function (root) {
                 var item = arguments[j];
                 info = this.add_to_hash(item, value_len);
                 if (info) {
-                    value_len += 1;
                     this.value[value_len] = info;
+                    value_len += 1;
                 }
             }
             return this;
@@ -81,8 +81,8 @@ var Set = (function (root) {
                 var item = arguments[j];
                 info = this.add_to_hash(item, index);
                 if (info) {
-                    index += 1;
                     this.value.splice(index, 0, info);
+                    index += 1;
                 }
             }
     

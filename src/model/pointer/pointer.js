@@ -255,6 +255,13 @@
         }
     };
     */
+	red.pointer_hash = function(item) {
+		if(item && item.hash) {
+			return item.hash();
+		} else {
+			return item.toString();
+		}
+	};
     red.check_special_context_equality = function (sc1, sc2) {
         var sc1_len = sc1.length,
             sc2_len = sc2.length;

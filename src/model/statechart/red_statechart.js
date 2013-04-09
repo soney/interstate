@@ -648,7 +648,8 @@ outer_loop:
             var parentage = [];
             var i = 0;
             do {
-                parentage[i += 1] = curr_node;
+                parentage[i] = curr_node;
+				i += 1;
                 if (curr_node === until_state) { break; }
                 curr_node = curr_node.parent();
             } while (curr_node);
