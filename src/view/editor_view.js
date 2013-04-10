@@ -102,8 +102,9 @@
 						value.do_initialize({
 							direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value })
 						});
-						value.get_own_statechart().add_state("INIT")
+						/*value.get_own_statechart().add_state("INIT")
 							.starts_at("INIT");
+							*/
 					} else if (prop_type === 'dict') {
 						value = red.create("dict", {has_protos: false}, true);
 						value.do_initialize({ });

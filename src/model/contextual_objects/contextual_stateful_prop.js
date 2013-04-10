@@ -6,10 +6,12 @@
 	var cjs = red.cjs,
 		_ = red._;
 
+	var NO_VAL = {};
+
 	red.ContextualStatefulProp = function (options) {
 		red.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
 		this.transition_times_run = {};
-		this.used_start_transition = false;
+		this._last_value = NO_VAL;
 
 	/*
 		var values = this.get_values();
@@ -73,7 +75,12 @@
 			}
 			var substates = _.chain(statecharts)
 				.map(function (sc) {
-					return _.rest(sc.flatten_substates());
+					var flat_substates = sc.flatten_substates();
+					var flat_substates_without_original_statechart = _.rest(flat_substates);
+					var init_state = sc.get_start_state();
+
+					var substates = ([init_state]).concat(flat_substates_without_original_statechart);
+					return substates;
 				})
 				.flatten(true)
 				.map(function (state) {
@@ -232,14 +239,13 @@
 			this.transition_times_run[transition_id] = tr;
 		};
 
-		var NO_VAL = {};
 		
 		proto.active_value = function () {
 			var values = this.get_values();
 			var len = values.length;
 			var info, i;
 
-			var using_val = NO_VAL, using_state;
+			var using_val = NO_VAL, using_state, fallback_value = NO_VAL, fallback_state;
 			var invalidate_value = _.bind(function () {
 				this.$value.invalidate();
 			}, this);
@@ -254,10 +260,12 @@
 					}
 				} else if (state instanceof red.StatechartTransition) {
 					var tr = state.get_times_run();
-					if (!this._used_start_transition && state.from() instanceof red.StartState) {
+					if (state.from() instanceof red.StartState) {
 						using_val = val;
 						using_state = state;
 						_.defer(invalidate_value);
+						fallback_value = val;
+						fallback_state = state;
 					}
 
 					if (tr > this.get_transition_times_run(state)) {
@@ -273,10 +281,19 @@
 					}
 				}
 			}
-			this._used_start_transition = true;
 			if (using_val === NO_VAL) {
-				using_val = this._last_value;
-				using_state = this._from_state;
+				if (this._last_value === NO_VAL) {
+					if (fallback_value === NO_VAL) {
+						using_val = this._last_value = fallback_value;
+						using_state = this._from_state = fallback_state;
+					} else {
+						using_val = undefined;
+						using_state = undefined;
+					}
+				} else {
+					using_val = this._last_value;
+					using_state = this._from_state;
+				}
 			} else {
 				this._last_value = using_val;
 				this._from_state = using_state;
