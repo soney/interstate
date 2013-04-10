@@ -68,6 +68,7 @@
 		this._children_change_listener = this.add_children_change_listener();
 		this.current_children_srcs = [];
 
+		this.pause();
 		this.on_ready();
 	};
 	(function (my) {
@@ -76,7 +77,8 @@
 		proto.get_owner = function () {
 			return this._owner;
 		};
-		proto.on_ready = function () { };
+		proto.on_ready = function () {
+		};
 		proto.destroy = function () {
 			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.destroy(); }
 			if (_.has(this, "_css_change_listener")) { this._css_change_listener.destroy(); }
@@ -94,6 +96,7 @@
 			if (_.has(this, "_children_change_listener")) { this._children_change_listener.destroy(); }
 		};
 		proto.get_dom_obj = function () {
+			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.run(); }
 			var rv = cjs.get(this._dom_obj);
 			return rv;
 		};
@@ -272,7 +275,12 @@
 			return false;
 		};
 
+		proto.is_paused = function() {
+			return this._paused;
+		};
+
 		proto.pause = function () {
+			this._paused = true;
 			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.pause(); }
 			if (_.has(this, "_css_change_listener")) { this._css_change_listener.pause(); }
 			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.pause(); }
@@ -302,6 +310,7 @@
 		};
 
 		proto.resume = function () {
+			this._paused = false;
 			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.resume(); }
 			if (_.has(this, "_css_change_listener")) { this._css_change_listener.resume(); }
 			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.resume(); }

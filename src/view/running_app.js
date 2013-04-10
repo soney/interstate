@@ -161,6 +161,8 @@
 					this.element.children().remove();
 					this.element.append(dom_element);
 				}
+
+				dom_attachment.resume();
 			}, {
 				context: this,
 				pause_while_running: true
