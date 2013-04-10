@@ -108,45 +108,6 @@
 			return 0;
 		};
 
-		proto.get_background_css = function () {
-			var bg_images = [],
-				bg_positions = [],
-				bg_repeats = [];
-			var i;
-
-			var full_layout_info = this.get_layout();
-			var layout_info = full_layout_info.locations;
-			var url_prefix = window.location.protocol + "//" + window.location.host + "/src/view/style/dots/";
-
-			layout_info.each(function (info, state) {
-				if (state instanceof red.State) {
-					if (_.indexOf(this.statecharts, state) < 0) {
-						bg_images.push("url(" + url_prefix + "dot2.png)");
-						bg_positions.push((info.center.x + 300) + "px");
-						bg_repeats.push("repeat-y");
-					}
-				} else if (state instanceof red.StatechartTransition) {
-					if (info.from) {
-						bg_images.push("url(" + url_prefix + "dot3.png)");
-						bg_positions.push((info.from.x + 300) + "px");
-						bg_repeats.push("repeat-y");
-					} else { // start transition
-						bg_images.push("url(" + url_prefix + "dot3.png)");
-						bg_positions.push((info.to.x + 300 - 15) + "px");
-						bg_repeats.push("repeat-y");
-					}
-				}
-			}, this);
-
-			var weaved = [];
-			for (i = 0; i < bg_images.length; i += 1) {
-				weaved.push(bg_images[i] + " " + bg_repeats[i] + " " + bg_positions[i]);
-			}
-
-			var rv = weaved.join(", ");
-			return rv;
-		};
-
 		proto.get_layout = function () {
 			return this.$layout.get();
 		};
@@ -169,7 +130,7 @@
 				var col_len = columns.length;
 				var li, ri;
 				if (statechart instanceof red.StartState) {
-					columns.push({ state: statechart, lr: "c", depth: depth});
+					columns.push({ state: statechart, lr: "c", depth: depth + 1});
 					col_indicies.put(statechart, {c: col_len});
 					li = ri = col_len;
 				} else {
@@ -463,7 +424,7 @@
 						//x += STATE_PADDING_X/2;
 					} else if (state instanceof red.StartState) {
 						x += START_STATE_WIDTH / 2;
-						y = H * (num_rows - column.depth - 1) + H / 2;
+						y = H * (num_rows - column.depth) + H / 2;
 						location_info_map.put(state, { center: { x: x, y: y } });
 
 						var column_values = _.pluck(rows, i);

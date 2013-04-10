@@ -257,7 +257,7 @@
 			.up()
 		.set("css", "<dict>")
 		.cd("css")
-			.set("width", "(statechart_disp.layout_engine.total_width()-70) + 'px'")
+			.set("width", "(statechart_disp.layout_engine ? statechart_disp.layout_engine.total_width()-70 : 0) + 'px'")
 			.set("height", "'7px'")
 			.set("display", "'inline-block'")
 			.set("border-bottom", "'1px dashed #CCC'")

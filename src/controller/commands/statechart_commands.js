@@ -1,5 +1,5 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,Set */
+/*global red,esprima,able,uid,console,RedSet */
 
 (function (red) {
     "use strict";
@@ -93,7 +93,7 @@
         proto._execute = function () {
             this._index = this._statechart.get_state_index(this._state_name);
             this._state = this._statechart.find_state(this._state_name);
-            var transitions = new Set({
+            var transitions = new RedSet({
                 hash: "hash"
             });
             var incoming_transitions = this._state.get_incoming_transitions(),
