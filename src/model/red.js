@@ -11,6 +11,7 @@ var red = (function (root) {
 	red.esprima = esprima;
 	red._ = _.noConflict();
 	red.__debug = true;
+	red.__version = "0.0.1";
 
 	able.make_this_listenable(red);
 	able.make_proto_listenable(red);

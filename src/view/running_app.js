@@ -70,7 +70,8 @@
 			open_separate_client_window: true,
 			editor_window_options: function () {
 				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + window.innerHeight + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
-			}
+			},
+			show_debugging_info: false
 		},
 
 		_create: function () {
@@ -135,6 +136,11 @@
 					this.open_editor();
 				}
 			}
+
+			if (this.option("show_debugging_info")) {
+				
+			}
+
 			this._add_change_listeners();
 		},
 

@@ -84,7 +84,11 @@
 				})
 				.flatten(true)
 				.map(function (state) {
-					return ([state]).concat(state.get_incoming_transitions());
+					var incoming_transitions = state.get_incoming_transitions();
+					incoming_transitions = _.filter(incoming_transitions, function(trans) {
+						return trans.from() instanceof red.Statechart;
+					});
+					return ([state]).concat(incoming_transitions);
 				})
 				.flatten(true)
 				.value();
@@ -284,11 +288,11 @@
 			if (using_val === NO_VAL) {
 				if (this._last_value === NO_VAL) {
 					if (fallback_value === NO_VAL) {
-						using_val = this._last_value = fallback_value;
-						using_state = this._from_state = fallback_state;
-					} else {
 						using_val = undefined;
 						using_state = undefined;
+					} else {
+						using_val = this._last_value = fallback_value;
+						using_state = this._from_state = fallback_state;
 					}
 				} else {
 					using_val = this._last_value;

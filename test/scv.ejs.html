@@ -40,7 +40,10 @@
 					statechart.add_state("B.z");
 					*/
 					var statechart = window.statechart = red.create("statechart");
-					statechart.add_state("idle")
+					statechart
+					//statechart.add_state("idle")
+					//			.starts_at("idle")
+					/*
 								.add_state("click1")
 								.add_state("click2")
 								.add_transition("idle", "click1", red.create_event("parsed", {str: "on('click', this)", inert: true}))

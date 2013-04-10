@@ -58,6 +58,7 @@
 		"<<":	function (a, b) { return a << b; },
 		">>":	function (a, b) { return a >> b; },
 		">>>":  function (a, b) { return a >>> b; },
+		"in":	function (a, b) { return a in b; },
 		"instanceof":	function (a, b) { return a instanceof b; }
 	};
 	red.unary_operators = {

@@ -8,7 +8,6 @@
 
 	var FONT_FAMILY_STR = "Tahoma, Geneva, sans-serif";
 
-
 	red.RootStatechartView = function (statecharts, layout_engine, paper) {
 		able.make_this_listenable(this);
 		this.statecharts = statecharts;
@@ -35,7 +34,7 @@
 			var new_items = [];
 			layout.each(function (layout_info, state) {
 				var view;
-				if (state instanceof red.Statechart) {
+				if (state instanceof red.State) {
 					if (_.indexOf(this.statecharts, state) >= 0) {
 						if (layout_info.add_state_button_x) {
 							add_state_button.attr({
@@ -47,13 +46,19 @@
 					}
 					if (this.object_views.has(state)) {
 						view = this.get_view(state, layout_info);
-						view.option({
-							lws: layout_info.left_wing_start,
-							lwe: layout_info.left_wing_end,
-							rws: layout_info.right_wing_start,
-							rwe: layout_info.right_wing_end,
-							c: layout_info.center
-						});
+						if (state instanceof red.StartState) {
+							view.option({
+								c: layout_info.center
+							});
+						} else {
+							view.option({
+								lws: layout_info.left_wing_start,
+								lwe: layout_info.left_wing_end,
+								rws: layout_info.right_wing_start,
+								rwe: layout_info.right_wing_end,
+								c: layout_info.center
+							});
+						}
 						new_items.push(view);
 					} else {
 						view = this.get_view(state, layout_info);
@@ -92,31 +97,26 @@
 			return this.object_views.get_or_put(obj, function () {
 				var rv;
 				if (obj instanceof red.StatechartTransition) {
-					if (obj.from() instanceof red.StartState) {
-						rv  = new red.StartTransitionView({
-							paper: this.paper,
-							transition: obj,
-							to: layout_info.to
-						});
-						return rv;
-					} else {
-						var event = obj.event();
-						rv = new red.TransitionView({
-							paper: this.paper,
-							transition: obj,
-							from: layout_info.from,
-							to: layout_info.to
-						});
-						rv.on("change", function (event) {
-							var value = event.value;
-							if (value === "") {
-								this._emit("remove_transition", {transition: obj});
-							} else {
-								this._emit("change_transition_event", {transition: obj, str: value});
-							}
-						}, this);
-						return rv;
-					}
+					rv = new red.TransitionView({
+						paper: this.paper,
+						transition: obj,
+						from: layout_info.from,
+						to: layout_info.to
+					});
+					rv.on("change", function (event) {
+						var value = event.value;
+						if (value === "") {
+							this._emit("remove_transition", {transition: obj});
+						} else {
+							this._emit("change_transition_event", {transition: obj, str: value});
+						}
+					}, this);
+				} else if (obj instanceof red.StartState) {
+					rv = new red.StartStateView({
+						state: obj,
+						paper: this.paper,
+						c: layout_info.center
+					});
 				} else {
 					rv = new red.StateView({
 						state: obj,
@@ -144,8 +144,8 @@
 							this._emit("add_transition", {from: from_state, to: to_state});
 						}
 					}, this);
-					return rv;
 				}
+				return rv;
 			}, this);
 		};
 
@@ -482,76 +482,38 @@
 		};
 	}(red.TransitionView));
 
-	red.StartTransitionView = function (options) {
+	red.StartStateView = function (options) {
 		able.make_this_optionable(this, {
 			transition: null,
 			paper: null,
-			to: {x: 0, y: 0},
-			arrowLength: 8,
-			radius: 4,
-			line_len: 2,
-			arrowAngle: 20
+			c: {x: 0, y: 0},
+			radius: 6
 		}, options);
 
 		var paper = this.option("paper");
-		var paths = this.get_paths();
-
-		this.line_path = paper.path(paths.line.path);
-		this.arrow_path = paper.path(paths.arrow.path);
-		this.arrow_path.attr({
-			"fill": "black"
-		});
-		this.circle = paper.circle(paths.circle.cx, paths.circle.cy, paths.circle.r);
+		var center = this.option("c");
+		this.circle = paper.circle(center.x, center.y, this.option("radius"));
 		this.circle.attr({
 			"fill": "black",
 			"stroke": "none"
-		});
-
-		var to = this.option("to");
-		var from = {x: to.x - this.option("arrowLength") - this.option("radius") - this.option("line_len"), y: to.y};
-		this.vline = paper.path("M" + from.x + "," + (from.y) + "V9999");
-		this.vline.toBack();
-		this.vline.attr({
-			stroke: "#999",
-			"stroke-dasharray": ". "
 		});
 	};
 
 	(function (My) {
 		var proto = My.prototype;
 		able.make_proto_optionable(proto);
-		proto.get_paths = function () {
-			var to = this.option("to"),
-				self_pointing_theta = 0,
-				radius = this.option("radius"),
-				arrowLength = this.option("arrowLength"),
-				arrowAngleRadians = this.option("arrowAngle") * Math.PI / 180;
-
-			var from = {x: to.x - this.option("arrowLength") - this.option("radius") - this.option("line_len"), y: to.y};
-			return get_arrow_paths(from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians);
-		};
 
 		proto._on_options_set = function (values) {
-			var paths = this.get_paths();
-			this.line_path.attr("path", paths.line.path);
-			this.arrow_path.attr("path", paths.arrow.path);
+			var paper = this.option("paper");
+			var center = this.option("c");
 			this.circle.attr({
-				cx: paths.circle.cx,
-				cy: paths.circle.cy,
-				r: paths.circle.r
+				cx: center.x,
+				cy: center.y,
+				r: this.option("radius")
 			});
-			var to = this.option("to");
-			var from = {x: to.x - this.option("arrowLength") - this.option("radius") - this.option("line_len"), y: to.y};
-			this.vline.attr({
-				path: "M" + from.x + "," + (from.y) + "V9999"
-			});
-			this.vline.toBack();
 		};
 		proto.remove = function () {
-			this.vline.remove();
-			this.line_path.remove();
-			this.arrow_path.remove();
 			this.circle.remove();
 		};
-	}(red.StartTransitionView));
+	}(red.StartStateView));
 }(red));
