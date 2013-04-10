@@ -26,7 +26,7 @@
 			this._emit("add_state", {statechart: this.statecharts[0]});
 		}, this));
 		var curr_items = [];
-		cjs.liven(function () {
+		this.live_layout = cjs.liven(function () {
 			var layout_info = this.layout_engine.get_layout();
 			var width = layout_info.width,
 				height = layout_info.height,
@@ -85,8 +85,8 @@
 		});
 	};
 
-	(function (my) {
-		var proto = my.prototype;
+	(function (My) {
+		var proto = My.prototype;
 		able.make_proto_listenable(proto);
 		proto.get_view = function (obj, layout_info) {
 			return this.object_views.get_or_put(obj, function () {
@@ -148,6 +148,18 @@
 				}
 			}, this);
 		};
+
+		proto.pause = function () {
+			this.live_layout.pause();
+		};
+		proto.resume = function () {
+			this.live_layout.resume();
+			this.live_layout.run();
+		};
+		proto.destroy = function () {
+			this.live_layout.destroy();
+		};
+
 	}(red.RootStatechartView));
 
 
@@ -196,8 +208,8 @@
 		}
 	};
 
-	(function (my) {
-		var proto = my.prototype;
+	(function (My) {
+		var proto = My.prototype;
 		able.make_proto_listenable(proto);
 		able.make_proto_optionable(proto);
 		proto.initialize = function () {
@@ -393,8 +405,8 @@
 		this.label.option("text", str);
 	};
 
-	(function (my) {
-		var proto = my.prototype;
+	(function (My) {
+		var proto = My.prototype;
 		able.make_proto_listenable(proto);
 		able.make_proto_optionable(proto);
 		proto._on_options_set = function (values) {
@@ -505,8 +517,8 @@
 		});
 	};
 
-	(function (my) {
-		var proto = my.prototype;
+	(function (My) {
+		var proto = My.prototype;
 		able.make_proto_optionable(proto);
 		proto.get_paths = function () {
 			var to = this.option("to"),

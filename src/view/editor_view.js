@@ -629,6 +629,8 @@
 					var statechart = e.statechart;
 					post_command("add_state", statechart);
 				});
+				$(content).data("pause", _.bind(view.pause, view));
+				$(content).data("resume", _.bind(view.resume, view));
 			} else {
 				content.textContent = "(waiting for statechart to load)";
 			}
