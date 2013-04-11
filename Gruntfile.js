@@ -61,6 +61,12 @@ module.exports = function(grunt) {
 				]
 			},
 
+			sample_apps: {
+				files: [
+					{ expand: true, cwd: "sample_apps/", src: ["**"], dest: "build/sample_apps" }
+				]
+			},
+
 			dist: {
 				files: [
 					{ expand: true, cwd: "dist/", src: ["**"], dest: "build/" }
@@ -80,6 +86,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-clean');
 
 	// Default task(s).
-	grunt.registerTask('default', ['concat', 'uglify', 'copy']);
+	grunt.registerTask('default', ['concat', /*'uglify',*/ 'copy']);
 	grunt.registerTask('test', ['jshint']);
 };

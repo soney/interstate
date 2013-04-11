@@ -65,7 +65,7 @@
 			root: undefined,
 			show_edit_button: true,
 			edit_on_open: false,
-			editor_url: origin + "/src/view/editor.ejs.html",
+			editor_url: "editor.html",
 			editor_name: uid.get_prefix() + "red_editor",
 			open_separate_client_window: true,
 			editor_window_options: function () {

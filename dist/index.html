@@ -1,66 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>red</title>
+	<head>
+		<title>red</title>
+		<style type="text/css">
+			html, body { height: 100%; }
+			#examples {
+				font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+				font-weight: 300;
+				font-size: 0.8em;
+				position: absolute;
+				z-index: 10;
+				height: 3em;
+				bottom: 0px;
+			}
+			#examples a {
+				text-decoration: none;
+			}
+			#examples a:hover {
+				text-decoration: underline;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="examples">
+			<strong>Pre-built examples: </strong> <span id="sample_apps">(loading...)</span>
+		</div>
+		<div class="content"></div>
+	</body>
 	<link rel="stylesheet" href="style/editor_style.css" />
 	<script src="red.js"></script>
-  </head>
-  <body>
-		<div class="content">
-		</div>
-	  <div>
-			<script type="text/javascript">
-				var env, the_div, root;
-				window.save = function(name) {
-					return red.save(root, name);
-				};
-				window.load = function(name) {
-					root = red.load(name);
-					if(the_div.data("dom_output")) {
-						the_div.dom_output("destroy")
-					}
-					if(env) {
-						env.destroy();
-					}
-					env = red.create("environment", {root: root});
-					env.print_on_return = true;
-					the_div.dom_output({
-						root: root,
-						//edit_on_open: true
-						editor_url: "editor.html"
-					});
-					return root;
-				};
-				window.ls = red.ls;
+	<script src="sample_apps/sample_app_loader.js"></script>
+	<script type="text/javascript">
+		var env, the_div, root;
 
-				$(function() {
-					the_div = $("<div />").appendTo(document.body);
-					try {
-						root = load();
-					} catch(e) {
-						console.log("Creating a new project");
-						env = red.create("environment");
+		var sample_apps = [
+			"hello_world"
+		];
 
-						root = env.get_root();
+		$(function() {
+			env = red.create("environment");
 
-						the_div.dom_output({
-							root: root
-				//			edit_on_open: true
-						});
-						env.print_on_return = true;
-					}
+			root = env.get_root();
+
+			$("div.content").dom_output({
+				root: env.get_root()
+			});
+
+			var load = function(root) {
+				$("div.content").dom_output("destroy");
+				env.destroy();
+
+				env = red.create("environment", {root: root});
+				$("div.content").dom_output({
+					root: root
 				});
-				$(window).on("beforeunload", function() {
-					if(window.nosave !== true) {
-						save();
-					}
-				});
-				window.nuke = function() {
-					nosave = true;
-					red.nuke();
-				};
-				//nosave = true;
-			</script>
-	  </div>
-  </body>
+			};
+			$("#sample_apps").html("");
+			for(var i = 0; i<sample_apps.length; i++) {
+				var sample_app_name = sample_apps[i];
+				var sample_app_link = $("<a />").attr("href", "javascript:void(0)")
+					.text(sample_app_name.replace("_", " "))
+					.on("click", (function(name) {
+									return function() {
+										red.load_sample_app(name, function(root) {
+											load(root);
+										});
+									}
+								}(sample_app_name)))
+					.appendTo("#sample_apps");
+				if (i < sample_apps.length - 1) {
+					$("#sample_apps").append("&nbsp;|&nbsp;");
+				}
+			}
+		});
+	</script>
 </html>

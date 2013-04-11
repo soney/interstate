@@ -2,12 +2,13 @@
 <html lang="en">
   <head>
     <title>red</title>
+	<link rel="stylesheet" href="style/editor_style.css" />
+	<script src="red.js"></script>
   </head>
   <body>
 		<div class="content">
 		</div>
 	  <div>
-			<%- red_include(red_inc.main) %>
 			<script type="text/javascript">
 				var env, the_div, root;
 				window.save = function(name) {
@@ -25,8 +26,7 @@
 					env.print_on_return = true;
 					the_div.dom_output({
 						root: root,
-						//edit_on_open: true,
-						editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor.ejs.html"
+						editor_url: "editor.html"
 					});
 					return root;
 				};
@@ -44,8 +44,7 @@
 
 						the_div.dom_output({
 							root: root,
-				//			edit_on_open: true,
-							editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor.ejs.html"
+							editor_url: "editor.html"
 						});
 						env.print_on_return = true;
 					}
