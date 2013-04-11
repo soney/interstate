@@ -209,8 +209,10 @@
 					value.do_initialize({
 						direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value })
 					});
+					/*
 					value.get_own_statechart().add_state("INIT")
 						.starts_at("INIT");
+					*/
 				} else if (value === "<stateful_prop>") {
 					value = red.create("stateful_prop");
 				} else {
@@ -386,12 +388,8 @@
 					commands: commands
 				});
 			}
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 		proto._get_unset_prop_command = function (prop_name) {
 			var parent_obj = this.get_pointer_obj();
@@ -407,12 +405,8 @@
 		};
 		proto.unset = function () {
 			var command = this._get_unset_prop_command.apply(this, arguments);
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 
 		proto._get_rename_prop_command = function (from_name, to_name) {
@@ -426,12 +420,8 @@
 		};
 		proto.rename = function () {
 			var command = this._get_rename_prop_command.apply(this, arguments);
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 		proto._get_move_prop_command = function (prop_name, index) {
 			var parent_obj = this.get_pointer_obj();
@@ -444,12 +434,8 @@
 		};
 		proto.move = function () {
 			var command = this._get_move_prop_command.apply(this, arguments);
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 
 		proto._get_set_cell_command = function (arg0, arg1, arg2) {
@@ -538,12 +524,8 @@
 
 		proto.set_cell = function () {
 			var command = this._get_set_cell_command.apply(this, arguments);
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 
 		var get_state = function (state_name, states) {
@@ -595,12 +577,8 @@
 
 		proto.add_state = function () {
 			var command = this._get_add_state_command.apply(this, arguments);
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 
 		proto._get_remove_state_command = function (state_name) {
@@ -614,12 +592,8 @@
 		};
 		proto.remove_state = function () {
 			var command = this._get_remove_state_command.apply(this, arguments);
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 
 		proto._get_move_state_command = function (state_name, index) {
@@ -636,12 +610,8 @@
 
 		proto.move_state = function () {
 			var command = this._get_move_state_command.apply(this, arguments);
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 
 
@@ -657,12 +627,8 @@
 		};
 		proto.rename_state = function () {
 			var command = this._get_rename_state_command.apply(this, arguments);
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 
 
@@ -692,21 +658,13 @@
 				statechart: state,
 				concurrent: concurrent
 			});
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 		proto.add_transition = function () {
 			var command = this._get_add_transition_command.apply(this, arguments);
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 
 		proto._get_remove_transition_command = function (transition_id) {
@@ -727,12 +685,8 @@
 		};
 		proto.remove_transition = function () {
 			var command = this._get_remove_transition_command.apply(this, arguments);
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 
 		proto._get_set_event_command = function (transition_id, event) {
@@ -747,12 +701,8 @@
 		};
 		proto.set_event = function () {
 			var command = this._get_set_event_command.apply(this, arguments);
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 		proto.set_from = function (transition, to_state) {
 			transition = this.find_state(transition);
@@ -761,12 +711,8 @@
 				transition: transition,
 				statechart: to_state
 			});
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 		proto.set_to = function (transition, to_state) {
 			transition = this.find_state(transition);
@@ -775,12 +721,21 @@
 				transition: transition,
 				statechart: to_state
 			});
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
+		};
+		proto.start_at = function(state_name) {
+			var statechart = this.get_current_statechart();
+			var command;
+			var start_state = statechart.get_start_state();
+			var to_state = this.find_state(state_name);
+			var outgoing_transition = start_state.get_outgoing_transition();
+			var command = new red.SetTransitionToCommand({
+				transition: outgoing_transition,
+				statechart: to_state
+			});
+			this._do(command);
+			return this.default_return_value();
 		};
 		proto.on_state = function (spec, func, context) {
 			var statechart = this.get_current_statechart();
@@ -794,12 +749,8 @@
 				pcontext: this.pointer,
 				context: context
 			});
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 		proto.off_state = function (spec, func, context) {
 			var statechart = this.get_current_statechart();
@@ -809,12 +760,8 @@
 				listener: func,
 				context: context
 			});
-			if (this.return_commands) {
-				return command;
-			} else {
-				this._do(command);
-				return this.default_return_value();
-			}
+			this._do(command);
+			return this.default_return_value();
 		};
 		proto.print = function (logging_mechanism) {
 			return red.print(this.pointer, logging_mechanism);

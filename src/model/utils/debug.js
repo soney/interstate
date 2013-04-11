@@ -30,16 +30,17 @@
 	function print_statechart() {
 		var last_arg = _.last(arguments),
 			statecharts,
-			logging_mechanism,
-			stringified_statecharts;
+			logging_mechanism = console,
+			stringified_statecharts,
+			include_start;
+
 		
-		if (last_arg && last_arg.constructor && last_arg.constructor.prototype &&
-				_.every(["log", "group", "groupCollapsed", "groupEnd"], _.bind(_.has, _, last_arg.constructor.prototype))) {
-			logging_mechanism = last_arg;
+		if (last_arg && !(last_arg instanceof red.Statechart)) {
+			include_start = last_arg;
 			statecharts = _.first(arguments, arguments.length - 1);
 		} else {
+			include_start = false;
 			statecharts = _.toArray(arguments);
-			logging_mechanism = console;
 		}
 		stringified_statecharts = _.map(statecharts, function (sc) {
 			var id_printed = uid.strip_prefix(sc.id());
@@ -51,7 +52,7 @@
 		}).join(" ");
 		logging_mechanism.group("  Statechart " + stringified_statecharts);
 		_.each(statecharts, function (statechart) {
-			var flattened_statechart = _.without(statechart.flatten_substates(), statechart);
+			var flattened_statechart = _.without(statechart.flatten_substates(include_start), statechart);
 
 			var flattened_state_and_transitions = _.flatten(_.map(flattened_statechart, function (statechart) {
 				return ([statechart]).concat(statechart.get_outgoing_transitions());

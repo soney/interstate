@@ -19,6 +19,9 @@
 			#examples a:hover {
 				text-decoration: underline;
 			}
+			#examples a.active {
+				color: red;
+			}
 		</style>
 	</head>
 	<body>
@@ -34,8 +37,7 @@
 		var env, the_div, root;
 
 		var sample_apps = [
-			"hello_world",
-			"goodbye_world"
+			"hello_world"
 		];
 
 		$(function() {
@@ -60,11 +62,14 @@
 				red.load_sample_app(name, function(root) {
 					load(root);
 				});
+				$("#sample_apps a").removeClass("active")
+				$("#sample_apps #"+name+"").addClass("active")
 			};
 			$("#sample_apps").html("");
 			for(var i = 0; i<sample_apps.length; i++) {
 				var sample_app_name = sample_apps[i];
 				var sample_app_link = $("<a />").attr("href", "javascript:void(0)")
+					.attr("id", sample_app_name)
 					.text(sample_app_name.replace("_", " "))
 					.on("click", (function(name) {
 									return function() {

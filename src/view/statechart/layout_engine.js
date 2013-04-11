@@ -42,6 +42,7 @@
 		this.statecharts = statecharts;
 		this.statecharts_with_add_state_button = [this.statecharts[0]];
 		this.$layout = cjs.$(_.bind(this._compute_layout, this));
+		window.statechart = statecharts[0];
 	};
 	(function (my) {
 		var proto = my.prototype;
@@ -339,6 +340,8 @@
 										}
 										location_info = location_info_map.get_or_put(cell, return_empty_obj);
 
+										console.log(is_from, is_to, cell);
+
 										if (is_from && is_to) {
 											location_info.from = location_info.to = {x: x, y: y};
 										} else if (is_from) {
@@ -444,7 +447,7 @@
 									} else { // includes start state
 										location_info.to = {x: x, y: y};
 									}
-									console.log(location_info, cell);
+									console.log(is_from, is_to, cell);
 								}
 							}
 						}

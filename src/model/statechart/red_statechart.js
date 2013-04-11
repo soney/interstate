@@ -1549,7 +1549,7 @@
 			}
 		};
 		proto.print = function () {
-			red.print_statechart(this);
+			red.print_statechart.apply(red, ([this]).concat(_.toArray(arguments)));
 		};
 
 		red.register_serializable_type("statechart",

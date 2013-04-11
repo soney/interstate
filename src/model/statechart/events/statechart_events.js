@@ -169,7 +169,7 @@
 				inert_shadows: this.options.inert_shadows
 			});
 		};
-		proto.stringify = function () { return this.target.id() + ":" + this.spec; };
+		proto.stringify = function () { return /*this.target.id() +*/ ":"/* + this.spec*/; };
 
 		red.register_serializable_type("statechart_event",
 			function (x) {
