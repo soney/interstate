@@ -10,8 +10,8 @@ module.exports = function(grunt) {
 
 	var exclude_regexes = [
 		"jquery-.*\\.js",
-		"raphael.js",
-		"underscore.js"
+		"raphael\\.js",
+		"underscore\\.js"
 	];
 
 	var my_src_files = src_js.filter(function(f) { 
@@ -52,20 +52,24 @@ module.exports = function(grunt) {
 			js: {
 				src: src_js,
 				dest: "build/red.js"
-			},
-			css: {
-				src: src_css,
-				dest: "build/editor_style.css"
 			}
 		},
 		copy: {
 			css: {
 				files: [
-					{src: ["src/view/style/**"], dest: "build/tree_imgs"}
+					{ expand: true, cwd: "src/view/style/", src: ["**"], dest: "build/style" }
+				]
+			},
+
+			dist: {
+				files: [
+					{ expand: true, cwd: "dist/", src: ["**"], dest: "build/" }
 				]
 			}
 		},
-		clean: ["build/"]
+		clean: {
+			build: ["build/"]
+		}
 	});
 
 	// Load the plugin that provides the "uglify" task.
@@ -78,5 +82,4 @@ module.exports = function(grunt) {
 	// Default task(s).
 	grunt.registerTask('default', ['concat', 'uglify', 'copy']);
 	grunt.registerTask('test', ['jshint']);
-	grunt.registerTask('clean', ['clean']);
 };
