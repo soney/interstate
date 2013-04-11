@@ -5,8 +5,8 @@ module.exports = function(grunt) {
 	};
 	var cjs_inc = require('./include_libs');
 
-	var src_js = cjs_inc.main_src.filter(function(f) { return ends_with(f, ".js");});
-	var src_css = cjs_inc.main_src.filter(function(f) { return ends_with(f, ".css");});
+	var src_js = cjs_inc.build_src.filter(function(f) { return ends_with(f, ".js");});
+	var src_css = cjs_inc.build_src.filter(function(f) { return ends_with(f, ".css");});
 
 	var exclude_regexes = [
 		"jquery-.*\\.js",

@@ -26,8 +26,7 @@ var vendor_src = cp(src, "_vendor");
 var cjs_path = cp(vendor_src, "cjs");
 var cjs_inc = require("./src/_vendor/cjs/include_libs");
 
-
-exports.main_src = c(
+exports.build_src = c(
 	cp(vendor_src, [
 				"stopwatch.js",
 				"array_diff.js",
@@ -97,7 +96,13 @@ exports.main_src = c(
 				"view/statechart/layout_engine.js",
 				"view/statechart/statechart_view.js",
 				"view/style/editor_style.css"
-			]));
+]));
+
+exports.main_src = c(
+	exports.build_src,
+	cp("sample_apps", [
+		"sample_app_loader.js"
+	]));
 
 var ends_with = function(str1, str2) {
 	return str1.slice(str1.length-str2.length) == str2;

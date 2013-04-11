@@ -243,8 +243,8 @@
 				}
 			});
 
-/*
 	// FOR DEBUGGING
+	/*
 			_.each(this.statecharts, function (statechart) {
 				statechart.print();
 			});
@@ -444,6 +444,7 @@
 									} else { // includes start state
 										location_info.to = {x: x, y: y};
 									}
+									console.log(location_info, cell);
 								}
 							}
 						}

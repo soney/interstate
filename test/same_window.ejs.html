@@ -27,6 +27,15 @@
 
 				*/
 env
+	env	.cd("child_nodes")
+		.set("obj", "<stateful>")
+		.cd("obj")
+		.set("(prototypes)", "INIT", "dom")
+		.set("tag", "<stateful_prop>")
+		.set("text", "<stateful_prop>")
+		.set("tag", "INIT", "'div'")
+		.set("text", "INIT", "'hello world'")
+		;
 
 /*
 .cd("child_nodes")

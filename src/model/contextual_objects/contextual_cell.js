@@ -21,11 +21,13 @@
 		};
 		proto._getter = function () {
 			var value;
-			try {
+	//		try {
 				value = cjs.get(this.value_constraint);
+				/*
 			} catch (e) {
 				console.error(e);
 			}
+			*/
 			return value;
 		};
 		proto.get_str = function () {

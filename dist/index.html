@@ -34,7 +34,8 @@
 		var env, the_div, root;
 
 		var sample_apps = [
-			"hello_world"
+			"hello_world",
+			"goodbye_world"
 		];
 
 		$(function() {
@@ -55,6 +56,11 @@
 					root: root
 				});
 			};
+			var load_sample_app = function(name) {
+				red.load_sample_app(name, function(root) {
+					load(root);
+				});
+			};
 			$("#sample_apps").html("");
 			for(var i = 0; i<sample_apps.length; i++) {
 				var sample_app_name = sample_apps[i];
@@ -62,16 +68,15 @@
 					.text(sample_app_name.replace("_", " "))
 					.on("click", (function(name) {
 									return function() {
-										red.load_sample_app(name, function(root) {
-											load(root);
-										});
-									}
+										load_sample_app(name);
+									};
 								}(sample_app_name)))
 					.appendTo("#sample_apps");
 				if (i < sample_apps.length - 1) {
 					$("#sample_apps").append("&nbsp;|&nbsp;");
 				}
 			}
+			load_sample_app(sample_apps[0]);
 		});
 	</script>
 </html>
