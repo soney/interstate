@@ -6,6 +6,7 @@ module.exports = function(grunt) {
 	var cjs_inc = require('./include_libs');
 
 	var src_js = cjs_inc.main_src.filter(function(f) { return ends_with(f, ".js");});
+	var src_css = cjs_inc.main_src.filter(function(f) { return ends_with(f, ".css");});
 
 	var exclude_regexes = [
 		"jquery-.*\\.js",
@@ -48,19 +49,34 @@ module.exports = function(grunt) {
 				banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
 						'<%= grunt.template.today("yyyy-mm-dd") %> */'
 			},
-			build: {
+			js: {
 				src: src_js,
 				dest: "build/red.js"
+			},
+			css: {
+				src: src_css,
+				dest: "build/editor_style.css"
 			}
-		}
+		},
+		copy: {
+			css: {
+				files: [
+					{src: ["src/view/style/**"], dest: "build/tree_imgs"}
+				]
+			}
+		},
+		clean: ["build/"]
 	});
 
 	// Load the plugin that provides the "uglify" task.
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-contrib-concat');
+	grunt.loadNpmTasks('grunt-contrib-copy');
+	grunt.loadNpmTasks('grunt-contrib-clean');
 
 	// Default task(s).
-	grunt.registerTask('default', ['concat', 'uglify']);
+	grunt.registerTask('default', ['concat', 'uglify', 'copy']);
 	grunt.registerTask('test', ['jshint']);
+	grunt.registerTask('clean', ['clean']);
 };
