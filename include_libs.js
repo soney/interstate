@@ -21,14 +21,11 @@ var c = function () {
 };
 
 var path = "";
-var build_path = cp(path, "build");
 var src = cp(path, "src");
 var vendor_src = cp(src, "_vendor");
 var cjs_path = cp(vendor_src, "cjs");
-
 var cjs_inc = require("./src/_vendor/cjs/include_libs");
 
-exports.main_build = cp(build_path, ["red.min.js"]);
 
 exports.main_src = c(
 	cp(vendor_src, [
