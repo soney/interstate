@@ -21,9 +21,9 @@ var getArrayDiff = (function (root) {
 		nativeKeys         = Object.keys,
 		nativeMap          = ArrayProto.map;
 
-	var hasOwnProperty = Object.prototype.hasOwnProperty;
+	var hOP = Object.prototype.hasOwnProperty;
 	var has = function (obj, key) {
-		return hasOwnProperty.call(obj, key);
+		return hOP.call(obj, key);
 	};
 
 	// Establish the object that gets returned to break out of a loop iteration.
@@ -240,7 +240,14 @@ var getArrayDiff = (function (root) {
 			for (i = 0; i < m; i += 1) {
 				p = (r === p) ? p1 : popsym(i, x, y, symbols, r, n, equality_check);
 				p1 = popsym(i + 1, x, y, symbols, r, n, equality_check);
-				idx = (p > p1) ? (i++, p1) : p;
+
+				if (p > p1) {
+					i += 1;
+					idx = p1;
+				} else {
+					idx = p;
+				}
+
 				if (idx === n || i === m) {
 					p=popsym(i, x, y, symbols, r, n, equality_check);
 				} else {

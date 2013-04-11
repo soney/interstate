@@ -730,7 +730,7 @@
 			var start_state = statechart.get_start_state();
 			var to_state = this.find_state(state_name);
 			var outgoing_transition = start_state.get_outgoing_transition();
-			var command = new red.SetTransitionToCommand({
+			command = new red.SetTransitionToCommand({
 				transition: outgoing_transition,
 				statechart: to_state
 			});

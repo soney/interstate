@@ -203,10 +203,22 @@
 					statechart = arg1;
 					statechart_puppet_id = statechart.puppet_master_id; 
 					var substates = statechart.get_substates();
-					var state_name = "state_" + _.size(substates);
+
+					var substates_size = _.size(substates);
+					var state_name, make_start;
+
+					if(substates_size === 0) {
+						state_name = "init";
+						make_start = true;
+					} else {
+						state_name = "state_" + substates_size;
+						make_start = true;
+					}
+
 					command = new red.AddStateCommand({
 						statechart: { id: to_func(statechart_puppet_id) },
-						name: state_name
+						name: state_name,
+						make_start: make_start
 					});
 
 					this.client_socket.post_command(command);

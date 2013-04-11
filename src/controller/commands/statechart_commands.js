@@ -20,6 +20,7 @@
             this._state = this._options.state;
         }
         this._index = this._options.index;
+		this._make_start = this._options.make_start;
     
         if (this._statechart.basis && this._statechart.basis()) {
             this._statechart = this._statechart.basis();
@@ -37,6 +38,10 @@
                 this._statechart.add_state(this._state_name, "statechart", this._index);
                 this._state = this._statechart.find_state(this._state_name);
             }
+
+			if(this._make_start) {
+				this._statechart.starts_at(this._state);
+			}
         };
     
         proto._unexecute = function () {
@@ -58,7 +63,8 @@
                     statechart: this._statechart.id(),
                     name: this._state_name,
                     index: this._index,
-                    state: red.serialize.apply(red, ([this._state]).concat(args))
+                    state: red.serialize.apply(red, ([this._state]).concat(args)),
+					make_start: this._make_start
                 };
             },
             function (obj) {
@@ -66,7 +72,8 @@
                     statechart: red.find_uid(obj.statechart),
                     name: obj.name,
                     index: obj.index,
-                    state: red.deserialize(obj.state)
+                    state: red.deserialize(obj.state),
+					make_start: obj.make_start
                 });
             });
     }(red.AddStateCommand));

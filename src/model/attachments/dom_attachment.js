@@ -1,7 +1,7 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,window */
+/*global red,able,uid,console,jQuery,window */
 
-(function (red) {
+(function (red, $) {
 	"use strict";
 	var cjs = red.cjs,
 		_ = red._;
@@ -496,4 +496,4 @@
 	red.define("dom_attachment", function (options) {
 		return new red.DomAttachment(options);
 	});
-}(red));
+}(red, jQuery));

@@ -11,7 +11,9 @@ module.exports = function(grunt) {
 	var exclude_regexes = [
 		"jquery-.*\\.js",
 		"raphael\\.js",
-		"underscore\\.js"
+		"underscore\\.js",
+		"underscore\\.deferred\\.js",
+		"esprima\\.js"
 	];
 
 	var my_src_files = src_js.filter(function(f) { 
@@ -86,6 +88,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-clean');
 
 	// Default task(s).
-	grunt.registerTask('default', ['concat', /*'uglify',*/ 'copy']);
+	grunt.registerTask('full', ['jshint', 'concat', 'uglify', 'copy']);
+	grunt.registerTask('default', ['concat', 'copy']);
 	grunt.registerTask('test', ['jshint']);
 };

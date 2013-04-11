@@ -289,7 +289,13 @@
 				this._from_state._remove_direct_outgoing_transition(this);
 			}
 			this._from_state = state;
-			this._from_state._add_direct_outgoing_transition(this);
+			if(state.is_initialized()) {
+				this._from_state._add_direct_outgoing_transition(this);
+			} else {
+				state.once("initialized", _.bind(function() {
+					this._from_state._add_direct_outgoing_transition(this);
+				}, this));
+			}
 			this._emit("setFrom", {type: "setFrom", target: this, state: state});
 			return this;
 		};
@@ -298,7 +304,13 @@
 				this._to_state._remove_direct_incoming_transition(this);
 			}
 			this._to_state = state;
-			this._to_state._add_direct_incoming_transition(this);
+			if(state.is_initialized()) {
+				this._to_state._add_direct_incoming_transition(this);
+			} else {
+				state.once("initialized", _.bind(function() {
+					this._to_state._add_direct_incoming_transition(this);
+				}, this));
+			}
 			this._emit("setTo", {type: "setTo", target: this, state: state});
 			return this;
 		};

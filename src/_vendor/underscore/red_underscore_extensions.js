@@ -1,3 +1,5 @@
+/*global window,getArrayDiff */
+
 (function () {
 	"use strict";
 	var _ = window._;
@@ -100,14 +102,14 @@
 				return string.replace( rmsPrefix, "ms-" ).replace(rdashAlpha, fcamelCase);
 			},
 		deepExtend: function(obj) {
-				var parentRE = /#{\s*?_\s*?}/,
+				var parentRE = new RegExp("#{\\s*?_\\s*?}"),
 				slice = Array.prototype.slice,
-				hasOwnProperty = Object.prototype.hasOwnProperty;
+				hOP = Object.prototype.hasOwnProperty;
 				var is_null_fn = _.bind(_.isNull, _);
 
 				_.each(slice.call(arguments, 1), function(source) {
 						for (var prop in source) {
-							if (hasOwnProperty.call(source, prop)) {
+							if (hOP.call(source, prop)) {
 								if (_.isUndefined(obj[prop])) {
 									obj[prop] = source[prop];
 								} else if (_.isString(source[prop]) && parentRE.test(source[prop])) {

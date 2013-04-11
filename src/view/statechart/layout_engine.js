@@ -303,13 +303,13 @@
 
 			var x = dx;
 
-			var is_from, is_to, row, location_info, cell, wing_start_x, wing_start_y;
+			var is_from, is_to, row, location_info, cell, wing_start_x, wing_start_y, column_values;
 			var return_empty_obj = function () { return {}; };
 			for (i = 0; i < columns.length; i += 1) {
 				var column = columns[i];
 				var state = column.state;
 				if (column.lr === "l" || column.lr === "r") { //it's a transition pole
-					var column_values = _.pluck(rows, i);
+					column_values = _.pluck(rows, i);
 
 					if (column.lr === "l") {
 						x += STATE_PADDING_X / 2;
@@ -339,8 +339,6 @@
 											to_continue = true;
 										}
 										location_info = location_info_map.get_or_put(cell, return_empty_obj);
-
-										console.log(is_from, is_to, cell);
 
 										if (is_from && is_to) {
 											location_info.from = location_info.to = {x: x, y: y};
@@ -430,7 +428,7 @@
 						y = H * (num_rows - column.depth) + H / 2;
 						location_info_map.put(state, { center: { x: x, y: y } });
 
-						var column_values = _.pluck(rows, i);
+						column_values = _.pluck(rows, i);
 
 						for (row = column_values.length - 1; row >= column.depth; row -= 1) {
 							cell = column_values[row];
@@ -447,7 +445,6 @@
 									} else { // includes start state
 										location_info.to = {x: x, y: y};
 									}
-									console.log(is_from, is_to, cell);
 								}
 							}
 						}
