@@ -25,9 +25,11 @@ module.exports = function(grunt) {
 		}
 		return true;
 	});
+
+	var package = grunt.file.readJSON('package.json');
 	// Project configuration.
 	grunt.initConfig({
-		pkg: grunt.file.readJSON('package.json'),
+		pkg: package,
 		jshint: {
 			build: {
 				src: my_src_files
@@ -36,7 +38,7 @@ module.exports = function(grunt) {
 		uglify: {
 			options: {
 				banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
-						'<%= grunt.template.today("yyyy-mm-dd") %> */',
+						'<%= grunt.template.today("yyyy-mm-dd h:MM:ss TT") %> */',
 				global_defs: {
 					DEBUG: false
 				}
@@ -49,7 +51,13 @@ module.exports = function(grunt) {
 		concat: {
 			options: {
 				banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
-						'<%= grunt.template.today("yyyy-mm-dd") %> */'
+						'<%= grunt.template.today("yyyy-mm-dd h:MM:ss TT") %> */',
+				process: {
+					data: {
+						version: package.version,
+						build_time: grunt.template.today("yyyy-mm-dd h:MM:ss TT")
+					}
+				}
 			},
 			js: {
 				src: src_js,

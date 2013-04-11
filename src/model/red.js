@@ -10,7 +10,8 @@ var red = (function (root) {
 	red.cjs = cjs.noConflict();
 	red.esprima = esprima;
 	red._ = _.noConflict();
-	red.__version = "0.0.1";
+	red.version = "<%= version %>";
+	red.build_time = "<%= build_time %>";
 
 	able.make_this_listenable(red);
 	able.make_proto_listenable(red);

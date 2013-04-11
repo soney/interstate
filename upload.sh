@@ -1,6 +1,6 @@
 #!/bin/sh
 
 echo "BUILDING"
-grunt
+grunt full
 echo "UPLOADING"
 scp -r build/* soney@from.so:euc.from.so

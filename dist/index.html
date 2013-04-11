@@ -4,7 +4,7 @@
 		<title>euc.from.so</title>
 		<style type="text/css">
 			html, body { height: 100%; }
-			#examples {
+			#examples, #version_info {
 				font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
 				font-weight: 300;
 				font-size: 0.8em;
@@ -12,6 +12,15 @@
 				z-index: 10;
 				height: 3em;
 				bottom: 0px;
+			}
+			#version_info {
+				right: 5px;
+			}
+			#version_no {
+				font-weight: bold;
+			}
+			#build_time {
+				margin-right: 5px;
 			}
 			#examples a {
 				text-decoration: none;
@@ -27,6 +36,10 @@
 	<body>
 		<div id="examples">
 			<strong>Pre-built examples: </strong> <span id="sample_apps">(loading...)</span>
+		</div>
+		<div id="version_info">
+			<span id="build_time"></span>
+			<span id="version_no"></span>
 		</div>
 		<div class="content"></div>
 	</body>
@@ -67,6 +80,8 @@
 				$("#sample_apps #"+name+"").addClass("active")
 			};
 			$("#sample_apps").html("");
+			$("#version_no").text("v" + red.version);
+			$("#build_time").text("built " + red.build_time.replace("2013-", ""));
 			for(var i = 0; i<sample_apps.length; i++) {
 				var sample_app_name = sample_apps[i];
 				var sample_app_link = $("<a />").attr("href", "javascript:void(0)")
