@@ -23,7 +23,7 @@
 			} else {
 				var type = wrapper_client.type();
 				if (type === "statechart") {
-					statechart = new red.Statechart(null, true);
+					statechart = statecharts[id] = new red.Statechart(null, true);
 					statechart.puppet_master_id = id;
 					var substates = _.Deferred();
 					var substates_value;
@@ -195,7 +195,7 @@
 			if (transitions.hasOwnProperty(id)) {
 				transition = transitions[id];
 			} else {
-				transition = new red.StatechartTransition(null, true);
+				transition = transitions[id] = new red.StatechartTransition(null, true);
 				transition.puppet_master_id = id;
 
 				var from = _.Deferred();

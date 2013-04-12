@@ -212,7 +212,7 @@
 						make_start = true;
 					} else {
 						state_name = "state_" + substates_size;
-						make_start = true;
+						make_start = false;
 					}
 
 					command = new red.AddStateCommand({

@@ -375,7 +375,7 @@
 		if (event instanceof red.ParsedEvent) {
 			str = event.get_str();
 		}
-		var c = center(this.option("from"), this.option("to") || this.option("from"));
+		var c = center(this.option("from"), this.option("to"));
 		this.label = new red.EditableText(paper, {x: c.x, y: c.y + 8, text: str});
 		this.label.option({
 			"font-size": "10px",
@@ -433,7 +433,7 @@
 
 		proto.get_paths = function () {
 			var from = this.option("from"),
-				to = this.option("to") || from,
+				to = this.option("to"),
 				self_pointing_theta = this.option("self_pointing_theta"),
 				radius = this.option("radius"),
 				arrowLength = this.option("arrowLength"),

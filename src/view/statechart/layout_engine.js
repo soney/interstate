@@ -197,7 +197,7 @@
 								type = "right";
 							} else {
 								min_x = ri;
-								min_x = _.has(x_indicies, "l") ? x_indicies.l : x_indicies.c;
+								max_x = _.has(x_indicies, "l") ? x_indicies.l : x_indicies.c;
 								type = "left";
 							}
 							from_to.push({ min_x: min_x, max_x: max_x, type: type, transition: t });
@@ -282,7 +282,7 @@
 				console.log(row_str);
 				curr_element = false;
 			}
-			*/
+			/**/
 
 			// So far, we have poles for each state's left transitions, the state itself, and its right transitions.
 			// Now, we have to figure out how far to spread each state's left poles
