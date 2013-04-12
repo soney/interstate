@@ -36,32 +36,44 @@ module.exports = function(grunt) {
 			}
 		},
 		uglify: {
-			options: {
-				banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
-						'<%= grunt.template.today("yyyy-mm-dd h:MM:ss TT") %> */',
-				global_defs: {
-					DEBUG: false
-				}
-			},
 			build: {
-				src: src_js,
+				options: {
+					banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
+							'<%= grunt.template.today("yyyy-mm-dd h:MM:ss TT") %> */',
+					global_defs: {
+						DEBUG: false
+					}
+				},
+				src: "build/red.js",
 				dest: "build/red.min.js"
+			},
+			esprima: {
+				options: {
+					mangle: false,
+					compress: false
+				},
+				src: "src/_vendor/esprima/esprima.js",
+				dest: "build/_vendor/esprima.min.js"
 			}
 		},
 		concat: {
-			options: {
-				banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
-						'<%= grunt.template.today("yyyy-mm-dd h:MM:ss TT") %> */',
-				process: {
-					data: {
-						version: package.version,
-						build_time: grunt.template.today("yyyy-mm-dd h:MM:ss TT")
-					}
-				}
-			},
 			js: {
+				options: {
+					banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
+							'<%= grunt.template.today("yyyy-mm-dd h:MM:ss TT") %> */',
+					process: {
+						data: {
+							version: package.version,
+							build_time: grunt.template.today("yyyy-mm-dd h:MM:ss TT")
+						}
+					}
+				},
 				src: src_js,
 				dest: "build/red.js"
+			},
+			esprima: {
+				src: "src/_vendor/esprima/esprima.js",
+				dest: "build/_vendor/esprima.js"
 			}
 		},
 		copy: {
@@ -97,6 +109,6 @@ module.exports = function(grunt) {
 
 	// Default task(s).
 	grunt.registerTask('full', ['jshint', 'concat', 'uglify', 'copy']);
-	grunt.registerTask('default', ['concat', 'copy']);
+	grunt.registerTask('default', ['concat', 'uglify', 'copy']);
 	grunt.registerTask('test', ['jshint']);
 };

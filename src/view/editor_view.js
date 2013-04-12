@@ -547,7 +547,7 @@
 					.start_at("INIT")
 					.set("(prototypes)", "INIT", "[dom]")
 					.add_transition("INIT", "INIT", "on('click', this)")
-					.set("text", "INIT", "' (Empty Object) '")
+					.set("text", "INIT", "' (Stateless Object) '")
 					.set("tag", "<stateful_prop>")
 					.set("tag", "INIT", "'a'")
 					.set("attr", "<dict>")

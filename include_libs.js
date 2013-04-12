@@ -34,19 +34,14 @@ exports.build_src = c(
 				"map.js",
 				"uid.js",
 				"aware_split.js",
-	])
-	, cp(cjs_path, cjs_inc.main_src)
-	, cp(vendor_src, [
-				"esprima/esprima.js",
+	]),
+	cp(cjs_path, cjs_inc.main_src),
+	cp(vendor_src, [
 				"ablejs/able.js",
-				"underscore/underscore.js",
 				"underscore/underscore.deferred.js",
 				"underscore/red_underscore_extensions.js",
-				"jquery-ui-1.9.1.custom/js/jquery-1.8.2.js",
-				"jquery-ui-1.9.1.custom/js/jquery-ui-1.9.1.custom.js",
-				"raphael/raphael.js",
-			])
-	, cp(src, [
+			]),
+	cp(src, [
 				"model/red.js",
 				"model/utils/serialize.js",
 				"model/utils/obj_utils.js",
@@ -99,6 +94,13 @@ exports.build_src = c(
 ]));
 
 exports.main_src = c(
+	cp(vendor_src, [
+				"underscore/underscore.js",
+				"jquery-ui-1.9.1.custom/js/jquery-1.8.2.js",
+				"jquery-ui-1.9.1.custom/js/jquery-ui-1.9.1.custom.js",
+				"raphael/raphael.js",
+				"esprima/esprima.js",
+			]),
 	exports.build_src,
 	cp("sample_apps", [
 		"sample_app_loader.js"
