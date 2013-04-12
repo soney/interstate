@@ -242,6 +242,7 @@
 			this.set_event(options.event);
 			red.register_uid(this._id, this);
 			this._initialized.set(true);
+			this.is_start_transition = this._from_state instanceof red.StartState;
 			this._emit("initialized");
 		};
 		proto.is_puppet = function () {
@@ -289,12 +290,13 @@
 				this._from_state._remove_direct_outgoing_transition(this);
 			}
 			this._from_state = state;
-			if(state.is_initialized()) {
+			var do_set_from = _.bind(function() {
 				this._from_state._add_direct_outgoing_transition(this);
+			}, this);
+			if(state.is_initialized()) {
+				do_set_from();
 			} else {
-				state.once("initialized", _.bind(function() {
-					this._from_state._add_direct_outgoing_transition(this);
-				}, this));
+				state.once("initialized", do_set_from);
 			}
 			this._emit("setFrom", {type: "setFrom", target: this, state: state});
 			return this;
@@ -304,12 +306,21 @@
 				this._to_state._remove_direct_incoming_transition(this);
 			}
 			this._to_state = state;
-			if(state.is_initialized()) {
+			var do_set_to = _.bind(function() {
 				this._to_state._add_direct_incoming_transition(this);
+				if(this.is_start_transition) {
+					var from = this.from();
+					if(from.is_active() && from.is_running()) {
+						red.event_queue.wait();
+						this.fire({});
+						red.event_queue.signal();
+					}
+				}
+			}, this);
+			if(state.is_initialized()) {
+				do_set_to();
 			} else {
-				state.once("initialized", _.bind(function() {
-					this._to_state._add_direct_incoming_transition(this);
-				}, this));
+				state.once("initialized", do_set_to);
 			}
 			this._emit("setTo", {type: "setTo", target: this, state: state});
 			return this;
@@ -832,7 +843,8 @@
 		};
 		proto.setTo = function (toNode) {
 			var transition = this.outgoingTransition;
-			if (toNode.is_child_of(this.parent())) {
+			var parent = this.parent();
+			if (toNode.is_child_of(parent)) {
 				transition.setTo(toNode);
 			}
 		};
@@ -1483,9 +1495,6 @@
 			}
 			var start_state = this.get_start_state();
 			start_state.setTo(state);
-			if (this.is_running() && this.get_active_substate() === start_state) {
-				this.set_active_substate(state);
-			}
 			return this;
 		};
 

@@ -42,7 +42,6 @@
 		this.statecharts = statecharts;
 		this.statecharts_with_add_state_button = [this.statecharts[0]];
 		this.$layout = cjs.$(_.bind(this._compute_layout, this));
-		window.statechart = statecharts[0];
 	};
 	(function (my) {
 		var proto = my.prototype;
