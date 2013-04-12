@@ -11,22 +11,6 @@
 			<script type="text/javascript">
 				var env = red.create("environment");
 				var root = env.get_root();
-				/*
-				root.set("a", 1);
-				/*
-				var dict1 = red.create("dict", {has_protos: false});
-				root.set("dict", dict1);
-
-				var cell1 = red.create("cell", {str: "1+1"});
-				dict1.set("c", cell1);
-
-				//var cell2 = red.create("cell", {str: "2+3"});
-				//root.set("cell", cell2);
-				/*
-
-
-				*/
-env
 	env	.cd("child_nodes")
 		.set("obj", "<stateful>")
 		.cd("obj")
@@ -36,46 +20,8 @@ env
 		.set("tag", "(start)", "'div'")
 		.set("text", "(start)", "'hello world'")
 		;
-
-/*
-.cd("child_nodes")
-	.set("obj", "<stateful>")
-	.cd("obj")
-		.set("(prototypes)", "INIT", "dom")
-		.add_state("hover")
-		.add_transition("INIT", "hover", "on('mouseover', this)")
-		.add_transition("hover", "INIT", "on('mouseout', this)")
-		.set("text", "<stateful_prop>")
-		.set("text", "INIT", "'hello world'")
-		.set("text", "hover", "'goodbye cruel world'")
-		/*
-		.add_state("hover")
-		.add_transition("INIT", "hover", "on('timeout', 500)")
-		/*
-		//.set("text", "hover", "'goodbye world'")
-	/*
-		.set("(protos)", "INIT", "dom")
-		.set("tag", "<stateful_prop>")
-		.set("text", "<stateful_prop>")
-		.set("tag", "INIT", "'div'")
-		.set("text", "INIT", "i")
-		.set("i", "INIT", "'hello'")
-//		.set("i", "INIT -> INIT", "i+1")
-;
-	/*
-env
-.set("a", "1+1")
-.set("b", "<dict>")
-.cd("b")
-	.set("x", "a+2")
-	.set("y", "x+2")
-	.up()
-/**/
-//console.log(env.print());
 				$("div#editor").editor({
-					//debug_ready: true,
 					debug_env: true,
-					//command_box: true,
 					server_window: window
 				});
 				$("div.output").dom_output({
