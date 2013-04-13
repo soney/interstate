@@ -8,7 +8,13 @@
 		
 	var listener_map = new RedMap({
 		equals: red.check_contextual_object_equality,
-		hash: "hash"
+		hash: function(obj) {
+			if(_.has(obj, "hash")) {
+				return obj.hash();
+			} else {
+				return obj.toString();
+			}
+		}
 	});
 
 	red.emit = function (type, target) {

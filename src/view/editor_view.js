@@ -168,7 +168,7 @@
 					});
 					this.client_socket.post_command(command);
 				} else if (type === 'remove_transition') {
-					transition = arg2;
+					transition = arg1;
 					statechart = transition.root();
 					command = new red.RemoveTransitionCommand({
 						transition: { id: to_func(transition.puppet_master_id) },
@@ -211,7 +211,12 @@
 						state_name = "init";
 						make_start = true;
 					} else {
-						state_name = "state_" + substates_size;
+						var orig_state_name = "state_" + substates_size;
+						state_name = orig_state_name;
+						var i = 1;
+						while(_.has(substates, state_name)) {
+							state_name = orig_state_name + "_" + i;
+						}
 						make_start = false;
 					}
 

@@ -134,12 +134,14 @@
 		};
 		proto.update_label_background = function () {
 			var bbox = this.getBBox();
-			this.label_background.attr({
-				x: bbox.x,
-				y: bbox.y,
-				width: bbox.width,
-				height: bbox.height
-			});
+			if(bbox) {
+				this.label_background.attr({
+					x: bbox.x,
+					y: bbox.y,
+					width: bbox.width,
+					height: bbox.height
+				});
+			}
 		};
 		proto.onKeydown = function (event) {
 			var textbox = event.srcElement;

@@ -52,6 +52,10 @@
 		}).join(" ");
 		logging_mechanism.group("  Statechart " + stringified_statecharts);
 		_.each(statecharts, function (statechart) {
+			if(!statechart.is_initialized()) {
+				logging_mechanism.log("(not initialized)");
+				return;
+			}
 			var flattened_statechart = _.without(statechart.flatten_substates(include_start), statechart);
 
 			var flattened_state_and_transitions = _.flatten(_.map(flattened_statechart, function (statechart) {

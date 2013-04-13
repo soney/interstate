@@ -245,8 +245,12 @@
 
 	// FOR DEBUGGING
 	/*
+		if(uid.strip_prefix(this.statecharts[0].id()) == 24) {
 			_.each(this.statecharts, function (statechart) {
+				try {
 				statechart.print();
+				}
+				catch(e) {}
 			});
 			var curr_element, curr_element_start_col;
 			for (i = rows.length - 1; i >= 0; i -= 1) {
@@ -282,6 +286,7 @@
 				console.log(row_str);
 				curr_element = false;
 			}
+		}
 			/**/
 
 			// So far, we have poles for each state's left transitions, the state itself, and its right transitions.
@@ -435,10 +440,10 @@
 								is_from = cell.from() === state;
 								is_to = cell.to() === state;
 
+								location_info = location_info_map.get_or_put(cell, return_empty_obj);
 								if (is_from && is_to) {
-									// Leave self-transitions to/from start state out of view
+									location_info.from = location_info.to = {x: x, y: y};
 								} else {
-									location_info = location_info_map.get_or_put(cell, return_empty_obj);
 									if (is_from) {
 										location_info.from = {x: x, y: y};
 									} else { // includes start state

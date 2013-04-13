@@ -82,6 +82,7 @@
 			_.each(curr_items, function (ci) {
 				if (new_items.indexOf(ci) < 0) {
 					ci.remove();
+					ci.destroy();
 				}
 			});
 			curr_items = new_items;
@@ -272,6 +273,9 @@
 			this.path.remove();
 			this.label.remove();
 			this.vline.remove();
+		};
+		proto.destroy = function() {
+			this.active_fn.destroy();
 		};
 	}(red.StateView));
 
@@ -480,6 +484,9 @@
 			var transition = this.option("transition");
 			transition.off("fire", this.$flash);
 		};
+
+		proto.destroy = function () {
+		};
 	}(red.TransitionView));
 
 	red.StartStateView = function (options) {
@@ -514,6 +521,8 @@
 		};
 		proto.remove = function () {
 			this.circle.remove();
+		};
+		proto.destroy = function() {
 		};
 	}(red.StartStateView));
 }(red));

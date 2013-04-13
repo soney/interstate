@@ -35,8 +35,17 @@
 			this._str = cjs.is_constraint(options.str) ? options.str : cjs(options.str);
 			if (options.inert !== true) {
 				var SOandC = red.find_stateful_obj_and_context(options.context);
-				var context = SOandC.context;
-				var parent = SOandC.stateful_obj;
+
+				var context;
+				var parent;
+
+				if (SOandC) {
+					context = SOandC.context;
+					parent = SOandC.stateful_obj;
+				} else {
+					context = options.context;
+					parent = options.context.points_at();
+				}
 
 				var self = this;
 				this._tree = cjs(function () {
@@ -53,14 +62,20 @@
 						this._old_event.destroy(true); //destroy silently (without nullifying)
 					}
 
-					var tree = this._tree.get();
+					var tree, event = false;
 					cjs.wait();
-					var event = false;
-					event = get_event(tree, {
-						parent: parent,
-						context: context
-					}, this._live_event_creator);
-					cjs.signal();
+					try {
+						tree = this._tree.get();
+						event = get_event(tree, {
+							parent: parent,
+							context: context
+						}, this._live_event_creator);
+					} catch(e) {
+						console.error(e);
+					} finally {
+						cjs.signal();
+					}
+
 
 					if (event) {
 						event.set_transition(this.get_transition());

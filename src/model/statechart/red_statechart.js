@@ -219,6 +219,7 @@
 			var state = event.state;
 			var old_from = this.from();
 			var new_from = red.find_equivalent_state(state, old_from);
+			console.log(new_from);
 			this.setFrom(new_from);
 		}, this);
 		if (defer_initialization !== true) {
@@ -539,7 +540,7 @@
 					var basis_start_state_to = basis_start_state.getTo();
 					var is_running = this.is_running();
 					var my_context = this.context();
-					_.each(basis.get_substates(true), function (substate) {
+					_.each(basis.get_substates(true), function (substate, name) {
 						var shadow = substate.create_shadow({
 							context: my_context,
 							parent: this,
@@ -549,7 +550,6 @@
 						if (shadow instanceof red.StartState) {
 							this.set_start_state(shadow);
 						} else {
-							var name = substate.get_name(basis);
 							this.add_substate(name, shadow);
 						}
 					}, this);
@@ -560,8 +560,6 @@
 					}, this);
 				}
 				if (this.parent() === undefined) { // When all of the substates have been copied
-					var flat_substates = this.flatten_substates(true);
-
 					var parent_statechart = this,
 						context = this.context();
 
@@ -573,21 +571,7 @@
 						return transition.id();
 					});
 
-					_.each(flat_substates, function (substate) {
-						var basis = substate.basis();
-						var outgoing_transitions = basis.get_outgoing_transitions();
-						//var incoming_transitions = basis.get_incoming_transitions();
-
-						var shadow_outgoing = _.map(outgoing_transitions, create_transition_shadow);
-
-						_.each(shadow_outgoing, function (transition) {
-							var from = transition.from();
-							var to = transition.to();
-							from._add_direct_outgoing_transition(transition);
-							to._add_direct_incoming_transition(transition);
-							this.add_transition(transition);
-						}, this);
-					}, this);
+					this.do_shadow_transitions(create_transition_shadow);
 				}
 
 				this._basis.on("add_transition", this.$onBasisAddTransition);
@@ -601,6 +585,30 @@
 				this._basis.on("destroy", this.$onBasisDestroy);
 			}
 			return this;
+		};
+
+		proto.do_shadow_transitions = function( create_transition_shadow ) {
+			var basis = this.basis();
+			var outgoing_transitions = basis.get_outgoing_transitions();
+			var shadow_outgoing = _.map(outgoing_transitions, create_transition_shadow);
+
+			_.each(shadow_outgoing, function (transition) {
+				var from = transition.from();
+				var to = transition.to();
+				from._add_direct_outgoing_transition(transition);
+				to._add_direct_incoming_transition(transition);
+
+				if(from.is_active()) {
+					transition.enable();
+				} else {
+					transition.disable();
+				}
+			}, this);
+
+			var substates = this.get_substates(true);
+			_.each(substates, function(substate) {
+				substate.do_shadow_transitions(create_transition_shadow);
+			}, this);
 		};
 
 		proto.do_initialize = function (options) {
@@ -808,6 +816,7 @@
 	red.StartState = function (options) {
 		options = options || {};
 		this.outgoingTransition = false;
+		this._transition_to_self = cjs.$(undefined);
 		red.StartState.superclass.constructor.apply(this, arguments);
 		this._running = options.running === true;
 	};
@@ -816,14 +825,16 @@
 		var proto = My.prototype;
 		proto.do_initialize = function (options) {
 			My.superclass.do_initialize.apply(this, arguments);
-			if (!this.basis()) { //If we have a basis, then whatever function shadowed us will create our outgoing transition too
+			var basis = this.basis();
+			if(!basis && !this.is_puppet()) {
+				// If we have a basis, then whatever function shadowed us will create our outgoing transition too
 				var to;
 				if (options.to) {
 					to = options.to;
-					this._transition_to_self = false;
+					this._transition_to_self.set(false);
 				} else {
 					to = this;
-					this._transition_to_self = true;
+					this._transition_to_self.set(true);
 				}
 				
 				this.outgoingTransition = options.outgoing_transition || new red.StatechartTransition({
@@ -836,7 +847,11 @@
 				});
 
 				to._add_direct_incoming_transition(this.outgoingTransition);
+			} else if(this.is_puppet()) {
+				this.outgoingTransition = options.outgoing_transition;
+				this._transition_to_self.set(this.outgoingTransition.to() === this);
 			}
+
 			red.register_uid(this._id, this);
 			this._initialized.set(true);
 			this._emit("initialized");
@@ -866,7 +881,7 @@
 			}
 		};
 		proto.get_incoming_transitions = function () {
-			if (this._transition_to_self && this.outgoingTransition) {
+			if (this._transition_to_self.get() && this.outgoingTransition) {
 				return [this.outgoingTransition];
 			} else {
 				return [];
@@ -876,19 +891,19 @@
 			if (transition !== this.outgoingTransition) {
 				throw new Error("Should never have a transition other than outgoing transition");
 			}
-			this._transition_to_self = true;
+			this._transition_to_self.set(true);
 		};
 		proto._remove_direct_incoming_transition = function (transition) {
 			if (transition !== this.outgoingTransition) {
 				throw new Error("Should never have a transition other than outgoing transition");
 			}
-			this._transition_to_self = false;
+			this._transition_to_self.set(false);
 		};
 		proto._add_direct_outgoing_transition = function (transition) {
 			if (this.outgoingTransition) { // I already have an outgoing transition
 				throw new Error("Should never have a transition other than outgoing transition");
 			}
-			this._transition_to_self = transition.to() === this;
+			this._transition_to_self.set(transition.to() === this);
 			this.outgoingTransition = transition;
 		};
 		proto._remove_direct_outgoing_transition = function (transition) {
@@ -910,7 +925,9 @@
 		proto.destroy = function () {
 			cjs.wait();
 			My.superclass.destroy.apply(this, arguments);
-			this.outgoingTransition.destroy();
+			if(this.outgoingTransition) {
+				this.outgoingTransition.destroy();
+			}
 			cjs.signal();
 		};
 
@@ -1066,19 +1083,49 @@
 		};
 
 		proto.set_active_substate = function (state, transition, event) {
-			cjs.wait();
-			red.event_queue.once("end_event_queue_round_0", function () {
-				this._emit("pre_transition_fire", {
-					type: "pre_transition_fire",
-					transition: transition,
-					target: this,
-					event: event,
-					state: state
-				});
-				//cjs.wait();
-				if (transition) { transition.set_active(true); }
-			}, this);
-			red.event_queue.once("end_event_queue_round_3", function () {
+			if(transition) {
+				cjs.wait();
+				red.event_queue.once("end_event_queue_round_0", function () {
+					this._emit("pre_transition_fire", {
+						type: "pre_transition_fire",
+						transition: transition,
+						target: this,
+						event: event,
+						state: state
+					});
+					transition.set_active(true);
+				}, this);
+				red.event_queue.once("end_event_queue_round_3", function () {
+					var local_state = this.$local_state.get();
+					if (local_state) {
+						local_state.disable_outgoing_transitions();
+						local_state.set_active(false);
+					}
+					local_state = state;
+					this.$local_state.set(local_state);
+					local_state._last_run_event.set(event);
+					if (local_state) {
+						if (!local_state.is_running()) {
+							local_state.run();
+						}
+						local_state.set_active(true);
+						local_state.enable_outgoing_transitions();
+					}
+					transition.increment_times_run();
+				}, this);
+				red.event_queue.once("end_event_queue_round_4", function () {
+					transition.set_active(false);
+					cjs.signal();
+					this._emit("post_transition_fire", {
+						type: "post_transition_fire",
+						transition: transition,
+						target: this,
+						event: event,
+						state: state
+					});
+				}, this);
+			} else {
+				cjs.wait();
 				var local_state = this.$local_state.get();
 				if (local_state) {
 					local_state.disable_outgoing_transitions();
@@ -1086,7 +1133,6 @@
 				}
 				local_state = state;
 				this.$local_state.set(local_state);
-				local_state._last_run_event.set(event);
 				if (local_state) {
 					if (!local_state.is_running()) {
 						local_state.run();
@@ -1094,19 +1140,8 @@
 					local_state.set_active(true);
 					local_state.enable_outgoing_transitions();
 				}
-				if (transition) { transition.increment_times_run(); }
-			}, this);
-			red.event_queue.once("end_event_queue_round_4", function () {
-				if (transition) { transition.set_active(false); }
 				cjs.signal();
-				this._emit("post_transition_fire", {
-					type: "post_transition_fire",
-					transition: transition,
-					target: this,
-					event: event,
-					state: state
-				});
-			}, this);
+			}
 		};
 		proto.run = function () {
 			if (!this.is_running()) {
@@ -1249,14 +1284,29 @@
 		};
 		proto.remove_substate = function (name, state, also_destroy) {
 			state = state || this.$substates.get(name);
+
 			cjs.wait();
-			if (this.get_active_substate() === state) {
-				this.set_active_substate(undefined);
-			}
-			this.$substates.remove(name);
-			cjs.signal();
 			state.off("pre_transition_fire", this.forward);
 			state.off("post_transition_fire", this.forward);
+			if (this.get_active_substate() === state) {
+				this.set_active_substate(this.get_start_state());
+			}
+			var incoming_transitions = state.get_incoming_transitions();
+			var outgoing_transitions = state.get_outgoing_transitions();
+			_.each(incoming_transitions, function(transition) {
+				var from = transition.from();
+				if(from instanceof red.StartState) {
+					from.setTo(from);
+				} else {
+					transition.remove();
+				}
+			});
+			_.forEach(outgoing_transitions, function (transition) {
+				transition.remove();
+			});
+			this.$substates.remove(name);
+
+			cjs.signal();
 
 			this._emit("remove_substate", {
 				type: "remove_substate",
@@ -1358,7 +1408,12 @@
 			cjs.wait();
 			My.superclass.destroy.apply(this, arguments);
 			_.forEach(this.get_incoming_transitions(), function (transition) {
-				transition.remove().destroy();
+				var from = transition.from();
+				if(from instanceof red.StartState) {
+					from.setTo(from);
+				} else {
+					transition.remove().destroy();
+				}
 			});
 			_.forEach(this.get_outgoing_transitions(), function (transition) {
 				transition.remove().destroy();
