@@ -342,7 +342,9 @@
 		proto.destroy = function () {
 			this._emit("destroy", {type: "destroy", target: this});
 			cjs.wait();
-			this.$active.destroy();
+			if(this.$active) {
+				this.$active.destroy();
+			}
 			this.set_basis(undefined);
 			this._event.off_fire(this.do_fire);
 			this._event.destroy();

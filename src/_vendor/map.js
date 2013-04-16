@@ -230,10 +230,11 @@ var RedMap = (function (root) {
     
     (function (My) {
         var proto = My.prototype;
-        var i, info;
         proto.put = function (key, value) {
-            var hash = this._hash(key);
-            var hash_arr = this._khash[hash];
+			var i, info;
+            var hash = this._hash(key),
+				hash_arr = this._khash[hash],
+                info = {key: key, value: value};
             if (hash_arr) {
                 var len = hash_arr.length;
                 for (i = 0; i < len; i += 1) {
@@ -244,37 +245,40 @@ var RedMap = (function (root) {
                     }
                 }
     
-                info = {key: key, value: value};
                 hash_arr.push(info);
                 this._ordered_values.push(info);
                 return this;
             } else {
-                info = {key: key, value: value};
                 this._khash[hash] = [info];
                 this._ordered_values.push(info);
                 return this;
             }
         };
         proto.unset = function (key) {
-            var i, item_i;
-            var len = this._ordered_values.length;
-            for (i = 0; i < len; i += 1) {
-                item_i = this._ordered_values[i];
-                if (this._equality_check(item_i.key, key)) {
-                    this._ordered_values.splice(i, 1);
-                }
-            }
-    
+            var i, item_i, len;
             var hash = this._hash(key);
             var hash_arr = this._khash[hash];
             if (hash_arr) {
+				len = hash_arr.length;
                 for (i = 0; i < len; i += 1) {
                     item_i = hash_arr[i];
                     if (this._equality_check(item_i.key, key)) {
+						//console.log(hash_arr, hash);
                         hash_arr.splice(i, 1);
                         if (len === 1) {
                             delete this._khash[hash];
                         }
+
+						//Remove from ordered values before returning
+						len = this._ordered_values.length;
+						for (i = 0; i < len; i += 1) {
+							item_i = this._ordered_values[i];
+							if (this._equality_check(item_i.key, key)) {
+								this._ordered_values.splice(i, 1);
+								i--;
+								len--;
+							}
+						}
                         return this;
                     }
                 }

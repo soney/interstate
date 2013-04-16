@@ -106,6 +106,9 @@
 					var puppet = window.puppet = red.create_remote_statechart(wrapper_client);
 					var puppet_view = get_view(puppet);
 					$(".bl").append(puppet_view);
+					window.setTimeout(function() {
+						master.remove_state("init");
+					}, 500);
 					/**/
 				});
 			</script>
