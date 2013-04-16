@@ -1290,9 +1290,6 @@
 			cjs.wait();
 			state.off("pre_transition_fire", this.forward);
 			state.off("post_transition_fire", this.forward);
-			if (this.get_active_substate() === state) {
-				this.set_active_substate(this.get_start_state());
-			}
 			var incoming_transitions = state.get_incoming_transitions();
 			var outgoing_transitions = state.get_outgoing_transitions();
 			_.each(incoming_transitions, function(transition) {
@@ -1306,6 +1303,9 @@
 			_.forEach(outgoing_transitions, function (transition) {
 				transition.remove();
 			});
+			if (this.get_active_substate() === state) {
+				this.set_active_substate(this.get_start_state().getTo());
+			}
 			this.$substates.remove(name);
 
 			cjs.signal();

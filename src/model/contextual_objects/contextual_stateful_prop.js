@@ -201,23 +201,17 @@
 						var statechart = statecharts[i];
 						if (key.root() === statechart.basis()) {
 							if (key instanceof red.State) {
-							/*
 								try {
-								*/
-								state = red.find_equivalent_state(key, statechart);
-									/*
+									state = red.find_equivalent_state(key, statechart);
 								} catch(e) {
 									continue;
 								}
-								*/
 							} else if (key instanceof red.StatechartTransition) {
-								//try {
-								state = red.find_equivalent_transition(key, statechart);
-									/*
+								try {
+									state = red.find_equivalent_transition(key, statechart);
 								} catch(e) {
 									continue;
 								}
-								*/
 							}
 							break;
 						}
