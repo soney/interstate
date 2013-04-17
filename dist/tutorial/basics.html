@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Euclase Tutorial: Main</title>
+		<link rel="stylesheet" type="text/css" href="source-sans/stylesheet.css"></link>
+		<link rel="stylesheet" type="text/css" href="main.css"></link>
+	</head>
+	<body>
+		<h1>Basics</h1>
+		<p>Every Euclase program starts off with one <em>object</em>, named <var>root</var>, as you can see below. Objects may have <em>fields</em>. Right now, <var>root</var> has none.</p>
+		<p>You can add a field by pressing the <code>(Add field)</code> button. This will show a list of field types:</p>
+		<ul>
+			<li><em>Property</em>: A field that can hold a value</li>
+			<li><em>Object</em>: An object with state (we'll talk more about this later)</li>
+			<li><em>Stateless Object</em>: An object without state</li>
+		</ul>
+		<p class="request">try adding a property to <var>root</var>:</p>
+		<div data-euc="edit one_obj"></div>
+		<p>When you add a field, its name appears on the far left hand side. To <em>rename</em> the field, you can click its name, enter a new name, and press <kbd>[enter]</kbd> (or <kbd>[esc]</kbd> to cancel).</p>
+		<p>To <em>delete</em> the field, give it an empty name</p>
+		<p>Use <kbd>[ctrl]+z</kbd> and <kbd>[ctrl]+[shift]+z</kbd> to undo and redo any changes you make to your program.</p>
+		<div data-euc="edit two_props"></div>
+
+		<footer>
+			<a class="prev" href="index.html">Tutorial Introduction</a>
+			<a class="next" href="end.html">End</a>
+		</footer>
+	</body>
+	<link rel="stylesheet" href="../style/editor_style.css" />
+	<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+	<script src="../_vendor/esprima.js"></script>
+	<script src="../red.js"></script>
+	<script src="tutorial_example_loader.js"></script>
+	<script type="text/javascript">
+		euc_examples.one_obj = function() {
+			var env = red.create("environment", {create_builtins: false});
+			return env.get_root();
+		};
+		euc_examples.two_props = function() {
+			var env = red.create("environment", {create_builtins: false});
+			env.set("a", "1+2+3");
+			env.set("b", "a+1");
+			return env.get_root();
+		};
+	</script>
+</html>

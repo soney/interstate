@@ -1,5 +1,7 @@
 body {
 	font-family: SourceSans, "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+	margin: auto;
+	max-width: 900px;
 }
 
 .euc_output {
@@ -47,4 +49,31 @@ body {
 	border: 0px;
 	height: 100%;
 	box-sizing: border-box;
+}
+footer {
+	border-top: 1px solid #BBB;
+	padding-top: 10px;
+	margin-top: 20px;
+}
+
+footer a.next {
+	float: right;
+}
+footer a.next:after {
+	content: " >>";
+}
+footer a.prev:before {
+	content: "<< ";
+}
+footer a.prev {
+	float: left;
+}
+var {
+	font-family: "Courier New", Courier, monospace;
+	font-style:normal;
+	font-weight: bold;
+}
+p.request {
+	color: #999;
+	text-align: center;
 }

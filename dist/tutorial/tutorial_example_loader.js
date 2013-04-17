@@ -1,13 +1,7 @@
+var euc_examples = {};
 $(function() {
-	var examples = {
-			one_obj: function() {
-				var env = red.create("environment", {create_builtins: false});
-				return env.get_root();
-			},
-		};
-
 	var get_example = function(name) {
-		var example = examples[name];
+		var example = euc_examples[name];
 		var rest_args = Array.prototype.slice.call(arguments, 1);
 
 		return example.apply(this, rest_args);
