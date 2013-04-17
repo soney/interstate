@@ -9,9 +9,16 @@ div#editor .prop_name, div#editor input.prop_name {
 	display: inline-block;
 	width: 110px;
 	font-style:italic;
-	height: 16px;
+	height: 17px;
 	box-sizing: border-box;
+	font-size: 14px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	outline: none;
+	border: none;
+	background: none;
 }
+
 div#editor .dict_child {
 }
 
@@ -73,7 +80,7 @@ div#editor input.raw_cell, div#editor .raw_cell {
 }
 
 .dict .add_prop_row:last-child {
-	background: #FFF8F8 url(tree_imgs/lastnode.png) no-repeat;
+	background: #FCFCFC url(tree_imgs/lastnode.png) no-repeat;
 }
 
 .stateful_prop {

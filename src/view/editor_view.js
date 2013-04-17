@@ -719,7 +719,7 @@
 	// ===== END EDITOR ===== 
 
 			$(window).on("keydown", _.bind(function (event) {
-				if (event.keyCode === 90 && event.metaKey) {
+				if (event.keyCode === 90 && (event.metaKey || event.ctrlKey)) {
 					if (event.shiftKey) {
 						this.client_socket.post_command("redo");
 					} else {

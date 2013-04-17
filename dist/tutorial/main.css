@@ -1,5 +1,5 @@
 body {
-	font-family: SourceSans, "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+	font-family: 'Source Sans Pro', sans-serif;
 	margin: auto;
 	max-width: 900px;
 }
@@ -17,38 +17,30 @@ body {
 	border-radius:3px;
 	padding: 10px;
 	margin: 5px;
-	overflow: scroll;
+	overflow: auto;
 	max-height: 500px;
-	background-color: #FFF8F8;
-	border: 2px solid #990000;
+	background-color: #FCFCFC;
+	border: 2px solid #EE0000;
 }
 .euc_output {
 	-moz-box-shadow: inset 0 0 7px #000040;
 	-webkit-box-shadow: inset 0 0 7px #000040;
 	box-shadow: inset 0 0 7px #000040;
-	overflow: scroll;
-	overflow: scroll;
+	overflow: auto;
 	max-height: 500px;
-	background-color: #F8F8FF;
-	border: 2px solid #000099;
+	background-color: #FCFCFC;
+	border: 2px solid #0000EE;
 }
 .euc_split_view {
 	padding: 0px;
 	max-height: 500px;
-	background-color: #F8F8FF;
 	vertical-align: top;
-	border: 2px solid #990099;
 	box-sizing: border-box;
 }
 .euc_split_view > .euc_editor, .euc_split_view > .euc_output {
-	-moz-box-shadow: none;
-	-webkit-box-shadow: none;
-	box-shadow: none;
-	border-radius: 0px;
 	width: 49%;
 	display: inline-block;
 	margin: 0px;
-	border: 0px;
 	box-sizing: border-box;
 }
 
@@ -66,11 +58,17 @@ footer {
 footer a.next {
 	float: right;
 }
+footer a.next:before {
+	content: "Next: ";
+	font-weight: bold;
+}
 footer a.next:after {
-	content: " >>";
+	content: " >";
+	font-weight: bold;
 }
 footer a.prev:before {
-	content: "<< ";
+	content: "< Previous: ";
+	font-weight: bold;
 }
 footer a.prev {
 	float: left;
@@ -79,8 +77,15 @@ var {
 	font-family: "Courier New", Courier, monospace;
 	font-style:normal;
 }
-p.request {
-	color: #999;
-	text-align: center;
+.request {
+	color: #E00;
 }
 
+.tip {
+	color: #888;
+	text-align: right;
+}
+.tip:before {
+	content: "Tip: ";
+	font-weight:bold;
+}
