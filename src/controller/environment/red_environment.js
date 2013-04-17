@@ -22,21 +22,25 @@
 			})]});
 
 			root_pointer = red.create("pointer", {stack: [root]});
-			this.initialize_props(root_pointer);
+			if(!options || options.create_builtins !== false) {
+				this.initialize_props(root_pointer);
+			}
 		}
 
 		//Context tracking
 		this.pointer = root_pointer;
 		this.print_on_return = false;
 
-		root.set("on", red.on_event);
-		root.set("emit", red.emit);
-		root.set("find", function (find_root) {
-			if (arguments.length === 0) {
-				find_root = new red.ContextualObject({pointer: root_pointer});
-			}
-			return new red.Query({value: find_root});
-		});
+		if(!options || options.create_builtins !== false) {
+			root.set("on", red.on_event);
+			root.set("emit", red.emit);
+			root.set("find", function (find_root) {
+				if (arguments.length === 0) {
+					find_root = new red.ContextualObject({pointer: root_pointer});
+				}
+				return new red.Query({value: find_root});
+			});
+		}
 	};
 
 	(function (my) {

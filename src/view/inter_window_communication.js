@@ -57,13 +57,11 @@
 						});
 					}
 				} else if(type === "loaded") {
-					var client_id = data.client_id;
-					if(client_id === this.client_id) {
+					if(data.client_id === this.client_id) {
 						this._emit("connected");
 					}
 				} else if (type === "command") {
-					var client_id = data.client_id;
-					if(client_id === this.client_id) {
+					if(data.client_id === this.client_id) {
 						var stringified_command = data.command;
 						if ((["undo", "redo", "reset"]).indexOf(stringified_command) >= 0) {
 							this._emit("command", stringified_command);
