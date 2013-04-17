@@ -231,10 +231,11 @@ var RedMap = (function (root) {
     (function (My) {
         var proto = My.prototype;
         proto.put = function (key, value) {
-			var i, info;
+			var i;
             var hash = this._hash(key),
 				hash_arr = this._khash[hash],
                 info = {key: key, value: value};
+
             if (hash_arr) {
                 var len = hash_arr.length;
                 for (i = 0; i < len; i += 1) {

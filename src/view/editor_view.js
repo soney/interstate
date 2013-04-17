@@ -15,7 +15,8 @@
 			debug_ready: false,
 			debug_env: false,
 			command_box: false,
-			server_window: window.opener
+			server_window: window.opener,
+			client_id: ""
 		},
 
 		_create: function () {
@@ -39,7 +40,8 @@
 
 			this.client_socket = new red.ProgramStateClient({
 				ready_func: this.option("debug_ready"),
-				server_window: this.option("server_window")
+				server_window: this.option("server_window"),
+				client_id: this.option("client_id")
 			}).on("message", function (data) {
 				if (data.type === "color") {
 					var color = data.value;
@@ -274,10 +276,12 @@
 			.up()
 		.set("css", "<dict>")
 		.cd("css")
+		/*
 			.set("width", "(statechart_disp.layout_engine ? statechart_disp.layout_engine.total_width()-70 : 0) + 'px'")
 			.set("height", "'7px'")
 			.set("display", "'inline-block'")
 			.set("border-bottom", "'1px dashed #CCC'")
+			*/
 			.up()
 		.up()
 	.set("value_view", "<stateful>")
@@ -728,7 +732,8 @@
 
 			this.element.html("")
 						.dom_output({
-							root: this.root
+							root: this.root,
+							show_edit_button: false
 						});
 			if (this.option("debug_env")) {
 				this.env.print_on_return = true;

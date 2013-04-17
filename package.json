@@ -26,7 +26,8 @@
 		"grunt-contrib-uglify": "~0.2",
 		"grunt-contrib-concat": "~0.2",
 		"grunt-contrib-copy": "~0.4",
-		"grunt-contrib-clean": "~0.4"
+		"grunt-contrib-clean": "~0.4",
+		"node-watch": "~0.3"
 	},
 	"engines": {
 		"node": ">= 0.4.7"

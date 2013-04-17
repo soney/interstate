@@ -9,6 +9,7 @@
 
 	red.ProgramStateServer = function (options) {
 		able.make_this_listenable(this);
+		this.client_id = options.client_id;
 		this.add_message_listeners();
 		this.root = options.root;
 		this.contextual_root = red.find_or_put_contextual_obj(this.root);
@@ -43,18 +44,26 @@
 		proto.on_message = function (event) {
 			if (event.source === this.client_window) {
 				var data = event.data;
-				if (data === "ready") {
-					this.connected = true;
-					var croot = this.contextual_root;
-					this.post({
-						type: "croot",
-						summary: croot.summarize()
-					});
-				} else if (data === "loaded") {
-					this._emit("connected");
-				} else {
-					var type = data.type;
-					if (type === "command") {
+				var type = data.type;
+				if(type === "ready") {
+					var client_id = data.client_id;
+					if(client_id === this.client_id) {
+						this.connected = true;
+						var croot = this.contextual_root;
+						this.post({
+							type: "croot",
+							summary: croot.summarize(),
+							client_id: this.client_id
+						});
+					}
+				} else if(type === "loaded") {
+					var client_id = data.client_id;
+					if(client_id === this.client_id) {
+						this._emit("connected");
+					}
+				} else if (type === "command") {
+					var client_id = data.client_id;
+					if(client_id === this.client_id) {
 						var stringified_command = data.command;
 						if ((["undo", "redo", "reset"]).indexOf(stringified_command) >= 0) {
 							this._emit("command", stringified_command);
@@ -99,6 +108,7 @@
 	red.ProgramStateClient = function (options) {
 		able.make_this_listenable(this);
 		this.server_window = options.server_window;
+		this.client_id = options.client_id;
 
 		if (options.ready_func === true) {
 			var old_ready = window.ready;
@@ -121,7 +131,10 @@
 
 		proto.on_loaded = function () {
 			this.add_message_listener();
-			this.post("ready");
+			this.post({
+				type: "ready",
+				client_id: this.client_id
+			});
 		};
 
 		proto.add_message_listener = function () {
@@ -136,15 +149,17 @@
 			if (event.source === this.server_window) {
 				var data = event.data;
 				var type = data.type;
-				if (type === "croot") {
-					var summary = data.summary;
+				if(data.client_id === this.client_id) {
+					if (type === "croot") {
+						var summary = data.summary;
 
-					this.root_client = red.get_wrapper_client(summary, this.server_window);
+						this.root_client = red.get_wrapper_client(summary, this.server_window);
 
-					this._emit("loaded", this.root_client);
-					this.post("loaded");
+						this._emit("loaded", this.root_client);
+						this.post({type: "loaded", client_id: this.client_id});
+					}
+					this._emit("message", data);
 				}
-				this._emit("message", data);
 			}
 		};
 
@@ -167,7 +182,8 @@
 			}
 			this.post({
 				type: "command",
-				command: stringified_command
+				command: stringified_command,
+				client_id: this.client_id
 			});
 		};
 	}(red.ProgramStateClient));

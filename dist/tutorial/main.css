@@ -1,0 +1,50 @@
+body {
+	font-family: SourceSans, "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+}
+
+.euc_output {
+	padding: 10px;
+	border: 1px dashed blue;
+	margin: 5px;
+	overflow: scroll;
+	max-height: 500px;
+	background-color: #F8F8FF;
+}
+
+.euc_editor {
+	padding: 10px;
+	border: 1px dashed red;
+	margin: 5px;
+	overflow: scroll;
+	max-height: 500px;
+	background-color: #FFF8F8;
+}
+
+.euc_split_view {
+	margin: 5px;
+	border: 1px dashed purple;
+	border-left: 1px dashed red;
+	border-right: 1px dashed blue;
+	padding: none;
+	max-height: 500px;
+	padding-left: 1px;
+	background-color: #F8F8FF;
+	vertical-align: top;
+}
+
+.euc_split_view > .euc_editor {
+	width: 49%;
+	display: inline-block;
+	margin: 0px;
+	border: 0px;
+	border-right: 1px dashed purple;
+	box-sizing: border-box;
+}
+.euc_split_view > .euc_output {
+	width: 49%;
+	display: inline-block;
+	margin: 0px;
+	border: 0px;
+	height: 100%;
+	box-sizing: border-box;
+}

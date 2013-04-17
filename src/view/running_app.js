@@ -71,7 +71,9 @@
 			editor_window_options: function () {
 				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + window.innerHeight + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
 			},
-			show_debugging_info: false
+			show_debugging_info: false,
+			client_id: "",
+			immediately_create_server_socket: false
 		},
 
 		_create: function () {
@@ -141,6 +143,10 @@
 				
 			}
 
+			if(this.option("immediately_create_server_socket")) {
+				this.server_socket = this._get_server_socket();
+			}
+
 			this._add_change_listeners();
 		},
 
@@ -179,40 +185,50 @@
 			this._dom_tree_fn.destroy();
 		},
 
+		_get_server_socket: function() {
+			var root = this.option("root");
+
+			if (this.option("open_separate_client_window")) {
+				this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options")());
+			} else {
+				this.editor_window = window;
+			}
+
+
+			var server_socket = new red.ProgramStateServer({
+				root: root,
+				client_window: this.editor_window,
+				client_id: this.option("client_id")
+			}).on("connected", function () {
+				if(this.edit_button) {
+					this.edit_button.addClass("active").css(this.edit_active_css);
+				}
+				this.server_socket.post({
+					type: "color",
+					value: this.button_color
+				});
+			}, this).on("disconnected", function () {
+				this.cleanup_closed_editor();
+			}, this).on("command", function (command) {
+				if (command === "undo") {
+					this._command_stack._undo();
+				} else if (command === "redo") {
+					this._command_stack._redo();
+				} else if (command === "reset") {
+					root.reset();
+				} else {
+					this._command_stack._do(command);
+				}
+			}, this);
+			return server_socket;
+		},
+
 		open_editor: function () {
 			if (this.editor_window) {
 				this.editor_window.focus();
 			} else {
-				if (this.option("open_separate_client_window")) {
-					this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options")());
-				} else {
-					this.editor_window = window;
-				}
+				this.server_socket = this.server_socket || this._get_server_socket();
 
-				var root = this.option("root");
-
-				this.server_socket = new red.ProgramStateServer({
-					root: root,
-					client_window: this.editor_window
-				}).on("connected", function () {
-					this.edit_button.addClass("active").css(this.edit_active_css);
-					this.server_socket.post({
-						type: "color",
-						value: this.button_color
-					});
-				}, this).on("disconnected", function () {
-					this.cleanup_closed_editor();
-				}, this).on("command", function (command) {
-					if (command === "undo") {
-						this._command_stack._undo();
-					} else if (command === "redo") {
-						this._command_stack._redo();
-					} else if (command === "reset") {
-						root.reset();
-					} else {
-						this._command_stack._do(command);
-					}
-				}, this);
 
 				if (this.server_socket.is_connected()) { // It connected immediately
 					this.edit_button.addClass("active").css(this.edit_active_css);
@@ -233,7 +249,9 @@
 		},
 
 		cleanup_closed_editor: function () {
-			this.edit_button.removeClass("active").css(this.edit_button_css);
+			if(this.edit_button) {
+				this.edit_button.removeClass("active").css(this.edit_button_css);
+			}
 			delete this.editor_window;
 
 			this.server_socket.destroy();

@@ -223,6 +223,21 @@ app.configure(function() {
 	});
 //});
 
+
+var filter_regex = /\.(js|html|css)$/;
+var cp = require('child_process');
+var watch = require('node-watch');
+watch(['dist', 'src/model', 'src/controller', 'src/view'], {}, function(filename) {
+	if(filter_regex.test(filename)) {
+		var grunt = cp.spawn('grunt', ['quick'])
+
+		grunt.stdout.on('data', function(data) {
+			// relay output to console
+			console.log("%s", data)
+		});
+	}
+});
+
 var render_files = function(res, files) {
 	concat_files(files, function(str) {
 		res.writeHead(200, {

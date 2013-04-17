@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Euclase Tutorial</title>
+		<link rel="stylesheet" type="text/css" href="source-sans/stylesheet.css"></link>
+		<link rel="stylesheet" type="text/css" href="main.css"></link>
+	</head>
+	<body>
+		<header>
+			<h1>Euclase Tutorial</h1>
+			<p>This tutorial is meant to show off some of the basic features of Euclase and will walk you through</p>
+		</header>
+		<div class="tutorial_section">
+			<h2>Basics</h2>
+			<div data-euc="edit very_basic"></div>
+			<div data-euc="run very_basic"></div>
+			<div data-euc="editrun medium"></div>
+		</div>
+	</body>
+	<link rel="stylesheet" href="../style/editor_style.css" />
+	<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+	<script src="../_vendor/esprima.js"></script>
+	<script src="../red.js"></script>
+	<script type="text/javascript">
+		var examples = {
+				very_basic: function() {
+					var env = red.create("environment");
+					env	.cd("child_nodes")
+						.set("obj", "<stateful>")
+						.cd("obj")
+						.set("(prototypes)", "(start)", "dom")
+						.set("tag", "<stateful_prop>")
+						.set("text", "<stateful_prop>")
+						.set("tag", "(start)", "'div'")
+						.set("text", "(start)", "'hello world'")
+						;
+					er.push(env);
+					return env.get_root();
+				},
+				medium: function() {
+					var env = red.create("environment");
+					env	.cd("child_nodes")
+						.set("obj", "<stateful>")
+						.cd("obj")
+						.set("(prototypes)", "(start)", "dom")
+						.set("tag", "<stateful_prop>")
+						.set("text", "<stateful_prop>")
+						.set("tag", "(start)", "'h1'")
+						.set("text", "(start)", "'bye'")
+						;
+					er.push(env);
+					return env.get_root();
+				},
+			};
+
+		var get_example = function(name) {
+			var example = examples[name];
+			var rest_args = Array.prototype.slice.call(arguments, 1);
+
+			return example.apply(this, rest_args);
+		};
+
+		window.er = [];
+		$(function() {
+			var unique_client_id = 0;
+			var euc_data_objects = $("div[data-euc]");
+			euc_data_objects.each(function() {
+				var $this = $(this);
+
+				var euc_args = $this.attr("data-euc").split(" ");
+				var command = euc_args[0];
+				var rest_args = euc_args.slice(1);
+
+				var example_root = get_example.apply(this, rest_args);
+				if(command === "edit") {
+					$("<div/>").insertBefore($this).dom_output({
+						client_id: unique_client_id,
+						show_edit_button: false,
+						root: example_root,
+						open_separate_client_window: false,
+						immediately_create_server_socket: true
+					}).hide();
+
+					$this.attr("id", "editor").editor({
+						client_id: unique_client_id,
+						server_window: window
+					});
+					unique_client_id++;
+					$this.addClass("euc_editor");
+				} else if(command === "run") {
+					$this.dom_output({
+						root: example_root,
+						show_edit_button: false
+					});
+					$this.addClass("euc_output");
+				} else if(command === "editrun") {
+					var editor_div = $("<div />").addClass("euc_editor").appendTo($this);
+					var output_div = $("<div />").addClass("euc_output").appendTo($this);
+
+					output_div.dom_output({
+						client_id: unique_client_id,
+						show_edit_button: false,
+						root: example_root,
+						open_separate_client_window: false,
+						immediately_create_server_socket: true
+					});
+
+					editor_div.attr("id", "editor").editor({
+						client_id: unique_client_id,
+						server_window: window
+					});
+					unique_client_id++;
+
+					$this.addClass("euc_split_view");
+				}
+			});
+		});
+	</script>
+</html>
