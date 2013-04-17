@@ -217,6 +217,8 @@
 					return "(communication wrapper)";
 				} else if (val === "constraint") {
 					return "(cjs constraint)";
+				} else if(val === "dom_elem") {
+					return "(dom element)";
 				}
 
 				return val;

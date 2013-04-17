@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Euclase Tutorial: Copies</title>
+		<link rel="stylesheet" type="text/css" href="source-sans/stylesheet.css"></link>
+		<link rel="stylesheet" type="text/css" href="main.css"></link>
+	</head>
+	<body>
+		<h1>Copies</h1>
+		<p>Objects may also contain multiple copies</p>
+		<p class="request">try chaning the <var>text</var> and <var>tag</var> fields of <var>OBJ</var>:</p>
+		<div data-euc="editrun simple_copies"></div>
+		<footer>
+			<a class="prev" href="dom.html">Creating HTML elements</a>
+			<a class="next" href="end.html">End</a>
+		</footer>
+	</body>
+	<link rel="stylesheet" href="../style/editor_style.css" />
+	<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+	<script src="../_vendor/esprima.js"></script>
+	<script src="../red.js"></script>
+	<script src="tutorial_example_loader.js"></script>
+	<script type="text/javascript">
+		euc_examples.simple_copies = function() {
+			var env = red.create("environment");
+			env	.cd("child_nodes")
+					.set("OBJ", "<stateful>")
+					.cd("OBJ")
+						.set("(prototypes)", "(start)", "dom")
+						.set("(copies)", "10")
+						.set("tag")
+						.set("tag", "(start)", "'div'")
+						.set("text")
+						.set("text", "(start)", "'item_'+my_copy")
+						.up()
+			return env.get_root();
+		};
+	</script>
+</html>

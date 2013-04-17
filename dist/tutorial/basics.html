@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Euclase Tutorial: Main</title>
+		<title>Euclase Tutorial: Baics</title>
 		<link rel="stylesheet" type="text/css" href="source-sans/stylesheet.css"></link>
 		<link rel="stylesheet" type="text/css" href="main.css"></link>
 	</head>
@@ -12,18 +12,16 @@
 		<ul>
 			<li><em>Property</em>: A field that can hold a value</li>
 			<li><em>Object</em>: An object with state (we'll talk more about this later)</li>
-			<li><em>Stateless Object</em>: An object without state</li>
 		</ul>
+		<p>The <em>current value</em> for every field is shown in a <span style="background-color:#CC0">yellow box</span> to the right of the property's name</p>
 		<p class="request">try adding a property to <var>root</var>:</p>
 		<div data-euc="edit one_obj"></div>
 		<p>When you add a field, its name appears on the far left hand side. To <em>rename</em> the field, you can click its name, enter a new name, and press <kbd>[enter]</kbd> (or <kbd>[esc]</kbd> to cancel).</p>
 		<p>To <em>delete</em> the field, give it an empty name</p>
 		<p>Use <kbd>[ctrl]+z</kbd> and <kbd>[ctrl]+[shift]+z</kbd> to undo and redo any changes you make to your program.</p>
-		<div data-euc="edit two_props"></div>
-
 		<footer>
 			<a class="prev" href="index.html">Tutorial Introduction</a>
-			<a class="next" href="end.html">End</a>
+			<a class="next" href="cells.html">Cells</a>
 		</footer>
 	</body>
 	<link rel="stylesheet" href="../style/editor_style.css" />
@@ -37,12 +35,6 @@
 	<script type="text/javascript">
 		euc_examples.one_obj = function() {
 			var env = red.create("environment", {create_builtins: false});
-			return env.get_root();
-		};
-		euc_examples.two_props = function() {
-			var env = red.create("environment", {create_builtins: false});
-			env.set("a", "1+2+3");
-			env.set("b", "a+1");
 			return env.get_root();
 		};
 	</script>

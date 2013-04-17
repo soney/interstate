@@ -589,7 +589,7 @@
 					.up()
 				.set("child_nodes", "<stateful_prop>")
 				.set("child_nodes", "INIT", "[add_field]")
-				.set("child_nodes", "add_field", "[add_prop, add_obj, add_dict]")
+				.set("child_nodes", "add_field", "[add_prop, add_obj]")
 				.set("attr", "<dict>")
 				.cd("attr")
 					.set("class", "'add_prop_row'")

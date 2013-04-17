@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Euclase Tutorial: Cells</title>
+		<link rel="stylesheet" type="text/css" href="source-sans/stylesheet.css"></link>
+		<link rel="stylesheet" type="text/css" href="main.css"></link>
+	</head>
+	<body>
+		<h1>Cells</h1>
+		<p><em>Cells</em> are meant to hold an individual value. That value can be a constant (e.g. <code>50</code> or <code>'red'</code>) or it can be a constraint (e.g. <code>x+1</code> or <code>Math.sqrt(y)</code>) that recalculates its value based on a formula that uses the properties of this or other objects.</p>
+		<p>To change a cell's value, click it and type a new value. Press <kbd>[enter]</kbd> to confirm or <kbd>[esc]</kbd> to cancel.</p>
+		<p>Again, use <kbd>[ctrl]+z</kbd> and <kbd>[ctrl]+[shift]+z</kbd> to undo and redo any changes you make to your program.</p>
+		<p class="request">try changing the values of <var>x</var>, <var>y</var>, and <var>z</var> in the example below:</p>
+		<div data-euc="edit two_cells"></div>
+		<footer>
+			<a class="prev" href="basics.html">Basics</a>
+			<a class="next" href="objects.html">Objects</a>
+		</footer>
+	</body>
+	<link rel="stylesheet" href="../style/editor_style.css" />
+	<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+	<script src="../_vendor/esprima.js"></script>
+	<script src="../red.js"></script>
+	<script src="tutorial_example_loader.js"></script>
+	<script type="text/javascript">
+		euc_examples.two_cells = function() {
+			var env = red.create("environment", {create_builtins: false});
+			env.set("x", "1+2+3");
+			env.set("y", "x+1");
+			env.set("z", "(2*y)");
+			return env.get_root();
+		};
+	</script>
+</html>

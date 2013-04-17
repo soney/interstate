@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Euclase Tutorial: Inheritance</title>
+		<link rel="stylesheet" type="text/css" href="source-sans/stylesheet.css"></link>
+		<link rel="stylesheet" type="text/css" href="main.css"></link>
+	</head>
+	<body>
+		<h1>Inheritance</h1>
+		<p>Euclase objects can inherit from other objects by setting their <var>prototypes</var> field. In the example below, <var>MY_SQUARE</var> inherits from <var>SQUARE</var>.</p>
+		<p><var>MY_SQUARE</var> inherits field <em>definitions</em> rather than values. For example, below, <var>MY_SQUARE</var> inherits the definition of <var>height</var>.</p>
+
+		<p class="request">try adding and removing properties to &amp; from <var>SQUARE</var> below:</p>
+		<div data-euc="edit simple_inh"></div>
+		<p>Objects can also inherit from multiple objects, as <var>SUB</var> does below:</p>
+		<div data-euc="edit multiple_inh"></div>
+		<footer>
+			<a class="prev" href="objects.html">Objects</a>
+			<a class="next" href="dom.html">Creating HTML elements</a>
+		</footer>
+	</body>
+	<link rel="stylesheet" href="../style/editor_style.css" />
+	<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+	<script src="../_vendor/esprima.js"></script>
+	<script src="../red.js"></script>
+	<script src="tutorial_example_loader.js"></script>
+	<script type="text/javascript">
+		euc_examples.simple_inh = function() {
+			var env = red.create("environment", {create_builtins: false});
+			env	.set("SQUARE", "<stateful>")
+				.cd("SQUARE")
+					.set("width", "(start)", "10+5")
+					.set("height", "(start)", "width")
+					.up()
+				.set("MY_SQUARE", "<stateful>")
+				.cd("MY_SQUARE")
+					.set("(prototypes)", "(start)", "SQUARE")
+					.set("width", "(start)", "20")
+					;
+			return env.get_root();
+		};
+		euc_examples.multiple_inh = function() {
+			var env = red.create("environment", {create_builtins: false});
+			env	.set("SUPER1", "<stateful>")
+				.cd("SUPER1")
+					.set("x", "(start)", "'super1X'")
+					.set("y", "(start)", "'super1Y'")
+					.up()
+				.set("SUPER2", "<stateful>")
+				.cd("SUPER2")
+					.set("x", "(start)", "'super2X'")
+					.set("z", "(start)", "'super2Z'")
+					.up()
+				.set("SUB", "<stateful>")
+				.cd("SUB")
+					.set("(prototypes)", "(start)", "[SUPER1,SUPER2]")
+			return env.get_root();
+		};
+	</script>
+</html>

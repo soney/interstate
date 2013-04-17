@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Euclase Tutorial: Objects</title>
+		<link rel="stylesheet" type="text/css" href="source-sans/stylesheet.css"></link>
+		<link rel="stylesheet" type="text/css" href="main.css"></link>
+	</head>
+	<body>
+		<h1>Objects</h1>
+		<p><em>Objects</em> are containers for fields. In the example below, an object <var>OBJ</var> has four properties:</p>
+		<ul>
+			<li><code>prototypes</code>: A built-in for every object (we'll talk about this in a bit)</li>
+			<li><code>foo</code></li>
+			<li><code>bar</code></li>
+			<li><code>baz</code></li>
+		</ul>
+		<div data-euc="edit obj"></div>
+		<h2>State Machines</h2>
+		<p>Every object also has a built-in state machine, shown above the object. A state machine specifies <em>states</em> and <em>transitions</em> between states. Every object property may specify a cell for every state in the object. The <em>active</em> value for any property is indicated with <span style="border: 2px solid red">a red outline</span>.</p>
+		<p>States can be added by pressing the <code>+</code> button to the right of the state machine. Transitions can be added by pressing the mouse down over the transition's <em>from</em> state and releasing it over its <em>to</em> state.</p>
+		<p>If a property has no value set for a state, it is displayed as a circle: <span class="no_cell" style="width:10px;display: inline-block;"></span>. You can click this circle to turn it into a cell.</p>
+		<p>Like properties and cells, both states and transitions can be edited by clicking on them and removed by deleting their text.</p>
+		<p class="request">try playing with the states and transitions below:</p>
+		<div id="hovertest" style="width: 200px; height: 100px; margin-bottom:25px; background-color: #900; color: white; margin: auto; font-size: 1.5em;">Hover over me &amp; watch <code>OBJ</code> below</div>
+		<div data-euc="edit one_state"></div>
+		<footer>
+			<a class="prev" href="cells.html">Cells</a>
+			<a class="next" href="inheritance.html">Inheritance</a>
+		</footer>
+	</body>
+	<link rel="stylesheet" href="../style/editor_style.css" />
+	<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+	<script src="../_vendor/esprima.js"></script>
+	<script src="../red.js"></script>
+	<script src="tutorial_example_loader.js"></script>
+	<script type="text/javascript">
+		euc_examples.obj = function() {
+			var env = red.create("environment", {create_builtins: false});
+			env	.set("OBJ", "<stateful>")
+				.cd("OBJ")
+					.set("foo", "(start)", "1+1")
+					.set("bar", "(start)", "OBJ.foo+1")
+					.set("baz", "(start)", "this.bar+1")
+					.up()
+				.set("outside", "99");
+			return env.get_root();
+		};
+		euc_examples.one_state = function() {
+			var env = red.create("environment", {create_builtins: true});
+			env	.set("OBJ", "<stateful>")
+				.cd("OBJ")
+					.add_state("idle")
+					.add_state("hover")
+					.start_at("idle")
+					.add_transition("idle", "hover", "on('mouseover', elem)")
+					.add_transition("hover", "idle", "on('mouseout', elem)")
+					.set("foo", "idle", "1")
+					.set("foo", "hover", "2")
+					.set("bar", "idle", "5")
+					.set("baz", "hover", "10")
+					.up()
+					.set("elem", document.getElementById("hovertest"))
+				.unset("find")
+				.unset("emit")
+				.unset("dom")
+				.unset("child_nodes");
+			return env.get_root();
+		};
+	</script>
+</html>
