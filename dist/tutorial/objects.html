@@ -7,13 +7,10 @@
 	</head>
 	<body>
 		<h1>Objects</h1>
-		<p><em>Objects</em> are containers for fields. In the example below, an object <var>OBJ</var> has four properties:</p>
-		<ul>
-			<li><code>prototypes</code>: A built-in for every object (we'll talk about this in a bit)</li>
-			<li><code>foo</code></li>
-			<li><code>bar</code></li>
-			<li><code>baz</code></li>
-		</ul>
+		<p><em>Objects</em> are containers for fields. In the example below, an object <var>OBJ</var> has three properties: <code>foo</code>, <code>bar</code>, and <code>baz</code></p>
+		<p>If a property has no value set (like <var>baz</var> below), it is displayed as a circle: <span class="no_cell" style="width:10px;display: inline-block;"></span>. You can click this circle to turn it into a cell.</p>
+		<p>The black dot above the object (<span style="display: inline-block; width:10px; height:10px; border-radius:5px; background-color: black"></span>) represents a <em>state</em>, which we'll discuss later.</p>
+		<p class="request">Set <var>OBJ.baz</var> to <var>this.bar+1</var>. Then, try creating a new object named <var>OBJ_2</var> and give it a property</p>
 		<div data-euc="edit obj"></div>
 		<footer>
 			<a class="prev" href="cells.html">Cells</a>
@@ -31,11 +28,11 @@
 	<script type="text/javascript">
 		euc_examples.obj = function() {
 			var env = red.create("environment", {create_builtins: false});
-			env	.set("OBJ", "<stateful>")
+			env	.set("OBJ", red.create("stateful_obj", {has_protos: false}))
 				.cd("OBJ")
 					.set("foo", "(start)", "1+1")
-					.set("bar", "(start)", "OBJ.foo+1")
-					.set("baz", "(start)", "this.bar+1")
+					.set("bar", "(start)", "foo+1")
+					.set("baz")
 					.up()
 				.set("outside", "99");
 			return env.get_root();

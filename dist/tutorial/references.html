@@ -7,6 +7,16 @@
 	</head>
 	<body>
 		<h1>References</h1>
+		<p>In the previous sections, you may have wondered how Euclase resolves variable references. In other words, when a cell says <code>x</code>, how does Euclase search for <code>x</code>?</p>
+		<p>Euclase resolves variable references by traversing its <em>object hierarchy</em>, the hierarchy that's created through objects and sub-objects.</p>
+		<p>Euclase also has a few built-in variable names, described below:</p>
+		<ul>
+			<li><var>this</var>: Represents the current object</li>
+			<li><var>parent</var>: Represents the current object's parent</li>
+			<li><var>root</var>: Represents the root</li>
+		</ul>
+		<p class="request">Try removing <var>OBJ.x</var> and see what happens to the value of <var>a</var></p>
+		<div data-euc="edit references"></div>
 		<footer>
 			<a class="prev" href="objects.html">Objects</a>
 			<a class="next" href="states.html">States</a>
@@ -21,36 +31,17 @@
 	<script src="../red.js"></script>
 	<script src="tutorial_example_loader.js"></script>
 	<script type="text/javascript">
-		euc_examples.obj = function() {
+		euc_examples.references = function() {
 			var env = red.create("environment", {create_builtins: false});
-			env	.set("OBJ", "<stateful>")
+			env	.set("OBJ", red.create("stateful_obj", {has_protos: false}))
 				.cd("OBJ")
-					.set("foo", "(start)", "1+1")
-					.set("bar", "(start)", "OBJ.foo+1")
-					.set("baz", "(start)", "this.bar+1")
+					.set("x", "(start)", '"OBJ\'s x"')
+					.set("a", "(start)", "x")
+					.set("b", "(start)", "y")
+					.set("c", "(start)", "this.y")
 					.up()
-				.set("outside", "99");
-			return env.get_root();
-		};
-		euc_examples.one_state = function() {
-			var env = red.create("environment", {create_builtins: true});
-			env	.set("OBJ", "<stateful>")
-				.cd("OBJ")
-					.add_state("idle")
-					.add_state("hover")
-					.start_at("idle")
-					.add_transition("idle", "hover", "on('mouseover', elem)")
-					.add_transition("hover", "idle", "on('mouseout', elem)")
-					.set("foo", "idle", "1")
-					.set("foo", "hover", "2")
-					.set("bar", "idle", "5")
-					.set("baz", "hover", "10")
-					.up()
-					.set("elem", document.getElementById("hovertest"))
-				.unset("find")
-				.unset("emit")
-				.unset("dom")
-				.unset("child_nodes");
+				.set("x", "'outer x'")
+				.set("y", "'outer y'");
 			return env.get_root();
 		};
 	</script>
