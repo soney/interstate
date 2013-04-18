@@ -127,6 +127,11 @@
 		_.proto_extend(my, red.ContextualObject);
 		var proto = my.prototype;
 
+		proto.has_copies = function() {
+			var dict = this.object;
+			return dict.has_copies();
+		};
+
 		proto.get_all_protos = function () {
 			return red.Dict.get_proto_vals(this.get_object(), this.get_pointer());
 		};

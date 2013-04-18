@@ -39,7 +39,8 @@
             value: {},
             keys: [],
             values: [],
-            has_protos: true
+            has_protos: true,
+			has_copies: true
         }, options);
     
         this.type = "red_dict";
@@ -106,6 +107,10 @@
         proto.has_protos = function () {
             return this.options.has_protos;
         };
+
+		proto.has_copies = function() {
+			return this.options.has_copies;
+		};
     
         
         //
@@ -269,7 +274,8 @@
     
         proto.serialize = function (include_uid) {
             var rv = {
-                has_protos: this.has_protos()
+                has_protos: this.has_protos(),
+				has_copies: this.has_copies()
             };
             if (include_uid) { rv.uid = this.id(); }
     
@@ -293,7 +299,7 @@
                     serialized_options[name] = obj[name];
                 });
 
-                var rv = new My({uid: obj.uid, has_protos: obj.has_protos}, true);
+                var rv = new My({uid: obj.uid, has_protos: obj.has_protos, has_copies: obj.has_copies}, true);
                 rv.initialize = function () {
                     var options = {};
                     _.each(serialized_options, function (serialized_option, name) {

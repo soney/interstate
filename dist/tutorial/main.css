@@ -89,3 +89,20 @@ var {
 	content: "Tip: ";
 	font-weight:bold;
 }
+.note {
+	color: #888;
+	text-align: right;
+}
+.note:before {
+	content: "Note: ";
+	font-weight:bold;
+}
+.code_placeholder {
+	opacity: 0.5;
+}
+.code_placeholder:before {
+	content: "<";
+}
+.code_placeholder:after {
+	content: ">";
+}

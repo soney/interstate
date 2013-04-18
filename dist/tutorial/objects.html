@@ -28,7 +28,7 @@
 	<script type="text/javascript">
 		euc_examples.obj = function() {
 			var env = red.create("environment", {create_builtins: false});
-			env	.set("OBJ", red.create("stateful_obj", {has_protos: false}))
+			env	.set("OBJ", red.create("stateful_obj", {has_protos: false, has_copies: false}))
 				.cd("OBJ")
 					.set("foo", "(start)", "1+1")
 					.set("bar", "(start)", "foo+1")

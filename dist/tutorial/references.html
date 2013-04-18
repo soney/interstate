@@ -15,7 +15,7 @@
 			<li><var>parent</var>: Represents the current object's parent</li>
 			<li><var>root</var>: Represents the root</li>
 		</ul>
-		<p class="request">Try removing <var>OBJ.x</var> and see what happens to the value of <var>a</var></p>
+		<p class="request">Try renaming <var>OBJ.x</var> and see what happens to the value of <var>a</var>. Then, create a new property of <var>OBJ</var> named <var>d</var> that references the outer <var>x</var>.</p>
 		<div data-euc="edit references"></div>
 		<footer>
 			<a class="prev" href="objects.html">Objects</a>
@@ -33,7 +33,7 @@
 	<script type="text/javascript">
 		euc_examples.references = function() {
 			var env = red.create("environment", {create_builtins: false});
-			env	.set("OBJ", red.create("stateful_obj", {has_protos: false}))
+			env	.set("OBJ", red.create("stateful_obj", {has_protos: false, has_copies: false}))
 				.cd("OBJ")
 					.set("x", "(start)", '"OBJ\'s x"')
 					.set("a", "(start)", "x")

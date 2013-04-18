@@ -10,17 +10,27 @@
 		<p>Every object also has a built-in <em>state machine</em>, shown above the object. A state machine specifies <em>states</em> and <em>transitions</em> between states. Every object property may specify a cell for every state in the object. The <em>active</em> value for any property is indicated with <span style="border: 2px solid red">a red outline</span>.</p>
 		<p>States can be added by pressing the <code>+</code> button to the right of the state machine. Transitions can be added by pressing the mouse down over the transition's <em>from</em> state and releasing it over its <em>to</em> state.</p>
 		<p>Like properties and cells, both states and transitions can be edited by clicking on them and removed by deleting their text.</p>
-		<p class="request">try playing with the states and transitions below:</p>
+		<p class="request">Hover over the red rectangle below and watch the value of <var>OBJ.foo</var></p>
 		<div id="hovertest" style="width: 200px; height: 100px; margin-bottom:25px; background-color: #900; color: white; margin: auto; font-size: 1.5em;">Hover over me &amp; watch <code>OBJ.foo</code> below</div>
 		<div data-euc="edit one_state"></div>
 		<h2>Events</h2>
-		<p>You may have noticed that the above example includes a built-in property of <var>root</var> named <var>on</var>. <var>on</var>'s value is <code>(native function)</code>, which means that it's a builtin Euclase JavaScript function. <var>on</var> allows users to specify transition events.</p>
-		<p>Euclase also includes a number of built-in events. You can try some of them below. These include <a href="http://en.wikipedia.org/wiki/DOM_events" target="_blank">DOM events</a>, specified by <code>on('<span style="opacity:0.5">&lt;event_type&gt;</span>', <span style="opacity: 0.5">&lt;target&gt;</span>)</code>. For example, <code>on('mousedown', elem)</code> or <code>on('keydown', window</code>)</p>
-
+		<p>You may have noticed that the above example includes a built-in property of <var>root</var> named <var>on</var> whose value is <code>(native function)</code>, which means that it's a builtin Euclase JavaScript function. <var>on</var> allows users to specify transition events.</p>
+		<p>Euclase also includes a number of built-in events. You can try some of them below. These include <a href="http://en.wikipedia.org/wiki/DOM_events" target="_blank">DOM events</a>, specified by <code>on('<span class="code_placeholder">&lt;event_type</span>', <span class = "code_placeholder">target</span>)</code>. For example, <code>on('mousedown', elem)</code> or <code>on('keydown', window</code>)</p>
+		<p>Event variables may also be referenced through the <var>event</var> object, as <var>bar</var> does below.</p>
+		<p class="request">Create another state named <var>active</var> that is active when the user's mouse is pressed on <var>elem</var>:</p>
 		<div id="target" style="width: 200px; height: 80px; margin-bottom:25px; background-color: #900; color: white; margin: auto; font-size: 1.5em;text-align:center;padding-top:30px;"><code>elem</code></div>
 		<div data-euc="edit custom_events"></div>
+		<h2>Constraint Events</h2>
+		<p>Sometimes, it's nice to be able to specify events about program variables, like when <var>x</var> becomes greater than <code>100</code>. Euclase enables this by allowing transition events to also be arbitrary expressions. That transition event fires when the expression <em>becomes</em> <code>true</code>. For example, <code>x &gt; 100</code> only fires when <var>x</var> was less than <code>100</code> but then its value changes so that it becomes greater than <code>100</code>.</p>
+		<p class="request">Try setting <var>x</var> to <code>150</code> below and watch what happens to <var>OBJ</var>'s state.</p>
+		<div data-euc="edit constraint_events"></div>
+		<h2>Guards</h2>
+		<p>A <em>guard</em> allows events to be more descriptive. For example, to specify that a transition should fire only when the <kbd>g</kbd> key is pressed rather than any key.</p>
+		<p>Guards can be added by chaining event function calls with the <code>.when_eq(<span class="code_placeholder">event_property</span>, <span class="code_placeholder">value</span>)</code>.</p>
+		<p class="request">Try pressing <kbd>g</kbd> (whose <var>keyCode</var> is <code>71</code>) and watch what happens to <var>OBJ</var>'s state:</p>
+		<div data-euc="edit event_guard"></div>
 		<footer>
-			<a class="prev" href="cells.html">Cells</a>
+			<a class="prev" href="references.html">References</a>
 			<a class="next" href="inheritance.html">Inheritance</a>
 		</footer>
 	</body>
@@ -35,7 +45,7 @@
 	<script type="text/javascript">
 		euc_examples.one_state = function() {
 			var env = red.create("environment", {create_builtins: true});
-			env	.set("OBJ", red.create("stateful_obj", {has_protos: false}))
+			env	.set("OBJ", red.create("stateful_obj", {has_protos: false, has_copies: false}))
 				.cd("OBJ")
 					.add_state("idle")
 					.add_state("hover")
@@ -56,7 +66,7 @@
 		};
 		euc_examples.custom_events = function() {
 			var env = red.create("environment", {create_builtins: true});
-			env	.set("OBJ", red.create("stateful_obj", {has_protos: false}))
+			env	.set("OBJ", red.create("stateful_obj", {has_protos: false, has_copies: false}))
 				.cd("OBJ")
 					.add_state("idle")
 					.add_state("hover")
@@ -65,10 +75,41 @@
 					.add_transition("hover", "idle", "on('mouseout', elem)")
 					.set("foo", "idle", "1")
 					.set("foo", "hover", "2")
-					.set("bar", "idle", "5")
-					.set("baz", "hover", "10")
+					.set("bar", "hover", "event.clientX")
+					.set("baz", "idle", "10")
 					.up()
 					.set("elem", document.getElementById("target"))
+				.unset("find")
+				.unset("emit")
+				.unset("dom")
+				.unset("child_nodes");
+			return env.get_root();
+		};
+		euc_examples.constraint_events = function() {
+			var env = red.create("environment", {create_builtins: false});
+			env	.set("OBJ", red.create("stateful_obj", {has_protos: false, has_copies: false}))
+				.cd("OBJ")
+					.add_state("under")
+					.add_state("over")
+					.start_at("under")
+					.add_transition("under", "over", "x > 100")
+					.add_transition("over", "under", "x <= 100")
+					.up()
+				;
+			return env.get_root();
+		};
+		euc_examples.event_guard = function() {
+			var env = red.create("environment", {create_builtins: true});
+			env	.set("OBJ", red.create("stateful_obj", {has_protos: false, has_copies: false}))
+				.cd("OBJ")
+					.add_state("idle")
+					.add_state("pressed_g")
+					.start_at("idle")
+					.add_transition("idle", "pressed_g", "on('keydown', window).when_eq('keyCode', 71)")
+					.add_transition("pressed_g", "idle", "on('keyup', window).when_eq('keyCode', 71)")
+					.set("g_pressed", "idle", "false")
+					.set("g_pressed", "pressed_g", "true")
+					.up()
 				.unset("find")
 				.unset("emit")
 				.unset("dom")

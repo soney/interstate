@@ -7,8 +7,13 @@
 	</head>
 	<body>
 		<h1>Copies</h1>
-		<p>Objects may also contain multiple copies</p>
-		<p class="request">try chaning the <var>text</var> and <var>tag</var> fields of <var>OBJ</var>:</p>
+		<p>Sometimes, we want to be able to specify how many copies an object should have. To specify how many copies, click the <var>copies</var> slot near the object's name and edit it like a cell. Its value can be an array (e.g. <code>[1,2,3]</code>) or a number (e.g. <code>3</code>, which would be equivalent to <code>[1,2,3]</code>). Every copy gets two additional fields:</p>
+		<ul>
+			<li><var>my_copy</var>: The copy's item</li>
+			<li><var>copy_num</var>: The copy's index (1-indexed)</li>
+		</ul>
+		<div class="note">Note that because the editor doesn't yet display individual copies, <var>my_copy</var> and <var>copy_num</var> will appear as <code>undefined</code></div>
+		<p class="request">Try changing the number of copies of <var>OBJ</var> to <code>['X','Y','Z']</code></p>
 		<div data-euc="editrun simple_copies"></div>
 		<footer>
 			<a class="prev" href="dom.html">Creating HTML elements</a>

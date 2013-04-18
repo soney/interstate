@@ -9,8 +9,9 @@
 		<h1>Inheritance</h1>
 		<p>Euclase objects can inherit from other objects by setting their <var>prototypes</var> field. In the example below, <var>MY_SQUARE</var> inherits from <var>SQUARE</var>.</p>
 		<p><var>MY_SQUARE</var> inherits field <em>definitions</em> rather than values. For example, below, <var>MY_SQUARE</var> inherits the definition of <var>height</var>.</p>
+		<p>Also note that objects inherit copies of state machines, as <var>MY_SQUARE</var> does below</p>
 
-		<p class="request">try adding and removing properties to &amp; from <var>SQUARE</var> below:</p>
+		<p class="request">Try adding and removing properties to &amp; from <var>SQUARE</var> below and setting their values:</p>
 		<div data-euc="edit simple_inh"></div>
 		<p>Objects can also inherit from multiple objects, as <var>SUB</var> does below:</p>
 		<div data-euc="edit multiple_inh"></div>
@@ -32,8 +33,10 @@
 			var env = red.create("environment", {create_builtins: false});
 			env	.set("SQUARE", "<stateful>")
 				.cd("SQUARE")
-					.set("width", "(start)", "10+5")
-					.set("height", "(start)", "width")
+					.add_state("SQ_STATE_1")
+					.start_at("SQ_STATE_1")
+					.set("width", "SQ_STATE_1", "10+5")
+					.set("height", "SQ_STATE_1", "width")
 					.up()
 				.set("MY_SQUARE", "<stateful>")
 				.cd("MY_SQUARE")
