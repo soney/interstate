@@ -1,23 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Euclase Tutorial: Objects</title>
+		<title>Euclase Tutorial: References</title>
 		<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700' rel='stylesheet' type='text/css'>
 		<link rel="stylesheet" type="text/css" href="main.css"></link>
 	</head>
 	<body>
-		<h1>Objects</h1>
-		<p><em>Objects</em> are containers for fields. In the example below, an object <var>OBJ</var> has four properties:</p>
-		<ul>
-			<li><code>prototypes</code>: A built-in for every object (we'll talk about this in a bit)</li>
-			<li><code>foo</code></li>
-			<li><code>bar</code></li>
-			<li><code>baz</code></li>
-		</ul>
-		<div data-euc="edit obj"></div>
+		<h1>References</h1>
 		<footer>
-			<a class="prev" href="cells.html">Cells</a>
-			<a class="next" href="references.html">References</a>
+			<a class="prev" href="objects.html">Objects</a>
+			<a class="next" href="states.html">States</a>
 		</footer>
 	</body>
 	<link rel="stylesheet" href="../style/editor_style.css" />
@@ -38,6 +30,27 @@
 					.set("baz", "(start)", "this.bar+1")
 					.up()
 				.set("outside", "99");
+			return env.get_root();
+		};
+		euc_examples.one_state = function() {
+			var env = red.create("environment", {create_builtins: true});
+			env	.set("OBJ", "<stateful>")
+				.cd("OBJ")
+					.add_state("idle")
+					.add_state("hover")
+					.start_at("idle")
+					.add_transition("idle", "hover", "on('mouseover', elem)")
+					.add_transition("hover", "idle", "on('mouseout', elem)")
+					.set("foo", "idle", "1")
+					.set("foo", "hover", "2")
+					.set("bar", "idle", "5")
+					.set("baz", "hover", "10")
+					.up()
+					.set("elem", document.getElementById("hovertest"))
+				.unset("find")
+				.unset("emit")
+				.unset("dom")
+				.unset("child_nodes");
 			return env.get_root();
 		};
 	</script>
