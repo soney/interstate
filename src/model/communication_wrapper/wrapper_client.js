@@ -4,8 +4,7 @@
 (function (red) {
 	"use strict";
 	var cjs = red.cjs,
-		_ = red._,
-		origin = window.location.protocol + "//" + window.location.host;
+		_ = red._;
 
 	var summarize_arg = function (arg) { return arg; };
 	var summarize_args = function (args) { return _.map(args, summarize_arg); };
@@ -16,6 +15,7 @@
 		return _.last(args);
 	};
 
+/*
 	var pending_responses = {};
 	var response_listeners = {};
 	var wrapper_clients = {};
@@ -28,16 +28,18 @@
 			response_listeners[id] = listener;
 		}
 	};
+	*/
 
 	var argeq = function (arg1, arg2) {
 		return arg1 === arg2;
 	};
 
+/*
 	var clients = {};
 
-	var MessageDistributionCenter = function () {
+	red.ClientMessageDistributionCenter = function (comm_mechanism) {
 		able.make_this_listenable(this);
-		window.addEventListener("message", _.bind(function (event) {
+		comm_mechanism.on("message", _.bind(function (event) {
 			var client;
 			var data = event.data;
 			if (data.type === "wrapper_server") {
@@ -66,24 +68,24 @@
 			}
 		}, this));
 	};
-	able.make_proto_listenable(MessageDistributionCenter.prototype);
+	able.make_proto_listenable(red.ClientMessageDistributionCenter.prototype);
+	*/
 
-	var cdc = new MessageDistributionCenter();
 
 	var client_id = 0;
 	var message_id = 0;
 
 	red.WrapperClient = function (options) {
 		able.make_this_listenable(this);
-		this.server_window = options.server_window;
+		this.comm_mechanism = options.comm_mechanism;
 		this.cobj_id = options.cobj_id;
 		this.obj_id = options.obj_id;
 		this._type = options.type;
 		this.object_summary = options.object_summary;
+		this.program_state_client = options.program_state_client;
 
 		this._id = client_id;
 		client_id += 1;
-		clients[this._id] = this;
 
 		this.fn_call_constraints = new RedMap({
 			hash: function (args) {
@@ -104,27 +106,34 @@
 			}
 		});
 
-		this.post({
-			type: "register_listener",
-			cobj_id: this.cobj_id
-		});
+		this.$on_message = _.bind(this.on_message, this);
 	};
 
 	(function (my) {
 		var proto = my.prototype;
 		able.make_proto_listenable(proto);
 
+		proto.on_ready = function() {
+			this.post({
+				type: "register_listener",
+				cobj_id: this.cobj_id
+			});
+		};
+
+		proto.on_message = function(message) {
+		};
+
 		proto.destroy = function () { };
 		proto.post = function (message) {
 			var m_id = message_id;
 			message_id += 1;
-			this.server_window.postMessage({
+			this.comm_mechanism.post({
 				type: "wrapper_client",
 				client_id: this.id(),
 				message: message,
 				message_id: m_id,
 				cobj_id: this.cobj_id
-			}, origin);
+			});
 			return m_id;
 		};
 		proto.id = function () { return this._id; };
@@ -139,7 +148,7 @@
 				type: "async_get",
 				getting: args
 			});
-			register_response_listener(request_id, _.bind(function (value) {
+			this.program_state_client.register_response_listener(request_id, _.bind(function (value) {
 				var processed_value = this.process_value(value);
 				callback(processed_value);
 			}, this));
@@ -169,7 +178,7 @@
 				type: "get_$",
 				getting: args
 			});
-			register_response_listener(request_id, _.bind(function (value) {
+			this.program_state_client.register_response_listener(request_id, _.bind(function (value) {
 				var processed_value = this.process_value(value);
 				constraint.set(processed_value);
 			}, this));
@@ -199,19 +208,19 @@
 					return "(native object)";
 				} else if (val === "contextual_obj") {
 					object_summary = value.object_summary;
-					wrapper_client = red.get_wrapper_client(object_summary, this.server_window);
+					wrapper_client = this.program_state_client.get_wrapper_client(object_summary, this.comm_mechanism);
 					return wrapper_client;
 				} else if (val === "state") {
 					object_summary = value.object_summary;
-					wrapper_client = red.get_wrapper_client(object_summary, this.server_window);
+					wrapper_client = this.program_state_client.get_wrapper_client(object_summary, this.comm_mechanism);
 					return wrapper_client;
 				} else if (val === "transition") {
 					object_summary = value.object_summary;
-					wrapper_client = red.get_wrapper_client(object_summary, this.server_window);
+					wrapper_client = this.program_state_client.get_wrapper_client(object_summary, this.comm_mechanism);
 					return wrapper_client;
 				} else if (val === "event") {
 					object_summary = value.object_summary;
-					wrapper_client = red.get_wrapper_client(object_summary, this.server_window);
+					wrapper_client = this.program_state_client.get_wrapper_client(object_summary, this.comm_mechanism);
 					return wrapper_client;
 				} else if (val === "client_wrapper") {
 					return "(communication wrapper)";
@@ -233,8 +242,9 @@
 			}
 		};
 	}(red.WrapperClient));
+	/*
 		
-	red.get_wrapper_client = function (object_summary, server_window) {
+	red.get_wrapper_client = function (object_summary, comm_mechanism) {
 		var cobj_id = object_summary.id;
 		if (wrapper_clients.hasOwnProperty(cobj_id)) {
 			return wrapper_clients[cobj_id];
@@ -244,7 +254,7 @@
 
 			var obj_id = object_summary.obj_id;
 			rv = new red.WrapperClient({
-				server_window: server_window,
+				comm_mechanism: comm_mechanism,
 				cobj_id: cobj_id,
 				obj_id: obj_id,
 				type: otype,
@@ -255,4 +265,5 @@
 			return rv;
 		}
 	};
+	*/
 }(red));

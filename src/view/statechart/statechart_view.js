@@ -81,7 +81,6 @@
 
 			_.each(curr_items, function (ci) {
 				if (new_items.indexOf(ci) < 0) {
-					console.log(ci instanceof red.TransitionView ? ci.option("transition") : ci.option("state"));
 					this.object_views.unset(ci instanceof red.TransitionView ? ci.option("transition") : ci.option("state"));
 					ci.remove();
 					ci.destroy();

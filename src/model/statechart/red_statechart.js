@@ -866,7 +866,7 @@
 			}
 		};
 		proto.set_parent = function (parent) {
-			this.outgoingTransition.event().set_statecharts(parent);
+			//this.outgoingTransition.event().set_statecharts(parent);
 			return My.superclass.set_parent.apply(this, arguments);
 		};
 		proto.getTo = function () {

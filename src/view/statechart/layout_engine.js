@@ -442,7 +442,6 @@
 
 								location_info = location_info_map.get_or_put(cell, return_empty_obj);
 								if (is_from && is_to) {
-									console.log(cell.id());
 									location_info.from = location_info.to = {x: x, y: y};
 								} else {
 									if (is_from) {

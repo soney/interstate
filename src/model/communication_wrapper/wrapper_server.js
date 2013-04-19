@@ -4,9 +4,7 @@
 (function (red) {
 	"use strict";
 	var cjs = red.cjs,
-		_ = red._,
-		origin = window.location.protocol + "//" + window.location.host;
-
+		_ = red._;
 		
 	var process_arg = function (arg) {
 		return arg;
@@ -108,6 +106,7 @@
 		return rv;
 	};
 
+/*
 	var MessageDistributionCenter = function () {
 		able.make_this_listenable(this);
 		window.addEventListener("message", _.bind(function (event) {
@@ -161,6 +160,7 @@
 			}, create_constraint);
 		}
 	});
+	*/
 
 	var chop = function (args) {
 		return _.first(args, args.length - 1);
@@ -182,10 +182,12 @@
 	var argeq = function (arg1, arg2) {
 		return arg1 === arg2;
 	};
+	var id = 0;
 	red.WrapperServer = function (options) {
+		this.id = id++;
+		able.make_this_listenable(this);
 		this.object = options.object;
 		this._type = "none";
-		this.client_listeners = [];
 		this._event_type_listeners = options.listen_to || [];
 
 		this.$on_emit = _.bind(this.on_emit, this);
@@ -214,6 +216,7 @@
 
 	(function (my) {
 		var proto = my.prototype;
+		able.make_proto_listenable(proto);
 
 		proto.add_emission_listeners = function () {
 			var object = this.get_object();
@@ -241,9 +244,6 @@
 		proto.get_object = function () {
 			return this.object;
 		};
-		proto.register_listener = function (listener_info) {
-			this.client_listeners.push(listener_info);
-		};
 
 		proto.on_emit = function () {
 			this.remote_emit.apply(this, arguments);
@@ -253,14 +253,14 @@
 			var event_type = _.last(arguments);
 			var args = _.first(arguments, arguments.length - 1);
 			args = _.map(args, summarize_value);
-			this.post({
-				type: "emit",
+			this._emit("emit", {
 				event_type: event_type,
 				args: args
 			});
 		};
 
-		proto.on_request = function (getting, callback, create_constraint) {
+		proto.request = function (pre_processed_getting, callback, create_constraint) {
+			var getting = process_args(pre_processed_getting);
 			var fn_name = getting[0];
 			var args = _.rest(getting);
 			var object = this.get_object();
@@ -272,27 +272,27 @@
 						return rv;
 					});
 					constraint.onChange(_.bind(function () {
-						this.post({
-							type: "changed",
-							getting: getting
-						});
+						this._emit("changed", getting);
 					}, this));
 					return constraint;
 				}, this);
 
-				callback(constraint.get());
+				callback(summarize_value(constraint.get()));
 			} else {
 				var rv = object[fn_name].apply(object, args);
-				callback(rv);
+				callback(summarize_value(rv));
 			}
 		};
 
+/*
 		proto.post = function (data) {
-			var i, len = this.client_listeners.length;
 			var full_message = {
 				type: "wrapper_server",
 				server_message: data
 			};
+			this._emit(data);
+			
+			var i, len = this.client_listeners.length;
 			for (i = 0; i < len; i += 1) {
 				var cl = this.client_listeners[i];
 				if (cl.type === "channel") {
@@ -304,14 +304,12 @@
 				}
 			}
 		};
+		*/
 
 	}(red.WrapperServer));
 
+/*
 	var wrapper_servers = {};
-
-	red.register_wrapper_server = function (object, server) {
-		wrapper_servers[object.id()] = server;
-	};
 
 	red.get_wrapper_server = function (object) {
 		var id = object.id();
@@ -324,7 +322,7 @@
 			if (object instanceof red.State) {
 				listen_to = ["add_transition", "add_substate", "remove_substate",
 									"rename_substate", "move_substate", "make_concurrent",
-									/*"on_transition", "off_transition",*/ "destroy",
+									"on_transition", "off_transition", "destroy",
 									"active", "inactive"];
 			} else if (object instanceof red.StatechartTransition) {
 				listen_to = ["setTo", "setFrom", "remove", "destroy", "fire"];
@@ -343,4 +341,5 @@
 			return rv;
 		}
 	};
+	*/
 }(red));

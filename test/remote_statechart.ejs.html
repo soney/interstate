@@ -102,10 +102,20 @@
 							id: shadow.id()
 					};
 
-					var wrapper_client = red.get_wrapper_client(sc_sum, window);
+					var pss = new red.ProgramStateServer({
+						comm_mechanism: new red.SameWindowCommWrapper(),
+						client_window: window,
+						root: red.create("dict")
+					});
+					var psc = new red.ProgramStateClient({
+						comm_mechanism: new red.SameWindowCommWrapper()
+					});
+					psc.on_loaded();
+					var wrapper_client = psc.get_wrapper_client(sc_sum);
 					var puppet = window.puppet = red.create_remote_statechart(wrapper_client);
 					var puppet_view = get_view(puppet);
 					$(".bl").append(puppet_view);
+					/*
 					window.setTimeout(function() {
 						master.remove_state("init");
 					}, 500);

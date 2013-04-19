@@ -38,10 +38,16 @@
 			}
 			this.root = this.env.get_root();
 
+			var communication_mechanism;
+			if(this.option("server_window") === window) {
+				communication_mechanism = new red.SameWindowCommWrapper(this.option("client_id")); 
+			} else {
+				communication_mechanism = new red.InterWindowCommWrapper(this.option("server_window"), this.option("client_id")); 
+			}
+
 			this.client_socket = new red.ProgramStateClient({
 				ready_func: this.option("debug_ready"),
-				server_window: this.option("server_window"),
-				client_id: this.option("client_id")
+				comm_mechanism: communication_mechanism
 			}).on("message", function (data) {
 				if (data.type === "color") {
 					var color = data.value;
@@ -55,6 +61,7 @@
 				this.root.set("root_client", root_client, {literal: true});
 				this.load_viewer();
 			}, this);
+
 			this.element.text("Loading...");
 		},
 
