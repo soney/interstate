@@ -89,12 +89,6 @@
 							};
 							this.post(full_message);
 						}, this));
-						/*
-						server.register_listener();
-						console.log(server);
-						/*
-						server.register_listener(get_channel_listener(client_window, client_id));
-						*/
 					} else if (mtype === "get_$" || mtype === "async_get") { // async request
 						cobj_id = data.cobj_id;
 						cobj = red.find_uid(cobj_id);

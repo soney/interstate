@@ -106,62 +106,6 @@
 		return rv;
 	};
 
-/*
-	var MessageDistributionCenter = function () {
-		able.make_this_listenable(this);
-		window.addEventListener("message", _.bind(function (event) {
-			var data = event.data;
-			if (data.type === "wrapper_client") {
-				var client_id = data.client_id;
-				this._emit("message", data.message, event);
-			}
-		}, this));
-	};
-	able.make_proto_listenable(MessageDistributionCenter.prototype);
-
-
-	var get_channel_listener = function (client_window, client_id) {
-		return {
-			type: "channel",
-			client_window: client_window,
-			client_id: client_id
-		};
-	};
-
-	var sdc = new MessageDistributionCenter();
-	sdc.on("message", function (message, event) {
-		var type = message.type,
-			client_window = event.source,
-			client_id = event.data.client_id;
-		var cobj, cobj_id, server;
-		if (type === "register_listener") {
-			cobj_id = message.cobj_id;
-			cobj = red.find_uid(cobj_id);
-			server = red.get_wrapper_server(cobj);
-
-			server.register_listener(get_channel_listener(client_window, client_id));
-		} else if (type === "get_$" || type === "async_get") { // async request
-			cobj_id = event.data.cobj_id;
-			cobj = red.find_uid(cobj_id);
-			server = red.get_wrapper_server(cobj);
-
-			var request_id = event.data.message_id;
-			var processed_getting = process_args(message.getting);
-			var create_constraint = type === "get_$";
-
-			server.on_request(processed_getting, function (response) {
-				var summarized_response = summarize_value(response);
-				client_window.postMessage({
-					type: "response",
-					request_id: request_id,
-					client_id: client_id,
-					response: summarized_response
-				}, origin);
-			}, create_constraint);
-		}
-	});
-	*/
-
 	var chop = function (args) {
 		return _.first(args, args.length - 1);
 	};
@@ -283,63 +227,5 @@
 				callback(summarize_value(rv));
 			}
 		};
-
-/*
-		proto.post = function (data) {
-			var full_message = {
-				type: "wrapper_server",
-				server_message: data
-			};
-			this._emit(data);
-			
-			var i, len = this.client_listeners.length;
-			for (i = 0; i < len; i += 1) {
-				var cl = this.client_listeners[i];
-				if (cl.type === "channel") {
-					var client_window = cl.client_window,
-						client_id = cl.client_id;
-					client_window.postMessage(_.extend({
-						client_id: client_id
-					}, full_message), origin);
-				}
-			}
-		};
-		*/
-
 	}(red.WrapperServer));
-
-/*
-	var wrapper_servers = {};
-
-	red.get_wrapper_server = function (object) {
-		var id = object.id();
-		if (wrapper_servers.hasOwnProperty(id)) {
-			return wrapper_servers[id];
-		} else {
-			var rv;
-
-			var listen_to;
-			if (object instanceof red.State) {
-				listen_to = ["add_transition", "add_substate", "remove_substate",
-									"rename_substate", "move_substate", "make_concurrent",
-									"on_transition", "off_transition", "destroy",
-									"active", "inactive"];
-			} else if (object instanceof red.StatechartTransition) {
-				listen_to = ["setTo", "setFrom", "remove", "destroy", "fire"];
-			} else if (object instanceof red.ParsedEvent) {
-				listen_to = ["setString"];
-			} else {
-				listen_to = [];
-			}
-			
-			rv = new red.WrapperServer({
-				object: object,
-				listen_to: listen_to
-			});
-
-			wrapper_servers[id] = rv;
-			return rv;
-		}
-	};
-	*/
 }(red));

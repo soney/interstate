@@ -13,7 +13,6 @@
 		var statechart = red.find_uid(id);
 		var is_active, is_active_value, promises;
 		
-		//statechart = null;
 		if (!statechart) {
 			if (statecharts.hasOwnProperty(id)) {
 				statechart = statecharts[id];
@@ -191,7 +190,6 @@
 	red.create_remote_transition = function (wrapper_client) {
 		var id = wrapper_client.cobj_id;
 		var transition = red.find_uid(id);
-		//transition = null;
 		if (!transition) {
 			if (transitions.hasOwnProperty(id)) {
 				transition = transitions[id];
@@ -258,7 +256,6 @@
 	red.create_remote_event = function (wrapper_client) {
 		var id = wrapper_client.cobj_id;
 		var event = red.find_uid(id);
-		//event = null;
 		if (!event) {
 			if (events.hasOwnProperty(id)) {
 				event = events[id];

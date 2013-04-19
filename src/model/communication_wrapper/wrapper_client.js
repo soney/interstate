@@ -15,61 +15,9 @@
 		return _.last(args);
 	};
 
-/*
-	var pending_responses = {};
-	var response_listeners = {};
-	var wrapper_clients = {};
-
-	var register_response_listener = function (id, listener) {
-		if (pending_responses.hasOwnProperty(id)) {
-			listener(pending_responses[id]);
-			delete pending_responses[id];
-		} else {
-			response_listeners[id] = listener;
-		}
-	};
-	*/
-
 	var argeq = function (arg1, arg2) {
 		return arg1 === arg2;
 	};
-
-/*
-	var clients = {};
-
-	red.ClientMessageDistributionCenter = function (comm_mechanism) {
-		able.make_this_listenable(this);
-		comm_mechanism.on("message", _.bind(function (event) {
-			var client;
-			var data = event.data;
-			if (data.type === "wrapper_server") {
-				this._emit("message", data.message, event.source);
-				var client_id = data.client_id;
-				var server_message = data.server_message;
-
-				var type = server_message.type;
-				if (type === "changed") {
-					client = clients[client_id];
-					client.on_change.apply(client, server_message.getting);
-				} else if (type === "emit") {
-					client = clients[client_id];
-					client.on_emit.apply(client, ([server_message.event_type]).concat(server_message.args));
-				}
-			} else if (data.type === "response") {
-				data = event.data;
-				var request_id = data.request_id,
-					response = data.response;
-				if (response_listeners.hasOwnProperty(request_id)) {
-					response_listeners[request_id](response);
-					delete response_listeners[request_id];
-				} else {
-					pending_responses[request_id] = response;
-				}
-			}
-		}, this));
-	};
-	able.make_proto_listenable(red.ClientMessageDistributionCenter.prototype);
-	*/
 
 
 	var client_id = 0;
@@ -242,28 +190,4 @@
 			}
 		};
 	}(red.WrapperClient));
-	/*
-		
-	red.get_wrapper_client = function (object_summary, comm_mechanism) {
-		var cobj_id = object_summary.id;
-		if (wrapper_clients.hasOwnProperty(cobj_id)) {
-			return wrapper_clients[cobj_id];
-		} else {
-			var otype = object_summary.type;
-			var rv;
-
-			var obj_id = object_summary.obj_id;
-			rv = new red.WrapperClient({
-				comm_mechanism: comm_mechanism,
-				cobj_id: cobj_id,
-				obj_id: obj_id,
-				type: otype,
-				object_summary: object_summary
-			});
-
-			wrapper_clients[cobj_id] = rv;
-			return rv;
-		}
-	};
-	*/
 }(red));
