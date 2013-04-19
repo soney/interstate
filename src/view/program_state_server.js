@@ -42,6 +42,7 @@
 		};
 
 		proto.on_message = function (data) {
+			var cobj, cobj_id, server, client_id;
 			if(data === "ready") {
 				this.connected = true;
 				var croot = this.contextual_root;
@@ -64,7 +65,6 @@
 				} else if(type === "wrapper_client") {
 					var message = data.message;
 					var mtype = message.type;
-					var cobj, cobj_id, server, client_id;
 					if (mtype === "register_listener") {
 						cobj_id = message.cobj_id;
 						cobj = red.find_uid(cobj_id);
@@ -100,8 +100,8 @@
 						cobj = red.find_uid(cobj_id);
 						server = this.get_wrapper_server(cobj);
 
-						var request_id = data.message_id,
-							client_id = data.client_id;
+						var request_id = data.message_id;
+						client_id = data.client_id;
 						var create_constraint = data.message.type === "get_$";
 
 						server.request(data.message.getting, _.bind(function (response) {
