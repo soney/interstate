@@ -160,7 +160,7 @@
 					state = arg1;
 					new_name = arg2;
 					var old_name = state.get_name("parent");
-					parent_puppet_id = state.parent().puppet_master_id;
+					parent_puppet_id = state.parent().puppet_master_id || state.parent().id();
 					command = new red.RenameStateCommand({
 						statechart: { id: to_func(parent_puppet_id) },
 						from: old_name,
@@ -170,7 +170,7 @@
 				} else if (type === 'remove_state') {
 					state = arg1;
 					name = state.get_name("parent");
-					parent_puppet_id = state.parent().puppet_master_id;
+					parent_puppet_id = state.parent().puppet_master_id || state.parent().id();
 					command = new red.RemoveStateCommand({
 						statechart: { id: to_func(parent_puppet_id) },
 						name: name
@@ -180,14 +180,14 @@
 					transition = arg1;
 					statechart = transition.root();
 					command = new red.RemoveTransitionCommand({
-						transition: { id: to_func(transition.puppet_master_id) },
-						statechart: { id: to_func(statechart.puppet_master_id) }
+						transition: { id: to_func(transition.puppet_master_id || transition.id()) },
+						statechart: { id: to_func(statechart.puppet_master_id || transition.id()) }
 					});
 					this.client_socket.post_command(command);
 				} else if (type === 'set_transition_str') {
 					transition = arg1;
 					str = arg2;
-					var transition_id = transition.puppet_master_id;
+					var transition_id = transition.puppet_master_id || transition.id();
 					command = new red.SetTransitionEventCommand({
 						transition: { id: to_func(transition_id) },
 						event: str
@@ -196,10 +196,10 @@
 				} else if (type === 'add_transition') {
 					from_state = arg1;
 					to_state = arg2;
-					statechart = from_state.root();
-					statechart_puppet_id = statechart.puppet_master_id;
-					var from_puppet_id = from_state.puppet_master_id,
-						to_puppet_id = to_state.puppet_master_id;
+					state = from_state.root();
+					statechart_puppet_id = state.puppet_master_id || state.id();
+					var from_puppet_id = from_state.puppet_master_id || from_state.id(),
+						to_puppet_id = to_state.puppet_master_id || to_state.id();
 					var event = red.create_event("parsed", {str: "(event)", inert: true});
 					command = new red.AddTransitionCommand({
 						from: { id: to_func(from_puppet_id) },
@@ -209,9 +209,9 @@
 					});
 					this.client_socket.post_command(command);
 				} else if (type === 'add_state') {
-					statechart = arg1;
-					statechart_puppet_id = statechart.puppet_master_id; 
-					var substates = statechart.get_substates();
+					state = arg1;
+					statechart_puppet_id = state.puppet_master_id || state.id(); 
+					var substates = state.get_substates();
 
 					var substates_size = _.size(substates);
 					var state_name, make_start;

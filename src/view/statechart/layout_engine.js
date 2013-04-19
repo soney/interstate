@@ -74,7 +74,7 @@
 			if (state_wrapper) {
 				var id = state_wrapper.cobj_id;
 				var layout = full_layout_info.locations;
-				var keys = _.map(layout.keys(), function (x) { return x.puppet_master_id || -1; }),
+				var keys = _.map(layout.keys(), function (x) { return x.puppet_master_id || x.id() || -1; }),
 					values = layout.values();
 
 				var i = _.indexOf(keys, id);

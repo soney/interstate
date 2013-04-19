@@ -88,18 +88,22 @@
 					var ptr_context = red.create("pointer", {stack: [dict]});
 
 					var master = window.master = red.create("statechart");
-					master.add_state("init")
-							.starts_at("init")
+					master	//.add_state("init")
+							//.starts_at("init")
+							//.add_state("state2");
+
 					var master_view = get_view(master, true);
 					$(".tl").append(master_view);
+					/*
 
 					var shadow = window.shadow = master.create_shadow({ context: ptr_context, running: true });
 					var shadow_view = get_view(shadow);
 					$(".tr").append(shadow_view);
+					*/
 
 					var sc_sum = {
-							type: 'statechart',
-							id: shadow.id()
+						type: 'statechart',
+						id: master.id()
 					};
 
 					var pss = new red.ProgramStateServer({
@@ -115,6 +119,7 @@
 					var puppet = window.puppet = red.create_remote_statechart(wrapper_client);
 					var puppet_view = get_view(puppet);
 					$(".bl").append(puppet_view);
+					
 					/*
 					window.setTimeout(function() {
 						master.remove_state("init");

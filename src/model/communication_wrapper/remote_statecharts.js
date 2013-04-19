@@ -13,7 +13,7 @@
 		var statechart = red.find_uid(id);
 		var is_active, is_active_value, promises;
 		
-		statechart = null;
+		//statechart = null;
 		if (!statechart) {
 			if (statecharts.hasOwnProperty(id)) {
 				statechart = statecharts[id];
@@ -153,13 +153,15 @@
 						});
 					});
 				} else {
-					statechart = new red.StartState(null, true);
+					statechart = statecharts[id] = new red.StartState(null, true);
 					statechart.puppet_master_id = id;
 
 					var outgoing_transition = _.Deferred();
 					var outgoing_transition_value;
 					wrapper_client.async_get('get_outgoing_transition', function (transition_wrapper) {
 						outgoing_transition_value = red.create_remote_transition(transition_wrapper);
+
+						console.log(transition_wrapper);
 						outgoing_transition.resolve();
 					});
 
@@ -179,7 +181,6 @@
 						});
 					});
 				}
-				statecharts[id] = statechart;
 			}
 		}
 		return statechart;
@@ -190,7 +191,7 @@
 	red.create_remote_transition = function (wrapper_client) {
 		var id = wrapper_client.cobj_id;
 		var transition = red.find_uid(id);
-		transition = null;
+		//transition = null;
 		if (!transition) {
 			if (transitions.hasOwnProperty(id)) {
 				transition = transitions[id];
@@ -257,13 +258,13 @@
 	red.create_remote_event = function (wrapper_client) {
 		var id = wrapper_client.cobj_id;
 		var event = red.find_uid(id);
-		event = null;
+		//event = null;
 		if (!event) {
 			if (events.hasOwnProperty(id)) {
 				event = events[id];
 			} else {
 				var event_type = wrapper_client.object_summary.event_type;
-				event = red.create_event(event_type, {inert: true});
+				event = events[id] = red.create_event(event_type, {inert: true});
 				if (event_type === "parsed") {
 					var str_val = "";
 					wrapper_client.async_get("get_str", function (str) {
