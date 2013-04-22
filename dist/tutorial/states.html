@@ -61,6 +61,8 @@
 				.unset("find")
 				.unset("emit")
 				.unset("dom")
+				.unset("raphael")
+				.unset("three")
 				.unset("child_nodes");
 			return env.get_root();
 		};
@@ -82,6 +84,8 @@
 				.unset("find")
 				.unset("emit")
 				.unset("dom")
+				.unset("raphael")
+				.unset("three")
 				.unset("child_nodes");
 			return env.get_root();
 		};
@@ -95,6 +99,7 @@
 					.add_transition("under", "over", "x > 100")
 					.add_transition("over", "under", "x <= 100")
 					.up()
+				.set("x", "75")
 				;
 			return env.get_root();
 		};
@@ -113,7 +118,9 @@
 				.unset("find")
 				.unset("emit")
 				.unset("dom")
-				.unset("child_nodes");
+				.unset("child_nodes")
+				.unset("raphael")
+				.unset("three");
 			return env.get_root();
 		};
 	</script>

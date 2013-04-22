@@ -73,6 +73,8 @@ exports.build_src = c(
 				"model/statechart/events/combination_event.js",
 				"model/attachments/attachment_core.js",
 				"model/attachments/dom_attachment.js",
+				"model/attachments/raphael_attachment.js",
+				"model/attachments/three_attachment.js",
 				"model/communication_wrapper/comm_mechanisms.js",
 				"model/communication_wrapper/wrapper_server.js",
 				"model/communication_wrapper/wrapper_client.js",

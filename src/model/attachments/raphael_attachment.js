@@ -6,10 +6,10 @@
 	var cjs = red.cjs,
 		_ = red._;
 
-	red.ThreeAttachmentInstance = function (options) {
-		red.ThreeAttachmentInstance.superclass.constructor.apply(this, arguments);
+	red.RaphaelAttachmentInstance = function (options) {
+		red.RaphaelAttachmentInstance.superclass.constructor.apply(this, arguments);
 
-		this.type = "threejs";
+		this.type = "raphael";
 		this.on_ready();
 	};
 	(function (my) {
@@ -17,20 +17,20 @@
 		var proto = my.prototype;
 		proto.on_ready = function() {
 		};
-	}(red.ThreeAttachmentInstance));
+	}(red.RaphaelAttachmentInstance));
 
-	red.ThreeAttachment = function (options) {
+	red.RaphaelAttachment = function (options) {
 		options = _.extend({
-			instance_class: red.ThreeAttachmentInstance
+			instance_class: red.RaphaelAttachmentInstance
 		}, options);
 		red.RaphaelAttachment.superclass.constructor.call(this, options);
-		this.type = "three";
+		this.type = "raphael";
 	};
 	(function (My) {
 		_.proto_extend(My, red.Attachment);
 		var proto = My.prototype;
 
-		red.register_serializable_type("three_attachment",
+		red.register_serializable_type("raphael_attachment",
 			function (x) {
 				return x instanceof My;
 			},
@@ -44,10 +44,10 @@
 					instance_options: red.deserialize(obj.instance_options)
 				});
 			});
-	}(red.ThreeAttachment));
+	}(red.RaphaelAttachment));
 
-	red.define("three_attachment", function (options) {
-		return new red.ThreeAttachment(options);
+	red.define("raphael_attachment", function (options) {
+		return new red.RaphaelAttachment(options);
 	});
 
 }(red, jQuery));

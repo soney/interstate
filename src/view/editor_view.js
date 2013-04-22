@@ -372,6 +372,10 @@
 			"var value = event.target.value;\n" +
 			"post_command('set_str', cell, value);\n" +
 		"}")
+		.on_state("editing >2- idle", "function (event) {\n" +
+			"var value = event.target.value;\n" +
+			"post_command('set_str', cell, value);\n" +
+		"}")
 		.up()
 	.set("statechart_view", "<stateful>")
 	.cd("statechart_view")

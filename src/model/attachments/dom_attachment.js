@@ -271,6 +271,16 @@
 				if(dom_obj) {
 					return [dom_attachment, dom_obj];
 				}
+			} else {
+			/*
+				var raphael_attachment = contextual_dict.get_attachment_instance("raphael");
+				if(raphael_attachment) {
+					dom_obj = raphael_attachment.get_dom_obj();
+				}
+				if(dom_obj) {
+					return [raphael_attachment, dom_obj];
+				}
+				*/
 			}
 			return false;
 		};

@@ -11,17 +11,18 @@
 			<script type="text/javascript">
 				var env = red.create("environment");
 				var root = env.get_root();
-				/*
-	env	.cd("child_nodes")
-		.set("obj", "<stateful>")
-		.cd("obj")
-		.set("(prototypes)", "(start)", "dom")
-		.set("tag", "<stateful_prop>")
-		.set("text", "<stateful_prop>")
-		.set("tag", "(start)", "'div'")
-		.set("text", "(start)", "'hello world'")
-		;
-				*/
+				env	.cd("child_nodes")
+						.set("obj", "<stateful>")
+						.cd("obj")
+							.set("(prototypes)", "(start)", "[raphael]")
+							/*
+							.set("tag", "<stateful_prop>")
+							.set("text", "<stateful_prop>")
+							.set("tag", "(start)", "'div'")
+							.set("text", "(start)", "'hello world'")
+							*/
+				;
+
 				$("div#editor").editor({
 					debug_env: true,
 					server_window: window

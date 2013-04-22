@@ -57,6 +57,12 @@
 		//	dom.set("css", red.create("dict", {has_protos: false}));
 			root_dict.set("dom", dom);
 
+			var raphael = red.create("dict", {has_protos: false, direct_attachments: [red.create("raphael_attachment")]});
+			root_dict.set("raphael", raphael);
+
+			var three = red.create("dict", {has_protos: false, direct_attachments: [red.create("three_attachment")]});
+			root_dict.set("three", three);
+ 
 			var children = red.create("dict", {has_protos: false});
 			root_dict.set("child_nodes", children);
 		};

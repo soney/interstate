@@ -46,6 +46,11 @@
 						.set("text")
 						.set("text", "(start)", "'hello world'")
 						.up()
+					.up()
+				.unset("three")
+				.unset("raphael")
+				.unset("emit")
+				.unset("find")
 			return env.get_root();
 		};
 		euc_examples.child_nodes = function() {
@@ -74,7 +79,13 @@
 								.set("text")
 								.set("text", "(start)", "'second child'")
 								.up()
+							.up()
 						.up()
+					.up()
+				.unset("three")
+				.unset("raphael")
+				.unset("emit")
+				.unset("find")
 			return env.get_root();
 		};
 		euc_examples.dom_css = function() {
@@ -100,7 +111,12 @@
 						.cd("css")
 							.set("color", "(start)", "my_color")
 							.up()
+						.up()
 					.up()
+				.unset("three")
+				.unset("raphael")
+				.unset("emit")
+				.unset("find")
 			return env.get_root();
 		};
 	</script>
