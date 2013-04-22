@@ -17,6 +17,8 @@
 		var proto = my.prototype;
 		proto.on_ready = function() {
 		};
+		proto.destroy = function () {
+		};
 	}(red.ThreeAttachmentInstance));
 
 	red.ThreeAttachment = function (options) {
