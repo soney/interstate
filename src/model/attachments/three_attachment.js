@@ -5,7 +5,6 @@
 	"use strict";
 	var cjs = red.cjs,
 		_ = red._;
-
 	red.ThreeAttachmentInstance = function (options) {
 		red.ThreeAttachmentInstance.superclass.constructor.apply(this, arguments);
 
@@ -25,7 +24,7 @@
 		options = _.extend({
 			instance_class: red.ThreeAttachmentInstance
 		}, options);
-		red.RaphaelAttachment.superclass.constructor.call(this, options);
+		red.ThreeAttachment.superclass.constructor.call(this, options);
 		this.type = "three";
 	};
 	(function (My) {
