@@ -104,6 +104,8 @@ exports.main_src = c(
 				"jquery-ui-1.9.1.custom/js/jquery-ui-1.9.1.custom.js",
 				"raphael/raphael.js",
 				"esprima/esprima.js",
+				"three.min.js",
+				"box2d/Box2dWeb-2.1.a.3.min.js"
 			]),
 	exports.build_src,
 	cp("sample_apps", [

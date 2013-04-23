@@ -25,7 +25,7 @@
 			if(paper_children.length <= index) {
 				child_node.insertAfter(paper.bottom);
 			} else {
-				var before_child = paper_children[index]
+				var before_child = paper_children[index];
 				child_node.insertBefore(before_child);
 			}
 		}
@@ -76,7 +76,7 @@
 					old_type = type;
 					if (_.isString(type)) {
 						if(type === "paper") {
-							var dom_obj = document.createElement("div");
+							var dom_obj = window.document.createElement("div");
 							this.$dom_obj.set(dom_obj);
 							this.$robj.set(new Raphael(dom_obj, 1, 1));
 						} else if(_.indexOf(VALID_TYPES, type) >= 0) {
@@ -269,7 +269,7 @@
 					return parent_robj;
 				}
 			}
-			return false
+			return false;
 		};
 
 		proto.pause = function() { };

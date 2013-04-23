@@ -46,14 +46,6 @@ module.exports = function(grunt) {
 				},
 				src: "build/red.js",
 				dest: "build/red.min.js"
-			},
-			esprima: {
-				options: {
-					mangle: false,
-					compress: false
-				},
-				src: "src/_vendor/esprima/esprima.js",
-				dest: "build/_vendor/esprima.min.js"
 			}
 		},
 		concat: {
@@ -74,6 +66,10 @@ module.exports = function(grunt) {
 			esprima: {
 				src: "src/_vendor/esprima/esprima.js",
 				dest: "build/_vendor/esprima.js"
+			},
+			box2d: {
+				src: "src/_vendor/esprima/Box2dWeb-2.1.a.3.min.js",
+				dest: "build/_vendor/Box2dWeb-2.1.a.3.min.js"
 			}
 		},
 		copy: {
