@@ -6,6 +6,7 @@
 	var cjs = red.cjs,
 		_ = red._;
 
+/*
 	var b2Vec2 = Box2D.Common.Math.b2Vec2,
 		b2AABB = Box2D.Collision.b2AABB,
 		b2BodyDef = Box2D.Dynamics.b2BodyDef,
@@ -68,5 +69,6 @@
 	red.define("box2d_attachment", function (options) {
 		return new red.Box2DAttachment(options);
 	});
+	/**/
 
 }(red, jQuery));

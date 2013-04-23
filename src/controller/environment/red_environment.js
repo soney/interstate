@@ -63,9 +63,11 @@
 			var three = red.create("dict", {has_protos: false, direct_attachments: [red.create("three_attachment")]});
 			root_dict.set("three", three);
 
+/*
 			var box2d = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_attachment")]});
 			root_dict.set("box2d", box2d);
- 
+			*/
+
 			var children = red.create("dict", {has_protos: false});
 			root_dict.set("child_nodes", children);
 		};

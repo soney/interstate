@@ -61,7 +61,7 @@
 		var sample_apps = [
 			"hello_world",
 			"simple_hover",
-			"breakout"
+			"raphael"
 		];
 
 		$(function() {
@@ -107,7 +107,16 @@
 					$("#sample_apps").append("&nbsp;|&nbsp;");
 				}
 			}
-			load_sample_app(sample_apps[0]);
+			if(window.location.hash) {
+				var hash = window.location.hash.slice(1);
+				var index = sample_apps.indexOf(hash);
+				if(index < 0) {
+					index = 0;
+				}
+				load_sample_app(sample_apps[index]);
+			} else {
+				load_sample_app(sample_apps[0]);
+			}
 		});
 	</script>
 </html>
