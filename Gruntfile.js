@@ -68,7 +68,7 @@ module.exports = function(grunt) {
 				dest: "build/_vendor/esprima.js"
 			},
 			box2d: {
-				src: "src/_vendor/esprima/Box2dWeb-2.1.a.3.min.js",
+				src: "src/_vendor/box2d/Box2dWeb-2.1.a.3.min.js",
 				dest: "build/_vendor/Box2dWeb-2.1.a.3.min.js"
 			}
 		},
