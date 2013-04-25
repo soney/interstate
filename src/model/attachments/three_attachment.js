@@ -17,6 +17,12 @@
 									window.setTimeout(callback, 1000 / 60);
 								};
 
+	var cop_props = function(from, to, prop_names) {
+		_.each(prop_names, function(prop_name) {
+			to[prop_name] = from[prop_name];
+		});
+	};
+
 	var object_types = {
 		"point_light": {
 			ready: function() {
@@ -58,13 +64,45 @@
 		},
 		"sphere_geometry": {
 			ready: function() {
-				this.geometry = new THREE.SphereGeometry();
+				this.geometry = new THREE.SphereGeometry(undefined, 16, 16);
 				this.geometry.dynamic = true;
 			},
 			parameters: {
 				radius: function(contextual_object) {
 					var radius = contextual_object.prop_val("radius");
-					this.geometry.radius = radius;
+					var reference_geometry = new THREE.SphereGeometry(radius, 16, 16);
+
+					this.geometry.vertices.length = 0;
+					var vertices = reference_geometry.vertices;
+					for ( var i = 0, il = vertices.length; i < il; i ++ ) {
+						this.geometry.vertices.push(vertices[i].clone());
+					}
+
+					this.geometry.faces.length = 0;
+					var faces = reference_geometry.faces;
+					for ( var i = 0, il = faces.length; i < il; i ++ ) {
+						this.geometry.faces.push(faces[i].clone());
+					}
+
+					this.geometry.faceVertexUvs[0].length = 0;
+					var uvs = reference_geometry.faceVertexUvs[0];
+					for ( var i = 0, il = uvs.length; i < il; i ++ ) {
+						var uv = uvs[i], uvCopy = [];
+						for ( var j = 0, jl = uv.length; j < jl; j ++ ) {
+							uvCopy.push(new THREE.Vector2( uv[j].x, uv[j].y ) );
+						}
+						this.geometry.faceVertexUvs[0].push(uvCopy);
+					}
+
+					reference_geometry.dispose();
+
+					this.geometry.verticesNeedUpdate = true;
+					this.geometry.elementsNeedUpdate = true;
+					this.geometry.morphTargetsNeedUpdate = true;
+					this.geometry.uvsNeedUpdate = true;
+					this.geometry.normalsNeedUpdate = true;
+					this.geometry.colorsNeedUpdate = true;
+					this.geometry.tangentsNeedUpdate = true;
 				}
 			},
 			proto_props: {
@@ -120,6 +158,7 @@
 				this.scene.add(this.camera);
 				this.$render = _.bind(this.render, this);
 				this.render();
+				window.scene = this.scene;
 			},
 			
 			parameters: {
