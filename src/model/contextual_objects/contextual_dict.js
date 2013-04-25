@@ -453,6 +453,9 @@
 			}
 		};
 
+		proto.get_attachments = function() {
+		};
+
 		proto.destroy = function () {
 			my.superclass.destroy.apply(this, arguments);
 			this.attachments.destroy();

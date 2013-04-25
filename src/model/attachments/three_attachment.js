@@ -12,14 +12,15 @@
 		DEFAULT_FAR = 10000;
 
 	var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
-								window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+								window.webkitRequestAnimationFrame || window.msRequestAnimationFrame ||
+								function(callback) {
+									window.setTimeout(callback, 1000 / 60);
+								};
 
 	var object_types = {
 		"point_light": {
-			objects: {
-				point_light: function() {
-					return new THREE.PointLight(0xFFFFFF);
-				}
+			ready: function() {
+				this.point_light = new THREE.PointLight(0xFFFFFF);
 			},
 			parameters: {
 				position: function(contextual_object) {
@@ -30,208 +31,285 @@
 				},
 				color: function(contextual_object) {
 					var color = contextual_object.prop_val("color");
-					this.point_light.color = color;
+					this.point_light.color.set(color);
+				}
+			},
+			proto_props: {
+				get_three_obj: function() {
+					return this.point_light;
+				}
+			}
+		},
+		"lambert_material": {
+			ready: function() {
+				this.material = new THREE.MeshLambertMaterial();
+			},
+			parameters: {
+				color: function(contextual_object) {
+					var color = contextual_object.prop_val("color");
+					this.material.color.set(color);
+				}
+			},
+			proto_props: {
+				get_material: function() {
+					return this.material;
+				}
+			}
+		},
+		"sphere_geometry": {
+			ready: function() {
+				this.geometry = new THREE.SphereGeometry();
+				this.geometry.dynamic = true;
+			},
+			parameters: {
+				radius: function(contextual_object) {
+					var radius = contextual_object.prop_val("radius");
+					this.geometry.radius = radius;
+				}
+			},
+			proto_props: {
+				get_geometry: function() {
+					return this.geometry;
+				}
+			}
+		},
+
+		"mesh": {
+			ready: function() {
+				this.mesh = new THREE.Mesh();
+			},
+			parameters: {
+				geometry: function(contextual_object) {
+					var geometry_prop = contextual_object.prop_val("geometry");
+					var attachments = _.compact(_.map(["sphere_geometry"], function(attachment_name) {
+						return geometry_prop.get_attachment_instance(attachment_name);
+					}));
+					var geometries = _.map(attachments, function(attachment) {
+						return attachment.get_geometry();
+					});
+					var geometry = geometries[0];
+					if(geometry) {
+						this.mesh.geometry = geometry;
+					}
+				},
+				material: function(contextual_object) {
+					var material_prop = contextual_object.prop_val("material");
+					var attachments = _.compact(_.map(["lambert_material"], function(attachment_name) {
+						return material_prop.get_attachment_instance(attachment_name);
+					}));
+					var materials = _.map(attachments, function(attachment) {
+						return attachment.get_material();
+					});
+					var material = materials[0];
+					this.mesh.material = material;
+				}
+			},
+			proto_props: {
+				get_three_obj: function() {
+					return this.mesh;
+				}
+			}
+		},
+
+		"three_scene": {
+			ready: function() {
+				this.renderer = new THREE.WebGLRenderer();
+				this.camera = new THREE.PerspectiveCamera(DEFAULT_VIEW_ANGLE, DEFAULT_ASPECT, DEFAULT_NEAR, DEFAULT_FAR);
+				this.scene = new THREE.Scene();
+
+				this.scene.add(this.camera);
+				this.$render = _.bind(this.render, this);
+				this.render();
+			},
+			
+			parameters: {
+				size: function(contextual_object) {
+					var width = contextual_object.prop_val("width");
+					var height = contextual_object.prop_val("height");
+					this.renderer.setSize(width, height);
+				},
+				camera_position: function(contextual_object) {
+					var camera = contextual_object.prop_val("camera");
+					var x = camera.prop_val("x"),
+						y = camera.prop_val("y"),
+						z = camera.prop_val("z");
+					this.camera.position.set(x, y, z);
+					this.camera.updateProjectionMatrix();
+				},
+				camera_fov_near_far_aspect: function(contextual_object) {
+					var camera = contextual_object.prop_val("camera");
+					var fov = camera.prop_val("fov"),
+						aspect = camera.prop_val("aspect"),
+						near = camera.prop_val("near"),
+						far = camera.prop_val("far");
+
+					this.camera.fov = fov;
+					this.camera.aspect = aspect;
+					this.camera.near = near;
+					this.camera.far = far;
+					this.camera.updateProjectionMatrix();
+				},
+
+				clear_color: function(contextual_object) {
+					var clear_color = contextual_object.prop_val("clear_color");
+					this.renderer.setClearColor(clear_color);
+				},
+
+				objects: {
+					type: "list",
+					add: function(item, index) {
+						this.scene.add(item);
+						if(item instanceof THREE.Light )  {
+							this.scene.traverse(function(node) {
+								if(node.material) {
+									node.material.needsUpdate = true;
+									if ( node.material instanceof THREE.MeshFaceMaterial ) {
+										for ( var i = 0; i < node.material.materials.length; i++) {
+											node.material.materials[i].needsUpdate = true;
+										}
+									}
+								}
+							});
+						}
+					},
+					remove: function(item) {
+						this.scene.remove(item);
+					},
+					move: function(item, from_index, to_index) {
+					},
+					getter: function(contextual_object) {
+						var objects = contextual_object.prop_val("objects");
+						var object_children = _.pluck(objects.children(), "value");
+
+						var rv = [];
+						_.each(object_children, function(child) {
+							var attachments = _.compact(_.map(["point_light", "mesh"], function(attachment_name) {
+								return child.get_attachment_instance(attachment_name);
+							}));
+							var objects = _.map(attachments, function(attachment) {
+								return attachment.get_three_obj();
+							});
+							rv.push.apply(rv, objects);
+						});
+						return rv;
+					}
+				}
+			},
+
+			proto_props: {
+				render: function() {
+					requestAnimationFrame(this.$render);
+					this.renderer.render(this.scene, this.camera);
+				},
+				get_dom_obj: function() {
+					if(this.renderer) {
+						return this.renderer.domElement;
+					} else {
+						return false;
+					}
 				}
 			}
 		}
 	};
 
-_.each(object_types, function(attachment_specs, attachment_name) {
-	var InstanceType = function(options) {
-		InstanceType.superclass.constructor.apply(this, arguments);
+	_.each(object_types, function(attachment_specs, attachment_name) {
+		var attachment_suffix = "_attachment";
 
-		this.type = attachment_name;
-		this.on_ready();
-	};
-	(function(My) {
-		_.proto_extend(My, red.AttachmentInstance);
-		var proto = My.prototype;
-		proto.on_ready = function() {
-			_.each(attachment_specs.objects, function(obj_spec, obj_name) {
-				this[obj_name] = obj_spec.call(this);
-			}, this);
+		var InstanceType = function(options) {
+			InstanceType.superclass.constructor.apply(this, arguments);
 
-			this._listeners = {};
-			var contextual_object = this.get_contextual_object();
-			_.each(attachment_specs.parameters, function(parameter_spec, parameter_name) {
-				this._listeners[parameter_name] = cjs.liven(function() {
-					parameter_spec.call(this, contextual_object);
-				}, {
-					context: this
-				});
-			}, this);
+			this.type = attachment_name;
+			this.on_ready();
 		};
-	}(InstanceType));
+		(function(My) {
+			_.proto_extend(My, red.AttachmentInstance);
+			var proto = My.prototype;
+			proto.on_ready = function() {
+				attachment_specs.ready.call(this);
+				this._listeners = {};
+				var contextual_object = this.get_contextual_object();
+				_.each(attachment_specs.parameters, function(parameter_spec, parameter_name) {
+					if(_.isFunction(parameter_spec)) {
+						this._listeners[parameter_name] = cjs.liven(function() {
+							parameter_spec.call(this, contextual_object);
+						}, {
+							context: this
+						});
+					} else if(parameter_spec.type === "list") {
+						var add_fn = parameter_spec.add,
+							remove_fn = parameter_spec.remove,
+							move_fn = parameter_spec.move;
+						var getter = parameter_spec.getter;
+						var curr_val = [];
 
-	var AttachmentType = function(options) {
-		options = _.extend({
-			instance_class: InstanceType
-		}, options);
-		AttachmentType.superclass.constructor.call(this, options);
-		this.type = attachment_name;
-	};
-	(function(My) {
-		_.proto_extend(My, red.Attachment);
-		var proto = My.prototype;
-		red.register_serializable_type(attachment_name,
-			function (x) {
-				return x instanceof My;
-			},
-			function () {
-				return {
-					instance_options: red.serialize(this.instance_options)
-				};
-			},
-			function (obj) {
-				return new My({
-					instance_options: red.deserialize(obj.instance_options)
+						this._listeners[parameter_name] = cjs.liven(function() {
+							var desired_val = getter.call(this, contextual_object);
+							var diff = _.diff(curr_val, desired_val);
+
+							_.forEach(diff.removed, function (info) {
+								var index = info.from, child = info.from_item;
+								remove_fn.call(this, child, index);
+							}, this);
+							_.forEach(diff.added, function (info) {
+								var index = info.to, child = info.item;
+								add_fn.call(this, child, index);
+							}, this);
+							_.forEach(diff.moved, function (info) {
+								var from_index = info.from, to_index = info.to, child = info.item;
+								move_fn.call(this, child, from_index, to_index);
+							}, this);
+
+							curr_val = desired_val;
+						}, {
+							context: this
+						});
+					}
+				}, this);
+			};
+			proto.on_pause = function() {
+				_.each(this._listeners, function(listener) {
+					listener.pause();
 				});
-			});
-	}(AttachmentType));
+			};
+			proto.on_resume = function() {
+				_.each(this._listeners, function(listener) {
+					listener.resume();
+				});
+			};
 
-	red.define(attachment_name, function (options) {
-		return new AttachmentType(options);
+			_.each(attachment_specs.proto_props, function(proto_prop, proto_prop_name) {
+				proto[proto_prop_name] = proto_prop;
+			});
+		}(InstanceType));
+
+		var AttachmentType = function(options) {
+			options = _.extend({
+				instance_class: InstanceType
+			}, options);
+			AttachmentType.superclass.constructor.call(this, options);
+			this.type = attachment_name;
+		};
+		(function(My) {
+			_.proto_extend(My, red.Attachment);
+			var proto = My.prototype;
+			red.register_serializable_type(attachment_name + attachment_suffix,
+				function (x) {
+					return x instanceof My;
+				},
+				function () {
+					return {
+						instance_options: red.serialize(this.instance_options)
+					};
+				},
+				function (obj) {
+					return new My({
+						instance_options: red.deserialize(obj.instance_options)
+					});
+				});
+		}(AttachmentType));
+
+		red.define(attachment_name + attachment_suffix, function (options) {
+			return new AttachmentType(options);
+		});
 	});
-});
-
-	red.ThreeSceneAttachmentInstance = function (options) {
-		red.ThreeSceneAttachmentInstance.superclass.constructor.apply(this, arguments);
-
-		this.type = "three_scene";
-		this.on_ready();
-	};
-	(function (my) {
-		_.proto_extend(my, red.AttachmentInstance);
-		var proto = my.prototype;
-		proto.on_ready = function() {
-			this.renderer = new THREE.WebGLRenderer();
-			this.camera = new THREE.PerspectiveCamera(DEFAULT_VIEW_ANGLE, DEFAULT_ASPECT, DEFAULT_NEAR, DEFAULT_FAR);
-			this.scene = new THREE.Scene();
-
-
-// set up the sphere vars
-var radius = 50,
-	segments = 16,
-	rings = 16;
-
-var sphereMaterial = new THREE.MeshLambertMaterial( { color: 0xCC0000 });
-// create a new mesh with
-// sphere geometry - we will cover
-// the sphereMaterial next!
-var sphere = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), sphereMaterial);
-
-// add the sphere to the scene
-this.scene.add(sphere);
-
-this.scene.add(this.camera);
-this.camera.position.z = 300;
-
-// create a point light
-var pointLight =
-  new THREE.PointLight(0xFFFFFF);
-
-// set its position
-pointLight.position.x = 10;
-pointLight.position.y = 50;
-pointLight.position.z = 130;
-
-// add to the scene
-this.scene.add(pointLight);
-
-			this.add_camera_listener();
-			this.add_clear_color_listener();
-			this.add_size_listener();
-			this.$render = _.bind(this.render, this);
-			this.render();
-		};
-		proto.add_camera_listener = function() {
-			var contextual_object = this.get_contextual_object();
-			cjs.liven(function() {
-				var camera = contextual_object.prop_val("camera");
-				var x = camera.prop_val("x"),
-					y = camera.prop_val("y"),
-					z = camera.prop_val("z"),
-					fov = camera.prop_val("fov"),
-					aspect = camera.prop_val("aspect"),
-					near = camera.prop_val("near"),
-					far = camera.prop_val("far");
-
-				this.camera.position.set(x, y, z);
-				this.camera.fov = fov;
-				this.camera.aspect = aspect;
-				this.camera.near = near;
-				this.camera.far = far;
-				this.camera.updateProjectionMatrix();
-			}, {
-				context: this
-			});
-		};
-		proto.add_size_listener = function() {
-			var contextual_object = this.get_contextual_object();
-			cjs.liven(function() {
-				var width = contextual_object.prop_val("width");
-				var height = contextual_object.prop_val("height");
-				this.renderer.setSize(width, height);
-			}, {
-				context: this
-			});
-		};
-		proto.add_clear_color_listener = function() {
-			var contextual_object = this.get_contextual_object();
-			cjs.liven(function() {
-				var clear_color = contextual_object.prop_val("clear_color");
-				this.renderer.setClearColor(clear_color);
-			}, {
-				context: this
-			});
-		};
-
-		proto.get_dom_obj = function() {
-			if(this.renderer) {
-				return this.renderer.domElement;
-			} else {
-				return false;
-			}
-		};
-
-		proto.render = function() {
-			requestAnimationFrame(this.$render);
-			this.renderer.render(this.scene, this.camera);
-		};
-
-		proto.destroy = function () {
-		};
-	}(red.ThreeSceneAttachmentInstance));
-
-	red.ThreeSceneAttachment = function (options) {
-		options = _.extend({
-			instance_class: red.ThreeSceneAttachmentInstance
-		}, options);
-		red.ThreeSceneAttachment.superclass.constructor.call(this, options);
-		this.type = "three_scene";
-	};
-	(function (My) {
-		_.proto_extend(My, red.Attachment);
-		var proto = My.prototype;
-
-		red.register_serializable_type("three_scene_attachment",
-			function (x) {
-				return x instanceof My;
-			},
-			function () {
-				return {
-					instance_options: red.serialize(this.instance_options)
-				};
-			},
-			function (obj) {
-				return new My({
-					instance_options: red.deserialize(obj.instance_options)
-				});
-			});
-	}(red.ThreeSceneAttachment));
-
-	red.define("three_scene_attachment", function (options) {
-		return new red.ThreeSceneAttachment(options);
-	});
-
 }(red, jQuery));

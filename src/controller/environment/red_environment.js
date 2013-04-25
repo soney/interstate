@@ -61,8 +61,22 @@
 			root_dict.set("raphael", raphael);
 
 			var three = red.create("dict", {has_protos: false});
+
+			var point_light = red.create("dict", {has_protos: false, direct_attachments: [red.create("point_light_attachment")]});
+			three.set("point_light", point_light);
+
 			var scene = red.create("dict", {has_protos: false, direct_attachments: [red.create("three_scene_attachment")]});
 			three.set("scene", scene);
+
+			var lambert_material = red.create("dict", {has_protos: false, direct_attachments: [red.create("lambert_material_attachment")]});
+			three.set("lambert_material", lambert_material);
+
+			var sphere_geometry = red.create("dict", {has_protos: false, direct_attachments: [red.create("sphere_geometry_attachment")]});
+			three.set("sphere_geometry", sphere_geometry);
+
+			var mesh = red.create("dict", {has_protos: false, direct_attachments: [red.create("mesh_attachment")]});
+			three.set("mesh", mesh);
+
 			root_dict.set("three", three);
 
 /*
