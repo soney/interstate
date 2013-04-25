@@ -1,8 +1,11 @@
 /*jslint nomen: true, vars: true */
-/*global red,able,uid,console,jQuery,window */
+/*global red,able,uid,console,jQuery,window,Box2D */
 
 (function (red, $) {
 	"use strict";
+
+	if(!window.Box2D) { return; }
+
 	var cjs = red.cjs,
 		_ = red._;
 
@@ -16,57 +19,33 @@
 		b2MassData = Box2D.Collision.Shapes.b2MassData,
 		b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape,
 		b2CircleShape = Box2D.Collision.Shapes.b2CircleShape,
-		b2DebugDraw = Box2D.Dynamics.b2DebugDraw,
 		b2MouseJointDef =  Box2D.Dynamics.Joints.b2MouseJointDef;
 
-	var worlds = {};
-
-	red.Box2DAttachmentInstance = function (options) {
-		red.Box2DAttachmentInstance.superclass.constructor.apply(this, arguments);
-
-		this.type = "box2d";
-		this.on_ready();
-	};
-
-	(function (my) {
-		_.proto_extend(my, red.AttachmentInstance);
-		var proto = my.prototype;
-		proto.on_ready = function() {
-		};
-		proto.destroy = function () {
-		};
-	}(red.Box2DAttachmentInstance));
-
-
-	red.Box2DAttachment = function (options) {
-		options = _.extend({
-			instance_class: red.Box2DAttachmentInstance
-		}, options);
-		red.Box2DAttachment.superclass.constructor.call(this, options);
-		this.type = "box2d";
-	};
-	(function (My) {
-		_.proto_extend(My, red.Attachment);
-		var proto = My.prototype;
-
-		red.register_serializable_type("three_attachment",
-			function (x) {
-				return x instanceof My;
+	red.register_attachments({
+		"box2d": {
+			ready: function() {
+				this.world = new b2World(new Box2D.Common.Math.b2Vec2(0, 0), true);
 			},
-			function () {
-				return {
-					instance_options: red.serialize(this.instance_options)
-				};
-			},
-			function (obj) {
-				return new My({
-					instance_options: red.deserialize(obj.instance_options)
-				});
-			});
-	}(red.Box2DAttachment));
+			parameters: {
+				gravity: function(contextual_object) {
+					var gravity_x = contextual_object.prop_val("gx"),
+						gravity_y = contextual_object.prop_val("gy");
 
-	red.define("box2d_attachment", function (options) {
-		return new red.Box2DAttachment(options);
+					var gravity_vector = new b2Vec2(gravity_x, gravity_y)
+					this.world.SetGravity(gravity_vector);
+					var body_list = this.world.GetBodyList();
+					var body_len = this.world.GetBodyCount();
+					for(var i = 0; i<body_len; i++) {
+						body_list.SetAwake(true);
+						body_list = body_list.GetNext();
+					}
+				}
+			},
+			proto_props: {
+				get_world: function() {
+					return this.world;
+				}
+			}
+		},
 	});
-
 }(red, jQuery));
