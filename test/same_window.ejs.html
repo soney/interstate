@@ -13,33 +13,6 @@
 				var env = red.create("environment");
 				var root = env.get_root();
 
-				env
-				.set("my_world", "<stateful>")
-				.cd("my_world")
-					.set("(prototypes)", "(start)", "box2d.world")
-					.set("gy", "(start)", "0")
-					.set("gx", "(start)", "0")
-					.up()
-				.cd("child_nodes")
-					.set("my_block", "<stateful>")
-					.cd("my_block")
-						.set("(prototypes)", "(start)", "[box2d.fixture, dom]")
-						.set("tag", "(start)", "'span'")
-						.set("world", "(start)", "my_world")
-						.set("r", "(start)", "50")
-						.set("x", "(start)", "100")
-						.set("y", "(start)", "100")
-						.set("x_val", "(start)", "this.get_x()")
-						.set("y_val", "(start)", "this.get_y()")
-						.set("fixed", "(start)", "true")
-						.set("css", "<dict>")
-						.cd("css")
-							.set("width", "r+'px'")
-							.set("height", "r+'px'")
-							.set("position", "'absolute'")
-							.set("left", "x_val+'px'")
-							.set("top", "y_val+'px'")
-							.set("backgroundColor", "'red'")
 
 				$("div#editor").editor({
 					debug_env: true,

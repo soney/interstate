@@ -24,6 +24,7 @@
 	};
 
 	var copy_geometry = function(from, to) {
+			var i, il;
 			to.vertices.length = 0;
 			var vertices = from.vertices;
 			i = 0; il = vertices.length;
@@ -31,7 +32,7 @@
 				to.vertices.push(vertices[i].clone());
 			}
 
-			this.geometry.faces.length = 0;
+			to.faces.length = 0;
 			var faces = from.faces;
 			i = 0; il = faces.length;
 			for (; i < il; i ++ ) {
@@ -97,7 +98,6 @@
 			},
 			parameters: {
 				radius: function(contextual_object) {
-					var i, il;
 					var radius = contextual_object.prop_val("radius");
 					var reference_geometry = new THREE.SphereGeometry(radius, 16, 16);
 					copy_geometry(reference_geometry, this.geometry);
