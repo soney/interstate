@@ -7,8 +7,8 @@
         _ = red._;
 
     red.AttachmentInstance = function (options) {
-        options = options || {};
-        this.contextual_object = options.contextual_object;
+        this.options = options || {};
+        this.contextual_object = this.options.contextual_object;
         this.type = "(generic)";
     };
     
@@ -37,9 +37,10 @@
     };
     (function (My) {
         var proto = My.prototype;
-        proto.create_instance = function (contextual_object) {
+        proto.create_instance = function (contextual_object, owner) {
             var options = _.extend({
-                contextual_object: contextual_object
+                contextual_object: contextual_object,
+				owner: owner
             }, this.instance_options);
             var instance = new this._InstanceClass(options);
             return instance;

@@ -24,26 +24,19 @@
 				.cd("my_block")
 					.set("(prototypes)", "(start)", "my_world.fixture")
 					.set("r", "(start)", "50")
-					.set("x", "(start)", "50")
-					.set("y", "(start)", "50")
+					.set("x", "(start)", "100")
+					.set("y", "(start)", "100")
+					.set("x_val", "(start)", "this.get_x()")
+					.set("y_val", "(start)", "this.get_y()")
+					.set("fixed", "(start)", "true")
 				var rc = red.find_or_put_contextual_obj(root);
 				var my_world = rc.prop_val("my_world");
+				var my_block = rc.prop_val("my_block");
 				var box2d = my_world.get_attachment_instance("box2d");
+				var b2dfixture = my_block.get_attachment_instance("box2d_fixture");
 
 				var world = box2d.get_world();
-				var fixDef = new Box2D.Dynamics.b2FixtureDef();
-				fixDef.density = 1.0;
-				fixDef.friction = 0.5;
-				fixDef.restitution = 0.2;
-
-				var bodyDef = new Box2D.Dynamics.b2BodyDef();
-				bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
-				document.getElementById("canvas").addEventListener("click", function(event) {
-					fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(50/30);
-					bodyDef.position.x = event.layerX/30;
-					bodyDef.position.y = event.layerY/30;
-					window.x = world.CreateBody(bodyDef).CreateFixture(fixDef);
-				});
+				var fixture = b2dfixture.get_fixture();
 				
 				//setup debug draw
 				var debugDraw = new Box2D.Dynamics.b2DebugDraw();

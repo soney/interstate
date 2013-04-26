@@ -81,8 +81,9 @@
 
 			var box2d = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_attachment")]});
 
-			var box2d_fixture = red.create("dict", {has_protos: false, direct_attachments: []});
+			var box2d_fixture = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_fixture_attachment")]});
 			box2d.set("fixture", box2d_fixture);
+
 
 			root_dict.set("box2d", box2d);
 

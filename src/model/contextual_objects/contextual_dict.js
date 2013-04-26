@@ -395,6 +395,22 @@
 		};
 
 		proto.get_attachment_instance = function (type) {
+			var info = this.get_attachment_instance_and_src(type);
+			if(info) {
+				var attachment = info.attachment;
+				var attachment_instance;
+				if (this._attachment_instances.hasOwnProperty(type)) {
+					attachment_instance = this._attachment_instances[type];
+				} else {
+					attachment_instance = this._attachment_instances[type] = attachment.create_instance(this, info.owner);
+				}
+				return attachment_instance;
+			} else {
+				return undefined;
+			}
+		};
+
+		proto.get_attachment_instance_and_src = function (type) {
 			var dict = this.get_object();
 			var direct_attachments = dict.direct_attachments();
 			var len = direct_attachments.length;
@@ -416,7 +432,7 @@
 				var plen = proto_objects.length;
 				var proto_obj;
 
-	outer_loop:
+				outer_loop:
 				for (i = 0; i < plen; i += 1) {
 					proto_obj = proto_objects[i];
 					direct_attachments = proto_obj.direct_attachments();
@@ -436,13 +452,7 @@
 
 
 			if (info) {
-				attachment = info.attachment;
-				if (this._attachment_instances.hasOwnProperty(type)) {
-					attachment_instance = this._attachment_instances[type];
-				} else {
-					attachment_instance = this._attachment_instances[type] = attachment.create_instance(this);
-				}
-				return attachment_instance;
+				return info;
 			} else {
 				if (this._attachment_instances.hasOwnProperty(type)) {
 					attachment_instance = this._attachment_instances[type];
@@ -451,9 +461,6 @@
 				}
 				return undefined;
 			}
-		};
-
-		proto.get_attachments = function() {
 		};
 
 		proto.destroy = function () {

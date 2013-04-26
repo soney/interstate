@@ -11,7 +11,7 @@
 		DEFAULT_NEAR = 0.1,
 		DEFAULT_FAR = 10000;
 
-	var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+	red.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
 								window.webkitRequestAnimationFrame || window.msRequestAnimationFrame ||
 								function(callback) {
 									window.setTimeout(callback, 1000 / 60);
@@ -241,7 +241,7 @@
 
 			proto_props: {
 				render: function() {
-					requestAnimationFrame(this.$render);
+					red.requestAnimationFrame(this.$render);
 					this.renderer.render(this.scene, this.camera);
 				},
 				get_dom_obj: function() {
