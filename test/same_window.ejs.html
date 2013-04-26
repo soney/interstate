@@ -16,44 +16,30 @@
 				env
 				.set("my_world", "<stateful>")
 				.cd("my_world")
-					.set("(prototypes)", "(start)", "box2d")
+					.set("(prototypes)", "(start)", "box2d.world")
 					.set("gy", "(start)", "0")
 					.set("gx", "(start)", "0")
 					.up()
-				.set("my_block", "<stateful>")
-				.cd("my_block")
-					.set("(prototypes)", "(start)", "my_world.fixture")
-					.set("r", "(start)", "50")
-					.set("x", "(start)", "100")
-					.set("y", "(start)", "100")
-					.set("x_val", "(start)", "this.get_x()")
-					.set("y_val", "(start)", "this.get_y()")
-					.set("fixed", "(start)", "true")
-				var rc = red.find_or_put_contextual_obj(root);
-				var my_world = rc.prop_val("my_world");
-				var my_block = rc.prop_val("my_block");
-				var box2d = my_world.get_attachment_instance("box2d");
-				var b2dfixture = my_block.get_attachment_instance("box2d_fixture");
-
-				var world = box2d.get_world();
-				var fixture = b2dfixture.get_fixture();
-				
-				//setup debug draw
-				var debugDraw = new Box2D.Dynamics.b2DebugDraw();
-				debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
-				debugDraw.SetDrawScale(30.0);
-				debugDraw.SetFillAlpha(0.5);
-				debugDraw.SetLineThickness(1.0);
-				debugDraw.SetFlags(Box2D.Dynamics.b2DebugDraw.e_shapeBit | Box2D.Dynamics.b2DebugDraw.e_jointBit);
-				world.SetDebugDraw(debugDraw);
-
-				window.setInterval(update, 1000 / 60);
-			
-				function update() {
-					world.Step(1 / 60, 10, 10);
-					world.DrawDebugData();
-					world.ClearForces();
-				};
+				.cd("child_nodes")
+					.set("my_block", "<stateful>")
+					.cd("my_block")
+						.set("(prototypes)", "(start)", "[box2d.fixture, dom]")
+						.set("tag", "(start)", "'span'")
+						.set("world", "(start)", "my_world")
+						.set("r", "(start)", "50")
+						.set("x", "(start)", "100")
+						.set("y", "(start)", "100")
+						.set("x_val", "(start)", "this.get_x()")
+						.set("y_val", "(start)", "this.get_y()")
+						.set("fixed", "(start)", "true")
+						.set("css", "<dict>")
+						.cd("css")
+							.set("width", "r+'px'")
+							.set("height", "r+'px'")
+							.set("position", "'absolute'")
+							.set("left", "x_val+'px'")
+							.set("top", "y_val+'px'")
+							.set("backgroundColor", "'red'")
 
 				$("div#editor").editor({
 					debug_env: true,

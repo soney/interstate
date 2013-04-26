@@ -97,6 +97,11 @@
 				__type__: "summarized_obj",
 				__value__: "dom_elem"
 			};
+		} else if (window.Box2D && value instanceof Box2D.Dynamics.b2World) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "box2d_world"
+			};
 		} else if (_.isObject(value)) {
 			rv = {};
 			_.each(value, function (v, k) { rv[k] = summarize_value(v); });

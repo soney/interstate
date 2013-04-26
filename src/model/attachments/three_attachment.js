@@ -23,6 +23,34 @@
 		});
 	};
 
+	var copy_geometry = function(from, to) {
+			to.vertices.length = 0;
+			var vertices = from.vertices;
+			i = 0; il = vertices.length;
+			for (; i < il; i ++ ) {
+				to.vertices.push(vertices[i].clone());
+			}
+
+			this.geometry.faces.length = 0;
+			var faces = from.faces;
+			i = 0; il = faces.length;
+			for (; i < il; i ++ ) {
+				to.faces.push(faces[i].clone());
+			}
+
+			to.faceVertexUvs[0].length = 0;
+			var uvs = from.faceVertexUvs[0];
+			i = 0; il = uvs.length;
+			for (; i < il; i ++ ) {
+				var uv = uvs[i], uvCopy = [];
+				for ( var j = 0, jl = uv.length; j < jl; j ++ ) {
+					uvCopy.push(new THREE.Vector2( uv[j].x, uv[j].y ) );
+				}
+				to.faceVertexUvs[0].push(uvCopy);
+			}
+
+	};
+
 	red.register_attachments({
 		"point_light": {
 			ready: function() {
@@ -72,32 +100,7 @@
 					var i, il;
 					var radius = contextual_object.prop_val("radius");
 					var reference_geometry = new THREE.SphereGeometry(radius, 16, 16);
-
-					this.geometry.vertices.length = 0;
-					var vertices = reference_geometry.vertices;
-					i = 0; il = vertices.length;
-					for (; i < il; i ++ ) {
-						this.geometry.vertices.push(vertices[i].clone());
-					}
-
-					this.geometry.faces.length = 0;
-					var faces = reference_geometry.faces;
-					i = 0; il = faces.length;
-					for (; i < il; i ++ ) {
-						this.geometry.faces.push(faces[i].clone());
-					}
-
-					this.geometry.faceVertexUvs[0].length = 0;
-					var uvs = reference_geometry.faceVertexUvs[0];
-					i = 0; il = uvs.length;
-					for (; i < il; i ++ ) {
-						var uv = uvs[i], uvCopy = [];
-						for ( var j = 0, jl = uv.length; j < jl; j ++ ) {
-							uvCopy.push(new THREE.Vector2( uv[j].x, uv[j].y ) );
-						}
-						this.geometry.faceVertexUvs[0].push(uvCopy);
-					}
-
+					copy_geometry(reference_geometry, this.geometry);
 					reference_geometry.dispose();
 
 					this.geometry.verticesNeedUpdate = true;
@@ -241,7 +244,7 @@
 
 			proto_props: {
 				render: function() {
-					red.requestAnimationFrame(this.$render);
+					red.requestAnimationFrame.call(window, this.$render);
 					this.renderer.render(this.scene, this.camera);
 				},
 				get_dom_obj: function() {

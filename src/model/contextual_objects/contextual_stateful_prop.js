@@ -315,11 +315,11 @@
 
 				var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
 		
-				try {
+			//	try {
 					rv = using_val.get_value(eventized_pointer);
-				} catch (e1) {
-					console.error(e1);
-				}
+			//	} catch (e1) {
+			//		console.error(e1);
+			//	}
 
 				this._last_rv = rv;
 				return rv;

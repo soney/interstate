@@ -79,11 +79,31 @@
 
 			root_dict.set("three", three);
 
-			var box2d = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_attachment")]});
+			var box2d = red.create("dict", {has_protos: false});
+
+			var box2d_world = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_world_attachment")]});
+			box2d.set("world", box2d_world);
 
 			var box2d_fixture = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_fixture_attachment")]});
+			box2d_fixture.set("get_x", function() { return this.get_attachment_instance("box2d_fixture").b2x.get(); });
+			box2d_fixture.set("get_y", function() { return this.get_attachment_instance("box2d_fixture").b2y.get(); });
+			box2d_fixture.set("get_vx", function() { return this.get_attachment_instance("box2d_fixture").b2vx.get(); });
+			box2d_fixture.set("get_vy", function() { return this.get_attachment_instance("box2d_fixture").b2vy.get(); });
+			box2d_fixture.set("get_theta", function() { return this.get_attachment_instance("box2d_fixture").b2t.get(); });
+			box2d_fixture.set("get_vtheta", function() { return this.get_attachment_instance("box2d_fixture").b2vt.get(); });
 			box2d.set("fixture", box2d_fixture);
 
+			var box2d_body = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_body_attachment")]});
+			box2d.set("body", box2d_body);
+
+			var box2d_shape = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_shape_attachment")]});
+			box2d.set("shape", box2d_shape);
+
+			/*
+
+			var box2d_joint = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_joint_attachment")]});
+			box2d.set("joint", box2d_joint);
+			*/
 
 			root_dict.set("box2d", box2d);
 
