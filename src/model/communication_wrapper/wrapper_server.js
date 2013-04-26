@@ -1,5 +1,5 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,window */
+/*global red,esprima,able,uid,console,window,Box2D */
 
 (function (red) {
 	"use strict";

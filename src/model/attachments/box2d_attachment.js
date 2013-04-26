@@ -11,30 +11,30 @@
 
 	var PIXELS_PER_METER = 30;
 
-	var b2Vec2 = Box2D.Common.Math.b2Vec2,
-		b2AABB = Box2D.Collision.b2AABB,
-		b2BodyDef = Box2D.Dynamics.b2BodyDef,
+	var B2Vec2 = Box2D.Common.Math.b2Vec2,
+		B2AABB = Box2D.Collision.b2AABB,
+		B2BodyDef = Box2D.Dynamics.b2BodyDef,
 		b2Body = Box2D.Dynamics.b2Body,
-		b2FixtureDef = Box2D.Dynamics.b2FixtureDef,
-		b2Fixture = Box2D.Dynamics.b2Fixture,
-		b2World = Box2D.Dynamics.b2World,
-		b2MassData = Box2D.Collision.Shapes.b2MassData,
-		b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape,
-		b2CircleShape = Box2D.Collision.Shapes.b2CircleShape,
-		b2MouseJointDef =  Box2D.Dynamics.Joints.b2MouseJointDef;
+		B2FixtureDef = Box2D.Dynamics.b2FixtureDef,
+		B2Fixture = Box2D.Dynamics.b2Fixture,
+		B2World = Box2D.Dynamics.b2World,
+		B2MassData = Box2D.Collision.Shapes.b2MassData,
+		B2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape,
+		B2CircleShape = Box2D.Collision.Shapes.b2CircleShape,
+		B2MouseJointDef =  Box2D.Dynamics.Joints.b2MouseJointDef;
 
-	var fixDef = new Box2D.Dynamics.b2FixtureDef();
+	var fixDef = new B2FixtureDef();
 	fixDef.density = 1.0;
 	fixDef.friction = 0.5;
 	fixDef.restitution = 0.2;
 
-	var bodyDef = new Box2D.Dynamics.b2BodyDef();
-	bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+	var bodyDef = new B2BodyDef();
+	bodyDef.type = b2Body.b2_dynamicBody;
 	
 	red.register_attachments({
 		"box2d_world": {
 			ready: function() {
-				this.world = new b2World(new Box2D.Common.Math.b2Vec2(0, 0), true);
+				this.world = new B2World(new B2Vec2(0, 0), true);
 
 				var update_world = _.bind(function() {
 					this.world.Step(1 / 60, 10, 10);
@@ -47,7 +47,7 @@
 					var gravity_x = contextual_object.prop_val("gx"),
 						gravity_y = contextual_object.prop_val("gy");
 
-					var gravity_vector = new b2Vec2(gravity_x, gravity_y)
+					var gravity_vector = new B2Vec2(gravity_x, gravity_y);
 					this.world.SetGravity(gravity_vector);
 					var body_list = this.world.GetBodyList();
 					var body_len = this.world.GetBodyCount();
@@ -115,7 +115,7 @@
 							var x = contextual_object.prop_val("x") / PIXELS_PER_METER;
 							var y = contextual_object.prop_val("y") / PIXELS_PER_METER;
 							body.SetType(b2Body.b2_fixedBody);
-							body.SetPosition(new b2Vec2(x, y));
+							body.SetPosition(new B2Vec2(x, y));
 						} else {
 							body.SetType(b2Body.b2_dynamicBody);
 							body.SetAwake(true);
@@ -134,7 +134,7 @@
 
 							bodyDef.position.x = x / PIXELS_PER_METER;
 							bodyDef.position.y = y / PIXELS_PER_METER;
-							fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(radius/PIXELS_PER_METER);
+							fixDef.shape = new B2CircleShape(radius/PIXELS_PER_METER);
 
 							this.world = world;
 							this.fixture = this.world.CreateBody(bodyDef).CreateFixture(fixDef);
