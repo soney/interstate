@@ -3,10 +3,12 @@ module.exports = function(grunt) {
 	var ends_with = function (str1, str2) {
 		return str1.slice(str1.length-str2.length) == str2;
 	};
-	var cjs_inc = require('./include_libs');
+	var inc_libs = require('./include_libs');
 
-	var src_js = cjs_inc.build_src.filter(function(f) { return ends_with(f, ".js");});
-	var src_css = cjs_inc.build_src.filter(function(f) { return ends_with(f, ".css");});
+	var runtime_and_editor = inc_libs.runtime.concat(inc_libs.editor);
+
+	var src_js = runtime_and_editor.filter(function(f) { return ends_with(f, ".js");});
+	var src_css = runtime_and_editor.filter(function(f) { return ends_with(f, ".css");});
 
 	var exclude_regexes = [
 		"jquery-.*\\.js",

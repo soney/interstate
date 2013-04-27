@@ -36,7 +36,7 @@ div#editor .value {
 	width: 150px;
 	max-width: 150px;
 	overflow: hidden;
-	background-color: #CCCC00;
+	background-color: #5A5F66;
 	padding-left: 3px;
 	padding-right: 3px;
 }
@@ -59,7 +59,7 @@ div#editor input.raw_cell, div#editor .raw_cell {
 	padding-left: 3px;
 	padding-right: 3px;
 	outline: none;
-	background-color: #F9F9F9;
+	background-color: #232423;
 	height: 16px;
 	box-sizing: border-box;
 	-webkit-transition: border-color 0.2s ease-out; /* Safari and Chrome */
@@ -80,7 +80,7 @@ div#editor input.raw_cell, div#editor .raw_cell {
 }
 
 .dict .add_prop_row:last-child {
-	background: #FCFCFC url(tree_imgs/lastnode.png) no-repeat;
+	background: #232423 url(tree_imgs/lastnode.png) no-repeat;
 }
 
 .stateful_prop {
@@ -104,5 +104,10 @@ div#editor input.raw_cell, div#editor .raw_cell {
 
 .add_prop_row a {
 	text-decoration: none;
-	color: #007;
+	color: #5A5F66;
+}
+
+body {
+	background-color: #232423;
+	color: #BDC4C4;
 }

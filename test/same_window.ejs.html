@@ -6,13 +6,15 @@
   <body>
 		<div class="output"></div>
 		<div id="editor"></div>
-		<canvas width="600" height="400" id="canvas"></canvas>
 	  <div>
-			<%- red_include(red_inc.main) %>
+			<%- red_include(red_inc.vendor) %>
+			<%- red_include(red_inc.runtime) %>
+			<%- red_include(red_inc.editor) %>
 			<script type="text/javascript">
 				var env = red.create("environment");
 				var root = env.get_root();
 
+env.set("a", "<stateful>")
 
 				$("div#editor").editor({
 					debug_env: true,

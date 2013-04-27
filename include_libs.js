@@ -26,7 +26,19 @@ var vendor_src = cp(src, "_vendor");
 var cjs_path = cp(vendor_src, "cjs");
 var cjs_inc = require("./src/_vendor/cjs/include_libs");
 
-exports.build_src = c(
+exports.vendor = c(
+	cp(vendor_src, [
+				"underscore/underscore.js",
+				"jquery-ui-1.9.1.custom/js/jquery-1.8.2.js",
+				"jquery-ui-1.9.1.custom/js/jquery-ui-1.9.1.custom.js",
+				"raphael/raphael.js",
+				"esprima/esprima.js",
+				"three.js",
+				"box2d/Box2dWeb-2.1.a.3.min.js"
+			])
+);
+
+exports.runtime = c(
 	cp(vendor_src, [
 				"stopwatch.js",
 				"array_diff.js",
@@ -90,28 +102,22 @@ exports.build_src = c(
 				"controller/environment/command_stack.js",
 				"controller/environment/red_environment.js",
 				"view/running_app.js",
-				"view/editor_view.js",
-				"view/statechart/raphael_utils.js",
-				"view/statechart/editable_text.js",
-				"view/statechart/layout_engine.js",
-				"view/statechart/statechart_view.js",
-				"view/style/editor_style.css"
-]));
-
-exports.main_src = c(
-	cp(vendor_src, [
-				"underscore/underscore.js",
-				"jquery-ui-1.9.1.custom/js/jquery-1.8.2.js",
-				"jquery-ui-1.9.1.custom/js/jquery-ui-1.9.1.custom.js",
-				"raphael/raphael.js",
-				"esprima/esprima.js",
-				"three.js",
-				"box2d/Box2dWeb-2.1.a.3.min.js"
 			]),
-	exports.build_src,
 	cp("sample_apps", [
 		"sample_app_loader.js"
-	]));
+	])
+);
+
+exports.editor = c(
+	cp(src, [
+		"view/editor_view.js",
+		"view/statechart/raphael_utils.js",
+		"view/statechart/editable_text.js",
+		"view/statechart/layout_engine.js",
+		"view/statechart/statechart_view.js",
+		"view/style/editor_style.css"
+	])
+);
 
 var ends_with = function(str1, str2) {
 	return str1.slice(str1.length-str2.length) == str2;

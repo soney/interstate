@@ -1,6 +1,12 @@
 /*jslint nomen: true, vars: true */
 /*global red,esprima,able,uid,console,RedMap,window */
 
+var COLORS = {
+	BACKGROUND: "#232423",
+	FOREGROUND: "#BDC4C4",
+	HIGHLIGHT: "#EB2800"
+};
+
 (function (red) {
 	"use strict";
 	var cjs = red.cjs,
@@ -175,10 +181,10 @@
 			rws: {x: 0, y: 0},
 			rwe: {x: 0, y: 0},
 			c: {x: 0, y: 0},
-			default_stroke: "#777",
-			default_fill: "#F9F9F9",
+			default_stroke: COLORS.FOREGROUND,
+			default_fill: COLORS.BACKGROUND,
 			active_fill: "#CCC",
-			active_stroke: "red"
+			active_stroke: COLORS.HIGHLIGHT
 		}, options);
 		this.active_fn = cjs.liven(function () {
 			var state = this.option("state");
@@ -365,14 +371,18 @@
 		var paths = this.get_paths();
 
 		this.line_path = paper.path(paths.line.path);
+		this.line_path.attr({
+			stroke: COLORS.FOREGROUND
+		});
 		this.arrow_path = paper.path(paths.arrow.path);
 		this.arrow_path.attr({
-			fill: "black"
+			fill: COLORS.FOREGROUND,
+			stroke: "none"
 		});
 		this.circle = paper.circle(paths.circle.cx, paths.circle.cy, paths.circle.r);
 		this.circle.attr({
-			"fill": "black",
-			"stroke": "none"
+			fill: COLORS.FOREGROUND,
+			stroke: "none"
 		});
 		var transition = this.option("transition");
 		var event = transition.event();
@@ -470,7 +480,7 @@
 				arrow.attr({"fill": "red"});
 				window.setTimeout(function () {
 					arrow.animate({
-						fill: "black"
+						fill: COLORS.FOREGROUND
 					}, 200, "ease-out");
 				}, 200);
 			});
@@ -502,7 +512,7 @@
 		var center = this.option("c");
 		this.circle = paper.circle(center.x, center.y, this.option("radius"));
 		this.circle.attr({
-			"fill": "black",
+			"fill": COLORS.FOREGROUND,
 			"stroke": "none"
 		});
 	};
