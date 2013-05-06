@@ -83,7 +83,8 @@ module.exports = function(grunt) {
 		copy: {
 			css: {
 				files: [
-					{ expand: true, cwd: "src/view/style/images", src: ["**"], dest: "build/style/images" }
+					{ expand: true, cwd: "src/view/style/images", src: ["**"], dest: "build/style/images" },
+					{ expand: true, cwd: "src/view/style/fonts", src: ["**"], dest: "build/style/fonts" }
 				]
 			},
 			sample_apps: {
@@ -114,6 +115,6 @@ module.exports = function(grunt) {
 	// Default task(s).
 	grunt.registerTask('full', ['jshint', 'concat', 'uglify', 'sass', 'copy']);
 	grunt.registerTask('default', ['concat', 'uglify', 'sass', 'copy']);
-	grunt.registerTask('quick', ['concat', 'copy']);
+	grunt.registerTask('quick', ['jshint', 'concat', 'sass', 'copy']);
 	grunt.registerTask('test', ['jshint']);
 };

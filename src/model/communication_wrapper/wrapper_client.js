@@ -113,7 +113,7 @@
 			if (to_update) {
 				this.update(args);
 			}
-			return constraint.get();
+			return constraint;
 		};
 
 

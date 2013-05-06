@@ -4,13 +4,94 @@ html.full_window_editor {
     height: 100%;
     padding: 0px;
     margin: 0px; }
+    html.full_window_editor > body > #editor {
+      height: 100%; }
 
-#editor > #obj_nav {
-  background-color: red;
-  max-height: 100%;
-  float: left; }
-
-#editor > #curr_obj {
-  background-color: blue;
-  float: right;
-  max-height: 100%; }
+#editor {
+  font-family: "Source Sans Pro"; }
+  #editor > #obj_nav {
+    height: 100%;
+    float: left; }
+    #editor > #obj_nav > .col {
+      border-right: 1px solid #CCC;
+      border-bottom: 1px solid #CCC;
+      min-width: 150px;
+      float: left; }
+      #editor > #obj_nav > .col > header {
+        background-color: #eeeeee;
+        border-bottom: 1px solid #AAA;
+        position: relative; }
+        #editor > #obj_nav > .col > header > .obj_name {
+          font-weight: 200;
+          text-align: center;
+          font-size: 1.5em;
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -khtml-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+          cursor: default; }
+        #editor > #obj_nav > .col > header:hover {
+          background-color: #dddddd; }
+        #editor > #obj_nav > .col > header > .edit {
+          position: absolute;
+          right: 10px;
+          top: 10px;
+          font-size: 0.7em;
+          color: blue;
+          cursor: pointer; }
+      #editor > #obj_nav > .col > .child_list {
+        font-family: "Source Code Pro";
+        font-size: 0.8em; }
+        #editor > #obj_nav > .col > .child_list > :nth-child(even) {
+          background-color: #FCFCFC; }
+        #editor > #obj_nav > .col > .child_list > :nth-child(odd) {
+          background-color: #FFF; }
+        #editor > #obj_nav > .col > .child_list > .child {
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -khtml-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+          cursor: default;
+          padding-left: 5px;
+          position: relative; }
+          #editor > #obj_nav > .col > .child_list > .child > .value_summary {
+            right: 0px;
+            position: absolute;
+            overflow: hidden;
+            display: inline-box;
+            height: 100%;
+            box-sizing: border-box;
+            font-weight: 200;
+            padding-top: 2px;
+            padding-bottom: 2px; }
+          #editor > #obj_nav > .col > .child_list > .child > .value_summary.dict {
+            background-color: inherit;
+            text-align: right;
+            color: #CCC;
+            padding-right: 2px;
+            border-left: 1px dashed #F7F7F7; }
+          #editor > #obj_nav > .col > .child_list > .child > .value_summary.constant {
+            background-color: #EEE;
+            border-left: 1px solid #CCC; }
+          #editor > #obj_nav > .col > .child_list > .child:hover {
+            background-color: #f4f6fa; }
+          #editor > #obj_nav > .col > .child_list > .child.selected {
+            background-color: #5274d4;
+            color: white; }
+            #editor > #obj_nav > .col > .child_list > .child.selected > .value_summary.dict {
+              border-left: 1px dashed #AAA; }
+      #editor > #obj_nav > .col > .child_list > .child {
+        padding-right: 50px; }
+        #editor > #obj_nav > .col > .child_list > .child > .value_summary {
+          width: 50px; }
+      #editor > #obj_nav > .col.curr_col {
+        min-width: 250px;
+        border-right: 1px solid #888; }
+        #editor > #obj_nav > .col.curr_col > .child_list .child {
+          padding-right: 100px; }
+          #editor > #obj_nav > .col.curr_col > .child_list .child > .value_summary {
+            width: 100px; }

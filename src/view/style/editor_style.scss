@@ -1,3 +1,26 @@
+$nav_header_color: #EEE;
+$nav_header_hover_color: #DDD;
+
+$value_summary_width: 50px;
+$active_obj_value_summary_width: 100px;
+
+@mixin non-selectable {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	cursor: default;
+}
+@mixin transition($transition-property, $transition-time, $method) {
+	-webkit-transition: $transition-property $transition-time $method;
+	-moz-transition: $transition-property $transition-time $method;
+	-ms-transition: $transition-property $transition-time $method;
+	-o-transition: $transition-property $transition-time $method;
+	transition: $transition-property $transition-time $method;
+}
+
 html.full_window_editor {
 	height: 100%;
 	
@@ -5,21 +28,119 @@ html.full_window_editor {
 		height: 100%;
 		padding: 0px;
 		margin: 0px;
+		
+		> #editor {
+			height: 100%;
+		}
 	}
 }
 
-#editor > #obj_nav {
-	background-color: red;
-	max-height: 100%;
-	float: left;
+
+#editor {
+	font-family: "Source Sans Pro";
+
+	> #obj_nav {
+		height: 100%;
+		float: left;
+
+		> .col {
+			border-right: 1px solid #CCC;
+			border-bottom: 1px solid #CCC;
+			min-width: 150px;
+			float: left;
+			> header {
+				background-color: $nav_header_color;
+				border-bottom: 1px solid #AAA;
+				position: relative;
+
+				> .obj_name {
+					font-weight: 200;
+					text-align: center;
+					font-size: 1.5em;
+					@include non-selectable;
+				}
+
+				&:hover {
+					background-color: $nav_header_hover_color;
+				}
+
+				> .edit {
+					position: absolute;
+					right: 10px;
+					top: 10px;
+					font-size: 0.7em;
+					color: blue;
+					cursor: pointer;
+				}
+			}
+			> .child_list {
+				font-family: "Source Code Pro";
+				font-size: 0.8em;
+				> :nth-child(even) {
+					background-color: #FCFCFC;
+				} > :nth-child(odd) {
+					background-color: #FFF;
+				}
+
+				> .child {
+					@include non-selectable;
+					padding-left: 5px;
+					position: relative;
+					> .value_summary {
+						right: 0px;
+						position: absolute;
+						overflow: hidden;
+						display: inline-box;
+						height: 100%;
+						box-sizing: border-box;
+						font-weight: 200;
+						padding-top: 2px;
+						padding-bottom: 2px;
+					}
+
+					> .value_summary.dict {
+						background-color: inherit;
+						text-align: right;
+						color: #CCC;
+						padding-right: 2px;
+						border-left: 1px dashed #F7F7F7;
+					}
+
+					> .value_summary.constant {
+						background-color: #EEE;
+						border-left: 1px solid #CCC;
+					}
+
+					&:hover {
+						background-color: rgb(244, 246, 250);
+					}
+
+					&.selected {
+						background-color: rgb(82, 116, 212);
+						color: white;
+						> .value_summary.dict {
+							border-left: 1px dashed #AAA;
+						}
+					}
+				}
+			}
+			> .child_list > .child {
+				padding-right: $value_summary_width;
+				> .value_summary {
+					width: $value_summary_width;
+				}
+			}
+			&.curr_col {
+				min-width: 250px;
+				border-right: 1px solid #888;
+				> .child_list .child {
+					padding-right: $active_obj_value_summary_width;
+					> .value_summary {
+						width: $active_obj_value_summary_width;
+					}
+				}
+			}
+		}
+	}
 }
 
-#editor > #curr_obj {
-	background-color: blue;
-	float: right;
-	max-height: 100%;
-}
-
-#obj_nav > .col {
-
-}

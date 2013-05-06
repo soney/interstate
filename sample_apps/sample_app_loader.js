@@ -1,5 +1,5 @@
 /*jslint nomen: true, vars: true */
-/*global red,console */
+/*global red,console,document */
 
 (function (red) {
 	"use strict";
