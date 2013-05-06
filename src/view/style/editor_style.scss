@@ -1,0 +1,25 @@
+html.full_window_editor {
+	height: 100%;
+	
+	> body {
+		height: 100%;
+		padding: 0px;
+		margin: 0px;
+	}
+}
+
+#editor > #obj_nav {
+	background-color: red;
+	max-height: 100%;
+	float: left;
+}
+
+#editor > #curr_obj {
+	background-color: blue;
+	float: right;
+	max-height: 100%;
+}
+
+#obj_nav > .col {
+
+}

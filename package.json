@@ -27,7 +27,9 @@
 		"grunt-contrib-concat": "~0.2",
 		"grunt-contrib-copy": "~0.4",
 		"grunt-contrib-clean": "~0.4",
-		"node-watch": "~0.3"
+		"grunt-contrib-sass": "~0.3",
+		"node-watch": "~0.3",
+		"node-sass": "~0.4"
 	},
 	"engines": {
 		"node": ">= 0.4.7"

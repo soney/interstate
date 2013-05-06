@@ -5,6 +5,7 @@ var devel_mode = true;
 var express = require('express');
 var fs = require('fs');
 var ejs = require('ejs');
+var sass = require("node-sass");
 var red_inc = require('./include_libs');
 
 var app = express();
@@ -43,97 +44,14 @@ var callback_map = function(arr, func, callback) {
 		});
 	});
 };
-var jslint_options = { //http://www.jslint.com/lint.html
-	sloppy: true // true if the ES5 'use strict'; pragma is not required. Do not use this pragma unless you know what you are doing.
-	, vars: true // true if multiple var statement per function should be allowed.
-	, nomen: true // true if names should not be checked for initial or trailing underbars.
-	, white: true // true if strict whitespace rules should be ignored.
-	, plusplus: true // true if ++ and -- should be allowed.
-	, predef: ["red", "module", "exports"]
-};
 
 app.configure(function() {
 	app.use(app.router);
+	app.use(sass.middleware({
+		src: __dirname
+	}));
 	app.use(express.static(__dirname));
-
-
-	app.get("*/list_files*", function(req, res, next) {
-		var path = req.query.path;
-		fs.readdir(path, function(err, files) {
-			if(err) {
-				var files_str = JSON.stringify({errno: err.errno});
-				res.writeHead(200, {
-					  'Content-Type': 'text/plain'
-					, 'Content-Length': files_str.length
-				});
-				res.end(files_str);
-			} else {
-				var files_str = JSON.stringify(files);
-				res.writeHead(200, {
-					  'Content-Type': 'text/plain'
-					, 'Content-Length': files_str.length
-				});
-				res.end(files_str);
-			}
-		});
-	});
-	app.get("*/file_type*", function(req, res, next) {
-		var path = req.query.path;
-		fs.stat(path, function(err, stats) {
-			if(err) {
-				var files_str = JSON.stringify({errno: err.errno});
-				res.writeHead(200, {
-					  'Content-Type': 'text/plain'
-					, 'Content-Length': files_str.length
-				});
-				res.end(files_str);
-			} else {
-				var type_str;
-				if(stats.isDirectory()) {
-					type_str = "directory";
-				} else  {
-					type_str = "file";
-				}
-				res.writeHead(200, {
-					  'Content-Type': 'text/plain'
-					, 'Content-Length': type_str.length
-				});
-				res.end(type_str);
-			}
-		});
-	});
-	app.get("*/command/*", function(req, res, next) {
-		var command = text_after(req.originalUrl, "/command/");
-		var do_confirm = function() {
-			var body = "done";
-			res.writeHead(200, {
-				  'Content-Type': 'text/html'
-				, 'Content-Length': body.length
-			});
-			res.end(body);
-		};
-		if(command==="recompile") {
-			var dev_mode = red_inc.main === red_inc.main_src;
-			delete require.cache[__dirname+'/include_libs.js']
-			red_inc = require(__dirname + '/include_libs');
-			delete require.cache[__dirname+'/Makefile.dryice.js']
-			var makefile = require("./Makefile.dryice");
-			red_inc.main = dev_mode ? red_inc.main_src : red_inc.main_build;
-			makefile.build(do_confirm);
-		} else if(command === "refresh_include") {
-			var dev_mode = red_inc.main === red_inc.main_src;
-			delete require.cache[__dirname+'/include_libs.js']
-			red_inc = require(__dirname + '/include_libs');
-			red_inc.main = dev_mode ? red_inc.main_src : red_inc.main_build;
-			do_confirm();
-		} else if(command === "make_src_mode") {
-			red_inc.main = red_inc.main_src;
-			do_confirm();
-		} else if(command === "make_build_mode") {
-			red_inc.main = red_inc.main_build;
-			do_confirm();
-		}
-	});
+	app.set('view engine', 'ejs');
 
 	app.get("*.ejs.html*|/", function(req, res, next) {
 		var relative_url = req.originalUrl.slice(1); //remove the initial '/'
@@ -160,48 +78,8 @@ app.configure(function() {
 						}));
 					}
 					, red_inc: red_inc
-					, dev_mode: red_inc.core === red_inc.src
 				};
 
-				if(filename.indexOf("jslint")>=0) {
-					var jslint = require("jslint/lib/nodelint");
-					var errors_only = true;
-					var lintFile = function(file, options, callback) {
-						fs.readFile(file, function (err, data) {
-							if (err) {
-								throw err;
-							}
-							data = data.toString("utf8");
-
-							jslint(data, options);
-							var report = jslint.report(errors_only);
-							if(callback) {
-								callback(report);
-							}
-						});
-					};
-					var files = req.query.filename ? [req.query.filename] : red_inc.main_src;
-					callback_map(files, function(file_name, good_callback) {
-						lintFile(file_name, jslint_options, function(report) {
-							good_callback(report);
-						});
-					}, function(rv) {
-						locals.reports = rv.map(function(report, index) {
-							return {
-								file: files[index]
-								, lint: report
-							};
-						});
-
-						body = ejs.render(str, {cache: false, locals: locals});
-						res.writeHead(200, {
-							  'Content-Type': 'text/html'
-							, 'Content-Length': body.length
-						});
-						res.end(body);
-					});
-					return;
-				}
 				
 				var body = ejs.render(str, {cache: false, locals: locals});
 				res.writeHead(200, {
@@ -214,14 +92,12 @@ app.configure(function() {
 	});
 });
 
-//makefile.build(function() {
-	app.listen(8000);
-	console.log("Interactive times at http://localhost:8000/");
-	process.on('SIGINT', function () {
-		console.log("iao...");
-		process.exit(0);
-	});
-//});
+app.listen(8000);
+console.log("Interactive times at http://localhost:8000/");
+process.on('SIGINT', function () {
+	console.log("iao...");
+	process.exit(0);
+});
 
 
 var filter_regex = /\.(js|html|css)$/;

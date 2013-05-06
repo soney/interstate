@@ -8,7 +8,6 @@ module.exports = function(grunt) {
 	var runtime_and_editor = inc_libs.runtime.concat(inc_libs.editor);
 
 	var src_js = runtime_and_editor.filter(function(f) { return ends_with(f, ".js");});
-	var src_css = runtime_and_editor.filter(function(f) { return ends_with(f, ".css");});
 
 	var exclude_regexes = [
 		"jquery-.*\\.js",
@@ -74,13 +73,19 @@ module.exports = function(grunt) {
 				dest: "build/_vendor/Box2dWeb-2.1.a.3.min.js"
 			}
 		},
+		sass: {
+			dist: {
+				editor_style: {
+					"build/style/editor_style.css": "src/view/style/editor_style.sass"
+				}
+			}
+		},
 		copy: {
 			css: {
 				files: [
-					{ expand: true, cwd: "src/view/style/", src: ["**"], dest: "build/style" }
+					{ expand: true, cwd: "src/view/style/images", src: ["**"], dest: "build/style/images" }
 				]
 			},
-
 			sample_apps: {
 				files: [
 					{ expand: true, cwd: "sample_apps/", src: ["**"], dest: "build/sample_apps" }
@@ -104,10 +109,11 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-contrib-clean');
+	grunt.loadNpmTasks('grunt-contrib-sass');
 
 	// Default task(s).
-	grunt.registerTask('full', ['jshint', 'concat', 'uglify', 'copy']);
-	grunt.registerTask('default', ['concat', 'uglify', 'copy']);
+	grunt.registerTask('full', ['jshint', 'concat', 'uglify', 'sass', 'copy']);
+	grunt.registerTask('default', ['concat', 'uglify', 'sass', 'copy']);
 	grunt.registerTask('quick', ['concat', 'copy']);
 	grunt.registerTask('test', ['jshint']);
 };
