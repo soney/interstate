@@ -11,7 +11,7 @@ To build, from scratch, you will need:
 * [Grunt](http://gruntjs.com/): A JavaScript task runner
 * [Ruby](http://www.ruby-lang.org/en/downloads/) (for SASS): Check by running `ruby -v` in Terminal
 * [SASS](http://sass-lang.com/download.html): Install by running `gem install sass` after Ruby is installed
-
+ 
     git clone https://github.com/soney/red.git
     cd red
     npm install .
