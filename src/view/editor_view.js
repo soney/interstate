@@ -1,4 +1,5 @@
 /*jslint nomen: true, vars: true, white: true */
+/*jshint scripturl: true */
 /*global red,esprima,able,uid,console,window,jQuery,Raphael */
 
 (function (red, $) {
@@ -122,16 +123,16 @@
 		},
 		_create: function() {
 			this.element.attr("id", "obj_nav");
-			var root_col = $("<div />")	.appendTo(this.element);
-			root_col					.column({
-											name: "root",
-											client: this.option("root_client"),
-											is_curr_col: true,
-											show_prev: false
-										})
-										.on("child_select", $.proxy(this.on_child_select, this, root_col))
-										.on("header_click", $.proxy(this.on_header_click, this, root_col))
-										.on("prev_click", $.proxy(this.on_prev_click, this, root_col));
+			var root_col = $("<table />")	.appendTo(this.element);
+			root_col						.column({
+												name: "root",
+												client: this.option("root_client"),
+												is_curr_col: true,
+												show_prev: false
+											})
+											.on("child_select", $.proxy(this.on_child_select, this, root_col))
+											.on("header_click", $.proxy(this.on_header_click, this, root_col))
+											.on("prev_click", $.proxy(this.on_prev_click, this, root_col));
 			this.curr_col = root_col;
 			this.columns = [root_col];
 		},
@@ -151,17 +152,17 @@
 					col.column("destroy").remove();
 				});
 				this.columns.length = column_index + 1;
-				var next_col = $("<div />")	.appendTo(this.element);
-				next_col					.column({
-												name: child_info.name,
-												client: child_info.value,
-												is_curr_col: true,
-												prev_col: column,
-												show_prev: this.option("single_col")
-											})
-											.on("child_select", $.proxy(this.on_child_select, this, next_col))
-											.on("header_click", $.proxy(this.on_header_click, this, next_col))
-											.on("prev_click", $.proxy(this.on_prev_click, this, next_col));
+				var next_col = $("<table />")	.appendTo(this.element);
+				next_col						.column({
+													name: child_info.name,
+													client: child_info.value,
+													is_curr_col: true,
+													prev_col: column,
+													show_prev: this.option("single_col")
+												})
+												.on("child_select", $.proxy(this.on_child_select, this, next_col))
+												.on("header_click", $.proxy(this.on_header_click, this, next_col))
+												.on("prev_click", $.proxy(this.on_prev_click, this, next_col));
 				this.columns.push(next_col);
 				if(this.option("single_col")) {
 					this.curr_col.hide();
@@ -187,8 +188,8 @@
 			});
 			this.columns.length = column_index;
 			this.curr_col = this.columns[column_index-1];
-			this.curr_col.column("option", "is_curr_col", true);
 			this.curr_col.show();
+			this.curr_col.column("option", "is_curr_col", true);
 		}
 	});
 
@@ -199,42 +200,72 @@
 			prev_col: false,
 			show_prev: false,
 			is_curr_col: false,
-			show_source: true
+			show_source: true,
+			edit_text: "edit"
 		},
 
 		_create: function () {
 			this.element.addClass("col");
-			this.header = $("<header />")	.appendTo(this.element);
+			this.tbody = $("<tbody />")	.appendTo(this.element);
+			this.header = $("<tr />")	.appendTo(this.tbody)
+										.addClass("header");
 
-			this.obj_name = $("<div />")	.appendTo(this.header)
-											.addClass("obj_name")
-											.text(this.option("name"))
-											.on("click", $.proxy(this.on_header_click, this));
+			this.prev_cell = $("<th />")	.addClass("prev");
 
-			this.edit_button = $("<span />")	.addClass("edit")
-												.appendTo(this.header)
-												.text("edit");
+			this.prev_button = $("<a />")	.addClass("prev")
+											.attr("href", "javascript:void(0)")
+											.appendTo(this.prev_cell)
+											.text("<");
 
-			this.prev_button = $("<span />")	.addClass("prev")
-												.appendTo(this.header)
-												.text("<");
+			this.obj_name_cell = $("<th />")	.appendTo(this.header)
+												.addClass("obj_name")
+												.text(this.option("name"))
+												.on("click", $.proxy(this.on_header_click, this));
 
-			this.child_list = $("<div />")	.appendTo(this.element)
-											.addClass("child_list");
+			this.edit_cell = $("<th />")	.addClass("edit val_col");
+
+			this.edit_button = $("<a />")	.addClass("edit button")
+											.attr("href", "javascript:void(0)")
+											.appendTo(this.edit_cell)
+											.text(this.option("edit_text"));
+
 			this.add_children_listener();
 
 			if(this.option("is_curr_col")) {
-				this.element.addClass("curr_col");
-				this.build_src_view();
+				this.on_curr_col();
 			} else {
-				this.edit_button.hide();
+				this.on_not_curr_col();
 			}
 
-			if(this.option("show_prev")) {
-				this.prev_button.on("click", $.proxy(this.on_prev_click, this));
+			this.$on_prev_click = $.proxy(this.on_prev_click, this);
+		},
+
+		on_curr_col: function() {
+			if(this.option("prev_col") && this.option("show_prev")) {
+				this.obj_name_cell.attr("colspan", "1");
+				this.prev_cell.insertBefore(this.obj_name_cell);
+				this.prev_cell.on("click", this.$on_prev_click);
 			} else {
-				this.prev_button.hide();
+				this.obj_name_cell.attr("colspan", "2");
 			}
+
+			this.edit_cell.insertAfter(this.obj_name_cell);
+			this.element.addClass("curr_col");
+			this.build_src_view();
+			if(this.selected_child_disp) {
+				this.selected_child_disp.column_child("on_deselect");
+			}
+		},
+
+		on_not_curr_col: function() {
+			if(this.option("prev_col") && this.option("show_prev")) {
+				this.prev_cell.off("click", this.$on_prev_click);
+				this.prev_cell.remove();
+			}
+			this.obj_name_cell.attr("colspan", "3");
+			this.edit_cell.remove();
+			this.element.removeClass("curr_col");
+			this.destroy_src_view();
 		},
 
 		on_header_click: function(event) {
@@ -243,11 +274,13 @@
 		},
 
 		on_prev_click: function(event) {
+			console.log("prev click");
 			this.element.trigger("prev_click", this);
 			event.stopPropagation();
 		},
 
 		add_children_listener: function () {
+			var INDEX_OFFSET = 1; // Account for the header column
 			this.$on_child_select = $.proxy(this.on_child_select, this);
 			var client = this.option("client");
 			this.$children = client.get_$("children");
@@ -256,22 +289,18 @@
 			this.children_change_listener = cjs.liven(function() {
 				var children = this.$children.get();
 				if(_.isArray(children)) {
-					if(this.child_list.is(".loading")) {
-						this.child_list.removeClass("loading");
-						this.child_list.html("");
-					}
 					var diff = _.diff(old_children, children);
 
 					_.forEach(diff.removed, function (info) {
 						var index = info.from, child = info.from_item;
-						var child_disp = this.child_list.children().eq(index);
+						var child_disp = this.tbody.children().eq(index + INDEX_OFFSET);
 						child_disp.column_child("destroy");
 						remove(child_disp[0]);
 					}, this);
 					_.forEach(diff.added, function (info) {
 						var index = info.to, child = info.item;
-						var child_disp = $("<div />");
-						insert_at(child_disp[0], this.child_list[0], index);
+						var child_disp = $("<tr />");
+						insert_at(child_disp[0], this.tbody[0], index + INDEX_OFFSET);
 						child_disp.column_child({
 							value: child.value,
 							name: child.name,
@@ -280,13 +309,10 @@
 					}, this);
 					_.forEach(diff.moved, function (info) {
 						var from_index = info.from, to_index = info.to, child = info.item;
-						var child_disp = this.child_list.children().eq(from_index);
-						move(child_disp[0], from_index, to_index);
+						var child_disp = this.tbody.children().eq(from_index + INDEX_OFFSET);
+						move(child_disp[0], from_index + INDEX_OFFSET, to_index + INDEX_OFFSET);
 					}, this);
 					old_children = children;
-				} else {
-					this.child_list	.addClass("loading")
-									.text("...");
 				}
 			}, {
 				context: this
@@ -314,8 +340,9 @@
 		build_src_view: function() {
 			this.destroy_src_view();
 			var client = this.option("client");
+			/*
 			this.statechart_view_container = $("<div />")	.appendTo(this.header)
-												.addClass("statechart");
+															.addClass("statechart");
 
 			if(client.type() === "stateful") {
 				var $statecharts = client.get_$("get_statecharts");
@@ -326,17 +353,10 @@
 					});
 
 					if(this.layout_engine) {
-						this.layout_engine.destroy();
+					//	this.layout_engine.destroy();
 					}
 					if(statecharts) {
 						this.layout_engine = new red.RootStatechartLayoutEngine(statecharts);
-/*
-						var el = window.document.createElement("div");
-						el.style.position = "relative";
-						el.style.left = "300px";
-						el.style.width="0px";
-						//content.appendChild(el);
-						*/
 						var paper = new Raphael(this.statechart_view_container[0], 0, 0);
 						this.statechart_view = new red.RootStatechartView(statecharts, this.layout_engine, paper);
 					}
@@ -344,6 +364,7 @@
 					context: this
 				});
 			}
+			*/
 		},
 		destroy_src_view: function() {
 			if(this.layout_engine) {
@@ -361,16 +382,9 @@
 		_setOption: function(key, value) {
 			if(key === "is_curr_col") {
 				if(value) {
-					this.element.addClass("curr_col");
-					this.edit_button.show();
-					if(this.selected_child_disp) {
-						this.selected_child_disp.column_child("on_deselect");
-					}
-					this.build_src_view();
+					this.on_curr_col();
 				} else {
-					this.element.removeClass("curr_col");
-					this.edit_button.hide();
-					this.destroy_src_view();
+					this.on_not_curr_col();
 				}
 			}
 		}
@@ -384,12 +398,16 @@
 		},
 
 		_create: function() {
-			this.element.addClass("child")
-						.text(this.option("name"));
+			this.element.addClass("child");
 
-			this.value_summary = $("<span />")	.appendTo(this.element)
+			this.name_disp = $("<td />")	.addClass("name")
+											.appendTo(this.element)
+											.attr("colspan", "2")
+											.text(this.option("name"));
+
+			this.value_summary = $("<td />")	.appendTo(this.element)
 												.value_summary({ value: this.option("value") })
-												.addClass("value_summary");
+												.addClass("value_summary val_col");
 
 			if(this.option("inherited")) {
 				this.element.addClass("inherited");

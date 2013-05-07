@@ -40,7 +40,7 @@
 
 	red.RootStatechartLayoutEngine = function (statecharts) {
 		this.statecharts = statecharts;
-		this.statecharts_with_add_state_button = [this.statecharts[0]];
+		this.statecharts_with_add_state_button = [];//this.statecharts[0]];
 		this.$layout = cjs.$(_.bind(this._compute_layout, this));
 	};
 	(function (my) {

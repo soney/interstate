@@ -11,7 +11,6 @@ $active_obj_value_summary_width: 100px;
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
-	cursor: default;
 }
 @mixin transition($transition-property, $transition-time, $method) {
 	-webkit-transition: $transition-property $transition-time $method;
@@ -43,84 +42,120 @@ html.full_window_editor {
 		height: 100%;
 		float: left;
 
-		> .col {
+		> table.col {
 			border-left: 1px solid #CCC;
 			border-right: 1px solid #CCC;
 			border-bottom: 1px solid #CCC;
 			min-width: 150px;
 			float: left;
-			> header {
-				background-color: $nav_header_color;
-				border-bottom: 1px solid #AAA;
-				position: relative;
 
-				> .obj_name {
-					font-weight: 200;
-					text-align: center;
-					font-size: 1.5em;
-					@include non-selectable;
-				}
+			padding: 0px;
+			border-collapse: collapse;
 
-				&:hover {
-					background-color: $nav_header_hover_color;
-				}
-
-				> .edit {
-					position: absolute;
-					right: 10px;
-					top: 10px;
-					font-size: 0.7em;
-					color: blue;
-					cursor: pointer;
-				}
-
-				> .prev {
-					position: absolute;
-					left: 10px;
-					cursor: pointer;
-					top: 4px;
-					color: #666;
-					font-size: 1.2em;
+			&.curr_col {
+				min-width: 250px;
+				border-right: 1px solid #888;
+				> tbody > tr > .val_col {
+					max-width: $active_obj_value_summary_width;
 				}
 			}
-			> .child_list {
-				font-family: "Source Code Pro";
-				font-size: 0.8em;
-				> :nth-child(even) {
-					background-color: #FCFCFC;
-				} > :nth-child(odd) {
-					background-color: #FFF;
+			> tbody {
+				> tr > .val_col {
+					max-width: $value_summary_width;
+					overflow: hidden;
+					text-align: right;
+					word-break: break-all;
+					text-align: right;
+					white-space: nowrap;
+				}
+
+				> tr > th {
+					font-weight: normal;
+				}
+				> tr > th, > tr > td {
+					padding: 0px;
+					margin: 0px;
+				}
+
+				> .header {
+					@include non-selectable;
+					background-color: $nav_header_color;
+					border-bottom: 1px solid #AAA;
+
+					> th:hover {
+						background-color: $nav_header_hover_color;
+					}
+
+					> .prev {
+						text-align: center;
+						vertical-align: center;
+						border-right: 1px solid #CCC;
+						cursor: pointer;
+						> a {
+							top: 4px;
+							color: #666;
+							font-size: 1.2em;
+							text-decoration: none;
+						}
+					}
+
+					> .obj_name {
+						cursor: pointer;
+						font-weight: 200;
+						text-align: center;
+						font-size: 1.5em;
+					}
+
+					> .edit {
+						font-size: 0.7em;
+						color: blue;
+						cursor: pointer;
+						text-align: center;
+						vertical-align: middle;
+						border-left: 1px solid #CCC;
+						> a {
+							text-decoration: none;
+						}
+					}
 				}
 
 				> .child {
+					font-family: "Source Code Pro";
+					font-size: 0.8em;
+
+					&:nth-child(even) {
+						background-color: #FFF;
+					} &:nth-child(odd) {
+						background-color: #FAFAFA;
+					}
+
 					@include non-selectable;
-					padding-left: 5px;
-					position: relative;
+
+					> .name {
+						cursor: pointer;
+					}
+
 					> .value_summary {
-						right: 0px;
-						position: absolute;
 						overflow: hidden;
 						display: inline-box;
 						height: 100%;
 						box-sizing: border-box;
 						font-weight: 200;
 						padding-right: 2px;
-						padding-top: 2px;
-						padding-bottom: 2px;
 						word-break: break-all;
 						text-align: right;
-					}
-
-					> .value_summary.dict {
-						background-color: inherit;
-						text-align: right;
-						color: #CCC;
-						border-left: 1px dashed #F7F7F7;
-					}
-
-					> .value_summary.constant {
-						background-color: #EEE;
-						border-left: 1px solid #CCC;
+						
+						&.dict {
+							text-align: right;
+							color: #CCC;
+							border-left: 1px dashed #EEE;
+							cursor: pointer;
+						}
+						
+						&.constant {
+							background-color: #EEE;
+							border-left: 1px solid #EEE;
+						}
 					}
 
 					&:hover {
@@ -131,24 +166,8 @@ html.full_window_editor {
 						background-color: rgb(82, 116, 212);
 						color: white;
 						> .value_summary.dict {
-							border-left: 1px dashed #AAA;
+							border-left: 1px dashed #99B;
 						}
-					}
-				}
-			}
-			> .child_list > .child {
-				padding-right: $value_summary_width;
-				> .value_summary {
-					width: $value_summary_width;
-				}
-			}
-			&.curr_col {
-				min-width: 250px;
-				border-right: 1px solid #888;
-				> .child_list .child {
-					padding-right: $active_obj_value_summary_width;
-					> .value_summary {
-						width: $active_obj_value_summary_width;
 					}
 				}
 			}

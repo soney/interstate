@@ -22,6 +22,7 @@ var COLORS = {
 			hash: "hash"
 		});
 		this.paper = paper;
+		/*
 		var add_state_button = paper.text(0, 20, "+");
 		add_state_button.attr({
 			"font-size": "30px",
@@ -31,6 +32,7 @@ var COLORS = {
 		add_state_button.click(_.bind(function () {
 			this._emit("add_state", {statechart: this.statecharts[0]});
 		}, this));
+		*/
 		var curr_items = [];
 		this.live_layout = cjs.liven(function () {
 			var layout_info = this.layout_engine.get_layout();
@@ -44,10 +46,12 @@ var COLORS = {
 				if (state instanceof red.State) {
 					if (_.indexOf(this.statecharts, state) >= 0) {
 						if (layout_info.add_state_button_x) {
+						/*
 							add_state_button.attr({
 								x: layout_info.add_state_button_x,
 								y: height / 2
 							});
+							*/
 						}
 						return; //it's a root statechart
 					}

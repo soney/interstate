@@ -12,96 +12,102 @@ html.full_window_editor {
   #editor > #obj_nav {
     height: 100%;
     float: left; }
-    #editor > #obj_nav > .col {
+    #editor > #obj_nav > table.col {
       border-left: 1px solid #CCC;
       border-right: 1px solid #CCC;
       border-bottom: 1px solid #CCC;
       min-width: 150px;
-      float: left; }
-      #editor > #obj_nav > .col > header {
-        background-color: #eeeeee;
-        border-bottom: 1px solid #AAA;
-        position: relative; }
-        #editor > #obj_nav > .col > header > .obj_name {
-          font-weight: 200;
-          text-align: center;
-          font-size: 1.5em;
-          -webkit-touch-callout: none;
-          -webkit-user-select: none;
-          -khtml-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-          cursor: default; }
-        #editor > #obj_nav > .col > header:hover {
-          background-color: #dddddd; }
-        #editor > #obj_nav > .col > header > .edit {
-          position: absolute;
-          right: 10px;
-          top: 10px;
-          font-size: 0.7em;
-          color: blue;
-          cursor: pointer; }
-        #editor > #obj_nav > .col > header > .prev {
-          position: absolute;
-          left: 10px;
-          cursor: pointer;
-          top: 4px;
-          color: #666;
-          font-size: 1.2em; }
-      #editor > #obj_nav > .col > .child_list {
-        font-family: "Source Code Pro";
-        font-size: 0.8em; }
-        #editor > #obj_nav > .col > .child_list > :nth-child(even) {
-          background-color: #FCFCFC; }
-        #editor > #obj_nav > .col > .child_list > :nth-child(odd) {
-          background-color: #FFF; }
-        #editor > #obj_nav > .col > .child_list > .child {
-          -webkit-touch-callout: none;
-          -webkit-user-select: none;
-          -khtml-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-          cursor: default;
-          padding-left: 5px;
-          position: relative; }
-          #editor > #obj_nav > .col > .child_list > .child > .value_summary {
-            right: 0px;
-            position: absolute;
-            overflow: hidden;
-            display: inline-box;
-            height: 100%;
-            box-sizing: border-box;
-            font-weight: 200;
-            padding-right: 2px;
-            padding-top: 2px;
-            padding-bottom: 2px;
-            word-break: break-all;
-            text-align: right; }
-          #editor > #obj_nav > .col > .child_list > .child > .value_summary.dict {
-            background-color: inherit;
-            text-align: right;
-            color: #CCC;
-            border-left: 1px dashed #F7F7F7; }
-          #editor > #obj_nav > .col > .child_list > .child > .value_summary.constant {
-            background-color: #EEE;
-            border-left: 1px solid #CCC; }
-          #editor > #obj_nav > .col > .child_list > .child:hover {
-            background-color: #f4f6fa; }
-          #editor > #obj_nav > .col > .child_list > .child.selected {
-            background-color: #5274d4;
-            color: white; }
-            #editor > #obj_nav > .col > .child_list > .child.selected > .value_summary.dict {
-              border-left: 1px dashed #AAA; }
-      #editor > #obj_nav > .col > .child_list > .child {
-        padding-right: 50px; }
-        #editor > #obj_nav > .col > .child_list > .child > .value_summary {
-          width: 50px; }
-      #editor > #obj_nav > .col.curr_col {
+      float: left;
+      padding: 0px;
+      border-collapse: collapse; }
+      #editor > #obj_nav > table.col.curr_col {
         min-width: 250px;
         border-right: 1px solid #888; }
-        #editor > #obj_nav > .col.curr_col > .child_list .child {
-          padding-right: 100px; }
-          #editor > #obj_nav > .col.curr_col > .child_list .child > .value_summary {
-            width: 100px; }
+        #editor > #obj_nav > table.col.curr_col > tbody > tr > .val_col {
+          max-width: 100px; }
+      #editor > #obj_nav > table.col > tbody > tr > .val_col {
+        max-width: 50px;
+        overflow: hidden;
+        text-align: right;
+        word-break: break-all;
+        text-align: right;
+        white-space: nowrap; }
+      #editor > #obj_nav > table.col > tbody > tr > th {
+        font-weight: normal; }
+      #editor > #obj_nav > table.col > tbody > tr > th, #editor > #obj_nav > table.col > tbody > tr > td {
+        padding: 0px;
+        margin: 0px; }
+      #editor > #obj_nav > table.col > tbody > .header {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        background-color: #eeeeee;
+        border-bottom: 1px solid #AAA; }
+        #editor > #obj_nav > table.col > tbody > .header > th:hover {
+          background-color: #dddddd; }
+        #editor > #obj_nav > table.col > tbody > .header > .prev {
+          text-align: center;
+          vertical-align: center;
+          border-right: 1px solid #CCC;
+          cursor: pointer; }
+          #editor > #obj_nav > table.col > tbody > .header > .prev > a {
+            top: 4px;
+            color: #666;
+            font-size: 1.2em;
+            text-decoration: none; }
+        #editor > #obj_nav > table.col > tbody > .header > .obj_name {
+          cursor: pointer;
+          font-weight: 200;
+          text-align: center;
+          font-size: 1.5em; }
+        #editor > #obj_nav > table.col > tbody > .header > .edit {
+          font-size: 0.7em;
+          color: blue;
+          cursor: pointer;
+          text-align: center;
+          vertical-align: middle;
+          border-left: 1px solid #CCC; }
+          #editor > #obj_nav > table.col > tbody > .header > .edit > a {
+            text-decoration: none; }
+      #editor > #obj_nav > table.col > tbody > .child {
+        font-family: "Source Code Pro";
+        font-size: 0.8em;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none; }
+        #editor > #obj_nav > table.col > tbody > .child:nth-child(even) {
+          background-color: #FFF; }
+        #editor > #obj_nav > table.col > tbody > .child:nth-child(odd) {
+          background-color: #FAFAFA; }
+        #editor > #obj_nav > table.col > tbody > .child > .name {
+          cursor: pointer; }
+        #editor > #obj_nav > table.col > tbody > .child > .value_summary {
+          overflow: hidden;
+          display: inline-box;
+          height: 100%;
+          box-sizing: border-box;
+          font-weight: 200;
+          padding-right: 2px;
+          word-break: break-all;
+          text-align: right; }
+          #editor > #obj_nav > table.col > tbody > .child > .value_summary.dict {
+            text-align: right;
+            color: #CCC;
+            border-left: 1px dashed #EEE;
+            cursor: pointer; }
+          #editor > #obj_nav > table.col > tbody > .child > .value_summary.constant {
+            background-color: #EEE;
+            border-left: 1px solid #EEE; }
+        #editor > #obj_nav > table.col > tbody > .child:hover {
+          background-color: #f4f6fa; }
+        #editor > #obj_nav > table.col > tbody > .child.selected {
+          background-color: #5274d4;
+          color: white; }
+          #editor > #obj_nav > table.col > tbody > .child.selected > .value_summary.dict {
+            border-left: 1px dashed #99B; }
