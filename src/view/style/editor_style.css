@@ -13,6 +13,7 @@ html.full_window_editor {
     height: 100%;
     float: left; }
     #editor > #obj_nav > .col {
+      border-left: 1px solid #CCC;
       border-right: 1px solid #CCC;
       border-bottom: 1px solid #CCC;
       min-width: 150px;
@@ -41,6 +42,13 @@ html.full_window_editor {
           font-size: 0.7em;
           color: blue;
           cursor: pointer; }
+        #editor > #obj_nav > .col > header > .prev {
+          position: absolute;
+          left: 10px;
+          cursor: pointer;
+          top: 4px;
+          color: #666;
+          font-size: 1.2em; }
       #editor > #obj_nav > .col > .child_list {
         font-family: "Source Code Pro";
         font-size: 0.8em; }
@@ -66,13 +74,15 @@ html.full_window_editor {
             height: 100%;
             box-sizing: border-box;
             font-weight: 200;
+            padding-right: 2px;
             padding-top: 2px;
-            padding-bottom: 2px; }
+            padding-bottom: 2px;
+            word-break: break-all;
+            text-align: right; }
           #editor > #obj_nav > .col > .child_list > .child > .value_summary.dict {
             background-color: inherit;
             text-align: right;
             color: #CCC;
-            padding-right: 2px;
             border-left: 1px dashed #F7F7F7; }
           #editor > #obj_nav > .col > .child_list > .child > .value_summary.constant {
             background-color: #EEE;

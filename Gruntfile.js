@@ -74,9 +74,9 @@ module.exports = function(grunt) {
 			}
 		},
 		sass: {
-			dist: {
-				editor_style: {
-					"build/style/editor_style.css": "src/view/style/editor_style.sass"
+			editor_style: {
+				files: {
+					"build/style/editor_style.css": "src/view/style/editor_style.scss"
 				}
 			}
 		},

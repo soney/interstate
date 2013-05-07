@@ -6,9 +6,15 @@
 	var cjs = red.cjs,
 		_ = red._;
 
+	var round_num = function(num, decimals) {
+		var n = Math.pow(10, decimals);
+		return Math.round(num*n)/n;
+	};
 	var summarized_val = function(val) {
 		if(_.isString(val)) {
 			return "'" + val + "'";
+		} else if(_.isNumber(val)) {
+			return round_num(val, 2);
 		} else {
 			return val;
 		}
@@ -48,7 +54,8 @@
 			debug_ready: false,
 			full_window: true,
 			server_window: window.opener,
-			client_id: ""
+			client_id: "",
+			single_col_navigation: false
 		},
 
 		_create: function () {
@@ -79,7 +86,10 @@
 		load_viewer: function (root_client) {
 			this.element.html("");
 			this.navigator = $("<div />")	.appendTo(this.element)
-											.navigator({ root_client: root_client });
+											.navigator({
+												root_client: root_client,
+												single_col: this.option("single_col_navigation")
+											});
 
 
 			$(window).on("keydown", _.bind(function (event) {
@@ -107,18 +117,21 @@
 
 	$.widget("red.navigator", {
 		options: {
-			root_client: false
-		}, 
+			root_client: false,
+			single_col: false
+		},
 		_create: function() {
 			this.element.attr("id", "obj_nav");
 			var root_col = $("<div />")	.appendTo(this.element);
 			root_col					.column({
 											name: "root",
 											client: this.option("root_client"),
-											is_curr_col: true
+											is_curr_col: true,
+											show_prev: false
 										})
 										.on("child_select", $.proxy(this.on_child_select, this, root_col))
-										.on("header_click", $.proxy(this.on_header_click, this, root_col));
+										.on("header_click", $.proxy(this.on_header_click, this, root_col))
+										.on("prev_click", $.proxy(this.on_prev_click, this, root_col));
 			this.curr_col = root_col;
 			this.columns = [root_col];
 		},
@@ -142,11 +155,17 @@
 				next_col					.column({
 												name: child_info.name,
 												client: child_info.value,
-												is_curr_col: true
+												is_curr_col: true,
+												prev_col: column,
+												show_prev: this.option("single_col")
 											})
 											.on("child_select", $.proxy(this.on_child_select, this, next_col))
-											.on("header_click", $.proxy(this.on_header_click, this, next_col));
+											.on("header_click", $.proxy(this.on_header_click, this, next_col))
+											.on("prev_click", $.proxy(this.on_prev_click, this, next_col));
 				this.columns.push(next_col);
+				if(this.option("single_col")) {
+					this.curr_col.hide();
+				}
 				this.curr_col = next_col;
 			}
 		},
@@ -159,6 +178,17 @@
 			this.columns.length = column_index + 1;
 			this.curr_col = column;
 			this.curr_col.column("option", "is_curr_col", true);
+		},
+		on_prev_click: function(column, event) {
+			var column_index = _.indexOf(this.columns, column);
+			var subsequent_columns = this.columns.slice(column_index);
+			_.each(subsequent_columns, function(col) {
+				col.column("destroy").remove();
+			});
+			this.columns.length = column_index;
+			this.curr_col = this.columns[column_index-1];
+			this.curr_col.column("option", "is_curr_col", true);
+			this.curr_col.show();
 		}
 	});
 
@@ -166,8 +196,8 @@
 		options: {
 			client: false,
 			name: "root",
-			next_col: false,
 			prev_col: false,
+			show_prev: false,
 			is_curr_col: false
 		},
 
@@ -184,6 +214,10 @@
 												.appendTo(this.header)
 												.text("edit");
 
+			this.prev_button = $("<span />")	.addClass("prev")
+												.appendTo(this.header)
+												.text("<");
+
 			this.child_list = $("<div />")	.appendTo(this.element)
 											.addClass("child_list");
 			this.add_children_listener();
@@ -193,10 +227,22 @@
 			} else {
 				this.edit_button.hide();
 			}
+
+			if(this.option("show_prev")) {
+				this.prev_button.on("click", $.proxy(this.on_prev_click, this));
+			} else {
+				this.prev_button.hide();
+			}
 		},
 
-		on_header_click: function() {
+		on_header_click: function(event) {
 			this.element.trigger("header_click", this);
+			event.stopPropagation();
+		},
+
+		on_prev_click: function(event) {
+			this.element.trigger("prev_click", this);
+			event.stopPropagation();
 		},
 
 		add_children_listener: function () {
@@ -254,13 +300,12 @@
 		},
 		on_child_select: function(child_info, child_disp, event) {
 			var client = child_info.value;
-			if(client instanceof red.WrapperClient) {
-				child_disp.column_child("on_select");
-
+			if(client instanceof red.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
 				if(this.selected_child_disp) {
 					this.selected_child_disp.column_child("on_deselect");
 				}
 				this.selected_child_disp = child_disp;
+				this.selected_child_disp.column_child("on_select");
 			}
 			this.element.trigger("child_select", child_info);
 		},
@@ -269,6 +314,9 @@
 				if(value) {
 					this.element.addClass("curr_col");
 					this.edit_button.show();
+					if(this.selected_child_disp) {
+						this.selected_child_disp.column_child("on_deselect");
+					}
 				} else {
 					this.element.removeClass("curr_col");
 					this.edit_button.hide();
