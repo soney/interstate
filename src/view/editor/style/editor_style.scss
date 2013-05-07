@@ -43,13 +43,12 @@ html.full_window_editor {
 		float: left;
 
 		> table.col {
-			border-left: 1px solid #CCC;
-			border-right: 1px solid #CCC;
-			border-bottom: 1px solid #CCC;
-			min-width: 150px;
-			float: left;
+			border: 1px solid #CCC;
+			border-top: none;
 
-			padding: 0px;
+			min-width: 100px;
+
+			float: left;
 			border-collapse: collapse;
 
 			&.curr_col {
@@ -57,6 +56,10 @@ html.full_window_editor {
 				border-right: 1px solid #888;
 				> tbody > tr > .val_col {
 					max-width: $active_obj_value_summary_width;
+				}
+
+				> tbody > .header > .edit {
+					border-right: 1px solid #888;
 				}
 			}
 			> tbody {
@@ -108,7 +111,6 @@ html.full_window_editor {
 
 					> .edit {
 						font-size: 0.7em;
-						color: blue;
 						cursor: pointer;
 						text-align: center;
 						vertical-align: middle;
@@ -117,9 +119,18 @@ html.full_window_editor {
 							text-decoration: none;
 						}
 					}
+					
+					> .statechart {
+						&:hover {
+							background-color: inherit;
+						}
+						vertical-align: bottom;
+					}
 				}
 
 				> .child {
+					@include non-selectable;
+
 					font-family: "Source Code Pro";
 					font-size: 0.8em;
 
@@ -129,10 +140,9 @@ html.full_window_editor {
 						background-color: #FAFAFA;
 					}
 
-					@include non-selectable;
-
 					> .name {
 						cursor: pointer;
+						padding-left: 2px;
 					}
 
 					> .value_summary {

@@ -110,12 +110,16 @@ exports.runtime = c(
 
 exports.editor = c(
 	cp(src, [
-		"view/editor_view.js",
-		"view/statechart/raphael_utils.js",
-		"view/statechart/editable_text.js",
-		"view/statechart/layout_engine.js",
-		"view/statechart/statechart_view.js",
-		"view/style/editor_style.css"
+		"view/editor/editor_view.js",
+		"view/editor/navigator.js",
+		"view/editor/column.js",
+		"view/editor/prop.js",
+		"view/editor/val_summary.js",
+		"view/editor/statechart/raphael_utils.js",
+		"view/editor/statechart/editable_text.js",
+		"view/editor/statechart/layout_engine.js",
+		"view/editor/statechart/statechart_view.js",
+		"view/editor/style/editor_style.css"
 	])
 );
 

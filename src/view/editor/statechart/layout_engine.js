@@ -107,6 +107,9 @@
 			}
 			return 0;
 		};
+		proto.get_num_cols = function() {
+			return 1;
+		};
 
 		proto.get_layout = function () {
 			return this.$layout.get();

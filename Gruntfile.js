@@ -76,15 +76,15 @@ module.exports = function(grunt) {
 		sass: {
 			editor_style: {
 				files: {
-					"build/style/editor_style.css": "src/view/style/editor_style.scss"
+					"build/editor/style/editor_style.css": "src/view/editor/style/editor_style.scss"
 				}
 			}
 		},
 		copy: {
 			css: {
 				files: [
-					{ expand: true, cwd: "src/view/style/images", src: ["**"], dest: "build/style/images" },
-					{ expand: true, cwd: "src/view/style/fonts", src: ["**"], dest: "build/style/fonts" }
+					{ expand: true, cwd: "src/view/editor/style/images", src: ["**"], dest: "build/editor/style/images" },
+					{ expand: true, cwd: "src/view/editor/style/fonts", src: ["**"], dest: "build/editor/style/fonts" }
 				]
 			},
 			sample_apps: {
