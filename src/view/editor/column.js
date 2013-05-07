@@ -59,7 +59,7 @@
 			this.obj_name_cell = $("<th />")	.appendTo(this.header)
 												.addClass("obj_name")
 												.text(this.option("name"))
-												.on("click", $.proxy(this.on_header_click, this));
+												.on("click touchstart", $.proxy(this.on_header_click, this));
 
 			this.edit_cell = $("<th />")	.addClass("edit val_col");
 
@@ -67,6 +67,13 @@
 											.attr("href", "javascript:void(0)")
 											.appendTo(this.edit_cell)
 											.text(this.option("edit_text"));
+
+			this.info_col = $("<tr />")	.appendTo(this.tbody)
+										.addClass("info");
+			this.info_cell = $("<td />")	.appendTo(this.info_col)
+											.addClass("info");
+			var filler_cell = $("<td />")	.appendTo(this.info_col)
+											.addClass("filler");
 
 			this.add_children_listener();
 
@@ -82,10 +89,12 @@
 		on_curr_col: function() {
 			if(this.option("prev_col") && this.option("show_prev")) {
 				this.obj_name_cell.attr("colspan", "1");
+				this.info_cell.attr("colspan", "1");
 				this.prev_cell.insertBefore(this.obj_name_cell);
-				this.prev_cell.on("click", this.$on_prev_click);
+				this.prev_cell.on("click touchstart", this.$on_prev_click);
 			} else {
 				this.obj_name_cell.attr("colspan", "2");
+				this.info_cell.attr("colspan", "2");
 			}
 
 			this.edit_cell.insertAfter(this.obj_name_cell);
@@ -98,10 +107,11 @@
 
 		on_not_curr_col: function() {
 			if(this.option("prev_col") && this.option("show_prev")) {
-				this.prev_cell.off("click", this.$on_prev_click);
+				this.prev_cell.off("click touchstart", this.$on_prev_click);
 				this.prev_cell.remove();
 			}
 			this.obj_name_cell.attr("colspan", "3");
+			this.info_cell.attr("colspan", "3");
 			this.edit_cell.remove();
 			this.element.removeClass("curr_col");
 			this.destroy_src_view();
@@ -110,16 +120,18 @@
 		on_header_click: function(event) {
 			this.element.trigger("header_click", this);
 			event.stopPropagation();
+			event.preventDefault();
 		},
 
 		on_prev_click: function(event) {
 			console.log("prev click");
 			this.element.trigger("prev_click", this);
 			event.stopPropagation();
+			event.preventDefault();
 		},
 
 		add_children_listener: function () {
-			var INDEX_OFFSET = 1; // Account for the header column
+			var INDEX_OFFSET = 2; // Account for the header column
 			this.$on_child_select = $.proxy(this.on_child_select, this);
 			var client = this.option("client");
 			this.$children = client.get_$("children");
@@ -143,7 +155,9 @@
 						child_disp.prop({
 							value: child.value,
 							name: child.name,
-							inherited: child.inherited
+							inherited: child.inherited,
+							layout_manager: this.layout_manager,
+							show_src: this.option("show_source")
 						}).on("select", $.proxy(this.on_child_select, this, child, child_disp));
 					}, this);
 					_.forEach(diff.moved, function (info) {
@@ -193,29 +207,32 @@
 				var $statecharts = client.get_$("get_statecharts");
 
 				this.live_src_view = cjs.liven(function() {
+					if(this.paper) {
+						this.paper.remove();
+					}
 					var wrappers = $statecharts.get();
 					var statecharts = _.map(wrappers, function (wrapper) {
 						return red.create_remote_statechart(wrapper);
 					});
 
-					if(this.layout_engine) {
-						delete this.layout_engine;
+					if(this.layout_manager) {
+						delete this.layout_manager;
 					}
 
 					if(statecharts) {
-						this.layout_engine = new red.RootStatechartLayoutEngine(statecharts);
-						var paper = new Raphael(this.statechart_view_container[0], 0, 0);
-						this.statechart_view = new red.RootStatechartView(statecharts, this.layout_engine, paper);
+						this.layout_manager = new red.RootStatechartLayoutEngine(statecharts);
+						$("tr.child").prop("option", "layout_manager", this.layout_manager);
+						this.paper = new Raphael(this.statechart_view_container[0], 0, 0);
+						this.statechart_view = new red.RootStatechartView(statecharts, this.layout_manager, this.paper);
 					}
 				}, {
 					context: this
 				});
 
 				this.num_columns_view = cjs.liven(function() {
-					if(this.layout_engine) {
-						var num_cols = this.layout_engine.get_num_cols();
-						$("tr.child td.val_col").attr("colspan", num_cols + 1);
-						this.statechart_view_container.attr("colspan", num_cols);
+					if(this.layout_manager) {
+						var num_cols = this.layout_manager.get_num_cols();
+						$("tr.child").prop("option", "show_src", true);
 					}
 				}, {
 					context: this
@@ -238,8 +255,13 @@
 			if(this.statechart_view_container) {
 				this.statechart_view_container.remove();
 			}
+			if(this.paper) {
+				this.paper.remove();
+			}
+			$("tr.child").prop("option", "show_src", false);
 		},
 		_setOption: function(key, value) {
+			this._super(key, value);
 			if(key === "is_curr_col") {
 				if(value) {
 					this.on_curr_col();

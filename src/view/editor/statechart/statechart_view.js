@@ -4,7 +4,11 @@
 var COLORS = {
 	BACKGROUND: "#FFF",
 	FOREGROUND: "#000",
-	HIGHLIGHT: "#F00"
+	HIGHLIGHT: "#F00",
+	FILL: "#EEE",
+	ACTIVE_FILL: "#FFF",
+	STROKE: "#999",
+	ACTIVE_STROKE: "#F00"
 };
 
 (function (red) {
@@ -12,7 +16,7 @@ var COLORS = {
 	var cjs = red.cjs,
 		_ = red._;
 
-	var FONT_FAMILY_STR = "Tahoma, Geneva, sans-serif";
+	var FONT_FAMILY_STR = "Source Sans Pro, Tahoma, Geneva, sans-serif";
 
 	red.RootStatechartView = function (statecharts, layout_engine, paper) {
 		able.make_this_listenable(this);
@@ -169,6 +173,8 @@ var COLORS = {
 			this.live_layout.resume();
 			this.live_layout.run();
 		};
+		proto.remove = function () {
+		};
 		proto.destroy = function () {
 			this.live_layout.destroy();
 		};
@@ -186,10 +192,10 @@ var COLORS = {
 			rws: {x: 0, y: 0},
 			rwe: {x: 0, y: 0},
 			c: {x: 0, y: 0},
-			default_stroke: COLORS.FOREGROUND,
-			default_fill: COLORS.BACKGROUND,
-			active_fill: "#333",
-			active_stroke: COLORS.HIGHLIGHT
+			default_stroke: COLORS.STROKE,
+			default_fill: COLORS.FILL,
+			active_fill: COLORS.ACTIVE_FILL,
+			active_stroke: COLORS.ACTIVE_STROKE
 		}, options);
 		this.active_fn = cjs.liven(function () {
 			var state = this.option("state");

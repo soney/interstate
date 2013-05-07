@@ -81,15 +81,15 @@
 				var layout_info = values[i];
 				if (layout_info) {
 					if (state_wrapper.type() === "statechart") {
-						return layout_info.center.x + 300;
+						return layout_info.center.x;
 					} else if (state_wrapper.type() === "transition") {
-						return layout_info.from.x + 300;
+						return layout_info.from.x;
 					} else if(state_wrapper.type() === "start_state") {
-						return layout_info.center.x + 300;
+						return layout_info.center.x;
 					}
 				}
 			} else {
-				return full_layout_info.width + 300;
+				return full_layout_info.width;
 			}
 		};
 		proto.total_width = function () {

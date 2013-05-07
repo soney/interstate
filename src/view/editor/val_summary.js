@@ -16,6 +16,12 @@
 			return "'" + val + "'";
 		} else if(_.isNumber(val)) {
 			return round_num(val, 2);
+		} else if(val === undefined) {
+			return "undefined";
+		} else if(val === null) {
+			return "null";
+		} else if(isNaN(val)) {
+			return "NaN";
 		} else {
 			return val;
 		}
@@ -43,7 +49,7 @@
 					$prop_val = client.get_$("val");
 
 					this.element	.addClass("cell")
-									.text("(cell)");
+									.text("");
 					this.live_value_fn = cjs.liven(function() {
 						this.element.text(summarized_val($prop_val.get()));
 					}, {
@@ -53,7 +59,7 @@
 					$prop_val = client.get_$("val");
 
 					this.element	.addClass("stateful_prop")
-									.text("(prop)");
+									.text("");
 					this.live_value_fn = cjs.liven(function() {
 						this.element.text(summarized_val($prop_val.get()));
 					}, {

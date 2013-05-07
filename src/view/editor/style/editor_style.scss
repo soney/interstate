@@ -1,8 +1,10 @@
-$nav_header_color: #EEE;
-$nav_header_hover_color: #DDD;
+$nav_header_color: #F7F7F7;
+$nav_header_hover_color: #EEE;
+$nav_header_active_color: #E0E0E0;
 
 $value_summary_width: 50px;
 $active_obj_value_summary_width: 100px;
+$unset_prop_val_radius: 7px;
 
 @mixin non-selectable {
 	-webkit-touch-callout: none;
@@ -54,12 +56,19 @@ html.full_window_editor {
 			&.curr_col {
 				min-width: 250px;
 				border-right: 1px solid #888;
+
+				> tbody > .header {
+					background-color: $nav_header_active_color;
+				}
+
 				> tbody > tr > .val_col {
 					max-width: $active_obj_value_summary_width;
 				}
 
-				> tbody > .header > .edit {
-					border-right: 1px solid #888;
+				> tbody > tr {
+					> .val_col {
+						border-right: 1px solid #888;
+					}
 				}
 			}
 			> tbody {
@@ -68,8 +77,8 @@ html.full_window_editor {
 					overflow: hidden;
 					text-align: right;
 					word-break: break-all;
-					text-align: right;
 					white-space: nowrap;
+					text-align: right;
 				}
 
 				> tr > th {
@@ -104,9 +113,11 @@ html.full_window_editor {
 
 					> .obj_name {
 						cursor: pointer;
-						font-weight: 200;
+						font-weight: 100;
 						text-align: center;
 						font-size: 1.5em;
+						padding-top: 4px;
+						padding-bottom: 2px;
 					}
 
 					> .edit {
@@ -131,18 +142,20 @@ html.full_window_editor {
 				> .child {
 					@include non-selectable;
 
-					font-family: "Source Code Pro";
-					font-size: 0.8em;
+					font-family: "Inconsolata";
+					font-size: 1em;
 
 					&:nth-child(even) {
 						background-color: #FFF;
 					} &:nth-child(odd) {
 						background-color: #FAFAFA;
 					}
+					border-top: 1px solid #EEE;
 
 					> .name {
 						cursor: pointer;
 						padding-left: 2px;
+						padding-right: 5px;
 					}
 
 					> .value_summary {
@@ -150,11 +163,12 @@ html.full_window_editor {
 						display: inline-box;
 						height: 100%;
 						box-sizing: border-box;
-						font-weight: 200;
 						padding-right: 2px;
 						word-break: break-all;
 						text-align: right;
 						
+						border-left: 1px solid #EEE;
+						color: #888;
 						&.dict {
 							text-align: right;
 							color: #CCC;
@@ -164,7 +178,6 @@ html.full_window_editor {
 						
 						&.constant {
 							background-color: #EEE;
-							border-left: 1px solid #EEE;
 						}
 					}
 
@@ -177,6 +190,49 @@ html.full_window_editor {
 						color: white;
 						> .value_summary.dict {
 							border-left: 1px dashed #99B;
+						}
+					}
+
+					> .src {
+						position: relative;
+						vertical-align: top;
+						background-color: white;
+
+						> .cell, >.unset {
+							position: absolute;
+						}
+
+						> .cell {
+							@include non-selectable;
+							background-color: #EEE;
+							border-left: 1px solid #CCC;
+							border-right: 1px solid #CCC;
+							cursor: pointer;
+							text-align: center;
+							overflow: hidden;
+							word-break: break-all;
+							white-space: nowrap;
+
+							&.active {
+								color: red;
+								border-left: 1px solid red;
+								border-right: 1px solid red;
+							}
+						}
+
+						> .unset {
+							width: $unset_prop_val_radius * 2;
+							height: $unset_prop_val_radius * 2;
+							border-radius: $unset_prop_val_radius;
+							border: 1px solid #CCC;
+							box-sizing: border-box;
+							background-color: #EEE;
+							display: inline-block;
+							top: 1px;
+							cursor: pointer;
+							&:hover {
+								background-color: #DEDEDE;
+							}
 						}
 					}
 				}

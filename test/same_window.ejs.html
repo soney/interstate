@@ -15,6 +15,12 @@
 				var root = env.get_root();
 
 env.set("a", "<stateful>")
+	.cd("a")
+	.add_state("init")
+	.start_at("init")
+	.add_state("hover")
+	.set("prop1")
+	.set("prop1", "init", "'hi'");
 
 				$("div#editor").editor({
 					debug_env: true,

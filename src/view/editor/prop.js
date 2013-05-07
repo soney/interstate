@@ -36,7 +36,9 @@
 		options: {
 			name: "",
 			value: false,
-			inherited: false
+			inherited: false,
+			layout_manager: false,
+			show_src: false
 		},
 
 		_create: function() {
@@ -54,10 +56,16 @@
 			if(this.option("inherited")) {
 				this.element.addClass("inherited");
 			}
-			this.element.on("click", $.proxy(this.on_click, this));
+			this.element.on("click touchstart", $.proxy(this.on_click, this));
+			if(this.option("show_src")) {
+				this.on_show_src();
+			} else {
+				this.on_hide_src();
+			}
 		},
 
 		_destroy: function() {
+			this._super();
 		},
 
 		on_click: function(event) {
@@ -72,6 +80,80 @@
 		},
 		on_deselect: function() {
 			this.element.removeClass("selected");
+		},
+		on_show_src: function() {
+			this.src_cell = $("<td />")	.addClass("src")
+										.appendTo(this.element);
+
+			var value = this.option("value");
+			if(value instanceof red.WrapperClient && value.type() === "stateful_prop") {
+				var layout_manager = this.option("layout_manager");
+				if(layout_manager) {
+					var client = value;
+					var $states = client.get_$("get_states");
+					var $values = client.get_$("get_values");
+					var $active_value = client.get_$("active_value");
+					this.live_prop_vals_fn = cjs.liven(function() {
+						var values = $values.get();
+						var states = $states.get();
+						var active_value = $active_value.get();
+
+						this.src_cell.children().remove();
+
+						_.each(states, function(state) {
+							if(state) {
+								var view = $("<span />").unset_prop({
+									left: layout_manager.get_x(state)
+								});
+								view.appendTo(this.src_cell);
+							}
+						}, this);
+
+						_.each(values, function(value_info) {
+							var value = value_info.value,
+								state = value_info.state;
+
+							var active = active_value && active_value.value === value && value !== undefined;
+							if(state) {
+								var view = $("<span />").prop_cell({
+									left: layout_manager.get_x(state),
+									width: layout_manager.get_width(state),
+									value: value,
+									active: active
+								});
+								view.appendTo(this.src_cell);
+							}
+						}, this);
+					}, {
+						context: this
+					});
+				}
+			}
+		},
+		on_hide_src: function() {
+			if(this.src_cell) {
+				this.src_cell.remove();
+				delete this.src_cell;
+			}
+			if(this.live_prop_vals_fn) {
+				this.live_prop_vals_fn.destroy();
+				delete this.live_prop_vals_fn;
+			}
+		},
+		_setOption: function(key, value) {
+			this._super(key, value);
+			if(key === "show_src") {
+				if(value) {
+					this.on_show_src();
+				} else {
+					this.on_hide_src();
+				}
+			} else if(key === "layout_manager") {
+				if(this.option("show_src")) {
+					this.on_hide_src();
+					this.on_show_src();
+				}
+			}
 		}
 	});
 }(red, jQuery));

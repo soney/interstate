@@ -21,17 +21,19 @@ html.full_window_editor {
       #editor > #obj_nav > table.col.curr_col {
         min-width: 250px;
         border-right: 1px solid #888; }
+        #editor > #obj_nav > table.col.curr_col > tbody > .header {
+          background-color: #e0e0e0; }
         #editor > #obj_nav > table.col.curr_col > tbody > tr > .val_col {
           max-width: 100px; }
-        #editor > #obj_nav > table.col.curr_col > tbody > .header > .edit {
+        #editor > #obj_nav > table.col.curr_col > tbody > tr > .val_col {
           border-right: 1px solid #888; }
       #editor > #obj_nav > table.col > tbody > tr > .val_col {
         max-width: 50px;
         overflow: hidden;
         text-align: right;
         word-break: break-all;
-        text-align: right;
-        white-space: nowrap; }
+        white-space: nowrap;
+        text-align: right; }
       #editor > #obj_nav > table.col > tbody > tr > th {
         font-weight: normal; }
       #editor > #obj_nav > table.col > tbody > tr > th, #editor > #obj_nav > table.col > tbody > tr > td {
@@ -44,10 +46,10 @@ html.full_window_editor {
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
-        background-color: #eeeeee;
+        background-color: #f7f7f7;
         border-bottom: 1px solid #AAA; }
         #editor > #obj_nav > table.col > tbody > .header > th:hover {
-          background-color: #dddddd; }
+          background-color: #eeeeee; }
         #editor > #obj_nav > table.col > tbody > .header > .prev {
           text-align: center;
           vertical-align: center;
@@ -60,9 +62,11 @@ html.full_window_editor {
             text-decoration: none; }
         #editor > #obj_nav > table.col > tbody > .header > .obj_name {
           cursor: pointer;
-          font-weight: 200;
+          font-weight: 100;
           text-align: center;
-          font-size: 1.5em; }
+          font-size: 1.5em;
+          padding-top: 4px;
+          padding-bottom: 2px; }
         #editor > #obj_nav > table.col > tbody > .header > .edit {
           font-size: 0.7em;
           cursor: pointer;
@@ -82,32 +86,34 @@ html.full_window_editor {
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
-        font-family: "Source Code Pro";
-        font-size: 0.8em; }
+        font-family: "Inconsolata";
+        font-size: 1em;
+        border-top: 1px solid #EEE; }
         #editor > #obj_nav > table.col > tbody > .child:nth-child(even) {
           background-color: #FFF; }
         #editor > #obj_nav > table.col > tbody > .child:nth-child(odd) {
           background-color: #FAFAFA; }
         #editor > #obj_nav > table.col > tbody > .child > .name {
           cursor: pointer;
-          padding-left: 2px; }
+          padding-left: 2px;
+          padding-right: 5px; }
         #editor > #obj_nav > table.col > tbody > .child > .value_summary {
           overflow: hidden;
           display: inline-box;
           height: 100%;
           box-sizing: border-box;
-          font-weight: 200;
           padding-right: 2px;
           word-break: break-all;
-          text-align: right; }
+          text-align: right;
+          border-left: 1px solid #EEE;
+          color: #888; }
           #editor > #obj_nav > table.col > tbody > .child > .value_summary.dict {
             text-align: right;
             color: #CCC;
             border-left: 1px dashed #EEE;
             cursor: pointer; }
           #editor > #obj_nav > table.col > tbody > .child > .value_summary.constant {
-            background-color: #EEE;
-            border-left: 1px solid #EEE; }
+            background-color: #EEE; }
         #editor > #obj_nav > table.col > tbody > .child:hover {
           background-color: #f4f6fa; }
         #editor > #obj_nav > table.col > tbody > .child.selected {
@@ -115,3 +121,40 @@ html.full_window_editor {
           color: white; }
           #editor > #obj_nav > table.col > tbody > .child.selected > .value_summary.dict {
             border-left: 1px dashed #99B; }
+        #editor > #obj_nav > table.col > tbody > .child > .src {
+          position: relative;
+          vertical-align: top;
+          background-color: white; }
+          #editor > #obj_nav > table.col > tbody > .child > .src > .cell, #editor > #obj_nav > table.col > tbody > .child > .src > .unset {
+            position: absolute; }
+          #editor > #obj_nav > table.col > tbody > .child > .src > .cell {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-color: #EEE;
+            border-left: 1px solid #CCC;
+            border-right: 1px solid #CCC;
+            cursor: pointer;
+            text-align: center;
+            overflow: hidden;
+            word-break: break-all;
+            white-space: nowrap; }
+            #editor > #obj_nav > table.col > tbody > .child > .src > .cell.active {
+              color: red;
+              border-left: 1px solid red;
+              border-right: 1px solid red; }
+          #editor > #obj_nav > table.col > tbody > .child > .src > .unset {
+            width: 14px;
+            height: 14px;
+            border-radius: 7px;
+            border: 1px solid #CCC;
+            box-sizing: border-box;
+            background-color: #EEE;
+            display: inline-block;
+            top: 1px;
+            cursor: pointer; }
+            #editor > #obj_nav > table.col > tbody > .child > .src > .unset:hover {
+              background-color: #DEDEDE; }

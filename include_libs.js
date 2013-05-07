@@ -114,12 +114,15 @@ exports.editor = c(
 		"view/editor/navigator.js",
 		"view/editor/column.js",
 		"view/editor/prop.js",
+		"view/editor/cell.js",
 		"view/editor/val_summary.js",
 		"view/editor/statechart/raphael_utils.js",
 		"view/editor/statechart/editable_text.js",
 		"view/editor/statechart/layout_engine.js",
 		"view/editor/statechart/statechart_view.js",
-		"view/editor/style/editor_style.css"
+		"view/editor/style/editor_style.css",
+		"view/editor/style/fonts/Inconsolata/stylesheet.css",
+		"view/editor/style/fonts/SourceSansPro/stylesheet.css"
 	])
 );
 
