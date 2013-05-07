@@ -225,6 +225,7 @@
 
 			if(this.option("is_curr_col")) {
 				this.element.addClass("curr_col");
+				this.build_src_view();
 			} else {
 				this.edit_button.hide();
 			}
@@ -310,6 +311,33 @@
 			}
 			this.element.trigger("child_select", child_info);
 		},
+		build_src_view: function() {
+			this.destroy_src_view();
+			var client = this.option("client");
+			if(client.type() === "stateful") {
+				var $statecharts = client.get_$("get_statecharts");
+				this.live_src_view = cjs.liven(function() {
+					var statecharts = $statecharts.get();
+					if(this.layout_engine) {
+						this.layout_engine.destroy();
+					}
+					if(statecharts) {
+						this.layout_engine = new red.RootStatechartLayoutEngine(statecharts);
+						console.log(this.layout_engine);
+					}
+				}, {
+					context: this
+				});
+			}
+		},
+		destroy_src_view: function() {
+			if(this.layout_engine) {
+				this.layout_engine.destroy();
+			}
+			if(this.live_src_view) {
+				this.live_src_view.destroy();
+			}
+		},
 		_setOption: function(key, value) {
 			if(key === "is_curr_col") {
 				if(value) {
@@ -318,9 +346,11 @@
 					if(this.selected_child_disp) {
 						this.selected_child_disp.column_child("on_deselect");
 					}
+					this.build_src_view();
 				} else {
 					this.element.removeClass("curr_col");
 					this.edit_button.hide();
+					this.destroy_src_view();
 				}
 			}
 		}

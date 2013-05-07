@@ -25,7 +25,8 @@ var COLORS = {
 		var add_state_button = paper.text(0, 20, "+");
 		add_state_button.attr({
 			"font-size": "30px",
-			"cursor": "pointer"
+			"cursor": "pointer",
+			"fill": COLORS.FOREGROUND
 		});
 		add_state_button.click(_.bind(function () {
 			this._emit("add_state", {statechart: this.statecharts[0]});
@@ -183,7 +184,7 @@ var COLORS = {
 			c: {x: 0, y: 0},
 			default_stroke: COLORS.FOREGROUND,
 			default_fill: COLORS.BACKGROUND,
-			active_fill: "#CCC",
+			active_fill: "#333",
 			active_stroke: COLORS.HIGHLIGHT
 		}, options);
 		this.active_fn = cjs.liven(function () {
@@ -241,7 +242,7 @@ var COLORS = {
 			var center = this.option("c");
 
 			var name = state.get_name("parent");
-			this.label = new red.EditableText(paper, {x: center.x, y: center.y, text: name});
+			this.label = new red.EditableText(paper, {x: center.x, y: center.y, text: name, fill: COLORS.BACKGROUND, color: COLORS.FOREGROUND});
 			this.label.option({
 				"font-size": "12px",
 				"font-family": FONT_FAMILY_STR
@@ -391,7 +392,7 @@ var COLORS = {
 			str = event.get_str();
 		}
 		var c = center(this.option("from"), this.option("to"));
-		this.label = new red.EditableText(paper, {x: c.x, y: c.y + 8, text: str});
+		this.label = new red.EditableText(paper, {x: c.x, y: c.y + 8, text: str, fill: COLORS.BACKGROUND, color: COLORS.FOREGROUND});
 		this.label.option({
 			"font-size": "10px",
 			"font-family": FONT_FAMILY_STR
