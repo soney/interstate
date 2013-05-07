@@ -2,9 +2,9 @@
 /*global red,esprima,able,uid,console,RedMap,window */
 
 var COLORS = {
-	BACKGROUND: "#232423",
-	FOREGROUND: "#BDC4C4",
-	HIGHLIGHT: "#EB2800"
+	BACKGROUND: "#FFF",
+	FOREGROUND: "#000",
+	HIGHLIGHT: "#F00"
 };
 
 (function (red) {

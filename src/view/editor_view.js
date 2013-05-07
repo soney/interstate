@@ -314,16 +314,31 @@
 		build_src_view: function() {
 			this.destroy_src_view();
 			var client = this.option("client");
+			this.statechart_view_container = $("<div />")	.appendTo(this.header)
+												.addClass("statechart");
+
 			if(client.type() === "stateful") {
 				var $statecharts = client.get_$("get_statecharts");
 				this.live_src_view = cjs.liven(function() {
-					var statecharts = $statecharts.get();
+					var wrappers = $statecharts.get();
+					var statecharts = _.map(wrappers, function (wrapper) {
+						return red.create_remote_statechart(wrapper);
+					});
+
 					if(this.layout_engine) {
 						this.layout_engine.destroy();
 					}
 					if(statecharts) {
 						this.layout_engine = new red.RootStatechartLayoutEngine(statecharts);
-						console.log(this.layout_engine);
+/*
+						var el = window.document.createElement("div");
+						el.style.position = "relative";
+						el.style.left = "300px";
+						el.style.width="0px";
+						//content.appendChild(el);
+						*/
+						var paper = new Raphael(this.statechart_view_container[0], 0, 0);
+						this.statechart_view = new red.RootStatechartView(statecharts, this.layout_engine, paper);
 					}
 				}, {
 					context: this
@@ -332,10 +347,15 @@
 		},
 		destroy_src_view: function() {
 			if(this.layout_engine) {
-				this.layout_engine.destroy();
 			}
 			if(this.live_src_view) {
 				this.live_src_view.destroy();
+			}
+			if(this.statechart_view) {
+				this.statechart_view.destroy();
+			}
+			if(this.statechart_view_container) {
+				this.statechart_view_container.remove();
 			}
 		},
 		_setOption: function(key, value) {
