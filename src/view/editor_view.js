@@ -198,7 +198,8 @@
 			name: "root",
 			prev_col: false,
 			show_prev: false,
-			is_curr_col: false
+			is_curr_col: false,
+			show_source: true
 		},
 
 		_create: function () {
