@@ -28,9 +28,12 @@ html.full_window_editor {
         min-width: 250px;
         border-right: 1px solid #CCC; }
         #editor > #obj_nav > table.col.curr_col > tbody > .header, #editor > #obj_nav > table.col.curr_col > tbody > .info {
+          color: #222222;
           background-color: #e0e0e0; }
           #editor > #obj_nav > table.col.curr_col > tbody > .header > th.obj_name, #editor > #obj_nav > table.col.curr_col > tbody > .info > th.obj_name {
             border-right: 1px solid #CCC; }
+        #editor > #obj_nav > table.col.curr_col > tbody > .child {
+          color: #222222; }
         #editor > #obj_nav > table.col.curr_col > tbody > tr > td.info {
           border-right: 1px solid #CCC; }
         #editor > #obj_nav > table.col.curr_col > tbody > tr > .val_col {
@@ -66,6 +69,7 @@ html.full_window_editor {
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
+        color: #888888;
         background-color: #f7f7f7;
         height: 35px; }
         #editor > #obj_nav > table.col > tbody > .header > th:hover {
@@ -89,8 +93,14 @@ html.full_window_editor {
             padding-right: 5px; }
           #editor > #obj_nav > table.col > tbody > .header > .obj_name > .copy {
             color: #888; }
-            #editor > #obj_nav > table.col > tbody > .header > .obj_name > .copy > span > .copy_text {
-              color: #BBB; }
+            #editor > #obj_nav > table.col > tbody > .header > .obj_name > .copy > input.copy_input {
+              outline: none;
+              border: none;
+              background: none;
+              font-family: inherit;
+              font-size: inherit;
+              font-weight: inherit;
+              font-color: inherit; }
             #editor > #obj_nav > table.col > tbody > .header > .obj_name > .copy > span > .of_text {
               color: #BBB; }
         #editor > #obj_nav > table.col > tbody > .header > .statechart {
@@ -120,6 +130,7 @@ html.full_window_editor {
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
+        color: #666666;
         font-family: "Inconsolata";
         font-size: 1em;
         border-top: 1px solid #EEE; }
@@ -146,6 +157,9 @@ html.full_window_editor {
             color: #CCC;
             border-left: 1px dashed #EEE;
             cursor: pointer; }
+            #editor > #obj_nav > table.col > tbody > .child > .value_summary.dict > .copies {
+              color: #BBB;
+              padding-right: 3px; }
           #editor > #obj_nav > table.col > tbody > .child > .value_summary.constant {
             background-color: #EEE; }
         #editor > #obj_nav > table.col > tbody > .child:hover {
@@ -157,6 +171,7 @@ html.full_window_editor {
             border-left: 1px dashed #99B; }
         #editor > #obj_nav > table.col > tbody > .child > .src {
           position: relative;
+          display: block;
           vertical-align: top; }
           #editor > #obj_nav > table.col > tbody > .child > .src > .cell, #editor > #obj_nav > table.col > tbody > .child > .src > .unset {
             position: absolute; }
@@ -179,6 +194,9 @@ html.full_window_editor {
               color: red;
               border-left: 1px solid red;
               border-right: 1px solid red; }
+          #editor > #obj_nav > table.col > tbody > .child > .src > .pure_cell {
+            color: black;
+            display: block; }
           #editor > #obj_nav > table.col > tbody > .child > .src > .unset {
             width: 14px;
             height: 14px;

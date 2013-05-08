@@ -2,6 +2,12 @@ $nav_header_color: #F7F7F7;
 $nav_header_hover_color: #EEE;
 $nav_header_active_color: #E0E0E0;
 
+$nav_header_text_color: #888;
+$nav_header_active_text_color: #222;
+
+$nav_column_text_color: #666;
+$nav_column_active_text_color: #222;
+
 $value_summary_width: 50px;
 $active_obj_value_summary_width: 100px;
 $unset_prop_val_radius: 7px;
@@ -72,12 +78,16 @@ html.full_window_editor {
 
 				> tbody {
 					> .header, > .info {
+						color: $nav_header_active_text_color;
 						background-color: $nav_header_active_color;
 						> th.obj_name {
 							border-right: 1px solid #CCC;
 						}
 					}
 
+					> .child {
+						color: $nav_column_active_text_color;
+					}
 
 
 					> tr {
@@ -122,6 +132,7 @@ html.full_window_editor {
 
 				> .header {
 					@include non-selectable;
+					color: $nav_header_text_color;
 					background-color: $nav_header_color;
 					height: 35px;
 
@@ -152,14 +163,18 @@ html.full_window_editor {
 
 						> .copy {
 							color: #888;
-							> .brace {
+
+							> input.copy_input {
+								outline: none;
+								border: none;
+								background: none;
+								font-family: inherit;
+								font-size: inherit;
+								font-weight: inherit;
+								font-color: inherit;
 							}
 
 							> span {
-								> .copy_text {
-									color: #BBB;
-								}
-
 								> .of_text {
 									color: #BBB;
 								}
@@ -197,6 +212,7 @@ html.full_window_editor {
 
 				> .child {
 					@include non-selectable;
+					color: $nav_column_text_color;
 
 					font-family: "Inconsolata";
 					font-size: 1em;
@@ -230,6 +246,10 @@ html.full_window_editor {
 							color: #CCC;
 							border-left: 1px dashed #EEE;
 							cursor: pointer;
+							>.copies {
+								color: #BBB;
+								padding-right: 3px;
+							}
 						}
 						
 						&.constant {
@@ -251,6 +271,7 @@ html.full_window_editor {
 
 					> .src {
 						position: relative;
+						display: block;
 						vertical-align: top;
 
 						> .cell, >.unset {
@@ -273,6 +294,11 @@ html.full_window_editor {
 								border-left: 1px solid red;
 								border-right: 1px solid red;
 							}
+						}
+
+						> .pure_cell {
+							color: black;
+							display: block;
 						}
 
 						> .unset {

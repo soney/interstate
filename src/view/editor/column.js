@@ -50,11 +50,6 @@
 			this.header = $("<tr />")	.appendTo(this.tbody)
 										.addClass("header");
 
-/*
-			this.prev_cell = $("<th />")	.addClass("prev")
-											.pressable();
-
-											*/
 
 			this.obj_name_cell = $("<th />")	.appendTo(this.header)
 												.attr("colspan", "2")
@@ -72,11 +67,6 @@
 											.prependTo(this.obj_name_cell)
 											.pressable()
 											.text("<");
-
-/*
-			this.edit_cell = $("<th />")	.addClass("edit val_col");
-
-											*/
 
 			this.info_row = $("<tr />")	.appendTo(this.tbody)
 										.addClass("info");
@@ -103,24 +93,12 @@
 
 		on_curr_col: function() {
 			if(this.option("prev_col") && this.option("show_prev")) {
-				//this.obj_name_cell.attr("colspan", "1");
-				//this.info_cell.attr("colspan", "3");
-				//this.prev_cell.insertBefore(this.obj_name_cell);
-				//this.prev_cell.on("pressed", this.$on_prev_click);
 				this.prev_button	.show()
 									.on("pressed", this.$on_prev_click);
 			} else {
 				this.prev_button	.off("pressed", this.$on_prev_click)
 									.hide();
-				//this.obj_name_cell.attr("colspan", "2");
-				//this.info_cell.attr("colspan", "3");
 			}
-
-/*
-			this.edit_cell	.insertAfter(this.obj_name_cell)
-							.pressable()
-							.on("pressed", this.$on_edit_click);
-							*/
 
 			this.edit_button.show();
 			this.element.addClass("curr_col");
@@ -135,13 +113,6 @@
 				this.prev_button.off("pressed", this.$on_prev_click)
 								.hide();
 			}
-			//this.obj_name_cell.attr("colspan", "3");
-			//this.info_cell.attr("colspan", "3");
-			/*
-			this.edit_cell	.off("pressed", this.$on_edit_click)
-							.pressable("destroy")
-							.remove();
-							*/
 			this.edit_button.hide();
 			this.element.removeClass("curr_col");
 			this.destroy_src_view();
@@ -171,7 +142,7 @@
 			this.$children = client.get_$("children");
 
 			var none_display = $("<tr />")	.addClass("no_children")
-											.html("<td colspan='2'>(no properties)</td>");
+											.html("<td colspan='3'>(no properties)</td>");
 			var old_children = [];
 			this.children_change_listener = cjs.liven(function() {
 				var children = this.$children.get();
@@ -220,11 +191,9 @@
 		},
 
 		_destroy: function () {
-		/*
-			if(this.edit_cell.data("pressable")) {
-				this.edit_cell.pressable("destroy");
+			if(this.prev_button.data("pressable")) {
+				this.prev_button.pressable("destroy");
 			}
-			*/
 			this.remove_children_listener();
 		},
 		on_child_select: function(child_info, child_disp, event) {
@@ -270,7 +239,7 @@
 
 					if(statecharts) {
 						this.layout_manager = new red.RootStatechartLayoutEngine(statecharts);
-						$("tr.child").prop("option", "layout_manager", this.layout_manager);
+						$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
 						this.paper = new Raphael(this.statechart_view_container[0], 0, 0);
 						this.statechart_view = new red.RootStatechartView(statecharts, this.layout_manager, this.paper);
 					}
@@ -281,11 +250,15 @@
 				this.num_columns_view = cjs.liven(function() {
 					if(this.layout_manager) {
 						var num_cols = this.layout_manager.get_num_cols();
-						$("tr.child").prop("option", "show_src", true);
+						$("tr.child", this.element).prop("option", "show_src", true);
 					}
 				}, {
 					context: this
 				});
+			} else {
+				this.filler_view_container = $("<th />").appendTo(this.header)
+														.attr("rowspan", "2");
+				$("tr.child", this.element).prop("option", "show_src", true);
 			}
 		},
 		destroy_src_view: function() {
@@ -303,6 +276,9 @@
 			}
 			if(this.statechart_view_container) {
 				this.statechart_view_container.remove();
+			}
+			if(this.filler_view_container) {
+				this.filler_view_container.remove();
 			}
 			if(this.paper) {
 				this.paper.remove();
@@ -324,7 +300,7 @@
 	$.widget("red.copy", {
 		options: {
 			curr_copy: 0,
-			out_of: 10,
+			out_of: 0,
 			client: false,
 			displayed: false
 		},
@@ -345,11 +321,58 @@
 				this.on_displayed();
 			}
 
+			this.$on_click = $.proxy(this.on_click, this);
+			this.$on_blur = $.proxy(this.on_blur, this);
+			this.$on_change = $.proxy(this.on_change, this);
+			this.$on_key_down = $.proxy(this.on_key_down, this);
+			this.content.on("click", this.$on_click);
 			this.add_listener();
 		},
 
 		_destroy: function () {
 			this.remove_listener();
+		},
+
+		on_click: function() {
+			this.copy_num_input = $("<input />").attr({
+													type: "number",
+													min: 1,
+													max: this.option("out_of")
+												})
+												.val(this.option("curr_copy") + 1)
+												.addClass("copy_input")
+												.insertBefore(this.content)
+												.focus()
+												.select()
+												.on("blur", this.$on_blur)
+												.on("change", this.$on_change)
+												.on("keydown", this.$on_key_down);
+
+			this.original_copy_num = this.option("curr_copy");
+			this.content.hide();
+		},
+
+		on_blur: function() {
+			this.copy_num_input	.off("blur", this.$on_blur)
+								.off("change", this.$on_change)
+								.remove();
+			this.content.show();
+		},
+
+		on_change: function(event) {
+			var value = parseInt(this.copy_num_input.val(), 10);
+			this.option("curr_copy", value - 1);
+		},
+
+		on_key_down: function(jqEvent) {
+			var event = jqEvent.originalEvent;
+			if(event.keyCode === 13) { // Enter
+				this.on_change();
+				this.on_blur();
+			} else if(event.keyCode === 27) { // Esc
+				this.on_blur();
+				this.option("curr_copy", this.original_copy_num);
+			}
 		},
 
 		add_listener: function() {
@@ -412,6 +435,4 @@
 			}
 		}
 	});
-
-
 }(red, jQuery));

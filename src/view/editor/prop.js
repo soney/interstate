@@ -87,58 +87,79 @@
 										.appendTo(this.element);
 
 			var value = this.option("value");
-			if(value instanceof red.WrapperClient && value.type() === "stateful_prop") {
-				var layout_manager = this.option("layout_manager");
-				if(layout_manager) {
-					var client = value;
-					var $states = client.get_$("get_states");
-					var $values = client.get_$("get_values");
-					var $active_value = client.get_$("active_value");
-					this.live_prop_vals_fn = cjs.liven(function() {
-						var values = $values.get();
-						var states = $states.get();
-						var active_value = $active_value.get();
+			if(value instanceof red.WrapperClient) {
+				if(value.type() === "stateful_prop") {
+					var layout_manager = this.option("layout_manager");
+					if(layout_manager) {
+						var client = value;
+						var $states = client.get_$("get_states");
+						var $values = client.get_$("get_values");
+						var $active_value = client.get_$("active_value");
+						this.live_prop_vals_fn = cjs.liven(function() {
+							var values = $values.get();
+							var states = $states.get();
+							var active_value = $active_value.get();
 
+							this.src_cell.children().remove();
+
+							_.each(states, function(state) {
+								if(state) {
+									var view = $("<span />").unset_prop({
+										left: layout_manager.get_x(state)
+									});
+									view.appendTo(this.src_cell);
+								}
+							}, this);
+
+							_.each(values, function(value_info) {
+								var value = value_info.value,
+									state = value_info.state;
+
+								var active = active_value && active_value.value === value && value !== undefined;
+								if(state) {
+									var view = $("<span />").prop_cell({
+										left: layout_manager.get_x(state),
+										width: layout_manager.get_width(state),
+										value: value,
+										active: active
+									});
+									view.appendTo(this.src_cell);
+								}
+							}, this);
+						}, {
+							context: this
+						});
+					}
+				} else if(value.type() === "cell") {
+					var $str = value.get_$("get_str");
+					this.live_cell_str_fn = cjs.liven(function() {
 						this.src_cell.children().remove();
 
-						_.each(states, function(state) {
-							if(state) {
-								var view = $("<span />").unset_prop({
-									left: layout_manager.get_x(state)
-								});
-								view.appendTo(this.src_cell);
-							}
-						}, this);
-
-						_.each(values, function(value_info) {
-							var value = value_info.value,
-								state = value_info.state;
-
-							var active = active_value && active_value.value === value && value !== undefined;
-							if(state) {
-								var view = $("<span />").prop_cell({
-									left: layout_manager.get_x(state),
-									width: layout_manager.get_width(state),
-									value: value,
-									active: active
-								});
-								view.appendTo(this.src_cell);
-							}
-						}, this);
+						var str = $str.get();
+						var cell_disp = $("<span />")	.addClass("pure_cell")
+														.appendTo(this.src_cell)
+														.text(str);
 					}, {
 						context: this
 					});
+				} else {
+					//console.log(value.type());
 				}
 			}
 		},
 		on_hide_src: function() {
-			if(this.src_cell) {
-				this.src_cell.remove();
-				delete this.src_cell;
-			}
 			if(this.live_prop_vals_fn) {
 				this.live_prop_vals_fn.destroy();
 				delete this.live_prop_vals_fn;
+			}
+
+			if(this.live_cell_str_fn) {
+				this.live_cell_str_fn.destroy();
+				delete this.live_cell_str_fn;
+			}
+			if(this.src_cell) {
+				this.src_cell.remove();
+				delete this.src_cell;
 			}
 		},
 		_setOption: function(key, value) {
