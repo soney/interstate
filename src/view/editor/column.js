@@ -49,7 +49,8 @@
 			this.header = $("<tr />")	.appendTo(this.tbody)
 										.addClass("header");
 
-			this.prev_cell = $("<th />")	.addClass("prev");
+			this.prev_cell = $("<th />")	.addClass("prev")
+											.pressable();
 
 			this.prev_button = $("<a />")	.addClass("prev")
 											.attr("href", "javascript:void(0)")
@@ -59,7 +60,8 @@
 			this.obj_name_cell = $("<th />")	.appendTo(this.header)
 												.addClass("obj_name")
 												.text(this.option("name"))
-												.on("click touchstart", $.proxy(this.on_header_click, this));
+												.pressable()
+												.on("pressed", $.proxy(this.on_header_click, this));
 
 			this.edit_cell = $("<th />")	.addClass("edit val_col");
 
@@ -68,36 +70,38 @@
 											.appendTo(this.edit_cell)
 											.text(this.option("edit_text"));
 
-			this.info_col = $("<tr />")	.appendTo(this.tbody)
+			this.info_row = $("<tr />")	.appendTo(this.tbody)
 										.addClass("info");
-			this.info_cell = $("<td />")	.appendTo(this.info_col)
-											.addClass("info");
-			var filler_cell = $("<td />")	.appendTo(this.info_col)
-											.addClass("filler");
+			this.info_cell = $("<td />")	.appendTo(this.info_row)
+											.addClass("info").text("HELLO");
 
 			this.add_children_listener();
+
+			this.$on_prev_click = $.proxy(this.on_prev_click, this);
+			this.$on_edit_click = $.proxy(this.on_edit_click, this);
 
 			if(this.option("is_curr_col")) {
 				this.on_curr_col();
 			} else {
 				this.on_not_curr_col();
 			}
-
-			this.$on_prev_click = $.proxy(this.on_prev_click, this);
 		},
 
 		on_curr_col: function() {
 			if(this.option("prev_col") && this.option("show_prev")) {
 				this.obj_name_cell.attr("colspan", "1");
-				this.info_cell.attr("colspan", "1");
+				this.info_cell.attr("colspan", "3");
 				this.prev_cell.insertBefore(this.obj_name_cell);
-				this.prev_cell.on("click touchstart", this.$on_prev_click);
+				this.prev_cell.on("pressed", this.$on_prev_click);
 			} else {
 				this.obj_name_cell.attr("colspan", "2");
-				this.info_cell.attr("colspan", "2");
+				this.info_cell.attr("colspan", "3");
 			}
 
-			this.edit_cell.insertAfter(this.obj_name_cell);
+			this.edit_cell	.insertAfter(this.obj_name_cell)
+							.pressable()
+							.on("pressed", this.$on_edit_click);
+
 			this.element.addClass("curr_col");
 			this.build_src_view();
 			if(this.selected_child_disp) {
@@ -107,12 +111,14 @@
 
 		on_not_curr_col: function() {
 			if(this.option("prev_col") && this.option("show_prev")) {
-				this.prev_cell.off("click touchstart", this.$on_prev_click);
+				this.prev_cell.off("pressed", this.$on_prev_click);
 				this.prev_cell.remove();
 			}
 			this.obj_name_cell.attr("colspan", "3");
 			this.info_cell.attr("colspan", "3");
-			this.edit_cell.remove();
+			this.edit_cell	.off("pressed", this.$on_edit_click)
+							.pressable("destroy")
+							.remove();
 			this.element.removeClass("curr_col");
 			this.destroy_src_view();
 		},
@@ -124,8 +130,12 @@
 		},
 
 		on_prev_click: function(event) {
-			console.log("prev click");
 			this.element.trigger("prev_click", this);
+			event.stopPropagation();
+			event.preventDefault();
+		},
+
+		on_edit_click: function(event) {
 			event.stopPropagation();
 			event.preventDefault();
 		},
@@ -177,6 +187,9 @@
 		},
 
 		_destroy: function () {
+			if(this.edit_cell.data("pressable")) {
+				this.edit_cell.pressable("destroy");
+			}
 			this.remove_children_listener();
 		},
 		on_child_select: function(child_info, child_disp, event) {
@@ -203,6 +216,7 @@
 
 			if(client.type() === "stateful") {
 				this.statechart_view_container = $("<th />")	.appendTo(this.header)
+																.attr("rowspan", "2")
 																.addClass("statechart");
 				var $statecharts = client.get_$("get_statecharts");
 

@@ -40,6 +40,19 @@ html.full_window_editor {
 #editor {
 	font-family: "Source Sans Pro";
 
+	&.tablet, &.phone {
+		font-size: 1.5em;
+	}
+
+	&.phone {
+		> #obj_nav {
+			width: 100%;
+			> table.col {
+				width: 100%;
+			}
+		}
+	}
+
 	> #obj_nav {
 		height: 100%;
 		float: left;
@@ -103,6 +116,7 @@ html.full_window_editor {
 						vertical-align: center;
 						border-right: 1px solid #CCC;
 						cursor: pointer;
+						min-width: 50px;
 						> a {
 							top: 4px;
 							color: #666;
@@ -136,6 +150,7 @@ html.full_window_editor {
 							background-color: inherit;
 						}
 						vertical-align: bottom;
+						position: relative;
 					}
 				}
 

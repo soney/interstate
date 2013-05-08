@@ -9,6 +9,12 @@ html.full_window_editor {
 
 #editor {
   font-family: "Source Sans Pro"; }
+  #editor.tablet, #editor.phone {
+    font-size: 1.5em; }
+  #editor.phone > #obj_nav {
+    width: 100%; }
+    #editor.phone > #obj_nav > table.col {
+      width: 100%; }
   #editor > #obj_nav {
     height: 100%;
     float: left; }
@@ -54,7 +60,8 @@ html.full_window_editor {
           text-align: center;
           vertical-align: center;
           border-right: 1px solid #CCC;
-          cursor: pointer; }
+          cursor: pointer;
+          min-width: 50px; }
           #editor > #obj_nav > table.col > tbody > .header > .prev > a {
             top: 4px;
             color: #666;
@@ -76,7 +83,8 @@ html.full_window_editor {
           #editor > #obj_nav > table.col > tbody > .header > .edit > a {
             text-decoration: none; }
         #editor > #obj_nav > table.col > tbody > .header > .statechart {
-          vertical-align: bottom; }
+          vertical-align: bottom;
+          position: relative; }
           #editor > #obj_nav > table.col > tbody > .header > .statechart:hover {
             background-color: inherit; }
       #editor > #obj_nav > table.col > tbody > .child {

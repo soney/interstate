@@ -56,7 +56,8 @@
 			if(this.option("inherited")) {
 				this.element.addClass("inherited");
 			}
-			this.element.on("click touchstart", $.proxy(this.on_click, this));
+			this.element.pressable();
+			this.element.on("pressed", $.proxy(this.on_click, this));
 			if(this.option("show_src")) {
 				this.on_show_src();
 			} else {
@@ -66,6 +67,7 @@
 
 		_destroy: function() {
 			this._super();
+			this.element.pressable("destroy");
 		},
 
 		on_click: function(event) {
