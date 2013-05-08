@@ -1,7 +1,7 @@
 {
 	"name": "Euclase",
 	"description": "An editor for creating interactive behaviors.",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"author": "Stephen Oney (Carnegie Mellon)",
 	"maintainers": [{
 		"name": "Stephen Oney",
