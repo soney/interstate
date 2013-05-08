@@ -169,6 +169,10 @@ html.full_window_editor {
           color: white; }
           #editor > #obj_nav > table.col > tbody > .child.selected > .value_summary.dict {
             border-left: 1px dashed #99B; }
+        #editor > #obj_nav > table.col > tbody > .child.inherited {
+          cursor: default;
+          opacity: 0.5;
+          background-image: url('images/stripe.png'); }
         #editor > #obj_nav > table.col > tbody > .child > .src {
           position: relative;
           display: block;
@@ -196,6 +200,7 @@ html.full_window_editor {
               border-right: 1px solid red; }
           #editor > #obj_nav > table.col > tbody > .child > .src > .pure_cell {
             color: black;
+            text-align: center;
             display: block; }
           #editor > #obj_nav > table.col > tbody > .child > .src > .unset {
             width: 14px;
@@ -209,3 +214,6 @@ html.full_window_editor {
             cursor: pointer; }
             #editor > #obj_nav > table.col > tbody > .child > .src > .unset:hover {
               background-color: #DEDEDE; }
+          #editor > #obj_nav > table.col > tbody > .child > .src.cannot_modify {
+            background-image: url('images/stripe.png');
+            display: table-cell; }

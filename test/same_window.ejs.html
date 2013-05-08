@@ -22,7 +22,11 @@ env.set("a", "<stateful>")
 	.start_at("init")
 	.add_state("hover")
 	.set("prop1")
-	.set("prop1", "init", "'hi'");
+	.set("prop1", "init", "'item_'+my_copy")
+	.up()
+	.set("b", "<stateful>")
+	.cd("b")
+	.set("(prototypes)", "(start)", "a");
 
 				$("div#editor").editor({
 					debug_env: true,

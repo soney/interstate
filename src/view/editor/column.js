@@ -41,7 +41,8 @@
 			is_curr_col: false,
 			show_source: true,
 			edit_text: "(edit)",
-			editing_text: "(done)"
+			editing_text: "(done)",
+			curr_copy_client: false
 		},
 
 		_create: function () {
@@ -50,6 +51,7 @@
 			this.header = $("<tr />")	.appendTo(this.tbody)
 										.addClass("header");
 
+			this.$on_copy_select = $.proxy(this.on_copy_select, this);
 
 			this.obj_name_cell = $("<th />")	.appendTo(this.header)
 												.attr("colspan", "2")
@@ -57,9 +59,8 @@
 												.text(this.option("name"))
 												.pressable()
 												.on("pressed", $.proxy(this.on_header_click, this));
-			this.copy_disp = $("<span />")	.copy({
-													client: this.option("client")
-												})
+			this.copy_disp = $("<span />")	.copy({ client: this.option("client") })
+											.on("curr_copy_change", this.$on_copy_select)
 											.appendTo(this.obj_name_cell);
 
 			this.prev_button = $("<a />")	.addClass("prev")
@@ -80,6 +81,7 @@
 											.text(this.option("edit_text"));
 
 			this.add_children_listener();
+			this.add_curr_copy_listener();
 
 			this.$on_prev_click = $.proxy(this.on_prev_click, this);
 			this.$on_edit_click = $.proxy(this.on_edit_click, this);
@@ -89,6 +91,17 @@
 			} else {
 				this.on_not_curr_col();
 			}
+			var client = this.option("client");
+			client.async_get("instances", $.proxy(function(instances) {
+				if(instances) {
+					var instance = instances[0];
+					this.option("curr_copy_client", instance);
+					this.destroy_src_view();
+					this.build_src_view();
+					this.remove_children_listener();
+					this.add_children_listener();
+				}
+			}, this));
 		},
 
 		on_curr_col: function() {
@@ -138,7 +151,11 @@
 		add_children_listener: function () {
 			var INDEX_OFFSET = 2; // Account for the header column
 			this.$on_child_select = $.proxy(this.on_child_select, this);
-			var client = this.option("client");
+			var client = this.option("curr_copy_client");
+
+			if(!client) {
+				client = this.option("client");
+			}
 			this.$children = client.get_$("children");
 
 			var none_display = $("<tr />")	.addClass("no_children")
@@ -188,13 +205,38 @@
 
 		remove_children_listener: function () {
 			this.children_change_listener.destroy();
+			/*
+			this.$children.destroy();
+			delete this.$children;
+			*/
+			$("tr.child", this.tbody).prop("destroy").remove();
+			$("tr.no_children", this.tbody).remove();
 		},
+
+		on_copy_select: function(event, copy_index) {
+			var client = this.option("client");
+			client.async_get("instances", $.proxy(function(instances) {
+				if(instances) {
+					var instance = instances[copy_index];
+					this.option("curr_copy_client", instance);
+					this.destroy_src_view();
+					this.build_src_view();
+					this.remove_children_listener();
+					this.add_children_listener();
+				}
+			}, this));
+		}, 
+
+		add_curr_copy_listener: function () { },
+
+		remove_curr_copy_listener: function() { },
 
 		_destroy: function () {
 			if(this.prev_button.data("pressable")) {
 				this.prev_button.pressable("destroy");
 			}
 			this.remove_children_listener();
+			this.remove_curr_copy_listener();
 		},
 		on_child_select: function(child_info, child_disp, event) {
 			var client = child_info.value;
@@ -209,7 +251,11 @@
 		},
 		build_src_view: function() {
 			this.destroy_src_view();
-			var client = this.option("client");
+			var client = this.option("curr_copy_client");
+
+			if(!client) {
+				client = this.option("client");
+			}
 
 			if(this.live_src_view) {
 				this.live_src_view.destroy();
@@ -299,7 +345,7 @@
 
 	$.widget("red.copy", {
 		options: {
-			curr_copy: 0,
+			curr_copy: false,
 			out_of: 0,
 			client: false,
 			displayed: false
@@ -409,8 +455,13 @@
 		},
 
 		update_display: function() {
-			this.curr_copy_text.text(this.option("curr_copy") + 1);
-			this.of_text.text(" of " + this.option("out_of"));
+			if(this.option("curr_copy") === false) {
+				this.curr_copy_text.text("");
+				this.of_text.text(this.option("out_of"));
+			} else  {
+				this.curr_copy_text.text(this.option("curr_copy") + 1);
+				this.of_text.text(" of " + this.option("out_of"));
+			}
 		},
 
 		on_displayed: function() {
@@ -431,8 +482,12 @@
 					this.on_not_displayed();
 				}
 			} else if(key === "curr_copy" || key === "out_of") {
+				if(key === "curr_copy") {
+					this.element.trigger("curr_copy_change", value);
+				}
 				this.update_display();
 			}
+
 		}
 	});
 }(red, jQuery));

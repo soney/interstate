@@ -144,7 +144,10 @@
 					});
 				} else {
 					//console.log(value.type());
+					this.src_cell.addClass("cannot_modify");
 				}
+			} else {
+				this.src_cell.addClass("cannot_modify");
 			}
 		},
 		on_hide_src: function() {

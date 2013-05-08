@@ -269,6 +269,12 @@ html.full_window_editor {
 						}
 					}
 
+					&.inherited {
+						cursor: default;
+						opacity: 0.5;
+						background-image: url('images/stripe.png');
+					}
+
 					> .src {
 						position: relative;
 						display: block;
@@ -298,6 +304,7 @@ html.full_window_editor {
 
 						> .pure_cell {
 							color: black;
+							text-align: center;
 							display: block;
 						}
 
@@ -314,6 +321,11 @@ html.full_window_editor {
 							&:hover {
 								background-color: #DEDEDE;
 							}
+						}
+
+						&.cannot_modify {
+							background-image: url('images/stripe.png');
+							display: table-cell;
 						}
 					}
 				}
