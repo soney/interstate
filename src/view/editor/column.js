@@ -40,7 +40,8 @@
 			show_prev: false,
 			is_curr_col: false,
 			show_source: true,
-			edit_text: "edit"
+			edit_text: "(edit)",
+			editing_text: "(done)"
 		},
 
 		_create: function () {
@@ -49,31 +50,44 @@
 			this.header = $("<tr />")	.appendTo(this.tbody)
 										.addClass("header");
 
+/*
 			this.prev_cell = $("<th />")	.addClass("prev")
 											.pressable();
 
-			this.prev_button = $("<a />")	.addClass("prev")
-											.attr("href", "javascript:void(0)")
-											.appendTo(this.prev_cell)
-											.text("<");
+											*/
 
 			this.obj_name_cell = $("<th />")	.appendTo(this.header)
+												.attr("colspan", "2")
 												.addClass("obj_name")
 												.text(this.option("name"))
 												.pressable()
 												.on("pressed", $.proxy(this.on_header_click, this));
+			this.copy_disp = $("<span />")	.copy({
+													client: this.option("client")
+												})
+											.appendTo(this.obj_name_cell);
 
+			this.prev_button = $("<a />")	.addClass("prev")
+											.attr("href", "javascript:void(0)")
+											.prependTo(this.obj_name_cell)
+											.pressable()
+											.text("<");
+
+/*
 			this.edit_cell = $("<th />")	.addClass("edit val_col");
 
-			this.edit_button = $("<a />")	.addClass("edit button")
-											.attr("href", "javascript:void(0)")
-											.appendTo(this.edit_cell)
-											.text(this.option("edit_text"));
+											*/
 
 			this.info_row = $("<tr />")	.appendTo(this.tbody)
 										.addClass("info");
 			this.info_cell = $("<td />")	.appendTo(this.info_row)
-											.addClass("info").text("HELLO");
+											.attr("colspan", "2")
+											.addClass("info");
+
+			this.edit_button = $("<div />")	.addClass("edit button")
+											.pressable()
+											.appendTo(this.info_cell)
+											.text(this.option("edit_text"));
 
 			this.add_children_listener();
 
@@ -89,19 +103,26 @@
 
 		on_curr_col: function() {
 			if(this.option("prev_col") && this.option("show_prev")) {
-				this.obj_name_cell.attr("colspan", "1");
-				this.info_cell.attr("colspan", "3");
-				this.prev_cell.insertBefore(this.obj_name_cell);
-				this.prev_cell.on("pressed", this.$on_prev_click);
+				//this.obj_name_cell.attr("colspan", "1");
+				//this.info_cell.attr("colspan", "3");
+				//this.prev_cell.insertBefore(this.obj_name_cell);
+				//this.prev_cell.on("pressed", this.$on_prev_click);
+				this.prev_button	.show()
+									.on("pressed", this.$on_prev_click);
 			} else {
-				this.obj_name_cell.attr("colspan", "2");
-				this.info_cell.attr("colspan", "3");
+				this.prev_button	.off("pressed", this.$on_prev_click)
+									.hide();
+				//this.obj_name_cell.attr("colspan", "2");
+				//this.info_cell.attr("colspan", "3");
 			}
 
+/*
 			this.edit_cell	.insertAfter(this.obj_name_cell)
 							.pressable()
 							.on("pressed", this.$on_edit_click);
+							*/
 
+			this.edit_button.show();
 			this.element.addClass("curr_col");
 			this.build_src_view();
 			if(this.selected_child_disp) {
@@ -111,14 +132,17 @@
 
 		on_not_curr_col: function() {
 			if(this.option("prev_col") && this.option("show_prev")) {
-				this.prev_cell.off("pressed", this.$on_prev_click);
-				this.prev_cell.remove();
+				this.prev_button.off("pressed", this.$on_prev_click)
+								.hide();
 			}
-			this.obj_name_cell.attr("colspan", "3");
-			this.info_cell.attr("colspan", "3");
+			//this.obj_name_cell.attr("colspan", "3");
+			//this.info_cell.attr("colspan", "3");
+			/*
 			this.edit_cell	.off("pressed", this.$on_edit_click)
 							.pressable("destroy")
 							.remove();
+							*/
+			this.edit_button.hide();
 			this.element.removeClass("curr_col");
 			this.destroy_src_view();
 		},
@@ -146,10 +170,15 @@
 			var client = this.option("client");
 			this.$children = client.get_$("children");
 
+			var none_display = $("<tr />")	.addClass("no_children")
+											.html("<td colspan='2'>(no properties)</td>");
 			var old_children = [];
 			this.children_change_listener = cjs.liven(function() {
 				var children = this.$children.get();
 				if(_.isArray(children)) {
+					if(children.length > 0) {
+						none_display.remove();
+					}
 					var diff = _.diff(old_children, children);
 
 					_.forEach(diff.removed, function (info) {
@@ -176,6 +205,10 @@
 						move(child_disp[0], from_index + INDEX_OFFSET, to_index + INDEX_OFFSET);
 					}, this);
 					old_children = children;
+
+					if(children.length === 0) {
+						this.tbody.append(none_display);
+					}
 				}
 			}, {
 				context: this
@@ -187,9 +220,11 @@
 		},
 
 		_destroy: function () {
+		/*
 			if(this.edit_cell.data("pressable")) {
 				this.edit_cell.pressable("destroy");
 			}
+			*/
 			this.remove_children_listener();
 		},
 		on_child_select: function(child_info, child_disp, event) {
@@ -285,4 +320,98 @@
 			}
 		}
 	});
+
+	$.widget("red.copy", {
+		options: {
+			curr_copy: 0,
+			out_of: 10,
+			client: false,
+			displayed: false
+		},
+
+		_create: function () {
+			this.left_brace = $("<span />").text(" [").addClass("brace");
+			this.content = $("<span />");
+			this.right_brace = $("<span />").text("]").addClass("brace");
+
+			this.curr_copy_text = $("<span />")	.addClass("copy_num");
+			this.of_text = $("<span />")	.addClass("of_text");
+
+			this.content.append(this.curr_copy_text, this.of_text);
+
+			this.element.addClass("copy");
+
+			if(this.option("displayed")) {
+				this.on_displayed();
+			}
+
+			this.add_listener();
+		},
+
+		_destroy: function () {
+			this.remove_listener();
+		},
+
+		add_listener: function() {
+			var client = this.option("client");
+			var $is_template = client.get_$("is_template");
+			var $copies = client.get_$("instances");
+			this.copy_listener = cjs.liven(function() {
+				var is_template = $is_template.get();
+				if(is_template) {
+					var copies = $copies.get();
+					if(_.isArray(copies)) {
+						var len = copies.length;
+						this.option({
+							displayed: true,
+							out_of: len,
+							curr_copy: Math.min(this.option("curr_copy"), len)
+						});
+					} else {
+						this.option({
+							displayed: false
+						});
+					}
+				} else {
+					this.option({
+						displayed: false
+					});
+				}
+			}, {
+				context: this
+			});
+		},
+		remove_listener: function() {
+			this.copy_listener.destroy();
+		},
+
+		update_display: function() {
+			this.curr_copy_text.text(this.option("curr_copy") + 1);
+			this.of_text.text(" of " + this.option("out_of"));
+		},
+
+		on_displayed: function() {
+			this.update_display();
+			this.element.append(this.left_brace, this.content, this.right_brace);
+		},
+
+		on_not_displayed: function() {
+			this.element.children().remove();
+		},
+
+		_setOption: function(key, value) {
+			this._super(key, value);
+			if(key === "displayed") {
+				if(value) {
+					this.on_displayed();
+				} else {
+					this.on_not_displayed();
+				}
+			} else if(key === "curr_copy" || key === "out_of") {
+				this.update_display();
+			}
+		}
+	});
+
+
 }(red, jQuery));

@@ -26,13 +26,16 @@ html.full_window_editor {
       border-collapse: collapse; }
       #editor > #obj_nav > table.col.curr_col {
         min-width: 250px;
-        border-right: 1px solid #888; }
-        #editor > #obj_nav > table.col.curr_col > tbody > .header {
+        border-right: 1px solid #CCC; }
+        #editor > #obj_nav > table.col.curr_col > tbody > .header, #editor > #obj_nav > table.col.curr_col > tbody > .info {
           background-color: #e0e0e0; }
+          #editor > #obj_nav > table.col.curr_col > tbody > .header > th.obj_name, #editor > #obj_nav > table.col.curr_col > tbody > .info > th.obj_name {
+            border-right: 1px solid #CCC; }
+        #editor > #obj_nav > table.col.curr_col > tbody > tr > td.info {
+          border-right: 1px solid #CCC; }
         #editor > #obj_nav > table.col.curr_col > tbody > tr > .val_col {
-          max-width: 100px; }
-        #editor > #obj_nav > table.col.curr_col > tbody > tr > .val_col {
-          border-right: 1px solid #888; }
+          max-width: 100px;
+          border-right: 1px solid #CCC; }
       #editor > #obj_nav > table.col > tbody > tr > .val_col {
         max-width: 50px;
         overflow: hidden;
@@ -45,6 +48,17 @@ html.full_window_editor {
       #editor > #obj_nav > table.col > tbody > tr > th, #editor > #obj_nav > table.col > tbody > tr > td {
         padding: 0px;
         margin: 0px; }
+      #editor > #obj_nav > table.col > tbody > tr.no_children > td {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        text-align: center;
+        color: #BBB;
+        padding: 5px; }
       #editor > #obj_nav > table.col > tbody > .header {
         -webkit-touch-callout: none;
         -webkit-user-select: none;
@@ -53,40 +67,52 @@ html.full_window_editor {
         -ms-user-select: none;
         user-select: none;
         background-color: #f7f7f7;
-        border-bottom: 1px solid #AAA; }
+        height: 35px; }
         #editor > #obj_nav > table.col > tbody > .header > th:hover {
           background-color: #eeeeee; }
-        #editor > #obj_nav > table.col > tbody > .header > .prev {
-          text-align: center;
-          vertical-align: center;
-          border-right: 1px solid #CCC;
-          cursor: pointer;
-          min-width: 50px; }
-          #editor > #obj_nav > table.col > tbody > .header > .prev > a {
-            top: 4px;
-            color: #666;
-            font-size: 1.2em;
-            text-decoration: none; }
         #editor > #obj_nav > table.col > tbody > .header > .obj_name {
           cursor: pointer;
           font-weight: 100;
           text-align: center;
           font-size: 1.5em;
           padding-top: 4px;
-          padding-bottom: 2px; }
-        #editor > #obj_nav > table.col > tbody > .header > .edit {
-          font-size: 0.7em;
-          cursor: pointer;
-          text-align: center;
-          vertical-align: middle;
-          border-left: 1px solid #CCC; }
-          #editor > #obj_nav > table.col > tbody > .header > .edit > a {
-            text-decoration: none; }
+          padding-bottom: 2px;
+          position: relative; }
+          #editor > #obj_nav > table.col > tbody > .header > .obj_name > a.prev {
+            top: 4px;
+            color: #888;
+            font-size: 1.2em;
+            text-decoration: none;
+            position: absolute;
+            left: 0px;
+            padding-left: 5px;
+            padding-right: 5px; }
+          #editor > #obj_nav > table.col > tbody > .header > .obj_name > .copy {
+            color: #888; }
+            #editor > #obj_nav > table.col > tbody > .header > .obj_name > .copy > span > .copy_text {
+              color: #BBB; }
+            #editor > #obj_nav > table.col > tbody > .header > .obj_name > .copy > span > .of_text {
+              color: #BBB; }
         #editor > #obj_nav > table.col > tbody > .header > .statechart {
           vertical-align: bottom;
           position: relative; }
           #editor > #obj_nav > table.col > tbody > .header > .statechart:hover {
             background-color: inherit; }
+      #editor > #obj_nav > table.col > tbody > .info {
+        vertical-align: top; }
+        #editor > #obj_nav > table.col > tbody > .info .edit {
+          background-color: #e0e0e0;
+          color: royalblue;
+          font-size: 0.8em;
+          cursor: pointer;
+          text-align: center;
+          vertical-align: middle;
+          cursor: pointer;
+          padding-top: 3px;
+          padding-bottom: 3px; }
+          #editor > #obj_nav > table.col > tbody > .info .edit:hover {
+            background-color: #eeeeee;
+            text-decoration: underline; }
       #editor > #obj_nav > table.col > tbody > .child {
         -webkit-touch-callout: none;
         -webkit-user-select: none;
@@ -131,8 +157,7 @@ html.full_window_editor {
             border-left: 1px dashed #99B; }
         #editor > #obj_nav > table.col > tbody > .child > .src {
           position: relative;
-          vertical-align: top;
-          background-color: white; }
+          vertical-align: top; }
           #editor > #obj_nav > table.col > tbody > .child > .src > .cell, #editor > #obj_nav > table.col > tbody > .child > .src > .unset {
             position: absolute; }
           #editor > #obj_nav > table.col > tbody > .child > .src > .cell {

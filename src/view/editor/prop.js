@@ -46,7 +46,6 @@
 
 			this.name_disp = $("<td />")	.addClass("name")
 											.appendTo(this.element)
-											.attr("colspan", "2")
 											.text(this.option("name"));
 
 			this.value_summary = $("<td />")	.appendTo(this.element)
