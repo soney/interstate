@@ -30,12 +30,18 @@
 		}
 	};
 
+	var select_list_options = {
+		"obj": "Object",
+		"prop": "Property"
+	};
+
 	$.widget("red.value_summary", {
 		options: {
 			value: false
 		},
 		_create: function() {
 			this.element.addClass("value_summary");
+			this.summary_span = $("<span />").appendTo(this.element);
 			var value = this.option("value");
 			if(value instanceof red.WrapperClient) {
 				var client = value;
@@ -44,9 +50,9 @@
 
 				if(type === "dict" || type === "stateful") {
 					if(type === "dict") {
-						this.element.addClass("dict");
+						this.summary_span.addClass("dict");
 					} else {
-						this.element.addClass("stateful dict");
+						this.summary_span.addClass("stateful dict");
 					}
 
 					var copies_span = $("<span />").addClass("copies");
@@ -70,24 +76,24 @@
 						}
 					});
 
-					this.element.append(copies_span, arrow_span);
+					this.summary_span.append(copies_span, arrow_span);
 				} else if(type === "cell") {
 					$prop_val = client.get_$("val");
 
-					this.element	.addClass("cell")
-									.text("");
+					this.summary_span	.addClass("cell")
+										.text("");
 					this.live_value_fn = cjs.liven(function() {
-						this.element.text(summarized_val($prop_val.get()));
+						this.summary_span.text(summarized_val($prop_val.get()));
 					}, {
 						context: this
 					});
 				} else if(type ==="stateful_prop") {
 					$prop_val = client.get_$("val");
 
-					this.element	.addClass("stateful_prop")
-									.text("");
+					this.summary_span	.addClass("stateful_prop")
+										.text("");
 					this.live_value_fn = cjs.liven(function() {
-						this.element.text(summarized_val($prop_val.get()));
+						this.summary_span.text(summarized_val($prop_val.get()));
 					}, {
 						context: this
 					});
@@ -95,17 +101,36 @@
 					console.log(type);
 				}
 			} else {
-				this.element	.addClass("constant")
-								.text(value);
+				this.summary_span	.addClass("constant")
+									.text(value);
 			}
 		},
 		_destroy: function() {
+			this.summary_span.remove();
 			if(this.live_value_fn) {
 				this.live_value_fn.destroy();
 			}
 			if(this.live_copies_fn) {
 				this.live_copies_fn.destroy();
 			}
+		},
+		begin_editing: function() {
+			this.element.addClass("editing");
+			this.summary_span.hide();
+			this.select_type_list = $("<select />").appendTo(this.element); 
+			_.each(select_list_options, function(option_text, option_id) {
+				var option_item = $("<option />")	.attr("value", option_id)
+													.text(option_text)
+													.appendTo(this.select_type_list);
+			}, this);
+			this.select_type_list.on("change", function(event) {
+				console.log("changed");
+			});
+		},
+		done_editing: function() {
+			this.element.removeClass("editing");
+			this.select_type_list.remove();
+			this.summary_span.show();
 		}
 	});
 }(red, jQuery));

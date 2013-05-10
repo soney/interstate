@@ -69,6 +69,9 @@
 											.pressable()
 											.text("<");
 
+			this.$on_prev_click = $.proxy(this.on_prev_click, this);
+			this.$on_edit_click = $.proxy(this.on_edit_click, this);
+
 			this.info_row = $("<tr />")	.appendTo(this.tbody)
 										.addClass("info");
 			this.info_cell = $("<td />")	.appendTo(this.info_row)
@@ -77,14 +80,12 @@
 
 			this.edit_button = $("<div />")	.addClass("edit button")
 											.pressable()
+											.on("pressed", this.$on_edit_click)
 											.appendTo(this.info_cell)
 											.text(this.option("edit_text"));
 
 			this.add_children_listener();
 			this.add_curr_copy_listener();
-
-			this.$on_prev_click = $.proxy(this.on_prev_click, this);
-			this.$on_edit_click = $.proxy(this.on_edit_click, this);
 
 			if(this.option("is_curr_col")) {
 				this.on_curr_col();
@@ -102,6 +103,7 @@
 					this.add_children_listener();
 				}
 			}, this));
+			this.begin_editing();
 		},
 
 		on_curr_col: function() {
@@ -129,6 +131,10 @@
 			this.edit_button.hide();
 			this.element.removeClass("curr_col");
 			this.destroy_src_view();
+
+			if(this.element.hasClass("editing")) {
+				this.done_editing();
+			}
 		},
 
 		on_header_click: function(event) {
@@ -146,6 +152,106 @@
 		on_edit_click: function(event) {
 			event.stopPropagation();
 			event.preventDefault();
+			if(this.element.hasClass("editing")) {
+				this.done_editing();
+			} else {
+				this.begin_editing();
+			}
+		},
+
+		begin_editing: function() {
+			this.element.addClass("editing");
+			this.edit_button.text(this.option("editing_text"));
+			$("tr.child", this.tbody).prop("begin_editing");
+
+			this.options_form = $("<form />")	.addClass("options")
+												.attr("action", "javascript:void(0)")
+												.on("submit", $.proxy(this.done_editing, this))
+												.appendTo(this.info_cell);
+
+			var options_fieldset = $("<fieldset />").appendTo(this.options_form);
+			var legend = $("<legend />").text("Options")
+										.appendTo(options_fieldset);
+
+			var copies_div = $("<div />")	.addClass("copies_option_container")
+											.appendTo(options_fieldset);
+
+			var copies_label = $("<label />")	.attr({
+													"for": "copies"
+												})
+												.text("Copies:")
+												.appendTo(copies_div);
+
+			var copies_input = $("<input />")	.attr({
+													type: "text",
+													id: "copies"
+													//placeholder: "(Array or number)"
+												})
+												.appendTo(copies_div);
+
+			var can_inherit_div = $("<div />")	.addClass("can_inherit_option_container")
+												.appendTo(options_fieldset);
+			var can_inherit_checkbox = $("<input />")	.attr({
+															type: "checkbox",
+															id: "can_inherit",
+															checked: true
+														})
+														.appendTo(can_inherit_div);
+			var can_inherit_label = $("<label />")	.attr({
+														"for": "can_inherit"
+													})
+													.text("Can inherit")
+													.appendTo(can_inherit_div);
+
+			var state_machine_div = $("<div />")	.addClass("state_machine_option_container")
+													.appendTo(options_fieldset);
+
+			var own_input = $("<input />")	.attr({
+												type: "radio",
+												name: "statemachine",
+												value: "own",
+												id: "own",
+												checked: true
+											})
+											.appendTo(state_machine_div);
+			var own_label = $("<label />")	.attr({
+												"for": "own",
+												id: "own_label"
+											})
+											.text("Owns State Machine")
+											.appendTo(state_machine_div);
+
+			var none_input = $("<input />")	.attr({
+												type: "radio",
+												name: "statemachine",
+												value: "none",
+												id: "none"
+											})
+											.appendTo(state_machine_div);
+			var none_label = $("<label />")	.attr({
+												"for": "none"
+											})
+											.text("No state")
+											.appendTo(state_machine_div);
+
+
+			this.add_property_button = $("<div />")	.addClass("add_prop")
+													.appendTo(this.info_cell)
+													.text("(+ Add Property)")
+													.pressable()
+													.on("pressed", function() {
+														console.log("add property");
+													});
+			this.copy_disp.hide();
+		},
+
+		done_editing: function() {
+			this.element.removeClass("editing");
+			this.edit_button.text(this.option("edit_text"));
+			$("tr.child", this.tbody).prop("done_editing");
+			this.add_property_button.remove();
+			this.copy_disp.show();
+			this.options_form.remove();
 		},
 
 		add_children_listener: function () {
@@ -340,154 +446,6 @@
 					this.on_not_curr_col();
 				}
 			}
-		}
-	});
-
-	$.widget("red.copy", {
-		options: {
-			curr_copy: false,
-			out_of: 0,
-			client: false,
-			displayed: false
-		},
-
-		_create: function () {
-			this.left_brace = $("<span />").text(" [").addClass("brace");
-			this.content = $("<span />");
-			this.right_brace = $("<span />").text("]").addClass("brace");
-
-			this.curr_copy_text = $("<span />")	.addClass("copy_num");
-			this.of_text = $("<span />")	.addClass("of_text");
-
-			this.content.append(this.curr_copy_text, this.of_text);
-
-			this.element.addClass("copy");
-
-			if(this.option("displayed")) {
-				this.on_displayed();
-			}
-
-			this.$on_click = $.proxy(this.on_click, this);
-			this.$on_blur = $.proxy(this.on_blur, this);
-			this.$on_change = $.proxy(this.on_change, this);
-			this.$on_key_down = $.proxy(this.on_key_down, this);
-			this.content.on("click", this.$on_click);
-			this.add_listener();
-		},
-
-		_destroy: function () {
-			this.remove_listener();
-		},
-
-		on_click: function() {
-			this.copy_num_input = $("<input />").attr({
-													type: "number",
-													min: 1,
-													max: this.option("out_of")
-												})
-												.val(this.option("curr_copy") + 1)
-												.addClass("copy_input")
-												.insertBefore(this.content)
-												.focus()
-												.select()
-												.on("blur", this.$on_blur)
-												.on("change", this.$on_change)
-												.on("keydown", this.$on_key_down);
-
-			this.original_copy_num = this.option("curr_copy");
-			this.content.hide();
-		},
-
-		on_blur: function() {
-			this.copy_num_input	.off("blur", this.$on_blur)
-								.off("change", this.$on_change)
-								.remove();
-			this.content.show();
-		},
-
-		on_change: function(event) {
-			var value = parseInt(this.copy_num_input.val(), 10);
-			this.option("curr_copy", value - 1);
-		},
-
-		on_key_down: function(jqEvent) {
-			var event = jqEvent.originalEvent;
-			if(event.keyCode === 13) { // Enter
-				this.on_change();
-				this.on_blur();
-			} else if(event.keyCode === 27) { // Esc
-				this.on_blur();
-				this.option("curr_copy", this.original_copy_num);
-			}
-		},
-
-		add_listener: function() {
-			var client = this.option("client");
-			var $is_template = client.get_$("is_template");
-			var $copies = client.get_$("instances");
-			this.copy_listener = cjs.liven(function() {
-				var is_template = $is_template.get();
-				if(is_template) {
-					var copies = $copies.get();
-					if(_.isArray(copies)) {
-						var len = copies.length;
-						this.option({
-							displayed: true,
-							out_of: len,
-							curr_copy: Math.min(this.option("curr_copy"), len)
-						});
-					} else {
-						this.option({
-							displayed: false
-						});
-					}
-				} else {
-					this.option({
-						displayed: false
-					});
-				}
-			}, {
-				context: this
-			});
-		},
-		remove_listener: function() {
-			this.copy_listener.destroy();
-		},
-
-		update_display: function() {
-			if(this.option("curr_copy") === false) {
-				this.curr_copy_text.text("");
-				this.of_text.text(this.option("out_of"));
-			} else  {
-				this.curr_copy_text.text(this.option("curr_copy") + 1);
-				this.of_text.text(" of " + this.option("out_of"));
-			}
-		},
-
-		on_displayed: function() {
-			this.update_display();
-			this.element.append(this.left_brace, this.content, this.right_brace);
-		},
-
-		on_not_displayed: function() {
-			this.element.children().remove();
-		},
-
-		_setOption: function(key, value) {
-			this._super(key, value);
-			if(key === "displayed") {
-				if(value) {
-					this.on_displayed();
-				} else {
-					this.on_not_displayed();
-				}
-			} else if(key === "curr_copy" || key === "out_of") {
-				if(key === "curr_copy") {
-					this.element.trigger("curr_copy_change", value);
-				}
-				this.update_display();
-			}
-
 		}
 	});
 }(red, jQuery));

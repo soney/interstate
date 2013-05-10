@@ -115,6 +115,7 @@ exports.editor = c(
 		"view/editor/column.js",
 		"view/editor/prop.js",
 		"view/editor/cell.js",
+		"view/editor/copies.js",
 		"view/editor/val_summary.js",
 		"view/editor/statechart/raphael_utils.js",
 		"view/editor/statechart/editable_text.js",

@@ -101,6 +101,119 @@ html.full_window_editor {
 					}
 				}
 			}
+
+			&.editing {
+				border: 1px solid #900;
+				> tbody {
+					> tr {
+						&.header {
+							background-color: #900;
+							color: white;
+							> th:hover {
+								background-color: inherit;
+							}
+						}
+						&.info {
+							color: white;
+
+							form.options {
+								> fieldset {
+									background-color: #700;
+									border: 1px solid #000;
+									font-size: 0.8em;
+									text-align: right;
+									border-radius: 3px;
+
+									> div.copies_option_container {
+										text-align: left;
+										> input#copies {
+											display: block;
+											font-family: "Inconsolata";
+											color: white;
+											background-color: #500;
+											border: 1px solid #999;
+											font-size: inherit;
+										}
+									}
+
+									> div.can_inherit_option_container {
+										text-align: left;
+										margin-top: 5px;
+										margin-bottom: 5px;
+									}
+
+									> div.state_machine_option_container {
+										text-align: left;
+										margin-top: 5px;
+										margin-bottom: 5px;
+										> #own_label {
+											margin-right: 10px;
+										}
+									}
+								}
+								margin-bottom: 5px;
+							}
+
+							td.info {
+								> .add_prop {
+									padding: 4px;
+									text-align: center;
+									background-color: white;
+									cursor: pointer;
+									color: #900;
+								}
+							}
+
+							td.info, td.info:hover {
+								background-color: #900;
+								> .edit {
+									background-color: #900;
+									color: white;
+								}
+							}
+						}
+
+						&.child {
+							> td.name {
+								cursor: text;
+								> .drag_handle {
+									cursor: grab;
+									cursor: -moz-grab;
+									cursor: -webkit-grab;
+									
+									&:active {
+										cursor: grabbing;
+										cursor: -moz-grabbing;
+										cursor: -webkit-grabbing;
+									}
+									color: #DDD;
+									padding-right: 7px;
+								}
+								> input.rename {
+									border: none;
+									font-family: "Inconsolata";
+									background: none;
+									font-size: inherit;
+									padding: 0px;
+									margin: 0px;
+								}
+								> .remove_button {
+									cursor: pointer;
+									text-align: center;
+									color: #999;
+									padding-left: 5px;
+									padding-right: 5px;
+									border-left: 1px solid #EEE;
+
+									&:hover {
+										color: #900;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 			> tbody {
 				> tr > .val_col {
 					max-width: $value_summary_width;
