@@ -318,13 +318,15 @@ html.full_window_editor {
 						}
 					}
 
-					> .statechart {
+					> .statechart_cell {
 						border-left: 1px solid #AAA;
 						&:hover {
 							background-color: inherit;
 						}
 						vertical-align: bottom;
-						position: relative;
+						> .statechart {
+							position: relative;
+						}
 					}
 				}
 				
@@ -378,14 +380,17 @@ html.full_window_editor {
 						border-left: 1px solid #EEE;
 						color: #888;
 
-						&.dict {
+						> .dict {
 							text-align: right;
-							color: #CCC;
-							border-left: 1px dashed #EEE;
 							cursor: pointer;
+
 							>.copies {
 								color: #BBB;
 								padding-right: 3px;
+							}
+
+							>.expand_arrow {
+								color: #CCC;
 							}
 						}
 						

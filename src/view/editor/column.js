@@ -406,13 +406,10 @@
 			if(client.type() === "stateful") {
 				this.statechart_view_container = $("<th />")	.appendTo(this.header)
 																.attr("rowspan", "2")
-																.addClass("statechart");
+																.addClass("statechart_cell");
 				var $statecharts = client.get_$("get_statecharts");
 
 				this.live_src_view = cjs.liven(function() {
-					if(this.paper) {
-						this.paper.remove();
-					}
 					var wrappers = $statecharts.get();
 					var statecharts = _.map(wrappers, function (wrapper) {
 						return red.create_remote_statechart(wrapper);
@@ -425,8 +422,13 @@
 					if(statecharts) {
 						this.layout_manager = new red.RootStatechartLayoutEngine(statecharts);
 						$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
-						this.paper = new Raphael(this.statechart_view_container[0], 0, 0);
-						this.statechart_view = new red.RootStatechartView(statecharts, this.layout_manager, this.paper);
+
+						this.statechart_view = $("<div />")	.addClass("statechart")
+															.appendTo(this.statechart_view_container)
+															.statechart({
+																layout_manager: this.layout_manager,
+																statecharts: statecharts
+															});
 					}
 				}, {
 					context: this
@@ -457,7 +459,10 @@
 				this.num_columns_view.destroy();
 			}
 			if(this.statechart_view) {
-				this.statechart_view.destroy();
+				if(this.statechart_view.data("statechart")) {
+					this.statechart_view.statechart("destroy");
+				}
+				this.statechart_view.remove();
 			}
 			if(this.statechart_view_container) {
 				this.statechart_view_container.remove();

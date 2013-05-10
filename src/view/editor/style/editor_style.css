@@ -201,12 +201,13 @@ html.full_window_editor {
               font-color: inherit; }
             #editor > #obj_nav > table.col > tbody > .header > .obj_name > .copy > span > .of_text {
               color: #BBB; }
-        #editor > #obj_nav > table.col > tbody > .header > .statechart {
+        #editor > #obj_nav > table.col > tbody > .header > .statechart_cell {
           border-left: 1px solid #AAA;
-          vertical-align: bottom;
-          position: relative; }
-          #editor > #obj_nav > table.col > tbody > .header > .statechart:hover {
+          vertical-align: bottom; }
+          #editor > #obj_nav > table.col > tbody > .header > .statechart_cell:hover {
             background-color: inherit; }
+          #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart {
+            position: relative; }
       #editor > #obj_nav > table.col > tbody > .info {
         vertical-align: top; }
         #editor > #obj_nav > table.col > tbody > .info .edit {
@@ -259,14 +260,14 @@ html.full_window_editor {
           text-align: right;
           border-left: 1px solid #EEE;
           color: #888; }
-          #editor > #obj_nav > table.col > tbody > .child > .value_summary.dict {
+          #editor > #obj_nav > table.col > tbody > .child > .value_summary > .dict {
             text-align: right;
-            color: #CCC;
-            border-left: 1px dashed #EEE;
             cursor: pointer; }
-            #editor > #obj_nav > table.col > tbody > .child > .value_summary.dict > .copies {
+            #editor > #obj_nav > table.col > tbody > .child > .value_summary > .dict > .copies {
               color: #BBB;
               padding-right: 3px; }
+            #editor > #obj_nav > table.col > tbody > .child > .value_summary > .dict > .expand_arrow {
+              color: #CCC; }
           #editor > #obj_nav > table.col > tbody > .child > .value_summary.constant {
             background-color: #EEE; }
         #editor > #obj_nav > table.col > tbody > .child:hover {

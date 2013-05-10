@@ -120,7 +120,11 @@ exports.editor = c(
 		"view/editor/statechart/raphael_utils.js",
 		"view/editor/statechart/editable_text.js",
 		"view/editor/statechart/layout_engine.js",
+		"view/editor/statechart/start_state_view.js",
+		"view/editor/statechart/state_view.js",
+		"view/editor/statechart/transition_view.js",
 		"view/editor/statechart/statechart_view.js",
+		"view/editor/statechart/hrange.js",
 		"view/editor/style/editor_style.css",
 		"view/editor/style/fonts/Inconsolata/stylesheet.css",
 		"view/editor/style/fonts/SourceSansPro/stylesheet.css"
