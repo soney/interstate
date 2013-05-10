@@ -1,9 +1,11 @@
 html.full_window_editor {
-  height: 100%; }
+  height: 100%;
+  background-color: #FEFEFE; }
   html.full_window_editor > body {
     height: 100%;
-    padding: 0px;
-    margin: 0px; }
+    padding: 15px;
+    margin: 0px;
+    box-sizing: border-box; }
     html.full_window_editor > body > #editor {
       height: 100%; }
 
@@ -16,76 +18,89 @@ html.full_window_editor {
     #editor.phone > #obj_nav > table.col {
       width: 100%; }
   #editor > #obj_nav {
-    height: 100%;
     float: left; }
     #editor > #obj_nav > table.col {
       border: 1px solid #CCC;
-      border-top: none;
       min-width: 100px;
       float: left;
-      border-collapse: collapse; }
+      border-collapse: collapse;
+      -webkit-transition: box-shadow 0.01s ease-in-out;
+      -moz-transition: box-shadow 0.01s ease-in-out;
+      -ms-transition: box-shadow 0.01s ease-in-out;
+      -o-transition: box-shadow 0.01s ease-in-out;
+      transition: box-shadow 0.01s ease-in-out;
+      margin: 5px; }
       #editor > #obj_nav > table.col.curr_col {
         min-width: 250px;
-        border-right: 1px solid #CCC; }
+        box-shadow: 2px 2px 10px #666; }
         #editor > #obj_nav > table.col.curr_col > tbody > .header, #editor > #obj_nav > table.col.curr_col > tbody > .info {
           color: #222222;
           background-color: #e0e0e0; }
-          #editor > #obj_nav > table.col.curr_col > tbody > .header > th.obj_name, #editor > #obj_nav > table.col.curr_col > tbody > .info > th.obj_name {
-            border-right: 1px solid #CCC; }
         #editor > #obj_nav > table.col.curr_col > tbody > .child {
           color: #222222; }
-        #editor > #obj_nav > table.col.curr_col > tbody > tr > td.info {
-          border-right: 1px solid #CCC; }
-        #editor > #obj_nav > table.col.curr_col > tbody > tr > .val_col {
-          max-width: 100px;
-          border-right: 1px solid #CCC; }
+        #editor > #obj_nav > table.col.curr_col > tbody > tr > .value_summary {
+          max-width: 100px; }
+          #editor > #obj_nav > table.col.curr_col > tbody > tr > .value_summary.stateful_prop {
+            border-right: 1px solid #999; }
       #editor > #obj_nav > table.col.editing {
-        border: 1px solid #900; }
+        border: 1px solid #777; }
         #editor > #obj_nav > table.col.editing > tbody > tr.header {
-          background-color: #900;
-          color: white; }
+          background-color: #CCC;
+          color: black; }
           #editor > #obj_nav > table.col.editing > tbody > tr.header > th:hover {
             background-color: inherit; }
         #editor > #obj_nav > table.col.editing > tbody > tr.info {
-          color: white; }
+          color: black; }
           #editor > #obj_nav > table.col.editing > tbody > tr.info form.options {
             margin-bottom: 5px; }
             #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset {
-              background-color: #700;
-              border: 1px solid #000;
+              background-color: #BBB;
+              border: 1px solid #888;
               font-size: 0.8em;
-              text-align: right;
-              border-radius: 3px; }
-              #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.copies_option_container {
-                text-align: left; }
-                #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.copies_option_container > input#copies {
-                  display: block;
-                  font-family: "Inconsolata";
-                  color: white;
-                  background-color: #500;
-                  border: 1px solid #999;
-                  font-size: inherit; }
-              #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.can_inherit_option_container {
-                text-align: left;
-                margin-top: 5px;
-                margin-bottom: 5px; }
+              border-radius: 3px;
+              margin: 10px; }
+              #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > legend {
+                color: #888;
+                text-align: right; }
+              #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.copies_option_container > input#copies {
+                display: block;
+                font-family: "Inconsolata";
+                color: black;
+                background-color: #AAA;
+                border: 1px solid #333;
+                font-size: inherit; }
               #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.state_machine_option_container {
-                text-align: left;
-                margin-top: 5px;
-                margin-bottom: 5px; }
-                #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.state_machine_option_container > #own_label {
+                margin-top: 9px;
+                margin-bottom: 5px;
+                border-top: 1px solid #AAA;
+                padding-top: 8px; }
+                #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.state_machine_option_container > #own_label, #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.state_machine_option_container #none_label {
                   margin-right: 10px; }
+              #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.can_inherit_option_container {
+                margin-top: 9px;
+                margin-bottom: 5px;
+                padding-top: 8px;
+                border-top: 1px solid #AAA; }
           #editor > #obj_nav > table.col.editing > tbody > tr.info td.info > .add_prop {
             padding: 4px;
-            text-align: center;
+            text-align: left;
+            padding-left: 20px;
             background-color: white;
-            cursor: pointer;
-            color: #900; }
+            color: #4169e1;
+            text-decoration: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            cursor: pointer; }
+            #editor > #obj_nav > table.col.editing > tbody > tr.info td.info > .add_prop:hover {
+              text-decoration: underline; }
           #editor > #obj_nav > table.col.editing > tbody > tr.info td.info, #editor > #obj_nav > table.col.editing > tbody > tr.info td.info:hover {
-            background-color: #900; }
+            background-color: #CCC; }
             #editor > #obj_nav > table.col.editing > tbody > tr.info td.info > .edit, #editor > #obj_nav > table.col.editing > tbody > tr.info td.info:hover > .edit {
-              background-color: #900;
-              color: white; }
+              background-color: #CCC; }
         #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name {
           cursor: text; }
           #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .drag_handle {
@@ -109,15 +124,23 @@ html.full_window_editor {
           #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .remove_button {
             cursor: pointer;
             text-align: center;
-            color: #999;
             padding-left: 5px;
             padding-right: 5px;
-            border-left: 1px solid #EEE; }
+            border-left: 1px solid #EEE;
+            color: #4169e1;
+            text-decoration: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            cursor: pointer; }
             #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .remove_button:hover {
-              color: #900; }
+              text-decoration: underline; }
         #editor > #obj_nav > table.col.editing > tbody > tr.child > td.value_summary > select {
           margin: 0px; }
-      #editor > #obj_nav > table.col > tbody > tr > .val_col {
+      #editor > #obj_nav > table.col > tbody > tr > .value_summary {
         max-width: 50px;
         overflow: hidden;
         text-align: right;
@@ -138,6 +161,7 @@ html.full_window_editor {
         user-select: none;
         cursor: pointer;
         text-align: center;
+        background-color: white;
         color: #BBB;
         padding: 5px; }
       #editor > #obj_nav > table.col > tbody > .header {
@@ -182,6 +206,7 @@ html.full_window_editor {
             #editor > #obj_nav > table.col > tbody > .header > .obj_name > .copy > span > .of_text {
               color: #BBB; }
         #editor > #obj_nav > table.col > tbody > .header > .statechart {
+          border-left: 1px solid #AAA;
           vertical-align: bottom;
           position: relative; }
           #editor > #obj_nav > table.col > tbody > .header > .statechart:hover {
@@ -190,17 +215,25 @@ html.full_window_editor {
         vertical-align: top; }
         #editor > #obj_nav > table.col > tbody > .info .edit {
           background-color: #e0e0e0;
-          color: royalblue;
           font-size: 0.8em;
           cursor: pointer;
           text-align: center;
           vertical-align: middle;
-          cursor: pointer;
           padding-top: 3px;
-          padding-bottom: 3px; }
+          padding-bottom: 3px;
+          color: #4169e1;
+          text-decoration: none;
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -khtml-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+          cursor: pointer; }
           #editor > #obj_nav > table.col > tbody > .info .edit:hover {
-            background-color: #eeeeee;
             text-decoration: underline; }
+          #editor > #obj_nav > table.col > tbody > .info .edit:hover {
+            background-color: #eeeeee; }
       #editor > #obj_nav > table.col > tbody > .child {
         -webkit-touch-callout: none;
         -webkit-user-select: none;
@@ -221,12 +254,12 @@ html.full_window_editor {
           padding-left: 2px;
           padding-right: 5px; }
         #editor > #obj_nav > table.col > tbody > .child > .value_summary {
+          cursor: pointer;
           overflow: hidden;
           display: inline-box;
           height: 100%;
           box-sizing: border-box;
           padding-right: 2px;
-          word-break: break-all;
           text-align: right;
           border-left: 1px solid #EEE;
           color: #888; }
@@ -245,8 +278,10 @@ html.full_window_editor {
         #editor > #obj_nav > table.col > tbody > .child.selected {
           background-color: #5274d4;
           color: white; }
-          #editor > #obj_nav > table.col > tbody > .child.selected > .value_summary.dict {
+          #editor > #obj_nav > table.col > tbody > .child.selected > .value_summary {
             border-left: 1px dashed #99B; }
+            #editor > #obj_nav > table.col > tbody > .child.selected > .value_summary > .dict {
+              color: white; }
         #editor > #obj_nav > table.col > tbody > .child.inherited {
           cursor: default;
           opacity: 0.5;

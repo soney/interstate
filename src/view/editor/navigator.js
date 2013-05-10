@@ -54,9 +54,14 @@
 												.on("child_select", $.proxy(this.on_child_select, this, next_col))
 												.on("header_click", $.proxy(this.on_header_click, this, next_col))
 												.on("prev_click", $.proxy(this.on_prev_click, this, next_col));
+
 				this.columns.push(next_col);
 				if(this.option("single_col")) {
 					this.curr_col.hide();
+				} else {
+					//next_col.hide()
+							//.show("fade", "fast");
+
 				}
 				this.curr_col = next_col;
 			}

@@ -189,6 +189,58 @@
 												})
 												.appendTo(copies_div);
 
+
+			var state_machine_div = $("<div />")	.addClass("state_machine_option_container")
+													.appendTo(options_fieldset);
+
+			var state_machine_desc = $("<div />")	.text("State Machine:")
+													.addClass("state_machine_option_desc")
+													.appendTo(state_machine_div);
+
+			var own_input = $("<input />")	.attr({
+												type: "radio",
+												name: "statemachine",
+												value: "own",
+												id: "own",
+												checked: true
+											})
+											.appendTo(state_machine_div);
+
+			var own_label = $("<label />")	.attr({
+												"for": "own",
+												id: "own_label"
+											})
+											.text("Own")
+											.appendTo(state_machine_div);
+
+			var none_input = $("<input />")	.attr({
+												type: "radio",
+												name: "statemachine",
+												value: "none",
+												id: "none"
+											})
+											.appendTo(state_machine_div);
+			var none_label = $("<label />")	.attr({
+												"for": "none",
+												id: "none_label"
+											})
+											.text("None")
+											.appendTo(state_machine_div);
+
+			var parent_input = $("<input />")	.attr({
+												type: "radio",
+												name: "statemachine",
+												value: "parent",
+												id: "parent"
+											})
+											.appendTo(state_machine_div);
+
+			var parent_label = $("<label />")	.attr({
+												"for": "parent"
+											})
+											.text("Parent")
+											.appendTo(state_machine_div);
+
 			var can_inherit_div = $("<div />")	.addClass("can_inherit_option_container")
 												.appendTo(options_fieldset);
 			var can_inherit_checkbox = $("<input />")	.attr({
@@ -203,37 +255,6 @@
 													.text("Can inherit")
 													.appendTo(can_inherit_div);
 
-			var state_machine_div = $("<div />")	.addClass("state_machine_option_container")
-													.appendTo(options_fieldset);
-
-			var own_input = $("<input />")	.attr({
-												type: "radio",
-												name: "statemachine",
-												value: "own",
-												id: "own",
-												checked: true
-											})
-											.appendTo(state_machine_div);
-			var own_label = $("<label />")	.attr({
-												"for": "own",
-												id: "own_label"
-											})
-											.text("Owns State Machine")
-											.appendTo(state_machine_div);
-
-			var none_input = $("<input />")	.attr({
-												type: "radio",
-												name: "statemachine",
-												value: "none",
-												id: "none"
-											})
-											.appendTo(state_machine_div);
-			var none_label = $("<label />")	.attr({
-												"for": "none"
-											})
-											.text("No state")
-											.appendTo(state_machine_div);
-
 
 			this.add_property_button = $("<div />")	.addClass("add_prop")
 													.appendTo(this.info_cell)
@@ -241,17 +262,25 @@
 													.pressable()
 													.on("pressed", function() {
 														console.log("add property");
-													});
+													})
+													.hide();
 			this.copy_disp.hide();
+			options_fieldset.hide().show("bind", $.proxy(function() {
+				this.add_property_button.show("bind");
+			}, this));
 		},
 
 		done_editing: function() {
-			this.element.removeClass("editing");
 			this.edit_button.text(this.option("edit_text"));
 			$("tr.child", this.tbody).prop("done_editing");
-			this.add_property_button.remove();
 			this.copy_disp.show();
-			this.options_form.remove();
+			this.add_property_button.hide("bind");
+			this.options_form.hide("bind", $.proxy(function() {
+				this.options_form.remove();
+				this.element.removeClass("editing");
+				this.add_property_button.pressable("destroy")
+										.remove();
+			}, this));
 		},
 
 		add_children_listener: function () {

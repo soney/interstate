@@ -180,7 +180,7 @@
 													event.preventDefault();
 													event.stopPropagation();
 												})
-												.text("-");
+												.text("x");
 			this.value_summary.value_summary("begin_editing");
 			this.rename_input = $("<input />")	.addClass("rename")
 												.attr({

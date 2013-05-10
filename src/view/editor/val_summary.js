@@ -89,6 +89,7 @@
 					});
 				} else if(type ==="stateful_prop") {
 					$prop_val = client.get_$("val");
+					this.element.addClass("stateful_prop");
 
 					this.summary_span	.addClass("stateful_prop")
 										.text("");

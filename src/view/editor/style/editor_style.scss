@@ -12,6 +12,8 @@ $value_summary_width: 50px;
 $active_obj_value_summary_width: 100px;
 $unset_prop_val_radius: 7px;
 
+$link_color: royalblue;
+
 @mixin non-selectable {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -28,13 +30,26 @@ $unset_prop_val_radius: 7px;
 	transition: $transition-property $transition-time $method;
 }
 
+@mixin link {
+	color: $link_color;
+	text-decoration: none;
+	@include non-selectable;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
 html.full_window_editor {
 	height: 100%;
+	background-color: #FEFEFE;
 	
 	> body {
 		height: 100%;
-		padding: 0px;
+		padding: 15px;
 		margin: 0px;
+		box-sizing: border-box;
 		
 		> #editor {
 			height: 100%;
@@ -60,29 +75,26 @@ html.full_window_editor {
 	}
 
 	> #obj_nav {
-		height: 100%;
 		float: left;
 
 		> table.col {
 			border: 1px solid #CCC;
-			border-top: none;
 
 			min-width: 100px;
 
 			float: left;
 			border-collapse: collapse;
+			@include transition(box-shadow, 0.01s, ease-in-out);
+			margin: 5px;
 
 			&.curr_col {
 				min-width: 250px;
-				border-right: 1px solid #CCC;
+				box-shadow: 2px 2px 10px #666;
 
 				> tbody {
 					> .header, > .info {
 						color: $nav_header_active_text_color;
 						background-color: $nav_header_active_color;
-						> th.obj_name {
-							border-right: 1px solid #CCC;
-						}
 					}
 
 					> .child {
@@ -92,64 +104,71 @@ html.full_window_editor {
 
 					> tr {
 						> td.info {
-							border-right: 1px solid #CCC;
 						}
-						> .val_col {
+						> .value_summary {
 							max-width: $active_obj_value_summary_width;
-							border-right: 1px solid #CCC;
+							&.stateful_prop {
+								border-right: 1px solid #999;
+							}
 						}
 					}
 				}
 			}
 
 			&.editing {
-				border: 1px solid #900;
+				border: 1px solid #777;
 				> tbody {
 					> tr {
 						&.header {
-							background-color: #900;
-							color: white;
+							background-color: #CCC;
+							color: black;
 							> th:hover {
 								background-color: inherit;
 							}
 						}
 						&.info {
-							color: white;
+							color: black;
 
 							form.options {
 								> fieldset {
-									background-color: #700;
-									border: 1px solid #000;
+									> legend {
+										color: #888;
+										text-align: right;
+									}
+									background-color: #BBB;
+									border: 1px solid #888;
 									font-size: 0.8em;
-									text-align: right;
 									border-radius: 3px;
+									margin: 10px;
 
 									> div.copies_option_container {
-										text-align: left;
 										> input#copies {
 											display: block;
 											font-family: "Inconsolata";
-											color: white;
-											background-color: #500;
-											border: 1px solid #999;
+											color: black;
+											background-color: #AAA;
+											border: 1px solid #333;
 											font-size: inherit;
 										}
 									}
 
-									> div.can_inherit_option_container {
-										text-align: left;
-										margin-top: 5px;
-										margin-bottom: 5px;
-									}
-
 									> div.state_machine_option_container {
-										text-align: left;
-										margin-top: 5px;
+										margin-top: 9px;
 										margin-bottom: 5px;
-										> #own_label {
+										border-top: 1px solid #AAA;
+										padding-top: 8px;
+										> #own_label, #none_label {
 											margin-right: 10px;
 										}
 									}
+									
+									> div.can_inherit_option_container {
+										margin-top: 9px;
+										margin-bottom: 5px;
+										padding-top: 8px;
+										border-top: 1px solid #AAA;
+									}
+
 								}
 								margin-bottom: 5px;
 							}
@@ -157,18 +176,18 @@ html.full_window_editor {
 							td.info {
 								> .add_prop {
 									padding: 4px;
-									text-align: center;
+									text-align: left;
+									padding-left: 20px;
 									background-color: white;
-									cursor: pointer;
-									color: #900;
+									@include link;
 								}
+
 							}
 
 							td.info, td.info:hover {
-								background-color: #900;
+								background-color: #CCC;
 								> .edit {
-									background-color: #900;
-									color: white;
+									background-color: #CCC;
 								}
 							}
 						}
@@ -201,14 +220,10 @@ html.full_window_editor {
 								> .remove_button {
 									cursor: pointer;
 									text-align: center;
-									color: #999;
 									padding-left: 5px;
 									padding-right: 5px;
 									border-left: 1px solid #EEE;
-
-									&:hover {
-										color: #900;
-									}
+									@include link;
 								}
 							}
 
@@ -222,7 +237,7 @@ html.full_window_editor {
 				}
 			}
 			> tbody {
-				> tr > .val_col {
+				> tr > .value_summary {
 					max-width: $value_summary_width;
 					overflow: hidden;
 					text-align: right;
@@ -245,6 +260,7 @@ html.full_window_editor {
 						@include non-selectable;
 						cursor: pointer;
 						text-align: center;
+						background-color: white;
 						color: #BBB;
 						padding: 5px;
 					}
@@ -303,6 +319,7 @@ html.full_window_editor {
 					}
 
 					> .statechart {
+						border-left: 1px solid #AAA;
 						&:hover {
 							background-color: inherit;
 						}
@@ -315,17 +332,16 @@ html.full_window_editor {
 					vertical-align: top;
 					.edit {
 						background-color: $nav_header_active_color;
-						color: royalblue;
 						font-size: 0.8em;
 						cursor: pointer;
 						text-align: center;
 						vertical-align: middle;
-						cursor: pointer;
 						padding-top: 3px;
 						padding-bottom: 3px;
+
+						@include link;
 						&:hover {
 							background-color: $nav_header_hover_color;
-							text-decoration: underline;
 						}
 					}
 				}
@@ -351,16 +367,17 @@ html.full_window_editor {
 					}
 
 					> .value_summary {
+						cursor: pointer;
 						overflow: hidden;
 						display: inline-box;
 						height: 100%;
 						box-sizing: border-box;
 						padding-right: 2px;
-						word-break: break-all;
 						text-align: right;
 						
 						border-left: 1px solid #EEE;
 						color: #888;
+
 						&.dict {
 							text-align: right;
 							color: #CCC;
@@ -384,8 +401,11 @@ html.full_window_editor {
 					&.selected {
 						background-color: rgb(82, 116, 212);
 						color: white;
-						> .value_summary.dict {
+						> .value_summary {
 							border-left: 1px dashed #99B;
+							> .dict {
+								color: white;
+							}
 						}
 					}
 
