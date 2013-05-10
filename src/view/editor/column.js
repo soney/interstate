@@ -291,7 +291,7 @@
 							inherited: child.inherited,
 							layout_manager: this.layout_manager,
 							show_src: this.option("show_source")
-						}).on("select", $.proxy(this.on_child_select, this, child, child_disp));
+						}).on("expand", $.proxy(this.on_child_select, this, child, child_disp));
 					}, this);
 					_.forEach(diff.moved, function (info) {
 						var from_index = info.from, to_index = info.to, child = info.item;

@@ -75,7 +75,7 @@
 				event.stopPropagation();
 				event.preventDefault();
 				if(this.element.not(".selected")) {
-					this.element.trigger("select");
+					this.element.trigger("expand");
 				}
 			}
 		},
@@ -188,7 +188,8 @@
 													size: ""
 												})
 												.val(this.option("name"))
-												.insertAfter(this.name_span);
+												.insertAfter(this.name_span)
+												.on("focus", function(event) { });
 			this.name_span.hide();
 		},
 		done_editing: function() {
