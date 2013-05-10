@@ -103,7 +103,6 @@
 					this.add_children_listener();
 				}
 			}, this));
-			this.begin_editing();
 		},
 
 		on_curr_col: function() {
@@ -184,7 +183,8 @@
 
 			var copies_input = $("<input />")	.attr({
 													type: "text",
-													id: "copies"
+													id: "copies",
+													spellcheck: false
 													//placeholder: "(Array or number)"
 												})
 												.appendTo(copies_div);

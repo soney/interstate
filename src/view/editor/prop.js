@@ -146,7 +146,6 @@
 						context: this
 					});
 				} else {
-					//console.log(value.type());
 					this.src_cell.addClass("cannot_modify");
 				}
 			} else {
@@ -185,7 +184,8 @@
 			this.value_summary.value_summary("begin_editing");
 			this.rename_input = $("<input />")	.addClass("rename")
 												.attr({
-													size: ""
+													size: "",
+													spellcheck: false
 												})
 												.val(this.option("name"))
 												.insertAfter(this.name_span)

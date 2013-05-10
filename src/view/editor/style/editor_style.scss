@@ -188,6 +188,7 @@ html.full_window_editor {
 									}
 									color: #DDD;
 									padding-right: 7px;
+									font-size: 0.9em;
 								}
 								> input.rename {
 									border: none;
@@ -208,6 +209,12 @@ html.full_window_editor {
 									&:hover {
 										color: #900;
 									}
+								}
+							}
+
+							> td.value_summary {
+								> select {
+									margin: 0px;
 								}
 							}
 						}

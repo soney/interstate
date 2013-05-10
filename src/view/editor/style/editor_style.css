@@ -93,7 +93,8 @@ html.full_window_editor {
             cursor: -moz-grab;
             cursor: -webkit-grab;
             color: #DDD;
-            padding-right: 7px; }
+            padding-right: 7px;
+            font-size: 0.9em; }
             #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .drag_handle:active {
               cursor: grabbing;
               cursor: -moz-grabbing;
@@ -114,6 +115,8 @@ html.full_window_editor {
             border-left: 1px solid #EEE; }
             #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .remove_button:hover {
               color: #900; }
+        #editor > #obj_nav > table.col.editing > tbody > tr.child > td.value_summary > select {
+          margin: 0px; }
       #editor > #obj_nav > table.col > tbody > tr > .val_col {
         max-width: 50px;
         overflow: hidden;
