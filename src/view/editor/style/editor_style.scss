@@ -11,6 +11,7 @@ $nav_column_active_text_color: #222;
 $value_summary_width: 50px;
 $active_obj_value_summary_width: 100px;
 $unset_prop_val_radius: 7px;
+$drag_handle_width: 20px;
 
 $link_color: royalblue;
 
@@ -84,7 +85,6 @@ html.full_window_editor {
 
 			float: left;
 			border-collapse: collapse;
-			@include transition(box-shadow, 0.01s, ease-in-out);
 			margin: 5px;
 
 			&.curr_col {
@@ -122,9 +122,6 @@ html.full_window_editor {
 						&.header {
 							background-color: #CCC;
 							color: black;
-							> th:hover {
-								background-color: inherit;
-							}
 						}
 						&.info {
 							color: black;
@@ -177,7 +174,7 @@ html.full_window_editor {
 								> .add_prop {
 									padding: 4px;
 									text-align: left;
-									padding-left: 20px;
+									padding-left: $drag_handle_width;
 									background-color: white;
 									@include link;
 								}
@@ -206,15 +203,17 @@ html.full_window_editor {
 										cursor: -webkit-grabbing;
 									}
 									color: #DDD;
-									padding-right: 7px;
 									font-size: 0.9em;
+									width: $drag_handle_width;
+									display: inline-block;
 								}
 								> input.rename {
-									border: none;
+									border: 1px solid #AAA;
 									font-family: "Inconsolata";
-									background: none;
+									background-color: #EEE;
 									font-size: inherit;
 									padding: 0px;
+									padding-left: 3px;
 									margin: 0px;
 								}
 								> .remove_button {
@@ -259,10 +258,11 @@ html.full_window_editor {
 					> td {
 						@include non-selectable;
 						cursor: pointer;
-						text-align: center;
+						text-align: left;
+						padding: 5px;
+						padding-left: $drag_handle_width;
 						background-color: white;
 						color: #BBB;
-						padding: 5px;
 					}
 				}
 

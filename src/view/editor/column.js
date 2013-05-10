@@ -137,7 +137,11 @@
 		},
 
 		on_header_click: function(event) {
-			this.element.trigger("header_click", this);
+			if(this.element.hasClass("editing")) {
+				this.done_editing();
+			} else {
+				this.element.trigger("header_click", this);
+			}
 			event.stopPropagation();
 			event.preventDefault();
 		},
@@ -278,7 +282,7 @@
 			this.options_form.hide("bind", $.proxy(function() {
 				this.options_form.remove();
 				this.element.removeClass("editing");
-				this.add_property_button.pressable("destroy")
+				this.add_property_button//.pressable("destroy")
 										.remove();
 			}, this));
 		},

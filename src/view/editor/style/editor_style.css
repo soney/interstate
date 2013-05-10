@@ -24,11 +24,6 @@ html.full_window_editor {
       min-width: 100px;
       float: left;
       border-collapse: collapse;
-      -webkit-transition: box-shadow 0.01s ease-in-out;
-      -moz-transition: box-shadow 0.01s ease-in-out;
-      -ms-transition: box-shadow 0.01s ease-in-out;
-      -o-transition: box-shadow 0.01s ease-in-out;
-      transition: box-shadow 0.01s ease-in-out;
       margin: 5px; }
       #editor > #obj_nav > table.col.curr_col {
         min-width: 250px;
@@ -47,8 +42,6 @@ html.full_window_editor {
         #editor > #obj_nav > table.col.editing > tbody > tr.header {
           background-color: #CCC;
           color: black; }
-          #editor > #obj_nav > table.col.editing > tbody > tr.header > th:hover {
-            background-color: inherit; }
         #editor > #obj_nav > table.col.editing > tbody > tr.info {
           color: black; }
           #editor > #obj_nav > table.col.editing > tbody > tr.info form.options {
@@ -108,18 +101,20 @@ html.full_window_editor {
             cursor: -moz-grab;
             cursor: -webkit-grab;
             color: #DDD;
-            padding-right: 7px;
-            font-size: 0.9em; }
+            font-size: 0.9em;
+            width: 20px;
+            display: inline-block; }
             #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .drag_handle:active {
               cursor: grabbing;
               cursor: -moz-grabbing;
               cursor: -webkit-grabbing; }
           #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > input.rename {
-            border: none;
+            border: 1px solid #AAA;
             font-family: "Inconsolata";
-            background: none;
+            background-color: #EEE;
             font-size: inherit;
             padding: 0px;
+            padding-left: 3px;
             margin: 0px; }
           #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .remove_button {
             cursor: pointer;
@@ -160,10 +155,11 @@ html.full_window_editor {
         -ms-user-select: none;
         user-select: none;
         cursor: pointer;
-        text-align: center;
+        text-align: left;
+        padding: 5px;
+        padding-left: 20px;
         background-color: white;
-        color: #BBB;
-        padding: 5px; }
+        color: #BBB; }
       #editor > #obj_nav > table.col > tbody > .header {
         -webkit-touch-callout: none;
         -webkit-user-select: none;
