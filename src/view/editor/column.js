@@ -290,7 +290,9 @@
 			}, this));
 
 			if(this.statechart_view) {
-				this.statechart_view.statechart("done_editing");
+				if(this.statechart_view.data("statechart")) {
+					this.statechart_view.statechart("done_editing");
+				}
 			}
 		},
 

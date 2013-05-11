@@ -32,6 +32,11 @@
 		}
 	};
 
+	var type_options = {
+		"obj": "Object",
+		"prop": "Property"
+	};
+
 	$.widget("red.prop", {
 		options: {
 			name: "",
@@ -183,54 +188,68 @@
 				this.drag_handle = $("<span />").addClass("drag_handle")
 												.prependTo(this.name_cell)
 												.html("&#9776;");
-				/*
-				this.remove_button = $("<span />")	.addClass("remove_button")
-													.appendTo(this.name_cell)
-													.pressable()
-													.on("pressed", function(event) {
-														console.log("remove");
-														event.preventDefault();
-														event.stopPropagation();
-													})
-													.text("x");
-				this.rename_input = $("<input />")	.addClass("rename")
-													.attr({
-														size: "",
-														spellcheck: false
-													})
-													.val(this.option("name"))
-													.insertAfter(this.name_span)
-													.on("focus", function(event) { });
-				*/
 
-				this.remove_button = $("<div />")	.text("Remove")
+				this.remove_button = $("<div />")	.addClass("menu_item")	
+													.text("Remove")
 													.pressable()
 													.on("pressed", function(event) {
+														edit_dropdown.dropdown("collapse");
+														console.log("Remove");
 														event.preventDefault();
 														event.stopPropagation();
 													});
+				this.rename_button = $("<div />")	.addClass("menu_item")	
+													.text("Rename")
+													.pressable()
+													.on("pressed", function(event) {
+														edit_dropdown.dropdown("collapse");
+														console.log("Rename");
+														event.preventDefault();
+														event.stopPropagation();
+													});
+				this.types = _.map(type_options, function(type_name) {
+					return $("<div />")	.addClass("menu_item")
+										.text(type_name)
+										.pressable()
+										.on("pressed", function(event) {
+											edit_dropdown.dropdown("collapse");
+											console.log("set type", type_name);
+											event.preventDefault();
+											event.stopPropagation();
+										});
+				}, this);
+				this.change_type_button = $("<div />")	.addClass("menu_item")
+														.submenu({
+															text: "Set Type",
+															items: this.types
+														});
+
 			
 				this.edit_dropdown = $("<span />")	.appendTo(this.name_cell)
 													.addClass("edit_prop")
 													.dropdown({
 														text: this.option("name"),
-														items: [this.remove_button]
+														items: [this.change_type_button, this.rename_button, this.remove_button]
 													});
-				this.name_span.hide();
 
+				var edit_dropdown = this.edit_dropdown;
+				this.name_span.hide();
 			}
 		},
 		done_editing: function() {
 			this.value_summary.value_summary("done_editing");								
 			this.element.removeClass("editing");
+			if(this.change_type_button) {
+				this.change_type_button.submenu("destroy");
+			}
 			if(this.edit_dropdown) {
 				this.edit_dropdown	.dropdown("destroy")
 									.remove();
 			}
-			/*
 			if(this.drag_handle) {
 				this.drag_handle.remove();
 			}
+			/*
 			if(this.remove_button) {
 				this.remove_button.remove();
 			}

@@ -30,10 +30,6 @@
 		}
 	};
 
-	var select_list_options = {
-		"obj": "Object",
-		"prop": "Property"
-	};
 
 	$.widget("red.value_summary", {
 		options: {
