@@ -346,3 +346,20 @@ html.full_window_editor {
           #editor > #obj_nav > table.col > tbody > .child > .src.cannot_modify {
             background-image: url('images/stripe.png');
             display: table-cell; }
+
+.dropdown {
+  position: relative; }
+  .dropdown > .btn {
+    cursor: pointer; }
+  .dropdown > .menu {
+    display: none;
+    position: absolute;
+    border: 1px solid black;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    border-top: none;
+    background-color: white;
+    box-shadow: 0px 3px 10px #333;
+    width: 100%; }
+  .dropdown.expanded > .menu {
+    display: block; }

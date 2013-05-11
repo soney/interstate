@@ -130,30 +130,10 @@
 														event.stopPropagation();
 													})
 													.text("inherit");
-			} else if(this.option("builtin")) {
-			} else {
-				this.select_type_list = $("<select />").appendTo(this.element); 
-				/*
-				var no_option = $("<option />")	.appendTo(this.select_type_list)
-												.attr({
-													selected: true
-												});
-												*/
-				_.each(select_list_options, function(option_text, option_id) {
-					var option_item = $("<option />")	.attr("value", option_id)
-														.text(option_text)
-														.appendTo(this.select_type_list);
-				}, this);
-				this.select_type_list.on("change", function(event) {
-					console.log("changed");
-				});
 			}
 		},
 		done_editing: function() {
 			this.element.removeClass("editing");
-			if(this.select_type_list) {
-				this.select_type_list.remove();
-			}
 			if(this.inherit_button) {
 				this.inherit_button.remove();
 			}
