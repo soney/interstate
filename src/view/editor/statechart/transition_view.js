@@ -171,9 +171,8 @@
 				radius = this.option("radius"),
 				arrowLength = this.option("arrowLength"),
 				arrowAngleRadians = this.option("arrowAngle") * Math.PI / 180;
-			var padding_top = this.option("padding_top");
 			
-			return get_arrow_paths({x: from.x, y: from.y + padding_top}, {x: to.x, y: to.y + padding_top}, self_pointing_theta, radius, arrowLength, arrowAngleRadians);
+			return get_arrow_paths(from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians);
 		};
 
 		proto.flash = function () {

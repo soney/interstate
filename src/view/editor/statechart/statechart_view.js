@@ -25,8 +25,8 @@
 			active_state_stroke: "#F00",
 			active_state_text_color: "#F00",
 			start_state_color: "#000",
+			start_state_radius: 6,
 
-			layout_manager: false,
 			statecharts: [],
 
 			hrange_y: 5,
@@ -39,13 +39,23 @@
 
 		_create: function () {
 			this.paper = new Raphael(this.element[0], 0, 0);
-			this.statechart_view = new red.RootStatechartView(this.option("statecharts"), this.option("layout_manager"), this.paper, this.options);
+			var statecharts = this.option("statecharts");
+			this.layout_manager = new red.RootStatechartLayoutEngine(statecharts, {
+				start_state_radius: this.option("start_state_radius"),
+				padding_top: this.option("padding_top").call(this)
+			});
+			this.statechart_view = new red.RootStatechartView(statecharts, this.layout_manager, this.paper, this.options);
 		},
 		_destroy: function () {
 			this._super();
 			this.statechart_view.destroy();
 			this.paper.remove();
 		},
+
+		get_layout_manager: function() {
+			return this.layout_manager;
+		},
+
 		_setOption: function(key, value) {
 			this._super(key, value);
 		},
@@ -74,7 +84,7 @@
 		this.live_layout = cjs.liven(function () {
 			var layout_info = this.layout_engine.get_layout();
 			var width = layout_info.width,
-				height = layout_info.height + this.option("padding_top"),
+				height = layout_info.height,
 				layout = layout_info.locations;
 			this.paper.setSize(width, height);
 			var new_items = [];
@@ -188,8 +198,7 @@
 						text_background: this.option("transition_text_background_color"),
 						text_foreground: this.option("transition_text_color"),
 						font_family: this.option("transition_font_family"),
-						font_size: this.option("transition_font_size"),
-						padding_top: this.option("padding_top")
+						font_size: this.option("transition_font_size")
 					});
 					rv.on("change", function (event) {
 						var value = event.value;
@@ -205,7 +214,7 @@
 						paper: this.paper,
 						c: layout_info.center,
 						fill_color: this.option("start_state_color"),
-						padding_top: this.option("padding_top")
+						radius: this.option("start_state_radius")
 					});
 				} else {
 					rv = new red.StateView({

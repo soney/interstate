@@ -6,23 +6,6 @@
 	var cjs = red.cjs,
 		_ = red._;
 
-	// Constants
-	var THETA_DEGREES = 45,
-		TRANSITION_HEIGHT = 18,
-		TRANSITION_MARGIN = 1,
-		STATE_NAME_WIDTH = 90,
-		STATE_NAME_HEIGHT = TRANSITION_HEIGHT,
-		STATE_PADDING_Y = TRANSITION_MARGIN,
-		STATE_PADDING_X = 8,
-		ADD_STATE_WIDTH = 50,
-		START_STATE_WIDTH = STATE_NAME_WIDTH;
-
-	var THETA_RADIANS = THETA_DEGREES * Math.PI / 180,
-		TAN_THETA = Math.tan(THETA_RADIANS);
-
-	var TRANSITION_WIDTH = TRANSITION_HEIGHT / TAN_THETA;
-
-	var STATE_LINE_PADDING_FACTOR = 1 / 2;
 
 	var FAKE_ROOT_STATECHART = {
 			hash: function () {
@@ -38,13 +21,33 @@
 			basis: function () { return false; }
 		};
 
-	red.RootStatechartLayoutEngine = function (statecharts) {
+	red.RootStatechartLayoutEngine = function (statecharts, options) {
+		able.make_this_optionable(this, {
+			theta_degrees: 45,
+			transition_height: 18,
+			transition_margin: 1,
+			state_name_width: 90,
+			state_name_height: function() { return this.option("transition_height"); },
+			state_padding_y: function() { return this.option("transition_margin"); },
+			state_padding_x: 8,
+			add_state_width: 50,
+			start_state_width: function() { return this.option("state_name_width"); },
+			start_state_radius: 5,
+			theta_radians: function() { return this.option("theta_degrees") * Math.PI / 180; },
+			tan_theta: function() { return Math.tan(this.option("theta_radians")); },
+			transition_width: function() { return this.option("transition_height") / this.option("tan_theta"); },
+			state_line_padding_factor: 1/2,
+			padding_top: 0
+		}, options);
+
 		this.statecharts = statecharts;
 		this.statecharts_with_add_state_button = [];//this.statecharts[0]];
 		this.$layout = cjs.$(_.bind(this._compute_layout, this));
 	};
-	(function (my) {
-		var proto = my.prototype;
+	(function (My) {
+		var proto = My.prototype;
+
+		able.make_proto_optionable(proto);
 
 		proto.get_statechart_tree = function () {
 			var expand_node = function (node) {
@@ -99,16 +102,13 @@
 
 		proto.get_width = function (state_wrapper) {
 			if (state_wrapper.type() === "statechart") {
-				return STATE_NAME_WIDTH;
+				return this.option("state_name_width");
 			} else if (state_wrapper.type() === "transition") {
-				return TRANSITION_WIDTH;
+				return this.option("transition_width");
 			} else if (state_wrapper.type() === "start_state") {
-				return START_STATE_WIDTH;
+				return this.option("start_state_width");
 			}
 			return 0;
-		};
-		proto.get_num_cols = function() {
-			return 1;
 		};
 
 		proto.get_layout = function () {
@@ -116,6 +116,22 @@
 		};
 
 		proto._compute_layout = function () {
+			var THETA_DEGREES = this.option("theta_degrees"),
+				TRANSITION_HEIGHT = this.option("transition_height"),
+				TRANSITION_MARGIN = this.option("transition_margin"),
+				STATE_NAME_WIDTH = this.option("state_name_width"),
+				STATE_NAME_HEIGHT = this.option("state_name_height"),
+				STATE_PADDING_Y = this.option("state_padding_y"),
+				STATE_PADDING_X = this.option("state_padding_x"),
+				ADD_STATE_WIDTH = this.option("add_state_width"),
+				START_STATE_WIDTH = this.option("start_state_width"),
+				THETA_RADIANS = this.option("theta_radians"),
+				TAN_THETA = this.option("tan_theta"),
+				TRANSITION_WIDTH = this.option("transition_width"),
+				STATE_LINE_PADDING_FACTOR = this.option("state_line_padding_factor"),
+				START_STATE_RADIUS = this.option("start_state_radius"),
+				PADDING_TOP = this.option("padding_top");
+
 			var sc_tree = this.get_statechart_tree();
 			var rows = [];
 			var columns = [];
@@ -299,7 +315,7 @@
 				hash: "hash"
 			});
 
-			var y = 0;
+			var y = PADDING_TOP;
 			var column_widths = [];
 			var num_rows = rows.length;
 
@@ -320,7 +336,7 @@
 
 					if (column.lr === "l") {
 						x += STATE_PADDING_X / 2;
-						y = H * (num_rows - column_values.length + 1) + (H / 2);
+						y = PADDING_TOP + H * (num_rows - column_values.length + 1) + (H / 2);
 
 						var found_relevant_transition = false;
 						for (row = column_values.length - 1; row >= column.depth; row -= 1) {
@@ -368,7 +384,7 @@
 						location_info_map.put(state, location_info);
 					} else {
 						var found_state;
-						y = H * (num_rows - column.depth) + H / 2;
+						y = PADDING_TOP + H * (num_rows - column.depth) + H / 2;
 						wing_start_x = x;
 						wing_start_y = y;
 						var wing_end_x = x + dx * STATE_LINE_PADDING_FACTOR,
@@ -426,13 +442,13 @@
 						x += STATE_PADDING_X;
 					} else if (_.indexOf(this.statecharts, state) >= 0) {
 						//x += STATE_PADDING_X/2;
-						y = H * (num_rows - column.depth) + H / 2;
+						y = PADDING_TOP + H * (num_rows - column.depth) + H / 2;
 						location_info = location_info_map.get(state);
 						location_info.center = { x: x, y: y };
 						//x += STATE_PADDING_X/2;
 					} else if (state instanceof red.StartState) {
 						x += START_STATE_WIDTH / 2;
-						y = H * (num_rows - column.depth) + H / 2;
+						y = PADDING_TOP + H * (num_rows - column.depth) + H / 2;
 						location_info_map.put(state, { center: { x: x, y: y } });
 
 						column_values = _.pluck(rows, i);
@@ -459,7 +475,7 @@
 						x += START_STATE_WIDTH / 2;
 					} else {
 						x += STATE_NAME_WIDTH / 2;
-						y = H * (num_rows - column.depth) + H / 2;
+						y = PADDING_TOP + H * (num_rows - column.depth) + H / 2;
 						location_info = location_info_map.get(state);
 						location_info.center = { x: x, y: y };
 						x += STATE_NAME_WIDTH / 2;
@@ -468,7 +484,7 @@
 			}
 
 			var width = x;
-			var height = (num_rows - 1) * H;
+			var height = PADDING_TOP + (num_rows - 1) * H;
 
 			return {width: width, height: height, locations: location_info_map};
 		};

@@ -428,15 +428,14 @@
 					}
 
 					if(statecharts) {
-						this.layout_manager = new red.RootStatechartLayoutEngine(statecharts);
 						$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
 
 						this.statechart_view = $("<div />")	.addClass("statechart")
 															.appendTo(this.statechart_view_container)
 															.statechart({
-																layout_manager: this.layout_manager,
 																statecharts: statecharts
 															});
+						this.layout_manager = this.statechart_view.statechart("get_layout_manager");
 					}
 				}, {
 					context: this
@@ -444,7 +443,6 @@
 
 				this.num_columns_view = cjs.liven(function() {
 					if(this.layout_manager) {
-						var num_cols = this.layout_manager.get_num_cols();
 						$("tr.child", this.element).prop("option", "show_src", true);
 					}
 				}, {

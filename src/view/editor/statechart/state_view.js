@@ -71,7 +71,7 @@
 			var center = this.option("c");
 
 			var name = state.get_name("parent");
-			this.label = new red.EditableText(paper, {x: center.x, y: center.y + this.option("padding_top"), text: name, fill: this.option("text_background"), color: this.option("text_foreground")});
+			this.label = new red.EditableText(paper, {x: center.x, y: center.y, text: name, fill: this.option("text_background"), color: this.option("text_foreground")});
 			this.label.option({
 				"font-size": this.option("font_size"),
 				"font-family": this.option("font_family")
@@ -90,7 +90,7 @@
 				var name = state.get_name("parent");
 				this.label.option({
 					x: center.x,
-					y: center.y + this.option("padding_top"),
+					y: center.y,
 					text: name
 				});
 			}
@@ -102,7 +102,7 @@
 			var x0 = pts[0].x;
 			var y0 = pts[0].y;
 			var path_str = "M" + x0 + "," + padding_top + "L" + _.map(pts, function (pt) {
-				return pt.x + "," + (pt.y + padding_top);
+				return pt.x + "," + pt.y;
 			}).join("L") + "V"+padding_top+"Z";
 			return path_str;
 		};
