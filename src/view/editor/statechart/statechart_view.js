@@ -40,7 +40,9 @@
 		_create: function () {
 			this.paper = new Raphael(this.element[0], 0, 0);
 			var statecharts = this.option("statecharts");
-			this.layout_manager = new red.RootStatechartLayoutEngine(statecharts, {
+			this.layout_manager = new red.RootStatechartLayoutEngine({
+				statecharts: statecharts,
+				statecharts_with_add_state_button: [],
 				start_state_radius: this.option("start_state_radius"),
 				padding_top: this.option("padding_top").call(this)
 			});
@@ -60,10 +62,16 @@
 			this._super(key, value);
 		},
 		begin_editing: function() {
-			console.log("begin editing");
+			this.layout_manager.option({
+				statecharts_with_add_state_button: [this.option("statecharts")[0]]
+			});
+			this.layout_manager.invalidate();
 		},
 		done_editing: function() {
-			console.log("end editing");
+			this.layout_manager.option({
+				statecharts_with_add_state_button: []
+			});
+			this.layout_manager.invalidate();
 		}
 	});
 

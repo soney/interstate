@@ -21,7 +21,7 @@
 			basis: function () { return false; }
 		};
 
-	red.RootStatechartLayoutEngine = function (statecharts, options) {
+	red.RootStatechartLayoutEngine = function (options) {
 		able.make_this_optionable(this, {
 			theta_degrees: 45,
 			transition_height: 18,
@@ -37,17 +37,20 @@
 			tan_theta: function() { return Math.tan(this.option("theta_radians")); },
 			transition_width: function() { return this.option("transition_height") / this.option("tan_theta"); },
 			state_line_padding_factor: 1/2,
-			padding_top: 0
+			padding_top: 0,
+			statecharts_with_add_state_button: [],
+			statecharts: []
 		}, options);
-
-		this.statecharts = statecharts;
-		this.statecharts_with_add_state_button = [];//this.statecharts[0]];
 		this.$layout = cjs.$(_.bind(this._compute_layout, this));
 	};
 	(function (My) {
 		var proto = My.prototype;
 
 		able.make_proto_optionable(proto);
+
+		proto.invalidate = function() {
+			this.$layout.invalidate();
+		};
 
 		proto.get_statechart_tree = function () {
 			var expand_node = function (node) {
@@ -64,7 +67,7 @@
 					node.children = [];
 				}
 			};
-			var curr_node = {statechart: FAKE_ROOT_STATECHART, children: _.map(this.statecharts, function (sc) {
+			var curr_node = {statechart: FAKE_ROOT_STATECHART, children: _.map(this.option("statecharts"), function (sc) {
 				var node = {statechart: sc, children: [ { statechart: sc.get_start_state(), children: [] }]};
 				expand_node.call(this, node);
 				return node;
@@ -431,16 +434,18 @@
 						location_info.right_wing_end = { x: wing_end_x, y: wing_end_y };
 
 						x += STATE_PADDING_X / 2;
-						if (_.indexOf(this.statecharts_with_add_state_button, state) >= 0) {
+						if (_.indexOf(this.option("statecharts_with_add_state_button"), state) >= 0) {
 							x += ADD_STATE_WIDTH / 2;
 							location_info.add_state_button_x = x;
 							x += ADD_STATE_WIDTH / 2;
+							location_info.right_wing_end.x += ADD_STATE_WIDTH;
+							location_info.right_wing_start.x += ADD_STATE_WIDTH;
 						}
 					}
 				} else {
 					if (state === FAKE_ROOT_STATECHART) {
 						x += STATE_PADDING_X;
-					} else if (_.indexOf(this.statecharts, state) >= 0) {
+					} else if (_.indexOf(this.option("statecharts"), state) >= 0) {
 						//x += STATE_PADDING_X/2;
 						y = PADDING_TOP + H * (num_rows - column.depth) + H / 2;
 						location_info = location_info_map.get(state);
