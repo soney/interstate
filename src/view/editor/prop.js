@@ -37,6 +37,7 @@
 			name: "",
 			value: false,
 			inherited: false,
+			builtin: false,
 			layout_manager: false,
 			show_src: false
 		},
@@ -53,12 +54,16 @@
 			this.value_summary = $("<td />")	.appendTo(this.element)
 												.value_summary({
 													value: this.option("value"),
-													inherited: this.option("inherited")
+													inherited: this.option("inherited"),
+													builtin: this.option("builtin")
 												});
 
 			if(this.option("inherited")) {
 				this.element.addClass("inherited");
+			} else if(this.option("builtin")) {
+				this.element.addClass("builtin");
 			}
+
 			this.element.pressable();
 			this.element.on("pressed", $.proxy(this.on_click, this));
 			if(this.option("show_src")) {
@@ -174,7 +179,7 @@
 			this.element.addClass("editing");
 
 			this.value_summary.value_summary("begin_editing");
-			if(!this.option("inherited")) {
+			if(!this.option("inherited") && !this.option("builtin")) {
 				this.drag_handle = $("<span />").addClass("drag_handle")
 												.prependTo(this.name_cell)
 												.html("&#9776;");

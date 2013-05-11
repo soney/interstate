@@ -52,7 +52,7 @@
 		begin_editing: function() {
 			console.log("begin editing");
 		},
-		end_editing: function() {
+		done_editing: function() {
 			console.log("end editing");
 		}
 	});

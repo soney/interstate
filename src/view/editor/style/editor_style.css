@@ -150,6 +150,8 @@ html.full_window_editor {
             cursor: pointer; }
             #editor > #obj_nav > table.col.editing > tbody > tr.child.inherited > td.value_summary:hover {
               text-decoration: underline; }
+        #editor > #obj_nav > table.col.editing > tbody > tr.child.builtin > td.name {
+          padding-left: 20px; }
         #editor > #obj_nav > table.col.editing > tbody > tr.child > td.value_summary > select {
           margin: 0px; }
       #editor > #obj_nav > table.col > tbody > tr > .value_summary {

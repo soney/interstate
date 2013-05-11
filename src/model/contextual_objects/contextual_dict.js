@@ -227,7 +227,7 @@
 				var contextual_objects = _.map(infos, function (info, i) {
 					var name = names[i];
 					var value = get_contextual_object(info, pointer);
-					return {name: name, value: value, inherited: type === "inherited"};
+					return {name: name, value: value, inherited: type === "inherited", builtin: (type === "builtin" || type === "special_context") };
 				}, this);
 				rv.push.apply(rv, contextual_objects);
 			}, this);

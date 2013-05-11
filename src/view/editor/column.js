@@ -272,6 +272,9 @@
 			options_fieldset.hide().show("bind", $.proxy(function() {
 				this.add_property_button.show("bind");
 			}, this));
+			if(this.statechart_view) {
+				this.statechart_view.statechart("begin_editing");
+			}
 		},
 
 		done_editing: function() {
@@ -285,6 +288,10 @@
 				this.add_property_button//.pressable("destroy")
 										.remove();
 			}, this));
+
+			if(this.statechart_view) {
+				this.statechart_view.statechart("done_editing");
+			}
 		},
 
 		add_children_listener: function () {
@@ -322,6 +329,7 @@
 							value: child.value,
 							name: child.name,
 							inherited: child.inherited,
+							builtin: child.builtin,
 							layout_manager: this.layout_manager,
 							show_src: this.option("show_source")
 						}).on("expand", $.proxy(this.on_child_select, this, child, child_disp));

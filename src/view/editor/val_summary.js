@@ -38,7 +38,8 @@
 	$.widget("red.value_summary", {
 		options: {
 			value: false,
-			inherited: false
+			inherited: false,
+			builtin: false
 		},
 		_create: function() {
 			this.element.addClass("value_summary");
@@ -129,8 +130,15 @@
 														event.stopPropagation();
 													})
 													.text("inherit");
+			} else if(this.option("builtin")) {
 			} else {
 				this.select_type_list = $("<select />").appendTo(this.element); 
+				/*
+				var no_option = $("<option />")	.appendTo(this.select_type_list)
+												.attr({
+													selected: true
+												});
+												*/
 				_.each(select_list_options, function(option_text, option_id) {
 					var option_item = $("<option />")	.attr("value", option_id)
 														.text(option_text)

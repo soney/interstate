@@ -236,7 +236,11 @@ html.full_window_editor {
 								}
 							}
 
-
+							&.builtin {
+								> td.name {
+									padding-left: $drag_handle_width;
+								}
+							}
 
 							> td.value_summary {
 								> select {
