@@ -48,6 +48,12 @@
 		},
 		_setOption: function(key, value) {
 			this._super(key, value);
+		},
+		begin_editing: function() {
+			console.log("begin editing");
+		},
+		end_editing: function() {
+			console.log("end editing");
 		}
 	});
 

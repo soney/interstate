@@ -51,7 +51,10 @@
 											.appendTo(this.name_cell);
 
 			this.value_summary = $("<td />")	.appendTo(this.element)
-												.value_summary({ value: this.option("value") });
+												.value_summary({
+													value: this.option("value"),
+													inherited: this.option("inherited")
+												});
 
 			if(this.option("inherited")) {
 				this.element.addClass("inherited");
@@ -169,35 +172,44 @@
 		},
 		begin_editing: function() {
 			this.element.addClass("editing");
-			this.drag_handle = $("<span />").addClass("drag_handle")
-											.prependTo(this.name_cell)
-											.html("&#9776;");
-			this.remove_button = $("<span />")	.addClass("remove_button")
-												.appendTo(this.name_cell)
-												.pressable()
-												.on("pressed", function(event) {
-													console.log("remove");
-													event.preventDefault();
-													event.stopPropagation();
-												})
-												.text("x");
+
 			this.value_summary.value_summary("begin_editing");
-			this.rename_input = $("<input />")	.addClass("rename")
-												.attr({
-													size: "",
-													spellcheck: false
-												})
-												.val(this.option("name"))
-												.insertAfter(this.name_span)
-												.on("focus", function(event) { });
-			this.name_span.hide();
+			if(!this.option("inherited")) {
+				this.drag_handle = $("<span />").addClass("drag_handle")
+												.prependTo(this.name_cell)
+												.html("&#9776;");
+				this.remove_button = $("<span />")	.addClass("remove_button")
+													.appendTo(this.name_cell)
+													.pressable()
+													.on("pressed", function(event) {
+														console.log("remove");
+														event.preventDefault();
+														event.stopPropagation();
+													})
+													.text("x");
+				this.rename_input = $("<input />")	.addClass("rename")
+													.attr({
+														size: "",
+														spellcheck: false
+													})
+													.val(this.option("name"))
+													.insertAfter(this.name_span)
+													.on("focus", function(event) { });
+				this.name_span.hide();
+			}
 		},
 		done_editing: function() {
 			this.value_summary.value_summary("done_editing");								
 			this.element.removeClass("editing");
-			this.drag_handle.remove();
-			this.remove_button.remove();
-			this.rename_input.remove();
+			if(this.drag_handle) {
+				this.drag_handle.remove();
+			}
+			if(this.remove_button) {
+				this.remove_button.remove();
+			}
+			if(this.rename_input) {
+				this.rename_input.remove();
+			}
 			this.name_span.show();
 		},
 		_setOption: function(key, value) {

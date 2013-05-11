@@ -225,6 +225,18 @@ html.full_window_editor {
 									@include link;
 								}
 							}
+							&.inherited {
+								opacity: 0.9;
+								> td.name {
+									padding-left: $drag_handle_width;
+								}
+								> td.value_summary {
+									text-align: center;
+									@include link;
+								}
+							}
+
+
 
 							> td.value_summary {
 								> select {

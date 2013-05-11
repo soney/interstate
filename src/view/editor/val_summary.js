@@ -37,7 +37,8 @@
 
 	$.widget("red.value_summary", {
 		options: {
-			value: false
+			value: false,
+			inherited: false
 		},
 		_create: function() {
 			this.element.addClass("value_summary");
@@ -118,19 +119,36 @@
 		begin_editing: function() {
 			this.element.addClass("editing");
 			this.summary_span.hide();
-			this.select_type_list = $("<select />").appendTo(this.element); 
-			_.each(select_list_options, function(option_text, option_id) {
-				var option_item = $("<option />")	.attr("value", option_id)
-													.text(option_text)
-													.appendTo(this.select_type_list);
-			}, this);
-			this.select_type_list.on("change", function(event) {
-				console.log("changed");
-			});
+			if(this.option("inherited")) {
+				this.inherit_button = $("<span />")	.addClass("inherit_button")
+													.appendTo(this.element)
+													.pressable()
+													.on("pressed", function(event) {
+														console.log("inherit");
+														event.preventDefault();
+														event.stopPropagation();
+													})
+													.text("inherit");
+			} else {
+				this.select_type_list = $("<select />").appendTo(this.element); 
+				_.each(select_list_options, function(option_text, option_id) {
+					var option_item = $("<option />")	.attr("value", option_id)
+														.text(option_text)
+														.appendTo(this.select_type_list);
+				}, this);
+				this.select_type_list.on("change", function(event) {
+					console.log("changed");
+				});
+			}
 		},
 		done_editing: function() {
 			this.element.removeClass("editing");
-			this.select_type_list.remove();
+			if(this.select_type_list) {
+				this.select_type_list.remove();
+			}
+			if(this.inherit_button) {
+				this.inherit_button.remove();
+			}
 			this.summary_span.show();
 		}
 	});
