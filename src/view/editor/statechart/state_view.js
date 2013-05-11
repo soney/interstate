@@ -23,7 +23,8 @@
 			text_foreground: "black",
 			text_background: "white",
 			font_family: "Source Sans Pro",
-			font_size: "12px"
+			font_size: "12px",
+			padding_top: 0
 		}, options);
 		this.active_fn = cjs.liven(function () {
 			var state = this.option("state");
@@ -70,7 +71,7 @@
 			var center = this.option("c");
 
 			var name = state.get_name("parent");
-			this.label = new red.EditableText(paper, {x: center.x, y: center.y, text: name, fill: this.option("text_background"), color: this.option("text_foreground")});
+			this.label = new red.EditableText(paper, {x: center.x, y: center.y + this.option("padding_top"), text: name, fill: this.option("text_background"), color: this.option("text_foreground")});
 			this.label.option({
 				"font-size": this.option("font_size"),
 				"font-family": this.option("font_family")
@@ -89,7 +90,7 @@
 				var name = state.get_name("parent");
 				this.label.option({
 					x: center.x,
-					y: center.y,
+					y: center.y + this.option("padding_top"),
 					text: name
 				});
 			}
@@ -97,10 +98,12 @@
 
 		proto.get_path_str = function () {
 			var pts = [this.option("lws"), this.option("lwe"), this.option("rws"), this.option("rwe")];
+			var padding_top = this.option("padding_top");
 			var x0 = pts[0].x;
-			var path_str = "M" + x0 + ",0" + "L" + _.map(pts, function (pt) {
-				return pt.x + "," + pt.y;
-			}).join("L") + "V0Z";
+			var y0 = pts[0].y;
+			var path_str = "M" + x0 + "," + padding_top + "L" + _.map(pts, function (pt) {
+				return pt.x + "," + (pt.y + padding_top);
+			}).join("L") + "V"+padding_top+"Z";
 			return path_str;
 		};
 		proto.remove = function () {

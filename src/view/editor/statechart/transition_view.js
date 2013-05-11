@@ -30,12 +30,12 @@
 			lineEndY = (fromY - (radius + arrowLength) * Math.sin(theta));
 
 			line_path_str = "M" + lineStartX + "," + lineStartY +
-								"C" + (fromX + curve_radius * Math.cos(theta)) +
-								"," + (fromY + curve_radius * Math.sin(theta)) +
-								"," + (fromX + (curve_radius + arrowLength) * Math.cos(theta)) +
-								"," + (fromY - (curve_radius + arrowLength) * Math.sin(theta)) +
-								"," + lineEndX +
-								"," + lineEndY;
+							"C" + (fromX + curve_radius * Math.cos(theta)) +
+							"," + (fromY + curve_radius * Math.sin(theta)) +
+							"," + (fromX + (curve_radius + arrowLength) * Math.cos(theta)) +
+							"," + (fromY - (curve_radius + arrowLength) * Math.sin(theta)) +
+							"," + lineEndX +
+							"," + lineEndY;
 
 			toX = (toX + radius * Math.cos(theta));
 			toY = (toY - radius * Math.sin(theta));
@@ -91,7 +91,8 @@
 			text_background: "white",
 			text_foreground: "black",
 			font_family: "Sourse Sans Pro",
-			font_size: "13px"
+			font_size: "13px",
+			padding_top: 0
 		}, options);
 		var paper = this.option("paper");
 		var paths = this.get_paths();
@@ -170,7 +171,9 @@
 				radius = this.option("radius"),
 				arrowLength = this.option("arrowLength"),
 				arrowAngleRadians = this.option("arrowAngle") * Math.PI / 180;
-			return get_arrow_paths(from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians);
+			var padding_top = this.option("padding_top");
+			
+			return get_arrow_paths({x: from.x, y: from.y + padding_top}, {x: to.x, y: to.y + padding_top}, self_pointing_theta, radius, arrowLength, arrowAngleRadians);
 		};
 
 		proto.flash = function () {

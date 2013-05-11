@@ -11,12 +11,13 @@
 			paper: null,
 			c: {x: 0, y: 0},
 			radius: 6,
-			fill_color: "black"
+			fill_color: "black",
+			padding_top: 0
 		}, options);
 
 		var paper = this.option("paper");
 		var center = this.option("c");
-		this.circle = paper.circle(center.x, center.y, this.option("radius"));
+		this.circle = paper.circle(center.x, center.y + this.option("padding_top"), this.option("radius"));
 		this.circle.attr({
 			fill: this.option("fill_color"),
 			stroke: "none"
@@ -32,7 +33,7 @@
 			var center = this.option("c");
 			this.circle.attr({
 				cx: center.x,
-				cy: center.y,
+				cy: center.y + this.option("padding_top"),
 				r: this.option("radius")
 			});
 		};

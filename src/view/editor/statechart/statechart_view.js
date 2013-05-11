@@ -27,7 +27,14 @@
 			start_state_color: "#000",
 
 			layout_manager: false,
-			statecharts: []
+			statecharts: [],
+
+			hrange_y: 5,
+			hrange_height: 14,
+
+			padding_top: function() {
+				return this.option("hrange_y") + this.option("hrange_height");
+			}
 		},
 
 		_create: function () {
@@ -61,7 +68,7 @@
 		this.live_layout = cjs.liven(function () {
 			var layout_info = this.layout_engine.get_layout();
 			var width = layout_info.width,
-				height = layout_info.height,
+				height = layout_info.height + this.option("padding_top"),
 				layout = layout_info.locations;
 			this.paper.setSize(width, height);
 			var new_items = [];
@@ -77,9 +84,21 @@
 							});
 							*/
 						}
-						var hrange = 
-						console.log(state);
-						console.log(layout_info);
+						var hrange;
+						var text = "inherited";
+						if(this.statecharts[0] === state) {
+							text = "own";
+						}
+
+						if(this.hranges.has(state)) {
+							hrange = this.hranges.get(state);
+							hrange.option({
+								from_x: layout_info.left_wing_start.x,
+								to_x: layout_info.right_wing_end.x
+							});
+						} else {
+							hrange = this.get_hrange(state, text, layout_info);
+						}
 						return; //it's a root statechart
 					}
 					if (this.object_views.has(state)) {
@@ -134,10 +153,18 @@
 		var proto = My.prototype;
 		able.make_proto_listenable(proto);
 		able.make_proto_optionable(proto);
-		proto.get_hrange = function(statechart, layout_info) {
+		proto.get_hrange = function(statechart, text, layout_info) {
 			return this.hranges.get_or_put(statechart, function () {
-				console.log(layout_info);
 				return new red.HorizontalRangeDisplay({
+					from_x: layout_info.left_wing_start.x,
+					to_x: layout_info.right_wing_end.x,
+					paper: this.paper,
+					text: text,
+					line_color: "#AAA",
+					color: "#999",
+					background: "#EEE",
+					y: this.option("hrange_y"),
+					height: this.option("hrange_height")
 				});
 			}, this);
 		};
@@ -155,7 +182,8 @@
 						text_background: this.option("transition_text_background_color"),
 						text_foreground: this.option("transition_text_color"),
 						font_family: this.option("transition_font_family"),
-						font_size: this.option("transition_font_size")
+						font_size: this.option("transition_font_size"),
+						padding_top: this.option("padding_top")
 					});
 					rv.on("change", function (event) {
 						var value = event.value;
@@ -170,7 +198,8 @@
 						state: obj,
 						paper: this.paper,
 						c: layout_info.center,
-						fill_color: this.option("start_state_color")
+						fill_color: this.option("start_state_color"),
+						padding_top: this.option("padding_top")
 					});
 				} else {
 					rv = new red.StateView({
@@ -189,7 +218,8 @@
 						active_fill: this.option("active_state_fill"),
 						text_foreground: this.option("state_text_color"),
 						active_text_fireground: this.option("active_state_text_color"),
-						text_background: this.option("state_text_background_color")
+						text_background: this.option("state_text_background_color"),
+						padding_top: this.option("padding_top")
 					});
 					rv.on("change", function (event) {
 						var value = event.value;
