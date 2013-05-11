@@ -37,6 +37,11 @@
 				r: this.option("radius")
 			});
 		};
+
+		proto.begin_editing = function() {
+		};
+		proto.done_editing = function() {
+		};
 		proto.remove = function () {
 			this.circle.remove();
 		};

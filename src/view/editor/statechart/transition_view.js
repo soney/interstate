@@ -205,6 +205,12 @@
 			});
 		};
 
+		proto.begin_editing = function() {
+		};
+
+		proto.done_editing = function() {
+		};
+
 		proto.remove = function () {
 			this.label.remove();
 			this.circle.remove();

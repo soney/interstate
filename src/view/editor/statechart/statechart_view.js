@@ -26,6 +26,7 @@
 			active_state_text_color: "#F00",
 			start_state_color: "#000",
 			start_state_radius: 6,
+			add_state_width: 50,
 
 			statecharts: [],
 
@@ -44,7 +45,8 @@
 				statecharts: statecharts,
 				statecharts_with_add_state_button: [],
 				start_state_radius: this.option("start_state_radius"),
-				padding_top: this.option("padding_top").call(this)
+				padding_top: this.option("padding_top").call(this),
+				add_state_width: this.option("add_state_width")
 			});
 			this.statechart_view = new red.RootStatechartView(statecharts, this.layout_manager, this.paper, this.options);
 		},
@@ -66,12 +68,14 @@
 				statecharts_with_add_state_button: [this.option("statecharts")[0]]
 			});
 			this.layout_manager.invalidate();
+			this.statechart_view.begin_editing();
 		},
 		done_editing: function() {
 			this.layout_manager.option({
 				statecharts_with_add_state_button: []
 			});
 			this.layout_manager.invalidate();
+			this.statechart_view.done_editing();
 		}
 	});
 
@@ -88,6 +92,20 @@
 			hash: "hash"
 		});
 		this.paper = paper;
+		this.add_state_shape = this.paper.path("M0,0");
+		this.add_state_button = this.paper.text(0,0,"+");
+		this.add_state_shape.attr({
+			fill: this.option("state_fill"),
+			stroke: this.option("state_stroke"),
+			opacity: 0.5,
+			cursor: "pointer"
+		}).click($.proxy(this.on_add_state_click, this)).hide();
+		this.add_state_button.attr({
+			"font-size": "42px",
+			fill: this.option("state_stroke"),
+			opacity: 0.5,
+			cursor: "pointer"
+		}).click($.proxy(this.on_add_state_click, this)).hide();
 		var curr_items = [];
 		this.live_layout = cjs.liven(function () {
 			var layout_info = this.layout_engine.get_layout();
@@ -101,12 +119,24 @@
 				if (state instanceof red.State) {
 					if (_.indexOf(this.statecharts, state) >= 0) {
 						if (layout_info.add_state_button_x) {
-						/*
-							add_state_button.attr({
+							this.add_state_button.attr({
 								x: layout_info.add_state_button_x,
 								y: height / 2
 							});
-							*/
+							var shorten_height = this.layout_engine.option("state_name_height");
+							var dx = layout_info.right_wing_end.x - layout_info.right_wing_start.x;
+							var padding_top = this.option("padding_top");
+							var x = layout_info.add_state_button_x;
+							var width = this.option("add_state_width");
+							this.add_state_shape.attr({
+								path: "M"+(x-width/2)+","+padding_top +
+										"H" + (x + width/2) +
+										"V" + (layout_info.right_wing_end.y-shorten_height) +
+										"L" + (layout_info.right_wing_start.x) + "," + (layout_info.right_wing_start.y - shorten_height) +
+										"H" + (x - width/2 + dx) + 
+										"L" + (x - width/2) + "," + (layout_info.right_wing_end.y - shorten_height) +
+										"Z"
+							});
 						}
 						var hrange;
 						var text = "inherited";
@@ -191,6 +221,23 @@
 					height: this.option("hrange_height")
 				});
 			}, this);
+		};
+		proto.on_add_state_click = function() {
+			console.log("ADD A STATE");
+		};
+		proto.begin_editing = function() {
+			this.add_state_button.show();
+			this.add_state_shape.show();
+			this.object_views.each(function(view) {
+				view.begin_editing();
+			});
+		};
+		proto.done_editing = function() {
+			this.add_state_button.hide();
+			this.add_state_shape.hide();
+			this.object_views.each(function(view) {
+				view.done_editing();
+			});
 		};
 		proto.get_view = function (obj, layout_info) {
 			return this.object_views.get_or_put(obj, function () {

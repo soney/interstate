@@ -96,6 +96,11 @@
 			}
 		};
 
+		proto.begin_editing = function() {
+		};
+		proto.done_editing = function() {
+		};
+
 		proto.get_path_str = function () {
 			var pts = [this.option("lws"), this.option("lwe"), this.option("rws"), this.option("rwe")];
 			var padding_top = this.option("padding_top");
