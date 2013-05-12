@@ -110,6 +110,7 @@ exports.runtime = c(
 
 exports.editor = c(
 	cp(src, [
+		"view/editor/pressable.js",
 		"view/editor/editor_view.js",
 		"view/editor/dropdown.js",
 		"view/editor/navigator.js",

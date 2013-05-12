@@ -44,7 +44,8 @@
 			inherited: false,
 			builtin: false,
 			layout_manager: false,
-			show_src: false
+			show_src: false,
+			obj: false
 		},
 
 		_create: function() {
@@ -192,12 +193,12 @@
 				this.remove_button = $("<div />")	.addClass("menu_item")	
 													.text("Remove")
 													.pressable()
-													.on("pressed", function(event) {
+													.on("pressed", $.proxy(function(event) {
 														edit_dropdown.dropdown("collapse");
-														console.log("Remove");
+														this.unset();
 														event.preventDefault();
 														event.stopPropagation();
-													});
+													}, this));
 				this.rename_button = $("<div />")	.addClass("menu_item")	
 													.text("Rename")
 													.pressable()
@@ -236,15 +237,44 @@
 				this.name_span.hide();
 			}
 		},
+		unset: function() {
+			var event = new $.Event("command");
+			event.command_type = "unset";
+			event.name = this.option("name");
+			event.client = this.option("obj");
+
+			this.element.trigger(event);
+		},
 		begin_rename: function() {
-			this.rename_input = $("<input />").addClass("rename")
+			this.$end_rename = $.proxy(this.end_rename, this);
+			this.rename_input = $("<input />")	.addClass("rename")
 												.val(this.option("name"))
 												.appendTo(this.name_cell)
 												.focus()
-												.select();
+												.select()
+												.on("keydown", $.proxy(function(event) {
+													if(event.keyCode === 27) {
+														this.end_rename(true);
+													} else if(event.keyCode === 13) {
+														this.end_rename();
+													}
+												}, this))
+												.on("blur", this.$end_rename);
 			this.edit_dropdown.hide();
 		},
-		end_rename: function() {
+		end_rename: function(cancel) {
+			this.rename_input.off("blur", this.$end_rename); // because removal would result in the rename event being fired twice
+			if(cancel !== true) {
+				var val = this.rename_input.val();
+
+				var event = new $.Event("command");
+				event.command_type = "rename";
+				event.from_name = this.option("name");
+				event.to_name = this.rename_input.val();
+				event.client = this.option("obj");
+
+				this.element.trigger(event);
+			}
 			this.edit_dropdown.show();
 			this.rename_input.remove();
 		},

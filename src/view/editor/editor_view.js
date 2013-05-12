@@ -10,6 +10,10 @@
 	var display;
     var platform = window.navigator.platform;
 
+	var to_func = function (value) {
+		return function () { return value; };
+	};
+
 	if(platform === "iPhone" || platform === "iPod") {
 		display = "phone";
 	} else if(platform === "iPad") {
@@ -29,6 +33,7 @@
 		},
 
 		_create: function () {
+			this.$on_command = $.proxy(this.on_command, this);
 			this.element.addClass(this.option("view_type"));
 
 			if(this.option("full_window")) {
@@ -61,7 +66,8 @@
 											.navigator({
 												root_client: root_client,
 												single_col: this.option("single_col_navigation")
-											});
+											})
+											.on("command", this.$on_command);
 
 
 			$(window).on("keydown", _.bind(function (event) {
@@ -74,6 +80,51 @@
 			}, this));
 		},
 
+	
+		on_command: function(event) {
+			var type = event.command_type;
+			var client, value, command;
+
+			if(type === "add_property") {
+				client = event.client;
+				var prop_type;
+				if(client.type() === "dict") {
+					prop_type = "cell";
+				} else {
+					prop_type = "stateful_prop";
+				}
+
+				if(prop_type === "cell") {
+					value = red.create('cell');
+				} else if(prop_type === "stateful_prop") {
+					value = red.create('stateful_prop');
+				}
+
+				command = new red.SetPropCommand({
+					parent: { id: to_func(client.obj_id) },
+					value: value
+				});
+				this.client_socket.post_command(command);
+			} else if(type === "rename") {
+				client = event.client;
+				command = new red.RenamePropCommand({
+					parent: { id: to_func(client.obj_id) },
+					from: event.from_name,
+					to: event.to_name
+				});
+				this.client_socket.post_command(command);
+			} else if(type === "unset") {
+				client = event.client;
+				command = new red.UnsetPropCommand({
+					parent: { id: to_func(client.obj_id) },
+					name: event.name
+				});
+				this.client_socket.post_command(command);
+			} else {
+				console.log("Unhandled type " + type);
+			}
+		},
+
 		undo: function() {
 			this.client_socket.post_command("undo");
 		},
@@ -84,78 +135,6 @@
 		_destroy: function () {
 			this.navigator.navigator("destroy");
 			this.client_socket.destroy();
-		}
-	});
-
-	$.widget("red.pressable", {
-		options: {
-			touch_move_tolerance: 10
-		},
-
-		_create: function() {
-			this.$on_touch_start = $.proxy(this.on_touch_start, this);
-			this.$on_touch_move = $.proxy(this.on_touch_move, this);
-			this.$on_touch_end = $.proxy(this.on_touch_end, this);
-			this.$on_click = $.proxy(this.on_click, this);
-
-			this.element.on("touchstart", this.$on_touch_start);
-			this.element.on("click", this.$on_click);
-
-			this.active = false;
-		},
-
-		_destroy: function() {
-			this.element.off("touchstart", this.$on_touch_start);
-			this.element.off("click", this.$on_click);
-
-			this.reset();
-		},
-
-		on_touch_start: function(jqEvent) {
-			var event = jqEvent.originalEvent;
-			this.startX = event.touches[0].clientX;
-			this.startY = event.touches[0].clientY;
-			this.active = true;
-			this.element.on("touchend", this.$on_touch_end);
-			this.element.on("touchmove", this.$on_touch_move);
-		},
-
-		on_touch_move: function(jqEvent) {
-			var event = jqEvent.originalEvent;
-			if (Math.abs(event.touches[0].clientX - this.startX) > 10 ||
-				Math.abs(event.touches[0].clientY - this.startY) > 10) {
-				this.reset();
-			}
-		},
-
-		on_touch_end: function(jqEvent) {
-			var event = jqEvent.originalEvent;
-			event.stopPropagation();
-			event.preventDefault();
-			this.reset();
-			this.trigger_pressed(event);
-		},
-
-		on_click: function(jqEvent) {
-			var event = jqEvent.originalEvent;
-			event.stopPropagation();
-			event.preventDefault();
-			this.reset();
-			this.trigger_pressed(event);
-		},
-
-		trigger_pressed: function(event) {
-			this.element.trigger("pressed", event);
-		},
-
-		reset: function() {
-			if(this.active) {
-				this.active = false;
-				delete this.startX;
-				delete this.startY;
-				this.element.off("touchend", this.$on_touch_end);
-				this.element.off("touchmove", this.$on_touch_move);
-			}
 		}
 	});
 }(red, jQuery));

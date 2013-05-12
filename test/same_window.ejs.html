@@ -27,7 +27,8 @@ env.set("a", "<stateful>")
 	.up()
 	.set("b", "<stateful>")
 	.cd("b")
-	.set("(prototypes)", "(start)", "a");
+	.set("(prototypes)", "(start)", "a")
+	.top();
 
 				$("div#editor").editor({
 					debug_env: true,

@@ -85,7 +85,6 @@
 											.text(this.option("edit_text"));
 
 			this.add_children_listener();
-			this.add_curr_copy_listener();
 
 			if(this.option("is_curr_col")) {
 				this.on_curr_col();
@@ -118,7 +117,9 @@
 			this.element.addClass("curr_col");
 			this.build_src_view();
 			if(this.selected_child_disp) {
-				this.selected_child_disp.prop("on_deselect");
+				if(this.selected_child_disp.data("prop")) { // need to check in case this.selected_child_disp was removed
+					this.selected_child_disp.prop("on_deselect");
+				}
 			}
 		},
 
@@ -264,9 +265,13 @@
 													.appendTo(this.info_cell)
 													.text("(+ Add Property)")
 													.pressable()
-													.on("pressed", function() {
-														console.log("add property");
-													})
+													.on("pressed", $.proxy(function() {
+														this.awaiting_add_prop = true;
+														var event = new $.Event("command");
+														event.command_type = "add_property";
+														event.client = this.option("client");
+														this.element.trigger(event);
+													}, this))
 													.hide();
 			this.copy_disp.hide();
 			options_fieldset.hide().show("bind", $.proxy(function() {
@@ -315,26 +320,39 @@
 					if(children.length > 0) {
 						none_display.remove();
 					}
-					var diff = _.diff(old_children, children);
+					var diff = _.diff(old_children, children, function(a, b) {
+						return a.name === b.name && a.value === b.value;
+					});
 
 					_.forEach(diff.removed, function (info) {
 						var index = info.from, child = info.from_item;
 						var child_disp = this.tbody.children().eq(index + INDEX_OFFSET);
 						child_disp.prop("destroy");
 						remove(child_disp[0]);
+						this.element.trigger("child_removed", child.value);
 					}, this);
 					_.forEach(diff.added, function (info) {
 						var index = info.to, child = info.item;
 						var child_disp = $("<tr />");
 						insert_at(child_disp[0], this.tbody[0], index + INDEX_OFFSET);
-						child_disp.prop({
-							value: child.value,
-							name: child.name,
-							inherited: child.inherited,
-							builtin: child.builtin,
-							layout_manager: this.layout_manager,
-							show_src: this.option("show_source")
-						}).on("expand", $.proxy(this.on_child_select, this, child, child_disp));
+						child_disp	.prop({
+										value: child.value,
+										name: child.name,
+										inherited: child.inherited,
+										builtin: child.builtin,
+										layout_manager: this.layout_manager,
+										show_src: this.option("show_source"),
+										obj: this.option("client")
+									})
+									.on("expand", $.proxy(this.on_child_select, this, child, child_disp));
+
+						if(this.element.hasClass("editing")) {
+							child_disp	.prop("begin_editing");
+							if(this.awaiting_add_prop) {
+								child_disp	.prop("begin_rename");
+								delete this.awaiting_add_prop;
+							}
+						}
 					}, this);
 					_.forEach(diff.moved, function (info) {
 						var from_index = info.from, to_index = info.to, child = info.item;
@@ -354,10 +372,6 @@
 
 		remove_children_listener: function () {
 			this.children_change_listener.destroy();
-			/*
-			this.$children.destroy();
-			delete this.$children;
-			*/
 			$("tr.child", this.tbody).prop("destroy").remove();
 			$("tr.no_children", this.tbody).remove();
 		},
@@ -376,22 +390,19 @@
 			}, this));
 		}, 
 
-		add_curr_copy_listener: function () { },
-
-		remove_curr_copy_listener: function() { },
-
 		_destroy: function () {
 			if(this.prev_button.data("pressable")) {
 				this.prev_button.pressable("destroy");
 			}
 			this.remove_children_listener();
-			this.remove_curr_copy_listener();
 		},
 		on_child_select: function(child_info, child_disp, event) {
 			var client = child_info.value;
 			if(client instanceof red.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
 				if(this.selected_child_disp) {
-					this.selected_child_disp.prop("on_deselect");
+					if(this.selected_child_disp.data("prop")) { // need to check in case this.selected_child_disp was removed
+						this.selected_child_disp.prop("on_deselect");
+					}
 				}
 				this.selected_child_disp = child_disp;
 				this.selected_child_disp.prop("on_select");

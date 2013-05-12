@@ -13,6 +13,12 @@
 			single_col: false
 		},
 		_create: function() {
+			this.$on_child_select = $.proxy(this.on_child_select, this);
+			this.$on_header_click = $.proxy(this.on_header_click, this);
+			this.$on_prev_click = $.proxy(this.on_prev_click, this);
+			this.$on_child_removed = $.proxy(this.on_child_removed, this);
+			this.$forward_event = $.proxy(this.forward_event, this);
+
 			this.element.attr("id", "obj_nav");
 			var root_col = $("<table />")	.appendTo(this.element);
 			root_col						.column({
@@ -23,7 +29,9 @@
 											})
 											.on("child_select", $.proxy(this.on_child_select, this, root_col))
 											.on("header_click", $.proxy(this.on_header_click, this, root_col))
-											.on("prev_click", $.proxy(this.on_prev_click, this, root_col));
+											.on("prev_click", $.proxy(this.on_prev_click, this, root_col))
+											.on("child_removed", $.proxy(this.on_child_removed, this, root_col))
+											.on("command", this.$forward_event);
 			this.curr_col = root_col;
 			this.columns = [root_col];
 		},
@@ -53,7 +61,8 @@
 												})
 												.on("child_select", $.proxy(this.on_child_select, this, next_col))
 												.on("header_click", $.proxy(this.on_header_click, this, next_col))
-												.on("prev_click", $.proxy(this.on_prev_click, this, next_col));
+												.on("prev_click", $.proxy(this.on_prev_click, this, next_col))
+												.on("child_removed", $.proxy(this.on_child_removed, this, next_col));
 
 				this.columns.push(next_col);
 				if(this.option("single_col")) {
@@ -86,6 +95,28 @@
 			this.curr_col = this.columns[column_index-1];
 			this.curr_col.show();
 			this.curr_col.column("option", "is_curr_col", true);
+		},
+
+		on_child_removed: function(target, event, client) {
+			var removed_index = -1;
+			var column;
+			for(var i = this.columns.length-1; i>=0; i--) {
+				column = this.columns[i];
+				if(column.column("option", "client") === client) {
+					removed_index = i;
+					break;
+				}
+			}
+			if(removed_index >= 0) {
+				var subsequent_columns = this.columns.slice(removed_index);
+				_.each(subsequent_columns, function(col) {
+					col.column("destroy").remove();
+				});
+				this.columns.length = removed_index;
+				this.curr_col = this.columns[removed_index-1];
+				this.curr_col.show();
+				this.curr_col.column("option", "is_curr_col", true);
+			}
 		}
 	});
 
