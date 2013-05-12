@@ -118,7 +118,7 @@
 			str = event.get_str();
 		}
 		var c = center(this.option("from"), this.option("to"));
-		this.label = new red.EditableText(paper, {x: c.x, y: c.y + 8, text: str, fill: this.option("text_background"), color: this.option("text_foreground")});
+		this.label = new red.EditableText(paper, {x: c.x, y: c.y + 8, text: str, fill: this.option("text_background"), color: this.option("text_foreground"), edit_on_click: false});
 		this.label.option({
 			"font-size": this.option("font_size"),
 			"font-family": this.option("font_family")
@@ -219,21 +219,29 @@
 
 		proto.begin_editing = function() {
 			var paper = this.option("paper");
+			var transition = this.option("transition");
 			var parentElement = paper.canvas.parentNode;
 			this.edit_event = $("<div />").addClass("menu_item")
-											.text("Add substate")
+											.text("Change event")
 											.pressable()
-											.on("pressed", function() {
-												console.log("add substate");
-											});
+											.on("pressed", $.proxy(function() {
+												
+												this.label.edit().focus().select();
+											}, this));
 			this.change_from = $("<div />")	.addClass("menu_item")
-												.text("Add transition")
+												.text("Change from")
 												.pressable()
 												.on("pressed", function() {
-													console.log("add transition");
+													console.log("change from");
 												});
 			this.change_to = $("<div />").addClass("menu_item")
-											.text("Actions...")
+											.text("Change to")
+											.pressable()
+											.on("pressed", function() {
+												console.log("change to");
+											});
+			this.edit_actions = $("<div />").addClass("menu_item")
+											.text("Edit Actions")
 											.pressable()
 											.on("pressed", function() {
 												console.log("edit actions");
@@ -255,11 +263,18 @@
 			var width = Math.max((max_x-min_x) - 2*PADDING, 100);
 			var cx = (max_x + min_x)/2;
 			var x = cx - width/2;
-			var y = from.y - HEIGHT/2;
+			var y = from.y;
+
+			var items;
+			if(transition.from() instanceof red.StartState) {
+				items = [this.change_to, this.edit_actions];
+			} else {
+				items = [this.edit_event, this.change_from, this.change_to, this.edit_actions, this.remove];
+			}
 
 			this.edit_dropdown = $("<div />")	.dropdown({
 													text: this.get_str(),
-													items: [this.edit_event, this.change_from, this.change_to, this.remove]
+													items: items
 												})
 												.addClass("transition")
 												.appendTo(parentElement)

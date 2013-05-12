@@ -12,6 +12,7 @@ $value_summary_width: 50px;
 $active_obj_value_summary_width: 100px;
 $unset_prop_val_radius: 7px;
 $drag_handle_width: 20px;
+$dropdown_padding: 5px;
 
 $link_color: royalblue;
 
@@ -223,7 +224,7 @@ html.full_window_editor {
 									}
 									> .btn {
 										width: 100%;
-										padding-left: 5px;
+										padding-left: $dropdown_padding;
 										padding-right: 5px;
 									}
 
@@ -286,7 +287,7 @@ html.full_window_editor {
 							&.inherited {
 								opacity: 0.9;
 								> td.name {
-									padding-left: $drag_handle_width;
+									padding-left: $drag_handle_width + $dropdown_padding + 1;
 								}
 								> td.value_summary {
 									text-align: center;
@@ -296,7 +297,7 @@ html.full_window_editor {
 
 							&.builtin {
 								> td.name {
-									padding-left: $drag_handle_width;
+									padding-left: $drag_handle_width + $dropdown_padding + 1;
 								}
 							}
 

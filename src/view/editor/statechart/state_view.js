@@ -70,7 +70,7 @@
 			}).toBack();
 			var center = this.option("c");
 
-			this.label = new red.EditableText(paper, {x: center.x, y: center.y, text: this.get_name(), fill: this.option("text_background"), color: this.option("text_foreground")});
+			this.label = new red.EditableText(paper, {x: center.x, y: center.y, text: this.get_name(), fill: this.option("text_background"), color: this.option("text_foreground"), edit_on_click: false});
 			this.label.option({
 				"font-size": this.option("font_size"),
 				"font-family": this.option("font_family")
@@ -134,9 +134,11 @@
 											this._emit("remove");
 										}, this));
 			this.make_concurrent = $("<div />")	.addClass("menu_item")
-												.text("Concurrent")
+												.html("Concurrent&nbsp;&#9745;")
 												.pressable()
 												.on("pressed", $.proxy(function() {
+													this.make_concurrent.html("Concurrent&nbsp;&#9744;");
+													//this.make_concurrent.html("Concurrent&nbsp;&#9745;");
 													this._emit("make_concurrent");
 												}, this));
 			var lwe = this.option("lwe"),
@@ -166,7 +168,7 @@
 		};
 
 		proto.begin_rename = function() {
-			this.label.show().focus().select();
+			this.label.show().edit().focus().select();
 			this.edit_dropdown.hide();
 		};
 

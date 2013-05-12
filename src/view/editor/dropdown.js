@@ -18,9 +18,11 @@
 			this.element.addClass("dropdown");
 			this.$on_btn_click = $.proxy(this.on_btn_click, this);
 			this.btn = $("<span />").appendTo(this.element)
-									.text(this.option("text"))
 									.addClass("btn")
 									.on("click", this.$on_btn_click);
+			this.btn_text = $("<span />")	.addClass("txt")
+											.text(this.option("text"))
+											.appendTo(this.btn);
 			this.caret = $("<span />")	.addClass("caret")
 										.appendTo(this.btn);
 			this.menu_items = $("<span />")	.addClass("menu")

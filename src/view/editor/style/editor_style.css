@@ -176,7 +176,7 @@ html.full_window_editor {
         #editor > #obj_nav > table.col.editing > tbody > tr.child.inherited {
           opacity: 0.9; }
           #editor > #obj_nav > table.col.editing > tbody > tr.child.inherited > td.name {
-            padding-left: 20px; }
+            padding-left: 26px; }
           #editor > #obj_nav > table.col.editing > tbody > tr.child.inherited > td.value_summary {
             text-align: center;
             color: #4169e1;
@@ -191,7 +191,7 @@ html.full_window_editor {
             #editor > #obj_nav > table.col.editing > tbody > tr.child.inherited > td.value_summary:hover {
               text-decoration: underline; }
         #editor > #obj_nav > table.col.editing > tbody > tr.child.builtin > td.name {
-          padding-left: 20px; }
+          padding-left: 26px; }
         #editor > #obj_nav > table.col.editing > tbody > tr.child > td.value_summary > select {
           margin: 0px; }
       #editor > #obj_nav > table.col > tbody > tr > .value_summary {

@@ -47,7 +47,8 @@
 			color: "#000000",
 			default_color: "#AAAAAA",
 			fill: "white",
-			"fill-opacity": 0.7
+			"fill-opacity": 0.7,
+			edit_on_click: true
 		}, options);
 
 		this.text = paper.text(this.option("x"), this.option("y"), this.get_text())
@@ -99,35 +100,36 @@
 			}
 		};
 		proto.onClick = function (event) {
-			this.edit();
+			if(this.option("edit_on_click") !== false) {
+				this.edit();
+			}
 		};
 		proto.edit = function () {
-			var textbox = window.document.createElement("input");
-			textbox.type = "text";
-			textbox.style.zIndex = 2;
+			this.textbox = window.document.createElement("input");
+			this.textbox.type = "text";
+			this.textbox.style.zIndex = 2;
 			var bbox = this.getBBox();
 			var width = Math.max(bbox.width, this.option("width"));
 
 			var anchor = this.text.attr("text-anchor");
 			if (anchor === "start") {
-				textbox.style.left = this.option("x") + "px";
+				this.textbox.style.left = this.option("x") + "px";
 			} else if (anchor === "middle") {
-				textbox.style.left = (this.option("x") - width / 2) + "px";
+				this.textbox.style.left = (this.option("x") - width / 2) + "px";
 			} else {
-				textbox.style.left = (this.option("x") - width) + "px";
+				this.textbox.style.left = (this.option("x") - width) + "px";
 			}
 
-			textbox.style.width = width + "px";
-			match_styles(textbox, this.text);
-			this.paper.canvas.parentNode.insertBefore(textbox, this.paper.canvas);
-			textbox.value = this.option("text");
-			textbox.style.color = this.option("color");
-			textbox.focus();
-			textbox.select();
+			this.textbox.style.width = width + "px";
+			match_styles(this.textbox, this.text);
+			this.paper.canvas.parentNode.insertBefore(this.textbox, this.paper.canvas);
+			this.textbox.value = this.option("text");
+			this.textbox.style.color = this.option("color");
 
 			this.text.hide();
-			textbox.addEventListener("keydown", this.$onKeydown);
-			textbox.addEventListener("blur", this.$onBlur);
+			this.textbox.addEventListener("keydown", this.$onKeydown);
+			this.textbox.addEventListener("blur", this.$onBlur);
+			return this;
 		};
 		proto.getBBox = function () {
 			return this.text.getBBox();
@@ -199,10 +201,20 @@
 		proto.hide = function() {
 			this.label_background.hide();
 			this.text.hide();
+			return this;
 		};
 		proto.show = function() {
 			this.label_background.show();
 			this.text.show();
+			return this;
+		};
+		proto.focus = function() {
+			this.textbox.focus();
+			return this;
+		};
+		proto.select = function() {
+			this.textbox.select();
+			return this;
 		};
 	}(red.EditableText));
 }(red));
