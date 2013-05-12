@@ -196,5 +196,13 @@
 			this.label_background.remove();
 			this.text.remove();
 		};
+		proto.hide = function() {
+			this.label_background.hide();
+			this.text.hide();
+		};
+		proto.show = function() {
+			this.label_background.show();
+			this.text.show();
+		};
 	}(red.EditableText));
 }(red));

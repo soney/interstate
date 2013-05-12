@@ -21,10 +21,16 @@
 			this.update_position();
 			this.update_active();
 			this.create_live_text_fn();
+			this.$on_click = $.proxy(this.on_click, this);
+			this.element.on("click", this.$on_click);
 		},
 		_destroy: function() {
 			this.element.removeClass("cell");
 			this.destroy_live_text_fn();
+			this.element.off("click", this.$on_click);
+		},
+		on_click: function() {
+			console.log("edit me");
 		},
 		create_live_text_fn: function() {
 			var value = this.option("value");
@@ -76,12 +82,18 @@
 		_create: function() {
 			this.element.addClass("unset");
 			this.update_left();
+			this.$on_click = $.proxy(this.on_click, this);
+			this.element.on("click", this.$on_click);
 		},
 		_destroy: function() {
 			this.element.removeClass("unset");
+			this.element.off("click", this.$on_click);
 		},
 		update_left: function() {
 			this.element.css("left", (this.option("left") - this.option("radius")) + "px");
+		},
+		on_click: function() {
+			console.log("set me");
 		},
 		_setOption: function(key, value) {
 			this._super(key, value);

@@ -201,12 +201,12 @@
 				this.rename_button = $("<div />")	.addClass("menu_item")	
 													.text("Rename")
 													.pressable()
-													.on("pressed", function(event) {
-														edit_dropdown.dropdown("collapse");
-														console.log("Rename");
+													.on("pressed", $.proxy(function(event) {
+														this.edit_dropdown.dropdown("collapse");
+														this.begin_rename();
 														event.preventDefault();
 														event.stopPropagation();
-													});
+													}, this));
 				this.types = _.map(type_options, function(type_name) {
 					return $("<div />")	.addClass("menu_item")
 										.text(type_name)
@@ -235,6 +235,18 @@
 				var edit_dropdown = this.edit_dropdown;
 				this.name_span.hide();
 			}
+		},
+		begin_rename: function() {
+			this.rename_input = $("<input />").addClass("rename")
+												.val(this.option("name"))
+												.appendTo(this.name_cell)
+												.focus()
+												.select();
+			this.edit_dropdown.hide();
+		},
+		end_rename: function() {
+			this.edit_dropdown.show();
+			this.rename_input.remove();
 		},
 		done_editing: function() {
 			this.value_summary.value_summary("done_editing");								

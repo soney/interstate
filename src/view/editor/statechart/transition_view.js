@@ -1,7 +1,7 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedMap,window */
+/*global red,esprima,able,uid,console,RedMap,jQuery,window */
 
-(function (red) {
+(function (red, $) {
 	"use strict";
 	var cjs = red.cjs,
 		_ = red._;
@@ -164,6 +164,18 @@
 			var from = this.option("from");
 		};
 
+		proto.get_str = function() {
+			var transition = this.option("transition");
+			var event = transition.event();
+			var str = "";
+			if (event instanceof red.ParsedEvent) {
+				str = event.get_str();
+			} else {
+				str = "(start)";
+			}
+			return str;
+		};
+
 		proto.get_paths = function () {
 			var from = this.option("from"),
 				to = this.option("to"),
@@ -206,9 +218,63 @@
 		};
 
 		proto.begin_editing = function() {
+			var paper = this.option("paper");
+			var parentElement = paper.canvas.parentNode;
+			this.edit_event = $("<div />").addClass("menu_item")
+											.text("Add substate")
+											.pressable()
+											.on("pressed", function() {
+												console.log("add substate");
+											});
+			this.change_from = $("<div />")	.addClass("menu_item")
+												.text("Add transition")
+												.pressable()
+												.on("pressed", function() {
+													console.log("add transition");
+												});
+			this.change_to = $("<div />").addClass("menu_item")
+											.text("Actions...")
+											.pressable()
+											.on("pressed", function() {
+												console.log("edit actions");
+											});
+			this.remove = $("<div />")	.addClass("menu_item")
+										.text("Remove")
+										.pressable()
+										.on("pressed", function() {
+											console.log("remove");
+										});
+			var lwe = this.option("lwe"),
+				rws = this.option("rws");
+			var from = this.option("from"),
+				to = this.option("to");
+			var min_x = Math.min(from.x, to.x);
+			var max_x = Math.max(from.x, to.x);
+			var PADDING = 1;
+			var HEIGHT = 10;
+			var width = Math.max((max_x-min_x) - 2*PADDING, 100);
+			var cx = (max_x + min_x)/2;
+			var x = cx - width/2;
+			var y = from.y - HEIGHT/2;
+
+			this.edit_dropdown = $("<div />")	.dropdown({
+													text: this.get_str(),
+													items: [this.edit_event, this.change_from, this.change_to, this.remove]
+												})
+												.addClass("transition")
+												.appendTo(parentElement)
+												.css({
+													position: "absolute",
+													left: x + "px",
+													top: y + "px",
+													width: width + "px"
+												});
+			this.label.hide();
 		};
 
 		proto.done_editing = function() {
+			this.edit_dropdown.dropdown("destroy").remove();
+			this.label.show();
 		};
 
 		proto.remove = function () {
@@ -223,4 +289,4 @@
 		proto.destroy = function () {
 		};
 	}(red.TransitionView));
-}(red));
+}(red, jQuery));

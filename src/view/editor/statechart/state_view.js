@@ -1,7 +1,7 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedMap,window */
+/*global red,esprima,able,uid,console,RedMap,jQuery,window */
 
-(function (red) {
+(function (red, $) {
 	"use strict";
 	var cjs = red.cjs,
 		_ = red._;
@@ -70,13 +70,17 @@
 			}).toBack();
 			var center = this.option("c");
 
-			var name = state.get_name("parent");
-			this.label = new red.EditableText(paper, {x: center.x, y: center.y, text: name, fill: this.option("text_background"), color: this.option("text_foreground")});
+			this.label = new red.EditableText(paper, {x: center.x, y: center.y, text: this.get_name(), fill: this.option("text_background"), color: this.option("text_foreground")});
 			this.label.option({
 				"font-size": this.option("font_size"),
 				"font-family": this.option("font_family")
 			});
 			this.label.on("change", this.forward);
+		};
+
+		proto.get_name = function() {
+			var state = this.option("state");
+			return state.get_name("parent");
 		};
 
 		proto._on_options_set = function (values) {
@@ -97,8 +101,68 @@
 		};
 
 		proto.begin_editing = function() {
+			var paper = this.option("paper");
+			var parentElement = paper.canvas.parentNode;
+			this.add_substate = $("<div />").addClass("menu_item")
+											.text("Add substate")
+											.pressable()
+											.on("pressed", function() {
+												console.log("add substate");
+											});
+			this.add_transition = $("<div />")	.addClass("menu_item")
+												.text("Add transition")
+												.pressable()
+												.on("pressed", function() {
+													console.log("add transition");
+												});
+			this.edit_actions = $("<div />").addClass("menu_item")
+											.text("Actions...")
+											.pressable()
+											.on("pressed", function() {
+												console.log("edit actions");
+											});
+			this.rename = $("<div />")	.addClass("menu_item")
+										.text("Rename")
+										.pressable()
+										.on("pressed", function() {
+											console.log("rename");
+										});
+			this.remove = $("<div />")	.addClass("menu_item")
+										.text("Remove")
+										.pressable()
+										.on("pressed", function() {
+											console.log("remove");
+										});
+			this.make_concurrent = $("<div />")	.addClass("menu_item")
+												.text("Concurrent")
+												.pressable()
+												.on("pressed", function() {
+													console.log("make concurrent");
+												});
+			var lwe = this.option("lwe"),
+				rws = this.option("rws");
+			var PADDING = 1;
+			var HEIGHT = 10;
+			var width = rws.x-lwe.x - 2*PADDING;
+			var x = lwe.x + PADDING;
+			var y = lwe.y - HEIGHT/2;
+
+			this.edit_dropdown = $("<div />")	.dropdown({
+													text: this.get_name(),
+													items: [this.add_substate, this.add_transition, this.edit_actions, this.rename, this.remove, this.make_concurrent]
+												})
+												.appendTo(parentElement)
+												.css({
+													position: "absolute",
+													left: x + "px",
+													top: y + "px",
+													width: width + "px"
+												});
+			this.label.hide();
 		};
 		proto.done_editing = function() {
+			this.edit_dropdown.dropdown("destroy").remove();
+			this.label.show();
 		};
 
 		proto.get_path_str = function () {
@@ -119,4 +183,4 @@
 			this.active_fn.destroy();
 		};
 	}(red.StateView));
-}(red));
+}(red, jQuery));

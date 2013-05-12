@@ -400,6 +400,51 @@ html.full_window_editor {
 						vertical-align: bottom;
 						> .statechart {
 							position: relative;
+							> .dropdown {
+								font-size: 0.8em;
+								&.transition {
+									font-size: 0.6em;
+								}
+								background-color: #EEE;
+								> .btn {
+									width: 100%;
+									box-sizing: border-box;
+									-moz-box-sizing: border-box;
+									border-radius: 1px;
+									border: 1px solid #999;
+									> .caret {
+										margin-top: 3px;
+									}
+									overflow: hidden;
+								}
+								&:hover {
+									background-color: #DFDFDF;
+								}
+								&.expanded {
+									> .btn {
+										background-color: #DDD;
+										border-bottom: none;
+									}
+								}
+								> .menu {
+									left: 1px;
+									box-sizing: border-box;
+									-moz-box-sizing: border-box;
+									> .menu_item {
+										cursor: pointer;
+										padding-left: 2px;
+										text-align: left;
+										background-color: #EEE;
+										border-bottom: 1px solid #C9C9C9;
+										&:hover {
+											background-color: #DDD;
+										}
+										&:last-child {
+											border-bottom: none;
+										}
+									}
+								}
+							}
 						}
 					}
 				}
