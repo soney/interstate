@@ -106,39 +106,39 @@
 			this.add_substate = $("<div />").addClass("menu_item")
 											.text("Add substate")
 											.pressable()
-											.on("pressed", function() {
-												console.log("add substate");
-											});
+											.on("pressed", $.proxy(function() {
+												this._emit("add_substate");
+											}, this));
 			this.add_transition = $("<div />")	.addClass("menu_item")
 												.text("Add transition")
 												.pressable()
-												.on("pressed", function() {
+												.on("pressed", $.proxy(function() {
 													console.log("add transition");
-												});
+												}, this));
 			this.edit_actions = $("<div />").addClass("menu_item")
 											.text("Actions...")
 											.pressable()
-											.on("pressed", function() {
+											.on("pressed", $.proxy(function() {
 												console.log("edit actions");
-											});
+											}, this));
 			this.rename = $("<div />")	.addClass("menu_item")
 										.text("Rename")
 										.pressable()
-										.on("pressed", function() {
-											console.log("rename");
-										});
+										.on("pressed", $.proxy(function() {
+											this.begin_rename();
+										}, this));
 			this.remove = $("<div />")	.addClass("menu_item")
 										.text("Remove")
 										.pressable()
-										.on("pressed", function() {
-											console.log("remove");
-										});
+										.on("pressed", $.proxy(function() {
+											this._emit("remove");
+										}, this));
 			this.make_concurrent = $("<div />")	.addClass("menu_item")
 												.text("Concurrent")
 												.pressable()
-												.on("pressed", function() {
-													console.log("make concurrent");
-												});
+												.on("pressed", $.proxy(function() {
+													this._emit("make_concurrent");
+												}, this));
 			var lwe = this.option("lwe"),
 				rws = this.option("rws");
 			var PADDING = 1;
@@ -163,6 +163,16 @@
 		proto.done_editing = function() {
 			this.edit_dropdown.dropdown("destroy").remove();
 			this.label.show();
+		};
+
+		proto.begin_rename = function() {
+			this.label.show().focus().select();
+			this.edit_dropdown.hide();
+		};
+
+		proto.end_rename = function() {
+			this.edit_dropdown.show();
+			this.label.hide();
 		};
 
 		proto.get_path_str = function () {
