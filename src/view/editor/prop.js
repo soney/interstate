@@ -219,12 +219,17 @@
 					return $("<div />")	.addClass("menu_item")
 										.text(type_name)
 										.pressable()
-										.on("pressed", function(event) {
+										.on("pressed", $.proxy(function(e) {
 											edit_dropdown.dropdown("collapse");
-											console.log("set type", type_name);
+											var event = new $.Event("command");
+											event.command_type = "set_type";
+											event.type_name = type_name;
+											event.client = this.option("obj");
+											event.prop_name = this.option("name");
+											this.element.trigger(event);
 											event.preventDefault();
 											event.stopPropagation();
-										});
+										}, this));
 				}, this);
 				this.change_type_button = $("<div />")	.addClass("menu_item")
 														.submenu({

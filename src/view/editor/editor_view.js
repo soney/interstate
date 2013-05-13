@@ -89,13 +89,16 @@
 				client = event.client;
 				var prop_type;
 				if(client.type() === "dict") {
-					prop_type = "cell";
+					prop_type = "stateful_obj";
 				} else {
 					prop_type = "stateful_prop";
 				}
 
-				if(prop_type === "cell") {
-					value = red.create('cell');
+				if(prop_type === "stateful_obj") {
+					value = red.create("stateful_obj", undefined, true);
+					value.do_initialize({
+						direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value })
+					});
 				} else if(prop_type === "stateful_prop") {
 					value = red.create('stateful_prop');
 				}
@@ -183,6 +186,25 @@
 				command = new red.RemoveTransitionCommand({
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart.puppet_master_id || transition.id()) }
+				});
+				this.client_socket.post_command(command);
+			} else if(type === "set_type") {
+				var to_type = event.type_name;
+				name = event.prop_name;
+				client = event.client;
+				if(to_type === "Object") {
+					value = red.create("stateful_obj", undefined, true);
+					value.do_initialize({
+						direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value })
+					});
+				} else if(to_type === "Property") {
+					value = red.create('stateful_prop');
+				}
+
+				command = new red.SetPropCommand({
+					parent: { id: to_func(client.obj_id) },
+					value: value,
+					name: name
 				});
 				this.client_socket.post_command(command);
 			} else {
