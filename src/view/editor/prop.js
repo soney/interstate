@@ -145,7 +145,9 @@
 										left: layout_manager.get_x(state),
 										width: layout_manager.get_width(state),
 										value: value,
-										active: active
+										active: active,
+										state: state,
+										prop: this.option("value")
 									});
 									view.appendTo(this.src_cell);
 								}

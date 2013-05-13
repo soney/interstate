@@ -135,6 +135,15 @@
 					value: value
 				});
 				this.client_socket.post_command(command);
+			} else if(type === "unset_stateful_prop_for_state") {
+				client = event.prop;
+				state = event.state;
+
+				command = new red.UnsetStatefulPropValueCommand({
+					stateful_prop: { id: to_func(client.obj_id) },
+					state: { id: to_func(state.cobj_id) }
+				});
+				this.client_socket.post_command(command);
 			} else if(type === "set_str") {
 				client = event.client;
 				value = event.str;

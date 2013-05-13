@@ -443,7 +443,12 @@
 					}
 
 					if(statecharts) {
-						$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
+						if(this.statechart_view) {
+							if(this.statechart_view.data("statechart")) {
+								this.statechart_view.statechart("destroy");
+							}
+							this.statechart_view.remove();
+						}
 
 						this.statechart_view = $("<div />")	.addClass("statechart")
 															.appendTo(this.statechart_view_container)
@@ -451,6 +456,7 @@
 																statecharts: statecharts
 															});
 						this.layout_manager = this.statechart_view.statechart("get_layout_manager");
+						$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
 					}
 				}, {
 					context: this
@@ -484,6 +490,7 @@
 					this.statechart_view.statechart("destroy");
 				}
 				this.statechart_view.remove();
+				delete this.statechart_view;
 			}
 			if(this.statechart_view_container) {
 				this.statechart_view_container.remove();
