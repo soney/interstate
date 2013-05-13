@@ -148,11 +148,15 @@
 		proto.onKeydown = function (event) {
 			var textbox = event.srcElement;
 			if (event.keyCode === 27) { //esc
+				this.onCancel();
 				this.showText(textbox);
 			} else if (event.keyCode === 13) { // enter
 				this.onTextChange(textbox.value);
 				this.showText(textbox);
 			}
+		};
+		proto.onCancel = function() {
+			this._emit("cancel");
 		};
 		proto.onTextChange = function (value) {
 			this.option("text", value);

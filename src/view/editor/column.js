@@ -84,6 +84,18 @@
 											.appendTo(this.info_cell)
 											.text(this.option("edit_text"));
 
+			this.add_property_button = $("<div />")	.addClass("add_prop")
+													.appendTo(this.info_cell)
+													.text("(+ Add Property)")
+													.pressable()
+													.on("pressed", $.proxy(function() {
+														this.awaiting_add_prop = true;
+														var event = new $.Event("command");
+														event.command_type = "add_property";
+														event.client = this.option("client");
+														this.element.trigger(event);
+													}, this));
+
 			this.add_children_listener();
 
 			if(this.option("is_curr_col")) {
@@ -171,8 +183,9 @@
 			this.options_form = $("<form />")	.addClass("options")
 												.attr("action", "javascript:void(0)")
 												.on("submit", $.proxy(this.done_editing, this))
-												.appendTo(this.info_cell);
+												.prependTo(this.info_cell);
 
+												/*
 			var options_fieldset = $("<fieldset />").appendTo(this.options_form);
 			var legend = $("<legend />").text("Options")
 										.appendTo(options_fieldset);
@@ -259,24 +272,16 @@
 													})
 													.text("Can inherit")
 													.appendTo(can_inherit_div);
+													*/
 
 
-			this.add_property_button = $("<div />")	.addClass("add_prop")
-													.appendTo(this.info_cell)
-													.text("(+ Add Property)")
-													.pressable()
-													.on("pressed", $.proxy(function() {
-														this.awaiting_add_prop = true;
-														var event = new $.Event("command");
-														event.command_type = "add_property";
-														event.client = this.option("client");
-														this.element.trigger(event);
-													}, this))
+			/*
 													.hide();
 			this.copy_disp.hide();
 			options_fieldset.hide().show("bind", $.proxy(function() {
 				this.add_property_button.show("bind");
 			}, this));
+			*/
 			if(this.statechart_view) {
 				this.statechart_view.statechart("begin_editing");
 			}
@@ -286,12 +291,9 @@
 			this.edit_button.text(this.option("edit_text"));
 			$("tr.child", this.tbody).prop("done_editing");
 			this.copy_disp.show();
-			this.add_property_button.hide("bind");
 			this.options_form.hide("bind", $.proxy(function() {
 				this.options_form.remove();
 				this.element.removeClass("editing");
-				this.add_property_button//.pressable("destroy")
-										.remove();
 			}, this));
 
 			if(this.statechart_view) {

@@ -225,21 +225,43 @@
 											.text("Change event")
 											.pressable()
 											.on("pressed", $.proxy(function() {
-												
-												this.label.edit().focus().select();
+												this.edit_dropdown.dropdown("collapse");
+												this.begin_rename();
 											}, this));
 			this.change_from = $("<div />")	.addClass("menu_item")
 												.text("Change from")
 												.pressable()
-												.on("pressed", function() {
-													console.log("change from");
-												});
+												.on("pressed", $.proxy(function() {
+													this.edit_dropdown.dropdown("collapse");
+													var root = transition.root();
+													var selectable_substates = _.rest(root.flatten_substates()); // the first element is the major statechart itself
+													this._emit("awaiting_state_selection", {
+														states: selectable_substates,
+														on_select: $.proxy(function(from_state) {
+															this._emit("set_from", {
+																transition: transition,
+																from: from_state
+															});
+														}, this)
+													});
+												}, this));
 			this.change_to = $("<div />").addClass("menu_item")
 											.text("Change to")
 											.pressable()
-											.on("pressed", function() {
-												console.log("change to");
-											});
+											.on("pressed", $.proxy(function() {
+												this.edit_dropdown.dropdown("collapse");
+												var root = transition.root();
+												var selectable_substates = _.rest(root.flatten_substates()); // the first element is the major statechart itself
+												this._emit("awaiting_state_selection", {
+													states: selectable_substates,
+													on_select: $.proxy(function(to_state) {
+														this._emit("set_to", {
+															transition: transition,
+															to: to_state
+														});
+													}, this)
+												});
+											}, this));
 			this.edit_actions = $("<div />").addClass("menu_item")
 											.text("Edit Actions")
 											.pressable()
@@ -268,9 +290,9 @@
 
 			var items;
 			if(transition.from() instanceof red.StartState) {
-				items = [this.change_to, this.edit_actions];
+				items = [this.change_to/*, this.edit_actions*/];
 			} else {
-				items = [this.edit_event, this.change_from, this.change_to, this.edit_actions, this.remove_item];
+				items = [this.edit_event, this.change_from, this.change_to/*, this.edit_actions, this.remove_item*/];
 			}
 
 			this.edit_dropdown = $("<div />")	.dropdown({
@@ -301,6 +323,7 @@
 				var x = cx - width/2;
 				var y = from.y;
 
+				this.edit_dropdown.dropdown("option", "text", this.get_str());
 				this.edit_dropdown.css({
 										position: "absolute",
 										left: x + "px",
@@ -309,9 +332,41 @@
 									});
 			}
 		};
+		proto.begin_rename = function() {
+			this.$on_cancel_rename = $.proxy(this.on_cancel_rename, this);
+			this.$on_confirm_rename = $.proxy(this.on_confirm_rename, this);
+			this.label	.show()
+						.edit()
+						.focus()
+						.select()
+						.on("cancel", this.$on_cancel_rename)
+						.on("change", this.$on_confirm_rename);
+			this.edit_dropdown.hide();
+		};
+
+		proto.on_cancel_rename = function(event) {
+			this.end_rename();
+		};
+
+		proto.on_confirm_rename = function(event) {
+			var value = event.value;
+			this.end_rename();
+			this._emit("set_str", {
+				str: value,
+				transition: this.option("transition")
+			});
+		};
+
+		proto.end_rename = function() {
+			this.edit_dropdown.show();
+			this.label	.hide()
+						.off("cancel", this.$on_cancel_rename)
+						.off("change", this.$on_end_rename);
+		};
 
 		proto.done_editing = function() {
 			this.edit_dropdown.dropdown("destroy").remove();
+			delete this.edit_dropdown;
 			this.label.show();
 		};
 

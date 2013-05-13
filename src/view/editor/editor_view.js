@@ -223,6 +223,42 @@
 					statechart: { id: to_func(statechart_puppet_id) }
 				});
 				this.client_socket.post_command(command);
+			} else if(type === "set_transition_to") {
+				transition = event.transition;
+				state = event.to;
+				command = new red.SetTransitionToCommand({
+					transition: transition,
+					statechart: state
+				});
+				this.client_socket.post_command(command);
+			} else if(type === "set_transition_from") {
+				transition = event.transition;
+				state = event.from;
+				command = new red.SetTransitionFromCommand({
+					transition: transition,
+					statechart: state
+				});
+				this.client_socket.post_command(command);
+			} else if(type === "rename_state") {
+				state = event.state;
+				var new_name = event.new_name;
+				var old_name = state.get_name("parent");
+				parent_puppet_id = state.parent().puppet_master_id || state.parent().id();
+				command = new red.RenameStateCommand({
+					statechart: { id: to_func(parent_puppet_id) },
+					from: old_name,
+					to: new_name
+				});
+				this.client_socket.post_command(command);
+			} else if (type === 'set_transition_str') {
+				transition = event.transition;
+				var str = event.str;
+				var transition_id = transition.puppet_master_id || transition.id();
+				command = new red.SetTransitionEventCommand({
+					transition: { id: to_func(transition_id) },
+					event: str
+				});
+				this.client_socket.post_command(command);
 			} else {
 				console.log("Unhandled type " + type);
 			}

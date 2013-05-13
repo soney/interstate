@@ -34,6 +34,10 @@ html.full_window_editor {
           background-color: #e0e0e0; }
         #editor > #obj_nav > table.col.curr_col > tbody > .child {
           color: #222222; }
+        #editor > #obj_nav > table.col.curr_col > tbody > tr > td.info {
+          vertical-align: bottom; }
+          #editor > #obj_nav > table.col.curr_col > tbody > tr > td.info > .add_prop {
+            display: block; }
         #editor > #obj_nav > table.col.curr_col > tbody > tr > .value_summary {
           max-width: 100px; }
           #editor > #obj_nav > table.col.curr_col > tbody > tr > .value_summary.stateful_prop {
@@ -74,22 +78,8 @@ html.full_window_editor {
                 margin-bottom: 5px;
                 padding-top: 8px;
                 border-top: 1px solid #AAA; }
-          #editor > #obj_nav > table.col.editing > tbody > tr.info td.info > .add_prop {
-            padding: 4px;
-            text-align: left;
-            padding-left: 20px;
-            background-color: white;
-            color: #4169e1;
-            text-decoration: none;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            cursor: pointer; }
-            #editor > #obj_nav > table.col.editing > tbody > tr.info td.info > .add_prop:hover {
-              text-decoration: underline; }
+          #editor > #obj_nav > table.col.editing > tbody > tr.info > td.info > .add_prop {
+            padding-left: 25px; }
           #editor > #obj_nav > table.col.editing > tbody > tr.info td.info, #editor > #obj_nav > table.col.editing > tbody > tr.info td.info:hover {
             background-color: #CCC; }
             #editor > #obj_nav > table.col.editing > tbody > tr.info td.info > .edit, #editor > #obj_nav > table.col.editing > tbody > tr.info td.info:hover > .edit {
@@ -323,6 +313,22 @@ html.full_window_editor {
             text-decoration: underline; }
           #editor > #obj_nav > table.col > tbody > .info .edit:hover {
             background-color: #eeeeee; }
+        #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop {
+          padding: 4px;
+          text-align: left;
+          display: none;
+          background-color: white;
+          color: #4169e1;
+          text-decoration: none;
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -khtml-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+          cursor: pointer; }
+          #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop:hover {
+            text-decoration: underline; }
       #editor > #obj_nav > table.col > tbody > .child {
         -webkit-touch-callout: none;
         -webkit-user-select: none;

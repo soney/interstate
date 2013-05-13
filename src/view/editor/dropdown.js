@@ -68,7 +68,15 @@
 			this.element.removeClass("expanded");
 			this.option("expanded", false);
 			$(window).off("mousedown", this.$on_window_click_while_expanded);
+		},
+
+		_setOption: function(key, value) {
+			this._super(key, value);
+			if(key === "text") {
+				this.btn_text.text(this.option("text"));
+			}
 		}
+
 	});
 
 	$.widget("red.submenu", {
@@ -144,6 +152,13 @@
 				window.clearTimeout(this.collapse_timeout);
 			}
 			this.collapse_timeout = window.setTimeout($.proxy(this.collapse, this), this.option("collapse_delay"));
+		},
+
+		_setOption: function(key, value) {
+			this._super(key, value);
+			if(key === "text") {
+				this.btn.text(this.option("text"));
+			}
 		}
 	});
 }(red, jQuery));

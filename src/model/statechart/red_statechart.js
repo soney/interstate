@@ -219,7 +219,6 @@
 			var state = event.state;
 			var old_from = this.from();
 			var new_from = red.find_equivalent_state(state, old_from);
-			console.log(new_from);
 			this.setFrom(new_from);
 		}, this);
 		if (defer_initialization !== true) {

@@ -97,6 +97,7 @@ html.full_window_editor {
 					> .header, > .info {
 						color: $nav_header_active_text_color;
 						background-color: $nav_header_active_color;
+
 					}
 
 					> .child {
@@ -106,6 +107,10 @@ html.full_window_editor {
 
 					> tr {
 						> td.info {
+							vertical-align: bottom;
+							> .add_prop {
+								display: block;
+							}
 						}
 						> .value_summary {
 							max-width: $active_obj_value_summary_width;
@@ -170,16 +175,10 @@ html.full_window_editor {
 								}
 								margin-bottom: 5px;
 							}
-
-							td.info {
+							> td.info {
 								> .add_prop {
-									padding: 4px;
-									text-align: left;
-									padding-left: $drag_handle_width;
-									background-color: white;
-									@include link;
+									padding-left: $drag_handle_width + $dropdown_padding;
 								}
-
 							}
 
 							td.info, td.info:hover {
@@ -464,6 +463,16 @@ html.full_window_editor {
 						@include link;
 						&:hover {
 							background-color: $nav_header_hover_color;
+						}
+					}
+
+					> td.info {
+						> .add_prop {
+							padding: 4px;
+							text-align: left;
+							display: none;
+							background-color: white;
+							@include link;
 						}
 					}
 				}

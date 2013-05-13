@@ -20,6 +20,7 @@
 			default_fill: "white",
 			active_fill: "red",
 			active_stroke: "red",
+			selectable_fill: "#666",
 			text_foreground: "black",
 			text_background: "white",
 			font_family: "Source Sans Pro",
@@ -170,7 +171,7 @@
 
 			this.edit_dropdown = $("<div />")	.dropdown({
 													text: this.get_name(),
-													items: [this.add_substate, this.add_transition, this.edit_actions, this.rename_item, this.remove_item, this.make_concurrent]
+													items: [/*this.add_substate, */this.add_transition, this.rename_item, this.remove_item/*, this.edit_actions, this.make_concurrent*/]
 												})
 												.appendTo(parentElement)
 												.css({
@@ -190,6 +191,9 @@
 				var width = rws.x-lwe.x - 2*PADDING;
 				var x = lwe.x + PADDING;
 				var y = lwe.y - HEIGHT/2;
+				var state = this.option("state");
+				var name = state.get_name("parent");
+				this.edit_dropdown.dropdown("option", "text", name);
 				this.edit_dropdown.css({
 					position: "absolute",
 					left: x + "px",
@@ -205,13 +209,35 @@
 		};
 
 		proto.begin_rename = function() {
-			this.label.show().edit().focus().select();
+			this.$on_cancel_rename = $.proxy(this.on_cancel_rename, this);
+			this.$on_confirm_rename = $.proxy(this.on_confirm_rename, this);
+			this.label	.show()
+						.edit()
+						.focus()
+						.select()
+						.on("cancel", this.$on_cancel_rename)
+						.on("change", this.$on_confirm_rename);
 			this.edit_dropdown.hide();
+		};
+
+		proto.on_cancel_rename = function(event) {
+			this.end_rename();
+		};
+
+		proto.on_confirm_rename = function(event) {
+			var value = event.value;
+			this.end_rename();
+			this._emit("rename", {
+				name: value,
+				state: this.option("state")
+			});
 		};
 
 		proto.end_rename = function() {
 			this.edit_dropdown.show();
-			this.label.hide();
+			this.label	.hide()
+						.off("cancel", this.$on_cancel_rename)
+						.off("change", this.$on_end_rename);
 		};
 
 		proto.get_path_str = function () {
@@ -239,6 +265,10 @@
 			}
 		};
 		proto.make_selectable = function(callback) {
+			this.path.attr({
+				fill: this.option("selectable_fill"),
+				cursor: "pointer"
+			});
 			if(this._selectable_callback) {
 				this.path.unclick(this._selectable_callback);
 			}
@@ -250,6 +280,11 @@
 				this.path.unclick(this._selectable_callback);
 				delete this._selectable_callback;
 			}
+			var state = this.option("state");
+			this.path.attr({
+				fill: this.option(state.is_active() ? "active_fill" : "default_fill"),
+				cursor: ""
+			});
 		};
 	}(red.StateView));
 }(red, jQuery));

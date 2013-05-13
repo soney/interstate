@@ -53,6 +53,10 @@
 			this.statechart_view.on("remove_state", $.proxy(this.remove_state, this));
 			this.statechart_view.on("remove_transition", $.proxy(this.remove_transition, this));
 			this.statechart_view.on("add_transition", $.proxy(this.add_transition, this));
+			this.statechart_view.on("set_to", $.proxy(this.set_transition_to, this));
+			this.statechart_view.on("set_from", $.proxy(this.set_transition_from, this));
+			this.statechart_view.on("rename", $.proxy(this.rename_state, this));
+			this.statechart_view.on("set_str", $.proxy(this.set_transition_str, this));
 		},
 		_destroy: function () {
 			this._super();
@@ -107,6 +111,46 @@
 			event.command_type = "add_transition";
 			event.from = e.from;
 			event.to = e.to;
+
+			this.element.trigger(event);
+		},
+		set_transition_to: function(e) {
+			var event = new $.Event("command");
+			event.command_type = "set_transition_to";
+			event.transition = e.transition;
+			event.to = e.to;
+
+			this.element.trigger(event);
+		},
+		set_transition_from: function(e) {
+			var event = new $.Event("command");
+			event.command_type = "set_transition_from";
+			event.transition = e.transition;
+			event.from = e.from;
+
+			this.element.trigger(event);
+		},
+		set_transition_event: function(e) {
+			var event = new $.Event("command");
+			event.command_type = "set_transition_event";
+			event.transition = e.transition;
+			event.from = e.from;
+
+			this.element.trigger(event);
+		},
+		rename_state: function(e) {
+			var event = new $.Event("command");
+			event.command_type = "rename_state";
+			event.state = e.state;
+			event.new_name = e.name;
+
+			this.element.trigger(event);
+		},
+		set_transition_str: function(e) {
+			var event = new $.Event("command");
+			event.command_type = "set_transition_str";
+			event.transition = e.transition;
+			event.str = e.str;
 
 			this.element.trigger(event);
 		}
@@ -313,6 +357,10 @@
 						}
 					}, this);
 					rv.on("remove_transition", this.forward);
+					rv.on("awaiting_state_selection", this.$on_awaiting_state_selection);
+					rv.on("set_to", this.forward);
+					rv.on("set_from", this.forward);
+					rv.on("set_str", this.forward);
 					if(this.is_editing()) {
 						rv.begin_editing();
 					}
@@ -349,15 +397,8 @@
 					});
 					rv.on("remove_state", this.forward);
 					rv.on("add_transition", this.forward);
+					rv.on("rename", this.forward);
 					rv.on("awaiting_state_selection", this.$on_awaiting_state_selection);
-					rv.on("change", function (event) {
-						var value = event.value;
-						if (value === "") {
-							this._emit("remove_state", {state: obj});
-						} else {
-							this._emit("rename_state", {state: obj, str: value});
-						}
-					}, this);
 					if(this.is_editing()) {
 						rv.begin_editing();
 					}
