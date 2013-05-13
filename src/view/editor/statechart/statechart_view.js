@@ -52,6 +52,7 @@
 			this.statechart_view.on("add_state", $.proxy(this.add_state, this));
 			this.statechart_view.on("remove_state", $.proxy(this.remove_state, this));
 			this.statechart_view.on("remove_transition", $.proxy(this.remove_transition, this));
+			this.statechart_view.on("add_transition", $.proxy(this.add_transition, this));
 		},
 		_destroy: function () {
 			this._super();
@@ -100,6 +101,14 @@
 			event.transition = e.transition;
 
 			this.element.trigger(event);
+		},
+		add_transition: function(e) {
+			var event = new $.Event("command");
+			event.command_type = "add_transition";
+			event.from = e.from;
+			event.to = e.to;
+
+			this.element.trigger(event);
 		}
 	});
 
@@ -107,6 +116,8 @@
 	red.RootStatechartView = function (statecharts, layout_engine, paper, options) {
 		able.make_this_listenable(this);
 		able.make_this_optionable(this, {}, options);
+
+		this.$on_awaiting_state_selection = $.proxy(this.on_awaiting_state_selection, this);
 		this.statecharts = statecharts;
 		this.layout_engine = layout_engine;
 		this.object_views = new RedMap({
@@ -126,12 +137,16 @@
 								})
 								.click($.proxy(this.on_add_state_click, this))
 								.hide();
-		this.add_state_button.attr({
-			"font-size": "42px",
-			fill: this.option("state_stroke"),
-			opacity: 0.5,
-			cursor: "pointer"
-		}).click($.proxy(this.on_add_state_click, this)).hide();
+
+		this.add_state_button	.attr({
+									"font-size": "42px",
+									fill: this.option("state_stroke"),
+									opacity: 0.5,
+									cursor: "pointer"
+								})
+								.click($.proxy(this.on_add_state_click, this))
+								.hide();
+
 		var curr_items = [];
 		this.live_layout = cjs.liven(function () {
 			var layout_info = this.layout_engine.get_layout();
@@ -219,8 +234,8 @@
 			_.each(curr_items, function (ci) {
 				if (new_items.indexOf(ci) < 0) {
 					this.object_views.unset(ci instanceof red.TransitionView ? ci.option("transition") : ci.option("state"));
-					ci.remove();
 					ci.destroy();
+					ci.remove();
 				}
 			}, this);
 			curr_items = new_items;
@@ -333,6 +348,8 @@
 						padding_top: this.option("padding_top")
 					});
 					rv.on("remove_state", this.forward);
+					rv.on("add_transition", this.forward);
+					rv.on("awaiting_state_selection", this.$on_awaiting_state_selection);
 					rv.on("change", function (event) {
 						var value = event.value;
 						if (value === "") {
@@ -356,10 +373,36 @@
 			this.live_layout.resume();
 			this.live_layout.run();
 		};
+		proto.on_awaiting_state_selection = function(event) {
+			var states = event.states,
+				on_select = event.on_select;
+			var on_keydown = function(e) {
+				if(e.keyCode === 27) { //esc
+					unmake_selectable();
+				}
+			};
+			var unmake_selectable = $.proxy(function() {
+				_.each(states, function(state) {
+					var view = this.get_view(state);
+					view.unmake_selectable();
+				}, this);
+			}, this);
+
+			_.each(states, function(state) {
+				var view = this.get_view(state);
+				view.make_selectable(function() {
+					unmake_selectable();
+					on_select(state);
+				});
+			}, this);
+		};
 		proto.remove = function () {
 		};
 		proto.destroy = function () {
 			this.live_layout.destroy();
+			this.object_views.each(function(object_view) {
+				object_view.destroy();
+			});
 		};
 
 	}(red.RootStatechartView));

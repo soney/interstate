@@ -105,7 +105,8 @@
 
 				command = new red.SetPropCommand({
 					parent: { id: to_func(client.obj_id) },
-					value: value
+					value: value,
+					index: 0
 				});
 				this.client_socket.post_command(command);
 			} else if(type === "rename") {
@@ -205,6 +206,21 @@
 					parent: { id: to_func(client.obj_id) },
 					value: value,
 					name: name
+				});
+				this.client_socket.post_command(command);
+			} else if(type === "add_transition") {
+				var from_state = event.from;
+				var to_state = event.to;
+				state = from_state.root();
+				statechart_puppet_id = state.puppet_master_id || state.id();
+				var from_puppet_id = from_state.puppet_master_id || from_state.id(),
+					to_puppet_id = to_state.puppet_master_id || to_state.id();
+				event = red.create_event("parsed", {str: "(event)", inert: true});
+				command = new red.AddTransitionCommand({
+					from: { id: to_func(from_puppet_id) },
+					to: { id: to_func(to_puppet_id) },
+					event: event,
+					statechart: { id: to_func(statechart_puppet_id) }
 				});
 				this.client_socket.post_command(command);
 			} else {

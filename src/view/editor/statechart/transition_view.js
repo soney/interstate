@@ -161,7 +161,7 @@
 				cy: paths.circle.cy,
 				r: paths.circle.r
 			});
-			var from = this.option("from");
+			this.update_dropdown_position();
 		};
 
 		proto.get_str = function() {
@@ -202,19 +202,19 @@
 			});
 			the_flash.animate({
 				path: line_elem.getSubpath(0, len)
-			}, 200, "ease-in", function () {
+			}, 200, "ease-in", $.proxy(function () {
 				the_flash.animate({
 					path: line_elem.getSubpath(4 * len / 4.1, len)
 				}, 200, "ease-out", function () {
 					the_flash.remove();
 				});
-				arrow.attr({"fill": "red"});
-				window.setTimeout(function () {
+				arrow.attr({"fill": this.option("active_color")});
+				window.setTimeout($.proxy(function () {
 					arrow.animate({
 						fill: this.option("color")
 					}, 200, "ease-out");
-				}, 200);
-			});
+				}, this), 200);
+			}, this));
 		};
 
 		proto.begin_editing = function() {
@@ -255,8 +255,6 @@
 													transition: this.option("transition")
 												});
 											}, this));
-			var lwe = this.option("lwe"),
-				rws = this.option("rws");
 			var from = this.option("from"),
 				to = this.option("to");
 			var min_x = Math.min(from.x, to.x);
@@ -290,6 +288,28 @@
 			this.label.hide();
 		};
 
+		proto.update_dropdown_position = function() {
+			if(this.edit_dropdown) {
+				var from = this.option("from"),
+					to = this.option("to");
+				var min_x = Math.min(from.x, to.x);
+				var max_x = Math.max(from.x, to.x);
+				var PADDING = 1;
+				var HEIGHT = 10;
+				var width = Math.max((max_x-min_x) - 2*PADDING, 100);
+				var cx = (max_x + min_x)/2;
+				var x = cx - width/2;
+				var y = from.y;
+
+				this.edit_dropdown.css({
+										position: "absolute",
+										left: x + "px",
+										top: y + "px",
+										width: width + "px"
+									});
+			}
+		};
+
 		proto.done_editing = function() {
 			this.edit_dropdown.dropdown("destroy").remove();
 			this.label.show();
@@ -300,14 +320,18 @@
 			this.circle.remove();
 			this.line_path.remove();
 			this.arrow_path.remove();
-			var transition = this.option("transition");
-			transition.off("fire", this.$flash);
 			if(this.edit_dropdown) {
-				this.edit_dropdown.dropdown("destroy").remove();
+				this.edit_dropdown.remove();
+				delete this.edit_dropdown;
 			}
 		};
 
 		proto.destroy = function () {
+			var transition = this.option("transition");
+			transition.off("fire", this.$flash);
+			if(this.edit_dropdown) {
+				this.edit_dropdown.dropdown("destroy");
+			}
 		};
 	}(red.TransitionView));
 }(red, jQuery));

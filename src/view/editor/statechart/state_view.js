@@ -108,24 +108,39 @@
 											.text("Add substate")
 											.pressable()
 											.on("pressed", $.proxy(function() {
+												this.edit_dropdown.dropdown("collapse");
 												this._emit("add_substate");
 											}, this));
 			this.add_transition = $("<div />")	.addClass("menu_item")
 												.text("Add transition")
 												.pressable()
 												.on("pressed", $.proxy(function() {
-													console.log("add transition");
+													this.edit_dropdown.dropdown("collapse");
+													var from_state = this.option("state");
+													var root = from_state.root();
+													var selectable_substates = _.rest(root.flatten_substates()); // the first element is the major statechart itself
+													this._emit("awaiting_state_selection", {
+														states: selectable_substates,
+														on_select: $.proxy(function(to_state) {
+															this._emit("add_transition", {
+																from: from_state,
+																to: to_state
+															});
+														}, this)
+													});
 												}, this));
 			this.edit_actions = $("<div />").addClass("menu_item")
 											.text("Actions...")
 											.pressable()
 											.on("pressed", $.proxy(function() {
+												this.edit_dropdown.dropdown("collapse");
 												console.log("edit actions");
 											}, this));
 			this.rename_item = $("<div />")	.addClass("menu_item")
 											.text("Rename")
 											.pressable()
 											.on("pressed", $.proxy(function() {
+												this.edit_dropdown.dropdown("collapse");
 												this.begin_rename();
 											}, this));
 			this.remove_item = $("<div />")	.addClass("menu_item")
@@ -213,12 +228,28 @@
 			this.path.remove();
 			this.label.remove();
 			if(this.edit_dropdown) {
-				this.edit_dropdown.dropdown("destroy").remove();
+				this.edit_dropdown.remove();
 				delete this.edit_dropdown;
 			}
 		};
 		proto.destroy = function() {
 			this.active_fn.destroy();
+			if(this.edit_dropdown) {
+				this.edit_dropdown.dropdown("destroy");
+			}
+		};
+		proto.make_selectable = function(callback) {
+			if(this._selectable_callback) {
+				this.path.unclick(this._selectable_callback);
+			}
+			this._selectable_callback = callback;
+			this.path.click(this._selectable_callback);
+		};
+		proto.unmake_selectable = function() {
+			if(this._selectable_callback) {
+				this.path.unclick(this._selectable_callback);
+				delete this._selectable_callback;
+			}
 		};
 	}(red.StateView));
 }(red, jQuery));
