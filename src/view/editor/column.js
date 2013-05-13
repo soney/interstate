@@ -291,7 +291,7 @@
 			this.edit_button.text(this.option("edit_text"));
 			$("tr.child", this.tbody).prop("done_editing");
 			this.copy_disp.show();
-			this.options_form.hide("bind", $.proxy(function() {
+			this.options_form.hide(0, $.proxy(function() {
 				this.options_form.remove();
 				this.element.removeClass("editing");
 			}, this));
