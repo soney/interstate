@@ -566,6 +566,17 @@ html.full_window_editor {
 								border-left: 1px solid red;
 								border-right: 1px solid red;
 							}
+							> input {
+								width: 100%;
+								background: none;
+								border: none;
+								font-family: inherit;
+								text-align: inherit;
+								font-size: inherit;
+								outline: none;
+								padding: 0px;
+								margin: 0px;
+							}
 						}
 
 						> .pure_cell {

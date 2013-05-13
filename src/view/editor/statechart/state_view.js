@@ -97,6 +97,7 @@
 					y: center.y,
 					text: name
 				});
+				this.update_dropdown_position();
 			}
 		};
 
@@ -121,18 +122,21 @@
 											.on("pressed", $.proxy(function() {
 												console.log("edit actions");
 											}, this));
-			this.rename = $("<div />")	.addClass("menu_item")
-										.text("Rename")
-										.pressable()
-										.on("pressed", $.proxy(function() {
-											this.begin_rename();
-										}, this));
-			this.remove = $("<div />")	.addClass("menu_item")
-										.text("Remove")
-										.pressable()
-										.on("pressed", $.proxy(function() {
-											this._emit("remove");
-										}, this));
+			this.rename_item = $("<div />")	.addClass("menu_item")
+											.text("Rename")
+											.pressable()
+											.on("pressed", $.proxy(function() {
+												this.begin_rename();
+											}, this));
+			this.remove_item = $("<div />")	.addClass("menu_item")
+											.text("Remove")
+											.pressable()
+											.on("pressed", $.proxy(function() {
+												this.edit_dropdown.dropdown("collapse");
+												this._emit("remove_state", {
+													state: this.option("state")
+												});
+											}, this));
 			this.make_concurrent = $("<div />")	.addClass("menu_item")
 												.html("Concurrent&nbsp;&#9745;")
 												.pressable()
@@ -151,7 +155,7 @@
 
 			this.edit_dropdown = $("<div />")	.dropdown({
 													text: this.get_name(),
-													items: [this.add_substate, this.add_transition, this.edit_actions, this.rename, this.remove, this.make_concurrent]
+													items: [this.add_substate, this.add_transition, this.edit_actions, this.rename_item, this.remove_item, this.make_concurrent]
 												})
 												.appendTo(parentElement)
 												.css({
@@ -162,8 +166,26 @@
 												});
 			this.label.hide();
 		};
+		proto.update_dropdown_position = function() {
+			if(this.edit_dropdown) {
+				var lwe = this.option("lwe"),
+					rws = this.option("rws");
+				var PADDING = 1;
+				var HEIGHT = 10;
+				var width = rws.x-lwe.x - 2*PADDING;
+				var x = lwe.x + PADDING;
+				var y = lwe.y - HEIGHT/2;
+				this.edit_dropdown.css({
+					position: "absolute",
+					left: x + "px",
+					top: y + "px",
+					width: width + "px"
+				});
+			}
+		};
 		proto.done_editing = function() {
 			this.edit_dropdown.dropdown("destroy").remove();
+			delete this.edit_dropdown;
 			this.label.show();
 		};
 
@@ -190,6 +212,10 @@
 		proto.remove = function () {
 			this.path.remove();
 			this.label.remove();
+			if(this.edit_dropdown) {
+				this.edit_dropdown.dropdown("destroy").remove();
+				delete this.edit_dropdown;
+			}
 		};
 		proto.destroy = function() {
 			this.active_fn.destroy();

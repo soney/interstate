@@ -246,12 +246,15 @@
 											.on("pressed", function() {
 												console.log("edit actions");
 											});
-			this.remove = $("<div />")	.addClass("menu_item")
-										.text("Remove")
-										.pressable()
-										.on("pressed", function() {
-											console.log("remove");
-										});
+			this.remove_item = $("<div />")	.addClass("menu_item")
+											.text("Remove")
+											.pressable()
+											.on("pressed", $.proxy(function() {
+												this.edit_dropdown.dropdown("collapse");
+												this._emit("remove_transition", {
+													transition: this.option("transition")
+												});
+											}, this));
 			var lwe = this.option("lwe"),
 				rws = this.option("rws");
 			var from = this.option("from"),
@@ -269,7 +272,7 @@
 			if(transition.from() instanceof red.StartState) {
 				items = [this.change_to, this.edit_actions];
 			} else {
-				items = [this.edit_event, this.change_from, this.change_to, this.edit_actions, this.remove];
+				items = [this.edit_event, this.change_from, this.change_to, this.edit_actions, this.remove_item];
 			}
 
 			this.edit_dropdown = $("<div />")	.dropdown({
@@ -299,6 +302,9 @@
 			this.arrow_path.remove();
 			var transition = this.option("transition");
 			transition.off("fire", this.$flash);
+			if(this.edit_dropdown) {
+				this.edit_dropdown.dropdown("destroy").remove();
+			}
 		};
 
 		proto.destroy = function () {

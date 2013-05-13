@@ -49,6 +49,9 @@
 				add_state_width: this.option("add_state_width")
 			});
 			this.statechart_view = new red.RootStatechartView(statecharts, this.layout_manager, this.paper, this.options);
+			this.statechart_view.on("add_state", $.proxy(this.add_state, this));
+			this.statechart_view.on("remove_state", $.proxy(this.remove_state, this));
+			this.statechart_view.on("remove_transition", $.proxy(this.remove_transition, this));
 		},
 		_destroy: function () {
 			this._super();
@@ -76,6 +79,27 @@
 			});
 			this.layout_manager.invalidate();
 			this.statechart_view.done_editing();
+		},
+		add_state: function(e) {
+			var event = new $.Event("command");
+			event.command_type = "add_state";
+			event.state = e.parent;
+
+			this.element.trigger(event);
+		},
+		remove_state: function(e) {
+			var event = new $.Event("command");
+			event.command_type = "remove_state";
+			event.state = e.state;
+
+			this.element.trigger(event);
+		},
+		remove_transition: function(e) {
+			var event = new $.Event("command");
+			event.command_type = "remove_transition";
+			event.transition = e.transition;
+
+			this.element.trigger(event);
 		}
 	});
 
@@ -94,12 +118,14 @@
 		this.paper = paper;
 		this.add_state_shape = this.paper.path("M0,0");
 		this.add_state_button = this.paper.text(0,0,"+");
-		this.add_state_shape.attr({
-			fill: this.option("state_fill"),
-			stroke: this.option("state_stroke"),
-			opacity: 0.5,
-			cursor: "pointer"
-		}).click($.proxy(this.on_add_state_click, this)).hide();
+		this.add_state_shape	.attr({
+									fill: this.option("state_fill"),
+									stroke: this.option("state_stroke"),
+									opacity: 0.5,
+									cursor: "pointer"
+								})
+								.click($.proxy(this.on_add_state_click, this))
+								.hide();
 		this.add_state_button.attr({
 			"font-size": "42px",
 			fill: this.option("state_stroke"),
@@ -201,6 +227,7 @@
 		}, {
 			context: this
 		});
+		this.editing = false;
 	};
 
 	(function (My) {
@@ -223,9 +250,12 @@
 			}, this);
 		};
 		proto.on_add_state_click = function() {
-			console.log("ADD A STATE");
+			this._emit("add_state", {
+				parent: this.statecharts[0]
+			});
 		};
 		proto.begin_editing = function() {
+			this.editing = true;
 			this.add_state_button.show();
 			this.add_state_shape.show();
 			this.object_views.each(function(view) {
@@ -233,11 +263,15 @@
 			});
 		};
 		proto.done_editing = function() {
+			this.editing = false;
 			this.add_state_button.hide();
 			this.add_state_shape.hide();
 			this.object_views.each(function(view) {
 				view.done_editing();
 			});
+		};
+		proto.is_editing = function() {
+			return this.editing;
 		};
 		proto.get_view = function (obj, layout_info) {
 			return this.object_views.get_or_put(obj, function () {
@@ -263,6 +297,10 @@
 							this._emit("change_transition_event", {transition: obj, str: value});
 						}
 					}, this);
+					rv.on("remove_transition", this.forward);
+					if(this.is_editing()) {
+						rv.begin_editing();
+					}
 				} else if (obj instanceof red.StartState) {
 					rv = new red.StartStateView({
 						state: obj,
@@ -271,6 +309,9 @@
 						fill_color: this.option("start_state_color"),
 						radius: this.option("start_state_radius")
 					});
+					if(this.is_editing()) {
+						rv.begin_editing();
+					}
 				} else {
 					rv = new red.StateView({
 						state: obj,
@@ -291,6 +332,7 @@
 						text_background: this.option("state_text_background_color"),
 						padding_top: this.option("padding_top")
 					});
+					rv.on("remove_state", this.forward);
 					rv.on("change", function (event) {
 						var value = event.value;
 						if (value === "") {
@@ -299,6 +341,9 @@
 							this._emit("rename_state", {state: obj, str: value});
 						}
 					}, this);
+					if(this.is_editing()) {
+						rv.begin_editing();
+					}
 				}
 				return rv;
 			}, this);

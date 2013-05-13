@@ -123,7 +123,14 @@
 								if(state) {
 									var view = $("<span />").unset_prop({
 										left: layout_manager.get_x(state)
-									});
+									}).on("click", $.proxy(function() {
+										var event = new $.Event("command");
+										event.command_type = "set_stateful_prop_for_state";
+										event.prop = this.option("value");
+										event.state = state;
+
+										this.element.trigger(event);
+									}, this));
 									view.appendTo(this.src_cell);
 								}
 							}, this);
@@ -266,14 +273,15 @@
 			this.rename_input.off("blur", this.$end_rename); // because removal would result in the rename event being fired twice
 			if(cancel !== true) {
 				var val = this.rename_input.val();
+				if(val !== this.option("name")) {
+					var event = new $.Event("command");
+					event.command_type = "rename";
+					event.from_name = this.option("name");
+					event.to_name = this.rename_input.val();
+					event.client = this.option("obj");
 
-				var event = new $.Event("command");
-				event.command_type = "rename";
-				event.from_name = this.option("name");
-				event.to_name = this.rename_input.val();
-				event.client = this.option("obj");
-
-				this.element.trigger(event);
+					this.element.trigger(event);
+				}
 			}
 			this.edit_dropdown.show();
 			this.rename_input.remove();

@@ -83,7 +83,7 @@
 	
 		on_command: function(event) {
 			var type = event.command_type;
-			var client, value, command;
+			var client, name, value, command, state, transition, statechart_puppet_id, parent_puppet_id;
 
 			if(type === "add_property") {
 				client = event.client;
@@ -118,6 +118,71 @@
 				command = new red.UnsetPropCommand({
 					parent: { id: to_func(client.obj_id) },
 					name: event.name
+				});
+				this.client_socket.post_command(command);
+			} else if(type === "set_stateful_prop_for_state") {
+				client = event.prop;
+				state = event.state;
+				value = red.create('cell', {str: ''});
+
+				command = new red.SetStatefulPropValueCommand({
+					stateful_prop: { id: to_func(client.obj_id) },
+					state: { id: to_func(state.cobj_id) },
+					value: value
+				});
+				this.client_socket.post_command(command);
+			} else if(type === "set_str") {
+				client = event.client;
+				value = event.str;
+
+				command = new red.ChangeCellCommand({
+					cell: { id: to_func(client.cobj_id || client.obj_id) },
+					str: value
+				});
+				this.client_socket.post_command(command);
+			} else if(type === "add_state") {
+				state = event.state;
+				statechart_puppet_id = state.puppet_master_id || state.id(); 
+				var substates = state.get_substates();
+
+				var substates_size = _.size(substates);
+				var state_name, make_start;
+
+				if(substates_size === 0) {
+					state_name = "init";
+					make_start = true;
+				} else {
+					var orig_state_name = "state_" + substates_size;
+					state_name = orig_state_name;
+					var i = 1;
+					while(_.has(substates, state_name)) {
+						state_name = orig_state_name + "_" + i;
+					}
+					make_start = false;
+				}
+
+				command = new red.AddStateCommand({
+					statechart: { id: to_func(statechart_puppet_id) },
+					name: state_name,
+					make_start: make_start
+				});
+
+				this.client_socket.post_command(command);
+			} else if(type === "remove_state") {
+				state = event.state;
+				name = state.get_name("parent");
+				parent_puppet_id = state.parent().puppet_master_id || state.parent().id();
+				command = new red.RemoveStateCommand({
+					statechart: { id: to_func(parent_puppet_id) },
+					name: name
+				});
+				this.client_socket.post_command(command);
+			} else if(type === "remove_transition") {
+				transition = event.transition;
+				var statechart = transition.root();
+				command = new red.RemoveTransitionCommand({
+					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
+					statechart: { id: to_func(statechart.puppet_master_id || transition.id()) }
 				});
 				this.client_socket.post_command(command);
 			} else {

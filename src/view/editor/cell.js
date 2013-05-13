@@ -14,7 +14,8 @@
 			value: false,
 			left: 0,
 			width: 0,
-			active: false
+			active: false,
+			parent: false
 		},
 		_create: function() {
 			this.element.addClass("cell");
@@ -23,14 +24,18 @@
 			this.create_live_text_fn();
 			this.$on_click = $.proxy(this.on_click, this);
 			this.element.on("click", this.$on_click);
+
+			this.text = $("<span />")	.addClass("txt")
+										.appendTo(this.element);
 		},
 		_destroy: function() {
+			this.text.remove();
 			this.element.removeClass("cell");
 			this.destroy_live_text_fn();
 			this.element.off("click", this.$on_click);
 		},
 		on_click: function() {
-			console.log("edit me");
+			this.begin_editing();
 		},
 		create_live_text_fn: function() {
 			var value = this.option("value");
@@ -38,7 +43,12 @@
 				var $str = value.get_$("get_str");
 				this.live_text_fn = cjs.liven(function() {
 					var str = $str.get();
-					this.element.text(str);
+					this.str = str;
+					if(str === "") {
+						this.text.html("&nbsp;");
+					} else {
+						this.text.text(str);
+					}
 				}, {
 					context: this
 				});
@@ -64,6 +74,59 @@
 				this.element.removeClass("active");
 			}
 		},
+		begin_editing: function() {
+			this.element.off("click", this.$on_click);
+			this.text.hide();
+			this.$end_edit = $.proxy(this.end_edit, this);
+			this.textbox = $("<input />")	.attr("type", "text")
+											.appendTo(this.element)
+											.on("keydown", $.proxy(function(event) {
+												if(event.keyCode === 27) {
+													this.end_edit(true);
+												} else if(event.keyCode === 13) {
+													this.end_edit();
+												}
+											}, this))
+											.on("blur", this.$end_edit);
+
+			this.textbox.val(this.str);
+			this.focus();
+			this.select();
+		},
+		end_edit: function(cancel) {
+			this.element.on("click", this.$on_click);
+			if(cancel !== true) {
+				var val = this.textbox.val();
+				var event;
+				if(val.trim() === "") {
+					event = new $.Event("command");
+					event.command_type = "set_str";
+					event.str = val;
+					event.client = this.option("value");
+
+					this.element.trigger(event);
+				} else {
+					event = new $.Event("command");
+					event.command_type = "set_str";
+					event.str = val;
+					event.client = this.option("value");
+
+					this.element.trigger(event);
+				}
+			}
+			this.text.show();
+			this.textbox.remove();
+		},
+		focus: function() {
+			if(this.textbox) {
+				this.textbox.focus();
+			}
+		},
+		select: function() {
+			if(this.textbox) {
+				this.textbox.select();
+			}
+		},
 		_setOption: function(key, value) {
 			this._super(key, value);
 			if(key === "left" || key === "width") {
@@ -82,18 +145,12 @@
 		_create: function() {
 			this.element.addClass("unset");
 			this.update_left();
-			this.$on_click = $.proxy(this.on_click, this);
-			this.element.on("click", this.$on_click);
 		},
 		_destroy: function() {
 			this.element.removeClass("unset");
-			this.element.off("click", this.$on_click);
 		},
 		update_left: function() {
 			this.element.css("left", (this.option("left") - this.option("radius")) + "px");
-		},
-		on_click: function() {
-			console.log("set me");
 		},
 		_setOption: function(key, value) {
 			this._super(key, value);

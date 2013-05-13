@@ -401,6 +401,16 @@ html.full_window_editor {
               color: red;
               border-left: 1px solid red;
               border-right: 1px solid red; }
+            #editor > #obj_nav > table.col > tbody > .child > .src > .cell > input {
+              width: 100%;
+              background: none;
+              border: none;
+              font-family: inherit;
+              text-align: inherit;
+              font-size: inherit;
+              outline: none;
+              padding: 0px;
+              margin: 0px; }
           #editor > #obj_nav > table.col > tbody > .child > .src > .pure_cell {
             color: black;
             text-align: center;
