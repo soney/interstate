@@ -180,7 +180,9 @@
 													top: y + "px",
 													width: width + "px"
 												});
-			this.label.hide();
+			if(this.label) {
+				this.label.hide();
+			}
 		};
 		proto.update_dropdown_position = function() {
 			if(this.edit_dropdown) {
