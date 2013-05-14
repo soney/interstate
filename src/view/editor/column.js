@@ -185,7 +185,6 @@
 												.on("submit", $.proxy(this.done_editing, this))
 												.prependTo(this.info_cell);
 
-												/*
 			var options_fieldset = $("<fieldset />").appendTo(this.options_form);
 			var legend = $("<legend />").text("Options")
 										.appendTo(options_fieldset);
@@ -207,6 +206,7 @@
 												})
 												.appendTo(copies_div);
 
+												/*
 
 			var state_machine_div = $("<div />")	.addClass("state_machine_option_container")
 													.appendTo(options_fieldset);
