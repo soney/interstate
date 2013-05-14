@@ -72,8 +72,8 @@
 
 			$(window).on("keydown", _.bind(function (event) {
 				if (event.keyCode === 90 && (event.metaKey || event.ctrlKey)) {
-					if (event.shiftKey) { this.undo(); }
-					else { this.redo(); }
+					if (event.shiftKey) { this.redo(); }
+					else { this.undo(); }
 					event.stopPropagation();
 					event.preventDefault();
 				}
