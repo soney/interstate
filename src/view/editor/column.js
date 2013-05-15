@@ -40,13 +40,13 @@
 			show_prev: false,
 			is_curr_col: false,
 			show_source: true,
-			edit_text: "(edit)",
-			editing_text: "(done)",
 			curr_copy_client: false
 		},
 
 		_create: function () {
-			this.element.addClass("col");
+			this.element.addClass("col")
+						.attr("tabindex", 1);
+
 			this.tbody = $("<tbody />")	.appendTo(this.element);
 			this.header = $("<tr />")	.appendTo(this.tbody)
 										.addClass("header");
@@ -77,12 +77,6 @@
 			this.info_cell = $("<td />")	.appendTo(this.info_row)
 											.attr("colspan", "2")
 											.addClass("info");
-
-			this.edit_button = $("<div />")	.addClass("edit button")
-											.pressable()
-											.on("pressed", this.$on_edit_click)
-											.appendTo(this.info_cell)
-											.text(this.option("edit_text"));
 
 			this.add_property_button = $("<div />")	.addClass("add_prop")
 													.appendTo(this.info_cell)
@@ -125,7 +119,6 @@
 									.hide();
 			}
 
-			this.edit_button.show();
 			this.element.addClass("curr_col");
 			this.build_src_view();
 			if(this.selected_child_disp) {
@@ -140,7 +133,6 @@
 				this.prev_button.off("pressed", this.$on_prev_click)
 								.hide();
 			}
-			this.edit_button.hide();
 			this.element.removeClass("curr_col");
 			this.destroy_src_view();
 
@@ -177,7 +169,6 @@
 
 		begin_editing: function() {
 			this.element.addClass("editing");
-			this.edit_button.text(this.option("editing_text"));
 			$("tr.child", this.tbody).prop("begin_editing");
 
 			this.options_form = $("<form />")	.addClass("options")
@@ -287,22 +278,6 @@
 			}
 		},
 
-		done_editing: function() {
-			this.edit_button.text(this.option("edit_text"));
-			$("tr.child", this.tbody).prop("done_editing");
-			this.copy_disp.show();
-			this.options_form.hide(0, $.proxy(function() {
-				this.options_form.remove();
-				this.element.removeClass("editing");
-			}, this));
-
-			if(this.statechart_view) {
-				if(this.statechart_view.data("statechart")) {
-					this.statechart_view.statechart("done_editing");
-				}
-			}
-		},
-
 		add_children_listener: function () {
 			var INDEX_OFFSET = 2; // Account for the header column
 			this.$on_child_select = $.proxy(this.on_child_select, this);
@@ -337,7 +312,10 @@
 						var index = info.to, child = info.item;
 						var child_disp = $("<tr />");
 						insert_at(child_disp[0], this.tbody[0], index + INDEX_OFFSET);
-						child_disp	.prop({
+						child_disp	.attr({
+										tabindex: index + 2
+									})
+									.prop({
 										value: child.value,
 										name: child.name,
 										inherited: child.inherited,
@@ -348,12 +326,9 @@
 									})
 									.on("expand", $.proxy(this.on_child_select, this, child, child_disp));
 
-						if(this.element.hasClass("editing")) {
-							child_disp	.prop("begin_editing");
-							if(this.awaiting_add_prop) {
-								child_disp	.prop("begin_rename");
-								delete this.awaiting_add_prop;
-							}
+						if(this.awaiting_add_prop) {
+							child_disp	.prop("begin_rename");
+							delete this.awaiting_add_prop;
 						}
 					}, this);
 					_.forEach(diff.moved, function (info) {

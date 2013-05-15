@@ -16,6 +16,7 @@ Then run:
 
     git clone https://github.com/soney/red.git
     cd red
+	git submodule update --init --recursive
     npm install .
     grunt
 

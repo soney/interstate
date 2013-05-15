@@ -5,6 +5,8 @@ $nav_header_active_color: #E0E0E0;
 $nav_header_text_color: #888;
 $nav_header_active_text_color: #222;
 
+$nav_selected_color: rgb(82, 116, 212);
+
 $nav_column_text_color: #666;
 $nav_column_active_text_color: #222;
 
@@ -49,7 +51,6 @@ html.full_window_editor {
 	
 	> body {
 		height: 100%;
-		padding: 15px;
 		margin: 0px;
 		box-sizing: border-box;
 		-moz-box-sizing: border-box;
@@ -63,6 +64,14 @@ html.full_window_editor {
 
 #editor {
 	font-family: "Source Sans Pro";
+
+	> .menu {
+		display: none;
+		margin-bottom: 5px;
+		.reset {
+			@include link;
+		}
+	}
 
 	&.tablet, &.phone {
 		font-size: 1.5em;
@@ -78,6 +87,7 @@ html.full_window_editor {
 	}
 
 	> #obj_nav {
+		margin: 15px;
 		float: left;
 
 		> table.col {
@@ -95,8 +105,6 @@ html.full_window_editor {
 
 				> tbody {
 					> .header, > .info {
-						color: $nav_header_active_text_color;
-						background-color: $nav_header_active_color;
 
 					}
 
@@ -122,193 +130,6 @@ html.full_window_editor {
 				}
 			}
 
-			&.editing {
-				border: 1px solid #777;
-				> tbody {
-					> tr {
-						&.header {
-							background-color: #CCC;
-							color: black;
-						}
-						&.info {
-							color: black;
-
-							form.options {
-								> fieldset {
-									> legend {
-										color: #888;
-										text-align: right;
-									}
-									background-color: #BBB;
-									border: 1px solid #888;
-									font-size: 0.8em;
-									margin: 10px;
-
-									> div.copies_option_container {
-										> input#copies {
-											display: block;
-											font-family: "Inconsolata";
-											color: black;
-											background-color: #AAA;
-											border: 1px solid #333;
-											font-size: inherit;
-										}
-									}
-
-									> div.state_machine_option_container {
-										margin-top: 9px;
-										margin-bottom: 5px;
-										border-top: 1px solid #AAA;
-										padding-top: 8px;
-										> #own_label, #none_label {
-											margin-right: 10px;
-										}
-									}
-									
-									> div.can_inherit_option_container {
-										margin-top: 9px;
-										margin-bottom: 5px;
-										padding-top: 8px;
-										border-top: 1px solid #AAA;
-									}
-
-								}
-								margin-bottom: 5px;
-							}
-							> td.info {
-								> .add_prop {
-									padding-left: $drag_handle_width + $dropdown_padding;
-								}
-							}
-
-							td.info, td.info:hover {
-								background-color: #CCC;
-								> .edit {
-									background-color: #CCC;
-								}
-							}
-						}
-
-						&.child {
-							> td.name {
-								cursor: text;
-								> .drag_handle {
-									cursor: grab;
-									cursor: -moz-grab;
-									cursor: -webkit-grab;
-									
-									&:active {
-										cursor: grabbing;
-										cursor: -moz-grabbing;
-										cursor: -webkit-grabbing;
-									}
-									color: #DDD;
-									font-size: 0.9em;
-									width: $drag_handle_width;
-									display: inline-block;
-								}
-
-								> .dropdown {
-									width: 250px;
-									display: inline-block;
-									border: 1px solid #CCC;
-									background-color: #F9F9F9;
-									&:hover {
-										background-color: #EEE;
-										border: 1px solid #BBB;
-									}
-									&.expanded {
-										background-color: #CCC;
-										border: 1px solid #000;
-									}
-									> .btn {
-										width: 100%;
-										padding-left: $dropdown_padding;
-										padding-right: 5px;
-									}
-
-									.menu {
-										> .menu_item {
-											font-family: "Source Sans Pro";
-											width: 100%;
-											cursor: pointer;
-											box-sizing: border-box;
-											-moz-box-sizing: border-box;
-											padding-left: 15px;
-											padding-right: 5px;
-
-											background-color: #F9F9F9;
-
-											&:hover {
-												background-color: #EEE;
-											}
-											border-bottom: 1px solid #DDD;
-											padding-top: 2px;
-											padding-bottom: 2px;
-
-											&:last-child {
-												border-bottom: none;
-												border-bottom-left-radius: 3px;
-												border-bottom-right-radius: 3px;
-											}
-										}
-										.submenu {
-											.menu {
-												width: 150px;
-											}
-											> .menu_item {
-												background-color: red;
-												font-family: "Source Sans Pro";
-												background-color: #F9F9F9;
-												width: 200px;
-											}
-										}
-									}
-								}
-								> input.rename {
-									border: 1px solid #AAA;
-									font-family: "Inconsolata";
-									background-color: #EEE;
-									font-size: inherit;
-									padding: 0px;
-									padding-left: 3px;
-									margin: 0px;
-								}
-								> .remove_button {
-									cursor: pointer;
-									text-align: center;
-									padding-left: 5px;
-									padding-right: 5px;
-									border-left: 1px solid #EEE;
-									@include link;
-								}
-							}
-							&.inherited {
-								opacity: 0.9;
-								> td.name {
-									padding-left: $drag_handle_width + $dropdown_padding + 1;
-								}
-								> td.value_summary {
-									text-align: center;
-									@include link;
-								}
-							}
-
-							&.builtin {
-								> td.name {
-									padding-left: $drag_handle_width + $dropdown_padding + 1;
-								}
-							}
-
-							> td.value_summary {
-								> select {
-									margin: 0px;
-								}
-							}
-						}
-					}
-				}
-			}
 			> tbody {
 				> tr > .value_summary {
 					max-width: $value_summary_width;
@@ -468,11 +289,16 @@ html.full_window_editor {
 
 					> td.info {
 						> .add_prop {
+							font-size: 0.9em;
 							padding: 4px;
-							text-align: left;
+							text-align: center;
 							display: none;
 							background-color: white;
 							@include link;
+							color: black;
+							&:hover {
+								color: $link_color;
+							}
 						}
 					}
 				}
@@ -491,10 +317,25 @@ html.full_window_editor {
 					}
 					border-top: 1px solid #EEE;
 
+					&:focus {
+						outline: none;
+						border: 1px solid $nav_selected_color;
+					}
+
 					> .name {
 						cursor: pointer;
 						padding-left: 2px;
 						padding-right: 5px;
+						
+						> .prop_name {
+							> input {
+								background: none;
+								border: none;
+								font-size: inherit;
+								font-family: inherit;
+								color: inherit;
+							}
+						}
 					}
 
 					> .value_summary {

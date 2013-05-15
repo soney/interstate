@@ -3,7 +3,6 @@ html.full_window_editor {
   background-color: #FEFEFE; }
   html.full_window_editor > body {
     height: 100%;
-    padding: 15px;
     margin: 0px;
     box-sizing: border-box;
     -moz-box-sizing: border-box; }
@@ -12,6 +11,21 @@ html.full_window_editor {
 
 #editor {
   font-family: "Source Sans Pro"; }
+  #editor > .menu {
+    display: none;
+    margin-bottom: 5px; }
+    #editor > .menu .reset {
+      color: #4169e1;
+      text-decoration: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      cursor: pointer; }
+      #editor > .menu .reset:hover {
+        text-decoration: underline; }
   #editor.tablet, #editor.phone {
     font-size: 1.5em; }
   #editor.phone > #obj_nav {
@@ -19,6 +33,7 @@ html.full_window_editor {
     #editor.phone > #obj_nav > table.col {
       width: 100%; }
   #editor > #obj_nav {
+    margin: 15px;
     float: left; }
     #editor > #obj_nav > table.col {
       border: 1px solid #CCC;
@@ -29,9 +44,6 @@ html.full_window_editor {
       #editor > #obj_nav > table.col.curr_col {
         min-width: 250px;
         box-shadow: 2px 2px 10px #666; }
-        #editor > #obj_nav > table.col.curr_col > tbody > .header, #editor > #obj_nav > table.col.curr_col > tbody > .info {
-          color: #222222;
-          background-color: #e0e0e0; }
         #editor > #obj_nav > table.col.curr_col > tbody > .child {
           color: #222222; }
         #editor > #obj_nav > table.col.curr_col > tbody > tr > td.info {
@@ -42,148 +54,6 @@ html.full_window_editor {
           max-width: 100px; }
           #editor > #obj_nav > table.col.curr_col > tbody > tr > .value_summary.stateful_prop {
             border-right: 1px solid #999; }
-      #editor > #obj_nav > table.col.editing {
-        border: 1px solid #777; }
-        #editor > #obj_nav > table.col.editing > tbody > tr.header {
-          background-color: #CCC;
-          color: black; }
-        #editor > #obj_nav > table.col.editing > tbody > tr.info {
-          color: black; }
-          #editor > #obj_nav > table.col.editing > tbody > tr.info form.options {
-            margin-bottom: 5px; }
-            #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset {
-              background-color: #BBB;
-              border: 1px solid #888;
-              font-size: 0.8em;
-              margin: 10px; }
-              #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > legend {
-                color: #888;
-                text-align: right; }
-              #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.copies_option_container > input#copies {
-                display: block;
-                font-family: "Inconsolata";
-                color: black;
-                background-color: #AAA;
-                border: 1px solid #333;
-                font-size: inherit; }
-              #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.state_machine_option_container {
-                margin-top: 9px;
-                margin-bottom: 5px;
-                border-top: 1px solid #AAA;
-                padding-top: 8px; }
-                #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.state_machine_option_container > #own_label, #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.state_machine_option_container #none_label {
-                  margin-right: 10px; }
-              #editor > #obj_nav > table.col.editing > tbody > tr.info form.options > fieldset > div.can_inherit_option_container {
-                margin-top: 9px;
-                margin-bottom: 5px;
-                padding-top: 8px;
-                border-top: 1px solid #AAA; }
-          #editor > #obj_nav > table.col.editing > tbody > tr.info > td.info > .add_prop {
-            padding-left: 25px; }
-          #editor > #obj_nav > table.col.editing > tbody > tr.info td.info, #editor > #obj_nav > table.col.editing > tbody > tr.info td.info:hover {
-            background-color: #CCC; }
-            #editor > #obj_nav > table.col.editing > tbody > tr.info td.info > .edit, #editor > #obj_nav > table.col.editing > tbody > tr.info td.info:hover > .edit {
-              background-color: #CCC; }
-        #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name {
-          cursor: text; }
-          #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .drag_handle {
-            cursor: grab;
-            cursor: -moz-grab;
-            cursor: -webkit-grab;
-            color: #DDD;
-            font-size: 0.9em;
-            width: 20px;
-            display: inline-block; }
-            #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .drag_handle:active {
-              cursor: grabbing;
-              cursor: -moz-grabbing;
-              cursor: -webkit-grabbing; }
-          #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .dropdown {
-            width: 250px;
-            display: inline-block;
-            border: 1px solid #CCC;
-            background-color: #F9F9F9; }
-            #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .dropdown:hover {
-              background-color: #EEE;
-              border: 1px solid #BBB; }
-            #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .dropdown.expanded {
-              background-color: #CCC;
-              border: 1px solid #000; }
-            #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .dropdown > .btn {
-              width: 100%;
-              padding-left: 5px;
-              padding-right: 5px; }
-            #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .dropdown .menu > .menu_item {
-              font-family: "Source Sans Pro";
-              width: 100%;
-              cursor: pointer;
-              box-sizing: border-box;
-              -moz-box-sizing: border-box;
-              padding-left: 15px;
-              padding-right: 5px;
-              background-color: #F9F9F9;
-              border-bottom: 1px solid #DDD;
-              padding-top: 2px;
-              padding-bottom: 2px; }
-              #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .dropdown .menu > .menu_item:hover {
-                background-color: #EEE; }
-              #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .dropdown .menu > .menu_item:last-child {
-                border-bottom: none;
-                border-bottom-left-radius: 3px;
-                border-bottom-right-radius: 3px; }
-            #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .dropdown .menu .submenu .menu {
-              width: 150px; }
-            #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .dropdown .menu .submenu > .menu_item {
-              background-color: red;
-              font-family: "Source Sans Pro";
-              background-color: #F9F9F9;
-              width: 200px; }
-          #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > input.rename {
-            border: 1px solid #AAA;
-            font-family: "Inconsolata";
-            background-color: #EEE;
-            font-size: inherit;
-            padding: 0px;
-            padding-left: 3px;
-            margin: 0px; }
-          #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .remove_button {
-            cursor: pointer;
-            text-align: center;
-            padding-left: 5px;
-            padding-right: 5px;
-            border-left: 1px solid #EEE;
-            color: #4169e1;
-            text-decoration: none;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            cursor: pointer; }
-            #editor > #obj_nav > table.col.editing > tbody > tr.child > td.name > .remove_button:hover {
-              text-decoration: underline; }
-        #editor > #obj_nav > table.col.editing > tbody > tr.child.inherited {
-          opacity: 0.9; }
-          #editor > #obj_nav > table.col.editing > tbody > tr.child.inherited > td.name {
-            padding-left: 26px; }
-          #editor > #obj_nav > table.col.editing > tbody > tr.child.inherited > td.value_summary {
-            text-align: center;
-            color: #4169e1;
-            text-decoration: none;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            cursor: pointer; }
-            #editor > #obj_nav > table.col.editing > tbody > tr.child.inherited > td.value_summary:hover {
-              text-decoration: underline; }
-        #editor > #obj_nav > table.col.editing > tbody > tr.child.builtin > td.name {
-          padding-left: 26px; }
-        #editor > #obj_nav > table.col.editing > tbody > tr.child > td.value_summary > select {
-          margin: 0px; }
       #editor > #obj_nav > table.col > tbody > tr > .value_summary {
         max-width: 50px;
         overflow: hidden;
@@ -314,8 +184,9 @@ html.full_window_editor {
           #editor > #obj_nav > table.col > tbody > .info .edit:hover {
             background-color: #eeeeee; }
         #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop {
+          font-size: 0.9em;
           padding: 4px;
-          text-align: left;
+          text-align: center;
           display: none;
           background-color: white;
           color: #4169e1;
@@ -326,9 +197,12 @@ html.full_window_editor {
           -moz-user-select: none;
           -ms-user-select: none;
           user-select: none;
-          cursor: pointer; }
+          cursor: pointer;
+          color: black; }
           #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop:hover {
             text-decoration: underline; }
+          #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop:hover {
+            color: #4169e1; }
       #editor > #obj_nav > table.col > tbody > .child {
         -webkit-touch-callout: none;
         -webkit-user-select: none;
@@ -344,10 +218,19 @@ html.full_window_editor {
           background-color: #FFF; }
         #editor > #obj_nav > table.col > tbody > .child:nth-child(odd) {
           background-color: #FAFAFA; }
+        #editor > #obj_nav > table.col > tbody > .child:focus {
+          outline: none;
+          border: 1px solid #5274d4; }
         #editor > #obj_nav > table.col > tbody > .child > .name {
           cursor: pointer;
           padding-left: 2px;
           padding-right: 5px; }
+          #editor > #obj_nav > table.col > tbody > .child > .name > .prop_name > input {
+            background: none;
+            border: none;
+            font-size: inherit;
+            font-family: inherit;
+            color: inherit; }
         #editor > #obj_nav > table.col > tbody > .child > .value_summary {
           cursor: pointer;
           overflow: hidden;

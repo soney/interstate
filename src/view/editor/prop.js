@@ -54,7 +54,20 @@
 			this.name_cell = $("<td />")	.addClass("name")
 											.appendTo(this.element);
 
-			this.name_span = $("<span />")	.text(this.option("name"))
+			this.name_span = $("<span />")	.addClass("prop_name")
+											.editable_text({
+												text: this.option("name"),
+												edit_event: "dblclick"
+											})
+											.on("text_change", $.proxy(function(e) {
+												var event = new $.Event("command");
+												event.command_type = "rename";
+												event.from_name = this.option("name");
+												event.to_name = e.str;
+												event.client = this.option("obj");
+
+												this.element.trigger(event);
+											}, this))
 											.appendTo(this.name_cell);
 
 			this.value_summary = $("<td />")	.appendTo(this.element)
@@ -70,8 +83,10 @@
 				this.element.addClass("builtin");
 			}
 
-			this.element.pressable();
-			this.element.on("pressed", $.proxy(this.on_click, this));
+			//this.element.pressable();
+			this.element.on("click", $.proxy(this.on_click, this));
+			this.element.on("contextmenu", $.proxy(this.on_context_menu, this));
+			this.element.on("keydown", $.proxy(this.on_key_down, this));
 			if(this.option("show_src")) {
 				this.on_show_src();
 			} else {
@@ -81,17 +96,50 @@
 
 		_destroy: function() {
 			this._super();
-			this.element.pressable("destroy");
+			//this.element.pressable("destroy");
+		},
+
+		on_key_down: function(event) {
+			var keyCode = event.keyCode;
+			var prev;
+			if(keyCode === 40 || keyCode === 74) { //down or j
+				var next = this.element.next();
+				if(next) {
+					next.focus();
+				}
+			} else if(keyCode === 38 || keyCode === 75) { // up or k
+				prev = this.element.prev();
+				if(prev) {
+					prev.focus();
+				}
+			} else if(keyCode === 13) { // Enter
+				this.begin_rename();
+			} else if(keyCode === 39 || keyCode === 79) { // Right or o
+				this.element.trigger("expand");
+			} else if(keyCode === 37) { // Left
+				this.element.trigger("prev");
+			} else if(keyCode === 8) { //Backspace
+				prev = this.element.prev();
+				if(prev) {
+					prev.focus();
+				}
+				this.unset();
+				event.preventDefault();
+			} else {
+				console.log(keyCode);
+			}
 		},
 
 		on_click: function(event) {
-			if(!this.element.hasClass("editing")) {
-				event.stopPropagation();
-				event.preventDefault();
-				if(this.element.not(".selected")) {
-					this.element.trigger("expand");
-				}
+			event.stopPropagation();
+			event.preventDefault();
+			if(this.element.not(".selected")) {
+				this.element.trigger("expand");
 			}
+		},
+		on_context_menu: function(event) {
+			console.log("open a context menu");
+			event.preventDefault();
 		},
 		on_select: function() {
 			this.element.addClass("selected");
@@ -260,38 +308,7 @@
 			this.element.trigger(event);
 		},
 		begin_rename: function() {
-			this.$end_rename = $.proxy(this.end_rename, this);
-			this.rename_input = $("<input />")	.addClass("rename")
-												.val(this.option("name"))
-												.appendTo(this.name_cell)
-												.focus()
-												.select()
-												.on("keydown", $.proxy(function(event) {
-													if(event.keyCode === 27) {
-														this.end_rename(true);
-													} else if(event.keyCode === 13) {
-														this.end_rename();
-													}
-												}, this))
-												.on("blur", this.$end_rename);
-			this.edit_dropdown.hide();
-		},
-		end_rename: function(cancel) {
-			this.rename_input.off("blur", this.$end_rename); // because removal would result in the rename event being fired twice
-			if(cancel !== true) {
-				var val = this.rename_input.val();
-				if(val !== this.option("name")) {
-					var event = new $.Event("command");
-					event.command_type = "rename";
-					event.from_name = this.option("name");
-					event.to_name = this.rename_input.val();
-					event.client = this.option("obj");
-
-					this.element.trigger(event);
-				}
-			}
-			this.edit_dropdown.show();
-			this.rename_input.remove();
+			this.name_span.editable_text("edit");
 		},
 		done_editing: function() {
 			this.value_summary.value_summary("done_editing");								

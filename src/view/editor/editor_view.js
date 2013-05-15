@@ -62,6 +62,15 @@
 
 		load_viewer: function (root_client) {
 			this.element.html("");
+			this.menu = $("<div />").addClass("menu")
+									.appendTo(this.element);
+			this.reset_button = $("<a />")	.addClass("reset button")
+											.text("Reset")
+											.appendTo(this.menu)
+											.attr("href", "javascript:void(0)")
+											.on("click", $.proxy(this.reset, this));
+											
+
 			this.navigator = $("<div />")	.appendTo(this.element)
 											.navigator({
 												root_client: root_client,
@@ -279,9 +288,13 @@
 		redo: function() {
 			this.client_socket.post_command("redo");
 		},
+		reset: function() {
+			this.client_socket.post_command("reset");
+		},
 
 		_destroy: function () {
 			this.navigator.navigator("destroy");
+			this.menu.remove();
 			this.client_socket.destroy();
 		}
 	});

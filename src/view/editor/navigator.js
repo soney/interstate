@@ -31,7 +31,8 @@
 											.on("header_click", $.proxy(this.on_header_click, this, root_col))
 											.on("prev_click", $.proxy(this.on_prev_click, this, root_col))
 											.on("child_removed", $.proxy(this.on_child_removed, this, root_col))
-											.on("command", this.$forward_event);
+											.on("command", this.$forward_event)
+											.focus();
 			this.curr_col = root_col;
 			this.columns = [root_col];
 		},
@@ -62,7 +63,8 @@
 												.on("child_select", $.proxy(this.on_child_select, this, next_col))
 												.on("header_click", $.proxy(this.on_header_click, this, next_col))
 												.on("prev_click", $.proxy(this.on_prev_click, this, next_col))
-												.on("child_removed", $.proxy(this.on_child_removed, this, next_col));
+												.on("child_removed", $.proxy(this.on_child_removed, this, next_col))
+												.focus();
 
 				this.columns.push(next_col);
 				if(this.option("single_col")) {
