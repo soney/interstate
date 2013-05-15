@@ -76,7 +76,7 @@ html.full_window_editor {
         cursor: pointer;
         text-align: left;
         padding: 5px;
-        padding-left: 20px;
+        padding-left: 15px;
         background-color: white;
         color: #BBB; }
       #editor > #obj_nav > table.col > tbody > .header {
@@ -218,13 +218,22 @@ html.full_window_editor {
           background-color: #FFF; }
         #editor > #obj_nav > table.col > tbody > .child:nth-child(odd) {
           background-color: #FAFAFA; }
-        #editor > #obj_nav > table.col > tbody > .child:focus {
-          outline: none;
-          border: 1px solid #5274d4; }
         #editor > #obj_nav > table.col > tbody > .child > .name {
           cursor: pointer;
           padding-left: 2px;
           padding-right: 5px; }
+          #editor > #obj_nav > table.col > tbody > .child > .name > .drag_handle {
+            cursor: grab;
+            cursor: -moz-grab;
+            cursor: -webkit-grab;
+            color: #DDD;
+            font-size: 0.7em;
+            width: 15px;
+            display: inline-block; }
+            #editor > #obj_nav > table.col > tbody > .child > .name > .drag_handle:active {
+              cursor: grabbing;
+              cursor: -moz-grabbing;
+              cursor: -webkit-grabbing; }
           #editor > #obj_nav > table.col > tbody > .child > .name > .prop_name > input {
             background: none;
             border: none;
@@ -257,6 +266,8 @@ html.full_window_editor {
         #editor > #obj_nav > table.col > tbody > .child.selected {
           background-color: #5274d4;
           color: white; }
+          #editor > #obj_nav > table.col > tbody > .child.selected .drag_handle {
+            color: #bebebe; }
           #editor > #obj_nav > table.col > tbody > .child.selected > .value_summary {
             border-left: 1px dashed #99B; }
             #editor > #obj_nav > table.col > tbody > .child.selected > .value_summary > .dict {

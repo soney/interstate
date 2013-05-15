@@ -13,7 +13,7 @@ $nav_column_active_text_color: #222;
 $value_summary_width: 50px;
 $active_obj_value_summary_width: 100px;
 $unset_prop_val_radius: 7px;
-$drag_handle_width: 20px;
+$drag_handle_width: 15px;
 $dropdown_padding: 5px;
 
 $link_color: royalblue;
@@ -318,14 +318,30 @@ html.full_window_editor {
 					border-top: 1px solid #EEE;
 
 					&:focus {
-						outline: none;
-						border: 1px solid $nav_selected_color;
+					//	outline: none;
+					//	border: 1px solid $nav_selected_color;
 					}
 
 					> .name {
 						cursor: pointer;
 						padding-left: 2px;
 						padding-right: 5px;
+
+						> .drag_handle {
+							cursor: grab;
+							cursor: -moz-grab;
+							cursor: -webkit-grab;
+
+							&:active {
+								cursor: grabbing;
+								cursor: -moz-grabbing;
+								cursor: -webkit-grabbing;
+							}
+							color: #DDD;
+							font-size: 0.7em;
+							width: $drag_handle_width;
+							display: inline-block;
+						}
 						
 						> .prop_name {
 							> input {
@@ -337,6 +353,7 @@ html.full_window_editor {
 							}
 						}
 					}
+
 
 					> .value_summary {
 						cursor: pointer;
@@ -377,6 +394,9 @@ html.full_window_editor {
 					&.selected {
 						background-color: rgb(82, 116, 212);
 						color: white;
+						.drag_handle {
+							color: rgb(190, 190, 190);
+						}
 						> .value_summary {
 							border-left: 1px dashed #99B;
 							> .dict {

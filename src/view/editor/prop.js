@@ -54,6 +54,9 @@
 			this.name_cell = $("<td />")	.addClass("name")
 											.appendTo(this.element);
 
+			this.drag_handle = $("<span />").addClass("drag_handle")
+											.appendTo(this.name_cell)
+											.html("&#9776;");
 			this.name_span = $("<span />")	.addClass("prop_name")
 											.editable_text({
 												text: this.option("name"),
@@ -100,33 +103,61 @@
 		},
 
 		on_key_down: function(event) {
-			var keyCode = event.keyCode;
-			var prev;
-			if(keyCode === 40 || keyCode === 74) { //down or j
-				var next = this.element.next();
-				if(next) {
-					next.focus();
+			if(this.element.is(event.target)) {
+				var keyCode = event.keyCode;
+				var table, prev, next;
+				if(keyCode === 40 || keyCode === 74) { //down or j
+					next = this.element.next(":focusable");
+					if(next.length>0) {
+						next.focus();
+					} else {
+						table = this.element.parent().parent();
+						table.focus();
+					}
+				} else if(keyCode === 38 || keyCode === 75) { // up or k
+					prev = this.element.prev(":focusable");
+					if(prev.length>0) {
+						prev.focus();
+					} else {
+						table = this.element.parent().parent();
+						table.focus();
+					}
+				} else if(keyCode === 13) { // Enter
+					this.begin_rename();
+				} else if(keyCode === 39 || keyCode === 79 || keyCode === 76) { // Right or o or k
+					this.element.trigger("expand");
+				} else if(keyCode === 37 || keyCode === 72) { // Left
+					table = this.element.parent().parent();
+					prev = table.prev();
+					if(prev.length>0) {
+						prev.focus();
+					}
+				} else if(keyCode === 8) { //Backspace
+					prev = this.element.prev(":focusable");
+					if(prev.length>0) {
+						prev.focus();
+					} else {
+						next = this.element.next(":focusable");
+						if(next.length>0) {
+							next.focus();
+						} else {
+							table = this.element.parent().parent();
+							table.focus();
+						}
+					}
+					this.unset();
+					event.preventDefault();
+				} else if(keyCode === 27) {
+					table = this.element.parent().parent();
+					table.focus();
+				} else if(keyCode === 187 && event.shiftKey) { // +
+					event.stopPropagation();
+					event.preventDefault();
+					table = this.element.parent().parent();
+					table.column("add_property");
+				} else {
+					//console.log(keyCode);
 				}
-			} else if(keyCode === 38 || keyCode === 75) { // up or k
-				prev = this.element.prev();
-				if(prev) {
-					prev.focus();
-				}
-			} else if(keyCode === 13) { // Enter
-				this.begin_rename();
-			} else if(keyCode === 39 || keyCode === 79) { // Right or o
-				this.element.trigger("expand");
-			} else if(keyCode === 37) { // Left
-				this.element.trigger("prev");
-			} else if(keyCode === 8) { //Backspace
-				prev = this.element.prev();
-				if(prev) {
-					prev.focus();
-				}
-				this.unset();
-				event.preventDefault();
-			} else {
-				console.log(keyCode);
 			}
 		},
 
@@ -243,9 +274,6 @@
 
 			this.value_summary.value_summary("begin_editing");
 			if(!this.option("inherited") && !this.option("builtin")) {
-				this.drag_handle = $("<span />").addClass("drag_handle")
-												.prependTo(this.name_cell)
-												.html("&#9776;");
 
 				this.remove_button = $("<div />")	.addClass("menu_item")	
 													.text("Remove")

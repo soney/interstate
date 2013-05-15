@@ -74,12 +74,14 @@
 			this.textbox.remove();
 			this.set_state(STATE.IDLE);
 			this.update_static_text();
+			this.element.trigger("done_editing");
 		},
 
 		cancel: function() {
 			this.textbox.remove();
 			this.set_state(STATE.IDLE);
 			this.update_static_text();
+			this.element.trigger("done_editing");
 		},
 
 		get_state: function() {

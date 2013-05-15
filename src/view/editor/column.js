@@ -83,11 +83,7 @@
 													.text("(+ Add Property)")
 													.pressable()
 													.on("pressed", $.proxy(function() {
-														this.awaiting_add_prop = true;
-														var event = new $.Event("command");
-														event.command_type = "add_property";
-														event.client = this.option("client");
-														this.element.trigger(event);
+														this.add_property();
 													}, this));
 
 			this.add_children_listener();
@@ -108,6 +104,52 @@
 					this.add_children_listener();
 				}
 			}, this));
+			this.element.on("keydown", $.proxy(this.on_key_down, this));
+		},
+
+		add_property: function() {
+			this.awaiting_add_prop = true;
+			var event = new $.Event("command");
+			event.command_type = "add_property";
+			event.client = this.option("client");
+			this.element.trigger(event);
+		},
+
+		on_key_down: function(event) {
+			if(this.element.is(event.target)) {
+				var keyCode = event.keyCode;
+				var prev;
+
+				if(keyCode === 40 || keyCode === 74) { //down or j
+					var next = $("tr.child:focusable", this.element).first();
+					if(next.length>0) {
+						next.focus();
+					}
+				} else if(keyCode === 38 || keyCode === 75) { // up or k
+					prev = $("tr.child:focusable", this.element).last();
+					if(prev.length>0) {
+						prev.focus();
+					}
+				} else if(keyCode === 37 || keyCode === 72) { // Left
+					var prev_col = this.element.prev();
+					if(prev_col.length>0) {
+						prev_col.focus();
+					}
+				} else if(keyCode === 39 || keyCode === 76) { // Right or k
+					var next_col = this.element.next();
+					if(next_col.length>0) {
+						next_col.focus();
+					}
+				} else if(keyCode === 79) { // o
+					this.element.trigger("header_click", this);
+				} else if(keyCode === 187 && event.shiftKey) { // +
+					event.stopPropagation();
+					event.preventDefault();
+					this.add_property();
+				} else if(keyCode === 8) { //Backspace
+					event.preventDefault();
+				}
+			}
 		},
 
 		on_curr_col: function() {
