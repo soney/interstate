@@ -352,6 +352,27 @@ html.full_window_editor {
 								color: inherit;
 							}
 						}
+
+						> .edit {
+							font-family: "Source Sans Pro";
+							position: absolute;
+							width: 90px;
+							border: 1px solid black;
+							box-shadow: 2px 2px 10px #666;
+							background-color: #EEE;
+							color: black;
+							font-weight: 200;
+							> .item {
+								border-top: 1px solid #AAA;
+								padding-left: 5px;
+								&:first-child {
+									border-top: none;
+								}
+								&:hover {
+									background-color: #DDD;
+								}
+							}
+						}
 					}
 
 
@@ -453,6 +474,12 @@ html.full_window_editor {
 							color: black;
 							text-align: center;
 							display: block;
+							> input {
+								background: none;
+								border: none;
+								font-size: inherit;
+								font-family: inherit;
+							}
 						}
 
 						> .unset {

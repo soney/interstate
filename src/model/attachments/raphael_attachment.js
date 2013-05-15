@@ -7,9 +7,7 @@
 		_ = red._;
 	var VALID_TYPES = ["path", "image", "rect", "text", "circle", "ellipse"];
 
-	var is_paper = function(x) {
-		return x instanceof Raphael._Paper;
-	};
+	var is_paper = function(obj) { return obj instanceof Raphael._Paper; };
 
 	var insert_at = function (child_node, parent_node, index) {
 		var paper = parent_node;
@@ -49,6 +47,93 @@
 		}
 		child_node.insertBefore(before_child);
 	};
+
+	red.register_attachments({
+		"paper": {
+			ready: function() {
+				this.dom_obj = window.document.createElement("div");
+				this.paper = new Raphael(this.dom_obj, 0, 0);
+			},
+			parameters: {
+				width_height: function(contextual_object) {
+					var width = contextual_object.prop_val("width"),
+						height = contextual_object.prop_val("height");
+					this.paper.setSize(width, height);
+				},
+				screen: function(contextual_object) {
+					var screen = contextual_object.prop_val("screen");
+					var screen_contents = [];
+					if(screen instanceof red.ContextualDict) {
+						screen_contents = screen.children();
+					}
+
+				
+					var children;
+					_.each(screen_contents, function(child_info) {
+						var child = child_info.value;
+						if(child instanceof red.ContextualDict) {
+							console.log(child);
+							var circle_attachment_instance = child.get_attachment_instance("circle");
+							if(circle_attachment_instance) {
+								console.log("yo");
+							}
+						}
+					});
+				}
+			},
+			proto_props: {
+				get_dom_obj: function() {
+					return this.dom_obj;
+				}
+			}
+		},
+		"circle": {
+			ready: function() {
+				this.robj = false;
+			},
+			parameters: {
+				/*
+				object: function(contextual_object) {
+					var type = "circle";
+					var defaults = [50,50,40];
+					this._type_change_listener = cjs.liven(function () {
+						var paper = this.get_paper();
+						var obj = paper[type].apply(paper, defaults);
+						this.$robj.set(obj);
+					}, {
+						context: this,
+						pause_while_running: true
+					});
+				}
+				*/
+			},
+			proto_props: {
+				create_robj: function(paper) {
+					var type = "circle";
+					var defaults = [50,50,40];
+					this.robj = paper[type].apply(paper, defaults);
+				}
+			/*
+				get_paper: function() {
+					var contextual_object = this.get_contextual_object();
+					var ptr = contextual_object.get_pointer();
+					var parent_ptr = ptr.slice(0, ptr.length()-2);
+					var parent_object = parent_ptr.points_at();
+					var parent_cobj = red.find_or_put_contextual_obj(parent_object, parent_ptr);
+					var parent_raphael_attachment = parent_cobj.get_attachment_instance("paper");
+					if(parent_raphael_attachment) {
+						var parent_robj = parent_raphael_attachment.get_raphael_obj();
+						if(is_paper(parent_robj)) {
+							return parent_robj;
+						}
+					}
+					return false;
+				}
+				*/
+			}
+		}
+	});
+		/*
 
 	red.RaphaelAttachmentInstance = function (options) {
 		red.RaphaelAttachmentInstance.superclass.constructor.apply(this, arguments);
@@ -319,5 +404,6 @@
 	red.define("raphael_attachment", function (options) {
 		return new red.RaphaelAttachment(options);
 	});
+	*/
 
 }(red, jQuery));

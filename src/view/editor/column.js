@@ -35,7 +35,7 @@
 	$.widget("red.column", {
 		options: {
 			client: false,
-			name: "root",
+			name: "sketch",
 			prev_col: false,
 			show_prev: false,
 			is_curr_col: false,
@@ -147,6 +147,7 @@
 					event.preventDefault();
 					this.add_property();
 				} else if(keyCode === 8) { //Backspace
+					event.stopPropagation();
 					event.preventDefault();
 				}
 			}
@@ -355,7 +356,7 @@
 						var child_disp = $("<tr />");
 						insert_at(child_disp[0], this.tbody[0], index + INDEX_OFFSET);
 						child_disp	.attr({
-										tabindex: index + 2
+										tabindex: (index + 2) * 10
 									})
 									.prop({
 										value: child.value,
@@ -371,6 +372,10 @@
 						if(this.awaiting_add_prop) {
 							child_disp	.prop("begin_rename");
 							delete this.awaiting_add_prop;
+							this.awaiting_rename_prop = true;
+						} else if(this.awaiting_rename_prop) {
+							this.on_child_select(child, child_disp);
+							delete this.awaiting_rename_prop;
 						}
 					}, this);
 					_.forEach(diff.moved, function (info) {

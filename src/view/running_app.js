@@ -164,7 +164,15 @@
 			var root_contextual_object = red.find_or_put_contextual_obj(root_dict);
 
 			this._dom_tree_fn = cjs.liven(function () {
-				var dom_attachment = root_contextual_object.get_attachment_instance("dom");
+				var paper_attachment = root_contextual_object.get_attachment_instance("paper");
+				var dom_element = paper_attachment.get_dom_obj();
+				if (this.element.children().is(dom_element)) {
+					this.element.children().not(dom_element).remove();
+				} else {
+					this.element.children().remove();
+					this.element.append(dom_element);
+				}
+				/*
 				var dom_element = dom_attachment.get_dom_obj();
 
 				if (this.element.children().is(dom_element)) {
@@ -175,6 +183,7 @@
 				}
 
 				dom_attachment.resume();
+				*/
 			}, {
 				context: this,
 				pause_while_running: true

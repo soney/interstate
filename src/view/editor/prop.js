@@ -54,9 +54,11 @@
 			this.name_cell = $("<td />")	.addClass("name")
 											.appendTo(this.element);
 
+/*
 			this.drag_handle = $("<span />").addClass("drag_handle")
 											.appendTo(this.name_cell)
 											.html("&#9776;");
+											*/
 			this.name_span = $("<span />")	.addClass("prop_name")
 											.editable_text({
 												text: this.option("name"),
@@ -86,6 +88,21 @@
 				this.element.addClass("builtin");
 			}
 
+			this.edit_menu = $("<div />")	.addClass("edit")
+											.appendTo(this.name_cell)
+											.hide();
+			this.rename_button = $("<div />")	.appendTo(this.edit_menu)
+												.addClass("item")
+												.on("mousedown", $.proxy(this.begin_rename, this))
+												.attr("tabindex", 2)
+												.text("Rename");
+			this.remove_button = $("<div />")	.appendTo(this.edit_menu)
+												.addClass("item")
+												.on("mousedown", $.proxy(this.unset, this))
+												.attr("tabindex", 2)
+												.text("Remove");
+
+
 			//this.element.pressable();
 			this.element.on("click", $.proxy(this.on_click, this));
 			this.element.on("contextmenu", $.proxy(this.on_context_menu, this));
@@ -103,16 +120,20 @@
 		},
 
 		on_key_down: function(event) {
+			var table, prev, next;
+			var keyCode = event.keyCode;
 			if(this.element.is(event.target)) {
-				var keyCode = event.keyCode;
-				var table, prev, next;
 				if(keyCode === 40 || keyCode === 74) { //down or j
-					next = this.element.next(":focusable");
-					if(next.length>0) {
-						next.focus();
+					if(this.edit_menu.is(":visible")) {
+						this.edit_menu.children().first().focus();
 					} else {
-						table = this.element.parent().parent();
-						table.focus();
+						next = this.element.next(":focusable");
+						if(next.length>0) {
+							next.focus();
+						} else {
+							table = this.element.parent().parent();
+							table.focus();
+						}
 					}
 				} else if(keyCode === 38 || keyCode === 75) { // up or k
 					prev = this.element.prev(":focusable");
@@ -125,7 +146,12 @@
 				} else if(keyCode === 13) { // Enter
 					this.begin_rename();
 				} else if(keyCode === 39 || keyCode === 79 || keyCode === 76) { // Right or o or k
-					this.element.trigger("expand");
+					var focusable_children = $(":focusable", this.element).first();
+					if(focusable_children.length > 0) {
+						focusable_children.first().focus();
+					} else {
+						this.element.trigger("expand");
+					}
 				} else if(keyCode === 37 || keyCode === 72) { // Left
 					table = this.element.parent().parent();
 					prev = table.prev();
@@ -147,16 +173,43 @@
 					}
 					this.unset();
 					event.preventDefault();
-				} else if(keyCode === 27) {
-					table = this.element.parent().parent();
-					table.focus();
+				} else if(keyCode === 27) { // Esc
+					if(this.edit_menu.is(":visible")) {
+						this.hide_edit_menu();
+					} else {
+						table = this.element.parent().parent();
+						table.focus();
+					}
 				} else if(keyCode === 187 && event.shiftKey) { // +
 					event.stopPropagation();
 					event.preventDefault();
 					table = this.element.parent().parent();
 					table.column("add_property");
+				} else if(keyCode === 69) { // e
+					if(this.edit_menu.is(":visible")) {
+						this.hide_edit_menu();
+					} else {
+						this.show_edit_menu();
+					}
 				} else {
 					//console.log(keyCode);
+				}
+			} else if(this.edit_menu.is($(event.target).parents())) {
+				if(keyCode === 40 || keyCode === 74) { //down or j
+					next = $(event.target).next(":focusable");
+					if(next.length > 0) {
+						next.focus();
+					}
+				} else if(keyCode === 38 || keyCode === 75) { // up or k
+					prev = $(event.target).prev(":focusable");
+					if(prev.length > 0) {
+						prev.focus();
+					}
+				} else if(keyCode === 13) { // Enter
+					$(event.target).trigger("mousedown");
+				} else if(keyCode === 27) { // Esc
+					this.hide_edit_menu();
+					this.element.focus();
 				}
 			}
 		},
@@ -169,8 +222,21 @@
 			}
 		},
 		on_context_menu: function(event) {
-			console.log("open a context menu");
 			event.preventDefault();
+			this.show_edit_menu();
+		},
+		show_edit_menu: function() {
+			this.edit_menu.show();
+			this.close_edit_menu_listener = $.proxy(function(e) {
+				this.hide_edit_menu();
+				e.preventDefault();
+				e.stopPropagation();
+			}, this);
+			$(window).on("mousedown", this.close_edit_menu_listener);
+		},
+		hide_edit_menu: function() {
+			this.edit_menu.hide();
+			$(window).off("mousedown", this.close_edit_menu_listener);
 		},
 		on_select: function() {
 			this.element.addClass("selected");
@@ -243,7 +309,20 @@
 						var str = $str.get();
 						var cell_disp = $("<span />")	.addClass("pure_cell")
 														.appendTo(this.src_cell)
-														.text(str);
+														.editable_text({
+															text: str
+														})
+														.on("click", $.proxy(function() {
+															cell_disp.editable_text("edit");
+														}, this))
+														.on("text_change", $.proxy(function(e) {
+															var event = new $.Event("command");
+															event.command_type = "set_str";
+															event.str = e.str;
+															event.client = value;
+
+															this.element.trigger(event);
+														}, this));
 					}, {
 						context: this
 					});
@@ -269,64 +348,6 @@
 				delete this.src_cell;
 			}
 		},
-		begin_editing: function() {
-			this.element.addClass("editing");
-
-			this.value_summary.value_summary("begin_editing");
-			if(!this.option("inherited") && !this.option("builtin")) {
-
-				this.remove_button = $("<div />")	.addClass("menu_item")	
-													.text("Remove")
-													.pressable()
-													.on("pressed", $.proxy(function(event) {
-														edit_dropdown.dropdown("collapse");
-														this.unset();
-														event.preventDefault();
-														event.stopPropagation();
-													}, this));
-				this.rename_button = $("<div />")	.addClass("menu_item")	
-													.text("Rename")
-													.pressable()
-													.on("pressed", $.proxy(function(event) {
-														this.edit_dropdown.dropdown("collapse");
-														this.begin_rename();
-														event.preventDefault();
-														event.stopPropagation();
-													}, this));
-				this.types = _.map(type_options, function(type_name) {
-					return $("<div />")	.addClass("menu_item")
-										.text(type_name)
-										.pressable()
-										.on("pressed", $.proxy(function(e) {
-											edit_dropdown.dropdown("collapse");
-											var event = new $.Event("command");
-											event.command_type = "set_type";
-											event.type_name = type_name;
-											event.client = this.option("obj");
-											event.prop_name = this.option("name");
-											this.element.trigger(event);
-											event.preventDefault();
-											event.stopPropagation();
-										}, this));
-				}, this);
-				this.change_type_button = $("<div />")	.addClass("menu_item")
-														.submenu({
-															text: "Set Type",
-															items: this.types
-														});
-
-			
-				this.edit_dropdown = $("<span />")	.appendTo(this.name_cell)
-													.addClass("edit_prop")
-													.dropdown({
-														text: this.option("name"),
-														items: [this.change_type_button, this.rename_button, this.remove_button]
-													});
-
-				var edit_dropdown = this.edit_dropdown;
-				this.name_span.hide();
-			}
-		},
 		unset: function() {
 			var event = new $.Event("command");
 			event.command_type = "unset";
@@ -337,29 +358,6 @@
 		},
 		begin_rename: function() {
 			this.name_span.editable_text("edit");
-		},
-		done_editing: function() {
-			this.value_summary.value_summary("done_editing");								
-			this.element.removeClass("editing");
-			if(this.change_type_button) {
-				this.change_type_button.submenu("destroy");
-			}
-			if(this.edit_dropdown) {
-				this.edit_dropdown	.dropdown("destroy")
-									.remove();
-			}
-			if(this.drag_handle) {
-				this.drag_handle.remove();
-			}
-			/*
-			if(this.remove_button) {
-				this.remove_button.remove();
-			}
-			if(this.rename_input) {
-				this.rename_input.remove();
-			}
-			*/
-			this.name_span.show();
 		},
 		_setOption: function(key, value) {
 			this._super(key, value);

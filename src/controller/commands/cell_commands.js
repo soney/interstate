@@ -15,6 +15,9 @@
         }
     
         this._cell = this._options.cell;
+		if(this._cell instanceof red.ContextualCell) {
+			this._cell = this._cell.get_object();
+		}
         this._to_str = this._options.str;
     };
     

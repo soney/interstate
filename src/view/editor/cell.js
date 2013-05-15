@@ -18,7 +18,8 @@
 			parent: false
 		},
 		_create: function() {
-			this.element.addClass("cell");
+			this.element.addClass("cell")
+						.attr("tabindex", 1);
 			this.update_position();
 			this.update_active();
 			this.create_live_text_fn();
@@ -27,6 +28,7 @@
 
 			this.text = $("<span />")	.addClass("txt")
 										.appendTo(this.element);
+			this.element.on("keydown", $.proxy(this.on_key_down, this));
 		},
 		_destroy: function() {
 			this.text.remove();
@@ -36,6 +38,8 @@
 		},
 		on_click: function() {
 			this.begin_editing();
+		},
+		on_key_down: function() {
 		},
 		create_live_text_fn: function() {
 			var value = this.option("value");
@@ -143,7 +147,8 @@
 			radius: 7
 		},
 		_create: function() {
-			this.element.addClass("unset");
+			this.element.addClass("unset")
+						.attr("tabindex", 1);
 			this.update_left();
 		},
 		_destroy: function() {

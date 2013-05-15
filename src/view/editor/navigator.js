@@ -22,7 +22,7 @@
 			this.element.attr("id", "obj_nav");
 			var root_col = $("<table />")	.appendTo(this.element);
 			root_col						.column({
-												name: "root",
+												name: "sketch",
 												client: this.option("root_client"),
 												is_curr_col: true,
 												show_prev: false

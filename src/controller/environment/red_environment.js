@@ -15,11 +15,7 @@
 			root = options.root;
 			root_pointer = red.create("pointer", {stack: [root]});
 		} else {
-			root = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment", {
-				instance_options: {
-					tag: "div"
-				}
-			})]});
+			root = red.create("dict", {has_protos: false, direct_attachments: [red.create("paper_attachment")]});
 
 			root_pointer = red.create("pointer", {stack: [root]});
 			if(!options || options.create_builtins !== false) {
@@ -33,6 +29,7 @@
 
 		if(!options || options.create_builtins !== false) {
 			root.set("on", red.on_event);
+			/*
 			root.set("emit", red.emit);
 			root.set("find", function (find_root) {
 				if (arguments.length === 0) {
@@ -40,6 +37,7 @@
 				}
 				return new red.Query({value: find_root});
 			});
+			*/
 		}
 	};
 
@@ -48,6 +46,45 @@
 
 		proto.initialize_props = function (root_pointer) {
 			var root_dict = root_pointer.points_at();
+			root_dict.set("width", red.create("cell", {str: "500"}));
+			root_dict.set("height", red.create("cell", {str: "500"}));
+
+			var screen = red.create("dict", {has_protos: false});
+			root_dict.set("screen", screen);
+
+			var shape = red.create("dict", {has_protos: false});
+			root_dict.set("shape", shape);
+
+			var circle = red.create("dict", {has_protos: false});
+			shape.set("circle", circle);
+			circle.set("show", red.create("cell", {str: "true"}));
+			circle.set("clip_rect", red.create("cell", {str: "null"}));
+			circle.set("cursor", red.create("cell", {str: "'default'"}));
+			circle.set("cx", red.create("cell", {str: "30"}));
+			circle.set("cy", red.create("cell", {str: "50"}));
+			circle.set("fill", red.create("cell", {str: "'none'"}));
+			circle.set("fill_opacity", red.create("cell", {str: "1.0"}));
+			circle.set("opacity", red.create("cell", {str: "1.0"}));
+			circle.set("r", red.create("cell", {str: "50"}));
+			circle.set("stroke", red.create("cell", {str: "'black'"}));
+			circle.set("stroke_dasharray", red.create("cell", {str: "''"}));
+			circle.set("stroke_opacity", red.create("cell", {str: "1.0"}));
+			circle.set("stroke_width", red.create("cell", {str: "1"}));
+			circle.set("transform", red.create("cell", {str: "''"}));
+			/*
+
+			var ellipse = red.create("dict", {has_protos: false});
+			shape.set("ellipse", ellipse);
+			
+			var image = red.create("dict", {has_protos: false});
+			shape.set("image", image);
+
+			var rect = red.create("dict", {has_protos: false});
+			shape.set("rect", rect);
+			
+			var text = red.create("dict", {has_protos: false});
+			shape.set("text", rect);
+			/*
 
 			var dom = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment")]});
 			dom.set("tag", red.create("cell", {str: "'div'"}));
@@ -103,12 +140,12 @@
 
 			var box2d_joint = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_joint_attachment")]});
 			box2d.set("joint", box2d_joint);
-			*/
 
 			root_dict.set("box2d", box2d);
 
 			var children = red.create("dict", {has_protos: false});
 			root_dict.set("child_nodes", children);
+			*/
 		};
 
 		proto.default_return_value = function () {
