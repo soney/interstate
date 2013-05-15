@@ -46,8 +46,6 @@
 
 		proto.initialize_props = function (root_pointer) {
 			var root_dict = root_pointer.points_at();
-			root_dict.set("width", red.create("cell", {str: "500"}));
-			root_dict.set("height", red.create("cell", {str: "500"}));
 
 			var screen = red.create("dict", {has_protos: false});
 			root_dict.set("screen", screen);
@@ -55,7 +53,7 @@
 			var shape = red.create("dict", {has_protos: false});
 			root_dict.set("shape", shape);
 
-			var circle = red.create("dict", {has_protos: false});
+			var circle = red.create("dict", {has_protos: false, direct_attachments: [red.create("circle_attachment")]});
 			shape.set("circle", circle);
 			circle.set("show", red.create("cell", {str: "true"}));
 			circle.set("clip_rect", red.create("cell", {str: "null"}));
@@ -71,6 +69,9 @@
 			circle.set("stroke_opacity", red.create("cell", {str: "1.0"}));
 			circle.set("stroke_width", red.create("cell", {str: "1"}));
 			circle.set("transform", red.create("cell", {str: "''"}));
+
+			root_dict.set("width", red.create("cell", {str: "500"}));
+			root_dict.set("height", red.create("cell", {str: "500"}));
 			/*
 
 			var ellipse = red.create("dict", {has_protos: false});
