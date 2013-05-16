@@ -72,9 +72,9 @@
 					_.each(screen_contents, function(child_info) {
 						var child = child_info.value;
 						if(child instanceof red.ContextualDict) {
-							var circle_attachment_instance = child.get_attachment_instance("circle");
-							if(circle_attachment_instance) {
-								var robj = circle_attachment_instance.create_robj(this.paper);
+							var shape_attachment_instance = child.get_attachment_instance("shape");
+							if(shape_attachment_instance) {
+								var robj = shape_attachment_instance.create_robj(this.paper);
 								children.push(robj);
 							}
 						}
@@ -86,8 +86,78 @@
 					return this.dom_obj;
 				}
 			}
+		},
+	"shape": {
+			ready: function() {
+				this.shape_type = this.options.shape_type;
+				this.constructor_params = this.options.constructor_params;
+			},
+			parameters: (function(infos) {
+				var parameters = {};
+				_.each(infos, function(euc_name, raph_name) {
+					parameters[euc_name] = function(contextual_object) {
+						if(contextual_object.has(euc_name)) {
+							var prop_val = contextual_object.prop_val(euc_name);
+							if(this.robj) {
+								this.robj.attr(raph_name, prop_val);
+							}
+						}
+					};
+				}, this);
+				return parameters;
+			}({
+				"arrow-end": "arrow_end",
+				"arrow-start": "arrow_start",
+				blur: "blur",
+				"clip-rect": "clip_rect",
+				cursor: "cursor",
+				cx: "cy",
+				cy: "cx",
+				fill: "fill",
+				"fill-opacity": "fill_opacity",
+				font: "font",
+				"font-family": "font_family",
+				"font-size": "font_size",
+				"font-style": "font_style",
+				"font-weight": "font_weight",
+				gradient: "gradient",
+				height: "height",
+				href: "href",
+				"letter-spacing": "letter_spacing",
+				opacity: "opacity",
+				path: "path",
+				r: "r",
+				rx: "rx",
+				ry: "ry",
+				src: "src",
+				stroke: "stroke",
+				"stroke-dasharray": "stroke_dasharray",
+				"stroke-linecap": "stroke_linecap",
+				"stroke-linejoin": "stroke_linejoin",
+				"stroke-miterlimit": "stroke_miterlimit",
+				"stroke-opacity": "stroke_opacity",
+				"stroke-width": "stroke_width",
+				target: "target",
+				"text-anchor": "text_anchor",
+				title: "title",
+				transform: "transform",
+				width: "width",
+				x: "x",
+				y: "y"
+			})),
+			proto_props: {
+				create_robj: function(paper) {
+					if(this.robj) {
+						return this.robj;
+					} else {
+						this.robj = paper[this.shape_type].apply(paper, this.constructor_params);
+						return this.robj;
+					}
+				}
+			}
 		}
 	});
+	/*
 	var to_register = {};
 	_.each([
 		{
@@ -183,4 +253,5 @@
 	});
 
 	red.register_attachments(to_register);
+	*/
 }(red, jQuery));

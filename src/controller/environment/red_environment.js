@@ -50,10 +50,19 @@
 			var screen = red.create("dict", {has_protos: false});
 			root_dict.set("screen", screen);
 
+			root_dict.set("width", red.create("cell", {str: "500"}));
+			root_dict.set("height", red.create("cell", {str: "500"}));
+
 			var shape = red.create("dict", {has_protos: false});
 			root_dict.set("shape", shape);
 
-			var circle = red.create("dict", {has_protos: false, direct_attachments: [red.create("circle_attachment")]});
+			var circle = red.create("dict", {has_protos: false, direct_attachments: [red.create("shape_attachment", {
+																								instance_options: {
+																									shape_type: "circle",
+																									constructor_params: [0, 0, 0]
+																								}
+																						})]
+																					});
 			shape.set("circle", circle);
 			circle.set("show", red.create("cell", {str: "true"}));
 			circle.set("clip_rect", red.create("cell", {str: "null"}));
@@ -70,11 +79,30 @@
 			circle.set("stroke_width", red.create("cell", {str: "1"}));
 			circle.set("transform", red.create("cell", {str: "''"}));
 
-			root_dict.set("width", red.create("cell", {str: "500"}));
-			root_dict.set("height", red.create("cell", {str: "500"}));
 
-			var ellipse = red.create("dict", {has_protos: false});
+			var ellipse = red.create("dict", {has_protos: false, direct_attachments: [red.create("shape_attachment", {
+																								instance_options: {
+																									shape_type: "ellipse",
+																									constructor_params: [0, 0, 0, 0]
+																								}
+																						})]
+																					});
 			shape.set("ellipse", ellipse);
+			ellipse.set("show", red.create("cell", {str: "true"}));
+			ellipse.set("clip_rect", red.create("cell", {str: "null"}));
+			ellipse.set("cursor", red.create("cell", {str: "'default'"}));
+			ellipse.set("cx", red.create("cell", {str: "30"}));
+			ellipse.set("cy", red.create("cell", {str: "50"}));
+			ellipse.set("fill", red.create("cell", {str: "'none'"}));
+			ellipse.set("fill_opacity", red.create("cell", {str: "1.0"}));
+			ellipse.set("opacity", red.create("cell", {str: "1.0"}));
+			ellipse.set("rx", red.create("cell", {str: "50"}));
+			ellipse.set("ry", red.create("cell", {str: "20"}));
+			ellipse.set("stroke", red.create("cell", {str: "'black'"}));
+			ellipse.set("stroke_dasharray", red.create("cell", {str: "''"}));
+			ellipse.set("stroke_opacity", red.create("cell", {str: "1.0"}));
+			ellipse.set("stroke_width", red.create("cell", {str: "1"}));
+			ellipse.set("transform", red.create("cell", {str: "''"}));
 			
 			var image = red.create("dict", {has_protos: false});
 			shape.set("image", image);
