@@ -362,6 +362,7 @@ html.full_window_editor {
 							background-color: #EEE;
 							color: black;
 							font-weight: 200;
+							z-index: 999;
 							> .item {
 								border-top: 1px solid #AAA;
 								padding-left: 5px;

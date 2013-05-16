@@ -72,7 +72,6 @@
 
 			root_dict.set("width", red.create("cell", {str: "500"}));
 			root_dict.set("height", red.create("cell", {str: "500"}));
-			/*
 
 			var ellipse = red.create("dict", {has_protos: false});
 			shape.set("ellipse", ellipse);

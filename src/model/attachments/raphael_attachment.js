@@ -92,7 +92,7 @@
 	_.each([
 		{
 			type: "circle",
-			constructor_params: [50, 50, 40],
+			constructor_params: [0, 0, 0],
 			parameters: {
 				"clip_rect": "clip-rect",
 				"cursor": "cursor",
@@ -108,7 +108,48 @@
 				"stroke_width": "stroke-width",
 				"transform": "transform"
 			}
+		},
+		{
+			type: "ellipse",
+			constructor_params: [0, 0, 0, 0],
+			parameters: {
+				"clip_rect": "clip-rect",
+				"cursor": "cursor",
+				"fill": "fill",
+				"cx": "cx",
+				"cy": "cy",
+				"fill_opacity": "fill-opacity",
+				"opacity": "opacity",
+				"rx": "rx",
+				"ry": "ry",
+				"stroke": "stroke",
+				"stroke_dasharray": "stroke-dasharray",
+				"stroke_opacity": "stroke-opacity",
+				"stroke_width": "stroke-width",
+				"transform": "transform"
+			}
+		},
+		{
+			type: "image",
+			constructor_params: ["", 0, 0, 0, 0],
+			parameters: {
+				"clip_rect": "clip-rect",
+				"cursor": "cursor",
+				"fill": "fill",
+				"x": "x",
+				"y": "y",
+				"fill_opacity": "fill-opacity",
+				"opacity": "opacity",
+				"rx": "rx",
+				"ry": "ry",
+				"stroke": "stroke",
+				"stroke_dasharray": "stroke-dasharray",
+				"stroke_opacity": "stroke-opacity",
+				"stroke_width": "stroke-width",
+				"transform": "transform"
+			}
 		}
+
 	], function(item_info) {
 		to_register[item_info.type] = (function(info) {
 				var rv = {

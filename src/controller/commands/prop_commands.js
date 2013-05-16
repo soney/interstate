@@ -93,6 +93,71 @@
             });
     }(red.SetPropCommand));
     
+    red.InheritPropCommand = function (options) {
+        red.InheritPropCommand.superclass.constructor.apply(this, arguments);
+        this._options = options || {};
+    
+        if (!this._options.parent || !this._options.name) {
+            throw new Error("Must select a parent object");
+        }
+    
+    
+        this._parent = this._options.parent;
+		this._prop_name = this._options.name;
+        this._prop_value = this._options.value;
+		var value = this._options.value;
+		if(this._parent instanceof red.StatefulObj) {
+			var own_statechart = this._parent.get_own_statechart();
+			var start_state = own_statechart.get_start_state();
+			if(value instanceof red.Cell) {
+				this._prop_value = red.create("stateful_prop");
+				this._prop_value.set(start_state, red.create("cell", {str: value.get_str()}));
+			}
+		}
+    };
+    
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
+    
+        proto._execute = function () {
+            this._parent.set_prop(this._prop_name, this._prop_value);
+        };
+        proto._unexecute = function () {
+			this._parent.unset_prop(this._prop_name);
+        };
+        proto._do_destroy = function (in_effect) {
+            if (in_effect) {
+                if (this._old_prop_value) {
+                    this._old_prop_value.destroy();
+                }
+            } else {
+                if (this._prop_value) {
+                    this._prop_value.destroy();
+                }
+            }
+        };
+        red.register_serializable_type("inherit_prop_command",
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var arg_array = _.toArray(arguments);
+                return {
+                    parent_uid: this._parent.id(),
+                    value_uid: this._prop_value.id(),
+                    name: this._prop_name
+                };
+            },
+            function (obj) {
+                return new My({
+                    parent: red.find_uid(obj.parent_uid),
+                    value: red.find_uid(obj.value_uid),
+                    name: obj.name
+                });
+            });
+    }(red.InheritPropCommand));
+    
     // === REMOVE ===
     
     red.UnsetPropCommand = function (options) {

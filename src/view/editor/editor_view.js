@@ -126,6 +126,17 @@
 					to: event.to_name
 				});
 				this.client_socket.post_command(command);
+			} else if(type === "inherit") {
+				client = event.client;
+				value = event.value;
+				var prop_name = event.name;
+
+				command = new red.InheritPropCommand({
+					parent: { id: to_func(client.obj_id) },
+					name: prop_name,
+					value: { id: to_func(value.obj_id) }
+				});
+				this.client_socket.post_command(command);
 			} else if(type === "unset") {
 				client = event.client;
 				command = new red.UnsetPropCommand({

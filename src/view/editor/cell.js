@@ -18,6 +18,7 @@
 			parent: false
 		},
 		_create: function() {
+			this.$on_key_down = $.proxy(this.on_key_down, this);
 			this.element.addClass("cell")
 						.attr("tabindex", 1);
 			this.update_position();
@@ -39,7 +40,29 @@
 		on_click: function() {
 			this.begin_editing();
 		},
-		on_key_down: function() {
+		on_key_down: function(event) {
+			var keyCode = event.keyCode;
+			if(this.element.is(event.target)) {
+				if(keyCode === 79 || keyCode === 13) { // o or ENTER
+					event.preventDefault();
+					event.stopPropagation();
+					this.begin_editing();
+				} else if(keyCode === 39 || keyCode === 79 || keyCode === 76) { // Right or o or k
+					var next_focusable = this.element.next(":focusable");
+					if(next_focusable.length>0) {
+						next_focusable.focus();
+					} else {
+						this.element.parent(":focusable").focus();
+					}
+				} else if(keyCode === 37 || keyCode === 72) { // Left
+					var prev_focusable = this.element.prev(":focusable");
+					if(prev_focusable.length>0) {
+						prev_focusable.focus();
+					} else {
+						this.element.parent(":focusable").focus();
+					}
+				}
+			}
 		},
 		create_live_text_fn: function() {
 			var value = this.option("value");
@@ -86,8 +109,12 @@
 											.appendTo(this.element)
 											.on("keydown", $.proxy(function(event) {
 												if(event.keyCode === 27) {
+													event.preventDefault();
+													event.stopPropagation();
 													this.end_edit(true);
 												} else if(event.keyCode === 13) {
+													event.preventDefault();
+													event.stopPropagation();
 													this.end_edit();
 												}
 											}, this))
@@ -120,6 +147,8 @@
 			}
 			this.text.show();
 			this.textbox.remove();
+			console.log("i want to focus");
+			this.element.focus();
 		},
 		focus: function() {
 			if(this.textbox) {
@@ -147,12 +176,38 @@
 			radius: 7
 		},
 		_create: function() {
+			this.$on_key_down = $.proxy(this.on_key_down, this);
 			this.element.addClass("unset")
-						.attr("tabindex", 1);
+						.attr("tabindex", 1)
+						.on("keydown", this.$on_key_down);
 			this.update_left();
 		},
 		_destroy: function() {
 			this.element.removeClass("unset");
+		},
+		on_key_down: function(event) {
+			var keyCode = event.keyCode;
+			if(this.element.is(event.target)) {
+				if(keyCode === 79 || keyCode === 13) { // o or ENTER
+					event.preventDefault();
+					event.stopPropagation();
+					this.element.trigger("click");
+				} else if(keyCode === 39 || keyCode === 79 || keyCode === 76) { // Right or o or k
+					var next_focusable = this.element.next(":focusable");
+					if(next_focusable.length>0) {
+						next_focusable.focus();
+					} else {
+						this.element.parent(":focusable").focus();
+					}
+				} else if(keyCode === 37 || keyCode === 72) { // Left
+					var prev_focusable = this.element.prev(":focusable");
+					if(prev_focusable.length>0) {
+						prev_focusable.focus();
+					} else {
+						this.element.parent(":focusable").focus();
+					}
+				}
+			}
 		},
 		update_left: function() {
 			this.element.css("left", (this.option("left") - this.option("radius")) + "px");

@@ -83,7 +83,8 @@
 												});
 
 			if(this.option("inherited")) {
-				this.element.addClass("inherited");
+				this.element.addClass("inherited")
+							.on("click", $.proxy(this.inherit, this));
 			} else if(this.option("builtin")) {
 				this.element.addClass("builtin");
 			}
@@ -144,13 +145,21 @@
 						table.focus();
 					}
 				} else if(keyCode === 13) { // Enter
-					this.begin_rename();
-				} else if(keyCode === 39 || keyCode === 79 || keyCode === 76) { // Right or o or k
-					var focusable_children = $(":focusable", this.element).first();
-					if(focusable_children.length > 0) {
-						focusable_children.first().focus();
+					if(this.option("inherited")) {
+						this.inherit();
 					} else {
-						this.element.trigger("expand");
+						this.begin_rename();
+					}
+				} else if(keyCode === 39 || keyCode === 79 || keyCode === 76) { // Right or o or k
+					if(this.option("inherited")) {
+						this.inherit();
+					} else {
+						var focusable_children = $(":focusable", this.element).first();
+						if(focusable_children.length > 0) {
+							focusable_children.first().focus();
+						} else {
+							this.element.trigger("expand");
+						}
 					}
 				} else if(keyCode === 37 || keyCode === 72) { // Left
 					table = this.element.parent().parent();
@@ -266,17 +275,20 @@
 
 							_.each(states, function(state) {
 								if(state) {
-									var view = $("<span />").unset_prop({
-										left: layout_manager.get_x(state)
-									}).on("click", $.proxy(function() {
-										var event = new $.Event("command");
-										event.command_type = "set_stateful_prop_for_state";
-										event.prop = this.option("value");
-										event.state = state;
+									if(!_.any(values, function(value_info) { return value_info.state === state; })) {
+										var view = $("<span />").unset_prop({
+											left: layout_manager.get_x(state)
+										}).on("click", $.proxy(function() {
+											this.__awaiting_value_for_state = state;
+											var event = new $.Event("command");
+											event.command_type = "set_stateful_prop_for_state";
+											event.prop = this.option("value");
+											event.state = state;
 
-										this.element.trigger(event);
-									}, this));
-									view.appendTo(this.src_cell);
+											this.element.trigger(event);
+										}, this));
+										view.appendTo(this.src_cell);
+									}
 								}
 							}, this);
 
@@ -295,6 +307,12 @@
 										prop: this.option("value")
 									});
 									view.appendTo(this.src_cell);
+									if(this.__awaiting_value_for_state === state) {
+										delete this.__awaiting_value_for_state;
+										view.prop_cell("begin_editing")
+											.prop_cell("select")
+											.prop_cell("focus");
+									}
 								}
 							}, this);
 						}, {
@@ -311,18 +329,20 @@
 														.appendTo(this.src_cell)
 														.editable_text({
 															text: str
-														})
-														.on("click", $.proxy(function() {
-															cell_disp.editable_text("edit");
-														}, this))
-														.on("text_change", $.proxy(function(e) {
-															var event = new $.Event("command");
-															event.command_type = "set_str";
-															event.str = e.str;
-															event.client = value;
+														});
+						if(!this.option("inherited")) {
+							cell_disp	.on("click", $.proxy(function() {
+											cell_disp.editable_text("edit");
+										}, this))
+										.on("text_change", $.proxy(function(e) {
+											var event = new $.Event("command");
+											event.command_type = "set_str";
+											event.str = e.str;
+											event.client = value;
 
-															this.element.trigger(event);
-														}, this));
+											this.element.trigger(event);
+										}, this));
+						}
 					}, {
 						context: this
 					});
@@ -332,6 +352,15 @@
 			} else {
 				this.src_cell.addClass("cannot_modify");
 			}
+		},
+		inherit: function() {
+			var event = new $.Event("command");
+			event.command_type = "inherit";
+			event.name = this.option("name");
+			event.client = this.option("obj");
+			event.value = this.option("value");
+
+			this.element.trigger(event);
 		},
 		on_hide_src: function() {
 			if(this.live_prop_vals_fn) {

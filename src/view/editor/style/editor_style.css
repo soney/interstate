@@ -248,7 +248,8 @@ html.full_window_editor {
             box-shadow: 2px 2px 10px #666;
             background-color: #EEE;
             color: black;
-            font-weight: 200; }
+            font-weight: 200;
+            z-index: 999; }
             #editor > #obj_nav > table.col > tbody > .child > .name > .edit > .item {
               border-top: 1px solid #AAA;
               padding-left: 5px; }
