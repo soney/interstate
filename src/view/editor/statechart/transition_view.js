@@ -94,6 +94,10 @@
 			font_size: "13px",
 			padding_top: 0
 		}, options);
+
+		this.$on_window_click_while_expanded = $.proxy(this.on_window_click_while_expanded, this);
+		this.$on_window_keydown_while_expanded = $.proxy(this.on_window_keydown_while_expanded, this);
+
 		var paper = this.option("paper");
 		var paths = this.get_paths();
 
@@ -118,11 +122,13 @@
 			str = event.get_str();
 		}
 		var c = center(this.option("from"), this.option("to"));
-		this.label = new red.EditableText(paper, {x: c.x, y: c.y + 8, text: str, fill: this.option("text_background"), color: this.option("text_foreground"), edit_on_click: false});
+		this.label = new red.EditableText(paper, {x: c.x, y: c.y + 8, text: str, fill: this.option("text_background"), color: this.option("text_foreground")});
 		this.label.option({
 			"font-size": this.option("font_size"),
 			"font-family": this.option("font_family")
 		});
+		this.label	.on("cancel", $.proxy(this.on_cancel_rename, this))
+					.on("change", $.proxy(this.on_confirm_rename, this));
 		
 		this.$flash = _.bind(this.flash, this);
 		transition.on("fire", this.$flash);
@@ -139,6 +145,12 @@
 			str = "";
 		}
 		this.label.option("text", str);
+		$([this.label.text[0], this.line_path[0], this.circle[0], this.arrow_path[0]]).on("contextmenu", $.proxy(function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+
+			this.show_menu();
+		}, this));
 	};
 
 	(function (My) {
@@ -161,7 +173,7 @@
 				cy: paths.circle.cy,
 				r: paths.circle.r
 			});
-			this.update_dropdown_position();
+			this.update_menu_position();
 		};
 
 		proto.get_str = function() {
@@ -217,7 +229,7 @@
 			}, this));
 		};
 
-		proto.begin_editing = function() {
+		proto.show_menu = function() {
 			var paper = this.option("paper");
 			var transition = this.option("transition");
 			var parentElement = paper.canvas.parentNode;
@@ -225,14 +237,14 @@
 											.text("Change event")
 											.pressable()
 											.on("pressed", $.proxy(function() {
-												this.edit_dropdown.dropdown("collapse");
+												this.remove_edit_dropdown();
 												this.begin_rename();
 											}, this));
 			this.change_from = $("<div />")	.addClass("menu_item")
 												.text("Change from")
 												.pressable()
 												.on("pressed", $.proxy(function() {
-													this.edit_dropdown.dropdown("collapse");
+													this.remove_edit_dropdown();
 													var root = transition.root();
 													var selectable_substates = _.rest(root.flatten_substates()); // the first element is the major statechart itself
 													this._emit("awaiting_state_selection", {
@@ -249,7 +261,7 @@
 											.text("Change to")
 											.pressable()
 											.on("pressed", $.proxy(function() {
-												this.edit_dropdown.dropdown("collapse");
+												this.remove_edit_dropdown();
 												var root = transition.root();
 												var selectable_substates = _.rest(root.flatten_substates()); // the first element is the major statechart itself
 												this._emit("awaiting_state_selection", {
@@ -272,7 +284,7 @@
 											.text("Remove")
 											.pressable()
 											.on("pressed", $.proxy(function() {
-												this.edit_dropdown.dropdown("collapse");
+												this.remove_edit_dropdown();
 												this._emit("remove_transition", {
 													transition: this.option("transition")
 												});
@@ -288,18 +300,8 @@
 			var x = cx - width/2;
 			var y = from.y;
 
-			var items;
-			if(transition.from() instanceof red.StartState) {
-				items = [this.change_to/*, this.edit_actions*/];
-			} else {
-				items = [this.edit_event, this.change_from, this.change_to/*, this.edit_actions, this.remove_item*/];
-			}
 
-			this.edit_dropdown = $("<div />")	.dropdown({
-													text: this.get_str(),
-													items: items
-												})
-												.addClass("transition")
+			this.edit_dropdown = $("<div />")	.addClass("transition dropdown")
 												.appendTo(parentElement)
 												.css({
 													position: "absolute",
@@ -307,10 +309,28 @@
 													top: y + "px",
 													width: width + "px"
 												});
-			this.label.hide();
+			var items;
+			if(transition.from() instanceof red.StartState) {
+				this.edit_dropdown.append(this.change_to);
+			} else {
+				this.edit_dropdown.append(this.edit_event, this.change_from, this.change_to, this.remove_item);
+			}
+			$(window).on("mousedown", this.$on_window_click_while_expanded);
+			$(window).on("keydown", this.$on_window_keydown_while_expanded);
 		};
 
-		proto.update_dropdown_position = function() {
+		proto.on_window_click_while_expanded = function(event) {
+			if(!$(event.target).parents().is(this.edit_dropdown)) {
+				this.remove_edit_dropdown();
+			}
+		};
+		proto.on_window_keydown_while_expanded = function(event) {
+			if(event.keyCode === 27) { // esc
+				this.remove_edit_dropdown();
+			}
+		};
+
+		proto.update_menu_position = function() {
 			if(this.edit_dropdown) {
 				var from = this.option("from"),
 					to = this.option("to");
@@ -323,9 +343,7 @@
 				var x = cx - width/2;
 				var y = from.y;
 
-				this.edit_dropdown.dropdown("option", "text", this.get_str());
 				this.edit_dropdown.css({
-										position: "absolute",
 										left: x + "px",
 										top: y + "px",
 										width: width + "px"
@@ -333,15 +351,7 @@
 			}
 		};
 		proto.begin_rename = function() {
-			this.$on_cancel_rename = $.proxy(this.on_cancel_rename, this);
-			this.$on_confirm_rename = $.proxy(this.on_confirm_rename, this);
-			this.label	.show()
-						.edit()
-						.focus()
-						.select()
-						.on("cancel", this.$on_cancel_rename)
-						.on("change", this.$on_confirm_rename);
-			this.edit_dropdown.hide();
+			this.label.edit();
 		};
 
 		proto.on_cancel_rename = function(event) {
@@ -357,17 +367,13 @@
 			});
 		};
 
-		proto.end_rename = function() {
-			this.edit_dropdown.show();
-			this.label	.hide()
-						.off("cancel", this.$on_cancel_rename)
-						.off("change", this.$on_end_rename);
-		};
+		proto.end_rename = function() { };
 
-		proto.done_editing = function() {
-			this.edit_dropdown.dropdown("destroy").remove();
-			delete this.edit_dropdown;
-			this.label.show();
+		proto.remove_edit_dropdown = function() {
+			if(this.edit_dropdown) {
+				this.edit_dropdown.remove();
+				delete this.edit_dropdown;
+			}
 		};
 
 		proto.remove = function () {

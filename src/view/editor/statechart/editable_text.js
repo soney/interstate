@@ -127,6 +127,8 @@
 			this.textbox.style.color = this.option("color");
 
 			this.text.hide();
+			this.textbox.focus();
+			this.textbox.select();
 			this.textbox.addEventListener("keydown", this.$onKeydown);
 			this.textbox.addEventListener("blur", this.$onBlur);
 			return this;

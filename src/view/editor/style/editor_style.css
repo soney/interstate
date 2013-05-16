@@ -129,37 +129,24 @@ html.full_window_editor {
             position: relative; }
             #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown {
               font-size: 0.8em;
-              background-color: #EEE; }
+              border: 1px solid #333;
+              background-color: #EEE;
+              left: 1px;
+              box-sizing: border-box;
+              -moz-box-sizing: border-box;
+              z-index: 9999; }
               #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown.transition {
                 font-size: 0.6em; }
-              #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown > .btn {
-                width: 100%;
-                box-sizing: border-box;
-                -moz-box-sizing: border-box;
-                border-radius: 1px;
-                border: 1px solid #999;
-                overflow: hidden; }
-                #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown > .btn > .caret {
-                  margin-top: 3px; }
-              #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown:hover {
-                background-color: #DFDFDF; }
-              #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown.expanded > .btn {
-                background-color: #DDD;
-                border-bottom: none; }
-              #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown > .menu {
-                left: 1px;
-                box-sizing: border-box;
-                -moz-box-sizing: border-box; }
-                #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown > .menu > .menu_item {
-                  cursor: pointer;
-                  padding-left: 2px;
-                  text-align: left;
-                  background-color: #EEE;
-                  border-bottom: 1px solid #C9C9C9; }
-                  #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown > .menu > .menu_item:hover {
-                    background-color: #DDD; }
-                  #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown > .menu > .menu_item:last-child {
-                    border-bottom: none; }
+              #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown > .menu_item {
+                cursor: pointer;
+                padding-left: 2px;
+                text-align: left;
+                background-color: #EEE;
+                border-bottom: 1px solid #C9C9C9; }
+                #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown > .menu_item:hover {
+                  background-color: #DDD; }
+                #editor > #obj_nav > table.col > tbody > .header > .statechart_cell > .statechart > .dropdown > .menu_item:last-child {
+                  border-bottom: none; }
       #editor > #obj_nav > table.col > tbody > .info {
         vertical-align: top; }
         #editor > #obj_nav > table.col > tbody > .info .edit {
@@ -356,6 +343,7 @@ html.full_window_editor {
 
 .dropdown {
   position: relative;
+  color: #333;
   border-radius: 3px; }
   .dropdown > .btn {
     cursor: pointer;
