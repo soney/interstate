@@ -272,11 +272,31 @@
 							var active_value = $active_value.get();
 
 							this.src_cell.children().remove();
+							var view;
 
 							_.each(states, function(state) {
 								if(state) {
-									if(!_.any(values, function(value_info) { return value_info.state === state; })) {
-										var view = $("<span />").unset_prop({
+									var value_info = _.find(values, function(value_info) { return value_info.state === state; });
+									if(value_info) {
+										var active = active_value && active_value.value === value && value !== undefined;
+										var val = value_info.value;
+										view = $("<span />").prop_cell({
+											left: layout_manager.get_x(state),
+											width: layout_manager.get_width(state),
+											value: val,
+											active: active,
+											state: state,
+											prop: this.option("value")
+										});
+										view.appendTo(this.src_cell);
+										if(this.__awaiting_value_for_state === state) {
+											delete this.__awaiting_value_for_state;
+											view.prop_cell("begin_editing")
+												.prop_cell("select")
+												.prop_cell("focus");
+										}
+									} else {
+										view = $("<span />").unset_prop({
 											left: layout_manager.get_x(state)
 										}).on("click", $.proxy(function() {
 											this.__awaiting_value_for_state = state;
@@ -288,30 +308,6 @@
 											this.element.trigger(event);
 										}, this));
 										view.appendTo(this.src_cell);
-									}
-								}
-							}, this);
-
-							_.each(values, function(value_info) {
-								var value = value_info.value,
-									state = value_info.state;
-
-								var active = active_value && active_value.value === value && value !== undefined;
-								if(state) {
-									var view = $("<span />").prop_cell({
-										left: layout_manager.get_x(state),
-										width: layout_manager.get_width(state),
-										value: value,
-										active: active,
-										state: state,
-										prop: this.option("value")
-									});
-									view.appendTo(this.src_cell);
-									if(this.__awaiting_value_for_state === state) {
-										delete this.__awaiting_value_for_state;
-										view.prop_cell("begin_editing")
-											.prop_cell("select")
-											.prop_cell("focus");
 									}
 								}
 							}, this);

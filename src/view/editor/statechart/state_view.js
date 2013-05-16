@@ -77,6 +77,12 @@
 				"font-family": this.option("font_family")
 			});
 			this.label.on("change", this.forward);
+			$(this.path[0]).on("contextmenu", $.proxy(function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+
+				this.show_menu();
+			}, this));
 		};
 
 		proto.get_name = function() {
@@ -102,7 +108,66 @@
 			}
 		};
 
-		proto.begin_editing = function() {
+		proto.show_menu = function() {
+			this.add_transition = $("<div />")	.addClass("menu_item")
+												.text("Add transition")
+												.pressable()
+												.on("pressed", $.proxy(function() {
+													this.edit_dropdown.dropdown("collapse");
+													var from_state = this.option("state");
+													var root = from_state.root();
+													var selectable_substates = _.rest(root.flatten_substates()); // the first element is the major statechart itself
+													this._emit("awaiting_state_selection", {
+														states: selectable_substates,
+														on_select: $.proxy(function(to_state) {
+															this._emit("add_transition", {
+																from: from_state,
+																to: to_state
+															});
+														}, this)
+													});
+												}, this));
+			this.rename_item = $("<div />")	.addClass("menu_item")
+											.text("Rename")
+											.pressable()
+											.on("pressed", $.proxy(function() {
+												this.edit_dropdown.dropdown("collapse");
+												this.begin_rename();
+											}, this));
+			this.remove_item = $("<div />")	.addClass("menu_item")
+											.text("Remove")
+											.pressable()
+											.on("pressed", $.proxy(function() {
+												this.edit_dropdown.dropdown("collapse");
+												this._emit("remove_state", {
+													state: this.option("state")
+												});
+											}, this));
+			var lwe = this.option("lwe"),
+				rws = this.option("rws");
+			var PADDING = 1;
+			var HEIGHT = 10;
+			var width = rws.x-lwe.x - 2*PADDING;
+			var x = lwe.x + PADDING;
+			var y = lwe.y - HEIGHT/2;
+
+			var paper = this.option("paper");
+			var parentElement = paper.canvas.parentNode;
+
+			this.edit_dropdown = $("<div />")	.append(this.add_transition, this.rename_item, this.remove_item)
+												.addClass("dropdown")
+												.css({
+													position: "absolute",
+													left: x + "px",
+													top: y + "px",
+													width: width + "px"
+												})
+												.appendTo(parentElement);
+												/*
+			if(this.label) {
+				this.label.hide();
+			}
+		/*
 			var paper = this.option("paper");
 			var parentElement = paper.canvas.parentNode;
 			this.add_substate = $("<div />").addClass("menu_item")
@@ -171,7 +236,7 @@
 
 			this.edit_dropdown = $("<div />")	.dropdown({
 													text: this.get_name(),
-													items: [/*this.add_substate, */this.add_transition, this.rename_item, this.remove_item/*, this.edit_actions, this.make_concurrent*/]
+													items: [this.add_transition, this.rename_item, this.remove_item]
 												})
 												.appendTo(parentElement)
 												.css({
@@ -183,6 +248,7 @@
 			if(this.label) {
 				this.label.hide();
 			}
+			*/
 		};
 		proto.update_dropdown_position = function() {
 			if(this.edit_dropdown) {

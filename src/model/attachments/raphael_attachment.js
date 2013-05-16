@@ -60,25 +60,36 @@
 						height = contextual_object.prop_val("height");
 					this.paper.setSize(width, height);
 				},
-				screen: function(contextual_object) {
-					var screen = contextual_object.prop_val("screen");
-					var screen_contents = [];
-					if(screen instanceof red.ContextualDict) {
-						screen_contents = screen.children();
-					}
-
-				
-					var children = [];
-					_.each(screen_contents, function(child_info) {
-						var child = child_info.value;
-						if(child instanceof red.ContextualDict) {
-							var shape_attachment_instance = child.get_attachment_instance("shape");
-							if(shape_attachment_instance) {
-								var robj = shape_attachment_instance.create_robj(this.paper);
-								children.push(robj);
-							}
+				screen: {
+					type: "list",
+					add: function(shape_attachment_instance, index) {
+						var robj = shape_attachment_instance.create_robj(this.paper);
+					},
+					remove: function(shape_attachment_instance) {
+						shape_attachment_instance.remove();
+					},
+					move: function(item, from_index, to_index) {
+						//console.log("move");
+					},
+					getter: function(contextual_object) {
+						var screen = contextual_object.prop_val("screen");
+						var screen_contents = [];
+						if(screen instanceof red.ContextualDict) {
+							screen_contents = screen.children();
 						}
-					}, this);
+				
+						var children = [];
+						_.each(screen_contents, function(child_info) {
+							var child = child_info.value;
+							if(child instanceof red.ContextualDict) {
+								var shape_attachment_instance = child.get_attachment_instance("shape");
+								if(shape_attachment_instance) {
+									children.push(shape_attachment_instance);
+								}
+							}
+						}, this);
+						return children;
+					}
 				}
 			},
 			proto_props: {
@@ -152,6 +163,12 @@
 					} else {
 						this.robj = paper[this.shape_type].apply(paper, this.constructor_params);
 						return this.robj;
+					}
+				},
+				remove: function() {
+					if(this.robj) {
+						this.robj.remove();
+						delete this.robj;
 					}
 				}
 			}
