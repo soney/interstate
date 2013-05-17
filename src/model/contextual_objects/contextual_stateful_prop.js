@@ -31,6 +31,7 @@
 		}
 		*/
 
+		this.used_start_transition = false;
 		this.$value.onChange(_.bind(function () {
 			if (red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
 				this.$value.update();
@@ -270,9 +271,11 @@
 						this.set_transition_times_run(state, tr);
 
 						if (using_val === NO_VAL) {
-							var pointer = this.get_pointer();
-							var event = state._last_run_event;
-							var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
+							using_val = val;
+							using_state = state;
+						}
+					} else if(state.from() instanceof red.StartState && this.used_start_transition === false) {
+						if (using_val === NO_VAL) {
 							using_val = val;
 							using_state = state;
 						}

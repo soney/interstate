@@ -5,7 +5,6 @@
 	"use strict";
 	var cjs = red.cjs,
 		_ = red._;
-	var VALID_TYPES = ["path", "image", "rect", "text", "circle", "ellipse"];
 
 	var is_paper = function(obj) { return obj instanceof Raphael._Paper; };
 
@@ -150,6 +149,7 @@
 				"stroke-width": "stroke_width",
 				target: "target",
 				"text-anchor": "text_anchor",
+				text: "text",
 				title: "title",
 				transform: "transform",
 				width: "width",
@@ -174,101 +174,4 @@
 			}
 		}
 	});
-	/*
-	var to_register = {};
-	_.each([
-		{
-			type: "circle",
-			constructor_params: [0, 0, 0],
-			parameters: {
-				"clip_rect": "clip-rect",
-				"cursor": "cursor",
-				"fill": "fill",
-				"cx": "cx",
-				"cy": "cy",
-				"fill_opacity": "fill-opacity",
-				"opacity": "opacity",
-				"r": "r",
-				"stroke": "stroke",
-				"stroke_dasharray": "stroke-dasharray",
-				"stroke_opacity": "stroke-opacity",
-				"stroke_width": "stroke-width",
-				"transform": "transform"
-			}
-		},
-		{
-			type: "ellipse",
-			constructor_params: [0, 0, 0, 0],
-			parameters: {
-				"clip_rect": "clip-rect",
-				"cursor": "cursor",
-				"fill": "fill",
-				"cx": "cx",
-				"cy": "cy",
-				"fill_opacity": "fill-opacity",
-				"opacity": "opacity",
-				"rx": "rx",
-				"ry": "ry",
-				"stroke": "stroke",
-				"stroke_dasharray": "stroke-dasharray",
-				"stroke_opacity": "stroke-opacity",
-				"stroke_width": "stroke-width",
-				"transform": "transform"
-			}
-		},
-		{
-			type: "image",
-			constructor_params: ["", 0, 0, 0, 0],
-			parameters: {
-				"clip_rect": "clip-rect",
-				"cursor": "cursor",
-				"fill": "fill",
-				"x": "x",
-				"y": "y",
-				"fill_opacity": "fill-opacity",
-				"opacity": "opacity",
-				"rx": "rx",
-				"ry": "ry",
-				"stroke": "stroke",
-				"stroke_dasharray": "stroke-dasharray",
-				"stroke_opacity": "stroke-opacity",
-				"stroke_width": "stroke-width",
-				"transform": "transform"
-			}
-		}
-
-	], function(item_info) {
-		to_register[item_info.type] = (function(info) {
-				var rv = {
-					ready: function() {
-						this.robj = false;
-					},
-					proto_props: {
-						create_robj: function(paper) {
-							if(this.robj) {
-								return this.robj;
-							} else {
-								this.robj = paper[info.type].apply(paper, info.constructor_params);
-								return this.robj;
-							}
-						}
-					}
-				};
-				rv.parameters = {};
-				_.each(info.parameters, function(raph_name, euc_name) {
-					rv.parameters[euc_name] = function(contextual_object) {
-						if(contextual_object.has(euc_name)) {
-							var prop_val = contextual_object.prop_val(euc_name);
-							if(this.robj) {
-								this.robj.attr(raph_name, prop_val);
-							}
-						}
-					};
-				}, this);
-				return rv;
-		}(item_info));
-	});
-
-	red.register_attachments(to_register);
-	*/
 }(red, jQuery));

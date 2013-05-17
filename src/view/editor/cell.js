@@ -43,7 +43,7 @@
 				}
 			} else if(keyCode === 40 || keyCode === 74) { //down or j
 				var next_prop = this.element.parents(":focusable").first().next();
-				next_focusable = $(":focusable", next_prop);
+				next_focusable = $(":focusable", next_prop).eq(this.element.index());
 				if(next_focusable.length>0) {
 					next_focusable.focus();
 				} else {
@@ -51,7 +51,7 @@
 				}
 			} else if(keyCode === 38 || keyCode === 75) { // up or k
 				var prev_prop = this.element.parents(":focusable").first().prev();
-				prev_focusable = $(":focusable", prev_prop);
+				prev_focusable = $(":focusable", prev_prop).eq(this.element.index());
 				if(prev_focusable.length>0) {
 					prev_focusable.focus();
 				} else {

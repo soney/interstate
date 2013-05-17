@@ -296,6 +296,7 @@
 										view.appendTo(this.src_cell);
 										if(this.__awaiting_value_for_state === state) {
 											delete this.__awaiting_value_for_state;
+											console.log(view);
 											view.prop_cell("begin_editing")
 												.prop_cell("select")
 												.prop_cell("focus");

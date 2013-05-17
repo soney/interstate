@@ -151,12 +151,12 @@
 			
 			var text = red.create("dict", {has_protos: false, direct_attachments: [red.create("shape_attachment", {
 																								instance_options: {
-																									shape_type: "rect",
+																									shape_type: "text",
 																									constructor_params: [20, 30, 40, 50]
 																								}
 																						})]
 																					});
-			shape.set("text", rect);
+			shape.set("text", text);
 			text.set("show", red.create("cell", {str: "true"}));
 			text.set("clip_rect", red.create("cell", {str: "null"}));
 			text.set("cursor", red.create("cell", {str: "'default'"}));
