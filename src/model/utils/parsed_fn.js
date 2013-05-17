@@ -95,7 +95,7 @@
 			return op_func.call(window, arg);
 		} else if (type === "Identifier") {
 			var key = node.name;
-			if (key === "root") {
+			if (key === "sketch") {
 				return red.find_or_put_contextual_obj(options.pcontext.root(), options.pcontext.slice(0, 1));
 			} else if (key === "parent") {
 				found_this = false;

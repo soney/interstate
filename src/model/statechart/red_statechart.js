@@ -1028,6 +1028,10 @@
 				if (basis_start_state_to === basis_start_state) {
 					my_starting_state = this._start_state;
 				} else {
+					var outgoing_transition = this._start_state.get_outgoing_transition();
+					_.defer(function() {
+						outgoing_transition.increment_times_run();
+					});
 					my_starting_state = red.find_equivalent_state(basis_start_state_to, this);
 				}
 			} else {

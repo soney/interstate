@@ -73,6 +73,9 @@
 
 												this.element.trigger(event);
 											}, this))
+											.on("done_editing", $.proxy(function(e) {
+												this.element.focus();
+											}, this))
 											.appendTo(this.name_cell);
 
 			this.value_summary = $("<td />")	.appendTo(this.element)
@@ -295,17 +298,21 @@
 										});
 										view.appendTo(this.src_cell);
 										if(this.__awaiting_value_for_state === state) {
-											delete this.__awaiting_value_for_state;
-											console.log(view);
-											view.prop_cell("begin_editing")
-												.prop_cell("select")
-												.prop_cell("focus");
+											if((new Date()).getTime() - this.__awaiting_value_for_state_set_at < 500) { // HUGE hack
+												view.prop_cell("begin_editing")
+													.prop_cell("select")
+													.prop_cell("focus");
+											} else {
+												delete this.__awaiting_value_for_state;
+												delete this.__awaiting_value_for_state_set_at;
+											}
 										}
 									} else {
 										view = $("<span />").unset_prop({
 											left: layout_manager.get_x(state)
 										}).on("click", $.proxy(function() {
 											this.__awaiting_value_for_state = state;
+											this.__awaiting_value_for_state_set_at = (new Date()).getTime();
 											var event = new $.Event("command");
 											event.command_type = "set_stateful_prop_for_state";
 											event.prop = this.option("value");

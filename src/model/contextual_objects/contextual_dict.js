@@ -401,6 +401,10 @@
 				var attachment_instance;
 				if (this._attachment_instances.hasOwnProperty(type)) {
 					attachment_instance = this._attachment_instances[type];
+					if(attachment_instance.get_creator() !== info.attachment) {
+						attachment_instance.destroy();
+						attachment_instance = this._attachment_instances[type] = attachment.create_instance(this, info.owner);
+					}
 				} else {
 					attachment_instance = this._attachment_instances[type] = attachment.create_instance(this, info.owner);
 				}

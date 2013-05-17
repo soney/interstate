@@ -127,7 +127,7 @@
 			var rect = red.create("dict", {has_protos: false, direct_attachments: [red.create("shape_attachment", {
 																								instance_options: {
 																									shape_type: "rect",
-																									constructor_params: [20, 30, 40, 50]
+																									constructor_params: [0, 0, 0, 0]
 																								}
 																						})]
 																					});
@@ -152,7 +152,7 @@
 			var text = red.create("dict", {has_protos: false, direct_attachments: [red.create("shape_attachment", {
 																								instance_options: {
 																									shape_type: "text",
-																									constructor_params: [20, 30, 40, 50]
+																									constructor_params: [0, 0, ""]
 																								}
 																						})]
 																					});
@@ -162,10 +162,7 @@
 			text.set("cursor", red.create("cell", {str: "'default'"}));
 			text.set("x", red.create("cell", {str: "20"}));
 			text.set("y", red.create("cell", {str: "30"}));
-			text.set("fill", red.create("cell", {str: "'red'"}));
-			text.set("fill_opacity", red.create("cell", {str: "1.0"}));
 			text.set("opacity", red.create("cell", {str: "1.0"}));
-			text.set("r", red.create("cell", {str: "0"}));
 			text.set("stroke", red.create("cell", {str: "'black'"}));
 			text.set("stroke_dasharray", red.create("cell", {str: "''"}));
 			text.set("stroke_opacity", red.create("cell", {str: "1.0"}));
@@ -173,8 +170,10 @@
 			text.set("transform", red.create("cell", {str: "''"}));
 			text.set("text", red.create("cell", {str: "'hello world'"}));
 			text.set("text_anchor", red.create("cell", {str: "'middle'"}));
-			text.set("width", red.create("cell", {str: "40"}));
-			text.set("height", red.create("cell", {str: "50"}));
+			text.set("font_family", red.create("cell", {str: "'Arial'"}));
+			text.set("font_size", red.create("cell", {str: "16"}));
+			text.set("font_weight", red.create("cell", {str: "400"}));
+			text.set("font_style", red.create("cell", {str: "'normal'"}));
 
 			var path = red.create("dict", {has_protos: false, direct_attachments: [red.create("shape_attachment", {
 																								instance_options: {

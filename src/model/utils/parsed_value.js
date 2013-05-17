@@ -151,7 +151,7 @@
 	var get_identifier_val = function (key, options) {
 		var context = options.context,
 			ignore_inherited_in_contexts = options.ignore_inherited_in_contexts || [];
-		if (key === "root") {
+		if (key === "sketch") {
 			return red.find_or_put_contextual_obj(context.root(), context.slice(0, 1));
 		} else if (key === "window") {
 			return window;

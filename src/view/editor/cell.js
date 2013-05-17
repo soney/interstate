@@ -175,7 +175,6 @@
 			}
 			this.text.show();
 			this.textbox.remove();
-			console.log("i want to focus");
 			this.element.focus();
 		},
 		focus: function() {

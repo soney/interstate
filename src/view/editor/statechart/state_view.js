@@ -82,7 +82,7 @@
 				"font-family": this.option("font_family")
 			});
 			this.label.on("change", this.forward);
-			$(this.path[0]).on("contextmenu", $.proxy(function(event) {
+			$(this.path[0]).add(this.label.text[0]).on("contextmenu", $.proxy(function(event) {
 				event.preventDefault();
 				event.stopPropagation();
 

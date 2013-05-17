@@ -31,7 +31,6 @@
 		}
 		*/
 
-		this.used_start_transition = false;
 		this.$value.onChange(_.bind(function () {
 			if (red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
 				this.$value.update();
@@ -242,7 +241,7 @@
 		proto.active_value = function () {
 			var values = this.get_values();
 			var len = values.length;
-			var info, i;
+			var info, i, tr;
 
 			var using_val = NO_VAL, using_state, fallback_value = NO_VAL, fallback_state;
 			var invalidate_value = _.bind(function () {
@@ -252,29 +251,34 @@
 				info = values[i];
 				var state = info.state,
 					val = info.value;
-				if (state instanceof red.State) {
+				if(state instanceof red.StartState) {
+					if (using_val === NO_VAL && state.is_active()) {
+						using_val = val;
+						using_state = state;
+					} else {
+						var transition = state.get_outgoing_transition();
+						tr = transition.get_times_run();
+
+						if (tr > this.get_transition_times_run(transition)) {
+							this.set_transition_times_run(transition, tr);
+
+							if (using_val === NO_VAL) {
+								using_val = val;
+								using_state = state;
+							}
+						}
+					}
+				} else if (state instanceof red.State) {
 					if (using_val === NO_VAL && state.is_active()) {
 						using_val = val;
 						using_state = state;
 					}
 				} else if (state instanceof red.StatechartTransition) {
-					var tr = state.get_times_run();
-					if (state.from() instanceof red.StartState) {
-						using_val = val;
-						using_state = state;
-						_.defer(invalidate_value);
-						fallback_value = val;
-						fallback_state = state;
-					}
+					tr = state.get_times_run();
 
 					if (tr > this.get_transition_times_run(state)) {
 						this.set_transition_times_run(state, tr);
 
-						if (using_val === NO_VAL) {
-							using_val = val;
-							using_state = state;
-						}
-					} else if(state.from() instanceof red.StartState && this.used_start_transition === false) {
 						if (using_val === NO_VAL) {
 							using_val = val;
 							using_state = state;
