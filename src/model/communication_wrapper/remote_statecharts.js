@@ -160,7 +160,6 @@
 					wrapper_client.async_get('get_outgoing_transition', function (transition_wrapper) {
 						outgoing_transition_value = red.create_remote_transition(transition_wrapper);
 
-						console.log(transition_wrapper);
 						outgoing_transition.resolve();
 					});
 

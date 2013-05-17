@@ -374,7 +374,11 @@
 		if ((str.replace(/\n/g, "")).match(func_regex)) {
 			return esprima.parse("(" + str + ")");
 		} else {
-			return esprima.parse(str);
+			try {
+				return esprima.parse(str);
+			} catch(e) {
+				return undefined;
+			}
 		}
 	};
 }(red));
