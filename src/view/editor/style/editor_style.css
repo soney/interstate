@@ -49,6 +49,7 @@ html.full_window_editor {
         #editor > #obj_nav > table.col.curr_col > tbody > tr > td.info {
           vertical-align: bottom; }
           #editor > #obj_nav > table.col.curr_col > tbody > tr > td.info > .add_prop {
+            color: black;
             display: block; }
         #editor > #obj_nav > table.col.curr_col > tbody > tr > .value_summary {
           max-width: 100px; }
@@ -174,7 +175,6 @@ html.full_window_editor {
           font-size: 0.9em;
           padding: 4px;
           text-align: center;
-          display: none;
           background-color: white;
           color: #4169e1;
           text-decoration: none;
@@ -185,7 +185,7 @@ html.full_window_editor {
           -ms-user-select: none;
           user-select: none;
           cursor: pointer;
-          color: black; }
+          color: #999; }
           #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop:hover {
             text-decoration: underline; }
           #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop:hover {

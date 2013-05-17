@@ -133,7 +133,12 @@
 				} else if(keyCode === 37 || keyCode === 72) { // Left
 					var prev_col = this.element.prev();
 					if(prev_col.length>0) {
-						prev_col.focus();
+						var selected_child = $(".child.selected", prev_col);
+						if(selected_child.length > 0) {
+							selected_child.focus();
+						} else {
+							prev_col.focus();
+						}
 					}
 				} else if(keyCode === 39 || keyCode === 76) { // Right or k
 					var next_col = this.element.next();

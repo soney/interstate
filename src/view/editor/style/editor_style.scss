@@ -117,6 +117,7 @@ html.full_window_editor {
 						> td.info {
 							vertical-align: bottom;
 							> .add_prop {
+								color: black;
 								display: block;
 							}
 						}
@@ -272,10 +273,9 @@ html.full_window_editor {
 							font-size: 0.9em;
 							padding: 4px;
 							text-align: center;
-							display: none;
 							background-color: white;
 							@include link;
-							color: black;
+							color: #999;
 							&:hover {
 								color: $link_color;
 							}

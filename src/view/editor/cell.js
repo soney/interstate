@@ -9,6 +9,58 @@
 
 	var UNSET_RADIUS = 7;
 
+	var on_cell_key_down = function(event) {
+		var keyCode = event.keyCode;
+		var prev, next, next_focusable, prev_focusable;
+		if(this.element.is(event.target)) {
+			if(keyCode === 79 || keyCode === 13) { // o or ENTER
+				event.preventDefault();
+				event.stopPropagation();
+				if(this.element.hasClass("unset")) {
+					this.element.trigger("click");
+				} else {
+					this.begin_editing();
+				}
+			} else if(keyCode === 39 || keyCode === 76) { // Right or o or k
+				next_focusable = this.element.next(":focusable");
+				if(next_focusable.length>0) {
+					next_focusable.focus();
+				} else {
+					var prop = this.element.parents(":focusable").first();
+					next = prop.next();
+					if(next.length>0) {
+						next.focus();
+					} else {
+						prop.focus();
+					}
+				}
+			} else if(keyCode === 37 || keyCode === 72) { // Left
+				prev_focusable = this.element.prev(":focusable");
+				if(prev_focusable.length>0) {
+					prev_focusable.focus();
+				} else {
+					this.element.parents(":focusable").first().focus();
+				}
+			} else if(keyCode === 40 || keyCode === 74) { //down or j
+				var next_prop = this.element.parents(":focusable").first().next();
+				next_focusable = $(":focusable", next_prop);
+				if(next_focusable.length>0) {
+					next_focusable.focus();
+				} else {
+					next_prop.focus();
+				}
+			} else if(keyCode === 38 || keyCode === 75) { // up or k
+				var prev_prop = this.element.parents(":focusable").first().prev();
+				prev_focusable = $(":focusable", prev_prop);
+				if(prev_focusable.length>0) {
+					prev_focusable.focus();
+				} else {
+					prev_prop.focus();
+				}
+			}
+		}
+	};
+
 	$.widget("red.prop_cell", {
 		options: {
 			value: false,
@@ -18,7 +70,7 @@
 			parent: false
 		},
 		_create: function() {
-			this.$on_key_down = $.proxy(this.on_key_down, this);
+			this.$on_key_down = $.proxy(on_cell_key_down, this);
 			this.element.addClass("cell")
 						.attr("tabindex", 1);
 			this.update_position();
@@ -29,7 +81,7 @@
 
 			this.text = $("<span />")	.addClass("txt")
 										.appendTo(this.element);
-			this.element.on("keydown", $.proxy(this.on_key_down, this));
+			this.element.on("keydown", this.$on_key_down);
 		},
 		_destroy: function() {
 			this.text.remove();
@@ -39,30 +91,6 @@
 		},
 		on_click: function() {
 			this.begin_editing();
-		},
-		on_key_down: function(event) {
-			var keyCode = event.keyCode;
-			if(this.element.is(event.target)) {
-				if(keyCode === 79 || keyCode === 13) { // o or ENTER
-					event.preventDefault();
-					event.stopPropagation();
-					this.begin_editing();
-				} else if(keyCode === 39 || keyCode === 79 || keyCode === 76) { // Right or o or k
-					var next_focusable = this.element.next(":focusable");
-					if(next_focusable.length>0) {
-						next_focusable.focus();
-					} else {
-						this.element.parent(":focusable").focus();
-					}
-				} else if(keyCode === 37 || keyCode === 72) { // Left
-					var prev_focusable = this.element.prev(":focusable");
-					if(prev_focusable.length>0) {
-						prev_focusable.focus();
-					} else {
-						this.element.parent(":focusable").focus();
-					}
-				}
-			}
 		},
 		create_live_text_fn: function() {
 			var value = this.option("value");
@@ -176,7 +204,7 @@
 			radius: 7
 		},
 		_create: function() {
-			this.$on_key_down = $.proxy(this.on_key_down, this);
+			this.$on_key_down = $.proxy(on_cell_key_down, this);
 			this.element.addClass("unset")
 						.attr("tabindex", 1)
 						.on("keydown", this.$on_key_down);
@@ -184,30 +212,6 @@
 		},
 		_destroy: function() {
 			this.element.removeClass("unset");
-		},
-		on_key_down: function(event) {
-			var keyCode = event.keyCode;
-			if(this.element.is(event.target)) {
-				if(keyCode === 79 || keyCode === 13) { // o or ENTER
-					event.preventDefault();
-					event.stopPropagation();
-					this.element.trigger("click");
-				} else if(keyCode === 39 || keyCode === 79 || keyCode === 76) { // Right or o or k
-					var next_focusable = this.element.next(":focusable");
-					if(next_focusable.length>0) {
-						next_focusable.focus();
-					} else {
-						this.element.parent(":focusable").focus();
-					}
-				} else if(keyCode === 37 || keyCode === 72) { // Left
-					var prev_focusable = this.element.prev(":focusable");
-					if(prev_focusable.length>0) {
-						prev_focusable.focus();
-					} else {
-						this.element.parent(":focusable").focus();
-					}
-				}
-			}
 		},
 		update_left: function() {
 			this.element.css("left", (this.option("left") - this.option("radius")) + "px");

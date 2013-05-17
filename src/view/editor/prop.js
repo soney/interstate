@@ -165,7 +165,12 @@
 					table = this.element.parent().parent();
 					prev = table.prev();
 					if(prev.length>0) {
-						prev.focus();
+						var selected_child = $(".child.selected", prev);
+						if(selected_child.length > 0) {
+							selected_child.focus();
+						} else {
+							prev.focus();
+						}
 					}
 				} else if(keyCode === 8) { //Backspace
 					prev = this.element.prev(":focusable");

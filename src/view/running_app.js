@@ -69,7 +69,7 @@
 			editor_name: uid.get_prefix() + "red_editor",
 			open_separate_client_window: true,
 			editor_window_options: function () {
-				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + window.innerHeight + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
+				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
 			},
 			show_debugging_info: false,
 			client_id: "",
@@ -77,6 +77,8 @@
 		},
 
 		_create: function () {
+			this.$open_editor = $.proxy(this.open_editor, this);
+			this.$on_key_down = $.proxy(this.on_key_down, this);
 			this._command_stack = red.create("command_stack");
 			if (this.option("show_edit_button")) {
 				this.button_color = randomColor([0, 1], [0.1, 0.7], [0.4, 0.6]);
@@ -113,6 +115,7 @@
 					"border-bottom": "5px solid " + this.button_color
 				};
 
+
 				this.edit_button = $("<a />").text("edit")
 					.css(this.edit_button_css)
 					.hover(_.bind(function () {
@@ -139,6 +142,8 @@
 				}
 			}
 
+			$(window).on("keydown", this.$on_key_down);
+
 			if (this.option("show_debugging_info")) {
 				
 			}
@@ -150,7 +155,14 @@
 			this._add_change_listeners();
 		},
 
+		on_key_down: function(event) {
+			if(event.keyCode === 69 && event.altKey && event.metaKey) {
+				this.open_editor();
+			}
+		},
+
 		_destroy: function () {
+			$(window).off("keydown", this.$on_key_down);
 			if (this.edit_button) {
 				this.edit_button.remove();
 			}
