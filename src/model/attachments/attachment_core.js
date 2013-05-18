@@ -135,7 +135,15 @@
 						listener.resume();
 					});
 				};
-
+				proto.destroy = function() {
+					if(attachment_specs.destroy) {
+						attachment_specs.destroy.call(this);
+					}
+					_.each(attachment_specs.parameters, function(parameter_spec, parameter_name) {
+						this._listeners[parameter_name].destroy();
+					}, this);
+					My.superclass.destroy.apply(this, arguments);
+				};
 				_.each(attachment_specs.proto_props, function(proto_prop, proto_prop_name) {
 					proto[proto_prop_name] = proto_prop;
 				});

@@ -81,9 +81,12 @@
 						_.each(screen_contents, function(child_info) {
 							var child = child_info.value;
 							if(child instanceof red.ContextualDict) {
-								var shape_attachment_instance = child.get_attachment_instance("shape");
-								if(shape_attachment_instance) {
-									children.push(shape_attachment_instance);
+								if(child.is_template()) {
+								} else {
+									var shape_attachment_instance = child.get_attachment_instance("shape");
+									if(shape_attachment_instance) {
+										children.push(shape_attachment_instance);
+									}
 								}
 							}
 						}, this);
@@ -101,15 +104,37 @@
 			ready: function() {
 				this.shape_type = this.options.shape_type;
 				this.constructor_params = this.options.constructor_params;
+				this.$robj = cjs.$(false);
+			},
+			destroy: function() {
+				this.remove();
+				this.$robj.destroy();
+				this.$robj = false;
 			},
 			parameters: (function(infos) {
+				var can_animate_parameters = ["r", "cx", "cy", "x", "y", "width", "height", "path", "fill", "stroke", "opacity", "fill_opacity", "stroke_opacity"];
 				var parameters = {};
 				_.each(infos, function(euc_name, raph_name) {
 					parameters[euc_name] = function(contextual_object) {
 						if(contextual_object.has(euc_name)) {
 							var prop_val = contextual_object.prop_val(euc_name);
-							if(this.robj) {
-								this.robj.attr(raph_name, prop_val);
+							var robj = this.get_robj();
+							if(robj) {
+								var animated_properties = contextual_object.prop_val("animated_properties");
+								if(_.indexOf(can_animate_parameters, euc_name) >= 0 &&
+										((_.isArray(animated_properties) && _.indexOf(animated_properties, euc_name) >= 0) ||
+											animated_properties === true ||
+											animated_properties === "*")) {
+									var duration = contextual_object.prop_val("animation_duration");
+									if(!_.isNumber(duration)) {
+										duration = 300;
+									}
+									var anim_options = { };
+									anim_options[raph_name] = prop_val;
+									robj.animate(anim_options, duration);
+								} else {
+									robj.attr(raph_name, prop_val);
+								}
 							}
 						}
 					};
@@ -158,17 +183,22 @@
 			})),
 			proto_props: {
 				create_robj: function(paper) {
-					if(this.robj) {
-						return this.robj;
+					var robj = this.get_robj();
+					if(robj) {
+						return robj;
 					} else {
-						this.robj = paper[this.shape_type].apply(paper, this.constructor_params);
-						return this.robj;
+						robj = paper[this.shape_type].apply(paper, this.constructor_params);
+						this.$robj.set(robj);
+						return robj;
 					}
 				},
+				get_robj: function() {
+					return cjs.get(this.$robj);
+				},
 				remove: function() {
-					if(this.robj) {
-						this.robj.remove();
-						delete this.robj;
+					var robj = this.get_robj();
+					if(robj) {
+						robj.remove();
 					}
 				}
 			}

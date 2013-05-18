@@ -273,11 +273,11 @@
 						var client = value;
 						var $states = client.get_$("get_states");
 						var $values = client.get_$("get_values");
-						var $active_value = client.get_$("active_value");
+						//var $active_value = client.get_$("active_value");
 						this.live_prop_vals_fn = cjs.liven(function() {
 							var values = $values.get();
 							var states = $states.get();
-							var active_value = $active_value.get();
+							//var active_value = $active_value.get();
 
 							this.src_cell.children().remove();
 							var view;
@@ -286,13 +286,13 @@
 								if(state) {
 									var value_info = _.find(values, function(value_info) { return value_info.state === state; });
 									if(value_info) {
-										var active = active_value && active_value.value === value && value !== undefined;
+										//var active = active_value && active_value.value === value && value !== undefined;
 										var val = value_info.value;
 										view = $("<span />").prop_cell({
 											left: layout_manager.get_x(state),
 											width: layout_manager.get_width(state),
 											value: val,
-											active: active,
+											//active: active,
 											state: state,
 											prop: this.option("value")
 										});

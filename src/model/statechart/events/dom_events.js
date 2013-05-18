@@ -48,6 +48,14 @@
 										if (dom_obj) {
 											return {dom_obj: dom_obj, cobj: instance};
 										}
+									} else {
+										var raphael_attachment = instance.get_attachment_instance("shape");
+										if(raphael_attachment) {
+											var robj = raphael_attachment.get_robj();
+											if(robj) {
+												return {dom_obj: robj[0], cobj: instance};
+											}
+										}
 									}
 									return false;
 								});
@@ -57,6 +65,14 @@
 									var dom_obj = dom_attachment.get_dom_obj();
 									if (dom_obj) {
 										return {dom_obj: dom_obj, cobj: target_cobj};
+									}
+								} else {
+									var raphael_attachment = target_cobj.get_attachment_instance("shape");
+									if(raphael_attachment) {
+										var robj = raphael_attachment.get_robj();
+										if(robj) {
+											return {dom_obj: robj[0], cobj: target_cobj};
+										}
 									}
 								}
 							}

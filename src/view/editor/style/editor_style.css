@@ -171,25 +171,27 @@ html.full_window_editor {
             text-decoration: underline; }
           #editor > #obj_nav > table.col > tbody > .info .edit:hover {
             background-color: #eeeeee; }
-        #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop {
-          font-size: 0.9em;
-          padding: 4px;
-          text-align: center;
-          background-color: white;
-          color: #4169e1;
-          text-decoration: none;
-          -webkit-touch-callout: none;
-          -webkit-user-select: none;
-          -khtml-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-          cursor: pointer;
-          color: #999; }
-          #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop:hover {
-            text-decoration: underline; }
-          #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop:hover {
-            color: #4169e1; }
+        #editor > #obj_nav > table.col > tbody > .info > td.info {
+          background-color: #f7f7f7; }
+          #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop {
+            font-size: 0.9em;
+            padding: 4px;
+            text-align: center;
+            background-color: white;
+            color: #4169e1;
+            text-decoration: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            cursor: pointer;
+            color: #999; }
+            #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop:hover {
+              text-decoration: underline; }
+            #editor > #obj_nav > table.col > tbody > .info > td.info > .add_prop:hover {
+              color: #4169e1; }
       #editor > #obj_nav > table.col > tbody > .child {
         -webkit-touch-callout: none;
         -webkit-user-select: none;
