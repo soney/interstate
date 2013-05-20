@@ -288,6 +288,14 @@
 					event: str
 				});
 				this.client_socket.post_command(command);
+			} else if (type === 'set_copies') {
+				value = event.str;
+				client = event.client;
+				command = new red.SetCopiesCommand({
+					parent: { id: to_func(client.obj_id) },
+					value: value
+				});
+				this.client_socket.post_command(command);
 			} else {
 				console.log("Unhandled type " + type);
 			}

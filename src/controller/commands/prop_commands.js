@@ -494,4 +494,53 @@
             });
     }(red.SetBuiltinCommand));
 
+    red.SetCopiesCommand = function (options) {
+        red.SetCopiesCommand.superclass.constructor.apply(this, arguments);
+        this._options = options || {};
+    
+        if (!this._options.parent) {
+            throw new Error("Must select a parent object");
+        }
+    
+        this._parent = this._options.parent;
+        this._value = this._options.value;
+		if(_.isString(this._value)) {
+			this._value = red.create("cell", {str: this._value});
+		}
+    };
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
+    
+        proto._execute = function () {
+			this._parent.set_copies(this._value);
+        };
+        proto._unexecute = function () {
+			console.log("unset copies", this._value);
+        };
+        proto._do_destroy = function (in_effect) {
+            if (in_effect) {
+            } else {
+            }
+        };
+    
+        red.register_serializable_type("set_copies",
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var arg_array = _.toArray(arguments);
+                return {
+                    parent_uid: this._parent.id(),
+                    value: red.serialize.apply(red, ([this._value]).concat(arg_array))
+                };
+            },
+            function (obj) {
+                return new My({
+                    parent: red.find_uid(obj.parent_uid),
+                    value: red.deserialize(obj.value)
+                });
+            });
+    }(red.SetCopiesCommand));
+
 }(red));

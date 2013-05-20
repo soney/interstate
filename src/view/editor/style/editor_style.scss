@@ -104,17 +104,13 @@ html.full_window_editor {
 				box-shadow: 2px 2px 10px #666;
 
 				> tbody {
-					> .header, > .info {
-
-					}
-
 					> .child {
 						color: $nav_column_active_text_color;
 					}
 
 
 					> tr {
-						> td.info {
+						> td.add_prop {
 							vertical-align: bottom;
 							> .add_prop {
 								color: black;
@@ -153,12 +149,13 @@ html.full_window_editor {
 				> tr.no_children {
 					> td {
 						@include non-selectable;
+						font-weight: 100;
 						cursor: pointer;
 						text-align: left;
 						padding: 5px;
 						padding-left: $drag_handle_width;
 						background-color: white;
-						color: #BBB;
+						color: #999;
 					}
 				}
 
@@ -175,13 +172,15 @@ html.full_window_editor {
 
 					> .obj_name {
 						cursor: pointer;
-						font-weight: 100;
 						text-align: center;
-						font-size: 1.5em;
-						padding-top: 4px;
-						padding-bottom: 2px;
-
 						position: relative;
+						> h2 {
+							font-size: 1.7em;
+							font-weight: 100;
+							margin: 0px;
+							padding-top: 4px;
+							padding-bottom: 2px;
+						}
 						> a.prev {
 							top: 4px;
 							color: #888;
@@ -192,7 +191,17 @@ html.full_window_editor {
 							padding-left: 5px;
 							padding-right: 5px;
 						}
-
+						> .show_options {
+							font-weight: 100;
+							font-size: 0.8em;
+							padding-top: 1px;
+							padding-bottom: 3px;
+							color: #AAA;
+							&:hover {
+								color: $link_color;
+								text-decoration: underline;
+							}
+						}
 						> .copy {
 							color: #888;
 
@@ -250,25 +259,55 @@ html.full_window_editor {
 						}
 					}
 				}
-				
-				> .info {
-					vertical-align: top;
-					.edit {
-						background-color: $nav_header_active_color;
-						font-size: 0.8em;
-						cursor: pointer;
-						text-align: center;
-						vertical-align: middle;
-						padding-top: 3px;
-						padding-bottom: 3px;
 
-						@include link;
-						&:hover {
-							background-color: $nav_header_hover_color;
+				> .options {
+					background-color: $nav_header_color;
+					form.options {
+						> fieldset {
+							> legend {
+								color: #888;
+								text-align: right;
+							}
+							background-color: #EEE;
+							border: 1px solid #888;
+							font-size: 0.8em;
+							margin: 10px;
+
+							> div.copies_option_container {
+								> input#copies {
+									display: block;
+									font-family: "Inconsolata";
+									color: black;
+									background-color: #DDD;
+									border: 1px solid #666;
+									font-size: inherit;
+								}
+							}
+
+							> div.state_machine_option_container {
+								margin-top: 9px;
+								margin-bottom: 5px;
+								border-top: 1px solid #AAA;
+								padding-top: 8px;
+								> #own_label, #none_label {
+									margin-right: 10px;
+								}
+							}
+
+							> div.can_inherit_option_container {
+								margin-top: 9px;
+								margin-bottom: 5px;
+								padding-top: 8px;
+								border-top: 1px solid #AAA;
+							}
+
 						}
+						margin-bottom: 5px;
 					}
-
-					> td.info {
+				}
+				
+				> .add_prop {
+					> td.add_prop {
 						background-color: $nav_header_color;
 						> .add_prop {
 							font-size: 0.9em;
@@ -573,4 +612,8 @@ html.full_window_editor {
 			display: block;
 		}
 	}
+}
+
+.placeholder {
+	opacity: 0.5;
 }

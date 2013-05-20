@@ -82,6 +82,13 @@
 							var child = child_info.value;
 							if(child instanceof red.ContextualDict) {
 								if(child.is_template()) {
+									var copies = child.instances();
+									_.each(copies, function(child) {
+										var shape_attachment_instance = child.get_attachment_instance("shape");
+										if(shape_attachment_instance) {
+											children.push(shape_attachment_instance);
+										}
+									});
 								} else {
 									var shape_attachment_instance = child.get_attachment_instance("shape");
 									if(shape_attachment_instance) {

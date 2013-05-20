@@ -55,13 +55,23 @@
 
 			this.obj_name_cell = $("<th />")	.appendTo(this.header)
 												.attr("colspan", "2")
-												.addClass("obj_name")
-												.text(this.option("name"))
-												.pressable()
-												.on("pressed", $.proxy(this.on_header_click, this));
+												.addClass("obj_name");
+
+			this.obj_name = $("<h2 />")	.text(this.option("name"))
+										.appendTo(this.obj_name_cell)
+										.pressable()
+										.on("pressed", $.proxy(this.on_header_click, this));
+
 			this.copy_disp = $("<span />")	.copy({ client: this.option("client") })
 											.on("curr_copy_change", this.$on_copy_select)
 											.appendTo(this.obj_name_cell);
+
+			this.show_hide_options = $("<div />")	.text("options")
+													.addClass("show_options button")
+													.appendTo(this.obj_name_cell)
+													.on("click", $.proxy(this.on_show_hide_options_click, this))
+													.hide();
+													
 
 			this.prev_button = $("<a />")	.addClass("prev")
 											.attr("href", "javascript:void(0)")
@@ -72,15 +82,21 @@
 			this.$on_prev_click = $.proxy(this.on_prev_click, this);
 			this.$on_edit_click = $.proxy(this.on_edit_click, this);
 
-			this.info_row = $("<tr />")	.appendTo(this.tbody)
-										.addClass("info");
-			this.info_cell = $("<td />")	.appendTo(this.info_row)
+			this.options_row = $("<tr />")	.appendTo(this.tbody)
+											.addClass("options");
+			this.options_cell = $("<td />")	.appendTo(this.options_row)
 											.attr("colspan", "2")
-											.addClass("info");
+											.addClass("options");
+
+			this.add_prop_row = $("<tr />")	.appendTo(this.tbody)
+											.addClass("add_prop");
+			this.add_prop_cell = $("<td />")	.appendTo(this.add_prop_row)
+												.attr("colspan", "2")
+												.addClass("add_prop");
 
 			this.add_property_button = $("<div />")	.addClass("add_prop")
-													.appendTo(this.info_cell)
-													.text("(+ Add Property)")
+													.appendTo(this.add_prop_cell)
+													.text("Add Property")
 													.pressable()
 													.on("pressed", $.proxy(function() {
 														this.add_property();
@@ -104,6 +120,9 @@
 					this.add_children_listener();
 				}
 			}, this));
+			if(client.type() !== "stateful") {
+				this.show_hide_options.hide();
+			}
 			this.element.on("keydown", $.proxy(this.on_key_down, this));
 		},
 
@@ -113,6 +132,80 @@
 			event.command_type = "add_property";
 			event.client = this.option("client");
 			this.element.trigger(event);
+		},
+
+		on_show_hide_options_click: function() {
+			if(this.element.hasClass("showing_options")) {
+				this.hide_options();
+			} else {
+				this.show_options();
+			}
+		},
+
+		show_options: function() {
+			this.show_hide_options.text("hide options");
+			this.element.addClass("showing_options");
+
+			this.options_form = $("<form />")	.addClass("options")
+												.attr("action", "javascript:void(0)")
+												.on("submit", $.proxy(this.done_editing, this))
+												.prependTo(this.options_cell);
+
+			var options_fieldset = $("<fieldset />").appendTo(this.options_form);
+			var legend = $("<legend />").text("Options")
+										.appendTo(options_fieldset);
+
+			var copies_div = $("<div />")	.addClass("copies_option_container")
+											.appendTo(options_fieldset);
+
+			var copies_label = $("<label />")	.attr({
+													"for": "copies"
+												})
+												.html("Copies:&nbsp;")
+												.appendTo(copies_div);
+
+			var copies_edit = $("<span />")	.editable_text({
+												text: "",
+												placeholder_text: "(undefined)"
+											})
+											.attr({
+												id: "copies"
+											})
+											.appendTo(copies_div)
+											.on("text_change", $.proxy(function(e) {
+												var str = e.str;
+												var event = new $.Event("command");
+												event.command_type = "set_copies";
+												event.client = this.option("client");
+												event.str = str;
+												this.element.trigger(event);
+											}, this));
+
+			var client = this.option("client");
+			var $copies_obj = client.get_$("copies_obj");
+			var $copies_str;
+			this.live_copies = cjs.liven(function() {
+				var copies_obj = $copies_obj.get();
+				if(copies_obj instanceof red.WrapperClient) {
+					console.log("A");
+				} else {
+					copies_edit.editable_text("option", "text", "");
+				}
+			}, {
+				context: this
+			});
+		},
+
+		hide_options: function() {
+			if(this.live_copies) {
+				this.live_copies.destroy();
+			}
+			this.show_hide_options.text("options");
+			this.element.removeClass("showing_options");
+			if(this.options_form) {
+				this.options_form.remove();
+				delete this.options_form;
+			}
 		},
 
 		on_key_down: function(event) {
@@ -159,6 +252,7 @@
 		},
 
 		on_curr_col: function() {
+			this.show_hide_options.show();
 			if(this.option("prev_col") && this.option("show_prev")) {
 				this.prev_button	.show()
 									.on("pressed", this.$on_prev_click);
@@ -177,6 +271,8 @@
 		},
 
 		on_not_curr_col: function() {
+			this.hide_options();
+			this.show_hide_options.hide();
 			if(this.option("prev_col") && this.option("show_prev")) {
 				this.prev_button.off("pressed", this.$on_prev_click)
 								.hide();
@@ -215,119 +311,8 @@
 			}
 		},
 
-		begin_editing: function() {
-			this.element.addClass("editing");
-			$("tr.child", this.tbody).prop("begin_editing");
-
-			this.options_form = $("<form />")	.addClass("options")
-												.attr("action", "javascript:void(0)")
-												.on("submit", $.proxy(this.done_editing, this))
-												.prependTo(this.info_cell);
-
-			var options_fieldset = $("<fieldset />").appendTo(this.options_form);
-			var legend = $("<legend />").text("Options")
-										.appendTo(options_fieldset);
-
-			var copies_div = $("<div />")	.addClass("copies_option_container")
-											.appendTo(options_fieldset);
-
-			var copies_label = $("<label />")	.attr({
-													"for": "copies"
-												})
-												.text("Copies:")
-												.appendTo(copies_div);
-
-			var copies_input = $("<input />")	.attr({
-													type: "text",
-													id: "copies",
-													spellcheck: false
-													//placeholder: "(Array or number)"
-												})
-												.appendTo(copies_div);
-
-												/*
-
-			var state_machine_div = $("<div />")	.addClass("state_machine_option_container")
-													.appendTo(options_fieldset);
-
-			var state_machine_desc = $("<div />")	.text("State Machine:")
-													.addClass("state_machine_option_desc")
-													.appendTo(state_machine_div);
-
-			var own_input = $("<input />")	.attr({
-												type: "radio",
-												name: "statemachine",
-												value: "own",
-												id: "own",
-												checked: true
-											})
-											.appendTo(state_machine_div);
-
-			var own_label = $("<label />")	.attr({
-												"for": "own",
-												id: "own_label"
-											})
-											.text("Own")
-											.appendTo(state_machine_div);
-
-			var none_input = $("<input />")	.attr({
-												type: "radio",
-												name: "statemachine",
-												value: "none",
-												id: "none"
-											})
-											.appendTo(state_machine_div);
-			var none_label = $("<label />")	.attr({
-												"for": "none",
-												id: "none_label"
-											})
-											.text("None")
-											.appendTo(state_machine_div);
-
-			var parent_input = $("<input />")	.attr({
-												type: "radio",
-												name: "statemachine",
-												value: "parent",
-												id: "parent"
-											})
-											.appendTo(state_machine_div);
-
-			var parent_label = $("<label />")	.attr({
-												"for": "parent"
-											})
-											.text("Parent")
-											.appendTo(state_machine_div);
-
-			var can_inherit_div = $("<div />")	.addClass("can_inherit_option_container")
-												.appendTo(options_fieldset);
-			var can_inherit_checkbox = $("<input />")	.attr({
-															type: "checkbox",
-															id: "can_inherit",
-															checked: true
-														})
-														.appendTo(can_inherit_div);
-			var can_inherit_label = $("<label />")	.attr({
-														"for": "can_inherit"
-													})
-													.text("Can inherit")
-													.appendTo(can_inherit_div);
-													*/
-
-
-			/*
-													.hide();
-			this.copy_disp.hide();
-			options_fieldset.hide().show("bind", $.proxy(function() {
-				this.add_property_button.show("bind");
-			}, this));
-			*/
-			if(this.statechart_view) {
-				this.statechart_view.statechart("begin_editing");
-			}
-		},
-
 		add_children_listener: function () {
-			var INDEX_OFFSET = 2; // Account for the header column
+			var INDEX_OFFSET = 3; // Account for the header column
 			this.$on_child_select = $.proxy(this.on_child_select, this);
 			var client = this.option("curr_copy_client");
 
@@ -455,7 +440,7 @@
 
 			if(client.type() === "stateful") {
 				this.statechart_view_container = $("<th />")	.appendTo(this.header)
-																.attr("rowspan", "2")
+																.attr("rowspan", "3")
 																.addClass("statechart_cell");
 				var $statecharts = client.get_$("get_statecharts");
 
@@ -498,7 +483,7 @@
 				});
 			} else {
 				this.filler_view_container = $("<th />").appendTo(this.header)
-														.attr("rowspan", "2");
+														.attr("rowspan", "3");
 				$("tr.child", this.element).prop("option", "show_src", true);
 			}
 		},

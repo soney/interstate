@@ -14,18 +14,30 @@
 	$.widget("red.editable_text", {
 		options: {
 			text: "",
+			placeholder_text: "",
 			edit_event: "click"
 		},
 
 		_create: function() {
+			this.$edit = $.proxy(this.edit, this);
 			this.set_state(STATE.IDLE);
 			this.update_static_text();
-			this.$edit = $.proxy(this.edit, this);
 		},
 
 
 		update_static_text: function() {
-			this.element.text(this.option("text"));
+			var text = this.option("text");
+			if(text) {
+				this.element.removeClass("placeholder");
+			} else {
+				text = this.option("placeholder_text");
+				this.element.addClass("placeholder");
+			}
+
+			this.element.text(text);
+			if(this.option("edit_event")) {
+				this.element.on(this.option("edit_event"), this.$edit);
+			}
 		},
 
 		edit: function(event) {
@@ -34,6 +46,8 @@
 				event.stopPropagation();
 			}
 			if(this.get_state() === STATE.IDLE) {
+				this.element.removeClass("placeholder");
+				this.element.off(this.option("edit_event"), this.$edit);
 				this.element.html(""); // Clear the children
 				this.textbox = $("<input />")	.attr({
 													type: "text"
