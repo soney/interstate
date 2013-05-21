@@ -34,6 +34,7 @@
 		</style>
 	</head>
 	<body>
+		<!--
 		<div id="examples">
 			<strong>Pre-built examples: </strong> <span id="sample_apps">(loading...)</span>
 		</div>
@@ -41,6 +42,7 @@
 			<span id="build_time"></span>
 			<span id="version_no"></span>
 		</div>
+		-->
 		<div class="content"></div>
 	</body>
 	<link rel="stylesheet" href="style/editor_style.css" />
@@ -65,15 +67,37 @@
 			"three",
 			"box2d"
 		];
+		window.upload = function(name) {
+			$.ajax({
+				url: "http://euc.from.so/gallery/upload.php",
+				type: "POST",
+				dataType: "text",
+				data: {
+					root: red.stringify(root),
+					name: red._.isString(name) ? name : "(no name)"
+				},
+				success: function(data) {
+					console.log(data);
+				}
+			});
+		};
 
 		$(function() {
-			env = red.create("environment");
-
-			root = env.get_root();
+			var post = localStorage.getItem("post");
+			if(post) {
+				root = red.destringify(post);
+				env = red.create("environment", {root: root});
+				//localStorage.removeItem("post");
+			} else {
+				env = red.create("environment");
+				root = env.get_root();
+			}
+			
 
 			$("div.content").dom_output({
 				root: env.get_root()
 			});
+			/*
 
 			var load = function(root) {
 				$("div.content").dom_output("destroy");
@@ -119,6 +143,7 @@
 			} else {
 				load_sample_app(sample_apps[0]);
 			}
+			*/
 		});
 	</script>
 </html>

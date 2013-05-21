@@ -32,6 +32,20 @@
 					});
 					return root;
 				};
+				window.upload = function(name) {
+					$.ajax({
+						url: "http://euc.from.so/gallery/upload.php",
+						type: "POST",
+						dataType: "text",
+						data: {
+							root: red.stringify(root),
+							name: red._.isString(name) ? name : "(no name)"
+						},
+						success: function(data) {
+							console.log(data);
+						}
+					});
+				};
 				window.ls = red.ls;
 
 				$(function() {
