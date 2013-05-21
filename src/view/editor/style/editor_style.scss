@@ -301,6 +301,13 @@ html.full_window_editor {
 								border-top: 1px solid #AAA;
 							}
 
+							> hr {
+								border: 1px solid #DDD;
+							}
+
+							> .reset.button {
+								@include link;
+							}
 						}
 						margin-bottom: 5px;
 					}
@@ -495,6 +502,9 @@ html.full_window_editor {
 							color: black;
 							text-align: center;
 							display: block;
+							max-width: $active_obj_value_summary_width;
+							white-space: nowrap;
+							overflow: hidden;
 							> input {
 								background: none;
 								border: none;

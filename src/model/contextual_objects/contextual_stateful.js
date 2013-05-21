@@ -48,6 +48,13 @@
 			return ([this.get_own_statechart()]).concat(proto_statecharts);
 		};
 
+		proto.reset = function () {
+			var statecharts = this.get_statecharts();
+			_.each(statecharts, function(statechart) {
+				statechart.reset();
+			}, this);
+		};
+
 		proto.destroy = function () {
 			My.superclass.destroy.apply(this, arguments);
 			this.statechart.destroy();

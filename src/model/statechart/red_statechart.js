@@ -780,7 +780,7 @@
 			var outgoing_transitions = this.get_outgoing_transitions();
 			var substates = this.get_substates();
 			_.each(outgoing_transitions, function (x) { x.disable(); });
-			_.each(substates, function (x) { x.disable(); });
+			_.each(substates, function (x) { x.disable_outgoing_transitions(); });
 		};
 
 		proto.summarize = function () {

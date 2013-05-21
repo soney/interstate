@@ -543,4 +543,47 @@
             });
     }(red.SetCopiesCommand));
 
+    red.ResetCommand = function (options) {
+        red.ResetCommand.superclass.constructor.apply(this, arguments);
+        this._options = options || {};
+    
+        if (!this._options.parent) {
+            throw new Error("Must select a parent object");
+        }
+    
+        this._parent = this._options.parent;
+    };
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
+    
+        proto._execute = function () {
+			this._parent.reset();
+        };
+        proto._unexecute = function () {
+			console.log("reset");
+        };
+        proto._do_destroy = function (in_effect) {
+            if (in_effect) {
+            } else {
+            }
+        };
+    
+        red.register_serializable_type("reset",
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var arg_array = _.toArray(arguments);
+                return {
+                    parent_uid: this._parent.id()
+                };
+            },
+            function (obj) {
+                return new My({
+                    parent: red.find_uid(obj.parent_uid)
+                });
+            });
+    }(red.ResetCommand));
+
 }(red));

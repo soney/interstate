@@ -180,6 +180,18 @@
 												event.str = str;
 												this.element.trigger(event);
 											}, this));
+			options_fieldset.append("<hr />");
+
+			var reset_button = $("<div />")	.addClass("reset button")
+											.text("Reset State")
+											.appendTo(options_fieldset)
+											.pressable()
+											.on("pressed", $.proxy(function() {
+												var event = new $.Event("command");
+												event.command_type = "reset";
+												event.client = this.option("client");
+												this.element.trigger(event);
+											}, this));
 
 			var client = this.option("client");
 			var $copies_obj = client.get_$("copies_obj");
@@ -252,7 +264,10 @@
 		},
 
 		on_curr_col: function() {
-			this.show_hide_options.show();
+			var client = this.option("client");
+			if(client.type() === "stateful") {
+				this.show_hide_options.show();
+			}
 			if(this.option("prev_col") && this.option("show_prev")) {
 				this.prev_button	.show()
 									.on("pressed", this.$on_prev_click);

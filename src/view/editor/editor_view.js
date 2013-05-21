@@ -296,6 +296,12 @@
 					value: value
 				});
 				this.client_socket.post_command(command);
+			} else if (type === 'reset') {
+				client = event.client;
+				command = new red.ResetCommand({
+					parent: { id: to_func(client.cobj_id) }
+				});
+				this.client_socket.post_command(command);
 			} else {
 				console.log("Unhandled type " + type);
 			}
