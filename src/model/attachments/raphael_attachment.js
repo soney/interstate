@@ -206,6 +206,7 @@
 					var robj = this.get_robj();
 					if(robj) {
 						robj.remove();
+						this.$robj.set(false);
 					}
 				}
 			}

@@ -107,6 +107,13 @@
 		},
 
 		_destroy: function() {
+		},
+
+		_setOption: function(key, value) {
+			this._super(key, value);
+			if(key === "text") {
+				this.update_static_text();
+			}
 		}
 	});
 

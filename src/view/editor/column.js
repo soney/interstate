@@ -195,13 +195,26 @@
 
 			var client = this.option("client");
 			var $copies_obj = client.get_$("copies_obj");
-			var $copies_str;
+			var $$copies_str = cjs.$(false);
 			this.live_copies = cjs.liven(function() {
 				var copies_obj = $copies_obj.get();
 				if(copies_obj instanceof red.WrapperClient) {
-					console.log("A");
+					if(copies_obj.type() === "raw_cell") {
+						$$copies_str.set(copies_obj.get_$("get_str"));
+					}
 				} else {
 					copies_edit.editable_text("option", "text", "");
+				}
+			}, {
+				context: this
+			});
+			this.live_copies_str = cjs.liven(function() {
+				var $copies_str = $$copies_str.get();
+				if($copies_str) {
+					var copies_str = $copies_str.get();
+					if(_.isString(copies_str)) {
+						copies_edit.editable_text("option", "text", copies_str);
+					}
 				}
 			}, {
 				context: this
@@ -211,6 +224,9 @@
 		hide_options: function() {
 			if(this.live_copies) {
 				this.live_copies.destroy();
+			}
+			if(this.live_copies_str) {
+				this.live_copies_str.destroy();
 			}
 			this.show_hide_options.text("options");
 			this.element.removeClass("showing_options");

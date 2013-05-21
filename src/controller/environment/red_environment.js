@@ -168,10 +168,12 @@
 			text.set("show", red.create("cell", {str: "true"}));
 			text.set("clip_rect", red.create("cell", {str: "null"}));
 			text.set("cursor", red.create("cell", {str: "'default'"}));
-			text.set("x", red.create("cell", {str: "20"}));
+			text.set("x", red.create("cell", {str: "50"}));
 			text.set("y", red.create("cell", {str: "30"}));
 			text.set("opacity", red.create("cell", {str: "1.0"}));
-			text.set("stroke", red.create("cell", {str: "'black'"}));
+			text.set("stroke", red.create("cell", {str: "'none'"}));
+			text.set("fill", red.create("cell", {str: "'black'"}));
+			text.set("fill_opacity", red.create("cell", {str: "1.0"}));
 			text.set("stroke_dasharray", red.create("cell", {str: "''"}));
 			text.set("stroke_opacity", red.create("cell", {str: "1.0"}));
 			text.set("stroke_width", red.create("cell", {str: "1"}));
