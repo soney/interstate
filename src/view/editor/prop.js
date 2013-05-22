@@ -65,13 +65,7 @@
 												edit_event: "dblclick"
 											})
 											.on("text_change", $.proxy(function(e) {
-												var event = new $.Event("command");
-												event.command_type = "rename";
-												event.from_name = this.option("name");
-												event.to_name = e.str;
-												event.client = this.option("obj");
-
-												this.element.trigger(event);
+												this.rename(e.str);
 											}, this))
 											.on("done_editing", $.proxy(function(e) {
 												this.element.focus();
@@ -121,6 +115,23 @@
 		_destroy: function() {
 			this._super();
 			//this.element.pressable("destroy");
+		},
+
+		rename: function(str) {
+			var old_name = this.option("name");
+			if(red.is_valid_prop_name(str)) {
+				var event = new $.Event("command");
+				event.command_type = "rename";
+				event.from_name = old_name;
+				event.to_name = str;
+				event.client = this.option("obj");
+
+				this.element.trigger(event);
+			} else {
+				this.name_span.editable_text("option", "text", old_name);
+				var problem_str = red.get_prop_name_error(str);
+				console.log(problem_str);
+			}
 		},
 
 		on_key_down: function(event) {
@@ -325,7 +336,11 @@
 								}
 							}, this);
 						}, {
-							context: this
+							context: this,
+							on_destroy: function() {
+								$states.destroy();
+								$values.destroy();
+							}
 						});
 					}
 				} else if(value.type() === "cell") {
@@ -353,7 +368,10 @@
 										}, this));
 						}
 					}, {
-						context: this
+						context: this,
+						on_destroy: function() {
+							$str.destroy();
+						}
 					});
 				} else {
 					this.src_cell.addClass("cannot_modify");

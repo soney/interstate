@@ -56,6 +56,7 @@ exports.runtime = c(
 	cp(src, [
 				"model/red.js",
 				"model/utils/serialize.js",
+				"model/errors.js",
 				"model/utils/obj_utils.js",
 				"model/utils/debug.js",
 				"model/utils/parsed_value.js",

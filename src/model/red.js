@@ -47,5 +47,9 @@ var red = (function (root) {
 		red._.each(uid_objs, func, context);
 	};
 
+	red.is_valid_prop_name = function(name) {
+		return name.match(/^[a-zA-Z_$][0-9a-zA-Z_$]*$/);
+	};
+
 	return red;
 }(this));

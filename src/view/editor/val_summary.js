@@ -72,6 +72,11 @@
 						} else {
 							copies_span.text("");
 						}
+					}, {
+						on_destroy: function() {
+							$copies.destroy();
+							$is_template.destroy();
+						}
 					});
 
 					this.summary_span.append(copies_span, arrow_span);
@@ -83,7 +88,10 @@
 					this.live_value_fn = cjs.liven(function() {
 						this.summary_span.text(summarized_val($prop_val.get()));
 					}, {
-						context: this
+						context: this,
+						on_destroy: function() {
+							$prop_val.destroy();
+						}
 					});
 				} else if(type ==="stateful_prop") {
 					$prop_val = client.get_$("val");
@@ -94,7 +102,10 @@
 					this.live_value_fn = cjs.liven(function() {
 						this.summary_span.text(summarized_val($prop_val.get()));
 					}, {
-						context: this
+						context: this,
+						on_destroy: function() {
+							$prop_val.destroy();
+						}
 					});
 				} else {
 					console.log(type);

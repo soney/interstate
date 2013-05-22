@@ -105,8 +105,19 @@
 		proto.get_$ = function () {
 			var args = summarize_args(arguments);
 			var to_update = false;
+			var self = this;
 			var constraint = this.fn_call_constraints.get_or_put(args, function () {
 				var rv = new cjs.SettableConstraint();
+				var old_destroy = rv.destroy;
+				rv.destroy = function() {
+					self.post({
+						getting: args,
+						type: "destroy_$"
+					});
+					self.fn_call_constraints.remove(args);
+					old_destroy.call(rv);
+				};
+
 				to_update = true;
 				return rv;
 			});
@@ -118,9 +129,7 @@
 
 
 		proto.update = function (args) {
-			var constraint = this.fn_call_constraints.get_or_put(args, function () {
-				return new cjs.SettableConstraint();
-			});
+			var constraint = this.fn_call_constraints.get(args);
 
 			var request_id = this.post({
 				type: "get_$",

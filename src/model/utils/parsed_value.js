@@ -372,13 +372,15 @@
 
 	red.parse = function (str) {
 		if ((str.replace(/\n/g, "")).match(func_regex)) {
+			str = "(" + str + ")";
+		}
+
+		try {
 			return esprima.parse("(" + str + ")");
-		} else {
-			try {
-				return esprima.parse(str);
-			} catch(e) {
-				return undefined;
-			}
+		} catch(e) {
+			return new red.Error({
+				message: e.description
+			});
 		}
 	};
 }(red));

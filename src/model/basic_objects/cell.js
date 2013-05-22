@@ -63,13 +63,13 @@
     
         proto.get_value = function (pcontext) {
             var tree = this._tree.get();
-			if(tree) {
+			if(tree instanceof red.Error) {
+				return tree;
+			} else {
 				return red.get_parsed_val(tree, {
 					context: pcontext,
 					ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext)
 				});
-			} else {
-				return undefined;
 			}
         };
         proto.constraint_in_context = function (pcontext) {

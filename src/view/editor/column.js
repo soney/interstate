@@ -182,8 +182,10 @@
 											}, this));
 			options_fieldset.append("<hr />");
 
-			var reset_button = $("<div />")	.addClass("reset button")
-											.text("Reset State")
+			var state_label = $("<label />").html("State:&nbsp;")
+											.appendTo(options_fieldset);
+			var reset_button = $("<span />").addClass("reset button")
+											.text("Reset")
 											.appendTo(options_fieldset)
 											.pressable()
 											.on("pressed", $.proxy(function() {
@@ -195,6 +197,7 @@
 
 			var client = this.option("client");
 			var $copies_obj = client.get_$("copies_obj");
+			var $copies_str;
 			var $$copies_str = cjs.$(false);
 			this.live_copies = cjs.liven(function() {
 				var copies_obj = $copies_obj.get();
@@ -206,10 +209,16 @@
 					copies_edit.editable_text("option", "text", "");
 				}
 			}, {
-				context: this
+				context: this,
+				on_destroy: function() {
+					$copies_obj.destroy();
+				}
 			});
 			this.live_copies_str = cjs.liven(function() {
-				var $copies_str = $$copies_str.get();
+				if($copies_str) {
+					$copies_str.destroy();
+				}
+				$copies_str = $$copies_str.get();
 				if($copies_str) {
 					var copies_str = $copies_str.get();
 					if(_.isString(copies_str)) {
@@ -217,7 +226,12 @@
 					}
 				}
 			}, {
-				context: this
+				context: this,
+				on_destroy: function() {
+					if($copies_str) {
+						$copies_str.destroy();
+					}
+				}
 			});
 		},
 
@@ -350,13 +364,13 @@
 			if(!client) {
 				client = this.option("client");
 			}
-			this.$children = client.get_$("children");
+			var $children = client.get_$("children");
 
 			var none_display = $("<tr />")	.addClass("no_children")
 											.html("<td colspan='3'>(no properties)</td>");
 			var old_children = [];
 			this.children_change_listener = cjs.liven(function() {
-				var children = this.$children.get();
+				var children = $children.get();
 				if(_.isArray(children)) {
 					if(children.length > 0) {
 						none_display.remove();
@@ -411,7 +425,10 @@
 					}
 				}
 			}, {
-				context: this
+				context: this,
+				on_destroy: function() {
+					$children.destroy();
+				}
 			});
 		},
 
@@ -502,7 +519,10 @@
 						$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
 					}
 				}, {
-					context: this
+					context: this,
+					on_destroy: function() {
+						$statecharts.destroy();
+					}
 				});
 
 				this.num_columns_view = cjs.liven(function() {

@@ -119,6 +119,7 @@ html.full_window_editor {
 						}
 						> .value_summary {
 							max-width: $active_obj_value_summary_width;
+							border-right: 1px solid #DDD;
 							&.stateful_prop {
 								border-right: 1px solid #999;
 							}

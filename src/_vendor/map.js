@@ -255,7 +255,7 @@ var RedMap = (function (root) {
                 return this;
             }
         };
-        proto.unset = function (key) {
+        proto.remove = function (key) {
             var i, item_i, len;
             var hash = this._hash(key);
             var hash_arr = this._khash[hash];

@@ -1,5 +1,5 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,window,Box2D */
+/*global red,esprima,able,uid,console,window,Box2D,RedMap */
 
 (function (red) {
 	"use strict";
@@ -139,10 +139,16 @@
 		this._type = "none";
 		this._event_type_listeners = options.listen_to || [];
 
+		this.client_count = 0;
+		this.client_ids = {};
+		_.each(options.client_ids, function(client_id) {
+			this.add_client_id(client_id);
+		}, this);
+
 		this.$on_emit = _.bind(this.on_emit, this);
 		this.add_emission_listeners();
 
-		this.fn_call_constraints = cjs.map({
+		this.fn_call_constraints = new RedMap({
 			hash: function (args) {
 				return args[0];
 			},
@@ -166,6 +172,24 @@
 	(function (my) {
 		var proto = my.prototype;
 		able.make_proto_listenable(proto);
+
+		proto.add_client_id = function(client_id) {
+			if(!this.client_ids.hasOwnProperty(client_id)) {
+				this.client_ids[client_id] = true;
+				this.client_count++;
+			}
+		};
+
+		proto.remove_client_id = function(client_id) {
+			if(this.client_ids.hasOwnProperty(client_id)) {
+				delete this.client_ids[client_id];
+				this.client_count--;
+			}
+		};
+
+		proto.has_clients = function() {
+			return this.client_count === 0;
+		};
 
 		proto.add_emission_listeners = function () {
 			var object = this.get_object();
@@ -208,23 +232,61 @@
 			});
 		};
 
-		proto.request = function (pre_processed_getting, callback, create_constraint) {
+		proto.client_destroyed = function(getting, client_id) {
+			var constraint_info = this.fn_call_constraints.get(getting);
+			
+			if(constraint_info.clients.hasOwnProperty(client_id)) {
+				constraint_info.client_count--;
+				if(constraint_info.client_count <= 0) {
+					constraint_info.constraint.destroy();
+				}
+			}
+		};
+
+		proto.request = function (pre_processed_getting, callback, create_constraint, client_id) {
 			var getting = process_args(pre_processed_getting);
 			var fn_name = getting[0];
 			var args = _.rest(getting);
 			var object = this.get_object();
 
 			if (create_constraint) {
-				var constraint = this.fn_call_constraints.get_or_put(getting, function () {
+				var add_to_clients = true;
+				var self = this;
+				var constraint_info = this.fn_call_constraints.get_or_put(getting, function () {
 					var constraint = new cjs.Constraint(function () {
 						var rv = object[fn_name].apply(object, args);
 						return rv;
 					});
-					constraint.onChange(_.bind(function () {
+					var on_change_listener = _.bind(function () {
 						this._emit("changed", getting);
-					}, this));
-					return constraint;
+					}, this);
+					constraint.onChange(on_change_listener);
+
+					var old_destroy = constraint.destroy;
+					constraint.destroy = function() {
+						constraint.offChange(on_change_listener);
+						self.fn_call_constraints.remove(getting);
+						old_destroy.call(constraint);
+					};
+
+					add_to_clients = false;
+
+					var clients = {};
+					clients[client_id] = true;
+					return {
+						constraint: constraint,
+						client_count: 1,
+						clients: clients
+					};
 				}, this);
+
+				if(add_to_clients) {
+					if(!constraint_info.hasOwnProperty(client_id)) {
+						constraint_info.clients[client_id] = true;
+						constraint_info.client_count++;
+					}
+				}
+				var constraint = constraint_info.constraint;
 
 				callback(summarize_value(constraint.get()));
 			} else {

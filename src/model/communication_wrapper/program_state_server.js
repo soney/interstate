@@ -15,18 +15,6 @@
 		this.client_window = options.client_window;
 		this.connected = false;
 		this.wrapper_servers = {};
-
-		var close_check_interval = window.setInterval(_.bind(function () {
-			if (this.client_window.closed) {
-				window.clearInterval(close_check_interval);
-				this.on_client_closed();
-			}
-		}, this), 200);
-
-		$(this.client_window).on("beforeunload", _.bind(function () {
-			window.clearInterval(close_check_interval);
-			this.on_client_closed();
-		}, this));
 	};
 
 	(function (my) {
@@ -52,6 +40,8 @@
 				});
 			} else if(data === "loaded") {
 				this._emit("connected");
+			} else if(data === "disconnect") {
+				this.on_client_closed();
 			} else {
 				var type = data.type;
 				if (type === "command") {
@@ -70,7 +60,7 @@
 						cobj = red.find_uid(cobj_id);
 						client_id = data.client_id;
 
-						server = this.get_wrapper_server(cobj);
+						server = this.get_wrapper_server(cobj, client_id);
 						server.on("emit", _.bind(function(evt) {
 							var full_message = {
 								type: "wrapper_server",
@@ -92,10 +82,11 @@
 					} else if (mtype === "get_$" || mtype === "async_get") { // async request
 						cobj_id = data.cobj_id;
 						cobj = red.find_uid(cobj_id);
-						server = this.get_wrapper_server(cobj);
+						client_id = data.client_id;
+
+						server = this.get_wrapper_server(cobj, client_id);
 
 						var request_id = data.message_id;
-						client_id = data.client_id;
 						var create_constraint = data.message.type === "get_$";
 
 						server.request(data.message.getting, _.bind(function (response) {
@@ -105,19 +96,28 @@
 								client_id: client_id,
 								response: response
 							});
-						}, this), create_constraint);
+						}, this), create_constraint, client_id);
+					} else if(mtype === "destroy_$") {
+						cobj_id = data.cobj_id;
+						client_id = data.client_id;
+
+						if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
+							var wrapper_server = this.wrapper_servers[cobj_id];
+							wrapper_server.client_destroyed(data.message.getting, client_id);
+						}
 					}
 				}
 			}
 		};
 
-		proto.get_wrapper_server = function(object) {
+		proto.get_wrapper_server = function(object, client_id) {
 			var id = object.id();
+			var rv;
 			if (this.wrapper_servers.hasOwnProperty(id)) {
-				return this.wrapper_servers[id];
+				rv = this.wrapper_servers[id];
+				rv.add_client_id(client_id);
+				return rv;
 			} else {
-				var rv;
-
 				var listen_to;
 				if (object instanceof red.State) {
 					listen_to = ["add_transition", "add_substate", "remove_substate",
@@ -134,7 +134,8 @@
 				
 				rv = new red.WrapperServer({
 					object: object,
-					listen_to: listen_to
+					listen_to: listen_to,
+					client_ids: [client_id]
 				});
 
 				this.wrapper_servers[id] = rv;

@@ -105,7 +105,10 @@
 						this.text.text(str);
 					}
 				}, {
-					context: this
+					context: this,
+					on_destroy: function() {
+						$str.destroy();
+					}
 				});
 			}
 		},

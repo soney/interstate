@@ -111,7 +111,11 @@
 					});
 				}
 			}, {
-				context: this
+				context: this,
+				on_destroy: function() {
+					$is_template.destroy();
+					$copies.destroy();
+				}
 			});
 		},
 		remove_listener: function() {

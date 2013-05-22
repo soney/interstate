@@ -27,6 +27,9 @@
 				window.addEventListener("load", _.bind(this.on_loaded, this));
 			}
 		}
+		$(window).on("beforeunload", _.bind(function () {
+			this.disconnect();
+		}, this));
 	};
 
 	(function (my) {
@@ -44,6 +47,10 @@
 		};
 		proto.remove_message_listener = function () {
 			this.comm_mechanism.off("message", this.$on_message);
+		};
+
+		proto.disconnect = function() {
+			this.post("disconnect");
 		};
 
 		proto.on_message = function (message) {
