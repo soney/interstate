@@ -16,6 +16,8 @@
 		},
 
 		_create: function () {
+			var client = this.option("client");
+			client.signal_interest();
 			this.left_brace = $("<span />").text(" [").addClass("brace");
 			this.content = $("<span />");
 			this.right_brace = $("<span />").text("]").addClass("brace");
@@ -41,6 +43,8 @@
 
 		_destroy: function () {
 			this.remove_listener();
+			var client = this.option("client");
+			client.signal_destroy();
 		},
 
 		on_click: function() {

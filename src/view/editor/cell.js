@@ -70,6 +70,9 @@
 			parent: false
 		},
 		_create: function() {
+			var client = this.option("value");
+			client.signal_interest();
+
 			this.$on_key_down = $.proxy(on_cell_key_down, this);
 			this.element.addClass("cell")
 						.attr("tabindex", 1);
@@ -88,6 +91,9 @@
 			this.element.removeClass("cell");
 			this.destroy_live_text_fn();
 			this.element.off("click", this.$on_click);
+
+			var client = this.option("value");
+			client.signal_destroy();
 		},
 		on_click: function() {
 			this.begin_editing();

@@ -25,6 +25,7 @@
 
 	red.WrapperClient = function (options) {
 		able.make_this_listenable(this);
+		this.semaphore = 0;
 		this.comm_mechanism = options.comm_mechanism;
 		this.cobj_id = options.cobj_id;
 		this.obj_id = options.obj_id;
@@ -67,11 +68,25 @@
 				cobj_id: this.cobj_id
 			});
 		};
+		proto.signal_interest = function() {
+			this.semaphore++;
+		};
+		proto.signal_destroy = function() {
+			if(--this.semaphore <= 0) {
+				this.destroy();
+			}
+		};
 
 		proto.on_message = function(message) {
 		};
 
-		proto.destroy = function () { };
+		proto.destroy = function () {
+			this.post({
+				type: "destroy"
+			});
+			able.destroy_this_listenable(this);
+		};
+
 		proto.post = function (message) {
 			var m_id = message_id;
 			message_id += 1;
@@ -120,7 +135,7 @@
 				var semaphore = 0;
 				rv.signal_interest = function() { semaphore++; };
 				rv.signal_destroy = function() {
-					if(semaphore-- <= 0) {
+					if(--semaphore <= 0) {
 						rv.destroy();
 					}
 				};

@@ -62,6 +62,7 @@
 			this._super();
 			this.statechart_view.destroy();
 			this.paper.remove();
+			this.layout_manager.destroy();
 		},
 
 		get_layout_manager: function() {

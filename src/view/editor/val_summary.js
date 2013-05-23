@@ -42,6 +42,7 @@
 			this.summary_span = $("<span />").appendTo(this.element);
 			var value = this.option("value");
 			if(value instanceof red.WrapperClient) {
+				value.signal_interest();
 				var client = value;
 				var $prop_val;
 				var type = client.type();
@@ -93,7 +94,7 @@
 							$prop_val.signal_destroy();
 						}
 					});
-				} else if(type ==="stateful_prop") {
+				} else if(type === "stateful_prop") {
 					$prop_val = client.get_$("val");
 					this.element.addClass("stateful_prop");
 
@@ -122,6 +123,10 @@
 			}
 			if(this.live_copies_fn) {
 				this.live_copies_fn.destroy();
+			}
+			var value = this.option("value");
+			if(value instanceof red.WrapperClient) {
+				value.signal_destroy();
 			}
 		},
 		begin_editing: function() {

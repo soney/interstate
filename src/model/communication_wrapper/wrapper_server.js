@@ -62,7 +62,7 @@
 		};
 
 		proto.has_clients = function() {
-			return this.client_count === 0;
+			return this.client_count <= 0;
 		};
 
 		proto.add_emission_listeners = function () {
@@ -83,6 +83,12 @@
 
 		proto.destroy = function () {
 			this.remove_emission_listeners();
+			able.destroy_this_listenable(this);
+			this.fn_call_constraints.each(function(constraint_info, getting) {
+				var constraint = constraint_info.constraint;
+				constraint_info.constraint.destroy();
+				this.fn_call_constraints.remove(getting);
+			}, this);
 		};
 
 		proto.type = function () {

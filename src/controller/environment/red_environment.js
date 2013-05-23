@@ -124,8 +124,8 @@
 			image.set("transform", red.create("cell", {str: "''"}));
 			image.set("x", red.create("cell", {str: "20"}));
 			image.set("y", red.create("cell", {str: "20"}));
-			image.set("width", red.create("cell", {str: "300"}));
-			image.set("height", red.create("cell", {str: "300"}));
+			image.set("width", red.create("cell", {str: "150"}));
+			image.set("height", red.create("cell", {str: "150"}));
 			image.set("animated_properties", red.create("cell", {str: "false"}));
 			image.set("animation_duration", red.create("cell", {str: "300"}));
 
@@ -204,7 +204,7 @@
 			path.set("stroke", red.create("cell", {str: "'black'"}));
 			path.set("stroke_dasharray", red.create("cell", {str: "''"}));
 			path.set("stroke_opacity", red.create("cell", {str: "1.0"}));
-			path.set("stroke_miterlimit", red.create("cell", {str: ""}));
+			path.set("stroke_miterlimit", red.create("cell", {str: "0"}));
 			path.set("stroke_width", red.create("cell", {str: "1"}));
 			path.set("path", red.create("cell", {str: "'M24.132,7.971c-2.203-2.205-5.916-2.098-8.25,0.235L15.5,8.588l-0.382-0.382c-2.334-2.333-6.047-2.44-8.25-0.235c-2.204,2.203-2.098,5.916,0.235,8.249l8.396,8.396l8.396-8.396C26.229,13.887,26.336,10.174,24.132,7.971z'"}));
 			path.set("transform", red.create("cell", {str: "''"}));

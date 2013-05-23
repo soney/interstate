@@ -46,17 +46,17 @@ $link_color: royalblue;
 }
 
 html.full_window_editor {
-	height: 100%;
+	//height: 100%;
 	background-color: #FEFEFE;
 	
 	> body {
-		height: 100%;
+	//	height: 100%;
 		margin: 0px;
 		box-sizing: border-box;
 		-moz-box-sizing: border-box;
 		
 		> #editor {
-			height: 100%;
+	//		height: 100%;
 		}
 	}
 }

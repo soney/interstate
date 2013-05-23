@@ -49,6 +49,10 @@
 		},
 
 		_create: function() {
+			var value = this.option("value");
+			if(value instanceof red.WrapperClient) {
+				value.signal_interest();
+			}
 			this.element.addClass("child");
 
 			this.name_cell = $("<td />")	.addClass("name")
@@ -116,6 +120,10 @@
 			this._super();
 			this.on_hide_src();
 			//this.element.pressable("destroy");
+			var value = this.option("value");
+			if(value instanceof red.WrapperClient) {
+				value.signal_destroy();
+			}
 		},
 
 		rename: function(str) {

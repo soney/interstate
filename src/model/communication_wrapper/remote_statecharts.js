@@ -14,6 +14,7 @@
 		var is_active, is_active_value, promises;
 		
 		if (!statechart) {
+			wrapper_client.signal_interest();
 			if (statecharts.hasOwnProperty(id)) {
 				statechart = statecharts[id];
 				if (statechart_parent && statechart.parent() !== statechart_parent) {
@@ -180,6 +181,9 @@
 					});
 				}
 			}
+			statechart.once("destroy", function() {
+				wrapper_client.signal_destroy();
+			});
 		}
 		return statechart;
 	};
@@ -190,6 +194,7 @@
 		var id = wrapper_client.cobj_id;
 		var transition = red.find_uid(id);
 		if (!transition) {
+			wrapper_client.signal_interest();
 			if (transitions.hasOwnProperty(id)) {
 				transition = transitions[id];
 			} else {
@@ -246,6 +251,9 @@
 					});
 				});
 			}
+			transition.once("destroy", function() {
+				wrapper_client.signal_destroy();
+			});
 		}
 		return transition;
 	};
@@ -256,6 +264,7 @@
 		var id = wrapper_client.cobj_id;
 		var event = red.find_uid(id);
 		if (!event) {
+			wrapper_client.signal_interest();
 			if (events.hasOwnProperty(id)) {
 				event = events[id];
 			} else {
@@ -273,6 +282,9 @@
 					});
 				}
 			}
+			event.once("destroy", function() {
+				wrapper_client.signal_destroy();
+			});
 		}
 		return event;
 	};

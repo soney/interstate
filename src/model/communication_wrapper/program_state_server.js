@@ -55,6 +55,7 @@
 				} else if(type === "wrapper_client") {
 					var message = data.message;
 					var mtype = message.type;
+					var wrapper_server;
 					if (mtype === "register_listener") {
 						cobj_id = message.cobj_id;
 						cobj = red.find_uid(cobj_id);
@@ -102,8 +103,19 @@
 						client_id = data.client_id;
 
 						if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
-							var wrapper_server = this.wrapper_servers[cobj_id];
+							wrapper_server = this.wrapper_servers[cobj_id];
 							wrapper_server.client_destroyed(data.message.getting, client_id);
+						}
+					} else if(mtype === "destroy") {
+						cobj_id = data.cobj_id;
+						client_id = data.client_id;
+
+						if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
+							wrapper_server = this.wrapper_servers[cobj_id];
+							wrapper_server.remove_client_id();
+							if(!wrapper_server.has_clients()) {
+								wrapper_server.destroy();
+							}
 						}
 					}
 				}

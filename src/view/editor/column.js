@@ -44,6 +44,8 @@
 		},
 
 		_create: function () {
+			var client = this.option("client");
+			client.signal_interest();
 			this.element.addClass("col")
 						.attr("tabindex", 1);
 
@@ -109,7 +111,6 @@
 			} else {
 				this.on_not_curr_col();
 			}
-			var client = this.option("client");
 			client.async_get("is_template", $.proxy(function(is_template) {
 				if(is_template) {
 					client.async_get("instances", $.proxy(function(instances) {
@@ -241,10 +242,10 @@
 
 		hide_options: function() {
 			if(this.live_copies) {
-				this.live_copies.signal_destroy();
+				this.live_copies.destroy();
 			}
 			if(this.live_copies_str) {
-				this.live_copies_str.signal_destroy();
+				this.live_copies_str.destroy();
 			}
 			this.show_hide_options.text("options");
 			this.element.removeClass("showing_options");
@@ -461,6 +462,8 @@
 		}, 
 
 		_destroy: function () {
+			var client = this.option("client");
+			client.signal_destroy();
 			if(this.prev_button.data("pressable")) {
 				this.prev_button.pressable("destroy");
 			}
@@ -500,36 +503,58 @@
 																.addClass("statechart_cell");
 				var $statecharts = client.get_$("get_statecharts");
 
-				this.live_src_view = cjs.liven(function() {
-					var wrappers = $statecharts.get();
-					var statecharts = _.map(wrappers, function (wrapper) {
-						return red.create_remote_statechart(wrapper);
-					});
+				var statecharts = [], wrappers = [];
 
+				this.live_src_view = cjs.liven(function() {
 					if(this.layout_manager) {
+						$("tr.child", this.element).prop("option", "layout_manager", false);
 						delete this.layout_manager;
 					}
 
-					if(statecharts) {
-						if(this.statechart_view) {
-							if(this.statechart_view.data("statechart")) {
-								this.statechart_view.statechart("destroy");
-							}
-							this.statechart_view.remove();
+					if(this.statechart_view) {
+						if(this.statechart_view.data("statechart")) {
+							this.statechart_view.statechart("destroy");
 						}
+						this.statechart_view.remove();
+					}
 
+					_.each(statecharts, function(statechart) {
+						statechart.destroy();
+					});
+
+					_.each(wrappers, function(wrapper) {
+						wrapper.signal_destroy();
+					});
+
+					wrappers = $statecharts.get();
+
+					_.each(wrappers, function(wrapper) {
+						wrapper.signal_interest();
+					});
+
+					statecharts = _.map(wrappers, function (wrapper) {
+						return red.create_remote_statechart(wrapper);
+					});
+
+					if(statecharts) {
 						this.statechart_view = $("<div />")	.addClass("statechart")
 															.appendTo(this.statechart_view_container)
 															.statechart({
 																statecharts: statecharts
 															});
 						this.layout_manager = this.statechart_view.statechart("get_layout_manager");
-						$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
+						//$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
 					}
 				}, {
 					context: this,
 					on_destroy: function() {
 						$statecharts.signal_destroy();
+						_.each(statecharts, function(statechart) {
+							statechart.destroy();
+						});
+						_.each(wrappers, function(wrapper) {
+							wrapper.signal_destroy();
+						});
 					}
 				});
 
@@ -548,6 +573,7 @@
 		},
 		destroy_src_view: function() {
 			if(this.layout_engine) {
+				this.layout_engine.destroy();
 				delete this.layout_engine;
 			}
 			if(this.live_src_view) {

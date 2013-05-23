@@ -13,6 +13,8 @@
 			single_col: false
 		},
 		_create: function() {
+			var client = this.option("root_client");
+			client.signal_interest();
 			this.$on_child_select = $.proxy(this.on_child_select, this);
 			this.$on_header_click = $.proxy(this.on_header_click, this);
 			this.$on_prev_click = $.proxy(this.on_prev_click, this);
@@ -23,7 +25,7 @@
 			var root_col = $("<table />")	.appendTo(this.element);
 			root_col						.column({
 												name: "sketch",
-												client: this.option("root_client"),
+												client: client,
 												is_curr_col: true,
 												show_prev: false
 											})
@@ -40,6 +42,8 @@
 			_.each(this.columns, function(col) {
 				col.column("destroy");
 			});
+			var client = this.option("root_client");
+			client.signal_destroy();
 		},
 		on_child_select: function(column, event, child_info) {
 			var value = child_info.value;
