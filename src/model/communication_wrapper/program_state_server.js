@@ -91,6 +91,7 @@
 						var create_constraint = data.message.type === "get_$";
 
 						server.request(data.message.getting, _.bind(function (response) {
+							if(request_id === 47) { debugger; }
 							this.post({
 								type: "response",
 								request_id: request_id,

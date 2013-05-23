@@ -89,6 +89,7 @@
 
 		proto.post = function (message) {
 			var m_id = message_id;
+			if(m_id === 47) { debugger; }
 			message_id += 1;
 			this.comm_mechanism.post({
 				type: "wrapper_client",
