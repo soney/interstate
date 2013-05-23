@@ -5,132 +5,6 @@
 	"use strict";
 	var cjs = red.cjs,
 		_ = red._;
-		
-	var process_arg = function (arg) {
-		return arg;
-	};
-	var process_args = function (args) { return _.map(args, process_arg); };
-
-	var summarize_value = function (value) {
-		var rv;
-		if (value instanceof red.ContextualObject) {
-			var id = value.id();
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "contextual_obj",
-				object_summary: {
-					type: value.type(),
-					id: value.id(),
-					obj_id: value.get_object().id()
-				}
-			};
-		} else if (value instanceof red.StartState) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "state",
-				object_summary: {
-					type: 'start_state',
-					id: value.id()
-				}
-			};
-		} else if (value instanceof red.Statechart) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "state",
-				object_summary: {
-					type: 'statechart',
-					id: value.id()
-				}
-			};
-		} else if (value instanceof red.StatechartTransition) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "transition",
-				object_summary: {
-					type: 'transition',
-					id: value.id()
-				}
-			};
-		} else if (value instanceof red.Event) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "event",
-				object_summary: {
-					type: 'event',
-					id: value.id(),
-					event_type: value.type()
-				}
-			};
-		} else if (value instanceof red.Cell) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "contextual_obj",
-				object_summary: {
-					type: 'raw_cell',
-					id: value.id()
-				}
-			};
-		} else if (value instanceof red.WrapperClient) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "client_wrapper"
-			};
-		} else if (cjs.is_$(value)) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "constraint"
-			};
-		} else if (_.isArray(value)) {
-			rv = _.map(value, summarize_value);
-		} else if (_.isFunction(value)) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "function"
-			};
-		} else if (cjs.is_$(value)) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "cjs_object"
-			};
-		} else if (_.isElement(value)) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "dom_elem"
-			};
-		} else if (window.Box2D && value instanceof Box2D.Dynamics.b2World) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "box2d_world"
-			};
-		} else if (_.isObject(value)) {
-			rv = {};
-			_.each(value, function (v, k) { rv[k] = summarize_value(v); });
-		} else {
-			rv = value;
-		}
-		return rv;
-	};
-
-	var chop = function (args) {
-		return _.first(args, args.length - 1);
-	};
-	var last = function (args) {
-		return _.last(args);
-	};
-
-	var make_async = function (object_func_name) {
-		return function () {
-			var args = chop(arguments),
-				callback = last(arguments);
-
-			var value = this.object[object_func_name].apply(this.object, args);
-			callback(value);
-		};
-	};
-
-	var argeq = function (arg1, arg2) {
-		return arg1 === arg2;
-	};
 	var id = 0;
 	red.WrapperServer = function (options) {
 		this.id = id++;
@@ -295,4 +169,130 @@
 			}
 		};
 	}(red.WrapperServer));
+		
+	var process_arg = function (arg) {
+		return arg;
+	};
+	var process_args = function (args) { return _.map(args, process_arg); };
+
+	var summarize_value = function (value) {
+		var rv;
+		if (value instanceof red.ContextualObject) {
+			var id = value.id();
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "contextual_obj",
+				object_summary: {
+					type: value.type(),
+					id: value.id(),
+					obj_id: value.get_object().id()
+				}
+			};
+		} else if (value instanceof red.StartState) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "state",
+				object_summary: {
+					type: 'start_state',
+					id: value.id()
+				}
+			};
+		} else if (value instanceof red.Statechart) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "state",
+				object_summary: {
+					type: 'statechart',
+					id: value.id()
+				}
+			};
+		} else if (value instanceof red.StatechartTransition) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "transition",
+				object_summary: {
+					type: 'transition',
+					id: value.id()
+				}
+			};
+		} else if (value instanceof red.Event) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "event",
+				object_summary: {
+					type: 'event',
+					id: value.id(),
+					event_type: value.type()
+				}
+			};
+		} else if (value instanceof red.Cell) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "contextual_obj",
+				object_summary: {
+					type: 'raw_cell',
+					id: value.id()
+				}
+			};
+		} else if (value instanceof red.WrapperClient) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "client_wrapper"
+			};
+		} else if (cjs.is_$(value)) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "constraint"
+			};
+		} else if (_.isArray(value)) {
+			rv = _.map(value, summarize_value);
+		} else if (_.isFunction(value)) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "function"
+			};
+		} else if (cjs.is_$(value)) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "cjs_object"
+			};
+		} else if (_.isElement(value)) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "dom_elem"
+			};
+		} else if (window.Box2D && value instanceof Box2D.Dynamics.b2World) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "box2d_world"
+			};
+		} else if (_.isObject(value)) {
+			rv = {};
+			_.each(value, function (v, k) { rv[k] = summarize_value(v); });
+		} else {
+			rv = value;
+		}
+		return rv;
+	};
+
+	var chop = function (args) {
+		return _.first(args, args.length - 1);
+	};
+	var last = function (args) {
+		return _.last(args);
+	};
+
+	var make_async = function (object_func_name) {
+		return function () {
+			var args = chop(arguments),
+				callback = last(arguments);
+
+			var value = this.object[object_func_name].apply(this.object, args);
+			callback(value);
+		};
+	};
+
+	var argeq = function (arg1, arg2) {
+		return arg1 === arg2;
+	};
 }(red));

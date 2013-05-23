@@ -110,11 +110,11 @@
 				var rv = new cjs.SettableConstraint();
 				var old_destroy = rv.destroy;
 				rv.destroy = function() {
+					self.fn_call_constraints.remove(args);
 					self.post({
 						getting: args,
 						type: "destroy_$"
 					});
-					self.fn_call_constraints.remove(args);
 					old_destroy.call(rv);
 				};
 
@@ -122,14 +122,14 @@
 				return rv;
 			});
 			if (to_update) {
-				this.update(args);
+				this.update(args, constraint);
 			}
 			return constraint;
 		};
 
 
-		proto.update = function (args) {
-			var constraint = this.fn_call_constraints.get(args);
+		proto.update = function (args, constraint) {
+			constraint = constraint || this.fn_call_constraints.get(args);
 
 			var request_id = this.post({
 				type: "get_$",

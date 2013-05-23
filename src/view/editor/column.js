@@ -375,6 +375,7 @@
 			var old_children = [];
 			this.children_change_listener = cjs.liven(function() {
 				var children = $children.get();
+				console.log(children);
 				if(_.isArray(children)) {
 					if(children.length > 0) {
 						none_display.remove();
@@ -437,7 +438,10 @@
 		},
 
 		remove_children_listener: function () {
-			this.children_change_listener.destroy();
+			if(this.children_change_listener) {
+				this.children_change_listener.destroy();
+				delete this.children_change_listener;
+			}
 			$("tr.child", this.tbody).prop("destroy").remove();
 			$("tr.no_children", this.tbody).remove();
 		},
@@ -460,6 +464,7 @@
 			if(this.prev_button.data("pressable")) {
 				this.prev_button.pressable("destroy");
 			}
+			console.log("DESTROY ME");
 			this.remove_children_listener();
 		},
 		on_child_select: function(child_info, child_disp, event) {
