@@ -107,7 +107,7 @@
 				}, {
 					context: this,
 					on_destroy: function() {
-						$str.destroy();
+						$str.signal_destroy();
 					}
 				});
 			}

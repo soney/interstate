@@ -117,10 +117,18 @@
 					});
 					old_destroy.call(rv);
 				};
+				var semaphore = 0;
+				rv.signal_interest = function() { semaphore++; };
+				rv.signal_destroy = function() {
+					if(semaphore-- <= 0) {
+						rv.destroy();
+					}
+				};
 
 				to_update = true;
 				return rv;
 			});
+			constraint.signal_interest();
 			if (to_update) {
 				this.update(args, constraint);
 			}

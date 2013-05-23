@@ -339,8 +339,8 @@
 						}, {
 							context: this,
 							on_destroy: function() {
-								$states.destroy();
-								$values.destroy();
+								$states.signal_destroy();
+								$values.signal_destroy();
 							}
 						});
 					}
@@ -370,7 +370,7 @@
 					}, {
 						context: this,
 						on_destroy: function() {
-							$str.destroy();
+							$str.signal_destroy();
 						}
 					});
 				} else {

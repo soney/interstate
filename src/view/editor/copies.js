@@ -113,8 +113,8 @@
 			}, {
 				context: this,
 				on_destroy: function() {
-					$is_template.destroy();
-					$copies.destroy();
+					$is_template.signal_destroy();
+					$copies.signal_destroy();
 				}
 			});
 		},

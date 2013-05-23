@@ -215,12 +215,12 @@
 			}, {
 				context: this,
 				on_destroy: function() {
-					$copies_obj.destroy();
+					$copies_obj.signal_destroy();
 				}
 			});
 			this.live_copies_str = cjs.liven(function() {
 				if($copies_str) {
-					$copies_str.destroy();
+					$copies_str.signal_destroy();
 				}
 				$copies_str = $$copies_str.get();
 				if($copies_str) {
@@ -233,7 +233,7 @@
 				context: this,
 				on_destroy: function() {
 					if($copies_str) {
-						$copies_str.destroy();
+						$copies_str.signal_destroy();
 					}
 				}
 			});
@@ -241,10 +241,10 @@
 
 		hide_options: function() {
 			if(this.live_copies) {
-				this.live_copies.destroy();
+				this.live_copies.signal_destroy();
 			}
 			if(this.live_copies_str) {
-				this.live_copies_str.destroy();
+				this.live_copies_str.signal_destroy();
 			}
 			this.show_hide_options.text("options");
 			this.element.removeClass("showing_options");
@@ -375,7 +375,6 @@
 			var old_children = [];
 			this.children_change_listener = cjs.liven(function() {
 				var children = $children.get();
-				console.log(children);
 				if(_.isArray(children)) {
 					if(children.length > 0) {
 						none_display.remove();
@@ -432,9 +431,10 @@
 			}, {
 				context: this,
 				on_destroy: function() {
-					$children.destroy();
+					$children.signal_destroy();
 				}
 			});
+			window.ccl = this.children_change_listener;
 		},
 
 		remove_children_listener: function () {
@@ -464,7 +464,6 @@
 			if(this.prev_button.data("pressable")) {
 				this.prev_button.pressable("destroy");
 			}
-			console.log("DESTROY ME");
 			this.remove_children_listener();
 		},
 		on_child_select: function(child_info, child_disp, event) {
@@ -530,7 +529,7 @@
 				}, {
 					context: this,
 					on_destroy: function() {
-						$statecharts.destroy();
+						$statecharts.signal_destroy();
 					}
 				});
 

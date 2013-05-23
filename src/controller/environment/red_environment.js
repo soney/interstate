@@ -28,7 +28,6 @@
 		this.print_on_return = false;
 
 		if(!options || options.create_builtins !== false) {
-		/*
 			root.set("on", red.on_event);
 			/*
 			root.set("emit", red.emit);
@@ -48,14 +47,12 @@
 		proto.initialize_props = function (root_pointer) {
 			var root_dict = root_pointer.points_at();
 
-/*
 			var screen = red.create("dict", {has_protos: false});
 			root_dict.set("screen", screen);
 
 			root_dict.set("width", red.create("cell", {str: "500"}));
 			root_dict.set("height", red.create("cell", {str: "500"}));
 
-*/
 			var shape = red.create("dict", {has_protos: false});
 			root_dict.set("shape", shape);
 

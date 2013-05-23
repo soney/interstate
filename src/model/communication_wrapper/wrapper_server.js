@@ -106,13 +106,16 @@
 			});
 		};
 
-		proto.client_destroyed = function(getting, client_id) {
+		proto.client_destroyed = function(pre_processed_getting, client_id) {
+			var getting = process_args(pre_processed_getting);
 			var constraint_info = this.fn_call_constraints.get(getting);
 			
 			if(constraint_info.clients.hasOwnProperty(client_id)) {
+				delete constraint_info.clients[client_id];
 				constraint_info.client_count--;
 				if(constraint_info.client_count <= 0) {
 					constraint_info.constraint.destroy();
+					this.fn_call_constraints.remove(getting);
 				}
 			}
 		};
@@ -125,7 +128,6 @@
 
 			if (create_constraint) {
 				var add_to_clients = true;
-				var self = this;
 				var constraint_info = this.fn_call_constraints.get_or_put(getting, function () {
 					var constraint = new cjs.Constraint(function () {
 						var rv = object[fn_name].apply(object, args);
@@ -139,7 +141,6 @@
 					var old_destroy = constraint.destroy;
 					constraint.destroy = function() {
 						constraint.offChange(on_change_listener);
-						self.fn_call_constraints.remove(getting);
 						old_destroy.call(constraint);
 					};
 

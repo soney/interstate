@@ -74,8 +74,8 @@
 						}
 					}, {
 						on_destroy: function() {
-							$copies.destroy();
-							$is_template.destroy();
+							$copies.signal_destroy();
+							$is_template.signal_destroy();
 						}
 					});
 
@@ -90,7 +90,7 @@
 					}, {
 						context: this,
 						on_destroy: function() {
-							$prop_val.destroy();
+							$prop_val.signal_destroy();
 						}
 					});
 				} else if(type ==="stateful_prop") {
@@ -104,7 +104,7 @@
 					}, {
 						context: this,
 						on_destroy: function() {
-							$prop_val.destroy();
+							$prop_val.signal_destroy();
 						}
 					});
 				} else {
