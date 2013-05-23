@@ -110,14 +110,18 @@
 				this.on_not_curr_col();
 			}
 			var client = this.option("client");
-			client.async_get("instances", $.proxy(function(instances) {
-				if(instances) {
-					var instance = instances[0];
-					this.option("curr_copy_client", instance);
-					this.destroy_src_view();
-					this.build_src_view();
-					this.remove_children_listener();
-					this.add_children_listener();
+			client.async_get("is_template", $.proxy(function(is_template) {
+				if(is_template) {
+					client.async_get("instances", $.proxy(function(instances) {
+						if(instances.length > 0) {
+							var instance = instances[0];
+							this.option("curr_copy_client", instance);
+							this.destroy_src_view();
+							this.build_src_view();
+							this.remove_children_listener();
+							this.add_children_listener();
+						}
+					}, this));
 				}
 			}, this));
 			if(client.type() !== "stateful") {

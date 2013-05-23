@@ -114,6 +114,7 @@
 
 		_destroy: function() {
 			this._super();
+			this.on_hide_src();
 			//this.element.pressable("destroy");
 		},
 
@@ -346,9 +347,8 @@
 				} else if(value.type() === "cell") {
 					var $str = value.get_$("get_str");
 					this.live_cell_str_fn = cjs.liven(function() {
-						this.src_cell.children().remove();
-
 						var str = $str.get();
+						this.src_cell.children().remove();
 						var cell_disp = $("<span />")	.addClass("pure_cell")
 														.appendTo(this.src_cell)
 														.editable_text({
