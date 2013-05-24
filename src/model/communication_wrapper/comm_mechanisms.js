@@ -65,7 +65,9 @@
 		};
 
 		proto.on_message = function(message) {
+			_.defer(_.bind(function() {
 			this._emit("message", message);
+			}, this));
 		};
 
 		proto.destroy = function() {

@@ -89,7 +89,6 @@
 
 		proto.post = function (message) {
 			var m_id = message_id;
-			if(m_id === 47) { debugger; }
 			message_id += 1;
 			this.comm_mechanism.post({
 				type: "wrapper_client",
@@ -126,6 +125,7 @@
 				var rv = new cjs.SettableConstraint();
 				var old_destroy = rv.destroy;
 				rv.destroy = function() {
+					//if(rv.__cjs_cs_ndoe__.id === 1458) debugger;
 					self.fn_call_constraints.remove(args);
 					self.post({
 						getting: args,
@@ -154,12 +154,14 @@
 
 		proto.update = function (args, constraint) {
 			constraint = constraint || this.fn_call_constraints.get(args);
+			var constraint_id = constraint.__cjs_cs_node__.id;
 
 			var request_id = this.post({
 				type: "get_$",
 				getting: args
 			});
 			this.program_state_client.register_response_listener(request_id, _.bind(function (value) {
+				var cid = constraint_id;
 				var processed_value = this.process_value(value);
 				constraint.set(processed_value);
 			}, this));

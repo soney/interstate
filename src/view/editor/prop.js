@@ -378,7 +378,7 @@
 					}, {
 						context: this,
 						on_destroy: function() {
-							$str.signal_destroy();
+							//$str.signal_destroy();
 						}
 					});
 				} else {
