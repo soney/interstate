@@ -117,6 +117,19 @@
 			}, this));
 		};
 
+		proto.destroy_$ = function(constraint, args) {
+			var request_ids = constraint.request_ids;
+			_.each(constraint.request_ids, function(request_id) {
+				this.program_state_client.deregister_response_listener(request_id);
+			}, this);
+			delete constraint.request_ids;
+			this.fn_call_constraints.remove(args);
+			this.post({
+				getting: args,
+				type: "destroy_$"
+			});
+		};
+
 		proto.get_$ = function () {
 			var args = summarize_args(arguments);
 			var to_update = false;
@@ -125,12 +138,7 @@
 				var rv = new cjs.SettableConstraint();
 				var old_destroy = rv.destroy;
 				rv.destroy = function() {
-					//if(rv.__cjs_cs_ndoe__.id === 1458) debugger;
-					self.fn_call_constraints.remove(args);
-					self.post({
-						getting: args,
-						type: "destroy_$"
-					});
+					self.destroy_$(rv, args);
 					old_destroy.call(rv);
 				};
 				var semaphore = 0;
@@ -140,6 +148,8 @@
 						rv.destroy();
 					}
 				};
+
+				rv.request_ids = [];
 
 				to_update = true;
 				return rv;
@@ -154,14 +164,19 @@
 
 		proto.update = function (args, constraint) {
 			constraint = constraint || this.fn_call_constraints.get(args);
-			var constraint_id = constraint.__cjs_cs_node__.id;
 
 			var request_id = this.post({
 				type: "get_$",
 				getting: args
 			});
+			constraint.request_ids.push(request_id);
 			this.program_state_client.register_response_listener(request_id, _.bind(function (value) {
-				var cid = constraint_id;
+				for(var i = constraint.request_ids.length; i>=0; i--) {
+					if(constraint.request_ids[i] === request_id) {
+						constraint.request_ids.splice(i, 1);
+						break;
+					}
+				}
 				var processed_value = this.process_value(value);
 				constraint.set(processed_value);
 			}, this));

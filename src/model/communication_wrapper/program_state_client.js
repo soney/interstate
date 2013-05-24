@@ -53,6 +53,7 @@
 			this.post("disconnect");
 		};
 
+		var DEREGISTERED = {};
 		proto.on_message = function (message) {
 			var type = message.type;
 
@@ -81,7 +82,10 @@
 				var request_id = message.request_id,
 					response = message.response;
 				if (this.response_listeners.hasOwnProperty(request_id)) {
-					this.response_listeners[request_id](response);
+					var response_listener = this.response_listeners[request_id];
+					if(response_listener !== DEREGISTERED) {
+						response_listener(response);
+					}
 					delete this.response_listeners[request_id];
 				} else {
 					this.pending_responses[request_id] = response;
@@ -97,6 +101,14 @@
 				delete this.pending_responses[id];
 			} else {
 				this.response_listeners[id] = listener;
+			}
+		};
+		proto.deregister_response_listener = function(id) {
+			if (this.pending_responses.hasOwnProperty(id)) {
+				delete this.pending_responses[id];
+			}
+			if (this.response_listeners.hasOwnProperty(id)) {
+				this.response_listeners[id] = DEREGISTERED; // don't want it added to pending when we get a response
 			}
 		};
 
