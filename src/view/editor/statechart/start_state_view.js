@@ -46,6 +46,7 @@
 			this.circle.remove();
 		};
 		proto.destroy = function() {
+			able.destroy_this_optionable(this);
 		};
 	}(red.StartStateView));
 }(red));

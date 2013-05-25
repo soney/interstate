@@ -181,9 +181,13 @@
 					});
 				}
 			}
-			statechart.once("destroy", function() {
+			var on_destroy = function() {
+				console.log("DESTROY", id);
+				statechart.off("destroy", on_destroy);
 				wrapper_client.signal_destroy();
-			});
+				delete statecharts[id];
+			};
+			statechart.on("destroy", on_destroy);
 		}
 		return statechart;
 	};
@@ -251,9 +255,13 @@
 					});
 				});
 			}
-			transition.once("destroy", function() {
+
+			var on_destroy = function() {
+				transition.off("destroy", on_destroy);
 				wrapper_client.signal_destroy();
-			});
+				delete transitions[id];
+			};
+			transition.on("destroy", on_destroy);
 		}
 		return transition;
 	};
@@ -282,9 +290,13 @@
 					});
 				}
 			}
-			event.once("destroy", function() {
+
+			var on_destroy = function() {
+				event.off("destroy", on_destroy);
 				wrapper_client.signal_destroy();
-			});
+				delete events[id];
+			};
+			event.on("destroy", on_destroy);
 		}
 		return event;
 	};

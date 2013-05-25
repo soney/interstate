@@ -59,10 +59,14 @@
 			this.statechart_view.on("set_str", $.proxy(this.set_transition_str, this));
 		},
 		_destroy: function () {
+			var statecharts = this.option("statecharts");
 			this._super();
 			this.statechart_view.destroy();
 			this.paper.remove();
 			this.layout_manager.destroy();
+			_.each(statecharts, function(statechart) {
+				statechart.destroy();
+			});
 		},
 
 		get_layout_manager: function() {
@@ -262,7 +266,7 @@
 
 			_.each(curr_items, function (ci) {
 				if (new_items.indexOf(ci) < 0) {
-					this.object_views.unset(ci instanceof red.TransitionView ? ci.option("transition") : ci.option("state"));
+					this.object_views.remove(ci instanceof red.TransitionView ? ci.option("transition") : ci.option("state"));
 					ci.destroy();
 					ci.remove();
 				}

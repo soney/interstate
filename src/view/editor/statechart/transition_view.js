@@ -393,6 +393,9 @@
 			if(this.edit_dropdown) {
 				this.edit_dropdown.dropdown("destroy");
 			}
+
+			able.destroy_this_listenable(this);
+			able.destroy_this_optionable(this);
 		};
 	}(red.TransitionView));
 }(red, jQuery));

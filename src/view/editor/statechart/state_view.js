@@ -246,6 +246,8 @@
 			if(this.edit_dropdown) {
 				this.edit_dropdown.dropdown("destroy");
 			}
+			able.destroy_this_listenable(this);
+			able.destroy_this_optionable(this);
 		};
 		proto.make_selectable = function(callback) {
 			this.path.attr({

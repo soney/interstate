@@ -112,7 +112,7 @@
 
 						if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
 							wrapper_server = this.wrapper_servers[cobj_id];
-							wrapper_server.remove_client_id();
+							wrapper_server.remove_client_id(client_id);
 							if(!wrapper_server.has_clients()) {
 								wrapper_server.destroy();
 							}
