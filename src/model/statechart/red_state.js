@@ -396,6 +396,20 @@
 
 		proto.destroy = function () {
 			this.$active.destroy();
+			this._initialized.destroy();
+			this._last_run_event.destroy();
+			if (this._basis) {
+				this._basis.off("add_transition", this.$onBasisAddTransition);
+				this._basis.off("add_substate", this.$onBasisAddSubstate);
+				this._basis.off("remove_substate", this.$onBasisRemoveSubstate);
+				this._basis.off("rename_substate", this.$onBasisRenameSubstate);
+				this._basis.off("move_substate", this.$onBasisMoveSubstate);
+				this._basis.off("make_concurrent", this.$onBasisMakeConcurrent);
+				this._basis.off("on_transition", this.$onBasisOnTransition);
+				this._basis.off("off_transition", this.$onBasisOffTransition);
+				this._basis.off("destroy", this.$onBasisDestroy);
+			}
+			able.destroy_this_listenable(this);
 		};
 	}(red.State));
 }(red));

@@ -117,10 +117,11 @@
 		};
 		proto.destroy = function () {
 			cjs.wait();
-			My.superclass.destroy.apply(this, arguments);
 			if(this.outgoingTransition) {
 				this.outgoingTransition.destroy();
 			}
+			this._transition_to_self.destroy();
+			My.superclass.destroy.apply(this, arguments);
 			cjs.signal();
 		};
 

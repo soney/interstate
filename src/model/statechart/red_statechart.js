@@ -567,7 +567,6 @@
 			});
 
 			cjs.wait();
-			My.superclass.destroy.apply(this, arguments);
 			_.forEach(this.get_incoming_transitions(), function (transition) {
 				var from = transition.from();
 				if(from instanceof red.StartState) {
@@ -589,6 +588,8 @@
 			this.$incoming_transitions.destroy();
 			this.$outgoing_transitions.destroy();
 			this.get_start_state().destroy();
+
+			My.superclass.destroy.apply(this, arguments);
 			cjs.signal();
 		};
 		proto.get_substate_names = function () {

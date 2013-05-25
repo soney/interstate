@@ -13,6 +13,7 @@
 		var statechart = red.find_uid(id);
 		var is_active, is_active_value, promises;
 		
+		statechart = false;
 		if (!statechart) {
 			wrapper_client.signal_interest();
 			if (statecharts.hasOwnProperty(id)) {
@@ -182,7 +183,6 @@
 				}
 			}
 			var on_destroy = function() {
-				console.log("DESTROY", id);
 				statechart.off("destroy", on_destroy);
 				wrapper_client.signal_destroy();
 				delete statecharts[id];
@@ -197,6 +197,7 @@
 	red.create_remote_transition = function (wrapper_client) {
 		var id = wrapper_client.cobj_id;
 		var transition = red.find_uid(id);
+		transition = false;
 		if (!transition) {
 			wrapper_client.signal_interest();
 			if (transitions.hasOwnProperty(id)) {
@@ -271,6 +272,7 @@
 	red.create_remote_event = function (wrapper_client) {
 		var id = wrapper_client.cobj_id;
 		var event = red.find_uid(id);
+		event = false;
 		if (!event) {
 			wrapper_client.signal_interest();
 			if (events.hasOwnProperty(id)) {
