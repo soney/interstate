@@ -543,7 +543,7 @@
 																statecharts: statecharts
 															});
 						this.layout_manager = this.statechart_view.statechart("get_layout_manager");
-						//$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
+						$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
 					}
 				}, {
 					context: this,

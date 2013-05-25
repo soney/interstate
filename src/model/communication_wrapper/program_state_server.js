@@ -115,6 +115,7 @@
 							wrapper_server.remove_client_id(client_id);
 							if(!wrapper_server.has_clients()) {
 								wrapper_server.destroy();
+								delete this.wrapper_servers[cobj_id];
 							}
 						}
 					}
@@ -164,6 +165,12 @@
 		};
 
 		proto.on_client_closed = function () {
+			_.each(this.wrapper_servers, function(wrapper_server, cobj_id) {
+				if(!wrapper_server.has_clients()) {
+					wrapper_server.destroy();
+					delete this.wrapper_servers[cobj_id];
+				}
+			}, this);
 			this.cleanup_closed_client();
 			this._emit("disconnected");
 		};
