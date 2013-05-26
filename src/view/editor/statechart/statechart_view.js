@@ -64,9 +64,6 @@
 			this.statechart_view.destroy();
 			this.paper.remove();
 			this.layout_manager.destroy();
-			_.each(statecharts, function(statechart) {
-				statechart.destroy();
-			});
 		},
 
 		get_layout_manager: function() {

@@ -11,7 +11,7 @@
 	red.create_remote_statechart = function (wrapper_client, statechart_parent) {
 		var id = wrapper_client.cobj_id;
 		var statechart = red.find_uid(id);
-		var is_active, is_active_value, promises;
+		var is_active, is_active_value, promises, listeners;
 		
 		statechart = false;
 		if (!statechart) {
@@ -93,6 +93,52 @@
 									incoming_transitions.promise(), is_concurrent.promise(),
 									is_active.promise(), start_state.promise()];
 
+					listeners = {
+						add_substate: function(event) {
+							var state_name = event.state_name,
+								index = event.index,
+								state_wrapper_client = event.state;
+							var substate = red.create_remote_statechart(state_wrapper_client, statechart);
+							statechart.add_substate(state_name, substate, index);
+						},
+						remove_substate: function (event) {
+							var state_name = event.name;
+							statechart.remove_substate(state_name, undefined, false);
+						},
+						rename_substate: function (event) {
+							var from_name = event.from,
+								to_name = event.to;
+							statechart.rename_substate(from_name, to_name);
+						},
+						move_substate: function (event) {
+							var state_name = event.state_name,
+								index = event.index;
+							statechart.move_state(state_name, index);
+						},
+						make_concurrent: function (event) {
+							statechart.make_concurrent(event.concurrent);
+						},
+						destroy: function (event) {
+							statechart.destroy();
+						},
+						add_transition: function (event) {
+							var transition_wrapper_client = event.transition,
+								from_state_wrapper_client = event.from_state,
+								to_state_wrapper_client = event.to_state,
+								from_state = red.create_remote_statechart(from_state_wrapper_client),
+								to_state = red.create_remote_statechart(to_state_wrapper_client),
+								transition = red.create_remote_transition(transition_wrapper_client);
+
+							from_state._add_direct_outgoing_transition(transition);
+							to_state._add_direct_incoming_transition(transition);
+						},
+						active: function(event) {
+							statechart.set_active(true);
+						},
+						inactive: function (event) {
+							statechart.set_active(false);
+						}
+					};
 					_.when(promises).done(function () {
 						_.when(substate_promises).done(function () {
 							statechart.do_initialize({
@@ -105,52 +151,7 @@
 								active: is_active_value,
 								puppet: true
 							});
-
-							wrapper_client.on("add_substate", function (event) {
-								var state_name = event.state_name,
-									index = event.index,
-									state_wrapper_client = event.state;
-								var substate = red.create_remote_statechart(state_wrapper_client, statechart);
-								statechart.add_substate(state_name, substate, index);
-							});
-							wrapper_client.on("remove_substate", function (event) {
-								var state_name = event.name;
-								statechart.remove_substate(state_name, undefined, false);
-							});
-
-							wrapper_client.on("rename_substate", function (event) {
-								var from_name = event.from,
-									to_name = event.to;
-								statechart.rename_substate(from_name, to_name);
-							});
-							wrapper_client.on("move_substate", function (event) {
-								var state_name = event.state_name,
-									index = event.index;
-								statechart.move_state(state_name, index);
-							});
-							wrapper_client.on("make_concurrent", function (event) {
-								statechart.make_concurrent(event.concurrent);
-							});
-							wrapper_client.on("destroy", function (event) {
-								statechart.destroy();
-							});
-							wrapper_client.on("add_transition", function (event) {
-								var transition_wrapper_client = event.transition,
-									from_state_wrapper_client = event.from_state,
-									to_state_wrapper_client = event.to_state,
-									from_state = red.create_remote_statechart(from_state_wrapper_client),
-									to_state = red.create_remote_statechart(to_state_wrapper_client),
-									transition = red.create_remote_transition(transition_wrapper_client);
-
-								from_state._add_direct_outgoing_transition(transition);
-								to_state._add_direct_incoming_transition(transition);
-							});
-							wrapper_client.on("active", function (event) {
-								statechart.set_active(true);
-							});
-							wrapper_client.on("inactive", function (event) {
-								statechart.set_active(false);
-							});
+							wrapper_client.on(listeners);
 						});
 					});
 				} else {
@@ -159,6 +160,8 @@
 
 					var outgoing_transition = _.Deferred();
 					var outgoing_transition_value;
+					listeners = { };
+
 					wrapper_client.async_get('get_outgoing_transition', function (transition_wrapper) {
 						outgoing_transition_value = red.create_remote_transition(transition_wrapper);
 
@@ -183,6 +186,7 @@
 				}
 			}
 			var on_destroy = function() {
+				wrapper_client.off(listeners);
 				statechart.off("destroy", on_destroy);
 				wrapper_client.signal_destroy();
 				delete statecharts[id];
@@ -197,6 +201,7 @@
 	red.create_remote_transition = function (wrapper_client) {
 		var id = wrapper_client.cobj_id;
 		var transition = red.find_uid(id);
+		var listeners;
 		transition = false;
 		if (!transition) {
 			wrapper_client.signal_interest();
@@ -226,6 +231,28 @@
 					event_value = red.create_remote_event(event_wrapper);
 					event.resolve();
 				});
+				listeners = {
+					setTo: function (event) {
+						var state_client_wrapper = event.state,
+							state = red.create_remote_statechart(state_client_wrapper);
+						transition.setTo(state);
+					},
+					setFrom: function (event) {
+						var state_client_wrapper = event.state,
+							state = red.create_remote_statechart(state_client_wrapper);
+						transition.setFrom(state);
+					},
+					remove: function (event) {
+						transition.remove();
+					},
+					destroy: function (event) {
+						transition.destroy();
+					},
+					fire: function (event) {
+						var e = event.event;
+						transition.fire(e);
+					}
+				};
 				var promises = [from.promise(), to.promise(), event.promise()];
 				_.when(promises).done(function () {
 					transition.do_initialize({
@@ -234,30 +261,12 @@
 						event: event_value,
 						puppet: true
 					});
-					wrapper_client.on("setTo", function (event) {
-						var state_client_wrapper = event.state,
-							state = red.create_remote_statechart(state_client_wrapper);
-						transition.setTo(state);
-					});
-					wrapper_client.on("setFrom", function (event) {
-						var state_client_wrapper = event.state,
-							state = red.create_remote_statechart(state_client_wrapper);
-						transition.setFrom(state);
-					});
-					wrapper_client.on("remove", function (event) {
-						transition.remove();
-					});
-					wrapper_client.on("destroy", function (event) {
-						transition.destroy();
-					});
-					wrapper_client.on("fire", function (event) {
-						var e = event.event;
-						transition.fire(e);
-					});
+					wrapper_client.on(listeners);
 				});
 			}
 
 			var on_destroy = function() {
+				wrapper_client.off(listeners);
 				transition.off("destroy", on_destroy);
 				wrapper_client.signal_destroy();
 				delete transitions[id];
@@ -272,11 +281,13 @@
 	red.create_remote_event = function (wrapper_client) {
 		var id = wrapper_client.cobj_id;
 		var event = red.find_uid(id);
+		var listeners;
 		event = false;
 		if (!event) {
 			wrapper_client.signal_interest();
 			if (events.hasOwnProperty(id)) {
 				event = events[id];
+				listeners = {};
 			} else {
 				var event_type = wrapper_client.object_summary.event_type;
 				event = events[id] = red.create_event(event_type, {inert: true});
@@ -285,15 +296,19 @@
 					wrapper_client.async_get("get_str", function (str) {
 						event.set_str(str);
 					});
+					listeners = {
+						setString: function (e) {
+							var str = e.to;
+							event.set_str(str);
+						}
+					};
 
-					wrapper_client.on("setString", function (e) {
-						var str = e.to;
-						event.set_str(str);
-					});
+					wrapper_client.on(listeners);
 				}
 			}
 
 			var on_destroy = function() {
+				wrapper_client.off(listeners);
 				event.off("destroy", on_destroy);
 				wrapper_client.signal_destroy();
 				delete events[id];

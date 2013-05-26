@@ -365,6 +365,7 @@ var RedMap = (function (root) {
             });
             return this;
         };
+		proto.destroy = function() {};
     }(Map));
     
     return Map;

@@ -84,6 +84,10 @@
 			this.post({
 				type: "destroy"
 			});
+			this.fn_call_constraints.each(function(constraint, args) {
+				this.destroy_$(constraint, args);
+			});
+			this.fn_call_constraints.destroy();
 			able.destroy_this_listenable(this);
 		};
 
