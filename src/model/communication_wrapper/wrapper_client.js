@@ -81,6 +81,7 @@
 		};
 
 		proto.destroy = function () {
+			this._emit("destroy");
 			this.post({
 				type: "destroy"
 			});

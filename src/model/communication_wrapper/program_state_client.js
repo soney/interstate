@@ -130,15 +130,32 @@
 					program_state_client: this
 				});
 
-				this.clients[rv.id()] = rv;
+				var client_id = rv.id();
+
+				this.clients[client_id] = rv;
 				this.wrapper_clients[cobj_id] = rv;
 				rv.on_ready();
+
+				var on_destroy = $.proxy(function() {
+					rv.off("destroy", on_destroy);
+					this.destroy_wrapper_client(client_id, cobj_id);
+				}, this);
+
+				rv.on("destroy", on_destroy);
 
 				return rv;
 			}
 		};
 
+		proto.destroy_wrapper_client = function(client_id, cobj_id) {
+			delete this.clients[client_id];
+			delete this.wrapper_clients[cobj_id];
+		};
+
 		proto.destroy = function () {
+			_.each(this.wrapper_clients, function(wc) {
+				wc.destroy();
+			}, this);
 			able.destroy_this_listenable(this);
 			this.remove_message_listener();
 			this.root_client.destroy();

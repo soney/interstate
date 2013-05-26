@@ -467,6 +467,7 @@
 			if(this.prev_button.data("pressable")) {
 				this.prev_button.pressable("destroy");
 			}
+			this.destroy_src_view();
 			this.remove_children_listener();
 		},
 		on_child_select: function(child_info, child_disp, event) {
@@ -536,7 +537,7 @@
 						return red.create_remote_statechart(wrapper);
 					});
 
-					if(statecharts) {
+					if(statecharts.length>0) {
 						this.statechart_view = $("<div />")	.addClass("statechart")
 															.appendTo(this.statechart_view_container)
 															.statechart({
@@ -558,18 +559,11 @@
 					}
 				});
 
-				this.num_columns_view = cjs.liven(function() {
-					if(this.layout_manager) {
-						$("tr.child", this.element).prop("option", "show_src", true);
-					}
-				}, {
-					context: this
-				});
 			} else {
 				this.filler_view_container = $("<th />").appendTo(this.header)
 														.attr("rowspan", "3");
-				$("tr.child", this.element).prop("option", "show_src", true);
 			}
+			$("tr.child", this.element).prop("option", "show_src", true);
 		},
 		destroy_src_view: function() {
 			if(this.layout_engine) {

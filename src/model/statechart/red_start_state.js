@@ -116,6 +116,11 @@
 			return this;
 		};
 		proto.destroy = function () {
+			this._emit("destroy", {
+				type: "destroy",
+				target: this
+			});
+
 			cjs.wait();
 			if(this.outgoingTransition) {
 				this.outgoingTransition.destroy();
