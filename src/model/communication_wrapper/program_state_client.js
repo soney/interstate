@@ -13,6 +13,7 @@
 		this.clients = {};
 		this.response_listeners = {};
 		this.pending_responses = {};
+		this.loaded = false;
 
 		if (options.ready_func === true) {
 			var old_ready = window.ready;
@@ -37,8 +38,11 @@
 		able.make_proto_listenable(proto);
 
 		proto.on_loaded = function () {
-			this.add_message_listener();
-			this.post("ready");
+			if(!this.loaded) {
+				this.loaded = true;
+				this.add_message_listener();
+				this.post("ready");
+			}
 		};
 
 		proto.add_message_listener = function () {

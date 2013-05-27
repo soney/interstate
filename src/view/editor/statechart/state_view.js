@@ -92,7 +92,8 @@
 
 		proto.get_name = function() {
 			var state = this.option("state");
-			return state.get_name("parent");
+			var name = state.get_name("parent");
+			return name;
 		};
 
 		proto._on_options_set = function (values) {
@@ -191,7 +192,7 @@
 				var x = lwe.x + PADDING;
 				var y = lwe.y - HEIGHT/2;
 				var state = this.option("state");
-				var name = state.get_name("parent");
+				var name = this.get_name();
 				this.edit_dropdown.css({
 					left: x + "px",
 					top: y + "px",

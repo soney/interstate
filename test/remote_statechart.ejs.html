@@ -136,10 +136,17 @@
 						master_view.statechart("destroy").remove();
 						master_view = get_view($(".tl"), master, true);
 						shadow_view.statechart("destroy").remove();
-						shadow_view = get_view($(".tl"), master);
+						shadow_view = get_view($(".tr"), master);
 						puppet_view.statechart("destroy").remove();
 						puppet_view = get_view($(".bl"), master);
 					};
+					/*
+					console.log("begin");
+					for(var i = 0; i<300; i++) {
+						reset();
+					}
+					console.log("end");
+					*/
 				});
 			</script>
 		</div>
