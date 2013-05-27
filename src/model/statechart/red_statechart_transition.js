@@ -54,8 +54,8 @@
 			this._puppet = options.puppet === true;
 			this.$active = cjs.$(false);
 			this.$times_run = cjs.$(0);
-			this._from_state = options.from;
-			this._to_state = options.to;
+			this._from_state = cjs.$(options.from);
+			this._to_state = cjs.$(options.to);
 			this._context = options.context;
 			this.set_basis(options.basis);
 			this.do_fire = _.bind(this.fire, this);
@@ -103,15 +103,16 @@
 			return this;
 		};
 		proto.id = proto.hash = function () { return this._id; };
-		proto.from = function () { return this._from_state; };
-		proto.to = function () { return this._to_state; };
+		proto.from = function () { return this._from_state.get(); };
+		proto.to = function () { return this._to_state.get(); };
 		proto.setFrom = function (state) {
-			if (this._from_state) {
-				this._from_state._remove_direct_outgoing_transition(this);
+			var from = this.from();
+			if (from) {
+				from._remove_direct_outgoing_transition(this);
 			}
-			this._from_state = state;
+			this._from_state.set(state);
 			var do_set_from = _.bind(function() {
-				this._from_state._add_direct_outgoing_transition(this);
+				state._add_direct_outgoing_transition(this);
 			}, this);
 			if(state.is_initialized()) {
 				do_set_from();
@@ -122,12 +123,13 @@
 			return this;
 		};
 		proto.setTo = function (state) {
-			if (this._to_state) {
-				this._to_state._remove_direct_incoming_transition(this);
+			var to = this.to();
+			if (to) {
+				to._remove_direct_incoming_transition(this);
 			}
-			this._to_state = state;
+			this._to_state.set(state);
 			var do_set_to = _.bind(function() {
-				this._to_state._add_direct_incoming_transition(this);
+				state._add_direct_incoming_transition(this);
 				if(this.is_start_transition) {
 					var from = this.from();
 					if(from.is_active() && from.is_running()) {
@@ -164,6 +166,8 @@
 			if(this.$active) {
 				this.$active.destroy();
 			}
+			this._from_state.destroy();
+			this._to_state.destroy();
 			this.set_basis(undefined);
 			this._event.off_fire(this.do_fire);
 			this._event.destroy();

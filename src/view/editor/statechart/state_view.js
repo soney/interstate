@@ -20,7 +20,7 @@
 			default_fill: "white",
 			active_fill: "red",
 			active_stroke: "red",
-			selectable_fill: "#666",
+			selectable_fill: "#AAA",
 			text_foreground: "black",
 			text_background: "white",
 			font_family: "Source Sans Pro",

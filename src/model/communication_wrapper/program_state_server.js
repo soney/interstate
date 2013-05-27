@@ -11,8 +11,9 @@
 		this.comm_mechanism = options.comm_mechanism;
 		this.add_message_listeners();
 		this.root = options.root;
-		this.contextual_root = red.find_or_put_contextual_obj(this.root);
-		this.client_window = options.client_window;
+		if(this.root) {
+			this.contextual_root = red.find_or_put_contextual_obj(this.root);
+		}
 		this.connected = false;
 		this.wrapper_servers = {};
 	};
@@ -33,10 +34,10 @@
 			var cobj, cobj_id, server, client_id;
 			if(data === "ready") {
 				this.connected = true;
-				var croot = this.contextual_root;
+				var croot_summary = this.contextual_root ? this.contextual_root.summarize() : null;
 				this.post({
 					type: "croot",
-					summary: croot.summarize()
+					summary: croot_summary
 				});
 			} else if(data === "loaded") {
 				this._emit("connected");

@@ -60,7 +60,9 @@
 			if (type === "croot") {
 				var summary = message.summary;
 
-				this.root_client = this.get_wrapper_client(summary);
+				if(summary) {
+					this.root_client = this.get_wrapper_client(summary);
+				}
 
 				this._emit("loaded", this.root_client);
 				this.post("loaded");

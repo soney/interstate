@@ -230,34 +230,6 @@ html.full_window_editor {
 							background-color: inherit;
 						}
 						vertical-align: bottom;
-						> .statechart {
-							position: relative;
-							> .dropdown {
-								font-size: 0.8em;
-								&.transition {
-									font-size: 0.6em;
-								}
-								border: 1px solid #333;
-								background-color: #EEE;
-								left: 1px;
-								box-sizing: border-box;
-								-moz-box-sizing: border-box;
-								z-index: 9999;
-								> .menu_item {
-									cursor: pointer;
-									padding-left: 2px;
-									text-align: left;
-									background-color: #EEE;
-									border-bottom: 1px solid #C9C9C9;
-									&:hover {
-										background-color: #DDD;
-									}
-									&:last-child {
-										border-bottom: none;
-									}
-								}
-							}
-						}
 					}
 				}
 
@@ -627,4 +599,32 @@ html.full_window_editor {
 
 .placeholder {
 	opacity: 0.5;
+}
+.statechart {
+	position: relative;
+	> .dropdown {
+		font-size: 0.8em;
+		&.transition {
+			font-size: 0.6em;
+		}
+		border: 1px solid #333;
+		background-color: #EEE;
+		left: 1px;
+		box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		z-index: 9999;
+		> .menu_item {
+			cursor: pointer;
+			padding-left: 2px;
+			text-align: left;
+			background-color: #EEE;
+			border-bottom: 1px solid #C9C9C9;
+			&:hover {
+				background-color: #DDD;
+			}
+			&:last-child {
+				border-bottom: none;
+			}
+		}
+	}
 }

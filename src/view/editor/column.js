@@ -538,8 +538,7 @@
 					});
 
 					if(statecharts.length>0) {
-						this.statechart_view = $("<div />")	.addClass("statechart")
-															.appendTo(this.statechart_view_container)
+						this.statechart_view = $("<div />")	.appendTo(this.statechart_view_container)
 															.statechart({
 																statecharts: statecharts
 															});

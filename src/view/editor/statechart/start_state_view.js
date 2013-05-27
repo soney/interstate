@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedMap,window */
+/*global red,esprima,able,uid,console,RedMap,jQuery,window */
 
-(function (red) {
+(function (red, $) {
 	"use strict";
 	var cjs = red.cjs,
 		_ = red._;
 	red.StartStateView = function (options) {
 		able.make_this_optionable(this, {
-			transition: null,
+			state: null,
 			paper: null,
 			c: {x: 0, y: 0},
 			radius: 6,
@@ -22,6 +22,8 @@
 			fill: this.option("fill_color"),
 			stroke: "none"
 		});
+		this.$on_context_menu = $.proxy(this.on_context_menu, this);
+		$(this.circle[0]).on("contextmenu", this.$on_context_menu);
 	};
 
 	(function (My) {
@@ -38,6 +40,17 @@
 			});
 		};
 
+		proto.on_context_menu = function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+			var parent = this.option("parent");
+			var outgoing_transition = this.option("state").get_outgoing_transition();
+			var view = parent.get_view(outgoing_transition);
+			if(view) {
+				view.show_menu();
+			}
+		};
+
 		proto.begin_editing = function() {
 		};
 		proto.done_editing = function() {
@@ -46,7 +59,8 @@
 			this.circle.remove();
 		};
 		proto.destroy = function() {
+			$(this.circle[0]).off("contextmenu", this.$on_context_menu);
 			able.destroy_this_optionable(this);
 		};
 	}(red.StartStateView));
-}(red));
+}(red, jQuery));

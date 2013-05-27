@@ -39,6 +39,7 @@
 		},
 
 		_create: function () {
+			this.element.addClass("statechart");
 			this.paper = new Raphael(this.element[0], 0, 0);
 			var statecharts = this.option("statecharts");
 			this.layout_manager = new red.RootStatechartLayoutEngine({
@@ -60,10 +61,12 @@
 		},
 		_destroy: function () {
 			var statecharts = this.option("statecharts");
-			this._super();
 			this.statechart_view.destroy();
 			this.paper.remove();
 			this.layout_manager.destroy();
+
+			this.element.removeClass("statechart");
+			this._super();
 		},
 
 		get_layout_manager: function() {
@@ -313,7 +316,8 @@
 						text_background: this.option("transition_text_background_color"),
 						text_foreground: this.option("transition_text_color"),
 						font_family: this.option("transition_font_family"),
-						font_size: this.option("transition_font_size")
+						font_size: this.option("transition_font_size"),
+						parent: this
 					});
 					rv.on("change", function (event) {
 						var value = event.value;
@@ -334,7 +338,8 @@
 						paper: this.paper,
 						c: layout_info.center,
 						fill_color: this.option("start_state_color"),
-						radius: this.option("start_state_radius")
+						radius: this.option("start_state_radius"),
+						parent: this
 					});
 				} else {
 					rv = new red.StateView({
@@ -354,7 +359,8 @@
 						text_foreground: this.option("state_text_color"),
 						active_text_fireground: this.option("active_state_text_color"),
 						text_background: this.option("state_text_background_color"),
-						padding_top: this.option("padding_top")
+						padding_top: this.option("padding_top"),
+						parent: this
 					});
 					rv.on("remove_state", this.forward);
 					rv.on("add_transition", this.forward);
@@ -380,7 +386,9 @@
 					unmake_selectable();
 				}
 			};
+			$(window).on("keydown", on_keydown);
 			var unmake_selectable = $.proxy(function() {
+				$(window).off("keydown", on_keydown);
 				_.each(states, function(state) {
 					var view = this.get_view(state);
 					view.unmake_selectable();
@@ -402,6 +410,10 @@
 			this.object_views.each(function(object_view) {
 				object_view.destroy();
 			});
+			this.object_views.destroy();
+			this.hranges.destroy();
+			able.destroy_this_listenable(this);
+			able.destroy_this_optionable(this);
 		};
 
 	}(red.RootStatechartView));

@@ -29,7 +29,7 @@
 					to = this;
 					this._transition_to_self.set(true);
 				}
-				
+
 				this.outgoingTransition = options.outgoing_transition || new red.StatechartTransition({
 					from: this,
 					to: to,

@@ -165,7 +165,14 @@
 					wrapper_client.async_get('get_outgoing_transition', function (transition_wrapper) {
 						outgoing_transition_value = red.create_remote_transition(transition_wrapper);
 
-						outgoing_transition.resolve();
+						// Wait for a resolution so that we can know if the to state is me
+						if(outgoing_transition_value.is_initialized()) {
+							outgoing_transition.resolve();
+						} else {
+							outgoing_transition_value.once("initialized", function() {
+								outgoing_transition.resolve();
+							});
+						}
 					});
 
 					is_active = _.Deferred();
