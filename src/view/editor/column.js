@@ -462,13 +462,13 @@
 		}, 
 
 		_destroy: function () {
+			this.remove_children_listener();
+			this.destroy_src_view();
 			var client = this.option("client");
 			client.signal_destroy();
 			if(this.prev_button.data("pressable")) {
 				this.prev_button.pressable("destroy");
 			}
-			this.destroy_src_view();
-			this.remove_children_listener();
 		},
 		on_child_select: function(child_info, child_disp, event) {
 			var client = child_info.value;
@@ -491,22 +491,65 @@
 				client = this.option("client");
 			}
 
+			/* handled by destroy src view
 			if(this.live_src_view) {
 				this.live_src_view.destroy();
 			}
-			if(this.num_columns_view) {
-				this.num_columns_view.destroy();
-			}
+			*/
 
 			if(client.type() === "stateful") {
 				this.statechart_view_container = $("<th />")	.appendTo(this.header)
 																.attr("rowspan", "3")
 																.addClass("statechart_cell");
-				var $statecharts = client.get_$("get_statecharts");
+				var $statecharts = client.do_get_$(["get_statecharts"], true);
 
 				var statecharts = [], wrappers = [];
+				var wrapper_infos = [];
+
+				this.statechart_view = $("<div />")	.appendTo(this.statechart_view_container)
+													.statechart({
+														statecharts: statecharts
+													});
+				this.layout_manager = this.statechart_view.statechart("get_layout_manager");
+				$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
 
 				this.live_src_view = cjs.liven(function() {
+					var old_wrapper_infos = wrapper_infos;
+					wrapper_infos = $statecharts.get() || [];
+					var diff = _.diff(old_wrapper_infos, wrapper_infos, function(a, b) {
+						return a.object_summary.id === b.object_summary.id;
+					});
+					_.forEach(diff.removed, function (info) {
+						var index = info.from, child = info.from_item;
+
+						var wrapper = wrappers[index];
+						var statechart = statecharts[index];
+
+						wrappers.splice(index, 1);
+						statecharts.splice(index, 1);
+						statechart.destroy();
+					}, this);
+					_.forEach(diff.added, function (info) {
+						var index = info.to, child = info.item;
+						var wrapper = client.process_value(child);
+						var statechart = red.create_remote_statechart(wrapper);
+						wrappers.splice(index, 0, wrapper);
+						statecharts.splice(index, 0, statechart);
+					}, this);
+					_.forEach(diff.moved, function (info) {
+						var from_index = info.from, to_index = info.to, child = info.item;
+
+						var wrapper = wrappers[from_index];
+						var statechart = statecharts[from_index];
+						wrapper.splice(from_index, 1);
+						wrappers.splice(to_index, 0, wrapper);
+						statecharts.splice(from_index, 1);
+						statecharts.splice(to_index, 0, statechart);
+					}, this);
+					if(diff.added.length > 0 || diff.removed.length > 0 || diff.moved.length > 0) {
+						this.statechart_view.statechart("option", "statecharts", statecharts);
+					}
+				/*
 					if(this.layout_manager) {
 						$("tr.child", this.element).prop("option", "layout_manager", false);
 						delete this.layout_manager;
@@ -523,32 +566,28 @@
 						statechart.destroy();
 					});
 
-/*
 					_.each(wrappers, function(wrapper) {
 						wrapper.signal_destroy();
 					});
-					*/
 
-					wrappers = $statecharts.get();
+					wrapper_infos = $statecharts.get();
+					wrappers = _.map(wrapper_infos, function(wi) {
+						return client.process_value(wi);
+					});
 
-/*
 					_.each(wrappers, function(wrapper) {
 						wrapper.signal_interest();
 					});
-					*/
 
 					statecharts = _.map(wrappers, function (wrapper) {
 						return red.create_remote_statechart(wrapper);
 					});
 
 					if(statecharts.length>0) {
-						this.statechart_view = $("<div />")	.appendTo(this.statechart_view_container)
-															.statechart({
-																statecharts: statecharts
-															});
 						this.layout_manager = this.statechart_view.statechart("get_layout_manager");
 						$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
 					}
+					*/
 				}, {
 					context: this,
 					on_destroy: function() {
@@ -559,13 +598,15 @@
 							}
 							this.statechart_view.remove();
 						}
-						$statecharts.signal_destroy();
 						_.each(statecharts, function(statechart) {
 							statechart.destroy();
 						});
+						$statecharts.signal_destroy();
+						/*
 						_.each(wrappers, function(wrapper) {
 							wrapper.signal_destroy();
 						});
+						*/
 					}
 				});
 
@@ -582,9 +623,7 @@
 			}
 			if(this.live_src_view) {
 				this.live_src_view.destroy();
-			}
-			if(this.num_columns_view) {
-				this.num_columns_view.destroy();
+				delete this.live_src_view;
 			}
 			if(this.statechart_view) {
 				if(this.statechart_view.data("statechart")) {
@@ -595,9 +634,11 @@
 			}
 			if(this.statechart_view_container) {
 				this.statechart_view_container.remove();
+				delete this.statechart_view_container;
 			}
 			if(this.filler_view_container) {
 				this.filler_view_container.remove();
+				delete this.filler_view_container;
 			}
 			if(this.paper) {
 				this.paper.remove();

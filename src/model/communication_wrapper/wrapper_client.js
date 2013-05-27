@@ -25,6 +25,7 @@
 
 	red.WrapperClient = function (options) {
 		able.make_this_listenable(this);
+		this.destroyed = false;
 		this.semaphore = 0;
 		this.comm_mechanism = options.comm_mechanism;
 		this.cobj_id = options.cobj_id;
@@ -69,6 +70,8 @@
 			});
 		};
 		proto.signal_interest = function() {
+			if(this.destroyed) {
+			}
 			this.semaphore++;
 		};
 		proto.signal_destroy = function() {
@@ -81,6 +84,7 @@
 		};
 
 		proto.destroy = function () {
+			this.destroyed = true;
 			this._emit("destroy");
 			this.post({
 				type: "destroy"
@@ -136,10 +140,14 @@
 		};
 
 		proto.get_$ = function () {
-			var args = summarize_args(arguments);
+			return this.do_get_$(arguments, false);
+		};
+
+		proto.do_get_$ = function(args, skip_processing) {
+			var summarized_args = summarize_args(args);
 			var to_update = false;
 			var self = this;
-			var constraint = this.fn_call_constraints.get_or_put(args, function () {
+			var constraint = this.fn_call_constraints.get_or_put(summarized_args, function () {
 				var rv = new cjs.SettableConstraint();
 				var old_destroy = rv.destroy;
 				rv.destroy = function() {
@@ -153,6 +161,7 @@
 						rv.destroy();
 					}
 				};
+				rv.skip_processing = !!skip_processing;
 
 				rv.request_ids = {};
 
@@ -161,7 +170,7 @@
 			});
 			constraint.signal_interest();
 			if (to_update) {
-				this.update(args, constraint);
+				this.update(args, constraint, skip_processing);
 			}
 			return constraint;
 		};
@@ -169,6 +178,7 @@
 
 		proto.update = function (args, constraint) {
 			constraint = constraint || this.fn_call_constraints.get(args);
+			var skip_processing = constraint.skip_processing;
 
 			var request_id = this.post({
 				type: "get_$",
@@ -177,8 +187,11 @@
 			constraint.request_ids[request_id] = request_id;
 			this.program_state_client.register_response_listener(request_id, _.bind(function (value) {
 				delete constraint.request_ids[request_id];
-				var processed_value = this.process_value(value);
-				constraint.set(processed_value);
+				if(skip_processing) {
+					constraint.set(value);
+				} else {
+					constraint.set(this.process_value(value));
+				}
 			}, this));
 		};
 

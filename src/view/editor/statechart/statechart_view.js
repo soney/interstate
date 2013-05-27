@@ -75,6 +75,10 @@
 
 		_setOption: function(key, value) {
 			this._super(key, value);
+			if(key === "statecharts") {
+				this.layout_manager.option("statecharts_with_add_state_button", [value[0]]);
+				this.layout_manager.invalidate();
+			}
 		},
 		add_state: function(e) {
 			var event = new $.Event("command");
