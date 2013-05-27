@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<style type="text/css">
+			.tl { position: absolute; top: 0; left: 0; right: 50%; bottom: 50%;  }
+			.tr { position: absolute; top: 0; left: 50%; right: 0; bottom: 50%;  }
+			.bl { position: absolute; top: 50%; left: 0; right: 50%; bottom: 0;  }
+			.br { position: absolute; top: 50%; left: 50%; right: 0; bottom: 0;  } 
+			.red_square {
+				width: 150px;
+				height: 150px;
+				background-color: red;
+				display: inline-block;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="tl"><span class="label">Master</span></div>
+		<div class="tr"><span class="label">Shadow</span></div>
+		<div class="bl"><span class="label">Shadow Puppet</span></div>
+		<div class="br">
+			<span class="red_square"></span>
+		</div>
+		<div>
+			<%- red_include(red_inc.vendor) %>
+			<%- red_include(red_inc.runtime) %>
+			<%- red_include(red_inc.editor) %>
+			<script type="text/javascript">
+				var get_view = function(parent_el, statechart, editable) {
+					var rv =  $("<div />")	.appendTo(parent_el)
+											.css({
+											})
+											.statechart({
+												statecharts: [statechart]
+											});
+
+					if(editable) {
+						rv.on("command", function(event) {
+							var type = event.command_type;
+							if(type === "add_state") {
+								var statechart = event.state;
+								var substates = statechart.get_substates();
+								var substates_size = red._.size(substates);
+								var state_name, make_start;
+
+								if(substates_size === 0) {
+									state_name = "init";
+									make_start = true;
+								} else {
+									state_name = "state_" + substates_size;
+									make_start = false;
+								}
+								statechart.add_state(state_name);
+								if(make_start) {
+									statechart.starts_at(state_name);
+								}
+							} else if(type === "set_transition_str") {
+								var transition = event.transition,
+									event_str = event.str;
+								var transition_event = transition.event();
+								transition_event.set_str(event_str);
+							} else if(type === "add_transition") {
+								var from = event.from,
+									to = event.to;
+								var transition_event = red.create_event("parsed", {str: "(event)", inert: true});
+								from.parent().add_transition(from, to, transition_event);
+							} else if(type === "rename_state") {
+								var state = event.state,
+									to_name = event.new_name;
+								state.parent().rename_substate(state.get_name("parent"), to_name);
+							} else if(type === "remove_state") {
+								var state = event.state;
+								state.parent().remove_substate(state.get_name("parent"), state);
+							} else if(type === "remove_transition") {
+								var transition = event.transition;
+								transition.remove();
+							} else if(type === "set_transition_to") {
+								var transition = event.transition,
+									state = event.to;
+								transition.setTo(state);
+							} else if(type === "set_transition_from") {
+								var transition = event.transition,
+									state = event.from;
+								transition.setFrom(state);
+							} else {
+								console.log(type, event);
+							}
+						});
+					}
+					return rv;
+				};
+				$(function() {
+					var dict = red.create("dict");
+					dict.set("sq", $(".red_square")[0]);
+					dict.set("on", red.on_event);
+					var ptr_context = red.create("pointer", {stack: [dict]});
+
+					var master = window.master = red.create("statechart");
+					master	.add_state("init")
+							.starts_at("init")
+							//.add_state("state2")
+							.run();
+
+					var master_view = get_view($(".tl"), master, true);
+
+					var shadow = window.shadow = master.create_shadow({ context: ptr_context, running: true });
+					var shadow_view = get_view($(".tr"), shadow);
+
+					var sc_sum = {
+						type: 'statechart',
+						id: shadow.id()
+					};
+
+					var pss = new red.ProgramStateServer({
+						comm_mechanism: new red.SameWindowCommWrapper()
+					});
+					var psc = new red.ProgramStateClient({
+						comm_mechanism: new red.SameWindowCommWrapper()
+					});
+					psc.on_loaded();
+
+					var wrapper_client = psc.get_wrapper_client(sc_sum);
+					var puppet = window.puppet = red.create_remote_statechart(wrapper_client);
+					var puppet_view = get_view($(".bl"), puppet);
+
+					window.p = function() {
+						red.print_statechart(/*master, shadow, */puppet, true);
+					};
+					
+					/*
+					window.setTimeout(function() {
+						master.remove_state("init");
+					}, 500);
+					/**/
+					window.reset = function() {
+						master_view.statechart("destroy").remove();
+						master_view = get_view($(".tl"), master, true);
+						shadow_view.statechart("destroy").remove();
+						shadow_view = get_view($(".tl"), master);
+						puppet_view.statechart("destroy").remove();
+						puppet_view = get_view($(".bl"), master);
+					};
+				});
+			</script>
+		</div>
+	</body>
+</html>
