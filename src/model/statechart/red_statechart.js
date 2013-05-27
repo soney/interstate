@@ -308,8 +308,9 @@
 			if (!this.is_running()) {
 				red.event_queue.wait();
 				this._running = true;
+				this._start_state.set_active(true);
+				this._start_state.enable_outgoing_transitions();
 
-				this.enable_outgoing_transitions();
 				this.get_active_substate().run();
 
 				this._emit("run", {
@@ -324,6 +325,11 @@
 			red.event_queue.wait();
 			this._running = false;
 			this.disable_outgoing_transitions();
+			var local_state = this.$local_state.get();
+			if(local_state) {
+				local_state.set_active(false);
+				local_state.disable_outgoing_transitions();
+			}
 			this.$local_state.set(this._start_state);
 			_.forEach(this.get_substates(), function (substate) {
 				substate.stop();
@@ -337,8 +343,10 @@
 		};
 		proto.reset = function () {
 			if (this.is_running()) {
+				red.event_queue.wait();
 				this.stop();
 				this.run();
+				red.event_queue.signal();
 			}
 			return this;
 		};

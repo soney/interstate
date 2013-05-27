@@ -523,15 +523,19 @@
 						statechart.destroy();
 					});
 
+/*
 					_.each(wrappers, function(wrapper) {
 						wrapper.signal_destroy();
 					});
+					*/
 
 					wrappers = $statecharts.get();
 
+/*
 					_.each(wrappers, function(wrapper) {
 						wrapper.signal_interest();
 					});
+					*/
 
 					statecharts = _.map(wrappers, function (wrapper) {
 						return red.create_remote_statechart(wrapper);
@@ -548,6 +552,13 @@
 				}, {
 					context: this,
 					on_destroy: function() {
+						if(this.statechart_view) {
+							$("tr.child", this.element).prop("option", "layout_manager", false);
+							if(this.statechart_view.data("statechart")) {
+								this.statechart_view.statechart("destroy");
+							}
+							this.statechart_view.remove();
+						}
 						$statecharts.signal_destroy();
 						_.each(statecharts, function(statechart) {
 							statechart.destroy();

@@ -193,8 +193,8 @@
 				}
 			}
 			var on_destroy = function() {
-				wrapper_client.off(listeners);
 				statechart.off("destroy", on_destroy);
+				wrapper_client.off(listeners);
 				wrapper_client.signal_destroy();
 				delete statecharts[id];
 			};

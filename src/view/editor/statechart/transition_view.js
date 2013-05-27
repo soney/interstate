@@ -215,14 +215,25 @@
 			the_flash.animate({
 				path: line_elem.getSubpath(0, len)
 			}, 200, "ease-in", $.proxy(function () {
+				if(paper.height === null) { // we were deleted
+					return;
+				} else if(arrow[0] === null) {
+					the_flash.remove();
+					return;
+				}
 				the_flash.animate({
 					path: line_elem.getSubpath(4 * len / 4.1, len)
 				}, 200, "ease-out", function () {
 					the_flash.remove();
 				});
 				arrow.attr({"fill": this.option("active_color")});
-				window.setTimeout($.proxy(function () {
-					arrow.animate({
+				if(this.arrow_timeout) {
+					window.clearTimeout(this.arrow_timeout);
+					delete this.arrow_timeout;
+				}
+				this.arrow_timeout = window.setTimeout($.proxy(function () {
+					delete this.arrow_timeout;
+					this.arrow_path.animate({
 						fill: this.option("color")
 					}, 200, "ease-out");
 				}, this), 200);
@@ -377,6 +388,10 @@
 		};
 
 		proto.remove = function () {
+			if(this.arrow_timeout) {
+				window.clearTimeout(this.arrow_timeout);
+				delete this.arrow_timeout;
+			}
 			this.label.remove();
 			this.circle.remove();
 			this.line_path.remove();
@@ -388,6 +403,10 @@
 		};
 
 		proto.destroy = function () {
+			if(this.arrow_timeout) {
+				window.clearTimeout(this.arrow_timeout);
+				delete this.arrow_timeout;
+			}
 			var transition = this.option("transition");
 			transition.off("fire", this.$flash);
 			if(this.edit_dropdown) {

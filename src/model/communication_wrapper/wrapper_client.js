@@ -154,7 +154,7 @@
 					}
 				};
 
-				rv.request_ids = [];
+				rv.request_ids = {};
 
 				to_update = true;
 				return rv;
