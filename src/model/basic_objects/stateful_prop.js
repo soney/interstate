@@ -71,9 +71,11 @@
             var dvs = this.get_direct_values();
             state = state_basis(state);
             var val = dvs.get(state);
+			/*
             if (val) {
                 val.destroy();
             }
+			*/
             dvs.remove(state);
         };
         proto._direct_value_for_state = function (state) {

@@ -121,6 +121,7 @@
 		destroy_live_text_fn: function() {
 			if(this.live_text_fn) {
 				this.live_text_fn.destroy();
+				delete this.live_text_fn;
 			}
 		},
 		update_position: function() {

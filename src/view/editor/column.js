@@ -485,17 +485,7 @@
 		},
 		build_src_view: function() {
 			this.destroy_src_view();
-			var client = this.option("curr_copy_client");
-
-			if(!client) {
-				client = this.option("client");
-			}
-
-			/* handled by destroy src view
-			if(this.live_src_view) {
-				this.live_src_view.destroy();
-			}
-			*/
+			var client = this.option("curr_copy_client") || this.option("client");
 
 			if(client.type() === "stateful") {
 				this.statechart_view_container = $("<th />")	.appendTo(this.header)
@@ -549,45 +539,6 @@
 					if(diff.added.length > 0 || diff.removed.length > 0 || diff.moved.length > 0) {
 						this.statechart_view.statechart("option", "statecharts", statecharts);
 					}
-				/*
-					if(this.layout_manager) {
-						$("tr.child", this.element).prop("option", "layout_manager", false);
-						delete this.layout_manager;
-					}
-
-					if(this.statechart_view) {
-						if(this.statechart_view.data("statechart")) {
-							this.statechart_view.statechart("destroy");
-						}
-						this.statechart_view.remove();
-					}
-
-					_.each(statecharts, function(statechart) {
-						statechart.destroy();
-					});
-
-					_.each(wrappers, function(wrapper) {
-						wrapper.signal_destroy();
-					});
-
-					wrapper_infos = $statecharts.get();
-					wrappers = _.map(wrapper_infos, function(wi) {
-						return client.process_value(wi);
-					});
-
-					_.each(wrappers, function(wrapper) {
-						wrapper.signal_interest();
-					});
-
-					statecharts = _.map(wrappers, function (wrapper) {
-						return red.create_remote_statechart(wrapper);
-					});
-
-					if(statecharts.length>0) {
-						this.layout_manager = this.statechart_view.statechart("get_layout_manager");
-						$("tr.child", this.element).prop("option", "layout_manager", this.layout_manager);
-					}
-					*/
 				}, {
 					context: this,
 					on_destroy: function() {
@@ -602,11 +553,6 @@
 							statechart.destroy();
 						});
 						$statecharts.signal_destroy();
-						/*
-						_.each(wrappers, function(wrapper) {
-							wrapper.signal_destroy();
-						});
-						*/
 					}
 				});
 
@@ -643,7 +589,7 @@
 			if(this.paper) {
 				this.paper.remove();
 			}
-			$("tr.child").prop("option", "show_src", false);
+			$("tr.child", this.element).prop("option", "show_src", false);
 		},
 		_setOption: function(key, value) {
 			this._super(key, value);

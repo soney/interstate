@@ -138,9 +138,17 @@
 									}
 									var anim_options = { };
 									anim_options[raph_name] = prop_val;
-									robj.animate(anim_options, duration);
+									try {
+										robj.animate(anim_options, duration);
+									} catch(e) {
+										console.error(e);
+									}
 								} else {
-									robj.attr(raph_name, prop_val);
+									try {
+										robj.attr(raph_name, prop_val);
+									} catch(e) {
+										console.error(e);
+									}
 								}
 							}
 						}

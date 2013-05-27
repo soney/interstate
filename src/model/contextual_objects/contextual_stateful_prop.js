@@ -241,7 +241,7 @@
 		proto.active_value = function () {
 			var values = this.get_values();
 			var len = values.length;
-			var info, i, tr;
+			var info, i, tr, state, val;
 
 			var using_val = NO_VAL, using_state, fallback_value = NO_VAL, fallback_state;
 			var invalidate_value = _.bind(function () {
@@ -249,8 +249,8 @@
 			}, this);
 			for (i = 0; i < len; i += 1) {
 				info = values[i];
-				var state = info.state,
-					val = info.value;
+				state = info.state;
+				val = info.value;
 				if(state instanceof red.StartState) {
 					if (using_val === NO_VAL && state.is_active()) {
 						using_val = val;
@@ -296,8 +296,18 @@
 						using_state = this._from_state = fallback_state;
 					}
 				} else {
-					using_val = this._last_value;
+					//using_val = this._last_value;
 					using_state = this._from_state;
+					using_val = undefined;
+					for(i = 0; i<len; i++) {
+						info = values[i];
+						state = info.state;
+						val = info.value;
+						if(state === using_state) {
+							using_val = val;
+							break;
+						}
+					}
 				}
 			} else {
 				this._last_value = using_val;

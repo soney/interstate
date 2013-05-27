@@ -96,8 +96,8 @@
 					var ptr_context = red.create("pointer", {stack: [dict]});
 
 					var master = window.master = red.create("statechart");
-					master	.add_state("init")
-							.starts_at("init")
+					master	//.add_state("init")
+							//.starts_at("init")
 							//.add_state("state2")
 							.run();
 

@@ -62,7 +62,7 @@
 			this.set_event(options.event);
 			red.register_uid(this._id, this);
 			this._initialized.set(true);
-			this.is_start_transition = this._from_state instanceof red.StartState;
+			this.is_start_transition = options.from instanceof red.StartState;
 			this._emit("initialized");
 		};
 		proto.is_puppet = function () {

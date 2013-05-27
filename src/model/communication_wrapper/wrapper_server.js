@@ -62,7 +62,7 @@
 		};
 
 		proto.has_clients = function() {
-			return this.client_count <= 0;
+			return this.client_count > 0;
 		};
 
 		proto.add_emission_listeners = function () {

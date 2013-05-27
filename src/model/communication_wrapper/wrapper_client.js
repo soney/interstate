@@ -85,13 +85,13 @@
 
 		proto.destroy = function () {
 			this.destroyed = true;
-			this._emit("destroy");
+			this._emit("wc_destroy");
 			this.post({
 				type: "destroy"
 			});
 			this.fn_call_constraints.each(function(constraint, args) {
 				this.destroy_$(constraint, args);
-			});
+			}, this);
 			this.fn_call_constraints.destroy();
 			able.destroy_this_listenable(this);
 		};

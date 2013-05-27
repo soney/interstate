@@ -58,6 +58,9 @@
 			}, this);
 
 			this.element.text("Loading...");
+			$(window).on("beforeunload", _.bind(function () {
+				this.on_unload();
+			}, this));
 		},
 
 		load_viewer: function (root_client) {
@@ -317,10 +320,14 @@
 			this.client_socket.post_command("reset");
 		},
 
-		_destroy: function () {
+		on_unload: function() {
 			this.navigator.navigator("destroy");
 			this.menu.remove();
 			this.client_socket.destroy();
+		},
+
+		_destroy: function () {
+			this.on_unload();
 		}
 	});
 }(red, jQuery));

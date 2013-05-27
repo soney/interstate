@@ -66,10 +66,15 @@
 					cjs.wait();
 					try {
 						tree = this._tree.get();
-						event = get_event(tree, {
-							parent: parent,
-							context: context
-						}, this._live_event_creator);
+						if(tree instanceof red.Error) {
+							console.log("no event");
+							event = null;
+						} else {
+							event = get_event(tree, {
+								parent: parent,
+								context: context
+							}, this._live_event_creator);
+						}
 					} catch(e) {
 						console.error(e);
 					} finally {

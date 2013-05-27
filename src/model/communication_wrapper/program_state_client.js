@@ -28,9 +28,6 @@
 				window.addEventListener("load", _.bind(this.on_loaded, this));
 			}
 		}
-		$(window).on("beforeunload", _.bind(function () {
-			this.disconnect();
-		}, this));
 	};
 
 	(function (my) {
@@ -54,6 +51,9 @@
 		};
 
 		proto.disconnect = function() {
+			_.each(this.clients, function(client) {
+				client.destroy();
+			}, this);
 			this.post("disconnect");
 		};
 
@@ -143,11 +143,11 @@
 				rv.on_ready();
 
 				var on_destroy = $.proxy(function() {
-					rv.off("destroy", on_destroy);
+					rv.off("wc_destroy", on_destroy);
 					this.destroy_wrapper_client(client_id, cobj_id);
 				}, this);
 
-				rv.on("destroy", on_destroy);
+				rv.on("wc_destroy", on_destroy);
 
 				return rv;
 			}
@@ -159,12 +159,9 @@
 		};
 
 		proto.destroy = function () {
-			_.each(this.wrapper_clients, function(wc) {
-				wc.destroy();
-			}, this);
+			this.disconnect();
 			able.destroy_this_listenable(this);
 			this.remove_message_listener();
-			this.root_client.destroy();
 		};
 
 		proto.post = function (message) {

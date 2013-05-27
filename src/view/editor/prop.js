@@ -291,15 +291,23 @@
 					var layout_manager = this.option("layout_manager");
 					if(layout_manager) {
 						var client = value;
-						var $states = client.get_$("get_states");
-						var $values = client.get_$("get_values");
+						var $states = client.do_get_$(["get_states"], true);
+						var $values = client.do_get_$(["get_values"], true);
 						//var $active_value = client.get_$("active_value");
 						this.live_prop_vals_fn = cjs.liven(function() {
-							var values = $values.get();
-							var states = $states.get();
-							//var active_value = $active_value.get();
+							var values_infos = $values.get();
+							var states_infos = $states.get();
 
 							this.src_cell.children().remove();
+
+							var values = _.map(values_infos, function(vi) {
+								return client.process_value(vi);
+							});
+							var states = _.map(states_infos, function(vi) {
+								return client.process_value(vi);
+							});
+							//var active_value = $active_value.get();
+
 							var view;
 
 							_.each(states, function(state) {
@@ -347,6 +355,14 @@
 						}, {
 							context: this,
 							on_destroy: function() {
+								$(this.src_cell).children().each(function() {
+									var $this = $(this);
+									if($this.data("unset_prop")) {
+										$this.unset_prop("destroy");
+									} else if($this.data("prop_cell")) {
+										$this.prop_cell("destroy");
+									}
+								}).remove();
 								$states.signal_destroy();
 								$values.signal_destroy();
 							}
@@ -378,7 +394,7 @@
 					}, {
 						context: this,
 						on_destroy: function() {
-							//$str.signal_destroy();
+							$str.signal_destroy();
 						}
 					});
 				} else {

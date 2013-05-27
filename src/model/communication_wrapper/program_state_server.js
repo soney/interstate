@@ -167,6 +167,7 @@
 
 		proto.on_client_closed = function () {
 			_.each(this.wrapper_servers, function(wrapper_server, cobj_id) {
+				console.log(wrapper_server.has_clients());
 				if(!wrapper_server.has_clients()) {
 					wrapper_server.destroy();
 					delete this.wrapper_servers[cobj_id];
