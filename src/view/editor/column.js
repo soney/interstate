@@ -225,6 +225,7 @@
 				}
 				$copies_str = $$copies_str.get();
 				if($copies_str) {
+					$copies_str.signal_interest();
 					var copies_str = $copies_str.get();
 					if(_.isString(copies_str)) {
 						copies_edit.editable_text("option", "text", copies_str);
@@ -443,7 +444,6 @@
 		},
 
 		on_copy_select: function(event, copy_index) {
-
 			var client = this.option("client");
 			client.async_get("instances", $.proxy(function(instances) {
 				if(instances) {
@@ -488,7 +488,7 @@
 				this.statechart_view_container = $("<th />")	.appendTo(this.header)
 																.attr("rowspan", "3")
 																.addClass("statechart_cell");
-				var $statecharts = client.do_get_$(["get_statecharts"], true);
+				var $statecharts = client.get_$("get_statecharts");
 
 				var statecharts = [], wrappers = [];
 				var wrapper_infos = [];
@@ -518,7 +518,7 @@
 					}, this);
 					_.forEach(diff.added, function (info) {
 						var index = info.to, child = info.item;
-						var wrapper = client.process_value(child);
+						var wrapper = child;
 						var statechart = red.create_remote_statechart(wrapper);
 						wrappers.splice(index, 0, wrapper);
 						statecharts.splice(index, 0, statechart);

@@ -93,6 +93,7 @@
 			this.element.off("click", this.$on_click);
 
 			var client = this.option("value");
+
 			client.signal_destroy();
 		},
 		on_click: function() {

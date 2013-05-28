@@ -84,6 +84,7 @@
 		};
 
 		proto.destroy = function () {
+			if(uid.strip_prefix(this.cobj_id) == 150) debugger;
 			this.destroyed = true;
 			this._emit("wc_destroy");
 			this.post({
@@ -140,14 +141,10 @@
 		};
 
 		proto.get_$ = function () {
-			return this.do_get_$(arguments, false);
-		};
-
-		proto.do_get_$ = function(args, skip_processing) {
-			var summarized_args = summarize_args(args);
+			var args = summarize_args(arguments);
 			var to_update = false;
 			var self = this;
-			var constraint = this.fn_call_constraints.get_or_put(summarized_args, function () {
+			var constraint = this.fn_call_constraints.get_or_put(args, function () {
 				var rv = new cjs.SettableConstraint();
 				var old_destroy = rv.destroy;
 				rv.destroy = function() {
@@ -161,7 +158,6 @@
 						rv.destroy();
 					}
 				};
-				rv.skip_processing = !!skip_processing;
 
 				rv.request_ids = {};
 
@@ -170,7 +166,7 @@
 			});
 			constraint.signal_interest();
 			if (to_update) {
-				this.update(args, constraint, skip_processing);
+				this.update(args, constraint);
 			}
 			return constraint;
 		};
@@ -178,7 +174,6 @@
 
 		proto.update = function (args, constraint) {
 			constraint = constraint || this.fn_call_constraints.get(args);
-			var skip_processing = constraint.skip_processing;
 
 			var request_id = this.post({
 				type: "get_$",
@@ -187,11 +182,9 @@
 			constraint.request_ids[request_id] = request_id;
 			this.program_state_client.register_response_listener(request_id, _.bind(function (value) {
 				delete constraint.request_ids[request_id];
-				if(skip_processing) {
-					constraint.set(value);
-				} else {
-					constraint.set(this.process_value(value));
-				}
+				constraint.set(_.bind(function() {
+					return this.process_value(value);
+				}, this));
 			}, this));
 		};
 
