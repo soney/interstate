@@ -123,7 +123,10 @@
 			});
 		},
 		remove_listener: function() {
-			this.copy_listener.destroy();
+			if(this.copy_listener) {
+				this.copy_listener.destroy();
+				delete this.copy_listener;
+			}
 		},
 
 		update_display: function() {
@@ -146,6 +149,10 @@
 		},
 
 		_setOption: function(key, value) {
+			var old_value;
+			if(key === "curr_copy" || key === "out_of") {
+				old_value = this.option(key);
+			}
 			this._super(key, value);
 			if(key === "displayed") {
 				if(value) {
@@ -154,10 +161,12 @@
 					this.on_not_displayed();
 				}
 			} else if(key === "curr_copy" || key === "out_of") {
-				if(key === "curr_copy") {
-					this.element.trigger("curr_copy_change", value);
+				if(old_value !== value) {
+					if(key === "curr_copy") {
+						this.element.trigger("curr_copy_change", value);
+					}
+					this.update_display();
 				}
-				this.update_display();
 			}
 
 		}

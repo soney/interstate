@@ -147,7 +147,7 @@
 					var old_destroy = constraint.destroy;
 					constraint.destroy = function() {
 						constraint.offChange(on_change_listener);
-						old_destroy.call(constraint);
+						old_destroy.call(constraint, true); // silent in case getter is syncronous
 					};
 
 					add_to_clients = false;
@@ -162,7 +162,7 @@
 				}, this);
 
 				if(add_to_clients) {
-					if(!constraint_info.hasOwnProperty(client_id)) {
+					if(!constraint_info.clients.hasOwnProperty(client_id)) {
 						constraint_info.clients[client_id] = true;
 						constraint_info.client_count++;
 					}

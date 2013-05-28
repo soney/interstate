@@ -364,11 +364,7 @@
 		add_children_listener: function () {
 			var INDEX_OFFSET = 3; // Account for the header column
 			this.$on_child_select = $.proxy(this.on_child_select, this);
-			var client = this.option("curr_copy_client");
-
-			if(!client) {
-				client = this.option("client");
-			}
+			var client = this.option("curr_copy_client") || this.option("client");
 			var $children = client.get_$("children");
 
 			var none_display = $("<tr />")	.addClass("no_children")
@@ -435,7 +431,6 @@
 					$children.signal_destroy();
 				}
 			});
-			window.ccl = this.children_change_listener;
 		},
 
 		remove_children_listener: function () {
@@ -448,6 +443,7 @@
 		},
 
 		on_copy_select: function(event, copy_index) {
+
 			var client = this.option("client");
 			client.async_get("instances", $.proxy(function(instances) {
 				if(instances) {
@@ -466,6 +462,7 @@
 			this.destroy_src_view();
 			var client = this.option("client");
 			client.signal_destroy();
+			this.option("curr_copy_client", false); // will destroy any curr copy client
 			if(this.prev_button.data("pressable")) {
 				this.prev_button.pressable("destroy");
 			}
@@ -592,12 +589,22 @@
 			$("tr.child", this.element).prop("option", "show_src", false);
 		},
 		_setOption: function(key, value) {
+			if(key === "curr_copy_client") {
+				var old_value = this.option(key);
+				if(old_value instanceof red.WrapperClient) {
+					old_value.signal_destroy();
+				}
+			}
 			this._super(key, value);
 			if(key === "is_curr_col") {
 				if(value) {
 					this.on_curr_col();
 				} else {
 					this.on_not_curr_col();
+				}
+			} else if(key === "curr_copy_client") {
+				if(value instanceof red.WrapperClient) {
+					value.signal_interest();
 				}
 			}
 		}
