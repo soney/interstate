@@ -25,7 +25,7 @@
 
 	red.WrapperClient = function (options) {
 		able.make_this_listenable(this);
-		this.destroyed = false;
+		this.paused = false;
 		this.semaphore = 0;
 		this.comm_mechanism = options.comm_mechanism;
 		this.cobj_id = options.cobj_id;
@@ -70,13 +70,26 @@
 			});
 		};
 		proto.signal_interest = function() {
-			if(this.destroyed) {
+			if(++this.semaphore > 0) {
+				this.resume();
 			}
-			this.semaphore++;
 		};
 		proto.signal_destroy = function() {
 			if(--this.semaphore <= 0) {
-				this.destroy();
+				this.pause();
+			}
+		};
+
+		proto.pause = function() {
+			if(!this.paused) {
+				this.paused = true;
+				console.log("PAUSE");
+			}
+		};
+		proto.resume = function() {
+			if(this.paused) {
+				this.paused = false;
+				console.log("RESUME");
 			}
 		};
 
@@ -84,8 +97,6 @@
 		};
 
 		proto.destroy = function () {
-			if(uid.strip_prefix(this.cobj_id) == 150) debugger;
-			this.destroyed = true;
 			this._emit("wc_destroy");
 			this.post({
 				type: "destroy"
@@ -182,9 +193,7 @@
 			constraint.request_ids[request_id] = request_id;
 			this.program_state_client.register_response_listener(request_id, _.bind(function (value) {
 				delete constraint.request_ids[request_id];
-				constraint.set(_.bind(function() {
-					return this.process_value(value);
-				}, this));
+				constraint.set(this.process_value(value));
 			}, this));
 		};
 

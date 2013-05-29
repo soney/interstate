@@ -9,7 +9,7 @@
 	red.ProgramStateClient = function (options) {
 		able.make_this_listenable(this);
 		this.comm_mechanism = options.comm_mechanism;
-		this.wrapper_clients = new cjs.map();
+		this.wrapper_clients = {};
 		this.clients = {};
 		this.response_listeners = {};
 		this.pending_responses = {};
@@ -120,36 +120,7 @@
 
 		proto.get_wrapper_client = function(object_summary) {
 			var cobj_id = object_summary.id;
-			return this.wrapper_clients.get_or_put(cobj_id, function() {
-				var otype = object_summary.type;
-				var rv;
-
-				var obj_id = object_summary.obj_id;
-				rv = new red.WrapperClient({
-					comm_mechanism: this.comm_mechanism,
-					cobj_id: cobj_id,
-					obj_id: obj_id,
-					type: otype,
-					object_summary: object_summary,
-					program_state_client: this
-				});
-
-				var client_id = rv.id();
-
-				this.clients[client_id] = rv;
-				rv.on_ready();
-
-				var on_destroy = $.proxy(function() {
-					rv.off("wc_destroy", on_destroy);
-					this.destroy_wrapper_client(client_id, cobj_id);
-				}, this);
-
-				rv.on("wc_destroy", on_destroy);
-
-				return rv;
-			}, this);
-			/*
-			if (this.wrapper_clients.hasOwnProperty(cobj_id)) {
+			if(this.wrapper_clients.hasOwnProperty(cobj_id)) {
 				return this.wrapper_clients[cobj_id];
 			} else {
 				var otype = object_summary.type;
@@ -169,6 +140,7 @@
 
 				this.clients[client_id] = rv;
 				this.wrapper_clients[cobj_id] = rv;
+
 				rv.on_ready();
 
 				var on_destroy = $.proxy(function() {
@@ -180,19 +152,17 @@
 
 				return rv;
 			}
-			*/
 		};
 
 		proto.destroy_wrapper_client = function(client_id, cobj_id) {
 			delete this.clients[client_id];
-			this.wrapper_clients.remove(cobj_id);
+			delete this.wrapper_clients[cobj_id];
 		};
 
 		proto.destroy = function () {
 			this.disconnect();
 			able.destroy_this_listenable(this);
 			this.remove_message_listener();
-			this.wrapper_clients.destroy();
 		};
 
 		proto.post = function (message) {
