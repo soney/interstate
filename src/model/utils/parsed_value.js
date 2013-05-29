@@ -7,20 +7,14 @@
 		_ = red._,
 		esprima = window.esprima;
 
-	var requestAnimFrame = (function(){
-	  return  window.requestAnimationFrame       ||
-			  window.webkitRequestAnimationFrame ||
-			  window.mozRequestAnimationFrame    ||
-			  function(callback){
-				window.setTimeout(callback, 1000 / 60);
-			  };
-	})();
-
 	red.on_event = function (event_type, arg1) {
 		if (event_type === "timeout" || event_type === "time") {
 			var time = arg1;
 			var timeout_event = red.create_event(event_type, time);
 			return timeout_event;
+		} else if(event_type === "frame") {
+			var frame_event = red.create_event("frame");
+			return frame_event;
 		} else {
 			var targets = _.rest(arguments);
 			var events = [];

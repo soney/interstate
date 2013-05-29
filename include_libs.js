@@ -28,12 +28,12 @@ var cjs_path = cp(vendor_src, "cjs");
 exports.vendor = c(
 	cp(vendor_src, [
 				"underscore/underscore.js",
-				"jquery-ui-1.9.1.custom/js/jquery-1.8.2.js",
-				"jquery-ui-1.9.1.custom/js/jquery-ui-1.9.1.custom.js",
+				"jquery-ui-1.10.3.custom/js/jquery-1.9.1.js",
+				"jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js",
 				"raphael/raphael.js",
 				"esprima/esprima.js",
-				"three.js",
-				"box2d/Box2dWeb-2.1.a.3.min.js"
+				//"three.js",
+				//"box2d/Box2dWeb-2.1.a.3.min.js"
 			])
 );
 
@@ -78,6 +78,7 @@ exports.runtime = c(
 				"model/statechart/red_statechart.js",
 				"model/statechart/red_statechart_transition.js",
 				"model/statechart/events/event_core.js",
+				"model/statechart/events/animation_events.js",
 				"model/statechart/events/red_obj_events.js",
 				"model/statechart/events/manual_event.js",
 				"model/statechart/events/dom_events.js",
@@ -89,8 +90,8 @@ exports.runtime = c(
 				"model/attachments/attachment_core.js",
 				"model/attachments/dom_attachment.js",
 				"model/attachments/raphael_attachment.js",
-				"model/attachments/three_attachment.js",
-				"model/attachments/box2d_attachment.js",
+				//"model/attachments/three_attachment.js",
+				//"model/attachments/box2d_attachment.js",
 				"model/communication_wrapper/comm_mechanisms.js",
 				"model/communication_wrapper/wrapper_server.js",
 				"model/communication_wrapper/wrapper_client.js",

@@ -273,6 +273,7 @@
 				deserialized_obj_vals = [];
 				rv = red.deserialize.apply(red, ([serialized_obj.root]).concat(rest_args));
 			} finally {
+				deserialized_objs = deserialized_obj_vals = undefined;
 				deserializing = false;
 			}
 
