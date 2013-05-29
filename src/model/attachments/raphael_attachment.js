@@ -119,7 +119,7 @@
 				this.$robj = false;
 			},
 			parameters: (function(infos) {
-				var can_animate_parameters = ["r", "cx", "cy", "x", "y", "width", "height", "path", "fill", "stroke", "opacity", "fill_opacity", "stroke_opacity"];
+				var can_animate_parameters = ["r", "cx", "cy", "x", "y", "width", "height", "path", "fill", "stroke", "opacity", "fill_opacity", "stroke_opacity", "transform"];
 				var parameters = {};
 				_.each(infos, function(euc_name, raph_name) {
 					parameters[euc_name] = function(contextual_object) {

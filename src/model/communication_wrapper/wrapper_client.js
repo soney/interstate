@@ -83,13 +83,17 @@
 		proto.pause = function() {
 			if(!this.paused) {
 				this.paused = true;
-				console.log("PAUSE");
+				this.post({
+					type: "pause"
+				});
 			}
 		};
 		proto.resume = function() {
 			if(this.paused) {
 				this.paused = false;
-				console.log("RESUME");
+				this.post({
+					type: "resume"
+				});
 			}
 		};
 

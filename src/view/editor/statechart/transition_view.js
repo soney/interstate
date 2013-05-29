@@ -205,6 +205,15 @@
 			var arrow = this.arrow_path;
 			var len = line_elem.getTotalLength();
 
+			this.circle.attr({
+				r: this.option("radius") * 3,
+				fill: this.option("active_color")
+			});
+			this.circle.animate({
+				fill: this.option("color"),
+				r: this.option("radius")
+			}, 400);
+
 			var the_flash = paper.path(line_elem.getSubpath(0, 0));
 			the_flash.attr({
 				stroke: this.option("active_color"),
