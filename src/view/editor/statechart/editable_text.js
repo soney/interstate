@@ -186,19 +186,29 @@
 			textbox.parentNode.removeChild(textbox);
 		};
 		proto._on_options_set = function (values, animated) {
-			this.text.attr({
-				x: this.option("x"),
-				y: this.option("y"),
-				width: this.option("width"),
-				font: this.option("font"),
-				"font-family": this.option("font-family"),
-				"font-size": this.option("font-size"),
-				"font-weight": this.option("font-weight"),
-				"text-anchor": this.option("text-anchor"),
-				fill: this.show_default() ? this.option("default_color") : this.option("color"),
-				text: this.option("text")
-			});
-			this.update_label_background();
+			if(_.isNumber(animated)) {
+				this.text.animate({
+					//x: this.option("x"),
+					//y: this.option("y"),
+					fill: this.show_default() ? this.option("default_color") : this.option("color")
+					//text: this.option("text")
+				}, animated);
+				this.update_label_background();
+			} else {
+				this.text.attr({
+					x: this.option("x"),
+					y: this.option("y"),
+					width: this.option("width"),
+					font: this.option("font"),
+					"font-family": this.option("font-family"),
+					"font-size": this.option("font-size"),
+					"font-weight": this.option("font-weight"),
+					"text-anchor": this.option("text-anchor"),
+					fill: this.show_default() ? this.option("default_color") : this.option("color"),
+					text: this.option("text")
+				});
+				this.update_label_background();
+			}
 		};
 		proto.remove = function () {
 			this.label_background.remove();

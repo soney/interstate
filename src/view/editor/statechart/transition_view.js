@@ -205,6 +205,8 @@
 			var arrow = this.arrow_path;
 			var len = line_elem.getTotalLength();
 
+			this.label.option("color", this.option("active_color"));
+			this.label.option("color", this.option("text_foreground"), 400);
 			this.circle.attr({
 				r: this.option("radius") * 3,
 				fill: this.option("active_color")

@@ -19,6 +19,7 @@
 			default_stroke: "black",
 			default_fill: "white",
 			active_fill: "red",
+			active_text_foreground: "#900",
 			active_stroke: "red",
 			selectable_fill: "#AAA",
 			text_foreground: "black",
@@ -38,6 +39,7 @@
 						"fill": this.option("active_fill"),
 						"stroke": this.option("active_stroke")
 					}, 300, "ease-out");
+					this.label.option("color", this.option("active_text_foreground"), 300);
 				}
 			} else {
 				if (this.path) {
@@ -45,6 +47,7 @@
 						"fill": this.option("default_fill"),
 						"stroke": this.option("default_stroke")
 					}, 300, "ease-out");
+					this.label.option("color", this.option("text_foreground"), 300);
 				}
 			}
 		}, {

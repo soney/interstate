@@ -119,6 +119,19 @@
 								delete this.wrapper_servers[cobj_id];
 							}
 						}
+					} else if(mtype === "pause") {
+						cobj_id = data.cobj_id;
+						client_id = data.client_id;
+
+						if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
+							wrapper_server = this.wrapper_servers[cobj_id];
+							wrapper_server.client_paused(cobj_id);
+						}
+					} else if(mtype === "resume") {
+						if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
+							wrapper_server = this.wrapper_servers[cobj_id];
+							wrapper_server.client_resumed(cobj_id);
+						}
 					}
 				}
 			}

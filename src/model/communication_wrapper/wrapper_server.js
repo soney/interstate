@@ -6,6 +6,8 @@
 	var cjs = red.cjs,
 		_ = red._;
 	var id = 0;
+	var ACTIVE = {},
+		PAUSED = {};
 	red.WrapperServer = function (options) {
 		this.id = id++;
 		able.make_this_listenable(this);
@@ -49,7 +51,7 @@
 
 		proto.add_client_id = function(client_id) {
 			if(!this.client_ids.hasOwnProperty(client_id)) {
-				this.client_ids[client_id] = true;
+				this.client_ids[client_id] = ACTIVE;
 				this.client_count++;
 			}
 		};
@@ -79,6 +81,18 @@
 			_.each(this._event_type_listeners, function (event_type) {
 				object.off(event_type, listener);
 			});
+		};
+
+		proto.client_paused = function(client_id) {
+			if(this.client_ids.hasOwnProperty(client_id)) {
+				this.client_ids[client_id] = PAUSED;
+			}
+		};
+
+		proto.client_resumed = function(client_id) {
+			if(this.client_ids.hasOwnProperty(client_id)) {
+				this.client_ids[client_id] = ACTIVE;
+			}
 		};
 
 		proto.destroy = function () {
@@ -153,7 +167,7 @@
 					add_to_clients = false;
 
 					var clients = {};
-					clients[client_id] = true;
+					clients[client_id] = ACTIVE;
 					return {
 						constraint: constraint,
 						client_count: 1,
@@ -163,7 +177,7 @@
 
 				if(add_to_clients) {
 					if(!constraint_info.clients.hasOwnProperty(client_id)) {
-						constraint_info.clients[client_id] = true;
+						constraint_info.clients[client_id] = ACTIVE;
 						constraint_info.client_count++;
 					}
 				}
