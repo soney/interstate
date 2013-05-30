@@ -193,7 +193,6 @@
 					fill: this.show_default() ? this.option("default_color") : this.option("color")
 					//text: this.option("text")
 				}, animated);
-				this.update_label_background();
 			} else {
 				this.text.attr({
 					x: this.option("x"),
