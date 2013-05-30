@@ -315,7 +315,7 @@
 			this.element.addClass("curr_col");
 			this.build_src_view();
 			if(this.selected_child_disp) {
-				if(this.selected_child_disp.data("prop")) { // need to check in case this.selected_child_disp was removed
+				if(this.selected_child_disp.data("red-prop")) { // need to check in case this.selected_child_disp was removed
 					this.selected_child_disp.prop("on_deselect");
 				}
 			}
@@ -463,7 +463,7 @@
 			var client = this.option("client");
 			client.signal_destroy();
 			this.option("curr_copy_client", false); // will destroy any curr copy client
-			if(this.prev_button.data("pressable")) {
+			if(this.prev_button.data("red-pressable")) {
 				this.prev_button.pressable("destroy");
 			}
 		},
@@ -471,7 +471,7 @@
 			var client = child_info.value;
 			if(client instanceof red.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
 				if(this.selected_child_disp) {
-					if(this.selected_child_disp.data("prop")) { // need to check in case this.selected_child_disp was removed
+					if(this.selected_child_disp.data("red-prop")) { // need to check in case this.selected_child_disp was removed
 						this.selected_child_disp.prop("on_deselect");
 					}
 				}
@@ -541,7 +541,7 @@
 					on_destroy: function() {
 						if(this.statechart_view) {
 							$("tr.child", this.element).prop("option", "layout_manager", false);
-							if(this.statechart_view.data("statechart")) {
+							if(this.statechart_view.data("red-statechart")) {
 								this.statechart_view.statechart("destroy");
 							}
 							this.statechart_view.remove();
@@ -569,7 +569,7 @@
 				delete this.live_src_view;
 			}
 			if(this.statechart_view) {
-				if(this.statechart_view.data("statechart")) {
+				if(this.statechart_view.data("red-statechart")) {
 					this.statechart_view.statechart("destroy");
 				}
 				this.statechart_view.remove();

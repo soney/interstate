@@ -359,9 +359,9 @@
 							on_destroy: function() {
 								$(this.src_cell).children().each(function() {
 									var $this = $(this);
-									if($this.data("unset_prop")) {
+									if($this.data("red-unset_prop")) {
 										$this.unset_prop("destroy");
-									} else if($this.data("prop_cell")) {
+									} else if($this.data("red-prop_cell")) {
 										$this.prop_cell("destroy");
 									}
 								}).remove();
