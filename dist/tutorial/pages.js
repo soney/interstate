@@ -38,6 +38,6 @@ var tutorial_pages = [
 	}, {
 		text: "Note the properties my_copy and copy_num appear. my_copy is the object copy's item. copy_num is that item's index. You can navigate through every copy by clicking the 1 in [1 of 3] below 'my_circle'."
 	}, {
-		text: "Right now, each copy is stacked on top of the last. Set cx to 2*r*copy_num to change this."
+		text: "Finally, objects can inherit behaviors. Try creating another object on screen called my_other_circle. Set its prototypes field to my_circle. Note that it inherits not only the properties of my_circle but also the statechart."
 	}
 ];

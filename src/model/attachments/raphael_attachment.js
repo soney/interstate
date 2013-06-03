@@ -170,7 +170,6 @@
 				"font-size": "font_size",
 				"font-style": "font_style",
 				"font-weight": "font_weight",
-				gradient: "gradient",
 				height: "height",
 				href: "href",
 				"letter-spacing": "letter_spacing",
