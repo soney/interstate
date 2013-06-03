@@ -91,6 +91,9 @@
 					else { this.undo(); }
 					event.stopPropagation();
 					event.preventDefault();
+				} else if(event.keyCode === 82 && (event.metaKey || event.ctrlKey)) { // 'r': prevent refresh
+					event.stopPropagation();
+					event.preventDefault();
 				}
 			}, this));
 		},
