@@ -108,7 +108,7 @@ process.on('SIGINT', function () {
 var filter_regex = /\.(js|html|css)$/;
 var cp = require('child_process');
 var watch = require('node-watch');
-watch(['src/_vendor/cjs/src'], {}, function(filename) {
+watch(['src/_vendor/cjs/src'], function(filename) {
 	if(filter_regex.test(filename)) {
 		var grunt = cp.spawn('grunt', [], {
 			cwd: 'src/_vendor/cjs'
@@ -120,7 +120,7 @@ watch(['src/_vendor/cjs/src'], {}, function(filename) {
 		});
 	}
 });
-watch(['dist', 'src/model', 'src/controller', 'src/view'], {}, function(filename) {
+watch(['dist', 'src/model', 'src/controller', 'src/view'], function(filename) {
 	if(filter_regex.test(filename)) {
 		var grunt = cp.spawn('grunt', ['quick'])
 
