@@ -14,12 +14,10 @@
 	<script src="../_vendor/Box2dWeb-2.1.a.3.min.js"></script>
 	<script src="../_vendor/esprima.js"></script>
 	<script src="../red.js"></script>
+	<script src="tutorial_running_app.js"></script>
 	<script type="text/javascript">
 		$(function() {
-			var env = red.create("environment");
-			$("div.content").dom_output({
-				root: env.get_root()
-			});
+			$("div.content").tutorial_running_app();
 		});
 	</script>
 </html>

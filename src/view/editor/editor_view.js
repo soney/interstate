@@ -34,7 +34,10 @@
 
 		_create: function () {
 			this.$on_command = $.proxy(this.on_command, this);
-			this.element.addClass(this.option("view_type"));
+			this.element.addClass(this.option("view_type"))
+						.attr({
+							id: "editor"
+						});
 
 			if(this.option("full_window")) {
 				$("html").addClass("full_window_editor");

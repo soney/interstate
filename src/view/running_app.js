@@ -252,8 +252,8 @@
 			if (this.editor_window) {
 				this.editor_window.focus();
 			} else {
+				this.element.trigger("editor_open");
 				this.server_socket = this.server_socket || this._get_server_socket();
-
 
 				if (this.server_socket.is_connected()) { // It connected immediately
 					this.edit_button.addClass("active").css(this.edit_active_css);

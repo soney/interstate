@@ -5,29 +5,29 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 		<style type="text/css">
 		</style>
-		<link rel="stylesheet" href="editor/style/fonts/Inconsolata/stylesheet.css" />
-		<link rel="stylesheet" href="editor/style/fonts/SourceSansPro/stylesheet.css" />
-		<link rel="stylesheet" href="editor/style/editor_style.css" />
+		<link rel="stylesheet" href="../editor/style/fonts/Inconsolata/stylesheet.css" />
+		<link rel="stylesheet" href="../editor/style/fonts/SourceSansPro/stylesheet.css" />
+		<link rel="stylesheet" href="../editor/style/editor_style.css" />
+		<link rel="stylesheet" href="tutorial_editor.css" />
 		<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
-		<script src="_vendor/esprima.js"></script>
-		<script src="red.js"></script>
+		<script src="../_vendor/esprima.js"></script>
+		<script src="../red.js"></script>
+		<script src="tutorial_editor.js"></script>
+		<script src="pages.js"></script>
 	</head>
 	<body>
-		<div id="editor"></div>
-
+		<div id="tutorial"></div>
 		<div>
-			<script type="text/javascript">
-				$(function () {
-					$("div#editor").editor({
-					//	debug_ready: true,
-					//	debug_env: true,
-					//	command_box: true
-					});
-				});
-			</script>
 		</div>
 	</body>
+	<script type="text/javascript">
+		$(function () {
+			$("div#tutorial").tutorial_editor({
+				pages: tutorial_pages
+			});
+		});
+	</script>
 </html>
