@@ -29,6 +29,8 @@
 			return "NaN";
 		} else if(_.isFunction(val)) {
 			return "(func)";
+		} else if(_.isArray(val)) {
+			return "[" + _.map(val, summarized_val).join(", ") + "]";
 		} else {
 			return val;
 		}
