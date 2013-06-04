@@ -15,9 +15,12 @@
 	<script src="../_vendor/esprima.js"></script>
 	<script src="../red.js"></script>
 	<script src="tutorial_running_app.js"></script>
+	<script src="pages.js"></script>
 	<script type="text/javascript">
 		$(function() {
-			$("div.content").tutorial_running_app();
+			$("div.content").tutorial_running_app({
+				pages: tutorial_pages
+			});
 		});
 	</script>
 </html>

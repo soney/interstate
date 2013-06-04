@@ -134,6 +134,7 @@
 						}
 					}
 				}
+				this._emit("message", data);
 			}
 		};
 

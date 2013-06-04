@@ -29,7 +29,8 @@
 			server_window: window.opener,
 			client_id: "",
 			single_col_navigation: display === "phone" || display === "tablet",
-			view_type: display
+			view_type: display,
+			annotations: {}
 		},
 
 		_create: function () {
@@ -64,6 +65,10 @@
 			$(window).on("beforeunload", _.bind(function () {
 				this.on_unload();
 			}, this));
+		},
+
+		get_client_socket: function() {
+			return this.client_socket;
 		},
 
 		load_viewer: function (root_client) {
@@ -334,6 +339,13 @@
 
 		_destroy: function () {
 			this.on_unload();
+		},
+
+		_setOption: function(key, value) {
+			this._super(key, value);
+			if(key === "anotations") {
+				this.navigator.navigator("option", key, value);
+			}
 		}
 	});
 }(red, jQuery));

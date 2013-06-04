@@ -69,9 +69,8 @@
 			editor_name: uid.get_prefix() + "red_editor",
 			open_separate_client_window: true,
 			editor_window_options: function () {
-				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
+				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.innerHeight);
 			},
-			show_debugging_info: false,
 			client_id: "",
 			immediately_create_server_socket: false
 		},
@@ -144,15 +143,16 @@
 
 			$(window).on("keydown", this.$on_key_down);
 
-			if (this.option("show_debugging_info")) {
-				
-			}
-
 			if(this.option("immediately_create_server_socket")) {
-				this.server_socket = this._get_server_socket();
+				this.server_socket = this._create_server_socket();
 			}
 
 			this._add_change_listeners();
+		},
+
+
+		get_server_socket: function() {
+			return this.server_socket;
 		},
 
 		on_key_down: function(event) {
@@ -206,7 +206,7 @@
 			this._dom_tree_fn.destroy();
 		},
 
-		_get_server_socket: function() {
+		_create_server_socket: function() {
 			var root = this.option("root");
 
 			var communication_mechanism;
@@ -252,8 +252,7 @@
 			if (this.editor_window) {
 				this.editor_window.focus();
 			} else {
-				this.element.trigger("editor_open");
-				this.server_socket = this.server_socket || this._get_server_socket();
+				this.server_socket = this.server_socket || this._create_server_socket();
 
 				if (this.server_socket.is_connected()) { // It connected immediately
 					this.edit_button.addClass("active").css(this.edit_active_css);
@@ -263,6 +262,7 @@
 					});
 				}
 				$(window).on("beforeunload", _.bind(this.close_editor, this));
+				this.element.trigger("editor_open");
 			}
 		},
 		

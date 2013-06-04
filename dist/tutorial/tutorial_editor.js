@@ -25,7 +25,15 @@
 											.addClass("next")
 											.appendTo(this.instructions)
 											.on("click", $.proxy(this.next, this));
-			this.show_page_no(this.option("page_no"));
+
+			this.client_socket = this.editor.editor("get_client_socket");
+			this.client_socket.on("message", function(data) {
+				if(data.type === "tutorial") {
+					console.log(data.subtype);
+				}
+			}).on("loaded", function() {
+				this.show_page_no(this.option("page_no"));
+			}, this);
 		},
 		_destroy: function() {
 			this.editor.editor("destroy").remove();
@@ -37,13 +45,31 @@
 		show_page_no: function(page_index) {
 			var pages = this.option("pages");
 			var page = pages[page_index];
+			var options = page.editor;
+
 			if(page_index === pages.length - 1) {
 				this.next_button.hide();
 			} else {
 				this.next_button.show();
 			}
 
-			this.instruction_content.text(page.text);
+			this.instruction_content.text(options.text);
+			if(options.hide_editor === true) {
+				this.editor.hide();
+			} else {
+				this.editor.show();
+			}
+
+			if(options.body_color) {
+				$("html").css("background-color", options.body_color);
+			} else {
+				$("html").css("background-color", "");
+			}
+			this.client_socket.post({
+				type: "tutorial",
+				subtype: "page_set",
+				page_index: page_index
+			});
 		},
 		_setOption: function(key, value) {
 			this._super(key, value);

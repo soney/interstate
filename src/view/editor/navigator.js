@@ -10,7 +10,8 @@
 	$.widget("red.navigator", {
 		options: {
 			root_client: false,
-			single_col: false
+			single_col: false,
+			annotations: {}
 		},
 		_create: function() {
 			var client = this.option("root_client");
@@ -122,6 +123,13 @@
 				this.curr_col = this.columns[removed_index-1];
 				this.curr_col.show();
 				this.curr_col.column("option", "is_curr_col", true);
+			}
+		},
+
+		_setOption: function(key, value) {
+			this._super(key, value);
+			if(key === "anotations") {
+				console.log(value);
 			}
 		}
 	});

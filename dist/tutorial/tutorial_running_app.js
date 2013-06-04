@@ -29,9 +29,29 @@
 			this.app.off("editor_open", this.$on_editor_open);
 			this.get_started_message.remove();
 			$("svg").show();
+
+			this.server_socket = this.app.dom_output("get_server_socket");
+			this.server_socket.on("message", function(data) {
+				if(data.type === "tutorial") {
+					if(data.subtype === "page_set") {
+						this.show_page_no(data.page_index);
+					}
+				}
+			}, this);
 		},
 		_destroy: function() {
 			this.app.running_app("destroy").remove();
+		},
+		show_page_no: function(page_index) {
+			var pages = this.option("pages");
+			var page = pages[page_index];
+			var options = page.runtime;
+
+			if(options.body_color) {
+				$("html").css("background-color", options.body_color);
+			} else {
+				$("html").css("background-color", "");
+			}
 		}
 	});
 }(red, jQuery));
