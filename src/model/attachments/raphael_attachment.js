@@ -156,6 +156,7 @@
 				}, this);
 				return parameters;
 			}({
+				opacity: "opacity", // put opacity first because fill-opacity should be set after opacity (?)
 				"arrow-end": "arrow_end",
 				"arrow-start": "arrow_start",
 				blur: "blur",
@@ -173,7 +174,6 @@
 				height: "height",
 				href: "href",
 				"letter-spacing": "letter_spacing",
-				opacity: "opacity",
 				path: "path",
 				r: "r",
 				rx: "rx",
