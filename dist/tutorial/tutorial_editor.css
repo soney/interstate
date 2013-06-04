@@ -6,7 +6,7 @@ html, body, #tutorial {
 	background-color: rgba(0, 0, 0, 0.7);
 	color: #DDD;
 	bottom: 0px;
-	position: absolute;
+	position: fixed;
 	width: 100%;
 	padding: 5px;
 	font-size: 1.1em;
@@ -69,6 +69,6 @@ html, body, #tutorial {
 	color: #CCC;
 }
 
-.curr_col {
+#editor > #obj_nav > table.curr_col {
 	margin-bottom: 200px;
 }
