@@ -34,114 +34,13 @@
 		</style>
 	</head>
 	<body>
-		<!--
-		<div id="examples">
-			<strong>Pre-built examples: </strong> <span id="sample_apps">(loading...)</span>
-		</div>
-		<div id="version_info">
-			<span id="build_time"></span>
-			<span id="version_no"></span>
-		</div>
-		-->
-		<div class="content"></div>
+		<h1>Euclase</h1>
+		<p>I'm working on filling this site out with content but for now, you can:</p>
+		<ul>
+			<li><a href="http://from.so/papers/oney_myers_brandt_euclase_live13.pdf">Look at the paper</a></li>
+			<li><a href="tutorial/">Run through the tutorial</a></li>
+			<li><a href="gallery/">Look at some example applications</a></li>
+			<li><a href="playground.html">Try Euclase out</a></li>
+		</ul>
 	</body>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r57/three.min.js"></script>
-	<script src="_vendor/Box2dWeb-2.1.a.3.min.js"></script>
-	<script src="_vendor/esprima.js"></script>
-	
-	<script src="red.min.js"></script>
-	<script src="sample_apps/sample_app_loader.js"></script>
-	<script type="text/javascript">
-		var env, the_div, root;
-
-		var sample_apps = [
-			"hello_world",
-			"simple_hover",
-			"raphael",
-			"three",
-			"box2d"
-		];
-		window.upload = function(name) {
-			$.ajax({
-				url: "http://euc.from.so/gallery/upload.php",
-				type: "POST",
-				dataType: "text",
-				data: {
-					root: red.stringify(root),
-					name: red._.isString(name) ? name : "(no name)"
-				},
-				success: function(data) {
-					console.log(data);
-				}
-			});
-		};
-
-		$(function() {
-			var post = localStorage.getItem("post");
-			if(post) {
-				root = red.destringify(post);
-				env = red.create("environment", {root: root});
-				//localStorage.removeItem("post");
-			} else {
-				env = red.create("environment");
-				root = env.get_root();
-			}
-			
-
-			$("div.content").dom_output({
-				root: env.get_root()
-			});
-			/*
-
-			var load = function(root) {
-				$("div.content").dom_output("destroy");
-				env.destroy();
-
-				env = red.create("environment", {root: root});
-				$("div.content").dom_output({
-					root: root
-				});
-			};
-			var load_sample_app = function(name) {
-				red.load_sample_app(name, function(root) {
-					load(root);
-				});
-				$("#sample_apps a").removeClass("active")
-				$("#sample_apps #"+name+"").addClass("active")
-			};
-			$("#sample_apps").html("");
-			$("#version_no").text("v" + red.version);
-			$("#build_time").text("built " + red.build_time.replace("2013-", ""));
-			for(var i = 0; i<sample_apps.length; i++) {
-				var sample_app_name = sample_apps[i];
-				var sample_app_link = $("<a />").attr("href", "javascript:void(0)")
-					.attr("id", sample_app_name)
-					.text(sample_app_name.replace("_", " "))
-					.on("click", (function(name) {
-									return function() {
-										load_sample_app(name);
-									};
-								}(sample_app_name)))
-					.appendTo("#sample_apps");
-				if (i < sample_apps.length - 1) {
-					$("#sample_apps").append("&nbsp;|&nbsp;");
-				}
-			}
-			if(window.location.hash) {
-				var hash = window.location.hash.slice(1);
-				var index = sample_apps.indexOf(hash);
-				if(index < 0) {
-					index = 0;
-				}
-				load_sample_app(sample_apps[index]);
-			} else {
-				load_sample_app(sample_apps[0]);
-			}
-			*/
-		});
-	</script>
 </html>

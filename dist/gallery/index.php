@@ -11,7 +11,7 @@ if($_GET['id']) {
 		$root = addslashes($row['root']);
 		echo "<script type='text/javascript'>var root_str = '$root';localStorage.setItem('post', root_str);</script>";
 	}
-	echo "<meta http-equiv='refresh' content='0; url=../'>";
+	echo "<meta http-equiv='refresh' content='0; url=../playground.html'>";
 } else {
 	echo "<html><head><link rel='stylesheet' type='css' href='style.css'></head><body>";
 
