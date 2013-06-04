@@ -15,9 +15,10 @@
 				var env = red.create("environment");
 				var root = env.get_root();
 
-				env.set("my_obj", "<stateful>")
+				env	.cd("screen")
+					.set("my_obj", "<stateful>")
 					.cd("my_obj")
-					.set("x")
+					.set("(copies)", "['a', 'b']")
 				/*
 					.set("(prototypes)", "(start)", "shape.rect");
 env.cd("screen")

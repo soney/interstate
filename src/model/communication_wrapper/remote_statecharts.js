@@ -12,6 +12,7 @@
 		var id = wrapper_client.cobj_id;
 		var statechart = red.find_uid(id);
 		var is_active, is_active_value, promises, listeners;
+		var destroyed = false;
 		
 		statechart = false;
 		if (!statechart) {
@@ -140,6 +141,7 @@
 						}
 					};
 					_.when(promises).done(function () {
+						if(destroyed) { return; }
 						_.when(substate_promises).done(function () {
 							statechart.do_initialize({
 								substates: substates_value,
@@ -183,6 +185,7 @@
 
 					promises = [outgoing_transition.promise(), is_active.promise()];
 					_.when(promises).done(function () {
+						if(destroyed) { return; }
 						statechart.do_initialize({
 							outgoing_transition: outgoing_transition_value,
 							parent: statechart_parent,
@@ -193,6 +196,7 @@
 				}
 			}
 			var on_destroy = function() {
+				destroyed = true;
 				statechart.off("destroy", on_destroy);
 				wrapper_client.off(listeners);
 				wrapper_client.signal_destroy();
@@ -210,6 +214,7 @@
 		var transition = red.find_uid(id);
 		var listeners;
 		transition = false;
+		var destroyed = false;
 		if (!transition) {
 			wrapper_client.signal_interest();
 			if (transitions.hasOwnProperty(id)) {
@@ -262,6 +267,7 @@
 				};
 				var promises = [from.promise(), to.promise(), event.promise()];
 				_.when(promises).done(function () {
+					if(destroyed) { return; }
 					transition.do_initialize({
 						from: from_value,
 						to: to_value,
@@ -289,6 +295,7 @@
 		var id = wrapper_client.cobj_id;
 		var event = red.find_uid(id);
 		var listeners;
+		var destroyed = false;
 		event = false;
 		if (!event) {
 			wrapper_client.signal_interest();
@@ -301,6 +308,7 @@
 				if (event_type === "parsed") {
 					var str_val = "";
 					wrapper_client.async_get("get_str", function (str) {
+						if(destroyed) { return; }
 						event.set_str(str);
 					});
 					listeners = {
@@ -315,6 +323,7 @@
 			}
 
 			var on_destroy = function() {
+				destroyed = true;
 				wrapper_client.off(listeners);
 				event.off("destroy", on_destroy);
 				wrapper_client.signal_destroy();

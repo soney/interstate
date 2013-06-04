@@ -341,6 +341,7 @@
 				var manifestations_pointer = pointer.push(manifestations);
 				var manifestations_contextual_object = red.find_or_put_contextual_obj(manifestations, manifestations_pointer);
 				var manifestations_value = manifestations_contextual_object.val();
+				manifestations_value = cjs.get(manifestations_value);
 				return manifestations_value;
 			} else {
 				return cjs.get(manifestations);

@@ -14,7 +14,11 @@
 	var NAN = NaN;
 	var summarized_val = function(val) {
 		if(_.isString(val)) {
-			return "'" + val + "'";
+			if(val === "(native function)") {
+				return val;
+			} else {
+				return "'" + val + "'";
+			}
 		} else if(_.isNumber(val)) {
 			return round_num(val, 2);
 		} else if(val === undefined) {
@@ -113,7 +117,7 @@
 				}
 			} else {
 				this.summary_span	.addClass("constant")
-									.text(value);
+									.text(summarized_val(value));
 			}
 		},
 		_destroy: function() {

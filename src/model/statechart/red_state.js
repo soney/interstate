@@ -395,7 +395,9 @@
 		};
 
 		proto.destroy = function () {
-			this.$active.destroy();
+			if(this.$active) {
+				this.$active.destroy();
+			}
 			this._initialized.destroy();
 			this._last_run_event.destroy();
 			if (this._basis) {
