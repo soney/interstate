@@ -1,130 +1,162 @@
-var tutorial_pages = [
-	{
-		editor: {
-			hide_editor: true,
-			text: "This tutorial will teach you all you need to know to use the Euclase editor. Click 'next' to continue.",
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "This is the 'editor' window; the other window is the 'running' window. Position these windows so you can see both simultaneously.",
-			hide_editor: true,
-			body_color: "#9B9",
-		},
-		runtime: {
-			body_color: "#99B"
-		}
-	}, {
-		editor: {
-			text: "Right now, you are looking at an object named 'sketch' with 5 properties. The value of every property is shown right next to its property name. Click on 'screen'",
-			annotations: {
-				"sketch": "highlight properties *"
+var tutorial_pages = (function() {
+	return [
+		{
+			editor: {
+				text: "<p>This tutorial will teach you all you need to know to use the Euclase editor.<div class='directive'>Click 'next' to continue.</div></p>",
+				on_enter: function($, post) {
+					this.editor.hide();
+				},
+				on_exit: function($, post) {
+					this.editor.show();
+				}
+			},
+			runtime: {
 			}
-		},
-		runtime: {
+		}, {
+			editor: {
+				text: "<p>This is the <span style='color: #AFA'>editor</span> window. The other window is the <span style='color: #AAF'>runtime</span> window.<div class='directive'>Position these windows so you can see both simultaneously.</div></p>",
+				on_enter: function($, post) {
+					this.editor.hide();
+					$("html").css("background-color", "#9B9");
+					this.editor_text = $("<span />")	.text("(editor)")
+														.css({
+															"font-size": "3em"
+														})
+														.prependTo(document.body);
+				},
+				on_exit: function($, post) {
+					$("html").css("background-color", "");
+					this.editor.show();
+					this.editor_text.remove();
+					delete this.editor_text;
+				}
+			},
+			runtime: {
+				on_enter: function($, post) {
+					$("html").css("background-color", "#99B");
+					this.runtime_text = $("<span />")	.text("(runtime)")
+														.css({
+															"font-size": "3em"
+														})
+														.prependTo(document.body);
+				},
+				on_exit: function($, post) {
+					$("html").css("background-color", "");
+					this.runtime_text.remove();
+					delete this.runtime_text;
+				}
+			}
+		}, {
+			editor: {
+				text: "<p>Right now, you are looking at an <em>object</em> named <var>sketch</var> with 5 <em>properties</em>.<br />The value of every property is shown right next to its property name. For instance, <var>width</var> is <code>500</code>. If a property's value is an arrow, that property is another object.<div class='directive'>Click on <var>screen</var>.</div></p>",
+				annotations: {
+					"sketch": "highlight properties *"
+				}
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p><var>screen</var> is an object represents the contents of the runtime window.<div class='directive'>Add a property to it and call it <var>my_circle</var>.</div><div class='note'>(note: Properties can be re-named by right clicking and selecting 'rename')</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p>To say that we want <var>my_circle</var> to be a circle, we need to set its <var>prototypes</var> property to <code>shape.circle</code>. This means we <em>inherit</em> from <var>shape.circle</var>. The grey circle next to <var>prototypes</var> means that <var>prototypes</var> is not set.<div class='directive'>Click the grey circle and enter <code>shape.circle</code> into the blank. Press <kbd>enter</kbd> to confirm.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p>The greyed out properties are inherited properties. Each of these properties controls some aspect of the circle. To <em>claim</em> an inherited property (make it your object's own), click its name.<div class='directive'>Claim <var>cx</var> and <var>cy</var> for <var>my_circle</var>.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p><var>cx</var> and <var>cy</var> represent the center point of our circle. To change their value, edit the <em>cell</em> under the black dot. Let's put <var>my_circle</var> in the middle of our sketch:<div class='directive'> Set <var>cx</var> to <code>sketch.width/2</code> and <var>cy</var> to <code>sketch.height/2</code>.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p><div class='directive'>Change <var>fill</var> to <code>'yellow'</code>. Try with and without quotes.</div><div class='note'>Note: Without quotes, fill is undefined because it's looking for a property named <var>yellow</var>.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p>Let's make <var>my_circle</var> red when the user clicks it.<div class='directive'>Add two new <em>states</em> to <var>my_circle</var> by clicking the <code>+</code> button twice.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p>To rename a state, click on its name, type a new name, and press <kbd>enter</kbd>.<div class='directive'>Rename <var>state_1</var> to <var>pressed</var>.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p>To specify that a property should have a value in a state, click the grey circle for that property's row and that state's column.<div class='directive'>Set <var>fill</var> to <code>'yellow'</code> in <var>init</var> and to <code>'red'</code> in <var>pressed</var>.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p>To add a <em>transition</em> to specify when <var>my_circle</var> changes state, right click the state you are transitioning from, select 'Add Transition', and click the state to transition to.<div class='directive'>Add a transition from <var>init</var> to <var>pressed</var>.</p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p>To set a transition's <em>event</em>, click the transition.<div class='directive'>Change our transition's event to <code>on('mousedown', my_circle)</code> so that it fires when the mouse presses on <var>my_circle</var>.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p><div class='directive'>Press the mouse on <var>my_circle</var> in the runtime window. Watch closely what happens to <var>my_circle</var>'s state.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p><var>my_circle</var> is stuck in the <var>pressed</var> state!<div class='directive'>Reset <var>my_circle</var>'s state by clicking (options) -> Reset</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p><div class='directive'>Add a transition from <var>pressed</var> to <var>init</var> with the event <code>on('mouseup')</code>. Play around with your app.</div><div class='note'>Note: that there is no target here, so we could release the mouse anywhere.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p><div class='directive'>Make your color changes animated by setting <var>animated_properties</var> to <code>true</code>. Play around with your app.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p>Objects can also have any number of copies. <div class='directive'>Make three copies of <var>my_circle</var> by clicking options -> copies, typing <code>['red', 'green', 'blue']</code>, and pressing <kbd>enter</kbd>.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p>Note the properties <var>my_copy</var> and <var>copy_num</var> appear. <var>my_copy</var> is the object copy's item. <var>copy_num</var> is that item's index.<div class='directive'>Navigate through every copy by clicking the 1 in [1 of 3] below <var>my_circle</var>.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p>Objects can inherit behaviors.<div class='directive'>Try creating another object on screen called <var>my_other_circle</var>. Set its <var>prototypes</var> field to <code>my_circle</code>. Note that it inherits not only the properties of <var>my_circle</var> but also its state machine.</p>"
+			},
+			runtime: {
+			}
 		}
-	}, {
-		editor: {
-			text: "'screen' is another object that represents what is shown in the 'running' window. Add a property to it and call it 'my_circle'. (note: Properties can be re-named by right clicking and selecting 'rename')"
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "To say that we want my_circle to be a circle, we need to set its prototypes property to 'shape.circle'. This means we inherit from shape.circle. Click the grey circle and enter 'shape.circle' (no quotes) into the blank."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "The greyed out properties are 'inherited' properties. Each of these properties controls some aspect of the circle. To 'claim' an inherited property (make it your object's own), click its name. Claim cx and cy in my_circle."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "cx and cy represent the center point of our circle. To change their value, edit the 'cell' under the black dot. Let's put the circle in the middle of our sketch by setting cx to sketch.width/2 and cy to sketch.height/2."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "While you're at it, change fill to 'yellow'. Try with and without quotes. Without quotes, fill is undefined because it's looking for a property named yellow."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "Let's make our circle red when the user clicks it. Add two new 'states' to my_circle by clicking the + button twice."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "To rename a state, click on its name, type a new name, and press enter. Rename state_1 to pressed."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "To specify that a property should have a value in a state, click the grey circle for that property's row and that state's column. Set fill in init to 'yellow' and 'red' in pressed"
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "To add a 'transition' to specify when my_circle changes state, right click the state you are transitioning from, select 'Add Transition', and click the state to transition to. Add a transition from init to pressed."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "To set a transition's event, click the transition. Change our transition's event to on('mousedown', my_circle) so that it fires when the mouse presses on my_circle."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "Press the mouse on my_circle in the running window, watching closely what happens to my_circle's state."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "my_circle is stuck in the pressed state! Reset my_circle's state machine by clicking options -> Reset"
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "Add a transition from pressed to init with the event on('mouseup'). Note that there is no target here, so we could release the mouse anywhere. When you are done, play around with your running app."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "Make your color changes animated by setting the animated_properties to true."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "Objects can also have any number of copies. Try making three copies of my_circle by clicking options -> copies, typing ['red', 'green', 'blue'], and pressing enter."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "Note the properties my_copy and copy_num appear. my_copy is the object copy's item. copy_num is that item's index. You can navigate through every copy by clicking the 1 in [1 of 3] below 'my_circle'."
-		},
-		runtime: {
-		}
-	}, {
-		editor: {
-			text: "Finally, objects can inherit behaviors. Try creating another object on screen called my_other_circle. Set its prototypes field to my_circle. Note that it inherits not only the properties of my_circle but also the statechart."
-		},
-		runtime: {
-		}
-	}
-];
+	];
+}());

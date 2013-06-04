@@ -43,28 +43,23 @@
 			this.option("page_no", this.option("page_no") + 1);
 		},
 		show_page_no: function(page_index) {
+			var options;
+			if(this.page) {
+				options = this.page.editor;
+				if(_.isFunction(options.on_exit)) {
+					options.on_exit.call(this, $);
+				}
+			}
+
 			var pages = this.option("pages");
-			var page = pages[page_index];
-			var options = page.editor;
+			this.page = pages[page_index];
+			options = this.page.editor;
 
-			if(page_index === pages.length - 1) {
-				this.next_button.hide();
-			} else {
-				this.next_button.show();
+			if(_.isFunction(options.on_enter)) {
+				options.on_enter.call(this, $);
 			}
 
-			this.instruction_content.text(options.text);
-			if(options.hide_editor === true) {
-				this.editor.hide();
-			} else {
-				this.editor.show();
-			}
-
-			if(options.body_color) {
-				$("html").css("background-color", options.body_color);
-			} else {
-				$("html").css("background-color", "");
-			}
+			this.instruction_content.html(options.text);
 			this.client_socket.post({
 				type: "tutorial",
 				subtype: "page_set",

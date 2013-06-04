@@ -69,7 +69,7 @@
 			editor_name: uid.get_prefix() + "red_editor",
 			open_separate_client_window: true,
 			editor_window_options: function () {
-				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.innerHeight);
+				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
 			},
 			client_id: "",
 			immediately_create_server_socket: false

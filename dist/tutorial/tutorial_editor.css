@@ -4,14 +4,14 @@ html, body, #tutorial {
 
 .instructions {
 	background-color: rgba(0, 0, 0, 0.7);
-	color: white;
+	color: #DDD;
 	bottom: 0px;
 	position: absolute;
 	width: 100%;
 	padding: 5px;
-	font-size: 1.3em;
+	font-size: 1.1em;
 	font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-	font-weight: 300;
+	font-weight: 200;
 	box-sizing: border-box;
 }
 
@@ -33,11 +33,42 @@ html, body, #tutorial {
 	background-color: #444;
 	color: #999;
 	box-sizing: border-box;
-	padding-top: 3px;
+	padding-top: 30px;
 }
 
 .instructions > a.next:hover {
 	color: white;
 	text-decoration: underline;
 	background-color: #474;
+}
+
+.instructions p {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.instructions > .content em {
+	text-decoration: underline;
+	font-style: normal;
+}
+.instructions > .content code {
+	font-size: 1.3em;
+	font-weight: 200;
+}
+
+.directive {
+	color: #FFF;
+	padding-top: 10px;
+}
+
+.note {
+	padding-top: 10px;
+	font-size: 0.8em;
+	color: #CCC;
+}
+
+.curr_col {
+	margin-bottom: 200px;
 }
