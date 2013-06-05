@@ -408,6 +408,8 @@
 		},
 		inherit: function() {
 			var event = new $.Event("command");
+			event.stopPropagation();
+			event.preventDefault();
 			event.command_type = "inherit";
 			event.name = this.option("name");
 			event.client = this.option("obj");
