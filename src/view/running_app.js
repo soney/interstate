@@ -168,6 +168,7 @@
 			}
 			if (this.server_socket) {
 				this.server_socket.destroy();
+				delete this.server_socket;
 			}
 		},
 
@@ -278,9 +279,6 @@
 				this.edit_button.removeClass("active").css(this.edit_button_css);
 			}
 			delete this.editor_window;
-
-			this.server_socket.destroy();
-			delete this.server_socket;
 		}
 	});
 }(red, jQuery));
