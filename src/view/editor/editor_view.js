@@ -73,13 +73,29 @@
 
 		load_viewer: function (root_client) {
 			this.element.html("");
-			this.menu = $("<div />").addClass("menu")
+			this.menu = $("<div />").menu({
+										title: "menu",
+										items: {
+											"Undo": {
+												on_select: _.bind(this.undo, this)
+											},
+											"Redo": {
+												on_select: _.bind(this.redo, this)
+											},
+											"Reset": {
+												on_select: _.bind(this.reset, this),
+												disabled: true
+											}
+										}
+									})
 									.appendTo(this.element);
+									/*
 			this.reset_button = $("<a />")	.addClass("reset button")
 											.text("Reset")
 											.appendTo(this.menu)
 											.attr("href", "javascript:void(0)")
 											.on("click", $.proxy(this.reset, this));
+											*/
 											
 
 			this.navigator = $("<div />")	.appendTo(this.element)
@@ -96,10 +112,10 @@
 					else { this.undo(); }
 					event.stopPropagation();
 					event.preventDefault();
-				} else if(event.keyCode === 82 && (event.metaKey || event.ctrlKey)) { // 'r': prevent refresh
+				}/* else if(event.keyCode === 82 && (event.metaKey || event.ctrlKey)) { // 'r': prevent refresh
 					event.stopPropagation();
 					event.preventDefault();
-				}
+				}*/
 			}, this));
 		},
 
@@ -333,7 +349,7 @@
 
 		on_unload: function() {
 			this.navigator.navigator("destroy");
-			this.menu.remove();
+			this.menu.menu("destroy").remove();
 			this.client_socket.destroy();
 		},
 

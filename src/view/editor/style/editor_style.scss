@@ -66,10 +66,49 @@ html.full_window_editor {
 	font-family: "Source Sans Pro";
 
 	> .menu {
-		display: none;
-		margin-bottom: 5px;
-		.reset {
-			@include link;
+		position: fixed;
+		right: 0px;
+		top: 0px;
+		> .title {
+			cursor: pointer;
+			top: 5px;
+			position: relative;
+			padding: 5px;
+			font-variant: small-caps;
+			background-color: #555;
+			color: white;
+			&:hover {
+				text-decoration: underline;
+			}
+			@include non-selectable;
+		}
+		> .contents {
+			box-shadow: 0px 0px 10px #666;
+			background-color: #EEE;
+			border: 1px solid black;
+			border-top: none;
+			border-right: none;
+			width: 200px;
+			font-size: 0.9em;
+			> .item {
+				padding: 3px;
+				border-top: 1px solid black;
+				cursor: pointer;
+				@include non-selectable;
+				&:first-child {
+					border-top: none;
+				}
+				&:hover {
+					background-color: #E0E0E0;
+				}
+				&.disabled {
+					color: #BBB;
+					cursor: default;
+					&:hover {
+						background-color: #EEE;
+					}
+				}
+			}
 		}
 	}
 

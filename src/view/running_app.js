@@ -135,10 +135,10 @@
 						window.clearInterval(append_interval);
 					}
 				}, this), 100);
+			}
 
-				if (this.option("edit_on_open")) {
-					this.open_editor();
-				}
+			if (this.option("edit_on_open")) {
+				this.open_editor();
 			}
 
 			$(window).on("keydown", this.$on_key_down);
@@ -254,7 +254,9 @@
 				this.server_socket.set_communication_mechanism(communication_mechanism);
 
 				if (this.server_socket.is_connected()) { // It connected immediately
-					this.edit_button.addClass("active").css(this.edit_active_css);
+					if(this.edit_button) {
+						this.edit_button.addClass("active").css(this.edit_active_css);
+					}
 					this.server_socket.post({
 						type: "color",
 						value: this.button_color
