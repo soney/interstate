@@ -210,21 +210,9 @@
 		_create_server_socket: function() {
 			var root = this.option("root");
 
-			var communication_mechanism;
-			if (this.option("open_separate_client_window")) {
-				this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options")());
-				communication_mechanism = new red.InterWindowCommWrapper(this.editor_window, this.option("client_id")); 
-			} else {
-				this.editor_window = window;
-				communication_mechanism = new red.SameWindowCommWrapper(this.option("client_id")); 
-			}
-
-
 
 			var server_socket = new red.ProgramStateServer({
-				root: root,
-				comm_mechanism: communication_mechanism,
-				client_window: this.editor_window
+				root: root
 			}).on("connected", function () {
 				if(this.edit_button) {
 					this.edit_button.addClass("active").css(this.edit_active_css);
@@ -253,7 +241,17 @@
 			if (this.editor_window) {
 				this.editor_window.focus();
 			} else {
+				var communication_mechanism;
+				if (this.option("open_separate_client_window")) {
+					this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options")());
+					communication_mechanism = new red.InterWindowCommWrapper(this.editor_window, this.option("client_id")); 
+				} else {
+					this.editor_window = window;
+					communication_mechanism = new red.SameWindowCommWrapper(this.option("client_id")); 
+				}
+
 				this.server_socket = this.server_socket || this._create_server_socket();
+				this.server_socket.set_communication_mechanism(communication_mechanism);
 
 				if (this.server_socket.is_connected()) { // It connected immediately
 					this.edit_button.addClass("active").css(this.edit_active_css);

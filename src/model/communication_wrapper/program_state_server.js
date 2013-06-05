@@ -8,8 +8,6 @@
 
 	red.ProgramStateServer = function (options) {
 		able.make_this_listenable(this);
-		this.comm_mechanism = options.comm_mechanism;
-		this.add_message_listeners();
 		this.root = options.root;
 		if(this.root) {
 			this.contextual_root = red.find_or_put_contextual_obj(this.root);
@@ -28,6 +26,14 @@
 		};
 		proto.remove_message_listeners = function () {
 			this.comm_mechanism.off("message", this.$on_message);
+		};
+		proto.set_communication_mechanism = function(comm_mechanism) {
+			if(this.comm_mechanism) {
+				this.remove_message_listeners();
+				delete this.comm_mechanism;
+			}
+			this.comm_mechanism = comm_mechanism;
+			this.add_message_listeners();
 		};
 
 		proto.on_message = function (data) {
