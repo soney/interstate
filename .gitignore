@@ -3,3 +3,4 @@
 build
 node_modules
 src/view/editor/style/editor_style.css
+dist/gallery/upload.php
