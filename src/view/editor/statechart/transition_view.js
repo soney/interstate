@@ -303,7 +303,7 @@
 												console.log("edit actions");
 											});
 			this.remove_item = $("<div />")	.addClass("menu_item")
-											.text("Remove")
+											.text("Delete")
 											.pressable()
 											.on("pressed", $.proxy(function() {
 												this.remove_edit_dropdown();

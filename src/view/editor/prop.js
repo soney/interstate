@@ -102,7 +102,7 @@
 												.addClass("item")
 												.on("mousedown", $.proxy(this.unset, this))
 												.attr("tabindex", 2)
-												.text("Remove");
+												.text("Delete");
 
 
 			//this.element.pressable();
