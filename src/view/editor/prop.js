@@ -376,14 +376,13 @@
 						var str = $str.get();
 						this.src_cell.children().remove();
 						var cell_disp = $("<span />")	.addClass("pure_cell")
-														.appendTo(this.src_cell)
-														.editable_text({
-															text: str
-														});
-						if(!this.option("inherited")) {
-							cell_disp	.on("click", $.proxy(function() {
-											cell_disp.editable_text("edit");
-										}, this))
+														.appendTo(this.src_cell);
+						if(this.option("inherited")) {
+							cell_disp.text(str);
+						} else {
+							cell_disp	.editable_text({
+											text: str
+										})
 										.on("text_change", $.proxy(function(e) {
 											var event = new $.Event("command");
 											event.command_type = "set_str";
