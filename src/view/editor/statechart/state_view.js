@@ -172,7 +172,7 @@
 													.pressable()
 													.on("pressed", $.proxy(function() {
 														this.remove_edit_dropdown();
-														this._emit("add_substate", {
+														this._emit("add_state", {
 															parent: this.option("state")
 														});
 													}, this));
@@ -187,7 +187,7 @@
 			var paper = this.option("paper");
 			var parentElement = paper.canvas.parentNode;
 
-			this.edit_dropdown = $("<div />")	.append(this.add_transition, /*this.add_substate_item,*/ this.rename_item, this.remove_item)
+			this.edit_dropdown = $("<div />")	.append(this.add_transition, this.add_substate_item, this.rename_item, this.remove_item)
 												.addClass("dropdown")
 												.css({
 													position: "absolute",

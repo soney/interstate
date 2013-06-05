@@ -112,8 +112,8 @@
 					};
 
 					var pss = new red.ProgramStateServer({
-						comm_mechanism: new red.SameWindowCommWrapper()
 					});
+					pss.set_communication_mechanism(new red.SameWindowCommWrapper());
 					var psc = new red.ProgramStateClient({
 						comm_mechanism: new red.SameWindowCommWrapper()
 					});
