@@ -247,6 +247,7 @@
 			var invalidate_value = _.bind(function () {
 				this.$value.invalidate();
 			}, this);
+			var needs_invalidation = false;
 			for (i = 0; i < len; i += 1) {
 				info = values[i];
 				state = info.state;
@@ -265,6 +266,7 @@
 							if (using_val === NO_VAL) {
 								using_val = val;
 								using_state = state;
+								needs_invalidation = true;
 							}
 						}
 					}
@@ -312,6 +314,9 @@
 			} else {
 				this._last_value = using_val;
 				this._from_state = using_state;
+			}
+			if(needs_invalidation) {
+				_.defer(invalidate_value);
 			}
 
 			return {
