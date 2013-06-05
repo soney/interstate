@@ -76,6 +76,7 @@
 		},
 
 		_create: function () {
+			this.element.addClass("euc_runtime");
 			this.$open_editor = $.proxy(this.open_editor, this);
 			this.$on_key_down = $.proxy(this.on_key_down, this);
 			this._command_stack = red.create("command_stack");
@@ -162,6 +163,7 @@
 		},
 
 		_destroy: function () {
+			this.element.removeClass("euc_runtime");
 			$(window).off("keydown", this.$on_key_down);
 			if (this.edit_button) {
 				this.edit_button.remove();
@@ -209,7 +211,6 @@
 
 		_create_server_socket: function() {
 			var root = this.option("root");
-
 
 			var server_socket = new red.ProgramStateServer({
 				root: root
