@@ -85,6 +85,22 @@
 											"Reset": {
 												on_select: _.bind(this.reset, this),
 												disabled: true
+											},
+											"Upload to Gallery": {
+												on_select: _.bind(this.upload, this),
+												disabled: true
+											},
+											"Save": {
+												on_select: _.bind(this.save, this),
+												disabled: true
+											},
+											"Save As": {
+												on_select: _.bind(this.save_as, this),
+												disabled: true
+											},
+											"Open": {
+												on_select: _.bind(this.open, this),
+												disabled: true
 											}
 										}
 									})
@@ -117,6 +133,15 @@
 					event.preventDefault();
 				}*/
 			}, this));
+		},
+
+		upload: function() {
+		},
+		save: function() {
+		},
+		save_as: function() {
+		},
+		open: function() {
 		},
 
 	

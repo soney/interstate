@@ -69,6 +69,7 @@ html.full_window_editor {
 		position: fixed;
 		right: 0px;
 		top: 0px;
+		z-index: 999999;
 		> .title {
 			cursor: pointer;
 			top: 5px;
@@ -85,14 +86,14 @@ html.full_window_editor {
 		> .contents {
 			box-shadow: 0px 0px 10px #666;
 			background-color: #EEE;
-			border: 1px solid black;
+			border: 1px solid #AAA;
 			border-top: none;
 			border-right: none;
 			width: 200px;
 			font-size: 0.9em;
 			> .item {
 				padding: 3px;
-				border-top: 1px solid black;
+				border-top: 1px solid #CCC;
 				cursor: pointer;
 				@include non-selectable;
 				&:first-child {
