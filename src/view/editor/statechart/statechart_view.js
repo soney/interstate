@@ -58,6 +58,7 @@
 			this.statechart_view.on("set_from", $.proxy(this.set_transition_from, this));
 			this.statechart_view.on("rename", $.proxy(this.rename_state, this));
 			this.statechart_view.on("set_str", $.proxy(this.set_transition_str, this));
+			this.statechart_view.on("add_substate", $.proxy(this.add_substate, this));
 		},
 		_destroy: function () {
 			var statecharts = this.option("statecharts");
@@ -146,6 +147,13 @@
 			event.command_type = "set_transition_str";
 			event.transition = e.transition;
 			event.str = e.str;
+
+			this.element.trigger(event);
+		},
+		add_substate: function(e) {
+			var event = new $.Event("command");
+			event.command_type = "add_state";
+			event.state = e.parent;
 
 			this.element.trigger(event);
 		}
@@ -369,6 +377,7 @@
 					rv.on("remove_state", this.forward);
 					rv.on("add_transition", this.forward);
 					rv.on("rename", this.forward);
+					rv.on("add_substate", this.forward);
 					rv.on("awaiting_state_selection", this.$on_awaiting_state_selection);
 				}
 				return rv;

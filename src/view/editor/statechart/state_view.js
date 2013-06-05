@@ -166,6 +166,16 @@
 													state: this.option("state")
 												});
 											}, this));
+
+			this.add_substate_item = $("<div />")	.addClass("menu_item")
+													.text("Add substate")
+													.pressable()
+													.on("pressed", $.proxy(function() {
+														this.remove_edit_dropdown();
+														this._emit("add_substate", {
+															parent: this.option("state")
+														});
+													}, this));
 			var lwe = this.option("lwe"),
 				rws = this.option("rws");
 			var PADDING = 1;
@@ -177,7 +187,7 @@
 			var paper = this.option("paper");
 			var parentElement = paper.canvas.parentNode;
 
-			this.edit_dropdown = $("<div />")	.append(this.add_transition, this.rename_item, this.remove_item)
+			this.edit_dropdown = $("<div />")	.append(this.add_transition, this.add_substate_item, this.rename_item, this.remove_item)
 												.addClass("dropdown")
 												.css({
 													position: "absolute",
