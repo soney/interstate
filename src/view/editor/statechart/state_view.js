@@ -187,7 +187,7 @@
 			var paper = this.option("paper");
 			var parentElement = paper.canvas.parentNode;
 
-			this.edit_dropdown = $("<div />")	.append(this.add_transition, this.add_substate_item, this.rename_item, this.remove_item)
+			this.edit_dropdown = $("<div />")	.append(this.add_transition, /*this.add_substate_item,*/ this.rename_item, this.remove_item)
 												.addClass("dropdown")
 												.css({
 													position: "absolute",
