@@ -83,31 +83,31 @@
 													builtin: this.option("builtin")
 												});
 
+			this.edit_menu = $("<div />")	.addClass("edit")
+											.appendTo(this.name_cell)
+											.hide();
 			if(this.option("inherited")) {
 				this.element.addClass("inherited")
 							.on("click", $.proxy(this.inherit, this));
 			} else if(this.option("builtin")) {
 				this.element.addClass("builtin");
+			} else {
+				this.rename_button = $("<div />")	.appendTo(this.edit_menu)
+													.addClass("item")
+													.on("mousedown", $.proxy(this.begin_rename, this))
+													.attr("tabindex", 2)
+													.text("Rename");
+				this.remove_button = $("<div />")	.appendTo(this.edit_menu)
+													.addClass("item")
+													.on("mousedown", $.proxy(this.unset, this))
+													.attr("tabindex", 2)
+													.text("Delete");
 			}
-
-			this.edit_menu = $("<div />")	.addClass("edit")
-											.appendTo(this.name_cell)
-											.hide();
-			this.rename_button = $("<div />")	.appendTo(this.edit_menu)
-												.addClass("item")
-												.on("mousedown", $.proxy(this.begin_rename, this))
-												.attr("tabindex", 2)
-												.text("Rename");
-			this.remove_button = $("<div />")	.appendTo(this.edit_menu)
-												.addClass("item")
-												.on("mousedown", $.proxy(this.unset, this))
-												.attr("tabindex", 2)
-												.text("Delete");
+			this.element.on("contextmenu", $.proxy(this.on_context_menu, this));
 
 
 			//this.element.pressable();
 			this.element.on("click", $.proxy(this.on_click, this));
-			this.element.on("contextmenu", $.proxy(this.on_context_menu, this));
 			this.element.on("keydown", $.proxy(this.on_key_down, this));
 			if(this.option("show_src")) {
 				this.on_show_src();
