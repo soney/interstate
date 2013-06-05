@@ -89,6 +89,11 @@
 			if(this.option("inherited")) {
 				this.element.addClass("inherited")
 							.on("click", $.proxy(this.inherit, this));
+				this.inherit_button = $("<div />")	.appendTo(this.edit_menu)
+													.addClass("item")
+													.on("mousedown", $.proxy(this.inherit, this))
+													.attr("tabindex", 2)
+													.text("Inherit");
 			} else if(this.option("builtin")) {
 				this.element.addClass("builtin");
 			} else {
