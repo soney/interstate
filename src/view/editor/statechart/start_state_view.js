@@ -12,7 +12,10 @@
 			c: {x: 0, y: 0},
 			radius: 6,
 			fill_color: "black",
-			padding_top: 0
+			padding_top: 0,
+			paper_height: 9999,
+			vline_color: "#CCC",
+			vline_dasharray: ". "
 		}, options);
 
 		var paper = this.option("paper");
@@ -24,6 +27,11 @@
 		});
 		this.$on_context_menu = $.proxy(this.on_context_menu, this);
 		$(this.circle[0]).on("contextmenu", this.$on_context_menu);
+		this.vline = paper	.path("M0,0")
+							.attr({
+								stroke: this.option("vline_color"),
+								"stroke-dasharray": this.option("vline_dasharray")
+							});
 	};
 
 	(function (My) {
@@ -33,11 +41,16 @@
 		proto._on_options_set = function (values) {
 			var paper = this.option("paper");
 			var center = this.option("c");
+			var paper_height = this.option("paper_height");
 			this.circle.attr({
 				cx: center.x,
 				cy: center.y + this.option("padding_top"),
 				r: this.option("radius")
 			});
+			this.vline	.attr({
+							path: "M" + center.x + "," + center.y + "V" + paper_height
+						})
+						.toBack();
 		};
 
 		proto.on_context_menu = function(event) {
@@ -57,6 +70,7 @@
 		};
 		proto.remove = function () {
 			this.circle.remove();
+			this.vline.remove();
 		};
 		proto.destroy = function() {
 			$(this.circle[0]).off("contextmenu", this.$on_context_menu);

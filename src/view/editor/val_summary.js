@@ -31,6 +31,8 @@
 			return "(func)";
 		} else if(_.isArray(val)) {
 			return "[" + _.map(val, summarized_val).join(", ") + "]";
+		} else if(val instanceof red.WrapperClient) {
+			return "(object)";
 		} else {
 			return val;
 		}

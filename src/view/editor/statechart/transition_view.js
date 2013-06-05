@@ -92,7 +92,10 @@
 			text_foreground: "black",
 			font_family: "Sourse Sans Pro",
 			font_size: "13px",
-			padding_top: 0
+			padding_top: 0,
+			paper_height: 9999,
+			vline_color: "#CCC",
+			vline_dasharray: ". "
 		}, options);
 
 		this.$on_window_click_while_expanded = $.proxy(this.on_window_click_while_expanded, this);
@@ -145,6 +148,12 @@
 			str = "";
 		}
 		this.label.option("text", str);
+		this.vline = paper	.path("M0,0")
+							.attr({
+								stroke: this.option("vline_color"),
+								"stroke-dasharray": this.option("vline_dasharray")
+							})
+							.toBack();
 		$([this.label.text[0], this.line_path[0], this.circle[0], this.arrow_path[0]]).on("contextmenu", $.proxy(function(event) {
 			event.preventDefault();
 			event.stopPropagation();
@@ -159,11 +168,13 @@
 		able.make_proto_optionable(proto);
 		proto._on_options_set = function (values) {
 			var transition = this.option("transition");
+			var paper_height = this.option("paper_height");
 			var paths = this.get_paths();
 			this.line_path.attr("path", paths.line.path);
 			this.arrow_path.attr("path", paths.arrow.path);
 			var event = transition.event();
-			var c = center(this.option("from"), this.option("to"));
+			var from = this.option("from");
+			var c = center(from, this.option("to"));
 			this.label.option({
 				x: c.x,
 				y: c.y + 8
@@ -174,6 +185,10 @@
 				r: paths.circle.r
 			});
 			this.update_menu_position();
+			this.vline	.attr({
+							path: "M" + from.x + "," + from.y + "V" + paper_height
+						})
+						.toBack();
 		};
 
 		proto.get_str = function() {
@@ -208,7 +223,7 @@
 			//this.label.option("color", this.option("active_color"));
 			//this.label.option("color", this.option("text_foreground"), 400);
 			this.circle.attr({
-				r: this.option("radius") * 3,
+				r: this.option("radius") * 4,
 				fill: this.option("active_color")
 			});
 			this.circle.animate({
@@ -403,6 +418,7 @@
 				window.clearTimeout(this.arrow_timeout);
 				delete this.arrow_timeout;
 			}
+			this.vline.remove();
 			this.label.remove();
 			this.circle.remove();
 			this.line_path.remove();

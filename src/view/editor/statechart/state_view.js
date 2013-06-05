@@ -26,7 +26,10 @@
 			text_background: "white",
 			font_family: "Source Sans Pro",
 			font_size: "12px",
-			padding_top: 0
+			padding_top: 0,
+			paper_height: 9999,
+			vline_color: "#CCC",
+			vline_dasharray: ". "
 		}, options);
 
 		this.$on_window_click_while_expanded = $.proxy(this.on_window_click_while_expanded, this);
@@ -91,6 +94,13 @@
 
 				this.show_menu();
 			}, this));
+			this.vline = paper	.path("M0,0")
+								.attr({
+									stroke: this.option("vline_color"),
+									"stroke-dasharray": this.option("vline_dasharray")
+								})
+								.toBack();
+
 		};
 
 		proto.get_name = function() {
@@ -105,6 +115,7 @@
 				this.path.attr({
 					"path": path_str
 				});
+				var paper_height = this.option("paper_height");
 				var center = this.option("c");
 				var state = this.option("state");
 				var name = state.get_name("parent");
@@ -114,6 +125,9 @@
 					text: name
 				});
 				this.update_menu_position();
+				this.vline.attr({
+					path: "M" + center.x + "," + center.y + "V" + paper_height
+				});
 			}
 		};
 
@@ -240,6 +254,7 @@
 		proto.remove = function () {
 			this.path.remove();
 			this.label.remove();
+			this.vline.remove();
 			if(this.edit_dropdown) {
 				this.edit_dropdown.remove();
 				delete this.edit_dropdown;
