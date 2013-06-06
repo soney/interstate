@@ -88,6 +88,10 @@
 		proto.get_raphael_object = function () {
 			return this.text;
 		};
+		proto.toFront = function() {
+			this.label_background.toFront();
+			this.text.toFront();
+		};
 
 		proto.show_default = function () {
 			return this.option("text") === "";

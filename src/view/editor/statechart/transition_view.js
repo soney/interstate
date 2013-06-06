@@ -191,6 +191,13 @@
 						.toBack();
 		};
 
+		proto.toFront = function() {
+			this.label.toFront();
+			this.circle.toFront();
+			this.arrow_path.toFront();
+			this.vline.toFront();
+		};
+
 		proto.get_str = function() {
 			var transition = this.option("transition");
 			var event = transition.event();

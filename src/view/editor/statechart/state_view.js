@@ -103,6 +103,18 @@
 
 		};
 
+		proto.toFront = function() {
+			if(this.path) {
+				this.path.toFront();
+			}
+			if(this.vline) {
+				this.vline.toFront();
+			}
+			if(this.label) {
+				this.label.toFront();
+			}
+		};
+
 		proto.get_name = function() {
 			var state = this.option("state");
 			var name = state.get_name("parent");

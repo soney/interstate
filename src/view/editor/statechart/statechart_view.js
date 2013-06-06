@@ -253,6 +253,7 @@
 						view = this.get_view(state, layout_info);
 						new_items.push(view);
 					}
+					view.toFront();
 				} else if (state instanceof red.StatechartTransition) {
 					if (this.object_views.has(state)) {
 						view = this.get_view(state, layout_info);
@@ -265,6 +266,7 @@
 						view = this.get_view(state, layout_info);
 						new_items.push(view);
 					}
+					view.toFront();
 				}
 			}, this);
 

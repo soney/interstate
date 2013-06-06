@@ -38,6 +38,11 @@
 		var proto = My.prototype;
 		able.make_proto_optionable(proto);
 
+		proto.toFront = function() {
+			this.vline.toFront();
+			this.circle.toFront();
+		};
+
 		proto._on_options_set = function (values) {
 			var paper = this.option("paper");
 			var center = this.option("c");
