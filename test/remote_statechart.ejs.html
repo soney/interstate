@@ -26,7 +26,7 @@
 			<%- red_include(red_inc.runtime) %>
 			<%- red_include(red_inc.editor) %>
 			<script type="text/javascript">
-				var get_view = function(parent_el, statechart, editable) {
+				var get_view = function(parent_el, statechart, editable, context) {
 					var rv =  $("<div />")	.appendTo(parent_el)
 											.css({
 											})
@@ -62,7 +62,7 @@
 							} else if(type === "add_transition") {
 								var from = event.from,
 									to = event.to;
-								var transition_event = red.create_event("parsed", {str: "(event)", inert: true});
+								var transition_event = red.create_event("parsed", {str: "(event)", context: context});
 								from.parent().add_transition(from, to, transition_event);
 							} else if(type === "rename_state") {
 								var state = event.state,
@@ -100,15 +100,41 @@
 					dict.set("on", red.on_event);
 					var ptr_context = red.create("pointer", {stack: [dict]});
 
+					var ge = function(str) {
+						return red.create_event("parsed", {str: str, context: ptr_context});
+					};
+
 					var master = window.master = red.create("statechart");
-					master	.add_state("init")
-							.starts_at("init")
+					master	.add_state("not_selected")
+							.starts_at("not_selected")
+							.add_state("selected")
 							//.add_state("init.A")
 							//.add_state("init.B")
 							//.add_state("state2")
 							.run();
+					master.add_transition("not_selected", "selected", ge("on('click', sq)"));
+					master.add_transition("selected", "not_selected", ge("on('dblclick', sq)"));
 
-					var master_view = get_view($(".tl"), master, true);
+					var selected_state = master.find_state("selected");
+					selected_state	.add_state("hover_state")
+									.add_state("pressed_state")
+									.make_concurrent(true);
+					var hover_state = selected_state.find_state("hover_state");
+					hover_state	.add_state("not_hover")
+								.add_state("hover")
+								.starts_at("not_hover");
+					hover_state.add_transition("not_hover", "hover", ge("on('mouseover', sq)"));
+					hover_state.add_transition("hover", "not_hover", ge("on('mouseout', sq)"));
+					var pressed_state = selected_state.find_state("pressed_state");
+					pressed_state	.add_state("not_pressed")
+									.add_state("pressed")
+									.starts_at("not_pressed");
+					pressed_state.add_transition("not_pressed", "pressed", ge("on('mousedown', sq)"));
+					pressed_state.add_transition("pressed", "not_pressed", ge("on('mouseup')"));
+
+
+
+					var master_view = get_view($(".tl"), master, true, ptr_context);
 					/*
 
 					var shadow = window.shadow = master.create_shadow({ context: ptr_context, running: true });

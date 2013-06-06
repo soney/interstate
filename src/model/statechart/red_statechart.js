@@ -278,19 +278,20 @@
 				}, this);
 				red.event_queue.once("end_event_queue_round_3", function () {
 					var local_state = this.$local_state.get();
-					if (local_state) {
-						local_state.disable_outgoing_transitions();
-						local_state.set_active(false);
-					}
-					local_state = state;
-					this.$local_state.set(local_state);
-					local_state._last_run_event.set(event);
-					if (local_state) {
-						if (!local_state.is_running()) {
+					if(local_state !== state) {
+						if (local_state) {
+							local_state.stop();
+							local_state.disable_outgoing_transitions();
+							local_state.set_active(false);
+						}
+						local_state = state;
+						this.$local_state.set(local_state);
+						local_state._last_run_event.set(event);
+						if (local_state) {
+							local_state.set_active(true);
+							local_state.enable_outgoing_transitions();
 							local_state.run();
 						}
-						local_state.set_active(true);
-						local_state.enable_outgoing_transitions();
 					}
 					transition.increment_times_run();
 				}, this);
@@ -307,19 +308,27 @@
 				}, this);
 			} else {
 				cjs.wait();
-				var local_state = this.$local_state.get();
-				if (local_state) {
-					local_state.disable_outgoing_transitions();
-					local_state.set_active(false);
-				}
-				local_state = state;
-				this.$local_state.set(local_state);
-				if (local_state) {
-					if (!local_state.is_running()) {
-						local_state.run();
+				if(this.is_concurrent()) {
+					_.each(this.get_substates(), function(substate) {
+						substate.set_active(false);
+						substate.stop();
+					});
+				} else {
+					var local_state = this.$local_state.get();
+					if(local_state !== state) {
+						if (local_state) {
+							local_state.stop();
+							local_state.disable_outgoing_transitions();
+							local_state.set_active(false);
+						}
+						local_state = state;
+						this.$local_state.set(local_state);
+						if (local_state) {
+							local_state.set_active(true);
+							local_state.enable_outgoing_transitions();
+							local_state.run();
+						}
 					}
-					local_state.set_active(true);
-					local_state.enable_outgoing_transitions();
 				}
 				cjs.signal();
 			}
@@ -332,13 +341,14 @@
 
 				if(this.is_concurrent()) {
 					_.each(this.get_substates(), function(substate) {
-						substate.set_active(true);
 						substate.run();
+						substate.set_active(true);
 					});
 				} else {
-					this._start_state.set_active(true);
-					this._start_state.enable_outgoing_transitions();
-					this.get_active_substate().run();
+					var start_state = this.get_start_state();
+					start_state.set_active(true);
+					start_state.enable_outgoing_transitions();
+					start_state.run();
 				}
 
 				this._emit("run", {
@@ -353,15 +363,22 @@
 			red.event_queue.wait();
 			this._running = false;
 			this.disable_outgoing_transitions();
-			var local_state = this.$local_state.get();
-			if(local_state) {
-				local_state.set_active(false);
-				local_state.disable_outgoing_transitions();
+			if(this.is_concurrent()) {
+				_.forEach(this.get_substates(true), function (substate) {
+					substate.set_active(false);
+					substate.stop();
+				});
+			} else {
+				var local_state = this.$local_state.get();
+				if(local_state) {
+					local_state.set_active(false);
+					local_state.disable_outgoing_transitions();
+				}
+				this.$local_state.set(this._start_state);
+				_.forEach(this.get_substates(true), function (substate) {
+					substate.stop();
+				});
 			}
-			this.$local_state.set(this._start_state);
-			_.forEach(this.get_substates(), function (substate) {
-				substate.stop();
-			});
 			this._emit("stop", {
 				type: "stop",
 				target: this
@@ -635,6 +652,7 @@
 		proto.get_substate_names = function () {
 			return this.$substates.keys();
 		};
+		/*
 		proto.is = function (state) {
 			var i;
 			state = this.find_state(state);
@@ -646,7 +664,7 @@
 					var len = to_check_lineage.length - 1;
 					for (i = 0; i < len; i += 1) {
 						var s = to_check_lineage[i];
-						if (!s.is_concurrent() && s.get_active_substate() !== to_check_lineage[i + 1]) {
+						if (!s.is_concurrent() && (s.get_active_substate() !== to_check_lineage[i + 1])) {
 							return false;
 						}
 					}
@@ -668,6 +686,7 @@
 				});
 			}
 		};
+		*/
 		proto.add_transition = function (arg0, arg1, arg2) {
 			var from_state, to_state, transition;
 			if (arguments.length === 1) {

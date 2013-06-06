@@ -202,17 +202,21 @@
 				});
 			});
 		proto.enable = function () {
-			My.superclass.enable.apply(this, arguments);
-			if (this.options.inert !== true) {
-				if (this.target) {
-					this.target.on(this.spec, this.$on_spec);
+			if(!this.is_enabled()) {
+				My.superclass.enable.apply(this, arguments);
+				if (this.options.inert !== true) {
+					if (this.target) {
+						this.target.on(this.spec, this.$on_spec);
+					}
 				}
 			}
 		};
 		proto.disable = function () {
-			My.superclass.disable.apply(this, arguments);
-			if (this.target) {
-				this.target.off(this.spec, this.$on_spec);
+			if(this.is_enabled()) {
+				My.superclass.disable.apply(this, arguments);
+				if (this.target) {
+					this.target.off(this.spec, this.$on_spec);
+				}
 			}
 		};
 	}(red.StatechartEvent));

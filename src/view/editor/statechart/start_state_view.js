@@ -27,7 +27,7 @@
 		});
 		this.$on_context_menu = $.proxy(this.on_context_menu, this);
 		$(this.circle[0]).on("contextmenu", this.$on_context_menu);
-		this.vline = paper	.path("M0,0")
+		this.vline = paper	.path("M" + center.x + "," + center.y + "V" + this.option("paper_height"))
 							.attr({
 								stroke: this.option("vline_color"),
 								"stroke-dasharray": this.option("vline_dasharray")

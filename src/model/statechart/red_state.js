@@ -1,4 +1,3 @@
-
 /*jslint nomen: true, vars: true */
 /*global red,esprima,able,uid,console */
 
@@ -205,12 +204,14 @@
 			this.set_basis(options.basis);
 		};
 		proto.set_active = function (to_active) {
-			this.$active.set(to_active === true);
-			var event_type = to_active ? "active" : "inactive";
-			this._emit(event_type, {
-				type: event_type,
-				target: this
-			});
+			if(this.is_initialized()) {
+				this.$active.set(to_active === true);
+				var event_type = to_active ? "active" : "inactive";
+				this._emit(event_type, {
+					type: event_type,
+					target: this
+				});
+			}
 		};
 		proto.flatten_substates = function (include_start) {
 			return ([this]).concat(_.flatten(_.map(this.get_substates(include_start), function (substate) {
@@ -287,11 +288,13 @@
 			if (this.is_running() && _.indexOf(this.get_outgoing_transitions(), transition) >= 0) {
 				transition._last_run_event.set(event);
 				var my_lineage = this.get_lineage();
+				/*
 				for (i = 0; i < my_lineage.length - 1; i += 1) {
 					if (!my_lineage[i].is(my_lineage[i + 1])) {
 						return false;
 					}
 				}
+				*/
 
 				var to = transition.to();
 				var to_lineage = to.get_lineage();
