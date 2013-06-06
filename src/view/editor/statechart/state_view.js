@@ -144,12 +144,13 @@
 		};
 
 		proto.show_menu = function() {
+			var my_state = this.option("state");
 			this.add_transition = $("<div />")	.addClass("menu_item")
 												.text("Add transition")
 												.pressable()
 												.on("pressed", $.proxy(function() {
 													this.remove_edit_dropdown();
-													var from_state = this.option("state");
+													var from_state = my_state;
 													var root = from_state.root();
 													var selectable_substates = _.rest(root.flatten_substates()); // the first element is the major statechart itself
 													this._emit("awaiting_state_selection", {
@@ -175,7 +176,7 @@
 											.on("pressed", $.proxy(function() {
 												this.remove_edit_dropdown();
 												this._emit("remove_state", {
-													state: this.option("state")
+													state: my_state
 												});
 											}, this));
 
@@ -185,9 +186,22 @@
 													.on("pressed", $.proxy(function() {
 														this.remove_edit_dropdown();
 														this._emit("add_state", {
-															parent: this.option("state")
+															parent: my_state
 														});
 													}, this));
+
+			var is_concurrent = this.option("state").is_concurrent();
+			var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
+			this.toggle_concurrency_item = $("<div />")	.addClass("menu_item")
+														.html("Concurrent " + checkbox_mark)
+														.pressable()
+														.on("pressed", $.proxy(function() {
+															this.remove_edit_dropdown();
+															this._emit("make_concurrent", {
+																state: my_state,
+																concurrent: !my_state.is_concurrent()
+															});
+														}, this));
 			var lwe = this.option("lwe"),
 				rws = this.option("rws");
 			var PADDING = 1;
@@ -199,7 +213,7 @@
 			var paper = this.option("paper");
 			var parentElement = paper.canvas.parentNode;
 
-			this.edit_dropdown = $("<div />")	.append(this.add_transition, this.add_substate_item, this.rename_item, this.remove_item)
+			this.edit_dropdown = $("<div />")	.append(this.add_transition, this.add_substate_item, this.toggle_concurrency_item, this.rename_item, this.remove_item)
 												.addClass("dropdown")
 												.css({
 													position: "absolute",

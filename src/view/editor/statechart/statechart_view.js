@@ -58,6 +58,7 @@
 			this.statechart_view.on("set_from", $.proxy(this.set_transition_from, this));
 			this.statechart_view.on("rename", $.proxy(this.rename_state, this));
 			this.statechart_view.on("set_str", $.proxy(this.set_transition_str, this));
+			this.statechart_view.on("make_concurrent", $.proxy(this.make_concurrent, this));
 		},
 		_destroy: function () {
 			var statecharts = this.option("statecharts");
@@ -146,6 +147,14 @@
 			event.command_type = "set_transition_str";
 			event.transition = e.transition;
 			event.str = e.str;
+
+			this.element.trigger(event);
+		},
+		make_concurrent: function(e) {
+			var event = new $.Event("command");
+			event.command_type = "make_concurrent";
+			event.state = e.state;
+			event.concurrent = e.concurrent;
 
 			this.element.trigger(event);
 		}
@@ -376,6 +385,7 @@
 					rv.on("add_transition", this.forward);
 					rv.on("add_state", this.forward);
 					rv.on("rename", this.forward);
+					rv.on("make_concurrent", this.forward);
 					rv.on("awaiting_state_selection", this.$on_awaiting_state_selection);
 				}
 				return rv;

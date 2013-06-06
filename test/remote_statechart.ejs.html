@@ -82,6 +82,11 @@
 								var transition = event.transition,
 									state = event.from;
 								transition.setFrom(state);
+							} else if(type === "make_concurrent") {
+								var state = event.state,
+									concurrent = event.concurrent;
+
+								state.make_concurrent(concurrent);
 							} else {
 								console.log(type, event);
 							}
@@ -98,6 +103,8 @@
 					var master = window.master = red.create("statechart");
 					master	.add_state("init")
 							.starts_at("init")
+							.add_state("init.A")
+							.add_state("init.B")
 							//.add_state("state2")
 							.run();
 
