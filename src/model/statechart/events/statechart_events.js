@@ -154,6 +154,7 @@
 			this.target = target;
 			if (this.options.inert !== true && this.is_enabled()) {
 				this.target.on(this.spec, this.$on_spec);
+				console.log("Listen to ", this.target.id());
 			}
 		};
 		proto.destroy = function () {
@@ -206,6 +207,7 @@
 				My.superclass.enable.apply(this, arguments);
 				if (this.options.inert !== true) {
 					if (this.target) {
+						console.log("enable", this.target.id());
 						this.target.on(this.spec, this.$on_spec);
 					}
 				}

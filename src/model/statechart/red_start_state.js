@@ -108,6 +108,7 @@
 		proto.run = function () {
 			if (!this.is_running()) {
 				this._running = true;
+				this.enable_outgoing_transitions();
 				this._emit("run", {
 					target: this,
 					type: "run"

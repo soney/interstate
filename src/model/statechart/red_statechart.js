@@ -336,6 +336,7 @@
 		proto.run = function () {
 			if (!this.is_running()) {
 				red.event_queue.wait();
+				this.enable_outgoing_transitions();
 
 				this._running = true;
 
@@ -346,11 +347,10 @@
 					});
 				} else {
 					var start_state = this.get_start_state();
-					start_state.enable_outgoing_transitions();
 					start_state.set_active(true);
 					start_state.run();
-					console.log(start_state.id());
 				}
+				console.log(this.id());
 
 				this._emit("run", {
 					target: this,
