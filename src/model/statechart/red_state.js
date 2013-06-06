@@ -362,10 +362,25 @@
 			_.each(outgoing_transitions, function (x) { x.enable(); });
 		};
 		proto.disable_outgoing_transitions = function () {
-			var outgoing_transitions = this.get_outgoing_transitions();
+			this.disable_immediate_outgoing_transitions();
 			var substates = this.get_substates();
-			_.each(outgoing_transitions, function (x) { x.disable(); });
 			_.each(substates, function (x) { x.disable_outgoing_transitions(); });
+		};
+		proto.disable_immediate_outgoing_transitions = function() {
+			var transitions = this.get_outgoing_transitions();
+			_.each(transitions, function (x) { x.disable(); });
+		};
+		proto.disable_immediate_incoming_transitions = function() {
+			var transitions = this.get_incoming_transitions();
+			_.each(transitions, function (x) { x.disable(); });
+		};
+		proto.parent_is_concurrent = function() {
+			var parent = this.parent();
+			if(parent) {
+				return parent.is_concurrent();
+			} else {
+				return false;
+			}
 		};
 
 		proto.summarize = function () {

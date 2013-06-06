@@ -17,6 +17,7 @@
 			id: function () {
 				return "FAKE";
 			},
+			parent_is_concurrent: function() { return false; },
 			is_initialized: function () { return true; },
 			basis: function () { return false; }
 		};
@@ -64,7 +65,9 @@
 					var substates = sc.get_substates();
 
 					if(_.size(substates) > 0) {
-						node.children.push({statechart: sc.get_start_state(), children: []});
+						if(!sc.is_concurrent()) {
+							node.children.push({statechart: sc.get_start_state(), children: []});
+						}
 						node.children.push.apply(node.children, _.map(substates, function (x) {
 							var subnode = {statechart: x, children: []};
 							expand_node(subnode);
@@ -208,7 +211,14 @@
 				}
 
 				if (statechart.is_initialized()) {
-					var incoming_transitions = statechart.get_incoming_transitions();
+					var incoming_transitions;
+
+					if(statechart.parent_is_concurrent()) {
+						incoming_transitions = [];
+					} else {
+						incoming_transitions = statechart.get_incoming_transitions();
+					}
+
 					_.each(incoming_transitions, function (t) {
 						if (!t.is_initialized()) {
 							return;
@@ -217,6 +227,10 @@
 						if (x === statechart) {
 							from_to.push({min_x: ri, max_x: ri, type: "self", transition: t});
 						} else {
+							if(x.parent_is_concurrent()) {
+								return;
+							}
+
 							var x_indicies = col_indicies.get(x);
 							var min_x, max_x, type;
 							if (statechart.order(x) < 0) {

@@ -123,13 +123,22 @@
 
 		proto._on_options_set = function (values) {
 			if (this.path) {
+				var state = this.option("state");
 				var path_str = this.get_path_str();
 				this.path.attr({
 					"path": path_str
 				});
+				if(state.parent_is_concurrent()) {
+					this.path.attr({
+						"stroke-dasharray": ". "
+					});
+				} else {
+					this.path.attr({
+						"stroke-dasharray": ""
+					});
+				}
 				var paper_height = this.option("paper_height");
 				var center = this.option("c");
-				var state = this.option("state");
 				var name = state.get_name("parent");
 				this.label.option({
 					x: center.x,

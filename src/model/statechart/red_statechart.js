@@ -209,6 +209,19 @@
 				target: this,
 				concurrent: is_concurrent
 			});
+			if(is_concurrent) {
+				_.each(this.get_substates(), function(substate) {
+					substate.disable_immediate_outgoing_transitions();
+					substate.disable_immediate_incoming_transitions();
+					substate.set_active(true);
+				});
+				this.get_start_state().set_active(false);
+			} else {
+				_.each(this.get_substates(), function(substate) {
+					substate.set_active(false);
+				});
+				this.get_start_state().set_active(true);
+			}
 			return this;
 		};
 		proto.get_substates = function (include_start) {
