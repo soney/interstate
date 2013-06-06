@@ -100,7 +100,15 @@
 									"stroke-dasharray": this.option("vline_dasharray")
 								})
 								.toBack();
-
+			if(state.parent_is_concurrent()) {
+				this.path.attr({
+					"stroke-dasharray": "- "
+				});
+			} else {
+				this.path.attr({
+					"stroke-dasharray": ""
+				});
+			}
 		};
 
 		proto.toFront = function() {

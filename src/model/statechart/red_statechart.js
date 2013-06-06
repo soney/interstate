@@ -211,11 +211,14 @@
 			});
 			var start_state = this.get_start_state();
 			if(is_concurrent) {
-				_.each(this.get_substates(), function(substate) {
-					substate.disable_immediate_outgoing_transitions();
-					substate.disable_immediate_incoming_transitions();
-					substate.set_active(true);
-				});
+				if(this.is_active()) {
+					_.each(this.get_substates(), function(substate) {
+						substate.disable_immediate_outgoing_transitions();
+						substate.disable_immediate_incoming_transitions();
+						substate.set_active(true);
+						substate.run();
+					});
+				}
 				start_state.set_active(false);
 			} else {
 				var start_transition = start_state.get_outgoing_transition();
@@ -475,7 +478,7 @@
 				state: state,
 				index: index
 			});
-			if(this.is_concurrent()) {
+			if(this.is_concurrent() && this.is_active()) {
 				state.set_active(true);
 				state.run();
 			}
