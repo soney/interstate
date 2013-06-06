@@ -192,10 +192,11 @@
 		};
 
 		proto.toFront = function() {
-			this.label.toFront();
+			this.line_path.toFront();
 			this.circle.toFront();
 			this.arrow_path.toFront();
 			this.vline.toFront();
+			this.label.toFront();
 		};
 
 		proto.get_str = function() {
