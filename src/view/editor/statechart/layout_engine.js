@@ -153,7 +153,7 @@
 			var push_node_columns = function (node, depth) {
 				var statechart = node.statechart;
 				var children = node.children;
-				var children_split_index = Math.ceil(children.length / 2);
+				var children_split_index = children.length;// Math.ceil(children.length / 2);
 
 				var col_len = columns.length;
 				var li, ri;

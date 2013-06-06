@@ -266,7 +266,6 @@
 						view = this.get_view(state, layout_info);
 						new_items.push(view);
 					}
-					view.toFront();
 				}
 			}, this);
 
@@ -277,6 +276,11 @@
 					ci.remove();
 				}
 			}, this);
+			_.each(new_items, function(view) {
+				if(view instanceof red.TransitionView) {
+					view.toFront();
+				}
+			});
 			curr_items = new_items;
 		}, {
 			context: this
