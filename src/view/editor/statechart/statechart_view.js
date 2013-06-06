@@ -239,6 +239,8 @@
 							});
 						} else {
 							hrange = this.get_hrange(state, text, layout_info);
+							hrange.on("add_state", this.forward);
+							hrange.on("make_concurrent", this.forward);
 						}
 						return; //it's a root statechart
 					}
@@ -312,7 +314,8 @@
 					color: "#999",
 					background: "#EEE",
 					y: this.option("hrange_y"),
-					height: this.option("hrange_height")
+					height: this.option("hrange_height"),
+					state: statechart
 				});
 			}, this);
 		};
@@ -384,8 +387,8 @@
 					rv.on("remove_state", this.forward);
 					rv.on("add_transition", this.forward);
 					rv.on("add_state", this.forward);
-					rv.on("rename", this.forward);
 					rv.on("make_concurrent", this.forward);
+					rv.on("rename", this.forward);
 					rv.on("awaiting_state_selection", this.$on_awaiting_state_selection);
 				}
 				return rv;

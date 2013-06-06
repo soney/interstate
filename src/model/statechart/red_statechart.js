@@ -471,8 +471,9 @@
 				state: state,
 				index: index
 			});
-			if(this.is_concurrent) {
+			if(this.is_concurrent()) {
 				state.set_active(true);
+				state.run();
 			}
 		};
 		proto.remove_substate = function (name, state, also_destroy) {
