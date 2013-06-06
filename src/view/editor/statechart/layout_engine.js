@@ -63,18 +63,19 @@
 				if (sc instanceof red.Statechart && sc.is_initialized()) {
 					var substates = sc.get_substates();
 
-					node.children.push.apply(node.children, _.map(substates, function (x) {
-						var subnode = {statechart: x, children: []};
-						expand_node.call(this, subnode);
-						return subnode;
-					}));
-				} else {
-					node.children = [];
+					if(_.size(substates) > 0) {
+						node.children.push({statechart: sc.get_start_state(), children: []});
+						node.children.push.apply(node.children, _.map(substates, function (x) {
+							var subnode = {statechart: x, children: []};
+							expand_node(subnode);
+							return subnode;
+						}));
+					}
 				}
 			};
 			var curr_node = {statechart: FAKE_ROOT_STATECHART, children: _.map(this.option("statecharts"), function (sc) {
-				var node = {statechart: sc, children: [ { statechart: sc.get_start_state(), children: [] }]};
-				expand_node.call(this, node);
+				var node = {statechart: sc, children: []};
+				expand_node(node);
 				return node;
 			}, this)};
 			return curr_node;

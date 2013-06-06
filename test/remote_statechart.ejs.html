@@ -96,12 +96,13 @@
 					var ptr_context = red.create("pointer", {stack: [dict]});
 
 					var master = window.master = red.create("statechart");
-					master	//.add_state("init")
-							//.starts_at("init")
+					master	.add_state("init")
+							.starts_at("init")
 							//.add_state("state2")
 							.run();
 
 					var master_view = get_view($(".tl"), master, true);
+					/*
 
 					var shadow = window.shadow = master.create_shadow({ context: ptr_context, running: true });
 					var shadow_view = get_view($(".tr"), shadow);
