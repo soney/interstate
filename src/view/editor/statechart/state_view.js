@@ -130,7 +130,7 @@
 				});
 				if(state.parent_is_concurrent()) {
 					this.path.attr({
-						"stroke-dasharray": ". "
+						"stroke-dasharray": "- "
 					});
 				} else {
 					this.path.attr({

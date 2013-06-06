@@ -320,11 +320,19 @@
 		proto.run = function () {
 			if (!this.is_running()) {
 				red.event_queue.wait();
-				this._running = true;
-				this._start_state.set_active(true);
-				this._start_state.enable_outgoing_transitions();
 
-				this.get_active_substate().run();
+				this._running = true;
+
+				if(this.is_concurrent()) {
+					_.each(this.get_substates(), function(substate) {
+						substate.set_active(true);
+						substate.run();
+					});
+				} else {
+					this._start_state.set_active(true);
+					this._start_state.enable_outgoing_transitions();
+					this.get_active_substate().run();
+				}
 
 				this._emit("run", {
 					target: this,
@@ -463,6 +471,9 @@
 				state: state,
 				index: index
 			});
+			if(this.is_concurrent) {
+				state.set_active(true);
+			}
 		};
 		proto.remove_substate = function (name, state, also_destroy) {
 			state = state || this.$substates.get(name);
