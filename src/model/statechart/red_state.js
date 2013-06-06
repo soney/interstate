@@ -129,7 +129,7 @@
 						var shadow = substate.create_shadow({
 							context: my_context,
 							parent: this,
-							running: is_running,
+							running: is_running && basis_start_state_to === substate,
 							active: is_running && basis_start_state_to === substate
 						});
 						if (shadow instanceof red.StartState) {

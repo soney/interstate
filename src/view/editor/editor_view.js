@@ -357,6 +357,14 @@
 					parent: { id: to_func(client.cobj_id) }
 				});
 				this.client_socket.post_command(command);
+			} else if (type === 'make_concurrent') {
+				state = event.state;
+				var state_puppet_id = state.puppet_master_id || state.id();
+				command = new red.MakeConcurrentCommand({
+					statechart: { id: to_func(state_puppet_id) },
+					concurrent: event.concurrent
+				});
+				this.client_socket.post_command(command);
 			} else {
 				console.log("Unhandled type " + type);
 			}

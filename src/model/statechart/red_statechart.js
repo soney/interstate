@@ -184,10 +184,10 @@
 				if (basis_start_state_to === basis_start_state) {
 					my_starting_state = this._start_state;
 				} else {
-					var outgoing_transition = this._start_state.get_outgoing_transition();
-					_.defer(function() {
+					_.defer(_.bind(function() {
+						var outgoing_transition = this._start_state.get_outgoing_transition();
 						outgoing_transition.increment_times_run();
-					});
+					}, this));
 					my_starting_state = red.find_equivalent_state(basis_start_state_to, this);
 				}
 			} else {
@@ -346,9 +346,10 @@
 					});
 				} else {
 					var start_state = this.get_start_state();
-					start_state.set_active(true);
 					start_state.enable_outgoing_transitions();
+					start_state.set_active(true);
 					start_state.run();
+					console.log(start_state.id());
 				}
 
 				this._emit("run", {

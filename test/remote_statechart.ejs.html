@@ -101,7 +101,7 @@
 					var ptr_context = red.create("pointer", {stack: [dict]});
 
 					var ge = function(str) {
-						return red.create_event("parsed", {str: str, context: ptr_context});
+						return red.create_event("parsed", {str: str, inert: true});
 					};
 
 					var master = window.master = red.create("statechart");
@@ -132,13 +132,12 @@
 					pressed_state.add_transition("not_pressed", "pressed", ge("on('mousedown', sq)"));
 					pressed_state.add_transition("pressed", "not_pressed", ge("on('mouseup')"));
 
-
-
 					var master_view = get_view($(".tl"), master, true, ptr_context);
-					/*
 
 					var shadow = window.shadow = master.create_shadow({ context: ptr_context, running: true });
 					var shadow_view = get_view($(".tr"), shadow);
+					$(".tl").hide();
+					/*
 
 					var sc_sum = {
 						type: 'statechart',
