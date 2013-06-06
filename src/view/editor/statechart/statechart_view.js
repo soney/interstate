@@ -44,7 +44,7 @@
 			var statecharts = this.option("statecharts");
 			this.layout_manager = new red.RootStatechartLayoutEngine({
 				statecharts: statecharts,
-				statecharts_with_add_state_button: [statecharts[0]],
+				statecharts_with_add_state_button: [],//statecharts[0]],
 				start_state_radius: this.option("start_state_radius"),
 				padding_top: this.option("padding_top").call(this),
 				add_state_width: this.option("add_state_width")
@@ -175,8 +175,8 @@
 			hash: "hash"
 		});
 		this.paper = paper;
-		this.add_state_shape = this.paper.path("M0,0");
-		this.add_state_button = this.paper.text(0,0,"+");
+		this.add_state_shape = this.paper.path("M0,0").hide();
+		this.add_state_button = this.paper.text(0,0,"+").hide();
 		this.add_state_shape	.attr({
 									fill: this.option("state_fill"),
 									stroke: this.option("state_stroke"),
@@ -209,7 +209,7 @@
 							this.add_state_button.attr({
 								x: layout_info.add_state_button_x,
 								y: height / 2
-							});
+							}).show();
 							var shorten_height = this.layout_engine.option("state_name_height");
 							var dx = layout_info.right_wing_end.x - layout_info.right_wing_start.x;
 							var padding_top = this.option("padding_top");
@@ -223,7 +223,7 @@
 										"H" + (x - width/2 + dx) + 
 										"L" + (x - width/2) + "," + (layout_info.right_wing_end.y - shorten_height) +
 										"Z"
-							});
+							}).show();
 						}
 						var hrange;
 						var text = "inherited";

@@ -115,6 +115,16 @@
 			}
 			return this;
 		};
+		proto.stop = function () {
+			if(this.is_running()) {
+				this._running = false;
+				this._emit("stop", {
+					type: "stop",
+					target: this
+				});
+			}
+			return this;
+		};
 		proto.destroy = function () {
 			this._emit("destroy", {
 				type: "destroy",

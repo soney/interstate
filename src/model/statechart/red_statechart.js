@@ -209,18 +209,22 @@
 				target: this,
 				concurrent: is_concurrent
 			});
+			var start_state = this.get_start_state();
 			if(is_concurrent) {
 				_.each(this.get_substates(), function(substate) {
 					substate.disable_immediate_outgoing_transitions();
 					substate.disable_immediate_incoming_transitions();
 					substate.set_active(true);
 				});
-				this.get_start_state().set_active(false);
+				start_state.set_active(false);
 			} else {
+				var start_transition = start_state.get_outgoing_transition();
+				var starts_at = start_transition.to();
 				_.each(this.get_substates(), function(substate) {
 					substate.set_active(false);
 				});
-				this.get_start_state().set_active(true);
+				//start_state.set_active(true);
+				starts_at.set_active(true);
 			}
 			return this;
 		};
