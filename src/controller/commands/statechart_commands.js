@@ -254,6 +254,9 @@
     
         this._statechart = this._options.statechart;
         this._concurrent = !!this._options.concurrent;
+        if (this._statechart.basis && this._statechart.basis()) {
+            this._statechart = this._statechart.basis();
+        }
     };
     
     (function (My) {

@@ -360,6 +360,7 @@
 			} else if (type === 'make_concurrent') {
 				state = event.state;
 				var state_puppet_id = state.puppet_master_id || state.id();
+				console.log(state);
 				command = new red.MakeConcurrentCommand({
 					statechart: { id: to_func(state_puppet_id) },
 					concurrent: event.concurrent
