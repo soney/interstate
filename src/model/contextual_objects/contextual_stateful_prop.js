@@ -271,7 +271,7 @@
 						}
 					}
 				} else if (state instanceof red.State) {
-					if (using_val === NO_VAL && state.is_active()) {
+					if ((using_val === NO_VAL || using_state.order(state) < 0) && state.is_active()) {
 						using_val = val;
 						using_state = state;
 					}
