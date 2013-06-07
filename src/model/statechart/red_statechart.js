@@ -350,7 +350,6 @@
 					start_state.set_active(true);
 					start_state.run();
 				}
-				console.log(this.id());
 
 				this._emit("run", {
 					target: this,

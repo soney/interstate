@@ -108,9 +108,9 @@
 					master	.add_state("not_selected")
 							.starts_at("not_selected")
 							.add_state("selected")
-							//.add_state("init.A")
-							//.add_state("init.B")
-							//.add_state("state2")
+							.add_state("init.A")
+							.add_state("init.B")
+							.add_state("state2")
 							.run();
 					master.add_transition("not_selected", "selected", ge("on('click', sq)"));
 					master.add_transition("selected", "not_selected", ge("on('dblclick', sq)"));

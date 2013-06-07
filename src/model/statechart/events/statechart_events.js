@@ -126,7 +126,9 @@
 			if (!_.isString(this.specified_target)) {
 				this.set_target(this.specified_target);
 			}
+			/*
 			// will figure out when our transition is set
+			*/
 		};
 		proto.set_transition = function (transition) {
 			var from;
@@ -152,9 +154,13 @@
 		proto.id = function () { return this._id; };
 		proto.set_target = function (target) {
 			this.target = target;
+			/*
+			if(uid.strip_prefix(this.target.id()) >= 20) {
+				console.log("ON", uid.strip_prefix(this.target.id()));
+			}
+			*/
 			if (this.options.inert !== true && this.is_enabled()) {
 				this.target.on(this.spec, this.$on_spec);
-				console.log("Listen to ", this.target.id());
 			}
 		};
 		proto.destroy = function () {
@@ -164,12 +170,33 @@
 		};
 		proto.create_shadow = function (parent_statechart, context) {
 			return red.create_event("statechart", {
-				target: parent_statechart,
+				target: this.specified_target,
 				spec: this.spec,
 				inert: this.options.inert_shadows,
 				inert_shadows: this.options.inert_shadows
 			});
 		};
+
+		proto.enable = function () {
+			if(!this.is_enabled()) {
+				My.superclass.enable.apply(this, arguments);
+				if (this.options.inert !== true) {
+					if (this.target) {
+						this.target.on(this.spec, this.$on_spec);
+					}
+				}
+			}
+		};
+
+		proto.disable = function () {
+			if(this.is_enabled()) {
+				My.superclass.disable.apply(this, arguments);
+				if (this.target) {
+					this.target.off(this.spec, this.$on_spec);
+				}
+			}
+		};
+
 		proto.stringify = function () { return /*this.target.id() +*/ ":"/* + this.spec*/; };
 
 		red.register_serializable_type("statechart_event",
@@ -202,24 +229,5 @@
 					spec: spec
 				});
 			});
-		proto.enable = function () {
-			if(!this.is_enabled()) {
-				My.superclass.enable.apply(this, arguments);
-				if (this.options.inert !== true) {
-					if (this.target) {
-						console.log("enable", this.target.id());
-						this.target.on(this.spec, this.$on_spec);
-					}
-				}
-			}
-		};
-		proto.disable = function () {
-			if(this.is_enabled()) {
-				My.superclass.disable.apply(this, arguments);
-				if (this.target) {
-					this.target.off(this.spec, this.$on_spec);
-				}
-			}
-		};
 	}(red.StatechartEvent));
 }(red));
