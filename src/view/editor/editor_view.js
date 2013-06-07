@@ -310,17 +310,19 @@
 			} else if(type === "set_transition_to") {
 				transition = event.transition;
 				state = event.to;
+				statechart_puppet_id = state.puppet_master_id || state.id();
 				command = new red.SetTransitionToCommand({
-					transition: transition,
-					statechart: state
+					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
+					statechart: { id: to_func(statechart_puppet_id) }
 				});
 				this.client_socket.post_command(command);
 			} else if(type === "set_transition_from") {
 				transition = event.transition;
 				state = event.from;
+				statechart_puppet_id = state.puppet_master_id || state.id();
 				command = new red.SetTransitionFromCommand({
-					transition: transition,
-					statechart: state
+					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
+					statechart: { id: to_func(statechart_puppet_id) }
 				});
 				this.client_socket.post_command(command);
 			} else if(type === "rename_state") {
@@ -360,7 +362,6 @@
 			} else if (type === 'make_concurrent') {
 				state = event.state;
 				var state_puppet_id = state.puppet_master_id || state.id();
-				console.log(state);
 				command = new red.MakeConcurrentCommand({
 					statechart: { id: to_func(state_puppet_id) },
 					concurrent: event.concurrent

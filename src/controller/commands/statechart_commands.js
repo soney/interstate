@@ -486,7 +486,6 @@
     
         this._transition = this._options.transition;
         this._statechart = this._options.statechart;
-        this._old_statechart = this._transition.from();
     };
     
     (function (My) {
@@ -494,6 +493,7 @@
         var proto = My.prototype;
     
         proto._execute = function () {
+			this._old_statechart = this._transition.from();
             this._transition.setFrom(this._statechart);
         };
     
@@ -532,7 +532,6 @@
     
         this._transition = this._options.transition;
         this._statechart = this._options.statechart;
-        this._old_statechart = this._transition.to();
     };
     
     (function (My) {
@@ -540,6 +539,7 @@
         var proto = My.prototype;
     
         proto._execute = function () {
+			this._old_statechart = this._transition.to();
             this._transition.setTo(this._statechart);
         };
     
