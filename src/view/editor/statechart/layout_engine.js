@@ -59,12 +59,12 @@
 		};
 
 		proto.get_statechart_tree = function () {
-			var expand_node = function (node) {
+			var expand_node = function (node, is_root) {
 				var sc = node.statechart;
 				if (sc instanceof red.Statechart && sc.is_initialized()) {
 					var substates = sc.get_substates();
 
-					if(_.size(substates) > 0) {
+					if(_.size(substates) > 0 || is_root) { // use is_root for root statecharts with only a start state
 						if(!sc.is_concurrent()) {
 							node.children.push({statechart: sc.get_start_state(), children: []});
 						}
@@ -78,7 +78,7 @@
 			};
 			var curr_node = {statechart: FAKE_ROOT_STATECHART, children: _.map(this.option("statecharts"), function (sc) {
 				var node = {statechart: sc, children: []};
-				expand_node(node);
+				expand_node(node, true);
 				return node;
 			}, this)};
 			return curr_node;
