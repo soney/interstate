@@ -44,7 +44,7 @@
 			var statecharts = this.option("statecharts");
 			this.layout_manager = new red.RootStatechartLayoutEngine({
 				statecharts: statecharts,
-				statecharts_with_add_state_button: [],//statecharts[0]],
+				statecharts_with_add_state_button: [statecharts[0]],
 				start_state_radius: this.option("start_state_radius"),
 				padding_top: this.option("padding_top").call(this),
 				add_state_width: this.option("add_state_width")
@@ -77,7 +77,7 @@
 		_setOption: function(key, value) {
 			this._super(key, value);
 			if(key === "statecharts") {
-				this.layout_manager.option("statecharts_with_add_state_button", []);//[value[0]]);
+				this.layout_manager.option("statecharts_with_add_state_button", [value[0]]);
 				this.layout_manager.invalidate();
 			}
 		},

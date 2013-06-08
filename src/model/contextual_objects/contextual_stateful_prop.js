@@ -134,6 +134,9 @@
 						var cdict = red.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len));
 						for (i = 0; i < my_names_len; i += 1) {
 							name = my_names[i];
+							if(!name) {
+								return false; // bandaid for removed properties
+							}
 							if (cdict.has(name)) {
 								var info = cdict.prop_info(name);
 								obj = info.value;

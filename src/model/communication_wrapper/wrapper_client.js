@@ -190,6 +190,8 @@
 		proto.update = function (args, constraint) {
 			constraint = constraint || this.fn_call_constraints.get(args);
 
+			if(!constraint) { return false; } // bandaid for removed properties
+
 			var request_id = this.post({
 				type: "get_$",
 				getting: args

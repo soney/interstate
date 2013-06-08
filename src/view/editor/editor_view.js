@@ -81,7 +81,7 @@
 											},
 											"Redo": {
 												on_select: _.bind(this.redo, this)
-											},
+											}/*,
 											"Reset": {
 												on_select: _.bind(this.reset, this),
 												disabled: true
@@ -101,7 +101,7 @@
 											"Open": {
 												on_select: _.bind(this.open, this),
 												disabled: true
-											}
+											}*/
 										}
 									})
 									.appendTo(this.element);
