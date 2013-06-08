@@ -102,11 +102,20 @@
 		},
 		create_live_text_fn: function() {
 			var value = this.option("value");
+			var is_err = false;
 			if(value.type() === "raw_cell") {
 				var $str = value.get_$("get_str");
 				this.live_text_fn = cjs.liven(function() {
 					var str = $str.get();
 					this.str = str;
+					try {
+						esprima.parse(this.str);
+						this.element.attr("title", "");
+						this.element.removeClass("error");
+					} catch(e) {
+						this.element.attr("title", e.description);
+						this.element.addClass("error");
+					}
 					if(str === "") {
 						this.text.html("&nbsp;");
 					} else {

@@ -194,7 +194,27 @@
 
 		rename: function(str) {
 			var old_name = this.option("name");
+			if(this.element.is(".builtin")) {
+				this.name_span.editable_text("option", "text", old_name);
+				window.alert("Can't rename builtin property");
+				return;
+			} else if(this.element.is(".inherited")) {
+				this.name_span.editable_text("option", "text", old_name);
+				window.alert("Can't rename inherited property");
+				return;
+			}
 			if(red.is_valid_prop_name(str)) {
+				var to_return = false;
+				var self = this;
+				$("span.prop_name", this.element.parent()).each(function() {
+					var child_parent = $(this).parents(".child");
+					if(child_parent !== self && child_parent.data("red-prop") && child_parent.prop("option", "name") === str) {
+						to_return = true;
+						self.name_span.editable_text("option", "text", old_name);
+						window.alert("Property with name '" + str + "' already exists");
+					}
+				});
+				if(to_return) { return; }
 				var event = new $.Event("command");
 				event.command_type = "rename";
 				event.from_name = old_name;
@@ -205,7 +225,7 @@
 			} else {
 				this.name_span.editable_text("option", "text", old_name);
 				var problem_str = red.get_prop_name_error(str);
-				console.log(problem_str);
+				window.alert(problem_str);
 			}
 		},
 
@@ -504,7 +524,9 @@
 			this.element.trigger(event);
 		},
 		begin_rename: function() {
-			this.name_span.editable_text("edit");
+			if(!this.element.is(".inherited") && !this.element.is(".builtin")) {
+				this.name_span.editable_text("edit");
+			}
 		},
 		_setOption: function(key, value) {
 			this._super(key, value);

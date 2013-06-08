@@ -513,6 +513,10 @@ html.full_window_editor {
 								border-left: 1px solid red;
 								border-right: 1px solid red;
 							}
+							&.error {
+								color: white;
+								background-color: #900;
+							}
 							&.editing {
 								z-index: 99;
 								padding: 0px;
