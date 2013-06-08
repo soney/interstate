@@ -404,7 +404,12 @@
 										show_src: this.option("show_source"),
 										obj: this.option("client")
 									})
-									.on("expand", $.proxy(this.on_child_select, this, child, child_disp));
+									.on("expand", $.proxy(this.on_child_select, this, child, child_disp))
+									.on("command", $.proxy(function(e) {
+										if(e.command_type === "inherit") {
+											this.awaiting_inherit_prop = child.name;
+										}
+									}, this));
 
 						if(this.awaiting_add_prop) {
 							child_disp	.prop("begin_rename");
@@ -413,6 +418,9 @@
 						} else if(this.awaiting_rename_prop) {
 							this.on_child_select(child, child_disp);
 							delete this.awaiting_rename_prop;
+						} else if(this.awaiting_inherit_prop === child.name) {
+							child_disp.focus();
+							delete this.awaiting_inherit_prop;
 						}
 					}, this);
 					_.forEach(diff.moved, function (info) {
