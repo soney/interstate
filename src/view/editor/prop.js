@@ -107,6 +107,20 @@
 													.on("mousedown", $.proxy(this.unset, this))
 													.attr("tabindex", 2)
 													.text("Delete");
+
+				if(value && value.type && (value.type() === "stateful_prop" || value.type() === "stateful")) {
+					var change_to_type = "";
+					if(value.type() === "stateful_prop") {
+						change_to_type = "Object";
+					} else {
+						change_to_type = "Property";
+					}
+					this.set_type_expand = $("<div />")	.appendTo(this.edit_menu)
+														.addClass("item")
+														.on("mousedown", $.proxy(this.change_type, this, change_to_type))
+														.attr("tabindex", 2)
+														.text("Change to " + change_to_type);
+				}
 			}
 			this.element.on("contextmenu", $.proxy(this.on_context_menu, this));
 
@@ -114,6 +128,7 @@
 			//this.element.pressable();
 			this.element.on("click", $.proxy(this.on_click, this));
 			this.element.on("keydown", $.proxy(this.on_key_down, this));
+			this.element.attr("draggable", true).on("dragstart", $.proxy(this.on_drag_start, this));
 			if(this.option("show_src")) {
 				this.on_show_src();
 			} else {
@@ -129,6 +144,52 @@
 			if(value instanceof red.WrapperClient) {
 				value.signal_destroy();
 			}
+		},
+
+		change_type: function(type) {
+			console.log("change to", type);
+		},
+
+		on_drag_start: function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+			this.element.addClass("dragging");
+			var curr_target = false;
+			var above_below = false;
+			var on_mmove = function(e) {
+				above_below = 2 * e.offsetY > curr_target.height() ? "below" : "above";
+				curr_target.addClass(above_below === "above" ? "dragtop" : "dragbottom");
+				curr_target.removeClass(above_below === "above" ? "dragbottom" : "dragtop");
+			};
+			var on_mover_child = function(e) {
+				curr_target = $(this);
+				curr_target.addClass("dragtop");
+				curr_target.on("mousemove", on_mmove);
+			};
+			var on_mout_child = function(e) {
+				if(curr_target) {
+					curr_target.removeClass("dragtop dragbottom");
+					curr_target.off("mousemove", on_mmove);
+					curr_target = false;
+				}
+			};
+			var on_mup = $.proxy(function() {
+				targets.off("mouseover", on_mover_child);
+				targets.off("mouseout", on_mout_child);
+				$(window).off("mouseup", on_mup);
+				this.element.removeClass("dragging");
+				if(curr_target) {
+					console.log(above_below, curr_target.prop("option", "name"));
+					curr_target.removeClass("dragtop dragbottom");
+					curr_target.off("mousemove", on_mmove);
+					curr_target = false;
+				}
+			}, this);
+			var targets = $("tr.child").not(".inherited");
+
+			targets.on("mouseover", on_mover_child);
+			targets.on("mouseout", on_mout_child);
+			$(window).on("mouseup", on_mup);
 		},
 
 		rename: function(str) {

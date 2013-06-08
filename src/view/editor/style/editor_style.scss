@@ -362,6 +362,21 @@ html.full_window_editor {
 					//	border: 1px solid $nav_selected_color;
 					}
 
+					&.dragging {
+						background-color: $nav_selected_color;
+						color: white;
+						&:hover {
+							background-color: $nav_selected_color;
+						}
+					}
+
+					&.dragtop {
+						border-top: 3px solid $nav_selected_color;
+					}
+					&.dragbottom {
+						border-bottom: 3px solid $nav_selected_color;
+					}
+
 					> .name {
 						cursor: pointer;
 						padding-left: 2px;
@@ -396,7 +411,7 @@ html.full_window_editor {
 						> .edit {
 							font-family: "Source Sans Pro";
 							position: absolute;
-							width: 90px;
+							width: 140px;
 							border: 1px solid black;
 							box-shadow: 2px 2px 10px #666;
 							background-color: #EEE;
@@ -498,16 +513,26 @@ html.full_window_editor {
 								border-left: 1px solid red;
 								border-right: 1px solid red;
 							}
-							> input {
-								width: 100%;
+							&.editing {
+								z-index: 99;
+								padding: 0px;
+								overflow: visible;
 								background: none;
 								border: none;
+							}
+							> textarea {
+								width: 100%;
 								font-family: inherit;
 								text-align: inherit;
 								font-size: inherit;
 								outline: none;
-								padding: 0px;
+								padding: 2px;
 								margin: 0px;
+								height: 16px;
+								text-align: left;
+								background-color: #EEE;
+								border: 1px solid #CCC;
+								box-shadow: 0px 0px 5px #777;
 							}
 						}
 

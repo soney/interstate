@@ -66,6 +66,7 @@
 			value: false,
 			left: 0,
 			width: 0,
+			edit_width: 100,
 			active: false,
 			parent: false
 		},
@@ -127,7 +128,7 @@
 		},
 		update_position: function() {
 			var left = this.option("left"),
-				width = this.option("width");
+				width = this.element.is(".editing") ? this.option("edit_width") : this.option("width");
 			this.element.css({
 				left: (left - width/2) + "px",
 				width: width + "px"
@@ -141,23 +142,35 @@
 			}
 		},
 		begin_editing: function() {
+			this.element.addClass("editing");
 			this.element.off("click", this.$on_click);
 			this.text.hide();
 			this.$end_edit = $.proxy(this.end_edit, this);
-			this.textbox = $("<input />")	.attr("type", "text")
-											.appendTo(this.element)
-											.on("keydown", $.proxy(function(event) {
-												if(event.keyCode === 27) {
-													event.preventDefault();
-													event.stopPropagation();
-													this.end_edit(true);
-												} else if(event.keyCode === 13) {
-													event.preventDefault();
-													event.stopPropagation();
-													this.end_edit();
-												}
-											}, this))
-											.on("blur", this.$end_edit);
+
+			if(this.textbox) {
+				this.textbox.show();
+			} else {
+				this.textbox = $("<textarea />")	.attr("type", "text")
+												.appendTo(this.element)
+												.on("keydown", $.proxy(function(event) {
+													if(event.keyCode === 27) {
+														event.preventDefault();
+														event.stopPropagation();
+														this.end_edit(true);
+													} else if(event.keyCode === 13 && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+														event.preventDefault();
+														event.stopPropagation();
+														this.end_edit();
+													}
+												}, this))
+												.on("blur", this.$end_edit);
+			}
+			var width = this.option("edit_width"),
+				left = this.option("left");
+			this.element.css({
+				left: (left - width/2) + "px",
+				width: width + "px"
+			});
 
 			this.textbox.val(this.str);
 			this.focus();
@@ -185,8 +198,16 @@
 				}
 			}
 			this.text.show();
-			this.textbox.remove();
+			this.textbox.hide();
 			this.element.focus();
+			this.element.removeClass("editing");
+
+			var width = this.option("width"),
+				left = this.option("left");
+			this.element.css({
+				left: (left - width/2) + "px",
+				width: width + "px"
+			});
 		},
 		focus: function() {
 			if(this.textbox) {
