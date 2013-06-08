@@ -147,12 +147,17 @@
 		},
 
 		change_type: function(type) {
+			var obj = this.option("obj"),
+				name = this.option("name");
 			console.log("change to", type);
 		},
 
 		on_drag_start: function(event) {
 			event.preventDefault();
 			event.stopPropagation();
+			if(this.element.is(".inherited") || this.element.is(".builtin")) {
+				return;
+			}
 			this.element.addClass("dragging");
 			var curr_target = false;
 			var above_below = false;
