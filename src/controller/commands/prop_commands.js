@@ -601,9 +601,14 @@
         var proto = My.prototype;
     
         proto._execute = function () {
-			var target_index =  this._target_obj.prop_index(this._target_name);
-			if(this._above_below === "below") {
-				target_index++;
+			var target_index;
+			if(this._target_name) {
+				target_index =  this._target_obj.prop_index(this._target_name);
+				if(this._above_below === "below") {
+					target_index++;
+				}
+			} else {
+				target_index = 0;
 			}
 
 			if(this._from_obj === this._target_obj) {

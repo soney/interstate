@@ -189,9 +189,15 @@
 				this.element.removeClass("dragging");
 				if(curr_target) {
 					var my_obj = this.option("obj"),
-						my_name = this.option("name"),
-						target_obj = curr_target.prop("option", "obj"),
+						my_name = this.option("name");
+					var target_name, target_obj;
+					if(curr_target.is("tr.no_children")) {
+						target_obj = curr_target.parents(".column").column("option", "client");
+						target_name = false;
+					} else {
+						target_obj = curr_target.prop("option", "obj");
 						target_name = curr_target.prop("option", "name");
+					}
 
 					curr_target.removeClass("dragtop dragbottom");
 					curr_target.off("mousemove", on_mmove);
@@ -208,7 +214,7 @@
 					this.element.trigger(event);
 				}
 			}, this);
-			var targets = $("tr.child").not(".inherited");
+			var targets = $("tr.child").not(".inherited").add("tr.no_children");
 
 			targets.on("mouseover", on_mover_child);
 			targets.on("mouseout", on_mout_child);
@@ -439,7 +445,7 @@
 										});
 										if(this.__awaiting_value_for_state === state) {
 											if((new Date()).getTime() - this.__awaiting_value_for_state_set_at < 500) { // HUGE hack
-											to_edit_view = view;
+												to_edit_view = view;
 											} else {
 												delete this.__awaiting_value_for_state;
 												delete this.__awaiting_value_for_state_set_at;

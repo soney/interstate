@@ -188,6 +188,13 @@ html.full_window_editor {
 				}
 
 				> tr.no_children {
+					&.dragtop {
+						border-top: 3px solid $nav_selected_color;
+					}
+					&.dragbottom {
+						border-bottom: 3px solid $nav_selected_color;
+					}
+
 					> td {
 						@include non-selectable;
 						font-weight: 100;
