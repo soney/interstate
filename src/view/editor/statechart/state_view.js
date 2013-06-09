@@ -58,6 +58,17 @@
 		});
 
 		var state = this.option("state");
+		var paper = this.option("paper");
+
+		this.path = paper	.path("M0,0")
+							.toBack();
+		this.vline = paper	.path("M0,0")
+							.attr({
+								stroke: this.option("vline_color"),
+								"stroke-dasharray": this.option("vline_dasharray")
+							})
+							.toBack();
+		this.label = new red.EditableText(paper, {x: -100, y: -100, text: "", fill: this.option("text_background"), color: this.option("text_foreground")});
 
 		if (state.is_initialized()) {
 			this.initialize();
@@ -72,20 +83,21 @@
 		able.make_proto_optionable(proto);
 		proto.initialize = function () {
 			var state = this.option("state");
-			var paper = this.option("paper");
-			this.path = paper.path(this.get_path_str());
-			this.path.attr({
-				"stroke": this.option(state.is_active() ? "active_stroke" : "default_stroke"),
-				"fill": this.option(state.is_active() ? "active_fill" : "default_fill")
-			}).toBack();
+			this.path .attr({
+							"path": this.get_path_str(),
+							"stroke": this.option(state.is_active() ? "active_stroke" : "default_stroke"),
+							"fill": this.option(state.is_active() ? "active_fill" : "default_fill")
+						});
 			var center = this.option("c");
 
-			this.label = new red.EditableText(paper, {x: center.x, y: center.y, text: this.get_name(), fill: this.option("text_background"), color: this.option("text_foreground")});
 			this.label	.on("cancel", $.proxy(this.on_cancel_rename, this))
 						.on("change", $.proxy(this.on_confirm_rename, this));
 			this.label.option({
 				"font-size": this.option("font_size"),
-				"font-family": this.option("font_family")
+				"font-family": this.option("font_family"),
+				x: center.x,
+				y: center.y,
+				text: this.get_name()
 			});
 			this.label.on("change", this.forward);
 			$(this.path[0]).add(this.label.text[0]).on("contextmenu", $.proxy(function(event) {
@@ -94,12 +106,6 @@
 
 				this.show_menu();
 			}, this));
-			this.vline = paper	.path("M0,0")
-								.attr({
-									stroke: this.option("vline_color"),
-									"stroke-dasharray": this.option("vline_dasharray")
-								})
-								.toBack();
 			if(state.parent_is_concurrent()) {
 				this.path.attr({
 					"stroke-dasharray": "- "
@@ -112,15 +118,9 @@
 		};
 
 		proto.toFront = function() {
-			if(this.path) {
-				this.path.toFront();
-			}
-			if(this.vline) {
-				this.vline.toFront();
-			}
-			if(this.label) {
-				this.label.toFront();
-			}
+			this.path.toFront();
+			this.vline.toFront();
+			this.label.toFront();
 		};
 
 		proto.get_name = function() {

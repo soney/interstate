@@ -214,9 +214,9 @@
 			}
 		};
 		proto.flatten_substates = function (include_start) {
-			return ([this]).concat(_.flatten(_.map(this.get_substates(include_start), function (substate) {
+			return _.flatten(_.map(this.get_substates(include_start), function (substate) {
 				return substate.flatten_substates(include_start);
-			})));
+			})).concat([this]);
 		};
 		proto.is_active = function (to_active) { return this.$active.get(); };
 		proto.get_name = function (relative_to) {

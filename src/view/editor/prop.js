@@ -410,21 +410,10 @@
 						var $values = client.get_$("get_values");
 						//var $active_value = client.get_$("active_value");
 						this.live_prop_vals_fn = cjs.liven(function() {
-							this.src_cell.children().remove();
+							this.src_cell.empty();
 
-							var values_infos = $values.get();
-							var states_infos = $states.get();
-
-							var values = _.map(values_infos, function(vi) {
-								//return client.process_value(vi);
-								return vi;
-							});
-							var states = _.map(states_infos, function(vi) {
-								//return client.process_value(vi);
-								return vi;
-							});
-							//var active_value = $active_value.get();
-
+							var values = $values.get();
+							var states = $states.get();
 							var view;
 
 							var views = [];
@@ -432,11 +421,12 @@
 							_.each(states, function(state) {
 								if(state) {
 									var value_info = _.find(values, function(value_info) { return value_info.state === state; });
+									var left = layout_manager.get_x(state);
 									if(value_info) {
 										//var active = active_value && active_value.value === value && value !== undefined;
 										var val = value_info.value;
 										view = $("<span />").prop_cell({
-											left: layout_manager.get_x(state),
+											left: left,
 											width: layout_manager.get_width(state),
 											value: val,
 											//active: active,
@@ -453,7 +443,7 @@
 										}
 									} else {
 										view = $("<span />").unset_prop({
-											left: layout_manager.get_x(state)
+											left: left
 										}).on("click", $.proxy(function() {
 											this.__awaiting_value_for_state = state;
 											this.__awaiting_value_for_state_set_at = (new Date()).getTime();
@@ -465,21 +455,24 @@
 											this.element.trigger(event);
 										}, this));
 									}
-									views.push(view);
-								}
-								this.src_cell.append.apply(this.src_cell, _.sortBy(views, function(v) {
-									if(v.data("red-prop_cell")) {
-										return parseInt(v.prop_cell("option", "left"), 10);
-									} else {
-										return parseInt(v.unset_prop("option", "left"), 10);
+
+									if(left >= 0) {
+										views.push(view);
 									}
-								}));
-								if(to_edit_view) {
-									to_edit_view.prop_cell("begin_editing")
-												.prop_cell("select")
-												.prop_cell("focus");
 								}
 							}, this);
+							this.src_cell.append.apply(this.src_cell, _.sortBy(views, function(v) {
+								if(v.data("red-prop_cell")) {
+									return parseInt(v.prop_cell("option", "left"), 10);
+								} else {
+									return parseInt(v.unset_prop("option", "left"), 10);
+								}
+							}));
+							if(to_edit_view) {
+								to_edit_view.prop_cell("begin_editing")
+											.prop_cell("select")
+											.prop_cell("focus");
+							}
 						}, {
 							context: this,
 							on_destroy: function() {

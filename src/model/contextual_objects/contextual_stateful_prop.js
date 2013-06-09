@@ -75,11 +75,8 @@
 			}
 			var substates = _.chain(statecharts)
 				.map(function (sc) {
-					var flat_substates = sc.flatten_substates();
-					var flat_substates_without_original_statechart = _.rest(flat_substates);
-					var init_state = sc.get_start_state();
-
-					var substates = ([init_state]).concat(flat_substates_without_original_statechart);
+					var flat_substates = sc.flatten_substates(true);
+					var substates = flat_substates.splice(0, flat_substates.length-1);
 					return substates;
 				})
 				.flatten(true)
@@ -100,7 +97,6 @@
 			var parent = this.get_parent();
 			var stateful_prop = this.get_object();
 			var statecharts, entries, name, i, values;
-
 
 			if (stateful_prop.get_can_inherit()) {
 				var pointer = this.get_pointer();

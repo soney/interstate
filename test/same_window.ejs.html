@@ -19,8 +19,10 @@
 					.cd("screen")
 					.set("my_obj", "<stateful>")
 					.cd("my_obj")
+					.add_state("init")
+					.start_at("init")
 					.set("(prototypes)", "(start)", "shape.rect")
-					.set("fill", "(start)", "'red'");
+					.set("fill", "(start)", "'orange'");
 					/*
 env.cd("screen")
 	.set("rect", "<stateful>")
