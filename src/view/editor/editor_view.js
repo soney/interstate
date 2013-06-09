@@ -367,6 +367,21 @@
 					concurrent: event.concurrent
 				});
 				this.client_socket.post_command(command);
+			} else if (type === 'move_prop') {
+				var from_obj = event.from_obj;
+				var from_name = event.from_name;
+				var target_obj = event.target_obj;
+				var target_name = event.target_name;
+				var above_below = event.above_below;
+
+				command = new red.MovePropAboveBelowCommand({
+					from_obj: { id: to_func(from_obj.obj_id) },
+					from_name: from_name,
+					target_obj: { id: to_func(target_obj.obj_id) },
+					target_name: target_name,
+					above_below: above_below
+				});
+				this.client_socket.post_command(command);
 			} else {
 				console.log("Unhandled type " + type);
 			}

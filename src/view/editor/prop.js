@@ -188,10 +188,24 @@
 				$(window).off("mouseup", on_mup);
 				this.element.removeClass("dragging");
 				if(curr_target) {
-					console.log(above_below, curr_target.prop("option", "name"));
+					var my_obj = this.option("obj"),
+						my_name = this.option("name"),
+						target_obj = curr_target.prop("option", "obj"),
+						target_name = curr_target.prop("option", "name");
+
 					curr_target.removeClass("dragtop dragbottom");
 					curr_target.off("mousemove", on_mmove);
 					curr_target = false;
+
+					var event = new $.Event("command");
+					event.command_type = "move_prop";
+					event.from_obj = my_obj;
+					event.from_name = my_name;
+					event.target_obj = target_obj;
+					event.target_name = target_name;
+					event.above_below = above_below;
+
+					this.element.trigger(event);
 				}
 			}, this);
 			var targets = $("tr.child").not(".inherited");

@@ -586,39 +586,58 @@
             });
     }(red.ResetCommand));
 
-	red.MovePropCommand = function(options) {
-        red.ResetCommand.superclass.constructor.apply(this, arguments);
+    red.MovePropAboveBelowCommand = function (options) {
+        red.MovePropCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
-	};
 
+		this._from_obj = this._options.from_obj;
+		this._from_name = this._options.from_name;
+		this._target_obj = this._options.target_obj;
+		this._target_name = this._options.target_name;
+		this._above_below = this._options.above_below;
+    };
     (function (My) {
         _.proto_extend(My, red.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
-			this._parent.reset();
+			var target_index =  this._target_obj.prop_index(this._target_name);
+			if(this._above_below === "below") {
+				target_index++;
+			}
+
+			if(this._from_obj === this._target_obj) {
+				this._from_obj.move_prop(this._from_name, target_index);
+			} else {
+				var val = this._from_obj._get_direct_prop(this._from_name);
+				this._from_obj.unset_prop(this._from_name);
+				this._target_obj.set_prop(this._from_name, val, target_index);
+			}
         };
         proto._unexecute = function () {
-			console.log("reset");
         };
-        proto._do_destroy = function (in_effect) {
-            if (in_effect) {
-            } else {
-            }
-        };
-    
-        red.register_serializable_type("move_prop",
+        proto._do_destroy = function (in_effect) { };
+        red.register_serializable_type("move_prop_above_below_command",
             function (x) {
                 return x instanceof My;
             },
             function () {
-                var arg_array = _.toArray(arguments);
                 return {
+					from_obj: this._from_obj.id(),
+					target_obj: this._target_obj.id(),
+					from_name: this._from_name,
+					target_name: this._target_name,
+					above_below: this._above_below
                 };
             },
             function (obj) {
                 return new My({
+					from_obj: red.find_uid(obj.from_obj),
+					target_obj: red.find_uid(obj.target_obj),
+					from_name: obj.from_name,
+					target_name: obj.target_name,
+					above_below: obj.above_below
                 });
             });
-    }(red.MovePropCommand));
+    }(red.MovePropAboveBelowCommand));
 }(red));
