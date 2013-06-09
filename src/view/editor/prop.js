@@ -147,9 +147,13 @@
 		},
 
 		change_type: function(type) {
-			var obj = this.option("obj"),
-				name = this.option("name");
-			console.log("change to", type);
+			var event = new $.Event("command");
+			event.command_type = "set_type";
+			event.client = this.option("obj");
+			event.prop_name = this.option("name");
+			event.type_name = type === "Object" ? "Object" : "Property";
+
+			this.element.trigger(event);
 		},
 
 		on_drag_start: function(event) {
@@ -403,6 +407,7 @@
 
 							var view;
 
+							var views = [];
 							_.each(states, function(state) {
 								if(state) {
 									var value_info = _.find(values, function(value_info) { return value_info.state === state; });
@@ -417,7 +422,6 @@
 											state: state,
 											prop: this.option("value")
 										});
-										view.appendTo(this.src_cell);
 										if(this.__awaiting_value_for_state === state) {
 											if((new Date()).getTime() - this.__awaiting_value_for_state_set_at < 500) { // HUGE hack
 												view.prop_cell("begin_editing")
@@ -441,9 +445,16 @@
 
 											this.element.trigger(event);
 										}, this));
-										view.appendTo(this.src_cell);
 									}
+									views.push(view);
 								}
+								this.src_cell.append.apply(this.src_cell, _.sortBy(views, function(v) {
+									if(v.data("red-prop_cell")) {
+										return parseInt(v.prop_cell("option", "left"), 10);
+									} else {
+										return parseInt(v.unset_prop("option", "left"), 10);
+									}
+								}));
 							}, this);
 						}, {
 							context: this,

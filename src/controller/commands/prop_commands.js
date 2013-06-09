@@ -586,4 +586,39 @@
             });
     }(red.ResetCommand));
 
+	red.MovePropCommand = function(options) {
+        red.ResetCommand.superclass.constructor.apply(this, arguments);
+        this._options = options || {};
+	};
+
+    (function (My) {
+        _.proto_extend(My, red.Command);
+        var proto = My.prototype;
+    
+        proto._execute = function () {
+			this._parent.reset();
+        };
+        proto._unexecute = function () {
+			console.log("reset");
+        };
+        proto._do_destroy = function (in_effect) {
+            if (in_effect) {
+            } else {
+            }
+        };
+    
+        red.register_serializable_type("move_prop",
+            function (x) {
+                return x instanceof My;
+            },
+            function () {
+                var arg_array = _.toArray(arguments);
+                return {
+                };
+            },
+            function (obj) {
+                return new My({
+                });
+            });
+    }(red.MovePropCommand));
 }(red));

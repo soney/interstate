@@ -57,6 +57,10 @@
 				} else {
 					prev_prop.focus();
 				}
+			} else if(keyCode === 8) { //backspace
+				if(this.element.hasClass("cell")) {
+					this.unset();
+				}
 			}
 		}
 	};
@@ -185,20 +189,22 @@
 			this.focus();
 			this.select();
 		},
+		unset: function() {
+			var event = new $.Event("command");
+			event.command_type = "unset_stateful_prop_for_state";
+			event.prop = this.option("prop");
+			event.state = this.option("state");
+
+			this.element.trigger(event);
+		},
 		end_edit: function(cancel) {
 			this.element.on("click", this.$on_click);
 			if(cancel !== true) {
 				var val = this.textbox.val();
-				var event;
 				if(val.trim() === "" && this.option("prop") && this.option("state")) {
-					event = new $.Event("command");
-					event.command_type = "unset_stateful_prop_for_state";
-					event.prop = this.option("prop");
-					event.state = this.option("state");
-
-					this.element.trigger(event);
+					this.unset();
 				} else {
-					event = new $.Event("command");
+					var event = new $.Event("command");
 					event.command_type = "set_str";
 					event.str = val;
 					event.client = this.option("value");
