@@ -164,19 +164,19 @@
 				this.textbox.show();
 			} else {
 				this.textbox = $("<textarea />")	.attr("type", "text")
-												.appendTo(this.element)
-												.on("keydown", $.proxy(function(event) {
-													if(event.keyCode === 27) {
-														event.preventDefault();
-														event.stopPropagation();
-														this.end_edit(true);
-													} else if(event.keyCode === 13 && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
-														event.preventDefault();
-														event.stopPropagation();
-														this.end_edit();
-													}
-												}, this))
-												.on("blur", this.$end_edit);
+													.appendTo(this.element)
+													.on("keydown", $.proxy(function(event) {
+														if(event.keyCode === 27) {
+															event.preventDefault();
+															event.stopPropagation();
+															this.end_edit(true);
+														} else if(event.keyCode === 13 && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+															event.preventDefault();
+															event.stopPropagation();
+															this.end_edit();
+														}
+													}, this))
+													.on("blur", this.$end_edit);
 			}
 			var width = this.option("edit_width"),
 				left = this.option("left");

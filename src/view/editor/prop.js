@@ -422,6 +422,7 @@
 							var view;
 
 							var views = [];
+							var to_edit_view = false;
 							_.each(states, function(state) {
 								if(state) {
 									var value_info = _.find(values, function(value_info) { return value_info.state === state; });
@@ -438,9 +439,7 @@
 										});
 										if(this.__awaiting_value_for_state === state) {
 											if((new Date()).getTime() - this.__awaiting_value_for_state_set_at < 500) { // HUGE hack
-												view.prop_cell("begin_editing")
-													.prop_cell("select")
-													.prop_cell("focus");
+											to_edit_view = view;
 											} else {
 												delete this.__awaiting_value_for_state;
 												delete this.__awaiting_value_for_state_set_at;
@@ -469,6 +468,11 @@
 										return parseInt(v.unset_prop("option", "left"), 10);
 									}
 								}));
+								if(to_edit_view) {
+									to_edit_view.prop_cell("begin_editing")
+												.prop_cell("select")
+												.prop_cell("focus");
+								}
 							}, this);
 						}, {
 							context: this,
