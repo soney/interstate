@@ -169,7 +169,8 @@
 													this.remove_edit_dropdown();
 													var from_state = my_state;
 													var root = from_state.root();
-													var selectable_substates = _.rest(root.flatten_substates()); // the first element is the major statechart itself
+													var flat_statecharts = root.flatten_substates();
+													var selectable_substates = flat_statecharts.splice(0, flat_statecharts.length-1); // the first element is the major statechart itself
 													this._emit("awaiting_state_selection", {
 														states: selectable_substates,
 														on_select: $.proxy(function(to_state) {

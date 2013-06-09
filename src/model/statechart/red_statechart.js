@@ -189,7 +189,7 @@
 						if(outgoing_transition) {
 							outgoing_transition.increment_times_run();
 						} else {
-							console.log(this);
+							console.err(this);
 						}
 					}, this));
 					my_starting_state = red.find_equivalent_state(basis_start_state_to, this);
@@ -215,7 +215,7 @@
 			});
 			var start_state = this.get_start_state();
 			if(is_concurrent) {
-				if(this.is_active()) {
+				if(this.is_active() || this.parent() === undefined) {
 					_.each(this.get_substates(), function(substate) {
 						substate.disable_immediate_outgoing_transitions();
 						substate.disable_immediate_incoming_transitions();

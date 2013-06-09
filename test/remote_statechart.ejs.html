@@ -107,8 +107,9 @@
 					var master = window.master = red.create("statechart");
 					master	.add_state("not_selected")
 							.starts_at("not_selected")
-							.add_state("selected")
+							//.add_state("selected")
 							.run();
+					/*
 					master.add_transition("not_selected", "selected", ge("on('click', sq)"));
 					master.add_transition("selected", "not_selected", ge("on('dblclick', sq)"));
 
@@ -128,11 +129,11 @@
 									.starts_at("not_pressed");
 					pressed_state.add_transition("not_pressed", "pressed", ge("on('mousedown', sq)"));
 					pressed_state.add_transition("pressed", "not_pressed", ge("on('mouseup')"));
+					*/
 
 					master = red.deserialize(red.serialize(master));
 
 					var master_view = get_view($(".tl"), master, true, ptr_context);
-					/*
 
 					var shadow = window.shadow = master.create_shadow({ context: ptr_context, running: true });
 					var shadow_view = get_view($(".tr"), shadow);

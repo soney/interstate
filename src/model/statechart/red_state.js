@@ -198,8 +198,8 @@
 
 		proto.do_initialize = function (options) {
 			this._puppet = options.puppet === true;
-			this.$active = cjs.$(options.active === true);
 			this._parent = options.parent;
+			this.$active = cjs.$(options.active === true);
 			this._context = options.context;
 			this.set_basis(options.basis);
 		};

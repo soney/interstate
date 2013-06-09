@@ -65,9 +65,9 @@
 					var substates = sc.get_substates();
 
 					if(_.size(substates) > 0 || is_root) { // use is_root for root statecharts with only a start state
-						if(!sc.is_concurrent()) {
-							node.children.push({statechart: sc.get_start_state(), children: []});
-						}
+						//if(!sc.is_concurrent()) {
+						node.children.push({statechart: sc.get_start_state(), children: []});
+						//}
 						node.children.push.apply(node.children, _.map(substates, function (x) {
 							var subnode = {statechart: x, children: []};
 							expand_node(subnode);
