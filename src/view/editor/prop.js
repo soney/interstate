@@ -192,7 +192,7 @@
 						my_name = this.option("name");
 					var target_name, target_obj;
 					if(curr_target.is("tr.no_children")) {
-						target_obj = curr_target.parents(".column").column("option", "client");
+						target_obj = curr_target.parents(".col").column("option", "client");
 						target_name = false;
 					} else {
 						target_obj = curr_target.prop("option", "obj");

@@ -373,6 +373,7 @@
 				var target_obj = event.target_obj;
 				var target_name = event.target_name;
 				var above_below = event.above_below;
+				console.log(target_obj);
 
 				command = new red.MovePropAboveBelowCommand({
 					from_obj: { id: to_func(from_obj.obj_id) },
