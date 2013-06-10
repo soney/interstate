@@ -202,14 +202,6 @@
 			red.register_uid(this._id, this);
 			this._initialized.set(true);
 			this._emit("initialized");
-			/*
-
-			var outgoing_transition = this._start_state.get_outgoing_transition();
-			if(!outgoing_transition) {
-				console.log(this.id());
-				debugger;
-			}
-			*/
 		};
 
 		proto.is_concurrent = function () { return this.$concurrent.get(); };
@@ -785,11 +777,11 @@
 			return this;
 		};
 
-		proto.create_shadow = function (options) {
+		proto.create_shadow = function (options, defer_initialization) {
 			var rv = new red.Statechart(_.extend({
 				basis: this,
 				concurrent: this.is_concurrent()
-			}, options));
+			}, options), defer_initialization);
 
 			return rv;
 		};

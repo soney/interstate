@@ -159,10 +159,10 @@
 			return this.outgoingTransition;
 		};
 
-		proto.create_shadow = function (options) {
+		proto.create_shadow = function (options, defer_initialization) {
 			var rv = new red.StartState(_.extend({
 				basis: this
-			}, options));
+			}, options), defer_initialization);
 
 			return rv;
 		};

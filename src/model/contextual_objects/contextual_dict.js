@@ -47,8 +47,8 @@
 				proto_val = proto_obj.toArray();
 			} else {
 				var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {
-					check_on_nullify: true,
-					equals: proto_eq
+					//check_on_nullify: true,
+					//equals: proto_eq
 				});
 				proto_val = proto_contextual_obj.val();
 			}

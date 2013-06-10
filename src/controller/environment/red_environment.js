@@ -19,7 +19,7 @@
 
 			root_pointer = red.create("pointer", {stack: [root]});
 			if(!options || options.create_builtins !== false) {
-		//		this.initialize_props(root_pointer);
+				this.initialize_props(root_pointer);
 			}
 		}
 
@@ -28,7 +28,7 @@
 		this.print_on_return = false;
 
 		if(!options || options.create_builtins !== false) {
-		//	root.set("on", red.on_event);
+			root.set("on", red.on_event);
 			/*
 			root.set("emit", red.emit);
 			root.set("find", function (find_root) {
