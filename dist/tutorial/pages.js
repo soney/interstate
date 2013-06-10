@@ -111,7 +111,7 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p>To set a transition's <em>event</em>, click the transition.<div class='directive'>Change our transition's event to <code>on('mousedown', my_circle)</code> so that it fires when the mouse presses on <var>my_circle</var>.</div></p>"
+				text: "<p>To set a transition's <em>event</em>, click the transition's event text (currently <code>(event)</code>).<div class='directive'>Change our transition's event to <code>on('mousedown', my_circle)</code> so that it fires when the mouse presses on <var>my_circle</var>.</div></p>"
 			},
 			runtime: {
 			}
@@ -123,7 +123,7 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p><var>my_circle</var> is stuck in the <var>pressed</var> state!<div class='directive'>Reset <var>my_circle</var>'s state by clicking (options) -> Reset</div></p>"
+				text: "<p><var>my_circle</var> is stuck in the <var>pressed</var> state!<div class='directive'>Reset <var>my_circle</var>'s state by clicking (options) -> Reset under the object name</div></p>"
 			},
 			runtime: {
 			}
