@@ -20,6 +20,11 @@
 											.appendTo(this.element);
 			this.instruction_content = $("<div />")	.addClass("content")
 													.appendTo(this.instructions);
+			this.prev_button = $("<a />")	.attr("href", "javascript:void(0)")
+											.text("prev")
+											.addClass("prev")
+											.appendTo(this.instructions)
+											.on("click", $.proxy(this.prev, this));
 			this.next_button = $("<a />")	.attr("href", "javascript:void(0)")
 											.text("next")
 											.addClass("next")
@@ -41,6 +46,9 @@
 		},
 		next: function() {
 			this.option("page_no", this.option("page_no") + 1);
+		},
+		prev: function() {
+			this.option("page_no", this.option("page_no") - 1);
 		},
 		show_page_no: function(page_index) {
 			var options;

@@ -57,7 +57,7 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p><var>screen</var> is an object represents the contents of the runtime window.<div class='directive'>Add a property to it and call it <var>my_circle</var>.</div><div class='note'>(note: Properties can be re-named by right clicking and selecting 'rename')</div></p>"
+				text: "<p><var>screen</var> is an object represents the contents of the runtime window.<div class='directive'>Add a property to it and call it <var>my_circle</var>.</div><div class='note'>(note: Properties can be re-named by right clicking the property name and selecting 'rename')</div></p>"
 			},
 			runtime: {
 			}
@@ -75,7 +75,7 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p><var>cx</var> and <var>cy</var> represent the center point of our circle. To change their value, edit the <em>cell</em> under the black dot. Let's put <var>my_circle</var> in the middle of our sketch:<div class='directive'> Set <var>cx</var> to <code>sketch.width/2</code> and <var>cy</var> to <code>sketch.height/2</code>.</div></p>"
+				text: "<p><var>cx</var> and <var>cy</var> represent the center point of our circle. To change their value, edit the <em>cell</em> under the black dot to the right of the object name. Let's put <var>my_circle</var> in the middle of our sketch:<div class='directive'> Set <var>cx</var> to <code>sketch.width/2</code> and <var>cy</var> to <code>sketch.height/2</code>.</div></p>"
 			},
 			runtime: {
 			}
@@ -153,9 +153,23 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p>Objects can inherit behaviors.<div class='directive'>Try creating another object on screen called <var>my_other_circle</var>. Set its <var>prototypes</var> field to <code>my_circle</code>. Note that it inherits not only the properties of <var>my_circle</var> but also its state machine.</p>"
+				text: "<p>Objects can inherit behaviors.<div class='directive'>Try inherititing from <var>hoverable</var> by setting <var>prototypes</var> to <code>[shape.circle, hoverable]</code>.</div> Note that it inherits not only the properties of <var>hoverable</var> but also its state machine.</p>"
 			},
 			runtime: {
+				on_enter: function() {
+					var env = this.env;
+					env	.top()
+						.set("hoverable", "<stateful>")
+						.cd("hoverable")
+							.add_state("not_hover")
+							.start_at("not_hover")
+							.add_state("hover")
+							.add_transition("not_hover", "hover", "on('mouseover', this)")
+							.add_transition("hover", "not_hover", "on('mouseout', this)")
+							.set("is_hovering", "not_hover", "false")
+							.set("is_hovering", "hover", "true")
+							.up();
+				}
 			}
 		}
 	];

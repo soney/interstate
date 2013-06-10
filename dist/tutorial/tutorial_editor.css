@@ -17,11 +17,21 @@ html, body, #tutorial {
 
 .instructions > .content {
 	padding-right: 100px;
+	padding-left: 100px;
 }
 
 .instructions > a.next {
-	position: absolute;
 	right: 0px;
+	border-left: 1px solid #999;
+}
+
+.instructions > a.prev {
+	left: 0px;
+	border-right: 1px solid #999;
+}
+
+.instructions > a.next, .instructions > a.prev {
+	position: absolute;
 	top: 0px;
 	width: 100px;
 	height: 100%;
@@ -29,14 +39,13 @@ html, body, #tutorial {
 	vertical-align: middle;
 	display: inline-block;
 	text-decoration: none;
-	border-left: 1px solid #999;
 	background-color: #444;
 	color: #999;
 	box-sizing: border-box;
 	padding-top: 30px;
 }
 
-.instructions > a.next:hover {
+.instructions > a.next:hover, .instructions > a.prev:hover {
 	color: white;
 	text-decoration: underline;
 	background-color: #474;
