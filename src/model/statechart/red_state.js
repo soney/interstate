@@ -61,7 +61,7 @@
 			var state_name = event.state_name,
 				state = event.state,
 				index = event.index;
-			this.add_substate(state_name, state.create_shadow(), index);
+			this.add_substate(state_name, state.create_shadow({context: this.context()}), index);
 		}, this);
 		this.$onBasisRemoveSubstate = _.bind(function (event) {
 			this.remove_substate(event.name, undefined, false);

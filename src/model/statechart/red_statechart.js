@@ -163,7 +163,8 @@
 		proto.do_initialize = function (options) {
 			this._start_state = options.start_state || new red.StartState({
 				parent: this,
-				to: options.start_at
+				to: options.start_at,
+				context: options.context
 			});
 			this.$substates = options.substates || cjs.map();
 			this.$substates.set_value_hash("hash");
@@ -189,7 +190,7 @@
 						if(outgoing_transition) {
 							outgoing_transition.increment_times_run();
 						} else {
-							console.err(this);
+							debugger;
 						}
 					}, this));
 					my_starting_state = red.find_equivalent_state(basis_start_state_to, this);
@@ -488,7 +489,7 @@
 			if (state instanceof red.Statechart) {
 				state.set_parent(this);
 			} else {
-				state = new red.Statechart({parent: this});
+				state = new red.Statechart({parent: this, context: this.context()});
 			}
 			state.on("pre_transition_fire", this.forward);
 			state.on("post_transition_fire", this.forward);
