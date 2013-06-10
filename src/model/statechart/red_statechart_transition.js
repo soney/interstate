@@ -158,6 +158,13 @@
 				this._event.on_fire(this.do_fire);
 			}
 		};
+		proto.order = function(order_to) {
+			if(order_to instanceof red.State) {
+				return 1;
+			} else {
+				return 0;
+			}
+		};
 		proto.event = function () { return this._event; };
 		proto.involves = function (state) { return this.from() === state || this.to() === state; };
 		proto.destroy = function () {
