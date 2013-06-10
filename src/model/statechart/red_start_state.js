@@ -19,9 +19,9 @@
 		proto.do_initialize = function (options) {
 			My.superclass.do_initialize.apply(this, arguments);
 			var basis = this.basis();
+			var to;
 			if(!basis && !this.is_puppet()) {
 				// If we have a basis, then whatever function shadowed us will create our outgoing transition too
-				var to;
 				if (options.to) {
 					to = options.to;
 					this._transition_to_self.set(false);

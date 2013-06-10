@@ -185,14 +185,12 @@
 				if (basis_start_state_to === basis_start_state) {
 					my_starting_state = this._start_state;
 				} else {
-					_.defer(_.bind(function() {
-						var outgoing_transition = this._start_state.get_outgoing_transition();
-						if(outgoing_transition) {
+					if(!this.is_puppet()) {
+						_.defer(_.bind(function() {
+							var outgoing_transition = this._start_state.get_outgoing_transition();
 							outgoing_transition.increment_times_run();
-						} else {
-							debugger;
-						}
-					}, this));
+						}, this));
+					}
 					my_starting_state = red.find_equivalent_state(basis_start_state_to, this);
 				}
 			} else {
@@ -204,6 +202,14 @@
 			red.register_uid(this._id, this);
 			this._initialized.set(true);
 			this._emit("initialized");
+			/*
+
+			var outgoing_transition = this._start_state.get_outgoing_transition();
+			if(!outgoing_transition) {
+				console.log(this.id());
+				debugger;
+			}
+			*/
 		};
 
 		proto.is_concurrent = function () { return this.$concurrent.get(); };
