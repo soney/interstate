@@ -1,5 +1,5 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,jQuery,window */
+/*global red,esprima,able,uid,console,jQuery,window,FileReader,document */
 
 (function (red, $) {
 	"use strict";
@@ -149,6 +149,65 @@
 			}
 
 			this._add_change_listeners();
+
+			window.addEventListener('dragover', $.proxy(function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+				$(document.body).addClass("drop_target");
+				return false;
+			}, this), false);
+			window.addEventListener('dragout', $.proxy(function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+				$(document.body).removeClass("drop_target");
+				return false;
+			}, this), false);
+			window.addEventListener('dragenter', $.proxy(function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+				$(document.body).addClass("drop_target");
+				return false;
+			}, this), false);
+			window.addEventListener('dragleave', $.proxy(function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+				$(document.body).removeClass("drop_target");
+				return false;
+			}, this), false);
+			window.addEventListener('drop', $.proxy(function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+				$(document.body).removeClass("drop_target");
+				// fetch FileList object
+				var files = event.target.files || event.dataTransfer.files;
+				var file = files[0];
+				var fr = new FileReader();
+				fr.onload = $.proxy(function() {
+					var new_root = red.destringify(fr.result);
+					this.option("root", new_root);
+				}, this);
+				fr.readAsText(file);
+				return false;
+			}, this), false);
+		},
+
+		_setOption: function(key, value) {
+			this._super(key, value);
+			if(key === "root") {
+				var to_open = false;
+				if(this.editor_window) {
+					to_open = true;
+					this.close_editor();
+				}
+
+				this._remove_change_listeners();
+				this._add_change_listeners();
+
+				if(to_open) {
+					this.open_editor();
+				}
+				console.log("reload");
+			}
 		},
 
 
@@ -187,18 +246,6 @@
 					this.element.children().remove();
 					this.element.append(dom_element);
 				}
-				/*
-				var dom_element = dom_attachment.get_dom_obj();
-
-				if (this.element.children().is(dom_element)) {
-					this.element.children().not(dom_element).remove();
-				} else {
-					this.element.children().remove();
-					this.element.append(dom_element);
-				}
-
-				dom_attachment.resume();
-				*/
 			}, {
 				context: this,
 				pause_while_running: true
@@ -231,6 +278,8 @@
 					this._command_stack._redo();
 				} else if (command === "reset") {
 					root.reset();
+				} else if (command === "export") {
+					window.open("data:text/plain;charset=utf-8," + red.stringify(root));
 				} else {
 					this._command_stack._do(command);
 				}

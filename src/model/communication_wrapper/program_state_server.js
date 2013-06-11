@@ -53,7 +53,7 @@
 				var type = data.type;
 				if (type === "command") {
 					var stringified_command = data.command;
-					if ((["undo", "redo", "reset"]).indexOf(stringified_command) >= 0) {
+					if ((["undo", "redo", "reset", "export"]).indexOf(stringified_command) >= 0) {
 						this._emit("command", stringified_command);
 					} else {
 						var command = red.destringify(stringified_command);

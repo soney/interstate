@@ -81,11 +81,11 @@
 											},
 											"Redo": {
 												on_select: _.bind(this.redo, this)
-											}/*,
-											"Reset": {
-												on_select: _.bind(this.reset, this),
-												disabled: true
 											},
+											"Export": {
+												on_select: _.bind(this["export"], this)
+											}
+											/*
 											"Upload to Gallery": {
 												on_select: _.bind(this.upload, this),
 												disabled: true
@@ -133,6 +133,10 @@
 					event.preventDefault();
 				}*/
 			}, this));
+		},
+
+		"export": function() {
+			this.client_socket.post_command("export");
 		},
 
 		upload: function() {
