@@ -185,6 +185,7 @@
 				fr.onload = $.proxy(function() {
 					var new_root = red.destringify(fr.result);
 					this.option("root", new_root);
+					this.element.trigger("change_root", new_root);
 				}, this);
 				fr.readAsText(file);
 				return false;
@@ -201,12 +202,15 @@
 				}
 
 				this._remove_change_listeners();
+				if(this.server_socket) {
+					this.server_socket.destroy();
+				}
+				this.server_socket = this._create_server_socket();
 				this._add_change_listeners();
 
 				if(to_open) {
 					this.open_editor();
 				}
-				console.log("reload");
 			}
 		},
 
