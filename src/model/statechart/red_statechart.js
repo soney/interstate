@@ -235,17 +235,21 @@
 			return this;
 		};
 		proto.get_substates = function (include_start) {
-			var rv = {};
+			if(this.$substates) {
+				var rv = {};
 
-			this.$substates.each(function (substate, name) {
-				rv[name] = substate;
-			});
+				this.$substates.each(function (substate, name) {
+					rv[name] = substate;
+				});
 
-			if (include_start) {
-				rv["(start)"] = this.get_start_state();
+				if (include_start) {
+					rv["(start)"] = this.get_start_state();
+				}
+
+				return rv;
+			} else {
+				return [];
 			}
-
-			return rv;
 		};
 		proto.get_start_state = function () { return this._start_state; };
 		proto.set_start_state = function (state) {
@@ -257,8 +261,20 @@
 			this._start_state = state;
 			cjs.signal();
 		};
-		proto.get_incoming_transitions = function () { return this.$incoming_transitions.toArray(); };
-		proto.get_outgoing_transitions = function () { return this.$outgoing_transitions.toArray(); };
+		proto.get_incoming_transitions = function () {
+			if(this.$incoming_transitions) {
+				return this.$incoming_transitions.toArray();
+			} else {
+				return [];
+			}
+		};
+		proto.get_outgoing_transitions = function () {
+			if(this.$outgoing_transitions) {
+				return this.$outgoing_transitions.toArray();
+			} else {
+				return [];
+			}
+		};
 		proto.get_active_substate = function () { return this.$local_state.get(); };
 		proto.is_running = function () { return this._running; };
 
@@ -640,16 +656,24 @@
 			_.forEach(this.get_outgoing_transitions(), function (transition) {
 				transition.remove().destroy();
 			});
-			_.forEach(this.get_substates(), function (substate) {
+			_.forEach(this.get_substates(true), function (substate) {
 				substate.destroy();
 			});
-			this.$substates.destroy();
-			this.$concurrent.destroy();
+			if(this.$substates) {
+				this.$substates.destroy();
+			}
+			if(this.$concurrent) {
+				this.$concurrent.destroy();
+			}
 
 
-			this.$incoming_transitions.destroy();
-			this.$outgoing_transitions.destroy();
-			this.get_start_state().destroy();
+			if(this.$incoming_transitions) {
+				this.$incoming_transitions.destroy();
+			}
+			if(this.$outgoing_transitions) {
+				this.$outgoing_transitions.destroy();
+			}
+			//this.get_start_state().destroy();
 
 			My.superclass.destroy.apply(this, arguments);
 			cjs.signal();

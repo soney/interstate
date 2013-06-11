@@ -143,6 +143,7 @@
 					_.when(promises).done(function () {
 						if(destroyed) { return; }
 						_.when(substate_promises).done(function () {
+							if(destroyed) { return; }
 							statechart.do_initialize({
 								substates: substates_value,
 								concurrent: is_concurrent_value,
