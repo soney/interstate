@@ -105,14 +105,14 @@
 					};
 
 					var master = window.master = red.create("statechart");
-					/*
-					master	.add_state("a.b")
+					master	.add_state("a")
+							.add_state("b.x")
+							.add_state("b.y")
 							.starts_at("a")
-							//.add_state("selected")
-							.add_transition("a.b", "a.b", ge("on('click', sq)"))
+							.add_transition("a", "b.y", ge("on('click', sq)"))
 							.run();
-					var a = master.find_state("a");
-					a.starts_at("b");
+					var b = master.find_state("b");
+					b.starts_at("x");
 					/*
 					master.add_transition("not_selected", "selected", ge("on('click', sq)"));
 					master.add_transition("selected", "not_selected", ge("on('dblclick', sq)"));

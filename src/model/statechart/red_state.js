@@ -312,14 +312,22 @@
 					i -= 2;
 				}
 				cjs.wait();
+				var active_substate, parent;
 				while (i < to_len - 1) {
-					var parent = to_lineage[i];
-					var active_substate = to_lineage[i + 1];
+					parent = to_lineage[i];
+					active_substate = to_lineage[i + 1];
 					if (!active_substate.is_running()) {
 						active_substate.run();
 					}
 					parent.set_active_substate(active_substate, transition, event);
 					i += 1;
+				}
+				if(!(active_substate instanceof red.StartState)) {
+					var start_state = active_substate.get_start_state();
+					if(!start_state.is_running()) {
+						start_state.run();
+					}
+					active_substate.set_active_substate(active_substate.get_start_state());
 				}
 				cjs.signal();
 				return true;

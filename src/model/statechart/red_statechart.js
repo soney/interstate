@@ -349,9 +349,11 @@
 						substate.set_active(true);
 					});
 				} else {
+				/*
 					var start_state = this.get_start_state();
 					start_state.set_active(true);
 					start_state.run();
+					*/
 				}
 
 				this._emit("run", {

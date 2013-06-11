@@ -291,7 +291,8 @@
 												.on("pressed", $.proxy(function() {
 													this.remove_edit_dropdown();
 													var root = transition.root();
-													var selectable_substates = _.rest(root.flatten_substates()); // the first element is the major statechart itself
+													var selectable_substates = root.flatten_substates(); // the first element is the major statechart itself
+													selectable_substates = selectable_substates.splice(0, selectable_substates.length-1);
 													this._emit("awaiting_state_selection", {
 														states: selectable_substates,
 														on_select: $.proxy(function(from_state) {
@@ -308,7 +309,8 @@
 											.on("pressed", $.proxy(function() {
 												this.remove_edit_dropdown();
 												var root = transition.root();
-												var selectable_substates = _.rest(root.flatten_substates()); // the first element is the major statechart itself
+												var selectable_substates = root.flatten_substates(); // the first element is the major statechart itself
+												selectable_substates = selectable_substates.splice(0, selectable_substates.length-1);
 												this._emit("awaiting_state_selection", {
 													states: selectable_substates,
 													on_select: $.proxy(function(to_state) {
