@@ -85,23 +85,6 @@
 											"Export": {
 												on_select: _.bind(this["export"], this)
 											}
-											/*
-											"Upload to Gallery": {
-												on_select: _.bind(this.upload, this),
-												disabled: true
-											},
-											"Save": {
-												on_select: _.bind(this.save, this),
-												disabled: true
-											},
-											"Save As": {
-												on_select: _.bind(this.save_as, this),
-												disabled: true
-											},
-											"Open": {
-												on_select: _.bind(this.open, this),
-												disabled: true
-											}*/
 										}
 									})
 									.appendTo(this.element);
