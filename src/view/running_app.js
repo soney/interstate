@@ -153,31 +153,31 @@
 			window.addEventListener('dragover', $.proxy(function(event) {
 				event.preventDefault();
 				event.stopPropagation();
-				$(document.body).addClass("drop_target");
+				this.show_drag_over();
 				return false;
 			}, this), false);
 			window.addEventListener('dragout', $.proxy(function(event) {
 				event.preventDefault();
 				event.stopPropagation();
-				$(document.body).removeClass("drop_target");
+				this.hide_drag_over();
 				return false;
 			}, this), false);
 			window.addEventListener('dragenter', $.proxy(function(event) {
 				event.preventDefault();
 				event.stopPropagation();
-				$(document.body).addClass("drop_target");
+				this.show_drag_over();
 				return false;
 			}, this), false);
 			window.addEventListener('dragleave', $.proxy(function(event) {
 				event.preventDefault();
 				event.stopPropagation();
-				$(document.body).removeClass("drop_target");
+				this.hide_drag_over();
 				return false;
 			}, this), false);
 			window.addEventListener('drop', $.proxy(function(event) {
 				event.preventDefault();
 				event.stopPropagation();
-				$(document.body).removeClass("drop_target");
+				this.hide_drag_over();
 				// fetch FileList object
 				var files = event.target.files || event.dataTransfer.files;
 				var file = files[0];
@@ -190,6 +190,32 @@
 				fr.readAsText(file);
 				return false;
 			}, this), false);
+		},
+
+		show_drag_over: function() {
+			$(document.body).addClass("drop_target");
+			if(!this.hasOwnProperty("overlay")) {
+				this.overlay = $("<div />")	.addClass("overlay")
+											.css({
+												"background-color": "#555",
+												"opacity": "0.8",
+												"position": "fixed",
+												"left": "0px",
+												"top": "0px",
+												"width": "100%",
+												"height": "100%",
+												"pointer-events": "none",
+												"border": "10px dashed #DDD",
+												"box-sizing": "border-box"
+											})
+											.appendTo(document.body);
+			}
+		},
+
+		hide_drag_over: function() {
+			$(document.body).removeClass("drop_target");
+			this.overlay.remove();
+			delete this.overlay;
 		},
 
 		_setOption: function(key, value) {
