@@ -6,18 +6,18 @@
 	var cjs = red.cjs,
 		_ = red._;
 
-	var Env = function (options) {
+	red.Environment = function (options) {
 		// Undo stack
-		this._command_stack = red.create("command_stack");
+		this._command_stack = new red.CommandStack();
 
 		var root, root_pointer;
 		if (options && _.has(options, "root")) {
 			root = options.root;
-			root_pointer = red.create("pointer", {stack: [root]});
+			root_pointer = new red.Pointer({stack: [root]});
 		} else {
-			root = red.create("dict", {has_protos: false, direct_attachments: [red.create("paper_attachment")]});
+			root = new red.Dict({has_protos: false, direct_attachments: [new red.PaperAttachment()]});
 
-			root_pointer = red.create("pointer", {stack: [root]});
+			root_pointer = new red.Pointer({stack: [root]});
 			if(!options || options.create_builtins !== false) {
 				this.initialize_props(root_pointer);
 			}
@@ -47,16 +47,16 @@
 		proto.initialize_props = function (root_pointer) {
 			var root_dict = root_pointer.points_at();
 
-			var screen = red.create("dict", {has_protos: false});
+			var screen = new red.Dict({has_protos: false});
 			root_dict.set("screen", screen);
 
-			root_dict.set("width", red.create("cell", {str: "500"}));
-			root_dict.set("height", red.create("cell", {str: "500"}));
+			root_dict.set("width", new red.Cell({str: "500"}));
+			root_dict.set("height", new red.Cell({str: "500"}));
 
-			var shape = red.create("dict", {has_protos: false});
+			var shape = new red.Dict({has_protos: false});
 			root_dict.set("shape", shape);
 
-			var circle = red.create("dict", {has_protos: false, direct_attachments: [red.create("shape_attachment", {
+			var circle = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "circle",
 																									constructor_params: [0, 0, 0]
@@ -985,10 +985,10 @@
 		};
 		proto.destroy = function () {
 		};
-	}(Env));
+	}(red.Environment));
 
 	red.define("environment", function (options) {
-		var env = new Env(options);
+		var env = new red.Environment(options);
 		return env;
 	});
 

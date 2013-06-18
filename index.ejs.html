@@ -6,12 +6,16 @@
 		body {
 			//text-align: center;
 			background-color: #EEE;
+			margin: 0px;
+			padding: 0px;
 		}
 		body.drop_target {
 			background-color: #DDD;
 		}
 		.euc_runtime svg {
 			border: 1px solid black;
+			border-top: none;
+			border-left: none;
 			background-color: white;
 		}
 	</style>
@@ -36,7 +40,7 @@
 					if(env) {
 						env.destroy();
 					}
-					env = red.create("environment", {root: root});
+					env = new red.Environment({root: root});
 					env.print_on_return = true;
 					the_div.dom_output({
 						root: root,
@@ -69,7 +73,7 @@
 					} catch(e) {
 					
 						console.log("Creating a new project");
-						env = red.create("environment");
+						env = new red.Environment();
 
 						root = env.get_root();
 
