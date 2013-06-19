@@ -17,7 +17,8 @@
 		var in_tree_basis_index = in_tree_basis_lineage_len - 1;
 		var to_state_index;
 		var i;
-	outer_loop:
+
+		outer_loop:
 		while (in_tree_basis_index >= 0) {
 			for (i = to_state_lineage_len - 1; i >= 0; i -= 1) {
 				if (to_state_lineage[i] === in_tree_basis_lineage[in_tree_basis_index]) {
@@ -37,7 +38,9 @@
 			var name = to_state_lineage[i - 1].get_name_for_substate(to_state_lineage[i]);
 			search_item = search_item.get_substate_with_name(name);
 		}
+
 		if (search_item.basis() !== to_state) { throw new Error("Could not find correct equivalent item"); }
+
 		return search_item;
 	};
 
