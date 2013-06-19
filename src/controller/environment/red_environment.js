@@ -15,7 +15,7 @@
 			root = options.root;
 			root_pointer = new red.Pointer({stack: [root]});
 		} else {
-			root = new red.Dict({has_protos: false, direct_attachments: [new red.PaperAttachment()]});
+			root = new red.Dict({has_protos: false, direct_attachments: [red.create("paper_attachment")]});
 
 			root_pointer = new red.Pointer({stack: [root]});
 			if(!options || options.create_builtins !== false) {
@@ -56,7 +56,7 @@
 			var shape = new red.Dict({has_protos: false});
 			root_dict.set("shape", shape);
 
-			var circle = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
+			var circle = new red.Dict({has_protos: false, direct_attachments: [red.create("shape_attachment", {
 																								instance_options: {
 																									shape_type: "circle",
 																									constructor_params: [0, 0, 0]
