@@ -15,14 +15,16 @@
 			padding_top: 0,
 			paper_height: 9999,
 			vline_color: "#CCC",
-			vline_dasharray: ". "
+			vline_dasharray: ". ",
+			active_fill: "red"
 		}, options);
 
 		var paper = this.option("paper");
 		var center = this.option("c");
+		var state = this.option("state");
 		this.circle = paper.circle(center.x, center.y + this.option("padding_top"), this.option("radius"));
 		this.circle.attr({
-			fill: this.option("fill_color"),
+			fill: state.is_active() ? this.option("active_fill") : this.option("fill_color"),
 			stroke: "none"
 		});
 		this.$on_context_menu = $.proxy(this.on_context_menu, this);
@@ -32,6 +34,23 @@
 								stroke: this.option("vline_color"),
 								"stroke-dasharray": this.option("vline_dasharray")
 							});
+		this.active_fn = cjs.liven(function () {
+			if (state.is_initialized() && state.is_active()) {
+				if (this.circle) {
+					this.circle.attr({
+						fill: this.option("active_fill")
+					});
+				}
+			} else {
+				if (this.circle) {
+					this.circle.attr({
+						fill: this.option("fill_color")
+					});
+				}
+			}
+		}, {
+			context: this
+		});
 	};
 
 	(function (My) {
@@ -80,6 +99,7 @@
 		proto.destroy = function() {
 			$(this.circle[0]).off("contextmenu", this.$on_context_menu);
 			able.destroy_this_optionable(this);
+			this.active_fn.destroy();
 		};
 	}(red.StartStateView));
 }(red, jQuery));

@@ -196,8 +196,20 @@
 			} else {
 				my_starting_state = this._start_state;
 			}
+
 			this.$local_state = cjs.$(my_starting_state);
-			my_starting_state.enable_outgoing_transitions();
+			if(options.concurrent === true) {
+				_.each(this.get_substates(), function(substate) {
+					substate.disable_immediate_outgoing_transitions();
+					substate.disable_immediate_incoming_transitions();
+					substate.set_active(true);
+					substate.run();
+				});
+			} else {
+				my_starting_state.enable_outgoing_transitions();
+				my_starting_state.set_active(true);
+				my_starting_state.run();
+			}
 
 			red.register_uid(this._id, this);
 			this._initialized.set(true);
@@ -371,7 +383,6 @@
 					start_state.run();
 					*/
 				}
-
 				this._emit("run", {
 					target: this,
 					type: "run"
@@ -806,7 +817,8 @@
 		proto.create_shadow = function (options, defer_initialization) {
 			var rv = new red.Statechart(_.extend({
 				basis: this,
-				concurrent: this.is_concurrent()
+				concurrent: this.is_concurrent(),
+				set_basis_as_root: true
 			}, options), defer_initialization);
 
 			return rv;

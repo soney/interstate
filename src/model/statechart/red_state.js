@@ -64,7 +64,7 @@
 			var state_name = event.state_name,
 				state = event.state,
 				index = event.index;
-			this.add_substate(state_name, state.create_shadow({context: this.context()}), index);
+			this.add_substate(state_name, state.create_shadow({parent: this, context: this.context()}), index);
 		}, this);
 		this.$onBasisRemoveSubstate = _.bind(function (event) {
 			this.remove_substate(event.name, undefined, false);
@@ -109,7 +109,7 @@
 			return this._puppet;
 		};
 
-		proto.set_basis = function (basis) {
+		proto.set_basis = function (basis, as_root) {
 			if (this._basis) {
 				this._basis.off("add_transition", this.$onBasisAddTransition);
 				this._basis.off("add_substate", this.$onBasisAddSubstate);
@@ -128,12 +128,15 @@
 					var basis_start_state_to = basis_start_state.getTo();
 					var is_running = this.is_running();
 					var my_context = this.context();
+					var is_concurrent = this.is_concurrent();
+
 					_.each(basis.get_substates(true), function (substate, name) {
 						var shadow = substate.create_shadow({
 							context: my_context,
 							parent: this,
-							running: is_running && basis_start_state_to === substate,
-							active: is_running && basis_start_state_to === substate
+							running: is_running && (basis_start_state_to === substate || is_concurrent),
+							active: is_running && (basis_start_state_to === substate || is_concurrent),
+							set_basis_as_root: false
 						});
 						if (shadow instanceof red.StartState) {
 							this.set_start_state(shadow);
@@ -147,7 +150,7 @@
 						}, this);
 					}, this);
 				}
-				if (this.parent() === undefined) { // When all of the substates have been copied
+				if (as_root === true) { // When all of the substates have been copied
 					var parent_statechart = this,
 						context = this.context();
 
@@ -202,12 +205,12 @@
 		proto.do_initialize = function (options) {
 			this._puppet = options.puppet === true;
 			this._parent = options.parent;
-			this.$active = cjs.$(options.active === true);
+			this.$active = cjs.$(options.active === true || (!this._parent && !this._puppet));
 			this._context = options.context;
-			this.set_basis(options.basis);
+			this.set_basis(options.basis, options.set_basis_as_root);
 		};
 		proto.set_active = function (to_active) {
-			if(this.is_initialized()) {
+			if(this.$active) {
 				this.$active.set(to_active === true);
 				var event_type = to_active ? "active" : "inactive";
 				this._emit(event_type, {
