@@ -79,7 +79,7 @@
 			this.element.addClass("euc_runtime");
 			this.$open_editor = $.proxy(this.open_editor, this);
 			this.$on_key_down = $.proxy(this.on_key_down, this);
-			this._command_stack = red.create("command_stack");
+			this._command_stack = new red.CommandStack();
 			if (this.option("show_edit_button")) {
 				this.button_color = randomColor([0, 1], [0.1, 0.7], [0.4, 0.6]);
 				//this.button_color = "#990000";

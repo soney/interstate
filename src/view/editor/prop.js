@@ -575,6 +575,12 @@
 					this.on_hide_src();
 					this.on_show_src();
 				}
+			} else if(key === "inherited") {
+				if(value) {
+					this.element.addClass("inherited");
+				} else {
+					this.element.removeClass("inherited");
+				}
 			}
 		}
 	});

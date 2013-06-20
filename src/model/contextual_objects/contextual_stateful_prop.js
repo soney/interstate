@@ -32,7 +32,7 @@
 		*/
 
 		this.$value.onChange(_.bind(function () {
-			if (red.event_queue.end_queue_round === 3 || red.event_queue_round === 4) {
+			if (red.event_queue.end_queue_round === 3 || red.event_queue.end_queue_round === 4) {
 				this.$value.update();
 			}
 		}, this));
@@ -330,7 +330,14 @@
 			var using_state = active_value_info.state;
 			var rv;
 
-			if (using_val instanceof red.Cell) {
+			if (using_state instanceof red.StatechartTransition) {
+				if(red.event_queue.end_queue_round === false) {
+					return this._last_rv;
+				}
+			}
+
+			//if (using_val instanceof red.Cell) {
+			if(using_val) {
 				var pointer = this.get_pointer();
 				var event = using_state._last_run_event.get();
 
@@ -345,6 +352,10 @@
 				this._last_rv = rv;
 				return rv;
 			} else {
+				return undefined;
+			}
+				/*
+			} else {
 				try {
 					rv = using_val instanceof red.ContextualObject ? using_val.val() : using_val;
 				} catch (e2) {
@@ -353,6 +364,7 @@
 				this._last_rv = rv;
 				return rv;
 			}
+			*/
 		};
 
 		proto.destroy = function () {

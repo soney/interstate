@@ -216,6 +216,8 @@
 				if(!to_active) {
 					_.each(this.get_substates(true), function(substate) {
 						substate.set_active(false);
+						substate.disable_outgoing_transitions();
+						substate.stop();
 					}, this);
 				}
 				var event_type = to_active ? "active" : "inactive";
