@@ -320,6 +320,7 @@
 		};
 
 		proto.set_active_substate = function (state, transition, event) {
+			//if(uid.strip_prefix(this.id()) == 53) { debugger; }
 			if(transition) {
 				cjs.wait();
 				red.event_queue.once("end_event_queue_round_0", function () {
@@ -333,23 +334,35 @@
 					transition.set_active(true);
 				}, this);
 				red.event_queue.once("end_event_queue_round_3", function () {
-					var local_state = this.$local_state.get();
-					if(local_state !== state) {
-						if (local_state) {
-							local_state.stop();
-							local_state.disable_outgoing_transitions();
-							local_state.set_active(false);
+					if(this.is_concurrent()) {
+						_.each(this.get_substates(true), function(substate) {
+							substate.set_active(true);
+							substate.enable_outgoing_transitions();
+							substate.run();
+							if(substate instanceof red.Statechart) {
+								var starts_at = substate.get_active_substate();
+								substate.set_active_substate(starts_at);
+							}
+						});
+					} else {
+						var local_state = this.$local_state.get();
+						if(local_state !== state) {
+							if (local_state) {
+								local_state.stop();
+								local_state.disable_outgoing_transitions();
+								local_state.set_active(false);
+							}
+							local_state = state;
+							this.$local_state.set(local_state);
+							local_state._last_run_event.set(event);
 						}
-						local_state = state;
-						this.$local_state.set(local_state);
-						local_state._last_run_event.set(event);
 						if (local_state) {
 							local_state.set_active(true);
 							local_state.enable_outgoing_transitions();
 							local_state.run();
 						}
+						transition.increment_times_run();
 					}
-					transition.increment_times_run();
 				}, this);
 				red.event_queue.once("end_event_queue_round_4", function () {
 					transition.set_active(false);
@@ -364,7 +377,17 @@
 				}, this);
 			} else {
 				cjs.wait();
-				if(!this.is_concurrent()) {
+				if(this.is_concurrent()) {
+					_.each(this.get_substates(true), function(substate) {
+						substate.set_active(true);
+						substate.enable_outgoing_transitions();
+						substate.run();
+						if(substate instanceof red.Statechart) {
+							var starts_at = substate.get_active_substate();
+							substate.set_active_substate(starts_at);
+						}
+					});
+				} else {
 					var local_state = this.$local_state.get();
 					if(local_state !== state) {
 						if (local_state) {
@@ -374,14 +397,11 @@
 						}
 						local_state = state;
 						this.$local_state.set(local_state);
-						if (local_state) {
-							local_state.set_active(true);
-							local_state.enable_outgoing_transitions();
-							local_state.run();
-						}
 					}
-					if(!local_state.is_active()) {
+					if (local_state) {
 						local_state.set_active(true);
+						local_state.enable_outgoing_transitions();
+						local_state.run();
 					}
 				}
 				cjs.signal();
@@ -554,6 +574,8 @@
 				if(this.is_concurrent()) {
 					state.set_active(true);
 					state.run();
+					var starts_at = state.get_active_substate();
+					state.set_active_substate(starts_at);
 				}
 			}
 		};
