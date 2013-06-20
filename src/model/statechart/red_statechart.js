@@ -237,6 +237,10 @@
 							substate.disable_immediate_incoming_transitions();
 							substate.set_active(true);
 							substate.run();
+							var start_state = substate.get_start_state();
+							var starting_state = start_state.getTo();
+							starting_state.set_active(true);
+							starting_state.run();
 						});
 					}
 					start_state.set_active(false);
@@ -386,10 +390,6 @@
 						substate.run();
 						substate.set_active(true);
 					});
-				} else {
-					var start_state = this.get_start_state();
-					start_state.set_active(true);
-					start_state.run();
 				}
 				this._emit("run", {
 					target: this,
