@@ -66,9 +66,9 @@
 					var substates = sc.get_substates();
 
 					if(_.size(substates) > 0 || is_root || show_all_start_states) { // use is_root for root statecharts with only a start state
-						//if(!sc.is_concurrent()) {
-						node.children.push({statechart: sc.get_start_state(), children: []});
-						//}
+						if(!sc.is_concurrent() || show_all_start_states) {
+							node.children.push({statechart: sc.get_start_state(), children: []});
+						}
 						node.children.push.apply(node.children, _.map(substates, function (x) {
 							var subnode = {statechart: x, children: []};
 							expand_node(subnode);
@@ -214,7 +214,7 @@
 				if (statechart.is_initialized()) {
 					var incoming_transitions;
 
-					if(statechart.parent_is_concurrent()) {
+					if(statechart.parent_is_concurrent() && !red.__debug_statecharts) {
 						incoming_transitions = [];
 					} else {
 						incoming_transitions = statechart.get_incoming_transitions();
@@ -228,7 +228,7 @@
 						if (x === statechart) {
 							from_to.push({min_x: ri, max_x: ri, type: "self", transition: t});
 						} else {
-							if(x.parent_is_concurrent()) {
+							if(x.parent_is_concurrent() && !red.__debug_statecharts) {
 								return;
 							}
 
