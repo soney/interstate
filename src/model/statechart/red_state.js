@@ -333,12 +333,12 @@
 					parent.set_active_substate(active_substate, transition, event);
 					i += 1;
 				}
-				if(!(active_substate instanceof red.StartState)) {
+				if(active_substate instanceof red.Statechart) {
 					var start_state = active_substate.get_start_state();
 					if(!start_state.is_running()) {
 						start_state.run();
 					}
-					active_substate.set_active_substate(active_substate.get_start_state());
+					active_substate.set_active_substate(start_state);
 				}
 				cjs.signal();
 				return true;

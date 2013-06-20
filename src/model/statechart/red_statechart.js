@@ -198,20 +198,22 @@
 			}
 
 			this.$local_state = cjs.$(my_starting_state);
-			if(options.concurrent === true) {
-				if(!this.is_puppet()) {
-					_.each(this.get_substates(), function(substate) {
-						substate.disable_immediate_outgoing_transitions();
-						substate.disable_immediate_incoming_transitions();
-						substate.set_active(true);
-						substate.run();
-					});
-				}
-			} else {
-				if(!this.is_puppet()) {
-					my_starting_state.enable_outgoing_transitions();
-					my_starting_state.set_active(true);
-					my_starting_state.run();
+			if(this.is_active()) {
+				if(options.concurrent === true) {
+					if(!this.is_puppet()) {
+						_.each(this.get_substates(), function(substate) {
+							substate.disable_immediate_outgoing_transitions();
+							substate.disable_immediate_incoming_transitions();
+							substate.set_active(true);
+							substate.run();
+						});
+					}
+				} else {
+					if(!this.is_puppet()) {
+						my_starting_state.enable_outgoing_transitions();
+						my_starting_state.set_active(true);
+						my_starting_state.run();
+					}
 				}
 			}
 
@@ -237,25 +239,26 @@
 							substate.disable_immediate_incoming_transitions();
 							substate.set_active(true);
 							substate.run();
-							var start_state = substate.get_start_state();
-							var starting_state = start_state.getTo();
+							var starting_state = substate.get_active_substate();
 							starting_state.set_active(true);
 							starting_state.run();
 						});
 					}
 					start_state.set_active(false);
 				} else {
-					var start_transition = start_state.get_outgoing_transition();
-					var starts_at = start_transition.to();
+					//var start_transition = start_state.get_outgoing_transition();
+					//var starting_state = start_transition.to();
+					var starting_state = this.get_active_substate();
 					_.each(this.get_substates(), function(substate) {
-						if(substate !== starts_at) {
+						if(substate !== starting_state) {
 							substate.set_active(false);
 							substate.stop();
 						}
 					});
 					//start_state.set_active(true);
-					starts_at.set_active(true);
-					starts_at.run();
+					starting_state.set_active(true);
+					starting_state.run();
+					starting_state.enable_outgoing_transitions();
 				}
 			}
 			return this;
@@ -373,6 +376,9 @@
 							local_state.enable_outgoing_transitions();
 							local_state.run();
 						}
+					}
+					if(!local_state.is_active()) {
+						local_state.set_active(true);
 					}
 				}
 				cjs.signal();
@@ -535,9 +541,11 @@
 				state: state,
 				index: index
 			});
-			if(this.is_concurrent() && this.is_active() && !this.is_puppet()) {
-				state.set_active(true);
-				state.run();
+			if(this.is_active() && !this.is_puppet()) {
+				if(this.is_concurrent()) {
+					state.set_active(true);
+					state.run();
+				}
 			}
 		};
 		proto.remove_substate = function (name, state, also_destroy) {
