@@ -6,6 +6,7 @@
 	var cjs = red.cjs,
 		_ = red._;
 
+	var show_all_start_states = true;
 
 	var FAKE_ROOT_STATECHART = {
 			hash: function () {
@@ -64,7 +65,7 @@
 				if (sc instanceof red.Statechart && sc.is_initialized()) {
 					var substates = sc.get_substates();
 
-					if(_.size(substates) > 0 || is_root || true) { // use is_root for root statecharts with only a start state
+					if(_.size(substates) > 0 || is_root || show_all_start_states) { // use is_root for root statecharts with only a start state
 						//if(!sc.is_concurrent()) {
 						node.children.push({statechart: sc.get_start_state(), children: []});
 						//}

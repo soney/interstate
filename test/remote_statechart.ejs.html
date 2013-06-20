@@ -105,18 +105,27 @@
 					};
 
 					var master = window.master = red.create("statechart");
-					master	.add_state("a")
-							.add_state("b.x")
-							.add_state("b.y")
-							.starts_at("a")
-							.add_transition("a", "b.y", ge("on('click', sq)"))
+					master	.add_state("init")
+							.add_state("hover")
+							.starts_at("init")
 							.run();
-					var b = master.find_state("b");
-					b.starts_at("x");
-					//master.make_concurrent(true);
+					var hover = master.find_state("hover");
+					hover	.add_state("state_1")
+							.add_state("state_1.a")
+							.add_state("state_1.b")
+							.add_state("state_2")
+							.add_state("state_2.x")
+							.add_state("state_2.y")
+							.make_concurrent(true);
+					var state_1 = hover.find_state("state_1");
+					state_1.starts_at("a");
+					var state_2 = hover.find_state("state_2");
+					state_2.starts_at("x");
+
+					//master.add_transition("init", "hover.state_1.b", ge("on('click', sq)"));
+					//master.add_transition("init", "hover.state_2.y", ge("on('click', sq)"));
+					master.add_transition("init", "hover", ge("on('click', sq)"));
 					/*
-					master.add_transition("not_selected", "selected", ge("on('click', sq)"));
-					master.add_transition("selected", "not_selected", ge("on('dblclick', sq)"));
 
 					var selected_state = master.find_state("selected");
 					selected_state	.add_state("hover_state")

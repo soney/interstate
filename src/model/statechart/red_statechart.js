@@ -356,12 +356,7 @@
 				}, this);
 			} else {
 				cjs.wait();
-				if(this.is_concurrent()) {
-					_.each(this.get_substates(), function(substate) {
-						substate.set_active(false);
-						substate.stop();
-					});
-				} else {
+				if(!this.is_concurrent()) {
 					var local_state = this.$local_state.get();
 					if(local_state !== state) {
 						if (local_state) {
