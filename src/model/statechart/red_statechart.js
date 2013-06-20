@@ -199,16 +199,20 @@
 
 			this.$local_state = cjs.$(my_starting_state);
 			if(options.concurrent === true) {
-				_.each(this.get_substates(), function(substate) {
-					substate.disable_immediate_outgoing_transitions();
-					substate.disable_immediate_incoming_transitions();
-					substate.set_active(true);
-					substate.run();
-				});
+				if(!this.is_puppet()) {
+					_.each(this.get_substates(), function(substate) {
+						substate.disable_immediate_outgoing_transitions();
+						substate.disable_immediate_incoming_transitions();
+						substate.set_active(true);
+						substate.run();
+					});
+				}
 			} else {
-				my_starting_state.enable_outgoing_transitions();
-				my_starting_state.set_active(true);
-				my_starting_state.run();
+				if(!this.is_puppet()) {
+					my_starting_state.enable_outgoing_transitions();
+					my_starting_state.set_active(true);
+					my_starting_state.run();
+				}
 			}
 
 			red.register_uid(this._id, this);
@@ -225,24 +229,30 @@
 				concurrent: is_concurrent
 			});
 			var start_state = this.get_start_state();
-			if(is_concurrent) {
-				if(this.is_active() || this.parent() === undefined) {
+			if(!this.is_puppet()) {
+				if(is_concurrent) {
+					if(this.is_active() || this.parent() === undefined) {
+						_.each(this.get_substates(), function(substate) {
+							substate.disable_immediate_outgoing_transitions();
+							substate.disable_immediate_incoming_transitions();
+							substate.set_active(true);
+							substate.run();
+						});
+					}
+					start_state.set_active(false);
+				} else {
+					var start_transition = start_state.get_outgoing_transition();
+					var starts_at = start_transition.to();
 					_.each(this.get_substates(), function(substate) {
-						substate.disable_immediate_outgoing_transitions();
-						substate.disable_immediate_incoming_transitions();
-						substate.set_active(true);
-						substate.run();
+						if(substate !== starts_at) {
+							substate.set_active(false);
+							substate.stop();
+						}
 					});
+					//start_state.set_active(true);
+					starts_at.set_active(true);
+					starts_at.run();
 				}
-				start_state.set_active(false);
-			} else {
-				var start_transition = start_state.get_outgoing_transition();
-				var starts_at = start_transition.to();
-				_.each(this.get_substates(), function(substate) {
-					substate.set_active(false);
-				});
-				//start_state.set_active(true);
-				starts_at.set_active(true);
 			}
 			return this;
 		};
@@ -377,11 +387,9 @@
 						substate.set_active(true);
 					});
 				} else {
-				/*
 					var start_state = this.get_start_state();
 					start_state.set_active(true);
 					start_state.run();
-					*/
 				}
 				this._emit("run", {
 					target: this,
@@ -527,7 +535,7 @@
 				state: state,
 				index: index
 			});
-			if(this.is_concurrent() && this.is_active()) {
+			if(this.is_concurrent() && this.is_active() && !this.is_puppet()) {
 				state.set_active(true);
 				state.run();
 			}

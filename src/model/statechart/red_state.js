@@ -212,6 +212,11 @@
 		proto.set_active = function (to_active) {
 			if(this.$active) {
 				this.$active.set(to_active === true);
+				if(!to_active) {
+					_.each(this.get_substates(true), function(substate) {
+						substate.set_active(false);
+					}, this);
+				}
 				var event_type = to_active ? "active" : "inactive";
 				this._emit(event_type, {
 					type: event_type,

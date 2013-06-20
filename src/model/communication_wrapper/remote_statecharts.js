@@ -163,7 +163,14 @@
 
 					var outgoing_transition = _.Deferred();
 					var outgoing_transition_value;
-					listeners = { };
+					listeners = {
+						active: function(event) {
+							statechart.set_active(true);
+						},
+						inactive: function (event) {
+							statechart.set_active(false);
+						}
+					};
 
 					wrapper_client.async_get('get_outgoing_transition', function (transition_wrapper) {
 						outgoing_transition_value = red.create_remote_transition(transition_wrapper);
@@ -193,6 +200,7 @@
 							active: is_active_value,
 							puppet: true
 						});
+						wrapper_client.on(listeners);
 					});
 				}
 			}
