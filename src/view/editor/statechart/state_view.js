@@ -5,6 +5,7 @@
 	"use strict";
 	var cjs = red.cjs,
 		_ = red._;
+	var highlight_running = red.__debug_statecharts;
 
 	red.StateView = function (options) {
 		able.make_this_listenable(this);
@@ -29,7 +30,9 @@
 			padding_top: 0,
 			paper_height: 9999,
 			vline_color: "#CCC",
-			vline_dasharray: ". "
+			vline_dasharray: ". ",
+			stroke_width: 1,
+			running_width: 3
 		}, options);
 
 		this.$on_window_click_while_expanded = $.proxy(this.on_window_click_while_expanded, this);
@@ -56,6 +59,22 @@
 		}, {
 			context: this
 		});
+		if(highlight_running) {
+			this.running_fn = cjs.liven(function () {
+				var state = this.option("state");
+				if (state.is_initialized() && state.get_$running()) {
+					if (this.path) {
+						this.path.attr("stroke-width", this.option("running_width"));
+					}
+				} else {
+					if (this.path) {
+						this.path.attr("stroke-width", this.option("stroke_width"));
+					}
+				}
+			}, {
+				context: this
+			});
+		}
 
 		var state = this.option("state");
 		var paper = this.option("paper");
@@ -319,6 +338,10 @@
 			if(this.edit_dropdown) {
 				this.edit_dropdown.dropdown("destroy");
 			}
+			if(this.running_fn) {
+				this.running_fn.destroy();
+			}
+
 			able.destroy_this_listenable(this);
 			able.destroy_this_optionable(this);
 		};

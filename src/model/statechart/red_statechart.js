@@ -174,6 +174,9 @@
 			this.$outgoing_transitions = options.outgoing_transitions || cjs.array();
 
 			this._running = options.running === true;
+			if(red.__debug_statecharts) {
+				this.$running = cjs.$(this._running);
+			}
 
 			My.superclass.do_initialize.apply(this, arguments);
 
@@ -221,6 +224,11 @@
 			this._initialized.set(true);
 			this._emit("initialized");
 		};
+		if(red.__debug_statecharts) {
+			proto.get_$running = function() {
+				return this.$running.get();
+			};
+		}
 
 		proto.is_concurrent = function () { return this.$concurrent.get(); };
 		proto.make_concurrent = function (is_concurrent) {
@@ -396,6 +404,9 @@
 					target: this,
 					type: "run"
 				});
+				if(red.__debug_statecharts) {
+					this.$running.set(true);
+				}
 				red.event_queue.signal();
 			}
 			return this;
@@ -424,6 +435,9 @@
 				type: "stop",
 				target: this
 			});
+			if(red.__debug_statecharts) {
+				this.$running.set(false);
+			}
 			red.event_queue.signal();
 			return this;
 		};

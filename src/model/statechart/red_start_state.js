@@ -12,6 +12,9 @@
 		this._transition_to_self = cjs.$(undefined);
 		red.StartState.superclass.constructor.apply(this, arguments);
 		this._running = options.running === true;
+		if(red.__debug_statecharts) {
+			this.$running = cjs.$(this._running);
+		}
 	};
 	(function (My) {
 		_.proto_extend(My, red.State);
@@ -49,6 +52,11 @@
 			this._initialized.set(true);
 			this._emit("initialized");
 		};
+		if(red.__debug_statecharts) {
+			proto.get_$running = function() {
+				return this.$running.get();
+			};
+		}
 		proto.setTo = function (toNode) {
 			var transition = this.outgoingTransition;
 			var parent = this.parent();
@@ -113,6 +121,9 @@
 					target: this,
 					type: "run"
 				});
+				if(red.__debug_statecharts) {
+					this.$running.set(true);
+				}
 			}
 			return this;
 		};
@@ -123,6 +134,9 @@
 					type: "stop",
 					target: this
 				});
+				if(red.__debug_statecharts) {
+					return this.$running.set(false);
+				}
 			}
 			return this;
 		};

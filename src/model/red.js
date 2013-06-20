@@ -13,6 +13,8 @@ var red = (function (root) {
 	red.version = "<%= version %>";
 	red.build_time = "<%= build_time %>";
 
+	red.__debug_statecharts = true;
+
 	able.make_this_listenable(red);
 	able.make_proto_listenable(red);
 

@@ -6,7 +6,7 @@
 	var cjs = red.cjs,
 		_ = red._;
 
-	var show_all_start_states = true;
+	var show_all_start_states = red.__debug_statecharts;
 
 	var FAKE_ROOT_STATECHART = {
 			hash: function () {

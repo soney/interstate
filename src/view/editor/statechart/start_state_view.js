@@ -5,6 +5,9 @@
 	"use strict";
 	var cjs = red.cjs,
 		_ = red._;
+
+	var highlight_running = red.__debug_statecharts;
+
 	red.StartStateView = function (options) {
 		able.make_this_optionable(this, {
 			state: null,
@@ -16,7 +19,11 @@
 			paper_height: 9999,
 			vline_color: "#CCC",
 			vline_dasharray: ". ",
-			active_fill: "red"
+			active_fill: "red",
+			running_stroke: "#99E",
+			stroke: "none",
+			running_stroke_width: 3,
+			stroke_width: 0
 		}, options);
 
 		var state = this.option("state");
@@ -52,6 +59,28 @@
 			}, {
 				context: this
 			});
+			if(highlight_running) {
+				this.running_fn = cjs.liven(function () {
+					var state = this.option("state");
+					if (state.is_initialized() && state.get_$running()) {
+						if (this.circle) {
+							this.circle.attr({
+								"stroke": this.option("running_stroke"),
+								"stroke-width": this.option("running_stroke_width")
+							});
+						}
+					} else {
+						if (this.circle) {
+							this.circle.attr({
+								"stroke": this.option("stroke"),
+								"stroke-width": this.option("stroke_width")
+							});
+						}
+					}
+				}, {
+					context: this
+				});
+			}
 
 			this.$on_context_menu = $.proxy(this.on_context_menu, this);
 			this.vline = paper	.path("M" + center.x + "," + center.y + "V" + this.option("paper_height"))
@@ -124,6 +153,9 @@
 			}
 			able.destroy_this_optionable(this);
 			this.active_fn.destroy();
+			if(this.running_fn) {
+				this.running_fn.destroy();
+			}
 		};
 	}(red.StartStateView));
 }(red, jQuery));

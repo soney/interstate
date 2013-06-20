@@ -46,6 +46,9 @@
 		}
 		this._last_run_event = cjs.$(false);
 		this._enabled = false;
+		if(red.__debug_statecharts) {
+			this.$enabled = cjs.$(this._enabled);
+		}
 	};
 	(function (My) {
 		var proto = My.prototype;
@@ -218,17 +221,29 @@
 			this._enabled = true;
 			var event = this.event();
 			event.enable();
+			if(red.__debug_statecharts) {
+				this.$enabled.set(true);
+			}
 		};
 
 		proto.disable = function () {
 			this._enabled = false;
 			var event = this.event();
 			event.disable();
+			if(red.__debug_statecharts) {
+				this.$enabled.set(false);
+			}
 		};
 
 		proto.is_enabled = function () {
 			return this._enabled;
 		};
+
+		if(red.__debug_statecharts) {
+			proto.get_$enabled = function() {
+				return this.$enabled.get();
+			};
+		}
 
 		proto.summarize = function () {
 			var context = this.context();

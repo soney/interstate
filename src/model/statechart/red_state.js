@@ -101,6 +101,14 @@
 		var proto = my.prototype;
 		able.make_proto_listenable(proto);
 
+		proto.do_initialize = function (options) {
+			this._puppet = options.puppet === true;
+			this._parent = options.parent;
+			this.$active = cjs.$(options.active === true || (!this._parent && !this._puppet));
+			this._context = options.context;
+			this.set_basis(options.basis, options.set_basis_as_root);
+		};
+
 		proto.is_initialized = function () {
 			return this._initialized.get();
 		};
@@ -202,13 +210,6 @@
 			}, this);
 		};
 
-		proto.do_initialize = function (options) {
-			this._puppet = options.puppet === true;
-			this._parent = options.parent;
-			this.$active = cjs.$(options.active === true || (!this._parent && !this._puppet));
-			this._context = options.context;
-			this.set_basis(options.basis, options.set_basis_as_root);
-		};
 		proto.set_active = function (to_active) {
 			if(this.$active) {
 				this.$active.set(to_active === true);

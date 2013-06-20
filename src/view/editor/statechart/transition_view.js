@@ -6,6 +6,8 @@
 	var cjs = red.cjs,
 		_ = red._;
 
+	var highlight_enabled = red.__debug_statecharts;
+
 	var get_arrow_paths = function (from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians) {
 		var fromX = from.x,
 			fromY = from.y,
@@ -95,7 +97,9 @@
 			padding_top: 0,
 			paper_height: 9999,
 			vline_color: "#CCC",
-			vline_dasharray: ". "
+			vline_dasharray: ". ",
+			enabled_dasharray: "",
+			disabled_dasharray: ". "
 		}, options);
 
 		this.$on_window_click_while_expanded = $.proxy(this.on_window_click_while_expanded, this);
@@ -160,6 +164,23 @@
 
 			this.show_menu();
 		}, this));
+
+		if(highlight_enabled) {
+			this.enabled_fn = cjs.liven(function () {
+				var transition = this.option("transition");
+				if (transition.is_initialized() && transition.get_$enabled()) {
+					if (this.line_path) {
+						this.line_path.attr("stroke-dasharray", this.option("enabled_dasharray"));
+					}
+				} else {
+					if (this.line_path) {
+						this.line_path.attr("stroke-dasharray", this.option("disabled_dasharray"));
+					}
+				}
+			}, {
+				context: this
+			});
+		}
 	};
 
 	(function (My) {
@@ -449,6 +470,10 @@
 			if(this.edit_dropdown) {
 				this.edit_dropdown.dropdown("destroy");
 			}
+			if(this.enabled_fn) {
+				this.enabled_fn.destroy();
+			}
+
 
 			able.destroy_this_listenable(this);
 			able.destroy_this_optionable(this);
