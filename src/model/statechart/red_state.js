@@ -325,7 +325,7 @@
 				if (i === to_len) { //if it is a self-transition. Just handle it on the lowest level possible
 					i -= 2;
 				}
-				cjs.wait();
+				//cjs.wait();
 				var active_substate, parent;
 				while (i < to_len - 1) {
 					parent = to_lineage[i];
@@ -343,7 +343,7 @@
 					}
 					active_substate.set_active_substate(start_state);
 				}
-				cjs.signal();
+				//cjs.signal();
 				return true;
 			}
 			return false;

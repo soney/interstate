@@ -322,7 +322,6 @@
 		proto.set_active_substate = function (state, transition, event) {
 			//if(uid.strip_prefix(this.id()) == 53) { debugger; }
 			if(transition) {
-				cjs.wait();
 				red.event_queue.once("end_event_queue_round_0", function () {
 					this._emit("pre_transition_fire", {
 						type: "pre_transition_fire",
@@ -345,7 +344,9 @@
 							}
 						});
 					} else {
+						transition.increment_times_run();
 						var local_state = this.$local_state.get();
+						cjs.wait();
 						if(local_state !== state) {
 							if (local_state) {
 								local_state.stop();
@@ -361,12 +362,11 @@
 							local_state.enable_outgoing_transitions();
 							local_state.run();
 						}
-						transition.increment_times_run();
+						cjs.signal();
 					}
 				}, this);
 				red.event_queue.once("end_event_queue_round_4", function () {
 					transition.set_active(false);
-					cjs.signal();
 					this._emit("post_transition_fire", {
 						type: "post_transition_fire",
 						transition: transition,
@@ -376,7 +376,7 @@
 					});
 				}, this);
 			} else {
-				cjs.wait();
+				//cjs.wait();
 				if(this.is_concurrent()) {
 					_.each(this.get_substates(true), function(substate) {
 						substate.set_active(true);
@@ -404,7 +404,7 @@
 						local_state.run();
 					}
 				}
-				cjs.signal();
+				//cjs.signal();
 			}
 		};
 		proto.run = function () {

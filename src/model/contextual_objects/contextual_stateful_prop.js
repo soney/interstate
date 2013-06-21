@@ -31,11 +31,15 @@
 		}
 		*/
 
+		this.$active_value = new cjs.Constraint(_.bind(this.active_value_getter, this));
+
 		this.$value.onChange(_.bind(function () {
-			if (red.event_queue.end_queue_round === 3 || red.event_queue.end_queue_round === 4) {
+			//if (red.event_queue.end_queue_round === 3 || red.event_queue.end_queue_round === 4) {
 				this.$value.update();
-			}
+			//}
 		}, this));
+		_.defer(_.bind(this.$value.update, this.$value));
+		//this.$value.update();
 
 		this._type = "stateful_prop";
 	};
@@ -237,7 +241,8 @@
 		};
 
 		
-		proto.active_value = function () {
+		proto.active_value_getter = function () {
+			var stateful_prop = this.get_object();
 			var values = this.get_values();
 			var len = values.length;
 			var info, i, tr, state, val;
@@ -278,9 +283,15 @@
 					tr = state.get_times_run();
 
 					if (tr > this.get_transition_times_run(state)) {
+						if(uid.strip_prefix(stateful_prop.id()) == 40) {
+							//console.log(rv);
+							//debugger;
+							console.log(state, tr);
+							console.log(using_state);
+						}
 						this.set_transition_times_run(state, tr);
 
-						if (using_val === NO_VAL) {
+						if (!(using_state instanceof red.StatechartTransition)) {
 							using_val = val;
 							using_state = state;
 						}
@@ -324,12 +335,21 @@
 			};
 		};
 
+		proto.active_value = function() {
+			return this.$active_value.get();
+		};
+
 		proto._getter = function () {
 			var active_value_info = this.active_value();
 			var using_val = active_value_info.value;
 			var using_state = active_value_info.state;
 			var rv;
 
+			var stateful_prop = this.get_object();
+			if(uid.strip_prefix(stateful_prop.id()) == 37) {
+				console.log(this._last_rv);
+				//debugger;
+			}
 			if (using_state instanceof red.StatechartTransition) {
 				if(red.event_queue.end_queue_round === false) {
 					return this._last_rv;
@@ -350,6 +370,10 @@
 			//	}
 
 				this._last_rv = rv;
+				if(uid.strip_prefix(stateful_prop.id()) == 40) {
+					//console.log(rv);
+					//debugger;
+				}
 				return rv;
 			} else {
 				return undefined;
@@ -369,6 +393,7 @@
 
 		proto.destroy = function () {
 			My.superclass.destroy.apply(this, arguments);
+			this.$active_value.destroy();
 		};
 	}(red.ContextualStatefulProp));
 }(red));
