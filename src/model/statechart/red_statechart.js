@@ -332,6 +332,11 @@
 					});
 					transition.set_active(true);
 				}, this);
+				red.event_queue.once("end_event_queue_round_2", function () {
+					if(!this.is_concurrent()) {
+						transition.increment_times_run();
+					}
+				}, this);
 				red.event_queue.once("end_event_queue_round_3", function () {
 					if(this.is_concurrent()) {
 						_.each(this.get_substates(true), function(substate) {
@@ -344,7 +349,6 @@
 							}
 						});
 					} else {
-						transition.increment_times_run();
 						var local_state = this.$local_state.get();
 						cjs.wait();
 						if(local_state !== state) {

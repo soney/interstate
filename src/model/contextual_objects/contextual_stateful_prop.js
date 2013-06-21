@@ -347,7 +347,7 @@
 
 			var stateful_prop = this.get_object();
 			if(uid.strip_prefix(stateful_prop.id()) == 37) {
-				console.log(this._last_rv);
+				//console.log(this._last_rv);
 				//debugger;
 			}
 			if (using_state instanceof red.StatechartTransition) {
