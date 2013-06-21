@@ -286,8 +286,8 @@
 						if(uid.strip_prefix(stateful_prop.id()) == 40) {
 							//console.log(rv);
 							//debugger;
-							console.log(state, tr);
-							console.log(using_state);
+							//console.log(state, tr);
+							//console.log(using_state);
 						}
 						this.set_transition_times_run(state, tr);
 
