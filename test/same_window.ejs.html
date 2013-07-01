@@ -16,6 +16,17 @@
 				var root = env.get_root();
 
 				env	.set("height", "200")
+					.set("rect", "<stateful>")
+					.cd("rect")
+					.set("width", "(start)", "10+5")
+					.set("height", "(start)", "width")
+					.up()
+					.set("my_rect", "<stateful>")
+					.cd("my_rect")
+					//.set("(prototypes)", "(start)", "rect")
+					.set("width", "(start)", "20")
+				/*
+				env	.set("height", "200")
 					.cd("screen")
 					.set("my_obj", "<stateful>")
 					.cd("my_obj")
