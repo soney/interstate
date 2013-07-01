@@ -423,6 +423,12 @@
 						substate.run();
 						substate.set_active(true);
 					});
+				} else {
+					var start_state = this.get_start_state();
+					this.$local_state.set(start_state);
+					start_state.enable_outgoing_transitions();
+					start_state.run();
+					start_state.set_active(true);
 				}
 				this._emit("run", {
 					target: this,

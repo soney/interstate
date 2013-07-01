@@ -20,9 +20,12 @@
 					.set("my_obj", "<stateful>")
 					.cd("my_obj")
 					.add_state("init")
+					.add_state("other")
 					.start_at("init")
+					.add_transition("init", "other", "on('timeout', 1000)")
 					.set("(prototypes)", "(start)", "shape.rect")
-					.set("fill", "(start)", "'orange'");
+					.set("fill", "(start)", "'orange'")
+					.set("fill", "other", "'red'");
 					/*
 env.cd("screen")
 	.set("rect", "<stateful>")

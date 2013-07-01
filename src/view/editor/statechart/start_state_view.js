@@ -19,7 +19,7 @@
 			paper_height: 9999,
 			vline_color: "#CCC",
 			vline_dasharray: ". ",
-			active_fill: "red",
+			active_fill: red.__debug_statecharts ? "red" : "black",
 			running_stroke: "#99E",
 			stroke: "none",
 			running_stroke_width: 3,
