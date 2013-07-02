@@ -1,0 +1,21 @@
+{
+	"manifest_version": 2,
+
+	"name": "One-click Kittens",
+	"description": "This extension demonstrates a 'browser action' with kittens.",
+	"version": "1.0",
+
+	"content_scripts": [
+		{
+			"matches": ["http://localhost:8000/test/unit_tests/unit_tests.ejs.html"],
+			"js": ["hello.js"],
+			"run_at": "document_start"
+		}
+	],
+
+	"permissions": [
+		"tabs",
+		"http://localhost:8000/test/unit_tests/unit_tests.ejs.html",
+		"debugger"
+	]
+}
