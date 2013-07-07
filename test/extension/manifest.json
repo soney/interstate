@@ -1,14 +1,17 @@
 {
 	"manifest_version": 2,
 
-	"name": "One-click Kittens",
-	"description": "This extension demonstrates a 'browser action' with kittens.",
+	"name": "Red Test Extension",
+	"description": "This extension helps test Euclase.",
 	"version": "1.0",
+	"background": {
+		"scripts": ["background.js"]
+	},
 
 	"content_scripts": [
 		{
 			"matches": ["http://localhost:8000/test/unit_tests/unit_tests.ejs.html"],
-			"js": ["hello.js"],
+			"js": ["content_script.js"],
 			"run_at": "document_start"
 		}
 	],
