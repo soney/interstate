@@ -1,7 +1,5 @@
 var listener = function(source, method, params) {
-	if(source.tabId === debuggerId.tabId) {
-		console.log("event", arguments);
-	}
+	console.log("event", arguments);
 };
 chrome.debugger.onEvent.addListener(listener);
 
@@ -17,7 +15,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 					if(source.tabId === debuggerId.tabId) {
 						if(method === "HeapProfiler.addProfileHeader") {
 							var uid = params.header.uid;
-							chrome.debugger.sendCommand(debuggerId, "Profiler.getHeapSnapshot", { uid: uid }, function() {
+							chrome.debugger.sendCommand(debuggerId, "HeapProfiler.getHeapSnapshot", { uid: uid }, function() {
 								chrome.debugger.detach(debuggerId, function() {
 									if(chrome.runtime.lastError) { console.error(chrome.runtime.lastError);  return;}
 									sendResponse({uid: uid});
