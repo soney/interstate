@@ -1,8 +1,16 @@
+var listener = function(source, method, params) {
+	if(source.tabId === debuggerId.tabId) {
+		console.log("event", arguments);
+	}
+};
+chrome.debugger.onEvent.addListener(listener);
+
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {   
     if(request.command) {
 		var command = request.command;
 		if(command === "take_snapshot") {
 			var debuggerId = {tabId: sender.tab.id};
+			console.log(sender.tab.id);
 			chrome.debugger.attach(debuggerId, "1.0", function() {
 				if(chrome.runtime.lastError) { console.error(chrome.runtime.lastError); return; }
 				var listener = function(source, method, params) {

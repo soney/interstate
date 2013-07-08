@@ -27,6 +27,7 @@ window.addEventListener("message", function(event) {
 }, false);
 
 var cjs = red.cjs;
+/*
 asyncTest("Constraint allocation", function() {
 	expect(3);
 	clear_snapshots(function() {
@@ -46,4 +47,24 @@ asyncTest("Constraint allocation", function() {
 		});
 	});
 });
+*/
+
+asyncTest("Map Allocation", function() {
+	expect(3);
+	clear_snapshots(function() {
+		take_snapshot(function() {
+			var m = cjs.map();
+			m.put("a", 1);
+			equal(m.get("b"), undefined);
+			equal(m.get("a"), 1);
+			m.destroy();
+			m = null;
+			take_snapshot(function() {
+				ok(true, "Make sure nothing was allocated");
+				start();
+			});
+		});
+	});
+});
+
 }());

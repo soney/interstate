@@ -112,9 +112,11 @@
 		};
 	}(red.PointerBucket));
 
+/*
 	red.pointer_buckets = new RedMap({
 		hash: "hash"
 	});
+	*/
 
 	red.find_or_put_contextual_obj = function (obj, pointer, options) {
 		var pointer_root;
