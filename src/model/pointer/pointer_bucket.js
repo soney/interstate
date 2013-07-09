@@ -71,6 +71,47 @@
 			});
 			return child_tree;
 		};
+		proto.get_valid_child_pointers = function() {
+			
+			var rv;
+			if(this.contextual_root.is_template()) {
+				var instance_pointers = this.contextual_root.instance_pointers();
+				rv = _.map(instance_pointers, function(instance_pointer) {
+					return { pointer: instance_pointer, obj: this.contextual_root.get_object() };
+				});
+				return rv;
+			} else {
+				var child_infos = this.contextual_root.raw_children();
+				rv = [];
+				var my_pointer = this.contextual_root.get_pointer();
+				_.each(child_infos, function(child_info) {
+					var value = child_info.value;
+					if (value instanceof red.Dict || value instanceof red.Cell || value instanceof red.StatefulProp) {
+						rv.push({obj: value, pointer: my_pointer.push(value)});
+					}
+				});
+				return rv;
+			}
+		};
+		proto.get_expired_children = function() {
+			var valid_child_pointers = this.get_valid_child_pointers();
+			console.log(valid_child_pointers);
+		/*
+			var tree_children = this.tree.children.values();
+			var buckets = _.map(tree_children, function(tree_child) {
+				return tree_child.bucket;
+			});
+			console.log(buckets);
+			
+			return [];
+			*/
+		};
+		proto.destroy = function() {
+			this.objects.destroy();
+			this.children.destroy();
+			delete this.objects;
+			delete this.children;
+		};
 	}(red.PointerTree));
 
 	red.PointerBucket = function (options) {
@@ -110,6 +151,14 @@
 			var rv = node.get_or_put_obj(obj, pointer, options);
 			return rv;
 		};
+		proto.get_expired_children = function() {
+			return this.tree.get_expired_children();
+		};
+		proto.destroy = function() {
+			this.tree.destroy();
+			delete this.tree;
+			delete this.contextual_root;
+		};
 	}(red.PointerBucket));
 
 	red.pointer_buckets = new RedMap({
@@ -134,5 +183,18 @@
 
 		var rv = pointer_bucket.find_or_put(obj, pointer, options);
 		return rv;
+	};
+	var get_expired_pointer_buckets = function(root) {
+		var bucket_roots = red.pointer_buckets.keys();
+		var invalid_bucket_roots = _.without(bucket_roots, root);
+		var real_root_bucket = red.pointer_buckets.get(root);
+		var other_expired_buckets = real_root_bucket.get_expired_children();
+
+		return invalid_bucket_roots.concat(other_expired_buckets);
+	};
+
+	red.get_expired_contextual_objects = function(root) {
+		var expired_buckets = get_expired_pointer_buckets(root);
+		console.log(expired_buckets);
 	};
 }(red));

@@ -49,6 +49,7 @@ asyncTest("Constraint allocation", function() {
 });
 */
 
+/*
 asyncTest("Map Allocation", function() {
 	expect(3);
 	clear_snapshots(function() {
@@ -65,6 +66,29 @@ asyncTest("Map Allocation", function() {
 			});
 		});
 	});
+});
+*/
+
+test("Pointer Bucket Collection", function() {
+	var root = red.create("dict");
+	var a_dict = red.create("dict");
+	var b_dict = red.create("dict");
+	var croot = red.find_or_put_contextual_obj(root);
+	root.set("a", a_dict);
+	root.set("b", b_dict);
+	var ca_dict = croot.prop("a");
+	var cb_dict = croot.prop("b");
+	equal(ca_dict.get_object(), a_dict);
+	equal(cb_dict.get_object(), b_dict);
+	root.unset("a");
+	equal(croot.prop("a"), undefined);
+	red.get_expired_contextual_objects(root);
+	/*
+	equal(croot.prop("b"), b_dict);
+	root.set("a", 1);
+	root.set("b", 2);
+	console.log(croot.prop("a"));
+	*/
 });
 
 }());

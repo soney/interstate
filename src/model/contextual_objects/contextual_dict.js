@@ -104,8 +104,7 @@
 		}
 	};
 
-	var get_contextual_object = function (info, pointer) {
-		var value = info.value;
+	var get_contextual_object = function (value, pointer) {
 		var value_ptr = pointer.push(value);
 
 		if (value instanceof red.Dict || value instanceof red.Cell || value instanceof red.StatefulProp) {
@@ -147,7 +146,7 @@
 			return rv;
 		};
 
-		proto.children = function (exclude_builtins) {
+		proto.raw_children = function (exclude_builtins) {
 			var dict = this.object;
 			var pointer = this.pointer;
 			var i;
@@ -226,13 +225,22 @@
 
 				var contextual_objects = _.map(infos, function (info, i) {
 					var name = names[i];
-					var value = get_contextual_object(info, pointer);
-					return {name: name, value: value, inherited: type === "inherited", builtin: (type === "builtin" || type === "special_context") };
+					return {name: name, value: info.value, inherited: type === "inherited", builtin: (type === "builtin" || type === "special_context") };
 				}, this);
 				rv.push.apply(rv, contextual_objects);
 			}, this);
 
 			return rv;
+		};
+		proto.children = function (exclude_builtins) {
+			var raw_children = this.raw_children(exclude_builtins);
+			var pointer = this.pointer;
+			var children = _.map(raw_children, function(raw_child) {
+				return _.extend({}, raw_child, {
+					value: get_contextual_object(raw_child.value)
+				});
+			});
+			return children;
 		};
 		proto.has = function (name, ignore_inherited) {
 			var dict = this.get_object();
@@ -311,7 +319,7 @@
 
 			if (info) {
 				var pointer = this.get_pointer();
-				var value = get_contextual_object(info, pointer);
+				var value = get_contextual_object(info.value, pointer);
 				return value;
 			} else {
 				return undefined;
@@ -369,7 +377,7 @@
 			return (_.isNumber(manifestations_value) && !isNaN(manifestations_value)) || _.isArray(manifestations_value);
 		};
 
-		proto.instances = function () {
+		proto.instance_pointers = function() {
 			var manifestations_value = this.get_manifestations_value();
 			var i;
 			if (_.isNumber(manifestations_value)) {
@@ -382,15 +390,23 @@
 			}
 
 			var pointer = this.get_pointer();
-			var object = this.get_object();
-			var manifestation_contextual_objects = _.map(manifestations_value, function (basis, index) {
+			var manifestation_pointers = _.map(manifestations_value, function (basis, index) {
 					var manifestation_obj = this._manifestation_objects.get_or_put(basis, function () {
 						return new red.CopyContext(this, basis, index + 1);
 					}, this);
 					var manifestation_pointer = pointer.push_special_context(manifestation_obj);
-					var contextual_object = red.find_or_put_contextual_obj(object, manifestation_pointer);
-					return contextual_object;
+					return manifestation_pointer;
 				}, this);
+
+			return manifestation_pointers;
+		};
+		proto.instances = function () {
+			var object = this.get_object();
+			var instance_pointers = this.instance_pointers();
+			var manifestation_contextual_objects = _.map(instance_pointers, function(instance_pointer) {
+				var contextual_object = red.find_or_put_contextual_obj(object, instance_pointer);
+				return contextual_object;
+			});
 
 			return manifestation_contextual_objects;
 		};
@@ -454,7 +470,6 @@
 					}
 				}
 			}
-
 
 			if (info) {
 				return info;
