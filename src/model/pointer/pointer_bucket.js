@@ -7,6 +7,8 @@
 		_ = red._;
 
 	red.PointerTree = function (options) {
+		this.contextual_object = options.contextual_object;
+		/*
 		this.objects = new RedMap({
 			hash: "hash",
 			equals: function (a, b) {
@@ -15,6 +17,7 @@
 			keys: options.object_keys,
 			values: options.object_values
 		});
+		*/
 		this.children = new RedMap({
 			hash: function (info) {
 				var child = info.child,
@@ -37,8 +40,8 @@
 					return false;
 				}
 			},
-			keys: options.pointer_keys,
-			values: options.pointer_values
+			keys: options.pointer_keys || [],
+			values: options.pointer_values || []
 		});
 	};
 
@@ -60,19 +63,20 @@
 				child: child,
 				special_contexts: special_contexts
 			}, function () {
-				var tree = new red.PointerTree({
+				var tree = new red.PointerTree();
+				/*
 					object_keys: [],
 					object_values: [],
 					pointer_keys: [],
 					pointer_values: []
 				});
+				*/
 
 				return tree;
 			});
 			return child_tree;
 		};
 		proto.get_valid_child_pointers = function() {
-			
 			var rv;
 			if(this.contextual_root.is_template()) {
 				var instance_pointers = this.contextual_root.instance_pointers();
@@ -94,9 +98,13 @@
 			}
 		};
 		proto.get_expired_children = function() {
+			var children = this.children.values();
+			var keys = this.children.keys();
+			var objects = this.objects.keys();
+			console.log(keys, children, this.objects.keys(), this.objects.values());
+		/*
 			var valid_child_pointers = this.get_valid_child_pointers();
 			console.log(valid_child_pointers);
-		/*
 			var tree_children = this.tree.children.values();
 			var buckets = _.map(tree_children, function(tree_child) {
 				return tree_child.bucket;
@@ -123,11 +131,7 @@
 		});
 
 		this.tree = new red.PointerTree({
-			object_keys: [root],
-			object_values: [this.contextual_root],
-			pointer_keys: [],
-			pointer_values: [],
-			pointer: root_pointer
+			contextual_object: this.contextual_root
 		});
 	};
 
@@ -148,7 +152,19 @@
 				node = node.get_or_put_child(ptr_i, sc_i);
 				i += 1;
 			}
+
+/*
+			var set_options = true;
+			var rv = this.objects.get_or_put(object, function () {
+				set_options = false;
+				return red.create_contextual_object(object, pointer, options);
+			});
+			if (set_options) {
+				rv.set_options(options);
+			}
+
 			var rv = node.get_or_put_obj(obj, pointer, options);
+			*/
 			return rv;
 		};
 		proto.get_expired_children = function() {
