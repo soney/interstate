@@ -237,7 +237,7 @@
 			var pointer = this.pointer;
 			var children = _.map(raw_children, function(raw_child) {
 				return _.extend({}, raw_child, {
-					value: get_contextual_object(raw_child.value)
+					value: get_contextual_object(raw_child.value, pointer)
 				});
 			});
 			return children;
@@ -485,8 +485,6 @@
 
 		proto.destroy = function () {
 			my.superclass.destroy.apply(this, arguments);
-			this.attachments.destroy();
-			this.get_child_pointer_objects.destroy();
 		};
 
 		proto._getter = function () {

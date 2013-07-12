@@ -67,6 +67,7 @@
 
 		proto.destroy = function () {
 			this.$value.destroy();
+			red.destroy_contextual_obj(this);
 		};
 
 		proto.get_name = function () {

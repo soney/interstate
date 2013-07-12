@@ -82,13 +82,12 @@ test("Pointer Bucket Collection", function() {
 	equal(cb_dict.get_object(), b_dict);
 	root.unset("a");
 	equal(croot.prop("a"), undefined);
-	red.get_expired_contextual_objects(root);
-	/*
-	equal(croot.prop("b"), b_dict);
-	root.set("a", 1);
-	root.set("b", 2);
-	console.log(croot.prop("a"));
-	*/
+	var expired_cobjs = red.get_expired_contextual_objects(root);
+	equal(expired_cobjs.length, 1);
+	equal(expired_cobjs[0], ca_dict);
+	ca_dict.destroy();
+	expired_cobjs = red.get_expired_contextual_objects(root);
+	equal(expired_cobjs.length, 0);
 });
 
 }());

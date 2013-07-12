@@ -256,7 +256,7 @@ var RedMap = (function (root) {
             }
         };
         proto.remove = function (key) {
-            var i, item_i, len;
+            var i, item_i, len, rv;
             var hash = this._hash(key);
             var hash_arr = this._khash[hash];
             if (hash_arr) {
@@ -278,13 +278,14 @@ var RedMap = (function (root) {
 								this._ordered_values.splice(i, 1);
 								i--;
 								len--;
+								rv = item_i.value;
 							}
 						}
-                        return this;
+                        return rv;
                     }
                 }
             }
-            return this;
+            return rv;
         };
         proto.get = function (key) {
             var hash = this._hash(key);
