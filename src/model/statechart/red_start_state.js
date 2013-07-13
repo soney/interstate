@@ -149,8 +149,10 @@
 			cjs.wait();
 			if(this.outgoingTransition) {
 				this.outgoingTransition.destroy();
+				delete this.outgoingTransition;
 			}
 			this._transition_to_self.destroy();
+			delete this._transition_to_self;
 			My.superclass.destroy.apply(this, arguments);
 			cjs.signal();
 		};

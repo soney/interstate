@@ -176,13 +176,49 @@
 			if(this.$active) {
 				this.$active.destroy();
 			}
+
 			this._from_state.destroy();
+			delete this._from_state;
+
 			this._to_state.destroy();
+			delete this._to_state;
+
 			this.set_basis(undefined);
+			
 			this._event.off_fire(this.do_fire);
 			this._event.destroy();
+			delete this._event;
+
+			this._initialized.destroy();
+			delete this._initialized;
+
+			this._last_run_event.destroy();
+			delete this._last_run_event;
+
+			this.$active.destroy();
+			delete this.$active;
+			
+			this.$times_run.destroy();
+			delete this.$times_run;
+
+			delete this._context;
+
+			if(red.__debug_statecharts) {
+				this.$enabled.destroy();
+				delete this.$enabled;
+			}
+
 			cjs.signal();
+			able.destroy_this_listenable(this);
+			red.unregister_uid(this.id());
+
+			delete this.$updateFrom;
+			delete this.$updateTo;
+			delete this.$destroy;
+			delete this.$remove;
+			delete this.do_fire;
 		};
+
 		proto.fire = function (event) {
 			if (this.is_puppet()) {
 				this._emit("fire", {type: "fire", target: this});

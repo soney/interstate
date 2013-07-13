@@ -437,9 +437,12 @@
 		proto.destroy = function () {
 			if(this.$active) {
 				this.$active.destroy();
+				delete this.$active;
 			}
 			this._initialized.destroy();
+			delete this._initialized;
 			this._last_run_event.destroy();
+			delete this._last_run_event;
 			if (this._basis) {
 				this._basis.off("add_transition", this.$onBasisAddTransition);
 				this._basis.off("add_substate", this.$onBasisAddSubstate);
@@ -452,6 +455,17 @@
 				this._basis.off("destroy", this.$onBasisDestroy);
 			}
 			able.destroy_this_listenable(this);
+			red.unregister_uid(this.id());
+
+			delete this.$onBasisAddTransition;
+			delete this.$onBasisAddSubstate;
+			delete this.$onBasisRemoveSubstate;
+			delete this.$onBasisRenameSubstate;
+			delete this.$onBasisMoveSubstate;
+			delete this.$onBasisMakeConcurrent;
+			delete this.$onBasisOnTransition;
+			delete this.$onBasisOffTransition;
+			delete this.$onBasisDestroy;
 		};
 	}(red.State));
 }(red));

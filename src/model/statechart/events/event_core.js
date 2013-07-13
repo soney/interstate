@@ -59,10 +59,11 @@
 			} else {
 				if (this.deferred_req !== true) {
 					this.deferred_req = true;
-					_.defer(_.bind(function () {
-						this.deferred_req = false;
-						this.run_event_queue();
-					}, this));
+					var self = this;
+					_.defer(function () {
+						self.deferred_req = false;
+						self.run_event_queue();
+					});
 				}
 			}
 		};
@@ -136,7 +137,13 @@
 				return event && event[prop] === val;
 			});
 		};
-		proto.destroy = function () {};
+		proto.destroy = function () {
+			able.destroy_this_listenable(this);
+			delete this.listeners;
+			delete this._transition;
+			delete this._enabled;
+			delete this.$fire_and_signal;
+		};
 		proto.create_shadow = function () { return new red.Event(); };
 		proto.stringify = function () {
 			return "";

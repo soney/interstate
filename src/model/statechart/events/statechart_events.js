@@ -6,6 +6,7 @@
 	var cjs = red.cjs,
 		_ = red._;
 
+/*
 	red.TransitionEvent = red._create_event_type("transition");
 
 	(function (My) {
@@ -105,6 +106,7 @@
 			this.remove_listeners();
 		};
 	}(red.TransitionEvent));
+	*/
 
 	red.StatechartEvent = red._create_event_type("statechart");
 
@@ -126,9 +128,7 @@
 			if (!_.isString(this.specified_target)) {
 				this.set_target(this.specified_target);
 			}
-			/*
 			// will figure out when our transition is set
-			*/
 		};
 		proto.set_transition = function (transition) {
 			var from;
@@ -153,20 +153,22 @@
 		};
 		proto.id = function () { return this._id; };
 		proto.set_target = function (target) {
-			this.target = target;
-			/*
-			if(uid.strip_prefix(this.target.id()) >= 20) {
-				console.log("ON", uid.strip_prefix(this.target.id()));
+			if (this.target) {
+				this.target.off(this.spec, this.$on_spec);
 			}
-			*/
+			this.target = target;
 			if (this.options.inert !== true && this.is_enabled()) {
 				this.target.on(this.spec, this.$on_spec);
 			}
 		};
 		proto.destroy = function () {
+			My.superclass.destroy.apply(this, arguments);
+			red.unregister_uid(this.id());
 			if (this.target) {
 				this.target.off(this.spec, this.$on_spec);
+				delete this.target;
 			}
+			delete this.$on_spec;
 		};
 		proto.create_shadow = function (parent_statechart, context) {
 			return red.create_event("statechart", {

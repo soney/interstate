@@ -68,7 +68,21 @@ asyncTest("Map Allocation", function() {
 	});
 });
 */
+asyncTest("Start State Allocation", function() {
+	expect(0);
+	clear_snapshots(function() {
+		take_snapshot(function() {
+			var sc = new red.StartState();
+			sc.destroy();
+			sc = null;
+			take_snapshot(function() {
+				start();
+			});
+		});
+	});
+});
 
+/*
 test("Pointer Bucket Collection", function() {
 	var root = red.create("dict");
 	var a_dict = red.create("dict");
@@ -89,5 +103,6 @@ test("Pointer Bucket Collection", function() {
 	expired_cobjs = red.get_expired_contextual_objects(root);
 	equal(expired_cobjs.length, 0);
 });
+*/
 
 }());
