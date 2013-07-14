@@ -27,20 +27,6 @@
 		options = options || {};
 		able.make_this_listenable(this);
 		this._id = options.id || uid();
-		this.$remove = _.bind(this.remove, this);
-		this.$destroy = _.bind(this.destroy, this);
-		this.$updateTo = _.bind(function (event) {
-			var state = event.state;
-			var old_to = this.to();
-			var new_to = red.find_equivalent_state(state, old_to);
-			this.setTo(new_to);
-		}, this);
-		this.$updateFrom = _.bind(function (event) {
-			var state = event.state;
-			var old_from = this.from();
-			var new_from = red.find_equivalent_state(state, old_from);
-			this.setFrom(new_from);
-		}, this);
 		if (defer_initialization !== true) {
 			this.do_initialize(options);
 		}
@@ -61,12 +47,23 @@
 			this._to_state = cjs.$(options.to);
 			this._context = options.context;
 			this.set_basis(options.basis);
-			this.do_fire = _.bind(this.fire, this);
 			this.set_event(options.event);
 			red.register_uid(this._id, this);
 			this._initialized.set(true);
 			this.is_start_transition = options.from instanceof red.StartState;
 			this._emit("initialized");
+		};
+		proto.updateTo = function(event) {
+			var state = event.state;
+			var old_to = this.to();
+			var new_to = red.find_equivalent_state(state, old_to);
+			this.setTo(new_to);
+		};
+		proto.updateFrom = function(event) {
+			var state = event.state;
+			var old_from = this.from();
+			var new_from = red.find_equivalent_state(state, old_from);
+			this.setFrom(new_from);
 		};
 		proto.is_puppet = function () {
 			return this._puppet;
@@ -91,17 +88,17 @@
 		proto.basis = function () { return this._basis; };
 		proto.set_basis = function (basis) {
 			if (this._basis) {
-				this._basis.off("setTo", this.$updateTo);
-				this._basis.off("setFrom", this.$updateFrom);
-				this._basis.off("remove", this.$remove);
-				this._basis.off("destroy", this.$destroy);
+				this._basis.off("setTo", this.updateTo, this);
+				this._basis.off("setFrom", this.updateFrom, this);
+				this._basis.off("remove", this.remove, this);
+				this._basis.off("destroy", this.destroy, this);
 			}
 			this._basis = basis;
 			if (this._basis) {
-				this._basis.on("setTo", this.$updateTo);
-				this._basis.on("setFrom", this.$updateFrom);
-				this._basis.on("remove", this.$remove);
-				this._basis.on("destroy", this.$destroy);
+				this._basis.on("setTo", this.updateTo, this);
+				this._basis.on("setFrom", this.updateFrom, this);
+				this._basis.on("remove", this.remove, this);
+				this._basis.on("destroy", this.destroy, this);
 			}
 			return this;
 		};
@@ -114,13 +111,13 @@
 				from._remove_direct_outgoing_transition(this);
 			}
 			this._from_state.set(state);
-			var do_set_from = _.bind(function() {
+			var do_set_from = function() {
 				state._add_direct_outgoing_transition(this);
-			}, this);
+			};
 			if(state.is_initialized()) {
-				do_set_from();
+				do_set_from.call(this);
 			} else {
-				state.once("initialized", do_set_from);
+				state.once("initialized", do_set_from, this);
 			}
 			this._emit("setFrom", {type: "setFrom", target: this, state: state});
 			return this;
@@ -131,7 +128,7 @@
 				to._remove_direct_incoming_transition(this);
 			}
 			this._to_state.set(state);
-			var do_set_to = _.bind(function() {
+			var do_set_to = function() {
 				state._add_direct_incoming_transition(this);
 				if(this.is_start_transition) {
 					var from = this.from();
@@ -141,24 +138,24 @@
 						red.event_queue.signal();
 					}
 				}
-			}, this);
+			};
 			if(state.is_initialized()) {
-				do_set_to();
+				do_set_to.call(this);
 			} else {
-				state.once("initialized", do_set_to);
+				state.once("initialized", do_set_to, this);
 			}
 			this._emit("setTo", {type: "setTo", target: this, state: state});
 			return this;
 		};
 		proto.set_event = function (event) {
 			if (this._event) {
-				this._event.off_fire(this.do_fire);
+				this._event.off_fire(this.fire, this);
 				this._event.destroy();
 			}
 			this._event = event;
 			if (this._event) {
 				this._event.set_transition(this);
-				this._event.on_fire(this.do_fire);
+				this._event.on_fire(this.fire, this);
 			}
 		};
 		proto.order = function(order_to) {
@@ -185,7 +182,7 @@
 
 			this.set_basis(undefined);
 			
-			this._event.off_fire(this.do_fire);
+			this._event.off_fire(this.fire, this);
 			this._event.destroy();
 			delete this._event;
 
@@ -211,12 +208,6 @@
 			cjs.signal();
 			able.destroy_this_listenable(this);
 			red.unregister_uid(this.id());
-
-			delete this.$updateFrom;
-			delete this.$updateTo;
-			delete this.$destroy;
-			delete this.$remove;
-			delete this.do_fire;
 		};
 
 		proto.fire = function (event) {

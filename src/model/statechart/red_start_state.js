@@ -36,7 +36,7 @@
 				this.outgoingTransition = options.outgoing_transition || new red.StatechartTransition({
 					from: this,
 					to: to,
-					event: red.create_event("statechart", {
+					event: new red.StatechartEvent({
 						target: "me",
 						spec: "run"
 					})

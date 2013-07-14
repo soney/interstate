@@ -118,7 +118,7 @@
 				y: center.y,
 				text: this.get_name()
 			});
-			this.label.on("change", this.forward);
+			this.label.on("change", this.forward_event, this);
 			$(this.path[0]).add(this.label.text[0]).on("contextmenu", $.proxy(function(event) {
 				event.preventDefault();
 				event.stopPropagation();

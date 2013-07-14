@@ -139,7 +139,7 @@
 		
 		this.$flash = _.bind(this.flash, this);
 		transition.on("fire", this.$flash);
-		this.label.on("change", this.forward);
+		this.label.on("change", this.forward_event, this);
 		var from = this.option("from");
 
 		if (event instanceof red.ParsedEvent) {

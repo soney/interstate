@@ -99,7 +99,6 @@
 		able.make_proto_listenable(proto);
 		proto._initialize = function () {
 			this.listeners = [];
-			this.$fire_and_signal = _.bind(this.fire_and_signal, this);
 		};
 		proto.fire_and_signal = function () {
 			this.fire.apply(this, arguments);
@@ -113,14 +112,24 @@
 				red.event_queue.push(this, arguments);
 			}
 		};
-		proto.on_fire = proto.add_listener = function (listener) { this.listeners.push(listener); };
-		proto.off_fire = proto.remove_listener = function (listener) { this.listeners = _.without(listener); };
+		proto.on_fire = proto.add_listener = function (callback, context) {
+			this.listeners.push({callback: callback, context: context});
+		};
+		proto.off_fire = proto.remove_listener = function (callback, context) {
+			for(var i = 0; i<this.listeners.length; i++) {
+				var listener = this.listeners[i];
+				if(listener.callback === callback && context && listener.context === context) {
+					this.listeners.splice(i, 1);
+					i--;
+				}
+			}
+		};
 		proto.set_transition = function (transition) { this._transition = transition; };
 		proto.get_transition = function () { return this._transition; };
 		proto._fire = function () {
 			var args = arguments;
 			_.forEach(this.listeners, function (listener) {
-				listener.apply(this, args);
+				listener.callback.apply(listener.context || this, args);
 			}, this);
 		};
 		proto.guard = proto.when = function (func) {
@@ -142,7 +151,7 @@
 			delete this.listeners;
 			delete this._transition;
 			delete this._enabled;
-			delete this.$fire_and_signal;
+			//delete this.$fire_and_signal;
 		};
 		proto.create_shadow = function () { return new red.Event(); };
 		proto.stringify = function () {
@@ -163,7 +172,6 @@
 	}(red.Event));
 
 	var event_types = {};
-
 
 	function construct(constructor, args) {
 		function F() {

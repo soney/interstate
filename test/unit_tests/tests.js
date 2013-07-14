@@ -68,16 +68,28 @@ asyncTest("Map Allocation", function() {
 	});
 });
 */
-asyncTest("Start State Allocation", function() {
+asyncTest("State Allocation", function() {
 	expect(0);
 	clear_snapshots(function() {
 		take_snapshot(function() {
-			var sc = new red.StartState();
-			sc.destroy();
-			sc = null;
-			take_snapshot(function() {
-				start();
-			});
+			var sc = new red.Statechart();
+			sc.add_state("state_1");
+			sc.add_state("state_2");
+			sc.add_state("state_2.X");
+			sc.add_state("state_2.Y");
+			sc.starts_at("state_1");
+			sc.add_transition("state_1", "state_2", new red.TimeoutEvent(100));
+			sc.add_transition("state_2", "state_1", new red.TimeoutEvent(100));
+			sc.run();
+			sc.print();
+			window.setTimeout(function() {
+				sc.print();
+				sc.destroy();
+				sc = null;
+				take_snapshot(function() {
+					start();
+				});
+			}, 350);
 		});
 	});
 });

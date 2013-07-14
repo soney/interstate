@@ -6,7 +6,6 @@
 	var cjs = red.cjs,
 		_ = red._;
 
-/*
 	red.TransitionEvent = red._create_event_type("transition");
 
 	(function (My) {
@@ -106,22 +105,21 @@
 			this.remove_listeners();
 		};
 	}(red.TransitionEvent));
-	*/
 
-	red.StatechartEvent = red._create_event_type("statechart");
+	red.StatechartEvent = function () {
+		red.Event.apply(this, arguments);
+		this._initialize();
+		this._type = "statechart_event";
+	};
 
 	(function (My) {
+		_.proto_extend(My, red.Event);
 		var proto = My.prototype;
 		proto.on_create = function (options) {
 			this._id = uid();
 			red.register_uid(this._id, this);
 
 			this.options = options;
-			this.$on_spec = _.bind(function () {
-				red.event_queue.wait();
-				this.fire.apply(this, arguments);
-				red.event_queue.signal();
-			}, this);
 
 			this.specified_target = options.target;
 			this.spec = options.spec;
@@ -130,6 +128,12 @@
 			}
 			// will figure out when our transition is set
 		};
+		proto.on_spec = function() {
+			red.event_queue.wait();
+			this.fire.apply(this, arguments);
+			red.event_queue.signal();
+		};
+
 		proto.set_transition = function (transition) {
 			var from;
 			My.superclass.set_transition.apply(this, arguments);
@@ -154,24 +158,23 @@
 		proto.id = function () { return this._id; };
 		proto.set_target = function (target) {
 			if (this.target) {
-				this.target.off(this.spec, this.$on_spec);
+				this.target.off(this.spec, this.on_spec, this);
 			}
 			this.target = target;
 			if (this.options.inert !== true && this.is_enabled()) {
-				this.target.on(this.spec, this.$on_spec);
+				this.target.on(this.spec, this.on_spec, this);
 			}
 		};
 		proto.destroy = function () {
 			My.superclass.destroy.apply(this, arguments);
 			red.unregister_uid(this.id());
 			if (this.target) {
-				this.target.off(this.spec, this.$on_spec);
+				this.target.off(this.spec, this.on_spec, this);
 				delete this.target;
 			}
-			delete this.$on_spec;
 		};
 		proto.create_shadow = function (parent_statechart, context) {
-			return red.create_event("statechart", {
+			return new My({
 				target: this.specified_target,
 				spec: this.spec,
 				inert: this.options.inert_shadows,
@@ -184,7 +187,7 @@
 				My.superclass.enable.apply(this, arguments);
 				if (this.options.inert !== true) {
 					if (this.target) {
-						this.target.on(this.spec, this.$on_spec);
+						this.target.on(this.spec, this.on_spec, this);
 					}
 				}
 			}
@@ -194,7 +197,7 @@
 			if(this.is_enabled()) {
 				My.superclass.disable.apply(this, arguments);
 				if (this.target) {
-					this.target.off(this.spec, this.$on_spec);
+					this.target.off(this.spec, this.on_spec, this);
 				}
 			}
 		};

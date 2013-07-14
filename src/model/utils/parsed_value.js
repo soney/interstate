@@ -8,9 +8,9 @@
 		esprima = window.esprima;
 
 	red.on_event = function (event_type, arg1) {
-		if (event_type === "timeout" || event_type === "time") {
+		if (event_type === "timeout") {
 			var time = arg1;
-			var timeout_event = red.create_event(event_type, time);
+			var timeout_event = new red.TimeoutEvent(time);
 			return timeout_event;
 		} else if(event_type === "frame") {
 			var frame_event = red.create_event("frame");

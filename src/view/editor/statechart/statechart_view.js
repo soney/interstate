@@ -239,8 +239,8 @@
 							});
 						} else {
 							hrange = this.get_hrange(state, text, layout_info);
-							hrange.on("add_state", this.forward);
-							hrange.on("make_concurrent", this.forward);
+							hrange.on("add_state", this.forward_event, this);
+							hrange.on("make_concurrent", this.forward_event, this);
 						}
 						return; //it's a root statechart
 					}
@@ -349,11 +349,11 @@
 							this._emit("change_transition_event", {transition: obj, str: value});
 						}
 					}, this);
-					rv.on("remove_transition", this.forward);
+					rv.on("remove_transition", this.forward_event, this);
 					rv.on("awaiting_state_selection", this.$on_awaiting_state_selection);
-					rv.on("set_to", this.forward);
-					rv.on("set_from", this.forward);
-					rv.on("set_str", this.forward);
+					rv.on("set_to", this.forward_event, this);
+					rv.on("set_from", this.forward_event, this);
+					rv.on("set_str", this.forward_event, this);
 				} else if (obj instanceof red.StartState) {
 					rv = new red.StartStateView({
 						state: obj,
@@ -384,11 +384,11 @@
 						padding_top: this.option("padding_top"),
 						parent: this
 					});
-					rv.on("remove_state", this.forward);
-					rv.on("add_transition", this.forward);
-					rv.on("add_state", this.forward);
-					rv.on("make_concurrent", this.forward);
-					rv.on("rename", this.forward);
+					rv.on("remove_state", this.forward_event, this);
+					rv.on("add_transition", this.forward_event, this);
+					rv.on("add_state", this.forward_event, this);
+					rv.on("make_concurrent", this.forward_event, this);
+					rv.on("rename", this.forward_event, this);
 					rv.on("awaiting_state_selection", this.$on_awaiting_state_selection);
 				}
 				return rv;

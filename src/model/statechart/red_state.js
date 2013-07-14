@@ -51,47 +51,6 @@
 		this._id = options.id || uid();
 		this._last_run_event = cjs.$(false);
 
-		this.$onBasisAddTransition = _.bind(function (event) {
-			var transition = event.transition;
-			var new_from = red.find_equivalent_state(event.from_state, this);
-			var new_to = red.find_equivalent_state(event.to_state, this);
-			var transition_shadow = transition.create_shadow(new_from, new_to, this, this.context());
-			new_from._add_direct_outgoing_transition(transition_shadow);
-			new_to._add_direct_incoming_transition(transition_shadow);
-			this.add_transition(transition_shadow);
-		}, this);
-		this.$onBasisAddSubstate = _.bind(function (event) {
-			var state_name = event.state_name,
-				state = event.state,
-				index = event.index;
-			this.add_substate(state_name, state.create_shadow({parent: this, context: this.context()}), index);
-		}, this);
-		this.$onBasisRemoveSubstate = _.bind(function (event) {
-			this.remove_substate(event.name, undefined, false);
-		}, this);
-		this.$onBasisRenameSubstate = _.bind(function (event) {
-			var from_name = event.from,
-				to_name = event.to;
-			this.rename_substate(from_name, to_name);
-		}, this);
-		this.$onBasisMoveSubstate = _.bind(function (event) {
-			var state_name = event.state_name,
-				index = event.index;
-			this.move_state(state_name, index);
-		}, this);
-		this.$onBasisMakeConcurrent = _.bind(function (event) {
-			this.make_concurrent(event.concurrent);
-		}, this);
-		this.$onBasisOnTransition = _.bind(function (event) {
-			this.on_transition(event.str, event.activation_listener, event.deactivation_listener, event.context);
-		}, this);
-		this.$onBasisOffTransition = _.bind(function (event) {
-			this.off_transition(event.str, event.activation_listener, event.deactivation_listener, event.context);
-		}, this);
-		this.$onBasisDestroy = _.bind(function (event) {
-			this.destroy();
-		}, this);
-
 		if (defer_initialization !== true) {
 			this.do_initialize(options);
 		}
@@ -119,15 +78,7 @@
 
 		proto.set_basis = function (basis, as_root) {
 			if (this._basis) {
-				this._basis.off("add_transition", this.$onBasisAddTransition);
-				this._basis.off("add_substate", this.$onBasisAddSubstate);
-				this._basis.off("remove_substate", this.$onBasisRemoveSubstate);
-				this._basis.off("rename_substate", this.$onBasisRenameSubstate);
-				this._basis.off("move_substate", this.$onBasisMoveSubstate);
-				this._basis.off("make_concurrent", this.$onBasisMakeConcurrent);
-				this._basis.off("on_transition", this.$onBasisOnTransition);
-				this._basis.off("off_transition", this.$onBasisOffTransition);
-				this._basis.off("destroy", this.$onBasisDestroy);
+				this.remove_basis_listeners();
 			}
 			this._basis = basis;
 			if (this._basis) {
@@ -173,15 +124,7 @@
 					this.do_shadow_transitions(create_transition_shadow);
 				}
 
-				this._basis.on("add_transition", this.$onBasisAddTransition);
-				this._basis.on("add_substate", this.$onBasisAddSubstate);
-				this._basis.on("remove_substate", this.$onBasisRemoveSubstate);
-				this._basis.on("rename_substate", this.$onBasisRenameSubstate);
-				this._basis.on("move_substate", this.$onBasisMoveSubstate);
-				this._basis.on("make_concurrent", this.$onBasisMakeConcurrent);
-				this._basis.on("on_transition", this.$onBasisOnTransition);
-				this._basis.on("off_transition", this.$onBasisOffTransition);
-				this._basis.on("destroy", this.$onBasisDestroy);
+				this.add_basis_listeners();
 			}
 			return this;
 		};
@@ -232,7 +175,7 @@
 				return substate.flatten_substates(include_start);
 			})).concat([this]);
 		};
-		proto.is_active = function (to_active) { return this.$active.get(); };
+		proto.is_active = function (to_active) { return this.$active && this.$active.get(); };
 		proto.get_name = function (relative_to) {
 			var parent = this.parent();
 			if (!relative_to) {
@@ -433,6 +376,68 @@
 				return red.find_uid(obj.basis_id);
 			}
 		};
+		proto.add_basis_listeners = function() {
+			this._basis.on("add_transition", this.onBasisAddTransition, this);
+			this._basis.on("add_substate", this.onBasisAddSubstate, this);
+			this._basis.on("remove_substate", this.onBasisRemoveSubstate, this);
+			this._basis.on("rename_substate", this.onBasisRenameSubstate, this);
+			this._basis.on("move_substate", this.onBasisMoveSubstate, this);
+			this._basis.on("make_concurrent", this.onBasisMakeConcurrent, this);
+			this._basis.on("on_transition", this.onBasisOnTransition, this);
+			this._basis.on("off_transition", this.onBasisOffTransition, this);
+			this._basis.on("destroy", this.onBasisDestroy, this);
+		};
+		proto.remove_basis_listeners = function() {
+			this._basis.off("add_transition", this.onBasisAddTransition, this);
+			this._basis.off("add_substate", this.onBasisAddSubstate, this);
+			this._basis.off("remove_substate", this.onBasisRemoveSubstate, this);
+			this._basis.off("rename_substate", this.onBasisRenameSubstate, this);
+			this._basis.off("move_substate", this.onBasisMoveSubstate, this);
+			this._basis.off("make_concurrent", this.onBasisMakeConcurrent, this);
+			this._basis.off("on_transition", this.onBasisOnTransition, this);
+			this._basis.off("off_transition", this.onBasisOffTransition, this);
+			this._basis.off("destroy", this.onBasisDestroy, this);
+		};
+		proto.onBasisAddTransition = function (event) {
+			var transition = event.transition;
+			var new_from = red.find_equivalent_state(event.from_state, this);
+			var new_to = red.find_equivalent_state(event.to_state, this);
+			var transition_shadow = transition.create_shadow(new_from, new_to, this, this.context());
+			new_from._add_direct_outgoing_transition(transition_shadow);
+			new_to._add_direct_incoming_transition(transition_shadow);
+			this.add_transition(transition_shadow);
+		};
+		proto.onBasisAddSubstate = function (event) {
+			var state_name = event.state_name,
+				state = event.state,
+				index = event.index;
+			this.add_substate(state_name, state.create_shadow({parent: this, context: this.context()}), index);
+		};
+		proto.onBasisRemoveSubstate = function (event) {
+			this.remove_substate(event.name, undefined, false);
+		};
+		proto.onBasisRenameSubstate = function (event) {
+			var from_name = event.from,
+				to_name = event.to;
+			this.rename_substate(from_name, to_name);
+		};
+		proto.onBasisMoveSubstate = function (event) {
+			var state_name = event.state_name,
+				index = event.index;
+			this.move_state(state_name, index);
+		};
+		proto.onBasisMakeConcurrent = function (event) {
+			this.make_concurrent(event.concurrent);
+		};
+		proto.onBasisOnTransition = function (event) {
+			this.on_transition(event.str, event.activation_listener, event.deactivation_listener, event.context);
+		};
+		proto.onBasisOffTransition = function (event) {
+			this.off_transition(event.str, event.activation_listener, event.deactivation_listener, event.context);
+		};
+		proto.onBasisDestroy = function (event) {
+			this.destroy();
+		};
 
 		proto.destroy = function () {
 			if(this.$active) {
@@ -444,28 +449,10 @@
 			this._last_run_event.destroy();
 			delete this._last_run_event;
 			if (this._basis) {
-				this._basis.off("add_transition", this.$onBasisAddTransition);
-				this._basis.off("add_substate", this.$onBasisAddSubstate);
-				this._basis.off("remove_substate", this.$onBasisRemoveSubstate);
-				this._basis.off("rename_substate", this.$onBasisRenameSubstate);
-				this._basis.off("move_substate", this.$onBasisMoveSubstate);
-				this._basis.off("make_concurrent", this.$onBasisMakeConcurrent);
-				this._basis.off("on_transition", this.$onBasisOnTransition);
-				this._basis.off("off_transition", this.$onBasisOffTransition);
-				this._basis.off("destroy", this.$onBasisDestroy);
+				this.remove_basis_listeners();
 			}
 			able.destroy_this_listenable(this);
 			red.unregister_uid(this.id());
-
-			delete this.$onBasisAddTransition;
-			delete this.$onBasisAddSubstate;
-			delete this.$onBasisRemoveSubstate;
-			delete this.$onBasisRenameSubstate;
-			delete this.$onBasisMoveSubstate;
-			delete this.$onBasisMakeConcurrent;
-			delete this.$onBasisOnTransition;
-			delete this.$onBasisOffTransition;
-			delete this.$onBasisDestroy;
 		};
 	}(red.State));
 }(red));

@@ -571,8 +571,8 @@
 			} else {
 				state = new red.Statechart({parent: this, context: this.context()});
 			}
-			state.on("pre_transition_fire", this.forward);
-			state.on("post_transition_fire", this.forward);
+			state.on("pre_transition_fire", this.forward_event, this);
+			state.on("post_transition_fire", this.forward_event, this);
 			this.$substates.put(state_name, state, index);
 			this._emit("add_substate", {
 				type: "add_substate",
@@ -593,8 +593,8 @@
 			state = state || this.$substates.get(name);
 
 			cjs.wait();
-			state.off("pre_transition_fire", this.forward);
-			state.off("post_transition_fire", this.forward);
+			state.off("pre_transition_fire", this.forward_event, this);
+			state.off("post_transition_fire", this.forward_event, this);
 			var incoming_transitions = state.get_incoming_transitions();
 			var outgoing_transitions = state.get_outgoing_transitions();
 			_.each(incoming_transitions, function(transition) {
@@ -729,9 +729,11 @@
 			});
 			if(this.$substates) {
 				this.$substates.destroy();
+				delete this.$substates;
 			}
 			if(this.$concurrent) {
 				this.$concurrent.destroy();
+				delete this.$concurrent;
 			}
 
 
