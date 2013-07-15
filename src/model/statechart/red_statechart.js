@@ -191,7 +191,9 @@
 					if(!this.is_puppet()) {
 						_.defer(_.bind(function() {
 							var outgoing_transition = this._start_state.get_outgoing_transition();
-							outgoing_transition.increment_times_run();
+							if(outgoing_transition) {
+								outgoing_transition.increment_times_run();
+							}
 						}, this));
 					}
 					my_starting_state = red.find_equivalent_state(basis_start_state_to, this);

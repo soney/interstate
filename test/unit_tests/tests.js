@@ -96,14 +96,20 @@ asyncTest("State Allocation", function() {
 });
 */
 asyncTest("Environment Collection", function() {
+	var env = new red.Environment({create_builtins: true});
+	env.set("x", "1+2");
+	env.set("y", "x+2");
+	env.set("OBJ", "<stateful>");
+	env.cd("OBJ");
+	env.add_state("init");
+	env.start_at("init");
+	env.set("x");
+	env.set("x", "init", "2");
+	env.print();
+	env.destroy();
 	expect(0);
 	clear_snapshots(function() {
 		take_snapshot(function() {
-			var env = new red.Environment({create_builtins: true});
-			env.set("x", "1+2");
-			env.set("y", "x+2");
-			env.print();
-			env.destroy();
 			take_snapshot(function() {
 				start();
 			});

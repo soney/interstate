@@ -38,7 +38,7 @@
 				this.$value.update();
 			//}
 		}, this));
-		_.defer(_.bind(this.$value.update, this.$value));
+		//_.defer(_.bind(this.$value.update, this.$value));
 		//this.$value.update();
 
 		this._type = "stateful_prop";
