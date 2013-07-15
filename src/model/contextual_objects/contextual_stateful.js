@@ -57,7 +57,11 @@
 
 		proto.destroy = function () {
 			My.superclass.destroy.apply(this, arguments);
-			this.statechart.destroy();
+			this.statecharts_per_proto.each(function(statechart) {
+				statechart.destroy();
+			});
+			this.statecharts_per_proto.destroy();
+			delete this.statecharts_per_proto;
 		};
 	}(red.ContextualStatefulObj));
 }(red));

@@ -51,7 +51,13 @@
                 });
             });
     
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
+			delete this._options;
+			delete this._cell;
+			delete this._from_str;
+			delete this._to_str;
+		};
     }(red.ChangeCellCommand));
 
 

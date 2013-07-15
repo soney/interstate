@@ -31,7 +31,7 @@
 		}
 		*/
 
-		this.$active_value = new cjs.Constraint(_.bind(this.active_value_getter, this));
+		this.$active_value = new cjs.Constraint(this.active_value_getter, { context: this });
 
 		this.$value.onChange(_.bind(function () {
 			//if (red.event_queue.end_queue_round === 3 || red.event_queue.end_queue_round === 4) {
@@ -346,10 +346,6 @@
 			var rv;
 
 			var stateful_prop = this.get_object();
-			if(uid.strip_prefix(stateful_prop.id()) == 37) {
-				//console.log(this._last_rv);
-				//debugger;
-			}
 			if (using_state instanceof red.StatechartTransition) {
 				if(red.event_queue.end_queue_round === false) {
 					return this._last_rv;
@@ -370,10 +366,6 @@
 			//	}
 
 				this._last_rv = rv;
-				if(uid.strip_prefix(stateful_prop.id()) == 40) {
-					//console.log(rv);
-					//debugger;
-				}
 				return rv;
 			} else {
 				return undefined;
@@ -394,6 +386,7 @@
 		proto.destroy = function () {
 			My.superclass.destroy.apply(this, arguments);
 			this.$active_value.destroy();
+			delete this.$active_value;
 		};
 	}(red.ContextualStatefulProp));
 }(red));

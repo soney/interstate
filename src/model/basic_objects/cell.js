@@ -84,18 +84,20 @@
         };
         proto.constraint_in_context = function (pcontext) {
             var contextual_values = this.get_contextual_values();
-            var node_constraint = this._tree;
     
             var val = contextual_values.get_or_put(pcontext, function () {
                 var ignore_inherited_in_contexts = this.get_ignore_inherited_in_contexts(pcontext);
     
                 var rv = cjs.$(function () {
-                    var node = cjs.get(node_constraint);
+                    var node = this._tree.get();
                     return red.get_parsed_$(node, {
                         context: pcontext,
-                        ignore_inherited_in_contexts: ignore_inherited_in_contexts
+                        ignore_inherited_in_contexts: ignore_inherited_in_contexts,
+						get_constraint: false
                     });
-                });
+                }, {
+					context: this
+				});
                 return rv;
             }, this);
     

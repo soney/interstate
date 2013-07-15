@@ -49,9 +49,16 @@
         };
     
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             if (!in_effect) {
                 this._state.destroy();
             }
+			delete this._options;
+			delete this._statechart;
+			delete this._state_name;
+			delete this._state;
+			delete this._index;
+			delete this._make_start;
         };
         red.register_serializable_type("add_state_command",
             function (x) {
@@ -120,12 +127,16 @@
         };
     
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
                 this._state.destroy();
                 _.forEach(this._transitions, function (transition) {
                     transition.destroy();
                 });
             }
+			delete this._options;
+			delete this._statechart;
+			delete this._state_name;
         };
         red.register_serializable_type("remove_state_command",
             function (x) {
@@ -171,7 +182,9 @@
             this._statechart.move_state(this._state_name, this._from_index);
         };
     
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
+		};
     
         red.register_serializable_type("move_state_command",
             function (x) {
@@ -222,7 +235,9 @@
             this._statechart.rename_state(this._to_state_name, this._from_state_name);
         };
     
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
+		};
     
         red.register_serializable_type("rename_state_command",
             function (x) {
@@ -271,7 +286,9 @@
             this._statechart.make_concurrent(!this._concurrent);
         };
     
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
+		};
         red.register_serializable_type("make_concurrent_command",
             function (x) {
                 return x instanceof My;
@@ -337,6 +354,7 @@
         };
     
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             if (!in_effect) {
                 this._transition.destroy();
             }
@@ -401,6 +419,7 @@
         };
     
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
                 this._transition.destroy();
             }
@@ -455,7 +474,9 @@
             event.set_str(this._from_str);
         };
     
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
+		};
         red.register_serializable_type("set_transition_event_command",
             function (x) {
                 return x instanceof My;
@@ -501,7 +522,9 @@
             this._transition.setFrom(this._old_statechart);
         };
     
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
+		};
         red.register_serializable_type("set_transition_from_command",
             function (x) {
                 return x instanceof My;
@@ -547,7 +570,9 @@
             this._transition.setTo(this._old_statechart);
         };
     
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
+		};
         red.register_serializable_type("set_transition_to_command",
             function (x) {
                 return x instanceof My;
@@ -610,7 +635,9 @@
             this._statechart.off_transition(this._spec, this._listener, null_fn, this._context);
         };
     
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
+		};
         red.register_serializable_type("set_transition_on_command",
             function (x) {
                 return x instanceof My;
@@ -662,7 +689,9 @@
             this._statechart.on_transition(this._spec, this._listener, null_fn, this._context);
         };
     
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
+		};
         red.register_serializable_type("set_transition_off_command",
             function (x) {
                 return x instanceof My;

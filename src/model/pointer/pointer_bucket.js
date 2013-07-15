@@ -117,6 +117,9 @@
 			return rv;
 		};
 		proto.destroy = function() {
+			this.children.each(function(child) {
+				child.destroy();
+			});
 			this.children.destroy();
 			delete this.children;
 			delete this.contextual_object;
@@ -178,7 +181,11 @@
 				i += 1;
 			}
 			if(node.get_contextual_object() === cobj) {
-				parent_node.remove_child(ptr_i, sc_i);
+				if(parent_node) {
+					parent_node.remove_child(ptr_i, sc_i);
+				} else { // It's the root
+					red.pointer_buckets.remove(pointer.root());
+				}
 			} else {
 				throw new Error("Couldn't find correct node to remove;");
 			}
@@ -197,12 +204,40 @@
 		hash: "hash"
 	});
 
+	var in_call = false;
 	red.destroy_contextual_obj = function(cobj) {
+		var root_call = in_call === false;
+		in_call = true;
+
+		if(root_call) {
+			depth_first_destroy(cobj, false);
+		}
+
 		var pointer = cobj.get_pointer();
 		var pointer_root = pointer.root();
 
 		var pointer_bucket = red.pointer_buckets.get(pointer_root);
 		pointer_bucket.destroy_cobj(cobj);
+
+		if(root_call) {
+		}
+
+		in_call = false;
+	};
+
+	var depth_first_destroy = function(root, destroy_root) {
+		if(root) {
+			if(_.isFunction(root.children)) {
+				var children = root.children();
+				_.each(children, function(child_info) {
+					depth_first_destroy(child_info.value);
+				});
+			}
+			if(_.isFunction(root.destroy) && destroy_root !== false) {
+				root.destroy(true);
+			}
+		}
+		return;
 	};
 
 	red.find_or_put_contextual_obj = function (obj, pointer, options) {
@@ -232,6 +267,7 @@
 
 		return invalid_bucket_roots.concat(other_expired_buckets);
 	};
+
 
 	red.get_expired_contextual_objects = function(root) {
 		var expired_trees = get_expired_pointer_trees(root);

@@ -12,12 +12,13 @@
 		this._type = "cell";
 	};
 
-	(function (my) {
-		_.proto_extend(my, red.ContextualObject);
-		var proto = my.prototype;
+	(function (My) {
+		_.proto_extend(My, red.ContextualObject);
+		var proto = My.prototype;
 		proto.destroy = function () {
-			my.superclass.destroy.apply(this, arguments);
+			My.superclass.destroy.apply(this, arguments);
 			this.value_constraint.destroy();
+			delete this.value_constraint;
 		};
 		proto._getter = function () {
 			var value;

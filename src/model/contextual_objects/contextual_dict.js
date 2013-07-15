@@ -122,9 +122,9 @@
 		this._type = "dict";
 	};
 
-	(function (my) {
-		_.proto_extend(my, red.ContextualObject);
-		var proto = my.prototype;
+	(function (My) {
+		_.proto_extend(My, red.ContextualObject);
+		var proto = My.prototype;
 
 		proto.has_copies = function() {
 			var dict = this.object;
@@ -484,7 +484,13 @@
 		};
 
 		proto.destroy = function () {
-			my.superclass.destroy.apply(this, arguments);
+			_.each(this._attachment_instances, function(attachment_instance) {
+				attachment_instance.destroy();
+			});
+			delete this._attachment_instances;
+			this._manifestation_objects.destroy();
+			delete this._manifestation_objects;
+			My.superclass.destroy.apply(this, arguments);
 		};
 
 		proto._getter = function () {

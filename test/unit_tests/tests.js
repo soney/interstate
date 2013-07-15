@@ -99,13 +99,17 @@ asyncTest("Environment Collection", function() {
 	expect(0);
 	clear_snapshots(function() {
 		take_snapshot(function() {
-			var env = new red.Environment();
+			var env = new red.Environment({create_builtins: true});
+			env.set("x", "1+2");
+			env.set("y", "x+2");
+			env.print();
 			env.destroy();
 			take_snapshot(function() {
 				start();
 			});
 		});
 	});
+	/**/
 });
 /*
 test("Pointer Bucket Collection", function() {

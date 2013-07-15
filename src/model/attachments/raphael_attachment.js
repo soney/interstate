@@ -47,8 +47,7 @@
 		child_node.insertBefore(before_child);
 	};
 
-	red.register_attachments({
-		"paper": {
+	red.PaperAttachment = red.register_attachment("paper", {
 			ready: function() {
 				this.dom_obj = window.document.createElement("div");
 				this.paper = new Raphael(this.dom_obj, 0, 0);
@@ -111,8 +110,8 @@
 			},
 			attachment_destroy: function() {
 			}
-		},
-	"shape": {
+		});
+	red.ShapeAttachment = red.register_attachment("shape", {
 			ready: function() {
 				this.shape_type = this.options.shape_type;
 				this.constructor_params = this.options.constructor_params;
@@ -223,6 +222,5 @@
 				}
 			},
 			attachment_destroy: function() { }
-		}
-	});
+		});
 }(red, jQuery));

@@ -29,9 +29,12 @@
             });
         };
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             _.forEach(this._commands, function (command) {
                 command.destroy(in_effect);
             });
+			delete this._options;
+			delete this._commands;
         };
     
         red.register_serializable_type("combined_command",

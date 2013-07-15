@@ -7,7 +7,8 @@
 		_ = red._;
 
 	red.ContextualObject = function (options) {
-		this.$value = new cjs.Constraint(_.bind(this._getter, this), false, {
+		this.$value = new cjs.Constraint(this._getter, {
+			context: this,
 			check_on_nullify: options.check_on_nullify === true,
 			equals: options.equals || undefined
 		});
@@ -65,9 +66,16 @@
 			return this.$value.get();
 		};
 
-		proto.destroy = function () {
+		proto.destroy = function (avoid_destroy_call) {
+			if(avoid_destroy_call !== true) {
+				red.destroy_contextual_obj(this);
+			}
+
 			this.$value.destroy();
-			red.destroy_contextual_obj(this);
+			delete this.object;
+			delete this.pointer;
+			delete this.$value;
+			red.unregister_uid(this.id());
 		};
 
 		proto.get_name = function () {

@@ -60,6 +60,7 @@
             }
         };
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
                 if (this._old_prop_value) {
                     this._old_prop_value.destroy();
@@ -69,6 +70,11 @@
                     this._prop_value.destroy();
                 }
             }
+			delete this._parent;
+			delete this._options;
+			delete this._old_prop_value;
+			delete this._prop_value;
+			delete this._prop_name;
         };
         red.register_serializable_type("set_prop_command",
             function (x) {
@@ -127,6 +133,7 @@
 			this._parent.unset_prop(this._prop_name);
         };
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
                 if (this._old_prop_value) {
                     this._old_prop_value.destroy();
@@ -136,6 +143,10 @@
                     this._prop_value.destroy();
                 }
             }
+			delete this._parent;
+			delete this._prop_name;
+			delete this._value;
+			delete this._options;
         };
         red.register_serializable_type("inherit_prop_command",
             function (x) {
@@ -191,6 +202,7 @@
             }
         };
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
                 if (this._old_prop_value) {
                     this._old_prop_value.destroy();
@@ -200,6 +212,12 @@
                     this._prop_value.destroy();
                 }
             }
+			delete this._options;
+			delete this._parent;
+			delete this._prop_name;
+			delete this._prop_value;
+			delete this._prop_index;
+			delete this._old_prop_value;
         };
         red.register_serializable_type("unset_prop_command",
             function (x) {
@@ -244,7 +262,13 @@
         proto._unexecute = function () {
             this._parent.rename(this._to_name, this._from_name);
         };
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
+			delete this._options;
+			delete this._parent;
+			delete this._from_name;
+			delete this._to_name;
+		};
         red.register_serializable_type("rename_prop_command",
             function (x) {
                 return x instanceof My;
@@ -291,7 +315,13 @@
         proto._unexecute = function () {
             this._parent.move_prop(this._prop_name, this._from_index);
         };
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
+			delete this._parent;
+			delete this._prop_name;
+			delete this._to_index;
+			delete this._options;
+		};
         red.register_serializable_type("move_prop_command",
             function (x) {
                 return x instanceof My;
@@ -337,11 +367,16 @@
             this._stateful_prop.unset(this._state);
         };
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             if (!in_effect) {
                 if (this._value && this._value.destroy) {
                     this._value.destroy();
                 }
             }
+			delete this._options;
+			delete this._stateful_prop;
+			delete this._state;
+			delete this._value;
         };
         red.register_serializable_type("set_stateful_prop_value_command",
             function (x) {
@@ -388,11 +423,16 @@
             this._stateful_prop.set(this._state, this._value);
         };
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
                 if (this._value && this._value.destroy) {
                     this._value.destroy();
                 }
             }
+			delete this._options;
+			delete this._stateful_prop;
+			delete this._state;
+			delete this._value;
         };
         red.register_serializable_type("unset_stateful_prop_value_command",
             function (x) {
@@ -462,6 +502,7 @@
             }
         };
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
                 if (this._old_value && this._old_value.destroy) {
                     this._old_value.destroy();
@@ -471,6 +512,10 @@
                     this._value.destroy();
                 }
             }
+			delete this._options;
+			delete this._parent;
+			delete this._builtin_name;
+			delete this._value;
         };
     
         red.register_serializable_type("set_builtin_command",
@@ -519,9 +564,12 @@
 			console.log("unset copies", this._value);
         };
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
             } else {
             }
+			delete this._parent;
+			delete this._value;
         };
     
         red.register_serializable_type("set_copies",
@@ -564,9 +612,12 @@
 			console.log("reset");
         };
         proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
             } else {
             }
+			delete this._options;
+			delete this._parent;
         };
     
         red.register_serializable_type("reset",
@@ -621,7 +672,15 @@
         };
         proto._unexecute = function () {
         };
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {
+			My.superclass._do_destroy.apply(this, arguments);
+			delete this._options;
+			delete this._from_obj;
+			delete this._from_name;
+			delete this._target_obj;
+			delete this._target_name;
+			delete this._above_below;
+		};
         red.register_serializable_type("move_prop_above_below_command",
             function (x) {
                 return x instanceof My;

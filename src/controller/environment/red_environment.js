@@ -15,7 +15,7 @@
 			root = options.root;
 			root_pointer = new red.Pointer({stack: [root]});
 		} else {
-			root = new red.Dict({has_protos: false, direct_attachments: [red.create("paper_attachment")]});
+			root = new red.Dict({has_protos: false, direct_attachments: [new red.PaperAttachment()]});
 
 			root_pointer = new red.Pointer({stack: [root]});
 			if(!options || options.create_builtins !== false) {
@@ -56,7 +56,7 @@
 			var shape = new red.Dict({has_protos: false});
 			root_dict.set("shape", shape);
 
-			var circle = new red.Dict({has_protos: false, direct_attachments: [red.create("shape_attachment", {
+			var circle = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "circle",
 																									constructor_params: [0, 0, 0]
@@ -82,7 +82,7 @@
 			circle.set("animation_duration", red.create("cell", {str: "300"}));
 
 
-			var ellipse = red.create("dict", {has_protos: false, direct_attachments: [red.create("shape_attachment", {
+			var ellipse = red.create("dict", {has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "ellipse",
 																									constructor_params: [0, 0, 0, 0]
@@ -108,7 +108,7 @@
 			ellipse.set("animated_properties", red.create("cell", {str: "false"}));
 			ellipse.set("animation_duration", red.create("cell", {str: "300"}));
 			
-			var image = red.create("dict", {has_protos: false, direct_attachments: [red.create("shape_attachment", {
+			var image = red.create("dict", {has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "image",
 																									constructor_params: ["", 0, 0, 0, 0]
@@ -130,7 +130,7 @@
 			image.set("animation_duration", red.create("cell", {str: "300"}));
 
 
-			var rect = red.create("dict", {has_protos: false, direct_attachments: [red.create("shape_attachment", {
+			var rect = red.create("dict", {has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "rect",
 																									constructor_params: [0, 0, 0, 0]
@@ -157,7 +157,7 @@
 			rect.set("animated_properties", red.create("cell", {str: "false"}));
 			rect.set("animation_duration", red.create("cell", {str: "300"}));
 			
-			var text = red.create("dict", {has_protos: false, direct_attachments: [red.create("shape_attachment", {
+			var text = red.create("dict", {has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "text",
 																									constructor_params: [0, 0, ""]
@@ -187,7 +187,7 @@
 			text.set("animated_properties", red.create("cell", {str: "false"}));
 			text.set("animation_duration", red.create("cell", {str: "300"}));
 
-			var path = red.create("dict", {has_protos: false, direct_attachments: [red.create("shape_attachment", {
+			var path = red.create("dict", {has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "path",
 																									constructor_params: ["M0,0"]
@@ -984,10 +984,15 @@
 			return red.print(this.pointer, logging_mechanism);
 		};
 		proto.destroy = function () {
-			this._command_stack.destroy();
-			delete this._command_stack;
 			var ptr = this.pointer;
 			var root = ptr.root();
+			var croot = red.find_or_put_contextual_obj(root);
+
+
+			this._command_stack.destroy();
+			delete this._command_stack;
+
+			croot.destroy();
 			root.destroy();
 			delete this.pointer;
 		};

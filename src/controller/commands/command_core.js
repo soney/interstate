@@ -29,7 +29,7 @@
     
         proto._execute = function () { };
         proto._unexecute = function () { };
-        proto._do_destroy = function (in_effect) { };
+        proto._do_destroy = function (in_effect) {};
         proto.to_undo_string = function () {
             return "Undo generic command";
         };
