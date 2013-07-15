@@ -68,6 +68,7 @@ asyncTest("Map Allocation", function() {
 	});
 });
 */
+/*
 asyncTest("State Allocation", function() {
 	expect(0);
 	clear_snapshots(function() {
@@ -93,7 +94,19 @@ asyncTest("State Allocation", function() {
 		});
 	});
 });
-
+*/
+asyncTest("Environment Collection", function() {
+	expect(0);
+	clear_snapshots(function() {
+		take_snapshot(function() {
+			var env = new red.Environment();
+			env.destroy();
+			take_snapshot(function() {
+				start();
+			});
+		});
+	});
+});
 /*
 test("Pointer Bucket Collection", function() {
 	var root = red.create("dict");

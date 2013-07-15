@@ -984,6 +984,12 @@
 			return red.print(this.pointer, logging_mechanism);
 		};
 		proto.destroy = function () {
+			this._command_stack.destroy();
+			delete this._command_stack;
+			var ptr = this.pointer;
+			var root = ptr.root();
+			root.destroy();
+			delete this.pointer;
 		};
 	}(red.Environment));
 

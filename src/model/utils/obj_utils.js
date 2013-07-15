@@ -64,6 +64,17 @@
 		});
 	};
 
+	red.unset_instance_builtins = function(obj, constructor) {
+		var builtins = constructor.builtins;
+
+		_.each(builtins, function (builtin, name) {
+			if (_.isFunction(builtin.destroy)) {
+				builtin.destroy(obj._builtins[name]);
+			}
+			delete obj._builtins[name];
+		});
+	};
+
 	var default_hash = function () {
 		var rv = "",
 			i;

@@ -10,7 +10,7 @@
 
 	"content_scripts": [
 		{
-			"matches": ["http://localhost:8000/test/unit_tests/unit_tests.ejs.html"],
+			"matches": ["http://localhost:8000/test/unit_tests/unit_tests.ejs.html*"],
 			"js": ["content_script.js"],
 			"run_at": "document_start"
 		}
@@ -18,7 +18,7 @@
 
 	"permissions": [
 		"tabs",
-		"http://localhost:8000/test/unit_tests/unit_tests.ejs.html",
+		"http://localhost:8000/test/unit_tests/unit_tests.ejs.html*",
 		"debugger"
 	]
 }

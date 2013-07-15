@@ -22,7 +22,10 @@
                 getter: function (me) { return me.get(); },
                 setter: function (me, str) {
                     me.set(str, true);
-                }
+                },
+				destroy: function(me) {
+					me.destroy();
+				}
             },
             "ignore_inherited_in_first_dict": {
                 "default": function () { return false; }
@@ -35,7 +38,14 @@
                     });
                 },
                 settable: false,
-                serialize: false
+                serialize: false,
+				destroy: function(me) {
+					me.each(function (value) {
+						value.destroy();
+					});
+					me.destroy();
+				}
+
             }
         };
         red.install_proto_builtins(proto, My.builtins);
@@ -92,12 +102,11 @@
             return val;
         };
         proto.destroy = function () {
-            var contextual_values = this.get_contextual_values();
-            contextual_values.each(function (value) {
-                value.destroy();
-            });
-            contextual_values.destroy();
             this._tree.destroy();
+			delete this._tree;
+
+			red.unset_instance_builtins(this, My);
+			red.unregister_uid(this.id());
         };
     
         proto.id = proto.hash = function () { return this._id; };

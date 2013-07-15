@@ -104,7 +104,12 @@
 			proto_props: {
 				get_dom_obj: function() {
 					return this.dom_obj;
+				},
+				destroy:  function() {
+					console.log("destroy");
 				}
+			},
+			attachment_destroy: function() {
 			}
 		},
 	"shape": {
@@ -216,7 +221,8 @@
 						this.$robj.set(false);
 					}
 				}
-			}
+			},
+			attachment_destroy: function() { }
 		}
 	});
 }(red, jQuery));

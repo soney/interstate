@@ -69,12 +69,20 @@
                 getter_name: "direct_protos",
                 setter_name: "_set_direct_protos",
                 env_visible: true,
-                env_name: "prototypes"
+                env_name: "prototypes",
+				destroy: function(me) {
+					me.destroy();
+				}
             },
     
             "direct_attachments": {
-                "default": function () { return cjs.array(); },
-                getter_name: "direct_attachments"
+                "default": function () { return []; },
+                getter_name: "direct_attachments",
+				destroy: function(me) {
+					_.each(me, function(attachment) {
+						attachment.destroy();
+					});
+				}
             },
     
             "direct_props": {
@@ -86,7 +94,17 @@
                     });
                     return rv;
                 },
-                getter_name: "direct_props"
+                getter_name: "direct_props",
+				destroy: function(me) {
+					me.each(function(prop_val) {
+						if(prop_val.value.destroy) {
+							prop_val.value.destroy();
+						}
+						delete prop_val.owner;
+						delete prop_val.value;
+					});
+					me.destroy();
+				}
             },
     
             "copies": {
@@ -94,7 +112,10 @@
                 env_visible: false,
                 env_name: "copies",
                 getter: function (me) { return me.get(); },
-                setter: function (me, val) { me.set(val, true); }
+                setter: function (me, val) { me.set(val, true); },
+				destroy: function(me) {
+					me.destroy();
+				}
             }
         };
     
@@ -261,11 +282,8 @@
         //
     
         proto.destroy = function () {
-            this._direct_props.destroy();
-            this._direct_protos.destroy();
-            this._direct_attachments.destroy();
-            this._direct_attachment_instances.destroy();
-            this.prop_val.destroy();
+			red.unset_instance_builtins(this, My);
+			red.unregister_uid(this.id());
         };
     
         proto.toString = function () {

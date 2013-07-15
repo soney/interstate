@@ -29,14 +29,16 @@
             "direct_statechart": {
                 "default": function () { return red.create("statechart"); },
                 getter_name: "get_own_statechart",
-                settable: false
+                settable: false,
+				destroy: function(me) {
+					me.destroy();
+				}
             }
         };
         red.install_proto_builtins(proto, My.builtins);
         proto.destroy = function () {
+			red.unset_instance_builtins(this, My);
             My.superclass.destroy.apply(this, arguments);
-            var own_statechart = this.get_own_statechart();
-            own_statechart.destroy();
         };
     
         red.register_serializable_type("stateful_obj",

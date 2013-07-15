@@ -47,5 +47,12 @@
 		this.can_redo = function() {
 			return index < stack.length - 1;
 		};
+
+		this.destroy = function() {
+			for(var i = 0; i<stack.length; i++) {
+				stack[i].destroy();
+			}
+			stack = null;
+		};
 	};
 }(red));

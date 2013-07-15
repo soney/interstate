@@ -63,6 +63,10 @@
         proto.hash = function () {
             return this.type;
         };
+		proto.do_destroy = function() {};
+		proto.destroy = function() {
+			this.do_destroy();
+		};
     }(red.Attachment));
     
     red.define("attachment", function (options) {
@@ -159,6 +163,9 @@
 			(function(My) {
 				_.proto_extend(My, red.Attachment);
 				var proto = My.prototype;
+				if(attachment_specs.attachment_destroy) {
+					proto.do_destroy = attachment_specs.attachment_destroy;
+				}
 				red.register_serializable_type(attachment_name + attachment_suffix,
 					function (x) {
 						return x instanceof My;
