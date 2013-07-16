@@ -316,8 +316,8 @@
 
 				if(event_type === "statechart_event") {
 					event = events[id] = new red.StatechartEvent({inert: true});
-				} else if (event_type === "parsed") {
-					event = events[id] = red.create_event(event_type, {inert: true});
+				} else if (event_type === "parsed_event") {
+					event = events[id] = new red.ParsedEvent({inert: true});
 					var str_val = "";
 					wrapper_client.async_get("get_str", function (str) {
 						if(destroyed) { return; }

@@ -24,5 +24,8 @@
 			});
 			return shadow;
 		};
+		proto.destroy = function () {
+			My.superclass.destroy.apply(this, arguments);
+		};
 	}(red.ManualEvent));
 }(red));

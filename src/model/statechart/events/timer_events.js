@@ -29,6 +29,9 @@
 				});
 			}, time_diff);
 		};
+		proto.destroy = function () {
+			My.superclass.destroy.apply(this, arguments);
+		};
 	}(red.TimeEvent));
 
 	red.TimeoutEvent = function () {
@@ -83,6 +86,9 @@
 				created_at: this.created_at
 			});
 			red.event_queue.signal();
+		};
+		proto.destroy = function () {
+			My.superclass.destroy.apply(this, arguments);
 		};
 
 		proto.enable = function () {

@@ -35,6 +35,9 @@
 		proto.is_running = function () {
 			return this.running_event_queue === false;
 		};
+		proto.clear = function() {
+			this.queue.splice(0, this.queue.length);
+		};
 
 		proto.run_event_queue = function () {
 			var i;
@@ -118,7 +121,7 @@
 		proto.off_fire = proto.remove_listener = function (callback, context) {
 			for(var i = 0; i<this.listeners.length; i++) {
 				var listener = this.listeners[i];
-				if(listener.callback === callback && context && listener.context === context) {
+				if(listener.callback === callback && (!context || listener.context === context)) {
 					this.listeners.splice(i, 1);
 					i--;
 				}

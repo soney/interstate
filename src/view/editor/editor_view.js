@@ -286,7 +286,7 @@
 				statechart_puppet_id = state.puppet_master_id || state.id();
 				var from_puppet_id = from_state.puppet_master_id || from_state.id(),
 					to_puppet_id = to_state.puppet_master_id || to_state.id();
-				event = red.create_event("parsed", {str: "(event)", inert: true});
+				event = new red.ParsedEvent({str: "(event)", inert: true});
 				command = new red.AddTransitionCommand({
 					from: { id: to_func(from_puppet_id) },
 					to: { id: to_func(to_puppet_id) },

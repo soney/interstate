@@ -22,6 +22,7 @@
 					this.fire.apply(this, arguments);
 				}, this));
 			}, this);
+			My.superclass.destroy.apply(this, arguments);
 		};
 
 		proto.destroy = function () {
@@ -29,6 +30,7 @@
 			_.each(this.events, function (event) {
 				event.destroy.apply(event, args);
 			});
+			delete this.events;
 		};
 
 		proto.enable = function () {

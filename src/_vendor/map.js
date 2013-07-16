@@ -287,6 +287,12 @@ var RedMap = (function (root) {
             }
             return rv;
         };
+		proto.clear = function() {
+			this._ordered_values.splice(0, this._ordered_values.length);
+			each(this._khash, function(val, key) {
+				delete this._khash[key];
+			}, this);
+		};
         proto.get = function (key) {
             var hash = this._hash(key);
             var hash_arr = this._khash[hash];

@@ -33,7 +33,11 @@
 
 			this.live_fn = cjs.liven(function () {
 				this.remove_listeners();
+				var old_spec;
 				this.spec = cjs.get(this.spec);
+				if(old_spec && old_spec.destroy) {
+					old_spec.destroy();
+				}
 				var targs = cjs.get(this.targets);
 				if (!_.isArray(targs)) {
 					targs = [targs];
@@ -68,12 +72,21 @@
 		};
 		proto.destroy = function () {
 			this.live_fn.destroy();
+			delete this.live_fn;
 			this.remove_listeners();
-			_.each(this.statecharts, function (statechart) {
-				if (statechart) {
-					statechart.off(this._spec, this.$on_change);
-				}
-			}, this);
+			if(this.spec.destroy) {
+				this.spec.destroy();
+			}
+			delete this.spec;
+			if(this.targets.destroy) {
+				this.targets.destroy();
+			}
+			delete this.target;
+			this.get_activation_listener.destroy();
+			this.get_deactivation_listener.destroy();
+			delete this.get_activation_listener;
+			delete this.get_deactivation_listener;
+			My.superclass.destroy.apply(this, arguments);
 		};
 		proto.add_listeners = function () {
 			_.each(this.processed_targets, function (target) {

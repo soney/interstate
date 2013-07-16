@@ -62,7 +62,7 @@
 							} else if(type === "add_transition") {
 								var from = event.from,
 									to = event.to;
-								var transition_event = red.create_event("parsed", {str: "(event)", context: context});
+								var transition_event = new red.ParsedEvent( {str: "(event)", context: context});
 								from.parent().add_transition(from, to, transition_event);
 							} else if(type === "rename_state") {
 								var state = event.state,
@@ -101,7 +101,7 @@
 					var ptr_context = red.create("pointer", {stack: [dict]});
 
 					var ge = function(str) {
-						return red.create_event("parsed", {str: str, inert: true});
+						return new red.ParsedEvent({str: str, inert: true});
 					};
 
 					var master = window.master = red.create("statechart");

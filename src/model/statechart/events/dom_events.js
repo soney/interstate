@@ -113,7 +113,12 @@
 		};
 		proto.destroy = function () {
 			this.live_fn.destroy();
+			delete this.live_fn;
 			this.remove_listeners();
+			this.get_target_listener.destroy();
+			delete this.get_target_listener;
+			delete this.targets;
+			My.superclass.destroy.apply(this, arguments);
 		};
 
 		proto.enable = function () {

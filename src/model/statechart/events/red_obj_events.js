@@ -45,6 +45,7 @@
 		};
 
 		proto.destroy = function () {
+			My.superclass.destroy.apply(this, arguments);
 			this.remove_listeners();
 		};
 
@@ -98,6 +99,9 @@
 			return shadow;
 		};
 		proto.destroy = function () {
+			listener_map.clear();
+			this.remove_listeners();
+			delete this.targets;
 			My.superclass.destroy.apply(this, arguments);
 		};
 

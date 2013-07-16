@@ -33,13 +33,19 @@
 
 		this.$active_value = new cjs.Constraint(this.active_value_getter, { context: this });
 
-		this.$value.onChange(_.bind(function () {
+		this.$value.onChange(this.$value.update, this.$value);
+		/*
+		_.bind(function () {
 			//if (red.event_queue.end_queue_round === 3 || red.event_queue.end_queue_round === 4) {
 				this.$value.update();
 			//}
 		}, this));
+		*/
 		//_.defer(_.bind(this.$value.update, this.$value));
 		//this.$value.update();
+		_.defer(_.bind(function() {
+			this.$value.update();
+		}, this));
 
 		this._type = "stateful_prop";
 	};
@@ -283,12 +289,6 @@
 					tr = state.get_times_run();
 
 					if (tr > this.get_transition_times_run(state)) {
-						if(uid.strip_prefix(stateful_prop.id()) == 40) {
-							//console.log(rv);
-							//debugger;
-							//console.log(state, tr);
-							//console.log(using_state);
-						}
 						this.set_transition_times_run(state, tr);
 
 						if (!(using_state instanceof red.StatechartTransition)) {
@@ -384,9 +384,10 @@
 		};
 
 		proto.destroy = function () {
-			My.superclass.destroy.apply(this, arguments);
+			this.$value.offChange(this.$value.update, this.$value);
 			this.$active_value.destroy();
 			delete this.$active_value;
+			My.superclass.destroy.apply(this, arguments);
 		};
 	}(red.ContextualStatefulProp));
 }(red));

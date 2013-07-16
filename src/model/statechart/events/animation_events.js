@@ -52,6 +52,9 @@
 			red.event_queue.signal();
 		};
 
+		proto.destroy = function () {
+			My.superclass.destroy.apply(this, arguments);
+		};
 		proto.enable = function () {
 			My.superclass.enable.apply(this, arguments);
 		};

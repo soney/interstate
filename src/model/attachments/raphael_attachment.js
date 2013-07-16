@@ -123,7 +123,8 @@
 			destroy: function() {
 				this.remove();
 				this.$robj.destroy();
-				this.$robj = false;
+				delete this.constructor_params;
+				delete this.$robj;
 			},
 			parameters: (function(infos) {
 				var can_animate_parameters = ["r", "cx", "cy", "x", "y", "width", "height", "path", "fill", "stroke", "opacity", "fill_opacity", "stroke_opacity", "transform"];

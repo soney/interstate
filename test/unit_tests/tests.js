@@ -106,8 +106,13 @@ asyncTest("Environment Collection", function() {
 					.cd("my_circle")
 						.add_state("init")
 						.add_state("hover")
+						.start_at("init")
 						.add_transition("init", "hover", "on('mouseover', this)")
-						.set("(prototypes)", "(start)", "shape.circle")
+						.add_transition("hover", "init", "on('mouseout', this)")
+						.set("(prototypes)", "init", "shape.circle")
+						.set("fill")
+						.set("fill", "init", "'red'")
+						.set("fill", "hover", "'blue'")
 			;
 			env.print();
 			var root = env.get_root();
@@ -127,7 +132,6 @@ asyncTest("Environment Collection", function() {
 			}, 1000);
 		});
 	});
-	/**/
 });
 /*
 test("Pointer Bucket Collection", function() {
