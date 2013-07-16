@@ -104,12 +104,12 @@ asyncTest("Environment Collection", function() {
 			env	.cd("screen")
 					.set("my_circle", "<stateful>")
 					.cd("my_circle")
+						.set("(prototypes)", "(start)", "shape.circle")
 						.add_state("init")
 						.add_state("hover")
 						.start_at("init")
 						.add_transition("init", "hover", "on('mouseover', this)")
-						.add_transition("hover", "init", "on('mouseout', this)")
-						.set("(prototypes)", "init", "shape.circle")
+						.add_transition("hover", "init", "on('timeout', 100)")
 						.set("fill")
 						.set("fill", "init", "'red'")
 						.set("fill", "hover", "'blue'")
@@ -129,7 +129,7 @@ asyncTest("Environment Collection", function() {
 				take_snapshot(function() {
 					start();
 				});
-			}, 1000);
+			}, 2000);
 		});
 	});
 });
