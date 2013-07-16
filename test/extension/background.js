@@ -15,11 +15,16 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 					if(source.tabId === debuggerId.tabId) {
 						if(method === "HeapProfiler.addProfileHeader") {
 							var uid = params.header.uid;
-							chrome.debugger.sendCommand(debuggerId, "Profiler.getHeapSnapshot", { uid: uid }, function() {
-								chrome.debugger.detach(debuggerId, function() {
-									if(chrome.runtime.lastError) { console.error(chrome.runtime.lastError);  return;}
-									sendResponse({uid: uid});
-									console.log("Took snapshot");
+							//https://code.google.com/p/chromium/issues/detail?id=260749
+							chrome.debugger.sendCommand(debuggerId,"Debugger.enable", { }, function() {
+								chrome.debugger.sendCommand(debuggerId, "HeapProfiler.getHeapSnapshot", { uid: uid }, function() {
+									chrome.debugger.detach(debuggerId, function() {
+										if(chrome.runtime.lastError) { console.error(chrome.runtime.lastError);  return;}
+										chrome.debugger.sendCommand(debuggerId,"Debugger.disable", { }, function() {
+											sendResponse({uid: uid});
+										});
+										console.log("Took snapshot");
+									});
 								});
 							});
 							chrome.debugger.onEvent.removeListener(listener);
