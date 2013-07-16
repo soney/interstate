@@ -125,6 +125,7 @@
 			}
 		},
 		_destroy: function() {
+			this._super();
 			this.summary_span.remove();
 			if(this.live_value_fn) {
 				this.live_value_fn.destroy();

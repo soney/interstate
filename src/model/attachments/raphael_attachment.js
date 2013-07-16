@@ -52,6 +52,12 @@
 				this.dom_obj = window.document.createElement("div");
 				this.paper = new Raphael(this.dom_obj, 0, 0);
 			},
+			destroy: function() {
+				this.paper.clear();
+				this.paper.remove();
+				delete this.paper;
+				delete this.dom_obj;
+			},
 			parameters: {
 				width_height: function(contextual_object) {
 					var width = contextual_object.prop_val("width"),
@@ -103,9 +109,6 @@
 			proto_props: {
 				get_dom_obj: function() {
 					return this.dom_obj;
-				},
-				destroy:  function() {
-					console.log("destroy");
 				}
 			},
 			attachment_destroy: function() {

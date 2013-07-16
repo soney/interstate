@@ -92,6 +92,7 @@
 			this.element.on("keydown", this.$on_key_down);
 		},
 		_destroy: function() {
+			this._super();
 			this.text.remove();
 			this.element.removeClass("cell");
 			this.destroy_live_text_fn();

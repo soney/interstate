@@ -9,11 +9,13 @@
 
 	red.on_event = function (event_type, arg1) {
 		if (event_type === "timeout") {
-			var time = arg1;
-			var timeout_event = new red.TimeoutEvent(time);
+			var timeout_event = new red.TimeoutEvent(arg1);
 			return timeout_event;
+		} else if(event_type === "time") {
+			var time_event = new red.TimeEvent(arg1);
+			return time_event;
 		} else if(event_type === "frame") {
-			var frame_event = red.create_event("frame");
+			var frame_event = new red.FrameEvent();
 			return frame_event;
 		} else {
 			var targets = _.rest(arguments);
@@ -21,20 +23,20 @@
 
 			if (targets) {
 				var statechart_spec = event_type;
-				var statechart_event = red.create_event("transition", targets, statechart_spec);
+				var statechart_event = new red.TransitionEvent(targets, statechart_spec);
 				events.push(statechart_event);
 
 				var red_event_type = event_type;
-				var red_event = red.create_event("red_obj", red_event_type, targets);
+				var red_event = new red.RedObjEvent(red_event_type, targets);
 				events.push(red_event);
 			}
 			if (arguments.length <= 1) { // Ex: on('mouseup') <-> on('mouseup', window)
 				targets = window;
 			}
-			var dom_event = red.create_event("dom", event_type, targets);
+			var dom_event = new red.DOMEvent(event_type, targets);
 			events.push(dom_event);
 
-			return red.create_event("combination", events);
+			return new red.CombinationEvent(events);
 		}
 	};
 

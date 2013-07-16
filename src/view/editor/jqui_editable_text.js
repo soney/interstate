@@ -107,6 +107,7 @@
 		},
 
 		_destroy: function() {
+			this._super();
 		},
 
 		_setOption: function(key, value) {

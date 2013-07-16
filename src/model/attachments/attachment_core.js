@@ -15,7 +15,12 @@
     
     (function (My) {
         var proto = My.prototype;
-        proto.destroy = function () { };
+        proto.destroy = function () {
+			delete this.options;
+			delete this.contextual_object;
+			delete this.creator;
+			delete this.type;
+		};
         proto.get_type = function () {
             return this.type;
         };
@@ -65,6 +70,10 @@
         };
 		proto.do_destroy = function() {};
 		proto.destroy = function() {
+			delete this.type;
+			delete this._multiple_allowed;
+			delete this._InstanceClass;
+			delete this.instance_options;
 			this.do_destroy();
 		};
     }(red.Attachment));
@@ -154,6 +163,7 @@
 				_.each(attachment_specs.parameters, function(parameter_spec, parameter_name) {
 					this._listeners[parameter_name].destroy();
 				}, this);
+				delete this._listeners;
 				My.superclass.destroy.apply(this, arguments);
 			};
 			_.each(attachment_specs.proto_props, function(proto_prop, proto_prop_name) {

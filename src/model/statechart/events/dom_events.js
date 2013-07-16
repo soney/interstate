@@ -6,8 +6,15 @@
 	var cjs = red.cjs,
 		_ = red._;
 
-	(function (my) {
-		var proto = my.prototype;
+	red.DOMEvent = function () {
+		red.Event.apply(this, arguments);
+		this._initialize();
+		this._type = "dom_event";
+	};
+
+	(function (My) {
+		_.proto_extend(My, red.Event);
+		var proto = My.prototype;
 		proto.on_create = function (type, targets) {
 			var self = this;
 			this.get_target_listener = cjs.memoize(_.bind(function (specified_target) {
@@ -88,7 +95,7 @@
 			});
 		};
 		proto.clone = function () {
-			return red.create_event("dom", this.type, this.targets);
+			return new My(this.type, this.targets);
 		};
 		proto.add_listeners = function () {
 			_.each(this.targets, function (target_info) {
@@ -110,14 +117,14 @@
 		};
 
 		proto.enable = function () {
-			my.superclass.enable.apply(this, arguments);
+			My.superclass.enable.apply(this, arguments);
 			this.add_listeners();
 			this.live_fn.resume().run();
 		};
 		proto.disable = function () {
-			my.superclass.disable.apply(this, arguments);
+			My.superclass.disable.apply(this, arguments);
 			this.remove_listeners();
 			this.live_fn.pause();
 		};
-	}(red._create_event_type("dom")));
+	}(red.DOMEvent));
 }(red));

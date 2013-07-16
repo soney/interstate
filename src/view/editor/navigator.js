@@ -40,6 +40,7 @@
 			this.columns = [root_col];
 		},
 		_destroy: function() {
+			this._super();
 			_.each(this.columns, function(col) {
 				col.column("destroy");
 			});

@@ -31,6 +31,7 @@
 		},
 
 		_destroy: function () {
+			this._super();
 			this.element.removeClass("dropdown");
 			this.btn.remove();
 			this.menu_items.remove();

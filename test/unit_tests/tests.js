@@ -96,23 +96,35 @@ asyncTest("State Allocation", function() {
 });
 */
 asyncTest("Environment Collection", function() {
-	var env = new red.Environment({create_builtins: true});
-	env.set("x", "1+2");
-	env.set("y", "x+2");
-	env.set("OBJ", "<stateful>");
-	env.cd("OBJ");
-	env.add_state("init");
-	env.start_at("init");
-	env.set("x");
-	env.set("x", "init", "2");
-	env.print();
-	env.destroy();
 	expect(0);
+	var the_div = $("<div />").appendTo(document.body);
 	clear_snapshots(function() {
 		take_snapshot(function() {
-			take_snapshot(function() {
-				start();
+			var env = new red.Environment({create_builtins: true});
+			env	.cd("screen")
+					.set("my_circle", "<stateful>")
+					.cd("my_circle")
+						.add_state("init")
+						.add_state("hover")
+						.add_transition("init", "hover", "on('mouseover', this)")
+						.set("(prototypes)", "(start)", "shape.circle")
+			;
+			env.print();
+			var root = env.get_root();
+			the_div.dom_output({
+				root: root,
+				editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
 			});
+
+			window.setTimeout(function() {
+				the_div.dom_output("destroy");
+				env.destroy();
+				env = null;
+				the_div.remove();
+				take_snapshot(function() {
+					start();
+				});
+			}, 1000);
 		});
 	});
 	/**/

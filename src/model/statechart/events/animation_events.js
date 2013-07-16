@@ -14,8 +14,14 @@
 			window.setTimeout(callback, 1000/60);
 		};
 	})();
-	(function (my) {
-		var proto = my.prototype;
+	red.FrameEvent = function () {
+		red.Event.apply(this, arguments);
+		this._initialize();
+		this._type = "frame_event";
+	};
+	(function (My) {
+		_.proto_extend(My, red.Event);
+		var proto = My.prototype;
 		proto.on_create = function () {
 			this.created_at = (new Date()).getTime();
 		};
@@ -47,10 +53,10 @@
 		};
 
 		proto.enable = function () {
-			my.superclass.enable.apply(this, arguments);
+			My.superclass.enable.apply(this, arguments);
 		};
 		proto.disable = function () {
-			my.superclass.disable.apply(this, arguments);
+			My.superclass.disable.apply(this, arguments);
 		};
-	}(red._create_event_type("frame")));
+	}(red.FrameEvent));
 }(red));

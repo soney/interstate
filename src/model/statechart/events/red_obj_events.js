@@ -30,9 +30,15 @@
 		}
 	};
 
+	red.RedObjEvent = function() {
+		red.Event.apply(this, arguments);
+		this._initialize();
+		this._type = "red_obj_event";
+	};
 
-	(function (my) {
-		var proto = my.prototype;
+	(function (My) {
+		_.proto_extend(My, red.Event);
+		var proto = My.prototype;
 		proto.on_create = function (type, targets) {
 			this.type = type;
 			this.targets = _.flatten(targets);
@@ -83,7 +89,7 @@
 			}, this);
 		};
 		proto.create_shadow = function (parent_statechart, context) {
-			var shadow = red.create_event("red_obj");
+			var shadow = new My();
 			this.on_fire(function () {
 				red.event_queue.wait();
 				shadow.fire();
@@ -92,16 +98,16 @@
 			return shadow;
 		};
 		proto.destroy = function () {
-			my.superclass.destroy.apply(this, arguments);
+			My.superclass.destroy.apply(this, arguments);
 		};
 
 		proto.enable = function () {
-			my.superclass.enable.apply(this, arguments);
+			My.superclass.enable.apply(this, arguments);
 			this.add_listeners();
 		};
 		proto.disable = function () {
-			my.superclass.disable.apply(this, arguments);
+			My.superclass.disable.apply(this, arguments);
 			this.remove_listeners();
 		};
-	}(red._create_event_type("red_obj")));
+	}(red.RedObjEvent));
 }(red));

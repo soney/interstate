@@ -857,7 +857,7 @@
 			var to_state = statechart.find_state(to_state_name);
 
 			if (_.isString(event)) {
-				event = red.create_event("parsed", {str: event, inert: true});
+				event = new red.ParsedEvent({str: event, inert: true});
 			}
 
 			var command = new red.AddTransitionCommand({

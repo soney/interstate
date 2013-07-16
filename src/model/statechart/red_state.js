@@ -450,7 +450,10 @@
 			delete this._last_run_event;
 			if (this._basis) {
 				this.remove_basis_listeners();
+				delete this._basis;
 			}
+			delete this._parent;
+			delete this._context;
 			able.destroy_this_listenable(this);
 			red.unregister_uid(this.id());
 		};

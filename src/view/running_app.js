@@ -77,8 +77,6 @@
 
 		_create: function () {
 			this.element.addClass("euc_runtime");
-			this.$open_editor = $.proxy(this.open_editor, this);
-			this.$on_key_down = $.proxy(this.on_key_down, this);
 			this._command_stack = new red.CommandStack();
 			if (this.option("show_edit_button")) {
 				this.button_color = randomColor([0, 1], [0.1, 0.7], [0.4, 0.6]);
@@ -142,7 +140,7 @@
 				this.open_editor();
 			}
 
-			$(window).on("keydown", this.$on_key_down);
+			$(window).on("keydown.open_editor", _.bind(this.on_key_down, this));
 
 			if(this.option("immediately_create_server_socket")) {
 				this.server_socket = this._create_server_socket();
@@ -252,8 +250,10 @@
 		},
 
 		_destroy: function () {
+			this._super();
+			this._remove_change_listeners();
 			this.element.removeClass("euc_runtime");
-			$(window).off("keydown", this.$on_key_down);
+			$(window).off("keydown.open_editor");
 			if (this.edit_button) {
 				this.edit_button.remove();
 			}
@@ -261,6 +261,10 @@
 				this.server_socket.destroy();
 				delete this.server_socket;
 			}
+			this._command_stack.destroy();
+			delete this._command_stack;
+
+			delete this.options;
 		},
 
 		_add_change_listeners: function () {
@@ -284,6 +288,7 @@
 		
 		_remove_change_listeners: function () {
 			this._dom_tree_fn.destroy();
+			delete this._dom_tree_fn;
 		},
 
 		_create_server_socket: function() {

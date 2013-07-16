@@ -210,6 +210,7 @@
 		in_call = true;
 
 		if(root_call) {
+			cjs.wait();
 			depth_first_destroy(cobj, false);
 		}
 
@@ -220,6 +221,7 @@
 		pointer_bucket.destroy_cobj(cobj);
 
 		if(root_call) {
+			cjs.signal();
 		}
 
 		in_call = false;

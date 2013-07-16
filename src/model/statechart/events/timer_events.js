@@ -6,7 +6,15 @@
 	var cjs = red.cjs,
 		_ = red._;
 
-	(function (proto) {
+	red.TimeEvent = function () {
+		red.Event.apply(this, arguments);
+		this._initialize();
+		this._type = "time";
+	};
+
+	(function (My) {
+		_.proto_extend(My, red.Event);
+		var proto = My.prototype;
 		proto.on_create = function (time) {
 			this.time = time;
 			var creation_time = (new Date()).getTime();
@@ -21,7 +29,7 @@
 				});
 			}, time_diff);
 		};
-	}(red._create_event_type("time").prototype));
+	}(red.TimeEvent));
 
 	red.TimeoutEvent = function () {
 		red.Event.apply(this, arguments);

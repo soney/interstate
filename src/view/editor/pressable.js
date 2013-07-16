@@ -24,6 +24,7 @@
 		},
 
 		_destroy: function() {
+			this._super();
 			this.element.off("touchstart", this.$on_touch_start);
 			this.element.off("click", this.$on_click);
 

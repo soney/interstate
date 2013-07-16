@@ -6,9 +6,14 @@
 	var cjs = red.cjs,
 		_ = red._;
 
-	red.TransitionEvent = red._create_event_type("transition");
+	red.TransitionEvent = function () {
+		red.Event.apply(this, arguments);
+		this._initialize();
+		this._type = "statechart_event";
+	};
 
 	(function (My) {
+		_.proto_extend(My, red.Event);
 		var proto = My.prototype;
 		proto.on_create = function (targets, spec) {
 			this.targets = targets;

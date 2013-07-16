@@ -31,7 +31,13 @@
         My.builtins = {
             "direct_values": {
                 "default": function () { return cjs.map(); },
-                env_visible: false
+                env_visible: false,
+				destroy: function(me) {
+					me.each(function(val) {
+						val.destroy();
+					});
+					me.destroy();
+				}
             },
     
             "can_inherit": {
@@ -90,12 +96,8 @@
         proto.id = proto.hash = function () { return this._id; };
     
         proto.destroy = function () {
-            var direct_values = this.get_direct_values();
-            var contextual_values = direct_values.values();
-            _.each(contextual_values, function (cv) {
-                cv.destroy();
-            });
-            direct_values.destroy();
+			red.unset_instance_builtins(this, My);
+			red.unregister_uid(this.id());
         };
     
         red.register_serializable_type("stateful_prop",

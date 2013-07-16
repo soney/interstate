@@ -170,30 +170,4 @@
 			return this._enabled;
 		};
 	}(red.Event));
-
-	var event_types = {};
-
-	function construct(constructor, args) {
-		function F() {
-			return constructor.apply(this, args);
-		}
-		F.prototype = constructor.prototype;
-		return new F();
-	}
-	red.create_event = function (event_type) {
-		var Constructor = event_types[event_type];
-
-		var rv = construct(Constructor, _.rest(arguments));
-		rv._type = event_type;
-		return rv;
-	};
-	red._create_event_type = function (name) {
-		var Constructor = function () {
-			red.Event.apply(this, arguments);
-			this._initialize();
-		};
-		_.proto_extend(Constructor, red.Event);
-		event_types[name] = Constructor;
-		return Constructor;
-	};
 }(red));

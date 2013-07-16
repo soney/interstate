@@ -13,12 +13,17 @@
 			return got_value;
 		} else {
 			cjs.removeDependency(event_constraint, live_event_creator);
-			return red.create_event("constraint", event_constraint, got_value);
+			return new red.ConstraintEvent(event_constraint, got_value);
 		}
 	};
 
-	red.ParsedEvent = red._create_event_type("parsed");
+	red.ParsedEvent = function () {
+		red.Event.apply(this, arguments);
+		this._initialize();
+		this._type = "parsed_event";
+	};
 	(function (My) {
+		_.proto_extend(My, red.Event);
 		var proto = My.prototype;
 		proto.set_transition = function (transition) {
 			My.superclass.set_transition.apply(this, arguments);
@@ -113,7 +118,7 @@
 			});
 		};
 		proto.create_shadow = function (parent_statechart, context) {
-			var rv = red.create_event("parsed", {str: this.get_str(), context: context, inert_shadows: this.options.inert_shadows, inert: this.options.inert_shadows});
+			var rv = new My({str: this.get_str(), context: context, inert_shadows: this.options.inert_shadows, inert: this.options.inert_shadows});
 			this.on("setString", function (e) {
 				rv.set_str(e.to);
 			});
@@ -123,10 +128,18 @@
 			if (this._old_event) {
 				this._old_event.off_fire(this.$child_fired);
 				this._old_event.destroy();
+				delete this._old_event;
 			}
 			if (this._live_event_creator) {
 				this._live_event_creator.destroy();
+				delete this._live_event_creator;
 			}
+			if(this._str) {
+				this._str.destroy();
+				delete this._str;
+			}
+			red.unregister_uid(this.id());
+			My.superclass.destroy.apply(this, arguments);
 		};
 		proto.clone = function () {
 		};
@@ -144,7 +157,7 @@
 				};
 			},
 			function (obj) {
-				return red.create_event("parsed", {
+				return new My({
 					str: obj.str,
 					inert: obj.inert
 				});

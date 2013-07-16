@@ -293,6 +293,9 @@
 		proto.get_start_state = function () { return this._start_state; };
 		proto.set_start_state = function (state) {
 			cjs.wait();
+			if(this._start_state) {
+				this._start_state.destroy();
+			}
 			if (this.$local_state && this.$local_state.get() === this.get_start_state()) {
 				this.$local_state.set(state);
 				this.$local_state.enable_outgoing_transitions();
@@ -733,17 +736,24 @@
 				this.$substates.destroy();
 				delete this.$substates;
 			}
+			delete this._start_state;
 			if(this.$concurrent) {
 				this.$concurrent.destroy();
 				delete this.$concurrent;
 			}
 
-
 			if(this.$incoming_transitions) {
 				this.$incoming_transitions.destroy();
+				delete this.$incoming_transitions;
 			}
 			if(this.$outgoing_transitions) {
 				this.$outgoing_transitions.destroy();
+				delete this.$outgoing_transitions;
+			}
+
+			if(this.$local_state) {
+				this.$local_state.destroy();
+				delete this.$local_state;
 			}
 			//this.get_start_state().destroy();
 

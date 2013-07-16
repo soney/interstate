@@ -3,10 +3,20 @@
 
 (function (red) {
 	"use strict";
+	var cjs = red.cjs,
+		_ = red._;
 
-	(function (proto) {
+	red.ManualEvent = function () {
+		red.ManualEvent.apply(this, arguments);
+		this._initialize();
+		this._type = "manual_event";
+	};
+
+	(function (My) {
+		_.proto_extend(My, red.Event);
+		var proto = My.prototype;
 		proto.create_shadow = function (parent_statechart, context) {
-			var shadow = red.create_event("manual");
+			var shadow = new My();
 			this.on_fire(function () {
 				red.event_queue.wait();
 				shadow.fire();
@@ -14,5 +24,5 @@
 			});
 			return shadow;
 		};
-	}(red._create_event_type("manual").prototype));
+	}(red.ManualEvent));
 }(red));

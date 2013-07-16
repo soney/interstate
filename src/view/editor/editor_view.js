@@ -392,6 +392,7 @@
 		},
 
 		_destroy: function () {
+			this._super();
 			this.on_unload();
 		},
 

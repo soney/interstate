@@ -6,8 +6,15 @@
 	var cjs = red.cjs,
 		_ = red._;
 
-	(function (my) {
-		var proto = my.prototype;
+	red.ConstraintEvent = function () {
+		red.Event.apply(this, arguments);
+		this._initialize();
+		this._type = "constraint_event";
+	};
+
+	(function (My) {
+		_.proto_extend(My, red.Event);
+		var proto = My.prototype;
 		proto.on_create = function (constraint, in_effect) {
 			this.constraint = constraint;
 			this._in_effect = !!in_effect;
@@ -36,15 +43,15 @@
 		};
 
 		proto.enable = function () {
-			my.superclass.enable.apply(this, arguments);
+			My.superclass.enable.apply(this, arguments);
 			this.constraint.onChange(this.$check_constraint_val);
 			if (!this.constraint.is_valid()) {
 				this.$check_constraint_val();
 			}
 		};
 		proto.disable = function () {
-			my.superclass.disable.apply(this, arguments);
+			My.superclass.disable.apply(this, arguments);
 			this.constraint.offChange(this.$check_constraint_val);
 		};
-	}(red._create_event_type("constraint")));
+	}(red.ConstraintEvent));
 }(red));

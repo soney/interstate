@@ -6,8 +6,15 @@
 	var cjs = red.cjs,
 		_ = red._;
 
-	(function (my) {
-		var proto = my.prototype;
+	red.CombinationEvent = function () {
+		red.Event.apply(this, arguments);
+		this._initialize();
+		this._type = "combination_event";
+	};
+
+	(function (My) {
+		_.proto_extend(My, red.Event);
+		var proto = My.prototype;
 		proto.on_create = function (events) {
 			this.events = events;
 			_.each(this.events, function (event) {
@@ -25,16 +32,16 @@
 		};
 
 		proto.enable = function () {
-			my.superclass.enable.apply(this, arguments);
+			My.superclass.enable.apply(this, arguments);
 			_.each(this.events, function (event) {
 				event.enable();
 			});
 		};
 		proto.disable = function () {
-			my.superclass.disable.apply(this, arguments);
+			My.superclass.disable.apply(this, arguments);
 			_.each(this.events, function (event) {
 				event.disable();
 			});
 		};
-	}(red._create_event_type("combination")));
+	}(red.CombinationEvent));
 }(red));

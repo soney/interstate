@@ -42,6 +42,7 @@
 		},
 
 		_destroy: function () {
+			this._super();
 			this.remove_listener();
 			var client = this.option("client");
 			client.signal_destroy();
