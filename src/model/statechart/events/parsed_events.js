@@ -86,7 +86,6 @@
 						cjs.signal();
 					}
 
-
 					if (event) {
 						event.set_transition(this.get_transition());
 						event.on_fire(this.$child_fired);
@@ -131,7 +130,7 @@
 				delete this._old_event;
 			}
 			if (this._live_event_creator) {
-				this._live_event_creator.destroy();
+				this._live_event_creator.destroy(true);
 				delete this._live_event_creator;
 			}
 			if(this._str) {

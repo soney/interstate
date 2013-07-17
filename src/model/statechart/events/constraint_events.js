@@ -38,8 +38,10 @@
 				this._in_effect = false;
 			}
 		};
-		proto.destroy = function (silent) {
-			this.constraint.destroy(silent);
+		proto.destroy = function () {
+			//this.constraint.destroy(true);
+			delete this.$check_constraint_val;
+			delete this.constraint;
 		};
 
 		proto.enable = function () {

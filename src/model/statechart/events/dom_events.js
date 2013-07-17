@@ -112,10 +112,10 @@
 			}, this);
 		};
 		proto.destroy = function () {
-			this.live_fn.destroy();
+			this.live_fn.destroy(true);
 			delete this.live_fn;
 			this.remove_listeners();
-			this.get_target_listener.destroy();
+			this.get_target_listener.destroy(true);
 			delete this.get_target_listener;
 			delete this.targets;
 			My.superclass.destroy.apply(this, arguments);
@@ -124,7 +124,9 @@
 		proto.enable = function () {
 			My.superclass.enable.apply(this, arguments);
 			this.add_listeners();
-			this.live_fn.resume().run();
+			if(this.live_fn.resume()) {
+				this.live_fn.run();
+			}
 		};
 		proto.disable = function () {
 			My.superclass.disable.apply(this, arguments);

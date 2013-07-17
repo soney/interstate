@@ -71,19 +71,19 @@
 			});
 		};
 		proto.destroy = function () {
-			this.live_fn.destroy();
+			this.live_fn.destroy(true);
 			delete this.live_fn;
 			this.remove_listeners();
 			if(this.spec.destroy) {
-				this.spec.destroy();
+				this.spec.destroy(true);
 			}
 			delete this.spec;
 			if(this.targets.destroy) {
-				this.targets.destroy();
+				this.targets.destroy(true);
 			}
 			delete this.target;
-			this.get_activation_listener.destroy();
-			this.get_deactivation_listener.destroy();
+			this.get_activation_listener.destroy(true);
+			this.get_deactivation_listener.destroy(true);
 			delete this.get_activation_listener;
 			delete this.get_deactivation_listener;
 			My.superclass.destroy.apply(this, arguments);

@@ -98,8 +98,8 @@ asyncTest("State Allocation", function() {
 asyncTest("Environment Collection", function() {
 	expect(0);
 	var the_div = $("<div />").appendTo(document.body);
-	clear_snapshots(function() {
-		take_snapshot(function() {
+	//clear_snapshots(function() {
+		//take_snapshot(function() {
 			var env = new red.Environment({create_builtins: true});
 			env	.cd("screen")
 					.set("my_circle", "<stateful>")
@@ -126,12 +126,12 @@ asyncTest("Environment Collection", function() {
 				env.destroy();
 				env = null;
 				the_div.remove();
-				take_snapshot(function() {
+				//take_snapshot(function() {
 					start();
-				});
+				//});
 			}, 2000);
-		});
-	});
+		//});
+	//});
 });
 /*
 test("Pointer Bucket Collection", function() {
