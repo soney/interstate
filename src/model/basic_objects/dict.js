@@ -329,9 +329,11 @@
                 return rv;
             });
     }(red.Dict));
+	/*
     
     red.define("dict", function (options) {
         var dict = new red.Dict(options);
         return dict;
     });
+	*/
 }(red));

@@ -96,10 +96,10 @@
 			var post = localStorage.getItem("post");
 			if(post) {
 				root = red.destringify(post);
-				env = red.create("environment", {root: root});
+				env = new red.Environment({root: root});
 				//localStorage.removeItem("post");
 			} else {
-				env = red.create("environment");
+				env = new red.Environment();
 				root = env.get_root();
 			}
 			
@@ -113,7 +113,7 @@
 				$("div.content").dom_output("destroy");
 				env.destroy();
 
-				env = red.create("environment", {root: root});
+				env = new red.Environment({root: root});
 				$("div.content").dom_output({
 					root: root
 				});

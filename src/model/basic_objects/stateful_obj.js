@@ -27,7 +27,7 @@
     
         My.builtins = {
             "direct_statechart": {
-                "default": function () { return red.create("statechart"); },
+                "default": function () { return new red.Statechart(); },
                 getter_name: "get_own_statechart",
                 settable: false,
 				destroy: function(me) {
@@ -67,10 +67,12 @@
                 return rv;
             });
     }(red.StatefulObj));
+	/*
     
     red.define("stateful_obj", function (options, defer_init) {
         var dict = new red.StatefulObj(options, defer_init);
         return dict;
     });
 
+*/
 }(red));

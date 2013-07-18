@@ -95,16 +95,16 @@
 					return rv;
 				};
 				$(function() {
-					var dict = red.create("dict");
+					var dict = new red.Dict();
 					dict.set("sq", $(".red_square")[0]);
 					dict.set("on", red.on_event);
-					var ptr_context = red.create("pointer", {stack: [dict]});
+					var ptr_context = new red.Pointer({stack: [dict]});
 
 					var ge = function(str) {
 						return new red.ParsedEvent({str: str, inert: true});
 					};
 
-					var master = window.master = red.create("statechart");
+					var master = window.master = new red.Statechart();
 					master	.add_state("init")
 							.add_state("hover")
 							.starts_at("init")

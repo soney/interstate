@@ -135,9 +135,9 @@ asyncTest("Environment Collection", function() {
 });
 /*
 test("Pointer Bucket Collection", function() {
-	var root = red.create("dict");
-	var a_dict = red.create("dict");
-	var b_dict = red.create("dict");
+	var root = new red.Dict();
+	var a_dict = new red.Dict();
+	var b_dict = new red.Dict();
 	var croot = red.find_or_put_contextual_obj(root);
 	root.set("a", a_dict);
 	root.set("b", b_dict);

@@ -511,7 +511,9 @@
 			});
 	}(red.DomAttachment));
 
+/*
 	red.define("dom_attachment", function (options) {
 		return new red.DomAttachment(options);
 	});
+	*/
 }(red, jQuery));

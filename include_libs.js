@@ -125,7 +125,7 @@ exports.editor = c(
 		"view/editor/cell.js",
 		"view/editor/copies.js",
 		"view/editor/val_summary.js",
-		"view/editor/statechart/raphael_utils.js",
+		//"view/editor/statechart/raphael_utils.js",
 		"view/editor/statechart/editable_text.js",
 		"view/editor/statechart/layout_engine.js",
 		"view/editor/statechart/start_state_view.js",

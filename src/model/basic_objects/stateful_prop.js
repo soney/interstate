@@ -149,10 +149,12 @@
                 return rv;
             });
     }(red.StatefulProp));
+	/*
     
     red.define("stateful_prop", function (options) {
         var prop = new red.StatefulProp(options);
         return prop;
     });
 
+*/
 }(red));

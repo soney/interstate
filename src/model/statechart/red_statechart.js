@@ -1009,8 +1009,10 @@
 				return rv;
 			});
 	}(red.Statechart));
+	/*
 
 	red.define("statechart", function (options) {
 		return new red.Statechart(options);
 	});
+	*/
 }(red));

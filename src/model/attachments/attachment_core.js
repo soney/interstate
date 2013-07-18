@@ -77,12 +77,14 @@
 			this.do_destroy();
 		};
     }(red.Attachment));
+	/*
     
     red.define("attachment", function (options) {
         var attachment = new red.Attachment(options);
         return attachment;
     });
 
+*/
 	red.register_attachments = function(object_types) {
 		var attachment_suffix = "_attachment";
 		_.each(object_types, function(attachment_specs, attachment_name) {

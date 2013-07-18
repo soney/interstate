@@ -17,6 +17,7 @@ var red = (function (root) {
 
 	able.make_this_listenable(red);
 	able.make_proto_listenable(red);
+	/*
 
 	red.define = function (type, factory) {
 		factories[type] = factory;
@@ -34,6 +35,7 @@ var red = (function (root) {
 	};
 
     
+	*/
 	red.register_uid = function (uid, obj) {
 		uid_objs[uid] = obj;
 		red._emit("uid_registered", uid, obj);

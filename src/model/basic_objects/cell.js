@@ -157,10 +157,12 @@
                 return rv;
             });
     }(red.Cell));
+	/*
     
     red.define("cell", function (options) {
         var cell = new red.Cell(options);
         return cell;
     });
+	*/
 
 }(red));

@@ -146,12 +146,12 @@
 				}
 
 				if(prop_type === "stateful_obj") {
-					value = red.create("stateful_obj", undefined, true);
+					value = new red.StatefulObj(undefined, true);
 					value.do_initialize({
-						direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value })
+						direct_protos: new red.StatefulProp({ can_inherit: false, statechart_parent: value })
 					});
 				} else if(prop_type === "stateful_prop") {
-					value = red.create('stateful_prop');
+					value = new red.StatefulProp();
 				}
 
 				command = new red.SetPropCommand({
@@ -189,7 +189,7 @@
 			} else if(type === "set_stateful_prop_for_state") {
 				client = event.prop;
 				state = event.state;
-				value = red.create('cell', {str: ''});
+				value = new red.Cell({str: ''});
 
 				command = new red.SetStatefulPropValueCommand({
 					stateful_prop: { id: to_func(client.obj_id) },
@@ -265,12 +265,12 @@
 				name = event.prop_name;
 				client = event.client;
 				if(to_type === "Object") {
-					value = red.create("stateful_obj", undefined, true);
+					value = new red.StatefulObj(undefined, true);
 					value.do_initialize({
-						direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value })
+						direct_protos: new red.StatefulProp({ can_inherit: false, statechart_parent: value })
 					});
 				} else if(to_type === "Property") {
-					value = red.create('stateful_prop');
+					value = new red.StatefulProp();
 				}
 
 				command = new red.SetPropCommand({

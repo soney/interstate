@@ -228,11 +228,13 @@
 			return rv;
 		};
 	}(red.Pointer));
+	/*
 
 	red.define("pointer", function (options) {
 		var context = new red.Pointer(options);
 		return context;
 	});
+	*/
 
 	red.is_pointer = function (obj) {
 		return obj instanceof red.Cell || obj instanceof red.StatefulProp;

@@ -64,25 +64,25 @@
 																						})]
 																					});
 			shape.set("circle", circle);
-			circle.set("show", red.create("cell", {str: "true"}));
-			circle.set("clip_rect", red.create("cell", {str: "null"}));
-			circle.set("cursor", red.create("cell", {str: "'default'"}));
-			circle.set("cx", red.create("cell", {str: "30"}));
-			circle.set("cy", red.create("cell", {str: "50"}));
-			circle.set("fill", red.create("cell", {str: "'none'"}));
-			circle.set("fill_opacity", red.create("cell", {str: "1.0"}));
-			circle.set("opacity", red.create("cell", {str: "1.0"}));
-			circle.set("r", red.create("cell", {str: "50"}));
-			circle.set("stroke", red.create("cell", {str: "'black'"}));
-			circle.set("stroke_dasharray", red.create("cell", {str: "''"}));
-			circle.set("stroke_opacity", red.create("cell", {str: "1.0"}));
-			circle.set("stroke_width", red.create("cell", {str: "1"}));
-			circle.set("transform", red.create("cell", {str: "''"}));
-			circle.set("animated_properties", red.create("cell", {str: "false"}));
-			circle.set("animation_duration", red.create("cell", {str: "300"}));
+			circle.set("show", new red.Cell({str: "true"}));
+			circle.set("clip_rect", new red.Cell({str: "null"}));
+			circle.set("cursor", new red.Cell({str: "'default'"}));
+			circle.set("cx", new red.Cell({str: "30"}));
+			circle.set("cy", new red.Cell({str: "50"}));
+			circle.set("fill", new red.Cell({str: "'none'"}));
+			circle.set("fill_opacity", new red.Cell({str: "1.0"}));
+			circle.set("opacity", new red.Cell({str: "1.0"}));
+			circle.set("r", new red.Cell({str: "50"}));
+			circle.set("stroke", new red.Cell({str: "'black'"}));
+			circle.set("stroke_dasharray", new red.Cell({str: "''"}));
+			circle.set("stroke_opacity", new red.Cell({str: "1.0"}));
+			circle.set("stroke_width", new red.Cell({str: "1"}));
+			circle.set("transform", new red.Cell({str: "''"}));
+			circle.set("animated_properties", new red.Cell({str: "false"}));
+			circle.set("animation_duration", new red.Cell({str: "300"}));
 
 
-			var ellipse = red.create("dict", {has_protos: false, direct_attachments: [new red.ShapeAttachment({
+			var ellipse = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "ellipse",
 																									constructor_params: [0, 0, 0, 0]
@@ -90,25 +90,25 @@
 																						})]
 																					});
 			shape.set("ellipse", ellipse);
-			ellipse.set("show", red.create("cell", {str: "true"}));
-			ellipse.set("clip_rect", red.create("cell", {str: "null"}));
-			ellipse.set("cursor", red.create("cell", {str: "'default'"}));
-			ellipse.set("cx", red.create("cell", {str: "30"}));
-			ellipse.set("cy", red.create("cell", {str: "50"}));
-			ellipse.set("fill", red.create("cell", {str: "'none'"}));
-			ellipse.set("fill_opacity", red.create("cell", {str: "1.0"}));
-			ellipse.set("opacity", red.create("cell", {str: "1.0"}));
-			ellipse.set("rx", red.create("cell", {str: "50"}));
-			ellipse.set("ry", red.create("cell", {str: "20"}));
-			ellipse.set("stroke", red.create("cell", {str: "'black'"}));
-			ellipse.set("stroke_dasharray", red.create("cell", {str: "''"}));
-			ellipse.set("stroke_opacity", red.create("cell", {str: "1.0"}));
-			ellipse.set("stroke_width", red.create("cell", {str: "1"}));
-			ellipse.set("transform", red.create("cell", {str: "''"}));
-			ellipse.set("animated_properties", red.create("cell", {str: "false"}));
-			ellipse.set("animation_duration", red.create("cell", {str: "300"}));
+			ellipse.set("show", new red.Cell({str: "true"}));
+			ellipse.set("clip_rect", new red.Cell({str: "null"}));
+			ellipse.set("cursor", new red.Cell({str: "'default'"}));
+			ellipse.set("cx", new red.Cell({str: "30"}));
+			ellipse.set("cy", new red.Cell({str: "50"}));
+			ellipse.set("fill", new red.Cell({str: "'none'"}));
+			ellipse.set("fill_opacity", new red.Cell({str: "1.0"}));
+			ellipse.set("opacity", new red.Cell({str: "1.0"}));
+			ellipse.set("rx", new red.Cell({str: "50"}));
+			ellipse.set("ry", new red.Cell({str: "20"}));
+			ellipse.set("stroke", new red.Cell({str: "'black'"}));
+			ellipse.set("stroke_dasharray", new red.Cell({str: "''"}));
+			ellipse.set("stroke_opacity", new red.Cell({str: "1.0"}));
+			ellipse.set("stroke_width", new red.Cell({str: "1"}));
+			ellipse.set("transform", new red.Cell({str: "''"}));
+			ellipse.set("animated_properties", new red.Cell({str: "false"}));
+			ellipse.set("animation_duration", new red.Cell({str: "300"}));
 			
-			var image = red.create("dict", {has_protos: false, direct_attachments: [new red.ShapeAttachment({
+			var image = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "image",
 																									constructor_params: ["", 0, 0, 0, 0]
@@ -116,21 +116,21 @@
 																						})]
 																					});
 			shape.set("image", image);
-			image.set("show", red.create("cell", {str: "true"}));
-			image.set("clip_rect", red.create("cell", {str: "null"}));
-			image.set("cursor", red.create("cell", {str: "'default'"}));
-			image.set("opacity", red.create("cell", {str: "1.0"}));
-			image.set("src", red.create("cell", {str: "'http://from.so/smile.png'"}));
-			image.set("transform", red.create("cell", {str: "''"}));
-			image.set("x", red.create("cell", {str: "20"}));
-			image.set("y", red.create("cell", {str: "20"}));
-			image.set("width", red.create("cell", {str: "150"}));
-			image.set("height", red.create("cell", {str: "150"}));
-			image.set("animated_properties", red.create("cell", {str: "false"}));
-			image.set("animation_duration", red.create("cell", {str: "300"}));
+			image.set("show", new red.Cell({str: "true"}));
+			image.set("clip_rect", new red.Cell({str: "null"}));
+			image.set("cursor", new red.Cell({str: "'default'"}));
+			image.set("opacity", new red.Cell({str: "1.0"}));
+			image.set("src", new red.Cell({str: "'http://from.so/smile.png'"}));
+			image.set("transform", new red.Cell({str: "''"}));
+			image.set("x", new red.Cell({str: "20"}));
+			image.set("y", new red.Cell({str: "20"}));
+			image.set("width", new red.Cell({str: "150"}));
+			image.set("height", new red.Cell({str: "150"}));
+			image.set("animated_properties", new red.Cell({str: "false"}));
+			image.set("animation_duration", new red.Cell({str: "300"}));
 
 
-			var rect = red.create("dict", {has_protos: false, direct_attachments: [new red.ShapeAttachment({
+			var rect = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "rect",
 																									constructor_params: [0, 0, 0, 0]
@@ -138,26 +138,26 @@
 																						})]
 																					});
 			shape.set("rect", rect);
-			rect.set("show", red.create("cell", {str: "true"}));
-			rect.set("clip_rect", red.create("cell", {str: "null"}));
-			rect.set("cursor", red.create("cell", {str: "'default'"}));
-			rect.set("x", red.create("cell", {str: "20"}));
-			rect.set("y", red.create("cell", {str: "30"}));
-			rect.set("fill", red.create("cell", {str: "'red'"}));
-			rect.set("fill_opacity", red.create("cell", {str: "1.0"}));
-			rect.set("opacity", red.create("cell", {str: "1.0"}));
-			rect.set("r", red.create("cell", {str: "0"}));
-			rect.set("stroke", red.create("cell", {str: "'black'"}));
-			rect.set("stroke_dasharray", red.create("cell", {str: "''"}));
-			rect.set("stroke_opacity", red.create("cell", {str: "1.0"}));
-			rect.set("stroke_width", red.create("cell", {str: "1"}));
-			rect.set("transform", red.create("cell", {str: "''"}));
-			rect.set("width", red.create("cell", {str: "40"}));
-			rect.set("height", red.create("cell", {str: "50"}));
-			rect.set("animated_properties", red.create("cell", {str: "false"}));
-			rect.set("animation_duration", red.create("cell", {str: "300"}));
+			rect.set("show", new red.Cell({str: "true"}));
+			rect.set("clip_rect", new red.Cell({str: "null"}));
+			rect.set("cursor", new red.Cell({str: "'default'"}));
+			rect.set("x", new red.Cell({str: "20"}));
+			rect.set("y", new red.Cell({str: "30"}));
+			rect.set("fill", new red.Cell({str: "'red'"}));
+			rect.set("fill_opacity", new red.Cell({str: "1.0"}));
+			rect.set("opacity", new red.Cell({str: "1.0"}));
+			rect.set("r", new red.Cell({str: "0"}));
+			rect.set("stroke", new red.Cell({str: "'black'"}));
+			rect.set("stroke_dasharray", new red.Cell({str: "''"}));
+			rect.set("stroke_opacity", new red.Cell({str: "1.0"}));
+			rect.set("stroke_width", new red.Cell({str: "1"}));
+			rect.set("transform", new red.Cell({str: "''"}));
+			rect.set("width", new red.Cell({str: "40"}));
+			rect.set("height", new red.Cell({str: "50"}));
+			rect.set("animated_properties", new red.Cell({str: "false"}));
+			rect.set("animation_duration", new red.Cell({str: "300"}));
 			
-			var text = red.create("dict", {has_protos: false, direct_attachments: [new red.ShapeAttachment({
+			var text = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "text",
 																									constructor_params: [0, 0, ""]
@@ -165,29 +165,29 @@
 																						})]
 																					});
 			shape.set("text", text);
-			text.set("show", red.create("cell", {str: "true"}));
-			text.set("clip_rect", red.create("cell", {str: "null"}));
-			text.set("cursor", red.create("cell", {str: "'default'"}));
-			text.set("x", red.create("cell", {str: "50"}));
-			text.set("y", red.create("cell", {str: "30"}));
-			text.set("opacity", red.create("cell", {str: "1.0"}));
-			text.set("stroke", red.create("cell", {str: "'none'"}));
-			text.set("fill", red.create("cell", {str: "'black'"}));
-			text.set("fill_opacity", red.create("cell", {str: "1.0"}));
-			text.set("stroke_dasharray", red.create("cell", {str: "''"}));
-			text.set("stroke_opacity", red.create("cell", {str: "1.0"}));
-			text.set("stroke_width", red.create("cell", {str: "1"}));
-			text.set("transform", red.create("cell", {str: "''"}));
-			text.set("text", red.create("cell", {str: "'hello world'"}));
-			text.set("text_anchor", red.create("cell", {str: "'middle'"}));
-			text.set("font_family", red.create("cell", {str: "'Arial'"}));
-			text.set("font_size", red.create("cell", {str: "16"}));
-			text.set("font_weight", red.create("cell", {str: "400"}));
-			text.set("font_style", red.create("cell", {str: "'normal'"}));
-			text.set("animated_properties", red.create("cell", {str: "false"}));
-			text.set("animation_duration", red.create("cell", {str: "300"}));
+			text.set("show", new red.Cell({str: "true"}));
+			text.set("clip_rect", new red.Cell({str: "null"}));
+			text.set("cursor", new red.Cell({str: "'default'"}));
+			text.set("x", new red.Cell({str: "50"}));
+			text.set("y", new red.Cell({str: "30"}));
+			text.set("opacity", new red.Cell({str: "1.0"}));
+			text.set("stroke", new red.Cell({str: "'none'"}));
+			text.set("fill", new red.Cell({str: "'black'"}));
+			text.set("fill_opacity", new red.Cell({str: "1.0"}));
+			text.set("stroke_dasharray", new red.Cell({str: "''"}));
+			text.set("stroke_opacity", new red.Cell({str: "1.0"}));
+			text.set("stroke_width", new red.Cell({str: "1"}));
+			text.set("transform", new red.Cell({str: "''"}));
+			text.set("text", new red.Cell({str: "'hello world'"}));
+			text.set("text_anchor", new red.Cell({str: "'middle'"}));
+			text.set("font_family", new red.Cell({str: "'Arial'"}));
+			text.set("font_size", new red.Cell({str: "16"}));
+			text.set("font_weight", new red.Cell({str: "400"}));
+			text.set("font_style", new red.Cell({str: "'normal'"}));
+			text.set("animated_properties", new red.Cell({str: "false"}));
+			text.set("animation_duration", new red.Cell({str: "300"}));
 
-			var path = red.create("dict", {has_protos: false, direct_attachments: [new red.ShapeAttachment({
+			var path = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "path",
 																									constructor_params: ["M0,0"]
@@ -195,26 +195,26 @@
 																						})]
 																					});
 			shape.set("path", path);
-			path.set("show", red.create("cell", {str: "true"}));
-			path.set("clip_rect", red.create("cell", {str: "null"}));
-			path.set("cursor", red.create("cell", {str: "'default'"}));
-			path.set("fill", red.create("cell", {str: "'red'"}));
-			path.set("fill_opacity", red.create("cell", {str: "1.0"}));
-			path.set("opacity", red.create("cell", {str: "1.0"}));
-			path.set("stroke", red.create("cell", {str: "'black'"}));
-			path.set("stroke_dasharray", red.create("cell", {str: "''"}));
-			path.set("stroke_opacity", red.create("cell", {str: "1.0"}));
-			path.set("stroke_miterlimit", red.create("cell", {str: "0"}));
-			path.set("stroke_width", red.create("cell", {str: "1"}));
-			path.set("path", red.create("cell", {str: "'M24.132,7.971c-2.203-2.205-5.916-2.098-8.25,0.235L15.5,8.588l-0.382-0.382c-2.334-2.333-6.047-2.44-8.25-0.235c-2.204,2.203-2.098,5.916,0.235,8.249l8.396,8.396l8.396-8.396C26.229,13.887,26.336,10.174,24.132,7.971z'"}));
-			path.set("transform", red.create("cell", {str: "''"}));
-			path.set("animated_properties", red.create("cell", {str: "false"}));
-			path.set("animation_duration", red.create("cell", {str: "300"}));
+			path.set("show", new red.Cell({str: "true"}));
+			path.set("clip_rect", new red.Cell({str: "null"}));
+			path.set("cursor", new red.Cell({str: "'default'"}));
+			path.set("fill", new red.Cell({str: "'red'"}));
+			path.set("fill_opacity", new red.Cell({str: "1.0"}));
+			path.set("opacity", new red.Cell({str: "1.0"}));
+			path.set("stroke", new red.Cell({str: "'black'"}));
+			path.set("stroke_dasharray", new red.Cell({str: "''"}));
+			path.set("stroke_opacity", new red.Cell({str: "1.0"}));
+			path.set("stroke_miterlimit", new red.Cell({str: "0"}));
+			path.set("stroke_width", new red.Cell({str: "1"}));
+			path.set("path", new red.Cell({str: "'M24.132,7.971c-2.203-2.205-5.916-2.098-8.25,0.235L15.5,8.588l-0.382-0.382c-2.334-2.333-6.047-2.44-8.25-0.235c-2.204,2.203-2.098,5.916,0.235,8.249l8.396,8.396l8.396-8.396C26.229,13.887,26.336,10.174,24.132,7.971z'"}));
+			path.set("transform", new red.Cell({str: "''"}));
+			path.set("animated_properties", new red.Cell({str: "false"}));
+			path.set("animation_duration", new red.Cell({str: "300"}));
 			/*
 
 			var dom = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment")]});
-			dom.set("tag", red.create("cell", {str: "'div'"}));
-		//	dom.set("text", red.create("cell", {str: "undefined"}));
+			dom.set("tag", new red.Cell({str: "'div'"}));
+		//	dom.set("text", new red.Cell({str: "undefined"}));
 			//dom.set("children", red.create("dict", {has_protos: false}));
 		//	dom.set("attr", red.create("dict", {has_protos: false}));
 		//	dom.set("css", red.create("dict", {has_protos: false}));
@@ -419,7 +419,7 @@
 			if (_.isString(value)) {
 				if (value === "<dict>") {
 					value = red.create("dict", {has_protos: false});
-					var direct_protos = red.create("cell", { ignore_inherited_in_first_dict: true/*str: "[]", ignore_inherited_in_contexts: [value]*/});
+					var direct_protos = new red.Cell({ ignore_inherited_in_first_dict: true/*str: "[]", ignore_inherited_in_contexts: [value]*/});
 					value._set_direct_protos(direct_protos);
 				} else if (value === "<stateful>") {
 					value = red.create("stateful_obj", undefined, true);
@@ -433,7 +433,7 @@
 				} else if (value === "<stateful_prop>") {
 					value = red.create("stateful_prop");
 				} else {
-					value = red.create("cell", {str: value});
+					value = new red.Cell({str: value});
 				}
 			}
 
@@ -717,7 +717,7 @@
 				for_state = this.find_state(arg1);
 				str = arg2;
 
-				cell = red.create("cell", {str: "", ignore_inherited_in_first_dict: true });
+				cell = new red.Cell({str: "", ignore_inherited_in_first_dict: true });
 				commands.push(this._get_stateful_prop_set_value_command(prop,
 																		for_state,
 																		cell));
@@ -997,11 +997,13 @@
 			delete this.pointer;
 		};
 	}(red.Environment));
+	/*
 
 	red.define("environment", function (options) {
 		var env = new red.Environment(options);
 		return env;
 	});
+	*/
 
 	var pad = function (str, len) {
 		if (str.length > len) {
