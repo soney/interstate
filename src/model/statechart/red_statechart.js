@@ -359,7 +359,7 @@
 						if(local_state !== state) {
 							if (local_state) {
 								local_state.stop();
-								local_state.disable_outgoing_transitions();
+								//local_state.disable_outgoing_transitions();
 								local_state.set_active(false);
 							}
 							local_state = state;
@@ -368,7 +368,7 @@
 						}
 						if (local_state) {
 							local_state.set_active(true);
-							local_state.enable_outgoing_transitions();
+							//local_state.enable_outgoing_transitions();
 							local_state.run();
 						}
 						cjs.signal();
@@ -401,7 +401,7 @@
 					if(local_state !== state) {
 						if (local_state) {
 							local_state.stop();
-							local_state.disable_outgoing_transitions();
+							//local_state.disable_outgoing_transitions();
 							local_state.set_active(false);
 						}
 						local_state = state;
@@ -409,7 +409,7 @@
 					}
 					if (local_state) {
 						local_state.set_active(true);
-						local_state.enable_outgoing_transitions();
+						//local_state.enable_outgoing_transitions();
 						local_state.run();
 					}
 				}

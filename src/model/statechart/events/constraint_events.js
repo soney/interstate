@@ -18,8 +18,6 @@
 		proto.on_create = function (constraint, in_effect) {
 			this.constraint = constraint;
 			this._in_effect = !!in_effect;
-
-			this.$check_constraint_val = _.bind(this.check_constraint_val, this);
 		};
 
 		proto.check_constraint_val = function () {
@@ -39,21 +37,21 @@
 			}
 		};
 		proto.destroy = function () {
-			//this.constraint.destroy(true);
-			delete this.$check_constraint_val;
+			this.constraint.offChange(this.check_constraint_val, this);
+			this.constraint.destroy(true);
 			delete this.constraint;
 		};
 
 		proto.enable = function () {
 			My.superclass.enable.apply(this, arguments);
-			this.constraint.onChange(this.$check_constraint_val);
+			this.constraint.onChange(this.check_constraint_val, this);
 			if (!this.constraint.is_valid()) {
-				this.$check_constraint_val();
+				this.check_constraint_val();
 			}
 		};
 		proto.disable = function () {
 			My.superclass.disable.apply(this, arguments);
-			this.constraint.offChange(this.$check_constraint_val);
+			this.constraint.offChange(this.check_constraint_val, this);
 		};
 	}(red.ConstraintEvent));
 }(red));
