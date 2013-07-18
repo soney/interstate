@@ -109,6 +109,7 @@
 				this.destroy_$(constraint, args);
 			}, this);
 			this.fn_call_constraints.destroy();
+			delete this.fn_call_constraints;
 			able.destroy_this_listenable(this);
 		};
 

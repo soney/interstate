@@ -27,7 +27,6 @@ window.addEventListener("message", function(event) {
 }, false);
 
 var cjs = red.cjs;
-/*
 asyncTest("Constraint allocation", function() {
 	expect(3);
 	clear_snapshots(function() {
@@ -47,7 +46,6 @@ asyncTest("Constraint allocation", function() {
 		});
 	});
 });
-*/
 
 /*
 asyncTest("Map Allocation", function() {
@@ -95,6 +93,7 @@ asyncTest("State Allocation", function() {
 	});
 });
 */
+/*
 asyncTest("Environment Collection", function() {
 	expect(0);
 	var the_div = $("<div />").appendTo(document.body);
@@ -133,6 +132,7 @@ asyncTest("Environment Collection", function() {
 		});
 	});
 });
+*/
 /*
 test("Pointer Bucket Collection", function() {
 	var root = new red.Dict();

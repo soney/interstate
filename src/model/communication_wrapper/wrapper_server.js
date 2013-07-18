@@ -21,7 +21,6 @@
 			this.add_client_id(client_id);
 		}, this);
 
-		this.$on_emit = _.bind(this.on_emit, this);
 		this.add_emission_listeners();
 
 		this.fn_call_constraints = new RedMap({
@@ -69,18 +68,16 @@
 
 		proto.add_emission_listeners = function () {
 			var object = this.get_object();
-			var listener = this.$on_emit;
 			_.each(this._event_type_listeners, function (event_type) {
-				object.on(event_type, listener);
-			});
+				object.on(event_type, this.on_emit, this);
+			}, this);
 		};
 
 		proto.remove_emission_listeners = function () {
 			var object = this.get_object();
-			var listener = this.$on_emit;
 			_.each(this._event_type_listeners, function (event_type) {
-				object.off(event_type, listener);
-			});
+				object.off(event_type, this.on_emit, this);
+			}, this);
 		};
 
 		proto.client_paused = function(client_id) {
@@ -97,12 +94,14 @@
 
 		proto.destroy = function () {
 			this.remove_emission_listeners();
-			able.destroy_this_listenable(this);
 			this.fn_call_constraints.each(function(constraint_info, getting) {
 				var constraint = constraint_info.constraint;
 				constraint_info.constraint.destroy();
 				this.fn_call_constraints.remove(getting);
 			}, this);
+			this.fn_call_constraints.destroy();
+			delete this.fn_call_constraints;
+			able.destroy_this_listenable(this);
 		};
 
 		proto.type = function () {

@@ -10,10 +10,11 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 		var command = request.command;
 		if(command === "take_snapshot") {
 			var debuggerId = {tabId: sender.tab.id};
-			console.log(sender.tab.id);
+			console.log("Attached to tab with id " + sender.tab.id);
 			chrome.debugger.attach(debuggerId, "1.0", function() {
 				if(chrome.runtime.lastError) { console.error(chrome.runtime.lastError); return; }
-				var snapshot = "";
+				var snapshot_str = "";
+				var illegal_strs = false;
 				var listener = function(source, method, params) {
 					if(source.tabId === debuggerId.tabId) {
 						if(method === "HeapProfiler.addProfileHeader") {
@@ -25,7 +26,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 										chrome.debugger.onEvent.removeListener(listener);
 										chrome.debugger.detach(debuggerId, function() {
 											if(chrome.runtime.lastError) { console.error(chrome.runtime.lastError);  return;}
-											sendResponse({uid: uid, snapshot: snapshot});
+											sendResponse({uid: uid, illegal_strs: illegal_strs});
 										});
 										console.log("Took snapshot");
 									});
@@ -33,8 +34,27 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 							});
 						} else if(method === "HeapProfiler.addHeapSnapshotChunk") {
 							var chunk = params.chunk;
-							//snapshot += chunk;
-						} else if(method === "HeapPropfiler.finishHeapSnapshot") {
+							//snapshot_str += chunk;
+						} else if(method === "HeapProfiler.finishHeapSnapshot") {
+							var snapshot = {strings:[]};//JSON.parse(snapshot_str);
+							var strings = snapshot.strings;
+							var len = strings.length;
+							var str;
+							var check_for_strings = ["red.", "Constraint"];
+							var cfslen = check_for_strings.length;
+							var cfs;
+							outer: for(var i = 0; i<len; i++) {
+								str = strings[i];
+								for(var j = 0; j<cfslen; j++) {
+									cfs = check_for_strings[j];
+									if(str.substring(0, cfs.length) === cfs) {
+										illegal_str = str;
+										console.log("found ", str, cfs);
+										break outer;
+									}
+								}
+							}
+							snapshot_str = snapshot = null;
 							//chrome.debugger.onEvent.removeListener(listener);
 						}
 					}

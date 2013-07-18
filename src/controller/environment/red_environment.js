@@ -418,20 +418,20 @@
 
 			if (_.isString(value)) {
 				if (value === "<dict>") {
-					value = red.create("dict", {has_protos: false});
+					value = new red.Dict({has_protos: false});
 					var direct_protos = new red.Cell({ ignore_inherited_in_first_dict: true/*str: "[]", ignore_inherited_in_contexts: [value]*/});
 					value._set_direct_protos(direct_protos);
 				} else if (value === "<stateful>") {
-					value = red.create("stateful_obj", undefined, true);
+					value = new red.StatefulObj(undefined, true);
 					value.do_initialize({
-						direct_protos: red.create("stateful_prop", { can_inherit: false, statechart_parent: value })
+						direct_protos: new red.StatefulProp({ can_inherit: false, statechart_parent: value })
 					});
 					/*
 					value.get_own_statechart().add_state("INIT")
 						.starts_at("INIT");
 					*/
 				} else if (value === "<stateful_prop>") {
-					value = red.create("stateful_prop");
+					value = new red.StatefulProp();
 				} else {
 					value = new red.Cell({str: value});
 				}
@@ -459,7 +459,7 @@
 							throw new Error("Trying to set value for non stateful prop");
 						}
 					} else {
-						val = red.create("stateful_prop");
+						val = new red.StatefulProp();
 						commands.push(new red.SetBuiltinCommand({
 							parent: parent_obj,
 							name: builtin_name,
@@ -499,7 +499,7 @@
 								}));
 							}
 						} else {
-							val = red.create("stateful_prop");
+							val = new red.StatefulProp();
 							commands.push(new red.SetPropCommand({
 								parent: parent_obj,
 								name: prop_name,
@@ -513,7 +513,7 @@
 							}));
 						}
 					} else {
-						val = red.create("stateful_prop");
+						val = new red.StatefulProp();
 						commands.push(new red.SetPropCommand({
 							parent: parent_obj,
 							name: prop_name,

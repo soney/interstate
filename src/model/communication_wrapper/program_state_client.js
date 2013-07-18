@@ -43,11 +43,10 @@
 		};
 
 		proto.add_message_listener = function () {
-			this.$on_message = _.bind(this.on_message, this);
-			this.comm_mechanism.on("message", this.$on_message);
+			this.comm_mechanism.on("message", this.on_message, this);
 		};
 		proto.remove_message_listener = function () {
-			this.comm_mechanism.off("message", this.$on_message);
+			this.comm_mechanism.off("message", this.on_message, this);
 		};
 
 		proto.disconnect = function() {
