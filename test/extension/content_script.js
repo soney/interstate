@@ -11,7 +11,7 @@ window.addEventListener("message", function(event) {
 
     if (event.data.type && (event.data.type == "FROM_PAGE")) {
 		var command = event.data.command;
-		chrome.extension.sendRequest({ command: command}, function(response) {
+		chrome.extension.sendRequest(event.data, function(response) {
 			window.postMessage({ id: event.data.id, type: "FROM_EXTENSION", response: response }, "*");
 		});
     }

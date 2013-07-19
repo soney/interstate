@@ -2,16 +2,22 @@
 //var cjs = red.cjs;
 var command_id = 0;
 var callbacks = {};
-var do_command = function(command_name, callback) {
+var do_command = function(command_name, parameters, callback) {
 	var id = command_id++;
 	callbacks[id] = callback;
-	window.postMessage({ id: id, type: "FROM_PAGE", command: command_name }, "*");
+	var message = { id: id, type: "FROM_PAGE", command: command_name };
+	for(var key in parameters) {
+		if(parameters.hasOwnProperty(key)) {
+			message[key] = parameters[key];
+		}
+	}
+	window.postMessage(message, "*");
 };
 var clear_snapshots = function(callback) {
-	do_command("clear_snapshots", callback);
+	do_command("clear_snapshots", {}, callback);
 };
-var take_snapshot = function(callback) {
-	do_command("take_snapshot", callback);
+var take_snapshot = function(forbidden_tokens, callback) {
+	do_command("take_snapshot", {forbidden_tokens: forbidden_tokens}, callback);
 };
 
 window.addEventListener("message", function(event) {
@@ -27,50 +33,60 @@ window.addEventListener("message", function(event) {
 }, false);
 
 var cjs = red.cjs;
+asyncTest("Debugger connection", function() {
+	expect(1);
+	var timeout_id = window.setTimeout(function() {
+		ok(false, "Could not connect to debugger");
+		start();
+	}, 1000);
+	do_command("ping", {}, function() {
+		ok(true, "Connected to debugger");
+		window.clearTimeout(timeout_id);
+		start();
+	});
+});
+
 asyncTest("Constraint allocation", function() {
 	expect(3);
 	clear_snapshots(function() {
-		take_snapshot(function() {
+		take_snapshot([], function(response) {
 			var x = cjs.$(1);
 			var y = cjs.$(function() { return x.get() + 1; });
 			equal(y.get(), 2);
 			equal(x.get(), 1);
 			x.get();
-			x.destroy();
-			x = null;
+			//x.destroy();
+			//x = null;
 			y = null;
-			take_snapshot(function() {
-				ok(true, "Make sure nothing was allocated");
+			take_snapshot(["ConstraintNode", "SettableConstraint", "red."], function(response) {
+				ok(!response.illegal_strs, "Make sure nothing was allocated");
 				start();
 			});
 		});
 	});
 });
 
-/*
 asyncTest("Map Allocation", function() {
 	expect(3);
 	clear_snapshots(function() {
-		take_snapshot(function() {
+		take_snapshot([], function() {
 			var m = cjs.map();
 			m.put("a", 1);
 			equal(m.get("b"), undefined);
 			equal(m.get("a"), 1);
 			m.destroy();
 			m = null;
-			take_snapshot(function() {
-				ok(true, "Make sure nothing was allocated");
+			take_snapshot(["ConstraintNode", "SettableConstraint", "red."], function(response) {
+				ok(!response.illegal_strs, "Make sure nothing was allocated");
 				start();
 			});
 		});
 	});
 });
-*/
-/*
 asyncTest("State Allocation", function() {
-	expect(0);
+	expect(1);
 	clear_snapshots(function() {
-		take_snapshot(function() {
+		take_snapshot([], function() {
 			var sc = new red.Statechart();
 			sc.add_state("state_1");
 			sc.add_state("state_2");
@@ -85,20 +101,19 @@ asyncTest("State Allocation", function() {
 				sc.print();
 				sc.destroy();
 				sc = null;
-				take_snapshot(function() {
+				take_snapshot(["ConstraintNode", "SettableConstraint", "red."], function(response) {
+					ok(!response.illegal_strs, "Make sure nothing was allocated");
 					start();
 				});
 			}, 350);
 		});
 	});
 });
-*/
-/*
 asyncTest("Environment Collection", function() {
-	expect(0);
+	expect(1);
 	var the_div = $("<div />").appendTo(document.body);
 	clear_snapshots(function() {
-		take_snapshot(function() {
+		take_snapshot([], function() {
 			var env = new red.Environment({create_builtins: true});
 			env	.cd("screen")
 					.set("my_circle", "<stateful>")
@@ -125,15 +140,14 @@ asyncTest("Environment Collection", function() {
 				env.destroy();
 				env = null;
 				the_div.remove();
-				take_snapshot(function() {
+				take_snapshot(["ConstraintNode", "SettableConstraint", "red."], function(response) {
+					ok(!response.illegal_strs, "Make sure nothing was allocated");
 					start();
 				});
 			}, 2000);
 		});
 	});
 });
-*/
-/*
 test("Pointer Bucket Collection", function() {
 	var root = new red.Dict();
 	var a_dict = new red.Dict();
@@ -154,6 +168,4 @@ test("Pointer Bucket Collection", function() {
 	expired_cobjs = red.get_expired_contextual_objects(root);
 	equal(expired_cobjs.length, 0);
 });
-*/
-
 }());

@@ -38,6 +38,7 @@
 		red.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "timeout";
+		this.timeout = undefined;
 	};
 
 	(function (My) {
@@ -51,30 +52,28 @@
 			this._transition = transition;
 			if (transition) {
 				var from = transition.from();
-				var timeout;
-				var enter_listener = _.bind(function () {
-					if (!_.isUndefined(timeout)) {
-						window.clearTimeout(timeout);
-						timeout = undefined;
-					}
-					timeout = window.setTimeout(_.bind(this.notify, this), this.delay);
-				}, this);
 
-				var leave_listener = _.bind(function () {
-					if (!_.isUndefined(timeout)) {
-						window.clearTimeout(timeout);
-						timeout = undefined;
-					}
-				}, this);
+				from.on("active", this.enter_listener, this);
+				from.on("inactive", this.leave_listener, this);
 
-				from.on("active", enter_listener);
-				from.on("inactive", leave_listener);
-
-				_.defer(function () {
+				_.defer(function (self) {
 					if (from.is_active()) {
-						enter_listener();
+						self.enter_listener();
 					}
-				});
+				}, this);
+			}
+		};
+		proto.enter_listener = function() {
+			if (this.timeout) {
+				window.clearTimeout(this.timeout);
+				this.timeout = undefined;
+			}
+			this.timeout = _.delay(function(self) { self.notify(); }, this.delay, this);
+		};
+		proto.leave_listener = function() {
+			if (this.timeout) {
+				window.clearTimeout(this.timeout);
+				this.timeout = undefined;
 			}
 		};
 		proto.notify = function () {
@@ -88,6 +87,13 @@
 			red.event_queue.signal();
 		};
 		proto.destroy = function () {
+			if(this._transition) {
+			/*
+				var from = this._transition.from();
+				from.off("active", this.enter_listener, this);
+				from.off("inactive", this.leave_listener, this);
+				*/
+			}
 			My.superclass.destroy.apply(this, arguments);
 		};
 
