@@ -55,8 +55,6 @@
 				}
 			}
 		});
-
-		this.$on_message = _.bind(this.on_message, this);
 	};
 
 	(function (my) {
@@ -97,9 +95,6 @@
 			}
 		};
 
-		proto.on_message = function(message) {
-		};
-
 		proto.destroy = function () {
 			this._emit("wc_destroy");
 			this.post({
@@ -111,6 +106,10 @@
 			this.fn_call_constraints.destroy();
 			delete this.fn_call_constraints;
 			able.destroy_this_listenable(this);
+
+			delete this.comm_mechanism;
+			delete this.program_state_client;
+			delete this.object_summary;
 		};
 
 		proto.post = function (message) {

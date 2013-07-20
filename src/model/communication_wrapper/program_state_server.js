@@ -21,11 +21,12 @@
 		able.make_proto_listenable(proto);
 
 		proto.add_message_listeners = function () {
-			this.$on_message = _.bind(this.on_message, this);
-			this.comm_mechanism.on("message", this.$on_message);
+			this.comm_mechanism.on("message", this.on_message, this);
 		};
 		proto.remove_message_listeners = function () {
-			this.comm_mechanism.off("message", this.$on_message);
+			if(this.comm_mechanism) {
+				this.comm_mechanism.off("message", this.on_message, this);
+			}
 		};
 		proto.set_communication_mechanism = function(comm_mechanism) {
 			if(this.comm_mechanism) {
@@ -204,10 +205,19 @@
 			this.connected = false;
 		};
 
-		proto.destroy = function () {
+		proto.destroy = function (dont_destroy_comm_wrapper) {
 			this.cleanup_closed_client();
 			able.destroy_this_listenable(this);
 			this.remove_message_listeners();
+
+			delete this.wrapper_servers;
+			delete this.root;
+			delete this.contextual_root;
+
+			if(dont_destroy_comm_wrapper !== false && this.comm_mechanism) {
+				this.comm_mechanism.destroy();
+				delete this.comm_mechanism;
+			}
 		};
 	}(red.ProgramStateServer));
 

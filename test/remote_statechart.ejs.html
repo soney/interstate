@@ -157,8 +157,7 @@
 						id: shadow.id()
 					};
 
-					var pss = new red.ProgramStateServer({
-					});
+					var pss = new red.ProgramStateServer({ });
 					pss.set_communication_mechanism(new red.SameWindowCommWrapper());
 					var psc = new red.ProgramStateClient({
 						comm_mechanism: new red.SameWindowCommWrapper()

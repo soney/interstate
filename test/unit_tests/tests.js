@@ -55,8 +55,8 @@ asyncTest("Constraint allocation", function() {
 			equal(y.get(), 2);
 			equal(x.get(), 1);
 			x.get();
-			//x.destroy();
-			//x = null;
+			x.destroy();
+			x = null;
 			y = null;
 			take_snapshot(["ConstraintNode", "SettableConstraint", "red."], function(response) {
 				ok(!response.illegal_strs, "Make sure nothing was allocated");
@@ -148,6 +148,69 @@ asyncTest("Environment Collection", function() {
 		});
 	});
 });
+asyncTest("Communication Wrapper", function() {
+	expect(3);
+	clear_snapshots(function() {
+		take_snapshot([], function() {
+			var env = new red.Environment({create_builtins: true});
+			env.print();
+
+			var pss = new red.ProgramStateServer({
+				root: env.get_root()
+			});
+
+			pss.set_communication_mechanism(new red.SameWindowCommWrapper());
+			var psc = new red.ProgramStateClient({
+				comm_mechanism: new red.SameWindowCommWrapper()
+			});
+			psc.on_loaded();
+
+			var root_client = psc.root_client;
+
+			psc.root_client.async_get("children", function(children) {
+				var croot = red.find_or_put_contextual_obj(env.get_root());
+				var env_children = croot.children();
+
+				ok(env_children.length === children.length);
+				for(var i = 0; i<children.length; i++) {
+					if(env_children[i].name !== children[i].name) {
+						throw new Error();
+					}
+				}
+				env.set("x", 20);
+				psc.root_client.async_get("children", function(children) {
+					var croot = red.find_or_put_contextual_obj(env.get_root());
+					var env_children = croot.children();
+
+					ok(env_children.length === children.length);
+					for(var i = 0; i<children.length; i++) {
+						if(env_children[i].name !== children[i].name) {
+							throw new Error();
+						}
+					}
+				});
+
+				croot = null;
+			});
+
+			root_client = null;
+
+			psc.destroy();
+			psc = null;
+
+			pss.destroy();
+			pss = null;
+
+			env.destroy();
+			env = null;
+
+			take_snapshot(["ConstraintNode", "SettableConstraint", "red."], function(response) {
+				ok(!response.illegal_strs, "Make sure nothing was allocated");
+				start();
+			});
+		});
+	});
+});
 test("Pointer Bucket Collection", function() {
 	var root = new red.Dict();
 	var a_dict = new red.Dict();
@@ -167,5 +230,9 @@ test("Pointer Bucket Collection", function() {
 	ca_dict.destroy();
 	expired_cobjs = red.get_expired_contextual_objects(root);
 	equal(expired_cobjs.length, 0);
+
+	croot.destroy();
+	root.destroy();
+	croot = root = null;
 });
 }());

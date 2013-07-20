@@ -142,7 +142,7 @@
 
 				rv.on_ready();
 
-				var on_destroy = $.proxy(function() {
+				var on_destroy = _.bind(function() {
 					rv.off("wc_destroy", on_destroy);
 					this.destroy_wrapper_client(client_id, cobj_id);
 				}, this);
@@ -158,10 +158,23 @@
 			delete this.wrapper_clients[cobj_id];
 		};
 
-		proto.destroy = function () {
+		proto.destroy = function (dont_destroy_comm_wrapper) {
 			this.disconnect();
 			able.destroy_this_listenable(this);
 			this.remove_message_listener();
+
+			_.each(this.wrapper_clients, function(wrapper_client) {
+				wrapper_client.destroy();
+			}, this);
+			delete this.wrapper_clients;
+			delete this.clients;
+
+			delete this.root_client;
+
+			if(dont_destroy_comm_wrapper !== false && this.comm_mechanism) {
+				this.comm_mechanism.destroy();
+				delete this.comm_mechanism;
+			}
 		};
 
 		proto.post = function (message) {
