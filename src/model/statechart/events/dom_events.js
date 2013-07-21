@@ -16,8 +16,7 @@
 		_.proto_extend(My, red.Event);
 		var proto = My.prototype;
 		proto.on_create = function (type, targets) {
-			var self = this;
-			this.get_target_listener = cjs.memoize(_.bind(function (specified_target) {
+			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var listener = _.bind(function (event) {
 					red.event_queue.wait();
 
@@ -31,13 +30,17 @@
 					});
 				}, this);
 				return listener;
-			}, this));
+			}, {
+				context: this
+			});
+
+			this.specified_targets = targets;
 
 
 			this.live_fn = cjs.liven(function () {
 				this.remove_listeners();
 				this.type = cjs.get(type);
-				var targs = cjs.get(targets);
+				var targs = cjs.get(this.specified_targets);
 				if (!_.isArray(targs)) {
 					targs = [targs];
 				}
@@ -118,6 +121,7 @@
 			this.get_target_listener.destroy(true);
 			delete this.get_target_listener;
 			delete this.targets;
+			delete this.specified_targets;
 			My.superclass.destroy.apply(this, arguments);
 		};
 
