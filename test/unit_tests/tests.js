@@ -251,8 +251,8 @@ asyncTest("Pointer Bucket Collection", function() {
 });
 asyncTest("Editor", function() {
 	expect(1);
-	clear_snapshots(function() {
-		take_snapshot([], function() {
+	//clear_snapshots(function() {
+		//take_snapshot([], function() {
 			var env = new red.Environment({create_builtins: true});
 			var root = env.get_root();
 
@@ -271,7 +271,7 @@ asyncTest("Editor", function() {
 
 			var cleanup_button = $("<a />")	.attr("href", "javascript:void(0)")
 											.text("Clean up")
-											.appendTo(document.body)
+											.prependTo(document.body)
 											.on("click.clean", function() {
 												cleanup_button.off("click.clean")
 																.remove();
@@ -291,13 +291,15 @@ asyncTest("Editor", function() {
 													});
 												}, 0);
 											});
+			/*
 			window.setTimeout(function() {
 				if(cleanup_button) {
 					cleanup_button.click();
 				}
-			}, 5000);
-		});
-	});
+			}, 50000);
+			*/
+		//});
+	//});
 });
 
 }());

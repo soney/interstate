@@ -36,6 +36,7 @@
 		};
 		proto.destroy = function() {
 			window.removeEventListener("message", this.$on_messsage);
+			delete this.$on_message;
 		};
 	}(red.InterWindowCommWrapper));
 

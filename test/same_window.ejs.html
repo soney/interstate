@@ -12,7 +12,7 @@
 			<%- red_include(red_inc.runtime) %>
 			<%- red_include(red_inc.editor) %>
 			<script type="text/javascript">
-				var env = red.create("environment");
+				var env = new red.Environment();
 				var root = env.get_root();
 
 				env	.set("height", "200")

@@ -116,8 +116,8 @@
 			var own_statechart = this._parent.get_own_statechart();
 			var start_state = own_statechart.get_start_state();
 			if(value instanceof red.Cell) {
-				this._prop_value = red.create("stateful_prop");
-				this._prop_value.set(start_state, red.create("cell", {str: value.get_str()}));
+				this._prop_value = new red.StatefulProp();
+				this._prop_value.set(start_state, new red.Cell({str: value.get_str()}));
 			}
 		}
     };
@@ -550,7 +550,7 @@
         this._parent = this._options.parent;
         this._value = this._options.value;
 		if(_.isString(this._value)) {
-			this._value = red.create("cell", {str: this._value});
+			this._value = new red.Cell({str: this._value});
 		}
     };
     (function (My) {

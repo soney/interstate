@@ -58,6 +58,8 @@
 					var color = data.value;
 				}
 			}, this).on("loaded", function (root_client) {
+				console.log(root_client);
+
 				this.load_viewer(root_client);
 			}, this);
 
