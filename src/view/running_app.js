@@ -300,7 +300,6 @@
 				if(this.edit_button) {
 					this.edit_button.addClass("active").css(this.edit_active_css);
 				}
-				debugger;
 				this.server_socket.post({
 					type: "color",
 					value: this.button_color

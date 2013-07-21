@@ -42,9 +42,10 @@
 
 
 	var same_window_comm_wrappers = [];
-	red.SameWindowCommWrapper = function(client_id) {
+	red.SameWindowCommWrapper = function(client_id, message_delay) {
 		able.make_this_listenable(this);
 		this.client_id = client_id;
+		this.message_delay = message_delay;
 		same_window_comm_wrappers.push(this);
 	};
 
@@ -66,9 +67,14 @@
 		};
 
 		proto.on_message = function(message) {
-			//_.defer(_.bind(function() {
-			this._emit("message", message);
-			//}, this));
+			if(this.message_delay || _.isNumber(this.message_delay)) {
+				var message_delay = _.isNumber(this.message_delay) ? this.message_delay : 0;
+				_.defer(_.bind(function() {
+					this._emit("message", message);
+				}, this), message_delay);
+			} else {
+				this._emit("message", message);
+			}
 		};
 
 		proto.destroy = function() {

@@ -23,7 +23,7 @@
 			}, this);
 		} else {
 			if (window.document.readyState === "complete") {
-				this.on_loaded();
+				_.defer(_.bind(this.on_loaded, this), this);
 			} else {
 				window.addEventListener("load", _.bind(this.on_loaded, this));
 			}

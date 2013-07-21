@@ -256,18 +256,18 @@ asyncTest("Editor", function() {
 			var env = new red.Environment({create_builtins: true});
 			var root = env.get_root();
 
-			var runtime_div = $("<div />")	.appendTo(document.body)
-											.dom_output({
-												root: root,
-												open_separate_client_window: false,
-												edit_on_open: true,
-												show_edit_button: false
-											});
-			var editor_div = $("<div />")	.appendTo(document.body)
-											.editor({
-												debug_env: true,
-												server_window: window
-											});
+			var runtime_div = $("<div />").appendTo(document.body);
+			var editor_div = $("<div />").appendTo(document.body);
+			runtime_div	.dom_output({
+							root: root,
+							open_separate_client_window: false,
+							edit_on_open: true,
+							show_edit_button: false
+						});
+			editor_div	.editor({
+							debug_env: true,
+							server_window: window
+						});
 
 			var cleanup_button = $("<a />")	.attr("href", "javascript:void(0)")
 											.text("Clean up")
