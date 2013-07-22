@@ -28,7 +28,7 @@
 		this.print_on_return = false;
 
 		if(!options || options.create_builtins !== false) {
-			root.set("on", red.on_event);
+			//root.set("on", red.on_event);
 			/*
 			root.set("emit", red.emit);
 			root.set("find", function (find_root) {
@@ -47,11 +47,11 @@
 		proto.initialize_props = function (root_pointer) {
 			var root_dict = root_pointer.points_at();
 
-			var screen = new red.Dict({has_protos: false});
-			root_dict.set("screen", screen);
+			//var screen = new red.Dict({has_protos: false});
+			//root_dict.set("screen", screen);
 
-			root_dict.set("width", new red.Cell({str: "500"}));
 			/*
+			root_dict.set("width", new red.Cell({str: "500"}));
 			root_dict.set("height", new red.Cell({str: "500"}));
 
 			var shape = new red.Dict({has_protos: false});
