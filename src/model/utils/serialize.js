@@ -133,13 +133,9 @@
 	var serialized_objs;
 	var serialized_obj_values;
 
-
 	var find_serialized_obj_id = function (obj) {
 		return _.indexOf(serialized_objs, obj);
 	};
-
-
-
 
 	function do_serialize(obj) {
 		var rest_args = _.rest(arguments),
@@ -197,10 +193,13 @@
 		} else if (is_init_serial_call) {
 			var serialized_obj = create_or_get_serialized_obj.apply(this, arguments);
 			serializing = false;
-			return {
+			var rv = {
 				serialized_objs: serialized_obj_values,
 				root: serialized_obj
 			};
+			serialized_objs = undefined;
+			serialized_obj_values = undefined;
+			return rv;
 		} else {
 			return create_or_get_serialized_obj.apply(this, arguments);
 		}

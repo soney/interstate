@@ -45,7 +45,7 @@
 			}
 			var communication_mechanism;
 			if(this.option("server_window") === window) {
-				communication_mechanism = new red.SameWindowCommWrapper(this.option("client_id")); 
+				communication_mechanism = new red.SameWindowCommWrapper(this.option("client_id"), 0); 
 			} else {
 				communication_mechanism = new red.InterWindowCommWrapper(this.option("server_window"), this.option("client_id")); 
 			}
@@ -159,7 +159,12 @@
 					value: value,
 					index: 0
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					//value.destroy();
+					//value = null;
+					command.destroy();
+					command = null;
+				});
 			} else if(type === "rename") {
 				client = event.client;
 				command = new red.RenamePropCommand({
@@ -167,7 +172,10 @@
 					from: event.from_name,
 					to: event.to_name
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if(type === "inherit") {
 				client = event.client;
 				value = event.value;
@@ -178,14 +186,20 @@
 					name: prop_name,
 					value: { id: to_func(value.obj_id) }
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if(type === "unset") {
 				client = event.client;
 				command = new red.UnsetPropCommand({
 					parent: { id: to_func(client.obj_id) },
 					name: event.name
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if(type === "set_stateful_prop_for_state") {
 				client = event.prop;
 				state = event.state;
@@ -196,7 +210,10 @@
 					state: { id: to_func(state.cobj_id) },
 					value: value
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if(type === "unset_stateful_prop_for_state") {
 				client = event.prop;
 				state = event.state;
@@ -205,7 +222,10 @@
 					stateful_prop: { id: to_func(client.obj_id) },
 					state: { id: to_func(state.cobj_id) }
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if(type === "set_str") {
 				client = event.client;
 				value = event.str;
@@ -214,7 +234,10 @@
 					cell: { id: to_func(client.cobj_id || client.obj_id) },
 					str: value
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if(type === "add_state") {
 				state = event.state;
 				statechart_puppet_id = state.puppet_master_id || state.id(); 
@@ -242,7 +265,10 @@
 					make_start: make_start
 				});
 
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if(type === "remove_state") {
 				state = event.state;
 				name = state.get_name("parent");
@@ -251,7 +277,10 @@
 					statechart: { id: to_func(parent_puppet_id) },
 					name: name
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if(type === "remove_transition") {
 				transition = event.transition;
 				var statechart = transition.root();
@@ -259,7 +288,10 @@
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart.puppet_master_id || transition.id()) }
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if(type === "set_type") {
 				var to_type = event.type_name;
 				name = event.prop_name;
@@ -277,8 +309,16 @@
 					parent: { id: to_func(client.obj_id) },
 					value: value,
 					name: name
+				}, function() {
+					value.destroy();
+					value = null;
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+					value.destroy();
+					value = null;
+				});
 			} else if(type === "add_transition") {
 				var from_state = event.from;
 				var to_state = event.to;
@@ -293,7 +333,12 @@
 					event: event,
 					statechart: { id: to_func(statechart_puppet_id) }
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+					event.destroy();
+					event = null;
+				});
 			} else if(type === "set_transition_to") {
 				transition = event.transition;
 				state = event.to;
@@ -302,7 +347,10 @@
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart_puppet_id) }
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if(type === "set_transition_from") {
 				transition = event.transition;
 				state = event.from;
@@ -311,7 +359,10 @@
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart_puppet_id) }
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if(type === "rename_state") {
 				state = event.state;
 				var new_name = event.new_name;
@@ -322,7 +373,10 @@
 					from: old_name,
 					to: new_name
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if (type === 'set_transition_str') {
 				transition = event.transition;
 				var str = event.str;
@@ -331,7 +385,10 @@
 					transition: { id: to_func(transition_id) },
 					event: str
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if (type === 'set_copies') {
 				value = event.str;
 				client = event.client;
@@ -339,13 +396,19 @@
 					parent: { id: to_func(client.obj_id) },
 					value: value
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if (type === 'reset') {
 				client = event.client;
 				command = new red.ResetCommand({
 					parent: { id: to_func(client.cobj_id) }
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if (type === 'make_concurrent') {
 				state = event.state;
 				var state_puppet_id = state.puppet_master_id || state.id();
@@ -353,7 +416,10 @@
 					statechart: { id: to_func(state_puppet_id) },
 					concurrent: event.concurrent
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else if (type === 'move_prop') {
 				var from_obj = event.from_obj;
 				var from_name = event.from_name;
@@ -368,7 +434,10 @@
 					target_name: target_name,
 					above_below: above_below
 				});
-				this.client_socket.post_command(command);
+				this.client_socket.post_command(command, function() {
+					command.destroy();
+					command = null;
+				});
 			} else {
 				console.log("Unhandled type " + type);
 			}

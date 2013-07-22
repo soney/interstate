@@ -177,11 +177,11 @@
 			}
 		};
 
-		proto.post = function (message) {
-			this.comm_mechanism.post(message);
+		proto.post = function (message, callback) {
+			this.comm_mechanism.post(message, callback);
 		};
 
-		proto.post_command = function (command) {
+		proto.post_command = function (command, callback) {
 			var stringified_command;
 			if ((["undo", "redo", "reset", "export"]).indexOf(command) >= 0) {
 				stringified_command = command;
@@ -191,7 +191,7 @@
 			this.post({
 				type: "command",
 				command: stringified_command
-			});
+			}, callback);
 		};
 	}(red.ProgramStateClient));
 }(red, jQuery));

@@ -47,7 +47,9 @@
             "statechart_parent": {
                 "default": function () {
                     return "parent";
-                }
+                },
+				destroy: function(me) {
+				}
             }
         };
     
@@ -145,6 +147,7 @@
                         options[name] = red.deserialize.apply(red, ([serialized_option, options]).concat(rest_args));
                     });
                     this.do_initialize(options);
+					options = null;
                 };
                 return rv;
             });

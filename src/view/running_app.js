@@ -332,7 +332,7 @@
 					communication_mechanism = new red.InterWindowCommWrapper(this.editor_window, this.option("client_id")); 
 				} else {
 					this.editor_window = window;
-					communication_mechanism = new red.SameWindowCommWrapper(this.option("client_id")); 
+					communication_mechanism = new red.SameWindowCommWrapper(this.option("client_id"), 0); 
 				}
 
 				this.server_socket = this.server_socket || this._create_server_socket();

@@ -28,11 +28,14 @@
 				}
 			}
 		};
-		proto.post = function(message) {
+		proto.post = function(message, callback) {
 			this.remote_window.postMessage({
 				message: message,
 				client_id: this.client_id
 			}, origin);
+			if(_.isFunction(callback)) {
+				callback();
+			}
 		};
 		proto.destroy = function() {
 			window.removeEventListener("message", this.$on_messsage);
@@ -53,7 +56,7 @@
 		var proto = My.prototype;
 		able.make_proto_listenable(proto);
 
-		proto.post = function(message) {
+		proto.post = function(message, callback) {
 			var len = same_window_comm_wrappers.length;
 			var my_client_id = this.client_id;
 			
@@ -63,6 +66,9 @@
 					same_window_comm_wrapper.client_id === my_client_id) {
 					same_window_comm_wrapper.on_message(message);
 				}
+			}
+			if(_.isFunction(callback)) {
+				callback();
 			}
 		};
 
