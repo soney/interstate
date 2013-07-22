@@ -62,7 +62,7 @@
 			}, this);
 
 			this.element.text("Loading...");
-			$(window).on("beforeunload", _.bind(function () {
+			$(window).on("beforeunload.close_editor", _.bind(function () {
 				this.on_unload();
 			}, this));
 		},
@@ -388,11 +388,15 @@
 			this.navigator.navigator("destroy");
 			this.menu.menu("destroy").remove();
 			this.client_socket.destroy();
+			delete this.client_socket;
+			delete this.navigator;
+			delete this.menu;
 		},
 
 		_destroy: function () {
 			this._super();
 			this.on_unload();
+			$(window).off("beforeunload.close_editor");
 		},
 
 		_setOption: function(key, value) {

@@ -71,7 +71,7 @@
                 env_visible: true,
                 env_name: "prototypes",
 				destroy: function(me) {
-					me.destroy();
+					me.destroy(true);
 				}
             },
     
@@ -80,7 +80,7 @@
                 getter_name: "direct_attachments",
 				destroy: function(me) {
 					_.each(me, function(attachment) {
-						attachment.destroy();
+						attachment.destroy(true);
 					});
 				}
             },
@@ -98,12 +98,12 @@
 				destroy: function(me) {
 					me.each(function(prop_val) {
 						if(prop_val.value.destroy) {
-							prop_val.value.destroy();
+							prop_val.value.destroy(true);
 						}
 						delete prop_val.owner;
 						delete prop_val.value;
 					});
-					me.destroy();
+					me.destroy(true);
 				}
             },
     
@@ -114,7 +114,7 @@
                 getter: function (me) { return me.get(); },
                 setter: function (me, val) { me.set(val, true); },
 				destroy: function(me) {
-					me.destroy();
+					me.destroy(true);
 				}
             }
         };

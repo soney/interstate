@@ -251,9 +251,9 @@ asyncTest("Pointer Bucket Collection", function() {
 });
 asyncTest("Editor", function() {
 	expect(1);
-	//clear_snapshots(function() {
-		//take_snapshot([], function() {
-			var env = new red.Environment({create_builtins: true});
+	clear_snapshots(function() {
+		take_snapshot([], function() {
+			var env = new red.Environment({create_builtins: false});
 			var root = env.get_root();
 
 			var runtime_div = $("<div />").appendTo(document.body);
@@ -279,8 +279,8 @@ asyncTest("Editor", function() {
 
 												env.destroy();
 												env = root = null;
-												editor_div.editor("destroy");
-												runtime_div.dom_output("destroy");
+												editor_div.editor("destroy").remove();
+												runtime_div.dom_output("destroy").remove();
 												window.setTimeout(function() {
 													take_snapshot(["ConstraintNode", "SettableConstraint", "red."], function(response) {
 														ok(!response.illegal_strs, "Make sure nothing was allocated");
@@ -298,8 +298,8 @@ asyncTest("Editor", function() {
 				}
 			}, 50000);
 			*/
-		//});
-	//});
+		});
+	});
 });
 
 }());

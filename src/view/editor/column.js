@@ -475,6 +475,7 @@
 			if(this.prev_button.data("red-pressable")) {
 				this.prev_button.pressable("destroy");
 			}
+			delete this.options;
 		},
 		on_child_select: function(child_info, child_disp, event) {
 			var client = child_info.value;

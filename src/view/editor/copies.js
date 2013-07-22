@@ -42,10 +42,12 @@
 		},
 
 		_destroy: function () {
+			this.content.off("click", this.$on_click);
 			this._super();
 			this.remove_listener();
 			var client = this.option("client");
 			client.signal_destroy();
+			delete this.options;
 		},
 
 		on_click: function() {
