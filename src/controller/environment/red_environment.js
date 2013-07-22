@@ -46,6 +46,7 @@
 
 		proto.initialize_props = function (root_pointer) {
 			var root_dict = root_pointer.points_at();
+			/*
 
 			var screen = new red.Dict({has_protos: false});
 			root_dict.set("screen", screen);
@@ -210,67 +211,6 @@
 			path.set("transform", new red.Cell({str: "''"}));
 			path.set("animated_properties", new red.Cell({str: "false"}));
 			path.set("animation_duration", new red.Cell({str: "300"}));
-			/*
-
-			var dom = red.create("dict", {has_protos: false, direct_attachments: [red.create("dom_attachment")]});
-			dom.set("tag", new red.Cell({str: "'div'"}));
-		//	dom.set("text", new red.Cell({str: "undefined"}));
-			//dom.set("children", red.create("dict", {has_protos: false}));
-		//	dom.set("attr", red.create("dict", {has_protos: false}));
-		//	dom.set("css", red.create("dict", {has_protos: false}));
-			root_dict.set("dom", dom);
-
-			var raphael = red.create("dict", {has_protos: false, direct_attachments: [red.create("raphael_attachment")]});
-			root_dict.set("raphael", raphael);
-
-			var three = red.create("dict", {has_protos: false});
-
-			var point_light = red.create("dict", {has_protos: false, direct_attachments: [red.create("point_light_attachment")]});
-			three.set("point_light", point_light);
-
-			var scene = red.create("dict", {has_protos: false, direct_attachments: [red.create("three_scene_attachment")]});
-			three.set("scene", scene);
-
-			var lambert_material = red.create("dict", {has_protos: false, direct_attachments: [red.create("lambert_material_attachment")]});
-			three.set("lambert_material", lambert_material);
-
-			var sphere_geometry = red.create("dict", {has_protos: false, direct_attachments: [red.create("sphere_geometry_attachment")]});
-			three.set("sphere_geometry", sphere_geometry);
-
-			var mesh = red.create("dict", {has_protos: false, direct_attachments: [red.create("mesh_attachment")]});
-			three.set("mesh", mesh);
-
-			root_dict.set("three", three);
-
-			var box2d = red.create("dict", {has_protos: false});
-
-			var box2d_world = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_world_attachment")]});
-			box2d.set("world", box2d_world);
-
-			var box2d_fixture = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_fixture_attachment")]});
-			box2d_fixture.set("get_x", function() { return this.get_attachment_instance("box2d_fixture").b2x.get(); });
-			box2d_fixture.set("get_y", function() { return this.get_attachment_instance("box2d_fixture").b2y.get(); });
-			box2d_fixture.set("get_vx", function() { return this.get_attachment_instance("box2d_fixture").b2vx.get(); });
-			box2d_fixture.set("get_vy", function() { return this.get_attachment_instance("box2d_fixture").b2vy.get(); });
-			box2d_fixture.set("get_theta", function() { return this.get_attachment_instance("box2d_fixture").b2t.get(); });
-			box2d_fixture.set("get_vtheta", function() { return this.get_attachment_instance("box2d_fixture").b2vt.get(); });
-			box2d.set("fixture", box2d_fixture);
-
-			var box2d_body = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_body_attachment")]});
-			box2d.set("body", box2d_body);
-
-			var box2d_shape = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_shape_attachment")]});
-			box2d.set("shape", box2d_shape);
-
-			/*
-
-			var box2d_joint = red.create("dict", {has_protos: false, direct_attachments: [red.create("box2d_joint_attachment")]});
-			box2d.set("joint", box2d_joint);
-
-			root_dict.set("box2d", box2d);
-
-			var children = red.create("dict", {has_protos: false});
-			root_dict.set("child_nodes", children);
 			*/
 		};
 
