@@ -47,7 +47,12 @@
 			this.remove_listener();
 			var client = this.option("client");
 			client.signal_destroy();
+			delete this.options.client;
 			delete this.options;
+			delete this.$on_click;
+			delete this.$on_blur;
+			delete this.$on_change;
+			delete this.$on_key_down;
 		},
 
 		on_click: function() {

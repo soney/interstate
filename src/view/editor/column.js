@@ -468,6 +468,7 @@
 		_destroy: function () {
 			this._super();
 			this.remove_children_listener();
+			this.copy_disp.copy("destroy");
 			this.destroy_src_view();
 			var client = this.option("client");
 			client.signal_destroy();

@@ -251,8 +251,8 @@ asyncTest("Pointer Bucket Collection", function() {
 });
 asyncTest("Editor", function() {
 	expect(1);
-	clear_snapshots(function() {
-		take_snapshot([], function() {
+	//clear_snapshots(function() {
+		//take_snapshot([], function() {
 			var env = new red.Environment({create_builtins: true});
 			var root = env.get_root();
 
@@ -298,8 +298,8 @@ asyncTest("Editor", function() {
 				}
 			}, 50000);
 			*/
-		});
-	});
+		//});
+	//});
 });
 
 }());

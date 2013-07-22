@@ -46,6 +46,9 @@
 			});
 			var client = this.option("root_client");
 			client.signal_destroy();
+
+			delete this.options.root_client;
+			delete this.options;
 		},
 		on_child_select: function(column, event, child_info) {
 			var value = child_info.value;
