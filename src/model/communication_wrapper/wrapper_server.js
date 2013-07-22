@@ -94,6 +94,7 @@
 		};
 
 		proto.destroy = function () {
+			this._emit("destroy");
 			this.object.off("destroyed", this.destroy, this);
 			this.remove_emission_listeners();
 			this.fn_call_constraints.each(function(constraint_info, getting) {

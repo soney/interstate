@@ -172,10 +172,16 @@
 					listen_to: listen_to,
 					client_ids: [client_id]
 				});
+				rv.on("destroy", this.wrapper_server_destroyed, this, rv, id);
 
 				this.wrapper_servers[id] = rv;
 				return rv;
 			}
+		};
+
+		proto.wrapper_server_destroyed = function(wrapper_server, id) {
+			wrapper_server.off("destroy", this.wrapper_server_destroyed);
+			delete this.wrapper_servers[id];
 		};
 
 		proto.post = function (message) {
