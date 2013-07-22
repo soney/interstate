@@ -46,12 +46,12 @@
 
 		proto.initialize_props = function (root_pointer) {
 			var root_dict = root_pointer.points_at();
-			/*
 
 			var screen = new red.Dict({has_protos: false});
 			root_dict.set("screen", screen);
 
 			root_dict.set("width", new red.Cell({str: "500"}));
+			/*
 			root_dict.set("height", new red.Cell({str: "500"}));
 
 			var shape = new red.Dict({has_protos: false});
@@ -211,7 +211,7 @@
 			path.set("transform", new red.Cell({str: "''"}));
 			path.set("animated_properties", new red.Cell({str: "false"}));
 			path.set("animation_duration", new red.Cell({str: "300"}));
-			*/
+			/**/
 		};
 
 		proto.default_return_value = function () {

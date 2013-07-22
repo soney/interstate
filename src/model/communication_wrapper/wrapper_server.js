@@ -12,6 +12,7 @@
 		this.id = id++;
 		able.make_this_listenable(this);
 		this.object = options.object;
+		this.object.on("destroyed", this.destroy, this);
 		this._type = "none";
 		this._event_type_listeners = options.listen_to || [];
 
@@ -93,6 +94,7 @@
 		};
 
 		proto.destroy = function () {
+			this.object.off("destroyed", this.destroy, this);
 			this.remove_emission_listeners();
 			this.fn_call_constraints.each(function(constraint_info, getting) {
 				var constraint = constraint_info.constraint;

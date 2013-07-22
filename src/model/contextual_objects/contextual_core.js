@@ -7,6 +7,7 @@
 		_ = red._;
 
 	red.ContextualObject = function (options) {
+		able.make_this_listenable(this);
 		this.$value = new cjs.Constraint(this._getter, {
 			context: this,
 			check_on_nullify: options.check_on_nullify === true,
@@ -20,6 +21,7 @@
 
 	(function (My) {
 		var proto = My.prototype;
+		able.make_proto_listenable(proto);
 
 		proto.id = proto.hash = function () { return this._id; };
 
@@ -76,6 +78,8 @@
 			delete this.pointer;
 			delete this.$value;
 			red.unregister_uid(this.id());
+			this._emit("destroyed");
+			able.destroy_this_listenable(this);
 		};
 
 		proto.get_name = function () {

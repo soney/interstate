@@ -52,7 +52,7 @@
 				this.dom_obj = window.document.createElement("div");
 				this.paper = new Raphael(this.dom_obj, 0, 0);
 			},
-			destroy: function() {
+			destroy: function(silent) {
 				this.paper.clear();
 				this.paper.remove();
 				delete this.paper;
@@ -120,9 +120,9 @@
 				this.constructor_params = this.options.constructor_params;
 				this.$robj = cjs.$(false);
 			},
-			destroy: function() {
+			destroy: function(silent) {
 				this.remove();
-				this.$robj.destroy();
+				this.$robj.destroy(silent);
 				delete this.constructor_params;
 				delete this.$robj;
 			},

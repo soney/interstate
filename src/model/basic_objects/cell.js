@@ -24,7 +24,7 @@
                     me.set(str, true);
                 },
 				destroy: function(me) {
-					me.destroy();
+					me.destroy(true);
 				}
             },
             "ignore_inherited_in_first_dict": {
@@ -41,9 +41,9 @@
                 serialize: false,
 				destroy: function(me) {
 					me.each(function (value) {
-						value.destroy();
+						value.destroy(true);
 					});
-					me.destroy();
+					me.destroy(true);
 				}
 
             }
