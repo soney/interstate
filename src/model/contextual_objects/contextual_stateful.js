@@ -34,16 +34,16 @@
 
 		proto.get_statecharts = function () {
 			var contextual_protos = this.get_all_protos();
-			var proto_statecharts = _.chain(contextual_protos)
-				.map(function (x) {
-					if (x instanceof red.StatefulObj) {
-						return this.get_statechart_for_proto(x);
-					} else {
-						return false;
-					}
-				}, this)
-				.compact()
-				.value();
+			var proto_statecharts = _	.chain(contextual_protos)
+										.map(function (x) {
+											if (x instanceof red.StatefulObj) {
+												return this.get_statechart_for_proto(x);
+											} else {
+												return false;
+											}
+										}, this)
+										.compact()
+										.value();
 
 			return ([this.get_own_statechart()]).concat(proto_statecharts);
 		};
@@ -56,10 +56,11 @@
 		};
 
 		proto.destroy = function () {
+			if(this.constructor === My) { this.emit_begin_destroy(); }
 			this.statecharts_per_proto.each(function(statechart) {
-				statechart.destroy();
+				statechart.destroy(true);
 			});
-			this.statecharts_per_proto.destroy();
+			this.statecharts_per_proto.destroy(true);
 			delete this.statecharts_per_proto;
 			My.superclass.destroy.apply(this, arguments);
 		};

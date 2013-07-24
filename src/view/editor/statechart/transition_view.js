@@ -461,6 +461,9 @@
 		};
 
 		proto.destroy = function () {
+			this.label.destroy();
+			delete this.label;
+
 			if(this.arrow_timeout) {
 				window.clearTimeout(this.arrow_timeout);
 				delete this.arrow_timeout;

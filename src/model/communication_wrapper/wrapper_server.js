@@ -12,6 +12,7 @@
 		this.id = id++;
 		able.make_this_listenable(this);
 		this.object = options.object;
+		this.object.on("begin_destroy", this.on_begin_destroy, this);
 		this.object.on("destroyed", this.destroy, this);
 		this._type = "none";
 		this._event_type_listeners = options.listen_to || [];
@@ -92,16 +93,25 @@
 				this.client_ids[client_id] = ACTIVE;
 			}
 		};
+		proto.on_begin_destroy = function() {
+			this.object.off("begin_destroy", this.on_begin_destroy, this);
+			this.remove_emission_listeners();
+			this.clear_fn_call_constraints();
+		};
+		proto.clear_fn_call_constraints = function() {
+			this.fn_call_constraints.each(function(constraint_info, getting) {
+				var constraint = constraint_info.constraint;
+				constraint.destroy();
+				this.fn_call_constraints.remove(getting);
+			}, this);
+		};
 
 		proto.destroy = function () {
 			this._emit("destroy");
+			this.object.off("begin_destroy", this.on_begin_destroy, this);
 			this.object.off("destroyed", this.destroy, this);
 			this.remove_emission_listeners();
-			this.fn_call_constraints.each(function(constraint_info, getting) {
-				var constraint = constraint_info.constraint;
-				constraint_info.constraint.destroy();
-				this.fn_call_constraints.remove(getting);
-			}, this);
+			this.clear_fn_call_constraints();
 			this.fn_call_constraints.destroy();
 			delete this.fn_call_constraints;
 			able.destroy_this_listenable(this);

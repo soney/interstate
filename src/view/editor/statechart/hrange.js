@@ -66,6 +66,12 @@
 		able.make_proto_optionable(proto);
 		able.make_proto_listenable(proto);
 
+		proto.destroy = function() {
+			delete this.options.state;
+			able.destroy_this_optionable(this);
+			able.destroy_this_listenable(this);
+		};
+
 		proto.update = function() {
 			var from_x = this.option("from_x"),
 				to_x = this.option("to_x"),

@@ -51,8 +51,9 @@
 		able.make_proto_optionable(proto);
 
 		proto.destroy = function() {
-			this.$layout.destroy();
 			able.destroy_this_optionable(this);
+			this.$layout.destroy();
+			delete this.$layout;
 		};
 
 		proto.invalidate = function() {

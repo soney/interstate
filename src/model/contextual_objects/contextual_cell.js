@@ -16,6 +16,7 @@
 		_.proto_extend(My, red.ContextualObject);
 		var proto = My.prototype;
 		proto.destroy = function () {
+			if(this.constructor === My) { this.emit_begin_destroy(); }
 			My.superclass.destroy.apply(this, arguments);
 			this.value_constraint.destroy();
 			delete this.value_constraint;

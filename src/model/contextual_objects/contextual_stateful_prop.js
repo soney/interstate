@@ -384,6 +384,7 @@
 		};
 
 		proto.destroy = function () {
+			if(this.constructor === My) { this.emit_begin_destroy(); }
 			this.$value.offChange(this.$value.update, this.$value);
 			this.$active_value.destroy();
 			delete this.$active_value;

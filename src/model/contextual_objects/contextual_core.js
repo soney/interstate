@@ -67,8 +67,13 @@
 		proto.val = function () {
 			return this.$value.get();
 		};
+		proto.emit_begin_destroy = function() {
+			this._emit("begin_destroy");
+		};
 
 		proto.destroy = function (avoid_destroy_call) {
+			if(this.constructor === My) { this.emit_begin_destroy(); }
+
 			if(avoid_destroy_call !== true) {
 				red.destroy_contextual_obj(this);
 			}

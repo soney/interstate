@@ -50,24 +50,39 @@
 				add_state_width: this.option("add_state_width")
 			});
 			this.statechart_view = new red.RootStatechartView(statecharts, this.layout_manager, this.paper, this.options);
-			this.statechart_view.on("add_state", $.proxy(this.add_state, this));
-			this.statechart_view.on("remove_state", $.proxy(this.remove_state, this));
-			this.statechart_view.on("remove_transition", $.proxy(this.remove_transition, this));
-			this.statechart_view.on("add_transition", $.proxy(this.add_transition, this));
-			this.statechart_view.on("set_to", $.proxy(this.set_transition_to, this));
-			this.statechart_view.on("set_from", $.proxy(this.set_transition_from, this));
-			this.statechart_view.on("rename", $.proxy(this.rename_state, this));
-			this.statechart_view.on("set_str", $.proxy(this.set_transition_str, this));
-			this.statechart_view.on("make_concurrent", $.proxy(this.make_concurrent, this));
+			this.statechart_view.on("add_state", this.add_state, this);
+			this.statechart_view.on("remove_state", this.remove_state, this);
+			this.statechart_view.on("remove_transition", this.remove_transition, this);
+			this.statechart_view.on("add_transition", this.add_transition, this);
+			this.statechart_view.on("set_to", this.set_transition_to, this);
+			this.statechart_view.on("set_from", this.set_transition_from, this);
+			this.statechart_view.on("rename", this.rename_state, this);
+			this.statechart_view.on("set_str", this.set_transition_str, this);
+			this.statechart_view.on("make_concurrent", this.make_concurrent, this);
 		},
 		_destroy: function () {
-			var statecharts = this.option("statecharts");
+			this._super();
+			this.statechart_view.off("add_state", this.add_state, this);
+			this.statechart_view.off("remove_state", this.remove_state, this);
+			this.statechart_view.off("remove_transition", this.remove_transition, this);
+			this.statechart_view.off("add_transition", this.add_transition, this);
+			this.statechart_view.off("set_to", this.set_transition_to, this);
+			this.statechart_view.off("set_from", this.set_transition_from, this);
+			this.statechart_view.off("rename", this.rename_state, this);
+			this.statechart_view.off("set_str", this.set_transition_str, this);
+			this.statechart_view.off("make_concurrent", this.make_concurrent, this);
 			this.statechart_view.destroy();
+
+			delete this.statechart_view;
+
 			this.paper.remove();
-			this.layout_manager.destroy();
 
 			this.element.removeClass("statechart");
-			this._super();
+			delete this.options.statecharts;
+			delete this.options;
+
+			this.layout_manager.destroy();
+			delete this.layout_manager;
 		},
 
 		get_layout_manager: function() {
@@ -430,12 +445,21 @@
 		proto.remove = function () {
 		};
 		proto.destroy = function () {
+			delete this.statecharts;
+
 			this.live_layout.destroy();
+			delete this.live_layout;
 			this.object_views.each(function(object_view) {
 				object_view.destroy();
 			});
 			this.object_views.destroy();
+			delete this.object_views;
 			this.hranges.destroy();
+			delete this.hranges;
+
+			delete this.$on_awaiting_state_selection;
+
+
 			able.destroy_this_listenable(this);
 			able.destroy_this_optionable(this);
 		};

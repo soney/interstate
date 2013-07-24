@@ -85,6 +85,19 @@
 		able.make_proto_listenable(proto);
 		able.make_proto_optionable(proto);
 
+		proto.destroy = function() {
+			this.text.unclick(this.$onClick);
+			if(this.textbox) {
+				this.textbox.removeEventListener("keydown", this.$onKeydown);
+				this.textbox.removeEventListener("blur", this.$onBlur);
+			}
+			delete this.$onClick;
+			delete this.$onKeydown;
+			delete this.$onBlur;
+			able.destroy_this_listenable(this);
+			able.destroy_this_optionable(this);
+		};
+
 		proto.get_raphael_object = function () {
 			return this.text;
 		};

@@ -139,7 +139,7 @@
                     this._old_prop_value.destroy();
                 }
             } else {
-                if (this._prop_value) {
+                if (this._prop_value && this._prop_value.destroy) {
                     this._prop_value.destroy();
                 }
             }
