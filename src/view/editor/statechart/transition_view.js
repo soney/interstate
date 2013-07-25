@@ -102,8 +102,17 @@
 			disabled_dasharray: ". "
 		}, options);
 
-		this.$on_window_click_while_expanded = $.proxy(this.on_window_click_while_expanded, this);
-		this.$on_window_keydown_while_expanded = $.proxy(this.on_window_keydown_while_expanded, this);
+		this.$on_window_click_while_expanded = _.bind(this.on_window_click_while_expanded, this);
+		this.$on_window_keydown_while_expanded = _.bind(this.on_window_keydown_while_expanded, this);
+		this.$on_cancel_rename = _.bind(this.on_cancel_rename, this);
+		this.$on_confirm_rename = _.bind(this.on_confirm_rename, this);
+		this.$flash = _.bind(this.flash, this);
+		this.$show_menu = _.bind(this.show_menu, this);
+		this.$on_edit_event_pressed = _.bind(this.on_edit_event_pressed, this);
+		this.$on_change_from_pressed = _.bind(this.on_change_from_pressed, this);
+		this.$on_change_to_pressed = _.bind(this.on_change_to_pressed, this);
+		this.$emit_set_from = _.bind(this.emit_set_from, this);
+		this.$emit_set_to = _.bind(this.emit_set_to, this);
 
 		var paper = this.option("paper");
 		var paths = this.get_paths();
@@ -134,10 +143,9 @@
 			"font-size": this.option("font_size"),
 			"font-family": this.option("font_family")
 		});
-		this.label	.on("cancel", $.proxy(this.on_cancel_rename, this))
-					.on("change", $.proxy(this.on_confirm_rename, this));
+		this.label	.on("cancel", this.$on_cancel_rename)
+					.on("change", this.$on_confirm_rename);
 		
-		this.$flash = _.bind(this.flash, this);
 		transition.on("fire", this.$flash);
 		this.label.on("change", this.forward_event, this);
 		var from = this.option("from");
@@ -158,12 +166,7 @@
 								"stroke-dasharray": this.option("vline_dasharray")
 							})
 							.toBack();
-		$([this.label.text[0], this.line_path[0], this.circle[0], this.arrow_path[0]]).on("contextmenu", $.proxy(function(event) {
-			event.preventDefault();
-			event.stopPropagation();
-
-			this.show_menu();
-		}, this));
+		$([this.label.text[0], this.line_path[0], this.circle[0], this.arrow_path[0]]).on("contextmenu", this.$show_menu);
 
 		if(highlight_enabled) {
 			this.enabled_fn = cjs.liven(function () {
@@ -269,7 +272,7 @@
 			});
 			the_flash.animate({
 				path: line_elem.getSubpath(0, len)
-			}, 200, "ease-in", $.proxy(function () {
+			}, 200, "ease-in", _.bind(function () {
 				if(paper.height === null) { // we were deleted
 					return;
 				} else if(arrow[0] === null) {
@@ -286,7 +289,7 @@
 					window.clearTimeout(this.arrow_timeout);
 					delete this.arrow_timeout;
 				}
-				this.arrow_timeout = window.setTimeout($.proxy(function () {
+				this.arrow_timeout = window.setTimeout(_.bind(function () {
 					delete this.arrow_timeout;
 					this.arrow_path.animate({
 						fill: this.option("color")
@@ -295,68 +298,31 @@
 			}, this));
 		};
 
-		proto.show_menu = function() {
+		proto.show_menu = function(event) {
+			if(event) {
+				event.preventDefault();
+				event.stopPropagation();
+			}
+
 			var paper = this.option("paper");
 			var transition = this.option("transition");
 			var parentElement = paper.canvas.parentNode;
 			this.edit_event = $("<div />").addClass("menu_item")
 											.text("Change event")
 											.pressable()
-											.on("pressed", $.proxy(function() {
-												this.remove_edit_dropdown();
-												this.begin_rename();
-											}, this));
+											.on("pressed", this.$on_edit_event_pressed);
 			this.change_from = $("<div />")	.addClass("menu_item")
 												.text("Change from")
 												.pressable()
-												.on("pressed", $.proxy(function() {
-													this.remove_edit_dropdown();
-													var root = transition.root();
-													var selectable_substates = root.flatten_substates(); // the first element is the major statechart itself
-													selectable_substates = selectable_substates.splice(0, selectable_substates.length-1);
-													this._emit("awaiting_state_selection", {
-														states: selectable_substates,
-														on_select: $.proxy(function(from_state) {
-															this._emit("set_from", {
-																transition: transition,
-																from: from_state
-															});
-														}, this)
-													});
-												}, this));
+												.on("pressed", this.$on_change_from_pressed);
 			this.change_to = $("<div />").addClass("menu_item")
 											.text("Change to")
 											.pressable()
-											.on("pressed", $.proxy(function() {
-												this.remove_edit_dropdown();
-												var root = transition.root();
-												var selectable_substates = root.flatten_substates(); // the first element is the major statechart itself
-												selectable_substates = selectable_substates.splice(0, selectable_substates.length-1);
-												this._emit("awaiting_state_selection", {
-													states: selectable_substates,
-													on_select: $.proxy(function(to_state) {
-														this._emit("set_to", {
-															transition: transition,
-															to: to_state
-														});
-													}, this)
-												});
-											}, this));
-			this.edit_actions = $("<div />").addClass("menu_item")
-											.text("Edit Actions")
-											.pressable()
-											.on("pressed", function() {
-												console.log("edit actions");
-											});
+											.on("pressed", this.$on_change_to_pressed);
 			this.remove_item = $("<div />")	.addClass("menu_item")
 											.text("Delete")
 											.pressable()
-											.on("pressed", $.proxy(function() {
-												this.remove_edit_dropdown();
-												this._emit("remove_transition", {
-													transition: this.option("transition")
-												});
-											}, this));
+											.on("pressed", this.$on_remove_item_pressed);
 			var from = this.option("from"),
 				to = this.option("to");
 			var min_x = Math.min(from.x, to.x);
@@ -385,6 +351,49 @@
 			}
 			$(window).on("mousedown", this.$on_window_click_while_expanded);
 			$(window).on("keydown", this.$on_window_keydown_while_expanded);
+		};
+
+		proto.on_edit_event_pressed = function() {
+			this.remove_edit_dropdown();
+			this.begin_rename();
+		};
+		proto.emit_set_from = function(from_state) {
+			this._emit("set_from", {
+				transition: this.option("transition"),
+				from: from_state
+			});
+		};
+		proto.on_change_from_pressed = function() {
+			this.remove_edit_dropdown();
+			var root = this.option("transition").root();
+			var selectable_substates = root.flatten_substates(); // the first element is the major statechart itself
+			selectable_substates = selectable_substates.splice(0, selectable_substates.length-1);
+			this._emit("awaiting_state_selection", {
+				states: selectable_substates,
+				on_select: this.$emit_set_from
+			});
+		};
+		proto.emit_set_to = function(to_state) {
+			this._emit("set_to", {
+				transition: this.option("transition"),
+				to: to_state
+			});
+		};
+		proto.on_change_to_pressed = function() {
+			this.remove_edit_dropdown();
+			var root = this.option("transition").root();
+			var selectable_substates = root.flatten_substates(); // the first element is the major statechart itself
+			selectable_substates = selectable_substates.splice(0, selectable_substates.length-1);
+			this._emit("awaiting_state_selection", {
+				states: selectable_substates,
+				on_select: this.$emit_set_to
+			});
+		};
+		proto.on_remove_item_pressed = function() {
+			this.remove_edit_dropdown();
+			this._emit("remove_transition", {
+				transition: this.option("transition")
+			});
 		};
 
 		proto.on_window_click_while_expanded = function(event) {
@@ -477,9 +486,19 @@
 				this.enabled_fn.destroy();
 			}
 
-
 			able.destroy_this_listenable(this);
 			able.destroy_this_optionable(this);
+			delete this.$on_window_click_while_expanded;
+			delete this.$on_window_keydown_while_expanded;
+			delete this.$on_cancel_rename;
+			delete this.$on_confirm_rename;
+			delete this.$flash;
+			delete this.$show_menu;
+			delete this.$on_edit_event_pressed;
+			delete this.$on_change_from_pressed;
+			delete this.$on_change_to_pressed;
+			delete this.$emit_set_from;
+			delete this.$emit_set_to;
 		};
 	}(red.TransitionView));
 }(red, jQuery));

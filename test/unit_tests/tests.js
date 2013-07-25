@@ -249,6 +249,60 @@ asyncTest("Pointer Bucket Collection", function() {
 		});
 	});
 });
+asyncTest("Statechart View", function() {
+	expect(1);
+	var master = new red.Statechart();
+	master	.add_state("state_1")
+			.starts_at("state_1");
+	var sc_display_div = $("<div />")	.appendTo(document.body)
+										.statechart({
+											statecharts: [master]
+										});
+
+	//clear_snapshots(function() {
+		//take_snapshot([], function() {
+			var cleanup_button = $("<a />")	.attr("href", "javascript:void(0)")
+											.text("Clean up")
+											.prependTo(document.body)
+											.on("click.clean", function() {
+												cleanup_button	.off("click.clean")
+																.remove();
+												sc_display_div.statechart("destroy").remove();
+												master.destroy();
+												sc_display_div = null;
+												master = null;
+												window.setTimeout(function() {
+													take_snapshot(["ConstraintNode", "SettableConstraint", "red."], function(response) {
+														ok(!response.illegal_strs, "Make sure nothing was allocated");
+														start();
+													});
+												}, 0);
+											});
+			/*
+
+			var runtime_div = $("<div />").appendTo(document.body);
+			var editor_div = $("<div />").appendTo(document.body);
+			runtime_div	.dom_output({
+							root: root,
+							open_separate_client_window: false,
+							edit_on_open: true,
+							show_edit_button: false
+						});
+			editor_div	.editor({
+							debug_env: true,
+							server_window: window
+						});
+
+			/*
+			window.setTimeout(function() {
+				if(cleanup_button) {
+					cleanup_button.click();
+				}
+			}, 50000);
+			*/
+		//});
+	//});
+});
 asyncTest("Editor", function() {
 	expect(1);
 	//clear_snapshots(function() {

@@ -180,7 +180,7 @@
 		able.make_this_listenable(this);
 		able.make_this_optionable(this, {}, options);
 
-		this.$on_awaiting_state_selection = $.proxy(this.on_awaiting_state_selection, this);
+		this.$on_awaiting_state_selection = _.bind(this.on_awaiting_state_selection, this);
 		this.statecharts = statecharts;
 		this.layout_engine = layout_engine;
 		this.object_views = new RedMap({
@@ -198,7 +198,7 @@
 									opacity: 0.5,
 									cursor: "pointer"
 								})
-								.click($.proxy(this.on_add_state_click, this));
+								.click(_.bind(this.on_add_state_click, this));
 
 		this.add_state_button	.attr({
 									"font-size": "42px",
@@ -206,7 +206,7 @@
 									opacity: 0.5,
 									cursor: "pointer"
 								})
-								.click($.proxy(this.on_add_state_click, this));
+								.click(_.bind(this.on_add_state_click, this));
 
 		var curr_items = [];
 		this.live_layout = cjs.liven(function () {
@@ -426,7 +426,7 @@
 				}
 			};
 			$(window).on("keydown", on_keydown);
-			var unmake_selectable = $.proxy(function() {
+			var unmake_selectable = _.bind(function() {
 				$(window).off("keydown", on_keydown);
 				_.each(states, function(state) {
 					var view = this.get_view(state);
@@ -449,11 +449,15 @@
 
 			this.live_layout.destroy();
 			delete this.live_layout;
+			delete this.layout_engine;
 			this.object_views.each(function(object_view) {
 				object_view.destroy();
 			});
 			this.object_views.destroy();
 			delete this.object_views;
+			this.hranges.each(function(hrange) {
+				hrange.destroy();
+			});
 			this.hranges.destroy();
 			delete this.hranges;
 
@@ -462,6 +466,11 @@
 
 			able.destroy_this_listenable(this);
 			able.destroy_this_optionable(this);
+
+			this.add_state_shape.remove();
+			delete this.add_state_shape;
+			this.add_state_button.remove();
+			delete this.add_state_button;
 		};
 
 	}(red.RootStatechartView));

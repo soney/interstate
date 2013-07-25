@@ -55,8 +55,7 @@
 									statechart.starts_at(state_name);
 								}
 							} else if(type === "set_transition_str") {
-								var transition = event.transition,
-									event_str = event.str;
+								var transition = event.transition, event_str = event.str;
 								var transition_event = transition.event();
 								transition_event.set_str(event_str);
 							} else if(type === "add_transition") {

@@ -22,8 +22,8 @@
 			state: null
 		}, options);
 		able.make_this_listenable(this);
-		this.$on_window_click_while_expanded = $.proxy(this.on_window_click_while_expanded, this);
-		this.$on_window_keydown_while_expanded = $.proxy(this.on_window_keydown_while_expanded, this);
+		this.$on_window_click_while_expanded = _.bind(this.on_window_click_while_expanded, this);
+		this.$on_window_keydown_while_expanded = _.bind(this.on_window_keydown_while_expanded, this);
 		var paper = this.option("paper");
 
 		this.left_vline = paper.path("M0,0");
@@ -53,7 +53,7 @@
 		});
 		this.update();
 
-		$(this.hline[0]).add(this.text_foreground[0]).on("contextmenu", $.proxy(function(event) {
+		$(this.hline[0]).add(this.text_foreground[0]).on("contextmenu.showmenu", _.bind(function(event) {
 			event.preventDefault();
 			event.stopPropagation();
 
@@ -67,7 +67,10 @@
 		able.make_proto_listenable(proto);
 
 		proto.destroy = function() {
-			delete this.options.state;
+			$(this.hline[0]).add(this.text_foreground[0]).off("contextmenu.showmenu");
+			this.remove_edit_dropdown();
+			delete this.$on_window_click_while_expanded;
+			delete this.$on_window_keydown_while_expanded;
 			able.destroy_this_optionable(this);
 			able.destroy_this_listenable(this);
 		};
@@ -108,7 +111,7 @@
 			this.add_substate_item = $("<div />")	.addClass("menu_item")
 													.text("Add substate")
 													.pressable()
-													.on("pressed", $.proxy(function() {
+													.on("pressed", _.bind(function() {
 														this.remove_edit_dropdown();
 														this._emit("add_state", {
 															parent: my_state
@@ -120,7 +123,7 @@
 			this.toggle_concurrency_item = $("<div />")	.addClass("menu_item")
 														.html("Concurrent " + checkbox_mark)
 														.pressable()
-														.on("pressed", $.proxy(function() {
+														.on("pressed", _.bind(function() {
 															this.remove_edit_dropdown();
 															this._emit("make_concurrent", {
 																state: my_state,

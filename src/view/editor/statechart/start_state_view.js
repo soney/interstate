@@ -82,7 +82,7 @@
 				});
 			}
 
-			this.$on_context_menu = $.proxy(this.on_context_menu, this);
+			this.$on_context_menu = _.bind(this.on_context_menu, this);
 			this.vline = paper	.path("M" + center.x + "," + center.y + "V" + this.option("paper_height"))
 								.attr({
 									stroke: this.option("vline_color"),

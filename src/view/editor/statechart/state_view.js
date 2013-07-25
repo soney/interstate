@@ -35,8 +35,19 @@
 			running_width: 3
 		}, options);
 
-		this.$on_window_click_while_expanded = $.proxy(this.on_window_click_while_expanded, this);
-		this.$on_window_keydown_while_expanded = $.proxy(this.on_window_keydown_while_expanded, this);
+		this.$on_window_click_while_expanded = _.bind(this.on_window_click_while_expanded, this);
+		this.$on_window_keydown_while_expanded = _.bind(this.on_window_keydown_while_expanded, this);
+		this.$initialize = _.bind(this.initialize, this);
+		this.$on_cancel_rename = _.bind(this.on_cancel_rename, this);
+		this.$on_confirm_rename = _.bind(this.on_confirm_rename, this);
+		this.$show_menu = _.bind(this.show_menu, this);
+		this.$add_transition_to_state = _.bind(this.add_transition_to_state, this);
+		this.$on_add_transition_item_pressed = _.bind(this.on_add_transition_item_pressed, this);
+		this.$on_add_substate_item_pressed = _.bind(this.on_add_substate_item_pressed, this);
+		this.$on_rename_item_pressed = _.bind(this.on_rename_item_pressed, this);
+		this.$on_remove_item_pressed = _.bind(this.on_remove_item_pressed, this);
+		this.$on_toggle_concurrency_item_pressed = _.bind(this.on_toggle_concurrency_item_pressed, this);
+
 		this.active_fn = cjs.liven(function () {
 			var state = this.option("state");
 			if (state.is_initialized() && state.is_active()) {
@@ -92,7 +103,7 @@
 		if (state.is_initialized()) {
 			this.initialize();
 		} else {
-			state.once("initialized", _.bind(this.initialize, this));
+			state.once("initialized", this.$initialize);
 		}
 	};
 
@@ -109,8 +120,8 @@
 						});
 			var center = this.option("c");
 
-			this.label	.on("cancel", $.proxy(this.on_cancel_rename, this))
-						.on("change", $.proxy(this.on_confirm_rename, this));
+			this.label	.on("cancel", this.$on_cancel_rename)
+						.on("change", this.$on_confirm_rename);
 			this.label.option({
 				"font-size": this.option("font_size"),
 				"font-family": this.option("font_family"),
@@ -119,12 +130,7 @@
 				text: this.get_name()
 			});
 			this.label.on("change", this.forward_event, this);
-			$(this.path[0]).add(this.label.text[0]).on("contextmenu", $.proxy(function(event) {
-				event.preventDefault();
-				event.stopPropagation();
-
-				this.show_menu();
-			}, this));
+			$(this.path[0]).add(this.label.text[0]).on("contextmenu", this.$show_menu);
 			if(state.parent_is_concurrent()) {
 				this.path.attr({
 					"stroke-dasharray": "- "
@@ -179,66 +185,35 @@
 			}
 		};
 
-		proto.show_menu = function() {
-			var my_state = this.option("state");
+		proto.show_menu = function(event) {
+			if(event) {
+				event.preventDefault();
+				event.stopPropagation();
+			}
 			this.add_transition = $("<div />")	.addClass("menu_item")
 												.text("Add transition")
 												.pressable()
-												.on("pressed", $.proxy(function() {
-													this.remove_edit_dropdown();
-													var from_state = my_state;
-													var root = from_state.root();
-													var flat_statecharts = root.flatten_substates();
-													var selectable_substates = flat_statecharts.splice(0, flat_statecharts.length-1); // the first element is the major statechart itself
-													this._emit("awaiting_state_selection", {
-														states: selectable_substates,
-														on_select: $.proxy(function(to_state) {
-															this._emit("add_transition", {
-																from: from_state,
-																to: to_state
-															});
-														}, this)
-													});
-												}, this));
+												.on("pressed", this.$on_add_transition_item_pressed);
 			this.rename_item = $("<div />")	.addClass("menu_item")
 											.text("Rename")
 											.pressable()
-											.on("pressed", $.proxy(function() {
-												this.remove_edit_dropdown();
-												this.begin_rename();
-											}, this));
+											.on("pressed", this.$on_rename_item_pressed);
 			this.remove_item = $("<div />")	.addClass("menu_item")
 											.text("Delete")
 											.pressable()
-											.on("pressed", $.proxy(function() {
-												this.remove_edit_dropdown();
-												this._emit("remove_state", {
-													state: my_state
-												});
-											}, this));
+											.on("pressed", this.$on_remove_item_pressed);
 
 			this.add_substate_item = $("<div />")	.addClass("menu_item")
 													.text("Add substate")
 													.pressable()
-													.on("pressed", $.proxy(function() {
-														this.remove_edit_dropdown();
-														this._emit("add_state", {
-															parent: my_state
-														});
-													}, this));
+													.on("pressed", this.$on_add_substate_item_pressed);
 
 			var is_concurrent = this.option("state").is_concurrent();
 			var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
 			this.toggle_concurrency_item = $("<div />")	.addClass("menu_item")
 														.html("Concurrent " + checkbox_mark)
 														.pressable()
-														.on("pressed", $.proxy(function() {
-															this.remove_edit_dropdown();
-															this._emit("make_concurrent", {
-																state: my_state,
-																concurrent: !my_state.is_concurrent()
-															});
-														}, this));
+														.on("pressed", this.$on_toggle_concurrency_item_pressed);
 			var lwe = this.option("lwe"),
 				rws = this.option("rws");
 			var PADDING = 1;
@@ -261,6 +236,47 @@
 												.appendTo(parentElement);
 			$(window).on("mousedown", this.$on_window_click_while_expanded);
 			$(window).on("keydown", this.$on_window_keydown_while_expanded);
+		};
+		proto.add_transition_to_state = function(to_state) {
+			this._emit("add_transition", {
+				from: this.option("state"),
+				to: to_state
+			});
+		};
+		proto.on_add_transition_item_pressed = function() {
+			this.remove_edit_dropdown();
+			var from_state = this.option("state");
+			var root = from_state.root();
+			var flat_statecharts = root.flatten_substates();
+			var selectable_substates = flat_statecharts.splice(0, flat_statecharts.length-1); // the first element is the major statechart itself
+			this._emit("awaiting_state_selection", {
+				states: selectable_substates,
+				on_select: this.$add_transition_to_state
+			});
+		};
+		proto.on_add_substate_item_pressed = function() {
+			this.remove_edit_dropdown();
+			this._emit("add_state", {
+				parent: this.option("state")
+			});
+		};
+		proto.on_rename_item_pressed = function() {
+			this.remove_edit_dropdown();
+			this.begin_rename();
+		};
+		proto.on_remove_item_pressed = function() {
+			this.remove_edit_dropdown();
+			this._emit("remove_state", {
+				state: this.option("state")
+			});
+		};
+		proto.on_toggle_concurrency_item_pressed = function() {
+			var my_state = this.option("state");
+			this.remove_edit_dropdown();
+			this._emit("make_concurrent", {
+				state: my_state,
+				concurrent: !my_state.is_concurrent()
+			});
 		};
 		proto.on_window_click_while_expanded = function(event) {
 			if(!$(event.target).parents().is(this.edit_dropdown)) {
@@ -342,8 +358,24 @@
 				this.running_fn.destroy();
 			}
 
+			this.label.destroy();
+			delete this.label;
+
 			able.destroy_this_listenable(this);
 			able.destroy_this_optionable(this);
+
+			delete this.$on_window_click_while_expanded;
+			delete this.$on_window_keydown_while_expanded;
+			delete this.$initialize;
+			delete this.$on_cancel_rename;
+			delete this.$on_confirm_rename;
+			delete this.$show_menu;
+			delete this.$add_transition_to_state;
+			delete this.$on_add_transition_item_pressed;
+			delete this.$on_add_substate_item_pressed;
+			delete this.$on_rename_item_pressed;
+			delete this.$on_remove_item_pressed;
+			delete this.$on_toggle_concurrency_item_pressed;
 		};
 		proto.make_selectable = function(callback) {
 			this.path.attr({
