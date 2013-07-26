@@ -7,6 +7,7 @@
         _ = red._;
     
     red.StatefulProp = function (options, defer_initialization) {
+		able.make_this_listenable(this);
         options = options || {};
     
         this._id = options.uid || uid();
@@ -18,6 +19,7 @@
     };
     (function (My) {
         var proto = My.prototype;
+		able.make_proto_listenable(proto);
     
         proto.do_initialize = function (options) {
             red.install_instance_builtins(this, options, My);
@@ -100,6 +102,7 @@
         proto.destroy = function () {
 			red.unset_instance_builtins(this, My);
 			red.unregister_uid(this.id());
+			able.destroy_this_listenable(this);
         };
     
         red.register_serializable_type("stateful_prop",

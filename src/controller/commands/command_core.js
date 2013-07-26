@@ -6,8 +6,8 @@
     var cjs = red.cjs,
         _ = red._;
 
-    red.Command = function () {
-        this._in_effect = false;
+    red.Command = function (options) {
+        this._in_effect = options && options.in_effect === true;
     };
     
     (function (My) {

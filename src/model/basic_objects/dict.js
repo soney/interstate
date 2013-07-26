@@ -35,6 +35,7 @@
     };
     
     red.Dict = function (options, defer_initialization) {
+		able.make_this_listenable(this);
         options = _.extend({
             value: {},
             keys: [],
@@ -54,6 +55,8 @@
     
     (function (My) {
         var proto = My.prototype;
+
+		able.make_proto_listenable(proto);
     
         proto.do_initialize = function (options) {
             red.install_instance_builtins(this, options, My);
@@ -280,10 +283,15 @@
         //
         // === BYE BYE ===
         //
+		proto.emit_begin_destroy = function() {
+			this._emit("begin_destroy");
+		};
     
         proto.destroy = function () {
+			if(this.constructor === My) { this.emit_begin_destroy(); }
 			red.unset_instance_builtins(this, My);
 			red.unregister_uid(this.id());
+			able.destroy_this_listenable(this);
         };
     
         proto.toString = function () {

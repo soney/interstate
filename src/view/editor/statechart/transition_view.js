@@ -104,8 +104,6 @@
 
 		this.$on_window_click_while_expanded = _.bind(this.on_window_click_while_expanded, this);
 		this.$on_window_keydown_while_expanded = _.bind(this.on_window_keydown_while_expanded, this);
-		this.$on_cancel_rename = _.bind(this.on_cancel_rename, this);
-		this.$on_confirm_rename = _.bind(this.on_confirm_rename, this);
 		this.$flash = _.bind(this.flash, this);
 		this.$show_menu = _.bind(this.show_menu, this);
 		this.$on_edit_event_pressed = _.bind(this.on_edit_event_pressed, this);
@@ -143,11 +141,11 @@
 			"font-size": this.option("font_size"),
 			"font-family": this.option("font_family")
 		});
-		this.label	.on("cancel", this.$on_cancel_rename)
-					.on("change", this.$on_confirm_rename);
+		this.label	.on("cancel", this.on_cancel_rename, this)
+					.on("change", this.on_confirm_rename, this)
+					.on("change", this.forward_event, this);
 		
 		transition.on("fire", this.$flash);
-		this.label.on("change", this.forward_event, this);
 		var from = this.option("from");
 
 		if (event instanceof red.ParsedEvent) {
@@ -448,6 +446,10 @@
 
 		proto.remove_edit_dropdown = function() {
 			if(this.edit_dropdown) {
+				this.edit_event.off("pressed", this.$on_edit_event_pressed);
+				this.change_from.off("pressed", this.$on_change_from_pressed);
+				this.change_to.off("pressed", this.$on_change_to_pressed);
+				this.remove_item.off("pressed", this.$on_remove_item_pressed);
 				this.edit_dropdown.remove();
 				delete this.edit_dropdown;
 			}
@@ -470,6 +472,11 @@
 		};
 
 		proto.destroy = function () {
+			this.label	.off("cancel", this.on_cancel_rename, this)
+						.off("change", this.on_confirm_rename, this);
+
+			$([this.label.text[0], this.line_path[0], this.circle[0], this.arrow_path[0]]).off("contextmenu", this.$show_menu);
+
 			this.label.destroy();
 			delete this.label;
 
@@ -490,8 +497,6 @@
 			able.destroy_this_optionable(this);
 			delete this.$on_window_click_while_expanded;
 			delete this.$on_window_keydown_while_expanded;
-			delete this.$on_cancel_rename;
-			delete this.$on_confirm_rename;
 			delete this.$flash;
 			delete this.$show_menu;
 			delete this.$on_edit_event_pressed;

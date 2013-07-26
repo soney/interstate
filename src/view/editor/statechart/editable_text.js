@@ -165,13 +165,13 @@
 			}
 		};
 		proto.onKeydown = function (event) {
-			var textbox = event.srcElement;
+			//var textbox = event.srcElement;
 			if (event.keyCode === 27) { //esc
 				this.onCancel();
-				this.showText(textbox);
+				this.showText();
 			} else if (event.keyCode === 13) { // enter
-				this.onTextChange(textbox.value);
-				this.showText(textbox);
+				this.onTextChange(this.textbox.value);
+				this.showText();
 			}
 		};
 		proto.onCancel = function() {
@@ -192,15 +192,16 @@
 			});
 		};
 		proto.onBlur = function (event) {
-			var textbox = event.srcElement;
-			this.onTextChange(textbox.value);
-			this.showText(textbox);
+			//var textbox = event.srcElement;
+			this.onTextChange(this.textbox.value);
+			this.showText();
 		};
-		proto.showText = function (textbox) {
+		proto.showText = function () {
 			this.text.show();
-			textbox.removeEventListener("keydown", this.$onKeydown);
-			textbox.removeEventListener("blur", this.$onBlur);
-			textbox.parentNode.removeChild(textbox);
+			this.textbox.removeEventListener("keydown", this.$onKeydown);
+			this.textbox.removeEventListener("blur", this.$onBlur);
+			this.textbox.parentNode.removeChild(this.textbox);
+			delete this.textbox;
 		};
 		proto._on_options_set = function (values, animated) {
 			if(_.isNumber(animated)) {

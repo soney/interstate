@@ -298,8 +298,8 @@
 			_.each(curr_items, function (ci) {
 				if (new_items.indexOf(ci) < 0) {
 					this.object_views.remove(ci instanceof red.TransitionView ? ci.option("transition") : ci.option("state"));
-					ci.destroy();
 					ci.remove();
+					ci.destroy();
 				}
 			}, this);
 			_.each(new_items, function(view) {

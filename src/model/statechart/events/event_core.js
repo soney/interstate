@@ -150,11 +150,12 @@
 			});
 		};
 		proto.destroy = function () {
-			able.destroy_this_listenable(this);
+			this._emit("destroy");
 			delete this.listeners;
 			delete this._transition;
 			delete this._enabled;
 			//delete this.$fire_and_signal;
+			able.destroy_this_listenable(this);
 		};
 		proto.create_shadow = function () { return new red.Event(); };
 		proto.stringify = function () {

@@ -217,6 +217,12 @@
 		},
 
 		_setOption: function(key, value) {
+			if(key === "root") {
+				var old_root = this.option("root");
+				if(old_root) {
+					old_root.destroy();
+				}
+			}
 			this._super(key, value);
 			if(key === "root") {
 				var to_open = false;

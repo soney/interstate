@@ -155,6 +155,7 @@
 				}
 
 				command = new red.SetPropCommand({
+					in_effect: true,
 					parent: { id: to_func(client.obj_id) },
 					value: value,
 					index: 0
@@ -168,6 +169,7 @@
 			} else if(type === "rename") {
 				client = event.client;
 				command = new red.RenamePropCommand({
+					in_effect: true,
 					parent: { id: to_func(client.obj_id) },
 					from: event.from_name,
 					to: event.to_name
@@ -182,6 +184,7 @@
 				var prop_name = event.name;
 
 				command = new red.InheritPropCommand({
+					in_effect: true,
 					parent: { id: to_func(client.obj_id) },
 					name: prop_name,
 					value: { id: to_func(value.obj_id) }
@@ -193,6 +196,7 @@
 			} else if(type === "unset") {
 				client = event.client;
 				command = new red.UnsetPropCommand({
+					in_effect: true,
 					parent: { id: to_func(client.obj_id) },
 					name: event.name
 				});
@@ -206,6 +210,7 @@
 				value = new red.Cell({str: ''});
 
 				command = new red.SetStatefulPropValueCommand({
+					in_effect: true,
 					stateful_prop: { id: to_func(client.obj_id) },
 					state: { id: to_func(state.cobj_id) },
 					value: value
@@ -219,6 +224,7 @@
 				state = event.state;
 
 				command = new red.UnsetStatefulPropValueCommand({
+					in_effect: true,
 					stateful_prop: { id: to_func(client.obj_id) },
 					state: { id: to_func(state.cobj_id) }
 				});
@@ -231,6 +237,7 @@
 				value = event.str;
 
 				command = new red.ChangeCellCommand({
+					in_effect: true,
 					cell: { id: to_func(client.cobj_id || client.obj_id) },
 					str: value
 				});
@@ -260,6 +267,7 @@
 				}
 
 				command = new red.AddStateCommand({
+					in_effect: true,
 					statechart: { id: to_func(statechart_puppet_id) },
 					name: state_name,
 					make_start: make_start
@@ -274,6 +282,7 @@
 				name = state.get_name("parent");
 				parent_puppet_id = state.parent().puppet_master_id || state.parent().id();
 				command = new red.RemoveStateCommand({
+					in_effect: true,
 					statechart: { id: to_func(parent_puppet_id) },
 					name: name
 				});
@@ -285,6 +294,7 @@
 				transition = event.transition;
 				var statechart = transition.root();
 				command = new red.RemoveTransitionCommand({
+					in_effect: true,
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart.puppet_master_id || transition.id()) }
 				});
@@ -306,6 +316,7 @@
 				}
 
 				command = new red.SetPropCommand({
+					in_effect: true,
 					parent: { id: to_func(client.obj_id) },
 					value: value,
 					name: name
@@ -328,6 +339,7 @@
 					to_puppet_id = to_state.puppet_master_id || to_state.id();
 				event = new red.ParsedEvent({str: "(event)", inert: true});
 				command = new red.AddTransitionCommand({
+					in_effect: true,
 					from: { id: to_func(from_puppet_id) },
 					to: { id: to_func(to_puppet_id) },
 					event: event,
@@ -344,6 +356,7 @@
 				state = event.to;
 				statechart_puppet_id = state.puppet_master_id || state.id();
 				command = new red.SetTransitionToCommand({
+					in_effect: true,
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart_puppet_id) }
 				});
@@ -356,6 +369,7 @@
 				state = event.from;
 				statechart_puppet_id = state.puppet_master_id || state.id();
 				command = new red.SetTransitionFromCommand({
+					in_effect: true,
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart_puppet_id) }
 				});
@@ -369,6 +383,7 @@
 				var old_name = state.get_name("parent");
 				parent_puppet_id = state.parent().puppet_master_id || state.parent().id();
 				command = new red.RenameStateCommand({
+					in_effect: true,
 					statechart: { id: to_func(parent_puppet_id) },
 					from: old_name,
 					to: new_name
@@ -382,6 +397,7 @@
 				var str = event.str;
 				var transition_id = transition.puppet_master_id || transition.id();
 				command = new red.SetTransitionEventCommand({
+					in_effect: true,
 					transition: { id: to_func(transition_id) },
 					event: str
 				});
@@ -393,6 +409,7 @@
 				value = event.str;
 				client = event.client;
 				command = new red.SetCopiesCommand({
+					in_effect: true,
 					parent: { id: to_func(client.obj_id) },
 					value: value
 				});
@@ -403,6 +420,7 @@
 			} else if (type === 'reset') {
 				client = event.client;
 				command = new red.ResetCommand({
+					in_effect: true,
 					parent: { id: to_func(client.cobj_id) }
 				});
 				this.client_socket.post_command(command, function() {
@@ -413,6 +431,7 @@
 				state = event.state;
 				var state_puppet_id = state.puppet_master_id || state.id();
 				command = new red.MakeConcurrentCommand({
+					in_effect: true,
 					statechart: { id: to_func(state_puppet_id) },
 					concurrent: event.concurrent
 				});
@@ -428,6 +447,7 @@
 				var above_below = event.above_below;
 
 				command = new red.MovePropAboveBelowCommand({
+					in_effect: true,
 					from_obj: { id: to_func(from_obj.obj_id) },
 					from_name: from_name,
 					target_obj: { id: to_func(target_obj.obj_id) },

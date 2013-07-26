@@ -350,12 +350,16 @@
 			}
 		};
 		proto.destroy = function() {
+			this.remove_edit_dropdown();
+
 			this.active_fn.destroy();
+			delete this.active_fn;
 			if(this.edit_dropdown) {
 				this.edit_dropdown.dropdown("destroy");
 			}
 			if(this.running_fn) {
 				this.running_fn.destroy();
+				delete this.running_fn;
 			}
 
 			this.label.destroy();

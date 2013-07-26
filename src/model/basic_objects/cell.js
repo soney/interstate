@@ -7,6 +7,7 @@
         _ = red._;
     
     red.Cell = function (options, defer_initialization) {
+		able.make_this_listenable(this);
         options = options || {};
         this._id = options.uid || uid();
         red.register_uid(this._id, this);
@@ -16,6 +17,8 @@
     };
     (function (My) {
         var proto = My.prototype;
+		able.make_proto_listenable(proto);
+
         My.builtins = {
             "str": {
                 start_with: function () { return cjs.$(""); },
@@ -57,6 +60,9 @@
                 return red.parse(str);
             });
         };
+		proto.emit_begin_destroy = function() {
+			this._emit("begin_destroy");
+		};
     
         proto.get_ignore_inherited_in_contexts = function (pcontext) {
             var i;
@@ -104,11 +110,14 @@
             return val;
         };
         proto.destroy = function () {
+			this.emit_begin_destroy();
             this._tree.destroy();
 			delete this._tree;
 
 			red.unset_instance_builtins(this, My);
 			red.unregister_uid(this.id());
+			this._emit("destroyed");
+			able.destroy_this_listenable(this);
         };
     
         proto.id = proto.hash = function () { return this._id; };

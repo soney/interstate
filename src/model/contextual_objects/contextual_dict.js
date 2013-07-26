@@ -485,12 +485,15 @@
 
 		proto.destroy = function () {
 			if(this.constructor === My) { this.emit_begin_destroy(); }
+			//The attachment instances might be listening for property changes for destroy them first
 			_.each(this._attachment_instances, function(attachment_instance) {
 				attachment_instance.destroy(true);
 			});
 			delete this._attachment_instances;
+
 			this._manifestation_objects.destroy(true);
 			delete this._manifestation_objects;
+
 			My.superclass.destroy.apply(this, arguments);
 		};
 

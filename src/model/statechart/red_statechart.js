@@ -160,6 +160,13 @@
 		_.proto_extend(My, red.State);
 		var proto = My.prototype;
 
+		proto.increment_start_state_times_run = function(self) {
+			var outgoing_transition = self._start_state.get_outgoing_transition();
+			if(outgoing_transition) {
+				outgoing_transition.increment_times_run();
+			}
+		};
+
 		proto.do_initialize = function (options) {
 			this._start_state = options.start_state || new red.StartState({
 				parent: this,
@@ -189,12 +196,7 @@
 					my_starting_state = this._start_state;
 				} else {
 					if(!this.is_puppet()) {
-						_.defer(_.bind(function() {
-							var outgoing_transition = this._start_state.get_outgoing_transition();
-							if(outgoing_transition) {
-								outgoing_transition.increment_times_run();
-							}
-						}, this));
+						_.defer(this.increment_start_state_times_run, this);
 					}
 					my_starting_state = red.find_equivalent_state(basis_start_state_to, this);
 				}

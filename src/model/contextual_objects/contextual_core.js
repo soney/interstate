@@ -30,6 +30,7 @@
 			if (options) {
 				if (_.has(options, "object")) {
 					this.object = options.object;
+					this.object.on("begin_destroy", this.destroy, this);
 				}
 				if (_.has(options, "pointer")) {
 					this.pointer = options.pointer;
@@ -72,6 +73,9 @@
 		};
 
 		proto.destroy = function (avoid_destroy_call) {
+			if(this.object) {
+				this.object.off("begin_destroy", this.destroy, this);
+			}
 			if(this.constructor === My) { this.emit_begin_destroy(); }
 
 			if(avoid_destroy_call !== true) {
