@@ -354,6 +354,7 @@
 			}
 		};
 		proto.destroy = function() {
+			console.log("DESTROY");
 			$(this.path[0]).add(this.label.text[0]).off("contextmenu.show");
 			this.remove_edit_dropdown();
 

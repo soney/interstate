@@ -22,8 +22,6 @@
 			state: null
 		}, options);
 		able.make_this_listenable(this);
-		this.$on_window_click_while_expanded = _.bind(this.on_window_click_while_expanded, this);
-		this.$on_window_keydown_while_expanded = _.bind(this.on_window_keydown_while_expanded, this);
 		var paper = this.option("paper");
 
 		this.left_vline = paper.path("M0,0");
@@ -69,8 +67,6 @@
 		proto.destroy = function() {
 			$(this.hline[0]).add(this.text_foreground[0]).off("contextmenu.showmenu");
 			this.remove_edit_dropdown();
-			delete this.$on_window_click_while_expanded;
-			delete this.$on_window_keydown_while_expanded;
 			able.destroy_this_optionable(this);
 			able.destroy_this_listenable(this);
 		};
@@ -147,8 +143,8 @@
 													width: width + "px"
 												})
 												.appendTo(parentElement);
-			$(window).on("mousedown", this.$on_window_click_while_expanded);
-			$(window).on("keydown", this.$on_window_keydown_while_expanded);
+			$(window).on("mousedown.collapse", _.bind(this.on_window_click_while_expanded, this));
+			$(window).on("keydown.collapse", _.bind(this.on_window_keydown_while_expanded, this));
 		};
 		proto.on_window_click_while_expanded = function(event) {
 			if(!$(event.target).parents().is(this.edit_dropdown)) {
@@ -165,8 +161,8 @@
 				this.edit_dropdown.remove();
 				delete this.edit_dropdown;
 			}
-			$(window).off("mousedown", this.$on_window_click_while_expanded);
-			$(window).off("keydown", this.$on_window_keydown_while_expanded);
+			$(window).off("mousedown.collapse");
+			$(window).off("keydown.collapse");
 		};
 	}(red.HorizontalRangeDisplay));
 	

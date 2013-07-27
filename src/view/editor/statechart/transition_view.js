@@ -102,6 +102,7 @@
 			disabled_dasharray: ". "
 		}, options);
 
+/*
 		this.$on_window_click_while_expanded = _.bind(this.on_window_click_while_expanded, this);
 		this.$on_window_keydown_while_expanded = _.bind(this.on_window_keydown_while_expanded, this);
 		this.$flash = _.bind(this.flash, this);
@@ -111,6 +112,7 @@
 		this.$on_change_to_pressed = _.bind(this.on_change_to_pressed, this);
 		this.$emit_set_from = _.bind(this.emit_set_from, this);
 		this.$emit_set_to = _.bind(this.emit_set_to, this);
+		*/
 
 		var paper = this.option("paper");
 		var paths = this.get_paths();
@@ -145,7 +147,7 @@
 					.on("change", this.on_confirm_rename, this)
 					.on("change", this.forward_event, this);
 		
-		transition.on("fire", this.$flash);
+		transition.on("fire", this.flash, this);
 		var from = this.option("from");
 
 		if (event instanceof red.ParsedEvent) {
@@ -164,7 +166,7 @@
 								"stroke-dasharray": this.option("vline_dasharray")
 							})
 							.toBack();
-		$([this.label.text[0], this.line_path[0], this.circle[0], this.arrow_path[0]]).on("contextmenu", this.$show_menu);
+		$([this.label.text[0], this.line_path[0], this.circle[0], this.arrow_path[0]]).on("contextmenu.cm", _.bind(this.show_menu, this));
 
 		if(highlight_enabled) {
 			this.enabled_fn = cjs.liven(function () {
@@ -308,19 +310,19 @@
 			this.edit_event = $("<div />").addClass("menu_item")
 											.text("Change event")
 											.pressable()
-											.on("pressed", this.$on_edit_event_pressed);
+											.on("pressed", _.bind(this.on_edit_event_pressed, this));
 			this.change_from = $("<div />")	.addClass("menu_item")
 												.text("Change from")
 												.pressable()
-												.on("pressed", this.$on_change_from_pressed);
+												.on("pressed", _.bind(this.on_change_from_pressed, this));
 			this.change_to = $("<div />").addClass("menu_item")
 											.text("Change to")
 											.pressable()
-											.on("pressed", this.$on_change_to_pressed);
+											.on("pressed", _.bind(this.on_change_to_pressed, this));
 			this.remove_item = $("<div />")	.addClass("menu_item")
 											.text("Delete")
 											.pressable()
-											.on("pressed", this.$on_remove_item_pressed);
+											.on("pressed", _.bind(this.on_remove_item_pressed, this));
 			var from = this.option("from"),
 				to = this.option("to");
 			var min_x = Math.min(from.x, to.x);
@@ -347,8 +349,8 @@
 			} else {
 				this.edit_dropdown.append(this.edit_event, this.change_from, this.change_to, this.remove_item);
 			}
-			$(window).on("mousedown", this.$on_window_click_while_expanded);
-			$(window).on("keydown", this.$on_window_keydown_while_expanded);
+			$(window).on("mousedown.close_menu", _.bind(this.on_window_click_while_expanded, this));
+			$(window).on("keydown.close_menu", _.bind(this.on_window_keydown_while_expanded, this));
 		};
 
 		proto.on_edit_event_pressed = function() {

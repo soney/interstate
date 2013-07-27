@@ -30,7 +30,7 @@
 		if (state.is_initialized()) {
 			this.initialize();
 		} else {
-			state.once("initialized", _.bind(this.initialize, this));
+			state.once("initialized", this.initialize, this);
 		}
 	};
 
@@ -82,7 +82,6 @@
 				});
 			}
 
-			this.$on_context_menu = _.bind(this.on_context_menu, this);
 			this.vline = paper	.path("M" + center.x + "," + center.y + "V" + this.option("paper_height"))
 								.attr({
 									stroke: this.option("vline_color"),
@@ -93,7 +92,7 @@
 				fill: state.is_active() ? this.option("active_fill") : this.option("fill_color"),
 				stroke: "none"
 			});
-			$(this.circle[0]).on("contextmenu", this.$on_context_menu);
+			$(this.circle[0]).on("contextmenu.cm");
 		};
 
 		proto.toFront = function() {
@@ -149,12 +148,14 @@
 		};
 		proto.destroy = function() {
 			if(this.circle) {
-				$(this.circle[0]).off("contextmenu", this.$on_context_menu);
+				$(this.circle[0]).off("contextmenu.cm");
 			}
 			able.destroy_this_optionable(this);
 			this.active_fn.destroy();
+			delete this.active_fn;
 			if(this.running_fn) {
 				this.running_fn.destroy();
+				delete this.running_fn;
 			}
 		};
 	}(red.StartStateView));
