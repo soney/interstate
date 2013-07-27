@@ -73,11 +73,7 @@
 			stroke: "none"
 		});
 
-		this.$onClick = _.bind(this.onClick, this);
-		this.$onKeydown = _.bind(this.onKeydown, this);
-		this.$onBlur = _.bind(this.onBlur, this);
-
-		this.text.click(this.$onClick);
+		$(this.text[0]).on("click.onclick", _.bind(this.onClick, this));
 		this.paper = paper;
 	};
 	(function (my) {
@@ -86,14 +82,14 @@
 		able.make_proto_optionable(proto);
 
 		proto.destroy = function() {
-			this.text.unclick(this.$onClick);
+			$(this.text[0]).off("click.onclick");
+			delete this.text;
 			if(this.textbox) {
-				this.textbox.removeEventListener("keydown", this.$onKeydown);
-				this.textbox.removeEventListener("blur", this.$onBlur);
+				$(this.textbox)	.off("keydown.onkeydown")
+								.off("blur.onblur")
+								.remove();
+				delete this.textbox;
 			}
-			delete this.$onClick;
-			delete this.$onKeydown;
-			delete this.$onBlur;
 			able.destroy_this_listenable(this);
 			able.destroy_this_optionable(this);
 		};
@@ -146,8 +142,8 @@
 			this.text.hide();
 			this.textbox.focus();
 			this.textbox.select();
-			this.textbox.addEventListener("keydown", this.$onKeydown);
-			this.textbox.addEventListener("blur", this.$onBlur);
+			$(this.textbox)	.on("keydown.onkeydown", _.bind(this.onKeydown, this))
+							.on("blur.onblur", _.bind(this.onBlur, this));
 			return this;
 		};
 		proto.getBBox = function () {
@@ -198,9 +194,9 @@
 		};
 		proto.showText = function () {
 			this.text.show();
-			this.textbox.removeEventListener("keydown", this.$onKeydown);
-			this.textbox.removeEventListener("blur", this.$onBlur);
-			this.textbox.parentNode.removeChild(this.textbox);
+			$(this.textbox)	.off("keydown.onkeydown")
+							.off("blur.onblur")
+							.remove();
 			delete this.textbox;
 		};
 		proto._on_options_set = function (values, animated) {
@@ -250,4 +246,4 @@
 			return this;
 		};
 	}(red.EditableText));
-}(red));
+}(red, jQuery));

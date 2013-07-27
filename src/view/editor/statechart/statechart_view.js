@@ -180,7 +180,6 @@
 		able.make_this_listenable(this);
 		able.make_this_optionable(this, {}, options);
 
-		this.$on_awaiting_state_selection = _.bind(this.on_awaiting_state_selection, this);
 		this.statecharts = statecharts;
 		this.layout_engine = layout_engine;
 		this.object_views = new RedMap({
@@ -365,7 +364,7 @@
 						}
 					}, this);
 					rv.on("remove_transition", this.forward_event, this);
-					rv.on("awaiting_state_selection", this.$on_awaiting_state_selection);
+					rv.on("awaiting_state_selection", this.on_awaiting_state_selection, this);
 					rv.on("set_to", this.forward_event, this);
 					rv.on("set_from", this.forward_event, this);
 					rv.on("set_str", this.forward_event, this);
@@ -404,7 +403,7 @@
 					rv.on("add_state", this.forward_event, this);
 					rv.on("make_concurrent", this.forward_event, this);
 					rv.on("rename", this.forward_event, this);
-					rv.on("awaiting_state_selection", this.$on_awaiting_state_selection);
+					rv.on("awaiting_state_selection", this.on_awaiting_state_selection, this);
 				}
 				return rv;
 			}, this);
@@ -460,9 +459,6 @@
 			});
 			this.hranges.destroy();
 			delete this.hranges;
-
-			delete this.$on_awaiting_state_selection;
-
 
 			able.destroy_this_listenable(this);
 			able.destroy_this_optionable(this);

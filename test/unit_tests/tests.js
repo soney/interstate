@@ -83,7 +83,6 @@ asyncTest("Map Allocation", function() {
 		});
 	});
 });
-/*
 asyncTest("State Allocation", function() {
 	expect(1);
 	clear_snapshots(function() {
@@ -110,7 +109,6 @@ asyncTest("State Allocation", function() {
 		});
 	});
 });
-*/
 asyncTest("Environment Collection", function() {
 	expect(1);
 	var the_div = $("<div />").appendTo(document.body);
@@ -252,8 +250,8 @@ asyncTest("Pointer Bucket Collection", function() {
 asyncTest("Statechart View", function() {
 	expect(1);
 	var master = new red.Statechart();
-	//master	.add_state("state_1")
-			//.starts_at("state_1");
+	master	.add_state("state_1")
+			.starts_at("state_1");
 	var sc_display_div = $("<div />")	.appendTo(document.body)
 										.statechart({
 											statecharts: [master]
