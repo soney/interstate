@@ -392,6 +392,7 @@ var getArrayDiff = (function (root) {
 				}
 			}
 		});
+		rearranged_array = null;
 		return { added: added, removed: removed, moved: moved, index_changed: index_changed , mapping: source_map};
 	};
 
