@@ -52,18 +52,17 @@
 					parent = options.context.points_at();
 				}
 
-				var self = this;
 				this._tree = cjs(function () {
-					return esprima.parse(self.get_str());
+					return esprima.parse(this.get_str());
+				}, {
+					context: this
 				});
-
-				this.$child_fired = _.bind(this.child_fired, this);
 
 				this._old_event = null;
 				//cjs.wait(); // ensure our live event creator isn't immediately run
 				this._live_event_creator = cjs.liven(function () {
 					if (this._old_event) {
-						this._old_event.off_fire(this.$child_fired);
+						this._old_event.off_fire(this.child_fired, this);
 						this._old_event.destroy(true); //destroy silently (without nullifying)
 					}
 
@@ -88,7 +87,7 @@
 
 					if (event) {
 						event.set_transition(this.get_transition());
-						event.on_fire(this.$child_fired);
+						event.on_fire(this.child_fired, this);
 						if (this.is_enabled()) {
 							event.enable();
 						}
@@ -100,7 +99,8 @@
 					run_on_create: false
 				});
 				//cjs.signal();
-				_.delay(_.bind(function () { //Delay it because parsed events can run up the dictionary tree and create all sorts of contextual objects that they shouldn't
+				_.delay(_.bind(function () {
+					//Delay it because parsed events can run up the dictionary tree and create all sorts of contextual objects that they shouldn't
 					this._live_event_creator.run();
 				}, this));
 			}

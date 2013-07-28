@@ -1,5 +1,5 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedMap,jQuery,window */
+/*global Raphael,red,esprima,able,uid,console,RedMap,jQuery,window */
 
 (function (red, $) {
 	"use strict";
@@ -102,17 +102,6 @@
 			disabled_dasharray: ". "
 		}, options);
 
-/*
-		this.$on_window_click_while_expanded = _.bind(this.on_window_click_while_expanded, this);
-		this.$on_window_keydown_while_expanded = _.bind(this.on_window_keydown_while_expanded, this);
-		this.$flash = _.bind(this.flash, this);
-		this.$show_menu = _.bind(this.show_menu, this);
-		this.$on_edit_event_pressed = _.bind(this.on_edit_event_pressed, this);
-		this.$on_change_from_pressed = _.bind(this.on_change_from_pressed, this);
-		this.$on_change_to_pressed = _.bind(this.on_change_to_pressed, this);
-		this.$emit_set_from = _.bind(this.emit_set_from, this);
-		this.$emit_set_to = _.bind(this.emit_set_to, this);
-		*/
 
 		var paper = this.option("paper");
 		var paths = this.get_paths();
@@ -166,7 +155,8 @@
 								"stroke-dasharray": this.option("vline_dasharray")
 							})
 							.toBack();
-		$([this.label.text[0], this.line_path[0], this.circle[0], this.arrow_path[0]]).on("contextmenu.cm", _.bind(this.show_menu, this));
+		this.$clickable = $([this.label.text[0], this.line_path[0], this.circle[0], this.arrow_path[0]]);
+		this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
 
 		if(highlight_enabled) {
 			this.enabled_fn = cjs.liven(function () {
@@ -246,56 +236,55 @@
 			return get_arrow_paths(from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians);
 		};
 
+		var anim_time = 400;
 		proto.flash = function () {
 			var paper = this.option("paper");
+			var this_option_color = this.option("color");
+			var this_option_active_color = this.option("active_color");
 			var line_elem = this.line_path;
 			var arrow = this.arrow_path;
 			var len = line_elem.getTotalLength();
 
-			//this.label.option("color", this.option("active_color"));
-			//this.label.option("color", this.option("text_foreground"), 400);
 			this.circle.attr({
 				r: this.option("radius") * 4,
-				fill: this.option("active_color")
+				fill: this_option_active_color
 			});
 			this.circle.animate({
-				fill: this.option("color"),
+				fill: this_option_color,
 				r: this.option("radius")
-			}, 400);
+			}, anim_time);
 
 			var the_flash = paper.path(line_elem.getSubpath(0, 0));
 			the_flash.attr({
-				stroke: this.option("active_color"),
+				stroke: this_option_active_color,
 				"stroke-width": 3,
 				guide: line_elem,
 				along: [0, 0]
 			});
-			the_flash.animate({
-				path: line_elem.getSubpath(0, len)
-			}, 200, "ease-in", _.bind(function () {
-				if(paper.height === null) { // we were deleted
-					return;
-				} else if(arrow[0] === null) {
-					the_flash.remove();
-					return;
-				}
-				the_flash.animate({
-					path: line_elem.getSubpath(4 * len / 4.1, len)
-				}, 200, "ease-out", function () {
-					the_flash.remove();
-				});
-				arrow.attr({"fill": this.option("active_color")});
-				if(this.arrow_timeout) {
-					window.clearTimeout(this.arrow_timeout);
-					delete this.arrow_timeout;
-				}
-				this.arrow_timeout = window.setTimeout(_.bind(function () {
-					delete this.arrow_timeout;
-					this.arrow_path.animate({
-						fill: this.option("color")
-					}, 200, "ease-out");
-				}, this), 200);
-			}, this));
+
+			var flash_1_to_0_anim = Raphael.animation({
+												path: line_elem.getSubpath(4 * len / 4.1, len)
+											}, anim_time/2, "ease-out", function() {
+												the_flash.remove();
+											});
+			var reset_arrow_color_anim = Raphael.animation({
+												fill: this_option_color
+											}, anim_time/2, "ease_out");
+
+			var flash_0_to_1_anim = Raphael.animation({
+												path: line_elem.getSubpath(0, len)
+											}, anim_time/2, "ease-in", function() {
+												if(paper.height === null) { // we were deleted
+													return;
+												} else if(arrow[0] === null) {
+													the_flash.remove();
+													return;
+												}
+												arrow.attr({"fill": this_option_active_color});
+												the_flash.animate(flash_1_to_0_anim);
+												arrow.animate(reset_arrow_color_anim);
+											});
+			the_flash.animate(flash_0_to_1_anim);
 		};
 
 		proto.show_menu = function(event) {
@@ -309,20 +298,16 @@
 			var parentElement = paper.canvas.parentNode;
 			this.edit_event = $("<div />").addClass("menu_item")
 											.text("Change event")
-											.pressable()
-											.on("pressed", _.bind(this.on_edit_event_pressed, this));
+											.on("click.menu_item", _.bind(this.on_edit_event_pressed, this));
 			this.change_from = $("<div />")	.addClass("menu_item")
 												.text("Change from")
-												.pressable()
-												.on("pressed", _.bind(this.on_change_from_pressed, this));
+												.on("click.menu_item", _.bind(this.on_change_from_pressed, this));
 			this.change_to = $("<div />").addClass("menu_item")
 											.text("Change to")
-											.pressable()
-											.on("pressed", _.bind(this.on_change_to_pressed, this));
+											.on("click.menu_item", _.bind(this.on_change_to_pressed, this));
 			this.remove_item = $("<div />")	.addClass("menu_item")
 											.text("Delete")
-											.pressable()
-											.on("pressed", _.bind(this.on_remove_item_pressed, this));
+											.on("click.menu_item", _.bind(this.on_remove_item_pressed, this));
 			var from = this.option("from"),
 				to = this.option("to");
 			var min_x = Math.min(from.x, to.x);
@@ -447,21 +432,19 @@
 		proto.end_rename = function() { };
 
 		proto.remove_edit_dropdown = function() {
+			$(window).off("mousedown.close_menu");
+			$(window).off("keydown.close_menu");
 			if(this.edit_dropdown) {
-				this.edit_event.off("pressed", this.$on_edit_event_pressed);
-				this.change_from.off("pressed", this.$on_change_from_pressed);
-				this.change_to.off("pressed", this.$on_change_to_pressed);
-				this.remove_item.off("pressed", this.$on_remove_item_pressed);
+				this.edit_event.off("click.menu_item").remove();
+				this.change_from.off("click.menu_item").remove();
+				this.change_to.off("click.menu_item").remove();
+				this.remove_item.off("click.menu_item").remove();
 				this.edit_dropdown.remove();
 				delete this.edit_dropdown;
 			}
 		};
 
 		proto.remove = function () {
-			if(this.arrow_timeout) {
-				window.clearTimeout(this.arrow_timeout);
-				delete this.arrow_timeout;
-			}
 			this.vline.remove();
 			this.label.remove();
 			this.circle.remove();
@@ -474,20 +457,16 @@
 		};
 
 		proto.destroy = function () {
+			this.$clickable.off("contextmenu.cm");
+			delete this.$clickable;
 			this.label	.off("cancel", this.on_cancel_rename, this)
 						.off("change", this.on_confirm_rename, this);
-
-			$([this.label.text[0], this.line_path[0], this.circle[0], this.arrow_path[0]]).off("contextmenu", this.$show_menu);
-
+			this.label.remove();
 			this.label.destroy();
 			delete this.label;
 
-			if(this.arrow_timeout) {
-				window.clearTimeout(this.arrow_timeout);
-				delete this.arrow_timeout;
-			}
 			var transition = this.option("transition");
-			transition.off("fire", this.$flash);
+			transition.off("fire", this.flash, this);
 			if(this.edit_dropdown) {
 				this.edit_dropdown.dropdown("destroy");
 			}
@@ -497,15 +476,6 @@
 
 			able.destroy_this_listenable(this);
 			able.destroy_this_optionable(this);
-			delete this.$on_window_click_while_expanded;
-			delete this.$on_window_keydown_while_expanded;
-			delete this.$flash;
-			delete this.$show_menu;
-			delete this.$on_edit_event_pressed;
-			delete this.$on_change_from_pressed;
-			delete this.$on_change_to_pressed;
-			delete this.$emit_set_from;
-			delete this.$emit_set_to;
 		};
 	}(red.TransitionView));
 }(red, jQuery));

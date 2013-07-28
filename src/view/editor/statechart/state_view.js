@@ -35,21 +35,6 @@
 			running_width: 3
 		}, options);
 
-/*
-		this.$on_window_click_while_expanded = _.bind(this.on_window_click_while_expanded, this);
-		this.$on_window_keydown_while_expanded = _.bind(this.on_window_keydown_while_expanded, this);
-		this.$initialize = _.bind(this.initialize, this);
-		this.$on_cancel_rename = _.bind(this.on_cancel_rename, this);
-		this.$on_confirm_rename = _.bind(this.on_confirm_rename, this);
-		this.$show_menu = _.bind(this.show_menu, this);
-		this.$add_transition_to_state = _.bind(this.add_transition_to_state, this);
-		this.$on_add_transition_item_pressed = _.bind(this.on_add_transition_item_pressed, this);
-		this.$on_add_substate_item_pressed = _.bind(this.on_add_substate_item_pressed, this);
-		this.$on_rename_item_pressed = _.bind(this.on_rename_item_pressed, this);
-		this.$on_remove_item_pressed = _.bind(this.on_remove_item_pressed, this);
-		this.$on_toggle_concurrency_item_pressed = _.bind(this.on_toggle_concurrency_item_pressed, this);
-		*/
-
 		this.active_fn = cjs.liven(function () {
 			var state = this.option("state");
 			if (state.is_initialized() && state.is_active()) {
@@ -132,7 +117,8 @@
 				text: this.get_name()
 			});
 			this.label.on("change", this.forward_event, this);
-			$(this.path[0]).add(this.label.text[0]).on("contextmenu.show", _.bind(this.show_menu, this));
+			this.$clickable = $([this.path[0], this.label.text[0]]);
+			this.$clickable.on("contextmenu.show", _.bind(this.show_menu, this));
 			if(state.parent_is_concurrent()) {
 				this.path.attr({
 					"stroke-dasharray": "- "
@@ -194,28 +180,23 @@
 			}
 			this.add_transition = $("<div />")	.addClass("menu_item")
 												.text("Add transition")
-												.pressable()
-												.on("pressed", _.bind(this.on_add_transition_item_pressed, this));
+												.on("click.menu_item", _.bind(this.on_add_transition_item_pressed, this));
 			this.rename_item = $("<div />")	.addClass("menu_item")
 											.text("Rename")
-											.pressable()
-											.on("pressed", _.bind(this.on_rename_item_pressed, this));
+											.on("click.menu_item", _.bind(this.on_rename_item_pressed, this));
 			this.remove_item = $("<div />")	.addClass("menu_item")
 											.text("Delete")
-											.pressable()
-											.on("pressed", _.bind(this.on_remove_item_pressed, this));
+											.on("click.menu_item", _.bind(this.on_remove_item_pressed, this));
 
 			this.add_substate_item = $("<div />")	.addClass("menu_item")
 													.text("Add substate")
-													.pressable()
-													.on("pressed", _.bind(this.on_add_substate_item_pressed, this));
+													.on("click.menu_item", _.bind(this.on_add_substate_item_pressed, this));
 
 			var is_concurrent = this.option("state").is_concurrent();
 			var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
 			this.toggle_concurrency_item = $("<div />")	.addClass("menu_item")
 														.html("Concurrent " + checkbox_mark)
-														.pressable()
-														.on("pressed", _.bind(this.on_toggle_concurrency_item_pressed, this));
+														.on("click.menu_item", _.bind(this.on_toggle_concurrency_item_pressed, this));
 			var lwe = this.option("lwe"),
 				rws = this.option("rws");
 			var PADDING = 1;
@@ -311,10 +292,14 @@
 		};
 		proto.remove_edit_dropdown = function() {
 			if(this.edit_dropdown) {
+				this.add_transition.off("click.menu_item").remove();
+				this.rename_item.off("click.menu_item").remove();
+				this.remove_item.off("click.menu_item").remove();
+				this.add_substate_item.off("click.menu_item").remove();
+				this.toggle_concurrency_item.off("click.menu_item").remove();
 				this.edit_dropdown.remove();
 				delete this.edit_dropdown;
 			}
-			var state = this.option("state");
 			$(window).off("mousedown.expanded_mousedown");
 			$(window).off("keydown.expanded_keydown");
 		};
@@ -354,8 +339,10 @@
 			}
 		};
 		proto.destroy = function() {
-			console.log("DESTROY");
-			$(this.path[0]).add(this.label.text[0]).off("contextmenu.show");
+			this.unmake_selectable();
+			this.$clickable.off("contextmenu.show");
+			delete this.$clickable;
+
 			this.remove_edit_dropdown();
 
 			this.active_fn.destroy();
@@ -373,19 +360,6 @@
 
 			able.destroy_this_listenable(this);
 			able.destroy_this_optionable(this);
-
-			delete this.$on_window_click_while_expanded;
-			delete this.$on_window_keydown_while_expanded;
-			delete this.$initialize;
-			delete this.$on_cancel_rename;
-			delete this.$on_confirm_rename;
-			delete this.$show_menu;
-			delete this.$add_transition_to_state;
-			delete this.$on_add_transition_item_pressed;
-			delete this.$on_add_substate_item_pressed;
-			delete this.$on_rename_item_pressed;
-			delete this.$on_remove_item_pressed;
-			delete this.$on_toggle_concurrency_item_pressed;
 		};
 		proto.make_selectable = function(callback) {
 			this.path.attr({

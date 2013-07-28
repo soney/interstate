@@ -294,9 +294,11 @@
 				}
 			}, this);
 
+			var key;
 			_.each(curr_items, function (ci) {
 				if (new_items.indexOf(ci) < 0) {
-					this.object_views.remove(ci instanceof red.TransitionView ? ci.option("transition") : ci.option("state"));
+					key = ci instanceof red.TransitionView ? ci.option("transition") : ci.option("state");
+					this.object_views.remove(key);
 					ci.remove();
 					ci.destroy();
 				}
@@ -424,26 +426,29 @@
 					unmake_selectable();
 				}
 			};
-			$(window).on("keydown", on_keydown);
-			var unmake_selectable = _.bind(function() {
-				$(window).off("keydown", on_keydown);
-				_.each(states, function(state) {
-					var view = this.get_view(state);
-					view.unmake_selectable();
-				}, this);
-			}, this);
+			$(window).on("keydown.awaiting_state_selection", on_keydown);
 
-			_.each(states, function(state) {
-				var view = this.get_view(state);
-				view.make_selectable(function() {
-					unmake_selectable();
-					on_select(state);
+			var state_views = _.map(states, this.get_view, this);
+
+			var unmake_selectable = _.bind(function() {
+				$(window).off("keydown.awaiting_state_selection");
+				_.each(state_views, function(view) {
+					view.unmake_selectable();
 				});
-			}, this);
+				on_select = state_views = states = null;
+			});
+
+			_.each(states, function(state, i) {
+				state_views[i].make_selectable(function() {
+					on_select(states[i]);
+					unmake_selectable();
+				});
+			});
 		};
 		proto.remove = function () {
 		};
 		proto.destroy = function () {
+			$(window).off("keydown.awaiting_state_selection");
 			delete this.statecharts;
 
 			this.live_layout.destroy();

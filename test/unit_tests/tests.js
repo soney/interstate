@@ -252,6 +252,10 @@ asyncTest("Statechart View", function() {
 	var master = new red.Statechart();
 	master	.add_state("a")
 			.starts_at("a");
+
+	var dict = new red.Dict();
+	var context = new red.Pointer({stack: [dict]});
+
 	var sc_display_div = $("<div />")	.appendTo(document.body)
 										.statechart({
 											statecharts: [master]
@@ -323,6 +327,9 @@ asyncTest("Statechart View", function() {
 												master.destroy();
 												sc_display_div = null;
 												master = null;
+												dict.destroy();
+												dict = null;
+												context = null;
 												window.setTimeout(function() {
 													take_snapshot(["ConstraintNode", "SettableConstraint", "red."], function(response) {
 														ok(!response.illegal_strs, "Make sure nothing was allocated");

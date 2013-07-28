@@ -72,8 +72,9 @@
 			"fill-opacity": this.option("fill-opacity"),
 			stroke: "none"
 		});
+		this.$text = $(this.text[0]);
 
-		$(this.text[0]).on("click.onclick", _.bind(this.onClick, this));
+		this.$text.on("click.onclick", _.bind(this.onClick, this));
 		this.paper = paper;
 	};
 	(function (my) {
@@ -82,7 +83,9 @@
 		able.make_proto_optionable(proto);
 
 		proto.destroy = function() {
-			$(this.text[0]).off("click.onclick");
+			this.$text.off("click.onclick");
+			delete this.$text;
+			this.text.remove();
 			delete this.text;
 			if(this.textbox) {
 				$(this.textbox)	.off("keydown.onkeydown")
