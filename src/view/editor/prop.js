@@ -445,6 +445,7 @@
 									$this.prop_cell("destroy");
 								}
 							}).remove();
+							this.src_cell.empty();
 
 							var values = $values.get();
 							var states = $states.get();
@@ -457,7 +458,7 @@
 								if(state) {
 									var value_info = _.find(values, function(value_info) { return value_info.state === state; });
 									var left = layout_manager.get_x(state);
-									if(left < 0) {
+									if(!left || left < 0) {
 										return;
 									}
 									if(value_info) {
@@ -519,6 +520,7 @@
 										$this.prop_cell("destroy");
 									}
 								}).remove();
+								this.src_cell.empty();
 								$states.signal_destroy();
 								$values.signal_destroy();
 							}
@@ -536,6 +538,7 @@
 								$this.prop_cell("destroy");
 							}
 						}).remove();
+						this.src_cell.empty();
 						var cell_disp = $("<span />")	.addClass("pure_cell")
 														.appendTo(this.src_cell);
 						if(this.option("inherited")) {
@@ -594,6 +597,7 @@
 						$this.prop_cell("destroy");
 					}
 				}).remove();
+				this.src_cell.empty();
 				delete this.src_cell;
 			}
 		},
