@@ -218,6 +218,8 @@
 				this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
+					value.destroy();
+					value = null;
 				});
 			} else if(type === "unset_stateful_prop_for_state") {
 				client = event.prop;
@@ -320,9 +322,6 @@
 					parent: { id: to_func(client.obj_id) },
 					value: value,
 					name: name
-				}, function() {
-					value.destroy();
-					value = null;
 				});
 				this.client_socket.post_command(command, function() {
 					command.destroy();

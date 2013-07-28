@@ -68,10 +68,10 @@
 												text: this.option("name"),
 												edit_event: "dblclick"
 											})
-											.on("text_change", $.proxy(function(e) {
+											.on("text_change.name_span", _.bind(function(e) {
 												this.rename(e.str);
 											}, this))
-											.on("done_editing", $.proxy(function(e) {
+											.on("done_editing.name_span".name_span, _.bind(function(e) {
 												this.element.focus();
 											}, this))
 											.appendTo(this.name_cell);
@@ -88,10 +88,10 @@
 											.hide();
 			if(this.option("inherited")) {
 				this.element.addClass("inherited")
-							.on("click", $.proxy(this.inherit, this));
+							.on("click.inherit", _.bind(this.inherit, this));
 				this.inherit_button = $("<div />")	.appendTo(this.edit_menu)
 													.addClass("item")
-													.on("mousedown", $.proxy(this.inherit, this))
+													.on("mousedown.inherit", _.bind(this.inherit, this))
 													.attr("tabindex", 2)
 													.text("Inherit");
 			} else if(this.option("builtin")) {
@@ -99,12 +99,12 @@
 			} else {
 				this.rename_button = $("<div />")	.appendTo(this.edit_menu)
 													.addClass("item")
-													.on("mousedown", $.proxy(this.begin_rename, this))
+													.on("mousedown.prop", _.bind(this.begin_rename, this))
 													.attr("tabindex", 2)
 													.text("Rename");
 				this.remove_button = $("<div />")	.appendTo(this.edit_menu)
 													.addClass("item")
-													.on("mousedown", $.proxy(this.unset, this))
+													.on("mousedown.prop", _.bind(this.unset, this))
 													.attr("tabindex", 2)
 													.text("Delete");
 
@@ -117,7 +117,7 @@
 					}
 					this.set_type_expand = $("<div />")	.appendTo(this.edit_menu)
 														.addClass("item")
-														.on("mousedown", $.proxy(this.change_type, this, change_to_type))
+														.on("mousedown.prop", _.bind(this.change_type, this, change_to_type))
 														.attr("tabindex", 2)
 														.text("Change to " + change_to_type);
 				}
@@ -140,10 +140,29 @@
 
 		_destroy: function() {
 			this._super();
+			this.name_span	.off("text_change.name_span done_editing.name_span")
+							.remove();
 			this.element.off("contextmenu.on_context_menu")
 						.off("click.onclick")
 						.off("keydown.onkeydown")
-						.off("dragstart.ondragstart");
+						.off("dragstart.ondragstart")
+						.off("click.inherit");
+			if(this.inherit_button) {
+				this.inherit_button	.off("mousedown.inherit")
+									.remove();
+			}
+			if(this.rename_button) {
+				this.rename_button	.off("mousedown.prop")
+									.remove();
+			}
+			if(this.remove_button) {
+				this.remove_button	.off("mousedown.prop")
+									.remove();
+			}
+			if(this.set_type_expand) {
+				this.set_type_expand	.off("mousedown.prop")
+										.remove();
+			}
 			this.on_hide_src();
 			//this.element.pressable("destroy");
 			var value = this.option("value");
@@ -190,7 +209,7 @@
 					curr_target = false;
 				}
 			};
-			var on_mup = $.proxy(function() {
+			var on_mup = _.bind(function() {
 				targets.off("mouseover", on_mover_child);
 				targets.off("mouseout", on_mout_child);
 				$(window).off("mouseup", on_mup);
@@ -418,7 +437,14 @@
 						var $values = client.get_$("get_values");
 						var $active_value = client.get_$("active_value");
 						this.live_prop_vals_fn = cjs.liven(function() {
-							this.src_cell.empty();
+							this.src_cell.children().each(function() {
+								var $this = $(this);
+								if($this.data("red-unset_prop")) {
+									$this.unset_prop("destroy");
+								} else if($this.data("red-prop_cell")) {
+									$this.prop_cell("destroy");
+								}
+							}).remove();
 
 							var values = $values.get();
 							var states = $states.get();
@@ -431,6 +457,9 @@
 								if(state) {
 									var value_info = _.find(values, function(value_info) { return value_info.state === state; });
 									var left = layout_manager.get_x(state);
+									if(left < 0) {
+										return;
+									}
 									if(value_info) {
 										var val = value_info.value;
 										var active = active_value && active_value.value === val && value !== undefined;
@@ -453,7 +482,7 @@
 									} else {
 										view = $("<span />").unset_prop({
 											left: left
-										}).on("click", $.proxy(function() {
+										}).on("click", _.bind(function() {
 											this.__awaiting_value_for_state = state;
 											this.__awaiting_value_for_state_set_at = (new Date()).getTime();
 											var event = new $.Event("command");
@@ -464,10 +493,7 @@
 											this.element.trigger(event);
 										}, this));
 									}
-
-									if(left >= 0) {
-										views.push(view);
-									}
+									views.push(view);
 								}
 							}, this);
 							this.src_cell.append.apply(this.src_cell, _.sortBy(views, function(v) {
@@ -502,7 +528,14 @@
 					var $str = value.get_$("get_str");
 					this.live_cell_str_fn = cjs.liven(function() {
 						var str = $str.get();
-						this.src_cell.children().remove();
+						this.src_cell.children().each(function() {
+							var $this = $(this);
+							if($this.data("red-unset_prop")) {
+								$this.unset_prop("destroy");
+							} else if($this.data("red-prop_cell")) {
+								$this.prop_cell("destroy");
+							}
+						}).remove();
 						var cell_disp = $("<span />")	.addClass("pure_cell")
 														.appendTo(this.src_cell);
 						if(this.option("inherited")) {
@@ -511,7 +544,7 @@
 							cell_disp	.editable_text({
 											text: str
 										})
-										.on("text_change", $.proxy(function(e) {
+										.on("text_change", _.bind(function(e) {
 											var event = new $.Event("command");
 											event.command_type = "set_str";
 											event.str = e.str;
@@ -553,7 +586,14 @@
 				delete this.live_cell_str_fn;
 			}
 			if(this.src_cell) {
-				this.src_cell.remove();
+				this.src_cell.children().each(function() {
+					var $this = $(this);
+					if($this.data("red-unset_prop")) {
+						$this.unset_prop("destroy");
+					} else if($this.data("red-prop_cell")) {
+						$this.prop_cell("destroy");
+					}
+				}).remove();
 				delete this.src_cell;
 			}
 		},

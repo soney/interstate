@@ -367,6 +367,8 @@ asyncTest("Editor", function() {
 	//clear_snapshots(function() {
 		//take_snapshot([], function() {
 			var env = new red.Environment({create_builtins: true});
+			env	.set("height", "10")
+				.set("obj", "<stateful>");
 			var root = env.get_root();
 
 			var runtime_div = $("<div />").appendTo(document.body);

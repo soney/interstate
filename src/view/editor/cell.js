@@ -78,29 +78,35 @@
 			var client = this.option("value");
 			client.signal_interest();
 
-			this.$on_key_down = $.proxy(on_cell_key_down, this);
-			this.element.addClass("cell")
-						.attr("tabindex", 1);
 			this.update_position();
 			this.update_active();
 			this.create_live_text_fn();
-			this.$on_click = $.proxy(this.on_click, this);
-			this.element.on("click", this.$on_click);
 
 			this.text = $("<span />")	.addClass("txt")
 										.appendTo(this.element);
-			this.element.on("keydown", this.$on_key_down);
+			this.element.on("keydown.prop_cell", _.bind(on_cell_key_down, this))
+						.on("click.prop_cell", _.bind(this.on_click, this))
+						.addClass("cell")
+						.attr("tabindex", 1);
 		},
 		_destroy: function() {
 			this._super();
+
+			this.element.off("keydown.prop_cell click.prop_cell")
+						.removeClass("cell");
+
+			if(this.textbox) {
+				this.textbox.off("keydown.prop_cell blur.prop_cell")
+							.remove();
+			}
+
 			this.text.remove();
-			this.element.removeClass("cell");
 			this.destroy_live_text_fn();
-			this.element.off("click", this.$on_click);
 
 			var client = this.option("value");
 
 			client.signal_destroy();
+			delete this.options;
 		},
 		on_click: function() {
 			this.begin_editing();
@@ -159,14 +165,13 @@
 			this.element.addClass("editing");
 			this.element.off("click", this.$on_click);
 			this.text.hide();
-			this.$end_edit = $.proxy(this.end_edit, this);
 
 			if(this.textbox) {
 				this.textbox.show();
 			} else {
 				this.textbox = $("<textarea />")	.attr("type", "text")
 													.appendTo(this.element)
-													.on("keydown", $.proxy(function(event) {
+													.on("keydown.prop_cell", _.bind(function(event) {
 														if(event.keyCode === 27) {
 															event.preventDefault();
 															event.stopPropagation();
@@ -177,7 +182,7 @@
 															this.end_edit();
 														}
 													}, this))
-													.on("blur", this.$end_edit);
+													.on("blur.prop_cell", _.bind(this.end_edit, this));
 			}
 			var width = this.option("edit_width"),
 				left = this.option("left");
@@ -251,14 +256,14 @@
 			radius: 7
 		},
 		_create: function() {
-			this.$on_key_down = $.proxy(on_cell_key_down, this);
 			this.element.addClass("unset")
 						.attr("tabindex", 1)
-						.on("keydown", this.$on_key_down);
+						.on("keydown.unset", _.bind(on_cell_key_down, this));
 			this.update_left();
 		},
 		_destroy: function() {
-			this.element.removeClass("unset");
+			this.element.removeClass("unset")
+						.off("keydown.unset");
 		},
 		update_left: function() {
 			this.element.css("left", (this.option("left") - this.option("radius")) + "px");

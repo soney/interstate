@@ -44,7 +44,9 @@
 		//_.defer(_.bind(this.$value.update, this.$value));
 		//this.$value.update();
 		_.defer(_.bind(function() {
-			this.$value.update();
+			if(this.$value) {
+				this.$value.update();
+			}
 		}, this));
 
 		this._type = "stateful_prop";

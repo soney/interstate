@@ -10,28 +10,27 @@
 	$.widget("red.navigator", {
 		options: {
 			root_client: false,
-			single_col: false,
-			annotations: {}
+			single_col: false
 		},
 		_create: function() {
 			var client = this.option("root_client");
 			client.signal_interest();
 
 			this.element.attr("id", "obj_nav");
-			this.root_col = $("<table />")	.appendTo(this.element)
-											.column({
+			var root_col = $("<table />")	.appendTo(this.element);
+			root_col						.column({
 												name: "sketch",
 												client: client,
 												is_curr_col: true,
 												show_prev: false
 											})
-											.on("child_select.nav", _.bind(this.on_child_select, this, this.root_col))
-											.on("header_click.nav", _.bind(this.on_header_click, this, this.root_col))
-											.on("prev_click.nav", _.bind(this.on_prev_click, this, this.root_col))
-											.on("child_removed.nav", _.bind(this.on_child_removed, this, this.root_col))
+											.on("child_select.nav", _.bind(this.on_child_select, this, root_col))
+											.on("header_click.nav", _.bind(this.on_header_click, this, root_col))
+											.on("prev_click.nav", _.bind(this.on_prev_click, this, root_col))
+											.on("child_removed.nav", _.bind(this.on_child_removed, this, root_col))
 											.focus();
-			this.curr_col = this.root_col;
-			this.columns = [this.root_col];
+			this.curr_col = root_col;
+			this.columns = [root_col];
 		},
 		_destroy: function() {
 			this._super();
