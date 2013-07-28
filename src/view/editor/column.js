@@ -53,7 +53,6 @@
 			this.header = $("<tr />")	.appendTo(this.tbody)
 										.addClass("header");
 
-			this.$on_copy_select = $.proxy(this.on_copy_select, this);
 
 			this.obj_name_cell = $("<th />")	.appendTo(this.header)
 												.attr("colspan", "2")
@@ -61,28 +60,24 @@
 
 			this.obj_name = $("<h2 />")	.text(this.option("name"))
 										.appendTo(this.obj_name_cell)
-										.pressable()
-										.on("pressed", $.proxy(this.on_header_click, this));
+										.on("click.header_click", _.bind(this.on_header_click, this));
 
 			this.copy_disp = $("<span />")	.copy({ client: this.option("client") })
-											.on("curr_copy_change", this.$on_copy_select)
+											.on("curr_copy_change.copy_select", _.bind(this.on_copy_select, this))
 											.appendTo(this.obj_name_cell);
 
 			this.show_hide_options = $("<div />")	.text("options")
 													.addClass("show_options button")
 													.appendTo(this.obj_name_cell)
-													.on("click", $.proxy(this.on_show_hide_options_click, this))
+													.on("click.show_hide_options", _.bind(this.on_show_hide_options_click, this))
 													.hide();
 													
 
 			this.prev_button = $("<a />")	.addClass("prev")
 											.attr("href", "javascript:void(0)")
 											.prependTo(this.obj_name_cell)
-											.pressable()
 											.text("<");
 
-			this.$on_prev_click = $.proxy(this.on_prev_click, this);
-			this.$on_edit_click = $.proxy(this.on_edit_click, this);
 
 			this.options_row = $("<tr />")	.appendTo(this.tbody)
 											.addClass("options");
@@ -99,10 +94,7 @@
 			this.add_property_button = $("<div />")	.addClass("add_prop")
 													.appendTo(this.add_prop_cell)
 													.text("Add Property")
-													.pressable()
-													.on("pressed", $.proxy(function() {
-														this.add_property();
-													}, this));
+													.on("click.add_property", _.bind(this.add_property, this));
 
 			this.add_children_listener();
 
@@ -111,9 +103,9 @@
 			} else {
 				this.on_not_curr_col();
 			}
-			client.async_get("is_template", $.proxy(function(is_template) {
+			client.async_get("is_template", function(is_template) {
 				if(is_template) {
-					client.async_get("instances", $.proxy(function(instances) {
+					client.async_get("instances", _.bind(function(instances) {
 						if(instances.length > 0) {
 							var instance = instances[0];
 							this.option("curr_copy_client", instance);
@@ -124,11 +116,11 @@
 						}
 					}, this));
 				}
-			}, this));
+			}, this);
 			if(client.type() !== "stateful") {
 				this.show_hide_options.hide();
 			}
-			this.element.on("keydown", $.proxy(this.on_key_down, this));
+			this.element.on("keydown.on_keydown", _.bind(this.on_key_down, this));
 		},
 
 		add_property: function() {
@@ -153,7 +145,7 @@
 
 			this.options_form = $("<form />")	.addClass("options")
 												.attr("action", "javascript:void(0)")
-												.on("submit", $.proxy(this.done_editing, this))
+												.on("submit", _.bind(this.done_editing, this))
 												.prependTo(this.options_cell);
 
 			var options_fieldset = $("<fieldset />").appendTo(this.options_form);
@@ -177,7 +169,7 @@
 												id: "copies"
 											})
 											.appendTo(copies_div)
-											.on("text_change", $.proxy(function(e) {
+											.on("text_change", _.bind(function(e) {
 												var str = e.str;
 												var event = new $.Event("command");
 												event.command_type = "set_copies";
@@ -192,8 +184,7 @@
 			var reset_button = $("<span />").addClass("reset button")
 											.text("Reset")
 											.appendTo(options_fieldset)
-											.pressable()
-											.on("pressed", $.proxy(function() {
+											.on("click.reset", _.bind(function() {
 												var event = new $.Event("command");
 												event.command_type = "reset";
 												event.client = this.option("client");
@@ -306,10 +297,9 @@
 			}
 			if(this.option("prev_col") && this.option("show_prev")) {
 				this.prev_button	.show()
-									.on("pressed", this.$on_prev_click);
+									.on("click.on_click", _.bind(this.on_prev_click, this));
 			} else {
-				this.prev_button	.off("pressed", this.$on_prev_click)
-									.hide();
+				this.prev_button.hide();
 			}
 
 			this.element.addClass("curr_col");
@@ -364,7 +354,6 @@
 
 		add_children_listener: function () {
 			var INDEX_OFFSET = 3; // Account for the header column
-			this.$on_child_select = $.proxy(this.on_child_select, this);
 			var client = this.option("curr_copy_client") || this.option("client");
 			var $children = client.get_$("children");
 
@@ -384,8 +373,10 @@
 					_.forEach(diff.removed, function (info) {
 						var index = info.from, child = info.from_item;
 						var child_disp = this.tbody.children().eq(index + INDEX_OFFSET);
-						child_disp.prop("destroy");
-						remove(child_disp[0]);
+						child_disp	.off("expand.on_child_select")
+									.off("command.on_child_select")
+									.prop("destroy")
+									.remove();
 						this.element.trigger("child_removed", child.value);
 					}, this);
 					_.forEach(diff.added, function (info) {
@@ -404,8 +395,8 @@
 										show_src: this.option("show_source"),
 										obj: this.option("client")
 									})
-									.on("expand", $.proxy(this.on_child_select, this, child, child_disp))
-									.on("command", $.proxy(function(e) {
+									.on("expand.on_child_select", _.bind(this.on_child_select, this, child, child_disp))
+									.on("command.on_child_select", _.bind(function(e) {
 										if(e.command_type === "inherit") {
 											this.awaiting_inherit_prop = child.name;
 										}
@@ -453,7 +444,7 @@
 
 		on_copy_select: function(event, copy_index) {
 			var client = this.option("client");
-			client.async_get("instances", $.proxy(function(instances) {
+			client.async_get("instances", _.bind(function(instances) {
 				if(instances) {
 					var instance = instances[copy_index];
 					this.option("curr_copy_client", instance);
@@ -467,8 +458,17 @@
 
 		_destroy: function () {
 			this._super();
+
+			this.obj_name.off("click.header_click").remove();
+			this.show_hide_options.off("click.show_hide_options").remove();
+			this.add_property_button.off("click.add_property").remove();
+			this.element.off("keydown.on_keydown");
+
+			this.prev_button.off("click.on_click").remove();
+
+
 			this.remove_children_listener();
-			this.copy_disp.copy("destroy");
+			this.copy_disp.off("curr_copy_change.copy_select").copy("destroy");
 			this.destroy_src_view();
 			var client = this.option("client");
 			client.signal_destroy();

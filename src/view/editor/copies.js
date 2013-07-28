@@ -33,26 +33,19 @@
 				this.on_displayed();
 			}
 
-			this.$on_click = $.proxy(this.on_click, this);
-			this.$on_blur = $.proxy(this.on_blur, this);
-			this.$on_change = $.proxy(this.on_change, this);
-			this.$on_key_down = $.proxy(this.on_key_down, this);
-			this.content.on("click", this.$on_click);
+			this.content.on("click.on_click", _.bind(this.on_click, this));
 			this.add_listener();
 		},
 
 		_destroy: function () {
-			this.content.off("click", this.$on_click);
+			this.destroy_copy_num_input();
+			this.content.off("click.on_click");
 			this._super();
 			this.remove_listener();
 			var client = this.option("client");
 			client.signal_destroy();
 			delete this.options.client;
 			delete this.options;
-			delete this.$on_click;
-			delete this.$on_blur;
-			delete this.$on_change;
-			delete this.$on_key_down;
 		},
 
 		on_click: function() {
@@ -66,18 +59,26 @@
 												.insertBefore(this.content)
 												.focus()
 												.select()
-												.on("blur", this.$on_blur)
-												.on("change", this.$on_change)
-												.on("keydown", this.$on_key_down);
+												.on("blur.on_blur", _.bind(this.on_blur, this))
+												.on("change.on_change", _.bind(this.on_change, this))
+												.on("keydown.on_keydown", _.bind(this.on_key_down, this));
 
 			this.original_copy_num = this.option("curr_copy");
 			this.content.hide();
 		},
 
+		destroy_copy_num_input: function() {
+			if(this.copy_num_input) {
+				this.copy_num_input	.off("blur.on_blur")
+									.off("change.on_change")
+									.off("keydown.on_keydown")
+									.remove();
+				delete this.copy_num_input;
+			}
+		},
+
 		on_blur: function() {
-			this.copy_num_input	.off("blur", this.$on_blur)
-								.off("change", this.$on_change)
-								.remove();
+			this.destroy_copy_num_input();
 			this.content.show();
 		},
 

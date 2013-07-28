@@ -34,7 +34,6 @@
 		},
 
 		_create: function () {
-			this.$on_command = $.proxy(this.on_command, this);
 			this.element.addClass(this.option("view_type"))
 						.attr({
 							id: "editor"
@@ -102,10 +101,10 @@
 												root_client: root_client,
 												single_col: this.option("single_col_navigation")
 											})
-											.on("command", this.$on_command);
+											.on("command.do_action", _.bind(this.on_command, this));
 
 
-			$(window).on("keydown", _.bind(function (event) {
+			$(window).on("keydown.editor_undo_redo", _.bind(function (event) {
 				if (event.keyCode === 90 && (event.metaKey || event.ctrlKey)) {
 					if (event.shiftKey) { this.redo(); }
 					else { this.undo(); }
@@ -161,10 +160,11 @@
 					index: 0
 				});
 				this.client_socket.post_command(command, function() {
-					//value.destroy();
-					//value = null;
 					command.destroy();
 					command = null;
+
+					value.destroy();
+					value = null;
 				});
 			} else if(type === "rename") {
 				client = event.client;
@@ -484,8 +484,10 @@
 
 		_destroy: function () {
 			this._super();
+			this.navigator.off("command.do_action");
 			this.on_unload();
-			$(window).off("beforeunload.close_editor");
+			$(window)	.off("beforeunload.close_editor")
+						.off("keydown.editor_undo_redo");
 		},
 
 		_setOption: function(key, value) {

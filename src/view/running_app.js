@@ -114,26 +114,26 @@
 				};
 
 
-				this.edit_button = $("<a />").text("edit")
-					.css(this.edit_button_css)
-					.hover(_.bind(function () {
-						if (!this.edit_button.hasClass("active")) {
-							this.edit_button.addClass("hover").css(this.edit_hover_css);
-						}
-					}, this), _.bind(function () {
-						if (!this.edit_button.hasClass("active")) {
-							this.edit_button.removeClass("hover").css(this.edit_button_css);
-						}
-					}, this))
-					.on("click", _.bind(this.open_editor, this));
+				this.edit_button = $("<a />")	.text("edit")
+												.css(this.edit_button_css)
+												.on("mouseover.make_active", _.bind(function() {
+													if (!this.edit_button.hasClass("active")) {
+														this.edit_button.addClass("hover").css(this.edit_hover_css);
+													}
+												}, this))
+												.on("mouseout.make_active", _.bind(function () {
+													if (!this.edit_button.hasClass("active")) {
+														this.edit_button.removeClass("hover").css(this.edit_button_css);
+													}
+												}, this))
+												.on("click.open_editor", _.bind(this.open_editor, this));
 
-				var append_interval = window.setInterval(_.bind(function () {
-					var parent = $(this.element).parent();
-					if (parent) {
-						parent.append(this.edit_button);
+				var append_interval = window.setInterval(_.bind(function (element, edit_button) {
+					if (element.parentNode) {
+						element.parentNode.append(edit_button);
 						window.clearInterval(append_interval);
 					}
-				}, this), 100);
+				}, window, this.element, this.edit_button), 100);
 			}
 
 			if (this.option("edit_on_open")) {
@@ -147,47 +147,54 @@
 			}
 
 			this._add_change_listeners();
+			this.$window = $(window);
+			this.$window.on("dragover.replace_program", _.bind(function(eve) {
+														var event = eve.originalEvent;
+														event.preventDefault();
+														event.stopPropagation();
+														this.show_drag_over();
+														return false;
+													}, this))
+						.on("dragout.replace_program", _.bind(function(eve) {
+														var event = eve.originalEvent;
+														event.preventDefault();
+														event.stopPropagation();
+														this.hide_drag_over();
+														return false;
+													}, this))
+						.on("dragenter.replace_program", _.bind(function(eve) {
+														var event = eve.originalEvent;
+														event.preventDefault();
+														event.stopPropagation();
+														this.show_drag_over();
+														return false;
+													}, this))
+						.on("dragleave.replace_program", _.bind(function(eve) {
+														var event = eve.originalEvent;
+														event.preventDefault();
+														event.stopPropagation();
+														this.hide_drag_over();
+													}, this))
+						.on("drop.replace_program", _.bind(function(eve) {
+														var event = eve.originalEvent;
+														event.preventDefault();
+														event.stopPropagation();
+														this.hide_drag_over();
+														// fetch FileList object
+														var files = event.target.files || event.dataTransfer.files;
+														var file = files[0];
+														var fr = new FileReader();
+														fr.onload = _.bind(function() {
+															var new_root = red.destringify(fr.result);
+															this.option("root", new_root);
+															this.element.trigger("change_root", new_root);
 
-			window.addEventListener('dragover', $.proxy(function(event) {
-				event.preventDefault();
-				event.stopPropagation();
-				this.show_drag_over();
-				return false;
-			}, this), false);
-			window.addEventListener('dragout', $.proxy(function(event) {
-				event.preventDefault();
-				event.stopPropagation();
-				this.hide_drag_over();
-				return false;
-			}, this), false);
-			window.addEventListener('dragenter', $.proxy(function(event) {
-				event.preventDefault();
-				event.stopPropagation();
-				this.show_drag_over();
-				return false;
-			}, this), false);
-			window.addEventListener('dragleave', $.proxy(function(event) {
-				event.preventDefault();
-				event.stopPropagation();
-				this.hide_drag_over();
-				return false;
-			}, this), false);
-			window.addEventListener('drop', $.proxy(function(event) {
-				event.preventDefault();
-				event.stopPropagation();
-				this.hide_drag_over();
-				// fetch FileList object
-				var files = event.target.files || event.dataTransfer.files;
-				var file = files[0];
-				var fr = new FileReader();
-				fr.onload = $.proxy(function() {
-					var new_root = red.destringify(fr.result);
-					this.option("root", new_root);
-					this.element.trigger("change_root", new_root);
-				}, this);
-				fr.readAsText(file);
-				return false;
-			}, this), false);
+															delete fr.onload;
+															fr = null;
+														}, this);
+														fr.readAsText(file);
+														return false;
+													}, this));
 		},
 
 		show_drag_over: function() {
@@ -257,11 +264,22 @@
 
 		_destroy: function () {
 			this._super();
+			this.$window.off("dragover.replace_program")
+						.off("dragout.replace_program")
+						.off("dragenter.replace_program")
+						.off("dragleave.replace_program")
+						.off("drop.replace_program")
+						.off("keydown.open_editor")
+						.off("beforeunload.close_editor");
+
 			this._remove_change_listeners();
 			this.element.removeClass("euc_runtime");
 			$(window).off("keydown.open_editor");
 			if (this.edit_button) {
-				this.edit_button.remove();
+				this.edit_button.off("mouseover.make_active")
+								.off("mouseout.make_active")
+								.off("click.open_editor")
+								.remove();
 			}
 			if (this.server_socket) {
 				this.server_socket.destroy();
@@ -353,7 +371,7 @@
 						value: this.button_color
 					});
 				}
-				$(window).on("beforeunload", _.bind(this.close_editor, this));
+				$(window).on("beforeunload.close_editor", _.bind(this.close_editor, this));
 				this.element.trigger("editor_open");
 			}
 		},

@@ -122,13 +122,15 @@
 														.text("Change to " + change_to_type);
 				}
 			}
-			this.element.on("contextmenu", $.proxy(this.on_context_menu, this));
 
 
 			//this.element.pressable();
-			this.element.on("click", $.proxy(this.on_click, this));
-			this.element.on("keydown", $.proxy(this.on_key_down, this));
-			this.element.attr("draggable", true).on("dragstart", $.proxy(this.on_drag_start, this));
+			this.element.on("contextmenu.on_context_menu", _.bind(this.on_context_menu, this))
+						.on("click.onclick", _.bind(this.on_click, this))
+						.on("keydown.onkeydown", _.bind(this.on_key_down, this))
+						.attr("draggable", true)
+						.on("dragstart.ondragstart", _.bind(this.on_drag_start, this));
+
 			if(this.option("show_src")) {
 				this.on_show_src();
 			} else {
@@ -138,12 +140,18 @@
 
 		_destroy: function() {
 			this._super();
+			this.element.off("contextmenu.on_context_menu")
+						.off("click.onclick")
+						.off("keydown.onkeydown")
+						.off("dragstart.ondragstart");
 			this.on_hide_src();
 			//this.element.pressable("destroy");
 			var value = this.option("value");
 			if(value instanceof red.WrapperClient) {
 				value.signal_destroy();
 			}
+			delete this.options.client;
+			delete this.options;
 		},
 
 		change_type: function(type) {

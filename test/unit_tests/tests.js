@@ -331,7 +331,7 @@ asyncTest("Statechart View", function() {
 												dict = null;
 												context = null;
 												window.setTimeout(function() {
-													take_snapshot(["ConstraintNode", "SettableConstraint", "red."], function(response) {
+													take_snapshot(["ConstraintNode", "SettableConstraint", "red.", "$.(anonymous function).(anonymous function)"], function(response) {
 														ok(!response.illegal_strs, "Make sure nothing was allocated");
 														start();
 													});
@@ -395,7 +395,7 @@ asyncTest("Editor", function() {
 												editor_div.editor("destroy").remove();
 												runtime_div.dom_output("destroy").remove();
 												window.setTimeout(function() {
-													take_snapshot(["ConstraintNode", "SettableConstraint", "red."], function(response) {
+													take_snapshot(["ConstraintNode", "SettableConstraint", "red.", "$.(anonymous function).(anonymous function)"], function(response) {
 														ok(!response.illegal_strs, "Make sure nothing was allocated");
 														editor_div.remove();
 														runtime_div.remove();

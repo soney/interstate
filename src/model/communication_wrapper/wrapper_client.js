@@ -130,7 +130,14 @@
 		proto.async_get = function () {
 			// doesn't store the value in a constraint; uses a callback when it's ready instead
 			var args = summarize_args(_.first(arguments, arguments.length - 1));
-			var callback = _.last(arguments);
+			var callback, context;
+			if(_.isFunction(arguments[arguments.length-2]) && !_.isFunction(arguments[arguments.length-1])) {
+				callback = arguments[arguments.length-2];
+				context = arguments[arguments.length-1];
+			} else {
+				callback = arguments[arguments.length-1];
+				context = window;
+			}
 
 			var request_id = this.post({
 				type: "async_get",
@@ -138,7 +145,7 @@
 			});
 			this.program_state_client.register_response_listener(request_id, _.bind(function (value) {
 				var processed_value = this.process_value(value);
-				callback(processed_value);
+				callback.call(context, processed_value);
 			}, this));
 		};
 

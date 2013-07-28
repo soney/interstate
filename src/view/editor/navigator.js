@@ -16,33 +16,28 @@
 		_create: function() {
 			var client = this.option("root_client");
 			client.signal_interest();
-			this.$on_child_select = $.proxy(this.on_child_select, this);
-			this.$on_header_click = $.proxy(this.on_header_click, this);
-			this.$on_prev_click = $.proxy(this.on_prev_click, this);
-			this.$on_child_removed = $.proxy(this.on_child_removed, this);
-			this.$forward_event = $.proxy(this.forward_event, this);
 
 			this.element.attr("id", "obj_nav");
-			var root_col = $("<table />")	.appendTo(this.element);
-			root_col						.column({
+			this.root_col = $("<table />")	.appendTo(this.element)
+											.column({
 												name: "sketch",
 												client: client,
 												is_curr_col: true,
 												show_prev: false
 											})
-											.on("child_select", $.proxy(this.on_child_select, this, root_col))
-											.on("header_click", $.proxy(this.on_header_click, this, root_col))
-											.on("prev_click", $.proxy(this.on_prev_click, this, root_col))
-											.on("child_removed", $.proxy(this.on_child_removed, this, root_col))
-											.on("command", this.$forward_event)
+											.on("child_select.nav", _.bind(this.on_child_select, this, this.root_col))
+											.on("header_click.nav", _.bind(this.on_header_click, this, this.root_col))
+											.on("prev_click.nav", _.bind(this.on_prev_click, this, this.root_col))
+											.on("child_removed.nav", _.bind(this.on_child_removed, this, this.root_col))
 											.focus();
-			this.curr_col = root_col;
-			this.columns = [root_col];
+			this.curr_col = this.root_col;
+			this.columns = [this.root_col];
 		},
 		_destroy: function() {
 			this._super();
 			_.each(this.columns, function(col) {
-				col.column("destroy");
+				col	.off("child_select.nav header_select.nav prev_click.nav child_removed.nav")
+					.column("destroy");
 			});
 			var client = this.option("root_client");
 			client.signal_destroy();
@@ -69,10 +64,10 @@
 													prev_col: column,
 													show_prev: this.option("single_col")
 												})
-												.on("child_select", $.proxy(this.on_child_select, this, next_col))
-												.on("header_click", $.proxy(this.on_header_click, this, next_col))
-												.on("prev_click", $.proxy(this.on_prev_click, this, next_col))
-												.on("child_removed", $.proxy(this.on_child_removed, this, next_col))
+												.on("child_select.nav", _.bind(this.on_child_select, this, next_col))
+												.on("header_click.nav", _.bind(this.on_header_click, this, next_col))
+												.on("prev_click.nav", _.bind(this.on_prev_click, this, next_col))
+												.on("child_removed.nav", _.bind(this.on_child_removed, this, next_col))
 												.focus();
 
 				this.columns.push(next_col);
