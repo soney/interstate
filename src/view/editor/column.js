@@ -145,7 +145,6 @@
 
 			this.options_form = $("<form />")	.addClass("options")
 												.attr("action", "javascript:void(0)")
-												.on("submit", _.bind(this.done_editing, this))
 												.prependTo(this.options_cell);
 
 			var options_fieldset = $("<fieldset />").appendTo(this.options_form);
@@ -320,18 +319,10 @@
 			}
 			this.element.removeClass("curr_col");
 			this.destroy_src_view();
-
-			if(this.element.hasClass("editing")) {
-				this.done_editing();
-			}
 		},
 
 		on_header_click: function(event) {
-			if(this.element.hasClass("editing")) {
-				this.done_editing();
-			} else {
-				this.element.trigger("header_click", this);
-			}
+			this.element.trigger("header_click", this);
 			event.stopPropagation();
 			event.preventDefault();
 		},
@@ -340,16 +331,6 @@
 			this.element.trigger("prev_click", this);
 			event.stopPropagation();
 			event.preventDefault();
-		},
-
-		on_edit_click: function(event) {
-			event.stopPropagation();
-			event.preventDefault();
-			if(this.element.hasClass("editing")) {
-				this.done_editing();
-			} else {
-				this.begin_editing();
-			}
 		},
 
 		add_children_listener: function () {

@@ -129,14 +129,15 @@
 
 		proto.async_get = function () {
 			// doesn't store the value in a constraint; uses a callback when it's ready instead
-			var args = summarize_args(_.first(arguments, arguments.length - 1));
-			var callback, context;
+			var args, callback, context;
 			if(_.isFunction(arguments[arguments.length-2]) && !_.isFunction(arguments[arguments.length-1])) {
 				callback = arguments[arguments.length-2];
 				context = arguments[arguments.length-1];
+				args = summarize_args(_.first(arguments, arguments.length - 2));
 			} else {
 				callback = arguments[arguments.length-1];
 				context = window;
+				args = summarize_args(_.first(arguments, arguments.length - 1));
 			}
 
 			var request_id = this.post({

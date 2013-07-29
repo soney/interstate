@@ -151,8 +151,10 @@
 				$(this.circle[0]).off("contextmenu.cm");
 			}
 			able.destroy_this_optionable(this);
-			this.active_fn.destroy();
-			delete this.active_fn;
+			if(this.active_fn) {
+				this.active_fn.destroy();
+				delete this.active_fn;
+			}
 			if(this.running_fn) {
 				this.running_fn.destroy();
 				delete this.running_fn;
