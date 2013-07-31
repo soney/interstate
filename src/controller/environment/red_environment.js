@@ -80,6 +80,7 @@
 			circle.set("transform", new red.Cell({str: "''"}));
 			circle.set("animated_properties", new red.Cell({str: "false"}));
 			circle.set("animation_duration", new red.Cell({str: "300"}));
+			circle.set("animation_easing", new red.Cell({str: "'linear'"}));
 
 
 			var ellipse = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
@@ -107,6 +108,7 @@
 			ellipse.set("transform", new red.Cell({str: "''"}));
 			ellipse.set("animated_properties", new red.Cell({str: "false"}));
 			ellipse.set("animation_duration", new red.Cell({str: "300"}));
+			ellipse.set("animation_easing", new red.Cell({str: "'linear'"}));
 			
 			var image = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
@@ -128,6 +130,7 @@
 			image.set("height", new red.Cell({str: "150"}));
 			image.set("animated_properties", new red.Cell({str: "false"}));
 			image.set("animation_duration", new red.Cell({str: "300"}));
+			image.set("animation_easing", new red.Cell({str: "'linear'"}));
 
 
 			var rect = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
@@ -156,6 +159,7 @@
 			rect.set("height", new red.Cell({str: "50"}));
 			rect.set("animated_properties", new red.Cell({str: "false"}));
 			rect.set("animation_duration", new red.Cell({str: "300"}));
+			rect.set("animation_easing", new red.Cell({str: "'linear'"}));
 			
 			var text = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
@@ -186,6 +190,7 @@
 			text.set("font_style", new red.Cell({str: "'normal'"}));
 			text.set("animated_properties", new red.Cell({str: "false"}));
 			text.set("animation_duration", new red.Cell({str: "300"}));
+			text.set("animation_easing", new red.Cell({str: "'linear'"}));
 
 			var path = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
 																								instance_options: {
@@ -210,6 +215,7 @@
 			path.set("transform", new red.Cell({str: "''"}));
 			path.set("animated_properties", new red.Cell({str: "false"}));
 			path.set("animation_duration", new red.Cell({str: "300"}));
+			path.set("animation_easing", new red.Cell({str: "'linear'"}));
 			/**/
 		};
 

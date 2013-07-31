@@ -144,10 +144,16 @@
 									if(!_.isNumber(duration)) {
 										duration = 300;
 									}
+									
+									var easing = contextual_object.prop_val("animation_easing");
+									if(!_.isString(easing)) {
+										easing = "linear";
+									}
+
 									var anim_options = { };
 									anim_options[raph_name] = prop_val;
 									try {
-										robj.animate(anim_options, duration);
+										robj.animate(anim_options, duration, easing);
 									} catch(e) {
 										console.error(e);
 									}
