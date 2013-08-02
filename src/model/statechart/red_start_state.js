@@ -140,7 +140,7 @@
 			}
 			return this;
 		};
-		proto.destroy = function () {
+		proto.destroy = function (silent) {
 			this._emit("destroy", {
 				type: "destroy",
 				target: this
@@ -148,10 +148,10 @@
 
 			cjs.wait();
 			if(this.outgoingTransition) {
-				this.outgoingTransition.destroy();
+				this.outgoingTransition.destroy(silent);
 				delete this.outgoingTransition;
 			}
-			this._transition_to_self.destroy();
+			this._transition_to_self.destroy(silent);
 			delete this._transition_to_self;
 			My.superclass.destroy.apply(this, arguments);
 			cjs.signal();

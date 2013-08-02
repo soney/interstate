@@ -296,7 +296,7 @@
 		proto.set_start_state = function (state) {
 			cjs.wait();
 			if(this._start_state) {
-				this._start_state.destroy();
+				this._start_state.destroy(true);
 			}
 			if (this.$local_state && this.$local_state.get() === this.get_start_state()) {
 				this.$local_state.set(state);

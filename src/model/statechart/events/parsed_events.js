@@ -68,7 +68,7 @@
 
 					var tree, event = false;
 					cjs.wait();
-					try {
+					//try {
 						tree = this._tree.get();
 						if(tree instanceof red.Error) {
 							console.log("no event");
@@ -79,11 +79,13 @@
 								context: context
 							}, this._live_event_creator);
 						}
+						/*
 					} catch(e) {
 						console.error(e);
 					} finally {
+					*/
 						cjs.signal();
-					}
+					//}
 
 					if (event) {
 						event.set_transition(this.get_transition());

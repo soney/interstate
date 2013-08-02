@@ -174,7 +174,6 @@
 			}
 		};
 
-
 		var tablify = function (contextual_object) {
 			if (contextual_object instanceof red.ContextualDict) {
 				if (contextual_object instanceof red.ContextualStatefulObj) {

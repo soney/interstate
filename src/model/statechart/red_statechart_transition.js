@@ -167,41 +167,41 @@
 		};
 		proto.event = function () { return this._event; };
 		proto.involves = function (state) { return this.from() === state || this.to() === state; };
-		proto.destroy = function () {
+		proto.destroy = function (silent) {
 			this._emit("destroy", {type: "destroy", target: this});
 			cjs.wait();
 			if(this.$active) {
-				this.$active.destroy();
+				this.$active.destroy(silent);
 			}
 
-			this._from_state.destroy();
+			this._from_state.destroy(silent);
 			delete this._from_state;
 
-			this._to_state.destroy();
+			this._to_state.destroy(silent);
 			delete this._to_state;
 
 			this.set_basis(undefined);
 			
 			this._event.off_fire(this.fire, this);
-			this._event.destroy();
+			this._event.destroy(silent);
 			delete this._event;
 
-			this._initialized.destroy();
+			this._initialized.destroy(silent);
 			delete this._initialized;
 
-			this._last_run_event.destroy();
+			this._last_run_event.destroy(silent);
 			delete this._last_run_event;
 
-			this.$active.destroy();
+			this.$active.destroy(silent);
 			delete this.$active;
 			
-			this.$times_run.destroy();
+			this.$times_run.destroy(silent);
 			delete this.$times_run;
 
 			delete this._context;
 
 			if(red.__debug_statecharts) {
-				this.$enabled.destroy();
+				this.$enabled.destroy(silent);
 				delete this.$enabled;
 			}
 

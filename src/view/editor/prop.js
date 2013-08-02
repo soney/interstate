@@ -1,6 +1,6 @@
 /*jslint nomen: true, vars: true, white: true */
 /*jshint scripturl: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael */
+/*global red,esprima,able,uid,console,window,jQuery,Raphael,RedMap */
 
 (function (red, $) {
 	"use strict";
@@ -424,6 +424,7 @@
 			this.element.removeClass("selected");
 		},
 		on_show_src: function() {
+
 			this.src_cell = $("<td />")	.addClass("src")
 										.appendTo(this.element);
 
@@ -432,11 +433,14 @@
 				if(value.type() === "stateful_prop") {
 					var layout_manager = this.option("layout_manager");
 					if(layout_manager) {
+						this.child_views = new RedMap({ });
+
 						var client = value;
 						var $states = client.get_$("get_states");
 						var $values = client.get_$("get_values");
 						var $active_value = client.get_$("active_value");
 						this.live_prop_vals_fn = cjs.liven(function() {
+						/*
 							this.src_cell.children().each(function() {
 								var $this = $(this);
 								if($this.data("red-unset_prop")) {
@@ -445,6 +449,7 @@
 									$this.prop_cell("destroy");
 								}
 							}).remove();
+							*/
 							this.src_cell.empty();
 
 							var values = $values.get();
@@ -454,6 +459,10 @@
 
 							var views = [];
 							var to_edit_view = false;
+
+							//console.log(this.child_views.keys());
+							//console.log(states);
+
 							_.each(states, function(state) {
 								if(state) {
 									var value_info = _.find(values, function(value_info) { return value_info.state === state; });
@@ -461,38 +470,50 @@
 									if(!left || left < 0) {
 										return;
 									}
-									if(value_info) {
-										var val = value_info.value;
-										var active = active_value && active_value.value === val && value !== undefined;
-										view = $("<span />").prop_cell({
-											left: left,
-											width: layout_manager.get_width(state),
-											value: val,
-											active: active,
-											state: state,
-											prop: this.option("value")
-										});
-										if(this.__awaiting_value_for_state === state) {
-											if((new Date()).getTime() - this.__awaiting_value_for_state_set_at < 500) { // HUGE hack
-												to_edit_view = view;
-											} else {
-												delete this.__awaiting_value_for_state;
-												delete this.__awaiting_value_for_state_set_at;
-											}
-										}
-									} else {
-										view = $("<span />").unset_prop({
-											left: left
-										}).on("click", _.bind(function() {
-											this.__awaiting_value_for_state = state;
-											this.__awaiting_value_for_state_set_at = (new Date()).getTime();
-											var event = new $.Event("command");
-											event.command_type = "set_stateful_prop_for_state";
-											event.prop = this.option("value");
-											event.state = state;
+									var set_options = true;
+									view = this.child_views.get_or_put(value_info ? value_info.value : state, function() {
+										set_options = false;
+										var view;
+										if(value_info) {
+											var val = value_info.value;
+											var active = active_value && active_value.value === val && value !== undefined;
+											return $("<span />").prop_cell({
+												left: left,
+												width: layout_manager.get_width(state),
+												value: val,
+												active: active,
+												state: state,
+												prop: this.option("value")
+											});
+										} else {
+											return $("<span />").unset_prop({
+												left: left
+											}).on("click", _.bind(function() {
+												this.__awaiting_value_for_state = state;
+												this.__awaiting_value_for_state_set_at = (new Date()).getTime();
+												var event = new $.Event("command");
+												event.command_type = "set_stateful_prop_for_state";
+												event.prop = this.option("value");
+												event.state = state;
 
-											this.element.trigger(event);
-										}, this));
+												this.element.trigger(event);
+											}, this));
+										}
+									}, this);
+									if(this.__awaiting_value_for_state === state) {
+										if((new Date()).getTime() - this.__awaiting_value_for_state_set_at < 500) { // HUGE hack
+											to_edit_view = view;
+										} else {
+											delete this.__awaiting_value_for_state;
+											delete this.__awaiting_value_for_state_set_at;
+										}
+									}
+									if(set_options) {
+										if(view.data("red-unset_prop")) {
+											view.unset_prop("option", "left", left);
+										} else if(view.data("red-prop_cell")) {
+											view.prop_cell("option", "left", left);
+										}
 									}
 									views.push(view);
 								}
@@ -512,6 +533,17 @@
 						}, {
 							context: this,
 							on_destroy: function() {
+								this.child_views.each(function($this, key) {
+									if($this.data("red-unset_prop")) {
+										$this.unset_prop("destroy");
+									} else if($this.data("red-prop_cell")) {
+										$this.prop_cell("destroy");
+									}
+									$this.remove();
+									this.child_views.unset(key);
+								}, this);
+								this.child_views.destroy();
+								delete this.child_views;
 								$(this.src_cell).children().each(function() {
 									var $this = $(this);
 									if($this.data("red-unset_prop")) {
