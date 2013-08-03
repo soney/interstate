@@ -440,18 +440,6 @@
 						var $values = client.get_$("get_values");
 						var $active_value = client.get_$("active_value");
 						this.live_prop_vals_fn = cjs.liven(function() {
-						/*
-							this.src_cell.children().each(function() {
-								var $this = $(this);
-								if($this.data("red-unset_prop")) {
-									$this.unset_prop("destroy");
-								} else if($this.data("red-prop_cell")) {
-									$this.prop_cell("destroy");
-								}
-							}).remove();
-							this.src_cell.empty();
-							*/
-
 							var values = $values.get();
 							var states = $states.get();
 							var active_value = $active_value.get();
@@ -460,15 +448,17 @@
 							var views = [];
 							var to_edit_view = false;
 
-							//console.log(this.child_views.keys());
-							//console.log(states);
-
 							var found = false;
+							/*
 							var keys = _.clone(this.child_views.keys());
 							_.each(keys, function(key) {
-								var i, value_info;
-								for(i = 0; i<values.length; i++) {
-									value_info = values[i];
+								var i, value_info state;
+								for(i = 0; i<states.length; i++) {
+									state = states[i];
+									value_info = _.find(values, function(value_info) { return value_info.state === state; });
+									if(value_info) {
+									} else {
+									}
 									if(value_info.state === key || value_info.value === key) {
 										found = true;
 										break;
@@ -485,6 +475,8 @@
 									this.child_views.remove(key);
 								}
 							}, this);
+							*/
+							var to_remove_keys = this.child_views.keys();
 							_.each(states, function(state) {
 								if(state) {
 									var value_info = _.find(values, function(value_info) { return value_info.state === state; });
@@ -493,13 +485,31 @@
 										return;
 									}
 									var set_options = true;
-									view = this.child_views.get_or_put(value_info ? value_info.value : state, function() {
-										set_options = false;
-										var view;
+									var key = value_info ? value_info.value : state;
+									var val, active;
+
+									if(value_info) {
+										val = value_info.value;
+										active = active_value && active_value.value === val && value !== undefined;
+									}
+
+									if(this.child_views.has(key)) {
+										view = this.child_views.get(key);
+										if(view.data("red-unset_prop")) {
+											view.unset_prop("option", {
+												left: left
+											});
+										} else if(view.data("red-prop_cell")) {
+											view.prop_cell("option", {
+												left: left,
+												active: active
+											});
+										}
+										var index = _.indexOf(to_remove_keys, key);
+										if(index >= 0) { to_remove_keys.splice(index, 1); }
+									} else {
 										if(value_info) {
-											var val = value_info.value;
-											var active = active_value && active_value.value === val && value !== undefined;
-											return $("<span />").prop_cell({
+											view = $("<span />").prop_cell({
 												left: left,
 												width: layout_manager.get_width(state),
 												value: val,
@@ -508,7 +518,7 @@
 												prop: this.option("value")
 											});
 										} else {
-											return $("<span />").unset_prop({
+											view = $("<span />").unset_prop({
 												left: left
 											}).on("click", _.bind(function() {
 												this.__awaiting_value_for_state = state;
@@ -521,7 +531,9 @@
 												this.element.trigger(event);
 											}, this));
 										}
-									}, this);
+										this.child_views.put(key, view);
+									}
+
 									if(this.__awaiting_value_for_state === state) {
 										if((new Date()).getTime() - this.__awaiting_value_for_state_set_at < 500) { // HUGE hack
 											to_edit_view = view;
@@ -530,22 +542,18 @@
 											delete this.__awaiting_value_for_state_set_at;
 										}
 									}
-									if(set_options) {
-										if(view.data("red-unset_prop")) {
-											view.unset_prop("option", {
-												left: left
-											});
-										} else if(view.data("red-prop_cell")) {
-											var val = value_info.value;
-											var active = active_value && active_value.value === val && value !== undefined;
-											view.prop_cell("option", {
-												left: left,
-												active: active
-											});
-										}
-									}
 									views.push(view);
 								}
+							}, this);
+							_.each(to_remove_keys, function(key) {
+								var view = this.child_views.get(key);
+								if(view.data("red-unset_prop")) {
+									view.unset_prop("destroy");
+								} else if(view.data("red-prop_cell")) {
+									view.prop_cell("destroy");
+								}
+								view.remove();
+								this.child_views.remove(key);
 							}, this);
 							this.src_cell.append.apply(this.src_cell, _.sortBy(views, function(v) {
 								if(v.data("red-prop_cell")) {
