@@ -136,6 +136,7 @@
 		_destroy: function() {
 			this._super();
 			this.name_span	.off("text_change.name_span done_editing.name_span")
+							.editable_text("destroy")
 							.remove();
 			this.element.off("contextmenu.on_context_menu")
 						.off("click.onclick")

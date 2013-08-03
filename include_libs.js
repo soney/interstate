@@ -28,7 +28,7 @@ var cjs_path = cp(vendor_src, "cjs");
 exports.vendor = c(
 	cp(vendor_src, [
 				"underscore/underscore.js",
-				"jquery-ui-1.10.3.custom/js/jquery-1.9.1.js",
+				"jquery-ui-1.10.3.custom/js/jquery-2.0.3.min.js",
 				"jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js",
 				"raphael/raphael.js",
 				"esprima/esprima.js",
