@@ -8,11 +8,13 @@
 
 	var get_event = function (tree, options, live_event_creator) {
 		var event_constraint = red.get_parsed_$(tree, options);
-		var got_value = event_constraint.get();
+		var got_value = cjs.get(event_constraint);
 		if (got_value instanceof red.Event) {
 			return got_value;
 		} else {
-			cjs.removeDependency(event_constraint, live_event_creator);
+			if(cjs.is_$(event_constraint)) {
+				cjs.removeDependency(event_constraint, live_event_creator);
+			}
 			return new red.ConstraintEvent(event_constraint, got_value);
 		}
 	};
@@ -68,7 +70,7 @@
 
 					var tree, event = false;
 					cjs.wait();
-					//try {
+					try {
 						tree = this._tree.get();
 						if(tree instanceof red.Error) {
 							console.log("no event");
@@ -79,13 +81,11 @@
 								context: context
 							}, this._live_event_creator);
 						}
-						/*
 					} catch(e) {
 						console.error(e);
 					} finally {
-					*/
 						cjs.signal();
-					//}
+					}
 
 					if (event) {
 						event.set_transition(this.get_transition());

@@ -247,14 +247,21 @@ asyncTest("Pointer Bucket Collection", function() {
 		});
 	});
 });
-asyncTest("Statechart View", function() {
+asyncTest("Basic Statechart View", function() {
 	expect(1);
 	var master = new red.Statechart();
-	master	.add_state("a")
-			.starts_at("a");
 
 	var dict = new red.Dict();
 	var context = new red.Pointer({stack: [dict]});
+	master	.add_state("a")
+			.add_state("a.x")
+			.add_state("a.y")
+			.add_transition("a.x", "a.y", new red.ParsedEvent({str: "false", context: context}))
+			.add_state("b")
+			.starts_at("a")
+			.find_state("a")
+				.starts_at("x")
+				.parent();
 
 	var sc_display_div = $("<div />")	.appendTo(document.body)
 										.statechart({
@@ -346,7 +353,7 @@ asyncTest("Statechart View", function() {
 		});
 	});
 });
-asyncTest("Editor", function() {
+asyncTest("Basic Editor", function() {
 	expect(1);
 	clear_snapshots(function() {
 		take_snapshot([], function() {

@@ -37,21 +37,27 @@
 			}
 		};
 		proto.destroy = function () {
-			this.constraint.offChange(this.check_constraint_val, this);
-			this.constraint.destroy(true);
+			if(cjs.is_$(this.constraint)) {
+				this.constraint.offChange(this.check_constraint_val, this);
+				this.constraint.destroy(true);
+			}
 			delete this.constraint;
 		};
 
 		proto.enable = function () {
 			My.superclass.enable.apply(this, arguments);
-			this.constraint.onChange(this.check_constraint_val, this);
-			if (!this.constraint.is_valid()) {
-				this.check_constraint_val();
+			if(cjs.is_$(this.constraint)) {
+				this.constraint.onChange(this.check_constraint_val, this);
+				if (!this.constraint.is_valid()) {
+					this.check_constraint_val();
+				}
 			}
 		};
 		proto.disable = function () {
 			My.superclass.disable.apply(this, arguments);
-			this.constraint.offChange(this.check_constraint_val, this);
+			if(cjs.is_$(this.constraint)) {
+				this.constraint.offChange(this.check_constraint_val, this);
+			}
 		};
 	}(red.ConstraintEvent));
 }(red));
