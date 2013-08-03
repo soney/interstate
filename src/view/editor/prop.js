@@ -449,8 +449,8 @@
 									$this.prop_cell("destroy");
 								}
 							}).remove();
-							*/
 							this.src_cell.empty();
+							*/
 
 							var values = $values.get();
 							var states = $states.get();
@@ -463,6 +463,28 @@
 							//console.log(this.child_views.keys());
 							//console.log(states);
 
+							var found = false;
+							var keys = _.clone(this.child_views.keys());
+							_.each(keys, function(key) {
+								var i, value_info;
+								for(i = 0; i<values.length; i++) {
+									value_info = values[i];
+									if(value_info.state === key || value_info.value === key) {
+										found = true;
+										break;
+									}
+								}
+								if(!found) {
+									var view = this.child_views.get(key);
+									if(view.data("red-unset_prop")) {
+										view.unset_prop("destroy");
+									} else if(view.data("red-prop_cell")) {
+										view.prop_cell("destroy");
+									}
+									view.remove();
+									this.child_views.remove(key);
+								}
+							}, this);
 							_.each(states, function(state) {
 								if(state) {
 									var value_info = _.find(values, function(value_info) { return value_info.state === state; });
@@ -510,9 +532,16 @@
 									}
 									if(set_options) {
 										if(view.data("red-unset_prop")) {
-											view.unset_prop("option", "left", left);
+											view.unset_prop("option", {
+												left: left
+											});
 										} else if(view.data("red-prop_cell")) {
-											view.prop_cell("option", "left", left);
+											var val = value_info.value;
+											var active = active_value && active_value.value === val && value !== undefined;
+											view.prop_cell("option", {
+												left: left,
+												active: active
+											});
 										}
 									}
 									views.push(view);
@@ -526,9 +555,11 @@
 								}
 							}));
 							if(to_edit_view) {
-								to_edit_view.prop_cell("begin_editing")
-											.prop_cell("select")
-											.prop_cell("focus");
+								if(to_edit_view.data("red-prop_cell")) {
+									to_edit_view.prop_cell("begin_editing")
+												.prop_cell("select")
+												.prop_cell("focus");
+								}
 							}
 						}, {
 							context: this,
@@ -540,7 +571,7 @@
 										$this.prop_cell("destroy");
 									}
 									$this.remove();
-									this.child_views.unset(key);
+									this.child_views.remove(key);
 								}, this);
 								this.child_views.destroy();
 								delete this.child_views;
@@ -621,15 +652,6 @@
 				delete this.live_cell_str_fn;
 			}
 			if(this.src_cell) {
-				this.src_cell.children().each(function() {
-					var $this = $(this);
-					if($this.data("red-unset_prop")) {
-						$this.unset_prop("destroy");
-					} else if($this.data("red-prop_cell")) {
-						$this.prop_cell("destroy");
-					}
-				}).remove();
-				this.src_cell.empty();
 				delete this.src_cell;
 			}
 		},

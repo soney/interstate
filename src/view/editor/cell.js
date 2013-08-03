@@ -163,7 +163,7 @@
 		},
 		begin_editing: function() {
 			this.element.addClass("editing");
-			this.element.off("click", this.$on_click);
+			this.element.off("click.prop_cell");
 			this.text.hide();
 
 			if(this.textbox) {
@@ -204,7 +204,7 @@
 			this.element.trigger(event);
 		},
 		end_edit: function(cancel) {
-			this.element.on("click", this.$on_click);
+			this.element.on("click", _.bind(this.on_click, this));
 			if(cancel !== true) {
 				var val = this.textbox.val();
 				if(val.trim() === "" && this.option("prop") && this.option("state")) {
