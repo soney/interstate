@@ -315,8 +315,8 @@ asyncTest("Statechart View", function() {
 											}
 										});
 
-	//clear_snapshots(function() {
-		//take_snapshot([], function() {
+	clear_snapshots(function() {
+		take_snapshot([], function() {
 			var cleanup_button = $("<a />")	.attr("href", "javascript:void(0)")
 											.text("Clean up")
 											.prependTo(document.body)
@@ -337,35 +337,19 @@ asyncTest("Statechart View", function() {
 													});
 												}, 0);
 											});
-			/*
 
-			var runtime_div = $("<div />").appendTo(document.body);
-			var editor_div = $("<div />").appendTo(document.body);
-			runtime_div	.dom_output({
-							root: root,
-							open_separate_client_window: false,
-							edit_on_open: true,
-							show_edit_button: false
-						});
-			editor_div	.editor({
-							debug_env: true,
-							server_window: window
-						});
-
-			/*
 			window.setTimeout(function() {
 				if(cleanup_button) {
 					cleanup_button.click();
 				}
-			}, 50000);
-			*/
-		//});
-	//});
+			}, 2000);
+		});
+	});
 });
 asyncTest("Editor", function() {
 	expect(1);
-	//clear_snapshots(function() {
-		//take_snapshot([], function() {
+	clear_snapshots(function() {
+		take_snapshot([], function() {
 			var env = new red.Environment({create_builtins: true});
 			env	.set("height", "10")
 				.set("obj", "<stateful>");
@@ -406,15 +390,13 @@ asyncTest("Editor", function() {
 													});
 												}, 0);
 											});
-			/*
 			window.setTimeout(function() {
 				if(cleanup_button) {
 					cleanup_button.click();
 				}
-			}, 50000);
-			*/
-		//});
-	//});
+			}, 2000);
+		});
+	});
 });
 
 }());
