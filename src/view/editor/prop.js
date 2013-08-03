@@ -424,7 +424,6 @@
 			this.element.removeClass("selected");
 		},
 		on_show_src: function() {
-
 			this.src_cell = $("<td />")	.addClass("src")
 										.appendTo(this.element);
 
@@ -449,34 +448,9 @@
 							var to_edit_view = false;
 
 							var found = false;
-							/*
-							var keys = _.clone(this.child_views.keys());
-							_.each(keys, function(key) {
-								var i, value_info state;
-								for(i = 0; i<states.length; i++) {
-									state = states[i];
-									value_info = _.find(values, function(value_info) { return value_info.state === state; });
-									if(value_info) {
-									} else {
-									}
-									if(value_info.state === key || value_info.value === key) {
-										found = true;
-										break;
-									}
-								}
-								if(!found) {
-									var view = this.child_views.get(key);
-									if(view.data("red-unset_prop")) {
-										view.unset_prop("destroy");
-									} else if(view.data("red-prop_cell")) {
-										view.prop_cell("destroy");
-									}
-									view.remove();
-									this.child_views.remove(key);
-								}
-							}, this);
-							*/
-							var to_remove_keys = this.child_views.keys();
+							//var to_remove_keys = _.clone(this.child_views.keys());
+							//console.log(states, values, this.child_views.keys());
+							var to_remove_elements = _.map(this.src_cell.children(), function(x) { return $(x); });
 							_.each(states, function(state) {
 								if(state) {
 									var value_info = _.find(values, function(value_info) { return value_info.state === state; });
@@ -484,14 +458,17 @@
 									if(!left || left < 0) {
 										return;
 									}
-									var set_options = true;
+									//var set_options = true;
 									var key = value_info ? value_info.value : state;
-									var val, active;
+									//var val, active;
+									var i, v;
 
+/*
 									if(value_info) {
 										val = value_info.value;
 										active = active_value && active_value.value === val && value !== undefined;
 									}
+									/*
 
 									if(this.child_views.has(key)) {
 										view = this.child_views.get(key);
@@ -508,31 +485,68 @@
 										var index = _.indexOf(to_remove_keys, key);
 										if(index >= 0) { to_remove_keys.splice(index, 1); }
 									} else {
+									*/
 										if(value_info) {
-											view = $("<span />").prop_cell({
-												left: left,
-												width: layout_manager.get_width(state),
-												value: val,
-												active: active,
-												state: state,
-												prop: this.option("value")
-											});
+											var val = value_info.value;
+											var active = active_value && active_value.value === val && value !== undefined;
+											view = false;
+											for(i = 0; i<to_remove_elements.length; i++) {
+												v = to_remove_elements[i];
+												if(v.data("red-prop_cell") && v.prop_cell("option", "value") === val) {
+													view = v;
+													to_remove_elements.splice(i, 1);
+													break;
+												}
+											}
+											if(view) {
+												view.prop_cell("option", {
+													active: active,
+													left: left
+												});
+											} else {
+												view = $("<span />").prop_cell({
+													left: left,
+													width: layout_manager.get_width(state),
+													value: val,
+													active: active,
+													state: state,
+													prop: this.option("value")
+												});
+											}
 										} else {
-											view = $("<span />").unset_prop({
-												left: left
-											}).on("click", _.bind(function() {
-												this.__awaiting_value_for_state = state;
-												this.__awaiting_value_for_state_set_at = (new Date()).getTime();
-												var event = new $.Event("command");
-												event.command_type = "set_stateful_prop_for_state";
-												event.prop = this.option("value");
-												event.state = state;
+											view = false;
+											for(i = 0; i<to_remove_elements.length; i++) {
+												v = to_remove_elements[i];
+												if(v.data("red-unset_prop") && v.unset_prop("option", "state") === state) {
+													view = v;
+													to_remove_elements.splice(i, 1);
+													break;
+												}
+											}
+											if(view) {
+												view.unset_prop("option", {
+													left: left
+												});
+											} else {
+												view = $("<span />").unset_prop({
+													left: left,
+													state: state
+												}).on("click", _.bind(function() {
+													this.__awaiting_value_for_state = state;
+													this.__awaiting_value_for_state_set_at = (new Date()).getTime();
+													var event = new $.Event("command");
+													event.command_type = "set_stateful_prop_for_state";
+													event.prop = this.option("value");
+													event.state = state;
 
-												this.element.trigger(event);
-											}, this));
+													this.element.trigger(event);
+												}, this));
+											}
 										}
+										/*
 										this.child_views.put(key, view);
 									}
+									*/
 
 									if(this.__awaiting_value_for_state === state) {
 										if((new Date()).getTime() - this.__awaiting_value_for_state_set_at < 500) { // HUGE hack
@@ -545,6 +559,7 @@
 									views.push(view);
 								}
 							}, this);
+							/*
 							_.each(to_remove_keys, function(key) {
 								var view = this.child_views.get(key);
 								if(view.data("red-unset_prop")) {
@@ -555,13 +570,30 @@
 								view.remove();
 								this.child_views.remove(key);
 							}, this);
-							this.src_cell.append.apply(this.src_cell, _.sortBy(views, function(v) {
+							*/
+							_.each(to_remove_elements, function(view) {
+								if(view.data("red-unset_prop")) {
+									view.unset_prop("destroy");
+								} else if(view.data("red-prop_cell")) {
+									view.prop_cell("destroy");
+								}
+								view.remove();
+							}, this);
+
+							var sorted_views = _.sortBy(views, function(v) {
 								if(v.data("red-prop_cell")) {
 									return parseInt(v.prop_cell("option", "left"), 10);
 								} else {
 									return parseInt(v.unset_prop("option", "left"), 10);
 								}
-							}));
+							});
+
+							//this.src_cell.append.apply(this.src_cell, );
+							//console.log(sorted_views);
+							//this.src_cell.append.apply(this.src_cell, sorted_views);
+							_.each(sorted_views, function(v, index) {
+								insert_at(v[0], this.src_cell[0], index);
+							}, this);
 							if(to_edit_view) {
 								if(to_edit_view.data("red-prop_cell")) {
 									to_edit_view.prop_cell("begin_editing")
@@ -572,6 +604,7 @@
 						}, {
 							context: this,
 							on_destroy: function() {
+							/*
 								this.child_views.each(function($this, key) {
 									if($this.data("red-unset_prop")) {
 										$this.unset_prop("destroy");
@@ -583,6 +616,7 @@
 								}, this);
 								this.child_views.destroy();
 								delete this.child_views;
+								*/
 								$(this.src_cell).children().each(function() {
 									var $this = $(this);
 									if($this.data("red-unset_prop")) {
@@ -590,7 +624,7 @@
 									} else if($this.data("red-prop_cell")) {
 										$this.prop_cell("destroy");
 									}
-								}).remove();
+								});
 								this.src_cell.empty();
 								$states.signal_destroy();
 								$values.signal_destroy();
@@ -630,6 +664,15 @@
 					}, {
 						context: this,
 						on_destroy: function() {
+							this.src_cell.children().each(function() {
+								var $this = $(this);
+								if($this.data("red-unset_prop")) {
+									$this.unset_prop("destroy");
+								} else if($this.data("red-prop_cell")) {
+									$this.prop_cell("destroy");
+								}
+							}).remove();
+							this.src_cell.empty();
 							$str.signal_destroy();
 						}
 					});

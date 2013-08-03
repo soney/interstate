@@ -253,7 +253,8 @@
 	$.widget("red.unset_prop", {
 		options: {
 			left: 0,
-			radius: 7
+			radius: 7,
+			state: null
 		},
 		_create: function() {
 			this.element.addClass("unset")
@@ -264,6 +265,7 @@
 		_destroy: function() {
 			this.element.removeClass("unset")
 						.off("keydown.unset");
+			delete this.options.state;
 		},
 		update_left: function() {
 			this.element.css("left", (this.option("left") - this.option("radius")) + "px");
