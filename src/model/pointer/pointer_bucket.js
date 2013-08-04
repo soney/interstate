@@ -218,7 +218,9 @@
 		var pointer_root = pointer.root();
 
 		var pointer_bucket = red.pointer_buckets.get(pointer_root);
-		pointer_bucket.destroy_cobj(cobj);
+		if(pointer_bucket) {
+			pointer_bucket.destroy_cobj(cobj);
+		}
 
 		if(root_call) {
 			cjs.signal();

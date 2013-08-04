@@ -66,14 +66,48 @@
 				},
 				screen: {
 					type: "list",
-					add: function(shape_attachment_instance, index) {
-						var robj = shape_attachment_instance.create_robj(this.paper);
+					add: function(shape_attachment_instance, to_index) {
+						var shape = shape_attachment_instance.create_robj(this.paper);
+						var itemi, len;
+						var index = 0;
+						var item;
+						this.paper.forEach(function(elem) {
+							if(index === to_index) {
+								itemi = elem;
+							}
+							len = index;
+							index++;
+						});
+						if(itemi !== shape) {
+							if(to_index >= len) {
+								shape.toBack();
+							} else {
+								shape.insertBefore(itemi);
+							}
+						}
 					},
 					remove: function(shape_attachment_instance) {
 						shape_attachment_instance.remove();
 					},
 					move: function(item, from_index, to_index) {
-						//console.log("move");
+						var shape = item.get_robj();
+						var index = 0;
+						if (from_index < to_index) { //If it's less than the index we're inserting at...
+							to_index += 1; //Increase the index by 1, to make up for the fact that we're removing me at the beginning
+						}
+						var itemi, len;
+						this.paper.forEach(function(elem) {
+							if(index === to_index) {
+								itemi = elem;
+							}
+							len = index;
+							index++;
+						});
+						if(to_index >= len) {
+							shape.toBack();
+						} else {
+							shape.insertBefore(itemi);
+						}
 					},
 					getter: function(contextual_object) {
 						var screen = contextual_object.prop_val("screen");

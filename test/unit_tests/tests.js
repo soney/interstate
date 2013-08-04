@@ -1,5 +1,4 @@
 (function() {
-//var cjs = red.cjs;
 var command_id = 0;
 var callbacks = {};
 var do_command = function(command_name, parameters, callback) {
