@@ -46,6 +46,43 @@
 		}
 		child_node.insertBefore(before_child);
 	};
+	var get_children = function(child_infos) {
+		var children = [];
+		_.each(child_infos, function(child_info) {
+			var child = child_info.value;
+			if(child instanceof red.ContextualDict) {
+				if(child.is_template()) {
+					var copies = child.instances();
+					_.each(copies, function(child) {
+						var shape_attachment_instance = child.get_attachment_instance("shape");
+						if(shape_attachment_instance) {
+							var to_show = child.prop_val("show");
+							if(to_show) {
+								children.push(shape_attachment_instance);
+							}
+						}
+						var group_attachment_instance = child.get_attachment_instance("group");
+						if(group_attachment_instance) {
+							children.push.apply(children, group_attachment_instance.get_children());
+						}
+					});
+				} else {
+					var shape_attachment_instance = child.get_attachment_instance("shape");
+					if(shape_attachment_instance) {
+						var to_show = child.prop_val("show");
+						if(to_show) {
+							children.push(shape_attachment_instance);
+						}
+					}
+					var group_attachment_instance = child.get_attachment_instance("group");
+					if(group_attachment_instance) {
+						children.push.apply(children, group_attachment_instance.get_children());
+					}
+				}
+			}
+		}, this);
+		return children;
+	};
 
 	red.PaperAttachment = red.register_attachment("paper", {
 			ready: function() {
@@ -116,26 +153,7 @@
 							screen_contents = screen.children();
 						}
 				
-						var children = [];
-						_.each(screen_contents, function(child_info) {
-							var child = child_info.value;
-							if(child instanceof red.ContextualDict) {
-								if(child.is_template()) {
-									var copies = child.instances();
-									_.each(copies, function(child) {
-										var shape_attachment_instance = child.get_attachment_instance("shape");
-										if(shape_attachment_instance) {
-											children.push(shape_attachment_instance);
-										}
-									});
-								} else {
-									var shape_attachment_instance = child.get_attachment_instance("shape");
-									if(shape_attachment_instance) {
-										children.push(shape_attachment_instance);
-									}
-								}
-							}
-						}, this);
+						var children = get_children(screen_contents);
 						return children;
 					}
 				}
@@ -144,8 +162,6 @@
 				get_dom_obj: function() {
 					return this.dom_obj;
 				}
-			},
-			attachment_destroy: function() {
 			}
 		});
 	red.ShapeAttachment = red.register_attachment("shape", {
@@ -266,5 +282,44 @@
 				}
 			},
 			attachment_destroy: function() { }
+		});
+	red.GroupAttachment = red.register_attachment("group", {
+			ready: function() {
+				this.$children = cjs.$(this.child_getter, {context: this});
+			},
+			destroy: function(silent) {
+				this.$children.destroy(silent);
+				delete this.$children;
+			},
+			parameters: {
+				children: function(contextual_object) {
+				}
+			},
+			proto_props: {
+				child_getter: function() {
+					var contextual_object = this.get_contextual_object();
+					var children, cobj_children;
+					var to_show = contextual_object.prop_val("show");
+
+					if(_.isArray(to_show) || _.isString(to_show)) {
+						if(_.isString(to_show)) {
+							to_show = [to_show];
+						}
+						cobj_children = _.filter(contextual_object.children(), function(child_info) {
+							return _.contains(to_show, child_info.name);
+						});
+						children = get_children(cobj_children);
+					} else if(to_show) {
+						cobj_children = contextual_object.children();
+						children = get_children(cobj_children);
+					} else {
+						children = [];
+					}
+					return children;
+				},
+				get_children: function() {
+					return this.$children.get();
+				}
+			}
 		});
 }(red, jQuery));

@@ -52,6 +52,39 @@ var tests = [
 				env.print();
 			}
 		}]
+	},
+	{
+		name: "Groups",
+		expect: 2,
+		steps: [{
+			setup: function(env) {
+				env	.cd("screen")
+					.set("compound1", "<stateful>")
+						.cd("compound1")
+							.set("(prototypes)", "(start)", "shape.group")
+							.set("circ1", "<stateful>")
+							.cd("circ1")
+								.set("(prototypes)", "(start)", "shape.circle")
+								.set("fill", "(start)", "'red'")
+								.set("cx", "(start)", "80")
+								.set("cy", "(start)", "80")
+								.up()
+							.set("circ2", "<stateful>")
+							.cd("circ2")
+								.set("(prototypes)", "(start)", "shape.circle")
+								.set("fill", "(start)", "'blue'")
+								.set("cx", "(start)", "100")
+								.set("cy", "(start)", "100")
+								.up()
+								;
+			},
+			test: function(env, runtime) {
+				var circles = $("circle", runtime);
+				equal(circles.eq(0).attr("fill"), "#ff0000");
+				equal(circles.eq(1).attr("fill"), "#0000ff");
+				env.print();
+			}
+		}]
 	}
 ];
 
@@ -81,9 +114,11 @@ window.addEventListener("message", function(event) {
 
     if (event.data.type && (event.data.type == "FROM_EXTENSION")) {
 		var id = event.data.id;
-		var callback = callbacks[id];
-		delete callbacks[id];
-		callback(event.data.response);
+		if(callbacks.hasOwnProperty(id)) {
+			var callback = callbacks[id];
+			delete callbacks[id];
+			callback(event.data.response);
+		}
     }
 }, false);
 

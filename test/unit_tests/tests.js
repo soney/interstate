@@ -25,9 +25,11 @@ window.addEventListener("message", function(event) {
 
     if (event.data.type && (event.data.type == "FROM_EXTENSION")) {
 		var id = event.data.id;
-		var callback = callbacks[id];
-		delete callbacks[id];
-		callback(event.data.response);
+		if(callbacks.hasOwnProperty(id)) {
+			var callback = callbacks[id];
+			delete callbacks[id];
+			callback(event.data.response);
+		}
     }
 }, false);
 

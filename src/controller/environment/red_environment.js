@@ -216,6 +216,10 @@
 			path.set("animated_properties", new red.Cell({str: "false"}));
 			path.set("animation_duration", new red.Cell({str: "300"}));
 			path.set("animation_easing", new red.Cell({str: "'linear'"}));
+
+			var group = new red.Dict({has_protos: false, direct_attachments: [new red.GroupAttachment()]});
+			shape.set("group", group);
+			group.set("show", new red.Cell({str: "true"}));
 			/**/
 		};
 

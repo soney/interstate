@@ -388,7 +388,7 @@
 		proto.destroy = function () {
 			if(this.constructor === My) { this.emit_begin_destroy(); }
 			this.$value.offChange(this.$value.update, this.$value);
-			this.$active_value.destroy();
+			this.$active_value.destroy(true);
 			delete this.$active_value;
 			My.superclass.destroy.apply(this, arguments);
 		};
