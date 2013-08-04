@@ -130,10 +130,10 @@
 
 				var append_interval = window.setInterval(_.bind(function (element, edit_button) {
 					if (element.parentNode) {
-						element.parentNode.append(edit_button);
+						element.parentNode.appendChild(edit_button);
 						window.clearInterval(append_interval);
 					}
-				}, window, this.element, this.edit_button), 100);
+				}, window, this.element[0], this.edit_button[0]), 100);
 			}
 
 			if (this.option("edit_on_open")) {
