@@ -103,7 +103,9 @@
 				//cjs.signal();
 				_.delay(_.bind(function () {
 					//Delay it because parsed events can run up the dictionary tree and create all sorts of contextual objects that they shouldn't
-					this._live_event_creator.run();
+					if(this._live_event_creator) {
+						this._live_event_creator.run();
+					}
 				}, this));
 			}
 		};

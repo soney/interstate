@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = true;
+var check_memory_leaks = false;
 var step_delay = 100;
 
 var tests = [
@@ -83,6 +83,30 @@ var tests = [
 				equal(circles.eq(0).attr("fill"), "#ff0000");
 				equal(circles.eq(1).attr("fill"), "#0000ff");
 				env.print();
+			}
+		}]
+	},
+	{
+		name: "Properties",
+		expect: 2,
+		steps: [{
+			setup: function(env) {
+				env	.set("obj", "<stateful>")
+					.cd("obj")
+						.add_state("INIT")
+						.add_transition("INIT", "INIT", "on('my_fire')")
+						.set("x")
+						.set("x", "(start)", "1")
+						.set("x", "INIT-0>INIT", "x+1")
+						;
+			},
+			test: function(env, runtime) {
+				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+				equal(cobj.prop_val("x"), 1);
+				red.emit("my_fire");
+				equal(cobj.prop_val("x"), 2);
+				red.emit("my_fire");
+				equal(cobj.prop_val("x"), 3);
 			}
 		}]
 	}

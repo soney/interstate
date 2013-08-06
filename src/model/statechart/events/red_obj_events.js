@@ -18,6 +18,7 @@
 	});
 
 	red.emit = function (type, target) {
+		target = target || window;
 		var target_listeners = listener_map.get(target);
 		if (target_listeners) {
 			var listeners = target_listeners[type];
