@@ -87,26 +87,32 @@ var tests = [
 		}]
 	},
 	{
-		name: "Properties",
+		name: "Incrementing Properties",
 		expect: 2,
 		steps: [{
 			setup: function(env) {
 				env	.set("obj", "<stateful>")
 					.cd("obj")
 						.add_state("INIT")
+						.start_at("INIT")
 						.add_transition("INIT", "INIT", "on('my_fire')")
 						.set("x")
 						.set("x", "(start)", "1")
 						.set("x", "INIT-0>INIT", "x+1")
 						;
+				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+				cobj.prop_val("x");
 			},
 			test: function(env, runtime) {
+				env.print();
 				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 				equal(cobj.prop_val("x"), 1);
 				red.emit("my_fire");
 				equal(cobj.prop_val("x"), 2);
+				/*
 				red.emit("my_fire");
 				equal(cobj.prop_val("x"), 3);
+				*/
 			}
 		}]
 	}
@@ -161,10 +167,12 @@ tests.forEach(function(test) {
 		};
 		var run_step = function(step, callback) {
 			step.setup(env, runtime_div);
-			step.test(env, runtime_div);
 			window.setTimeout(function() {
-				callback();
-			}, step_delay);
+				step.test(env, runtime_div);
+				window.setTimeout(function() {
+					callback();
+				}, step_delay);
+			}, 0);
 		};
 		var run_tests = function(callback, test_index) {
 			if(arguments.length === 1) {

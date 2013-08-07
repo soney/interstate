@@ -1,5 +1,5 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedMap */
+/*global red,esprima,able,uid,console,RedMap,window */
 
 (function (red) {
 	"use strict";
@@ -42,7 +42,11 @@
 		var proto = My.prototype;
 		proto.on_create = function (type, targets) {
 			this.type = type;
+			if (!_.isArray(targets)) {
+				targets = [targets];
+			}
 			this.targets = _.flatten(targets);
+			this.add_listeners();
 		};
 
 		proto.destroy = function () {

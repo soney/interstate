@@ -19,7 +19,6 @@ $dropdown_padding: 5px;
 $link_color: royalblue;
 
 @mixin non-selectable {
-	-webkit-touch-callout: none;
 	-webkit-user-select: none;
 	-khtml-user-select: none;
 	-moz-user-select: none;
@@ -260,7 +259,6 @@ html.full_window_editor {
 								font-family: inherit;
 								font-size: inherit;
 								font-weight: inherit;
-								font-color: inherit;
 							}
 
 							> span {
@@ -390,12 +388,10 @@ html.full_window_editor {
 						padding-right: 5px;
 
 						> .drag_handle {
-							cursor: grab;
 							cursor: -moz-grab;
 							cursor: -webkit-grab;
 
 							&:active {
-								cursor: grabbing;
 								cursor: -moz-grabbing;
 								cursor: -webkit-grabbing;
 							}
@@ -442,7 +438,6 @@ html.full_window_editor {
 					> .value_summary {
 						cursor: pointer;
 						overflow: hidden;
-						display: inline-box;
 						height: 100%;
 						box-sizing: border-box;
 						-moz-box-sizing: border-box;

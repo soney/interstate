@@ -26,6 +26,9 @@
 				var statechart_event = new red.TransitionEvent(targets, statechart_spec);
 				events.push(statechart_event);
 
+				if (arguments.length <= 1) { // Ex: on('mouseup') <-> on('mouseup', window)
+					targets = window;
+				}
 				var red_event_type = event_type;
 				var red_event = new red.RedObjEvent(red_event_type, targets);
 				events.push(red_event);
