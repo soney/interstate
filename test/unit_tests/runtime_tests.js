@@ -151,21 +151,38 @@ var tests = [
 		}]
 	},
 	{
-		name: "Start State Property Value",
-		expect: 1,
+		name: "Property and State Transitions",
+		expect: 6,
 		steps: [{
 			setup: function(env) {
 				env	.cd("screen")
 						.set("obj", "<stateful>")
 						.cd("obj")
-							.set("(prototypes)", "(start)", "shape.rect")
-							.set("fill", "(start)", "'#00ff00'")
+							.set("(prototypes)", "(start)", "shape.ellipse")
+							.set("fill", "(start)", "'#bada55'")
+							.add_state("state1")
+							.add_state("state2")
+							.start_at("state1")
+							.add_transition("state1", "state2", "on('e1')")
+							.add_transition("state2", "state1", "on('e2')")
+							.set("cx", "(start)", "1")
+							.set("cx", "state2", "3")
+							.set("cx", "state1->state2", "4")
+							.set("cx", "state2->state1", "5")
 							;
-
 			},
 			test: function(env, runtime) {
-				var rect = $("rect", runtime);
-				equal(rect.attr("fill"), "#00ff00");
+				var ellipse = $("ellipse", runtime);
+				equal(ellipse.attr("fill"), "#bada55");
+				equal(ellipse.attr("cx"), "1");
+				red.emit('e1');
+				equal(ellipse.attr("cx"), "3");
+				red.emit('e2');
+				equal(ellipse.attr("cx"), "5");
+				red.emit('e1');
+				equal(ellipse.attr("cx"), "3");
+				env.reset();
+				equal(ellipse.attr("cx"), "1");
 			}
 		}]
 	}
