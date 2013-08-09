@@ -17,18 +17,23 @@
 		var proto = My.prototype;
 		proto.on_create = function (type, targets) {
 			this.get_target_listener = cjs.memoize(function (specified_target) {
-				var listener = _.bind(function (event) {
+				var self = this;
+				var listener = function (event) {
 					red.event_queue.wait();
 
 					event = _.extend({}, event, {
 						red_target: specified_target
 					});
 
-					this.fire(event);
+					self.fire(event);
 					_.defer(function () {
 						red.event_queue.signal();
 					});
-				}, this);
+				};
+				listener.destroy = function() {
+					self = null;
+					delete listener.destroy;
+				};
 				return listener;
 			}, {
 				context: this
@@ -118,6 +123,9 @@
 			this.live_fn.destroy(true);
 			delete this.live_fn;
 			this.remove_listeners();
+			this.get_target_listener.each(function(tl) {
+				tl.destroy();
+			});
 			this.get_target_listener.destroy(true);
 			delete this.get_target_listener;
 			delete this.targets;

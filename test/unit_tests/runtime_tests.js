@@ -29,7 +29,6 @@ var tests = [
 				var circles = $("circle", runtime);
 				equal(circles.eq(0).attr("fill"), "#ff0000");
 				equal(circles.eq(1).attr("fill"), "#0000ff");
-				env.print();
 			}
 		}, {
 			setup: function(env) {
@@ -39,7 +38,6 @@ var tests = [
 				var circles = $("circle", runtime);
 				equal(circles.eq(0).attr("fill"), "#0000ff");
 				equal(circles.eq(1).attr("fill"), "#ff0000");
-				env.print();
 			}
 		}, {
 			setup: function(env) {
@@ -49,7 +47,6 @@ var tests = [
 				var circles = $("circle", runtime);
 				equal(circles.eq(0).attr("fill"), "#ff0000");
 				equal(circles.eq(1).attr("fill"), "#0000ff");
-				env.print();
 			}
 		}]
 	},
@@ -82,7 +79,6 @@ var tests = [
 				var circles = $("circle", runtime);
 				equal(circles.eq(0).attr("fill"), "#ff0000");
 				equal(circles.eq(1).attr("fill"), "#0000ff");
-				env.print();
 			}
 		}]
 	},
@@ -104,7 +100,6 @@ var tests = [
 				cobj.prop_val("x");
 			},
 			test: function(env, runtime) {
-				env.print();
 				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 				equal(cobj.prop_val("x"), 1);
 				red.emit("my_fire");
@@ -113,7 +108,52 @@ var tests = [
 				equal(cobj.prop_val("x"), 3);
 			}
 		}]
+	},
+	{
+		name: "Start Property Value",
+		expect: 3,
+		steps: [{
+			setup: function(env) {
+				env	.cd("screen")
+						.set("obj", "<stateful>")
+						.cd("obj")
+							.set("(prototypes)", "(start)", "shape.rect")
+							.set("fill", "(start)", "'#00ff00'")
+							.add_state("state1")
+							.start_at("state1")
+							.set("x", "state1", "3")
+							.set("y", "(start)", "33")
+							;
+
+			},
+			test: function(env, runtime) {
+				var rect = $("rect", runtime);
+				equal(rect.attr("fill"), "#00ff00");
+				equal(rect.attr("x"), "3");
+				equal(rect.attr("y"), "33");
+			}
+		}]
+	},
+	{
+		name: "Start State Property Value",
+		expect: 1,
+		steps: [{
+			setup: function(env) {
+				env	.cd("screen")
+						.set("obj", "<stateful>")
+						.cd("obj")
+							.set("(prototypes)", "(start)", "shape.rect")
+							.set("fill", "(start)", "'#00ff00'")
+							;
+
+			},
+			test: function(env, runtime) {
+				var rect = $("rect", runtime);
+				equal(rect.attr("fill"), "#00ff00");
+			}
+		}]
 	}
+
 ];
 
 var command_id = 0;
