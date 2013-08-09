@@ -111,7 +111,7 @@ var tests = [
 	},
 	{
 		name: "Start Property Value",
-		expect: 3,
+		expect: 6,
 		steps: [{
 			setup: function(env) {
 				env	.cd("screen")
@@ -120,11 +120,27 @@ var tests = [
 							.set("(prototypes)", "(start)", "shape.rect")
 							.set("fill", "(start)", "'#00ff00'")
 							.add_state("state1")
+							.add_state("state2")
 							.start_at("state1")
+							.add_transition("state1", "state2", "on('my_event')")
 							.set("x", "state1", "3")
+							.set("x", "state2", "6")
 							.set("y", "(start)", "33")
 							;
 
+			},
+			test: function(env, runtime) {
+				red.emit('my_event')
+				env.print();
+				var rect = $("rect", runtime);
+				equal(rect.attr("fill"), "#00ff00");
+				equal(rect.attr("x"), "6");
+				equal(rect.attr("y"), "33");
+			}
+		}, {
+			setup: function(env) {
+				env.reset();
+				env.print();
 			},
 			test: function(env, runtime) {
 				var rect = $("rect", runtime);
@@ -153,7 +169,6 @@ var tests = [
 			}
 		}]
 	}
-
 ];
 
 var command_id = 0;

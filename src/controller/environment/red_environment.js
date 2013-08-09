@@ -328,8 +328,13 @@
 			return this.default_return_value();
 		};
 		proto.reset = function () {
-			var root = this.pointer.points_at(0);
-			root.reset();
+			var parent_obj = this.get_pointer_obj();
+			var cobj = red.find_or_put_contextual_obj(parent_obj, this.pointer);
+			if(cobj instanceof red.ContextualStatefulObj) {
+				cobj.reset();
+			} else {
+				throw new Error("Trying to reset non-stateful");
+			}
 			return this.default_return_value();
 		};
 
