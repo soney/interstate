@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = false;
+var check_memory_leaks = true;
 var step_delay = 100;
 
 var tests = [
@@ -88,7 +88,7 @@ var tests = [
 	},
 	{
 		name: "Incrementing Properties",
-		expect: 2,
+		expect: 3,
 		steps: [{
 			setup: function(env) {
 				env	.set("obj", "<stateful>")
@@ -109,10 +109,8 @@ var tests = [
 				equal(cobj.prop_val("x"), 1);
 				red.emit("my_fire");
 				equal(cobj.prop_val("x"), 2);
-				/*
 				red.emit("my_fire");
 				equal(cobj.prop_val("x"), 3);
-				*/
 			}
 		}]
 	}

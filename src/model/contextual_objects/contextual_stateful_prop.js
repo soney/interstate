@@ -352,12 +352,6 @@
 
 			var stateful_prop = this.get_object();
 
-			if(uid.strip_prefix(stateful_prop.id()) == 135) {
-				if(using_state instanceof red.StatechartTransition) {
-					debugger;
-				}
-			}
-
 			if (using_state instanceof red.StatechartTransition) {
 				if(red.event_queue.end_queue_round === false) {
 					return this._last_rv;

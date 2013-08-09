@@ -112,11 +112,15 @@
 
 		proto.enable = function () {
 			My.superclass.enable.apply(this, arguments);
-			this.add_listeners();
+			if(!this.is_enabled()) {
+				this.add_listeners();
+			}
 		};
 		proto.disable = function () {
 			My.superclass.disable.apply(this, arguments);
-			this.remove_listeners();
+			if(this.is_enabled()) {
+				this.remove_listeners();
+			}
 		};
 	}(red.RedObjEvent));
 }(red));
