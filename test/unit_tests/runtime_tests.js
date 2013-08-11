@@ -234,7 +234,6 @@ var tests = [
 				red.emit('drag'); // hx = mouse.x - x = 45 - 20 = 25
 				equal(rect.attr("x"), "20"); // x = mouse.x - hx = 45 - 25 = 20
 				env.set("x", "40"); // mouse.x = 40
-				window.ddb = true;
 				equal(rect.attr("x"), "15"); // x = mouse.x - hx = 40 - 25 = 20
 				red.emit('stop');
 				equal(rect.attr("x"), "15"); // stay
@@ -245,8 +244,41 @@ var tests = [
 				equal(rect.attr("x"), "15"); // x = mouse.x - hx = 20 - 5 = 15
 				env.set("x", "22"); // mouse.x = 20
 				equal(rect.attr("x"), "17"); // x = mouse.x - hx = 22 - 5 = 17
-				delete window.ddb;
-				//env.print();
+			}
+		}]
+	},
+	{
+		name: "Transition Prop Values",
+		expect: 4,
+		steps: [{
+			setup: function(env) {
+				env	.cd("screen")
+						.set("obj", "<stateful>")
+						.cd("obj")
+							.add_state("s1")
+							.add_state("s2")
+							.add_transition("s1", "s2", "on('e1')")
+							.add_transition("s2", "s1", "on('e2')")
+							.start_at("s1")
+							.set("(prototypes)", "(start)", "shape.rect")
+							.set("width")
+							.set("tv1")
+							.set("tv2")
+							.set("x")
+							.set("tv1", "s1->s2", "1")
+							.set("tv2", "s1->s2", "x + tv1 + 3")
+							.set("width", "(start)", "10")
+							.set("width", "s2", "tv2 + 1")
+							.set("x", "(start)", "-10")
+							.set("x", "s2", "tv2 + 1")
+			},
+			test: function(env, runtime) {
+				var rect = $("rect", runtime);
+				equal(rect.attr("x"), "-10");
+				equal(rect.attr("width"), "10");
+				red.emit('e1');
+				equal(rect.attr("x"), "-5");
+				equal(rect.attr("width"), "-5");
 			}
 		}]
 	}
