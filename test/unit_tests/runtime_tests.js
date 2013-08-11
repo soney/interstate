@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = true;
+var check_memory_leaks = false;
 var step_delay = 100;
 
 var tests = [
@@ -183,6 +183,70 @@ var tests = [
 				equal(ellipse.attr("cx"), "3");
 				env.reset();
 				equal(ellipse.attr("cx"), "1");
+			}
+		}]
+	},
+	{
+		name: "Dragging Example",
+		expect: 8,
+		steps: [{
+			setup: function(env) {
+				env	.set("mouse", "<stateful>")
+					.cd("mouse")
+						.set("x", "0")
+						.set("y", "0")
+						.up()
+					.cd("screen")
+						.set("obj", "<stateful>")
+						.cd("obj")
+							.add_state("init")
+							.add_state("dragging")
+							.add_transition("init", "dragging", "on('drag')")
+							.add_transition("dragging", "init", "on('stop')")
+							.start_at("init")
+							.set("(prototypes)", "(start)", "shape.rect")
+							.set("hx")
+							.set("hy")
+							.set("x")
+							.set("y")
+							.set("fill")
+							.set("fill", "(start)", "'#bada55'")
+							.set("x", "(start)", "20")
+							.set("x", "dragging->init", "x")
+							.set("x", "dragging", "mouse.x - hx")
+							.set("y", "(start)", "20")
+							.set("y", "dragging->init", "y")
+							.set("y", "dragging", "mouse.y - hy")
+							.set("hx", "init->dragging", "mouse.x - x")
+							.set("hy", "init->dragging", "mouse.y - y")
+							;
+
+			},
+			test: function(env, runtime) {
+				var rect = $("rect", runtime);
+				equal(rect.attr("x"), "20");
+				env	.top()
+					.cd("mouse")
+						.set("x", "45")
+						.set("y", "45")
+						;
+				equal(rect.attr("x"), "20");
+				red.emit('drag'); // hx = mouse.x - x = 45 - 20 = 25
+				equal(rect.attr("x"), "20"); // x = mouse.x - hx = 45 - 25 = 20
+				env.set("x", "40"); // mouse.x = 40
+				window.ddb = true;
+				equal(rect.attr("x"), "15"); // x = mouse.x - hx = 40 - 25 = 20
+				red.emit('stop');
+				equal(rect.attr("x"), "15"); // stay
+				env.set("x", "30"); // mouse.x = 30
+				equal(rect.attr("x"), "15"); // stay
+				env.set("x", "20"); // mouse.x = 20
+				red.emit('drag'); // hx = mouse.x - x = 20 - 15 = 5
+				equal(rect.attr("x"), "15"); // x = mouse.x - hx = 20 - 5 = 15
+				env.set("x", "22"); // mouse.x = 20
+				equal(rect.attr("x"), "17"); // x = mouse.x - hx = 22 - 5 = 17
+				delete window.ddb;
+				//env.print();
 			}
 		}]
 	}

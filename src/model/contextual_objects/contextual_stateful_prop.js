@@ -135,35 +135,35 @@
 				var my_names_len = my_names.length;
 				var protos_and_me = ([stateful_obj]).concat(red.Dict.get_proto_vals(stateful_obj, stateful_obj_context));
 
-				var inherits_from = _.chain(protos_and_me)
-					.map(function (x) {
-						var i;
-						var obj;
-						var cdict = red.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len));
-						for (i = 0; i < my_names_len; i += 1) {
-							name = my_names[i];
-							if(!name) {
-								return false; // bandaid for removed properties
-							}
-							if (cdict.has(name)) {
-								var info = cdict.prop_info(name);
-								obj = info.value;
-								if (i < my_names_len - 1) {
-									if (!(obj instanceof red.Dict)) {
-										return false;
-									} else {
-										cdict = red.find_or_put_contextual_obj(obj, pointer.slice(0, stateful_obj_context_len + i + 1));
-									}
-								}
-							} else {
-								return false;
-							}
-						}
-						return obj;
-					})
-					.compact()
-					.uniq()
-					.value();
+				var inherits_from = _	.chain(protos_and_me)
+										.map(function (x) {
+											var i;
+											var obj;
+											var cdict = red.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len));
+											for (i = 0; i < my_names_len; i += 1) {
+												name = my_names[i];
+												if(!name) {
+													return false; // bandaid for removed properties
+												}
+												if (cdict.has(name)) {
+													var info = cdict.prop_info(name);
+													obj = info.value;
+													if (i < my_names_len - 1) {
+														if (!(obj instanceof red.Dict)) {
+															return false;
+														} else {
+															cdict = red.find_or_put_contextual_obj(obj, pointer.slice(0, stateful_obj_context_len + i + 1));
+														}
+													}
+												} else {
+													return false;
+												}
+											}
+											return obj;
+										})
+										.compact()
+										.uniq()
+										.value();
 
 				entries = [];
 				var ifrom;
@@ -256,9 +256,11 @@
 			var info, i, tr, state, val;
 
 			var using_val = NO_VAL, using_state, fallback_value = NO_VAL, fallback_state;
+			/*
 			var invalidate_value = _.bind(function () {
 				this.$value.invalidate();
 			}, this);
+			*/
 			var needs_invalidation = false;
 			for (i = 0; i < len; i += 1) {
 				info = values[i];
@@ -283,7 +285,7 @@
 						}
 					}
 				} else if (state instanceof red.State) {
-					if ((using_val === NO_VAL || using_state.order(state) < 0) && state.is_active()) {
+					if (state.is_active() && (using_val === NO_VAL || using_state.order(state) < 0)) {
 						using_val = val;
 						using_state = state;
 					}
