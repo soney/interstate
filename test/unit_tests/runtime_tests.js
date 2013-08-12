@@ -246,7 +246,7 @@ var tests = [
 				equal(rect.attr("x"), "17"); // x = mouse.x - hx = 22 - 5 = 17
 			}
 		}]
-	}/*,
+	},
 	{
 		name: "Transition Prop Values",
 		expect: 4,
@@ -272,7 +272,6 @@ var tests = [
 							.set("x", "(start)", "-10")
 							.set("x", "s2", "tv2 + 1")
 							;
-				env.print();
 			},
 			test: function(env, runtime) {
 				var rect = $("rect", runtime);
@@ -286,7 +285,6 @@ var tests = [
 			}
 		}]
 	}
-	*/
 ];
 
 var command_id = 0;

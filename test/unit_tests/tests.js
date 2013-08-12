@@ -113,8 +113,8 @@ asyncTest("State Allocation", function() {
 asyncTest("Environment Collection", function() {
 	expect(1);
 	var the_div = $("<div />").appendTo(document.body);
-	clear_snapshots(function() {
-		take_snapshot([], function() {
+	//clear_snapshots(function() {
+		//take_snapshot([], function() {
 			var env = new red.Environment({create_builtins: true});
 			env	.cd("screen")
 					.set("my_circle", "<stateful>")
@@ -146,8 +146,8 @@ asyncTest("Environment Collection", function() {
 					start();
 				});
 			}, 2000);
-		});
-	});
+		//});
+	//});
 });
 asyncTest("Communication Wrapper", function() {
 	expect(3);

@@ -319,7 +319,7 @@
 				context: this
 			});
 			this._create_fn = cjs.liven(function() {
-				red.create_current_contextual_objs();
+				red.create_current_contextual_objects(root_dict);
 			}, {
 				context: this
 			});
@@ -327,10 +327,10 @@
 		
 		_remove_change_listeners: function () {
 			this._dom_tree_fn.destroy();
-			delete this._dom_tree_fn;
 			this._destroy_fn.destroy();
-			delete this._destroy_fn;
 			this._create_fn.destroy();
+			delete this._dom_tree_fn;
+			delete this._destroy_fn;
 			delete this._create_fn;
 		},
 

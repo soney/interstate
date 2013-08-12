@@ -97,6 +97,13 @@
 				return [];
 			}
 		};
+		proto.create_current_contextual_objects = function () {
+			var child_pointers = this.get_valid_child_pointers();
+			_.each(child_pointers, function(child_pointer) {
+				var child_tree = this.get_or_put_child(child_pointer.obj, child_pointer.pointer.special_contexts());
+				child_tree.create_current_contextual_objects();
+			}, this);
+		};
 		proto.get_expired_children = function() {
 			var children = _.clone(this.children.values());
 			var keys = _.clone(this.children.keys());
@@ -148,6 +155,9 @@
 
 		proto.get_contextual_root = function () {
 			return this.contextual_root;
+		};
+		proto.create_current_contextual_objects = function () {
+			this.tree.create_current_contextual_objects();
 		};
 
 		proto.find_or_put = function (obj, pointer, options) {
@@ -286,6 +296,7 @@
 		return _.map(expired_trees, function(t) { return t.get_contextual_object(); });
 	};
 	red.create_current_contextual_objects = function(root) {
-		console.log(root);
+		var root_bucket = red.pointer_buckets.get(root);
+		root_bucket.create_current_contextual_objects();
 	};
 }(red));
