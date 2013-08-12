@@ -8,20 +8,26 @@
 
 	red.ContextualObject = function (options) {
 		able.make_this_listenable(this);
-		this.$value = new cjs.Constraint(this._getter, {
-			context: this,
-			check_on_nullify: options.check_on_nullify === true,
-			equals: options.equals || undefined
-		});
-		this.set_options(options);
 		this._id = uid();
 		red.register_uid(this._id, this);
+		if(options.defer_initialization !== true) {
+			this.initialize(options);
+		}
 		this._type = "none";
 	};
 
 	(function (My) {
 		var proto = My.prototype;
 		able.make_proto_listenable(proto);
+		proto.initialize = function(options) {
+			if(!options) { options = {}; }
+			this.$value = new cjs.Constraint(this._getter, {
+				context: this,
+				check_on_nullify: options.check_on_nullify === true,
+				equals: options.equals || undefined
+			});
+			this.set_options(options);
+		};
 
 		proto.id = proto.hash = function () { return this._id; };
 

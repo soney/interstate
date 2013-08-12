@@ -8,17 +8,19 @@
 
 	red.ContextualStatefulObj = function (options) {
 		red.ContextualStatefulObj.superclass.constructor.apply(this, arguments);
-
-		this.statecharts_per_proto = new RedMap({
-			hash: "hash"
-		});
-
 		this._type = "stateful";
 	};
 
 	(function (My) {
 		_.proto_extend(My, red.ContextualDict);
 		var proto = My.prototype;
+
+		proto.initialize = function() {
+			My.superclass.initialize.apply(this, arguments);
+			this.statecharts_per_proto = new RedMap({
+				hash: "hash"
+			});
+		};
 
 		proto.get_own_statechart = function () {
 			return this.get_statechart_for_proto(this.get_object());

@@ -8,13 +8,16 @@
 
 	red.ContextualCell = function (options) {
 		red.ContextualCell.superclass.constructor.apply(this, arguments);
-		this.value_constraint = this.object.constraint_in_context(this.get_pointer());
 		this._type = "cell";
 	};
 
 	(function (My) {
 		_.proto_extend(My, red.ContextualObject);
 		var proto = My.prototype;
+		proto.initialize = function(options) {
+			My.superclass.initialize.apply(this, arguments);
+			this.value_constraint = this.object.constraint_in_context(this.get_pointer());
+		};
 		proto.destroy = function () {
 			if(this.constructor === My) { this.emit_begin_destroy(); }
 			My.superclass.destroy.apply(this, arguments);

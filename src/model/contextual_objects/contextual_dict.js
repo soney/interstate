@@ -117,14 +117,17 @@
 
 	red.ContextualDict = function (options) {
 		red.ContextualDict.superclass.constructor.apply(this, arguments);
-		this._attachment_instances = { };
-		this._manifestation_objects = new RedMap({ });
 		this._type = "dict";
 	};
 
 	(function (My) {
 		_.proto_extend(My, red.ContextualObject);
 		var proto = My.prototype;
+		proto.initialize = function() {
+			My.superclass.initialize.apply(this, arguments);
+			this._attachment_instances = { };
+			this._manifestation_objects = new RedMap({ });
+		};
 
 		proto.has_copies = function() {
 			var dict = this.object;

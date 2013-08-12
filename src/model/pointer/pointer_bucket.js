@@ -72,25 +72,29 @@
 		};
 		proto.get_valid_child_pointers = function() {
 			var cobj = this.get_contextual_object();
-			var rv;
-			if(cobj.is_template()) {
-				var instance_pointers = cobj.instance_pointers();
-				var obj = cobj.get_object();
-				rv = _.map(instance_pointers, function(instance_pointer) {
-					return { pointer: instance_pointer, obj: obj };
-				});
-				return rv;
+			if(cobj instanceof red.ContextualDict) {
+				var rv;
+				if(cobj.is_template()) {
+					var instance_pointers = cobj.instance_pointers();
+					var obj = cobj.get_object();
+					rv = _.map(instance_pointers, function(instance_pointer) {
+						return { pointer: instance_pointer, obj: obj };
+					});
+					return rv;
+				} else {
+					rv = [];
+					var child_infos = cobj.raw_children();
+					var my_pointer = cobj.get_pointer();
+					_.each(child_infos, function(child_info) {
+						var value = child_info.value;
+						if (value instanceof red.Dict || value instanceof red.Cell || value instanceof red.StatefulProp) {
+							rv.push({obj: value, pointer: my_pointer.push(value)});
+						}
+					});
+					return rv;
+				}
 			} else {
-				rv = [];
-				var child_infos = cobj.raw_children();
-				var my_pointer = cobj.get_pointer();
-				_.each(child_infos, function(child_info) {
-					var value = child_info.value;
-					if (value instanceof red.Dict || value instanceof red.Cell || value instanceof red.StatefulProp) {
-						rv.push({obj: value, pointer: my_pointer.push(value)});
-					}
-				});
-				return rv;
+				return [];
 			}
 		};
 		proto.get_expired_children = function() {
@@ -161,8 +165,12 @@
 			if(node.has_contextual_object()) {
 				rv = node.get_contextual_object();
 			} else {
-				rv = red.create_contextual_object(obj, pointer, options);
+				rv = red.create_contextual_object(obj, pointer, {defer_initialization: true});
 				node.set_contextual_object(rv);
+				rv.initialize(_.extend({
+					object: obj,
+					pointer: pointer
+				}, options));
 			}
 
 			return rv;
@@ -276,5 +284,8 @@
 	red.get_expired_contextual_objects = function(root) {
 		var expired_trees = get_expired_pointer_trees(root);
 		return _.map(expired_trees, function(t) { return t.get_contextual_object(); });
+	};
+	red.create_current_contextual_objects = function(root) {
+		console.log(root);
 	};
 }(red));

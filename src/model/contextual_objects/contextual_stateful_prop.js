@@ -10,51 +10,72 @@
 
 	red.ContextualStatefulProp = function (options) {
 		red.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
-		this.transition_times_run = {};
-		this._last_value = NO_VAL;
-
-	/*
-		var values = this.get_values();
-		var len = values.length;
-		var info;
-		this._last_value = undefined;
-		this._from_state = undefined;
-
-		var using_val, using_state;
-		for (var i = 0; i<len; i += 1){
-			info = values[i];
-			var state = info.state,
-				val = info.value;
-			if (state instanceof red.StatechartTransition) {
-				this.set_transition_times_run(state, state.get_times_run());
-			}
-		}
-		*/
-
-		this.$active_value = new cjs.Constraint(this.active_value_getter, { context: this });
-
-		this.$value.onChange(this.$value.update, this.$value);
-		/*
-		_.bind(function () {
-			//if (red.event_queue.end_queue_round === 3 || red.event_queue.end_queue_round === 4) {
-				this.$value.update();
-			//}
-		}, this));
-		*/
-		//_.defer(_.bind(this.$value.update, this.$value));
-		//this.$value.update();
-		_.defer(_.bind(function() {
-			if(this.$value) {
-				this.$value.update();
-			}
-		}, this));
-
 		this._type = "stateful_prop";
 	};
 
 	(function (My) {
 		_.proto_extend(My, red.ContextualObject);
 		var proto = My.prototype;
+
+		proto.initialize = function() {
+			My.superclass.initialize.apply(this, arguments);
+			this.transition_times_run = {};
+			this._last_value = NO_VAL;
+
+		/*
+			var values = this.get_values();
+			var len = values.length;
+			var info;
+			this._last_value = undefined;
+			this._from_state = undefined;
+
+			var using_val, using_state;
+			for (var i = 0; i<len; i += 1){
+				info = values[i];
+				var state = info.state,
+					val = info.value;
+				if (state instanceof red.StatechartTransition) {
+					this.set_transition_times_run(state, state.get_times_run());
+				}
+			}
+			*/
+
+			this.$active_value = new cjs.Constraint(this.active_value_getter, { context: this });
+
+			this.$value.onChange(this.$value.update, this.$value);
+			/*
+			this.$value.onChange(function() {
+				if(window.dbg) {
+					if(uid.strip_prefix(this.get_object().id()) == 191) {
+						//debugger;
+					}
+					console.log("onChange", this.id(), this.get_object().id());
+				}
+				this.$value.update();
+			}, this);
+				*/
+			/*
+			_.bind(function () {
+				//if (red.event_queue.end_queue_round === 3 || red.event_queue.end_queue_round === 4) {
+					this.$value.update();
+				//}
+			}, this));
+			*/
+			//_.defer(_.bind(this.$value.update, this.$value));
+			//console.log(this.get_object().id());
+			this.$value.update(false);
+			/*
+			_.defer(_.bind(function() {
+				if(uid.strip_prefix(this.get_object().id()) == 191) {
+					console.log("XXX");
+					//debugger;
+				}
+				if(this.$value) {
+					this.$value.update();
+				}
+			}, this));
+			*/
+		};
 
 		proto.get_parent = function () {
 			var context = this.get_pointer();
@@ -346,15 +367,27 @@
 		};
 
 		proto._getter = function () {
+		/*
+			if(window.dbg) {
+				if(uid.strip_prefix(this.get_object().id()) == 191) {
+					//debugger;
+				}
+				console.log("getter", this.id(), this.get_object().id());
+			}
+			*/
 			var active_value_info = this.active_value();
 			var using_val = active_value_info.value;
 			var using_state = active_value_info.state;
 			var rv;
+			if(uid.strip_prefix(this.get_object().id()) == 191) {
+				console.log("OK");
+				//debugger;
+			}
 
 
 			var stateful_prop = this.get_object();
 
-			if (using_state instanceof red.StatechartTransition) {
+			if (using_state instanceof red.StatechartTransition) { // using a transition's old value
 				if(red.event_queue.end_queue_round === false) {
 					return this._last_rv;
 				}

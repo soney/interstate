@@ -129,7 +129,7 @@ asyncTest("Environment Collection", function() {
 						.set("fill", "init", "'red'")
 						.set("fill", "hover", "'blue'")
 			;
-			env.print();
+			//env.print();
 			var root = env.get_root();
 			the_div.dom_output({
 				root: root,

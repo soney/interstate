@@ -308,11 +308,30 @@
 				context: this,
 				pause_while_running: true
 			});
+
+			this._destroy_fn = cjs.liven(function() {
+				var expired_cobjs = red.get_expired_contextual_objects(root_dict);
+				_.each(expired_cobjs, function(cobj) {
+					cobj.destroy(true);
+				});
+				expired_cobjs = null;
+			}, {
+				context: this
+			});
+			this._create_fn = cjs.liven(function() {
+				red.create_current_contextual_objs();
+			}, {
+				context: this
+			});
 		},
 		
 		_remove_change_listeners: function () {
 			this._dom_tree_fn.destroy();
 			delete this._dom_tree_fn;
+			this._destroy_fn.destroy();
+			delete this._destroy_fn;
+			this._create_fn.destroy();
+			delete this._create_fn;
 		},
 
 		_create_server_socket: function() {
