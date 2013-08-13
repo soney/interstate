@@ -22,59 +22,10 @@
 			this.transition_times_run = {};
 			this._last_value = NO_VAL;
 
-		/*
-			var values = this.get_values();
-			var len = values.length;
-			var info;
-			this._last_value = undefined;
-			this._from_state = undefined;
-
-			var using_val, using_state;
-			for (var i = 0; i<len; i += 1){
-				info = values[i];
-				var state = info.state,
-					val = info.value;
-				if (state instanceof red.StatechartTransition) {
-					this.set_transition_times_run(state, state.get_times_run());
-				}
-			}
-			*/
-
 			this.$active_value = new cjs.Constraint(this.active_value_getter, { context: this });
 
 			this.$value.onChange(this.$value.update, this.$value);
-			/*
-			this.$value.onChange(function() {
-				if(window.dbg) {
-					if(uid.strip_prefix(this.get_object().id()) == 191) {
-						//debugger;
-					}
-					console.log("onChange", this.id(), this.get_object().id());
-				}
-				this.$value.update();
-			}, this);
-				*/
-			/*
-			_.bind(function () {
-				//if (red.event_queue.end_queue_round === 3 || red.event_queue.end_queue_round === 4) {
-					this.$value.update();
-				//}
-			}, this));
-			*/
-			//_.defer(_.bind(this.$value.update, this.$value));
-			//console.log(this.get_object().id());
 			this.$value.update(false);
-			/*
-			_.defer(_.bind(function() {
-				if(uid.strip_prefix(this.get_object().id()) == 191) {
-					console.log("XXX");
-					//debugger;
-				}
-				if(this.$value) {
-					this.$value.update();
-				}
-			}, this));
-			*/
 		};
 
 		proto.get_parent = function () {
@@ -367,22 +318,10 @@
 		};
 
 		proto._getter = function () {
-		/*
-			if(window.dbg) {
-				if(uid.strip_prefix(this.get_object().id()) == 191) {
-					//debugger;
-				}
-				console.log("getter", this.id(), this.get_object().id());
-			}
-			*/
 			var active_value_info = this.active_value();
 			var using_val = active_value_info.value;
 			var using_state = active_value_info.state;
 			var rv;
-			if(uid.strip_prefix(this.get_object().id()) == 191) {
-				console.log("OK");
-				//debugger;
-			}
 
 
 			var stateful_prop = this.get_object();
@@ -400,18 +339,18 @@
 
 				var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
 		
-			//	try {
+				try {
 					rv = using_val.get_value(eventized_pointer);
-			//	} catch (e1) {
-			//		console.error(e1);
-			//	}
+				} catch (e1) {
+					console.error(e1);
+				}
 
 				this._last_rv = rv;
 				return rv;
 			} else {
 				return undefined;
 			}
-				/*
+			/*
 			} else {
 				try {
 					rv = using_val instanceof red.ContextualObject ? using_val.val() : using_val;

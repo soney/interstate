@@ -97,6 +97,48 @@
 				return [];
 			}
 		};
+		proto.update_current_contextual_objects = function() {
+			var children = _.clone(this.children.values());
+			var keys = _.clone(this.children.keys());
+			var my_ptr = this.contextual_object.get_pointer();
+
+			var valid_children = this.get_valid_child_pointers();
+			var to_destroy = [];
+			_.each(children, function(child, index) {
+				var key = keys[index];
+				var cchild = child.get_contextual_object();
+				var obj = key.child;
+				var special_context = key.special_context;
+				var ptr = my_ptr.push(obj, special_context);
+
+				var found = _.find(valid_children, function(c) {
+						return c.obj === obj && c.pointer.eq(ptr);
+					});
+
+				if(!found) {
+					to_destroy.push(child);
+				}
+			}, this);
+			_.each(valid_children, function(valid_child) {
+				var obj = valid_child.obj,
+					ptr = valid_child.pointer;
+				var node = this.get_or_put_child(obj, ptr.special_contexts());
+				if(!node.has_contextual_object()) {
+					var cobj = red.create_contextual_object(obj, ptr, {defer_initialization: true});
+					node.set_contextual_object(cobj);
+					cobj.initialize({
+						object: obj,
+						pointer: ptr
+					});
+				}
+				node.update_current_contextual_objects();
+			}, this);
+			_.each(to_destroy, function(child_tree) {
+				var child = child_tree.get_contextual_object();
+				child.destroy(true);
+			});
+		};
+			
 		proto.create_current_contextual_objects = function () {
 			var child_pointers = this.get_valid_child_pointers();
 			_.each(child_pointers, function(child_pointer) {
@@ -208,6 +250,9 @@
 				throw new Error("Couldn't find correct node to remove;");
 			}
 		};
+		proto.update_current_contextual_objects = function() {
+			return this.tree.update_current_contextual_objects();
+		};
 		proto.get_expired_children = function() {
 			return this.tree.get_expired_children();
 		};
@@ -218,6 +263,12 @@
 		};
 	}(red.PointerBucket));
 
+/*
+	red.pointer_buckets = cjs.map({
+		hash: "hash",
+		create_unsubstantiated: false
+	});
+	*/
 	red.pointer_buckets = new RedMap({
 		hash: "hash"
 	});
@@ -290,11 +341,18 @@
 		return invalid_bucket_roots.concat(other_expired_buckets);
 	};
 
+	red.update_current_contextual_objects = function(root) {
+		var root_bucket = red.pointer_buckets.get(root);
+		if(root_bucket) {
+			root_bucket.update_current_contextual_objects();
+		}
+	};
 
 	red.get_expired_contextual_objects = function(root) {
 		var expired_trees = get_expired_pointer_trees(root);
 		return _.map(expired_trees, function(t) { return t.get_contextual_object(); });
 	};
+
 	red.create_current_contextual_objects = function(root) {
 		var root_bucket = red.pointer_buckets.get(root);
 		root_bucket.create_current_contextual_objects();

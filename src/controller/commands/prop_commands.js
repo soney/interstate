@@ -62,11 +62,11 @@
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
-                if (this._old_prop_value) {
+                if (this._old_prop_value && this._old_prop_value.destroy) {
                     this._old_prop_value.destroy();
                 }
             } else {
-                if (this._prop_value) {
+                if (this._prop_value && this._prop_value.destroy) {
                     this._prop_value.destroy();
                 }
             }

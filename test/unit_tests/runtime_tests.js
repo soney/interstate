@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = false;
+var check_memory_leaks = true;
 var step_delay = 100;
 
 var tests = [
@@ -248,8 +248,38 @@ var tests = [
 		}]
 	},
 	{
+		name: "Auto Create Contextual Objects",
+		expect: 2,
+		create_builtins: false,
+		steps: [{
+			setup: function(env) {
+				env	.set("on", red.on_event)
+					.set("obj", "<stateful>")
+					.cd("obj")
+						.add_state("INIT")
+						.start_at("INIT")
+						.add_transition("INIT", "INIT", "on('my_fire')")
+						.set("x")
+						.set("x", "(start)", "1")
+						.set("x", "INIT-0>INIT", "x+1")
+						;
+			},
+			test: function(env, runtime) {
+				red.emit("my_fire");
+				//debugger;
+				red.update_current_contextual_objects(env.get_root());
+				env.print();
+				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+				equal(cobj.prop_val("x"), 2);
+				red.emit("my_fire");
+				equal(cobj.prop_val("x"), 3);
+			}
+		}]
+	},
+	{
 		name: "Transition Prop Values",
 		expect: 4,
+		create_builtins: false,
 		steps: [{
 			setup: function(env) {
 				env	.cd("screen")
@@ -326,7 +356,7 @@ tests.forEach(function(test) {
 		var env, root, runtime_div;
 
 		var root_setup = function() {
-			env = new red.Environment({create_builtins: true});
+			env = new red.Environment({create_builtins: test.create_builtins !== false});
 			root = env.get_root();
 			runtime_div = $("<div />")	.prependTo(document.body)
 										.dom_output({
