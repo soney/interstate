@@ -116,7 +116,7 @@
 					});
 
 				if(!found) {
-					to_destroy.push(child);
+					to_destroy.push({key: key, value: child});
 				}
 			}, this);
 			_.each(valid_children, function(valid_child) {
@@ -133,10 +133,13 @@
 				}
 				node.update_current_contextual_objects();
 			}, this);
-			_.each(to_destroy, function(child_tree) {
+			_.each(to_destroy, function(to_destroy_info) {
+				var child_tree = to_destroy_info.value;
+				var key = to_destroy_info.key;
 				var child = child_tree.get_contextual_object();
 				child.destroy(true);
-			});
+				this.remove_child(key.child, key.special_contexts);
+			}, this);
 		};
 			
 		proto.create_current_contextual_objects = function () {

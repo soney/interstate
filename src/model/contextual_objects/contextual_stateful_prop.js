@@ -323,11 +323,9 @@
 			var using_state = active_value_info.state;
 			var rv;
 
-
 			var stateful_prop = this.get_object();
-
 			if (using_state instanceof red.StatechartTransition) { // using a transition's old value
-				if(red.event_queue.end_queue_round === false) {
+				if(red.event_queue.end_queue_round !== 2) {
 					return this._last_rv;
 				}
 			}

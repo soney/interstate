@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = true;
+var check_memory_leaks = false;
 var step_delay = 100;
 
 var tests = [
@@ -279,10 +279,11 @@ var tests = [
 	{
 		name: "Transition Prop Values",
 		expect: 4,
-		create_builtins: false,
+		create_builtins: true,
 		steps: [{
 			setup: function(env) {
-				env	.cd("screen")
+				env	
+					.cd("screen")
 						.set("obj", "<stateful>")
 						.cd("obj")
 							.add_state("s1")
@@ -296,7 +297,7 @@ var tests = [
 							.set("tv2")
 							.set("x")
 							.set("tv1", "s1->s2", "1")
-							.set("tv2", "s1->s2", "0*height + width + x + tv1 + 3")
+							.set("tv2", "s1->s2", "width + x + tv1 + 3")
 							.set("width", "(start)", "10")
 							.set("width", "s2", "tv2 + 1")
 							.set("x", "(start)", "-10")
@@ -304,6 +305,13 @@ var tests = [
 							;
 			},
 			test: function(env, runtime) {
+				
+				// OBJ		(start)		s1				->									s2
+				// width:	10																tv2 + 1 = 4+1 = 5 = 4+1 = 5
+				// tv1:									1
+				// tv2:									width+x+tv1+3 = 10-10+1+3 = 4
+				// x:		-10																tv2 + 1 = 4+1 = 5
+				
 				var rect = $("rect", runtime);
 				equal(rect.attr("x"), "-10");
 				equal(rect.attr("width"), "10");
@@ -311,7 +319,6 @@ var tests = [
 				red.emit('e1');
 				equal(rect.attr("x"), "5");
 				equal(rect.attr("width"), "5");
-				env.print();
 			}
 		}]
 	}
