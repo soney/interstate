@@ -309,8 +309,13 @@
 				pause_while_running: true
 			});
 
+			var is_running = false;
 			this._update_fn = cjs.liven(function() {
+				if(is_running) { debugger; }
+				is_running = true;
 				red.update_current_contextual_objects(root_dict);
+				is_running = false;
+			}, {
 			});
 		},
 		
