@@ -42,7 +42,9 @@
 		proto.do_initialize = function (options) {
 			this._puppet = options.puppet === true;
 			this.$active = cjs.$(false);
-			this.$times_run = cjs.$(0);
+			this.is_start_transition = options.from instanceof red.StartState;
+			this._times_run = options.times_run || (this.is_start_transition ? 1 : 0);
+			this.$times_run = cjs.$(this._times_run);
 			this._from_state = cjs.$(options.from);
 			this._to_state = cjs.$(options.to);
 			this._context = options.context;
@@ -50,7 +52,6 @@
 			this.set_event(options.event);
 			red.register_uid(this._id, this);
 			this._initialized.set(true);
-			this.is_start_transition = options.from instanceof red.StartState;
 			this._emit("initialized");
 		};
 		proto.updateTo = function(event) {
@@ -72,7 +73,7 @@
 			return this._initialized.get();
 		};
 		proto.increment_times_run = function () {
-			this.$times_run.set(this.$times_run.get() + 1);
+			this.$times_run.set(++this._times_run);
 		};
 		proto.get_times_run = function () {
 			return this.$times_run.get();

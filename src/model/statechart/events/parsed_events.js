@@ -8,13 +8,15 @@
 
 	var get_event = function (tree, options, live_event_creator) {
 		var event_constraint = red.get_parsed_$(tree, options);
-		var got_value = cjs.get(event_constraint);
+		var got_value = cjs.get(event_constraint, false);
 		if (got_value instanceof red.Event) {
 			return got_value;
 		} else {
+		/*
 			if(cjs.is_$(event_constraint)) {
 				cjs.removeDependency(event_constraint, live_event_creator);
 			}
+			*/
 			return new red.ConstraintEvent(event_constraint, got_value);
 		}
 	};
@@ -101,12 +103,12 @@
 					run_on_create: false
 				});
 				//cjs.signal();
-				_.delay(_.bind(function () {
+				//_.delay(_.bind(function () {
 					//Delay it because parsed events can run up the dictionary tree and create all sorts of contextual objects that they shouldn't
-					if(this._live_event_creator) {
-						this._live_event_creator.run();
-					}
-				}, this));
+					//if(this._live_event_creator) {
+						this._live_event_creator.run(false);
+					//}
+				//}, this));
 			}
 		};
 		proto.id = function () { return this._id; };

@@ -295,6 +295,15 @@
 			var root_dict = this.option("root");
 			var root_contextual_object = red.find_or_put_contextual_obj(root_dict);
 
+			var is_running = false;
+			this._update_fn = cjs.liven(function() {
+				//if(is_running) { debugger; }
+				is_running = true;
+				red.update_current_contextual_objects(root_dict);
+				is_running = false;
+			}, {
+			});
+
 			this._dom_tree_fn = cjs.liven(function () {
 				var paper_attachment = root_contextual_object.get_attachment_instance("paper");
 				var dom_element = paper_attachment.get_dom_obj();
@@ -307,15 +316,6 @@
 			}, {
 				context: this,
 				pause_while_running: true
-			});
-
-			var is_running = false;
-			this._update_fn = cjs.liven(function() {
-				if(is_running) { debugger; }
-				is_running = true;
-				red.update_current_contextual_objects(root_dict);
-				is_running = false;
-			}, {
 			});
 		},
 		

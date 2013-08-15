@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = false;
+var check_memory_leaks = true;
 var step_delay = 100;
 
 var tests = [
