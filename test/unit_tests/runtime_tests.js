@@ -1,8 +1,36 @@
 (function() {
-var check_memory_leaks = true;
+var check_memory_leaks = false;
 var step_delay = 100;
 
 var tests = [
+	{
+		name: "Property Basics",
+		expect: 4,
+		steps: [{
+			setup: function(env) {
+				env	.set("obj", "<stateful>")
+					.cd("obj")
+						.set("a", "(start)", "10")
+						.add_state("INIT")
+						.start_at("INIT")
+						.set("x")
+						.set("y")
+						.set("x", "(start)", "1")
+						.set("x", "INIT", "x+1")
+						.set("y", "INIT", "3")
+						.set("z", "(start)", "4")
+						;
+			},
+			test: function(env, runtime) {
+				env.print();
+				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+				equal(cobj.prop_val("a"), 10);
+				ok(cobj.prop_val("x") >= 2);
+				equal(cobj.prop_val("y"), 3);
+				equal(cobj.prop_val("z"), 4);
+			}
+		}]
+	},
 	{
 		name: "Object Ordering",
 		expect: 6,
@@ -96,10 +124,9 @@ var tests = [
 						.set("x", "(start)", "1")
 						.set("x", "INIT-0>INIT", "x+1")
 						;
-				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
-				cobj.prop_val("x");
 			},
 			test: function(env, runtime) {
+				env.print();
 				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 				equal(cobj.prop_val("x"), 1);
 				red.emit("my_fire");

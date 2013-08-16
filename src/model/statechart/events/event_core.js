@@ -48,7 +48,7 @@
 					target: this
 				});
 				this.do_run_event_queue();
-				for (i = 0; i < this.num_post_event_queue_rounds; i += 1) {
+				for (i = 0; i <= this.num_post_event_queue_rounds; i += 1) {
 					this.end_queue_round = i;
 					var event_type = "end_event_queue_round_" + i;
 					this._emit(event_type, {
