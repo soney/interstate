@@ -184,7 +184,7 @@
 			serialized_obj_values = [];
 		}
 
-		if (obj == null || typeof obj !== "object") {
+		if (obj == null || (typeof obj !== "object" && typeof obj !== "function")) {
 			return obj;
 		} else if (_.isArray(obj)) {
 			return _.map(obj, function (o) {

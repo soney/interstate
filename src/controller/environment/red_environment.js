@@ -27,9 +27,8 @@
 		this.pointer = root_pointer;
 		this.print_on_return = false;
 
-		if(!options || options.create_builtins !== false) {
-			root.set("on", red.on_event);
 			/*
+		if(!options || options.create_builtins !== false) {
 			root.set("emit", red.emit);
 			root.set("find", function (find_root) {
 				if (arguments.length === 0) {
@@ -37,8 +36,8 @@
 				}
 				return new red.Query({value: find_root});
 			});
-			*/
 		}
+			*/
 	};
 
 	(function (my) {
@@ -220,7 +219,8 @@
 			var group = new red.Dict({has_protos: false, direct_attachments: [new red.GroupAttachment()]});
 			shape.set("group", group);
 			group.set("show", new red.Cell({str: "true"}));
-			/**/
+
+			root_dict.set("on", red.on_event);
 		};
 
 		proto.default_return_value = function () {

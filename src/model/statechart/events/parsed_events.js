@@ -8,15 +8,15 @@
 
 	var get_event = function (tree, options, live_event_creator) {
 		var event_constraint = red.get_parsed_$(tree, options);
-		var got_value = cjs.get(event_constraint, false);
+		//var got_value = cjs.get(event_constraint, false);
+		var got_value = cjs.get(event_constraint);
+		//console.log(got_value);
 		if (got_value instanceof red.Event) {
 			return got_value;
 		} else {
-		/*
 			if(cjs.is_$(event_constraint)) {
 				cjs.removeDependency(event_constraint, live_event_creator);
 			}
-			*/
 			return new red.ConstraintEvent(event_constraint, got_value);
 		}
 	};

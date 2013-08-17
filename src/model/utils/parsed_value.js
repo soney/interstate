@@ -9,6 +9,7 @@
 
 	red.on_event = function (event_type, arg1) {
 		if (event_type === "timeout") {
+			//console.log(arg1);
 			var timeout_event = new red.TimeoutEvent(arg1);
 			return timeout_event;
 		} else if(event_type === "time") {
@@ -42,6 +43,17 @@
 			return new red.CombinationEvent(events);
 		}
 	};
+	red.register_serializable_type("red_on_event_func",
+		function (x) {
+			return x === red.on_event;
+		},
+		function () {
+			return {};
+		},
+		function (obj) {
+			return red.on_event;
+		});
+	
 
 
 	red.binary_operators = {
@@ -82,7 +94,14 @@
 		if (options.get_constraint) {
 			return cjs.$(function () {
 				var op_got = cjs.get(op);
-				var args_got = _.map(args, cjs.get);
+				if(op_got === red.on_event) {
+					//debugger;
+					window.dbg = true;
+				}
+				var args_got = _.map(args, function(arg) {
+													return cjs.get(arg);
+												});
+				window.dbg = false;
 				var calling_context_got = cjs.get(calling_context);
 
 				if (_.isFunction(op_got)) {
@@ -91,7 +110,8 @@
 				} else if (op_got instanceof red.ParsedFunction) {
 					return op_got._apply(calling_context_got, pcontext, args_got);
 				} else {
-					throw new Error("Calling a non-function");
+					//throw new Error("Calling a non-function");
+					return undefined;
 				}
 			});
 		} else {
@@ -188,6 +208,9 @@
 
 			curr_context = context;
 			context_item = curr_context.points_at();
+			//if(window.dbg) {
+				//debugger;
+			//}
 				
 			while (!curr_context.is_empty()) {
 				if (context_item instanceof red.Dict) {

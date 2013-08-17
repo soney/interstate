@@ -47,6 +47,27 @@ asyncTest("Debugger connection", function() {
 	});
 });
 
+test("Map Functionality", function() {
+	var m = cjs.map();
+	var ma = cjs.$(function() {
+		if(m.has("a")) {
+			return m.get("a");
+		} else {
+			return 'no a';
+		}
+	});
+	equal(ma.get(), 'no a');
+	m.set('a', 1);
+	equal(ma.get(), 1);
+	m.set('a', 2);
+	equal(ma.get(), 2);
+	m.remove('a');
+	equal(ma.get(), 'no a');
+	m.destroy();
+	ma.destroy();
+	m = ma = null;
+});
+
 asyncTest("Constraint allocation", function() {
 	expect(3);
 	clear_snapshots(function() {

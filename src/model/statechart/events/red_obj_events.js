@@ -72,22 +72,28 @@
 						target_listeners[this.type] = [this];
 					}
 				}
+				//console.log("Add", target, this.type);
+				//debugger;
 			}, this);
 		};
 
 		proto.remove_listeners = function () {
 			_.each(this.targets, function (target) {
+				//console.log("REMOVE", target, this.type);
+				//debugger;
 				var target_listeners = listener_map.get(target);
-				if (_.isArray(target_listeners)) {
+				if (target_listeners) {
 					var listeners = target_listeners[this.type];
 					if (_.isArray(listeners)) {
 						var listener_index = _.indexOf(listeners, this);
-						listeners.splice(listener_index, 1);
-						var len = listeners.length;
-						if (len === 0) {
-							delete target_listeners[this.type];
-							if (_.size(listeners) === 0) {
-								listener_map.unset(target);
+						if(listener_index >= 0) {
+							listeners.splice(listener_index, 1);
+							var len = listeners.length;
+							if (len === 0) {
+								delete target_listeners[this.type];
+								if (_.size(target_listeners) === 0) {
+									listener_map.remove(target);
+								}
 							}
 						}
 					}
@@ -104,7 +110,7 @@
 			return shadow;
 		};
 		proto.destroy = function () {
-			listener_map.clear();
+			//listener_map.clear();
 			this.remove_listeners();
 			delete this.targets;
 			My.superclass.destroy.apply(this, arguments);

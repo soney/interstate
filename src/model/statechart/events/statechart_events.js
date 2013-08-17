@@ -74,11 +74,11 @@
 			this.live_fn.destroy(true);
 			delete this.live_fn;
 			this.remove_listeners();
-			if(this.spec.destroy) {
+			if(this.spec && this.spec.destroy) {
 				this.spec.destroy(true);
 			}
 			delete this.spec;
-			if(this.targets.destroy) {
+			if(this.targets && this.targets.destroy) {
 				this.targets.destroy(true);
 			}
 			delete this.target;

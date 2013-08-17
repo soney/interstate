@@ -50,6 +50,9 @@
 					check_on_nullify: true,
 					equals: proto_eq
 				});
+				//if(window.dbg) {
+					//debugger;
+				//}
 				proto_val = proto_contextual_obj.val();
 			} else {
 				proto_val = [];

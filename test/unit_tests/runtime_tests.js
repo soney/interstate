@@ -1,8 +1,37 @@
 (function() {
-var check_memory_leaks = false;
+var check_memory_leaks = true;
 var step_delay = 100;
 
 var tests = [
+	{
+		name: "Dynamic Events",
+		expect: 2,
+		create_builtins: false,
+		steps: [{
+			setup: function(env) {
+				env	.set("on", red.on_event)
+					.set("obj", "<stateful>")
+					.cd("obj")
+						.add_state("INIT")
+						.start_at("INIT")
+						.add_state("active")
+						.add_transition("INIT", "active", "on(my_event)")
+						.set("my_event", "(start)", "'ev1'")
+						.set("my_state")
+						.set("my_state", "INIT", "'INIT'")
+						.set("my_state", "active", "'active'")
+						;
+			},
+			test: function(env, runtime) {
+				env.print();
+				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+				equal(cobj.prop_val("my_state"), "INIT");
+				env.set("my_event", "(start)", "'ev2'");
+				red.emit("ev2");
+				equal(cobj.prop_val("my_state"), "active");
+			}
+		}]
+	},
 	{
 		name: "Property Basics",
 		expect: 4,
@@ -342,10 +371,13 @@ var tests = [
 				var rect = $("rect", runtime);
 				equal(rect.attr("x"), "-10");
 				equal(rect.attr("width"), "10");
-				window.dbg = true;
+				//window.dbg = true;
+				//env.print();
+				//debugger;
 				red.emit('e1');
 				equal(rect.attr("x"), "5");
 				equal(rect.attr("width"), "5");
+				//env.print();
 			}
 		}]
 	}

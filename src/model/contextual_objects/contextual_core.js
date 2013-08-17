@@ -72,6 +72,8 @@
 		};
 
 		proto.val = function () {
+			//var rv = this.$value.get();
+			//return rv;
 			return this.$value.get();
 		};
 		proto.emit_begin_destroy = function() {

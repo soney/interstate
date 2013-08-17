@@ -25,6 +25,9 @@
 			this.$active_value = new cjs.Constraint(this.active_value_getter, { context: this });
 
 			this.$value.onChange(this.$value.update, this.$value);
+			//if(uid.strip_prefix(this.id()) == 150) {
+				//debugger;
+			//}
 			this.$value.update(false);
 		};
 
@@ -224,9 +227,9 @@
 
 		
 		proto.active_value_getter = function () {
-			if(uid.strip_prefix(this.get_object().id()) == 26) {
+			//if(uid.strip_prefix(this.get_object().id()) == 26) {
 				//debugger;
-			}
+			//}
 			var stateful_prop = this.get_object();
 			var values = this.get_values();
 			var len = values.length;
@@ -370,14 +373,18 @@
 				using_as = active_value_info.using_as,
 				is_fallback = active_value_info.is_fallback;
 			var rv;
-			if(uid.strip_prefix(this.get_object().id()) == 26) {
-				console.log(using_val, using_state, using_as, is_fallback, red.event_queue.event_queue_round);
+			//if(window.dbg) {
+				//console.log("X");
+				//debugger;
+			//}
+			//if(uid.strip_prefix(this.get_object().id()) == 26) {
+				//console.log(using_val, using_state, using_as, is_fallback, red.event_queue.event_queue_round);
 					//debugger;
 				//console.log(using_state, using_as, is_fallback);
 				//if(using_as === USING_AS_STATE) { debugger; }
 				//console.log(using_state, last_last_value, using_val, last_last_value === using_val);
 				//debugger;
-			}
+			//}
 			if(using_as === USING_AS_TRANSITION) {
 				if(is_fallback) {
 					return this._last_rv;
