@@ -1,9 +1,8 @@
 (function() {
-var check_memory_leaks = false;
+var check_memory_leaks = true;
 var step_delay = 100;
 
 var tests = [
-/*
 	{
 		name: "Dynamic Events",
 		expect: 2,
@@ -32,7 +31,7 @@ var tests = [
 				equal(cobj.prop_val("my_state"), "active");
 			}
 		}]
-	},*/
+	},
 	{
 		name: "Dynamic Events with Inherited Properties",
 		expect: 2,
@@ -69,9 +68,7 @@ var tests = [
 				equal(cobj.prop_val("my_state"), "active");
 			}
 		}]
-	}
-	/*
-	,
+	} ,
 	{
 		name: "Property Basics",
 		expect: 4,

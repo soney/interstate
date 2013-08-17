@@ -98,7 +98,6 @@
 			}
 		};
 		proto.update_current_contextual_objects = function() {
-			console.log(this.get_contextual_object().id());
 			var children = _.clone(this.children.values());
 			var keys = _.clone(this.children.keys());
 			var my_ptr = this.contextual_object.get_pointer();

@@ -36,9 +36,9 @@
                 env_visible: false,
 				destroy: function(me) {
 					me.each(function(val) {
-						val.destroy();
+						val.destroy(true);
 					});
-					me.destroy();
+					me.destroy(true);
 				}
             },
     

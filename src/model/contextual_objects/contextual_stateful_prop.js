@@ -436,7 +436,7 @@
 			//if (using_val instanceof red.Cell) {
 			if(using_val) {
 				var pointer = this.get_pointer();
-				var event = using_state._last_run_event.get();
+				var event = cjs.get(using_state._last_run_event);
 
 				var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
 		

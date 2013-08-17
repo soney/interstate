@@ -90,7 +90,7 @@
 				red.destroy_contextual_obj(this);
 			}
 
-			this.$value.destroy();
+			this.$value.destroy(true);
 			delete this.object;
 			delete this.pointer;
 			delete this.$value;

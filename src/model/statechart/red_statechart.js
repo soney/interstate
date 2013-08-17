@@ -714,7 +714,7 @@
 			}
 			return this;
 		};
-		proto.destroy = function () {
+		proto.destroy = function (silent) {
 			this._emit("destroy", {
 				type: "destroy",
 				target: this
@@ -730,32 +730,32 @@
 				}
 			});
 			_.forEach(this.get_outgoing_transitions(), function (transition) {
-				transition.remove().destroy();
+				transition.remove().destroy(silent);
 			});
 			_.forEach(this.get_substates(true), function (substate) {
-				substate.destroy();
+				substate.destroy(silent);
 			});
 			if(this.$substates) {
-				this.$substates.destroy();
+				this.$substates.destroy(silent);
 				delete this.$substates;
 			}
 			delete this._start_state;
 			if(this.$concurrent) {
-				this.$concurrent.destroy();
+				this.$concurrent.destroy(silent);
 				delete this.$concurrent;
 			}
 
 			if(this.$incoming_transitions) {
-				this.$incoming_transitions.destroy();
+				this.$incoming_transitions.destroy(silent);
 				delete this.$incoming_transitions;
 			}
 			if(this.$outgoing_transitions) {
-				this.$outgoing_transitions.destroy();
+				this.$outgoing_transitions.destroy(silent);
 				delete this.$outgoing_transitions;
 			}
 
 			if(this.$local_state) {
-				this.$local_state.destroy();
+				this.$local_state.destroy(true);
 				delete this.$local_state;
 			}
 			//this.get_start_state().destroy();

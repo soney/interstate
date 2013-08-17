@@ -439,14 +439,14 @@
 			this.destroy();
 		};
 
-		proto.destroy = function () {
+		proto.destroy = function (silent) {
 			if(this.$active) {
-				this.$active.destroy();
+				this.$active.destroy(silent);
 				delete this.$active;
 			}
-			this._initialized.destroy();
+			this._initialized.destroy(silent);
 			delete this._initialized;
-			this._last_run_event.destroy();
+			this._last_run_event.destroy(silent);
 			delete this._last_run_event;
 			if (this._basis) {
 				this.remove_basis_listeners();
