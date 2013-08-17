@@ -1,8 +1,9 @@
 (function() {
-var check_memory_leaks = true;
+var check_memory_leaks = false;
 var step_delay = 100;
 
 var tests = [
+/*
 	{
 		name: "Dynamic Events",
 		expect: 2,
@@ -31,7 +32,46 @@ var tests = [
 				equal(cobj.prop_val("my_state"), "active");
 			}
 		}]
-	},
+	},*/
+	{
+		name: "Dynamic Events with Inherited Properties",
+		expect: 2,
+		create_builtins: false,
+		steps: [{
+			setup: function(env) {
+				env	.set("on", red.on_event)
+					.set("proto_obj", "<stateful>")
+					.cd("proto_obj")
+						.set("my_event", "(start)", "'ev1'")
+						.up()
+					.set("obj", "<stateful>")
+					.cd("obj")
+						.add_state("INIT")
+						.start_at("INIT")
+						.add_state("active")
+						.add_transition("INIT", "active", "on(my_event)")
+						.set("(prototypes)", "(start)", "proto_obj")
+						.set("my_state")
+						.set("my_state", "INIT", "'INIT'")
+						.set("my_state", "active", "'active'")
+						;
+			},
+			test: function(env, runtime) {
+				env.print();
+				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+				equal(cobj.prop_val("my_state"), "INIT");
+
+				env		.up()
+					.cd("proto_obj")
+						.set("my_event", "(start)", "'ev2'");
+
+				red.emit("ev2");
+				equal(cobj.prop_val("my_state"), "active");
+			}
+		}]
+	}
+	/*
+	,
 	{
 		name: "Property Basics",
 		expect: 4,
@@ -381,6 +421,7 @@ var tests = [
 			}
 		}]
 	}
+	/**/
 ];
 
 var command_id = 0;
