@@ -63,11 +63,11 @@
 			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
                 if (this._old_prop_value && this._old_prop_value.destroy) {
-                    this._old_prop_value.destroy();
+                    this._old_prop_value.destroy(true);
                 }
             } else {
                 if (this._prop_value && this._prop_value.destroy) {
-                    this._prop_value.destroy();
+                    this._prop_value.destroy(true);
                 }
             }
 			delete this._parent;
@@ -136,11 +136,11 @@
 			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
                 if (this._old_prop_value) {
-                    this._old_prop_value.destroy();
+                    this._old_prop_value.destroy(true);
                 }
             } else {
                 if (this._prop_value && this._prop_value.destroy) {
-                    this._prop_value.destroy();
+                    this._prop_value.destroy(true);
                 }
             }
 			delete this._parent;
@@ -205,11 +205,11 @@
 			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
                 if (this._old_prop_value) {
-                    this._old_prop_value.destroy();
+                    this._old_prop_value.destroy(true);
                 }
             } else {
                 if (this._prop_value) {
-                    this._prop_value.destroy();
+                    this._prop_value.destroy(true);
                 }
             }
 			delete this._options;
@@ -370,7 +370,7 @@
 			My.superclass._do_destroy.apply(this, arguments);
             if (!in_effect) {
                 if (this._value && this._value.destroy) {
-                    this._value.destroy();
+                    this._value.destroy(true);
                 }
             }
 			delete this._options;
@@ -426,7 +426,7 @@
 			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
                 if (this._value && this._value.destroy) {
-                    this._value.destroy();
+                    this._value.destroy(true);
                 }
             }
 			delete this._options;
@@ -505,11 +505,11 @@
 			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
                 if (this._old_value && this._old_value.destroy) {
-                    this._old_value.destroy();
+                    this._old_value.destroy(true);
                 }
             } else {
                 if (this._value && this._value.destroy) {
-                    this._value.destroy();
+                    this._value.destroy(true);
                 }
             }
 			delete this._options;

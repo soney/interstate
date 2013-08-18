@@ -14,6 +14,10 @@
 			this.initialize(options);
 		}
 		this._type = "none";
+		this._destroyed = false;
+		//if(uid.strip_prefix(this.id()) == 75) {
+			//debugger;
+		//}
 	};
 
 	(function (My) {
@@ -80,14 +84,21 @@
 			this._emit("begin_destroy");
 		};
 
-		proto.destroy = function (avoid_destroy_call) {
+		proto.destroy = function (silent, avoid_destroy_call) {
+			//if(uid.strip_prefix(this.id()) == 75) {
+				//debugger;
+			//}
 			if(this.object) {
 				this.object.off("begin_destroy", this.destroy, this);
 			}
 			if(this.constructor === My) { this.emit_begin_destroy(); }
+			this._destroyed = true;
 
 			if(avoid_destroy_call !== true) {
 				red.destroy_contextual_obj(this);
+			//} else {
+				//debugger;
+				//console.log("A");
 			}
 
 			this.$value.destroy(true);
@@ -97,6 +108,9 @@
 			red.unregister_uid(this.id());
 			this._emit("destroyed");
 			able.destroy_this_listenable(this);
+		};
+		proto.is_destroyed = function() {
+			return this._destroyed;
 		};
 
 		proto.get_name = function () {

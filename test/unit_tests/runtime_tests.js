@@ -23,7 +23,6 @@ var tests = [
 						;
 			},
 			test: function(env, runtime) {
-				env.print();
 				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 				equal(cobj.prop_val("my_state"), "INIT");
 				env.set("my_event", "(start)", "'ev2'");
@@ -56,7 +55,6 @@ var tests = [
 						;
 			},
 			test: function(env, runtime) {
-				env.print();
 				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 				equal(cobj.prop_val("my_state"), "INIT");
 
@@ -66,9 +64,10 @@ var tests = [
 
 				red.emit("ev2");
 				equal(cobj.prop_val("my_state"), "active");
+				cobj = null;
 			}
 		}]
-	} ,
+	},
 	{
 		name: "Property Basics",
 		expect: 4,
@@ -88,7 +87,6 @@ var tests = [
 						;
 			},
 			test: function(env, runtime) {
-				env.print();
 				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 				equal(cobj.prop_val("a"), 10);
 				ok(cobj.prop_val("x") >= 2);
@@ -192,7 +190,6 @@ var tests = [
 						;
 			},
 			test: function(env, runtime) {
-				env.print();
 				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 				equal(cobj.prop_val("x"), 1);
 				red.emit("my_fire");
@@ -224,7 +221,6 @@ var tests = [
 			},
 			test: function(env, runtime) {
 				red.emit('my_event')
-				env.print();
 				var rect = $("rect", runtime);
 				equal(rect.attr("fill"), "#00ff00");
 				equal(rect.attr("x"), "6");
@@ -233,7 +229,6 @@ var tests = [
 		}, {
 			setup: function(env) {
 				env.reset();
-				env.print();
 			},
 			test: function(env, runtime) {
 				var rect = $("rect", runtime);
@@ -361,7 +356,6 @@ var tests = [
 				red.emit("my_fire");
 				//debugger;
 				red.update_current_contextual_objects(env.get_root());
-				env.print();
 				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 				equal(cobj.prop_val("x"), 2);
 				red.emit("my_fire");

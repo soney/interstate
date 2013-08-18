@@ -47,6 +47,9 @@
 			return this.contextual_object !== false;
 		};
 		proto.remove_child = function(child, special_contexts) {
+			//if(uid.strip_prefix(child.id()) == 75) {
+				//debugger;
+			//}
 			var value = this.children.remove({
 				child: child,
 				special_contexts: special_contexts
@@ -137,7 +140,10 @@
 				var child_tree = to_destroy_info.value;
 				var key = to_destroy_info.key;
 				var child = child_tree.get_contextual_object();
-				child.destroy(true);
+				//if(uid.strip_prefix(child.id()) == 75) {
+					//debugger;
+				//}
+				child.destroy(true, true);
 				this.remove_child(key.child, key.special_contexts);
 			}, this);
 		};
@@ -173,11 +179,17 @@
 			return rv;
 		};
 		proto.destroy = function() {
+			//if(uid.strip_prefix(this.contextual_object.id()) == 4) {
+				//debugger;
+			//}
 			this.children.each(function(child) {
 				child.destroy();
 			});
 			this.children.destroy();
 			delete this.children;
+			if(!this.contextual_object.is_destroyed()) {
+				this.contextual_object.destroy(true, true); // silent & avoid re-calling red.destroy_cobj
+			}
 			delete this.contextual_object;
 		};
 	}(red.PointerTree));
@@ -208,6 +220,7 @@
 		proto.find_or_put = function (obj, pointer, options) {
 			var node = this.tree;
 			var i = 1, len = pointer.length(), ptr_i, sc_i;
+
 
 			while (i < len) {
 				ptr_i = pointer.points_at(i);
@@ -293,6 +306,9 @@
 		if(pointer_bucket) {
 			pointer_bucket.destroy_cobj(cobj);
 		}
+		if(pointer.length() === 1) {
+			pointer_bucket.destroy();
+		}
 
 		if(root_call) {
 			cjs.signal();
@@ -310,7 +326,7 @@
 				});
 			}
 			if(_.isFunction(root.destroy) && destroy_root !== false) {
-				root.destroy(true);
+				root.destroy(true, true);
 			}
 		}
 		return;

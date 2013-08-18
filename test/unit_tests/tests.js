@@ -118,9 +118,9 @@ asyncTest("State Allocation", function() {
 			sc.add_transition("state_1", "state_2", new red.TimeoutEvent(100));
 			sc.add_transition("state_2", "state_1", new red.TimeoutEvent(100));
 			sc.run();
-			sc.print();
+			//sc.print();
 			window.setTimeout(function() {
-				sc.print();
+				//sc.print();
 				sc.destroy();
 				sc = null;
 				take_snapshot(["ConstraintNode", "SettableConstraint", "red."], function(response) {
@@ -134,8 +134,8 @@ asyncTest("State Allocation", function() {
 asyncTest("Environment Collection", function() {
 	expect(1);
 	var the_div = $("<div />").appendTo(document.body);
-	//clear_snapshots(function() {
-		//take_snapshot([], function() {
+	clear_snapshots(function() {
+		take_snapshot([], function() {
 			var env = new red.Environment({create_builtins: true});
 			env	.cd("screen")
 					.set("my_circle", "<stateful>")
@@ -167,8 +167,8 @@ asyncTest("Environment Collection", function() {
 					start();
 				});
 			}, 2000);
-		//});
-	//});
+		});
+	});
 });
 asyncTest("Communication Wrapper", function() {
 	expect(3);
