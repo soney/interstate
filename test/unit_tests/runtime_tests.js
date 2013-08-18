@@ -411,6 +411,46 @@ var tests = [
 				//env.print();
 			}
 		}]
+	},
+	{
+		name: "KEEP",
+		expect: 7,
+		create_builtins: true,
+		steps: [{
+			setup: function(env) {
+				env	.set("on", red.on_event)
+					.set("obj", "<stateful>")
+					.cd("obj")
+						.add_state("s1")
+						.start_at("s1")
+						.add_state("s2")
+						.add_transition("s1", "s2", "on('e1')")
+						.add_transition("s2", "s1", "on('e2')")
+						.set("prop1")
+						.set("prop1", "(start)", "100")
+						.set("prop1", "s1->s2", "prop2")
+						.set("prop2")
+						.set("prop2", "(start)", "210")
+						.set("prop2", "s2->s1", "prop2")
+						.set("prop2", "s2", "prop3")
+						.set("prop3")
+						.set("prop3", "s2", "320")
+						.set("prop3", "s2->s1", "310")
+						;
+			},
+			test: function(env, runtime) {
+				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+				equal(cobj.prop_val("prop1"), 100);
+				red.emit("e1");
+				equal(cobj.prop_val("prop1"), 210);
+				equal(cobj.prop_val("prop2"), 320);
+				equal(cobj.prop_val("prop3"), 320);
+				red.emit("e2");
+				equal(cobj.prop_val("prop1"), 210);
+				equal(cobj.prop_val("prop2"), 320);
+				equal(cobj.prop_val("prop3"), 310);
+			}
+		}]
 	}
 	/**/
 ];
