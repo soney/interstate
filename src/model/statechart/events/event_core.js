@@ -1,5 +1,5 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global red,esprima,able,uid,window,console */
 
 (function (red) {
 	"use strict";
@@ -149,12 +149,30 @@
 				return event && event[prop] === val;
 			});
 		};
+		proto.throttle = function(limit) {
+			if(!_.isNumber(limit) || limit < 0) {
+				limit = 50;
+			}
+			var timeout = false;
+			var last_event;
+			var new_event = new red.Event();
+			this.on_fire(function (event) {
+				last_event = event;
+				if(!timeout) {
+					timeout = true;
+					window.setTimeout(function() {
+						timeout = false;
+						new_event.fire(last_event);
+					}, limit);
+				}
+			});
+			return new_event;
+		};
 		proto.destroy = function () {
 			this._emit("destroy");
 			delete this.listeners;
 			delete this._transition;
 			delete this._enabled;
-			//delete this.$fire_and_signal;
 			able.destroy_this_listenable(this);
 		};
 		proto.create_shadow = function () { return new red.Event(); };
