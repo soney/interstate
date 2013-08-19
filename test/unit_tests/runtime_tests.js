@@ -1,6 +1,6 @@
 (function() {
-var check_memory_leaks = true;
-var step_delay = 100;
+var check_memory_leaks = false;
+var step_delay = 5000;
 
 var tests = [
 	{
@@ -449,6 +449,26 @@ var tests = [
 				equal(cobj.prop_val("prop1"), 210);
 				equal(cobj.prop_val("prop2"), 320);
 				equal(cobj.prop_val("prop3"), 310);
+			}
+		}]
+	},
+	{
+		name: "Copies",
+		expect: 0,
+		create_builtins: true,
+		steps: [{
+			setup: function(env) {
+				env	.cd("screen")
+						.set("my_shape", "<stateful>")
+						.cd("my_shape")
+							.set("(prototypes)", "(start)", "shape.circle")
+							.set_copies("3")
+							.set("cx", "(start)", "copy_num * 30")
+							.up()
+						;
+			},
+			test: function(env, runtime) {
+				env.print();
 			}
 		}]
 	}

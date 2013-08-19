@@ -594,6 +594,16 @@
 			this._do(command);
 			return this.default_return_value();
 		};
+		proto.set_copies = function (val) {
+			var parent_obj = this.get_pointer_obj();
+			console.log(parent_obj);
+			var command = new red.SetCopiesCommand({
+				parent: parent_obj,
+				value: val
+			});
+			this._do(command);
+			return this.default_return_value();
+		};
 		proto._get_move_prop_command = function (prop_name, index) {
 			var parent_obj = this.get_pointer_obj();
 			var command = new red.MovePropCommand({

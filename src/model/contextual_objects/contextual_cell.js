@@ -21,16 +21,16 @@
 		proto.destroy = function () {
 			if(this.constructor === My) { this.emit_begin_destroy(); }
 			My.superclass.destroy.apply(this, arguments);
-			this.value_constraint.destroy();
+			this.value_constraint.destroy(true);
 			delete this.value_constraint;
 		};
 		proto._getter = function () {
 			var value;
-			try {
+			//try {
 				value = cjs.get(this.value_constraint);
-			} catch (e) {
-				console.error(e);
-			}
+			//} catch (e) {
+				//console.error(e);
+			//}
 			return value;
 		};
 		proto.get_str = function () {
