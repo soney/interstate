@@ -596,7 +596,7 @@
 		};
 		proto.set_copies = function (val) {
 			var parent_obj = this.get_pointer_obj();
-			console.log(parent_obj);
+			//console.log(parent_obj);
 			var command = new red.SetCopiesCommand({
 				parent: parent_obj,
 				value: val

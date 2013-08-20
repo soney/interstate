@@ -89,6 +89,7 @@
 			}
         };
         proto.constraint_in_context = function (pcontext) {
+		/*
             var contextual_values = this.get_contextual_values();
     
             var val = contextual_values.get_or_put(pcontext, function () {
@@ -104,11 +105,40 @@
                 }, {
 					context: this
 				});
+				//if(this.id() == 14) {
+					//if(pcontext.points_at(-2).id() == 237) {
+						//rv.destroy = function() {
+							//debugger;
+							//console.log("XXX");
+						//}
+					//}
+				//}
+
                 return rv;
             }, this);
     
             return val;
+			*/
+			var ignore_inherited_in_contexts = this.get_ignore_inherited_in_contexts(pcontext);
+
+			var rv = cjs.$(function () {
+				var node = this._tree.get();
+				return red.get_parsed_$(node, {
+					context: pcontext,
+					ignore_inherited_in_contexts: ignore_inherited_in_contexts,
+					get_constraint: false
+				});
+			}, {
+				context: this
+			});
+
+			return rv;
+
         };
+		proto.remove_constraint_in_context = function(pcontext) {
+            //var contextual_values = this.get_contextual_values();
+            //contextual_values.remove(pcontext);
+		};
         proto.destroy = function () {
 			this.emit_begin_destroy();
             this._tree.destroy();

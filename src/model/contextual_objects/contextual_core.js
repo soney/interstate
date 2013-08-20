@@ -81,11 +81,11 @@
 			return this.$value.get();
 		};
 		proto.emit_begin_destroy = function() {
-			this._emit("begin_destroy");
+			this._emit("begin_destroy", this);
 		};
 
 		proto.destroy = function (silent, avoid_destroy_call) {
-			//if(uid.strip_prefix(this.id()) == 75) {
+			//if(uid.strip_prefix(this.id()) == 143) {
 				//debugger;
 			//}
 			if(this.object) {

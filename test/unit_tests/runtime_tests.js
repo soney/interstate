@@ -1,6 +1,6 @@
 (function() {
-var check_memory_leaks = false;
-var step_delay = 5000;
+var check_memory_leaks = true;
+var step_delay = 100;
 
 var tests = [
 	{
@@ -454,7 +454,7 @@ var tests = [
 	},
 	{
 		name: "Copies",
-		expect: 0,
+		expect: 1,
 		create_builtins: true,
 		steps: [{
 			setup: function(env) {
@@ -468,7 +468,9 @@ var tests = [
 						;
 			},
 			test: function(env, runtime) {
-				env.print();
+				var circles = $("circle", runtime);
+				equal(circles.size(), 3);
+				//env.print();
 			}
 		}]
 	}

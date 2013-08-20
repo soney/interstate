@@ -21,6 +21,7 @@
 		random_prefix += symbols[rand_index];
 	}
 	random_prefix += "_";
+	//prefix_length = 0; random_prefix = "";
 
 	var current_uid = 0;
 	window.uid = function () {

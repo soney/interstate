@@ -140,6 +140,7 @@
 				var child_tree = to_destroy_info.value;
 				var key = to_destroy_info.key;
 				var child = child_tree.get_contextual_object();
+				//console.log("destroy", child);
 				//if(uid.strip_prefix(child.id()) == 75) {
 					//debugger;
 				//}

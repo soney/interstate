@@ -365,6 +365,9 @@
 		};
 
 		proto._getter = function () {
+			//if(this.id() == 150) {
+				//debugger;
+			//}
 			var last_last_value = this._last_value;
 
 			var active_value_info = this.active_value();

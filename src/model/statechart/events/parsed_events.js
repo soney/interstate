@@ -103,12 +103,13 @@
 					run_on_create: false
 				});
 				//cjs.signal();
-				//_.delay(_.bind(function () {
+				_.delay(_.bind(function () {
 					//Delay it because parsed events can run up the dictionary tree and create all sorts of contextual objects that they shouldn't
-					//if(this._live_event_creator) {
+					//Delay it because if an event relies on an object's inherited property while the object is still being created, we're all fucked
+					if(this._live_event_creator) {
 						this._live_event_creator.run(false);
-					//}
-				//}, this));
+					}
+				}, this));
 			}
 		};
 		proto.id = function () { return this._id; };

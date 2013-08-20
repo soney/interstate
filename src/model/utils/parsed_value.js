@@ -53,8 +53,6 @@
 		function (obj) {
 			return red.on_event;
 		});
-	
-
 
 	red.binary_operators = {
 		"===":	function (a, b) { return red.check_contextual_object_equality_eqeqeq(a, b); },
@@ -205,6 +203,9 @@
 					context_item = curr_context.points_at();
 				}
 			}
+			//if(key == "animation_duration") {
+				//debugger;
+			//}
 
 			curr_context = context;
 			context_item = curr_context.points_at();

@@ -175,7 +175,7 @@ asyncTest("Communication Wrapper", function() {
 	clear_snapshots(function() {
 		take_snapshot([], function() {
 			var env = new red.Environment({create_builtins: true});
-			env.print();
+			//env.print();
 
 			var pss = new red.ProgramStateServer({
 				root: env.get_root()

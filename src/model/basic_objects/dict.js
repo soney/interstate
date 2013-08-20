@@ -117,6 +117,10 @@
                 getter: function (me) { return me.get(); },
                 setter: function (me, val) { me.set(val, true); },
 				destroy: function(me) {
+					var val = me.get();
+					if(val && val.destroy) {
+						val.destroy();
+					}
 					me.destroy(true);
 				}
             }

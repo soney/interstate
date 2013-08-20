@@ -9,7 +9,7 @@
 	var listener_map = new RedMap({
 		equals: red.check_contextual_object_equality,
 		hash: function(obj) {
-			if(_.has(obj, "hash")) {
+			if(obj.hash) {
 				return obj.hash();
 			} else {
 				return obj.toString();
@@ -56,6 +56,9 @@
 
 		proto.add_listeners = function () {
 			_.each(this.targets, function (target) {
+				if(target instanceof red.ContextualObject) {
+					target.on("begin_destroy", this.remove_target_listeners, this);
+				}
 				var must_add = true;
 				var target_listeners = listener_map.get_or_put(target, function () {
 					must_add = false;
@@ -79,26 +82,30 @@
 
 		proto.remove_listeners = function () {
 			_.each(this.targets, function (target) {
-				//console.log("REMOVE", target, this.type);
-				//debugger;
-				var target_listeners = listener_map.get(target);
-				if (target_listeners) {
-					var listeners = target_listeners[this.type];
-					if (_.isArray(listeners)) {
-						var listener_index = _.indexOf(listeners, this);
-						if(listener_index >= 0) {
-							listeners.splice(listener_index, 1);
-							var len = listeners.length;
-							if (len === 0) {
-								delete target_listeners[this.type];
-								if (_.size(target_listeners) === 0) {
-									listener_map.remove(target);
-								}
+				this.remove_target_listeners(target);
+			}, this);
+		};
+		proto.remove_target_listeners = function(target) {
+			if(target instanceof red.ContextualObject) {
+				target.off("begin_destroy", this.remove_target_listeners, this);
+			}
+			var target_listeners = listener_map.get(target);
+			if(target_listeners) {
+				var listeners = target_listeners[this.type];
+				if (_.isArray(listeners)) {
+					var listener_index = _.indexOf(listeners, this);
+					if(listener_index >= 0) {
+						listeners.splice(listener_index, 1);
+						var len = listeners.length;
+						if (len === 0) {
+							delete target_listeners[this.type];
+							if (_.size(target_listeners) === 0) {
+								listener_map.remove(target);
 							}
 						}
 					}
 				}
-			}, this);
+			}
 		};
 		proto.create_shadow = function (parent_statechart, context) {
 			var shadow = new My();
