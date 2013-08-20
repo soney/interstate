@@ -110,20 +110,18 @@
     
         this._parent = this._options.parent;
 		this._prop_name = this._options.name;
-		console.log(this._parent);
 		if(this._parent instanceof red.ContextualStatefulObj) {
 			var value = this._parent.prop(this._prop_name);
 			var vobj = value.get_object();
+
 			if(vobj instanceof red.Cell) {
-			} else if(vobj instanceof red.StatefulProp) {
+				var own_statechart = this._parent.get_own_statechart();
+				var start_state = own_statechart.get_start_state();
+
+				this._prop_value = new red.StatefulProp();
+				this._prop_value.set(start_state, vobj.clone());
+			} else if(value instanceof red.StatefulProp) {
 				this._prop_value = vobj.clone(value);
-				console.log("A");
-				/*
-				var values = value.get_values();
-				console.log(vobj);
-				console.log(value);
-				console.log(values);
-				*/
 			}
 		}
 		//this._value = this._options.value;

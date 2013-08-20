@@ -78,22 +78,24 @@
             this.get_direct_values().put(state, value);
         };
 		proto.clone = function(cprop) {
-			var values = cprop.get_values();
-			var keys = [];
-			var vals = [];
-			_.each(values, function(info) {
-				keys.push(info.state.basis());
-				vals.push(info.value.clone());
-			});
-			var direct_values = cjs.map({
-				keys: keys,
-				values: values
-			});
-			var rv = new red.StatefulProp({
-				direct_values: direct_values
-			});
-			console.log(rv);
-			return rv;
+			if(cprop instanceof red.Cell) {
+			} else if(cprop instanceof red.StatefulProp) {
+				var infos = cprop.get_values();
+				var keys = [];
+				var vals = [];
+				_.each(infos, function(info) {
+					keys.push(info.state.basis());
+					vals.push(info.value.clone());
+				});
+				var direct_values = cjs.map({
+					keys: keys,
+					values: vals
+				});
+				var rv = new red.StatefulProp({
+					direct_values: direct_values
+				});
+				return rv;
+			}
 		};
         proto.unset = proto._unset_direct_value_for_state = function (state) {
             var dvs = this.get_direct_values();

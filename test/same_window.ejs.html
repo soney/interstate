@@ -15,6 +15,16 @@
 				var env = new red.Environment();
 				var root = env.get_root();
 
+				env	.set("a", "<stateful>")
+					.cd("a")
+						.set("prop_0", "(start)", "1")
+						.up()
+					.set("b", "<stateful>")
+					.cd("b")
+						.set("(prototypes)", "(start)", "a")
+						.up()
+					;
+
 				/*
 				env	.set("height", "200")
 					.set("rect", "<stateful>")
