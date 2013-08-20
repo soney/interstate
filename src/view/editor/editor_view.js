@@ -180,14 +180,14 @@
 				});
 			} else if(type === "inherit") {
 				client = event.client;
-				value = event.value;
+				//value = event.value;
 				var prop_name = event.name;
 
 				command = new red.InheritPropCommand({
 					in_effect: true,
-					parent: { id: to_func(client.obj_id) },
-					name: prop_name,
-					value: { id: to_func(value.obj_id) }
+					parent: { id: to_func(client.cobj_id) },
+					name: prop_name
+					//value: { id: to_func(value.cobj_id) }
 				});
 				this.client_socket.post_command(command, function() {
 					command.destroy();

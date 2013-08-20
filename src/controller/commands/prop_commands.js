@@ -110,16 +110,36 @@
     
         this._parent = this._options.parent;
 		this._prop_name = this._options.name;
-        this._prop_value = this._options.value;
-		var value = this._options.value;
-		if(this._parent instanceof red.StatefulObj) {
-			var own_statechart = this._parent.get_own_statechart();
-			var start_state = own_statechart.get_start_state();
-			if(value instanceof red.Cell) {
-				this._prop_value = new red.StatefulProp();
-				this._prop_value.set(start_state, new red.Cell({str: value.get_str()}));
+		console.log(this._parent);
+		if(this._parent instanceof red.ContextualStatefulObj) {
+			var value = this._parent.prop(this._prop_name);
+			var vobj = value.get_object();
+			if(vobj instanceof red.Cell) {
+			} else if(vobj instanceof red.StatefulProp) {
+				this._prop_value = vobj.clone(value);
+				console.log("A");
+				/*
+				var values = value.get_values();
+				console.log(vobj);
+				console.log(value);
+				console.log(values);
+				*/
 			}
 		}
+		//this._value = this._options.value;
+		/*
+		if(this._parent instanceof red.ContextualStatefulObj) {
+			var own_statechart = this._parent.get_own_statechart();
+			var start_state = own_statechart.get_start_state();
+			if(this._value instanceof red.Cell) {
+				this._prop_value = new red.StatefulProp();
+				this._prop_value.set(start_state, new red.Cell({str: this._value.get_str()}));
+			} else if(this._value instanceof red.StatefulProp) {
+				this._prop_value = this._value.clone();
+			}
+		}
+		console.log(this._value, this._prop_value);
+		*/
     };
     
     (function (My) {
@@ -127,10 +147,12 @@
         var proto = My.prototype;
     
         proto._execute = function () {
-            this._parent.set_prop(this._prop_name, this._prop_value);
+			var parent_obj = this._parent.get_object();
+           parent_obj.set_prop(this._prop_name, this._prop_value);
         };
         proto._unexecute = function () {
-			this._parent.unset_prop(this._prop_name);
+			var parent_obj = this._parent.get_object();
+			parent_obj.unset_prop(this._prop_name);
         };
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
@@ -141,6 +163,9 @@
             } else {
                 if (this._prop_value && this._prop_value.destroy) {
                     this._prop_value.destroy(true);
+                }
+                if (this._value && this._value.destroy) {
+                    this._value.destroy(true);
                 }
             }
 			delete this._parent;
@@ -156,14 +181,14 @@
                 var arg_array = _.toArray(arguments);
                 return {
                     parent_uid: this._parent.id(),
-                    value_uid: this._prop_value.id(),
+                    //value_uid: this._value.id(),
                     name: this._prop_name
                 };
             },
             function (obj) {
                 return new My({
                     parent: red.find_uid(obj.parent_uid),
-                    value: red.find_uid(obj.value_uid),
+                    //value: red.find_uid(obj.value_uid),
                     name: obj.name
                 });
             });

@@ -60,6 +60,11 @@
                 return red.parse(str);
             });
         };
+		proto.clone = function() {
+			return new red.Cell({
+				str: this.get_str()
+			});
+		};
 		proto.emit_begin_destroy = function() {
 			this._emit("begin_destroy");
 		};

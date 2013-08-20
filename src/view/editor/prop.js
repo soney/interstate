@@ -625,7 +625,7 @@
 			event.command_type = "inherit";
 			event.name = this.option("name");
 			event.client = this.option("obj");
-			event.value = this.option("value");
+			//event.value = this.option("value");
 
 			this.element.trigger(event);
 		},

@@ -580,6 +580,20 @@
 			return this.default_return_value();
 		};
 
+		proto.inherit = function(prop_name) {
+			var parent_obj = this.get_pointer_obj();
+			var ptr = this.pointer;
+			var obj = ptr.points_at();
+			console.log(obj, ptr);
+			var cobj = red.find_or_put_contextual_obj(obj, ptr);
+			var command = new red.InheritPropCommand({
+				parent: cobj,
+				name: prop_name
+			});
+			this._do(command);
+			return this.default_return_value();
+		};
+
 		proto._get_rename_prop_command = function (from_name, to_name) {
 			var parent_obj = this.get_pointer_obj();
 			var command = new red.RenamePropCommand({

@@ -82,9 +82,16 @@
                 "default": function () { return []; },
                 getter_name: "direct_attachments",
 				destroy: function(me) {
-					_.each(me, function(attachment) {
-						attachment.destroy(true);
-					});
+					if (me instanceof cjs.ArrayConstraint) {
+						me.each(function(attachment) {
+							attachment.destroy(true);
+						});
+						me.destroy(true);
+					} else if(_.isArray(me)) {
+						_.each(me, function(attachment) {
+							attachment.destroy(true);
+						});
+					}
 				}
             },
     
