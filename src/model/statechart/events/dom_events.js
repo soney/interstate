@@ -70,6 +70,14 @@
 											if(robj) {
 												return {dom_obj: robj[0], cobj: instance};
 											}
+										} else {
+											var group_attachment_instance = child.get_attachment_instance("group");
+											if(group_attachment_instance) {
+												return _.map(group_attachment_instance.get_children(), function(child) {
+												});
+												//children.push.apply(children, group_attachment_instance.get_children());
+												//children.push.apply(children, group_attachment_instance.get_children());
+											}
 										}
 									}
 									return false;
