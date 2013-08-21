@@ -71,9 +71,11 @@
 												return {dom_obj: robj[0], cobj: instance};
 											}
 										} else {
-											var group_attachment_instance = child.get_attachment_instance("group");
+											var group_attachment_instance = instance.get_attachment_instance("group");
 											if(group_attachment_instance) {
 												return _.map(group_attachment_instance.get_children(), function(child) {
+													//console.log(child);
+													return {dom_obj: child[0]};
 												});
 												//children.push.apply(children, group_attachment_instance.get_children());
 												//children.push.apply(children, group_attachment_instance.get_children());

@@ -46,26 +46,16 @@
 		}
 		child_node.insertBefore(before_child);
 	};
-	var get_children = function(child_infos) {
+	var get_children = function(child_nodes) {
 		var children = [];
-		_.each(child_infos, function(child_info) {
-			var child = child_info.value;
+		_.each(child_nodes, function(child) {
 			if(child instanceof red.ContextualDict) {
 				if(child.is_template()) {
 					var copies = child.instances();
-					_.each(copies, function(child) {
-						var shape_attachment_instance = child.get_attachment_instance("shape");
-						if(shape_attachment_instance) {
-							var to_show = child.prop_val("show");
-							if(to_show) {
-								children.push(shape_attachment_instance);
-							}
-						}
-						var group_attachment_instance = child.get_attachment_instance("group");
-						if(group_attachment_instance) {
-							children.push.apply(children, group_attachment_instance.get_children());
-						}
-					});
+					children.push.apply(children, _.map(copies, function(copy) {
+						var copy_children = _.pluck(copy.get_children(), "value");
+						return get_children(copy_children);
+					}));
 				} else {
 					var shape_attachment_instance = child.get_attachment_instance("shape");
 					if(shape_attachment_instance) {
@@ -153,7 +143,7 @@
 							screen_contents = screen.children();
 						}
 				
-						var children = get_children(screen_contents);
+						var children = get_children(_.pluck(screen_contents, "value"));
 						return children;
 					}
 				}
@@ -308,10 +298,10 @@
 						cobj_children = _.filter(contextual_object.children(), function(child_info) {
 							return _.contains(to_show, child_info.name);
 						});
-						children = get_children(cobj_children);
+						children = get_children(_.pluck(cobj_children, "value"));
 					} else if(to_show) {
 						cobj_children = contextual_object.children();
-						children = get_children(cobj_children);
+						children = get_children(_.pluck(cobj_children, "value"));
 					} else {
 						children = [];
 					}
