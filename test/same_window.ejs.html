@@ -80,6 +80,13 @@ env.set("a", "<stateful>")
 					edit_on_open: true,
 					show_edit_button: false
 				});
+
+				window.setTimeout(function() {
+					$("tr").eq(9).click();
+				}, 1000);
+				window.setTimeout(function() {
+					$("tr").eq(14).click();
+				}, 2000);
 			</script>
 	  </div>
   </body>
