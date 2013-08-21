@@ -584,7 +584,7 @@
 			var parent_obj = this.get_pointer_obj();
 			var ptr = this.pointer;
 			var obj = ptr.points_at();
-			console.log(obj, ptr);
+			//console.log(obj, ptr);
 			var cobj = red.find_or_put_contextual_obj(obj, ptr);
 			var command = new red.InheritPropCommand({
 				parent: cobj,

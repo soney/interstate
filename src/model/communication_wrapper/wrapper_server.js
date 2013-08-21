@@ -9,7 +9,7 @@
 	var ACTIVE = {},
 		PAUSED = {};
 	red.WrapperServer = function (options) {
-		this.id = id++;
+		this._id = id++;
 		able.make_this_listenable(this);
 		this.object = options.object;
 		this.object.on("begin_destroy", this.on_begin_destroy, this);
@@ -49,6 +49,11 @@
 	(function (my) {
 		var proto = my.prototype;
 		able.make_proto_listenable(proto);
+
+		proto.id = function() { return this._id; };
+		if(red.__debug) {
+			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
+		}
 
 		proto.add_client_id = function(client_id) {
 			if(!this.client_ids.hasOwnProperty(client_id)) {
@@ -94,8 +99,8 @@
 			}
 		};
 		proto.on_begin_destroy = function() {
-			console.log("on_begin_destroy", this.object);
-			debugger;
+			//console.log("on_begin_destroy", this.object);
+			//debugger;
 			this.object.off("begin_destroy", this.on_begin_destroy, this);
 			this.remove_emission_listeners();
 			this.clear_fn_call_constraints();
@@ -109,7 +114,7 @@
 		};
 
 		proto.destroy = function () {
-			console.log("destroy", this.object);
+			//console.log("destroy", this.object);
 			this._emit("destroy");
 			this.object.off("begin_destroy", this.on_begin_destroy, this);
 			this.object.off("destroyed", this.destroy, this);

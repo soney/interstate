@@ -473,6 +473,31 @@ var tests = [
 				//env.print();
 			}
 		}]
+	},
+	{
+		name: "Inherited Start Property Values",
+		expect: 1,
+		create_builtins: false,
+		steps: [{
+			setup: function(env) {
+				env	.set("a", "<stateful>")
+					.cd("a")
+						.set("prop_0")
+						.set("prop_0", "(start)", "'a0'")
+						.up()
+					.set("b", "<stateful>")
+					.cd("b")
+						.set("(prototypes)", "(start)", "a")
+						.inherit("prop_0")
+						.set("prop_0", "(start)", "'b0'")
+						;
+			},
+			test: function(env, runtime) {
+				//env.print();
+				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+				equal(cobj.prop_val("prop_0"), "b0");
+			}
+		}]
 	}
 	/**/
 ];

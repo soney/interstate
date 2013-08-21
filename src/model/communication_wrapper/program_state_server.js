@@ -86,26 +86,35 @@
 									client_id: client_id
 								}
 							};
+							//if(client_id === 8) debugger;
 							this.post(full_message);
 						}, this));
 					} else if (mtype === "get_$" || mtype === "async_get") { // async request
 						cobj_id = data.cobj_id;
 						cobj = red.find_uid(cobj_id);
 						client_id = data.client_id;
-
-						server = this.get_wrapper_server(cobj, client_id);
-
 						var request_id = data.message_id;
-						var create_constraint = data.message.type === "get_$";
+						if(cobj) {
+							server = this.get_wrapper_server(cobj, client_id);
 
-						server.request(data.message.getting, _.bind(function (response) {
+							var create_constraint = data.message.type === "get_$";
+
+							server.request(data.message.getting, _.bind(function (response) {
+								this.post({
+									type: "response",
+									request_id: request_id,
+									client_id: client_id,
+									response: response
+								});
+							}, this), create_constraint, client_id);
+						} else {
 							this.post({
 								type: "response",
 								request_id: request_id,
 								client_id: client_id,
-								response: response
+								error: "cobj_destroyed"
 							});
-						}, this), create_constraint, client_id);
+						}
 					} else if(mtype === "destroy_$") {
 						cobj_id = data.cobj_id;
 						client_id = data.client_id;

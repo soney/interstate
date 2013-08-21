@@ -78,24 +78,21 @@
             this.get_direct_values().put(state, value);
         };
 		proto.clone = function(cprop) {
-			if(cprop instanceof red.Cell) {
-			} else if(cprop instanceof red.StatefulProp) {
-				var infos = cprop.get_values();
-				var keys = [];
-				var vals = [];
-				_.each(infos, function(info) {
-					keys.push(info.state.basis());
-					vals.push(info.value.clone());
-				});
-				var direct_values = cjs.map({
-					keys: keys,
-					values: vals
-				});
-				var rv = new red.StatefulProp({
-					direct_values: direct_values
-				});
-				return rv;
-			}
+			var infos = cprop.get_values();
+			var keys = [];
+			var vals = [];
+			_.each(infos, function(info) {
+				keys.push(info.state.basis());
+				vals.push(info.value.clone());
+			});
+			var direct_values = cjs.map({
+				keys: keys,
+				values: vals
+			});
+			var rv = new red.StatefulProp({
+				direct_values: direct_values
+			});
+			return rv;
 		};
         proto.unset = proto._unset_direct_value_for_state = function (state) {
             var dvs = this.get_direct_values();
@@ -118,6 +115,9 @@
         };
         
         proto.id = proto.hash = function () { return this._id; };
+		if(red.__debug) {
+			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
+		}
     
         proto.destroy = function () {
 			red.unset_instance_builtins(this, My);

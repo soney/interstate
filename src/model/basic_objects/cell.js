@@ -156,6 +156,9 @@
         };
     
         proto.id = proto.hash = function () { return this._id; };
+		if(red.__debug) {
+			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
+		}
     
         proto.summarize = function () {
             return this.id();

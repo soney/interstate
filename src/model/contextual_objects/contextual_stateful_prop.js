@@ -165,7 +165,6 @@
 						});
 					}
 				}
-
 				statecharts = parent.get_statecharts();
 			} else {
 				values = stateful_prop.get_direct_values();
@@ -177,7 +176,6 @@
 				}
 				statecharts = [parent.get_statechart_for_proto(sc_parent)];
 			}
-
 			var statecharts_len = statecharts.length;
 			var rv = _.map(entries, function (entry) {
 				var key = entry.key;
@@ -207,10 +205,17 @@
 				}
 				return {
 					state: state,
-					value: entry.value
+					value: entry.value,
+					root_sv_index: i
 				};
 			});
 			rv = _.compact(rv);
+
+			var root_indicies = {};
+
+			rv = rv.sort(function(a, b) {
+				return a.root_sv_index - b.root_sv_index;
+			});
 			return rv;
 		};
 
@@ -244,6 +249,10 @@
 			}, this);
 			var needs_invalidation = false;
 			*/
+			//if(this.sid() == 49 && values.length === 2)	{
+				//debugger;
+				//console.log(using_state, state);
+			//}
 			for (i = 0; i < len; i += 1) {
 				info = values[i];
 				state = info.state;

@@ -12,6 +12,7 @@ var red = (function (root) {
 	red._ = _.noConflict();
 	red.version = "<%= version %>";
 	red.build_time = "<%= build_time %>";
+	red.__debug = true;
 
 	//red.__debug_statecharts = true;
 

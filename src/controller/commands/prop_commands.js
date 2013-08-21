@@ -120,12 +120,12 @@
 
 				this._prop_value = new red.StatefulProp();
 				this._prop_value.set(start_state, vobj.clone());
-			} else if(value instanceof red.StatefulProp) {
+			} else if(vobj instanceof red.StatefulProp) {
 				this._prop_value = vobj.clone(value);
 			}
 		}
-		//this._value = this._options.value;
 		/*
+		this._value = this._options.value;
 		if(this._parent instanceof red.ContextualStatefulObj) {
 			var own_statechart = this._parent.get_own_statechart();
 			var start_state = own_statechart.get_start_state();

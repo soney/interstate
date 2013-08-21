@@ -115,6 +115,13 @@
 		proto.post = function (message) {
 			var m_id = message_id;
 			message_id += 1;
+			/*
+			if(uid.strip_prefix(this.cobj_id) == 279) {
+				if(m_id == 74) {
+					debugger;
+				}
+			}
+			*/
 			this.comm_mechanism.post({
 				type: "wrapper_client",
 				client_id: this.id(),
@@ -125,6 +132,9 @@
 			return m_id;
 		};
 		proto.id = function () { return this._id; };
+		if(red.__debug) {
+			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
+		}
 		proto.type = function () { return this._type; };
 
 		proto.async_get = function () {
