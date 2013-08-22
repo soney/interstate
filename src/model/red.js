@@ -13,6 +13,7 @@ var red = (function (root) {
 	red.version = "<%= version %>";
 	red.build_time = "<%= build_time %>";
 	red.__debug = true;
+	red.cjs.__debug = red.__debug;
 
 	//red.__debug_statecharts = true;
 

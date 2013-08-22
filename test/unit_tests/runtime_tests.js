@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = true;
+var check_memory_leaks = false;
 var step_delay = 100;
 
 var tests = [
@@ -496,6 +496,43 @@ var tests = [
 				//env.print();
 				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 				equal(cobj.prop_val("prop_0"), "b0");
+			}
+		}]
+	},
+	{
+		name: "Copies & Groups",
+		expect: 4,
+		create_builtins: false,
+		steps: [{
+			setup: function(env) {
+				env	.cd("screen")
+					.set("compound1", "<stateful>")
+						.cd("compound1")
+							.set_copies("['#ff0000', '#0000ff']")
+							.set("(prototypes)", "(start)", "shape.group")
+							.set("circ1", "<stateful>")
+							.cd("circ1")
+								.set("(prototypes)", "(start)", "shape.circle")
+								.set("fill", "(start)", "my_copy")
+								.set("cx", "(start)", "80")
+								.set("cy", "(start)", "80")
+								.up()
+							.set("circ2", "<stateful>")
+							.cd("circ2")
+								.set("(prototypes)", "(start)", "shape.rect")
+								.set("fill", "(start)", "my_copy")
+								.set("cx", "(start)", "100")
+								.set("cy", "(start)", "100")
+								.up()
+								;
+			},
+			test: function(env, runtime) {
+				var circles = $("circle", runtime);
+				var rects = $("rect", runtime);
+				equal(circles.eq(0).attr("fill"), "#ff0000");
+				equal(circles.eq(1).attr("fill"), "#0000ff");
+				equal(rects.eq(0).attr("fill"), "#ff0000");
+				equal(rects.eq(1).attr("fill"), "#0000ff");
 			}
 		}]
 	}

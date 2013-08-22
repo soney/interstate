@@ -52,10 +52,13 @@
 			if(child instanceof red.ContextualDict) {
 				if(child.is_template()) {
 					var copies = child.instances();
+					children.push.apply(children, get_children(copies));
+					/*
 					children.push.apply(children, _.map(copies, function(copy) {
-						var copy_children = _.pluck(copy.get_children(), "value");
+						var copy_children = _.pluck(copy.children(), "value");
 						return get_children(copy_children);
 					}));
+					*/
 				} else {
 					var shape_attachment_instance = child.get_attachment_instance("shape");
 					if(shape_attachment_instance) {
@@ -66,6 +69,7 @@
 					}
 					var group_attachment_instance = child.get_attachment_instance("group");
 					if(group_attachment_instance) {
+						//console.log(group_attachment_instance);
 						children.push.apply(children, group_attachment_instance.get_children());
 					}
 				}

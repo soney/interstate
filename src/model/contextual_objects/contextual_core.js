@@ -18,6 +18,9 @@
 		//if(uid.strip_prefix(this.id()) == 75) {
 			//debugger;
 		//}
+		//if(this.sid() === 189) {
+		//	debugger;
+		//}
 	};
 
 	(function (My) {
@@ -88,6 +91,9 @@
 		};
 
 		proto.destroy = function (silent, avoid_destroy_call) {
+			//if(this.sid() === 189) {
+				//debugger;
+			//}
 			//if(uid.strip_prefix(this.id()) == 143) {
 				//debugger;
 			//}
