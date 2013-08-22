@@ -78,7 +78,7 @@
 															var robj = raphael_attachment.get_robj();
 															if(robj) {
 																//console.log(child);
-																return {dom_obj: robj[0], cobj: target_cobj};
+																return {dom_obj: robj[0], cobj: instance};
 															} else {
 																return false;
 															}

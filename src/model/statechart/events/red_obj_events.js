@@ -30,6 +30,16 @@
 			red.event_queue.signal();
 		}
 	};
+	red.register_serializable_type("red_emit_func",
+		function (x) {
+			return x === red.emit;
+		},
+		function () {
+			return {};
+		},
+		function (obj) {
+			return red.emit;
+		});
 
 	red.RedObjEvent = function() {
 		red.Event.apply(this, arguments);

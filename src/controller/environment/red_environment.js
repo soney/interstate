@@ -221,6 +221,8 @@
 			group.set("show", new red.Cell({str: "true"}));
 
 			root_dict.set("on", red.on_event);
+			root_dict.set("find", red.find_fn);
+			root_dict.set("emit", red.emit);
 		};
 
 		proto.default_return_value = function () {

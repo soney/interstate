@@ -5,6 +5,25 @@
     "use strict";
     var cjs = red.cjs,
         _ = red._;
+	
+	red.find_fn = function(find_root) {
+		/*
+		if (arguments.length === 0) {
+			find_root = new red.ContextualObject({pointer: root_pointer});
+		}
+		*/
+		return new red.Query({value: find_root});
+	};
+	red.register_serializable_type("red_find_fn_func",
+		function (x) {
+			return x === red.find_fn;
+		},
+		function () {
+			return {};
+		},
+		function (obj) {
+			return red.find_fn;
+		});
 
     red.Query = function (options) {
         this.options = _.extend({
