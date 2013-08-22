@@ -588,7 +588,7 @@ tests.forEach(function(test) {
 		var root_setup = function() {
 			env = new red.Environment({create_builtins: test.create_builtins !== false});
 			root = env.get_root();
-			runtime_div = $("<div />")	.prependTo(document.body)
+			runtime_div = $("<div />")	.appendTo(document.body)
 										.dom_output({
 											root: root,
 											show_edit_button: false

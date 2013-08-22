@@ -387,7 +387,14 @@
 		} else if (type === "FunctionExpression") {
 			return red.get_fn_$(node, options);
 		} else if (type === "Program") {
-			return get_val(node.body[0], options);
+			if(node.body.length === 1) {
+				return get_val(node.body[0], options);
+			} else {
+				return _.map(node.body, function(body) {
+					return get_val(body, options);
+				});
+			}
+			//return get_val(node.body[0], options);
 		} else {
 			console.log(type, node);
 		}

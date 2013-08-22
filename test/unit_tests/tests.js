@@ -348,7 +348,7 @@ asyncTest("Basic Statechart View", function() {
 		take_snapshot([], function() {
 			var cleanup_button = $("<a />")	.attr("href", "javascript:void(0)")
 											.text("Clean up")
-											.prependTo(document.body)
+											.appendTo(document.body)
 											.on("click.clean", function() {
 												cleanup_button	.off("click.clean")
 																.remove();
@@ -399,7 +399,7 @@ asyncTest("Basic Editor", function() {
 
 			var cleanup_button = $("<a />")	.attr("href", "javascript:void(0)")
 											.text("Clean up")
-											.prependTo(document.body)
+											.appendTo(document.body)
 											.on("click.clean", function() {
 												cleanup_button.off("click.clean")
 																.remove();
@@ -452,7 +452,7 @@ asyncTest("Loading Files", function() {
 
 			var cleanup_button = $("<a />")	.attr("href", "javascript:void(0)")
 											.text("Clean up")
-											.prependTo(document.body)
+											.appendTo(document.body)
 											.on("click.clean", function() {
 												cleanup_button.off("click.clean")
 																.remove();

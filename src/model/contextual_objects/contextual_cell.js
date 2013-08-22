@@ -38,6 +38,7 @@
 			var value;
 			try {
 				value = cjs.get(this.value_constraint);
+				//console.log(value);
 			} catch (e) {
 				console.error(e);
 			}
