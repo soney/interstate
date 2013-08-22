@@ -443,6 +443,7 @@
 		};
 
 		proto.destroy = function (silent) {
+			this.destroyed = true;
 			if(this.$active) {
 				this.$active.destroy(silent);
 				delete this.$active;

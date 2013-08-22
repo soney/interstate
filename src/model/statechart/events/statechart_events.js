@@ -95,7 +95,9 @@
 		};
 		proto.remove_listeners = function () {
 			_.each(this.processed_targets, function (target) {
-				target.off_transition(this.spec, this.get_activation_listener(target), this.get_deactivation_listener(target), this);
+				if(!target.destroyed) {
+					target.off_transition(this.spec, this.get_activation_listener(target), this.get_deactivation_listener(target), this);
+				}
 			}, this);
 		};
 		proto.stringify = function () { return this.statecharts[0].id() + ":" + this._spec; };
