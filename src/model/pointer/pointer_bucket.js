@@ -297,7 +297,11 @@
 
 		if(root_call) {
 			cjs.wait();
-			depth_first_destroy(cobj, false);
+			var to_destroy = get_to_destroy(cobj, false);
+			_.each(to_destroy, function(cobj) {
+				cobj.destroy(true, true);
+			});
+			//depth_first_destroy(cobj, false);
 		}
 
 		var pointer = cobj.get_pointer();
@@ -318,19 +322,29 @@
 		in_call = false;
 	};
 
-	var depth_first_destroy = function(root, destroy_root) {
+	var get_to_destroy = function(root, destroy_root) {
+		var to_destroy = [];
 		if(root) {
-			if(_.isFunction(root.children)) {
+			if(root instanceof red.ContextualDict) {
+				if(root.is_template()) {
+					var instances = root.instances();
+					_.each(instances, function(instance) {
+						//depth_first_destroy(instance);
+						to_destroy.push.apply(to_destroy, get_to_destroy(instance));
+					});
+				}
 				var children = root.children();
 				_.each(children, function(child_info) {
-					depth_first_destroy(child_info.value);
+					to_destroy.push.apply(to_destroy, get_to_destroy(child_info.value));
+					//depth_first_destroy(child_info.value);
 				});
 			}
 			if(_.isFunction(root.destroy) && destroy_root !== false) {
-				root.destroy(true, true);
+				//root.destroy(true, true);
+				to_destroy.push(root);
 			}
 		}
-		return;
+		return to_destroy;
 	};
 
 	red.find_or_put_contextual_obj = function (obj, pointer, options) {

@@ -527,7 +527,7 @@ var tests = [
 								;
 			},
 			test: function(env, runtime) {
-				env.print();
+				//env.print();
 				var circles = $("circle", runtime);
 				var rects = $("rect", runtime);
 				equal(circles.eq(0).attr("fill"), "#ff0000");
