@@ -502,11 +502,11 @@ var tests = [
 	{
 		name: "Copies & Groups",
 		expect: 4,
-		create_builtins: false,
+		create_builtins: true,
 		steps: [{
 			setup: function(env) {
 				env	.cd("screen")
-					.set("compound1", "<stateful>")
+						.set("compound1", "<stateful>")
 						.cd("compound1")
 							.set_copies("['#ff0000', '#0000ff']")
 							.set("(prototypes)", "(start)", "shape.group")
@@ -514,19 +514,20 @@ var tests = [
 							.cd("circ1")
 								.set("(prototypes)", "(start)", "shape.circle")
 								.set("fill", "(start)", "my_copy")
-								.set("cx", "(start)", "80")
-								.set("cy", "(start)", "80")
+								.set("cx", "(start)", "80*copy_num")
+								.set("cy", "(start)", "80*copy_num")
 								.up()
 							.set("circ2", "<stateful>")
 							.cd("circ2")
 								.set("(prototypes)", "(start)", "shape.rect")
 								.set("fill", "(start)", "my_copy")
-								.set("cx", "(start)", "100")
-								.set("cy", "(start)", "100")
+								.set("x", "(start)", "100*copy_num")
+								.set("y", "(start)", "100*copy_num")
 								.up()
 								;
 			},
 			test: function(env, runtime) {
+				env.print();
 				var circles = $("circle", runtime);
 				var rects = $("rect", runtime);
 				equal(circles.eq(0).attr("fill"), "#ff0000");
