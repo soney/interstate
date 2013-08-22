@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = false;
+var check_memory_leaks = true;
 var step_delay = 100;
 
 var tests = [
@@ -510,6 +510,13 @@ var tests = [
 						.cd("compound1")
 							.set_copies("['#ff0000', '#0000ff']")
 							.set("(prototypes)", "(start)", "shape.group")
+							.add_state("init")
+							.add_state("clicked")
+							.add_transition("init", "clicked", "on('click', this)")
+							.add_transition("clicked", "init", "on('click', this)")
+							.set("group_fill", "init", "my_copy")
+							.set("group_fill", "clicked", "'purple'")
+							.start_at("init")
 							.set("circ1", "<stateful>")
 							.cd("circ1")
 								.set("(prototypes)", "(start)", "shape.circle")
@@ -527,6 +534,7 @@ var tests = [
 								;
 			},
 			test: function(env, runtime) {
+				//env.print();
 				var circles = $("circle", runtime);
 				var rects = $("rect", runtime);
 				equal(circles.eq(0).attr("fill"), "#ff0000");
