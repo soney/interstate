@@ -56,34 +56,42 @@
 						} else if (target_cobj instanceof red.ContextualDict) {
 							if (target_cobj.is_template()) {
 								var instances = target_cobj.instances();
-								return _.map(instances, function (instance) {
-									var dom_attachment = instance.get_attachment_instance("dom");
-									if (dom_attachment) {
-										var dom_obj = dom_attachment.get_dom_obj();
-										if (dom_obj) {
-											return {dom_obj: dom_obj, cobj: instance};
-										}
-									} else {
-										var raphael_attachment = instance.get_attachment_instance("shape");
-										if(raphael_attachment) {
-											var robj = raphael_attachment.get_robj();
-											if(robj) {
-												return {dom_obj: robj[0], cobj: instance};
+								return _.chain(instances)
+										.map(function(instance) {
+											var dom_attachment = instance.get_attachment_instance("dom");
+											if (dom_attachment) {
+												var dom_obj = dom_attachment.get_dom_obj();
+												if (dom_obj) {
+													return {dom_obj: dom_obj, cobj: instance};
+												}
+											} else {
+												var raphael_attachment = instance.get_attachment_instance("shape");
+												if(raphael_attachment) {
+													var robj = raphael_attachment.get_robj();
+													if(robj) {
+														return {dom_obj: robj[0], cobj: instance};
+													}
+												} else {
+													var group_attachment_instance = instance.get_attachment_instance("group");
+													if(group_attachment_instance) {
+														return _.map(group_attachment_instance.get_children(), function(raphael_attachment) {
+															var robj = raphael_attachment.get_robj();
+															if(robj) {
+																//console.log(child);
+																return {dom_obj: robj[0], cobj: target_cobj};
+															} else {
+																return false;
+															}
+														});
+														//children.push.apply(children, group_attachment_instance.get_children());
+														//children.push.apply(children, group_attachment_instance.get_children());
+													}
+												}
 											}
-										} else {
-											var group_attachment_instance = instance.get_attachment_instance("group");
-											if(group_attachment_instance) {
-												return _.map(group_attachment_instance.get_children(), function(child) {
-													//console.log(child);
-													return {dom_obj: child[0]};
-												});
-												//children.push.apply(children, group_attachment_instance.get_children());
-												//children.push.apply(children, group_attachment_instance.get_children());
-											}
-										}
-									}
-									return false;
-								});
+											return false;
+										})
+										.flatten(true)
+										.value();
 							} else {
 								var dom_attachment = target_cobj.get_attachment_instance("dom");
 								if (dom_attachment) {
@@ -97,6 +105,21 @@
 										var robj = raphael_attachment.get_robj();
 										if(robj) {
 											return {dom_obj: robj[0], cobj: target_cobj};
+										}
+									} else {
+										var group_attachment_instance = target_cobj.get_attachment_instance("group");
+										if(group_attachment_instance) {
+											return _.map(group_attachment_instance.get_children(), function(raphael_attachment) {
+												var robj = raphael_attachment.get_robj();
+												if(robj) {
+													//console.log(child);
+													return {dom_obj: robj[0], cobj: target_cobj};
+												} else {
+													return false;
+												}
+											});
+											//children.push.apply(children, group_attachment_instance.get_children());
+											//children.push.apply(children, group_attachment_instance.get_children());
 										}
 									}
 								}
