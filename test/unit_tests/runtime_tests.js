@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = true;
+var check_memory_leaks = false;
 var step_delay = 100;
 
 var tests = [
@@ -501,7 +501,7 @@ var tests = [
 	},
 	{
 		name: "Copies & Groups",
-		expect: 4,
+		expect: 12,
 		create_builtins: true,
 		steps: [{
 			setup: function(env) {
@@ -515,19 +515,19 @@ var tests = [
 							.add_transition("init", "clicked", "on('click', this)")
 							.add_transition("clicked", "init", "on('click', this)")
 							.set("group_fill", "init", "my_copy")
-							.set("group_fill", "clicked", "'purple'")
+							.set("group_fill", "clicked", "'#00ff00'")
 							.start_at("init")
 							.set("circ1", "<stateful>")
 							.cd("circ1")
 								.set("(prototypes)", "(start)", "shape.circle")
-								.set("fill", "(start)", "my_copy")
+								.set("fill", "(start)", "group_fill")
 								.set("cx", "(start)", "80*copy_num")
 								.set("cy", "(start)", "80*copy_num")
 								.up()
 							.set("circ2", "<stateful>")
 							.cd("circ2")
 								.set("(prototypes)", "(start)", "shape.rect")
-								.set("fill", "(start)", "my_copy")
+								.set("fill", "(start)", "group_fill")
 								.set("x", "(start)", "100*copy_num")
 								.set("y", "(start)", "100*copy_num")
 								.up()
@@ -535,6 +535,36 @@ var tests = [
 			},
 			test: function(env, runtime) {
 				//env.print();
+				var circles = $("circle", runtime);
+				var rects = $("rect", runtime);
+				equal(circles.eq(0).attr("fill"), "#ff0000");
+				equal(circles.eq(1).attr("fill"), "#0000ff");
+				equal(rects.eq(0).attr("fill"), "#ff0000");
+				equal(rects.eq(1).attr("fill"), "#0000ff");
+			}
+		}, {
+			setup: function(env, runtime) {
+				var circles = $("circle", runtime);
+				var rects = $("rect", runtime);
+				circles.eq(0).click();
+				rects.eq(1).click();
+			},
+			test: function(env, runtime) {
+				var circles = $("circle", runtime);
+				var rects = $("rect", runtime);
+				equal(circles.eq(0).attr("fill"), "#00ff00");
+				equal(circles.eq(1).attr("fill"), "#00ff00");
+				equal(rects.eq(0).attr("fill"), "#00ff00");
+				equal(rects.eq(1).attr("fill"), "#00ff00");
+			}
+		}, {
+			setup: function(env, runtime) {
+				var circles = $("circle", runtime);
+				var rects = $("rect", runtime);
+				circles.eq(1).click();
+				rects.eq(0).click();
+			},
+			test: function(env, runtime) {
 				var circles = $("circle", runtime);
 				var rects = $("rect", runtime);
 				equal(circles.eq(0).attr("fill"), "#ff0000");
