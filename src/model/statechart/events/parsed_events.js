@@ -106,10 +106,13 @@
 				_.delay(_.bind(function () {
 					//Delay it because parsed events can run up the dictionary tree and create all sorts of contextual objects that they shouldn't
 					//Delay it because if an event relies on an object's inherited property while the object is still being created, we're all fucked
-					if(this._live_event_creator) {
-						this._live_event_creator.run(false);
-					}
+					this.on_ready();
 				}, this));
+			}
+		};
+		proto.on_ready = function() {
+				if(this._live_event_creator && this.is_enabled()) {
+				this._live_event_creator.run(false);
 			}
 		};
 		proto.id = function () { return this._id; };
@@ -173,11 +176,17 @@
 			if (this._old_event) {
 				this._old_event.enable();
 			}
+			if(this._live_event_creator && this._live_event_creator.resume()) {
+				this._live_event_creator.run();
+			}
 		};
 		proto.disable = function () {
 			My.superclass.disable.apply(this, arguments);
 			if (this._old_event) {
 				this._old_event.disable();
+			}
+			if(this._live_event_creator) {
+				this._live_event_creator.pause();
 			}
 		};
 	}(red.ParsedEvent));

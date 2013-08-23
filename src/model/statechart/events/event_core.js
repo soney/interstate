@@ -108,6 +108,7 @@
 			red.event_queue.signal();
 		};
 		proto.on_create = function () {};
+		proto.on_ready = function() {};
 		proto.fire = function () {
 			if (red.event_queue.is_ready()) {
 				this._fire.apply(this, arguments);

@@ -68,6 +68,10 @@
 			this.set_basis(options.basis, options.set_basis_as_root);
 		};
 
+		proto.on_ready = function() {
+			console.log("ready");
+		};
+
 		proto.is_initialized = function () {
 			return this._initialized.get();
 		};

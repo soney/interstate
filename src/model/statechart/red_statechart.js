@@ -420,7 +420,17 @@
 			}
 		};
 		proto.run = function () {
-			if (!this.is_running()) {
+			if(this.is_puppet()) {
+				this._running = true;
+				this._emit("run", {
+					target: this,
+					type: "run"
+				});
+				if(red.__debug_statecharts) {
+					this.$running.set(true);
+				}
+				return;
+			} else if (!this.is_running()) {
 				red.event_queue.wait();
 				this.enable_outgoing_transitions();
 
@@ -450,33 +460,45 @@
 			return this;
 		};
 		proto.stop = function () {
-			red.event_queue.wait();
-			this._running = false;
-			this.disable_outgoing_transitions();
-			if(this.is_concurrent()) {
-				_.forEach(this.get_substates(true), function (substate) {
-					substate.set_active(false);
-					substate.stop();
+			if(this.is_puppet()) {
+				this._running = false;
+				this._emit("stop", {
+					type: "stop",
+					target: this
 				});
-			} else {
-				var local_state = this.$local_state.get();
-				if(local_state) {
-					local_state.set_active(false);
-					local_state.disable_outgoing_transitions();
+				if(red.__debug_statecharts) {
+					this.$running.set(false);
 				}
-				this.$local_state.set(this._start_state);
-				_.forEach(this.get_substates(true), function (substate) {
-					substate.stop();
+				return;
+			} else {
+				red.event_queue.wait();
+				this._running = false;
+				this.disable_outgoing_transitions();
+				if(this.is_concurrent()) {
+					_.forEach(this.get_substates(true), function (substate) {
+						substate.set_active(false);
+						substate.stop();
+					});
+				} else {
+					var local_state = this.$local_state.get();
+					if(local_state) {
+						local_state.set_active(false);
+						local_state.disable_outgoing_transitions();
+					}
+					this.$local_state.set(this._start_state);
+					_.forEach(this.get_substates(true), function (substate) {
+						substate.stop();
+					});
+				}
+				this._emit("stop", {
+					type: "stop",
+					target: this
 				});
+				if(red.__debug_statecharts) {
+					this.$running.set(false);
+				}
+				red.event_queue.signal();
 			}
-			this._emit("stop", {
-				type: "stop",
-				target: this
-			});
-			if(red.__debug_statecharts) {
-				this.$running.set(false);
-			}
-			red.event_queue.signal();
 			return this;
 		};
 		proto.reset = function () {

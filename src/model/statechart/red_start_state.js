@@ -114,7 +114,16 @@
 			return this._running;
 		};
 		proto.run = function () {
-			if (!this.is_running()) {
+			if(this.is_puppet()) {
+				this._running = true;
+				this._emit("run", {
+					target: this,
+					type: "run"
+				});
+				if(red.__debug_statecharts) {
+					this.$running.set(true);
+				}
+			} else if (!this.is_running()) {
 				this._running = true;
 				this.enable_outgoing_transitions();
 				this._emit("run", {
@@ -128,7 +137,16 @@
 			return this;
 		};
 		proto.stop = function () {
-			if(this.is_running()) {
+			if(this.is_puppet()) {
+				this._running = false;
+				this._emit("stop", {
+					type: "stop",
+					target: this
+				});
+				if(red.__debug_statecharts) {
+					return this.$running.set(false);
+				}
+			} else if(this.is_running()) {
 				this._running = false;
 				this._emit("stop", {
 					type: "stop",

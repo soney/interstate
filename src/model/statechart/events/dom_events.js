@@ -133,12 +133,19 @@
 				this.add_listeners();
 			}, {
 				context: this
+				//run_on_create: false
 			});
+			//console.log(this.is_enabled());
+			//debugger;
+			//if(this.is_enabled()) {
+				//this.live_fn.run();
+			//}
 		};
 		proto.clone = function () {
 			return new My(this.type, this.targets);
 		};
 		proto.add_listeners = function () {
+			//if(this.sid() == 37) { debugger; }
 			_.each(this.targets, function (target_info) {
 				var dom_obj = target_info.dom_obj,
 					cobj = target_info.cobj;
@@ -146,6 +153,7 @@
 			}, this);
 		};
 		proto.remove_listeners = function () {
+			//if(this.sid() == 37) { debugger; }
 			_.each(this.targets, function (target_info) {
 				var dom_obj = target_info.dom_obj,
 					cobj = target_info.cobj;

@@ -1,6 +1,6 @@
 (function() {
-var check_memory_leaks = false;
-var step_delay = 100;
+var check_memory_leaks = true;
+var step_delay = 10;
 
 var tests = [
 	{
@@ -504,7 +504,7 @@ var tests = [
 		expect: 12,
 		create_builtins: true,
 		steps: [{
-			setup: function(env) {
+			setup: function(env, runtime) {
 				env	.cd("screen")
 						.set("compound1", "<stateful>")
 						.cd("compound1")
@@ -514,9 +514,9 @@ var tests = [
 							.add_state("clicked")
 							.add_transition("init", "clicked", "on('click', this)")
 							.add_transition("clicked", "init", "on('click', this)")
+							.start_at("init")
 							.set("group_fill", "init", "my_copy")
 							.set("group_fill", "clicked", "'#00ff00'")
-							.start_at("init")
 							.set("circ1", "<stateful>")
 							.cd("circ1")
 								.set("(prototypes)", "(start)", "shape.circle")
@@ -537,6 +537,7 @@ var tests = [
 				//env.print();
 				var circles = $("circle", runtime);
 				var rects = $("rect", runtime);
+
 				equal(circles.eq(0).attr("fill"), "#ff0000");
 				equal(circles.eq(1).attr("fill"), "#0000ff");
 				equal(rects.eq(0).attr("fill"), "#ff0000");
@@ -546,8 +547,10 @@ var tests = [
 			setup: function(env, runtime) {
 				var circles = $("circle", runtime);
 				var rects = $("rect", runtime);
-				circles.eq(0).click();
-				rects.eq(1).click();
+
+				var event = new Event("click");
+				circles[0].dispatchEvent(event);
+				rects[1].dispatchEvent(event);
 			},
 			test: function(env, runtime) {
 				var circles = $("circle", runtime);
@@ -561,8 +564,10 @@ var tests = [
 			setup: function(env, runtime) {
 				var circles = $("circle", runtime);
 				var rects = $("rect", runtime);
-				circles.eq(1).click();
-				rects.eq(0).click();
+
+				var event = new Event("click");
+				circles[1].dispatchEvent(event);
+				rects[0].dispatchEvent(event);
 			},
 			test: function(env, runtime) {
 				var circles = $("circle", runtime);

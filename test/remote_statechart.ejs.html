@@ -2,10 +2,6 @@
 <html lang="en">
 	<head>
 		<style type="text/css">
-			//.tl { position: absolute; top: 0; left: 0; right: 50%; bottom: 50%;  }
-			//.tr { position: absolute; top: 0; left: 50%; right: 0; bottom: 50%;  }
-			//.bl { position: absolute; top: 50%; left: 0; right: 50%; bottom: 0;  }
-			//.br { position: absolute; top: 50%; left: 50%; right: 0; bottom: 0;  } 
 			.red_square {
 				width: 150px;
 				height: 150px;
@@ -109,6 +105,7 @@
 							.starts_at("init")
 							.run();
 					var hover = master.find_state("hover");
+					/*
 					hover	.add_state("s_1")
 							.add_state("s_1.a")
 							.add_state("s_1.b")
@@ -120,7 +117,11 @@
 					state_1.starts_at("a");
 					var state_2 = hover.find_state("s_2");
 					state_2.starts_at("x");
+					*/
 
+					master.add_transition("init", "hover", ge("on('click', sq)"));
+					master.add_transition("hover", "init", ge("on('click', sq)"));
+					/*
 					master.add_transition("init", "hover.s_1.b", ge("on('click', sq)"));
 					master.add_transition("init", "hover.s_2.y", ge("on('click', sq)"));
 					//master.add_transition("init", "hover", ge("on('click', sq)"));

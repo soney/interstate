@@ -11,7 +11,7 @@
 	red.create_remote_statechart = function (wrapper_client, statechart_parent) {
 		var id = wrapper_client.cobj_id;
 		var statechart = red.find_uid(id);
-		var is_active, is_active_value, promises, listeners;
+		var is_active, is_active_value, is_running, is_running_value, promises, listeners;
 		var destroyed = false;
 		
 		statechart = false;
@@ -90,9 +90,15 @@
 						is_active.resolve();
 					});
 
+					is_running = _.Deferred();
+					wrapper_client.async_get('is_running', function (is_it) {
+						is_running_value = is_it;
+						is_running.resolve();
+					});
+
 					promises = [substates.promise(), outgoing_transitions.promise(),
 									incoming_transitions.promise(), is_concurrent.promise(),
-									is_active.promise(), start_state.promise()];
+									is_active.promise(), start_state.promise(), is_running.promise()];
 
 					listeners = {
 						add_substate: function(event) {
@@ -138,6 +144,12 @@
 						},
 						inactive: function (event) {
 							statechart.set_active(false);
+						},
+						run: function(event) {
+							statechart.run();
+						},
+						stop: function(event) {
+							statechart.stop();
 						}
 					};
 					_.when(promises).done(function () {
@@ -152,7 +164,8 @@
 								parent: statechart_parent,
 								start_state: start_state_value,
 								active: is_active_value,
-								puppet: true
+								puppet: true,
+								running: is_running_value
 							});
 							wrapper_client.on(listeners);
 						});
@@ -169,7 +182,16 @@
 						},
 						inactive: function (event) {
 							statechart.set_active(false);
+						},
+						run: function(event) {
+							//console.log("run", statechart.sid());
+							statechart.run();
+						},
+						stop: function(event) {
+							//console.log("stop", statechart.sid());
+							statechart.stop();
 						}
+
 					};
 
 					wrapper_client.async_get('get_outgoing_transition', function (transition_wrapper) {
@@ -191,14 +213,22 @@
 						is_active.resolve();
 					});
 
-					promises = [outgoing_transition.promise(), is_active.promise()];
+					is_running = _.Deferred();
+					wrapper_client.async_get('is_running', function (is_it) {
+						is_running_value = is_it;
+						is_running.resolve();
+						//console.log(is_running_value, statechart.sid());
+					});
+
+					promises = [outgoing_transition.promise(), is_active.promise(), is_running.promise()];
 					_.when(promises).done(function () {
 						if(destroyed) { return; }
 						statechart.do_initialize({
 							outgoing_transition: outgoing_transition_value,
 							parent: statechart_parent,
 							active: is_active_value,
-							puppet: true
+							puppet: true,
+							running: is_running_value
 						});
 						wrapper_client.on(listeners);
 					});

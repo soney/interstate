@@ -35,6 +35,7 @@
 		if(red.__debug_statecharts) {
 			this.$enabled = cjs.$(this._enabled);
 		}
+		//if(this.sid() == 38) { debugger; }
 	};
 	(function (My) {
 		var proto = My.prototype;

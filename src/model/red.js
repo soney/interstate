@@ -12,10 +12,9 @@ var red = (function (root) {
 	red._ = _.noConflict();
 	red.version = "<%= version %>";
 	red.build_time = "<%= build_time %>";
-	red.__debug = true;
+	red.__debug = false;
 	red.cjs.__debug = red.__debug;
-
-	//red.__debug_statecharts = true;
+	red.__debug_statecharts = red.__debug;
 
 	able.make_this_listenable(red);
 	able.make_proto_listenable(red);

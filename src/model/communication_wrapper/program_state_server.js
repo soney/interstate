@@ -167,9 +167,9 @@
 					listen_to = ["add_transition", "add_substate", "remove_substate",
 										"rename_substate", "move_substate", "make_concurrent",
 										/*"on_transition", "off_transition",*/ "destroy",
-										"active", "inactive"];
+										"active", "inactive", "run", "stop"];
 				} else if (object instanceof red.StatechartTransition) {
-					listen_to = ["setTo", "setFrom", "remove", "destroy", "fire"];
+					listen_to = ["setTo", "setFrom", "remove", "destroy", "fire", "enable", "disable"];
 				} else if (object instanceof red.ParsedEvent) {
 					listen_to = ["setString"];
 				} else {
