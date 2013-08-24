@@ -12,7 +12,7 @@
 			page_no: 0
 		},
 		_create: function() {
-			this.env = red.create("environment");
+			this.env = new red.Environment();
 			this.app = $("<div />")	.appendTo(this.element)
 									.dom_output({
 										root: this.env.get_root(),
