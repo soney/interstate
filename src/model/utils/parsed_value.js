@@ -7,6 +7,26 @@
 		_ = red._,
 		esprima = window.esprima;
 
+	red.MultiExpression = function(expressions) {
+		this.expressions = expressions;
+	};
+
+	(function(My) {
+		var proto = My.prototype;
+		proto.get_expressions = function() {
+			return this.expressions;
+		};
+		proto.first = function() {
+			return _.first(this.expressions);
+		};
+		proto.rest = function() {
+			return _.rest(this.expressions);
+		};
+		proto.last = function() {
+			return _.last(this.expressions);
+		};
+	}(red.MultiExpression));
+
 	red.on_event = function (event_type, arg1) {
 		if (event_type === "timeout") {
 			//console.log(arg1);
@@ -390,9 +410,19 @@
 			if(node.body.length === 1) {
 				return get_val(node.body[0], options);
 			} else {
-				return _.map(node.body, function(body) {
-					return get_val(body, options);
-				});
+			/*
+				if (options.get_constraint) {
+					return cjs.$(function () {
+						return new red.MultiExpression(_.map(node.body, function(body) {
+							return get_val(body, options);
+						}));
+					});
+				} else {
+				*/
+					return new red.MultiExpression(_.map(node.body, function(bodyi) {
+						return get_val(bodyi, options);
+					}));
+				//}
 			}
 			//return get_val(node.body[0], options);
 		} else {
@@ -415,7 +445,7 @@
 		}
 
 		try {
-			return esprima.parse("(" + str + ")");
+			return esprima.parse(str);
 		} catch(e) {
 			return new red.Error({
 				message: e.description

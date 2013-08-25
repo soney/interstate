@@ -117,7 +117,8 @@
 			}
 		};
 		proto.on_fire = proto.add_listener = function (callback, context) {
-			this.listeners.push({callback: callback, context: context});
+			var args = _.rest(arguments, 2);
+			this.listeners.push({callback: callback, context: context, args: args});
 		};
 		proto.off_fire = proto.remove_listener = function (callback, context) {
 			for(var i = 0; i<this.listeners.length; i++) {
@@ -131,9 +132,9 @@
 		proto.set_transition = function (transition) { this._transition = transition; };
 		proto.get_transition = function () { return this._transition; };
 		proto._fire = function () {
-			var args = arguments;
+			var args = _.toArray(arguments);
 			_.forEach(this.listeners, function (listener) {
-				listener.callback.apply(listener.context || this, args);
+				listener.callback.apply(listener.context || this, listener.args.concat(args));
 			}, this);
 		};
 		proto.guard = proto.when = function (func) {

@@ -87,10 +87,15 @@
 			if(tree instanceof red.Error) {
 				return tree;
 			} else {
-				return red.get_parsed_val(tree, {
+				var parsed_$ = red.get_parsed_val(tree, {
 					context: pcontext,
 					ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext)
 				});
+				if(parsed_$ instanceof red.MultiExpression) {
+					return parsed_$.last();
+				} else {
+					return parsed_$;
+				}
 			}
         };
         proto.constraint_in_context = function (pcontext) {
@@ -128,11 +133,16 @@
 
 			var rv = cjs.$(function () {
 				var node = this._tree.get();
-				return red.get_parsed_$(node, {
+				var parsed_$ = red.get_parsed_$(node, {
 					context: pcontext,
 					ignore_inherited_in_contexts: ignore_inherited_in_contexts,
 					get_constraint: false
 				});
+				if(parsed_$ instanceof red.MultiExpression) {
+					return parsed_$.last();
+				} else {
+					return parsed_$;
+				}
 			}, {
 				context: this
 			});

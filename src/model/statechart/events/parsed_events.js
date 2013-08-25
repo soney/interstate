@@ -8,16 +8,36 @@
 
 	var get_event = function (tree, options, live_event_creator) {
 		var event_constraint = red.get_parsed_$(tree, options);
+		var got_event, actions;
+		if(event_constraint instanceof red.MultiExpression) {
+			got_event = cjs.get(event_constraint.first());
+			actions = event_constraint.rest();
+			/*
+
+
+			var got_value = cjs.get(event_constraint);
+			event = got_value.first();
+			actions = got_value.rest();
+			*/
+		} else {
+			got_event = cjs.get(event_constraint);
+			actions = [];
+			/*
+			//got_value = cjs.get(event_constraint);
+			event = cjs.get(event_constraint);
+			actions = [];
+			*/
+		}
 		//var got_value = cjs.get(event_constraint, false);
-		var got_value = cjs.get(event_constraint);
 		//console.log(got_value);
-		if (got_value instanceof red.Event) {
-			return got_value;
+		if (got_event instanceof red.Event) {
+			return {event: got_event, actions: actions};
 		} else {
 			if(cjs.is_$(event_constraint)) {
 				cjs.removeDependency(event_constraint, live_event_creator);
 			}
-			return new red.ConstraintEvent(event_constraint, got_value);
+			var event = new red.ConstraintEvent(event_constraint, got_event);
+			return {event: event, actions: actions};
 		}
 	};
 
@@ -70,18 +90,19 @@
 						this._old_event.destroy(true); //destroy silently (without nullifying)
 					}
 
-					var tree, event = false;
+					var tree, event_info = false, event = false;
 					cjs.wait();
 					try {
 						tree = this._tree.get();
 						if(tree instanceof red.Error) {
-							console.log("no event");
+							//console.log("no event");
 							event = null;
 						} else {
-							event = get_event(tree, {
+							event_info = get_event(tree, {
 								parent: parent,
 								context: context
 							}, this._live_event_creator);
+							event = event_info.event;
 						}
 					} catch(e) {
 						console.error(e);
@@ -91,7 +112,7 @@
 
 					if (event) {
 						event.set_transition(this.get_transition());
-						event.on_fire(this.child_fired, this);
+						event.on_fire(this.child_fired, this, event_info.actions);
 						if (this.is_enabled()) {
 							event.enable();
 						}
@@ -116,8 +137,15 @@
 			}
 		};
 		proto.id = function () { return this._id; };
-		proto.child_fired = function () {
-			this.fire.apply(this, arguments);
+		proto.child_fired = function (actions) {
+			var fire_args = _.rest(arguments);
+			_.each(actions, function(expression) {
+				if(expression.invalidate) {
+					expression.invalidate();
+				}
+				cjs.get(expression, false);
+			});
+			this.fire.apply(this, fire_args);
 		};
 		proto.get_str = function () { return this._str.get(); };
 		proto.set_str = function (str) {
