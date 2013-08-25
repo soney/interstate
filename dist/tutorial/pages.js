@@ -48,7 +48,7 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p>Right now, you are looking at an <em>object</em> named <var>sketch</var> with 5 <em>properties</em>.<br />The value of every property is shown right next to its property name. For instance, <var>width</var> is <code>500</code>. If a property's value is an arrow, that property is another object.<div class='directive'>Click on <var>screen</var>.</div></p>",
+				text: "<p>Right now, you are looking at an <em>object</em> named <var>sketch</var> with 7 <em>properties</em>.<br />The value of every property is shown right next to its property name. For instance, <var>width</var> is <code>500</code>. If a property's value is an arrow, that property is another object.<div class='directive'>Click on <var>screen</var>.</div></p>",
 				annotations: {
 					"sketch": "highlight properties *"
 				}
