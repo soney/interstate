@@ -224,9 +224,9 @@
 			var value = call_fn(node.argument, options);
 			var operator = node.operator;
 			var resulting_value;
-			if (operator === " += 1") {
+			if (operator === "++") {
 				resulting_value = value + 1;
-			} else if (operator === " -= 1") {
+			} else if (operator === "--") {
 				resulting_value = value - 1;
 			} else {
 				console.error("Unknown operator ", operator);

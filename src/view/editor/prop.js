@@ -32,11 +32,6 @@
 		}
 	};
 
-	var type_options = {
-		"obj": "Object",
-		"prop": "Property"
-	};
-
 	$.widget("red.prop", {
 		options: {
 			name: "",
@@ -103,12 +98,18 @@
 													.attr("tabindex", 2)
 													.text("Delete");
 
-				if(value && value.type && (value.type() === "stateful_prop" || value.type() === "stateful")) {
+				var value_type = value && value.type ? value.type() : false;
+				if(value_type) {
 					var change_to_type = "";
-					if(value.type() === "stateful_prop") {
+					if(value_type === "stateful_prop" || value_type === "cell") {
 						change_to_type = "Object";
 					} else {
-						change_to_type = "Property";
+						var obj = this.option("obj");
+						if(obj.type() === "dict") {
+							change_to_type = "Cell";
+						} else {
+							change_to_type = "Property";
+						}
 					}
 					this.set_type_expand = $("<div />")	.appendTo(this.edit_menu)
 														.addClass("item")
@@ -174,7 +175,7 @@
 			event.command_type = "set_type";
 			event.client = this.option("obj");
 			event.prop_name = this.option("name");
-			event.type_name = type === "Object" ? "Object" : "Property";
+			event.type_name = type;
 
 			this.element.trigger(event);
 		},
@@ -587,7 +588,8 @@
 							cell_disp.text(str);
 						} else {
 							cell_disp	.editable_text({
-											text: str
+											text: str,
+											tag: "textarea"
 										})
 										.on("text_change", _.bind(function(e) {
 											var event = new $.Event("command");

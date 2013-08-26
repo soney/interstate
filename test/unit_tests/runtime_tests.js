@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = true;
+var check_memory_leaks = false;
 var step_delay = 10;
 
 var tests = [
@@ -620,6 +620,34 @@ var tests = [
 							.up()
 			},
 			test: function(env, runtime) {
+			}
+		}]
+	},
+	{
+		name: "Queries",
+		expect: 3,
+		create_builtins: false,
+		steps: [{
+			setup: function(env) {
+				env	.set("find", red.find_fn)
+					.set("on", red.on_event)
+					.set("obj", "<stateful>")
+					.cd("obj")
+						.add_state("state1")
+						.add_state("state2")
+						.add_transition("state1", "state2", "on('ev'+my_copy)")
+						.start_at("state1")
+						.set_copies("5")
+						.up()
+					.set("query1", "find(obj).in_state('state1')");
+			},
+			test: function(env, runtime) {
+				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+				equal(cobj.prop_val("query1").size(), 5);
+				red.emit('ev1');
+				equal(cobj.prop_val("query1").size(), 4);
+				red.emit('ev3');
+				equal(cobj.prop_val("query1").size(), 3);
 			}
 		}]
 	}

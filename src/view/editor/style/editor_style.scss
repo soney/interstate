@@ -548,11 +548,30 @@ html.full_window_editor {
 							max-width: $active_obj_value_summary_width;
 							white-space: nowrap;
 							overflow: hidden;
-							> input {
+							min-width: 30px;
+							min-height: 17px;
+							> textarea {
 								background: none;
 								border: none;
 								font-size: inherit;
 								font-family: inherit;
+
+								position: absolute;
+								left: 0px;
+								top: 0px;
+								z-index: 10;
+
+								width: 100%;
+								font-family: inherit;
+								text-align: inherit;
+								font-size: inherit;
+								padding: 2px;
+								margin: 0px;
+								height: 16px;
+								text-align: left;
+								background-color: #EEE;
+								border: 1px solid #CCC;
+								box-shadow: 0px 0px 5px #777;
 							}
 						}
 

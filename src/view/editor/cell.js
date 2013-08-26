@@ -64,6 +64,7 @@
 			}
 		}
 	};
+	var func_regex = new RegExp("^\\s*function\\s*\\((\\s*[a-zA-Z$][\\w\\$]*\\s*,)*\\s*([a-zA-Z$][\\w\\$]*\\s*)?\\)\\s*{.*}\\s*$");
 
 	$.widget("red.prop_cell", {
 		options: {
@@ -120,7 +121,11 @@
 					var str = $str.get();
 					this.str = str;
 					try {
-						esprima.parse(this.str);
+						if ((str.replace(/\n/g, "")).match(func_regex)) {
+							str = "(" + str + ")";
+						}
+
+						esprima.parse(str);
 						this.element.attr("title", "");
 						this.element.removeClass("error");
 					} catch(e) {
@@ -130,7 +135,7 @@
 					if(str === "") {
 						this.text.html("&nbsp;");
 					} else {
-						this.text.text(str);
+						this.text.text(this.str);
 					}
 				}, {
 					context: this,

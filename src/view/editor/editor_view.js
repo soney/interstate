@@ -315,6 +315,8 @@
 					});
 				} else if(to_type === "Property") {
 					value = new red.StatefulProp();
+				} else if(to_type === "Cell") {
+					value = new red.Cell();
 				}
 
 				command = new red.SetPropCommand({

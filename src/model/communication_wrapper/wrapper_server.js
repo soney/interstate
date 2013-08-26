@@ -307,6 +307,11 @@
 				__type__: "summarized_obj",
 				__value__: "box2d_world"
 			};
+		} else if(value instanceof red.ParsedFunction) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "function"
+			};
 		} else if (_.isObject(value)) {
 			rv = {};
 			_.each(value, function (v, k) { rv[k] = summarize_value(v); });

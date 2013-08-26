@@ -15,7 +15,8 @@
 		options: {
 			text: "",
 			placeholder_text: "",
-			edit_event: "click"
+			edit_event: "click",
+			tag: "input"
 		},
 
 		_create: function() {
@@ -49,26 +50,26 @@
 				this.element.removeClass("placeholder");
 				this.element.off(this.option("edit_event"), this.$edit);
 				this.element.html(""); // Clear the children
-				this.textbox = $("<input />")	.attr({
-													type: "text"
-												})
-												.val(this.option("text"))
-												.appendTo(this.element)
-												.focus()
-												.select()
-												.on("keydown", $.proxy(function(event) {
-													var keyCode = event.keyCode;
-													if(keyCode === 27) { // ESC
-														this.cancel();
-													} else if(keyCode === 13) { // Enter
-														this.confirm();
-													}
-												}, this))
-												.on("blur", $.proxy(function(event) {
-													if(this.get_state() === STATE.EDITING) {
-														this.confirm();
-													}
-												}, this));
+				this.textbox = $("<" + this.option("tag") + " />")	.attr({
+														type: "text"
+													})
+													.val(this.option("text"))
+													.appendTo(this.element)
+													.focus()
+													.select()
+													.on("keydown", $.proxy(function(event) {
+														var keyCode = event.keyCode;
+														if(keyCode === 27 && !event.shiftKey) { // ESC
+															this.cancel();
+														} else if(keyCode === 13 && !event.shiftKey) { // Enter
+															this.confirm();
+														}
+													}, this))
+													.on("blur", $.proxy(function(event) {
+														if(this.get_state() === STATE.EDITING) {
+															this.confirm();
+														}
+													}, this));
 				this.set_state(STATE.EDITING);
 
 				this.element.trigger("begin_edit");
