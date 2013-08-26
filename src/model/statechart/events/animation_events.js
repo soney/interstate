@@ -29,17 +29,14 @@
 			this._transition = transition;
 			if (transition) {
 				var from = transition.from();
-				var enter_listener = _.bind(function () {
-					requestAnimFrame(_.bind(this.notify, this));
-				}, this);
+				from.on("active", this.enter_listener, this);
+				from.on("inactive", this.leave_listener, this);
 
-				from.on("active", enter_listener);
-
-				_.defer(function () {
+				_.defer(function (self) {
 					if (from.is_active()) {
-						enter_listener();
+						self.enter_listener();
 					}
-				});
+				}, this);
 			}
 		};
 		proto.notify = function () {
@@ -50,6 +47,21 @@
 				created_at: this.created_at
 			});
 			red.event_queue.signal();
+		};
+
+		proto.enter_listener = function() {
+			if (this.req) {
+				window.cancelAnimationFrame(this.req);
+				this.req = undefined;
+			}
+			this.req = requestAnimFrame(_.bind(this.notify, this));
+		};
+
+		proto.leave_listener = function() {
+			if (this.req) {
+				window.cancelAnimationFrame(this.req);
+				this.req = undefined;
+			}
 		};
 
 		proto.destroy = function () {

@@ -578,6 +578,50 @@ var tests = [
 				equal(rects.eq(1).attr("fill"), "#0000ff");
 			}
 		}]
+	},
+	{
+		name: "Bouncing Ball",
+		expect: 0,
+		create_builtins: true,
+		delay: 15000,
+		steps: [{
+			setup: function(env) {
+				env	.cd("screen")
+						.set("ball", "<stateful>")
+						.cd("ball")
+							.set("(prototypes)", "(start)", "shape.circle")
+							.set("r", "(start)", "10")
+							.add_state("moving")
+							.start_at("moving")
+							.add_transition("moving", "moving", "on('frame')")
+							.set("vx", "(start)", "1")
+							.set("vy", "(start)", "1")
+							.set("cx", "(start)", "Math.random() * sketch.width")
+							.set("cy", "(start)", "Math.random() * sketch.height")
+							.set("cx", "moving-0>moving", "cx+vx")
+							.set("cy", "moving-0>moving", "cy+vy")
+							.add_transition("moving", "moving", "cx < r")
+							.add_transition("moving", "moving", "cy < r")
+							.add_transition("moving", "moving", "cx + r > sketch.width")
+							.add_transition("moving", "moving", "cy + r > sketch.height")
+							.set("vx", "moving-1>moving", "-vx")
+							.set("vx", "moving-3>moving", "-vx")
+							.set("vy", "moving-2>moving", "-vy")
+							.set("vy", "moving-4>moving", "-vy")
+							.up()
+						.set("outline", "<stateful>")
+						.cd("outline")
+							.set("(prototypes)", "(start)", "shape.rect")
+							.set("width", "(start)", "sketch.width")
+							.set("height", "(start)", "sketch.height")
+							.set("fill", "(start)", "'none'")
+							.set("x", "(start)", "0")
+							.set("y", "(start)", "0")
+							.up()
+			},
+			test: function(env, runtime) {
+			}
+		}]
 	}
 	/**/
 ];
@@ -619,6 +663,7 @@ window.addEventListener("message", function(event) {
 tests.forEach(function(test) {
 	asyncTest(test.name, function() {
 		var env, root, runtime_div;
+		var delay = test.delay || step_delay;
 
 		var root_setup = function() {
 			env = new red.Environment({create_builtins: test.create_builtins !== false});
@@ -635,7 +680,7 @@ tests.forEach(function(test) {
 				step.test(env, runtime_div);
 				window.setTimeout(function() {
 					callback();
-				}, step_delay);
+				}, delay);
 			}, 0);
 		};
 		var run_tests = function(callback, test_index) {
