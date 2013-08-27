@@ -421,6 +421,18 @@
 			return get_logical_val(node.operator, left_arg, right_arg, options);
 		} else if (type === "FunctionExpression") {
 			return red.get_fn_$(node, options);
+		} else if (type === "ObjectExpression") {
+			if(options.get_constraint) {
+				console.error("not set");
+			} else {
+				var rv = {};
+				_.each(node.properties, function (prop_node) {
+					var key = prop_node.key.name,
+						value = get_val(prop_node.value, options);
+					rv[key] = value;
+				});
+				return rv;
+			}
 		} else if (type === "Program") {
 			if(node.body.length === 1) {
 				return get_val(node.body[0], options);
