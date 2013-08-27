@@ -36,11 +36,15 @@
 		};
 		proto._getter = function () {
 			var value;
-			try {
+			if(red.__debug) {
 				value = cjs.get(this.value_constraint);
-				//console.log(value);
-			} catch (e) {
-				console.error(e);
+			} else {
+				try {
+					value = cjs.get(this.value_constraint);
+					//console.log(value);
+				} catch (e) {
+					console.error(e);
+				}
 			}
 			return value;
 		};

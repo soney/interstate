@@ -156,18 +156,37 @@
 				limit = 50;
 			}
 			var timeout = false;
-			var last_event;
+			var last_args;
 			var new_event = new red.Event();
-			this.on_fire(function (event) {
-				last_event = event;
+			this.on_fire(function () {
+				last_args = arguments;
 				if(!timeout) {
 					timeout = true;
 					window.setTimeout(function() {
 						timeout = false;
-						new_event.fire(last_event);
+						new_event.fire.apply(new_event, _.toArray(last_args));
 					}, limit);
 				}
 			});
+			var old_enable = new_event.enable,
+				old_disable = new_event.disable,
+				old_destroy = new_event.destroy;
+
+			new_event.enable = _.bind(function() {
+				old_enable.apply(new_event, arguments);
+				this.enable();
+			}, this);
+			new_event.disable = _.bind(function() {
+				old_disable.apply(new_event, arguments);
+				this.disable();
+			}, this);
+			new_event.destroy = _.bind(function() {
+				old_destroy.apply(new_event, arguments);
+				this.destroy();
+				delete new_event.enable;
+				delete new_event.disable;
+				delete new_event.destroy;
+			}, this);
 			return new_event;
 		};
 		proto.destroy = function () {

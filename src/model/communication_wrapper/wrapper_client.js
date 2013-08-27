@@ -182,7 +182,8 @@
 				var old_destroy = rv.destroy;
 				rv.destroy = function() {
 					self.destroy_$(rv, args);
-					old_destroy.call(rv);
+					old_destroy.apply(rv, arguments);
+					self = rv = constraint = null;
 				};
 				var semaphore = 0;
 				rv.signal_interest = function() { semaphore++; };

@@ -115,7 +115,7 @@
 					context_item = curr_context.points_at();
 				}
 			} else if (_.has(options.var_map, key)) {
-				return cjs.get(options.var_map[key]);
+				return cjs.get(options.var_map[key], options.auto_add_dependency);
 			} else {
 				return red.get_parsed_val(node, {context: options.pcontext});
 			}
@@ -289,7 +289,7 @@
 
 	(function (my) {
 		var proto = my.prototype;
-		proto._apply = function (js_context, pcontext, args) {
+		proto._apply = function (js_context, pcontext, args, options) {
 			var node = this.node;
 
 			var var_map = {};
@@ -304,7 +304,8 @@
 				var_map: var_map,
 				js_context: js_context,
 				pcontext: pcontext,
-				ignore_inherited_in_contexts: this.options.ignore_inherited_in_contexts
+				ignore_inherited_in_contexts: this.options.ignore_inherited_in_contexts,
+				auto_add_dependency: options && options.auto_add_dependency
 			};
 			var rv = call_fn(node.body, opts);
 			if (rv === do_return) {

@@ -49,6 +49,12 @@
 			}
 			return this._special_contexts[index] || [];
 		};
+		proto.has_special_contexts = function(index) {
+			if (!_.isNumber(index)) {
+				index = this._special_contexts.length - 1;
+			}
+			return _.isArray(this._special_contexts[index]);
+		};
 		proto.slice = function () {
 			return new red.Pointer({
 				stack: this._stack.slice.apply(this._stack, arguments),

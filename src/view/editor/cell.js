@@ -193,9 +193,10 @@
 															event.stopPropagation();
 															this.end_edit();
 														}
-													}, this))
-													.on("blur.prop_cell", _.bind(this.end_edit, this));
+													}, this));
 			}
+			this.textbox.on("blur.prop_cell", _.bind(this.end_edit, this));
+
 			var width = this.option("edit_width"),
 				left = this.option("left");
 			this.element.css({
@@ -216,7 +217,11 @@
 			this.element.trigger(event);
 		},
 		end_edit: function(cancel) {
-			this.element.on("click", _.bind(this.on_click, this));
+			if(!this.is_editing()) {
+				return;
+			}
+			this.element.on("click.prop_cell", _.bind(this.on_click, this));
+			this.textbox.off("blur.prop_cell");
 			if(cancel !== true) {
 				var val = this.textbox.val();
 				if(val.trim() === "" && this.option("prop") && this.option("state")) {

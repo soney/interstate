@@ -39,7 +39,7 @@
 				cjs.removeDependency(event_constraint, live_event_creator);
 			}
 			var event = new red.ConstraintEvent(event_constraint, got_event);
-			return {event: event, actions: actions};
+			return {event: event/*.throttle(10)*/, actions: actions};
 		}
 	};
 
@@ -143,15 +143,18 @@
 		proto.child_fired = function (actions, parent, context, event) {
 			var fire_args = _.rest(arguments, 3);
 			if(actions.length > 0) {
-				var eventified_context = context.push_special_context(new red.EventContext(event));
+				var eventified_context = context.push(new red.ProvisionalContext(), new red.EventContext(event));
+				//console.log(eventified_context);
 				_.each(actions, function(expression_tree) {
 					try {
+						//red.dbg = true;
 						red.get_parsed_$(expression_tree, {
 							parent: parent,
 							context: eventified_context,
 							get_constraint: false,
 							auto_add_dependency: false
 						});
+						//red.dbg = false;
 					} catch(e) {
 						console.error(e);
 					}

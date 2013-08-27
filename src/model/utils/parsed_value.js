@@ -63,6 +63,7 @@
 			return new red.CombinationEvent(events);
 		}
 	};
+
 	red.register_serializable_type("red_on_event_func",
 		function (x) {
 			return x === red.on_event;
@@ -126,7 +127,7 @@
 					var rv = op_got.apply(calling_context_got, args_got);
 					return rv;
 				} else if (op_got instanceof red.ParsedFunction) {
-					return op_got._apply(calling_context_got, pcontext, args_got);
+					return op_got._apply(calling_context_got, pcontext, args_got, options);
 				} else {
 					//throw new Error("Calling a non-function");
 					return undefined;
@@ -242,12 +243,25 @@
 							return rv;
 						}
 					} else {
+						//if(red.dbg) {
+							//console.log(curr_context);
+							//curr_context = curr_context.pop();
+							//context_item = curr_context.points_at();
+							//return;
+							//continue;
+						//}
 						if (contextual_obj.has(key)) {
 							rv = contextual_obj.prop_val(key);
 							return rv;
 						}
 					}
-				} else if (context_item instanceof red.Cell) {
+				} else if (context_item instanceof red.ProvisionalContext) {
+					if(context_item.has(key)) {
+						return context_item.get(key);
+					}
+				}
+
+				if(curr_context.has_special_contexts()) {
 					var special_contexts = curr_context.special_contexts();
 					var len = special_contexts.length;
 					for (i = 0; i < len; i += 1) {
@@ -258,6 +272,7 @@
 						}
 					}
 				}
+					
 				curr_context = curr_context.pop();
 				context_item = curr_context.points_at();
 			}
