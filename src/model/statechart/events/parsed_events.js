@@ -100,7 +100,8 @@
 						} else {
 							event_info = get_event(tree, {
 								parent: parent,
-								context: context
+								context: context,
+								only_parse_first: true
 							}, this._live_event_creator);
 							event = event_info.event;
 						}
@@ -112,7 +113,7 @@
 
 					if (event) {
 						event.set_transition(this.get_transition());
-						event.on_fire(this.child_fired, this, event_info.actions);
+						event.on_fire(this.child_fired, this, event_info.actions, parent, context);
 						if (this.is_enabled()) {
 							event.enable();
 						}
@@ -137,14 +138,24 @@
 			}
 		};
 		proto.id = function () { return this._id; };
-		proto.child_fired = function (actions) {
-			var fire_args = _.rest(arguments);
-			_.each(actions, function(expression) {
-				if(expression.invalidate) {
-					expression.invalidate();
-				}
-				cjs.get(expression, false);
-			});
+		proto.child_fired = function (actions, parent, context, event) {
+			var fire_args = _.rest(arguments, 3);
+			if(actions.length > 0) {
+				var eventified_context = context.push_special_context(new red.EventContext(event));
+				_.each(actions, function(expression_tree) {
+					red.get_parsed_$(expression_tree, {
+						parent: parent,
+						context: eventified_context,
+						get_constraint: false
+					});
+				/*
+					if(expression.invalidate) {
+						expression.invalidate();
+					}
+					cjs.get(expression, false);
+					*/
+				});
+			}
 			this.fire.apply(this, fire_args);
 		};
 		proto.get_str = function () { return this._str.get(); };

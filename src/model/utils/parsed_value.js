@@ -419,8 +419,12 @@
 					});
 				} else {
 				*/
-					return new red.MultiExpression(_.map(node.body, function(bodyi) {
-						return get_val(bodyi, options);
+					return new red.MultiExpression(_.map(node.body, function(bodyi, i) {
+						if(!options.only_parse_first || i === 0) {
+							return get_val(bodyi, options);
+						} else {
+							return bodyi;
+						}
 					}));
 				//}
 			}
