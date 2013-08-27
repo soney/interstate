@@ -89,7 +89,7 @@
 			arrowAngle: 20,
 			self_pointing_theta: 40,
 			color: "black",
-			active_color: "red",
+			active_color: "green",
 			text_background: "white",
 			text_foreground: "black",
 			font_family: "Sourse Sans Pro",

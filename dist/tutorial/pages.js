@@ -69,7 +69,7 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p>The greyed out properties are inherited properties. Each of these properties controls some aspect of the circle. To <em>claim</em> an inherited property (make it your object's own), click its name.<div class='directive'>Claim <var>cx</var> and <var>cy</var> for <var>my_circle</var>.</div></p>"
+				text: "<p>The greyed out properties are inherited properties. Each of these properties controls some aspect of the circle. To <em>override</em> an inherited property (make it your object's own), click its name.<div class='directive'>Claim <var>cx</var> and <var>cy</var> for <var>my_circle</var>.</div></p>"
 			},
 			runtime: {
 			}

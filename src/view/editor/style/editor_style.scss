@@ -511,9 +511,9 @@ html.full_window_editor {
 							white-space: nowrap;
 
 							&.active {
-								color: red;
-								border-left: 1px solid red;
-								border-right: 1px solid red;
+								color: green;
+								border-left: 1px solid green;
+								border-right: 1px solid green;
 							}
 							&.error {
 								color: white;
