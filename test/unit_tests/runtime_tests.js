@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = false;
+var check_memory_leaks = true;
 var step_delay = 10;
 
 var tests = [
@@ -650,7 +650,25 @@ var tests = [
 				equal(cobj.prop_val("query1").size(), 3);
 			}
 		}]
-	}
+	},
+	{
+		name: "Calling a Parsed FN",
+		expect: 2,
+		create_builtins: false,
+		steps: [{
+			setup: function(env) {
+				env	.set("fn_a", "function(a, b, c) { var sum = a+b+c; for(var i = 0; i<arguments.length; i++) { sum += arguments[i]; } return sum + d; }")
+					.set("d", "1+2")
+					.set("x", "fn_a(1,2,3)");
+			},
+			test: function(env, runtime) {
+				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+				equal(cobj.prop_val("x"), 15);
+				env.set("d", "2");
+				equal(cobj.prop_val("x"), 14);
+			}
+		}]
+	},
 	/**/
 ];
 

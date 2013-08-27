@@ -8,10 +8,11 @@
 
 	var get_event = function (tree, options, live_event_creator) {
 		var event_constraint = red.get_parsed_$(tree, options);
-		var got_event, actions;
+		var got_event, actions, first_event;
 		if(event_constraint instanceof red.MultiExpression) {
-			got_event = cjs.get(event_constraint.first());
 			actions = event_constraint.rest();
+			event_constraint = event_constraint.first();
+			got_event = cjs.get(event_constraint);
 			/*
 
 
@@ -20,6 +21,7 @@
 			actions = got_value.rest();
 			*/
 		} else {
+			first_event = event_constraint;
 			got_event = cjs.get(event_constraint);
 			actions = [];
 			/*
@@ -143,11 +145,16 @@
 			if(actions.length > 0) {
 				var eventified_context = context.push_special_context(new red.EventContext(event));
 				_.each(actions, function(expression_tree) {
-					red.get_parsed_$(expression_tree, {
-						parent: parent,
-						context: eventified_context,
-						get_constraint: false
-					});
+					try {
+						red.get_parsed_$(expression_tree, {
+							parent: parent,
+							context: eventified_context,
+							get_constraint: false,
+							auto_add_dependency: false
+						});
+					} catch(e) {
+						console.error(e);
+					}
 				/*
 					if(expression.invalidate) {
 						expression.invalidate();

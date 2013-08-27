@@ -111,16 +111,16 @@
 		var args = _.rest(arguments, 3);
 		if (options.get_constraint) {
 			return cjs.$(function () {
-				var op_got = cjs.get(op);
-				if(op_got === red.on_event) {
+				var op_got = cjs.get(op, options.auto_add_dependency);
+				//if(op_got === red.on_event) {
 					//debugger;
-					window.dbg = true;
-				}
+					//window.dbg = true;
+				//}
 				var args_got = _.map(args, function(arg) {
-													return cjs.get(arg);
+													return cjs.get(arg, options.auto_add_dependency);
 												});
-				window.dbg = false;
-				var calling_context_got = cjs.get(calling_context);
+				//window.dbg = false;
+				var calling_context_got = cjs.get(calling_context, options.auto_add_dependency);
 
 				if (_.isFunction(op_got)) {
 					var rv = op_got.apply(calling_context_got, args_got);
@@ -159,9 +159,9 @@
 			return cjs.$(function () {
 				switch (op_id) {
 				case AND_OP:
-					return cjs.get(left) && cjs.get(right);
+					return cjs.get(left, options.auto_add_dependency) && cjs.get(right, options.auto_add_dependency);
 				case OR_OP:
-					return cjs.get(left) || cjs.get(right);
+					return cjs.get(left, options.auto_add_dependency) || cjs.get(right, options.auto_add_dependency);
 				}
 			});
 		} else {
@@ -178,11 +178,11 @@
 	var get_conditional_val = function (test, consequent, alternate, options) { // test ? consequent : alternate
 		if (options.get_constraint) {
 			return cjs.$(function () {
-				var test_got = cjs.get(test);
+				var test_got = cjs.get(test, options.auto_add_dependency);
 				if (test_got) {
-					return cjs.get(consequent);
+					return cjs.get(consequent, options.auto_add_dependency);
 				} else {
-					return cjs.get(alternate);
+					return cjs.get(alternate, options.auto_add_dependency);
 				}
 			});
 		} else {
@@ -337,8 +337,8 @@
 
 		if (options.get_constraint) {
 			return cjs.$(function () {
-				var object = cjs.get(obj),
-					property = cjs.get(prop);
+				var object = cjs.get(obj, options.auto_add_dependency),
+					property = cjs.get(prop, options.auto_add_dependency);
 				return getter(object, property);
 			});
 		} else {
@@ -350,7 +350,7 @@
 		if (options.get_constraint) {
 			return cjs.$(function () {
 				return _.map(elements, function (element) {
-					return cjs.get(element);
+					return cjs.get(element, options.auto_add_dependency);
 				});
 			});
 		} else {
@@ -436,7 +436,8 @@
 
 	red.get_parsed_$ = function (node, options) {
 		var parsed_value = red.get_parsed_val(node, _.extend({
-			get_constraint: true
+			get_constraint: true,
+			auto_add_dependency: true
 		}, options));
 		return parsed_value;
 	};
