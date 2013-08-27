@@ -69,9 +69,14 @@
 		};
 		proto.enable = function () {
 			My.superclass.enable.apply(this, arguments);
+			this.enter_listener();
 		};
 		proto.disable = function () {
 			My.superclass.disable.apply(this, arguments);
+			if (this.req) {
+				window.cancelAnimationFrame(this.req);
+				this.req = undefined;
+			}
 		};
 	}(red.FrameEvent));
 }(red));
