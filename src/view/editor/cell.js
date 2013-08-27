@@ -109,8 +109,12 @@
 			client.signal_destroy();
 			delete this.options;
 		},
-		on_click: function() {
-			this.begin_editing();
+		on_click: function(event) {
+			if(this.is_editing()) {
+				event.stopPropagation();
+			} else {
+				this.begin_editing();
+			}
 		},
 		create_live_text_fn: function() {
 			var value = this.option("value");
@@ -153,7 +157,7 @@
 		},
 		update_position: function() {
 			var left = this.option("left"),
-				width = this.element.is(".editing") ? this.option("edit_width") : this.option("width");
+				width = this.is_editing() ? this.option("edit_width") : this.option("width");
 			this.element.css({
 				left: (left - width/2) + "px",
 				width: width + "px"
@@ -165,6 +169,9 @@
 			} else {
 				this.element.removeClass("active");
 			}
+		},
+		is_editing: function() {
+			return this.element.hasClass("editing");
 		},
 		begin_editing: function() {
 			this.element.addClass("editing");
