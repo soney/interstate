@@ -147,7 +147,13 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p>Note the properties <var>my_copy</var> and <var>copy_num</var> appear. <var>my_copy</var> is the object copy's item. <var>copy_num</var> is that item's index.<div class='directive'>Navigate through every copy by clicking the 1 in [1 of 3] below <var>my_circle</var>.</div></p>"
+				text: "<p>Note the properties <var>my_copy</var> and <var>copy_num</var> appear. <var>my_copy</var> is the object copy's item. <var>copy_num</var> is that item's index.<div class='directive'>Set <var>fill</var> to <code>my_copy</code> and <var>cy</var> to <code>copy_num*r</code>.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p><div class='directive'>Navigate through every copy by clicking the 1 in [1 of 3] below <var>my_circle</var>.</div></p>"
 			},
 			runtime: {
 			}
@@ -170,6 +176,12 @@ var tutorial_pages = (function() {
 							.set("is_hovering", "hover", "true")
 							.up();
 				}
+			}
+		}, {
+			editor: {
+				text: "<p>That's it for now. Please see http://euc.from.so for more information on Euclase.</p>"
+			},
+			runtime: {
 			}
 		}
 	];

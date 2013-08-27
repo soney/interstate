@@ -73,6 +73,18 @@
 				subtype: "page_set",
 				page_index: page_index
 			});
+			if(page_index === 0) {
+				this.prev_button.hide();
+			} else {
+				this.prev_button.show();
+			}
+			if(page_index === pages.length-1) {
+				this.next_button.text("done").on("click.done", $.proxy(function() {
+					this.instructions.hide();
+				}, this));
+			} else {
+				this.next_button.text("next").off("click.done");
+			}
 		},
 		_setOption: function(key, value) {
 			this._super(key, value);
