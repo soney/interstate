@@ -26,9 +26,9 @@
 					});
 
 					self.fire(event);
-					_.defer(function () {
+					//_.defer(function () {
 						red.event_queue.signal();
-					});
+					//});
 				};
 				listener.destroy = function() {
 					self = null;

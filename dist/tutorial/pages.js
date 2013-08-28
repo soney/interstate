@@ -57,7 +57,7 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p><var>screen</var> is an object represents the contents of the runtime window.<div class='directive'>Add a property to it and call it <var>my_circle</var>.</div><div class='note'>(note: Properties can be re-named by right clicking the property name and selecting 'rename')</div></p>"
+				text: "<p><var>screen</var> is an object that represents the contents of the runtime window.<div class='directive'>Add a property to it and call it <var>my_circle</var>.</div><div class='note'>(note: Properties can be re-named by right clicking the property name and selecting 'rename')</div></p>"
 			},
 			runtime: {
 			}
@@ -70,6 +70,12 @@ var tutorial_pages = (function() {
 		}, {
 			editor: {
 				text: "<p>The greyed out properties are inherited properties. Each of these properties controls some aspect of the circle. To <em>override</em> an inherited property (make it your object's own), click its name.<div class='directive'>Claim <var>cx</var> and <var>cy</var> for <var>my_circle</var>.</div></p>"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "<p>You should see three columns under <var>my_circle</var>. The leftmost column shows the property name, while the column immediately to the right of it shows that property's value. To the right of that is the constraint that specifies the property's value.</p>"
 			},
 			runtime: {
 			}
@@ -111,7 +117,7 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p>To set a transition's <em>event</em>, click the transition's event text (currently <code>(event)</code>).<div class='directive'>Change our transition's event to <code>on('mousedown', my_circle)</code> so that it fires when the mouse presses on <var>my_circle</var>.</div></p>"
+				text: "<p>To set a transition's <em>event</em>, click the transition's event text (currently <code>(event)</code>).<div class='directive'>Change our transition's event to <code>on('mousedown', this)</code> so that it fires when the mouse presses on <var>my_circle</var>.</div></p>"
 			},
 			runtime: {
 			}

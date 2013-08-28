@@ -355,7 +355,7 @@
 			selectable_substates = selectable_substates.splice(0, selectable_substates.length-1);
 			this._emit("awaiting_state_selection", {
 				states: selectable_substates,
-				on_select: this.$emit_set_from
+				on_select: _.bind(this.emit_set_from, this)
 			});
 		};
 		proto.emit_set_to = function(to_state) {
@@ -371,7 +371,7 @@
 			selectable_substates = selectable_substates.splice(0, selectable_substates.length-1);
 			this._emit("awaiting_state_selection", {
 				states: selectable_substates,
-				on_select: this.$emit_set_to
+				on_select: _.bind(this.emit_set_to, this)
 			});
 		};
 		proto.on_remove_item_pressed = function() {
