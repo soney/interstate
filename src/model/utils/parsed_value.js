@@ -1,4 +1,4 @@
-/*jslint nomen: true, vars: true, bitwise:true */
+/*jslint evil:true,nomen: true, vars: true, bitwise:true */
 /*global red,esprima,able,uid,console,window */
 
 (function (red) {
@@ -6,6 +6,18 @@
 	var cjs = red.cjs,
 		_ = red._,
 		esprima = window.esprima;
+
+	red.construct = function(constructor, args) {
+		if(constructor === Date) { // Functions check to see if date object
+			var rv = eval("new constructor(" + args.join(",") + ")");
+			return rv;
+		}
+		function F() {
+			return constructor.apply(this, args);
+		}
+		F.prototype = constructor.prototype;
+		return new F();
+	};
 
 	red.MultiExpression = function(expressions) {
 		this.expressions = expressions;
@@ -373,6 +385,25 @@
 		}
 	};
 
+	var get_new_$ = function(node, options) {
+		console.log(node, options);
+	/*
+		op_context = window;
+		if (node.callee.type === "MemberExpression") {
+			op_context = call_fn(node.callee.object, options);
+		}
+		op_func = call_fn(node.callee, options);
+		args = _.map(node["arguments"], function (arg) {
+			return call_fn(arg, options);
+		});
+		if (_.isFunction(op_func)) {
+			return red.construct(op_func, args);
+		} else if (op_func instanceof red.ParsedFunction) {
+			console.error("unhandled case");
+		}
+		*/
+	};
+
 	var get_val = red.get_parsed_val = function (node, options) {
 		var op_func, left_arg, right_arg, arg;
 		if (!node) { return undefined; }
@@ -421,6 +452,8 @@
 			return get_logical_val(node.operator, left_arg, right_arg, options);
 		} else if (type === "FunctionExpression") {
 			return red.get_fn_$(node, options);
+		} else if (type === "NewExpression") {
+			return red.get_new_$(node, options);
 		} else if (type === "ObjectExpression") {
 			if(options.get_constraint) {
 				console.error("not set");

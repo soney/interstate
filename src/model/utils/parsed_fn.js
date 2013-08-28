@@ -21,14 +21,6 @@
 		"^=": function (a, b) { return a ^ b; }
 	};
 
-	function construct(constructor, args) {
-		function F() {
-			return constructor.apply(this, args);
-		}
-		F.prototype = constructor.prototype;
-		return new F();
-	}
-
 	var call_fn = function (node, options) {
 		var i, var_map, op_func, rv, test, body, prop, object,
 			found_this, curr_context, context_item, id, op_context,
@@ -260,7 +252,7 @@
 				return call_fn(arg, options);
 			});
 			if (_.isFunction(op_func)) {
-				return construct(op_func, args);
+				return red.construct(op_func, args);
 			} else if (op_func instanceof red.ParsedFunction) {
 				console.error("unhandled case");
 			}
