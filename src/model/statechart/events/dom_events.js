@@ -50,6 +50,14 @@
 					targs = [targs];
 				}
 				this.targets = _.chain(targs)
+								.map(function(targ) {
+									if(targ instanceof red.Query) {
+										return targ.value();
+									} else {
+										return targ;
+									}
+								})
+								.flatten(true)
 					.map(function (target_cobj) {
 						if (_.isElement(target_cobj) || target_cobj === window) {
 							return {dom_obj: target_cobj, cobj: target_cobj};

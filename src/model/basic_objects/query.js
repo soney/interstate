@@ -179,14 +179,13 @@
             return new_query;
         };
     
-        proto.remove = function () {
+        proto.not = proto.remove = function () {
             var my_value_set = new RedSet({value: this.value(), equals: red.check_contextual_object_equality, hash: "hash"});
             var items = extract_items.apply(this, arguments);
     
-            var new_value_set = my_value_set.remove.apply(my_value_set, items);
-    
+            my_value_set.remove.apply(my_value_set, items);
             var new_query = new red.Query({
-                value: new_value_set.toArray(),
+                value: my_value_set.toArray(),
                 parent_query: this
             });
             return new_query;

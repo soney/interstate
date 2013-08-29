@@ -94,7 +94,7 @@
 
 					var tree, event_info = false, event = false;
 					cjs.wait();
-					try {
+					if(red.__debug) {
 						tree = this._tree.get();
 						if(tree instanceof red.Error) {
 							//console.log("no event");
@@ -107,10 +107,26 @@
 							}, this._live_event_creator);
 							event = event_info.event;
 						}
-					} catch(e) {
-						console.error(e);
-					} finally {
 						cjs.signal();
+					} else {
+						try {
+							tree = this._tree.get();
+							if(tree instanceof red.Error) {
+								//console.log("no event");
+								event = null;
+							} else {
+								event_info = get_event(tree, {
+									parent: parent,
+									context: context,
+									only_parse_first: true
+								}, this._live_event_creator);
+								event = event_info.event;
+							}
+						} catch(e) {
+							console.error(e);
+						} finally {
+							cjs.signal();
+						}
 					}
 
 					if (event) {
