@@ -63,9 +63,9 @@
 			//this.live_fn.run(false);
 			//console.log(this.is_enabled());
 			//debugger;
-			if(this.is_enabled()) {
+			//if(this.is_enabled()) {
 				this.live_fn.run(false);
-			}
+			//}
 		};
 		proto.clone = function () {
 			return new My(this.type, this.targets);

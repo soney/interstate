@@ -157,7 +157,8 @@
 		};
 		proto.id = function () { return this._id; };
 		proto.child_fired = function (actions, parent, context, event) {
-			var fire_args = _.rest(arguments, 3);
+			this.fire.apply(this, _.rest(arguments, 3));
+			
 			if(actions.length > 0) {
 				var eventified_context = context.push(new red.ProvisionalContext(), new red.EventContext(event));
 				//console.log(eventified_context);
@@ -182,7 +183,6 @@
 					*/
 				});
 			}
-			this.fire.apply(this, fire_args);
 		};
 		proto.get_str = function () { return this._str.get(); };
 		proto.set_str = function (str) {
