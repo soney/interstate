@@ -158,9 +158,6 @@
 			var target = target_info.cobj,
 				type = target_info.type;
 
-			if(target instanceof red.ContextualObject) {
-				target.off("begin_destroy", this.remove_listener, this);
-			}
 			var target_listeners = listener_map.get(target);
 			if(target_listeners) {
 				var listeners = target_listeners[type];
@@ -168,6 +165,9 @@
 					var listener_index = _.indexOf(listeners, this);
 					if(listener_index >= 0) {
 						listeners.splice(listener_index, 1);
+						if(target instanceof red.ContextualObject) {
+							target.off("begin_destroy", this.remove_listener, this);
+						}
 						var len = listeners.length;
 						if (len === 0) {
 							delete target_listeners[type];

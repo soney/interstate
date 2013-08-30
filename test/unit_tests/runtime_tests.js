@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = false;
+var check_memory_leaks = true;
 var step_delay = 10;
 
 var tests = [
@@ -26,7 +26,6 @@ var tests = [
 				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 				equal(cobj.prop_val("my_state"), "INIT");
 				env.set("my_event", "(start)", "'ev2'");
-				console.log("set");
 				red.emit("ev2");
 				equal(cobj.prop_val("my_state"), "active");
 			}
@@ -667,6 +666,28 @@ var tests = [
 				equal(cobj.prop_val("x"), 15);
 				env.set("d", "2");
 				equal(cobj.prop_val("x"), 14);
+			}
+		}]
+	},
+	{
+		name: "Immediate Constraint Event Transitions",
+		expect: 1,
+		create_builtins: false,
+		steps: [{
+			setup: function(env) {
+				env	.set("obj", "<stateful>")
+					.cd("obj")
+						.add_state("state1")
+						.add_state("state2")
+						.add_transition("state1", "state2", "true")
+						.set("x", "state1", "1")
+						.set("x", "state2", "2")
+						.start_at("state1")
+					;
+			},
+			test: function(env, runtime) {
+				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+				equal(cobj.prop_val("x"), 2);
 			}
 		}]
 	},

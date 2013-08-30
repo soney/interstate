@@ -77,9 +77,6 @@
 		proto.toString = function () {
 			return "p_" + this.get_pointer().toString();
 		};
-		proto.hash = function () {
-			return this.get_pointer().hash();
-		};
 
 		proto.val = function () {
 			//var rv = this.$value.get();
