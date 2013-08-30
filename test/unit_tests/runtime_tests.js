@@ -1,5 +1,5 @@
 (function() {
-var check_memory_leaks = true;
+var check_memory_leaks = false;
 var step_delay = 10;
 
 var tests = [
@@ -26,6 +26,7 @@ var tests = [
 				var cobj = red.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 				equal(cobj.prop_val("my_state"), "INIT");
 				env.set("my_event", "(start)", "'ev2'");
+				console.log("set");
 				red.emit("ev2");
 				equal(cobj.prop_val("my_state"), "active");
 			}

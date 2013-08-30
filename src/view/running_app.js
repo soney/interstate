@@ -150,6 +150,7 @@
 			this.$window = $(window);
 			this.$window.on("dragover.replace_program", _.bind(function(eve) {
 														var event = eve.originalEvent;
+														console.log(event);
 														event.preventDefault();
 														event.stopPropagation();
 														this.show_drag_over();

@@ -33,27 +33,30 @@
         if (!_.isArray(this.options.value)) {
             this.options.value = [this.options.value];
         }
-        this.options.value = _
-            .chain(this.options.value)
-            .map(function (pointer_object) {
-                var pointer = pointer_object.get_pointer();
-                var points_at = pointer.points_at();
-                var cobj;
-                if (points_at instanceof red.Dict) {
-                    cobj = red.find_or_put_contextual_obj(points_at, pointer);
-                    if (cobj.is_template()) {
-                        return cobj.instances();
-                    } else {
-                        return cobj;
-                    }
-                } else {
-                    cobj = red.find_or_put_contextual_obj(points_at, pointer);
-                    //new red.ContextualObject({pointer: pointer});
-                    return cobj;
-                }
-            })
-            .flatten(true)
-            .value();
+        this.options.value = _	.chain(this.options.value)
+								.map(function (pointer_object) {
+									if(pointer_object) {
+										var pointer = pointer_object.get_pointer();
+										var points_at = pointer.points_at();
+										var cobj;
+										if (points_at instanceof red.Dict) {
+											cobj = red.find_or_put_contextual_obj(points_at, pointer);
+											if (cobj.is_template()) {
+												return cobj.instances();
+											} else {
+												return cobj;
+											}
+										} else {
+											cobj = red.find_or_put_contextual_obj(points_at, pointer);
+											//new red.ContextualObject({pointer: pointer});
+											return cobj;
+										}
+									} else {
+										return false;
+									}
+								})
+								.flatten(true)
+								.value();
     };
 
     (function (My) {
@@ -136,6 +139,10 @@
                 return _.filter(values, filter_func, context);
             });
         };
+		proto.eq = function(index) {
+			var value = this.value();
+			return value[index];
+		};
         proto.map = function (map_func, context) {
             return this.op(function (values) {
                 return _.map(values, map_func, context);
