@@ -38,12 +38,6 @@
 				if(data.type === "tutorial") {
 					if(data.subtype === "page_set") {
 						this.show_page_no(data.page_index);
-					} else if(data.subtype === "inter_page") {
-						if(this.page) {
-							if(_.isFunction(this.page.runtime.on_message)) {
-								
-							}
-						}
 					}
 				}
 			}, this);
@@ -55,7 +49,7 @@
 			var options;
 			if(this.page) {
 				options = this.page.runtime;
-				if(_.isFunction(options.on_exit)) {
+				if(options && _.isFunction(options.on_exit)) {
 					options.on_exit.call(this, $, _.bind(this.post_to_client, this));
 				}
 			}
@@ -64,7 +58,7 @@
 			this.page = pages[page_index];
 			options = this.page.runtime;
 
-			if(_.isFunction(options.on_enter)) {
+			if(options && _.isFunction(options.on_enter)) {
 				options.on_enter.call(this, $, _.bind(this.post_to_client, this));
 			}
 		},
