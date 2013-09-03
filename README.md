@@ -5,7 +5,7 @@
 * Demo: [euc.from.so](http://euc.from.so)
 
 ### Building from Scratch
-To build, from scratch, you will need:
+To build from scratch, you will need:
 
 * [Node.JS/NPM](http://nodejs.org/): A desktop JavaScript evaluator
 * [Grunt](http://gruntjs.com/): A JavaScript task runner
