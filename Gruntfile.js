@@ -92,6 +92,11 @@ module.exports = function(grunt) {
 					{ expand: true, cwd: "sample_apps/", src: ["**"], dest: "build/sample_apps" }
 				]
 			},
+			carousel_images: {
+				files: [
+					{ expand: true, cwd: "carousel_images/", src: ["**"], dest: "build/carousel_images" }
+				]
+			},
 
 			dist: {
 				files: [

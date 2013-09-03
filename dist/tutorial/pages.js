@@ -164,6 +164,36 @@ var tutorial_pages = (function() {
 			runtime: {
 			}
 		}, {
+			editor: { // 
+				text: "(something on emit)"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "(something on emit)"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "(something on find)"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "(something on find)"
+			},
+			runtime: {
+			}
+		}, {
+			editor: {
+				text: "(something on find)"
+			},
+			runtime: {
+			}
+		}, {
 			editor: {
 				text: "<p>Objects can inherit behaviors.<div class='directive'>Try inherititing from <var>hoverable</var> by setting <var>prototypes</var> to <code>[shape.circle, hoverable]</code>.</div> Note that it inherits not only the properties of <var>hoverable</var> but also its state machine.</p>"
 			},

@@ -19,6 +19,8 @@
 			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var self = this;
 				var listener = function (event) {
+					event.preventDefault();
+
 					red.event_queue.wait();
 
 					event = _.extend({}, event, {

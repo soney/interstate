@@ -385,9 +385,49 @@
 		}
 	};
 
-	var get_new_$ = function(node, options) {
-		console.log(node, options);
+	var get_new_$ = function (options, calling_context, op) {
+		var pcontext = options.context;
+		var args = _.rest(arguments, 3);
+		if (options.get_constraint) {
+			return cjs.$(function () {
+				var op_got = cjs.get(op, options.auto_add_dependency);
+				//if(op_got === red.on_event) {
+					//debugger;
+					//window.dbg = true;
+				//}
+				var args_got = _.map(args, function(arg) {
+													return cjs.get(arg, options.auto_add_dependency);
+												});
+				//window.dbg = false;
+				var calling_context_got = cjs.get(calling_context, options.auto_add_dependency);
+
+				if (_.isFunction(op_got)) {
+					var rv = red.construct.call(calling_context_got, op_got, args_got);
+					return rv;
+				} else if (op_got instanceof red.ParsedFunction) {
+					return op_got._apply(calling_context_got, pcontext, args_got, options);
+				} else {
+					//throw new Error("Calling a non-function");
+					return undefined;
+				}
+			});
+		} else {
+			if (_.isFunction(op)) {
+				var rv = red.construct.call(calling_context, op, args);
+				return rv;
+			} else if (op instanceof red.ParsedFunction) {
+				return op._apply(calling_context, pcontext, args);
+			} else {
+				//throw new Error("Calling a non-function");
+				return undefined;
+			}
+		}
 	/*
+		if(options.get_constraint) {
+			console.error("not implemented");
+		} else {
+			return red.construct(callee, args);
+		}
 		op_context = window;
 		if (node.callee.type === "MemberExpression") {
 			op_context = call_fn(node.callee.object, options);
@@ -405,7 +445,7 @@
 	};
 
 	var get_val = red.get_parsed_val = function (node, options) {
-		var op_func, left_arg, right_arg, arg;
+		var op_func, left_arg, right_arg, arg, callee, op_context, args;
 		if (!node) { return undefined; }
 		var type = node.type;
 		if (type === "ExpressionStatement") {
@@ -422,12 +462,12 @@
 			arg = get_val(node.argument, options);
 			return get_op_val(options, window, op_func, arg);
 		} else if (type === "CallExpression") {
-			var callee = get_val(node.callee, options);
-			var op_context = window;
+			callee = get_val(node.callee, options);
+			op_context = window;
 			if (node.callee.type === "MemberExpression") {
 				op_context = get_val(node.callee.object, options);
 			}
-			var args = _.map(node["arguments"], function (arg) {
+			args = _.map(node["arguments"], function (arg) {
 				return get_val(arg, options);
 			});
 			return get_op_val.apply(this, ([options, op_context, callee]).concat(args));
@@ -453,7 +493,15 @@
 		} else if (type === "FunctionExpression") {
 			return red.get_fn_$(node, options);
 		} else if (type === "NewExpression") {
-			return red.get_new_$(node, options);
+			callee = get_val(node.callee, options);
+			op_context = window;
+			if (node.callee.type === "MemberExpression") {
+				op_context = get_val(node.callee.object, options);
+			}
+			args = _.map(node["arguments"], function (arg) {
+				return get_val(arg, options);
+			});
+			return get_new_$.apply(this, ([options, op_context, callee]).concat(args));
 		} else if (type === "ObjectExpression") {
 			if(options.get_constraint) {
 				console.error("not set");
