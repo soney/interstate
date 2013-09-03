@@ -118,12 +118,12 @@ var tutorial_pages = (function() {
 				text: "<p>Events can also call functions on transitions by placing a semicolon after the event action. Try calling the JavaScript <var>alert</var> function when the user's mouse is released by changing the <code>mouseup</code> event to <code>on('mouseup'); alert('Mouse released')</code></p>"
 			}
 		}, {
-			editor: { // To "emit" an event, call the emit function. Add an emit("circle clicked", this) method after circle is this
+			editor: {
 				text: "<p>One useful function is the built in <code>emit('event_type' [, target])</code> function. When <code>emit</code> is called, it 'emits' an event that can be detected by <code>on</code>. <div class='directive'>Change the previous event so that rather than popping up an alert dialog, it emits an event named <code>'dragged'</code>.</div></p>"
 			}
 		}, {
-			editor: { // Something on how to get it to find that emitted event
-				text: "These emitted events can be used by other objects. Let's create a counter display whose number increases every time the user clicks a circle. Create a new object on <var>screen</var> called <var>message</var>. Make it inherit from <var>shape.text</var> and give it an initial text value of <code>1</code>. Then, add a new state and transition whose value is These emitted events can be used"
+			editor: {
+				text: "<p>These emitted events can be used by other objects. Let's create a counter display whose number increases every time the user clicks a circle. <div class='directive'>Create a new object on <var>screen</var> called <var>message</var>. Make it inherit from <var>shape.text</var>, add a variable called <var>counter</var> whose initial value is <code>1</code>. Set the <var>text</var> property to be <code>'Count: ' + counter</code>. Then, add a new state called <var>init</var> and a transition from <var>init</var> to itself whose event is <code>on('dragged', my_circle)</code>. Finally, set <var>counter</var> to <code>counter+1</code> on that transition.</div><div class='note'>Note: You may have to reset the state machine.</div></p>"
 			}
 		}, {
 			editor: {
@@ -139,15 +139,15 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: { // The find function can be used to find objects.
-				text: "(something on find)"
+				text: "<p>The built-in <var>find(root)</var> function can be used to find objects. <var>find</var> accepts a <var>root</var> object to start at and returns a special 'query' object. <div class='directive'>Create a new property called selected_circle.</div></p>"
 			}
 		}, {
 			editor: { // Find can also be used to filter out objects in certain states. For example, let's make this object...
-				text: "(something on find)"
+				text: "<p></p>"
 			}
 		}, {
 			editor: { // To get the first item in find, then...
-				text: "(something on find)"
+				text: "<p></p>"
 			}
 		}, {
 			editor: {
@@ -171,7 +171,7 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p>That's it for now. Please see http://euc.from.so for more information on Euclase.</p>"
+				text: "<p>That's it for now. Press 'done' to close this overlay</p>"
 			}
 		}
 	];
