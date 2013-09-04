@@ -104,20 +104,20 @@
 		};
 
 		proto.enable = function () {
-			My.superclass.enable.apply(this, arguments);
 			if(!this.is_enabled()) {
 				this.add_listeners();
 				if(this.live_fn.resume()) {
 					this.live_fn.run();
 				}
 			}
+			My.superclass.enable.apply(this, arguments);
 		};
 		proto.disable = function () {
-			My.superclass.disable.apply(this, arguments);
 			if(this.is_enabled()) {
 				this.live_fn.pause();
 				this.remove_listeners();
 			}
+			My.superclass.disable.apply(this, arguments);
 		};
 
 		var get_instance_targs = function(instance) {

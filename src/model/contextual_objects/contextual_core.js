@@ -45,7 +45,7 @@
 				var parent_pointer = pointer.slice(0, my_index-1);
 				if(parent_obj instanceof red.Dict) {
 					var sp_contexts = pointer.special_contexts();
-					console.log(sp_contexts);
+					//console.log(sp_contexts);
 					var extra_txt = "";
 					if(sp_contexts.length > 0) {
 						var sp_context;

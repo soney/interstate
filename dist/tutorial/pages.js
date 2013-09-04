@@ -139,15 +139,7 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: { // The find function can be used to find objects.
-				text: "<p>The built-in <var>find(root)</var> function can be used to find objects. <var>find</var> accepts a <var>root</var> object to start at and returns a special 'query' object. <div class='directive'>Create a new property called selected_circle.</div></p>"
-			}
-		}, {
-			editor: { // Find can also be used to filter out objects in certain states. For example, let's make this object...
-				text: "<p></p>"
-			}
-		}, {
-			editor: { // To get the first item in find, then...
-				text: "<p></p>"
+				text: "<p>The built-in <var>find(root)</var> function can be used to find objects. <var>find</var> accepts a <var>root</var> object to start at and returns a special 'query' object. <div class='directive'>Create a new property called selected_circle. Set it's value to <code>find(my_circle).in_state('selected').eq(0)</code></div></p>"
 			}
 		}, {
 			editor: {

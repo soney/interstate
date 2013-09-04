@@ -22,7 +22,7 @@
 		var target_listeners = listener_map.get(target);
 		if (target_listeners) {
 			var listeners = target_listeners[type];
-			if(listeners.length > 0) {
+			if(listeners && listeners.length > 0) {
 				var args = _.rest(arguments, 2);
 				if(args.length === 0) { // no event object
 					args = [{

@@ -144,7 +144,7 @@
 				this.of_text.text(this.option("out_of"));
 			} else  {
 				this.curr_copy_text.text(this.option("curr_copy"));
-				this.of_text.text(" , length:" + this.option("out_of"));
+				this.of_text.text(" , length " + (this.option("out_of") + 1));
 			}
 		},
 

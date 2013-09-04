@@ -132,6 +132,9 @@
 			} else {
 				this.on_hide_src();
 			}
+
+			this.element.on("mouseover.highlight", _.bind(this.add_runtime_highlight, this));
+			this.element.on("mouseout.highlight", _.bind(this.remove_runtime_highlight, this));
 		},
 
 		_destroy: function() {
@@ -143,7 +146,9 @@
 						.off("click.onclick")
 						.off("keydown.onkeydown")
 						.off("dragstart.ondragstart")
-						.off("click.inherit");
+						.off("click.inherit")
+						.off("mouseover.highlight mouseout.highlight");
+
 			if(this.inherit_button) {
 				this.inherit_button	.off("mousedown.inherit")
 									.remove();
@@ -168,6 +173,12 @@
 			}
 			delete this.options.client;
 			delete this.options;
+		},
+
+		add_runtime_highlight: function() {
+		},
+
+		remove_runtime_highlight: function() {
 		},
 
 		change_type: function(type) {

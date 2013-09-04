@@ -399,6 +399,14 @@
 				this.edit_button.removeClass("active").css(this.edit_button_css);
 			}
 			delete this.editor_window;
+		},
+
+		add_highlight: function(cobj) {
+			console.log("add", cobj);
+		},
+
+		remove_highlight: function(cobj) {
+			console.log("remove", cobj);
 		}
 	});
 }(red, jQuery));

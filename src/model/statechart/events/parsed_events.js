@@ -163,17 +163,26 @@
 				var eventified_context = context.push(new red.ProvisionalContext(), new red.EventContext(event));
 				//console.log(eventified_context);
 				_.each(actions, function(expression_tree) {
-					try {
-						//red.dbg = true;
+					if(red.__debug) {
 						red.get_parsed_$(expression_tree, {
 							parent: parent,
 							context: eventified_context,
 							get_constraint: false,
 							auto_add_dependency: false
 						});
-						//red.dbg = false;
-					} catch(e) {
-						console.error(e);
+					} else {
+						try {
+							//red.dbg = true;
+							red.get_parsed_$(expression_tree, {
+								parent: parent,
+								context: eventified_context,
+								get_constraint: false,
+								auto_add_dependency: false
+							});
+							//red.dbg = false;
+						} catch(e) {
+							console.error(e);
+						}
 					}
 				/*
 					if(expression.invalidate) {
