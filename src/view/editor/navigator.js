@@ -10,7 +10,8 @@
 	$.widget("red.navigator", {
 		options: {
 			root_client: false,
-			single_col: false
+			single_col: false,
+			client_socket: false
 		},
 		_create: function() {
 			var client = this.option("root_client");
@@ -22,7 +23,8 @@
 												name: "sketch",
 												client: client,
 												is_curr_col: true,
-												show_prev: false
+												show_prev: false,
+												client_socket: this.option("client_socket")
 											})
 											.on("child_select.nav", _.bind(this.on_child_select, this, root_col))
 											.on("header_click.nav", _.bind(this.on_header_click, this, root_col))
@@ -42,6 +44,7 @@
 			client.signal_destroy();
 
 			delete this.options.root_client;
+			delete this.options.client_socket;
 			delete this.options;
 		},
 		on_child_select: function(column, event, child_info) {
@@ -61,7 +64,8 @@
 													client: child_info.value,
 													is_curr_col: true,
 													prev_col: column,
-													show_prev: this.option("single_col")
+													show_prev: this.option("single_col"),
+													client_socket: this.option("client_socket")
 												})
 												.on("child_select.nav", _.bind(this.on_child_select, this, next_col))
 												.on("header_click.nav", _.bind(this.on_header_click, this, next_col))

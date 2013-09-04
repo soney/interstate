@@ -40,7 +40,8 @@
 			builtin: false,
 			layout_manager: false,
 			show_src: false,
-			obj: false
+			obj: false,
+			client_socket: false
 		},
 
 		_create: function() {
@@ -180,7 +181,7 @@
 		},
 
 		remove_runtime_highlight: function() {
-			console.log("REMOVE HIGHLIGHT");
+			console.log("REMOVE HIGHLIGHT", this.option("client"));
 		},
 
 		change_type: function(type) {

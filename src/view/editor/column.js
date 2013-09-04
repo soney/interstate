@@ -40,7 +40,8 @@
 			show_prev: false,
 			is_curr_col: false,
 			show_source: true,
-			curr_copy_client: false
+			curr_copy_client: false,
+			client_socket: false
 		},
 
 		_create: function () {
@@ -374,7 +375,8 @@
 										builtin: child.builtin,
 										layout_manager: this.layout_manager,
 										show_src: this.option("show_source"),
-										obj: this.option("client")
+										obj: this.option("client"),
+										client_socket: this.option("client_socket")
 									})
 									.on("expand.on_child_select", _.bind(this.on_child_select, this, child, child_disp))
 									.on("command.on_child_select", _.bind(function(e) {
@@ -457,6 +459,7 @@
 			if(this.prev_button.data("red-pressable")) {
 				this.prev_button.pressable("destroy");
 			}
+			delete this.option.client_socket;
 			delete this.options;
 		},
 		on_child_select: function(child_info, child_disp, event) {

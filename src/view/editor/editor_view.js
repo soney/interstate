@@ -99,7 +99,8 @@
 			this.navigator = $("<div />")	.appendTo(this.element)
 											.navigator({
 												root_client: root_client,
-												single_col: this.option("single_col_navigation")
+												single_col: this.option("single_col_navigation"),
+												client_socket: this.client_socket 
 											})
 											.on("command.do_action", _.bind(this.on_command, this));
 
