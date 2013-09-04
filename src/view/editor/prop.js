@@ -176,9 +176,11 @@
 		},
 
 		add_runtime_highlight: function() {
+			console.log("ADD HIGHLIGHT", this.option("client"));
 		},
 
 		remove_runtime_highlight: function() {
+			console.log("REMOVE HIGHLIGHT");
 		},
 
 		change_type: function(type) {

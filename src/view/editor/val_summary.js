@@ -32,7 +32,6 @@
 		} else if(_.isArray(val)) {
 			return "[" + _.map(val, summarized_val).join(", ") + "]";
 		} else if(val instanceof red.WrapperClient) {
-			console.log(val);
 			return val.colloquial_name;
 		} else {
 			return val;
