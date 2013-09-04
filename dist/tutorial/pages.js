@@ -135,12 +135,13 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p><div class='directive'>Navigate through every copy by clicking the 1 in [1 of 3] below <var>my_circle</var>.</div></p>"
+				text: "<p><div class='directive'>Navigate through every copy by clicking the 0 in [0, length 3] below <var>my_circle</var>.</div></p>"
 			}
 		}, {
 			editor: { // The find function can be used to find objects.
 				text: "<p>The built-in <var>find(root)</var> function can be used to find objects. <var>find</var> accepts a <var>root</var> object to start at and returns a special 'query' object. <div class='directive'>Create a new property called selected_circle. Set it's value to <code>find(my_circle).in_state('selected').eq(0)</code></div></p>"
 			}
+			/*
 		}, {
 			editor: {
 				text: "<p>Objects can inherit behaviors.<div class='directive'>Try inherititing from <var>hoverable</var> by setting <var>prototypes</var> to <code>[shape.circle, hoverable]</code>.</div> Note that it inherits not only the properties of <var>hoverable</var> but also its state machine.</p>"
@@ -165,6 +166,20 @@ var tutorial_pages = (function() {
 			editor: {
 				text: "<p>That's it for now. Press 'done' to close this overlay</p>"
 			}
+			*/
+			// opened up screen type
+			// typed in shape.rectangle but didn't get anything, should get an error saying shape.rect is not defined
+			// should be shape.rect, not shape.rectangle
+			// in reference sheet, have a list of shapes...
+			// and also, make topmost items appear on top insetad of bottom
+			//
+			// doesn't know how to link position to selected thumbnail, may be 
+			//
+			// want to allow users to click to open new object
+			//
+			// objects on top in screen should be on top
+			// remove spell checking in cells
+			// add tutorial on how to make box bigger
 		}
 	];
 }());
