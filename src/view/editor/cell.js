@@ -71,7 +71,7 @@
 			value: false,
 			left: 0,
 			width: 0,
-			edit_width: 100,
+			edit_width: 200,
 			active: false,
 			parent: false
 		},

@@ -148,6 +148,7 @@
 						}
 				
 						var children = get_children(_.pluck(screen_contents, "value"));
+						children.reverse();
 						return children;
 					}
 				}
