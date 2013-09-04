@@ -35,6 +35,36 @@
 			});
 			this.set_options(options);
 		};
+		proto.get_colloquial_name = function() {
+			var pointer = this.get_pointer();
+			var my_index = pointer.indexOf(this.get_object());
+			if(my_index === 0) {
+				return "(sketch)";
+			} else {
+				var parent_obj = pointer.points_at(my_index-1);
+				var parent_pointer = pointer.slice(0, my_index-1);
+				if(parent_obj instanceof red.Dict) {
+					var sp_contexts = pointer.special_contexts();
+					console.log(sp_contexts);
+					var extra_txt = "";
+					if(sp_contexts.length > 0) {
+						var sp_context;
+						for(var i = 0; i<sp_contexts.length; i++) {
+							sp_context = sp_contexts[i];
+							if(sp_context instanceof red.CopyContext) {
+								extra_txt = "[" + sp_context.copy_num + "]";
+								break;
+							}
+						}
+					}
+					var name = red.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer());
+
+					return "("+name+extra_txt+")";
+				} else {
+					return "(object)";
+				}
+			}
+		};
 
 		proto.id = proto.hash = function () { return this._id; };
 		if(red.__debug) {

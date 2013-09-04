@@ -539,7 +539,11 @@
 							this.statechart_view.remove();
 						}
 						_.each(statecharts, function(statechart) {
-							statechart.destroy();
+							try {
+								statechart.destroy();
+							} catch(e) {
+								console.error(e);
+							}
 						});
 						$statecharts.signal_destroy();
 					}

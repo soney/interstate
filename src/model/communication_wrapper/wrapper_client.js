@@ -32,6 +32,7 @@
 		this.obj_id = options.obj_id;
 		this._type = options.type;
 		this.object_summary = options.object_summary;
+		this.colloquial_name = this.object_summary.colloquial_name;
 		this.program_state_client = options.program_state_client;
 
 		this._id = client_id;

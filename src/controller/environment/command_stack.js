@@ -20,8 +20,10 @@
 				}
 			});
 
-			stack.push(command);
-			index += 1;
+			if(command.is_undoable()) {
+				stack.push(command);
+				index += 1;
+			}
 		};
 
 		this._undo = function() {

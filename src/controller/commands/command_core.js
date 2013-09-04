@@ -8,10 +8,14 @@
 
     red.Command = function (options) {
         this._in_effect = options && options.in_effect === true;
+		this._undoable = true;
     };
     
     (function (My) {
         var proto = My.prototype;
+		proto.is_undoable = function() {
+			return this._undoable;
+		};
         proto._do = function () {
             this._in_effect = true;
             this._execute();

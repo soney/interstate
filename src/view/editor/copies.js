@@ -51,10 +51,10 @@
 		on_click: function() {
 			this.copy_num_input = $("<input />").attr({
 													type: "number",
-													min: 1,
+													min: 0,
 													max: this.option("out_of")
 												})
-												.val(this.option("curr_copy") + 1)
+												.val(this.option("curr_copy"))
 												.addClass("copy_input")
 												.insertBefore(this.content)
 												.focus()
@@ -84,7 +84,7 @@
 
 		on_change: function(event) {
 			var value = parseInt(this.copy_num_input.val(), 10);
-			this.option("curr_copy", value - 1);
+			this.option("curr_copy", value);
 		},
 
 		on_key_down: function(jqEvent) {
@@ -110,7 +110,7 @@
 						var len = copies.length;
 						this.option({
 							displayed: true,
-							out_of: len,
+							out_of: len-1,
 							curr_copy: Math.min(this.option("curr_copy"), len)
 						});
 					} else {
@@ -143,8 +143,8 @@
 				this.curr_copy_text.text("");
 				this.of_text.text(this.option("out_of"));
 			} else  {
-				this.curr_copy_text.text(this.option("curr_copy") + 1);
-				this.of_text.text(" of " + this.option("out_of"));
+				this.curr_copy_text.text(this.option("curr_copy"));
+				this.of_text.text(" , length:" + this.option("out_of"));
 			}
 		},
 

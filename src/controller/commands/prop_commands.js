@@ -221,7 +221,7 @@
         };
         proto._unexecute = function () {
             if (this._has_direct_prop) {
-                this._parent.set_prop(this._prop_name, this._prop_value, this._prop_index);
+                this._parent.set_prop(this._prop_name, this._prop_value, {index: this._prop_index});
             }
         };
         proto._do_destroy = function (in_effect) {
@@ -623,6 +623,7 @@
         }
     
         this._parent = this._options.parent;
+		this._undoable = false;
     };
     (function (My) {
         _.proto_extend(My, red.Command);
@@ -675,25 +676,40 @@
         var proto = My.prototype;
     
         proto._execute = function () {
-			var target_index;
-			if(this._target_name) {
-				target_index =  this._target_obj.prop_index(this._target_name);
-				if(this._above_below === "below") {
-					target_index++;
+			if(!_.isNumber(this._to_index)) {
+				if(this._target_name) {
+					this._to_index =  this._target_obj.prop_index(this._target_name);
+					if(this._above_below === "below") {
+						this._to_index++;
+					}
+				} else {
+					this._to_index = 0;
 				}
-			} else {
-				target_index = 0;
+
+				this._from_index = this._from_obj.prop_index(this._from_name);
+				if(this._from_obj === this._target_obj) {
+					if(this._from_index < this._to_index) {
+						this._to_index--;
+					}
+				}
 			}
 
 			if(this._from_obj === this._target_obj) {
-				this._from_obj.move_prop(this._from_name, target_index);
+				this._from_obj.move_prop(this._from_name, this._to_index);
 			} else {
 				var val = this._from_obj._get_direct_prop(this._from_name);
 				this._from_obj.unset_prop(this._from_name);
-				this._target_obj.set_prop(this._from_name, val, target_index);
+				this._target_obj.set_prop(this._from_name, val, this._to_index);
 			}
         };
         proto._unexecute = function () {
+			if(this._from_obj === this._target_obj) {
+				this._from_obj.move_prop(this._from_name, this._from_index);
+			} else {
+				var val = this._target_obj._get_direct_prop(this._from_name);
+				this._target_obj.unset_prop(this._from_name);
+				this._from_obj.set_prop(this._from_name, val, this._to_index);
+			}
         };
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);

@@ -466,7 +466,9 @@
 			delete this.label;
 
 			var transition = this.option("transition");
-			transition.off("fire", this.flash, this);
+			if(!transition.destroyed) {
+				transition.off("fire", this.flash, this);
+			}
 			if(this.edit_dropdown) {
 				this.edit_dropdown.dropdown("destroy");
 			}

@@ -173,6 +173,7 @@
 		proto.event = function () { return this._event; };
 		proto.involves = function (state) { return this.from() === state || this.to() === state; };
 		proto.destroy = function (silent) {
+			this.destroyed = true;
 			this._emit("destroy", {type: "destroy", target: this});
 			cjs.wait();
 			if(this.$active) {

@@ -153,7 +153,7 @@
 						}
 					};
 					_.when(promises).done(function () {
-						if(destroyed) { return; }
+						if(statechart.destroyed) { return; }
 						_.when(substate_promises).done(function () {
 							if(destroyed) { return; }
 							statechart.do_initialize({
@@ -222,7 +222,7 @@
 
 					promises = [outgoing_transition.promise(), is_active.promise(), is_running.promise()];
 					_.when(promises).done(function () {
-						if(destroyed) { return; }
+						if(statechart.destroyed) { return; }
 						statechart.do_initialize({
 							outgoing_transition: outgoing_transition_value,
 							parent: statechart_parent,

@@ -226,7 +226,8 @@
 				object_summary: {
 					type: value.type(),
 					id: value.id(),
-					obj_id: value.get_object().id()
+					obj_id: value.get_object().id(),
+					colloquial_name: value.get_colloquial_name()
 				}
 			};
 		} else if (value instanceof red.StartState) {
