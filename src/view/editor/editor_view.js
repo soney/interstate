@@ -208,7 +208,7 @@
 			} else if(type === "set_stateful_prop_for_state") {
 				client = event.prop;
 				state = event.state;
-				value = new red.Cell({str: ''});
+				value = new red.Cell({str: '', substantiated: false});
 
 				command = new red.SetStatefulPropValueCommand({
 					in_effect: true,

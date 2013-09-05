@@ -41,7 +41,8 @@
 			is_curr_col: false,
 			show_source: true,
 			curr_copy_client: false,
-			client_socket: false
+			client_socket: false,
+			selected_prop_name: false
 		},
 
 		_create: function () {
@@ -79,7 +80,8 @@
 			this.prev_button = $("<a />")	.addClass("prev")
 											.attr("href", "javascript:void(0)")
 											.prependTo(this.obj_name_cell)
-											.text("<");
+											.text("<")
+											.hide();
 
 
 			this.options_row = $("<tr />")	.appendTo(this.tbody)
@@ -118,6 +120,36 @@
 							this.add_children_listener();
 						}
 					}, this));
+				} else {
+				/*
+					client.async_get("is_instance", function(is_instance) {
+						if(is_instance) {
+							client.async_get("get_template", function(response) {
+								if(response) {
+									var index = response.index,
+										template_client = response.cobj;
+									this.option("curr_copy_client", client);
+									this.option("client", template_client);
+									this.destroy_src_view();
+									this.build_src_view();
+									this.remove_children_listener();
+									this.add_children_listener();
+									this.option("curr_copy", index)
+									this.destroy_src_view();
+									this.build_src_view();
+									this.remove_children_listener();
+									this.add_children_listener();
+								}
+									
+									this.option("client", template_client);
+									this.destroy_src_view();
+									this.build_src_view();
+									this.remove_children_listener();
+									this.add_children_listener();
+							}, this);
+						}
+					}, this);
+									*/
 				}
 			}, this);
 			if(client.type() !== "stateful") {
@@ -411,6 +443,17 @@
 										}
 									}, this));
 
+						if(child.name === this.option("selected_prop_name")) {
+							if(this.selected_child_disp) {
+								if(this.selected_child_disp.data("red-prop")) { // need to check in case this.selected_child_disp was removed
+									this.selected_child_disp.prop("on_deselect");
+								}
+							}
+							this.selected_child_disp = child_disp;
+							child_disp.prop("on_select");
+							this.option("selected_prop_name", false);
+						}
+
 						if(this.awaiting_add_prop) {
 							child_disp	.prop("begin_rename");
 							delete this.awaiting_add_prop;
@@ -616,6 +659,17 @@
 			}
 			$("tr.child", this.element).prop("option", "show_src", false);
 		},
+		get_child_disp: function(name) {
+			var elems = $("span.prop_name", this.element);
+			var eqi;
+			for(var i = 0; i<elems.length; i++) {
+				eqi = elems.eq(i);
+				if(eqi.text() === name) {
+					return eqi.parents(".child");
+				}
+			}
+			return false;
+		},
 		_setOption: function(key, value) {
 			if(key === "curr_copy_client") {
 				var old_value = this.option(key);
@@ -633,6 +687,20 @@
 			} else if(key === "curr_copy_client") {
 				if(value instanceof red.WrapperClient) {
 					value.signal_interest();
+				}
+			} else if(key === "selected_prop_name") {
+				if(value) {
+					var child_disp = this.get_child_disp(value);
+					if(child_disp) {
+						if(this.selected_child_disp) {
+							if(this.selected_child_disp.data("red-prop")) { // need to check in case this.selected_child_disp was removed
+								this.selected_child_disp.prop("on_deselect");
+							}
+						}
+						this.selected_child_disp = child_disp;
+						child_disp.prop("on_select");
+						this.option(key, false);
+					}
 				}
 			}
 		}

@@ -95,6 +95,8 @@
 				} else {
 					this.pending_responses[request_id] = response;
 				}
+			} else if(type === "cobj_links") {
+				this._emit("cobj_links", message);
 			}
 
 			this._emit("message", message);

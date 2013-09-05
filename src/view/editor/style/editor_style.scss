@@ -162,6 +162,9 @@ html.full_window_editor {
 							&.stateful_prop {
 								border-right: 1px solid #999;
 							}
+							.cobj_link {
+								@include link;
+							}
 						}
 					}
 				}
@@ -360,6 +363,25 @@ html.full_window_editor {
 					} &:nth-child(odd) {
 						background-color: #FAFAFA;
 					}
+					&:hover {
+						background-color: rgb(244, 246, 250);
+						&.error {
+							background-color: #FFF8F8;
+						}
+					}
+					&.error {
+						background-color: #FFF3F3;
+						color: #B00;
+						border-top: 1px solid #B88;
+						border-bottom: 1px solid #B88;
+						.active.cell {
+							color: white;
+							background-color: #900;
+							.txt {
+								color: white;
+							}
+						}
+					}
 					border-top: 1px solid #EEE;
 
 					&:focus {
@@ -466,9 +488,6 @@ html.full_window_editor {
 						}
 					}
 
-					&:hover {
-						background-color: rgb(244, 246, 250);
-					}
 
 					&.selected {
 						background-color: rgb(82, 116, 212);
@@ -509,12 +528,6 @@ html.full_window_editor {
 							overflow: hidden;
 							word-break: break-all;
 							white-space: nowrap;
-
-							.tooltip {
-								position: absolute;
-								z-index: 9999;
-								font-size: 5em;
-							}
 
 							&.active {
 								color: green;
@@ -720,6 +733,39 @@ html.full_window_editor {
 			&:last-child {
 				border-bottom: none;
 			}
+		}
+	}
+}
+
+.ui-tooltip {
+	font-family: "Source Sans Pro";
+	font-weight: 200;
+	position: absolute;
+	z-index: 9999;
+	font-size: 1em;
+	border: 1px solid #333;
+	padding: 4px;
+	border-radius: 3px;
+	background-color: white;
+	box-shadow: 0px 0px 5px #666666;
+	&.error {
+		border: 1px solid #900;
+		color: #900;
+		.ui-tooltip-content:before {
+			content: "Error: ";
+			font-weight: bold;
+		}
+	}
+	&.val_summary {
+		.ui-tooltip-content:before {
+			content: "Current Value: ";
+			font-weight: bold;
+		}
+	}
+	&.cell_text {
+		.ui-tooltip-content:before {
+			content: "Cell: ";
+			font-weight: bold;
 		}
 	}
 }

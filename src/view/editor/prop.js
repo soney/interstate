@@ -66,6 +66,12 @@
 												this.element.focus();
 											}, this))
 											.appendTo(this.name_cell);
+			this.element.tooltip({
+				position: {
+					my: "center bottom-1",
+					at: "center top"
+				}
+			});
 
 			this.value_summary = $("<td />")	.appendTo(this.element)
 												.value_summary({
@@ -141,9 +147,6 @@
 		_destroy: function() {
 			this.remove_runtime_highlight();
 			this._super();
-			this.name_span	.off("text_change.name_span done_editing.name_span")
-							.editable_text("destroy")
-							.remove();
 			this.element.off("contextmenu.on_context_menu")
 						.off("click.onclick")
 						.off("keydown.onkeydown")
@@ -168,6 +171,10 @@
 										.remove();
 			}
 			this.on_hide_src();
+			this.name_span	.off("text_change.name_span done_editing.name_span")
+							.editable_text("destroy")
+							.remove();
+			this.element.tooltip("destroy");
 			//this.element.pressable("destroy");
 			var value = this.option("value");
 			if(value instanceof red.WrapperClient) {
@@ -600,6 +607,32 @@
 								$values.signal_destroy();
 							}
 						});
+
+						var $runtime_errors = client.get_$("get_runtime_errors");
+						this.runtime_errors_fn = cjs.liven(function() {
+							var runtime_errors = $runtime_errors.get();
+							if(runtime_errors && runtime_errors.length>0) {
+								this.element.addClass("error");
+								this.element.attr("title", runtime_errors[0]);
+								this.element.tooltip("option", {
+									tooltipClass: "error",
+									content: runtime_errors[0]
+								});
+
+							} else {
+								this.element.removeClass("error");
+								this.element.attr("title", "");
+								this.element.tooltip("option", {
+									tooltipClass: false,
+									content: false 
+								});
+							}
+						}, {
+							context: this,
+							on_destroy: function() {
+								$runtime_errors.signal_destroy();
+							}
+						});
 					}
 				} else if(value.type() === "cell") {
 					var $str = value.get_$("get_str");
@@ -667,6 +700,11 @@
 			if(this.live_prop_vals_fn) {
 				this.live_prop_vals_fn.destroy();
 				delete this.live_prop_vals_fn;
+			}
+			
+			if(this.runtime_errors_fn) {
+				this.runtime_errors_fn.destroy();
+				delete this.runtime_errors_fn;
 			}
 
 			if(this.live_cell_str_fn) {

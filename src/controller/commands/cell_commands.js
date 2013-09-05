@@ -28,6 +28,9 @@
         proto._execute = function () {
             this._from_str = this._cell.get_str();
             this._cell.set_str(this._to_str);
+			if(!this._cell.is_substantiated()) {
+				this._cell.substantiate();
+			}
         };
     
         proto._unexecute = function () {

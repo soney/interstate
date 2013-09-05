@@ -24,6 +24,9 @@
 
 			this.$active_value = new cjs.Constraint(this.active_value_getter, { context: this });
 
+			this._has_runtime_errors = false;
+			this.$runtime_errors = cjs.$([]);
+
 			this.$value.onChange(this.$value.update, this.$value);
 			//if(uid.strip_prefix(this.id()) == 150) {
 				//debugger;
@@ -460,9 +463,17 @@
 						if(rv instanceof red.Error) {
 							rv = undefined;
 						}
+						if(this._has_runtime_errors) {
+							this._has_runtime_errors = false;
+							this.$runtime_errors.set([]);
+						}
 						//console.log(rv);
 					} catch (e1) {
-						console.error(e1);
+						rv = undefined;
+						this.$runtime_errors.set([e1.message]);
+						this._has_runtime_errors = true;
+						//rv = new red.Error(e1.message);
+						//console.error(e1);
 					}
 				}
 
@@ -490,6 +501,9 @@
 			this.$active_value.destroy(true);
 			delete this.$active_value;
 			My.superclass.destroy.apply(this, arguments);
+		};
+		proto.get_runtime_errors = function () {
+			return this.$runtime_errors.get();
 		};
 	}(red.ContextualStatefulProp));
 }(red));

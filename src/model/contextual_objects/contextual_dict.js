@@ -385,6 +385,47 @@
 			return (_.isNumber(manifestations_value) && !isNaN(manifestations_value)) || _.isArray(manifestations_value);
 		};
 
+		proto.is_instance = function () {
+			var pointer = this.get_pointer();
+			var object = this.get_object();
+			var obj_index = pointer.lastIndexOf(object);
+			var i;
+
+			if (obj_index >= 0) {
+				var special_contexts = pointer.special_contexts(obj_index);
+				var special_context;
+				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
+					special_context = special_contexts[i];
+					if (special_context instanceof red.CopyContext) {
+						return true;
+					}
+				}
+			}
+			return false;
+		};
+
+		proto.get_template = function () {
+			var pointer = this.get_pointer();
+			var object = this.get_object();
+			var obj_index = pointer.lastIndexOf(object);
+			var i;
+
+			if (obj_index >= 0) {
+				var ptr = pointer.slice(0, obj_index);
+				ptr = ptr.push(object);
+
+				var special_contexts = pointer.special_contexts(obj_index);
+				var special_context;
+				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
+					special_context = special_contexts[i];
+					if (special_context instanceof red.CopyContext) {
+						return {cobj: red.find_or_put_contextual_obj(object, ptr), index: special_context.get_copy_num()};
+					}
+				}
+			}
+			return false;
+		};
+
 		proto.instance_pointers = function() {
 			var manifestations_value = this.get_manifestations_value();
 			var i;

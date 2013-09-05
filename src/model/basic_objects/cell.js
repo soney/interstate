@@ -10,7 +10,6 @@
 		able.make_this_listenable(this);
         options = options || {};
         this._id = options.uid || uid();
-		this._substantiated = options.substantiated;
         red.register_uid(this._id, this);
         if (defer_initialization !== true) {
             this.do_initialize(options);
@@ -49,23 +48,25 @@
 					});
 					me.destroy(true);
 				}
-
+            },
+            "substantiated": {
+                "default": function () { return false; },
+				getter_name: "is_substantiated"
             }
         };
         red.install_proto_builtins(proto, My.builtins);
         proto.do_initialize = function (options) {
-            var self = this;
             red.install_instance_builtins(this, options, My);
             this._tree = cjs.$(function () {
-                var str = self.get_str();
+                var str = this.get_str();
                 return red.parse(str);
-            });
+            }, {
+				context: this
+			});
         };
-		proto.is_substantiated = function() {
-			return this._substantiated;
-		};
 		proto.substantiate = function() {
-			this._substantiated = true;
+			this.set_substantiated(true);
+			this._emit("substantiated");
 		};
 		proto.clone = function() {
 			return new red.Cell({
@@ -197,13 +198,12 @@
                 var rv = { };
                 if (include_uid) { rv.uid = this.id(); }
 
-                var self = this;
                 _.each(My.builtins, function (builtin, name) {
                     if (builtin.serialize !== false) {
                         var getter_name = builtin.getter_name || "get_" + name;
-                        rv[name] = red.serialize(self[getter_name]());
+                        rv[name] = red.serialize(this[getter_name]());
                     }
-                });
+                }, this);
 
                 return rv;
             },

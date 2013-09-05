@@ -141,8 +141,8 @@
 				} else if (op_got instanceof red.ParsedFunction) {
 					return op_got._apply(calling_context_got, pcontext, args_got, options);
 				} else {
-					//throw new Error("Calling a non-function");
-					return undefined;
+					throw new Error("Calling a non-function");
+					//return undefined;
 				}
 			});
 		} else {
@@ -152,8 +152,8 @@
 			} else if (op instanceof red.ParsedFunction) {
 				return op._apply(calling_context, pcontext, args);
 			} else {
-				//throw new Error("Calling a non-function");
-				return undefined;
+				throw new Error("Calling a non-function");
+				//return undefined;
 			}
 		}
 	};
@@ -291,7 +291,8 @@
 			if (window.hasOwnProperty(key)) {
 				return window[key];
 			} else {
-				return undefined;
+				throw new Error("Could not find variable '" + key + "'");
+				//return undefined;
 			}
 		};
 
@@ -317,7 +318,8 @@
 				context_item = curr_context.points_at();
 			}
 
-			return undefined;
+			throw new Error("Could not find this");
+			//return undefined;
 		};
 		if (options.get_constraint) {
 			return cjs.$(getter);
@@ -330,7 +332,8 @@
 		var getter = function (object, property) {
 			var rv;
 			if (!object) {
-				return undefined;
+				throw new Error("No parent object");
+				//return undefined;
 			}
 
 			if (object instanceof red.ContextualObject) {
@@ -353,9 +356,16 @@
 					}
 				} else if (_.isNumber(property) && object.is_template()) {
 					var instances = object.instances();
-					return instances[property];
+					if(instances.hasOwnProperty(property)) {
+						return instances[property];
+					} else {
+						throw new Error("No such property '" + property + "'");
+					}
 				}
 				rv = object.prop_val(property);
+				if(rv === undefined && !object.has(property)) {
+					throw new Error("No such property '" + property + "'");
+				}
 				return rv;
 			} else {
 				return object[property];
@@ -407,8 +417,8 @@
 				} else if (op_got instanceof red.ParsedFunction) {
 					return op_got._apply(calling_context_got, pcontext, args_got, options);
 				} else {
-					//throw new Error("Calling a non-function");
-					return undefined;
+					throw new Error("Calling a non-function");
+					//return undefined;
 				}
 			});
 		} else {
@@ -418,8 +428,8 @@
 			} else if (op instanceof red.ParsedFunction) {
 				return op._apply(calling_context, pcontext, args);
 			} else {
-				//throw new Error("Calling a non-function");
-				return undefined;
+				throw new Error("Calling a non-function");
+				//return undefined;
 			}
 		}
 	/*
@@ -446,7 +456,9 @@
 
 	var get_val = red.get_parsed_val = function (node, options) {
 		var op_func, left_arg, right_arg, arg, callee, op_context, args;
-		if (!node) { return undefined; }
+		if (!node) {
+			return undefined;
+		}
 		var type = node.type;
 		if (type === "ExpressionStatement") {
 			return get_val(node.expression, options);

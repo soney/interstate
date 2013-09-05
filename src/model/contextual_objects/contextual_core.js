@@ -35,6 +35,20 @@
 			});
 			this.set_options(options);
 		};
+		proto.get_name = function() {
+			var pointer = this.get_pointer();
+			var my_index = pointer.indexOf(this.get_object());
+			if(my_index === 0) {
+				return "sketch";
+			} else {
+				var parent_obj = pointer.points_at(my_index-1);
+				var parent_pointer = pointer.slice(0, my_index-1);
+				if(parent_obj instanceof red.Dict) {
+					var name = red.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer());
+					return name;
+				}
+			}
+		};
 		proto.get_colloquial_name = function() {
 			var pointer = this.get_pointer();
 			var my_index = pointer.indexOf(this.get_object());
@@ -149,9 +163,6 @@
 			return this._destroyed;
 		};
 
-		proto.get_name = function () {
-			return this.name;
-		};
 		proto.is_inherited = function () {
 			return this.inherited;
 		};

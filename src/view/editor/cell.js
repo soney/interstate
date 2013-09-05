@@ -89,6 +89,13 @@
 						.on("click.prop_cell", _.bind(this.on_click, this))
 						.addClass("cell")
 						.attr("tabindex", 1);
+			this.element.tooltip({
+				position: {
+					my: "center bottom-1",
+					at: "center top"
+				},
+				tooltipClass: "error"
+			});
 		},
 		_destroy: function() {
 			this._super();
@@ -103,6 +110,7 @@
 
 			this.text.remove();
 			this.destroy_live_text_fn();
+			this.element.tooltip("destroy");
 
 			var client = this.option("value");
 
@@ -132,12 +140,22 @@
 					}
 					
 					var syntax_errors = $syntax_errors.get();
-					if(syntax_errors.length > 0) {
+					if(syntax_errors && syntax_errors.length > 0) {
 						this.element.addClass("error");
 						var syntax_error_text = syntax_errors[0];
-						this.element.attr("title", syntax_error_text).tooltip({ content: syntax_error_text });
+						this.element.attr("title", syntax_error_text);
+						this.element.tooltip("option", {
+							tooltipClass: "error",
+							content: syntax_error_text
+						});
 					} else {
 						this.element.removeClass("error");
+						//this.element.attr("title", this.str);
+						this.element.attr("title", "");
+						this.element.tooltip("option", {
+							tooltipClass: "",
+							content: ""
+						});
 					}
 				}, {
 					context: this,

@@ -17,10 +17,10 @@
 			if(val === "(native function)") {
 				return val;
 			} else {
-				return "'" + val + "'";
+				return "'" + escapeHtml(val) + "'";
 			}
 		} else if(_.isNumber(val)) {
-			return round_num(val, 2);
+			return round_num(val, 2)+"";
 		} else if(val === undefined) {
 			return "undefined";
 		} else if(val === null) {
@@ -31,6 +31,31 @@
 			return "(func)";
 		} else if(_.isArray(val)) {
 			return "[" + _.map(val, summarized_val).join(", ") + "]";
+		} else if(val instanceof red.WrapperClient) {
+			return "<span class='cobj_link' data-cobj_id='"+val.cobj_id+"'>" + val.colloquial_name + "</span>";
+		} else {
+			return val;
+		}
+	};
+	var summarized_plain_val = function(val) {
+		if(_.isString(val)) {
+			if(val === "(native function)") {
+				return val;
+			} else {
+				return "'" + val + "'";
+			}
+		} else if(_.isNumber(val)) {
+			return round_num(val, 2)+"";
+		} else if(val === undefined) {
+			return "undefined";
+		} else if(val === null) {
+			return "null";
+		} else if(val === NAN) {
+			return "NaN";
+		} else if(_.isFunction(val)) {
+			return "(func)";
+		} else if(_.isArray(val)) {
+			return "[" + _.map(val, summarized_plain_val).join(", ") + "]";
 		} else if(val instanceof red.WrapperClient) {
 			return val.colloquial_name;
 		} else {
@@ -47,6 +72,13 @@
 		},
 		_create: function() {
 			this.element.addClass("value_summary");
+			this.element.tooltip({
+				position: {
+					my: "center bottom-1",
+					at: "center top"
+				},
+				tooltipClass: "val_summary"
+			});
 			this.summary_span = $("<span />").appendTo(this.element);
 			var value = this.option("value");
 			if(value instanceof red.WrapperClient) {
@@ -89,31 +121,31 @@
 					});
 
 					this.summary_span.append(copies_span, arrow_span);
-				} else if(type === "cell") {
+				} else if(type === "stateful_prop" || type === "cell") {
 					$prop_val = client.get_$("val");
 
-					this.summary_span	.addClass("cell")
+					this.summary_span	.addClass(type)
 										.text("");
+					var open_cobj = _.bind(this.open_cobj, this);
 					this.live_value_fn = cjs.liven(function() {
-						this.summary_span.text(summarized_val($prop_val.get()));
+						var prop_val = $prop_val.get();
+						var val = summarized_val(prop_val);
+						var plain_val = summarized_plain_val(prop_val);
+
+						this.summary_span.html(val);
+						$("span.cobj_link", this.summary_span).on("mousedown", function(event) {
+							var cobj_id = $(this).attr("data-cobj_id");
+							open_cobj(cobj_id);
+							event.preventDefault();
+							event.stopPropagation();
+						});
+						this.element.attr("title", plain_val);
+						this.element.tooltip("option", "content", plain_val);
 					}, {
 						context: this,
 						on_destroy: function() {
 							$prop_val.signal_destroy();
-						}
-					});
-				} else if(type === "stateful_prop") {
-					$prop_val = client.get_$("val");
-					this.element.addClass("stateful_prop");
-
-					this.summary_span	.addClass("stateful_prop")
-										.text("");
-					this.live_value_fn = cjs.liven(function() {
-						this.summary_span.text(summarized_val($prop_val.get()));
-					}, {
-						context: this,
-						on_destroy: function() {
-							$prop_val.signal_destroy();
+							open_cobj = null;
 						}
 					});
 				} else {
@@ -126,6 +158,7 @@
 		},
 		_destroy: function() {
 			this._super();
+			this.element.tooltip("destroy");
 			this.summary_span.remove();
 			if(this.live_value_fn) {
 				this.live_value_fn.destroy();
@@ -159,6 +192,26 @@
 				this.inherit_button.remove();
 			}
 			this.summary_span.show();
+		},
+		open_cobj: function(cobj_id) {
+			var event = new $.Event("open_cobj");
+			event.cobj_id = cobj_id;
+
+			this.element.trigger(event);
 		}
 	});
+	var entityMap = {
+		"&": "&amp;",
+		"<": "&lt;",
+		">": "&gt;",
+		'"': '&quot;',
+		"'": '&#39;',
+		"/": '&#x2F;'
+	};
+
+	function escapeHtml(string) {
+		return String(string).replace(/[&<>"'\/]/g, function (s) {
+			return entityMap[s];
+		});
+	}
 }(red, jQuery));

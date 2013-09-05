@@ -364,6 +364,43 @@
 						this.add_highlight(red.find_uid(message.cobj_id), message.highlight_type);
 					} else if(message.type === "remove_highlight") {
 						this.remove_highlight(red.find_uid(message.cobj_id), message.highlight_type);
+					} else if(message.type === "get_ptr") {
+						var cobj_id = message.cobj_id;
+						var cobj = red.find_uid(message.cobj_id);
+						if(cobj) {
+							if(cobj.is_instance()) {
+								var template = cobj.get_template();
+								cobj = template.cobj;
+							}
+							var ptr = cobj.get_pointer();
+							var cobjs = [];
+							for(var i = ptr.length(); i>=2; i--) {
+								cobjs[i-2] = red.find_or_put_contextual_obj(ptr.points_at(i), ptr.slice(0, i));
+							}
+							var summaries = _.map(cobjs, function(value) {
+								var id = value.id();
+								var rv = {
+									__type__: "summarized_obj",
+									__value__: "contextual_obj",
+									object_summary: {
+										type: value.type(),
+										id: value.id(),
+										obj_id: value.get_object().id(),
+										name: value.get_name()
+									}
+								};
+								return rv;
+							});
+							this.server_socket.post({
+								type: "cobj_links",
+								cobj_id: cobj_id,
+								value: summaries
+							});
+							/*
+							console.log(summaries);
+							console.log(cobjs);
+							*/
+						}
 					}
 				}
 			}, this);
@@ -465,7 +502,10 @@
 				} else {
 					var group_attachment_instance = instance.get_attachment_instance("group");
 					if(group_attachment_instance) {
-						console.log(group_attachment_instance);
+						var children = group_attachment_instance.get_children();
+						return _.map(children, function(child) {
+							return child.get_robj();
+						});
 					}
 				}
 			};
@@ -515,6 +555,7 @@
 				}
 				var highlight_objs = _	.chain(instances)
 										.map(per_instance)
+										.flatten(true)
 										.compact()
 										.value();
 				var bounding_boxes = _	.map(highlight_objs, getbboxes);

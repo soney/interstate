@@ -17,7 +17,9 @@
 			var client = this.option("root_client");
 			client.signal_interest();
 
-			this.element.attr("id", "obj_nav");
+			this.element.attr("id", "obj_nav")
+						.on("open_cobj.nav", _.bind(this.open_cobj, this));
+
 			var root_col = $("<table />")	.appendTo(this.element);
 			root_col						.column({
 												name: "sketch",
@@ -41,6 +43,7 @@
 					.column("destroy");
 			});
 			var client = this.option("root_client");
+			this.element.off("open_cobj.nav");
 			client.signal_destroy();
 
 			delete this.options.root_client;
@@ -133,6 +136,83 @@
 			if(key === "anotations") {
 				console.log(value);
 			}
+		},
+
+		open_cobj: function(event) {
+			var client_socket = this.option("client_socket");
+			var cobj_id = event.cobj_id;
+			client_socket.post({type: "get_ptr", cobj_id: cobj_id});
+			client_socket.once("cobj_links", function(message) {
+				if(message.cobj_id === cobj_id) {
+					var vals = message.value;
+					var wrapper_clients = _.map(vals, function(val) {
+						return client_socket.get_wrapper_client(val.object_summary);
+					}, this);
+
+					this.curr_col.column("option", "is_curr_col", false);
+
+					var subsequent_columns = this.columns.slice(1);
+					_.each(subsequent_columns, function(col) {
+						col.column("destroy").remove();
+					});
+					this.columns.length = 1;
+					var len = wrapper_clients.length;
+					var next_col = this.columns[0];
+					var single_col = this.option("single_col");
+					var last_col;
+					for(var i = 0; i<len; i++) {
+						var wc = wrapper_clients[i];
+						var val = vals[i];
+						var is_last = i===len-1;
+						last_col = next_col;
+						last_col.column("option", "selected_prop_name", val.object_summary.name);
+
+						next_col = $("<table />")	.appendTo(this.element);
+						next_col						.column({
+															name: val.object_summary.name,
+															client: wc,
+															is_curr_col: is_last,
+															prev_col: next_col,
+															show_prev: single_col,
+															client_socket: client_socket
+														})
+														.on("child_select.nav", _.bind(this.on_child_select, this, next_col))
+														.on("header_click.nav", _.bind(this.on_header_click, this, next_col))
+														.on("prev_click.nav", _.bind(this.on_prev_click, this, next_col))
+														.on("child_removed.nav", _.bind(this.on_child_removed, this, next_col));
+						if(is_last) {
+							next_col.focus();
+						}
+						this.columns.push(next_col);
+					}
+					/*
+					var next_col = $("<table />")	.appendTo(this.element);
+					next_col						.column({
+														name: child_info.name,
+														client: child_info.value,
+														is_curr_col: true,
+														prev_col: column,
+														show_prev: this.option("single_col"),
+														client_socket: this.option("client_socket")
+													})
+													.on("child_select.nav", _.bind(this.on_child_select, this, next_col))
+													.on("header_click.nav", _.bind(this.on_header_click, this, next_col))
+													.on("prev_click.nav", _.bind(this.on_prev_click, this, next_col))
+													.on("child_removed.nav", _.bind(this.on_child_removed, this, next_col))
+													.focus();
+
+					this.columns.push(next_col);
+					if(this.option("single_col")) {
+						this.curr_col.hide();
+					} else {
+						//next_col.hide()
+								//.show("fade", "fast");
+
+					}
+					*/
+					this.curr_col = next_col;
+				}
+			}, this);
 		}
 	});
 
