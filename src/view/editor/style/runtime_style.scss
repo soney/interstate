@@ -1,0 +1,43 @@
+$highlight_color: #C00;
+$dim_highlight_color: #C00;
+$highlight_size: 20px;
+$dim_highlight_size: 10px;
+body {
+	background-color: #EEE;
+	margin: 0px;
+	padding: 0px;
+
+	&.drop_target {
+		background-color: #DDD;
+	}
+
+	.euc_runtime svg {
+		border: 1px solid black;
+		border-top: none;
+		border-left: none;
+		background-color: white;
+	}
+
+	.highlight {
+		pointer-events: none;
+		box-shadow: 0 0 $dim_highlight_size $highlight_color;
+		-webkit-animation: pusate 0.5s infinite alternate;
+		-moz-animation: pusate 0.5s infinite alternate;
+		position: absolute;
+		z-index: 999;
+		box-sizing: border-box;
+	}
+}
+
+@-webkit-keyframes pusate {
+	from { box-shadow: 0 0 $dim_highlight_size $dim_highlight_color; }
+	to { box-shadow: 0 0 $highlight_size $highlight_color; }
+}
+@-moz-keyframes pusate {
+	from { box-shadow: 0 0 $dim_highlight_size $dim_highlight_color; }
+	to { box-shadow: 0 0 $highlight_size $highlight_color; }
+}
+@keyframes pusate {
+	from { box-shadow: 0 0 $dim_highlight_size $dim_highlight_color; }
+	to { box-shadow: 0 0 $highlight_size $highlight_color; }
+}
