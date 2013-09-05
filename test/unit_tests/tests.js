@@ -144,7 +144,7 @@ asyncTest("Environment Collection", function() {
 						.add_state("hover")
 						.start_at("init")
 						.add_transition("init", "hover", "on('mouseover', this)")
-						.add_transition("hover", "init", "x == 1")
+						.add_transition("hover", "init", "on('mouseout', this)")
 						.set("(prototypes)", "init", "shape.circle")
 						.set("fill")
 						.set("fill", "init", "'red'")

@@ -94,7 +94,9 @@
 					my: "center bottom-1",
 					at: "center top"
 				},
-				tooltipClass: "error"
+				tooltipClass: "error",
+				show: false,
+				hide: false
 			});
 		},
 		_destroy: function() {

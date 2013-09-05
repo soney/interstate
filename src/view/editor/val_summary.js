@@ -34,7 +34,7 @@
 		} else if(val instanceof red.WrapperClient) {
 			return "<span class='cobj_link' data-cobj_id='"+val.cobj_id+"'>" + val.colloquial_name + "</span>";
 		} else {
-			return val;
+			return val+"";
 		}
 	};
 	var summarized_plain_val = function(val) {
@@ -59,7 +59,7 @@
 		} else if(val instanceof red.WrapperClient) {
 			return val.colloquial_name;
 		} else {
-			return val;
+			return val+"";
 		}
 	};
 
@@ -77,6 +77,11 @@
 					my: "center bottom-1",
 					at: "center top"
 				},
+				show: {
+					effect: "none",
+					delay: 800
+				}, // no animation
+				hide: false, // no animation
 				tooltipClass: "val_summary"
 			});
 			this.summary_span = $("<span />").appendTo(this.element);

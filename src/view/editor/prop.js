@@ -70,7 +70,9 @@
 				position: {
 					my: "center bottom-1",
 					at: "center top"
-				}
+				},
+				show: false,
+				hide: false
 			});
 
 			this.value_summary = $("<td />")	.appendTo(this.element)
@@ -465,6 +467,7 @@
 
 			var value = this.option("value");
 			if(value instanceof red.WrapperClient) {
+				this.element.addClass(value.type());
 				if(value.type() === "stateful_prop") {
 					var layout_manager = this.option("layout_manager");
 					if(layout_manager) {
@@ -623,8 +626,8 @@
 								this.element.removeClass("error");
 								this.element.attr("title", "");
 								this.element.tooltip("option", {
-									tooltipClass: false,
-									content: false 
+									tooltipClass: "",
+									content: "" 
 								});
 							}
 						}, {

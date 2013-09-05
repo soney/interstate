@@ -403,9 +403,11 @@ html.full_window_editor {
 					&.dragbottom {
 						border-bottom: 3px solid $nav_selected_color;
 					}
+					&.dict, &.stateful {
+						cursor: pointer;
+					}
 
 					> .name {
-						cursor: pointer;
 						padding-left: 2px;
 						padding-right: 5px;
 
@@ -458,7 +460,6 @@ html.full_window_editor {
 
 
 					> .value_summary {
-						cursor: pointer;
 						overflow: hidden;
 						height: 100%;
 						box-sizing: border-box;
@@ -561,6 +562,7 @@ html.full_window_editor {
 						}
 
 						> .pure_cell {
+							cursor: pointer;
 							color: black;
 							text-align: center;
 							display: block;
