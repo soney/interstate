@@ -71,7 +71,7 @@
 			value: false,
 			left: 0,
 			width: 0,
-			edit_width: 200,
+			edit_width: 150,
 			active: false,
 			parent: false
 		},
@@ -121,30 +121,29 @@
 			var is_err = false;
 			if(value.type() === "raw_cell") {
 				var $str = value.get_$("get_str");
+				var $syntax_errors = value.get_$("get_syntax_errors");
 				this.live_text_fn = cjs.liven(function() {
 					var str = $str.get();
 					this.str = str;
-					try {
-						if ((str.replace(/\n/g, "")).match(func_regex)) {
-							str = "(" + str + ")";
-						}
-
-						esprima.parse(str);
-						this.element.attr("title", "");
-						this.element.removeClass("error");
-					} catch(e) {
-						this.element.attr("title", e.description);
-						this.element.addClass("error");
-					}
 					if(str === "") {
 						this.text.html("&nbsp;");
 					} else {
 						this.text.text(this.str);
 					}
+					
+					var syntax_errors = $syntax_errors.get();
+					if(syntax_errors.length > 0) {
+						this.element.addClass("error");
+						var syntax_error_text = syntax_errors[0];
+						this.element.attr("title", syntax_error_text).tooltip({ content: syntax_error_text });
+					} else {
+						this.element.removeClass("error");
+					}
 				}, {
 					context: this,
 					on_destroy: function() {
 						$str.signal_destroy();
+						$syntax_errors.signal_destroy();
 					}
 				});
 			}

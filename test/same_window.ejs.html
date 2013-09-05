@@ -11,11 +11,13 @@
 			<%- red_include(red_inc.vendor) %>
 			<%- red_include(red_inc.runtime) %>
 			<%- red_include(red_inc.editor) %>
+			<%- red_include(red_inc.runtime_style) %>
 			<script type="text/javascript">
 				var env = new red.Environment();
 				var root = env.get_root();
 
-				env	.cd("screen")
+				env	.set("height", "100")
+					.cd("screen")
 						.set("a", "<stateful>")
 						.cd("a")
 							.add_state("init")
@@ -23,13 +25,8 @@
 							.start_at("init")
 							.add_transition("init", "clicked", "on('click', this)")
 							.set("(prototypes)", "(start)", "shape.rect")
-							.set("prop_0", "(start)", "Math.round(1.5);2")
+							.set("prop_0", "(start)", "1+")
 							.up()
-						.set("b", "<stateful>")
-						.cd("b")
-							.set("(prototypes)", "(start)", "a")
-							.up()
-					;
 
 				/*
 				env	.set("height", "200")

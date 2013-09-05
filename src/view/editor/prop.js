@@ -139,6 +139,7 @@
 		},
 
 		_destroy: function() {
+			this.remove_runtime_highlight();
 			this._super();
 			this.name_span	.off("text_change.name_span done_editing.name_span")
 							.editable_text("destroy")
@@ -178,23 +179,27 @@
 		},
 
 		add_runtime_highlight: function() {
-			var client_socket = this.option("client_socket");
 			var value = this.option("value");
-			client_socket.post({
-				type: "add_highlight",
-				highlight_type: "hover",
-				client: value ? value.cobj_id : false
-			});
+			if(value instanceof red.WrapperClient) {
+				var client_socket = this.option("client_socket");
+				client_socket.post({
+					type: "add_highlight",
+					highlight_type: "hover",
+					cobj_id: value ? value.cobj_id : false
+				});
+			}
 		},
 
 		remove_runtime_highlight: function() {
-			var client_socket = this.option("client_socket");
 			var value = this.option("value");
-			client_socket.post({
-				type: "remove_highlight",
-				highlight_type: "hover",
-				client: value ? value.cobj_id : false
-			});
+			if(value instanceof red.WrapperClient) {
+				var client_socket = this.option("client_socket");
+				client_socket.post({
+					type: "remove_highlight",
+					highlight_type: "hover",
+					cobj_id: value ? value.cobj_id : false
+				});
+			}
 		},
 
 		change_type: function(type) {

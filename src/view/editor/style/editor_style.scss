@@ -510,6 +510,12 @@ html.full_window_editor {
 							word-break: break-all;
 							white-space: nowrap;
 
+							.tooltip {
+								position: absolute;
+								z-index: 9999;
+								font-size: 5em;
+							}
+
 							&.active {
 								color: green;
 								border-left: 1px solid green;

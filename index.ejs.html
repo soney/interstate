@@ -2,22 +2,6 @@
 <html lang="en">
   <head>
     <title>red</title>
-	<style type="text/css">
-		body {
-			background-color: #EEE;
-			margin: 0px;
-			padding: 0px;
-		}
-		body.drop_target {
-			background-color: #DDD;
-		}
-		.euc_runtime svg {
-			border: 1px solid black;
-			border-top: none;
-			border-left: none;
-			background-color: white;
-		}
-	</style>
   </head>
   <body>
 		<div class="content">
@@ -25,6 +9,7 @@
 	  <div>
 			<%- red_include(red_inc.vendor) %>
 			<%- red_include(red_inc.runtime) %>
+			<%- red_include(red_inc.runtime_style) %>
 
 			<script type="text/javascript">
 				var env, the_div, root;

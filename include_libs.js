@@ -112,6 +112,8 @@ exports.runtime = c(
 	])
 );
 
+exports.runtime_style = cp(src, ["view/editor/style/runtime_style.css"]);
+
 exports.editor = c(
 	cp(src, [
 		"view/editor/jqui_editable_text.js",

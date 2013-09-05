@@ -72,12 +72,16 @@
 				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
 			},
 			client_id: "",
+			highlight_colors: {
+				hover: 'red'
+			},
 			immediately_create_server_socket: false
 		},
 
 		_create: function () {
 			this.element.addClass("euc_runtime");
 			this._command_stack = new red.CommandStack();
+			this.highlights = [];
 			if (this.option("show_edit_button")) {
 				this.button_color = randomColor([0, 1], [0.1, 0.7], [0.4, 0.6]);
 				//this.button_color = "#990000";
@@ -264,6 +268,7 @@
 
 		_destroy: function () {
 			this._super();
+			delete this.highlights;
 			this.$window.off("dragover.replace_program")
 						.off("dragout.replace_program")
 						.off("dragenter.replace_program")
@@ -353,10 +358,17 @@
 				} else {
 					this._command_stack._do(command);
 				}
+			}, this).on("message", function(message) {
+				if(message) {
+					if(message.type === "add_highlight") {
+						this.add_highlight(red.find_uid(message.cobj_id), message.highlight_type);
+					} else if(message.type === "remove_highlight") {
+						this.remove_highlight(red.find_uid(message.cobj_id), message.highlight_type);
+					}
+				}
 			}, this);
 			return server_socket;
 		},
-
 		open_editor: function () {
 			if (this.editor_window) {
 				this.editor_window.focus();
@@ -401,12 +413,113 @@
 			delete this.editor_window;
 		},
 
-		add_highlight: function(cobj) {
-			console.log("add", cobj);
+		add_highlight: function(cobj, highlight_type) {
+			if(cobj instanceof red.ContextualDict) {
+				var len = this.highlights.length;
+				var highlight;
+				for(var i = 0; i < len; i++) {
+					highlight = this.highlights[i];
+					if(highlight.cobj === cobj && highlight.type === highlight_type) {
+						return false;
+					}
+				}
+				this.highlights.push({
+					cobj: cobj,
+					type: highlight_type
+				});
+				this.update_highlights();
+				return true;
+			} else {
+				return false;
+			}
 		},
 
-		remove_highlight: function(cobj) {
-			console.log("remove", cobj);
+		remove_highlight: function(cobj, highlight_type) {
+			var len = this.highlights.length;
+			var highlight;
+			var remove_elem = function(elem) {
+				elem.remove();
+			};
+			for(var i = 0; i < len; i++) {
+				highlight = this.highlights[i];
+				if(highlight.cobj === cobj && highlight.type === highlight_type) {
+					if(highlight.elems) {
+						_.each(highlight.elems, remove_elem);
+					}
+					this.highlights.splice(i, 1);
+					this.update_highlights();
+					return true;
+				}
+			}
+			return false;
+		},
+
+		update_highlights: function() {
+			var len = this.highlights.length;
+			var highlight;
+			var per_instance = function(instance) {
+				var shape_attachment_instance = instance.get_attachment_instance("shape");
+				if(shape_attachment_instance) {
+					var robj = shape_attachment_instance.get_robj();
+					return robj;
+				} else {
+					var group_attachment_instance = instance.get_attachment_instance("group");
+					if(group_attachment_instance) {
+						console.log(group_attachment_instance);
+					}
+				}
+			};
+			var getbboxes = function(robj) {
+				var bbox = robj.getBBox();
+				return {bbox: bbox, robj: robj};
+			};
+			var get_highlight_elem = function(info) {
+				var bbox = info.bbox,
+					robj = info.robj;
+				var elem = $("<div />")	.addClass("highlight")
+										.css({
+											left: bbox.x,
+											top: bbox.y,
+											width: bbox.width,
+											height: bbox.height
+										})
+										.appendTo(this.element);
+				if(robj.type === "circle" || robj.type === "ellipse") {
+					elem.css("border-radius", Math.max(bbox.width, bbox.height)+"px");	
+				}
+				return elem;
+			};
+			var remove_elem = function(elem) {
+				elem.remove();
+			};
+			var bboxes = [];
+			for(var i = 0; i < len; i++) {
+				highlight = this.highlights[i];
+				var cobj = highlight.cobj;
+
+				if(cobj.is_destroyed()) {
+					this.highlights.splice(i, 1);
+					i--;
+					len--;
+					if(highlight.elems) {
+						_.each(highlight.elems, remove_elem);
+					}
+					continue;
+				}
+
+				var instances;
+				if(cobj.is_template()) {
+					instances = cobj.instances();
+				} else {
+					instances = [cobj];
+				}
+				var highlight_objs = _	.chain(instances)
+										.map(per_instance)
+										.compact()
+										.value();
+				var bounding_boxes = _	.map(highlight_objs, getbboxes);
+				highlight.elems = _.map(bounding_boxes, get_highlight_elem, this);
+			}
 		}
 	});
 }(red, jQuery));

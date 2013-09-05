@@ -57,7 +57,9 @@
 
 			this.obj_name_cell = $("<th />")	.appendTo(this.header)
 												.attr("colspan", "2")
-												.addClass("obj_name");
+												.addClass("obj_name")
+												.on("mouseover.header_mouseover", _.bind(this.add_runtime_highlight, this))
+												.on("mouseout.header_mouseout", _.bind(this.remove_runtime_highlight, this));
 
 			this.obj_name = $("<h2 />")	.text(this.option("name"))
 										.appendTo(this.obj_name_cell)
@@ -328,6 +330,30 @@
 			event.preventDefault();
 		},
 
+		add_runtime_highlight: function() {
+			var value = this.option("curr_copy_client") || this.option("client");
+			if(value instanceof red.WrapperClient) {
+				var client_socket = this.option("client_socket");
+				client_socket.post({
+					type: "add_highlight",
+					highlight_type: "hover",
+					cobj_id: value ? value.cobj_id : false
+				});
+			}
+		},
+
+		remove_runtime_highlight: function() {
+			var value = this.option("curr_copy_client") || this.option("client");
+			if(value instanceof red.WrapperClient) {
+				var client_socket = this.option("client_socket");
+				client_socket.post({
+					type: "remove_highlight",
+					highlight_type: "hover",
+					cobj_id: value ? value.cobj_id : false
+				});
+			}
+		},
+
 		on_prev_click: function(event) {
 			this.element.trigger("prev_click", this);
 			event.stopPropagation();
@@ -427,6 +453,7 @@
 
 		on_copy_select: function(event, copy_index) {
 			var client = this.option("client");
+			this.remove_runtime_highlight();
 			client.async_get("instances", _.bind(function(instances) {
 				if(instances) {
 					var instance = instances[copy_index];
@@ -440,6 +467,7 @@
 		}, 
 
 		_destroy: function () {
+			this.remove_runtime_highlight();
 			this._super();
 
 			this.obj_name.off("click.header_click").remove();
@@ -459,6 +487,7 @@
 			if(this.prev_button.data("red-pressable")) {
 				this.prev_button.pressable("destroy");
 			}
+			this.obj_name_cell.off("mouseover.header_mouseover mouseout.header_mouseout").remove();
 			delete this.option.client_socket;
 			delete this.options;
 		},

@@ -53,12 +53,6 @@
 				if(child.is_template()) {
 					var copies = child.instances();
 					children.push.apply(children, get_children(copies));
-					/*
-					children.push.apply(children, _.map(copies, function(copy) {
-						var copy_children = _.pluck(copy.children(), "value");
-						return get_children(copy_children);
-					}));
-					*/
 				} else {
 					var shape_attachment_instance = child.get_attachment_instance("shape");
 					if(shape_attachment_instance) {
@@ -147,8 +141,9 @@
 							screen_contents = screen.children();
 						}
 				
-						var children = get_children(_.pluck(screen_contents, "value"));
-						children.reverse();
+						var values = _.pluck(screen_contents, "value");
+						values.reverse();
+						var children = get_children(values);
 						return children;
 					}
 				}
@@ -293,7 +288,7 @@
 			proto_props: {
 				child_getter: function() {
 					var contextual_object = this.get_contextual_object();
-					var children, cobj_children;
+					var children, cobj_children, values;
 					var to_show = contextual_object.prop_val("show");
 
 					if(_.isArray(to_show) || _.isString(to_show)) {
@@ -303,10 +298,14 @@
 						cobj_children = _.filter(contextual_object.children(), function(child_info) {
 							return _.contains(to_show, child_info.name);
 						});
-						children = get_children(_.pluck(cobj_children, "value"));
+						values = _.pluck(cobj_children, "value");
+						values.reverse();
+						children = get_children(values);
 					} else if(to_show) {
 						cobj_children = contextual_object.children();
-						children = get_children(_.pluck(cobj_children, "value"));
+						values = _.pluck(cobj_children, "value");
+						values.reverse();
+						children = get_children(values);
 					} else {
 						children = [];
 					}

@@ -149,8 +149,6 @@
 							wrapper_server.client_resumed(cobj_id);
 						}
 					}
-				} else {
-					console.log(arguments);
 				}
 				this._emit("message", data);
 			}

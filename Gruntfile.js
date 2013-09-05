@@ -8,6 +8,7 @@ module.exports = function(grunt) {
 	var runtime_and_editor = inc_libs.runtime.concat(inc_libs.editor);
 
 	var src_js = runtime_and_editor.filter(function(f) { return ends_with(f, ".js");});
+	var build_folder = ".build";
 
 	var exclude_regexes = [
 		"jquery-.*\\.js",
@@ -45,8 +46,8 @@ module.exports = function(grunt) {
 						DEBUG: false
 					}
 				},
-				src: "build/red.js",
-				dest: "build/red.min.js"
+				src: build_folder + "/red.js",
+				dest: build_folder + "/red.min.js"
 			}
 		},
 		concat: {
@@ -62,45 +63,47 @@ module.exports = function(grunt) {
 					}
 				},
 				src: src_js,
-				dest: "build/red.js"
+				dest: build_folder + "/red.js"
 			},
 			esprima: {
 				src: "src/_vendor/esprima/esprima.js",
-				dest: "build/_vendor/esprima.js"
-			},
-			box2d: {
-				src: "src/_vendor/box2d/Box2dWeb-2.1.a.3.min.js",
-				dest: "build/_vendor/Box2dWeb-2.1.a.3.min.js"
+				dest: build_folder + "/_vendor/esprima.js"
 			}
 		},
 		sass: {
 			editor_style: {
-				files: {
-					"build/editor/style/editor_style.css": "src/view/editor/style/editor_style.scss"
-				}
+				files: [{
+					dest: build_folder + "/editor/style/editor_style.css",
+					src: "src/view/editor/style/editor_style.scss"
+				}]
+			}, runtime_style: {
+				files: [{
+					dest: build_folder + "/editor/style/runtime_style.css",
+					src: "src/view/editor/style/runtime_style.scss"
+				}]
 			}
 		},
 		copy: {
 			css: {
 				files: [
-					{ expand: true, cwd: "src/view/editor/style/images", src: ["**"], dest: "build/editor/style/images" },
-					{ expand: true, cwd: "src/view/editor/style/fonts", src: ["**"], dest: "build/editor/style/fonts" }
+					{ expand: true, cwd: "src/view/editor/style/images", src: ["**"], dest: build_folder + "/editor/style/images" },
+					{ expand: true, cwd: "src/view/editor/style/fonts", src: ["**"], dest: build_folder + "/editor/style/fonts" }
 				]
 			},
 			sample_apps: {
 				files: [
-					{ expand: true, cwd: "sample_apps/", src: ["**"], dest: "build/sample_apps" }
+					{ expand: true, cwd: "sample_apps/", src: ["**"], dest: build_folder + "/sample_apps" }
 				]
 			},
 			carousel_images: {
 				files: [
-					{ expand: true, cwd: "carousel_images/", src: ["**"], dest: "build/carousel_images" }
+					{ expand: true, cwd: "carousel_images/", src: ["**"], dest: build_folder + "/carousel_images" }
 				]
 			},
 
 			dist: {
 				files: [
-					{ expand: true, cwd: "dist/", src: ["**"], dest: "build/" }
+					{ expand: true, cwd: "dist/", src: ["**"], dest: build_folder + "/" }
 				]
 			}
 		},

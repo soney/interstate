@@ -20,16 +20,16 @@
 		"ejs": ">= 0.4.3"
 	},
 	"devDependencies": {
-		"grunt": "~0.4.1",
-		"grunt-contrib-jshint": "~0.1",
-		"grunt-contrib-nodeunit": "~0.1",
-		"grunt-contrib-uglify": "~0.2",
-		"grunt-contrib-concat": "~0.2",
-		"grunt-contrib-copy": "~0.4",
-		"grunt-contrib-clean": "~0.4",
-		"grunt-contrib-sass": "~0.3",
-		"node-watch": "~0.3",
-		"node-sass": "~0.4"
+		"grunt": ">=0.4.1",
+		"grunt-contrib-jshint": ">=0.1",
+		"grunt-contrib-nodeunit": ">=0.1",
+		"grunt-contrib-uglify": ">=0.2",
+		"grunt-contrib-concat": ">=0.2",
+		"grunt-contrib-copy": ">=0.4",
+		"grunt-contrib-clean": ">=0.4",
+		"grunt-contrib-sass": ">=0.5",
+		"node-watch": ">=0.3",
+		"node-sass": ">=0.6"
 	},
 	"engines": {
 		"node": ">= 0.4.7"

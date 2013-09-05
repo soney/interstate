@@ -457,6 +457,10 @@
 				} else {
 					try {
 						rv = using_val.get_value(eventized_pointer);
+						if(rv instanceof red.Error) {
+							rv = undefined;
+						}
+						//console.log(rv);
 					} catch (e1) {
 						console.error(e1);
 					}

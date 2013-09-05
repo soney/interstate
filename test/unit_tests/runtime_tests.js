@@ -119,8 +119,8 @@ var tests = [
 			},
 			test: function(env, runtime) {
 				var circles = $("circle", runtime);
-				equal(circles.eq(0).attr("fill"), "#ff0000");
-				equal(circles.eq(1).attr("fill"), "#0000ff");
+				equal(circles.eq(0).attr("fill"), "#0000ff");
+				equal(circles.eq(1).attr("fill"), "#ff0000");
 			}
 		}, {
 			setup: function(env) {
@@ -128,8 +128,8 @@ var tests = [
 			},
 			test: function(env, runtime) {
 				var circles = $("circle", runtime);
-				equal(circles.eq(0).attr("fill"), "#0000ff");
-				equal(circles.eq(1).attr("fill"), "#ff0000");
+				equal(circles.eq(0).attr("fill"), "#ff0000");
+				equal(circles.eq(1).attr("fill"), "#0000ff");
 			}
 		}, {
 			setup: function(env) {
@@ -137,8 +137,8 @@ var tests = [
 			},
 			test: function(env, runtime) {
 				var circles = $("circle", runtime);
-				equal(circles.eq(0).attr("fill"), "#ff0000");
-				equal(circles.eq(1).attr("fill"), "#0000ff");
+				equal(circles.eq(0).attr("fill"), "#0000ff");
+				equal(circles.eq(1).attr("fill"), "#ff0000");
 			}
 		}]
 	},
@@ -169,8 +169,8 @@ var tests = [
 			},
 			test: function(env, runtime) {
 				var circles = $("circle", runtime);
-				equal(circles.eq(0).attr("fill"), "#ff0000");
-				equal(circles.eq(1).attr("fill"), "#0000ff");
+				equal(circles.eq(0).attr("fill"), "#0000ff");
+				equal(circles.eq(1).attr("fill"), "#ff0000");
 			}
 		}]
 	},

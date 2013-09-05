@@ -8,6 +8,7 @@
 
 	red.ContextualCell = function (options) {
 		red.ContextualCell.superclass.constructor.apply(this, arguments);
+		this._errors = cjs.$([]);
 		this._type = "cell";
 		//if(this.id() == "402") {
 			//debugger;
@@ -41,7 +42,6 @@
 			} else {
 				try {
 					value = cjs.get(this.value_constraint);
-					//console.log(value);
 				} catch (e) {
 					console.error(e);
 				}
@@ -51,6 +51,10 @@
 		proto.get_str = function () {
 			var cell = this.get_object();
 			return cell.get_str();
+		};
+		proto.get_syntax_errors = function() {
+			var cell = this.get_object();
+			return cell.get_syntax_errors();
 		};
 	}(red.ContextualCell));
 }(red));

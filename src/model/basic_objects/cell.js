@@ -10,6 +10,7 @@
 		able.make_this_listenable(this);
         options = options || {};
         this._id = options.uid || uid();
+		this._substantiated = options.substantiated;
         red.register_uid(this._id, this);
         if (defer_initialization !== true) {
             this.do_initialize(options);
@@ -60,6 +61,12 @@
                 return red.parse(str);
             });
         };
+		proto.is_substantiated = function() {
+			return this._substantiated;
+		};
+		proto.substantiate = function() {
+			this._substantiated = true;
+		};
 		proto.clone = function() {
 			return new red.Cell({
 				str: this.get_str()
@@ -85,7 +92,7 @@
         proto.get_value = function (pcontext) {
             var tree = this._tree.get();
 			if(tree instanceof red.Error) {
-				return tree;
+				return undefined;
 			} else {
 				var parsed_$ = red.get_parsed_val(tree, {
 					context: pcontext,
@@ -98,6 +105,14 @@
 				}
 			}
         };
+		proto.get_syntax_errors = function() {
+            var tree = this._tree.get();
+			if(tree instanceof red.Error) {
+				return [tree.message()];
+			} else {
+				return [];
+			}
+		};
         proto.constraint_in_context = function (pcontext) {
 		/*
             var contextual_values = this.get_contextual_values();

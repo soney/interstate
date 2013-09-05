@@ -1,7 +1,8 @@
 *.swp
 .DS_Store
-build
+.build
 node_modules
 src/view/editor/style/editor_style.css
+src/view/editor/style/runtime_style.css
 dist/gallery/upload.php
 dist/gallery/index.php
