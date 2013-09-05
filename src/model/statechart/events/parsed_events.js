@@ -47,6 +47,8 @@
 		red.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "parsed_event";
+		this.$errors = cjs.$([]);
+		this._has_errors = false;
 	};
 	(function (My) {
 		_.proto_extend(My, red.Event);
@@ -121,9 +123,14 @@
 									only_parse_first: true
 								}, this._live_event_creator);
 								event = event_info.event;
+								if(this._has_errors) {
+									this.$errors.set([]);
+									this._has_errors = false;
+								}
 							}
 						} catch(e) {
-							console.error(e);
+							this.$errors.set([e.description]);
+							this._has_errors = true;
 						} finally {
 							cjs.signal();
 						}
@@ -154,6 +161,9 @@
 				if(this._live_event_creator && this.is_enabled()) {
 				this._live_event_creator.run(false);
 			}
+		};
+		proto.get_errors = function() {
+			return this.$errors.get();
 		};
 		proto.id = function () { return this._id; };
 		proto.child_fired = function (actions, parent, context, event) {
@@ -221,6 +231,8 @@
 				this._str.destroy();
 				delete this._str;
 			}
+			this.$errors.destroy(true);
+			delete this.$errors;
 			red.unregister_uid(this.id());
 			My.superclass.destroy.apply(this, arguments);
 		};

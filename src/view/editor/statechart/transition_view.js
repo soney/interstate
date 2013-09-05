@@ -92,6 +92,8 @@
 			active_color: "green",
 			text_background: "white",
 			text_foreground: "black",
+			error_background: "#900",
+			error_foreground: "white",
 			font_family: "Sourse Sans Pro",
 			font_size: "13px",
 			padding_top: 0,
@@ -145,6 +147,24 @@
 				this.label.option("text", str);
 			}, this);
 			str = event.get_str();
+			this.errors_fn = cjs.liven(function () {
+				var errors = event.get_errors();
+				if(errors && errors.length > 0) {
+					this.label.option({
+						fill: this.option("error_background"),
+						color: this.option("error_foreground")
+					});
+				} else {
+					this.label.option({
+						fill: this.option("text_background"),
+						color: this.option("text_foreground")
+					});
+				}
+			}, {
+				context: this,
+				destroy: function() {
+				}
+			});
 		} else {
 			str = "";
 		}

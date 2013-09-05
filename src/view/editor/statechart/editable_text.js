@@ -156,10 +156,11 @@
 			var bbox = this.getBBox();
 			if(bbox) {
 				this.label_background.attr({
-					x: bbox.x,
-					y: bbox.y,
-					width: bbox.width,
-					height: bbox.height
+					x: bbox.x - 1,
+					y: bbox.y - 1,
+					width: bbox.width+2,
+					height: bbox.height+2,
+					fill: this.option("fill")
 				});
 			}
 		};
@@ -224,6 +225,9 @@
 					text: this.option("text")
 				});
 				this.update_label_background();
+				if(this.textbox) {
+					this.textbox.css("background-color", this.option("fill"));
+				}
 			}
 		};
 		proto.remove = function () {

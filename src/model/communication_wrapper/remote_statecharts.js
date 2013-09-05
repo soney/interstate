@@ -353,6 +353,25 @@
 						if(destroyed) { return; }
 						event.set_str(str);
 					});
+					var $errors = wrapper_client.get_$("get_errors");
+					var live_errors = cjs.liven(function() {
+						if(destroyed) { return; }
+						var errors = $errors.get();
+						if(errors && errors.length > 0) {
+							event.$errors.set(errors);
+							event._has_errors = true;
+						} else {
+							if(event._has_errors) {
+								event.$errors.set([]);
+								event._has_errors = false;
+							}
+						}
+					}, {
+						destroy: function() {
+							$errors.signal_destroy();
+							$errors = null;
+						}
+					});
 					listeners = {
 						setString: function (e) {
 							var str = e.to;
@@ -366,6 +385,10 @@
 
 			var on_destroy = function() {
 				destroyed = true;
+				if(live_errors) {
+					live_errors.destroy();
+					live_errors = null;
+				}
 				wrapper_client.off(listeners);
 				event.off("destroy", on_destroy);
 				wrapper_client.signal_destroy();
