@@ -226,7 +226,7 @@
 				});
 				this.update_label_background();
 				if(this.textbox) {
-					this.textbox.css("background-color", this.option("fill"));
+					$(this.textbox).css("background-color", this.option("fill"));
 				}
 			}
 		};

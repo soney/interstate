@@ -129,7 +129,8 @@
 								}
 							}
 						} catch(e) {
-							this.$errors.set([e.description]);
+							var message = e.hasOwnProperty("message") ? e.message : e.description;
+							this.$errors.set([message]);
 							this._has_errors = true;
 						} finally {
 							cjs.signal();

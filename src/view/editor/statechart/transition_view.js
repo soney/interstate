@@ -154,11 +154,21 @@
 						fill: this.option("error_background"),
 						color: this.option("error_foreground")
 					});
+					var err_text = errors[0];
+					$(this.label.text[0])	.attr("title", err_text)
+											.tooltip("option", {
+												content: err_text
+											});
 				} else {
 					this.label.option({
 						fill: this.option("text_background"),
 						color: this.option("text_foreground")
 					});
+					$(this.label.text[0])	.attr("title", "")
+											.tooltip("option", {
+												tooltipClass: "error",
+												content: ""
+											});
 				}
 			}, {
 				context: this,
@@ -177,6 +187,10 @@
 							.toBack();
 		this.$clickable = $([this.label.text[0], this.line_path[0], this.circle[0], this.arrow_path[0]]);
 		this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
+
+		$(this.label.text[0]).tooltip({
+			tooltipClass: "error"
+		});
 
 		if(highlight_enabled) {
 			this.enabled_fn = cjs.liven(function () {
@@ -477,6 +491,9 @@
 		};
 
 		proto.destroy = function () {
+			if($(this.label.text[0]).data("ui-tooltip")) {
+				$(this.label.text[0]).tooltip("destroy");
+			}
 			this.$clickable.off("contextmenu.cm");
 			delete this.$clickable;
 			this.label	.off("cancel", this.on_cancel_rename, this)
