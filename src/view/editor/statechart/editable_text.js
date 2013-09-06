@@ -6,7 +6,7 @@
 	var cjs = red.cjs,
 		_ = red._;
 
-	var match_styles = function (textbox, text) {
+	var match_styles = function (textbox, text, options) {
 		textbox.style.position = "absolute";
 		var anchor = text.attr("text-anchor");
 		if (anchor === "start") {
@@ -27,7 +27,8 @@
 		textbox.style.padding = "0px";
 		textbox.style.margin = "0px";
 		textbox.style.boxSizing = "border-box";
-		textbox.style.background = "rgba(255, 255, 255, 0.7)";
+		textbox.style.background = options.fill;
+		textbox.style.color = options.color;
 	};
 
 	red.EditableText = function (paper, options) {
@@ -48,6 +49,8 @@
 			default_color: "#AAAAAA",
 			fill: "white",
 			"fill-opacity": 0.7,
+			textbox_background: "white",
+			textbox_color: "black",
 			edit_on_click: true
 		}, options);
 
@@ -137,10 +140,12 @@
 			}
 
 			this.textbox.style.width = width + "px";
-			match_styles(this.textbox, this.text);
+			match_styles(this.textbox, this.text, {
+					"color": this.option("textbox_color"),
+					"fill": this.option("textbox_background")
+				});
 			this.paper.canvas.parentNode.insertBefore(this.textbox, this.paper.canvas);
 			this.textbox.value = this.option("text");
-			this.textbox.style.color = this.option("color");
 
 			this.text.hide();
 			this.textbox.focus();
@@ -225,9 +230,6 @@
 					text: this.option("text")
 				});
 				this.update_label_background();
-				if(this.textbox) {
-					$(this.textbox).css("background-color", this.option("fill"));
-				}
 			}
 		};
 		proto.remove = function () {
