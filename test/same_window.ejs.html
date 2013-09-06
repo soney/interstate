@@ -17,6 +17,7 @@
 				var root = env.get_root();
 
 				env	.set("height", "100")
+					.set("a1", "screen.a")
 					.cd("screen")
 						.set("a", "<stateful>")
 						.cd("a")
@@ -25,6 +26,7 @@
 							.start_at("init")
 							.add_transition("init", "clicked", "on('click', this_reference_does_not_exist)")
 							.set("(prototypes)", "(start)", "shape.rect")
+							.set_copies("4")
 							.up()
 
 				/*
@@ -83,12 +85,14 @@ env.set("a", "<stateful>")
 					show_edit_button: false
 				});
 
+				/*
 				window.setTimeout(function() {
 					$("tr").eq(9).click();
 				}, 1000);
 				window.setTimeout(function() {
 					$("tr").eq(14).click();
 				}, 2000);
+				*/
 			</script>
 	  </div>
   </body>

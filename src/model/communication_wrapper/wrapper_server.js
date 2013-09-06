@@ -216,19 +216,48 @@
 	};
 	var process_args = function (args) { return _.map(args, process_arg); };
 
-	var summarize_value = function (value) {
+	var summarize_value = function (value, avoid_dict_followup) {
 		var rv;
 		if (value instanceof red.ContextualObject) {
 			var id = value.id();
+			var type = value.type();
+			var object_summary = {
+				type: type,
+				id: id,
+				obj_id: value.get_object().id(),
+				colloquial_name: value.get_colloquial_name(),
+				name: value.get_name()
+			};
+
+			if((type === "dict" || type === "stateful") && avoid_dict_followup !== true) {
+				var is_template = value.is_template();
+				var is_instance;
+				var template, index, instances;
+
+				if(is_template) {
+					is_instance = index = template = false;
+					instances = value.instances();
+				} else {
+					instances = false;
+					is_instance = value.is_instance();
+					if(is_instance) {
+						var template_info = value.get_template_info();
+						template = template_info.cobj;
+						index = template_info.index;
+					} else {
+						template = index = false;
+					}
+				}
+				object_summary.is_template = is_template;
+				object_summary.is_instance = is_instance;
+				object_summary.template = summarize_value(template, true);
+				object_summary.instances = instances ? _.map(instances, function(x) { return summarize_value(x, true); }) : instances;
+				object_summary.index = index;
+			}
 			rv = {
 				__type__: "summarized_obj",
 				__value__: "contextual_obj",
-				object_summary: {
-					type: value.type(),
-					id: value.id(),
-					obj_id: value.get_object().id(),
-					colloquial_name: value.get_colloquial_name()
-				}
+				object_summary: object_summary
 			};
 		} else if (value instanceof red.StartState) {
 			rv = {
@@ -321,6 +350,7 @@
 		}
 		return rv;
 	};
+	red.summarize_value_for_comm_wrapper = summarize_value;
 
 	var chop = function (args) {
 		return _.first(args, args.length - 1);

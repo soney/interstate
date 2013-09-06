@@ -42,7 +42,8 @@
 			show_source: true,
 			curr_copy_client: false,
 			client_socket: false,
-			selected_prop_name: false
+			selected_prop_name: false,
+			curr_copy_index: false
 		},
 
 		_create: function () {
@@ -66,7 +67,10 @@
 										.appendTo(this.obj_name_cell)
 										.on("click.header_click", _.bind(this.on_header_click, this));
 
-			this.copy_disp = $("<span />")	.copy({ client: this.option("client") })
+			this.copy_disp = $("<span />")	.copy({
+													client: this.option("client"),
+													curr_copy: this.option("curr_copy_index")
+											})
 											.on("curr_copy_change.copy_select", _.bind(this.on_copy_select, this))
 											.appendTo(this.obj_name_cell);
 
@@ -108,6 +112,7 @@
 			} else {
 				this.on_not_curr_col();
 			}
+			/*
 			client.async_get("is_template", function(is_template) {
 				if(is_template) {
 					client.async_get("instances", _.bind(function(instances) {
@@ -118,16 +123,16 @@
 							this.build_src_view();
 							this.remove_children_listener();
 							this.add_children_listener();
+						} else {
 						}
 					}, this));
 				} else {
-				/*
 					client.async_get("is_instance", function(is_instance) {
 						if(is_instance) {
 							client.async_get("get_template", function(response) {
+								var index = response.index,
+									template_client = response.cobj;
 								if(response) {
-									var index = response.index,
-										template_client = response.cobj;
 									this.option("curr_copy_client", client);
 									this.option("client", template_client);
 									this.destroy_src_view();
@@ -149,9 +154,9 @@
 							}, this);
 						}
 					}, this);
-									*/
 				}
 			}, this);
+			*/
 			if(client.type() !== "stateful") {
 				this.show_hide_options.hide();
 			}

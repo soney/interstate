@@ -61,22 +61,11 @@
 					col.column("destroy").remove();
 				});
 				this.columns.length = column_index + 1;
-				var next_col = $("<table />")	.appendTo(this.element);
-				next_col						.column({
-													name: child_info.name,
-													client: child_info.value,
+				var next_col = this.get_column(child_info.value, {
 													is_curr_col: true,
 													prev_col: column,
-													show_prev: this.option("single_col"),
-													client_socket: this.option("client_socket")
-												})
-												.on("child_select.nav", _.bind(this.on_child_select, this, next_col))
-												.on("header_click.nav", _.bind(this.on_header_click, this, next_col))
-												.on("prev_click.nav", _.bind(this.on_prev_click, this, next_col))
-												.on("child_removed.nav", _.bind(this.on_child_removed, this, next_col))
-												.focus();
-
-				this.columns.push(next_col);
+													show_prev: this.option("single_col")
+												});
 				if(this.option("single_col")) {
 					this.curr_col.hide();
 				} else {
@@ -84,6 +73,7 @@
 							//.show("fade", "fast");
 
 				}
+				next_col.focus();
 				this.curr_col = next_col;
 			}
 		},
@@ -138,6 +128,39 @@
 			}
 		},
 
+		get_column: function(wrapper_client, options) {
+				var client_socket = this.option("client_socket");
+				var column_options = _.extend({
+					name: wrapper_client.object_summary.name,
+					client: wrapper_client,
+					client_socket: client_socket
+				}, options);
+				var obj_summary = wrapper_client.object_summary;
+				if(obj_summary.is_template) {
+					if(obj_summary.instances.length > 0) {
+						var instance_client = client_socket.get_wrapper_client(obj_summary.instances[0].object_summary);
+
+						column_options.curr_copy_client = instance_client;
+						column_options.curr_copy_index = 0;
+					}
+				} else if(obj_summary.is_instance) {
+					var template_client = client_socket.get_wrapper_client(obj_summary.template.object_summary);
+
+					column_options.client = template_client;
+					column_options.curr_copy_client = wrapper_client;
+					column_options.curr_copy_index = obj_summary.index;
+				}
+
+				var col = $("<table />")	.appendTo(this.element);
+				col	.column(column_options)
+					.on("child_select.nav", _.bind(this.on_child_select, this, col))
+					.on("header_click.nav", _.bind(this.on_header_click, this, col))
+					.on("prev_click.nav", _.bind(this.on_prev_click, this, col))
+					.on("child_removed.nav", _.bind(this.on_child_removed, this, col));
+				this.columns.push(col);
+				return col;
+		},
+
 		open_cobj: function(event) {
 			var client_socket = this.option("client_socket");
 			var cobj_id = event.cobj_id;
@@ -162,28 +185,17 @@
 					var last_col;
 					for(var i = 0; i<len; i++) {
 						var wc = wrapper_clients[i];
-						var val = vals[i];
 						var is_last = i===len-1;
 						last_col = next_col;
-						last_col.column("option", "selected_prop_name", val.object_summary.name);
-
-						next_col = $("<table />")	.appendTo(this.element);
-						next_col						.column({
-															name: val.object_summary.name,
-															client: wc,
-															is_curr_col: is_last,
-															prev_col: next_col,
-															show_prev: single_col,
-															client_socket: client_socket
-														})
-														.on("child_select.nav", _.bind(this.on_child_select, this, next_col))
-														.on("header_click.nav", _.bind(this.on_header_click, this, next_col))
-														.on("prev_click.nav", _.bind(this.on_prev_click, this, next_col))
-														.on("child_removed.nav", _.bind(this.on_child_removed, this, next_col));
+						last_col.column("option", "selected_prop_name", wc.object_summary.name);
+						next_col = this.get_column(wc, {
+							is_curr_col: is_last,
+							prev_col: last_col,
+							show_prev: single_col
+						});
 						if(is_last) {
 							next_col.focus();
 						}
-						this.columns.push(next_col);
 					}
 					/*
 					var next_col = $("<table />")	.appendTo(this.element);

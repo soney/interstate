@@ -140,6 +140,7 @@
 
 		proto.async_get = function () {
 			// doesn't store the value in a constraint; uses a callback when it's ready instead
+
 			var args, callback, context;
 			if(_.isFunction(arguments[arguments.length-2]) && !_.isFunction(arguments[arguments.length-1])) {
 				callback = arguments[arguments.length-2];

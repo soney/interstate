@@ -354,12 +354,17 @@
 						curr_context = curr_context.pop();
 						context_item = curr_context.points_at();
 					}
-				} else if (_.isNumber(property) && object.is_template()) {
-					var instances = object.instances();
-					if(instances.hasOwnProperty(property)) {
-						return instances[property];
-					} else {
-						throw new Error("No such property '" + property + "'");
+				} else if (object.is_template && object.is_template()) {
+					if( _.isNumber(property)) {
+						var instances = object.instances();
+						if(instances.hasOwnProperty(property)) {
+							return instances[property];
+						} else {
+							throw new Error("No such property '" + property + "'");
+						}
+					} else if(property === "length") {
+						var instances = object.instances();
+						return instances.length;
 					}
 				}
 				rv = object.prop_val(property);

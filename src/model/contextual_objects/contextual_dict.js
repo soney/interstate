@@ -404,7 +404,7 @@
 			return false;
 		};
 
-		proto.get_template = function () {
+		proto.get_template_info = function () {
 			var pointer = this.get_pointer();
 			var object = this.get_object();
 			var obj_index = pointer.lastIndexOf(object);
