@@ -330,7 +330,7 @@
 
 	var get_member_val = function (obj, prop, options) {
 		var getter = function (object, property) {
-			var rv;
+			var rv, instances;
 			if (!object) {
 				throw new Error("No parent object");
 				//return undefined;
@@ -356,14 +356,14 @@
 					}
 				} else if (object.is_template && object.is_template()) {
 					if( _.isNumber(property)) {
-						var instances = object.instances();
+						instances = object.instances();
 						if(instances.hasOwnProperty(property)) {
 							return instances[property];
 						} else {
 							throw new Error("No such property '" + property + "'");
 						}
 					} else if(property === "length") {
-						var instances = object.instances();
+						instances = object.instances();
 						return instances.length;
 					}
 				}

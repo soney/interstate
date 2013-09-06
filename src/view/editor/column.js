@@ -112,6 +112,10 @@
 			} else {
 				this.on_not_curr_col();
 			}
+
+			if(this.option("curr_copy_client")) {
+				this.element.addClass("template");
+			}
 			/*
 			client.async_get("is_template", function(is_template) {
 				if(is_template) {
