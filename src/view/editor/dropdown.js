@@ -80,7 +80,7 @@
 
 	});
 
-	$.widget("ist.submenu", {
+	$.widget("interstate.submenu", {
 		options: {
 			text: "",
 			items: [],

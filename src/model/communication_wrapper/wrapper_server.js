@@ -150,7 +150,7 @@
 			var getting = process_args(pre_processed_getting);
 			var constraint_info = this.fn_call_constraints.get(getting);
 			
-			if(constraint_info.clients.hasOwnProperty(client_id)) {
+			if(constraint_info && constraint_info.clients.hasOwnProperty(client_id)) {
 				delete constraint_info.clients[client_id];
 				constraint_info.client_count--;
 				if(constraint_info.client_count <= 0) {

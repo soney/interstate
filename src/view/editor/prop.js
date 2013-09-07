@@ -742,7 +742,9 @@
 			} else if(key === "layout_manager") {
 				if(this.option("show_src")) {
 					this.on_hide_src();
-					this.on_show_src();
+					if(value) {
+						this.on_show_src();
+					}
 				}
 			} else if(key === "inherited") {
 				if(value) {

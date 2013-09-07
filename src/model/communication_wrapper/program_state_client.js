@@ -121,11 +121,13 @@
 
 		proto.get_wrapper_client = function(object_summary) {
 			var cobj_id = object_summary.id;
+			var rv;
 			if(this.wrapper_clients.hasOwnProperty(cobj_id)) {
-				return this.wrapper_clients[cobj_id];
+				rv = this.wrapper_clients[cobj_id];
+				rv.object_summary = object_summary;
+				return rv;
 			} else {
 				var otype = object_summary.type;
-				var rv;
 
 				var obj_id = object_summary.obj_id;
 				rv = new ist.WrapperClient({

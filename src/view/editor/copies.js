@@ -7,7 +7,7 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	$.widget("ist.copy", {
+	$.widget("interstate.copy", {
 		options: {
 			curr_copy: false,
 			out_of: 0,

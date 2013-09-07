@@ -136,6 +136,7 @@
 					client_socket: client_socket
 				}, options);
 				var obj_summary = wrapper_client.object_summary;
+				/*
 				if(obj_summary.is_template) {
 					if(obj_summary.instances.length > 0) {
 						var instance_client = client_socket.get_wrapper_client(obj_summary.instances[0].object_summary);
@@ -150,6 +151,7 @@
 					column_options.curr_copy_client = wrapper_client;
 					column_options.curr_copy_index = obj_summary.index;
 				}
+				*/
 
 				var col = $("<table />")	.appendTo(this.element);
 				col	.column(column_options)
@@ -164,7 +166,6 @@
 		open_cobj: function(event) {
 			var client_socket = this.option("client_socket");
 			var cobj_id = event.cobj_id;
-			client_socket.post({type: "get_ptr", cobj_id: cobj_id});
 			client_socket.once("cobj_links", function(message) {
 				if(message.cobj_id === cobj_id) {
 					var vals = message.value;
@@ -197,34 +198,10 @@
 							next_col.focus();
 						}
 					}
-					/*
-					var next_col = $("<table />")	.appendTo(this.element);
-					next_col						.column({
-														name: child_info.name,
-														client: child_info.value,
-														is_curr_col: true,
-														prev_col: column,
-														show_prev: this.option("single_col"),
-														client_socket: this.option("client_socket")
-													})
-													.on("child_select.nav", _.bind(this.on_child_select, this, next_col))
-													.on("header_click.nav", _.bind(this.on_header_click, this, next_col))
-													.on("prev_click.nav", _.bind(this.on_prev_click, this, next_col))
-													.on("child_removed.nav", _.bind(this.on_child_removed, this, next_col))
-													.focus();
-
-					this.columns.push(next_col);
-					if(this.option("single_col")) {
-						this.curr_col.hide();
-					} else {
-						//next_col.hide()
-								//.show("fade", "fast");
-
-					}
-					*/
 					this.curr_col = next_col;
 				}
 			}, this);
+			client_socket.post({type: "get_ptr", cobj_id: cobj_id});
 		}
 	});
 

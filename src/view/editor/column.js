@@ -32,7 +32,7 @@
 		}
 	};
 
-	$.widget("ist.column", {
+	$.widget("interstate.column", {
 		options: {
 			client: false,
 			name: "sketch",
@@ -106,6 +106,7 @@
 													.on("click.add_property", _.bind(this.add_property, this));
 
 			this.add_children_listener();
+			this.add_copies_listener();
 
 			if(this.option("is_curr_col")) {
 				this.on_curr_col();
@@ -115,56 +116,17 @@
 
 			if(this.option("curr_copy_client")) {
 				this.element.addClass("template");
+				var curr_copy_client = this.option("curr_copy_client");
+				curr_copy_client.on("wc_destroy", this.curr_copy_client_destroyed, this);
 			}
-			/*
-			client.async_get("is_template", function(is_template) {
-				if(is_template) {
-					client.async_get("instances", _.bind(function(instances) {
-						if(instances.length > 0) {
-							var instance = instances[0];
-							this.option("curr_copy_client", instance);
-							this.destroy_src_view();
-							this.build_src_view();
-							this.remove_children_listener();
-							this.add_children_listener();
-						} else {
-						}
-					}, this));
-				} else {
-					client.async_get("is_instance", function(is_instance) {
-						if(is_instance) {
-							client.async_get("get_template", function(response) {
-								var index = response.index,
-									template_client = response.cobj;
-								if(response) {
-									this.option("curr_copy_client", client);
-									this.option("client", template_client);
-									this.destroy_src_view();
-									this.build_src_view();
-									this.remove_children_listener();
-									this.add_children_listener();
-									this.option("curr_copy", index)
-									this.destroy_src_view();
-									this.build_src_view();
-									this.remove_children_listener();
-									this.add_children_listener();
-								}
-									
-									this.option("client", template_client);
-									this.destroy_src_view();
-									this.build_src_view();
-									this.remove_children_listener();
-									this.add_children_listener();
-							}, this);
-						}
-					}, this);
-				}
-			}, this);
-			*/
 			if(client.type() !== "stateful") {
 				this.show_hide_options.hide();
 			}
 			this.element.on("keydown.on_keydown", _.bind(this.on_key_down, this));
+		},
+
+		curr_copy_client_destroyed: function() {
+			console.log("CCC DESTROYED");
 		},
 
 		add_property: function() {
@@ -401,6 +363,43 @@
 			event.preventDefault();
 		},
 
+		add_copies_listener: function () {
+			var client = this.option("client");
+			var $is_template = client.get_$("is_template");
+			var $copies = client.get_$("instances");
+			this.copy_listener = cjs.liven(function() {
+				var is_template = $is_template.get();
+				if(is_template) {
+					if(!this.option("curr_copy_client")) {
+						var copies = $copies.get();
+						if(_.isArray(copies)) {
+							this.on_copy_select(null, 0);
+						}
+					}
+				} else {
+					if(this.option("curr_copy_client")) {
+						this.option("curr_copy_client", false); // will destroy any curr copy client
+						this.destroy_src_view();
+						this.build_src_view();
+						this.remove_children_listener();
+						this.add_children_listener();
+					}
+				}
+			}, {
+				context: this,
+				on_destroy: function() {
+					$is_template.signal_destroy();
+					$copies.signal_destroy();
+				}
+			});
+		},
+
+		remove_copies_listener: function () {
+			if(this.copy_listener) {
+				this.copy_listener.destroy();
+			}
+		},
+
 		add_children_listener: function () {
 			var INDEX_OFFSET = 3; // Account for the header column
 			var client = this.option("curr_copy_client") || this.option("client");
@@ -464,7 +463,14 @@
 						}
 
 						if(this.awaiting_add_prop) {
-							child_disp	.prop("begin_rename");
+							child_disp	.prop("begin_rename")
+										.on("done_editing.do_open", _.bind(function(event) {
+												child_disp.off("done_editing.do_open");
+												if(event.from_str === event.to_str) { //awaiting rename prop won't trigger
+													this.on_child_select(child, child_disp);
+													delete this.awaiting_rename_prop;
+												}
+											}, this));
 							delete this.awaiting_add_prop;
 							this.awaiting_rename_prop = true;
 						} else if(this.awaiting_rename_prop) {
@@ -496,7 +502,7 @@
 
 		remove_children_listener: function () {
 			if(this.children_change_listener) {
-				this.children_change_listener.destroy();
+				this.children_change_listener.destroy(true);
 				delete this.children_change_listener;
 			}
 			$("tr.child", this.tbody).prop("destroy").remove();
@@ -530,6 +536,7 @@
 			this.prev_button.off("click.on_click").remove();
 
 
+			this.remove_copies_listener();
 			this.remove_children_listener();
 			this.copy_disp.off("curr_copy_change.copy_select").copy("destroy");
 			this.destroy_src_view();
@@ -683,6 +690,7 @@
 			if(key === "curr_copy_client") {
 				var old_value = this.option(key);
 				if(old_value instanceof ist.WrapperClient) {
+					old_value.off("wc_destroy", this.curr_copy_client_destroyed, this);
 					old_value.signal_destroy();
 				}
 			}
@@ -696,6 +704,10 @@
 			} else if(key === "curr_copy_client") {
 				if(value instanceof ist.WrapperClient) {
 					value.signal_interest();
+					value.on("wc_destroy", this.curr_copy_client_destroyed, this);
+					this.element.addClass("template");
+				} else {
+					this.element.removeClass("template");
 				}
 			} else if(key === "selected_prop_name") {
 				if(value) {
