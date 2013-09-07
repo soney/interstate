@@ -14,7 +14,7 @@ To build from scratch, you will need:
 Then run:
 
     git clone https://github.com/soney/interstategit
-    cd red
+    cd interstate
 	git submodule update --init --recursive
     npm install .
     grunt
