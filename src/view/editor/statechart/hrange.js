@@ -1,12 +1,12 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedMap,jQuery,window,Raphael */
+/*global interstate,esprima,able,uid,console,jQuery,window,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.HorizontalRangeDisplay = function (options) {
+	ist.HorizontalRangeDisplay = function (options) {
 		able.make_this_optionable(this, {
 			font_family: "Source Sans Pro",
 			font_size: "12px",
@@ -164,6 +164,6 @@
 			$(window).off("mousedown.collapse");
 			$(window).off("keydown.collapse");
 		};
-	}(red.HorizontalRangeDisplay));
+	}(ist.HorizontalRangeDisplay));
 	
-}(red, jQuery));
+}(interstate, jQuery));

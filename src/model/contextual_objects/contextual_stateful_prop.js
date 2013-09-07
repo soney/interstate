@@ -1,20 +1,20 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var NO_VAL = {};
 
-	red.ContextualStatefulProp = function (options) {
-		red.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
+	ist.ContextualStatefulProp = function (options) {
+		ist.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
 		this._type = "stateful_prop";
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.ContextualObject);
+		_.proto_extend(My, ist.ContextualObject);
 		var proto = My.prototype;
 
 		proto.initialize = function() {
@@ -40,8 +40,8 @@
 
 			while (!context.is_empty()) {
 				last = context.points_at();
-				if (last instanceof red.StatefulObj) {
-					var contextual_object = red.find_or_put_contextual_obj(last, context);
+				if (last instanceof ist.StatefulObj) {
+					var contextual_object = ist.find_or_put_contextual_obj(last, context);
 					return contextual_object;
 				}
 				popped_item = last;
@@ -73,7 +73,7 @@
 				.map(function (state) {
 					var incoming_transitions = state.get_incoming_transitions();
 					incoming_transitions = _.filter(incoming_transitions, function(trans) {
-						return trans.from() instanceof red.Statechart;
+						return trans.from() instanceof ist.Statechart;
 					});
 					return ([state]).concat(incoming_transitions);
 				})
@@ -103,7 +103,7 @@
 				i += 1;
 				while (i < len) {
 					item_i = pointer.points_at(i);
-					name = red.Dict.get_prop_name(item_im1, item_i, pointer.slice(0, i));
+					name = ist.Dict.get_prop_name(item_im1, item_i, pointer.slice(0, i));
 					my_names.push(name);
 					item_im1 = item_i;
 					i += 1;
@@ -111,13 +111,13 @@
 
 				var stateful_obj_context_len = stateful_obj_context.length();
 				var my_names_len = my_names.length;
-				var protos_and_me = ([stateful_obj]).concat(red.Dict.get_proto_vals(stateful_obj, stateful_obj_context));
+				var protos_and_me = ([stateful_obj]).concat(ist.Dict.get_proto_vals(stateful_obj, stateful_obj_context));
 
 				var inherits_from = _	.chain(protos_and_me)
 										.map(function (x) {
 											var i;
 											var obj;
-											var cdict = red.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len));
+											var cdict = ist.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len));
 											for (i = 0; i < my_names_len; i += 1) {
 												name = my_names[i];
 												if(!name) {
@@ -127,10 +127,10 @@
 													var info = cdict.prop_info(name);
 													obj = info.value;
 													if (i < my_names_len - 1) {
-														if (!(obj instanceof red.Dict)) {
+														if (!(obj instanceof ist.Dict)) {
 															return false;
 														} else {
-															cdict = red.find_or_put_contextual_obj(obj, pointer.slice(0, stateful_obj_context_len + i + 1));
+															cdict = ist.find_or_put_contextual_obj(obj, pointer.slice(0, stateful_obj_context_len + i + 1));
 														}
 													}
 												} else {
@@ -155,12 +155,12 @@
 				};
 				for (i = 0; i < inherits_from_len; i += 1) {
 					ifrom = inherits_from[i];
-					if (ifrom instanceof red.StatefulProp) {
+					if (ifrom instanceof ist.StatefulProp) {
 						var dvs = ifrom.get_direct_values();
 						var dv_entries = dvs.entries();
 						dv_entries = _.map(dv_entries, dv_entries_map_fn);
 						entries.push.apply(entries, dv_entries);
-					} else if (ifrom instanceof red.Cell) {
+					} else if (ifrom instanceof ist.Cell) {
 						entries.push({
 							key: undefined,
 							value: ifrom,
@@ -187,15 +187,15 @@
 					for (i = 0; i < statecharts_len; i += 1) {
 						var statechart = statecharts[i];
 						if (key.root() === statechart.basis()) {
-							if (key instanceof red.State) {
+							if (key instanceof ist.State) {
 								try {
-									state = red.find_equivalent_state(key, statechart);
+									state = ist.find_equivalent_state(key, statechart);
 								} catch(e) {
 									continue;
 								}
-							} else if (key instanceof red.StatechartTransition) {
+							} else if (key instanceof ist.StatechartTransition) {
 								try {
-									state = red.find_equivalent_transition(key, statechart);
+									state = ist.find_equivalent_transition(key, statechart);
 								} catch(e) {
 									continue;
 								}
@@ -261,7 +261,7 @@
 				state = info.state;
 				val = info.value;
 				/*
-				if(state instanceof red.StartState) { // Should actually use the transition and not the state
+				if(state instanceof ist.StartState) { // Should actually use the transition and not the state
 					state = state.get_outgoing_transition();
 					is_start_state = true;
 				} else {
@@ -269,7 +269,7 @@
 				}
 				*/
 
-				if(state instanceof red.StartState) { // Should actually use the transition and not the state
+				if(state instanceof ist.StartState) { // Should actually use the transition and not the state
 					
 					//if ((using_val === NO_VAL || using_state.order(state) < 0) && state.is_active()) {
 					if (state.is_active() && (using_val === NO_VAL || using_state.order(state) < 0)) {
@@ -288,20 +288,20 @@
 							using_as = USING_AS_TRANSITION;
 						}
 					}
-				} else if (state instanceof red.State) {
+				} else if (state instanceof ist.State) {
 					//if ((using_val === NO_VAL || using_state.order(state) < 0) && state.is_active()) {
 					if (state.is_active() && (using_val === NO_VAL || using_state.order(state) < 0)) {
 						using_val = val;
 						using_state = state;
 						using_as = USING_AS_STATE;
 					}
-				} else if (state instanceof red.StatechartTransition) {
+				} else if (state instanceof ist.StatechartTransition) {
 					tr = state.get_times_run();
 
 					if (tr > this.get_transition_times_run(state)) {
 						this.set_transition_times_run(state, tr);
 
-						if (!(using_state instanceof red.StatechartTransition)) {
+						if (!(using_state instanceof ist.StatechartTransition)) {
 							using_val = val;
 							using_state = state;
 							using_as = USING_AS_TRANSITION;
@@ -336,7 +336,7 @@
 						info = values[i];
 						state = info.state;
 						/*
-						if(state instanceof red.StartState) { // Should actually use the transition and not the state
+						if(state instanceof ist.StartState) { // Should actually use the transition and not the state
 							state = state.get_outgoing_transition();
 						}
 						*/
@@ -346,9 +346,9 @@
 							break;
 						}
 					}
-					if(using_state instanceof red.State) {
+					if(using_state instanceof ist.State) {
 						using_as = USING_AS_STATE;
-					} else if(using_state instanceof red.StatechartTransition) {
+					} else if(using_state instanceof ist.StatechartTransition) {
 						using_as = USING_AS_TRANSITION;
 					}
 				}
@@ -393,7 +393,7 @@
 				//debugger;
 			//}
 			//if(uid.strip_prefix(this.get_object().id()) == 26) {
-				//console.log(using_val, using_state, using_as, is_fallback, red.event_queue.event_queue_round);
+				//console.log(using_val, using_state, using_as, is_fallback, ist.event_queue.event_queue_round);
 					//debugger;
 				//console.log(using_state, using_as, is_fallback);
 				//if(using_as === USING_AS_STATE) { debugger; }
@@ -415,10 +415,10 @@
 							this.$active_value.invalidate();
 						}
 					}, this);
-					if(red.event_queue.end_queue_round === 2) {
-						red.event_queue.once("end_event_queue_round_3", invalidate_value);
-					} else if(red.event_queue.end_queue_round === 6) {
-						red.event_queue.once("end_event_queue_round_7", invalidate_value);
+					if(ist.event_queue.end_queue_round === 2) {
+						ist.event_queue.once("end_event_queue_round_3", invalidate_value);
+					} else if(ist.event_queue.end_queue_round === 6) {
+						ist.event_queue.once("end_event_queue_round_7", invalidate_value);
 					} else {
 						_.defer(invalidate_active_value);
 					}
@@ -428,7 +428,7 @@
 
 			var stateful_prop = this.get_object();
 			/*
-			if (using_state instanceof red.StatechartTransition) { // using a transition's old value
+			if (using_state instanceof ist.StatechartTransition) { // using a transition's old value
 				if(is_fallback) {
 					return this._last_rv;
 				}
@@ -437,10 +437,10 @@
 						this.$value.invalidate();
 					}
 				}, this);
-				if(red.event_queue.end_queue_round === 2) {
-					red.event_queue.once("end_event_queue_round_3", invalidate_value);
-				} else if(red.event_queue.end_queue_round === 6) {
-					red.event_queue.once("end_event_queue_round_7", invalidate_value);
+				if(ist.event_queue.end_queue_round === 2) {
+					ist.event_queue.once("end_event_queue_round_3", invalidate_value);
+				} else if(ist.event_queue.end_queue_round === 6) {
+					ist.event_queue.once("end_event_queue_round_7", invalidate_value);
 				} else {
 					_.defer(invalidate_value);
 				}
@@ -448,19 +448,19 @@
 			}
 			*/
 
-			//if (using_val instanceof red.Cell) {
+			//if (using_val instanceof ist.Cell) {
 			if(using_val) {
 				var pointer = this.get_pointer();
 				var event = cjs.get(using_state._last_run_event);
 
-				var eventized_pointer = pointer.push(using_val, new red.EventContext(event));
+				var eventized_pointer = pointer.push(using_val, new ist.EventContext(event));
 		
-				if(red.__debug) {
+				if(ist.__debug) {
 					rv = using_val.get_value(eventized_pointer);
 				} else {
 					try {
 						rv = using_val.get_value(eventized_pointer);
-						if(rv instanceof red.Error) {
+						if(rv instanceof ist.Error) {
 							rv = undefined;
 						}
 						if(this._has_runtime_errors) {
@@ -472,7 +472,7 @@
 						rv = undefined;
 						this.$runtime_errors.set([e1.message]);
 						this._has_runtime_errors = true;
-						//rv = new red.Error(e1.message);
+						//rv = new ist.Error(e1.message);
 						//console.error(e1);
 					}
 				}
@@ -485,7 +485,7 @@
 			/*
 			} else {
 				try {
-					rv = using_val instanceof red.ContextualObject ? using_val.val() : using_val;
+					rv = using_val instanceof ist.ContextualObject ? using_val.val() : using_val;
 				} catch (e2) {
 					console.error(e2);
 				}
@@ -505,5 +505,5 @@
 		proto.get_runtime_errors = function () {
 			return this.$runtime_errors.get();
 		};
-	}(red.ContextualStatefulProp));
-}(red));
+	}(ist.ContextualStatefulProp));
+}(interstate));

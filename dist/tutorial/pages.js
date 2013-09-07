@@ -2,7 +2,7 @@ var tutorial_pages = (function() {
 	return [
 		{
 			editor: {
-				text: "<p>This tutorial will teach you all you need to know to use the Euclase editor.<div class='directive'>Click 'next' to continue.</div></p>",
+				text: "<p>This tutorial will teach you all you need to know to use the Interstate editor.<div class='directive'>Click 'next' to continue.</div></p>",
 				on_enter: function($, post) {
 					this.editor.hide();
 				},

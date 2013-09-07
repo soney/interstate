@@ -1,11 +1,11 @@
 /*jslint nomen: true, vars: true, white: true */
 /*jshint scripturl: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var display;
     var platform = window.navigator.platform;
@@ -22,7 +22,7 @@
 		display = "desktop";
 	}
 
-	$.widget("red.editor", {
+	$.widget("interstate.editor", {
 		options: {
 			debug_ready: false,
 			full_window: true,
@@ -44,12 +44,12 @@
 			}
 			var communication_mechanism;
 			if(this.option("server_window") === window) {
-				communication_mechanism = new red.SameWindowCommWrapper(this.option("client_id"), 0); 
+				communication_mechanism = new ist.SameWindowCommWrapper(this.option("client_id"), 0); 
 			} else {
-				communication_mechanism = new red.InterWindowCommWrapper(this.option("server_window"), this.option("client_id")); 
+				communication_mechanism = new ist.InterWindowCommWrapper(this.option("server_window"), this.option("client_id")); 
 			}
 
-			this.client_socket = new red.ProgramStateClient({
+			this.client_socket = new ist.ProgramStateClient({
 				ready_func: this.option("debug_ready"),
 				comm_mechanism: communication_mechanism
 			}).on("message", function (data) {
@@ -146,15 +146,15 @@
 				}
 
 				if(prop_type === "stateful_obj") {
-					value = new red.StatefulObj(undefined, true);
+					value = new ist.StatefulObj(undefined, true);
 					value.do_initialize({
-						direct_protos: new red.StatefulProp({ can_inherit: false, statechart_parent: value })
+						direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: value })
 					});
 				} else if(prop_type === "stateful_prop") {
-					value = new red.StatefulProp();
+					value = new ist.StatefulProp();
 				}
 
-				command = new red.SetPropCommand({
+				command = new ist.SetPropCommand({
 					in_effect: true,
 					parent: { id: to_func(client.obj_id) },
 					value: value,
@@ -169,7 +169,7 @@
 				});
 			} else if(type === "rename") {
 				client = event.client;
-				command = new red.RenamePropCommand({
+				command = new ist.RenamePropCommand({
 					in_effect: true,
 					parent: { id: to_func(client.obj_id) },
 					from: event.from_name,
@@ -184,7 +184,7 @@
 				//value = event.value;
 				var prop_name = event.name;
 
-				command = new red.InheritPropCommand({
+				command = new ist.InheritPropCommand({
 					in_effect: true,
 					parent: { id: to_func(client.cobj_id) },
 					name: prop_name
@@ -196,7 +196,7 @@
 				});
 			} else if(type === "unset") {
 				client = event.client;
-				command = new red.UnsetPropCommand({
+				command = new ist.UnsetPropCommand({
 					in_effect: true,
 					parent: { id: to_func(client.obj_id) },
 					name: event.name
@@ -208,9 +208,9 @@
 			} else if(type === "set_stateful_prop_for_state") {
 				client = event.prop;
 				state = event.state;
-				value = new red.Cell({str: '', substantiated: false});
+				value = new ist.Cell({str: '', substantiated: false});
 
-				command = new red.SetStatefulPropValueCommand({
+				command = new ist.SetStatefulPropValueCommand({
 					in_effect: true,
 					stateful_prop: { id: to_func(client.obj_id) },
 					state: { id: to_func(state.cobj_id) },
@@ -226,7 +226,7 @@
 				client = event.prop;
 				state = event.state;
 
-				command = new red.UnsetStatefulPropValueCommand({
+				command = new ist.UnsetStatefulPropValueCommand({
 					in_effect: true,
 					stateful_prop: { id: to_func(client.obj_id) },
 					state: { id: to_func(state.cobj_id) }
@@ -239,7 +239,7 @@
 				client = event.client;
 				value = event.str;
 
-				command = new red.ChangeCellCommand({
+				command = new ist.ChangeCellCommand({
 					in_effect: true,
 					cell: { id: to_func(client.cobj_id || client.obj_id) },
 					str: value
@@ -269,7 +269,7 @@
 					make_start = false;
 				}
 
-				command = new red.AddStateCommand({
+				command = new ist.AddStateCommand({
 					in_effect: true,
 					statechart: { id: to_func(statechart_puppet_id) },
 					name: state_name,
@@ -284,7 +284,7 @@
 				state = event.state;
 				name = state.get_name("parent");
 				parent_puppet_id = state.parent().puppet_master_id || state.parent().id();
-				command = new red.RemoveStateCommand({
+				command = new ist.RemoveStateCommand({
 					in_effect: true,
 					statechart: { id: to_func(parent_puppet_id) },
 					name: name
@@ -296,7 +296,7 @@
 			} else if(type === "remove_transition") {
 				transition = event.transition;
 				var statechart = transition.root();
-				command = new red.RemoveTransitionCommand({
+				command = new ist.RemoveTransitionCommand({
 					in_effect: true,
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart.puppet_master_id || transition.id()) }
@@ -310,17 +310,17 @@
 				name = event.prop_name;
 				client = event.client;
 				if(to_type === "Object") {
-					value = new red.StatefulObj(undefined, true);
+					value = new ist.StatefulObj(undefined, true);
 					value.do_initialize({
-						direct_protos: new red.StatefulProp({ can_inherit: false, statechart_parent: value })
+						direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: value })
 					});
 				} else if(to_type === "Property") {
-					value = new red.StatefulProp();
+					value = new ist.StatefulProp();
 				} else if(to_type === "Cell") {
-					value = new red.Cell();
+					value = new ist.Cell();
 				}
 
-				command = new red.SetPropCommand({
+				command = new ist.SetPropCommand({
 					in_effect: true,
 					parent: { id: to_func(client.obj_id) },
 					value: value,
@@ -339,8 +339,8 @@
 				statechart_puppet_id = state.puppet_master_id || state.id();
 				var from_puppet_id = from_state.puppet_master_id || from_state.id(),
 					to_puppet_id = to_state.puppet_master_id || to_state.id();
-				event = new red.ParsedEvent({str: "(event)", inert: true});
-				command = new red.AddTransitionCommand({
+				event = new ist.ParsedEvent({str: "(event)", inert: true});
+				command = new ist.AddTransitionCommand({
 					in_effect: true,
 					from: { id: to_func(from_puppet_id) },
 					to: { id: to_func(to_puppet_id) },
@@ -357,7 +357,7 @@
 				transition = event.transition;
 				state = event.to;
 				statechart_puppet_id = state.puppet_master_id || state.id();
-				command = new red.SetTransitionToCommand({
+				command = new ist.SetTransitionToCommand({
 					in_effect: true,
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart_puppet_id) }
@@ -370,7 +370,7 @@
 				transition = event.transition;
 				state = event.from;
 				statechart_puppet_id = state.puppet_master_id || state.id();
-				command = new red.SetTransitionFromCommand({
+				command = new ist.SetTransitionFromCommand({
 					in_effect: true,
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart_puppet_id) }
@@ -384,7 +384,7 @@
 				var new_name = event.new_name;
 				var old_name = state.get_name("parent");
 				parent_puppet_id = state.parent().puppet_master_id || state.parent().id();
-				command = new red.RenameStateCommand({
+				command = new ist.RenameStateCommand({
 					in_effect: true,
 					statechart: { id: to_func(parent_puppet_id) },
 					from: old_name,
@@ -398,7 +398,7 @@
 				transition = event.transition;
 				var str = event.str;
 				var transition_id = transition.puppet_master_id || transition.id();
-				command = new red.SetTransitionEventCommand({
+				command = new ist.SetTransitionEventCommand({
 					in_effect: true,
 					transition: { id: to_func(transition_id) },
 					event: str
@@ -410,7 +410,7 @@
 			} else if (type === 'set_copies') {
 				value = event.str;
 				client = event.client;
-				command = new red.SetCopiesCommand({
+				command = new ist.SetCopiesCommand({
 					in_effect: true,
 					parent: { id: to_func(client.obj_id) },
 					value: value
@@ -421,7 +421,7 @@
 				});
 			} else if (type === 'reset') {
 				client = event.client;
-				command = new red.ResetCommand({
+				command = new ist.ResetCommand({
 					in_effect: true,
 					parent: { id: to_func(client.cobj_id) }
 				});
@@ -432,7 +432,7 @@
 			} else if (type === 'make_concurrent') {
 				state = event.state;
 				var state_puppet_id = state.puppet_master_id || state.id();
-				command = new red.MakeConcurrentCommand({
+				command = new ist.MakeConcurrentCommand({
 					in_effect: true,
 					statechart: { id: to_func(state_puppet_id) },
 					concurrent: event.concurrent
@@ -448,7 +448,7 @@
 				var target_name = event.target_name;
 				var above_below = event.above_below;
 
-				command = new red.MovePropAboveBelowCommand({
+				command = new ist.MovePropAboveBelowCommand({
 					in_effect: true,
 					from_obj: { id: to_func(from_obj.obj_id) },
 					from_name: from_name,
@@ -499,4 +499,4 @@
 			}
 		}
 	});
-}(red, jQuery));
+}(interstate, jQuery));

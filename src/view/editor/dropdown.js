@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true, white: true */
 /*jshint scripturl: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	$.widget("red.dropdown", {
+	$.widget("interstate.dropdown", {
 		options: {
 			text: "",
 			items: [],
@@ -80,7 +80,7 @@
 
 	});
 
-	$.widget("red.submenu", {
+	$.widget("ist.submenu", {
 		options: {
 			text: "",
 			items: [],
@@ -162,4 +162,4 @@
 			}
 		}
 	});
-}(red, jQuery));
+}(interstate, jQuery));

@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,window */
+/*global interstate,esprima,able,uid,console,window */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 
-	red.RaphelButton = function (paper, options) {
+	ist.RaphelButton = function (paper, options) {
 		able.make_this_listenable(this);
 		able.make_this_optionable(this, {
 			text: "",
@@ -32,5 +32,5 @@
 			this.label_background.remove();
 			this.text.remove();
 		};
-	}(red.EditableText));
-}(red));
+	}(ist.EditableText));
+}(interstate));

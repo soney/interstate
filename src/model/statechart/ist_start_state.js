@@ -1,23 +1,23 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.StartState = function (options) {
+	ist.StartState = function (options) {
 		options = options || {};
 		this.outgoingTransition = false;
 		this._transition_to_self = cjs.$(undefined);
-		red.StartState.superclass.constructor.apply(this, arguments);
+		ist.StartState.superclass.constructor.apply(this, arguments);
 		this._running = options.running === true;
-		if(red.__debug_statecharts) {
+		if(ist.__debug_statecharts) {
 			this.$running = cjs.$(this._running);
 		}
 	};
 	(function (My) {
-		_.proto_extend(My, red.State);
+		_.proto_extend(My, ist.State);
 		var proto = My.prototype;
 		proto.do_initialize = function (options) {
 			My.superclass.do_initialize.apply(this, arguments);
@@ -33,10 +33,10 @@
 					this._transition_to_self.set(true);
 				}
 
-				this.outgoingTransition = options.outgoing_transition || new red.StatechartTransition({
+				this.outgoingTransition = options.outgoing_transition || new ist.StatechartTransition({
 					from: this,
 					to: to,
-					event: new red.StatechartEvent({
+					event: new ist.StatechartEvent({
 						target: "me",
 						spec: "run"
 					})
@@ -48,11 +48,11 @@
 				this._transition_to_self.set(this.outgoingTransition.to() === this);
 			}
 
-			red.register_uid(this._id, this);
+			ist.register_uid(this._id, this);
 			this._initialized.set(true);
 			this._emit("initialized");
 		};
-		if(red.__debug_statecharts) {
+		if(ist.__debug_statecharts) {
 			proto.get_$running = function() {
 				return this.$running.get();
 			};
@@ -120,7 +120,7 @@
 					target: this,
 					type: "run"
 				});
-				if(red.__debug_statecharts) {
+				if(ist.__debug_statecharts) {
 					this.$running.set(true);
 				}
 			} else if (!this.is_running()) {
@@ -130,7 +130,7 @@
 					target: this,
 					type: "run"
 				});
-				if(red.__debug_statecharts) {
+				if(ist.__debug_statecharts) {
 					this.$running.set(true);
 				}
 			}
@@ -143,7 +143,7 @@
 					type: "stop",
 					target: this
 				});
-				if(red.__debug_statecharts) {
+				if(ist.__debug_statecharts) {
 					return this.$running.set(false);
 				}
 			} else if(this.is_running()) {
@@ -152,7 +152,7 @@
 					type: "stop",
 					target: this
 				});
-				if(red.__debug_statecharts) {
+				if(ist.__debug_statecharts) {
 					return this.$running.set(false);
 				}
 			}
@@ -194,22 +194,22 @@
 		};
 
 		proto.create_shadow = function (options, defer_initialization) {
-			var rv = new red.StartState(_.extend({
+			var rv = new ist.StartState(_.extend({
 				basis: this
 			}, options), defer_initialization);
 
 			return rv;
 		};
 
-		red.register_serializable_type("start_state",
+		ist.register_serializable_type("start_state",
 			function (x) {
 				return x instanceof My;
 			},
 			function (include_id) {
 				var args = _.toArray(arguments);
 				var rv = {
-					outgoing_transition: red.serialize.apply(red, ([this.get_outgoing_transition()]).concat(args)),
-					parent: red.serialize.apply(red, ([this.parent()]).concat(args))
+					outgoing_transition: ist.serialize.apply(ist, ([this.get_outgoing_transition()]).concat(args)),
+					parent: ist.serialize.apply(ist, ([this.parent()]).concat(args))
 				};
 				if (include_id) {
 					rv.id = this.id();
@@ -220,7 +220,7 @@
 				var rest_args = _.rest(arguments);
 				var rv;
 				if (obj.id) {
-					rv = red.find_uid(obj.id);
+					rv = ist.find_uid(obj.id);
 					if (rv) {
 						return rv;
 					}
@@ -228,13 +228,13 @@
 				rv = new My({id: obj.id}, true);
 				rv.initialize = function () {
 					var options = {
-						outgoing_transition: red.deserialize.apply(red, ([obj.outgoing_transition]).concat(rest_args)),
-						parent: red.deserialize.apply(red, ([obj.parent]).concat(rest_args))
+						outgoing_transition: ist.deserialize.apply(ist, ([obj.outgoing_transition]).concat(rest_args)),
+						parent: ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args))
 					};
 					this.do_initialize(options);
 				};
 
 				return rv;
 			});
-	}(red.StartState));
-}(red));
+	}(ist.StartState));
+}(interstate));

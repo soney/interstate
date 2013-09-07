@@ -1,15 +1,15 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
     "use strict";
-    var cjs = red.cjs,
-        _ = red._;
+    var cjs = ist.cjs,
+        _ = ist._;
     
     // === SET ===
     
-    red.SetPropCommand = function (options) {
-        red.SetPropCommand.superclass.constructor.apply(this, arguments);
+    ist.SetPropCommand = function (options) {
+        ist.SetPropCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.parent || !this._options.value) {
@@ -18,11 +18,11 @@
     
     
         this._parent = this._options.parent;
-        if (!this._options.name && this._parent instanceof red.Dict) {
+        if (!this._options.name && this._parent instanceof ist.Dict) {
             var parent = this._parent;
             var prop_names = parent._get_direct_prop_names();
             var prefix = "prop";
-            if (this._options.value instanceof red.Dict) {
+            if (this._options.value instanceof ist.Dict) {
                 prefix = "obj";
             }
             var original_new_prop_name = prefix + "_" +  prop_names.length;
@@ -41,7 +41,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -76,7 +76,7 @@
 			delete this._prop_value;
 			delete this._prop_name;
         };
-        red.register_serializable_type("set_prop_command",
+        ist.register_serializable_type("set_prop_command",
             function (x) {
                 return x instanceof My;
             },
@@ -85,22 +85,22 @@
                 return {
                     parent_uid: this._parent.id(),
                     name: this._prop_name,
-                    value: red.serialize.apply(red, ([this._prop_value]).concat(arg_array)),
+                    value: ist.serialize.apply(ist, ([this._prop_value]).concat(arg_array)),
                     index: this._prop_index
                 };
             },
             function (obj) {
                 return new My({
-                    parent: red.find_uid(obj.parent_uid),
+                    parent: ist.find_uid(obj.parent_uid),
                     name: obj.name,
-                    value: red.deserialize(obj.value),
+                    value: ist.deserialize(obj.value),
                     index: obj.index
                 });
             });
-    }(red.SetPropCommand));
+    }(ist.SetPropCommand));
     
-    red.InheritPropCommand = function (options) {
-        red.InheritPropCommand.superclass.constructor.apply(this, arguments);
+    ist.InheritPropCommand = function (options) {
+        ist.InheritPropCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.parent || !this._options.name) {
@@ -110,29 +110,29 @@
     
         this._parent = this._options.parent;
 		this._prop_name = this._options.name;
-		if(this._parent instanceof red.ContextualStatefulObj) {
+		if(this._parent instanceof ist.ContextualStatefulObj) {
 			var value = this._parent.prop(this._prop_name);
 			var vobj = value.get_object();
 
-			if(vobj instanceof red.Cell) {
+			if(vobj instanceof ist.Cell) {
 				var own_statechart = this._parent.get_own_statechart();
 				var start_state = own_statechart.get_start_state();
 
-				this._prop_value = new red.StatefulProp();
+				this._prop_value = new ist.StatefulProp();
 				this._prop_value.set(start_state, vobj.clone());
-			} else if(vobj instanceof red.StatefulProp) {
+			} else if(vobj instanceof ist.StatefulProp) {
 				this._prop_value = vobj.clone(value);
 			}
 		}
 		/*
 		this._value = this._options.value;
-		if(this._parent instanceof red.ContextualStatefulObj) {
+		if(this._parent instanceof ist.ContextualStatefulObj) {
 			var own_statechart = this._parent.get_own_statechart();
 			var start_state = own_statechart.get_start_state();
-			if(this._value instanceof red.Cell) {
-				this._prop_value = new red.StatefulProp();
-				this._prop_value.set(start_state, new red.Cell({str: this._value.get_str()}));
-			} else if(this._value instanceof red.StatefulProp) {
+			if(this._value instanceof ist.Cell) {
+				this._prop_value = new ist.StatefulProp();
+				this._prop_value.set(start_state, new ist.Cell({str: this._value.get_str()}));
+			} else if(this._value instanceof ist.StatefulProp) {
 				this._prop_value = this._value.clone();
 			}
 		}
@@ -141,7 +141,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -171,7 +171,7 @@
 			delete this._value;
 			delete this._options;
         };
-        red.register_serializable_type("inherit_prop_command",
+        ist.register_serializable_type("inherit_prop_command",
             function (x) {
                 return x instanceof My;
             },
@@ -185,17 +185,17 @@
             },
             function (obj) {
                 return new My({
-                    parent: red.find_uid(obj.parent_uid),
-                    //value: red.find_uid(obj.value_uid),
+                    parent: ist.find_uid(obj.parent_uid),
+                    //value: ist.find_uid(obj.value_uid),
                     name: obj.name
                 });
             });
-    }(red.InheritPropCommand));
+    }(ist.InheritPropCommand));
     
     // === REMOVE ===
     
-    red.UnsetPropCommand = function (options) {
-        red.UnsetPropCommand.superclass.constructor.apply(this, arguments);
+    ist.UnsetPropCommand = function (options) {
+        ist.UnsetPropCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.parent) {
@@ -206,7 +206,7 @@
         this._prop_name = this._options.name;
     };
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -242,7 +242,7 @@
 			delete this._prop_index;
 			delete this._old_prop_value;
         };
-        red.register_serializable_type("unset_prop_command",
+        ist.register_serializable_type("unset_prop_command",
             function (x) {
                 return x instanceof My;
             },
@@ -254,17 +254,17 @@
             },
             function (obj) {
                 return new My({
-                    parent: red.find_uid(obj.parent_uid),
+                    parent: ist.find_uid(obj.parent_uid),
                     name: obj.name
                 });
             });
-    }(red.UnsetPropCommand));
+    }(ist.UnsetPropCommand));
     
     
     // === RENAME ===
     
-    red.RenamePropCommand = function (options) {
-        red.RenamePropCommand.superclass.constructor.apply(this, arguments);
+    ist.RenamePropCommand = function (options) {
+        ist.RenamePropCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.parent || !this._options.from || !this._options.to) {
@@ -276,7 +276,7 @@
         this._to_name = this._options.to;
     };
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -292,7 +292,7 @@
 			delete this._from_name;
 			delete this._to_name;
 		};
-        red.register_serializable_type("rename_prop_command",
+        ist.register_serializable_type("rename_prop_command",
             function (x) {
                 return x instanceof My;
             },
@@ -305,18 +305,18 @@
             },
             function (obj) {
                 return new My({
-                    parent: red.find_uid(obj.parent_uid),
+                    parent: ist.find_uid(obj.parent_uid),
                     from: obj.from_name,
                     to: obj.to_name
                 });
             });
-    }(red.RenamePropCommand));
+    }(ist.RenamePropCommand));
     
     
     // === MOVE ===
     
-    red.MovePropCommand = function (options) {
-        red.MovePropCommand.superclass.constructor.apply(this, arguments);
+    ist.MovePropCommand = function (options) {
+        ist.MovePropCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.parent) {
@@ -328,7 +328,7 @@
         this._to_index = this._options.to;
     };
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -345,7 +345,7 @@
 			delete this._to_index;
 			delete this._options;
 		};
-        red.register_serializable_type("move_prop_command",
+        ist.register_serializable_type("move_prop_command",
             function (x) {
                 return x instanceof My;
             },
@@ -358,17 +358,17 @@
             },
             function (obj) {
                 return new My({
-                    parent: red.find_uid(obj.parent_uid),
+                    parent: ist.find_uid(obj.parent_uid),
                     name: obj.name,
                     to: obj.to
                 });
             });
-    }(red.MovePropCommand));
+    }(ist.MovePropCommand));
     
     // === STATEFUL PROPS ===
     
-    red.SetStatefulPropValueCommand = function (options) {
-        red.SetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
+    ist.SetStatefulPropValueCommand = function (options) {
+        ist.SetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.stateful_prop || !this._options.state || !this._options.value) {
@@ -380,7 +380,7 @@
         this._value = this._options.value;
     };
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -401,7 +401,7 @@
 			delete this._state;
 			delete this._value;
         };
-        red.register_serializable_type("set_stateful_prop_value_command",
+        ist.register_serializable_type("set_stateful_prop_value_command",
             function (x) {
                 return x instanceof My;
             },
@@ -410,21 +410,21 @@
                 return {
                     stateful_prop_uid: this._stateful_prop.id(),
                     state_uid: this._state.id(),
-                    value: red.serialize.apply(red, ([this._value]).concat(arg_array))
+                    value: ist.serialize.apply(ist, ([this._value]).concat(arg_array))
                 };
             },
             function (obj) {
                 return new My({
-                    stateful_prop: red.find_uid(obj.stateful_prop_uid),
-                    state: red.find_uid(obj.state_uid),
-                    value: red.deserialize(obj.value)
+                    stateful_prop: ist.find_uid(obj.stateful_prop_uid),
+                    state: ist.find_uid(obj.state_uid),
+                    value: ist.deserialize(obj.value)
                 });
             });
-    }(red.SetStatefulPropValueCommand));
+    }(ist.SetStatefulPropValueCommand));
     
     
-    red.UnsetStatefulPropValueCommand = function (options) {
-        red.UnsetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
+    ist.UnsetStatefulPropValueCommand = function (options) {
+        ist.UnsetStatefulPropValueCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.stateful_prop) {
@@ -435,7 +435,7 @@
         this._state = this._options.state;
     };
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -457,7 +457,7 @@
 			delete this._state;
 			delete this._value;
         };
-        red.register_serializable_type("unset_stateful_prop_value_command",
+        ist.register_serializable_type("unset_stateful_prop_value_command",
             function (x) {
                 return x instanceof My;
             },
@@ -469,15 +469,15 @@
             },
             function (obj) {
                 return new My({
-                    stateful_prop: red.find_uid(obj.parent_uid),
-                    state: red.find_uid(obj.state_uid)
+                    stateful_prop: ist.find_uid(obj.parent_uid),
+                    state: ist.find_uid(obj.state_uid)
                 });
             });
-    }(red.UnsetStatefulPropValueCommand));
+    }(ist.UnsetStatefulPropValueCommand));
     
     
-    red.SetBuiltinCommand = function (options) {
-        red.SetBuiltinCommand.superclass.constructor.apply(this, arguments);
+    ist.SetBuiltinCommand = function (options) {
+        ist.SetBuiltinCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.parent) {
@@ -489,7 +489,7 @@
         this._value = this._options.value;
     };
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -541,7 +541,7 @@
 			delete this._value;
         };
     
-        red.register_serializable_type("set_builtin_command",
+        ist.register_serializable_type("set_builtin_command",
             function (x) {
                 return x instanceof My;
             },
@@ -550,20 +550,20 @@
                 return {
                     parent_uid: this._parent.id(),
                     name: this._builtin_name,
-                    value: red.serialize.apply(red, ([this._value]).concat(arg_array))
+                    value: ist.serialize.apply(ist, ([this._value]).concat(arg_array))
                 };
             },
             function (obj) {
                 return new My({
-                    parent: red.find_uid(obj.parent_uid),
+                    parent: ist.find_uid(obj.parent_uid),
                     name: obj.name,
-                    value: red.deserialize(obj.value)
+                    value: ist.deserialize(obj.value)
                 });
             });
-    }(red.SetBuiltinCommand));
+    }(ist.SetBuiltinCommand));
 
-    red.SetCopiesCommand = function (options) {
-        red.SetCopiesCommand.superclass.constructor.apply(this, arguments);
+    ist.SetCopiesCommand = function (options) {
+        ist.SetCopiesCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.parent) {
@@ -573,11 +573,11 @@
         this._parent = this._options.parent;
         this._value = this._options.value;
 		if(_.isString(this._value)) {
-			this._value = new red.Cell({str: this._value});
+			this._value = new ist.Cell({str: this._value});
 		}
     };
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -595,7 +595,7 @@
 			delete this._value;
         };
     
-        red.register_serializable_type("set_copies",
+        ist.register_serializable_type("set_copies",
             function (x) {
                 return x instanceof My;
             },
@@ -603,19 +603,19 @@
                 var arg_array = _.toArray(arguments);
                 return {
                     parent_uid: this._parent.id(),
-                    value: red.serialize.apply(red, ([this._value]).concat(arg_array))
+                    value: ist.serialize.apply(ist, ([this._value]).concat(arg_array))
                 };
             },
             function (obj) {
                 return new My({
-                    parent: red.find_uid(obj.parent_uid),
-                    value: red.deserialize(obj.value)
+                    parent: ist.find_uid(obj.parent_uid),
+                    value: ist.deserialize(obj.value)
                 });
             });
-    }(red.SetCopiesCommand));
+    }(ist.SetCopiesCommand));
 
-    red.ResetCommand = function (options) {
-        red.ResetCommand.superclass.constructor.apply(this, arguments);
+    ist.ResetCommand = function (options) {
+        ist.ResetCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.parent) {
@@ -626,7 +626,7 @@
 		this._undoable = false;
     };
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -644,7 +644,7 @@
 			delete this._parent;
         };
     
-        red.register_serializable_type("reset",
+        ist.register_serializable_type("reset",
             function (x) {
                 return x instanceof My;
             },
@@ -656,13 +656,13 @@
             },
             function (obj) {
                 return new My({
-                    parent: red.find_uid(obj.parent_uid)
+                    parent: ist.find_uid(obj.parent_uid)
                 });
             });
-    }(red.ResetCommand));
+    }(ist.ResetCommand));
 
-    red.MovePropAboveBelowCommand = function (options) {
-        red.MovePropCommand.superclass.constructor.apply(this, arguments);
+    ist.MovePropAboveBelowCommand = function (options) {
+        ist.MovePropCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
 
 		this._from_obj = this._options.from_obj;
@@ -672,7 +672,7 @@
 		this._above_below = this._options.above_below;
     };
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -720,7 +720,7 @@
 			delete this._target_name;
 			delete this._above_below;
 		};
-        red.register_serializable_type("move_prop_above_below_command",
+        ist.register_serializable_type("move_prop_above_below_command",
             function (x) {
                 return x instanceof My;
             },
@@ -735,12 +735,12 @@
             },
             function (obj) {
                 return new My({
-					from_obj: red.find_uid(obj.from_obj),
-					target_obj: red.find_uid(obj.target_obj),
+					from_obj: ist.find_uid(obj.from_obj),
+					target_obj: ist.find_uid(obj.target_obj),
 					from_name: obj.from_name,
 					target_name: obj.target_name,
 					above_below: obj.above_below
                 });
             });
-    }(red.MovePropAboveBelowCommand));
-}(red));
+    }(ist.MovePropAboveBelowCommand));
+}(interstate));

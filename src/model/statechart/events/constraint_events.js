@@ -1,21 +1,21 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
 var UNDEF = {};
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.ConstraintEvent = function () {
-		red.Event.apply(this, arguments);
+	ist.ConstraintEvent = function () {
+		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "constraint_event";
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.Event);
+		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.on_create = function (constraint, last_val) {
 			this.constraint = constraint;
@@ -27,12 +27,12 @@ var UNDEF = {};
 			var val = cjs.get(this.constraint, false);
 			if (val && (this._last_val !== val)) {
 				this._last_val = val;
-				red.event_queue.wait();
+				ist.event_queue.wait();
 				this.fire({
 					value: val,
 					timestamp: (new Date()).getTime()
 				});
-				red.event_queue.signal();
+				ist.event_queue.signal();
 			} else {
 				this._last_val = val;
 			}
@@ -64,5 +64,5 @@ var UNDEF = {};
 				this.constraint.offChange(this.check_constraint_val, this);
 			}
 		};
-	}(red.ConstraintEvent));
-}(red));
+	}(ist.ConstraintEvent));
+}(interstate));

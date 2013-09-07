@@ -1,17 +1,17 @@
 /*jslint nomen: true, vars: true, white: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var STATE = {
 		IDLE: {},
 		EDITING: {}
 	};
 
-	$.widget("red.editable_text", {
+	$.widget("ist.editable_text", {
 		options: {
 			text: "",
 			placeholder_text: "",
@@ -119,4 +119,4 @@
 		}
 	});
 
-}(red, jQuery));
+}(interstate, jQuery));

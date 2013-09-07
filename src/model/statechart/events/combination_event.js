@@ -1,19 +1,19 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.CombinationEvent = function () {
-		red.Event.apply(this, arguments);
+	ist.CombinationEvent = function () {
+		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "combination_event";
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.Event);
+		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.on_create = function (events) {
 			this.events = events;
@@ -45,5 +45,5 @@
 				event.disable();
 			});
 		};
-	}(red.CombinationEvent));
-}(red));
+	}(ist.CombinationEvent));
+}(interstate));

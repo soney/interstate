@@ -1,10 +1,10 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,window,console */
+/*global interstate,esprima,able,uid,window,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var EventQueue = function () {
 		able.make_this_listenable(this);
@@ -79,7 +79,7 @@
 		};
 
 		proto.do_run_event_queue = function () {
-			var fire = red.Event.prototype._fire;
+			var fire = ist.Event.prototype._fire;
 			while (this.queue.length > 0) {
 				var event_info = this.queue.shift();
 				fire.apply(event_info.context, event_info.args);
@@ -87,9 +87,9 @@
 		};
 	}(EventQueue));
 
-	red.event_queue = new EventQueue();
+	ist.event_queue = new EventQueue();
 
-	red.Event = function () {
+	ist.Event = function () {
 		able.make_this_listenable(this);
 		this._initialize();
 		this._transition = undefined;
@@ -105,15 +105,15 @@
 		};
 		proto.fire_and_signal = function () {
 			this.fire.apply(this, arguments);
-			red.event_queue.signal();
+			ist.event_queue.signal();
 		};
 		proto.on_create = function () {};
 		proto.on_ready = function() {};
 		proto.fire = function () {
-			if (red.event_queue.is_ready()) {
+			if (ist.event_queue.is_ready()) {
 				this._fire.apply(this, arguments);
 			} else {
-				red.event_queue.push(this, arguments);
+				ist.event_queue.push(this, arguments);
 			}
 		};
 		proto.on_fire = proto.add_listener = function (callback, context) {
@@ -138,7 +138,7 @@
 			}, this);
 		};
 		proto.guard = proto.when = function (func) {
-			var new_event = new red.Event();
+			var new_event = new ist.Event();
 			this.on_fire(function () {
 				if (func.apply(this, arguments)) {
 					new_event.fire.apply(new_event, arguments);
@@ -157,7 +157,7 @@
 			}
 			var timeout = false;
 			var last_args;
-			var new_event = new red.Event();
+			var new_event = new ist.Event();
 			this.on_fire(function () {
 				last_args = arguments;
 				if(!timeout) {
@@ -196,7 +196,7 @@
 			delete this._enabled;
 			able.destroy_this_listenable(this);
 		};
-		proto.create_shadow = function () { return new red.Event(); };
+		proto.create_shadow = function () { return new ist.Event(); };
 		proto.stringify = function () {
 			return "";
 		};
@@ -212,5 +212,5 @@
 		proto.is_enabled = function () {
 			return this._enabled;
 		};
-	}(red.Event));
-}(red));
+	}(ist.Event));
+}(interstate));

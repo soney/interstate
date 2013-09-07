@@ -1,12 +1,12 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedMap,jQuery,window,Raphael */
+/*global interstate,esprima,able,uid,console,RedMap,jQuery,window,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	$.widget("red.statechart", {
+	$.widget("ist.statechart", {
 		options: {
 			transition_font_family: "Source Sans Pro",
 			transition_font_size: "10px",
@@ -42,14 +42,14 @@
 			this.element.addClass("statechart");
 			this.paper = new Raphael(this.element[0], 0, 0);
 			var statecharts = this.option("statecharts");
-			this.layout_manager = new red.RootStatechartLayoutEngine({
+			this.layout_manager = new ist.RootStatechartLayoutEngine({
 				statecharts: statecharts,
 				statecharts_with_add_state_button: [statecharts[0]],
 				start_state_radius: this.option("start_state_radius"),
 				padding_top: this.option("padding_top").call(this),
 				add_state_width: this.option("add_state_width")
 			});
-			this.statechart_view = new red.RootStatechartView(statecharts, this.layout_manager, this.paper, this.options);
+			this.statechart_view = new ist.RootStatechartView(statecharts, this.layout_manager, this.paper, this.options);
 			this.statechart_view.on("add_state", this.add_state, this);
 			this.statechart_view.on("remove_state", this.remove_state, this);
 			this.statechart_view.on("remove_transition", this.remove_transition, this);
@@ -176,7 +176,7 @@
 	});
 
 
-	red.RootStatechartView = function (statecharts, layout_engine, paper, options) {
+	ist.RootStatechartView = function (statecharts, layout_engine, paper, options) {
 		able.make_this_listenable(this);
 		able.make_this_optionable(this, {}, options);
 
@@ -217,7 +217,7 @@
 			var new_items = [];
 			layout.each(function (layout_info, state) {
 				var view;
-				if (state instanceof red.State) {
+				if (state instanceof ist.State) {
 					if (_.indexOf(this.statecharts, state) >= 0) {
 						if (layout_info.add_state_button_x) {
 							this.add_state_button.attr({
@@ -260,7 +260,7 @@
 					}
 					if (this.object_views.has(state)) {
 						view = this.get_view(state, layout_info);
-						if (state instanceof red.StartState) {
+						if (state instanceof ist.StartState) {
 							view.option({
 								c: layout_info.center
 							});
@@ -279,7 +279,7 @@
 						new_items.push(view);
 					}
 					view.toFront();
-				} else if (state instanceof red.StatechartTransition) {
+				} else if (state instanceof ist.StatechartTransition) {
 					if (this.object_views.has(state)) {
 						view = this.get_view(state, layout_info);
 						view.option({
@@ -297,14 +297,14 @@
 			var key;
 			_.each(curr_items, function (ci) {
 				if (new_items.indexOf(ci) < 0) {
-					key = ci instanceof red.TransitionView ? ci.option("transition") : ci.option("state");
+					key = ci instanceof ist.TransitionView ? ci.option("transition") : ci.option("state");
 					this.object_views.remove(key);
 					ci.remove();
 					ci.destroy();
 				}
 			}, this);
 			_.each(new_items, function(view) {
-				if(view instanceof red.TransitionView) {
+				if(view instanceof ist.TransitionView) {
 					view.toFront();
 				}
 			});
@@ -321,7 +321,7 @@
 		able.make_proto_optionable(proto);
 		proto.get_hrange = function(statechart, text, layout_info) {
 			return this.hranges.get_or_put(statechart, function () {
-				return new red.HorizontalRangeDisplay({
+				return new ist.HorizontalRangeDisplay({
 					from_x: layout_info.left_wing_start.x,
 					to_x: layout_info.right_wing_end.x,
 					paper: this.paper,
@@ -343,8 +343,8 @@
 		proto.get_view = function (obj, layout_info) {
 			return this.object_views.get_or_put(obj, function () {
 				var rv;
-				if (obj instanceof red.StatechartTransition) {
-					rv = new red.TransitionView({
+				if (obj instanceof ist.StatechartTransition) {
+					rv = new ist.TransitionView({
 						paper: this.paper,
 						transition: obj,
 						from: layout_info.from,
@@ -370,8 +370,8 @@
 					rv.on("set_to", this.forward_event, this);
 					rv.on("set_from", this.forward_event, this);
 					rv.on("set_str", this.forward_event, this);
-				} else if (obj instanceof red.StartState) {
-					rv = new red.StartStateView({
+				} else if (obj instanceof ist.StartState) {
+					rv = new ist.StartStateView({
 						state: obj,
 						paper: this.paper,
 						c: layout_info.center,
@@ -380,7 +380,7 @@
 						parent: this
 					});
 				} else {
-					rv = new red.StateView({
+					rv = new ist.StateView({
 						state: obj,
 						paper: this.paper,
 						lws: layout_info.left_wing_start,
@@ -474,6 +474,6 @@
 			delete this.add_state_button;
 		};
 
-	}(red.RootStatechartView));
+	}(ist.RootStatechartView));
 	
-}(red, jQuery));
+}(interstate, jQuery));

@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedMap,jQuery,window */
+/*global interstate,esprima,able,uid,console,jQuery,window */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
-	var highlight_running = red.__debug_statecharts;
+	var cjs = ist.cjs,
+		_ = ist._;
+	var highlight_running = ist.__debug_statecharts;
 
-	red.StateView = function (options) {
+	ist.StateView = function (options) {
 		able.make_this_listenable(this);
 		able.make_this_optionable(this, {
 			state: null,
@@ -85,7 +85,7 @@
 								"stroke-dasharray": this.option("vline_dasharray")
 							})
 							.toBack();
-		this.label = new red.EditableText(paper, {x: -100, y: -100, text: "", fill: this.option("text_background"), color: this.option("text_foreground")});
+		this.label = new ist.EditableText(paper, {x: -100, y: -100, text: "", fill: this.option("text_background"), color: this.option("text_foreground")});
 
 		if (state.is_initialized()) {
 			this.initialize();
@@ -383,5 +383,5 @@
 				cursor: ""
 			});
 		};
-	}(red.StateView));
-}(red, jQuery));
+	}(ist.StateView));
+}(interstate, jQuery));

@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
     "use strict";
-    var cjs = red.cjs,
-        _ = red._;
+    var cjs = ist.cjs,
+        _ = ist._;
 
-    red.ChangeCellCommand = function (options) {
-        red.ChangeCellCommand.superclass.constructor.apply(this, arguments);
+    ist.ChangeCellCommand = function (options) {
+        ist.ChangeCellCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.cell || !this._options.str) {
@@ -15,14 +15,14 @@
         }
     
         this._cell = this._options.cell;
-		if(this._cell instanceof red.ContextualCell) {
+		if(this._cell instanceof ist.ContextualCell) {
 			this._cell = this._cell.get_object();
 		}
         this._to_str = this._options.str;
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -37,7 +37,7 @@
             this._cell.set_str(this._from_str);
         };
     
-        red.register_serializable_type("change_cell_command",
+        ist.register_serializable_type("change_cell_command",
             function (x) {
                 return x instanceof My;
             },
@@ -49,7 +49,7 @@
             },
             function (obj) {
                 return new My({
-                    cell: red.find_uid(obj.cell_uid),
+                    cell: ist.find_uid(obj.cell_uid),
                     str: obj.str
                 });
             });
@@ -61,7 +61,7 @@
 			delete this._from_str;
 			delete this._to_str;
 		};
-    }(red.ChangeCellCommand));
+    }(ist.ChangeCellCommand));
 
 
-}(red));
+}(interstate));

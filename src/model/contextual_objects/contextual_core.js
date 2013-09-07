@@ -1,15 +1,15 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.ContextualObject = function (options) {
+	ist.ContextualObject = function (options) {
 		able.make_this_listenable(this);
 		this._id = uid();
-		red.register_uid(this._id, this);
+		ist.register_uid(this._id, this);
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
 		}
@@ -43,8 +43,8 @@
 			} else {
 				var parent_obj = pointer.points_at(my_index-1);
 				var parent_pointer = pointer.slice(0, my_index-1);
-				if(parent_obj instanceof red.Dict) {
-					var name = red.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer());
+				if(parent_obj instanceof ist.Dict) {
+					var name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer());
 					return name;
 				}
 			}
@@ -57,7 +57,7 @@
 			} else {
 				var parent_obj = pointer.points_at(my_index-1);
 				var parent_pointer = pointer.slice(0, my_index-1);
-				if(parent_obj instanceof red.Dict) {
+				if(parent_obj instanceof ist.Dict) {
 					var sp_contexts = pointer.special_contexts();
 					//console.log(sp_contexts);
 					var extra_txt = "";
@@ -65,13 +65,13 @@
 						var sp_context;
 						for(var i = 0; i<sp_contexts.length; i++) {
 							sp_context = sp_contexts[i];
-							if(sp_context instanceof red.CopyContext) {
+							if(sp_context instanceof ist.CopyContext) {
 								extra_txt = "[" + sp_context.copy_num + "]";
 								break;
 							}
 						}
 					}
-					var name = red.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer());
+					var name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer());
 
 					return "("+name+extra_txt+")";
 				} else {
@@ -81,7 +81,7 @@
 		};
 
 		proto.id = proto.hash = function () { return this._id; };
-		if(red.__debug) {
+		if(ist.__debug) {
 			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		}
 
@@ -113,9 +113,9 @@
 		};
 
 		proto.desummarize = function (obj) {
-			var pointer = red.Pointer.desummarize(obj.pointer);
-			var object = red.find_uid(obj.object_uid);
-			return red.find_or_put_contextual_obj(object, pointer);
+			var pointer = ist.Pointer.desummarize(obj.pointer);
+			var object = ist.find_uid(obj.object_uid);
+			return ist.find_or_put_contextual_obj(object, pointer);
 		};
 
 		proto.toString = function () {
@@ -145,7 +145,7 @@
 			this._destroyed = true;
 
 			if(avoid_destroy_call !== true) {
-				red.destroy_contextual_obj(this);
+				ist.destroy_contextual_obj(this);
 			//} else {
 				//debugger;
 				//console.log("A");
@@ -155,7 +155,7 @@
 			delete this.object;
 			delete this.pointer;
 			delete this.$value;
-			red.unregister_uid(this.id());
+			ist.unregister_uid(this.id());
 			this._emit("destroyed");
 			able.destroy_this_listenable(this);
 		};
@@ -179,19 +179,19 @@
 		proto.type = function () {
 			return this._type;
 		};
-	}(red.ContextualObject));
+	}(ist.ContextualObject));
 
 
-	red.check_contextual_object_equality =  red.check_contextual_object_equality_eqeqeq = function (itema, itemb) {
-		if (itema instanceof red.ContextualObject && itemb instanceof red.ContextualObject) {
+	ist.check_contextual_object_equality =  ist.check_contextual_object_equality_eqeqeq = function (itema, itemb) {
+		if (itema instanceof ist.ContextualObject && itemb instanceof ist.ContextualObject) {
 			return itema.get_pointer().eq(itemb.get_pointer()) && itema.get_object() === itemb.get_object();
 		} else {
 			return itema === itemb;
 		}
 	};
 	/*
-	red.check_contextual_object_equality_eqeq = function (itema, itemb) {
-		if (itema instanceof red.ContextualObject && itemb instanceof red.ContextualObject) {
+	ist.check_contextual_object_equality_eqeq = function (itema, itemb) {
+		if (itema instanceof ist.ContextualObject && itemb instanceof ist.ContextualObject) {
 			return itema.get_pointer().eq(itemb.get_pointer()) && itema.get_object() == itemb.get_object();
 		} else {
 			return itema == itemb;
@@ -199,25 +199,25 @@
 	};
 	*/
 
-	red.create_contextual_object = function (object, pointer, options) {
+	ist.create_contextual_object = function (object, pointer, options) {
 		options = _.extend({
 			object: object,
 			pointer: pointer
 		}, options);
 
 		var rv;
-		if (object instanceof red.Cell) {
-			rv = new red.ContextualCell(options);
-		} else if (object instanceof red.StatefulProp) {
-			rv = new red.ContextualStatefulProp(options);
-		} else if (object instanceof red.StatefulObj) {
-			rv = new red.ContextualStatefulObj(options);
-		} else if (object instanceof red.Dict) {
-			rv = new red.ContextualDict(options);
+		if (object instanceof ist.Cell) {
+			rv = new ist.ContextualCell(options);
+		} else if (object instanceof ist.StatefulProp) {
+			rv = new ist.ContextualStatefulProp(options);
+		} else if (object instanceof ist.StatefulObj) {
+			rv = new ist.ContextualStatefulObj(options);
+		} else if (object instanceof ist.Dict) {
+			rv = new ist.ContextualDict(options);
 		} else {
-			rv = new red.ContextualObject(options);
+			rv = new ist.ContextualObject(options);
 		}
 
 		return rv;
 	};
-}(red));
+}(interstate));

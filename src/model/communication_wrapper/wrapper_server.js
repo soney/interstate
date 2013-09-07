@@ -1,14 +1,14 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,window,Box2D,RedMap */
+/*global interstate,esprima,able,uid,console,window,Box2D,RedMap */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 	var id = 0;
 	var ACTIVE = {},
 		PAUSED = {};
-	red.WrapperServer = function (options) {
+	ist.WrapperServer = function (options) {
 		this._id = id++;
 		able.make_this_listenable(this);
 		this.object = options.object;
@@ -51,7 +51,7 @@
 		able.make_proto_listenable(proto);
 
 		proto.id = function() { return this._id; };
-		if(red.__debug) {
+		if(ist.__debug) {
 			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		}
 
@@ -209,7 +209,7 @@
 				callback(summarize_value(rv));
 			}
 		};
-	}(red.WrapperServer));
+	}(ist.WrapperServer));
 		
 	var process_arg = function (arg) {
 		return arg;
@@ -218,7 +218,7 @@
 
 	var summarize_value = function (value, avoid_dict_followup) {
 		var rv;
-		if (value instanceof red.ContextualObject) {
+		if (value instanceof ist.ContextualObject) {
 			var id = value.id();
 			var type = value.type();
 			var object_summary = {
@@ -259,7 +259,7 @@
 				__value__: "contextual_obj",
 				object_summary: object_summary
 			};
-		} else if (value instanceof red.StartState) {
+		} else if (value instanceof ist.StartState) {
 			rv = {
 				__type__: "summarized_obj",
 				__value__: "state",
@@ -268,7 +268,7 @@
 					id: value.id()
 				}
 			};
-		} else if (value instanceof red.Statechart) {
+		} else if (value instanceof ist.Statechart) {
 			rv = {
 				__type__: "summarized_obj",
 				__value__: "state",
@@ -277,7 +277,7 @@
 					id: value.id()
 				}
 			};
-		} else if (value instanceof red.StatechartTransition) {
+		} else if (value instanceof ist.StatechartTransition) {
 			rv = {
 				__type__: "summarized_obj",
 				__value__: "transition",
@@ -286,7 +286,7 @@
 					id: value.id()
 				}
 			};
-		} else if (value instanceof red.Event) {
+		} else if (value instanceof ist.Event) {
 			rv = {
 				__type__: "summarized_obj",
 				__value__: "event",
@@ -296,7 +296,7 @@
 					event_type: value.type()
 				}
 			};
-		} else if (value instanceof red.Cell) {
+		} else if (value instanceof ist.Cell) {
 			rv = {
 				__type__: "summarized_obj",
 				__value__: "contextual_obj",
@@ -305,7 +305,7 @@
 					id: value.id()
 				}
 			};
-		} else if (value instanceof red.WrapperClient) {
+		} else if (value instanceof ist.WrapperClient) {
 			rv = {
 				__type__: "summarized_obj",
 				__value__: "client_wrapper"
@@ -337,7 +337,7 @@
 				__type__: "summarized_obj",
 				__value__: "box2d_world"
 			};
-		} else if(value instanceof red.ParsedFunction) {
+		} else if(value instanceof ist.ParsedFunction) {
 			rv = {
 				__type__: "summarized_obj",
 				__value__: "function"
@@ -350,7 +350,7 @@
 		}
 		return rv;
 	};
-	red.summarize_value_for_comm_wrapper = summarize_value;
+	ist.summarize_value_for_comm_wrapper = summarize_value;
 
 	var chop = function (args) {
 		return _.first(args, args.length - 1);
@@ -372,4 +372,4 @@
 	var argeq = function (arg1, arg2) {
 		return arg1 === arg2;
 	};
-}(red));
+}(interstate));

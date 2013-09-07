@@ -1,16 +1,16 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,jQuery,window */
+/*global interstate,esprima,able,uid,console,jQuery,window */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.ProgramStateServer = function (options) {
+	ist.ProgramStateServer = function (options) {
 		able.make_this_listenable(this);
 		this.root = options.root;
 		if(this.root) {
-			this.contextual_root = red.find_or_put_contextual_obj(this.root);
+			this.contextual_root = ist.find_or_put_contextual_obj(this.root);
 		}
 		this.connected = false;
 		this.wrapper_servers = {};
@@ -57,7 +57,7 @@
 					if ((["undo", "redo", "reset", "export"]).indexOf(stringified_command) >= 0) {
 						this._emit("command", stringified_command);
 					} else {
-						var command = red.destringify(stringified_command);
+						var command = ist.destringify(stringified_command);
 						this._emit("command", command);
 					}
 				} else if(type === "wrapper_client") {
@@ -66,7 +66,7 @@
 					var wrapper_server;
 					if (mtype === "register_listener") {
 						cobj_id = message.cobj_id;
-						cobj = red.find_uid(cobj_id);
+						cobj = ist.find_uid(cobj_id);
 						client_id = data.client_id;
 
 						server = this.get_wrapper_server(cobj, client_id);
@@ -91,7 +91,7 @@
 						}, this));
 					} else if (mtype === "get_$" || mtype === "async_get") { // async request
 						cobj_id = data.cobj_id;
-						cobj = red.find_uid(cobj_id);
+						cobj = ist.find_uid(cobj_id);
 						client_id = data.client_id;
 						var request_id = data.message_id;
 						if(cobj) {
@@ -163,20 +163,20 @@
 				return rv;
 			} else {
 				var listen_to;
-				if (object instanceof red.State) {
+				if (object instanceof ist.State) {
 					listen_to = ["add_transition", "add_substate", "remove_substate",
 										"rename_substate", "move_substate", "make_concurrent",
 										/*"on_transition", "off_transition",*/ "destroy",
 										"active", "inactive", "run", "stop"];
-				} else if (object instanceof red.StatechartTransition) {
+				} else if (object instanceof ist.StatechartTransition) {
 					listen_to = ["setTo", "setFrom", "remove", "destroy", "fire", "enable", "disable"];
-				} else if (object instanceof red.ParsedEvent) {
+				} else if (object instanceof ist.ParsedEvent) {
 					listen_to = ["setString"];
 				} else {
 					listen_to = [];
 				}
 				
-				rv = new red.WrapperServer({
+				rv = new ist.WrapperServer({
 					object: object,
 					listen_to: listen_to,
 					client_ids: [client_id]
@@ -234,6 +234,6 @@
 				delete this.comm_mechanism;
 			}
 		};
-	}(red.ProgramStateServer));
+	}(ist.ProgramStateServer));
 
-}(red, jQuery));
+}(interstate, jQuery));

@@ -1,10 +1,10 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,jQuery,window,FileReader,document */
+/*global interstate,esprima,able,uid,console,jQuery,window,FileReader,document */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._,
+	var cjs = ist.cjs,
+		_ = ist._,
 		origin = window.location.protocol + "//" + window.location.host;
 		
 	function componentToHex(c) {
@@ -60,13 +60,13 @@
 		return rgbToHex.apply(window, rgb);
 	}
 
-	$.widget("red.dom_output", {
+	$.widget("ist.dom_output", {
 		options: {
 			root: undefined,
 			show_edit_button: true,
 			edit_on_open: false,
 			editor_url: "editor.html",
-			editor_name: uid.get_prefix() + "red_editor",
+			editor_name: uid.get_prefix() + "ist_editor",
 			open_separate_client_window: true,
 			editor_window_options: function () {
 				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
@@ -80,7 +80,7 @@
 
 		_create: function () {
 			this.element.addClass("euc_runtime");
-			this._command_stack = new red.CommandStack();
+			this._command_stack = new ist.CommandStack();
 			this.highlights = [];
 			if (this.option("show_edit_button")) {
 				this.button_color = randomColor([0, 1], [0.1, 0.7], [0.4, 0.6]);
@@ -189,7 +189,7 @@
 														var file = files[0];
 														var fr = new FileReader();
 														fr.onload = _.bind(function() {
-															var new_root = red.destringify(fr.result);
+															var new_root = ist.destringify(fr.result);
 															this.option("root", new_root);
 															this.element.trigger("change_root", new_root);
 
@@ -298,13 +298,13 @@
 
 		_add_change_listeners: function () {
 			var root_dict = this.option("root");
-			var root_contextual_object = red.find_or_put_contextual_obj(root_dict);
+			var root_contextual_object = ist.find_or_put_contextual_obj(root_dict);
 
 			var is_running = false;
 			this._update_fn = cjs.liven(function() {
 				//if(is_running) { debugger; }
 				is_running = true;
-				red.update_current_contextual_objects(root_dict);
+				ist.update_current_contextual_objects(root_dict);
 				is_running = false;
 			}, {
 			});
@@ -334,7 +334,7 @@
 		_create_server_socket: function() {
 			var root = this.option("root");
 
-			var server_socket = new red.ProgramStateServer({
+			var server_socket = new ist.ProgramStateServer({
 				root: root
 			}).on("connected", function () {
 				if(this.edit_button) {
@@ -354,26 +354,26 @@
 				} else if (command === "reset") {
 					root.reset();
 				} else if (command === "export") {
-					window.open("data:text/plain;charset=utf-8," + red.stringify(root));
+					window.open("data:text/plain;charset=utf-8," + ist.stringify(root));
 				} else {
 					this._command_stack._do(command);
 				}
 			}, this).on("message", function(message) {
 				if(message) {
 					if(message.type === "add_highlight") {
-						this.add_highlight(red.find_uid(message.cobj_id), message.highlight_type);
+						this.add_highlight(ist.find_uid(message.cobj_id), message.highlight_type);
 					} else if(message.type === "remove_highlight") {
-						this.remove_highlight(red.find_uid(message.cobj_id), message.highlight_type);
+						this.remove_highlight(ist.find_uid(message.cobj_id), message.highlight_type);
 					} else if(message.type === "get_ptr") {
 						var cobj_id = message.cobj_id;
-						var cobj = red.find_uid(message.cobj_id);
+						var cobj = ist.find_uid(message.cobj_id);
 						if(cobj) {
 							var ptr = cobj.get_pointer();
 							var cobjs = [];
 							for(var i = ptr.length(); i>=2; i--) {
-								cobjs[i-2] = red.find_or_put_contextual_obj(ptr.points_at(i), ptr.slice(0, i));
+								cobjs[i-2] = ist.find_or_put_contextual_obj(ptr.points_at(i), ptr.slice(0, i));
 							}
-							var summaries = red.summarize_value_for_comm_wrapper(cobjs);
+							var summaries = ist.summarize_value_for_comm_wrapper(cobjs);
 							this.server_socket.post({
 								type: "cobj_links",
 								cobj_id: cobj_id,
@@ -396,10 +396,10 @@
 				var communication_mechanism;
 				if (this.option("open_separate_client_window")) {
 					this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options")());
-					communication_mechanism = new red.InterWindowCommWrapper(this.editor_window, this.option("client_id")); 
+					communication_mechanism = new ist.InterWindowCommWrapper(this.editor_window, this.option("client_id")); 
 				} else {
 					this.editor_window = window;
-					communication_mechanism = new red.SameWindowCommWrapper(this.option("client_id"), 0); 
+					communication_mechanism = new ist.SameWindowCommWrapper(this.option("client_id"), 0); 
 				}
 
 				this.server_socket = this.server_socket || this._create_server_socket();
@@ -434,7 +434,7 @@
 		},
 
 		add_highlight: function(cobj, highlight_type) {
-			if(cobj instanceof red.ContextualDict) {
+			if(cobj instanceof ist.ContextualDict) {
 				var len = this.highlights.length;
 				var highlight;
 				for(var i = 0; i < len; i++) {
@@ -546,4 +546,4 @@
 			}
 		}
 	});
-}(red, jQuery));
+}(interstate, jQuery));

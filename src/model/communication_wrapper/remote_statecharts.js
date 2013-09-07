@@ -1,16 +1,16 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var statecharts = {};
 
-	red.create_remote_statechart = function (wrapper_client, statechart_parent) {
+	ist.create_remote_statechart = function (wrapper_client, statechart_parent) {
 		var id = wrapper_client.cobj_id;
-		var statechart = red.find_uid(id);
+		var statechart = ist.find_uid(id);
 		var is_active, is_active_value, is_running, is_running_value, promises, listeners;
 		var destroyed = false;
 		
@@ -25,7 +25,7 @@
 			} else {
 				var type = wrapper_client.type();
 				if (type === "statechart") {
-					statechart = statecharts[id] = new red.Statechart(null, true);
+					statechart = statecharts[id] = new ist.Statechart(null, true);
 					statechart.puppet_master_id = id;
 					var substates = _.Deferred();
 					var substates_value;
@@ -34,7 +34,7 @@
 						substates_value = cjs.map({ });
 
 						_.each(substate_wrappers, function (substate_wrapper, name) {
-							var substate = red.create_remote_statechart(substate_wrapper, statechart);
+							var substate = ist.create_remote_statechart(substate_wrapper, statechart);
 							substates_value.put(name, substate);
 							if (!substate.is_initialized()) {
 								var substate_promise = _.Deferred();
@@ -50,7 +50,7 @@
 					var start_state = _.Deferred();
 					var start_state_value;
 					wrapper_client.async_get('get_start_state', function (substate_wrapper) {
-						start_state_value = red.create_remote_statechart(substate_wrapper, statechart);
+						start_state_value = ist.create_remote_statechart(substate_wrapper, statechart);
 						start_state.resolve();
 					});
 
@@ -59,7 +59,7 @@
 					var outgoing_transitions_value;
 					wrapper_client.async_get('get_outgoing_transitions', function (transition_wrappers) {
 						var outgoing_transitions_value_arr = _.map(transition_wrappers, function (transition_wrapper, name) {
-							var transition = red.create_remote_transition(transition_wrapper);
+							var transition = ist.create_remote_transition(transition_wrapper);
 							return transition;
 						});
 						outgoing_transitions_value = cjs.array({value: outgoing_transitions_value_arr});
@@ -70,7 +70,7 @@
 					var incoming_transitions_value;
 					wrapper_client.async_get('get_incoming_transitions', function (transition_wrappers) {
 						var incoming_transitions_value_arr = _.map(transition_wrappers, function (transition_wrapper, name) {
-							var transition = red.create_remote_transition(transition_wrapper);
+							var transition = ist.create_remote_transition(transition_wrapper);
 							return transition;
 						});
 						incoming_transitions_value = cjs.array({value: incoming_transitions_value_arr});
@@ -105,7 +105,7 @@
 							var state_name = event.state_name,
 								index = event.index,
 								state_wrapper_client = event.state;
-							var substate = red.create_remote_statechart(state_wrapper_client, statechart);
+							var substate = ist.create_remote_statechart(state_wrapper_client, statechart);
 							statechart.add_substate(state_name, substate, index);
 						},
 						remove_substate: function (event) {
@@ -132,9 +132,9 @@
 							var transition_wrapper_client = event.transition,
 								from_state_wrapper_client = event.from_state,
 								to_state_wrapper_client = event.to_state,
-								from_state = red.create_remote_statechart(from_state_wrapper_client),
-								to_state = red.create_remote_statechart(to_state_wrapper_client),
-								transition = red.create_remote_transition(transition_wrapper_client);
+								from_state = ist.create_remote_statechart(from_state_wrapper_client),
+								to_state = ist.create_remote_statechart(to_state_wrapper_client),
+								transition = ist.create_remote_transition(transition_wrapper_client);
 
 							from_state._add_direct_outgoing_transition(transition);
 							to_state._add_direct_incoming_transition(transition);
@@ -171,7 +171,7 @@
 						});
 					});
 				} else {
-					statechart = statecharts[id] = new red.StartState(null, true);
+					statechart = statecharts[id] = new ist.StartState(null, true);
 					statechart.puppet_master_id = id;
 
 					var outgoing_transition = _.Deferred();
@@ -195,7 +195,7 @@
 					};
 
 					wrapper_client.async_get('get_outgoing_transition', function (transition_wrapper) {
-						outgoing_transition_value = red.create_remote_transition(transition_wrapper);
+						outgoing_transition_value = ist.create_remote_transition(transition_wrapper);
 
 						// Wait for a resolution so that we can know if the to state is me
 						if(outgoing_transition_value.is_initialized()) {
@@ -248,9 +248,9 @@
 
 	var transitions = {};
 
-	red.create_remote_transition = function (wrapper_client) {
+	ist.create_remote_transition = function (wrapper_client) {
 		var id = wrapper_client.cobj_id;
-		var transition = red.find_uid(id);
+		var transition = ist.find_uid(id);
 		var listeners;
 		transition = false;
 		var destroyed = false;
@@ -259,38 +259,38 @@
 			if (transitions.hasOwnProperty(id)) {
 				transition = transitions[id];
 			} else {
-				transition = transitions[id] = new red.StatechartTransition(null, true);
+				transition = transitions[id] = new ist.StatechartTransition(null, true);
 				transition.puppet_master_id = id;
 
 				var from = _.Deferred();
 				var from_value;
 				wrapper_client.async_get('from', function (state_wrapper) {
-					from_value = red.create_remote_statechart(state_wrapper);
+					from_value = ist.create_remote_statechart(state_wrapper);
 					from.resolve();
 				});
 
 				var to = _.Deferred();
 				var to_value;
 				wrapper_client.async_get('to', function (state_wrapper) {
-					to_value = red.create_remote_statechart(state_wrapper);
+					to_value = ist.create_remote_statechart(state_wrapper);
 					to.resolve();
 				});
 
 				var event = _.Deferred();
 				var event_value;
 				wrapper_client.async_get('event', function (event_wrapper) {
-					event_value = red.create_remote_event(event_wrapper);
+					event_value = ist.create_remote_event(event_wrapper);
 					event.resolve();
 				});
 				listeners = {
 					setTo: function (event) {
 						var state_client_wrapper = event.state,
-							state = red.create_remote_statechart(state_client_wrapper);
+							state = ist.create_remote_statechart(state_client_wrapper);
 						transition.setTo(state);
 					},
 					setFrom: function (event) {
 						var state_client_wrapper = event.state,
-							state = red.create_remote_statechart(state_client_wrapper);
+							state = ist.create_remote_statechart(state_client_wrapper);
 						transition.setFrom(state);
 					},
 					remove: function (event) {
@@ -330,9 +330,9 @@
 
 	var events = {};
 
-	red.create_remote_event = function (wrapper_client) {
+	ist.create_remote_event = function (wrapper_client) {
 		var id = wrapper_client.cobj_id;
-		var event = red.find_uid(id);
+		var event = ist.find_uid(id);
 		var listeners;
 		var destroyed = false;
 		event = false;
@@ -345,9 +345,9 @@
 				var event_type = wrapper_client.object_summary.event_type;
 
 				if(event_type === "statechart_event") {
-					event = events[id] = new red.StatechartEvent({inert: true});
+					event = events[id] = new ist.StatechartEvent({inert: true});
 				} else if (event_type === "parsed_event") {
-					event = events[id] = new red.ParsedEvent({inert: true});
+					event = events[id] = new ist.ParsedEvent({inert: true});
 					var str_val = "";
 					wrapper_client.async_get("get_str", function (str) {
 						if(destroyed) { return; }
@@ -398,4 +398,4 @@
 		}
 		return event;
 	};
-}(red));
+}(interstate));

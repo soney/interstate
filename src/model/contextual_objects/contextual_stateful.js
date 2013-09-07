@@ -1,18 +1,18 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedMap */
+/*global interstate,esprima,able,uid,console,RedMap */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.ContextualStatefulObj = function (options) {
-		red.ContextualStatefulObj.superclass.constructor.apply(this, arguments);
+	ist.ContextualStatefulObj = function (options) {
+		ist.ContextualStatefulObj.superclass.constructor.apply(this, arguments);
 		this._type = "stateful";
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.ContextualDict);
+		_.proto_extend(My, ist.ContextualDict);
 		var proto = My.prototype;
 
 		proto.initialize = function() {
@@ -38,7 +38,7 @@
 			var contextual_protos = this.get_all_protos();
 			var proto_statecharts = _	.chain(contextual_protos)
 										.map(function (x) {
-											if (x instanceof red.StatefulObj) {
+											if (x instanceof ist.StatefulObj) {
 												return this.get_statechart_for_proto(x);
 											} else {
 												return false;
@@ -66,5 +66,5 @@
 			delete this.statecharts_per_proto;
 			My.superclass.destroy.apply(this, arguments);
 		};
-	}(red.ContextualStatefulObj));
-}(red));
+	}(ist.ContextualStatefulObj));
+}(interstate));

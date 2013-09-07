@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
     "use strict";
-    var cjs = red.cjs,
-        _ = red._;
+    var cjs = ist.cjs,
+        _ = ist._;
 
-    red.CombinedCommand = function (options) {
-        red.CombinedCommand.superclass.constructor.apply(this, arguments);
+    ist.CombinedCommand = function (options) {
+        ist.CombinedCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
         if (!this._options.commands) {
             throw new Error("Must specify commands!");
@@ -15,7 +15,7 @@
         this._commands = options.commands;
     };
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -37,21 +37,21 @@
 			delete this._commands;
         };
     
-        red.register_serializable_type("combined_command",
+        ist.register_serializable_type("combined_command",
             function (x) {
                 return x instanceof My;
             },
             function () {
                 var arg_array = _.toArray(arguments);
                 return {
-                    commands: red.serialize.apply(red, ([this._commands]).concat(arg_array))
+                    commands: ist.serialize.apply(ist, ([this._commands]).concat(arg_array))
                 };
             },
             function (obj) {
                 return new My({
-                    commands: red.deserialize(obj.commands)
+                    commands: ist.deserialize(obj.commands)
                 });
             });
-    }(red.CombinedCommand));
+    }(ist.CombinedCommand));
 
-}(red));
+}(interstate));

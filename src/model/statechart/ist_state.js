@@ -1,12 +1,12 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.find_equivalent_state = function (to_state, in_tree) {
+	ist.find_equivalent_state = function (to_state, in_tree) {
 		var in_tree_basis = in_tree.basis();
 		var in_tree_basis_lineage = in_tree_basis.get_lineage();
 		var to_state_lineage = to_state.get_lineage();
@@ -44,7 +44,7 @@
 		return search_item;
 	};
 
-	red.State = function (options, defer_initialization) {
+	ist.State = function (options, defer_initialization) {
 		this._initialized = cjs.$(false);
 		options = options || {};
 		able.make_this_listenable(this);
@@ -86,7 +86,7 @@
 			}
 			this._basis = basis;
 			if (this._basis) {
-				if (this._basis instanceof red.Statechart) {
+				if (this._basis instanceof ist.Statechart) {
 					var basis_start_state = this._basis.get_start_state();
 					var basis_start_state_to = basis_start_state.getTo();
 					var is_running = this.is_running();
@@ -101,7 +101,7 @@
 							active: is_running && (basis_start_state_to === substate || is_concurrent),
 							set_basis_as_root: false
 						});
-						if (shadow instanceof red.StartState) {
+						if (shadow instanceof ist.StartState) {
 							this.set_start_state(shadow);
 						} else {
 							this.add_substate(name, shadow);
@@ -118,8 +118,8 @@
 						context = this.context();
 
 					var create_transition_shadow = _.memoize(function (transition) {
-						var from = red.find_equivalent_state(transition.from(), parent_statechart);
-						var to = red.find_equivalent_state(transition.to(), parent_statechart);
+						var from = ist.find_equivalent_state(transition.from(), parent_statechart);
+						var to = ist.find_equivalent_state(transition.to(), parent_statechart);
 						return transition.create_shadow(from, to, parent_statechart, context);
 					}, function (transition, from) {
 						return transition.id();
@@ -201,7 +201,7 @@
 			}
 		};
 		proto.id = proto.hash = function () { return this._id; };
-		if(red.__debug) {
+		if(ist.__debug) {
 			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		}
 		proto.basis = function () { return this._basis; };
@@ -286,7 +286,7 @@
 					parent.set_active_substate(active_substate, transition, event);
 					i += 1;
 				}
-				if(active_substate instanceof red.Statechart) {
+				if(active_substate instanceof ist.Statechart) {
 					var start_state = active_substate.get_start_state();
 					if(!start_state.is_running()) {
 						start_state.run();
@@ -372,15 +372,15 @@
 		};
 		my.desummarize = function (obj) {
 			if (obj.context) {
-				var state_basis = red.find_uid(obj.basis_id);
-				var context = red.Pointer.desummarize(obj.context);
+				var state_basis = ist.find_uid(obj.basis_id);
+				var context = ist.Pointer.desummarize(obj.context);
 				var dict = context.points_at();
 				var contextual_statechart = dict.get_statechart_for_context(context);
 
-				var state = red.find_equivalent_state(state_basis, contextual_statechart);
+				var state = ist.find_equivalent_state(state_basis, contextual_statechart);
 				return state;
 			} else {
-				return red.find_uid(obj.basis_id);
+				return ist.find_uid(obj.basis_id);
 			}
 		};
 		proto.add_basis_listeners = function() {
@@ -407,8 +407,8 @@
 		};
 		proto.onBasisAddTransition = function (event) {
 			var transition = event.transition;
-			var new_from = red.find_equivalent_state(event.from_state, this);
-			var new_to = red.find_equivalent_state(event.to_state, this);
+			var new_from = ist.find_equivalent_state(event.from_state, this);
+			var new_to = ist.find_equivalent_state(event.to_state, this);
 			var transition_shadow = transition.create_shadow(new_from, new_to, this, this.context());
 			new_from._add_direct_outgoing_transition(transition_shadow);
 			new_to._add_direct_incoming_transition(transition_shadow);
@@ -463,7 +463,7 @@
 			delete this._parent;
 			delete this._context;
 			able.destroy_this_listenable(this);
-			red.unregister_uid(this.id());
+			ist.unregister_uid(this.id());
 		};
-	}(red.State));
-}(red));
+	}(ist.State));
+}(interstate));

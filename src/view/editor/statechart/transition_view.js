@@ -1,12 +1,12 @@
 /*jslint nomen: true, vars: true */
-/*global Raphael,red,esprima,able,uid,console,RedMap,jQuery,window */
+/*global Raphael,interstate,esprima,able,uid,console,jQuery,window */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	var highlight_enabled = red.__debug_statecharts;
+	var highlight_enabled = ist.__debug_statecharts;
 
 	var get_arrow_paths = function (from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians) {
 		var fromX = from.x,
@@ -77,7 +77,7 @@
 					y: (p1.y + p2.y) / 2 };
 	};
 
-	red.TransitionView = function (options) {
+	ist.TransitionView = function (options) {
 		able.make_this_listenable(this);
 		able.make_this_optionable(this, {
 			transition: null,
@@ -125,11 +125,11 @@
 		var transition = this.option("transition");
 		var event = transition.event();
 		var str = "";
-		if (event instanceof red.ParsedEvent) {
+		if (event instanceof ist.ParsedEvent) {
 			str = event.get_str();
 		}
 		var c = center(this.option("from"), this.option("to"));
-		this.label = new red.EditableText(paper, {x: c.x, y: c.y + 8, text: str, fill: this.option("text_background"), color: this.option("text_foreground")});
+		this.label = new ist.EditableText(paper, {x: c.x, y: c.y + 8, text: str, fill: this.option("text_background"), color: this.option("text_foreground")});
 		this.label.option({
 			"font-size": this.option("font_size"),
 			"font-family": this.option("font_family")
@@ -141,7 +141,7 @@
 		transition.on("fire", this.flash, this);
 		var from = this.option("from");
 
-		if (event instanceof red.ParsedEvent) {
+		if (event instanceof ist.ParsedEvent) {
 			event.on("setString", function (e) {
 				var str = e.to;
 				this.label.option("text", str);
@@ -251,7 +251,7 @@
 			var transition = this.option("transition");
 			var event = transition.event();
 			var str = "";
-			if (event instanceof red.ParsedEvent) {
+			if (event instanceof ist.ParsedEvent) {
 				str = event.get_str();
 			} else {
 				str = "(start)";
@@ -363,7 +363,7 @@
 													width: width + "px"
 												});
 			var items;
-			if(transition.from() instanceof red.StartState) {
+			if(transition.from() instanceof ist.StartState) {
 				this.edit_dropdown.append(this.change_to);
 			} else {
 				this.edit_dropdown.append(this.edit_event, this.change_from, this.change_to, this.remove_item);
@@ -516,5 +516,5 @@
 			able.destroy_this_listenable(this);
 			able.destroy_this_optionable(this);
 		};
-	}(red.TransitionView));
-}(red, jQuery));
+	}(ist.TransitionView));
+}(interstate, jQuery));

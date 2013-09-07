@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.ContextualCell = function (options) {
-		red.ContextualCell.superclass.constructor.apply(this, arguments);
+	ist.ContextualCell = function (options) {
+		ist.ContextualCell.superclass.constructor.apply(this, arguments);
 		this._errors = cjs.$([]);
 		this._type = "cell";
 		//if(this.id() == "402") {
@@ -16,7 +16,7 @@
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.ContextualObject);
+		_.proto_extend(My, ist.ContextualObject);
 		var proto = My.prototype;
 		proto.initialize = function(options) {
 			My.superclass.initialize.apply(this, arguments);
@@ -37,7 +37,7 @@
 		};
 		proto._getter = function () {
 			var value;
-			if(red.__debug) {
+			if(ist.__debug) {
 				value = cjs.get(this.value_constraint);
 			} else {
 				try {
@@ -56,5 +56,5 @@
 			var cell = this.get_object();
 			return cell.get_syntax_errors();
 		};
-	}(red.ContextualCell));
-}(red));
+	}(ist.ContextualCell));
+}(interstate));

@@ -1,14 +1,14 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var scid = 0;
 
-	red.SpecialContext = function () {
+	ist.SpecialContext = function () {
 		this._id = "c" + (scid += 1);
 		this.context_obj = {};
 	};
@@ -23,13 +23,13 @@
 		proto.eq = function (other_context) {
 			return this === other_context;
 		};
-	}(red.SpecialContext));
+	}(ist.SpecialContext));
 
-	red.ProvisionalContext = function (values) {
+	ist.ProvisionalContext = function (values) {
 		this.values = values || {};
 	};
 	(function (My) {
-		_.proto_extend(My, red.SpecialContext);
+		_.proto_extend(My, ist.SpecialContext);
 		var proto = My.prototype;
 		proto.has = function (name) {
 			return this.values.hasOwnProperty(name);
@@ -43,18 +43,18 @@
 		proto.eq = function(other_context) {
 			return other_context instanceof My;
 		};
-	}(red.ProvisionalContext));
+	}(ist.ProvisionalContext));
 
 
-	red.StateContext = function (state) {
-		red.StateContext.superclass.constructor.apply(this, arguments);
+	ist.StateContext = function (state) {
+		ist.StateContext.superclass.constructor.apply(this, arguments);
 		this.state = state;
 		this.context_obj = {
 		};
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.SpecialContext);
+		_.proto_extend(My, ist.SpecialContext);
 		var proto = My.prototype;
 		proto.get_state = function () {
 			return this.state;
@@ -63,11 +63,11 @@
 			var state = this.get_state();
 			return state.get_event();
 		};
-	}(red.StateContext));
+	}(ist.StateContext));
 
 	var ec_counter = 1;
-	red.EventContext = function (event) {
-		red.EventContext.superclass.constructor.apply(this, arguments);
+	ist.EventContext = function (event) {
+		ist.EventContext.superclass.constructor.apply(this, arguments);
 		this.event = event;
 		this.context_obj = {
 			event: { value: event }
@@ -75,15 +75,15 @@
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.SpecialContext);
+		_.proto_extend(My, ist.SpecialContext);
 		var proto = My.prototype;
 		proto.get_event = function () {
 			return this.event;
 		};
-	}(red.EventContext));
+	}(ist.EventContext));
 
-	red.CopyContext = function (owner, my_copy, copy_num, options) {
-		red.CopyContext.superclass.constructor.apply(this, arguments);
+	ist.CopyContext = function (owner, my_copy, copy_num, options) {
+		ist.CopyContext.superclass.constructor.apply(this, arguments);
 		this.my_copy = my_copy;
 		this.copy_num = copy_num;
 		this.context_obj = {
@@ -97,10 +97,10 @@
 		this._owner = owner;
 	};
 	(function (My) {
-		_.proto_extend(My, red.SpecialContext);
+		_.proto_extend(My, ist.SpecialContext);
 		var proto = My.prototype;
 		proto.get_copy_num = function () {
 			return this.copy_num;
 		};
-	}(red.CopyContext));
-}(red));
+	}(ist.CopyContext));
+}(interstate));

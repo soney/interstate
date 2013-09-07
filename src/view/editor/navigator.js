@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true, white: true */
 /*jshint scripturl: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	$.widget("red.navigator", {
+	$.widget("interstate.navigator", {
 		options: {
 			root_client: false,
 			single_col: false,
@@ -52,7 +52,7 @@
 		},
 		on_child_select: function(column, event, child_info) {
 			var value = child_info.value;
-			if(value instanceof red.WrapperClient && (value.type() === "dict" || value.type() === "stateful")) {
+			if(value instanceof ist.WrapperClient && (value.type() === "dict" || value.type() === "stateful")) {
 				this.curr_col.column("option", "is_curr_col", false);
 
 				var column_index = _.indexOf(this.columns, column);
@@ -228,4 +228,4 @@
 		}
 	});
 
-}(red, jQuery));
+}(interstate, jQuery));

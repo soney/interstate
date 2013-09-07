@@ -1,23 +1,23 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.Environment = function (options) {
+	ist.Environment = function (options) {
 		// Undo stack
-		this._command_stack = new red.CommandStack();
+		this._command_stack = new ist.CommandStack();
 
 		var root, root_pointer;
 		if (options && _.has(options, "root")) {
 			root = options.root;
-			root_pointer = new red.Pointer({stack: [root]});
+			root_pointer = new ist.Pointer({stack: [root]});
 		} else {
-			root = new red.Dict({has_protos: false, direct_attachments: [new red.PaperAttachment()]});
+			root = new ist.Dict({has_protos: false, direct_attachments: [new ist.PaperAttachment()]});
 
-			root_pointer = new red.Pointer({stack: [root]});
+			root_pointer = new ist.Pointer({stack: [root]});
 			if(!options || options.create_builtins !== false) {
 				this.initialize_props(root_pointer);
 			}
@@ -29,12 +29,12 @@
 
 			/*
 		if(!options || options.create_builtins !== false) {
-			root.set("emit", red.emit);
+			root.set("emit", ist.emit);
 			root.set("find", function (find_root) {
 				if (arguments.length === 0) {
-					find_root = new red.ContextualObject({pointer: root_pointer});
+					find_root = new ist.ContextualObject({pointer: root_pointer});
 				}
-				return new red.Query({value: find_root});
+				return new ist.Query({value: find_root});
 			});
 		}
 			*/
@@ -46,16 +46,16 @@
 		proto.initialize_props = function (root_pointer) {
 			var root_dict = root_pointer.points_at();
 
-			var screen = new red.Dict({has_protos: false});
+			var screen = new ist.Dict({has_protos: false});
 			root_dict.set("screen", screen);
 
-			root_dict.set("width", new red.Cell({str: "500"}));
-			root_dict.set("height", new red.Cell({str: "500"}));
+			root_dict.set("width", new ist.Cell({str: "500"}));
+			root_dict.set("height", new ist.Cell({str: "500"}));
 
-			var shape = new red.Dict({has_protos: false});
+			var shape = new ist.Dict({has_protos: false});
 			root_dict.set("shape", shape);
 
-			var circle = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
+			var circle = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "circle",
 																									constructor_params: [0, 0, 0]
@@ -63,26 +63,26 @@
 																						})]
 																					});
 			shape.set("circle", circle);
-			circle.set("show", new red.Cell({str: "true"}));
-			circle.set("clip_rect", new red.Cell({str: "null"}));
-			circle.set("cursor", new red.Cell({str: "'default'"}));
-			circle.set("cx", new red.Cell({str: "30"}));
-			circle.set("cy", new red.Cell({str: "50"}));
-			circle.set("fill", new red.Cell({str: "'none'"}));
-			circle.set("fill_opacity", new red.Cell({str: "1.0"}));
-			circle.set("opacity", new red.Cell({str: "1.0"}));
-			circle.set("r", new red.Cell({str: "50"}));
-			circle.set("stroke", new red.Cell({str: "'black'"}));
-			circle.set("stroke_dasharray", new red.Cell({str: "''"}));
-			circle.set("stroke_opacity", new red.Cell({str: "1.0"}));
-			circle.set("stroke_width", new red.Cell({str: "1"}));
-			circle.set("transform", new red.Cell({str: "''"}));
-			circle.set("animated_properties", new red.Cell({str: "false"}));
-			circle.set("animation_duration", new red.Cell({str: "300"}));
-			circle.set("animation_easing", new red.Cell({str: "'linear'"}));
+			circle.set("show", new ist.Cell({str: "true"}));
+			circle.set("clip_rect", new ist.Cell({str: "null"}));
+			circle.set("cursor", new ist.Cell({str: "'default'"}));
+			circle.set("cx", new ist.Cell({str: "30"}));
+			circle.set("cy", new ist.Cell({str: "50"}));
+			circle.set("fill", new ist.Cell({str: "'none'"}));
+			circle.set("fill_opacity", new ist.Cell({str: "1.0"}));
+			circle.set("opacity", new ist.Cell({str: "1.0"}));
+			circle.set("r", new ist.Cell({str: "50"}));
+			circle.set("stroke", new ist.Cell({str: "'black'"}));
+			circle.set("stroke_dasharray", new ist.Cell({str: "''"}));
+			circle.set("stroke_opacity", new ist.Cell({str: "1.0"}));
+			circle.set("stroke_width", new ist.Cell({str: "1"}));
+			circle.set("transform", new ist.Cell({str: "''"}));
+			circle.set("animated_properties", new ist.Cell({str: "false"}));
+			circle.set("animation_duration", new ist.Cell({str: "300"}));
+			circle.set("animation_easing", new ist.Cell({str: "'linear'"}));
 
 
-			var ellipse = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
+			var ellipse = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "ellipse",
 																									constructor_params: [0, 0, 0, 0]
@@ -90,26 +90,26 @@
 																						})]
 																					});
 			shape.set("ellipse", ellipse);
-			ellipse.set("show", new red.Cell({str: "true"}));
-			ellipse.set("clip_rect", new red.Cell({str: "null"}));
-			ellipse.set("cursor", new red.Cell({str: "'default'"}));
-			ellipse.set("cx", new red.Cell({str: "30"}));
-			ellipse.set("cy", new red.Cell({str: "50"}));
-			ellipse.set("fill", new red.Cell({str: "'none'"}));
-			ellipse.set("fill_opacity", new red.Cell({str: "1.0"}));
-			ellipse.set("opacity", new red.Cell({str: "1.0"}));
-			ellipse.set("rx", new red.Cell({str: "50"}));
-			ellipse.set("ry", new red.Cell({str: "20"}));
-			ellipse.set("stroke", new red.Cell({str: "'black'"}));
-			ellipse.set("stroke_dasharray", new red.Cell({str: "''"}));
-			ellipse.set("stroke_opacity", new red.Cell({str: "1.0"}));
-			ellipse.set("stroke_width", new red.Cell({str: "1"}));
-			ellipse.set("transform", new red.Cell({str: "''"}));
-			ellipse.set("animated_properties", new red.Cell({str: "false"}));
-			ellipse.set("animation_duration", new red.Cell({str: "300"}));
-			ellipse.set("animation_easing", new red.Cell({str: "'linear'"}));
+			ellipse.set("show", new ist.Cell({str: "true"}));
+			ellipse.set("clip_rect", new ist.Cell({str: "null"}));
+			ellipse.set("cursor", new ist.Cell({str: "'default'"}));
+			ellipse.set("cx", new ist.Cell({str: "30"}));
+			ellipse.set("cy", new ist.Cell({str: "50"}));
+			ellipse.set("fill", new ist.Cell({str: "'none'"}));
+			ellipse.set("fill_opacity", new ist.Cell({str: "1.0"}));
+			ellipse.set("opacity", new ist.Cell({str: "1.0"}));
+			ellipse.set("rx", new ist.Cell({str: "50"}));
+			ellipse.set("ry", new ist.Cell({str: "20"}));
+			ellipse.set("stroke", new ist.Cell({str: "'black'"}));
+			ellipse.set("stroke_dasharray", new ist.Cell({str: "''"}));
+			ellipse.set("stroke_opacity", new ist.Cell({str: "1.0"}));
+			ellipse.set("stroke_width", new ist.Cell({str: "1"}));
+			ellipse.set("transform", new ist.Cell({str: "''"}));
+			ellipse.set("animated_properties", new ist.Cell({str: "false"}));
+			ellipse.set("animation_duration", new ist.Cell({str: "300"}));
+			ellipse.set("animation_easing", new ist.Cell({str: "'linear'"}));
 			
-			var image = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
+			var image = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "image",
 																									constructor_params: ["", 0, 0, 0, 0]
@@ -117,22 +117,22 @@
 																						})]
 																					});
 			shape.set("image", image);
-			image.set("show", new red.Cell({str: "true"}));
-			image.set("clip_rect", new red.Cell({str: "null"}));
-			image.set("cursor", new red.Cell({str: "'default'"}));
-			image.set("opacity", new red.Cell({str: "1.0"}));
-			image.set("src", new red.Cell({str: "'http://from.so/smile.png'"}));
-			image.set("transform", new red.Cell({str: "''"}));
-			image.set("x", new red.Cell({str: "20"}));
-			image.set("y", new red.Cell({str: "20"}));
-			image.set("width", new red.Cell({str: "150"}));
-			image.set("height", new red.Cell({str: "150"}));
-			image.set("animated_properties", new red.Cell({str: "false"}));
-			image.set("animation_duration", new red.Cell({str: "300"}));
-			image.set("animation_easing", new red.Cell({str: "'linear'"}));
+			image.set("show", new ist.Cell({str: "true"}));
+			image.set("clip_rect", new ist.Cell({str: "null"}));
+			image.set("cursor", new ist.Cell({str: "'default'"}));
+			image.set("opacity", new ist.Cell({str: "1.0"}));
+			image.set("src", new ist.Cell({str: "'http://from.so/smile.png'"}));
+			image.set("transform", new ist.Cell({str: "''"}));
+			image.set("x", new ist.Cell({str: "20"}));
+			image.set("y", new ist.Cell({str: "20"}));
+			image.set("width", new ist.Cell({str: "150"}));
+			image.set("height", new ist.Cell({str: "150"}));
+			image.set("animated_properties", new ist.Cell({str: "false"}));
+			image.set("animation_duration", new ist.Cell({str: "300"}));
+			image.set("animation_easing", new ist.Cell({str: "'linear'"}));
 
 
-			var rect = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
+			var rect = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "rect",
 																									constructor_params: [0, 0, 0, 0]
@@ -140,27 +140,27 @@
 																						})]
 																					});
 			shape.set("rect", rect);
-			rect.set("show", new red.Cell({str: "true"}));
-			rect.set("clip_rect", new red.Cell({str: "null"}));
-			rect.set("cursor", new red.Cell({str: "'default'"}));
-			rect.set("x", new red.Cell({str: "20"}));
-			rect.set("y", new red.Cell({str: "30"}));
-			rect.set("fill", new red.Cell({str: "'red'"}));
-			rect.set("fill_opacity", new red.Cell({str: "1.0"}));
-			rect.set("opacity", new red.Cell({str: "1.0"}));
-			rect.set("r", new red.Cell({str: "0"}));
-			rect.set("stroke", new red.Cell({str: "'black'"}));
-			rect.set("stroke_dasharray", new red.Cell({str: "''"}));
-			rect.set("stroke_opacity", new red.Cell({str: "1.0"}));
-			rect.set("stroke_width", new red.Cell({str: "1"}));
-			rect.set("transform", new red.Cell({str: "''"}));
-			rect.set("width", new red.Cell({str: "40"}));
-			rect.set("height", new red.Cell({str: "50"}));
-			rect.set("animated_properties", new red.Cell({str: "false"}));
-			rect.set("animation_duration", new red.Cell({str: "300"}));
-			rect.set("animation_easing", new red.Cell({str: "'linear'"}));
+			rect.set("show", new ist.Cell({str: "true"}));
+			rect.set("clip_rect", new ist.Cell({str: "null"}));
+			rect.set("cursor", new ist.Cell({str: "'default'"}));
+			rect.set("x", new ist.Cell({str: "20"}));
+			rect.set("y", new ist.Cell({str: "30"}));
+			rect.set("fill", new ist.Cell({str: "'red'"}));
+			rect.set("fill_opacity", new ist.Cell({str: "1.0"}));
+			rect.set("opacity", new ist.Cell({str: "1.0"}));
+			rect.set("r", new ist.Cell({str: "0"}));
+			rect.set("stroke", new ist.Cell({str: "'black'"}));
+			rect.set("stroke_dasharray", new ist.Cell({str: "''"}));
+			rect.set("stroke_opacity", new ist.Cell({str: "1.0"}));
+			rect.set("stroke_width", new ist.Cell({str: "1"}));
+			rect.set("transform", new ist.Cell({str: "''"}));
+			rect.set("width", new ist.Cell({str: "40"}));
+			rect.set("height", new ist.Cell({str: "50"}));
+			rect.set("animated_properties", new ist.Cell({str: "false"}));
+			rect.set("animation_duration", new ist.Cell({str: "300"}));
+			rect.set("animation_easing", new ist.Cell({str: "'linear'"}));
 			
-			var text = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
+			var text = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "text",
 																									constructor_params: [0, 0, ""]
@@ -168,30 +168,30 @@
 																						})]
 																					});
 			shape.set("text", text);
-			text.set("show", new red.Cell({str: "true"}));
-			text.set("clip_rect", new red.Cell({str: "null"}));
-			text.set("cursor", new red.Cell({str: "'default'"}));
-			text.set("x", new red.Cell({str: "50"}));
-			text.set("y", new red.Cell({str: "30"}));
-			text.set("opacity", new red.Cell({str: "1.0"}));
-			text.set("stroke", new red.Cell({str: "'none'"}));
-			text.set("fill", new red.Cell({str: "'black'"}));
-			text.set("fill_opacity", new red.Cell({str: "1.0"}));
-			text.set("stroke_dasharray", new red.Cell({str: "''"}));
-			text.set("stroke_opacity", new red.Cell({str: "1.0"}));
-			text.set("stroke_width", new red.Cell({str: "1"}));
-			text.set("transform", new red.Cell({str: "''"}));
-			text.set("text", new red.Cell({str: "'hello world'"}));
-			text.set("text_anchor", new red.Cell({str: "'middle'"}));
-			text.set("font_family", new red.Cell({str: "'Arial'"}));
-			text.set("font_size", new red.Cell({str: "16"}));
-			text.set("font_weight", new red.Cell({str: "400"}));
-			text.set("font_style", new red.Cell({str: "'normal'"}));
-			text.set("animated_properties", new red.Cell({str: "false"}));
-			text.set("animation_duration", new red.Cell({str: "300"}));
-			text.set("animation_easing", new red.Cell({str: "'linear'"}));
+			text.set("show", new ist.Cell({str: "true"}));
+			text.set("clip_rect", new ist.Cell({str: "null"}));
+			text.set("cursor", new ist.Cell({str: "'default'"}));
+			text.set("x", new ist.Cell({str: "50"}));
+			text.set("y", new ist.Cell({str: "30"}));
+			text.set("opacity", new ist.Cell({str: "1.0"}));
+			text.set("stroke", new ist.Cell({str: "'none'"}));
+			text.set("fill", new ist.Cell({str: "'black'"}));
+			text.set("fill_opacity", new ist.Cell({str: "1.0"}));
+			text.set("stroke_dasharray", new ist.Cell({str: "''"}));
+			text.set("stroke_opacity", new ist.Cell({str: "1.0"}));
+			text.set("stroke_width", new ist.Cell({str: "1"}));
+			text.set("transform", new ist.Cell({str: "''"}));
+			text.set("text", new ist.Cell({str: "'hello world'"}));
+			text.set("text_anchor", new ist.Cell({str: "'middle'"}));
+			text.set("font_family", new ist.Cell({str: "'Arial'"}));
+			text.set("font_size", new ist.Cell({str: "16"}));
+			text.set("font_weight", new ist.Cell({str: "400"}));
+			text.set("font_style", new ist.Cell({str: "'normal'"}));
+			text.set("animated_properties", new ist.Cell({str: "false"}));
+			text.set("animation_duration", new ist.Cell({str: "300"}));
+			text.set("animation_easing", new ist.Cell({str: "'linear'"}));
 
-			var path = new red.Dict({has_protos: false, direct_attachments: [new red.ShapeAttachment({
+			var path = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "path",
 																									constructor_params: ["M0,0"]
@@ -199,30 +199,30 @@
 																						})]
 																					});
 			shape.set("path", path);
-			path.set("show", new red.Cell({str: "true"}));
-			path.set("clip_rect", new red.Cell({str: "null"}));
-			path.set("cursor", new red.Cell({str: "'default'"}));
-			path.set("fill", new red.Cell({str: "'red'"}));
-			path.set("fill_opacity", new red.Cell({str: "1.0"}));
-			path.set("opacity", new red.Cell({str: "1.0"}));
-			path.set("stroke", new red.Cell({str: "'black'"}));
-			path.set("stroke_dasharray", new red.Cell({str: "''"}));
-			path.set("stroke_opacity", new red.Cell({str: "1.0"}));
-			path.set("stroke_miterlimit", new red.Cell({str: "0"}));
-			path.set("stroke_width", new red.Cell({str: "1"}));
-			path.set("path", new red.Cell({str: "'M24.132,7.971c-2.203-2.205-5.916-2.098-8.25,0.235L15.5,8.588l-0.382-0.382c-2.334-2.333-6.047-2.44-8.25-0.235c-2.204,2.203-2.098,5.916,0.235,8.249l8.396,8.396l8.396-8.396C26.229,13.887,26.336,10.174,24.132,7.971z'"}));
-			path.set("transform", new red.Cell({str: "''"}));
-			path.set("animated_properties", new red.Cell({str: "false"}));
-			path.set("animation_duration", new red.Cell({str: "300"}));
-			path.set("animation_easing", new red.Cell({str: "'linear'"}));
+			path.set("show", new ist.Cell({str: "true"}));
+			path.set("clip_rect", new ist.Cell({str: "null"}));
+			path.set("cursor", new ist.Cell({str: "'default'"}));
+			path.set("fill", new ist.Cell({str: "'red'"}));
+			path.set("fill_opacity", new ist.Cell({str: "1.0"}));
+			path.set("opacity", new ist.Cell({str: "1.0"}));
+			path.set("stroke", new ist.Cell({str: "'black'"}));
+			path.set("stroke_dasharray", new ist.Cell({str: "''"}));
+			path.set("stroke_opacity", new ist.Cell({str: "1.0"}));
+			path.set("stroke_miterlimit", new ist.Cell({str: "0"}));
+			path.set("stroke_width", new ist.Cell({str: "1"}));
+			path.set("path", new ist.Cell({str: "'M24.132,7.971c-2.203-2.205-5.916-2.098-8.25,0.235L15.5,8.588l-0.382-0.382c-2.334-2.333-6.047-2.44-8.25-0.235c-2.204,2.203-2.098,5.916,0.235,8.249l8.396,8.396l8.396-8.396C26.229,13.887,26.336,10.174,24.132,7.971z'"}));
+			path.set("transform", new ist.Cell({str: "''"}));
+			path.set("animated_properties", new ist.Cell({str: "false"}));
+			path.set("animation_duration", new ist.Cell({str: "300"}));
+			path.set("animation_easing", new ist.Cell({str: "'linear'"}));
 
-			var group = new red.Dict({has_protos: false, direct_attachments: [new red.GroupAttachment()]});
+			var group = new ist.Dict({has_protos: false, direct_attachments: [new ist.GroupAttachment()]});
 			shape.set("group", group);
-			group.set("show", new red.Cell({str: "true"}));
+			group.set("show", new ist.Cell({str: "true"}));
 
-			root_dict.set("on", red.on_event);
-			root_dict.set("find", red.find_fn);
-			root_dict.set("emit", red.emit);
+			root_dict.set("on", ist.on_event);
+			root_dict.set("find", ist.find_fn);
+			root_dict.set("emit", ist.emit);
 		};
 
 		proto.default_return_value = function () {
@@ -244,7 +244,7 @@
 		};
 		proto.get_current_statechart = function () {
 			var statechart;
-			var SOandC = red.find_stateful_obj_and_context(this.pointer);
+			var SOandC = ist.find_stateful_obj_and_context(this.pointer);
 			var owner = SOandC.stateful_obj;
 			statechart = owner.get_own_statechart();
 			if (!statechart) {
@@ -254,10 +254,10 @@
 		};
 		proto.find_state = function (name) {
 			var i, inherited_statecharts, isc;
-			if (name instanceof red.State || name instanceof red.StatechartTransition) {
+			if (name instanceof ist.State || name instanceof ist.StatechartTransition) {
 				return name.basis() || name;
 			} else {
-				var SOandC = red.find_stateful_obj_and_context(this.pointer);
+				var SOandC = ist.find_stateful_obj_and_context(this.pointer);
 				var owner = SOandC.stateful_obj;
 				var statechart = owner.get_own_statechart();
 
@@ -286,7 +286,7 @@
 					var state = statechart.find_state(name);
 
 					if (!state) {
-						var contextual_object = red.find_or_put_contextual_obj(SOandC.stateful_obj, SOandC.context);
+						var contextual_object = ist.find_or_put_contextual_obj(SOandC.stateful_obj, SOandC.context);
 						var statecharts = contextual_object.get_statecharts();
 						inherited_statecharts = statecharts.slice(1);
 						for (i = 0; i < inherited_statecharts.length; i += 1) {
@@ -331,8 +331,8 @@
 		};
 		proto.reset = function () {
 			var parent_obj = this.get_pointer_obj();
-			var cobj = red.find_or_put_contextual_obj(parent_obj, this.pointer);
-			if(cobj instanceof red.ContextualStatefulObj) {
+			var cobj = ist.find_or_put_contextual_obj(parent_obj, this.pointer);
+			if(cobj instanceof ist.ContextualStatefulObj) {
 				cobj.reset();
 			} else {
 				throw new Error("Trying to reset non-stateful");
@@ -363,7 +363,7 @@
 				}
 			}
 			if (arguments.length === 1) {
-				if (parent_obj instanceof red.StatefulObj) {
+				if (parent_obj instanceof ist.StatefulObj) {
 					value = "<stateful_prop>";
 				} else {
 					value = "<stateful>";
@@ -374,22 +374,22 @@
 
 			if (_.isString(value)) {
 				if (value === "<dict>") {
-					value = new red.Dict({has_protos: false});
-					var direct_protos = new red.Cell({ ignore_inherited_in_first_dict: true/*str: "[]", ignore_inherited_in_contexts: [value]*/});
+					value = new ist.Dict({has_protos: false});
+					var direct_protos = new ist.Cell({ ignore_inherited_in_first_dict: true/*str: "[]", ignore_inherited_in_contexts: [value]*/});
 					value._set_direct_protos(direct_protos);
 				} else if (value === "<stateful>") {
-					value = new red.StatefulObj(undefined, true);
+					value = new ist.StatefulObj(undefined, true);
 					value.do_initialize({
-						direct_protos: new red.StatefulProp({ can_inherit: false, statechart_parent: value })
+						direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: value })
 					});
 					/*
 					value.get_own_statechart().add_state("INIT")
 						.starts_at("INIT");
 					*/
 				} else if (value === "<stateful_prop>") {
-					value = new red.StatefulProp();
+					value = new ist.StatefulProp();
 				} else {
-					value = new red.Cell({str: value});
+					value = new ist.Cell({str: value});
 				}
 			}
 
@@ -397,7 +397,7 @@
 				var state = this.find_state(arg1);
 				index = arg3;
 
-				if (value instanceof red.StatefulProp) {
+				if (value instanceof ist.StatefulProp) {
 					throw new Error("Value is an instanceof a stateful prop");
 				}
 
@@ -405,8 +405,8 @@
 					getter_name = builtin_info._get_getter_name();
 					val = parent_obj[getter_name]();
 					if (val) {
-						if (val instanceof red.StatefulProp) {
-							commands.push(new red.SetStatefulPropValueCommand({
+						if (val instanceof ist.StatefulProp) {
+							commands.push(new ist.SetStatefulPropValueCommand({
 								stateful_prop: val,
 								state: state,
 								value: value
@@ -415,13 +415,13 @@
 							throw new Error("Trying to set value for non stateful prop");
 						}
 					} else {
-						val = new red.StatefulProp();
-						commands.push(new red.SetBuiltinCommand({
+						val = new ist.StatefulProp();
+						commands.push(new ist.SetBuiltinCommand({
 							parent: parent_obj,
 							name: builtin_name,
 							value: value
 						}));
-						commands.push(new red.SetStatefulPropValueCommand({
+						commands.push(new ist.SetStatefulPropValueCommand({
 							stateful_prop: val,
 							state: state,
 							value: value
@@ -430,53 +430,53 @@
 				} else {
 					if (parent_obj._has_direct_prop(prop_name)) {
 						val = parent_obj._get_direct_prop(prop_name);
-						if (val instanceof red.StatefulProp) {
+						if (val instanceof ist.StatefulProp) {
 							if (val._has_direct_value_for_state(state)) {
 								var sp_val = val._direct_value_for_state(state);
-								if (sp_val instanceof red.Cell && _.isString(arg2)) {
-									commands.push(new red.ChangeCellCommand({
+								if (sp_val instanceof ist.Cell && _.isString(arg2)) {
+									commands.push(new ist.ChangeCellCommand({
 										cell: sp_val,
 										str: arg2
 									}));
 									
 									value.destroy();
 								} else {
-									commands.push(new red.SetStatefulPropValueCommand({
+									commands.push(new ist.SetStatefulPropValueCommand({
 										stateful_prop: val,
 										state: state,
 										value: value
 									}));
 								}
 							} else {
-								commands.push(new red.SetStatefulPropValueCommand({
+								commands.push(new ist.SetStatefulPropValueCommand({
 									stateful_prop: val,
 									state: state,
 									value: value
 								}));
 							}
 						} else {
-							val = new red.StatefulProp();
-							commands.push(new red.SetPropCommand({
+							val = new ist.StatefulProp();
+							commands.push(new ist.SetPropCommand({
 								parent: parent_obj,
 								name: prop_name,
 								value: val,
 								index: index
 							}));
-							commands.push(new red.SetStatefulPropValueCommand({
+							commands.push(new ist.SetStatefulPropValueCommand({
 								stateful_prop: val,
 								state: state,
 								value: value
 							}));
 						}
 					} else {
-						val = new red.StatefulProp();
-						commands.push(new red.SetPropCommand({
+						val = new ist.StatefulProp();
+						commands.push(new ist.SetPropCommand({
 							parent: parent_obj,
 							name: prop_name,
 							value: val,
 							index: index
 						}));
-						commands.push(new red.SetStatefulPropValueCommand({
+						commands.push(new ist.SetStatefulPropValueCommand({
 							stateful_prop: val,
 							state: state,
 							value: value
@@ -491,20 +491,20 @@
 					getter_name = builtin_info._get_getter_name();
 					val = parent_obj[getter_name]();
 					if (val) {
-						if (val instanceof red.Cell && _.isString(arg1)) {
-							commands.push(new red.ChangeCellCommand({
+						if (val instanceof ist.Cell && _.isString(arg1)) {
+							commands.push(new ist.ChangeCellCommand({
 								cell: val,
 								str: arg1
 							}));
 						} else {
-							commands.push(new red.SetBuiltinCommand({
+							commands.push(new ist.SetBuiltinCommand({
 								parent: parent_obj,
 								name: builtin_name,
 								value: value
 							}));
 						}
 					} else {
-						commands.push(new red.SetBuiltinCommand({
+						commands.push(new ist.SetBuiltinCommand({
 							parent: parent_obj,
 							name: builtin_name,
 							value: value
@@ -513,14 +513,14 @@
 				} else {
 					if (parent_obj._has_direct_prop(prop_name)) {
 						val = parent_obj._get_direct_prop(prop_name);
-						if (val instanceof red.Cell && _.isString(arg1)) {
-							commands.push(new red.ChangeCellCommand({
+						if (val instanceof ist.Cell && _.isString(arg1)) {
+							commands.push(new ist.ChangeCellCommand({
 								cell: val,
 								str: arg1
 							}));
 							value.destroy();
 						} else {
-							commands.push(new red.SetPropCommand({
+							commands.push(new ist.SetPropCommand({
 								parent: parent_obj,
 								name: prop_name,
 								value: value,
@@ -528,7 +528,7 @@
 							}));
 						}
 					} else {
-						commands.push(new red.SetPropCommand({
+						commands.push(new ist.SetPropCommand({
 							parent: parent_obj,
 							name: prop_name,
 							value: value,
@@ -539,13 +539,13 @@
 			} else if (arguments.length === 1) {
 				if (builtin_info) {
 					getter_name = builtin_info._get_getter_name();
-					commands.push(new red.SetBuiltinCommand({
+					commands.push(new ist.SetBuiltinCommand({
 						parent: parent_obj,
 						name: builtin_name,
 						value: value
 					}));
 				} else {
-					commands.push(new red.SetPropCommand({
+					commands.push(new ist.SetPropCommand({
 						parent: parent_obj,
 						name: prop_name,
 						value: value,
@@ -557,7 +557,7 @@
 			if (commands.length === 1) {
 				command = commands[0];
 			} else {
-				command = new red.CombinedCommand({
+				command = new ist.CombinedCommand({
 					commands: commands
 				});
 			}
@@ -570,7 +570,7 @@
 				console.error("No name given");
 				return;
 			}
-			var command = new red.UnsetPropCommand({
+			var command = new ist.UnsetPropCommand({
 				parent: parent_obj,
 				name: prop_name
 			});
@@ -587,8 +587,8 @@
 			var ptr = this.pointer;
 			var obj = ptr.points_at();
 			//console.log(obj, ptr);
-			var cobj = red.find_or_put_contextual_obj(obj, ptr);
-			var command = new red.InheritPropCommand({
+			var cobj = ist.find_or_put_contextual_obj(obj, ptr);
+			var command = new ist.InheritPropCommand({
 				parent: cobj,
 				name: prop_name
 			});
@@ -598,7 +598,7 @@
 
 		proto._get_rename_prop_command = function (from_name, to_name) {
 			var parent_obj = this.get_pointer_obj();
-			var command = new red.RenamePropCommand({
+			var command = new ist.RenamePropCommand({
 				parent: parent_obj,
 				from: from_name,
 				to: to_name
@@ -612,7 +612,7 @@
 		};
 		proto.set_copies = function (val) {
 			var parent_obj = this.get_pointer_obj();
-			var command = new red.SetCopiesCommand({
+			var command = new ist.SetCopiesCommand({
 				parent: parent_obj,
 				value: val
 			});
@@ -621,7 +621,7 @@
 		};
 		proto._get_move_prop_command = function (prop_name, index) {
 			var parent_obj = this.get_pointer_obj();
-			var command = new red.MovePropCommand({
+			var command = new ist.MovePropCommand({
 				parent: parent_obj,
 				name: prop_name,
 				to: index
@@ -696,13 +696,13 @@
 				for_state = this.find_state(arg1);
 				str = arg2;
 
-				cell = new red.Cell({str: "", ignore_inherited_in_first_dict: true });
+				cell = new ist.Cell({str: "", ignore_inherited_in_first_dict: true });
 				commands.push(this._get_stateful_prop_set_value_command(prop,
 																		for_state,
 																		cell));
 			}
 
-			commands.push(new red.ChangeCellCommand({
+			commands.push(new ist.ChangeCellCommand({
 				cell: cell,
 				str: str
 			}));
@@ -711,7 +711,7 @@
 			if (commands.length === 1) {
 				command = commands[0];
 			} else {
-				command = new red.CombinedCommand({
+				command = new ist.CombinedCommand({
 					commands: commands
 				});
 			}
@@ -728,7 +728,7 @@
 			var i, state;
 			for (i = 0; i < states.length; i += 1) {
 				state = states[i];
-				if (state instanceof red.Statechart) {
+				if (state instanceof ist.Statechart) {
 					if (state === state_name) {
 						return state;
 					} else if (state.get_name() === state_name) {
@@ -742,7 +742,7 @@
 		};
 
 		proto._get_stateful_prop_set_value_command = function (stateful_prop, state, value) {
-			var command = new red.SetStatefulPropValueCommand({
+			var command = new ist.SetStatefulPropValueCommand({
 				stateful_prop: stateful_prop,
 				state: state,
 				value: value
@@ -751,7 +751,7 @@
 		};
 
 		proto._get_stateful_prop_unset_value_command = function (stateful_prop, state) {
-			var command = new red.UnsetStatefulPropValueCommand({
+			var command = new ist.UnsetStatefulPropValueCommand({
 				stateful_prop: stateful_prop,
 				state: state
 			});
@@ -763,7 +763,7 @@
 
 			if (_.isNumber(index)) { index += 1; } // Because of the pre_init state
 
-			var command = new red.AddStateCommand({
+			var command = new ist.AddStateCommand({
 				name: state_name,
 				statechart: statechart,
 				index: index
@@ -780,7 +780,7 @@
 		proto._get_remove_state_command = function (state_name) {
 			var statechart = this.get_current_statechart();
 
-			var command = new red.RemoveStateCommand({
+			var command = new ist.RemoveStateCommand({
 				name: state_name,
 				statechart: statechart
 			});
@@ -796,7 +796,7 @@
 			var statechart = this.get_current_statechart();
 
 			if (_.isNumber(index)) { index += 1; } // Because of the pre_init state
-			var command = new red.MoveStateCommand({
+			var command = new ist.MoveStateCommand({
 				name: state_name,
 				statechart: statechart,
 				index: index
@@ -814,7 +814,7 @@
 		proto._get_rename_state_command = function (from_state_name, to_state_name) {
 			var statechart = this.get_current_statechart();
 
-			var command = new red.RenameStateCommand({
+			var command = new ist.RenameStateCommand({
 				from: from_state_name,
 				to: to_state_name,
 				statechart: statechart
@@ -836,10 +836,10 @@
 			var to_state = statechart.find_state(to_state_name);
 
 			if (_.isString(event)) {
-				event = new red.ParsedEvent({str: event, inert: true});
+				event = new ist.ParsedEvent({str: event, inert: true});
 			}
 
-			var command = new red.AddTransitionCommand({
+			var command = new ist.AddTransitionCommand({
 				statechart: statechart,
 				event: event,
 				from: from_state,
@@ -850,7 +850,7 @@
 		proto.make_concurrent = function (state_name, concurrent) {
 			concurrent = concurrent !== false;
 			var state = this.find_state(state_name);
-			var command = new red.MakeConcurrentCommand({
+			var command = new ist.MakeConcurrentCommand({
 				statechart: state,
 				concurrent: concurrent
 			});
@@ -867,12 +867,12 @@
 			var statechart = this.get_current_statechart();
 			var id, transition;
 			
-			if (transition_id instanceof red.StatechartTransition) {
+			if (transition_id instanceof ist.StatechartTransition) {
 				transition = transition_id;
 			} else {
 				id = transition_id;
 			}
-			var command = new red.RemoveTransitionCommand({
+			var command = new ist.RemoveTransitionCommand({
 				statechart: statechart,
 				id: id,
 				transition: transition
@@ -888,7 +888,7 @@
 		proto._get_set_event_command = function (transition_id, event) {
 			var statechart = this.get_current_statechart();
 
-			var command = new red.SetTransitionEventCommand({
+			var command = new ist.SetTransitionEventCommand({
 				statechart: statechart,
 				id: transition_id,
 				event: event
@@ -903,7 +903,7 @@
 		proto.set_from = function (transition, to_state) {
 			transition = this.find_state(transition);
 			to_state = this.find_state(to_state);
-			var command = new red.SetTransitionFromCommand({
+			var command = new ist.SetTransitionFromCommand({
 				transition: transition,
 				statechart: to_state
 			});
@@ -913,7 +913,7 @@
 		proto.set_to = function (transition, to_state) {
 			transition = this.find_state(transition);
 			to_state = this.find_state(to_state);
-			var command = new red.SetTransitionToCommand({
+			var command = new ist.SetTransitionToCommand({
 				transition: transition,
 				statechart: to_state
 			});
@@ -926,7 +926,7 @@
 			var start_state = statechart.get_start_state();
 			var to_state = this.find_state(state_name);
 			var outgoing_transition = start_state.get_outgoing_transition();
-			command = new red.SetTransitionToCommand({
+			command = new ist.SetTransitionToCommand({
 				transition: outgoing_transition,
 				statechart: to_state
 			});
@@ -936,9 +936,9 @@
 		proto.on_state = function (spec, func, context) {
 			var statechart = this.get_current_statechart();
 			if (_.isString(func)) {
-				func = red.get_parsed_val(red.parse(func), { });
+				func = ist.get_parsed_val(ist.parse(func), { });
 			}
-			var command = new red.StatechartOnCommand({
+			var command = new ist.StatechartOnCommand({
 				statechart: statechart,
 				spec: spec,
 				listener: func,
@@ -950,7 +950,7 @@
 		};
 		proto.off_state = function (spec, func, context) {
 			var statechart = this.get_current_statechart();
-			var command = new red.StatechartOffCommand({
+			var command = new ist.StatechartOffCommand({
 				statechart: statechart,
 				spec: spec,
 				listener: func,
@@ -960,12 +960,12 @@
 			return this.default_return_value();
 		};
 		proto.print = function (logging_mechanism) {
-			return red.print(this.pointer, logging_mechanism);
+			return ist.print(this.pointer, logging_mechanism);
 		};
 		proto.destroy = function () {
 			var ptr = this.pointer;
 			var root = ptr.root();
-			var croot = red.find_or_put_contextual_obj(root);
+			var croot = ist.find_or_put_contextual_obj(root);
 
 
 			this._command_stack.destroy();
@@ -975,11 +975,11 @@
 			root.destroy();
 			delete this.pointer;
 		};
-	}(red.Environment));
+	}(ist.Environment));
 	/*
 
-	red.define("environment", function (options) {
-		var env = new red.Environment(options);
+	ist.define("environment", function (options) {
+		var env = new ist.Environment(options);
 		return env;
 	});
 	*/
@@ -997,4 +997,4 @@
 			return str;
 		}
 	};
-}(red));
+}(interstate));

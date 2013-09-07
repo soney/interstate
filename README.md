@@ -1,8 +1,7 @@
-# Euclase
+# Interstate
 ##### A Live Editor for Creating Interactive Web Applications
 
-* Interactive Tutorial: [euc.from.so/tutorial](http://euc.from.so/tutorial)
-* Demo: [euc.from.so](http://euc.from.so)
+* Webpage: [interstate.from.so](http://interstate.from.so)
 
 ### Building from Scratch
 To build from scratch, you will need:
@@ -14,7 +13,7 @@ To build from scratch, you will need:
 
 Then run:
 
-    git clone https://github.com/soney/red.git
+    git clone https://github.com/soney/interstategit
     cd red
 	git submodule update --init --recursive
     npm install .

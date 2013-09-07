@@ -1,16 +1,16 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
     "use strict";
-    var cjs = red.cjs,
-        _ = red._;
+    var cjs = ist.cjs,
+        _ = ist._;
     
-    red.Cell = function (options, defer_initialization) {
+    ist.Cell = function (options, defer_initialization) {
 		able.make_this_listenable(this);
         options = options || {};
         this._id = options.uid || uid();
-        red.register_uid(this._id, this);
+        ist.register_uid(this._id, this);
         if (defer_initialization !== true) {
             this.do_initialize(options);
         }
@@ -36,7 +36,7 @@
             "contextual_values": {
                 "default": function () {
                     return cjs.map({
-                        equals: red.check_pointer_equality,
+                        equals: ist.check_pointer_equality,
                         hash: "hash"
                     });
                 },
@@ -54,12 +54,12 @@
 				getter_name: "is_substantiated"
             }
         };
-        red.install_proto_builtins(proto, My.builtins);
+        ist.install_proto_builtins(proto, My.builtins);
         proto.do_initialize = function (options) {
-            red.install_instance_builtins(this, options, My);
+            ist.install_instance_builtins(this, options, My);
             this._tree = cjs.$(function () {
                 var str = this.get_str();
-                return red.parse(str);
+                return ist.parse(str);
             }, {
 				context: this
 			});
@@ -69,7 +69,7 @@
 			this._emit("substantiated");
 		};
 		proto.clone = function() {
-			return new red.Cell({
+			return new ist.Cell({
 				str: this.get_str()
 			});
 		};
@@ -82,7 +82,7 @@
             if (this.get_ignore_inherited_in_first_dict()) {
                 for (i = pcontext.length() - 1; i >= 0; i -= 1) {
                     var item = pcontext.points_at(i);
-                    if (item instanceof red.Dict) {
+                    if (item instanceof ist.Dict) {
                         return [item];
                     }
                 }
@@ -92,14 +92,14 @@
     
         proto.get_value = function (pcontext) {
             var tree = this._tree.get();
-			if(tree instanceof red.Error) {
+			if(tree instanceof ist.Error) {
 				return undefined;
 			} else {
-				var parsed_$ = red.get_parsed_val(tree, {
+				var parsed_$ = ist.get_parsed_val(tree, {
 					context: pcontext,
 					ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext)
 				});
-				if(parsed_$ instanceof red.MultiExpression) {
+				if(parsed_$ instanceof ist.MultiExpression) {
 					return parsed_$.last();
 				} else {
 					return parsed_$;
@@ -108,7 +108,7 @@
         };
 		proto.get_syntax_errors = function() {
             var tree = this._tree.get();
-			if(tree instanceof red.Error) {
+			if(tree instanceof ist.Error) {
 				return [tree.message()];
 			} else {
 				return [];
@@ -123,7 +123,7 @@
     
                 var rv = cjs.$(function () {
                     var node = this._tree.get();
-                    return red.get_parsed_$(node, {
+                    return ist.get_parsed_$(node, {
                         context: pcontext,
                         ignore_inherited_in_contexts: ignore_inherited_in_contexts,
 						get_constraint: false
@@ -149,12 +149,12 @@
 
 			var rv = cjs.$(function () {
 				var node = this._tree.get();
-				var parsed_$ = red.get_parsed_$(node, {
+				var parsed_$ = ist.get_parsed_$(node, {
 					context: pcontext,
 					ignore_inherited_in_contexts: ignore_inherited_in_contexts,
 					get_constraint: false
 				});
-				if(parsed_$ instanceof red.MultiExpression) {
+				if(parsed_$ instanceof ist.MultiExpression) {
 					return parsed_$.last();
 				} else {
 					return parsed_$;
@@ -175,14 +175,14 @@
             this._tree.destroy();
 			delete this._tree;
 
-			red.unset_instance_builtins(this, My);
-			red.unregister_uid(this.id());
+			ist.unset_instance_builtins(this, My);
+			ist.unregister_uid(this.id());
 			this._emit("destroyed");
 			able.destroy_this_listenable(this);
         };
     
         proto.id = proto.hash = function () { return this._id; };
-		if(red.__debug) {
+		if(ist.__debug) {
 			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		}
     
@@ -190,7 +190,7 @@
             return this.id();
         };
     
-        red.register_serializable_type("cell",
+        ist.register_serializable_type("cell",
             function (x) {
                 return x instanceof My;
             },
@@ -201,7 +201,7 @@
                 _.each(My.builtins, function (builtin, name) {
                     if (builtin.serialize !== false) {
                         var getter_name = builtin.getter_name || "get_" + name;
-                        rv[name] = red.serialize(this[getter_name]());
+                        rv[name] = ist.serialize(this[getter_name]());
                     }
                 }, this);
 
@@ -221,20 +221,20 @@
                 rv.initialize = function () {
                     var options = { };
                     _.each(serialized_options, function (serialized_option, name) {
-                        options[name] = red.deserialize.apply(red, ([serialized_option]).concat(rest_args));
+                        options[name] = ist.deserialize.apply(ist, ([serialized_option]).concat(rest_args));
                     });
                     this.do_initialize(options);
                 };
 
                 return rv;
             });
-    }(red.Cell));
+    }(ist.Cell));
 	/*
     
-    red.define("cell", function (options) {
-        var cell = new red.Cell(options);
+    ist.define("cell", function (options) {
+        var cell = new ist.Cell(options);
         return cell;
     });
 	*/
 
-}(red));
+}(interstate));

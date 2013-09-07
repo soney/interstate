@@ -1,15 +1,15 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var get_event = function (tree, options, live_event_creator) {
-		var event_constraint = red.get_parsed_$(tree, options);
+		var event_constraint = ist.get_parsed_$(tree, options);
 		var got_event, actions, first_event;
-		if(event_constraint instanceof red.MultiExpression) {
+		if(event_constraint instanceof ist.MultiExpression) {
 			actions = event_constraint.rest();
 			event_constraint = event_constraint.first();
 			got_event = cjs.get(event_constraint);
@@ -32,26 +32,26 @@
 		}
 		//var got_value = cjs.get(event_constraint, false);
 		//console.log(got_value);
-		if (got_event instanceof red.Event) {
+		if (got_event instanceof ist.Event) {
 			return {event: got_event, actions: actions};
 		} else {
 			if(cjs.is_$(event_constraint)) {
 				cjs.removeDependency(event_constraint, live_event_creator);
 			}
-			var event = new red.ConstraintEvent(event_constraint, got_event);
+			var event = new ist.ConstraintEvent(event_constraint, got_event);
 			return {event: event/*.throttle(10)*/, actions: actions};
 		}
 	};
 
-	red.ParsedEvent = function () {
-		red.Event.apply(this, arguments);
+	ist.ParsedEvent = function () {
+		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "parsed_event";
 		this.$errors = cjs.$([]);
 		this._has_errors = false;
 	};
 	(function (My) {
-		_.proto_extend(My, red.Event);
+		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.set_transition = function (transition) {
 			My.superclass.set_transition.apply(this, arguments);
@@ -62,12 +62,12 @@
 
 		proto.on_create = function (options) {
 			this._id = uid();
-			red.register_uid(this._id, this);
+			ist.register_uid(this._id, this);
 
 			this.options = options;
 			this._str = cjs.is_constraint(options.str) ? options.str : cjs(options.str);
 			if (options.inert !== true) {
-				var SOandC = red.find_stateful_obj_and_context(options.context);
+				var SOandC = ist.find_stateful_obj_and_context(options.context);
 
 				var context;
 				var parent;
@@ -96,9 +96,9 @@
 
 					var tree, event_info = false, event = false;
 					cjs.wait();
-					if(red.__debug) {
+					if(ist.__debug) {
 						tree = this._tree.get();
-						if(tree instanceof red.Error) {
+						if(tree instanceof ist.Error) {
 							//console.log("no event");
 							event = null;
 						} else {
@@ -113,7 +113,7 @@
 					} else {
 						try {
 							tree = this._tree.get();
-							if(tree instanceof red.Error) {
+							if(tree instanceof ist.Error) {
 								//console.log("no event");
 								event = null;
 							} else {
@@ -171,11 +171,11 @@
 			this.fire.apply(this, _.rest(arguments, 3));
 			
 			if(actions.length > 0) {
-				var eventified_context = context.push(new red.ProvisionalContext(), new red.EventContext(event));
+				var eventified_context = context.push(new ist.ProvisionalContext(), new ist.EventContext(event));
 				//console.log(eventified_context);
 				_.each(actions, function(expression_tree) {
-					if(red.__debug) {
-						red.get_parsed_$(expression_tree, {
+					if(ist.__debug) {
+						ist.get_parsed_$(expression_tree, {
 							parent: parent,
 							context: eventified_context,
 							get_constraint: false,
@@ -183,14 +183,14 @@
 						});
 					} else {
 						try {
-							//red.dbg = true;
-							red.get_parsed_$(expression_tree, {
+							//ist.dbg = true;
+							ist.get_parsed_$(expression_tree, {
 								parent: parent,
 								context: eventified_context,
 								get_constraint: false,
 								auto_add_dependency: false
 							});
-							//red.dbg = false;
+							//ist.dbg = false;
 						} catch(e) {
 							console.error(e);
 						}
@@ -234,7 +234,7 @@
 			}
 			this.$errors.destroy(true);
 			delete this.$errors;
-			red.unregister_uid(this.id());
+			ist.unregister_uid(this.id());
 			My.superclass.destroy.apply(this, arguments);
 		};
 		proto.clone = function () {
@@ -242,7 +242,7 @@
 		proto.stringify = function () {
 			return this._str.get();
 		};
-		red.register_serializable_type("parsed_event",
+		ist.register_serializable_type("parsed_event",
 			function (x) {
 				return x instanceof My;
 			},
@@ -276,5 +276,5 @@
 				this._live_event_creator.pause();
 			}
 		};
-	}(red.ParsedEvent));
-}(red));
+	}(ist.ParsedEvent));
+}(interstate));

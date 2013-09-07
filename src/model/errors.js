@@ -1,23 +1,23 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var ERROR_TYPE = {
 		WARNING: 1,
 		ERROR: 2
 	};
 
-	red.Error = (function(My) {
+	ist.Error = (function(My) {
 		var proto = My.prototype;
 
 		proto.type = function() { return this.options.type; };
 		proto.message = function() { return this.options.message; };
 
-        red.register_serializable_type("error",
+        ist.register_serializable_type("error",
             function (x) {
                 return x instanceof My;
             },
@@ -38,11 +38,11 @@
 	}));
 
 	var valid_prop_name_regex = /^[a-zA-Z_$][0-9a-zA-Z_$]*$/;
-	red.is_valid_prop_name = function(name) {
+	ist.is_valid_prop_name = function(name) {
 		return name.match(valid_prop_name_regex);
 	};
 
-	red.get_prop_name_error = function(name) {
+	ist.get_prop_name_error = function(name) {
 		if(name.length === 0) {
 			return "Must be at least one character";
 		} else if(name[0].match(/[0-9]/)) {
@@ -74,4 +74,4 @@
 			return "Invalid characters: " + invalid_char_str + ".";
 		}
 	};
-}(red));
+}(interstate));

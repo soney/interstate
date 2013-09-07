@@ -1,31 +1,31 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,window,RedSet */
+/*global interstate,esprima,able,uid,console,window,RedSet */
 
-(function (red) {
+(function (ist) {
     "use strict";
-    var cjs = red.cjs,
-        _ = red._;
+    var cjs = ist.cjs,
+        _ = ist._;
 	
-	red.find_fn = function(find_root) {
+	ist.find_fn = function(find_root) {
 		/*
 		if (arguments.length === 0) {
-			find_root = new red.ContextualObject({pointer: root_pointer});
+			find_root = new ist.ContextualObject({pointer: root_pointer});
 		}
 		*/
-		return new red.Query({value: find_root});
+		return new ist.Query({value: find_root});
 	};
-	red.register_serializable_type("red_find_fn_func",
+	ist.register_serializable_type("ist_find_fn_func",
 		function (x) {
-			return x === red.find_fn;
+			return x === ist.find_fn;
 		},
 		function () {
 			return {};
 		},
 		function (obj) {
-			return red.find_fn;
+			return ist.find_fn;
 		});
 
-    red.Query = function (options) {
+    ist.Query = function (options) {
         this.options = _.extend({
             value: [],
             parent_query: null
@@ -39,16 +39,16 @@
 										var pointer = pointer_object.get_pointer();
 										var points_at = pointer.points_at();
 										var cobj;
-										if (points_at instanceof red.Dict) {
-											cobj = red.find_or_put_contextual_obj(points_at, pointer);
+										if (points_at instanceof ist.Dict) {
+											cobj = ist.find_or_put_contextual_obj(points_at, pointer);
 											if (cobj.is_template()) {
 												return cobj.instances();
 											} else {
 												return cobj;
 											}
 										} else {
-											cobj = red.find_or_put_contextual_obj(points_at, pointer);
-											//new red.ContextualObject({pointer: pointer});
+											cobj = ist.find_or_put_contextual_obj(points_at, pointer);
+											//new ist.ContextualObject({pointer: pointer});
 											return cobj;
 										}
 									} else {
@@ -73,7 +73,7 @@
         var filter_funcs = {
             "in_state": function (cobj, index, arr, state_name) {
                 var statecharts, i, j;
-                if (cobj instanceof red.ContextualStatefulObj) {
+                if (cobj instanceof ist.ContextualStatefulObj) {
                     statecharts = cobj.get_statecharts();
                 } else {
                     statecharts = [];
@@ -120,7 +120,7 @@
                 var new_ptr = pointer.pop();
                 var new_ptr_obj = new_ptr.points_at();
     
-                var rv = red.find_or_put_contextual_obj(new_ptr_obj, new_ptr);
+                var rv = ist.find_or_put_contextual_obj(new_ptr_obj, new_ptr);
                 return rv;
             }
         };
@@ -159,7 +159,7 @@
             var items = _.chain(arguments)
                      .map(function (other_query) {
                         var other_objects;
-                        if (other_query instanceof red.Query) {
+                        if (other_query instanceof ist.Query) {
                             other_objects = other_query.value();
                         } else if (_.isArray(other_query)) {
                             other_objects = other_query;
@@ -174,12 +174,12 @@
         };
     
         proto.add = function () {
-            var my_value_set = new RedSet({value: this.value(), equals: red.check_contextual_object_equality, hash: "hash"});
+            var my_value_set = new RedSet({value: this.value(), equals: ist.check_contextual_object_equality, hash: "hash"});
             var items = extract_items.apply(this, arguments);
             
             var new_value_set = my_value_set.add.apply(my_value_set, items);
     
-            var new_query = new red.Query({
+            var new_query = new ist.Query({
                 value: new_value_set.toArray(),
                 parent_query: this
             });
@@ -187,11 +187,11 @@
         };
     
         proto.not = proto.remove = function () {
-            var my_value_set = new RedSet({value: this.value(), equals: red.check_contextual_object_equality, hash: "hash"});
+            var my_value_set = new RedSet({value: this.value(), equals: ist.check_contextual_object_equality, hash: "hash"});
             var items = extract_items.apply(this, arguments);
     
             my_value_set.remove.apply(my_value_set, items);
-            var new_query = new red.Query({
+            var new_query = new ist.Query({
                 value: my_value_set.toArray(),
                 parent_query: this
             });
@@ -200,7 +200,7 @@
     
         proto.op = function (op_func, context) {
             var value = op_func.call(context || window, this.value());
-            var new_query = new red.Query({
+            var new_query = new ist.Query({
                 value: value,
                 parent_query: this
             });
@@ -213,6 +213,6 @@
         proto.parent_query = function () {
             return this.options.parent_query;
         };
-    }(red.Query));
+    }(ist.Query));
 
-}(red));
+}(interstate));

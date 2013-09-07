@@ -1,18 +1,18 @@
 /*jslint nomen: true, vars: true, white: true */
 /*jshint scripturl: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
-	$.widget("red.tutorial_running_app", {
+	var cjs = ist.cjs,
+		_ = ist._;
+	$.widget("ist.tutorial_running_app", {
 		options: {
 			pages: [],
 			page_no: 0
 		},
 		_create: function() {
-			this.env = new red.Environment();
+			this.env = new ist.Environment();
 			this.app = $("<div />")	.appendTo(this.element)
 									.dom_output({
 										root: this.env.get_root(),
@@ -70,4 +70,4 @@
 			});
 		}
 	});
-}(red, jQuery));
+}(interstate, jQuery));

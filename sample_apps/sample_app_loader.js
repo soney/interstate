@@ -1,9 +1,9 @@
 /*jslint nomen: true, vars: true */
-/*global red,console,document */
+/*global interstate,console,document */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	red.sample_apps = {};
+	ist.sample_apps = {};
 
 	function loadjscssfile(filename, filetype){
 		var fileref;
@@ -24,9 +24,9 @@
 	}
 
 	var last_load_name, last_callback;
-	red.load_sample_app = function(name, callback) {
-		if(red.sample_apps.hasOwnProperty(name)) {
-			var root = red.sample_apps[name];
+	ist.load_sample_app = function(name, callback) {
+		if(ist.sample_apps.hasOwnProperty(name)) {
+			var root = ist.sample_apps[name];
 			callback(root, name);
 		} else {
 			last_load_name = name;
@@ -35,8 +35,8 @@
 		}
 	};
 
-	red.on_sample_app_ready = function(root) {
-		red.sample_apps[last_load_name] = root;
+	ist.on_sample_app_ready = function(root) {
+		ist.sample_apps[last_load_name] = root;
 		last_callback(root, last_load_name);
 	};
-}(red));
+}(interstate));

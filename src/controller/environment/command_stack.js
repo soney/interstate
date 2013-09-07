@@ -1,11 +1,11 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
     "use strict";
-    var cjs = red.cjs,
-        _ = red._;
-	red.CommandStack = function () {
+    var cjs = ist.cjs,
+        _ = ist._;
+	ist.CommandStack = function () {
         var stack = [];
         var index = -1; // Points at the next thing to undo
 
@@ -57,4 +57,4 @@
 			stack = null;
 		};
 	};
-}(red));
+}(interstate));

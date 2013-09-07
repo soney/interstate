@@ -1,9 +1,9 @@
-/*global red */
+/*global interstate */
 
-(function(red) {
+(function(ist) {
 	"use strict";
 
-	var env = red.create("environment");
+	var env = new ist.Environment();
 env
 .set("my_world", "<stateful>")
 .cd("my_world")
@@ -58,5 +58,5 @@ env
 			.up()
 		.up()
 
-	red.on_sample_app_ready(env.get_root());
-}(red));
+	ist.on_sample_app_ready(env.get_root());
+}(interstate));

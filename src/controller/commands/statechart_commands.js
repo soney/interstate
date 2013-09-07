@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedSet */
+/*global interstate,esprima,able,uid,console,RedSet */
 
-(function (red) {
+(function (ist) {
     "use strict";
-    var cjs = red.cjs,
-        _ = red._;
+    var cjs = ist.cjs,
+        _ = ist._;
     
-    red.AddStateCommand = function (options) {
-        red.AddStateCommand.superclass.constructor.apply(this, arguments);
+    ist.AddStateCommand = function (options) {
+        ist.AddStateCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.statechart) {
@@ -28,7 +28,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -60,7 +60,7 @@
 			delete this._index;
 			delete this._make_start;
         };
-        red.register_serializable_type("add_state_command",
+        ist.register_serializable_type("add_state_command",
             function (x) {
                 return x instanceof My;
             },
@@ -70,23 +70,23 @@
                     statechart: this._statechart.id(),
                     name: this._state_name,
                     index: this._index,
-                    state: red.serialize.apply(red, ([this._state]).concat(args)),
+                    state: ist.serialize.apply(ist, ([this._state]).concat(args)),
 					make_start: this._make_start
                 };
             },
             function (obj) {
                 return new My({
-                    statechart: red.find_uid(obj.statechart),
+                    statechart: ist.find_uid(obj.statechart),
                     name: obj.name,
                     index: obj.index,
-                    state: red.deserialize(obj.state),
+                    state: ist.deserialize(obj.state),
 					make_start: obj.make_start
                 });
             });
-    }(red.AddStateCommand));
+    }(ist.AddStateCommand));
     
-    red.RemoveStateCommand = function (options) {
-        red.RemoveStateCommand.superclass.constructor.apply(this, arguments);
+    ist.RemoveStateCommand = function (options) {
+        ist.RemoveStateCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.statechart) {
@@ -101,7 +101,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -138,7 +138,7 @@
 			delete this._statechart;
 			delete this._state_name;
         };
-        red.register_serializable_type("remove_state_command",
+        ist.register_serializable_type("remove_state_command",
             function (x) {
                 return x instanceof My;
             },
@@ -150,14 +150,14 @@
             },
             function (obj) {
                 return new My({
-                    statechart: red.find_uid(obj.statechart),
+                    statechart: ist.find_uid(obj.statechart),
                     name: obj.name
                 });
             });
-    }(red.RemoveStateCommand));
+    }(ist.RemoveStateCommand));
     
-    red.MoveStateCommand = function (options) {
-        red.MoveStateCommand.superclass.constructor.apply(this, arguments);
+    ist.MoveStateCommand = function (options) {
+        ist.MoveStateCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.statechart) {
@@ -170,7 +170,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -186,7 +186,7 @@
 			My.superclass._do_destroy.apply(this, arguments);
 		};
     
-        red.register_serializable_type("move_state_command",
+        ist.register_serializable_type("move_state_command",
             function (x) {
                 return x instanceof My;
             },
@@ -199,15 +199,15 @@
             },
             function (obj) {
                 return new My({
-                    statechart: red.find_uid(obj.statechart),
+                    statechart: ist.find_uid(obj.statechart),
                     name: obj.name,
                     index: obj.index
                 });
             });
-    }(red.MoveStateCommand));
+    }(ist.MoveStateCommand));
     
-    red.RenameStateCommand = function (options) {
-        red.RenameStateCommand.superclass.constructor.apply(this, arguments);
+    ist.RenameStateCommand = function (options) {
+        ist.RenameStateCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.statechart) {
@@ -224,7 +224,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -239,7 +239,7 @@
 			My.superclass._do_destroy.apply(this, arguments);
 		};
     
-        red.register_serializable_type("rename_state_command",
+        ist.register_serializable_type("rename_state_command",
             function (x) {
                 return x instanceof My;
             },
@@ -252,15 +252,15 @@
             },
             function (obj) {
                 return new My({
-                    statechart: red.find_uid(obj.statechart),
+                    statechart: ist.find_uid(obj.statechart),
                     from: obj.from,
                     to: obj.to
                 });
             });
-    }(red.RenameStateCommand));
+    }(ist.RenameStateCommand));
     
-    red.MakeConcurrentCommand = function (options) {
-        red.MakeConcurrentCommand.superclass.constructor.apply(this, arguments);
+    ist.MakeConcurrentCommand = function (options) {
+        ist.MakeConcurrentCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.statechart) {
@@ -275,7 +275,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -289,7 +289,7 @@
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
 		};
-        red.register_serializable_type("make_concurrent_command",
+        ist.register_serializable_type("make_concurrent_command",
             function (x) {
                 return x instanceof My;
             },
@@ -301,15 +301,15 @@
             },
             function (obj) {
                 return new My({
-                    statechart: red.find_uid(obj.statechart),
+                    statechart: ist.find_uid(obj.statechart),
                     concurrent: obj.concurrent
                 });
             });
-    }(red.MakeConcurrentCommand));
+    }(ist.MakeConcurrentCommand));
     
     
-    red.AddTransitionCommand = function (options) {
-        red.AddTransitionCommand.superclass.constructor.apply(this, arguments);
+    ist.AddTransitionCommand = function (options) {
+        ist.AddTransitionCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.from || !this._options.to || !this._options.statechart) {
@@ -336,7 +336,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -359,7 +359,7 @@
                 this._transition.destroy();
             }
         };
-        red.register_serializable_type("add_transition_command",
+        ist.register_serializable_type("add_transition_command",
             function (x) {
                 return x instanceof My;
             },
@@ -369,24 +369,24 @@
                     statechart_id: this._statechart.id(),
                     from_id: this._from_state.id(),
                     to_id: this._to_state.id(),
-                    event: red.serialize.apply(red, ([this._event]).concat(arg_array)),
-                    transition: red.serialize.apply(red, ([this._transition]).concat(arg_array))
+                    event: ist.serialize.apply(ist, ([this._event]).concat(arg_array)),
+                    transition: ist.serialize.apply(ist, ([this._transition]).concat(arg_array))
                 };
             },
             function (obj) {
                 return new My({
-                    statechart: red.find_uid(obj.statechart_id),
-                    from: red.find_uid(obj.from_id),
-                    to: red.find_uid(obj.to_id),
-                    event: red.deserialize(obj.event),
-                    transition: red.deserialize(obj.transition)
+                    statechart: ist.find_uid(obj.statechart_id),
+                    from: ist.find_uid(obj.from_id),
+                    to: ist.find_uid(obj.to_id),
+                    event: ist.deserialize(obj.event),
+                    transition: ist.deserialize(obj.transition)
                 });
             });
-    }(red.AddTransitionCommand));
+    }(ist.AddTransitionCommand));
     
     
-    red.RemoveTransitionCommand = function (options) {
-        red.RemoveTransitionCommand.superclass.constructor.apply(this, arguments);
+    ist.RemoveTransitionCommand = function (options) {
+        ist.RemoveTransitionCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.statechart) {
@@ -404,7 +404,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -424,7 +424,7 @@
                 this._transition.destroy();
             }
         };
-        red.register_serializable_type("remove_transition_command",
+        ist.register_serializable_type("remove_transition_command",
             function (x) {
                 return x instanceof My;
             },
@@ -437,14 +437,14 @@
             },
             function (obj) {
                 return new My({
-                    statechart: red.find_uid(obj.statechart),
-                    transition: red.find_uid(obj.transition)
+                    statechart: ist.find_uid(obj.statechart),
+                    transition: ist.find_uid(obj.transition)
                 });
             });
-    }(red.RemoveTransitionCommand));
+    }(ist.RemoveTransitionCommand));
     
-    red.SetTransitionEventCommand = function (options) {
-        red.SetTransitionEventCommand.superclass.constructor.apply(this, arguments);
+    ist.SetTransitionEventCommand = function (options) {
+        ist.SetTransitionEventCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.transition) {
@@ -460,7 +460,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -477,7 +477,7 @@
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
 		};
-        red.register_serializable_type("set_transition_event_command",
+        ist.register_serializable_type("set_transition_event_command",
             function (x) {
                 return x instanceof My;
             },
@@ -490,15 +490,15 @@
             },
             function (obj) {
                 return new My({
-                    transition: red.find_uid(obj.transition_id),
+                    transition: ist.find_uid(obj.transition_id),
                     event: obj.event_str
                 });
             });
-    }(red.SetTransitionEventCommand));
+    }(ist.SetTransitionEventCommand));
     
     
-    red.SetTransitionFromCommand = function (options) {
-        red.SetTransitionFromCommand.superclass.constructor.apply(this, arguments);
+    ist.SetTransitionFromCommand = function (options) {
+        ist.SetTransitionFromCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.statechart) {
@@ -510,7 +510,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -525,7 +525,7 @@
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
 		};
-        red.register_serializable_type("set_transition_from_command",
+        ist.register_serializable_type("set_transition_from_command",
             function (x) {
                 return x instanceof My;
             },
@@ -538,15 +538,15 @@
             },
             function (obj) {
                 return new My({
-                    transition: red.find_uid(obj.transition_id),
-                    statechart: red.find_uid(obj.state_id)
+                    transition: ist.find_uid(obj.transition_id),
+                    statechart: ist.find_uid(obj.state_id)
                 });
             });
-    }(red.SetTransitionFromCommand));
+    }(ist.SetTransitionFromCommand));
     
     
-    red.SetTransitionToCommand = function (options) {
-        red.SetTransitionToCommand.superclass.constructor.apply(this, arguments);
+    ist.SetTransitionToCommand = function (options) {
+        ist.SetTransitionToCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.statechart) {
@@ -558,7 +558,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -573,7 +573,7 @@
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
 		};
-        red.register_serializable_type("set_transition_to_command",
+        ist.register_serializable_type("set_transition_to_command",
             function (x) {
                 return x instanceof My;
             },
@@ -586,16 +586,16 @@
             },
             function (obj) {
                 return new My({
-                    transition: red.find_uid(obj.transition_id),
-                    statechart: red.find_uid(obj.state_id)
+                    transition: ist.find_uid(obj.transition_id),
+                    statechart: ist.find_uid(obj.state_id)
                 });
             });
-    }(red.SetTransitionToCommand));
+    }(ist.SetTransitionToCommand));
     
     var null_fn = function () {};
     
-    red.StatechartOnCommand = function (options) {
-        red.StatechartOnCommand.superclass.constructor.apply(this, arguments);
+    ist.StatechartOnCommand = function (options) {
+        ist.StatechartOnCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.statechart) {
@@ -605,7 +605,7 @@
         this._statechart = this._options.statechart;
         this._context = this._options.context;
         //this._pcontext = this._options.pcontext;
-        if (this._options.listener instanceof red.ParsedFunction) {
+        if (this._options.listener instanceof ist.ParsedFunction) {
             var func = this._options.listener;
             this._listener = function (info, type) {
                 var state = info.state;
@@ -613,7 +613,7 @@
                 var pcontext = state.context();
                 var js_context;
                 if (pcontext) {
-                    js_context = red.find_or_put_contextual_obj(pcontext.points_at(), pcontext);
+                    js_context = ist.find_or_put_contextual_obj(pcontext.points_at(), pcontext);
                 }
                 func._call(js_context, pcontext, event);
             };
@@ -624,7 +624,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -638,7 +638,7 @@
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
 		};
-        red.register_serializable_type("set_transition_on_command",
+        ist.register_serializable_type("set_transition_on_command",
             function (x) {
                 return x instanceof My;
             },
@@ -646,25 +646,25 @@
                 var arg_array = _.toArray(arguments);
                 return {
                     statechart_id: this._statechart.id(),
-                    context: red.serialize.apply(red, ([this._context]).concat(arg_array)),
-                    pcontext: red.serialize.apply(red, ([this._pcontext]).concat(arg_array)),
-                    listener: red.serialize.apply(red, ([this._listener]).concat(arg_array)),
+                    context: ist.serialize.apply(ist, ([this._context]).concat(arg_array)),
+                    pcontext: ist.serialize.apply(ist, ([this._pcontext]).concat(arg_array)),
+                    listener: ist.serialize.apply(ist, ([this._listener]).concat(arg_array)),
                     spec: this._spec
                 };
             },
             function (obj) {
                 return new My({
-                    statechart: red.find_uid(obj.statechart_id),
-                    context: red.deserialize(obj.context),
-                    pcontext: red.deserialize(obj.pcontext),
-                    listener: red.deserialize(obj.listener),
+                    statechart: ist.find_uid(obj.statechart_id),
+                    context: ist.deserialize(obj.context),
+                    pcontext: ist.deserialize(obj.pcontext),
+                    listener: ist.deserialize(obj.listener),
                     spec: obj._spec
                 });
             });
-    }(red.StatechartOnCommand));
+    }(ist.StatechartOnCommand));
     
-    red.StatechartOff = function (options) {
-        red.StatechartOff.superclass.constructor.apply(this, arguments);
+    ist.StatechartOff = function (options) {
+        ist.StatechartOff.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
         if (!this._options.statechart) {
@@ -678,7 +678,7 @@
     };
     
     (function (My) {
-        _.proto_extend(My, red.Command);
+        _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
@@ -692,7 +692,7 @@
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
 		};
-        red.register_serializable_type("set_transition_off_command",
+        ist.register_serializable_type("set_transition_off_command",
             function (x) {
                 return x instanceof My;
             },
@@ -700,21 +700,21 @@
                 var arg_array = _.toArray(arguments);
                 return {
                     statechart_id: this._statechart.id(),
-                    context: red.serialize.apply(red, ([this._context]).concat(arg_array)),
-                    pcontext: red.serialize.apply(red, ([this._pcontext]).concat(arg_array)),
-                    listener: red.serialize.apply(red, ([this._listener]).concat(arg_array)),
+                    context: ist.serialize.apply(ist, ([this._context]).concat(arg_array)),
+                    pcontext: ist.serialize.apply(ist, ([this._pcontext]).concat(arg_array)),
+                    listener: ist.serialize.apply(ist, ([this._listener]).concat(arg_array)),
                     spec: this._spec
                 };
             },
             function (obj) {
                 return new My({
-                    statechart: red.find_uid(obj.statechart_id),
-                    context: red.deserialize(obj.context),
-                    pcontext: red.deserialize(obj.pcontext),
-                    listener: red.deserialize(obj.listener),
+                    statechart: ist.find_uid(obj.statechart_id),
+                    context: ist.deserialize(obj.context),
+                    pcontext: ist.deserialize(obj.pcontext),
+                    listener: ist.deserialize(obj.listener),
                     spec: obj._spec
                 });
             });
-    }(red.StatechartOff));
+    }(ist.StatechartOff));
 
-}(red));
+}(interstate));

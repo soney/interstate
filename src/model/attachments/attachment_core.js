@@ -1,12 +1,12 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
     "use strict";
-    var cjs = red.cjs,
-        _ = red._;
+    var cjs = ist.cjs,
+        _ = ist._;
 
-    red.AttachmentInstance = function (options) {
+    ist.AttachmentInstance = function (options) {
         this.options = options || {};
         this.contextual_object = this.options.contextual_object;
 		this.creator = this.options.creator;
@@ -33,14 +33,14 @@
         proto.hash = function () {
             return this._context.hash();
         };
-    }(red.AttachmentInstance));
+    }(ist.AttachmentInstance));
     
-    red.Attachment = function (options) {
+    ist.Attachment = function (options) {
         options = options || {};
         if (options.multiple_allowed === true) {
             this._multiple_allowed = true;
         } else { this._multiple_allowed = false; }
-        this._InstanceClass = options.instance_class || red.AttachmentInstance;
+        this._InstanceClass = options.instance_class || ist.AttachmentInstance;
         this.type = "(generic)";
         this.instance_options = options.instance_options || {};
     };
@@ -76,26 +76,26 @@
 			delete this.instance_options;
 			this.do_destroy();
 		};
-    }(red.Attachment));
+    }(ist.Attachment));
 	/*
     
-    red.define("attachment", function (options) {
-        var attachment = new red.Attachment(options);
+    ist.define("attachment", function (options) {
+        var attachment = new ist.Attachment(options);
         return attachment;
     });
 
 */
-	red.register_attachments = function(object_types) {
+	ist.register_attachments = function(object_types) {
 		var attachment_suffix = "_attachment";
 		_.each(object_types, function(attachment_specs, attachment_name) {
-			var AttachmentType = red.register_attachment(attachment_name, attachment_specs);
+			var AttachmentType = ist.register_attachment(attachment_name, attachment_specs);
 
-			red.define(attachment_name + attachment_suffix, function (options) {
+			ist.define(attachment_name + attachment_suffix, function (options) {
 				return new AttachmentType(options);
 			});
 		});
 	};
-	red.register_attachment = function(attachment_name, attachment_specs) {
+	ist.register_attachment = function(attachment_name, attachment_specs) {
 		var attachment_suffix = "_attachment";
 		var InstanceType = function(options) {
 			InstanceType.superclass.constructor.apply(this, arguments);
@@ -104,7 +104,7 @@
 			this.on_ready();
 		};
 		(function(My) {
-			_.proto_extend(My, red.AttachmentInstance);
+			_.proto_extend(My, ist.AttachmentInstance);
 			var proto = My.prototype;
 			proto.on_ready = function() {
 				attachment_specs.ready.call(this);
@@ -181,27 +181,27 @@
 			this.type = attachment_name;
 		};
 		(function(My) {
-			_.proto_extend(My, red.Attachment);
+			_.proto_extend(My, ist.Attachment);
 			var proto = My.prototype;
 			if(attachment_specs.attachment_destroy) {
 				proto.do_destroy = attachment_specs.attachment_destroy;
 			}
-			red.register_serializable_type(attachment_name + attachment_suffix,
+			ist.register_serializable_type(attachment_name + attachment_suffix,
 				function (x) {
 					return x instanceof My;
 				},
 				function () {
 					return {
-						instance_options: red.serialize(this.instance_options)
+						instance_options: ist.serialize(this.instance_options)
 					};
 				},
 				function (obj) {
 					return new My({
-						instance_options: red.deserialize(obj.instance_options)
+						instance_options: ist.deserialize(obj.instance_options)
 					});
 				});
 		}(AttachmentType));
 
 		return AttachmentType;
 	};
-}(red));
+}(interstate));

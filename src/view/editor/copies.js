@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true, white: true */
 /*jshint scripturl: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	$.widget("red.copy", {
+	$.widget("ist.copy", {
 		options: {
 			curr_copy: false,
 			out_of: 0,
@@ -180,4 +180,4 @@
 
 		}
 	});
-}(red, jQuery));
+}(interstate, jQuery));

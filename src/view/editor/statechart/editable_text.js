@@ -1,10 +1,10 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,window */
+/*global interstate,esprima,able,uid,console,window */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var match_styles = function (textbox, text, options) {
 		textbox.style.position = "absolute";
@@ -31,7 +31,7 @@
 		textbox.style.color = options.color;
 	};
 
-	red.EditableText = function (paper, options) {
+	ist.EditableText = function (paper, options) {
 		able.make_this_listenable(this);
 		able.make_this_optionable(this, {
 			x: 0,
@@ -254,5 +254,5 @@
 			this.textbox.select();
 			return this;
 		};
-	}(red.EditableText));
-}(red, jQuery));
+	}(ist.EditableText));
+}(interstate, jQuery));

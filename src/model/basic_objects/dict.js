@@ -1,18 +1,18 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
     "use strict";
-    var cjs = red.cjs,
-        _ = red._;
+    var cjs = ist.cjs,
+        _ = ist._;
     
-    red.POINTERS_PROPERTY = {};
-    red.MANIFESTATIONS_PROPERTY = {};
+    ist.POINTERS_PROPERTY = {};
+    ist.MANIFESTATIONS_PROPERTY = {};
     
-    red.is_inherited = function (pcontext) {
-        return red.inherited_root(pcontext) !== undefined;
+    ist.is_inherited = function (pcontext) {
+        return ist.inherited_root(pcontext) !== undefined;
     };
-    red.inherited_root = function (pcontext) {
+    ist.inherited_root = function (pcontext) {
         var child, parent;
         child = pcontext.points_at();
         var inh = false,
@@ -34,7 +34,7 @@
         return undefined;
     };
     
-    red.Dict = function (options, defer_initialization) {
+    ist.Dict = function (options, defer_initialization) {
 		able.make_this_listenable(this);
         options = _.extend({
             value: {},
@@ -44,10 +44,10 @@
 			has_copies: true
         }, options);
     
-        this.type = "red_dict";
+        this.type = "ist_dict";
         this._id = options.uid || uid();
         this.options = options;
-        red.register_uid(this._id, this);
+        ist.register_uid(this._id, this);
         if (defer_initialization !== true) {
             this.do_initialize(options);
         }
@@ -59,7 +59,7 @@
 		able.make_proto_listenable(proto);
     
         proto.do_initialize = function (options) {
-            red.install_instance_builtins(this, options, My);
+            ist.install_instance_builtins(this, options, My);
             var direct_props = this.direct_props();
             direct_props.set_value_equality_check(function (info1, info2) {
                 return info1.value === info2.value;
@@ -133,7 +133,7 @@
             }
         };
     
-        red.install_proto_builtins(proto, My.builtins);
+        ist.install_proto_builtins(proto, My.builtins);
         
         //
         // === DIRECT PROTOS ===
@@ -290,7 +290,7 @@
         };
     
         proto.id = proto.hash = function () { return this._id; };
-		if(red.__debug) {
+		if(ist.__debug) {
 			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		}
     
@@ -303,8 +303,8 @@
     
         proto.destroy = function () {
 			if(this.constructor === My) { this.emit_begin_destroy(); }
-			red.unset_instance_builtins(this, My);
-			red.unregister_uid(this.id());
+			ist.unset_instance_builtins(this, My);
+			ist.unregister_uid(this.id());
 			able.destroy_this_listenable(this);
         };
     
@@ -322,12 +322,12 @@
             var args = _.toArray(arguments);
             _.each(this.get_builtins(), function (builtin, name) {
                 var getter_name = builtin._get_getter_name();
-                rv[name] = red.serialize.apply(red, ([this[getter_name]()]).concat(args));
+                rv[name] = ist.serialize.apply(ist, ([this[getter_name]()]).concat(args));
             }, this);
     
             return rv;
         };
-        red.register_serializable_type("dict",
+        ist.register_serializable_type("dict",
             function (x) {
                 return x instanceof My && x.constructor === My;
             },
@@ -343,19 +343,19 @@
                 rv.initialize = function () {
                     var options = {};
                     _.each(serialized_options, function (serialized_option, name) {
-                        options[name] = red.deserialize.apply(red, ([serialized_option]).concat(rest_args));
+                        options[name] = ist.deserialize.apply(ist, ([serialized_option]).concat(rest_args));
                     });
                     this.do_initialize(options);
                 };
 
                 return rv;
             });
-    }(red.Dict));
+    }(ist.Dict));
 	/*
     
-    red.define("dict", function (options) {
-        var dict = new red.Dict(options);
+    ist.define("dict", function (options) {
+        var dict = new ist.Dict(options);
         return dict;
     });
 	*/
-}(red));
+}(interstate));

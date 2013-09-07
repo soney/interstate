@@ -46,8 +46,8 @@ module.exports = function(grunt) {
 						DEBUG: false
 					}
 				},
-				src: build_folder + "/red.js",
-				dest: build_folder + "/red.min.js"
+				src: build_folder + "/interstate.js",
+				dest: build_folder + "/interstate.min.js"
 			}
 		},
 		concat: {
@@ -63,7 +63,7 @@ module.exports = function(grunt) {
 					}
 				},
 				src: src_js,
-				dest: build_folder + "/red.js"
+				dest: build_folder + "/interstate.js"
 			},
 			esprima: {
 				src: "src/_vendor/esprima/esprima.js",

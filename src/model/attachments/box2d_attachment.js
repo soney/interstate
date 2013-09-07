@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true */
-/*global red,able,uid,console,jQuery,window,Box2D */
+/*global interstate,able,uid,console,jQuery,window,Box2D */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
 
 	if(!window.Box2D) { return; }
 
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var PIXELS_PER_METER = 30;
 
@@ -31,16 +31,16 @@
 	var bodyDef = new B2BodyDef();
 	bodyDef.type = b2Body.b2_dynamicBody;
 	
-	red.register_attachments({
+	ist.register_attachments({
 		"box2d_world": {
 			ready: function() {
 				this.world = new B2World(new B2Vec2(0, 0), true);
 
 				var update_world = _.bind(function() {
 					this.world.Step(1 / 60, 10, 10);
-					red.requestAnimationFrame.call(window, update_world);
+					ist.requestAnimationFrame.call(window, update_world);
 				}, this);
-				red.requestAnimationFrame.call(window, update_world);
+				ist.requestAnimationFrame.call(window, update_world);
 			},
 			parameters: {
 				gravity: function(contextual_object) {
@@ -157,4 +157,4 @@
 			}
 		}
 	});
-}(red, jQuery));
+}(interstate, jQuery));

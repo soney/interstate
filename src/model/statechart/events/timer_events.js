@@ -1,19 +1,19 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,window */
+/*global interstate,esprima,able,uid,console,window */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.TimeEvent = function () {
-		red.Event.apply(this, arguments);
+	ist.TimeEvent = function () {
+		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "time";
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.Event);
+		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.on_create = function (time) {
 			this.time = time;
@@ -32,17 +32,17 @@
 		proto.destroy = function () {
 			My.superclass.destroy.apply(this, arguments);
 		};
-	}(red.TimeEvent));
+	}(ist.TimeEvent));
 
-	red.TimeoutEvent = function () {
-		red.Event.apply(this, arguments);
+	ist.TimeoutEvent = function () {
+		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "timeout";
 		this.timeout = undefined;
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.Event);
+		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.on_create = function (delay) {
 			this.delay = delay;
@@ -77,14 +77,14 @@
 			}
 		};
 		proto.notify = function () {
-			red.event_queue.wait();
+			ist.event_queue.wait();
 			this.fire({
 				type: "timeout",
 				delay: this.delay,
 				current_time: (new Date()).getTime(),
 				created_at: this.created_at
 			});
-			red.event_queue.signal();
+			ist.event_queue.signal();
 		};
 		proto.destroy = function () {
 			if(this._transition) {
@@ -103,5 +103,5 @@
 		proto.disable = function () {
 			My.superclass.disable.apply(this, arguments);
 		};
-	}(red.TimeoutEvent));
-}(red));
+	}(ist.TimeoutEvent));
+}(interstate));

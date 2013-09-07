@@ -6,13 +6,13 @@ var express = require('express');
 var fs = require('fs');
 var ejs = require('ejs');
 var sass = require("node-sass");
-var red_inc = require('./include_libs');
+var ist_inc = require('./include_libs');
 
 var app = express();
 if(devel_mode) {
-	red_inc.main = red_inc.main_src;
+	ist_inc.main = ist_inc.main_src;
 } else {
-	red_inc.main = red_inc.main_build;
+	ist_inc.main = ist_inc.main_build;
 }
 var text_after = function(str, portion) {
 	var index = str.lastIndexOf(portion);
@@ -77,12 +77,12 @@ app.configure(function() {
 					relative_path += "../";
 				}
 				var locals = {
-					red_include: function(files) {
-						return red_inc.include_templates(files.map(function(file) {
+					ist_include: function(files) {
+						return ist_inc.include_templates(files.map(function(file) {
 							return relative_path+file;
 						}));
 					}
-					, red_inc: red_inc
+					, ist_inc: ist_inc
 				};
 
 				

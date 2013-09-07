@@ -1,18 +1,18 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedMap */
+/*global interstate,esprima,able,uid,console,RedMap */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.PointerTree = function (options) {
+	ist.PointerTree = function (options) {
 		this.contextual_object = options && options.contextual_object || false;
 		this.children = new RedMap({
 			hash: function (info) {
 				var child = info.child,
 					special_contexts = info.special_contexts,
-					hash = red.pointer_hash(child);
+					hash = ist.pointer_hash(child);
 				
 				var i;
 				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
@@ -25,7 +25,7 @@
 					var sc1 = info1.special_contexts,
 						sc2 = info2.special_contexts;
 
-					return red.check_special_context_equality(sc1, sc2);
+					return ist.check_special_context_equality(sc1, sc2);
 				} else {
 					return false;
 				}
@@ -68,14 +68,14 @@
 				child: child,
 				special_contexts: special_contexts
 			}, function () {
-				var tree = new red.PointerTree();
+				var tree = new ist.PointerTree();
 				return tree;
 			});
 			return child_tree;
 		};
 		proto.get_valid_child_pointers = function() {
 			var cobj = this.get_contextual_object();
-			if(cobj instanceof red.ContextualDict) {
+			if(cobj instanceof ist.ContextualDict) {
 				var rv;
 				if(cobj.is_template()) {
 					var instance_pointers = cobj.instance_pointers();
@@ -90,7 +90,7 @@
 					var my_pointer = cobj.get_pointer();
 					_.each(child_infos, function(child_info) {
 						var value = child_info.value;
-						if (value instanceof red.Dict || value instanceof red.Cell || value instanceof red.StatefulProp) {
+						if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
 							rv.push({obj: value, pointer: my_pointer.push(value)});
 						}
 					});
@@ -127,7 +127,7 @@
 					ptr = valid_child.pointer;
 				var node = this.get_or_put_child(obj, ptr.special_contexts());
 				if(!node.has_contextual_object()) {
-					var cobj = red.create_contextual_object(obj, ptr, {defer_initialization: true});
+					var cobj = ist.create_contextual_object(obj, ptr, {defer_initialization: true});
 					node.set_contextual_object(cobj);
 					cobj.initialize({
 						object: obj,
@@ -189,21 +189,21 @@
 			this.children.destroy();
 			delete this.children;
 			if(!this.contextual_object.is_destroyed()) {
-				this.contextual_object.destroy(true, true); // silent & avoid re-calling red.destroy_cobj
+				this.contextual_object.destroy(true, true); // silent & avoid re-calling ist.destroy_cobj
 			}
 			delete this.contextual_object;
 		};
-	}(red.PointerTree));
+	}(ist.PointerTree));
 
-	red.PointerBucket = function (options) {
+	ist.PointerBucket = function (options) {
 		var root = options.root;
-		var root_pointer = new red.Pointer({stack: [root]});
-		this.contextual_root = new red.ContextualDict({
+		var root_pointer = new ist.Pointer({stack: [root]});
+		this.contextual_root = new ist.ContextualDict({
 			object: root,
 			pointer: root_pointer
 		});
 
-		this.tree = new red.PointerTree({
+		this.tree = new ist.PointerTree({
 			contextual_object: this.contextual_root
 		});
 	};
@@ -234,7 +234,7 @@
 			if(node.has_contextual_object()) {
 				rv = node.get_contextual_object();
 			} else {
-				rv = red.create_contextual_object(obj, pointer, {defer_initialization: true});
+				rv = ist.create_contextual_object(obj, pointer, {defer_initialization: true});
 				node.set_contextual_object(rv);
 				rv.initialize(_.extend({
 					object: obj,
@@ -261,7 +261,7 @@
 				if(parent_node) {
 					parent_node.remove_child(ptr_i, sc_i);
 				} else { // It's the root
-					red.pointer_buckets.remove(pointer.root());
+					ist.pointer_buckets.remove(pointer.root());
 				}
 			} else {
 				throw new Error("Couldn't find correct node to remove;");
@@ -278,20 +278,20 @@
 			delete this.tree;
 			delete this.contextual_root;
 		};
-	}(red.PointerBucket));
+	}(ist.PointerBucket));
 
 /*
-	red.pointer_buckets = cjs.map({
+	ist.pointer_buckets = cjs.map({
 		hash: "hash",
 		create_unsubstantiated: false
 	});
 	*/
-	red.pointer_buckets = new RedMap({
+	ist.pointer_buckets = new RedMap({
 		hash: "hash"
 	});
 
 	var in_call = false;
-	red.destroy_contextual_obj = function(cobj) {
+	ist.destroy_contextual_obj = function(cobj) {
 		var root_call = in_call === false;
 		in_call = true;
 
@@ -307,7 +307,7 @@
 		var pointer = cobj.get_pointer();
 		var pointer_root = pointer.root();
 
-		var pointer_bucket = red.pointer_buckets.get(pointer_root);
+		var pointer_bucket = ist.pointer_buckets.get(pointer_root);
 		if(pointer_bucket) {
 			pointer_bucket.destroy_cobj(cobj);
 		}
@@ -325,7 +325,7 @@
 	var get_to_destroy = function(root, destroy_root) {
 		var to_destroy = [];
 		if(root) {
-			if(root instanceof red.ContextualDict) {
+			if(root instanceof ist.ContextualDict) {
 				if(root.is_template()) {
 					var instances = root.instances();
 					_.each(instances, function(instance) {
@@ -347,18 +347,18 @@
 		return to_destroy;
 	};
 
-	red.find_or_put_contextual_obj = function (obj, pointer, options) {
+	ist.find_or_put_contextual_obj = function (obj, pointer, options) {
 		var pointer_root;
 
 		if (pointer) {
 			pointer_root = pointer.root();
 		} else {
-			pointer = new red.Pointer({stack: [obj]});
+			pointer = new ist.Pointer({stack: [obj]});
 			pointer_root = obj;
 		}
 
-		var pointer_bucket = red.pointer_buckets.get_or_put(pointer_root, function () {
-			return new red.PointerBucket({
+		var pointer_bucket = ist.pointer_buckets.get_or_put(pointer_root, function () {
+			return new ist.PointerBucket({
 				root: pointer_root
 			});
 		});
@@ -367,28 +367,28 @@
 		return rv;
 	};
 	var get_expired_pointer_trees = function(root) {
-		var bucket_roots = red.pointer_buckets.keys();
+		var bucket_roots = ist.pointer_buckets.keys();
 		var invalid_bucket_roots = _.without(bucket_roots, root);
-		var real_root_bucket = red.pointer_buckets.get(root);
+		var real_root_bucket = ist.pointer_buckets.get(root);
 		var other_expired_buckets = real_root_bucket.get_expired_children();
 
 		return invalid_bucket_roots.concat(other_expired_buckets);
 	};
 
-	red.update_current_contextual_objects = function(root) {
-		var root_bucket = red.pointer_buckets.get(root);
+	ist.update_current_contextual_objects = function(root) {
+		var root_bucket = ist.pointer_buckets.get(root);
 		if(root_bucket) {
 			root_bucket.update_current_contextual_objects();
 		}
 	};
 
-	red.get_expired_contextual_objects = function(root) {
+	ist.get_expired_contextual_objects = function(root) {
 		var expired_trees = get_expired_pointer_trees(root);
 		return _.map(expired_trees, function(t) { return t.get_contextual_object(); });
 	};
 
-	red.create_current_contextual_objects = function(root) {
-		var root_bucket = red.pointer_buckets.get(root);
+	ist.create_current_contextual_objects = function(root) {
+		var root_bucket = ist.pointer_buckets.get(root);
 		root_bucket.create_current_contextual_objects();
 	};
-}(red));
+}(interstate));

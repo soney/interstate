@@ -1,13 +1,13 @@
 /*jslint evil:true,nomen: true, vars: true, bitwise:true */
-/*global red,esprima,able,uid,console,window */
+/*global interstate,esprima,able,uid,console,window */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._,
+	var cjs = ist.cjs,
+		_ = ist._,
 		esprima = window.esprima;
 
-	red.construct = function(constructor, args) {
+	ist.construct = function(constructor, args) {
 		if(constructor === Date) { // Functions check to see if date object
 			var rv = eval("new constructor(" + args.join(",") + ")");
 			return rv;
@@ -19,7 +19,7 @@
 		return new F();
 	};
 
-	red.MultiExpression = function(expressions) {
+	ist.MultiExpression = function(expressions) {
 		this.expressions = expressions;
 	};
 
@@ -37,18 +37,18 @@
 		proto.last = function() {
 			return _.last(this.expressions);
 		};
-	}(red.MultiExpression));
+	}(ist.MultiExpression));
 
-	red.on_event = function (event_type, arg1) {
+	ist.on_event = function (event_type, arg1) {
 		if (event_type === "timeout") {
 			//console.log(arg1);
-			var timeout_event = new red.TimeoutEvent(arg1);
+			var timeout_event = new ist.TimeoutEvent(arg1);
 			return timeout_event;
 		} else if(event_type === "time") {
-			var time_event = new red.TimeEvent(arg1);
+			var time_event = new ist.TimeEvent(arg1);
 			return time_event;
 		} else if(event_type === "frame") {
-			var frame_event = new red.FrameEvent();
+			var frame_event = new ist.FrameEvent();
 			return frame_event;
 		} else {
 			var targets = _.rest(arguments);
@@ -56,42 +56,42 @@
 
 			if (targets) {
 				var statechart_spec = event_type;
-				var statechart_event = new red.TransitionEvent(targets, statechart_spec);
+				var statechart_event = new ist.TransitionEvent(targets, statechart_spec);
 				events.push(statechart_event);
 
 				if (arguments.length <= 1) { // Ex: on('mouseup') <-> on('mouseup', window)
 					targets = window;
 				}
-				var red_event_type = event_type;
-				var red_event = new red.RedObjEvent(red_event_type, targets);
-				events.push(red_event);
+				var ist_event_type = event_type;
+				var ist_event = new ist.IstObjEvent(ist_event_type, targets);
+				events.push(ist_event);
 			}
 			if (arguments.length <= 1) { // Ex: on('mouseup') <-> on('mouseup', window)
 				targets = window;
 			}
-			var dom_event = new red.DOMEvent(event_type, targets);
+			var dom_event = new ist.DOMEvent(event_type, targets);
 			events.push(dom_event);
 
-			return new red.CombinationEvent(events);
+			return new ist.CombinationEvent(events);
 		}
 	};
 
-	red.register_serializable_type("red_on_event_func",
+	ist.register_serializable_type("ist_on_event_func",
 		function (x) {
-			return x === red.on_event;
+			return x === ist.on_event;
 		},
 		function () {
 			return {};
 		},
 		function (obj) {
-			return red.on_event;
+			return ist.on_event;
 		});
 
-	red.binary_operators = {
-		"===":	function (a, b) { return red.check_contextual_object_equality_eqeqeq(a, b); },
-		"!==":	function (a, b) { return !red.check_contextual_object_equality_eqeqeq(a, b); },
-		"==":	function (a, b) { return red.check_contextual_object_equality_eqeqeq(a, b); },
-		"!=":	function (a, b) { return !red.check_contextual_object_equality_eqeqeq(a, b); },
+	ist.binary_operators = {
+		"===":	function (a, b) { return ist.check_contextual_object_equality_eqeqeq(a, b); },
+		"!==":	function (a, b) { return !ist.check_contextual_object_equality_eqeqeq(a, b); },
+		"==":	function (a, b) { return ist.check_contextual_object_equality_eqeqeq(a, b); },
+		"!=":	function (a, b) { return !ist.check_contextual_object_equality_eqeqeq(a, b); },
 		">":	function (a, b) { return a > b; },
 		">=":	function (a, b) { return a >= b; },
 		"<":	function (a, b) { return a < b; },
@@ -112,7 +112,7 @@
 		"in":	function (a, b) { return a in b; },
 		"instanceof":	function (a, b) { return a instanceof b; }
 	};
-	red.unary_operators = {
+	ist.unary_operators = {
 		"-":	function (a) { return -a; },
 		"!":	function (a) { return !a; },
 		"~":	function (a) { return ~a; },
@@ -125,10 +125,6 @@
 		if (options.get_constraint) {
 			return cjs.$(function () {
 				var op_got = cjs.get(op, options.auto_add_dependency);
-				//if(op_got === red.on_event) {
-					//debugger;
-					//window.dbg = true;
-				//}
 				var args_got = _.map(args, function(arg) {
 													return cjs.get(arg, options.auto_add_dependency);
 												});
@@ -138,7 +134,7 @@
 				if (_.isFunction(op_got)) {
 					var rv = op_got.apply(calling_context_got, args_got);
 					return rv;
-				} else if (op_got instanceof red.ParsedFunction) {
+				} else if (op_got instanceof ist.ParsedFunction) {
 					return op_got._apply(calling_context_got, pcontext, args_got, options);
 				} else {
 					throw new Error("Calling a non-function");
@@ -149,7 +145,7 @@
 			if (_.isFunction(op)) {
 				var rv = op.apply(calling_context, args);
 				return rv;
-			} else if (op instanceof red.ParsedFunction) {
+			} else if (op instanceof ist.ParsedFunction) {
 				return op._apply(calling_context, pcontext, args);
 			} else {
 				throw new Error("Calling a non-function");
@@ -211,7 +207,7 @@
 		var context = options.context,
 			ignore_inherited_in_contexts = options.ignore_inherited_in_contexts || [];
 		if (key === "sketch") {
-			return red.find_or_put_contextual_obj(context.root(), context.slice(0, 1));
+			return ist.find_or_put_contextual_obj(context.root(), context.slice(0, 1));
 		} else if (key === "window") {
 			return window;
 		}
@@ -224,9 +220,9 @@
 				context_item = curr_context.points_at();
 
 				while (!curr_context.is_empty()) {
-					if (context_item instanceof red.Dict) {
+					if (context_item instanceof ist.Dict) {
 						if (found_this) {
-							rv = red.find_or_put_contextual_obj(context_item, curr_context);
+							rv = ist.find_or_put_contextual_obj(context_item, curr_context);
 							return rv;
 						} else {
 							found_this = true;
@@ -247,8 +243,8 @@
 			//}
 				
 			while (!curr_context.is_empty()) {
-				if (context_item instanceof red.Dict) {
-					var contextual_obj = red.find_or_put_contextual_obj(context_item, curr_context);
+				if (context_item instanceof ist.Dict) {
+					var contextual_obj = ist.find_or_put_contextual_obj(context_item, curr_context);
 					if (_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
 						if (contextual_obj.has(key, true)) {
 							rv = contextual_obj.prop_val(key);
@@ -267,7 +263,7 @@
 							return rv;
 						}
 					}
-				} else if (context_item instanceof red.ProvisionalContext) {
+				} else if (context_item instanceof ist.ProvisionalContext) {
 					if(context_item.has(key)) {
 						return context_item.get(key);
 					}
@@ -310,8 +306,8 @@
 			var context_item = curr_context.points_at();
 
 			while (!curr_context.is_empty()) {
-				if (context_item instanceof red.Dict) {
-					var contextual_obj = red.find_or_put_contextual_obj(context_item, curr_context);
+				if (context_item instanceof ist.Dict) {
+					var contextual_obj = ist.find_or_put_contextual_obj(context_item, curr_context);
 					return contextual_obj;
 				}
 				curr_context = curr_context.pop();
@@ -336,16 +332,16 @@
 				//return undefined;
 			}
 
-			if (object instanceof red.ContextualObject) {
+			if (object instanceof ist.ContextualObject) {
 				if (property === "parent") {
 					var found_this = false;
 					var curr_context = object.get_pointer();
 					var context_item = curr_context.points_at();
 
 					while (!curr_context.is_empty()) {
-						if (context_item instanceof red.Dict) {
+						if (context_item instanceof ist.Dict) {
 							if (found_this) {
-								rv = red.find_or_put_contextual_obj(context_item, curr_context);
+								rv = ist.find_or_put_contextual_obj(context_item, curr_context);
 								return rv;
 							} else {
 								found_this = true;
@@ -417,9 +413,9 @@
 				var calling_context_got = cjs.get(calling_context, options.auto_add_dependency);
 
 				if (_.isFunction(op_got)) {
-					var rv = red.construct.call(calling_context_got, op_got, args_got);
+					var rv = ist.construct.call(calling_context_got, op_got, args_got);
 					return rv;
-				} else if (op_got instanceof red.ParsedFunction) {
+				} else if (op_got instanceof ist.ParsedFunction) {
 					return op_got._apply(calling_context_got, pcontext, args_got, options);
 				} else {
 					throw new Error("Calling a non-function");
@@ -428,38 +424,18 @@
 			});
 		} else {
 			if (_.isFunction(op)) {
-				var rv = red.construct.call(calling_context, op, args);
+				var rv = ist.construct.call(calling_context, op, args);
 				return rv;
-			} else if (op instanceof red.ParsedFunction) {
+			} else if (op instanceof ist.ParsedFunction) {
 				return op._apply(calling_context, pcontext, args);
 			} else {
 				throw new Error("Calling a non-function");
 				//return undefined;
 			}
 		}
-	/*
-		if(options.get_constraint) {
-			console.error("not implemented");
-		} else {
-			return red.construct(callee, args);
-		}
-		op_context = window;
-		if (node.callee.type === "MemberExpression") {
-			op_context = call_fn(node.callee.object, options);
-		}
-		op_func = call_fn(node.callee, options);
-		args = _.map(node["arguments"], function (arg) {
-			return call_fn(arg, options);
-		});
-		if (_.isFunction(op_func)) {
-			return red.construct(op_func, args);
-		} else if (op_func instanceof red.ParsedFunction) {
-			console.error("unhandled case");
-		}
-		*/
 	};
 
-	var get_val = red.get_parsed_val = function (node, options) {
+	var get_val = ist.get_parsed_val = function (node, options) {
 		var op_func, left_arg, right_arg, arg, callee, op_context, args;
 		if (!node) {
 			return undefined;
@@ -470,12 +446,12 @@
 		} else if (type === "Literal") {
 			return node.value;
 		} else if (type === "BinaryExpression") {
-			op_func = red.binary_operators[node.operator];
+			op_func = ist.binary_operators[node.operator];
 			left_arg = get_val(node.left, options);
 			right_arg = get_val(node.right, options);
 			return get_op_val(options, window, op_func, left_arg, right_arg);
 		} else if (type === "UnaryExpression") {
-			op_func = red.unary_operators[node.operator];
+			op_func = ist.unary_operators[node.operator];
 			arg = get_val(node.argument, options);
 			return get_op_val(options, window, op_func, arg);
 		} else if (type === "CallExpression") {
@@ -508,7 +484,7 @@
 			right_arg = get_val(node.right, options);
 			return get_logical_val(node.operator, left_arg, right_arg, options);
 		} else if (type === "FunctionExpression") {
-			return red.get_fn_$(node, options);
+			return ist.get_fn_$(node, options);
 		} else if (type === "NewExpression") {
 			callee = get_val(node.callee, options);
 			op_context = window;
@@ -535,23 +511,13 @@
 			if(node.body.length === 1) {
 				return get_val(node.body[0], options);
 			} else {
-			/*
-				if (options.get_constraint) {
-					return cjs.$(function () {
-						return new red.MultiExpression(_.map(node.body, function(body) {
-							return get_val(body, options);
-						}));
-					});
-				} else {
-				*/
-					return new red.MultiExpression(_.map(node.body, function(bodyi, i) {
-						if(!options.only_parse_first || i === 0) {
-							return get_val(bodyi, options);
-						} else {
-							return bodyi;
-						}
-					}));
-				//}
+				return new ist.MultiExpression(_.map(node.body, function(bodyi, i) {
+					if(!options.only_parse_first || i === 0) {
+						return get_val(bodyi, options);
+					} else {
+						return bodyi;
+					}
+				}));
 			}
 			//return get_val(node.body[0], options);
 		} else {
@@ -559,8 +525,8 @@
 		}
 	};
 
-	red.get_parsed_$ = function (node, options) {
-		var parsed_value = red.get_parsed_val(node, _.extend({
+	ist.get_parsed_$ = function (node, options) {
+		var parsed_value = ist.get_parsed_val(node, _.extend({
 			get_constraint: true,
 			auto_add_dependency: true
 		}, options));
@@ -569,7 +535,7 @@
 
 	var func_regex = new RegExp("^\\s*function\\s*\\((\\s*[a-zA-Z$][\\w\\$]*\\s*,)*\\s*([a-zA-Z$][\\w\\$]*\\s*)?\\)\\s*{.*}\\s*$");
 
-	red.parse = function (str) {
+	ist.parse = function (str) {
 		if ((str.replace(/\n/g, "")).match(func_regex)) {
 			str = "(" + str + ")";
 		}
@@ -577,9 +543,9 @@
 		try {
 			return esprima.parse(str);
 		} catch(e) {
-			return new red.Error({
+			return new ist.Error({
 				message: e.description
 			});
 		}
 	};
-}(red));
+}(interstate));

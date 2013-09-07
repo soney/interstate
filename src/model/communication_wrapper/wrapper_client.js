@@ -1,10 +1,10 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,window,RedMap */
+/*global interstate,esprima,able,uid,console,window,RedMap */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var summarize_arg = function (arg) { return arg; };
 	var summarize_args = function (args) { return _.map(args, summarize_arg); };
@@ -23,7 +23,7 @@
 	var client_id = 0;
 	var message_id = 0;
 
-	red.WrapperClient = function (options) {
+	ist.WrapperClient = function (options) {
 		able.make_this_listenable(this);
 		this.paused = false;
 		this.semaphore = 0;
@@ -133,7 +133,7 @@
 			return m_id;
 		};
 		proto.id = function () { return this._id; };
-		if(red.__debug) {
+		if(ist.__debug) {
 			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		}
 		proto.type = function () { return this._type; };
@@ -281,5 +281,5 @@
 				return value;
 			}
 		};
-	}(red.WrapperClient));
-}(red));
+	}(ist.WrapperClient));
+}(interstate));

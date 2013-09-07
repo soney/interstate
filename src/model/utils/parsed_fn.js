@@ -1,10 +1,10 @@
 /*jslint nomen: true, vars: true, bitwise:true, debug:true */
-/*global red,esprima,able,uid,console,window */
+/*global interstate,esprima,able,uid,console,window */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var do_return = {},
 		do_break = {},
@@ -77,27 +77,27 @@
 				console.error("Unset");
 			}
 		} else if (type === "BinaryExpression") {
-			op_func = red.binary_operators[node.operator];
+			op_func = ist.binary_operators[node.operator];
 			var left_arg = call_fn(node.left, options),
 				right_arg = call_fn(node.right, options);
 			return op_func.call(window, left_arg, right_arg);
 		} else if (type === "UnaryExpression") {
-			op_func = red.unary_operators[node.operator];
+			op_func = ist.unary_operators[node.operator];
 			var arg = call_fn(node.argument, options);
 			return op_func.call(window, arg);
 		} else if (type === "Identifier") {
 			var key = node.name;
 			if (key === "sketch") {
-				return red.find_or_put_contextual_obj(options.pcontext.root(), options.pcontext.slice(0, 1));
+				return ist.find_or_put_contextual_obj(options.pcontext.root(), options.pcontext.slice(0, 1));
 			} else if (key === "parent") {
 				found_this = false;
 				curr_context = options.pcontext;
 				context_item = curr_context.points_at();
 
 				while (!curr_context.is_empty()) {
-					if (context_item instanceof red.Dict) {
+					if (context_item instanceof ist.Dict) {
 						if (found_this) {
-							rv = red.find_or_put_contextual_obj(context_item, curr_context);
+							rv = ist.find_or_put_contextual_obj(context_item, curr_context);
 							return rv;
 						} else {
 							found_this = true;
@@ -109,7 +109,7 @@
 			} else if (_.has(options.var_map, key)) {
 				return cjs.get(options.var_map[key], options.auto_add_dependency);
 			} else {
-				return red.get_parsed_val(node, {context: options.pcontext});
+				return ist.get_parsed_val(node, {context: options.pcontext});
 			}
 		} else if (type === "ReturnStatement") {
 			options.rv = call_fn(node.argument, options);
@@ -165,15 +165,15 @@
 				prop = call_fn(node.property, options);
 			} else {
 				prop = node.property.name;
-				if (object instanceof red.ContextualObject && prop === "parent") {
+				if (object instanceof ist.ContextualObject && prop === "parent") {
 					found_this = false;
 					curr_context = object.get_pointer();
 					context_item = curr_context.points_at();
 
 					while (!curr_context.is_empty()) {
-						if (context_item instanceof red.Dict) {
+						if (context_item instanceof ist.Dict) {
 							if (found_this) {
-								rv = red.find_or_put_contextual_obj(context_item, curr_context);
+								rv = ist.find_or_put_contextual_obj(context_item, curr_context);
 								return rv;
 							} else {
 								found_this = true;
@@ -184,7 +184,7 @@
 					}
 				}
 			}
-			if (object instanceof red.ContextualObject) {
+			if (object instanceof ist.ContextualObject) {
 				return object.prop_val(prop);
 			} else {
 				return object[prop];
@@ -200,7 +200,7 @@
 			});
 			if (_.isFunction(op_func)) {
 				return op_func.apply(op_context, args);
-			} else if (op_func instanceof red.ParsedFunction) {
+			} else if (op_func instanceof ist.ParsedFunction) {
 				return op_func._apply(options.js_context, options.pcontext, args);
 			}
 		} else if (type === "LogicalExpression") {
@@ -252,8 +252,8 @@
 				return call_fn(arg, options);
 			});
 			if (_.isFunction(op_func)) {
-				return red.construct(op_func, args);
-			} else if (op_func instanceof red.ParsedFunction) {
+				return ist.construct(op_func, args);
+			} else if (op_func instanceof ist.ParsedFunction) {
 				console.error("unhandled case");
 			}
 		} else if (type === "ObjectExpression") {
@@ -274,7 +274,7 @@
 		}
 	};
 
-	red.ParsedFunction = function (node, options) {
+	ist.ParsedFunction = function (node, options) {
 		this.node = node;
 		this.options = options;
 	};
@@ -309,9 +309,9 @@
 		proto._call = function (js_context, pcontext) {
 			return this._apply.apply(this, [js_context, pcontext, _.rest(arguments, 2)]);
 		};
-	}(red.ParsedFunction));
+	}(ist.ParsedFunction));
 
-	red.get_fn_$ = function (node, options) {
-		return new red.ParsedFunction(node, options);
+	ist.get_fn_$ = function (node, options) {
+		return new ist.ParsedFunction(node, options);
 	};
-}(red));
+}(interstate));

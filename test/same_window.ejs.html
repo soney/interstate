@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>red</title>
+    <title>Interstate Runtime: Same Window</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   </head>
   <body>
 		<div class="output"></div>
 		<div id="editor"></div>
 	  <div>
-			<%- red_include(red_inc.vendor) %>
-			<%- red_include(red_inc.runtime) %>
-			<%- red_include(red_inc.editor) %>
-			<%- red_include(red_inc.runtime_style) %>
+			<%- ist_include(ist_inc.vendor) %>
+			<%- ist_include(ist_inc.runtime) %>
+			<%- ist_include(ist_inc.editor) %>
+			<%- ist_include(ist_inc.runtime_style) %>
 			<script type="text/javascript">
-				var env = new red.Environment();
+				var env = new interstate.Environment();
 				var root = env.get_root();
 
 				env	.set("height", "100")

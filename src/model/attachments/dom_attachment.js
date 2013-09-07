@@ -1,10 +1,10 @@
 /*jslint nomen: true, vars: true */
-/*global red,able,uid,console,jQuery,window */
+/*global interstate,able,uid,console,jQuery,window */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	function isInDOMTree (node) {
 		// If the farthest-back ancestor of our node has a "body"
@@ -49,14 +49,14 @@
 		}
 	};
 
-	red.DomAttachmentInstance = function (options) {
-		red.DomAttachmentInstance.superclass.constructor.apply(this, arguments);
+	ist.DomAttachmentInstance = function (options) {
+		ist.DomAttachmentInstance.superclass.constructor.apply(this, arguments);
 
 		this.type = "dom";
 		this.id = _.uniqueId();
 		if (options.tag) {
 			this._dom_obj = window.document.createElement(options.tag);
-			this._dom_obj.__red_contextual_object__ = this.contextual_object;
+			this._dom_obj.__ist_contextual_object__ = this.contextual_object;
 		} else {
 			this._dom_obj = cjs.$();
 			this._tag_change_listener = this.add_tag_change_listener();
@@ -72,7 +72,7 @@
 		this.on_ready();
 	};
 	(function (my) {
-		_.proto_extend(my, red.AttachmentInstance);
+		_.proto_extend(my, ist.AttachmentInstance);
 		var proto = my.prototype;
 		proto.get_owner = function () {
 			return this._owner;
@@ -111,7 +111,7 @@
 					old_tag = tag;
 					if (_.isString(tag)) {
 						var dom_obj = window.document.createElement(tag);
-						dom_obj.__red_contextual_object__ = contextual_object;
+						dom_obj.__ist_contextual_object__ = contextual_object;
 						this._dom_obj.set(dom_obj);
 					} else {
 						this._dom_obj.set(undefined);
@@ -135,7 +135,7 @@
 				var children;
 				var css = contextual_object.prop("css");
 				var child_vals = {};
-				if (css instanceof red.ContextualDict) {
+				if (css instanceof ist.ContextualDict) {
 					children = css.children(true);
 					var prop_names = _.pluck(children, "name");
 					_.each(children, function (child) {
@@ -205,7 +205,7 @@
 				var css = contextual_object.prop("attr");
 				var child_vals = {};
 				var children;
-				if (css instanceof red.ContextualDict) {
+				if (css instanceof ist.ContextualDict) {
 					children = css.children(true);
 					var prop_names = _.pluck(children, "name");
 					_.each(children, function (child) {
@@ -316,7 +316,7 @@
 
 			var children_srcs = this.current_children_srcs;
 			_.each(children_srcs, function(child_src) {
-				if (child_src instanceof red.DomAttachmentInstance) {
+				if (child_src instanceof ist.DomAttachmentInstance) {
 					child_src.pause();
 				} else if(_.isElement(child_src)) {
 					var pause_fn = $(child_src).data("pause");
@@ -353,7 +353,7 @@
 			if (_.has(this, "_children_change_listener")) { this._children_change_listener.run(); }
 			var children_srcs = this.current_children_srcs;
 			_.each(children_srcs, function(child_src) {
-				if (child_src instanceof red.DomAttachmentInstance) {
+				if (child_src instanceof ist.DomAttachmentInstance) {
 					child_src.resume();
 				} else if(_.isElement(child_src)) {
 					var resume_fn = $(child_src).data("resume");
@@ -404,9 +404,9 @@
 
 					if (children) {
 						var cc;
-						if (children instanceof red.ContextualDict) {
+						if (children instanceof ist.ContextualDict) {
 							cc = _.pluck(children.children(true), "value");
-						} else if (children instanceof red.ContextualObject) {
+						} else if (children instanceof ist.ContextualObject) {
 							cc = children.val();
 							if (!_.isArray(cc)) {
 								cc = [cc];
@@ -416,7 +416,7 @@
 						_.each(cc, function (c) {
 							if (_.isElement(c)) {
 								desired_children.push(c);
-							} else if (c instanceof red.ContextualDict) {
+							} else if (c instanceof ist.ContextualDict) {
 								if (c.is_template()) {
 									var instances = c.instances();
 									var cs_and_dom_objs = _.chain(instances)
@@ -446,7 +446,7 @@
 						var src = this.current_children_srcs[index];
 
 						remove(child);
-						if(src instanceof red.DomAttachmentInstance) {
+						if(src instanceof ist.DomAttachmentInstance) {
 							src.on_remove();
 						} else if(_.isElement(src)) {
 							var pause_fn = $(src).data("pause");
@@ -461,7 +461,7 @@
 
 						insert_at(child, dom_obj, index);
 
-						if(src instanceof red.DomAttachmentInstance) {
+						if(src instanceof ist.DomAttachmentInstance) {
 							src.on_add();
 						} else if(_.isElement(src)) {
 							var resume_fn = $(src).data("resume");
@@ -482,38 +482,38 @@
 			});
 			return cc;
 		};
-	}(red.DomAttachmentInstance));
+	}(ist.DomAttachmentInstance));
 
-	red.DomAttachment = function (options) {
+	ist.DomAttachment = function (options) {
 		options = _.extend({
-			instance_class: red.DomAttachmentInstance
+			instance_class: ist.DomAttachmentInstance
 		}, options);
-		red.DomAttachment.superclass.constructor.call(this, options);
+		ist.DomAttachment.superclass.constructor.call(this, options);
 		this.type = "dom";
 	};
 	(function (My) {
-		_.proto_extend(My, red.Attachment);
+		_.proto_extend(My, ist.Attachment);
 		var proto = My.prototype;
 
-		red.register_serializable_type("dom_attachment",
+		ist.register_serializable_type("dom_attachment",
 			function (x) {
 				return x instanceof My;
 			},
 			function () {
 				return {
-					instance_options: red.serialize(this.instance_options)
+					instance_options: ist.serialize(this.instance_options)
 				};
 			},
 			function (obj) {
 				return new My({
-					instance_options: red.deserialize(obj.instance_options)
+					instance_options: ist.deserialize(obj.instance_options)
 				});
 			});
-	}(red.DomAttachment));
+	}(ist.DomAttachment));
 
 /*
-	red.define("dom_attachment", function (options) {
-		return new red.DomAttachment(options);
+	ist.define("dom_attachment", function (options) {
+		return new ist.DomAttachment(options);
 	});
 	*/
-}(red, jQuery));
+}(interstate, jQuery));

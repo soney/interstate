@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedMap,window */
+/*global interstate,esprima,able,uid,console,RedMap,window */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 		
 	var listener_map = new RedMap({
-		equals: red.check_contextual_object_equality,
+		equals: ist.check_contextual_object_equality,
 		hash: function(obj) {
 			if(obj.hash) {
 				return obj.hash();
@@ -17,7 +17,7 @@
 		}
 	});
 
-	red.emit = function (type, target) {
+	ist.emit = function (type, target) {
 		target = target || window;
 		var target_listeners = listener_map.get(target);
 		if (target_listeners) {
@@ -30,33 +30,33 @@
 						timestamp: (new Date()).getTime()
 					}];
 				}
-				red.event_queue.wait();
+				ist.event_queue.wait();
 				_.each(listeners, function (listener) {
 					listener.fire.apply(listener, args);
 				});
-				red.event_queue.signal();
+				ist.event_queue.signal();
 			}
 		}
 	};
-	red.register_serializable_type("red_emit_func",
+	ist.register_serializable_type("ist_emit_func",
 		function (x) {
-			return x === red.emit;
+			return x === ist.emit;
 		},
 		function () {
 			return {};
 		},
 		function (obj) {
-			return red.emit;
+			return ist.emit;
 		});
 
-	red.RedObjEvent = function() {
-		red.Event.apply(this, arguments);
+	ist.IstObjEvent = function() {
+		ist.Event.apply(this, arguments);
 		this._initialize();
-		this._type = "red_obj_event";
+		this._type = "ist_obj_event";
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.Event);
+		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.on_create = function (specified_type, specified_targets) {
 			this.specified_type = specified_type;
@@ -72,7 +72,7 @@
 				
 				var targets = _	.chain(st)
 								.map(function(target) {
-									if(target instanceof red.Query) {
+									if(target instanceof ist.Query) {
 										return target.value();
 									} else {
 										return target;
@@ -80,7 +80,7 @@
 								})
 								.flatten(true)
 								.map(function(cobj) {
-									if(cobj instanceof red.ContextualDict) {
+									if(cobj instanceof ist.ContextualDict) {
 										if(cobj.is_template()) {
 											return cobj.instances();
 										} else {
@@ -134,7 +134,7 @@
 			var target = target_info.cobj,
 				type = target_info.type;
 
-			if(target instanceof red.ContextualObject) {
+			if(target instanceof ist.ContextualObject) {
 				target.on("begin_destroy", this.remove_listener, this, target_info);
 			}
 			var must_add = true;
@@ -165,7 +165,7 @@
 					var listener_index = _.indexOf(listeners, this);
 					if(listener_index >= 0) {
 						listeners.splice(listener_index, 1);
-						if(target instanceof red.ContextualObject) {
+						if(target instanceof ist.ContextualObject) {
 							target.off("begin_destroy", this.remove_listener, this);
 						}
 						var len = listeners.length;
@@ -187,9 +187,9 @@
 		proto.create_shadow = function (parent_statechart, context) {
 			var shadow = new My();
 			this.on_fire(function () {
-				red.event_queue.wait();
+				ist.event_queue.wait();
 				shadow.fire();
-				red.event_queue.signal();
+				ist.event_queue.signal();
 			});
 			return shadow;
 		};
@@ -217,5 +217,5 @@
 				this.remove_listeners();
 			}
 		};
-	}(red.RedObjEvent));
-}(red));
+	}(ist.IstObjEvent));
+}(interstate));

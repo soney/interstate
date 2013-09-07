@@ -1,11 +1,11 @@
 /*jslint nomen: true, vars: true, white: true */
 /*jshint scripturl: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael,RedMap */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael,RedMap */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 	
 	var insert_at = function (child_node, parent_node, index) {
 		var children = parent_node.childNodes;
@@ -32,7 +32,7 @@
 		}
 	};
 
-	$.widget("red.prop", {
+	$.widget("interstate.prop", {
 		options: {
 			name: "",
 			value: false,
@@ -46,7 +46,7 @@
 
 		_create: function() {
 			var value = this.option("value");
-			if(value instanceof red.WrapperClient) {
+			if(value instanceof ist.WrapperClient) {
 				value.signal_interest();
 			}
 			this.element.addClass("child");
@@ -179,7 +179,7 @@
 			this.element.tooltip("destroy");
 			//this.element.pressable("destroy");
 			var value = this.option("value");
-			if(value instanceof red.WrapperClient) {
+			if(value instanceof ist.WrapperClient) {
 				value.signal_destroy();
 			}
 			delete this.options.client;
@@ -189,7 +189,7 @@
 
 		add_runtime_highlight: function() {
 			var value = this.option("value");
-			if(value instanceof red.WrapperClient) {
+			if(value instanceof ist.WrapperClient) {
 				var client_socket = this.option("client_socket");
 				client_socket.post({
 					type: "add_highlight",
@@ -201,7 +201,7 @@
 
 		remove_runtime_highlight: function() {
 			var value = this.option("value");
-			if(value instanceof red.WrapperClient) {
+			if(value instanceof ist.WrapperClient) {
 				var client_socket = this.option("client_socket");
 				client_socket.post({
 					type: "remove_highlight",
@@ -297,12 +297,12 @@
 				window.alert("Can't rename inherited property");
 				return;
 			}
-			if(red.is_valid_prop_name(str)) {
+			if(ist.is_valid_prop_name(str)) {
 				var to_return = false;
 				var self = this;
 				$("span.prop_name", this.element.parent()).each(function() {
 					var child_parent = $(this).parents(".child");
-					if(child_parent !== self && child_parent.data("red-prop") && child_parent.prop("option", "name") === str) {
+					if(child_parent !== self && child_parent.data("interstate-prop") && child_parent.prop("option", "name") === str) {
 						to_return = true;
 						self.name_span.editable_text("option", "text", old_name);
 						window.alert("Property with name '" + str + "' already exists");
@@ -318,7 +318,7 @@
 				this.element.trigger(event);
 			} else {
 				this.name_span.editable_text("option", "text", old_name);
-				var problem_str = red.get_prop_name_error(str);
+				var problem_str = ist.get_prop_name_error(str);
 				window.alert(problem_str);
 			}
 		},
@@ -466,7 +466,7 @@
 										.appendTo(this.element);
 
 			var value = this.option("value");
-			if(value instanceof red.WrapperClient) {
+			if(value instanceof ist.WrapperClient) {
 				this.element.addClass(value.type());
 				if(value.type() === "stateful_prop") {
 					var layout_manager = this.option("layout_manager");
@@ -504,7 +504,7 @@
 										view = false;
 										for(i = 0; i<to_remove_elements.length; i++) {
 											v = to_remove_elements[i];
-											if(v.data("red-prop_cell") && v.prop_cell("option", "value") === val) {
+											if(v.data("interstate-prop_cell") && v.prop_cell("option", "value") === val) {
 												view = v;
 												to_remove_elements.splice(i, 1);
 												break;
@@ -529,7 +529,7 @@
 										view = false;
 										for(i = 0; i<to_remove_elements.length; i++) {
 											v = to_remove_elements[i];
-											if(v.data("red-unset_prop") && v.unset_prop("option", "state") === state) {
+											if(v.data("interstate-unset_prop") && v.unset_prop("option", "state") === state) {
 												view = v;
 												to_remove_elements.splice(i, 1);
 												break;
@@ -568,16 +568,16 @@
 								}
 							}, this);
 							_.each(to_remove_elements, function(view) {
-								if(view.data("red-unset_prop")) {
+								if(view.data("interstate-unset_prop")) {
 									view.unset_prop("destroy");
-								} else if(view.data("red-prop_cell")) {
+								} else if(view.data("interstate-prop_cell")) {
 									view.prop_cell("destroy");
 								}
 								view.remove();
 							}, this);
 
 							var sorted_views = _.sortBy(views, function(v) {
-								if(v.data("red-prop_cell")) {
+								if(v.data("interstate-prop_cell")) {
 									return parseInt(v.prop_cell("option", "left"), 10);
 								} else {
 									return parseInt(v.unset_prop("option", "left"), 10);
@@ -588,7 +588,7 @@
 								insert_at(v[0], this.src_cell[0], index);
 							}, this);
 							if(to_edit_view) {
-								if(to_edit_view.data("red-prop_cell")) {
+								if(to_edit_view.data("interstate-prop_cell")) {
 									to_edit_view.prop_cell("begin_editing")
 												.prop_cell("select")
 												.prop_cell("focus");
@@ -599,9 +599,9 @@
 							on_destroy: function() {
 								$(this.src_cell).children().each(function() {
 									var $this = $(this);
-									if($this.data("red-unset_prop")) {
+									if($this.data("interstate-unset_prop")) {
 										$this.unset_prop("destroy");
-									} else if($this.data("red-prop_cell")) {
+									} else if($this.data("interstate-prop_cell")) {
 										$this.prop_cell("destroy");
 									}
 								});
@@ -643,9 +643,9 @@
 						var str = $str.get();
 						this.src_cell.children().each(function() {
 							var $this = $(this);
-							if($this.data("red-unset_prop")) {
+							if($this.data("interstate-unset_prop")) {
 								$this.unset_prop("destroy");
-							} else if($this.data("red-prop_cell")) {
+							} else if($this.data("interstate-prop_cell")) {
 								$this.prop_cell("destroy");
 							}
 						}).remove();
@@ -673,9 +673,9 @@
 						on_destroy: function() {
 							this.src_cell.children().each(function() {
 								var $this = $(this);
-								if($this.data("red-unset_prop")) {
+								if($this.data("interstate-unset_prop")) {
 									$this.unset_prop("destroy");
-								} else if($this.data("red-prop_cell")) {
+								} else if($this.data("interstate-prop_cell")) {
 									$this.prop_cell("destroy");
 								}
 							}).remove();
@@ -753,4 +753,4 @@
 			}
 		}
 	});
-}(red, jQuery));
+}(interstate, jQuery));

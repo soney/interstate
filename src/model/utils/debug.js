@@ -1,10 +1,10 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._,
+	var cjs = ist.cjs,
+		_ = ist._,
 		PROP_NAME_WIDTH = 30,
 		PROP_ID_WIDTH = 5,
 		PROP_VALUE_WIDTH = 40,
@@ -35,7 +35,7 @@
 			include_start;
 
 		
-		if (last_arg && !(last_arg instanceof red.Statechart)) {
+		if (last_arg && !(last_arg instanceof ist.Statechart)) {
 			include_start = last_arg;
 			statecharts = _.first(arguments, arguments.length - 1);
 		} else {
@@ -65,9 +65,9 @@
 			_.each(flattened_state_and_transitions, function (state) {
 				var state_name;
 
-				if (state instanceof red.State) {
+				if (state instanceof ist.State) {
 					state_name = pad(state.get_name(), STATE_NAME_WIDTH - 2);
-				} else if (state instanceof red.StatechartTransition) { //transition
+				} else if (state instanceof ist.StatechartTransition) { //transition
 					var from = state.from(),
 						to = state.to();
 					state_name = pad(from.get_name() + "->" + to.get_name(), TRANSITION_NAME_WIDTH - 2);
@@ -103,21 +103,21 @@
 				return '(func)';
 			} else if (_.isElement(val)) {
 				return "(dom)";
-			} else if (val instanceof red.StatefulObj) {
+			} else if (val instanceof ist.StatefulObj) {
 				return "(stateful:" + uid.strip_prefix(val.id()) + ")";
-			} else if (val instanceof red.Dict) {
+			} else if (val instanceof ist.Dict) {
 				return "(dict:" + uid.strip_prefix(val.id()) + ")";
-			} else if (val instanceof red.Cell) {
+			} else if (val instanceof ist.Cell) {
 				return "(cell:" + uid.strip_prefix(val.id()) + ")";
-			} else if (val instanceof red.StatefulProp) {
+			} else if (val instanceof ist.StatefulProp) {
 				return "(prop:" + uid.strip_prefix(val.id()) + ")";
-			} else if (val instanceof red.ParsedFunction) {
+			} else if (val instanceof ist.ParsedFunction) {
 				return "(parsed fn)";
-			} else if (val instanceof red.WrapperClient) {
+			} else if (val instanceof ist.WrapperClient) {
 				return "(" + val.type() + " client wrapper " + val.cobj_id + ")";
-			} else if (val instanceof red.Query) {
+			} else if (val instanceof ist.Query) {
 				return value_to_value_str(val.value());
-			} else if (val instanceof red.Pointer) {
+			} else if (val instanceof ist.Pointer) {
 				points_at = val.points_at();
 				special_contexts = val.special_contexts();
 				str = value_to_value_str(points_at);
@@ -128,7 +128,7 @@
 				}
 
 				return str;
-			} else if (val instanceof red.ContextualObject) {
+			} else if (val instanceof ist.ContextualObject) {
 				var ptr = val.get_pointer();
 				points_at = ptr.points_at();
 				special_contexts = ptr.special_contexts();
@@ -140,7 +140,7 @@
 				}
 
 				return str;
-			} else if (val instanceof red.CopyContext) {
+			} else if (val instanceof ist.CopyContext) {
 				return val.id();
 			} else if (_.isArray(val)) {
 				return ("[" + _.map(val, function (v) { return value_to_value_str(v); }).join(", ") + "]");
@@ -165,9 +165,9 @@
 				return val.toString();
 			} else if (_.isFunction(val)) {
 				return 'function () {...}';
-			} else if (val instanceof red.Dict) {
+			} else if (val instanceof ist.Dict) {
 				return "";
-			} else if (val instanceof red.Cell) {
+			} else if (val instanceof ist.Cell) {
 				return "=(" + uid.strip_prefix(val.id()) + ")= " + val.get_str();
 			} else {
 				return val.toString();
@@ -175,8 +175,8 @@
 		};
 
 		var tablify = function (contextual_object) {
-			if (contextual_object instanceof red.ContextualDict) {
-				if (contextual_object instanceof red.ContextualStatefulObj) {
+			if (contextual_object instanceof ist.ContextualDict) {
+				if (contextual_object instanceof ist.ContextualStatefulObj) {
 					var statecharts = contextual_object.get_statecharts();
 					print_statechart.apply(this, (statecharts).concat(logging_mechanism));
 				}
@@ -186,7 +186,7 @@
 					var value = child_info.value;
 
 					var is_manifestations;
-					if (value instanceof red.ContextualDict) {
+					if (value instanceof ist.ContextualDict) {
 						is_manifestations = value.is_template();
 					} else {
 						is_manifestations = false;
@@ -202,7 +202,7 @@
 					var prop_name = child_info.name;
 					var is_inherited = child_info.inherited;
 					_.each(c_arr, function (child) {
-						var prop_pointer = child instanceof red.ContextualObject ? child.get_pointer() : false;
+						var prop_pointer = child instanceof ist.ContextualObject ? child.get_pointer() : false;
 						var prop_points_at = prop_pointer ? prop_pointer.points_at() : child;
 						var is_expanded = prop_points_at && current_pointer.has(prop_points_at);
 						var is_pointed_at = prop_pointer && current_pointer.eq(prop_pointer);
@@ -218,17 +218,17 @@
 							prop_text = "  " + prop_text;
 						}
 
-						if (prop_points_at instanceof red.StatefulProp) {
+						if (prop_points_at instanceof ist.StatefulProp) {
 							prop_text = pad(prop_text, PROP_NAME_WIDTH);
 							prop_text = prop_text + pad("(" + uid.strip_prefix(prop_points_at.id()) + ")", PROP_ID_WIDTH);
 						} else {
 							prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
 						}
 
-						var pp_val = child instanceof red.ContextualObject ? child.val() : child;
+						var pp_val = child instanceof ist.ContextualObject ? child.val() : child;
 						prop_text = pad(prop_text + value_to_value_str(pp_val), PROP_NAME_WIDTH + PROP_ID_WIDTH + PROP_VALUE_WIDTH);
 
-						if ((prop_points_at instanceof red.Dict) || (prop_points_at instanceof red.StatefulProp)) {
+						if ((prop_points_at instanceof ist.Dict) || (prop_points_at instanceof ist.StatefulProp)) {
 							logging_mechanism[is_expanded ? "group" : "groupCollapsed"](prop_text);
 							tablify(child);
 							logging_mechanism.groupEnd();
@@ -249,7 +249,7 @@
 						console.groupEnd();
 					}
 				});
-			} else if (contextual_object instanceof red.ContextualStatefulProp) {
+			} else if (contextual_object instanceof ist.ContextualStatefulProp) {
 				var value_specs = contextual_object.get_values();
 				_.each(value_specs, function (value_spec) {
 					var value = value_spec.value;
@@ -258,9 +258,9 @@
 					var state = value_spec.state;
 					var state_name;
 					if (state) {
-						if (state instanceof red.State) {
+						if (state instanceof ist.State) {
 							state_name = pad(state.get_name(), STATE_NAME_WIDTH - 2);
-						} else if (state instanceof red.StatechartTransition) { //transition
+						} else if (state instanceof ist.StatechartTransition) { //transition
 							var from = state.from(),
 								to = state.to();
 							state_name = pad(from.get_name() + "->" + to.get_name(), STATE_NAME_WIDTH - 2);
@@ -297,12 +297,12 @@
 			root_str = "root";
 		}
 		logging_mechanism.log(pad(root_str, PROP_NAME_WIDTH)  + value_to_value_str(root));
-		var contextual_root = red.find_or_put_contextual_obj(root);
+		var contextual_root = ist.find_or_put_contextual_obj(root);
 		tablify(contextual_root);
 
 		return "ok...";
 	}
 
-	red.print = print;
-	red.print_statechart = print_statechart;
-}(red));
+	ist.print = print;
+	ist.print_statechart = print_statechart;
+}(interstate));

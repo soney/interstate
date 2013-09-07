@@ -1,31 +1,31 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.ManualEvent = function () {
-		red.ManualEvent.apply(this, arguments);
+	ist.ManualEvent = function () {
+		ist.ManualEvent.apply(this, arguments);
 		this._initialize();
 		this._type = "manual_event";
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.Event);
+		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.create_shadow = function (parent_statechart, context) {
 			var shadow = new My();
 			this.on_fire(function () {
-				red.event_queue.wait();
+				ist.event_queue.wait();
 				shadow.fire();
-				red.event_queue.signal();
+				ist.event_queue.signal();
 			});
 			return shadow;
 		};
 		proto.destroy = function () {
 			My.superclass.destroy.apply(this, arguments);
 		};
-	}(red.ManualEvent));
-}(red));
+	}(ist.ManualEvent));
+}(interstate));

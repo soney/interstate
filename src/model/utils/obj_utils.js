@@ -1,12 +1,12 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.install_proto_builtins = function (proto, builtins) {
+	ist.install_proto_builtins = function (proto, builtins) {
 		_.each(builtins, function (builtin, name) {
 			var getter_name = builtin.getter_name || "get_" + name;
 			builtin._get_getter_name = function () { return getter_name; };
@@ -37,7 +37,7 @@
 		});
 	};
 
-	red.install_instance_builtins = function (obj, options, constructor) {
+	ist.install_instance_builtins = function (obj, options, constructor) {
 		var builtins = constructor.builtins;
 
 		obj._builtins = obj._builtins || {};
@@ -64,7 +64,7 @@
 		});
 	};
 
-	red.unset_instance_builtins = function(obj, constructor) {
+	ist.unset_instance_builtins = function(obj, constructor) {
 		var builtins = constructor.builtins;
 
 		_.each(builtins, function (builtin, name) {
@@ -98,4 +98,4 @@
 			return false;
 		}
 	};
-}(red));
+}(interstate));

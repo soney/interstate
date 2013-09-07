@@ -1,9 +1,9 @@
-/*global red */
+/*global interstate */
 
-(function(red) {
+(function(ist) {
 	"use strict";
 
-	var env = red.create("environment");
+	var env = new ist.Environment();
 env
 .cd("child_nodes")
 .set("obj", "<stateful>")
@@ -48,5 +48,5 @@ env
 		.set("far", "1000")
 		.up();
 
-	red.on_sample_app_ready(env.get_root());
-}(red));
+	ist.on_sample_app_ready(env.get_root());
+}(interstate));

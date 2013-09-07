@@ -1,10 +1,10 @@
 /*jslint nomen: true, vars: true */
-/*global red,able,uid,console,jQuery,Raphael,window */
+/*global interstate,able,uid,console,jQuery,Raphael,window */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var is_paper = function(obj) { return obj instanceof Raphael._Paper; };
 
@@ -49,7 +49,7 @@
 	var get_children = function(child_nodes) {
 		var children = [];
 		_.each(child_nodes, function(child) {
-			if(child instanceof red.ContextualDict) {
+			if(child instanceof ist.ContextualDict) {
 				if(child.is_template()) {
 					var copies = child.instances();
 					children.push.apply(children, get_children(copies));
@@ -72,7 +72,7 @@
 		return children;
 	};
 
-	red.PaperAttachment = red.register_attachment("paper", {
+	ist.PaperAttachment = ist.register_attachment("paper", {
 			ready: function() {
 				this.dom_obj = window.document.createElement("div");
 				this.paper = new Raphael(this.dom_obj, 0, 0);
@@ -137,7 +137,7 @@
 					getter: function(contextual_object) {
 						var screen = contextual_object.prop_val("screen");
 						var screen_contents = [];
-						if(screen instanceof red.ContextualDict) {
+						if(screen instanceof ist.ContextualDict) {
 							screen_contents = screen.children();
 						}
 				
@@ -154,7 +154,7 @@
 				}
 			}
 		});
-	red.ShapeAttachment = red.register_attachment("shape", {
+	ist.ShapeAttachment = ist.register_attachment("shape", {
 			ready: function() {
 				this.shape_type = this.options.shape_type;
 				this.constructor_params = this.options.constructor_params;
@@ -273,7 +273,7 @@
 			},
 			attachment_destroy: function() { }
 		});
-	red.GroupAttachment = red.register_attachment("group", {
+	ist.GroupAttachment = ist.register_attachment("group", {
 			ready: function() {
 				this.$children = cjs.$(this.child_getter, {context: this});
 			},
@@ -316,4 +316,4 @@
 				}
 			}
 		});
-}(red, jQuery));
+}(interstate, jQuery));

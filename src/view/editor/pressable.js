@@ -1,12 +1,12 @@
 /*jslint nomen: true, vars: true, white: true */
 /*jshint scripturl: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
-	$.widget("red.pressable", {
+	var cjs = ist.cjs,
+		_ = ist._;
+	$.widget("interstate.pressable", {
 		options: {
 			touch_move_tolerance: 10
 		},
@@ -78,4 +78,4 @@
 			}
 		}
 	});
-}(red, jQuery));
+}(interstate, jQuery));

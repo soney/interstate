@@ -1,10 +1,10 @@
 /*jslint nomen: true, vars: true, eqeq: true */
 /*jshint eqnull: true */
-/*global red,esprima,able,uid,console,window */
+/*global interstate,esprima,able,uid,console,window */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs, _ = red._;
+	var cjs = ist.cjs, _ = ist._;
 	 
 	//http://stackoverflow.com/questions/294297/javascript-implementation-of-gzip
 	// LZW-compress a string
@@ -66,7 +66,7 @@
 
 	var serialization_funcs = [ ];
 
-	red.register_serializable_type = function (name, instance_check, serialize, deserialize) {
+	ist.register_serializable_type = function (name, instance_check, serialize, deserialize) {
 		serialization_funcs.push({
 			name: name,
 			instance_check: instance_check,
@@ -75,14 +75,14 @@
 		});
 	};
 
-	red.register_serializable_type("cjs_array",
+	ist.register_serializable_type("cjs_array",
 		function (x) {
 			return cjs.is_array(x);
 		},
 		function () {
 			var args = _.toArray(arguments);
 			var serialized_value = _.map(this.toArray(), function (x) {
-				return red.serialize.apply(red, ([x]).concat(args));
+				return ist.serialize.apply(ist, ([x]).concat(args));
 			});
 
 			return {
@@ -93,22 +93,22 @@
 			var rest_args = _.rest(arguments);
 			return cjs.array({
 				value: _.map(obj.value, function (x) {
-					return red.deserialize.apply(red, ([x]).concat(rest_args));
+					return ist.deserialize.apply(ist, ([x]).concat(rest_args));
 				})
 			});
 		});
 
-	red.register_serializable_type("cjs_map",
+	ist.register_serializable_type("cjs_map",
 		function (x) {
 			return cjs.is_map(x);
 		},
 		function () {
 			var args = _.toArray(arguments);
 			var serialized_keys = _.map(this.keys(), function (x) {
-				return red.serialize.apply(red, ([x]).concat(args));
+				return ist.serialize.apply(ist, ([x]).concat(args));
 			});
 			var serialized_values = _.map(this.values(), function (x) {
-				return red.serialize.apply(red, ([x]).concat(args));
+				return ist.serialize.apply(ist, ([x]).concat(args));
 			});
 
 			return {
@@ -120,10 +120,10 @@
 			var rest_args = _.rest(arguments);
 			return cjs.map({
 				keys: _.map(obj.keys, function (x) {
-					return red.deserialize.apply(red, ([x]).concat(rest_args));
+					return ist.deserialize.apply(ist, ([x]).concat(rest_args));
 				}),
 				values: _.map(obj.values, function (x) {
-					return red.deserialize.apply(red, ([x]).concat(rest_args));
+					return ist.deserialize.apply(ist, ([x]).concat(rest_args));
 				})
 			});
 		});
@@ -152,7 +152,7 @@
 		var rv = {};
 
 		_.each(obj, function (value, key) {
-			rv[key] = red.serialize.apply(red, ([value]).concat(rest_args));
+			rv[key] = ist.serialize.apply(ist, ([value]).concat(rest_args));
 		});
 
 		return rv;
@@ -174,7 +174,7 @@
 		};
 	};
 
-	red.serialize = function (obj) {
+	ist.serialize = function (obj) {
 		var serialize_args = _.rest(arguments);
 		var is_init_serial_call = false;
 		if (!serializing) {
@@ -188,7 +188,7 @@
 			return obj;
 		} else if (_.isArray(obj)) {
 			return _.map(obj, function (o) {
-				return red.serialize.apply(red, ([o]).concat(serialize_args));
+				return ist.serialize.apply(ist, ([o]).concat(serialize_args));
 			});
 		} else if (is_init_serial_call) {
 			var serialized_obj = create_or_get_serialized_obj.apply(this, arguments);
@@ -207,13 +207,13 @@
 
 
 
-	red.stringify = function () {
-		var serialized_obj = red.serialize.apply(red, arguments);
+	ist.stringify = function () {
+		var serialized_obj = ist.serialize.apply(ist, arguments);
 		var stringified_obj = JSON.stringify(serialized_obj);
 		return stringified_obj;
 	};
-	red.stringify_and_compress = function () {
-		var string = red.stringify.apply(red, arguments);
+	ist.stringify_and_compress = function () {
+		var string = ist.stringify.apply(ist, arguments);
 		return lzw_encode(string);
 	};
 
@@ -237,7 +237,7 @@
 
 		var rv = {};
 		_.each(serialized_obj, function (value, key) {
-			rv[key] = red.deserialize.apply(red, ([value]).concat(rest_args));
+			rv[key] = ist.deserialize.apply(ist, ([value]).concat(rest_args));
 		});
 
 		return rv;
@@ -261,7 +261,7 @@
 		}
 	};
 
-	red.deserialize = function (serialized_obj) {
+	ist.deserialize = function (serialized_obj) {
 		var rest_args = _.rest(arguments);
 		var rv;
 		if (deserializing === false) {
@@ -270,7 +270,7 @@
 			try {
 				deserialized_objs = serialized_obj.serialized_objs;
 				deserialized_obj_vals = [];
-				rv = red.deserialize.apply(red, ([serialized_obj.root]).concat(rest_args));
+				rv = ist.deserialize.apply(ist, ([serialized_obj.root]).concat(rest_args));
 			} finally {
 				deserialized_objs = deserialized_obj_vals = undefined;
 				deserializing = false;
@@ -283,7 +283,7 @@
 			return serialized_obj;
 		} else if (_.isArray(serialized_obj)) {
 			return _.map(serialized_obj, function (x) {
-				return red.deserialize.apply(red, ([x]).concat(rest_args));
+				return ist.deserialize.apply(ist, ([x]).concat(rest_args));
 			});
 		} else {
 			return get_deserialized_obj.apply(this, ([serialized_obj]).concat(rest_args));
@@ -291,34 +291,34 @@
 	};
 
 
-	red.destringify = function (str) {
+	ist.destringify = function (str) {
 		var rest_args = _.rest(arguments);
-		return red.deserialize.apply(red, ([JSON.parse(str)]).concat(rest_args));
+		return ist.deserialize.apply(ist, ([JSON.parse(str)]).concat(rest_args));
 	};
-	red.decompress_and_destringify = function (compressed_str) {
+	ist.decompress_and_destringify = function (compressed_str) {
 		var rest_args = _.rest(arguments);
 		var str = lzw_decode(compressed_str);
-		return red.destringify.apply(red, ([str]).concat(rest_args));
+		return ist.destringify.apply(ist, ([str]).concat(rest_args));
 	};
 
 	var storage_prefix = "_";
-	red.save = function (root, name) {
+	ist.save = function (root, name) {
 		if (!_.isString(name)) {
 			name = "default";
 		}
 		name = storage_prefix + name;
-		window.localStorage.setItem(name, red.stringify(root));
-		return red.ls();
+		window.localStorage.setItem(name, ist.stringify(root));
+		return ist.ls();
 	};
-	red.load = function (name) {
+	ist.load = function (name) {
 		if (!_.isString(name)) {
 			name = "default";
 		}
 		name = storage_prefix + name;
-		var root = red.destringify(window.localStorage.getItem(name));
+		var root = ist.destringify(window.localStorage.getItem(name));
 		return root;
 	};
-	red.ls = function () {
+	ist.ls = function () {
 		var len = window.localStorage.length;
 		var rv = [];
 		var i;
@@ -330,17 +330,17 @@
 		}
 		return rv;
 	};
-	red.rm = function (name) {
+	ist.rm = function (name) {
 		if (!_.isString(name)) {
 			name = "default";
 		}
 		name = storage_prefix + name;
 		window.localStorage.removeItem(name);
-		return red.ls();
+		return ist.ls();
 	};
-	red.nuke = function () {
-		var program_names = red.ls();
-		_.each(program_names, red.rm);
-		return red.ls();
+	ist.nuke = function () {
+		var program_names = ist.ls();
+		_.each(program_names, ist.rm);
+		return ist.ls();
 	};
-}(red));
+}(interstate));

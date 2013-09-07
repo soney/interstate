@@ -1,12 +1,12 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
     "use strict";
-    var cjs = red.cjs,
-        _ = red._;
+    var cjs = ist.cjs,
+        _ = ist._;
 
-    red.Command = function (options) {
+    ist.Command = function (options) {
         this._in_effect = options && options.in_effect === true;
 		this._undoable = true;
     };
@@ -40,6 +40,6 @@
         proto.to_redo_string = function () {
             return "Redo generic command";
         };
-    }(red.Command));
+    }(ist.Command));
 
-}(red));
+}(interstate));

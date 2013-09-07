@@ -1,12 +1,12 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedSet,RedMap */
+/*global interstate,esprima,able,uid,console,RedSet,RedMap */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.Dict.get_proto_vals = function (dict, ptr) {
+	ist.Dict.get_proto_vals = function (dict, ptr) {
 		var rv = new RedSet({
 			value: [dict],
 			hash: "hash"
@@ -33,7 +33,7 @@
 			}
 		};
 		var each_proto_val = function (x) {
-			if (x && x instanceof red.ContextualDict) {
+			if (x && x instanceof ist.ContextualDict) {
 				return x.get_object();
 			} else {
 				return false;
@@ -46,7 +46,7 @@
 			if (proto_obj instanceof cjs.ArrayConstraint) {
 				proto_val = proto_obj.toArray();
 			} else if (proto_obj) {
-				var proto_contextual_obj = red.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {
+				var proto_contextual_obj = ist.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {
 					check_on_nullify: true,
 					equals: proto_eq
 				});
@@ -69,13 +69,13 @@
 		return rv_arr.slice(1); // don't include the original dict
 	};
 
-	red.Dict.get_prop_name = function (dict, value, pcontext) {
+	ist.Dict.get_prop_name = function (dict, value, pcontext) {
 		var direct_props = dict.direct_props();
 		var i;
 
 		var rv = direct_props.keyForValue({value: value});
 		if (_.isUndefined(rv) && pcontext) {
-			var protos = red.Dict.get_proto_vals(dict, pcontext);
+			var protos = ist.Dict.get_proto_vals(dict, pcontext);
 			for (i = 0; i < protos.length; i += 1) {
 				var protoi = protos[i];
 				direct_props = protoi.direct_props();
@@ -88,7 +88,7 @@
 		return rv;
 	};
 
-	red.Dict.get_prop_info = function (dict, prop_name, pcontext) {
+	ist.Dict.get_prop_info = function (dict, prop_name, pcontext) {
 		if (dict._has_builtin_prop(prop_name)) {
 			return dict._get_builtin_prop_info(prop_name);
 		} else if (dict._has_direct_prop(prop_name)) {
@@ -100,8 +100,8 @@
 		}
 	};
 
-	red.Dict.get_prop = function (dict, prop_name, pcontext) {
-		var info = red.Dict.get_prop_info(dict, prop_name, pcontext);
+	ist.Dict.get_prop = function (dict, prop_name, pcontext) {
+		var info = ist.Dict.get_prop_info(dict, prop_name, pcontext);
 		if (info) {
 			return info.value;
 		} else {
@@ -112,21 +112,21 @@
 	var get_contextual_object = function (value, pointer) {
 		var value_ptr = pointer.push(value);
 
-		if (value instanceof red.Dict || value instanceof red.Cell || value instanceof red.StatefulProp) {
-			var contextual_object = red.find_or_put_contextual_obj(value, value_ptr);
+		if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
+			var contextual_object = ist.find_or_put_contextual_obj(value, value_ptr);
 			return contextual_object;
 		} else {
 			return value;
 		}
 	};
 
-	red.ContextualDict = function (options) {
-		red.ContextualDict.superclass.constructor.apply(this, arguments);
+	ist.ContextualDict = function (options) {
+		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.ContextualObject);
+		_.proto_extend(My, ist.ContextualObject);
 		var proto = My.prototype;
 		proto.initialize = function() {
 			My.superclass.initialize.apply(this, arguments);
@@ -140,7 +140,7 @@
 		};
 
 		proto.get_all_protos = function () {
-			return red.Dict.get_proto_vals(this.get_object(), this.get_pointer());
+			return ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
 		};
 
 		proto.get_contextual_protos = function () {
@@ -148,7 +148,7 @@
 			var pointer = this.get_pointer();
 
 			var rv = _.map(proto_objects, function (proto_object) {
-				return red.find_or_put_contextual_obj(proto_object, pointer.push(proto_object));
+				return ist.find_or_put_contextual_obj(proto_object, pointer.push(proto_object));
 			}, this);
 
 			return rv;
@@ -336,7 +336,7 @@
 
 		proto.prop_val = function (name, ignore_inherited) {
 			var value = this.prop(name, ignore_inherited);
-			if (value instanceof red.ContextualObject) {
+			if (value instanceof ist.ContextualObject) {
 				return value.val();
 			} else {
 				return value;
@@ -353,9 +353,9 @@
 			var pointer = this.get_pointer();
 
 			var manifestations = this.copies_obj();
-			if (manifestations instanceof red.Cell) {
+			if (manifestations instanceof ist.Cell) {
 				var manifestations_pointer = pointer.push(manifestations);
-				var manifestations_contextual_object = red.find_or_put_contextual_obj(manifestations, manifestations_pointer);
+				var manifestations_contextual_object = ist.find_or_put_contextual_obj(manifestations, manifestations_pointer);
 				var manifestations_value = manifestations_contextual_object.val();
 				manifestations_value = cjs.get(manifestations_value);
 				return manifestations_value;
@@ -375,7 +375,7 @@
 				var special_context;
 				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
 					special_context = special_contexts[i];
-					if (special_context instanceof red.CopyContext) {
+					if (special_context instanceof ist.CopyContext) {
 						return false;
 					}
 				}
@@ -396,7 +396,7 @@
 				var special_context;
 				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
 					special_context = special_contexts[i];
-					if (special_context instanceof red.CopyContext) {
+					if (special_context instanceof ist.CopyContext) {
 						return true;
 					}
 				}
@@ -418,8 +418,8 @@
 				var special_context;
 				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
 					special_context = special_contexts[i];
-					if (special_context instanceof red.CopyContext) {
-						return {cobj: red.find_or_put_contextual_obj(object, ptr), index: special_context.get_copy_num()};
+					if (special_context instanceof ist.CopyContext) {
+						return {cobj: ist.find_or_put_contextual_obj(object, ptr), index: special_context.get_copy_num()};
 					}
 				}
 			}
@@ -441,7 +441,7 @@
 			var pointer = this.get_pointer();
 			var manifestation_pointers = _.map(manifestations_value, function (basis, index) {
 					var manifestation_obj = this._manifestation_objects.get_or_put(basis, function () {
-						return new red.CopyContext(this, basis, index);
+						return new ist.CopyContext(this, basis, index);
 					}, this);
 					var manifestation_pointer = pointer.push_special_context(manifestation_obj);
 					return manifestation_pointer;
@@ -453,7 +453,7 @@
 			var object = this.get_object();
 			var instance_pointers = this.instance_pointers();
 			var manifestation_contextual_objects = _.map(instance_pointers, function(instance_pointer) {
-				var contextual_object = red.find_or_put_contextual_obj(object, instance_pointer);
+				var contextual_object = ist.find_or_put_contextual_obj(object, instance_pointer);
 				return contextual_object;
 			});
 
@@ -549,5 +549,5 @@
 		proto._getter = function () {
 			return this;
 		};
-	}(red.ContextualDict));
-}(red));
+	}(ist.ContextualDict));
+}(interstate));

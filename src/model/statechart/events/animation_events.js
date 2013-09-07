@@ -1,10 +1,10 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,window,console */
+/*global interstate,esprima,able,uid,window,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var requestAnimFrame = (function(){
 		return	window.requestAnimationFrame		||
@@ -14,13 +14,13 @@
 			window.setTimeout(callback, 1000/60);
 		};
 	})();
-	red.FrameEvent = function () {
-		red.Event.apply(this, arguments);
+	ist.FrameEvent = function () {
+		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "frame_event";
 	};
 	(function (My) {
-		_.proto_extend(My, red.Event);
+		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.on_create = function () {
 			this.created_at = (new Date()).getTime();
@@ -40,13 +40,13 @@
 			}
 		};
 		proto.notify = function () {
-			red.event_queue.wait();
+			ist.event_queue.wait();
 			this.fire({
 				type: "frame",
 				current_time: (new Date()).getTime(),
 				created_at: this.created_at
 			});
-			red.event_queue.signal();
+			ist.event_queue.signal();
 		};
 
 		proto.enter_listener = function() {
@@ -78,5 +78,5 @@
 				this.req = undefined;
 			}
 		};
-	}(red.FrameEvent));
-}(red));
+	}(ist.FrameEvent));
+}(interstate));

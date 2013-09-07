@@ -1,17 +1,17 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
     "use strict";
-    var cjs = red.cjs,
-        _ = red._;
+    var cjs = ist.cjs,
+        _ = ist._;
     
-    red.StatefulProp = function (options, defer_initialization) {
+    ist.StatefulProp = function (options, defer_initialization) {
 		able.make_this_listenable(this);
         options = options || {};
     
         this._id = options.uid || uid();
-        red.register_uid(this._id, this);
+        ist.register_uid(this._id, this);
     
         if (defer_initialization !== true) {
             this.do_initialize(options);
@@ -22,7 +22,7 @@
 		able.make_proto_listenable(proto);
     
         proto.do_initialize = function (options) {
-            red.install_instance_builtins(this, options, My);
+            ist.install_instance_builtins(this, options, My);
             this.get_direct_values().set_hash("hash");
             //this.used_start_transition = options.used_start_transition === true;
             //this._can_inherit = options.can_inherit !== false;
@@ -55,7 +55,7 @@
             }
         };
     
-        red.install_proto_builtins(proto, My.builtins);
+        ist.install_proto_builtins(proto, My.builtins);
     
         //
         // === PARENTAGE ===
@@ -89,7 +89,7 @@
 				keys: keys,
 				values: vals
 			});
-			var rv = new red.StatefulProp({
+			var rv = new ist.StatefulProp({
 				direct_values: direct_values
 			});
 			return rv;
@@ -115,32 +115,32 @@
         };
         
         proto.id = proto.hash = function () { return this._id; };
-		if(red.__debug) {
+		if(ist.__debug) {
 			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		}
     
         proto.destroy = function () {
-			red.unset_instance_builtins(this, My);
-			red.unregister_uid(this.id());
+			ist.unset_instance_builtins(this, My);
+			ist.unregister_uid(this.id());
 			able.destroy_this_listenable(this);
         };
     
-        red.register_serializable_type("stateful_prop",
+        ist.register_serializable_type("stateful_prop",
             function (x) {
                 return x instanceof My;
             },
             function (include_uid) {
                 var args = _.toArray(arguments);
                 var rv = {
-                    //direct_values: red.serialize.apply(red, ([this.get_direct_values()]).concat(arg_array))
-                    //can_inherit: red.serialize.apply(red, ([this._can_inherit]).concat(args))
-                    //ignore_inherited_in_contexts: red.serialize.apply(red, ([this._ignore_inherited_in_contexts]).concat(args))
-                    //, check_on_nullify: red.serialize.apply(red, ([this._check_on_nullify]).concat(args))
+                    //direct_values: ist.serialize.apply(ist, ([this.get_direct_values()]).concat(arg_array))
+                    //can_inherit: ist.serialize.apply(ist, ([this._can_inherit]).concat(args))
+                    //ignore_inherited_in_contexts: ist.serialize.apply(ist, ([this._ignore_inherited_in_contexts]).concat(args))
+                    //, check_on_nullify: ist.serialize.apply(ist, ([this._check_on_nullify]).concat(args))
                 };
                 _.each(My.builtins, function (builtin, name) {
                     if (builtin.serialize !== false) {
                         var getter_name = builtin._get_getter_name();
-                        rv[name] = red.serialize.apply(red, ([this[getter_name]()]).concat(args));
+                        rv[name] = ist.serialize.apply(ist, ([this[getter_name]()]).concat(args));
                     }
                 }, this);
                 if (include_uid) {
@@ -161,26 +161,26 @@
                 var rest_args = _.rest(arguments, 2);
                 rv.initialize = function () {
                     options = _.extend({
-                        //direct_values: red.deserialize.apply(red, ([obj.direct_values]).concat(rest_args))
-                    //	can_inherit: red.deserialize.apply(red, ([obj.can_inherit, options]).concat(rest_args))
-                    //	, ignore_inherited_in_contexts: red.deserialize.apply(red, ([obj.ignore_inherited_in_contexts, options]).concat(rest_args))
-                    //	, check_on_nullify: red.deserialize.apply(red, ([obj.check_on_nullify, options]).concat(rest_args))
+                        //direct_values: ist.deserialize.apply(ist, ([obj.direct_values]).concat(rest_args))
+                    //	can_inherit: ist.deserialize.apply(ist, ([obj.can_inherit, options]).concat(rest_args))
+                    //	, ignore_inherited_in_contexts: ist.deserialize.apply(ist, ([obj.ignore_inherited_in_contexts, options]).concat(rest_args))
+                    //	, check_on_nullify: ist.deserialize.apply(ist, ([obj.check_on_nullify, options]).concat(rest_args))
                     }, options);
                     _.each(serialized_options, function (serialized_option, name) {
-                        options[name] = red.deserialize.apply(red, ([serialized_option, options]).concat(rest_args));
+                        options[name] = ist.deserialize.apply(ist, ([serialized_option, options]).concat(rest_args));
                     });
                     this.do_initialize(options);
 					options = null;
                 };
                 return rv;
             });
-    }(red.StatefulProp));
+    }(ist.StatefulProp));
 	/*
     
-    red.define("stateful_prop", function (options) {
-        var prop = new red.StatefulProp(options);
+    ist.define("stateful_prop", function (options) {
+        var prop = new ist.StatefulProp(options);
         return prop;
     });
 
 */
-}(red));
+}(interstate));

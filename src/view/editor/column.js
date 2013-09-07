@@ -1,11 +1,11 @@
 /*jslint nomen: true, vars: true, white: true */
 /*jshint scripturl: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var insert_at = function (child_node, parent_node, index) {
 		var children = parent_node.childNodes;
@@ -32,7 +32,7 @@
 		}
 	};
 
-	$.widget("red.column", {
+	$.widget("ist.column", {
 		options: {
 			client: false,
 			name: "sketch",
@@ -240,7 +240,7 @@
 			var $$copies_str = cjs.$(false);
 			this.live_copies = cjs.liven(function() {
 				var copies_obj = $copies_obj.get();
-				if(copies_obj instanceof red.WrapperClient) {
+				if(copies_obj instanceof ist.WrapperClient) {
 					if(copies_obj.type() === "raw_cell") {
 						$$copies_str.set(copies_obj.get_$("get_str"));
 					}
@@ -348,7 +348,7 @@
 			this.element.addClass("curr_col");
 			this.build_src_view();
 			if(this.selected_child_disp) {
-				if(this.selected_child_disp.data("red-prop")) { // need to check in case this.selected_child_disp was removed
+				if(this.selected_child_disp.data("interstate-prop")) { // need to check in case this.selected_child_disp was removed
 					this.selected_child_disp.prop("on_deselect");
 				}
 			}
@@ -373,7 +373,7 @@
 
 		add_runtime_highlight: function() {
 			var value = this.option("curr_copy_client") || this.option("client");
-			if(value instanceof red.WrapperClient) {
+			if(value instanceof ist.WrapperClient) {
 				var client_socket = this.option("client_socket");
 				client_socket.post({
 					type: "add_highlight",
@@ -385,7 +385,7 @@
 
 		remove_runtime_highlight: function() {
 			var value = this.option("curr_copy_client") || this.option("client");
-			if(value instanceof red.WrapperClient) {
+			if(value instanceof ist.WrapperClient) {
 				var client_socket = this.option("client_socket");
 				client_socket.post({
 					type: "remove_highlight",
@@ -454,7 +454,7 @@
 
 						if(child.name === this.option("selected_prop_name")) {
 							if(this.selected_child_disp) {
-								if(this.selected_child_disp.data("red-prop")) { // need to check in case this.selected_child_disp was removed
+								if(this.selected_child_disp.data("interstate-prop")) { // need to check in case this.selected_child_disp was removed
 									this.selected_child_disp.prop("on_deselect");
 								}
 							}
@@ -536,7 +536,7 @@
 			var client = this.option("client");
 			client.signal_destroy();
 			this.option("curr_copy_client", false); // will destroy any curr copy client
-			if(this.prev_button.data("red-pressable")) {
+			if(this.prev_button.data("interstate-pressable")) {
 				this.prev_button.pressable("destroy");
 			}
 			this.obj_name_cell.off("mouseover.header_mouseover mouseout.header_mouseout").remove();
@@ -545,9 +545,9 @@
 		},
 		on_child_select: function(child_info, child_disp, event) {
 			var client = child_info.value;
-			if(client instanceof red.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
+			if(client instanceof ist.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
 				if(this.selected_child_disp) {
-					if(this.selected_child_disp.data("red-prop")) { // need to check in case this.selected_child_disp was removed
+					if(this.selected_child_disp.data("interstate-prop")) { // need to check in case this.selected_child_disp was removed
 						this.selected_child_disp.prop("on_deselect");
 					}
 				}
@@ -595,7 +595,7 @@
 					_.forEach(diff.added, function (info) {
 						var index = info.to, child = info.item;
 						var wrapper = child;
-						var statechart = red.create_remote_statechart(wrapper);
+						var statechart = ist.create_remote_statechart(wrapper);
 						wrappers.splice(index, 0, wrapper);
 						statecharts.splice(index, 0, statechart);
 					}, this);
@@ -617,7 +617,7 @@
 					on_destroy: function() {
 						if(this.statechart_view) {
 							$("tr.child", this.element).prop("option", "layout_manager", false);
-							if(this.statechart_view.data("red-statechart")) {
+							if(this.statechart_view.data("interstate-statechart")) {
 								this.statechart_view.statechart("destroy");
 							}
 							this.statechart_view.remove();
@@ -649,7 +649,7 @@
 				delete this.live_src_view;
 			}
 			if(this.statechart_view) {
-				if(this.statechart_view.data("red-statechart")) {
+				if(this.statechart_view.data("interstate-statechart")) {
 					this.statechart_view.statechart("destroy");
 				}
 				this.statechart_view.remove();
@@ -682,7 +682,7 @@
 		_setOption: function(key, value) {
 			if(key === "curr_copy_client") {
 				var old_value = this.option(key);
-				if(old_value instanceof red.WrapperClient) {
+				if(old_value instanceof ist.WrapperClient) {
 					old_value.signal_destroy();
 				}
 			}
@@ -694,7 +694,7 @@
 					this.on_not_curr_col();
 				}
 			} else if(key === "curr_copy_client") {
-				if(value instanceof red.WrapperClient) {
+				if(value instanceof ist.WrapperClient) {
 					value.signal_interest();
 				}
 			} else if(key === "selected_prop_name") {
@@ -702,7 +702,7 @@
 					var child_disp = this.get_child_disp(value);
 					if(child_disp) {
 						if(this.selected_child_disp) {
-							if(this.selected_child_disp.data("red-prop")) { // need to check in case this.selected_child_disp was removed
+							if(this.selected_child_disp.data("interstate-prop")) { // need to check in case this.selected_child_disp was removed
 								this.selected_child_disp.prop("on_deselect");
 							}
 						}
@@ -714,4 +714,4 @@
 			}
 		}
 	});
-}(red, jQuery));
+}(interstate, jQuery));

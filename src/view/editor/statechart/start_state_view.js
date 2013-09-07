@@ -1,14 +1,14 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,RedMap,jQuery,window */
+/*global interstate,esprima,able,uid,console,jQuery*/
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	var highlight_running = red.__debug_statecharts;
+	var highlight_running = ist.__debug_statecharts;
 
-	red.StartStateView = function (options) {
+	ist.StartStateView = function (options) {
 		able.make_this_optionable(this, {
 			state: null,
 			paper: null,
@@ -19,7 +19,7 @@
 			paper_height: 9999,
 			vline_color: "#CCC",
 			vline_dasharray: ". ",
-			active_fill: red.__debug_statecharts ? "red" : "black",
+			active_fill: ist.__debug_statecharts ? "red" : "black",
 			running_stroke: "#99E",
 			stroke: "none",
 			running_stroke_width: 3,
@@ -160,5 +160,5 @@
 				delete this.running_fn;
 			}
 		};
-	}(red.StartStateView));
-}(red, jQuery));
+	}(ist.StartStateView));
+}(interstate, jQuery));

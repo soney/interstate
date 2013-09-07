@@ -1,17 +1,17 @@
 /*jslint nomen: true, vars: true */
-/*global red,able,uid,console,jQuery,THREE,window */
+/*global interstate,able,uid,console,jQuery,THREE,window */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var DEFAULT_VIEW_ANGLE = 45,
 		DEFAULT_ASPECT = 1,
 		DEFAULT_NEAR = 0.1,
 		DEFAULT_FAR = 10000;
 
-	red.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+	ist.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
 								window.webkitRequestAnimationFrame || window.msRequestAnimationFrame ||
 								function(callback) {
 									window.setTimeout(callback, 1000 / 60);
@@ -52,7 +52,7 @@
 
 	};
 
-	red.register_attachments({
+	ist.register_attachments({
 		"point_light": {
 			ready: function() {
 				this.point_light = new THREE.PointLight(0xFFFFFF);
@@ -244,7 +244,7 @@
 
 			proto_props: {
 				render: function() {
-					red.requestAnimationFrame.call(window, this.$render);
+					ist.requestAnimationFrame.call(window, this.$render);
 					this.renderer.render(this.scene, this.camera);
 				},
 				get_dom_obj: function() {
@@ -257,4 +257,4 @@
 			}
 		}
 	});
-}(red, jQuery));
+}(interstate, jQuery));

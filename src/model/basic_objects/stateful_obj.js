@@ -1,33 +1,33 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
     "use strict";
-    var cjs = red.cjs,
-        _ = red._;
+    var cjs = ist.cjs,
+        _ = ist._;
     
-    red.StatefulObj = function (options, defer_initialization) {
+    ist.StatefulObj = function (options, defer_initialization) {
         options = options || {};
-        red.StatefulObj.superclass.constructor.apply(this, arguments);
+        ist.StatefulObj.superclass.constructor.apply(this, arguments);
     
-        this.type = "red_stateful_obj";
+        this.type = "ist_stateful_obj";
     
         if (defer_initialization !== true) {
             this.do_initialize(options);
         }
     };
     (function (My) {
-        _.proto_extend(My, red.Dict);
+        _.proto_extend(My, ist.Dict);
         var proto = My.prototype;
     
         proto.do_initialize = function (options) {
             My.superclass.do_initialize.apply(this, arguments);
-            red.install_instance_builtins(this, options, My);
+            ist.install_instance_builtins(this, options, My);
         };
     
         My.builtins = {
             "direct_statechart": {
-                "default": function () { return new red.Statechart(); },
+                "default": function () { return new ist.Statechart(); },
                 getter_name: "get_own_statechart",
                 settable: false,
 				destroy: function(me) {
@@ -35,13 +35,13 @@
 				}
             }
         };
-        red.install_proto_builtins(proto, My.builtins);
+        ist.install_proto_builtins(proto, My.builtins);
         proto.destroy = function () {
-			red.unset_instance_builtins(this, My);
+			ist.unset_instance_builtins(this, My);
             My.superclass.destroy.apply(this, arguments);
         };
     
-        red.register_serializable_type("stateful_obj",
+        ist.register_serializable_type("stateful_obj",
             function (x) {
                 return x instanceof My;
             },
@@ -59,20 +59,20 @@
                 rv.initialize = function () {
                     var options = {};
                     _.each(serialized_options, function (serialized_option, name) {
-                        options[name] = red.deserialize.apply(red, ([serialized_option]).concat(rest_args));
+                        options[name] = ist.deserialize.apply(ist, ([serialized_option]).concat(rest_args));
                     });
                     this.do_initialize(options);
                 };
 
                 return rv;
             });
-    }(red.StatefulObj));
+    }(ist.StatefulObj));
 	/*
     
-    red.define("stateful_obj", function (options, defer_init) {
-        var dict = new red.StatefulObj(options, defer_init);
+    ist.define("stateful_obj", function (options, defer_init) {
+        var dict = new ist.StatefulObj(options, defer_init);
         return dict;
     });
 
 */
-}(red));
+}(interstate));

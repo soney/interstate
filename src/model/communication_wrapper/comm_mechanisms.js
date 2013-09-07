@@ -1,13 +1,13 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,window */
+/*global interstate,esprima,able,uid,console,window */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._,
+	var cjs = ist.cjs,
+		_ = ist._,
 		origin = window.location.protocol + "//" + window.location.host;
 	
-	red.InterWindowCommWrapper = function(remote_window, client_id) {
+	ist.InterWindowCommWrapper = function(remote_window, client_id) {
 		able.make_this_listenable(this);
 		this.remote_window = remote_window;
 		this.client_id = client_id;
@@ -41,11 +41,11 @@
 			window.removeEventListener("message", this.$on_messsage);
 			delete this.$on_message;
 		};
-	}(red.InterWindowCommWrapper));
+	}(ist.InterWindowCommWrapper));
 
 
 	var same_window_comm_wrappers = [];
-	red.SameWindowCommWrapper = function(client_id, message_delay) {
+	ist.SameWindowCommWrapper = function(client_id, message_delay) {
 		able.make_this_listenable(this);
 		this.client_id = client_id;
 		this.message_delay = message_delay;
@@ -91,5 +91,5 @@
 				}
 			}
 		};
-	}(red.SameWindowCommWrapper));
-}(red));
+	}(ist.SameWindowCommWrapper));
+}(interstate));

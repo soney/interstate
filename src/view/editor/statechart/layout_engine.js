@@ -1,12 +1,12 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,window,RedMap */
+/*global interstate,esprima,able,uid,console,window,RedMap */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	var show_all_start_states = red.__debug_statecharts;
+	var show_all_start_states = ist.__debug_statecharts;
 
 	var FAKE_ROOT_STATECHART = {
 			hash: function () {
@@ -23,7 +23,7 @@
 			basis: function () { return false; }
 		};
 
-	red.RootStatechartLayoutEngine = function (options) {
+	ist.RootStatechartLayoutEngine = function (options) {
 		able.make_this_optionable(this, {
 			theta_degrees: 45,
 			transition_height: 18,
@@ -63,7 +63,7 @@
 		proto.get_statechart_tree = function () {
 			var expand_node = function (node, is_root) {
 				var sc = node.statechart;
-				if (sc instanceof red.Statechart && sc.is_initialized()) {
+				if (sc instanceof ist.Statechart && sc.is_initialized()) {
 					var substates = sc.get_substates();
 
 					if(_.size(substates) > 0 || is_root || show_all_start_states) { // use is_root for root statecharts with only a start state
@@ -162,7 +162,7 @@
 
 				var col_len = columns.length;
 				var li, ri;
-				if (statechart instanceof red.StartState) {
+				if (statechart instanceof ist.StartState) {
 					columns.push({ state: statechart, lr: "c", depth: depth + 1});
 					col_indicies.put(statechart, {c: col_len});
 					li = ri = col_len;
@@ -205,7 +205,7 @@
 					indicies = col_indicies.get(statechart);
 
 				var li, ri;
-				if(statechart instanceof red.StartState) {
+				if(statechart instanceof ist.StartState) {
 					li = ri = indicies.c;
 				} else {
 					li = indicies.l;
@@ -215,7 +215,7 @@
 				if (statechart.is_initialized()) {
 					var incoming_transitions;
 
-					if(statechart.parent_is_concurrent() && !red.__debug_statecharts) {
+					if(statechart.parent_is_concurrent() && !ist.__debug_statecharts) {
 						incoming_transitions = [];
 					} else {
 						incoming_transitions = statechart.get_incoming_transitions();
@@ -229,7 +229,7 @@
 						if (x === statechart) {
 							from_to.push({min_x: ri, max_x: ri, type: "self", transition: t});
 						} else {
-							if(x.parent_is_concurrent() && !red.__debug_statecharts) {
+							if(x.parent_is_concurrent() && !ist.__debug_statecharts) {
 								return;
 							}
 
@@ -375,7 +375,7 @@
 								}
 								break;
 							} else {
-								if (cell instanceof red.StatechartTransition) {
+								if (cell instanceof ist.StatechartTransition) {
 									is_from = cell.from() === state;
 									is_to = cell.to() === state;
 									if (is_from || is_to) {
@@ -418,7 +418,7 @@
 						var last_relevant_transition_index = -1;
 						for (row = column_values.length - 1; row >= column.depth; row -= 1) {
 							cell = column_values[row];
-							if (cell instanceof red.StatechartTransition && (cell.from() === state || cell.to() === state)) {
+							if (cell instanceof ist.StatechartTransition && (cell.from() === state || cell.to() === state)) {
 								last_relevant_transition_index  = row;
 								break;
 							}
@@ -429,7 +429,7 @@
 								wing_start_x = x;
 								wing_start_y = y;
 							} else {
-								if (cell instanceof red.StatechartTransition) {
+								if (cell instanceof ist.StatechartTransition) {
 									is_from = cell.from() === state;
 									is_to = cell.to() === state;
 									if (is_from || is_to) {
@@ -473,7 +473,7 @@
 						location_info = location_info_map.get(state);
 						location_info.center = { x: x, y: y };
 						//x += STATE_PADDING_X/2;
-					} else if (state instanceof red.StartState) {
+					} else if (state instanceof ist.StartState) {
 						x += START_STATE_WIDTH / 2;
 						y = PADDING_TOP + H * (num_rows - column.depth) + H / 2;
 						location_info_map.put(state, { center: { x: x, y: y } });
@@ -482,7 +482,7 @@
 
 						for (row = column_values.length - 1; row >= column.depth; row -= 1) {
 							cell = column_values[row];
-							if (cell instanceof red.StatechartTransition && (cell.from() === state || cell.to() === state)) {
+							if (cell instanceof ist.StatechartTransition && (cell.from() === state || cell.to() === state)) {
 								is_from = cell.from() === state;
 								is_to = cell.to() === state;
 
@@ -515,5 +515,5 @@
 
 			return {width: width, height: height, locations: location_info_map};
 		};
-	}(red.RootStatechartLayoutEngine));
-}(red));
+	}(ist.RootStatechartLayoutEngine));
+}(interstate));

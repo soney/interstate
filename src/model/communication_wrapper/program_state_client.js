@@ -1,12 +1,12 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console,jQuery,window */
+/*global interstate,esprima,able,uid,console,jQuery,window */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.ProgramStateClient = function (options) {
+	ist.ProgramStateClient = function (options) {
 		able.make_this_listenable(this);
 		this.comm_mechanism = options.comm_mechanism;
 		this.wrapper_clients = {};
@@ -128,7 +128,7 @@
 				var rv;
 
 				var obj_id = object_summary.obj_id;
-				rv = new red.WrapperClient({
+				rv = new ist.WrapperClient({
 					comm_mechanism: this.comm_mechanism,
 					cobj_id: cobj_id,
 					obj_id: obj_id,
@@ -188,12 +188,12 @@
 			if ((["undo", "redo", "reset", "export"]).indexOf(command) >= 0) {
 				stringified_command = command;
 			} else {
-				stringified_command = red.stringify(command);
+				stringified_command = ist.stringify(command);
 			}
 			this.post({
 				type: "command",
 				command: stringified_command
 			}, callback);
 		};
-	}(red.ProgramStateClient));
-}(red, jQuery));
+	}(ist.ProgramStateClient));
+}(interstate, jQuery));

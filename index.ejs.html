@@ -7,24 +7,24 @@
 		<div class="content">
 		</div>
 	  <div>
-			<%- red_include(red_inc.vendor) %>
-			<%- red_include(red_inc.runtime) %>
-			<%- red_include(red_inc.runtime_style) %>
+			<%- ist_include(ist_inc.vendor) %>
+			<%- ist_include(ist_inc.runtime) %>
+			<%- ist_include(ist_inc.runtime_style) %>
 
 			<script type="text/javascript">
 				var env, the_div, root;
 				window.save = function(name) {
-					return red.save(the_div.dom_output("option", "root"), name);
+					return interstate.save(the_div.dom_output("option", "root"), name);
 				};
 				window.load = function(name) {
-					root = red.load(name);
+					root = interstate.load(name);
 					if(the_div.data("dom_output")) {
 						the_div.dom_output("destroy")
 					}
 					if(env) {
 						env.destroy();
 					}
-					env = new red.Environment({root: root});
+					env = new interstate.Environment({root: root});
 					env.print_on_return = true;
 					the_div.dom_output({
 						root: root,
@@ -39,15 +39,15 @@
 						type: "POST",
 						dataType: "text",
 						data: {
-							root: red.stringify(root),
-							name: red._.isString(name) ? name : "(no name)"
+							root: interstate.stringify(root),
+							name: interstate._.isString(name) ? name : "(no name)"
 						},
 						success: function(data) {
 							console.log(data);
 						}
 					});
 				};
-				window.ls = red.ls;
+				window.ls = interstate.ls;
 
 				$(function() {
 					the_div = $("<div />").appendTo(document.body);
@@ -55,7 +55,7 @@
 						root = load();
 					} catch(e) {
 						console.log("Creating a new project");
-						env = new red.Environment();
+						env = new interstate.Environment();
 
 						root = env.get_root();
 
@@ -76,7 +76,7 @@
 				});
 				window.nuke = function() {
 					nosave = true;
-					red.nuke();
+					interstate.nuke();
 				};
 				//nosave = true;
 			</script>

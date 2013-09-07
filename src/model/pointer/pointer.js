@@ -1,16 +1,16 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.find_stateful_obj_and_context = function (context) {
+	ist.find_stateful_obj_and_context = function (context) {
 		var popped_item, last;
 		while (!context.is_empty()) {
 			last = context.points_at();
-			if (last instanceof red.StatefulObj) {
+			if (last instanceof ist.StatefulObj) {
 				return {
 					stateful_obj: last,
 					context: context
@@ -22,7 +22,7 @@
 		return undefined;
 	};
 
-	red.Pointer = function (options) {
+	ist.Pointer = function (options) {
 		this._stack = (options && options.stack) || [];
 		this._special_contexts = (options && options.special_contexts) || new Array(this._stack.length);
 
@@ -56,7 +56,7 @@
 			return _.isArray(this._special_contexts[index]);
 		};
 		proto.slice = function () {
-			return new red.Pointer({
+			return new ist.Pointer({
 				stack: this._stack.slice.apply(this._stack, arguments),
 				special_contexts: this._special_contexts.slice.apply(this._special_contexts, arguments)
 			});
@@ -66,7 +66,7 @@
 			var special_contexts_copy = _.clone(this._special_contexts);
 			stack_copy.splice.apply(stack_copy, arguments);
 			special_contexts_copy.splice.apply(special_contexts_copy, arguments);
-			return new red.Pointer({ stack: stack_copy, special_contexts: special_contexts_copy });
+			return new ist.Pointer({ stack: stack_copy, special_contexts: special_contexts_copy });
 		};
 		proto.push = function (onto_stack, onto_special_contexts) {
 			var new_special_contexts;
@@ -75,7 +75,7 @@
 			} else {
 				new_special_contexts = this._special_contexts.concat(undefined);
 			}
-			return new red.Pointer({
+			return new ist.Pointer({
 				stack: this._stack.concat(onto_stack),
 				special_contexts: new_special_contexts
 			});
@@ -89,13 +89,13 @@
 			} else {
 				new_special_contexts_obj[len_m_1] = [special_context];
 			}
-			return new red.Pointer({
+			return new ist.Pointer({
 				stack: this._stack,
 				special_contexts: new_special_contexts_obj
 			});
 		};
 		proto.pop = function () {
-			return new red.Pointer({
+			return new ist.Pointer({
 				stack: this._stack.slice(0, this._stack.length - 1),
 				special_contexts: this._special_contexts.slice(0, this._stack.length - 1)
 			});
@@ -183,12 +183,12 @@
 			var special_context_infos = _.map(this._special_contexts, function (sc) {
 				if (_.isArray(sc)) {
 					return _.map(sc, function (c) {
-						if (c instanceof red.ManifestationContext) {
+						if (c instanceof ist.ManifestationContext) {
 							return {
 								type: "manifestation_context",
 								index: c.get_basis_index()
 							};
-						} else if (c instanceof red.EventContext) {
+						} else if (c instanceof ist.EventContext) {
 							return {
 								type: "event_context"
 							};
@@ -208,14 +208,14 @@
 
 		my.desummarize = function (obj) {
 			var stack = _.map(obj.stack_ids, function (stack_id) {
-				return red.find_uid(stack_id);
+				return ist.find_uid(stack_id);
 			});
 			var i;
 			var special_contexts = [];
 			var special_context_info = obj.special_context_info;
 			var each_special_context_info_item = function (info) {
 				if (info.type === "manifestation_context") {
-					var pointer = red.create("pointer", {stack: stack.slice(0, i)});
+					var pointer = ist.create("pointer", {stack: stack.slice(0, i)});
 					var dict = stack[i];
 					var manifestations = dict.get_manifestations(pointer);
 				} else {
@@ -230,47 +230,47 @@
 					special_contexts[i] = undefined;
 				}
 			}
-			var rv = red.create("pointer", {stack: stack, special_contexts: special_contexts});
+			var rv = ist.create("pointer", {stack: stack, special_contexts: special_contexts});
 			return rv;
 		};
-	}(red.Pointer));
+	}(ist.Pointer));
 	/*
 
-	red.define("pointer", function (options) {
-		var context = new red.Pointer(options);
+	ist.define("pointer", function (options) {
+		var context = new ist.Pointer(options);
 		return context;
 	});
 	*/
 
-	red.is_pointer = function (obj) {
-		return obj instanceof red.Cell || obj instanceof red.StatefulProp;
+	ist.is_pointer = function (obj) {
+		return obj instanceof ist.Cell || obj instanceof ist.StatefulProp;
 	};
 
 
-	red.check_pointer_equality =  red.check_pointer_equality_eqeqeq = function (itema, itemb) {
-		if (itema instanceof red.Pointer && itemb instanceof red.Pointer) {
+	ist.check_pointer_equality =  ist.check_pointer_equality_eqeqeq = function (itema, itemb) {
+		if (itema instanceof ist.Pointer && itemb instanceof ist.Pointer) {
 			return itema.eq(itemb);
 		} else {
 			return itema === itemb;
 		}
 	};
 	/*
-	red.check_pointer_equality_eqeq = function (itema, itemb) {
-		if (itema instanceof red.Pointer && itemb instanceof red.Pointer) {
+	ist.check_pointer_equality_eqeq = function (itema, itemb) {
+		if (itema instanceof ist.Pointer && itemb instanceof ist.Pointer) {
 			return itema.eq(itemb);
 		} else {
 			return itema == itemb;
 		}
 	};
 	*/
-	red.pointer_hash = function(item) {
+	ist.pointer_hash = function(item) {
 		if(item && item.hash) {
 			return item.hash();
 		} else {
 			return item.toString();
 		}
 	};
-	red.check_special_context_equality = function (sc1, sc2) {
+	ist.check_special_context_equality = function (sc1, sc2) {
 		var sc1_len = sc1.length,
 			sc2_len = sc2.length;
 		var i;
@@ -285,4 +285,4 @@
 			return false;
 		}
 	};
-}(red));
+}(interstate));

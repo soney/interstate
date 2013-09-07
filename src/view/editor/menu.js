@@ -1,12 +1,12 @@
 /*jslint nomen: true, vars: true, white: true */
 /*jshint scripturl: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
-	$.widget("red.menu", {
+	var cjs = ist.cjs,
+		_ = ist._;
+	$.widget("interstate.menu", {
 		options: {
 			title: "menu",
 			items: {}
@@ -82,15 +82,15 @@
 				this.collapse();
 			}, this);
 
-			$(window).on("mousedown.red_menu_click", on_click);
+			$(window).on("mousedown.ist_menu_click", on_click);
 		},
 
 		collapse: function() {
-			$(window).off("mousedown.red_menu_click");
+			$(window).off("mousedown.ist_menu_click");
 			this.element.removeClass("expanded")
 						.addClass("collapsed");
 			this.label.show();
 			this.expanded_contents.hide();
 		}
 	});
-}(red, jQuery));
+}(interstate, jQuery));

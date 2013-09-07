@@ -1,28 +1,28 @@
 /*jslint nomen: true, vars: true */
-/*global red,esprima,able,uid,console */
+/*global interstate,esprima,able,uid,console */
 
-(function (red) {
+(function (ist) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
-	red.TransitionEvent = function () {
-		red.Event.apply(this, arguments);
+	ist.TransitionEvent = function () {
+		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "statechart_event";
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.Event);
+		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.on_create = function (targets, spec) {
 			this.targets = targets;
 			this.spec = spec;
 			this.get_activation_listener = cjs.memoize(function (specified_target) {
 				var listener = function (event) {
-					red.event_queue.wait();
+					ist.event_queue.wait();
 					this.fire(event);
-					red.event_queue.signal();
+					ist.event_queue.signal();
 				};
 				return listener;
 			});
@@ -45,7 +45,7 @@
 				this.processed_targets = _.chain(targs)
 					.map(function (target_pointer) {
 						var statecharts;
-						if (target_pointer instanceof red.ContextualStatefulObj) {
+						if (target_pointer instanceof ist.ContextualStatefulObj) {
 							if (target_pointer.is_template()) {
 								var instances = target_pointer.instances();
 								statecharts = _.map(instances, function (instance) {
@@ -101,20 +101,20 @@
 			}, this);
 		};
 		proto.stringify = function () { return this.statecharts[0].id() + ":" + this._spec; };
-		red.register_serializable_type("transition_event",
+		ist.register_serializable_type("transition_event",
 			function (x) {
 				return x instanceof My;
 			},
 			function () {
 				var args = _.toArray(arguments);
 				return {
-					targets: red.serialize.apply(red, ([this.targets]).concat(args)),
+					targets: ist.serialize.apply(ist, ([this.targets]).concat(args)),
 					spec: this.spec
 				};
 			},
 			function (obj) {
 				var rest_args = _.rest(arguments);
-				return new My(red.deserialize.apply(red, ([obj.targets]).concat(rest_args)), obj.spec);
+				return new My(ist.deserialize.apply(ist, ([obj.targets]).concat(rest_args)), obj.spec);
 			});
 		proto.enable = function () {
 			My.superclass.enable.apply(this, arguments);
@@ -124,20 +124,20 @@
 			My.superclass.disable.apply(this, arguments);
 			this.remove_listeners();
 		};
-	}(red.TransitionEvent));
+	}(ist.TransitionEvent));
 
-	red.StatechartEvent = function () {
-		red.Event.apply(this, arguments);
+	ist.StatechartEvent = function () {
+		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "statechart_event";
 	};
 
 	(function (My) {
-		_.proto_extend(My, red.Event);
+		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.on_create = function (options) {
 			this._id = uid();
-			red.register_uid(this._id, this);
+			ist.register_uid(this._id, this);
 
 			this.options = options;
 
@@ -149,9 +149,9 @@
 			// will figure out when our transition is set
 		};
 		proto.on_spec = function() {
-			red.event_queue.wait();
+			ist.event_queue.wait();
 			this.fire.apply(this, arguments);
-			red.event_queue.signal();
+			ist.event_queue.signal();
 		};
 
 		proto.set_transition = function (transition) {
@@ -187,7 +187,7 @@
 		};
 		proto.destroy = function () {
 			My.superclass.destroy.apply(this, arguments);
-			red.unregister_uid(this.id());
+			ist.unregister_uid(this.id());
 			if (this.target) {
 				this.target.off(this.spec, this.on_spec, this);
 				delete this.target;
@@ -224,7 +224,7 @@
 
 		proto.stringify = function () { return /*this.target.id() +*/ ":"/* + this.spec*/; };
 
-		red.register_serializable_type("statechart_event",
+		ist.register_serializable_type("statechart_event",
 			function (x) {
 				return x instanceof My;
 			},
@@ -246,7 +246,7 @@
 				if (_.isString(obj.specified_target)) {
 					target = obj.specified_target;
 				} else {
-					target = red.State.desummarize(obj.specified_target);
+					target = ist.State.desummarize(obj.specified_target);
 				}
 				var spec = obj.spec;
 				return new My({
@@ -254,5 +254,5 @@
 					spec: spec
 				});
 			});
-	}(red.StatechartEvent));
-}(red));
+	}(ist.StatechartEvent));
+}(interstate));

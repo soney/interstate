@@ -1,11 +1,11 @@
 /* jslint nomen: true, vars: true, white: true */
 /* jshint scripturl: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var round_num = function(num, decimals) {
 		var n = Math.pow(10, decimals);
@@ -31,7 +31,7 @@
 			return "(func)";
 		} else if(_.isArray(val)) {
 			return "[" + _.map(val, summarized_val).join(", ") + "]";
-		} else if(val instanceof red.WrapperClient) {
+		} else if(val instanceof ist.WrapperClient) {
 			return "<span class='cobj_link' data-cobj_id='"+val.cobj_id+"'>" + val.colloquial_name + "</span>";
 		} else {
 			return val+"";
@@ -56,7 +56,7 @@
 			return "(func)";
 		} else if(_.isArray(val)) {
 			return "[" + _.map(val, summarized_plain_val).join(", ") + "]";
-		} else if(val instanceof red.WrapperClient) {
+		} else if(val instanceof ist.WrapperClient) {
 			return val.colloquial_name;
 		} else {
 			return val+"";
@@ -64,7 +64,7 @@
 	};
 
 
-	$.widget("red.value_summary", {
+	$.widget("interstate.value_summary", {
 		options: {
 			value: false,
 			inherited: false,
@@ -86,7 +86,7 @@
 			});
 			this.summary_span = $("<span />").appendTo(this.element);
 			var value = this.option("value");
-			if(value instanceof red.WrapperClient) {
+			if(value instanceof ist.WrapperClient) {
 				value.signal_interest();
 				var client = value;
 				var $prop_val;
@@ -172,7 +172,7 @@
 				this.live_copies_fn.destroy();
 			}
 			var value = this.option("value");
-			if(value instanceof red.WrapperClient) {
+			if(value instanceof ist.WrapperClient) {
 				value.signal_destroy();
 			}
 		},
@@ -219,4 +219,4 @@
 			return entityMap[s];
 		});
 	}
-}(red, jQuery));
+}(interstate, jQuery));

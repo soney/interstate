@@ -18,9 +18,9 @@
 			<span class="red_square"></span>
 		</div>
 		<div>
-			<%- red_include(red_inc.vendor) %>
-			<%- red_include(red_inc.runtime) %>
-			<%- red_include(red_inc.editor) %>
+			<%- ist_include(ist_inc.vendor) %>
+			<%- ist_include(ist_inc.runtime) %>
+			<%- ist_include(ist_inc.editor) %>
 			<script type="text/javascript">
 				var get_view = function(parent_el, statechart, editable, context) {
 					var rv =  $("<div />")	.appendTo(parent_el)
@@ -36,7 +36,7 @@
 							if(type === "add_state") {
 								var statechart = event.state;
 								var substates = statechart.get_substates();
-								var substates_size = red._.size(substates);
+								var substates_size = interstate._.size(substates);
 								var state_name, make_start;
 
 								if(substates_size === 0) {
@@ -57,7 +57,7 @@
 							} else if(type === "add_transition") {
 								var from = event.from,
 									to = event.to;
-								var transition_event = new red.ParsedEvent( {str: "(event)", context: context});
+								var transition_event = new interstate.ParsedEvent( {str: "(event)", context: context});
 								from.parent().add_transition(from, to, transition_event);
 							} else if(type === "rename_state") {
 								var state = event.state,
@@ -90,16 +90,16 @@
 					return rv;
 				};
 				$(function() {
-					var dict = new red.Dict();
+					var dict = new interstate.Dict();
 					dict.set("sq", $(".red_square")[0]);
-					dict.set("on", red.on_event);
-					var ptr_context = new red.Pointer({stack: [dict]});
+					dict.set("on", interstate.on_event);
+					var ptr_context = new interstate.Pointer({stack: [dict]});
 
 					var ge = function(str) {
-						return new red.ParsedEvent({str: str, inert: true});
+						return new interstate.ParsedEvent({str: str, inert: true});
 					};
 
-					var master = window.master = new red.Statechart();
+					var master = window.master = new interstate.Statechart();
 					master	.add_state("init")
 							.add_state("hover")
 							.starts_at("init")
@@ -145,7 +145,7 @@
 					pressed_state.add_transition("pressed", "not_pressed", ge("on('mouseup')"));
 					*/
 
-					//master = red.deserialize(red.serialize(master));
+					//master = interstate.deserialize(interstate.serialize(master));
 
 					var master_view = get_view($(".tl"), master, true, ptr_context);
 
@@ -157,19 +157,19 @@
 						id: shadow.id()
 					};
 
-					var pss = new red.ProgramStateServer({ });
-					pss.set_communication_mechanism(new red.SameWindowCommWrapper());
-					var psc = new red.ProgramStateClient({
-						comm_mechanism: new red.SameWindowCommWrapper()
+					var pss = new interstate.ProgramStateServer({ });
+					pss.set_communication_mechanism(new interstate.SameWindowCommWrapper());
+					var psc = new interstate.ProgramStateClient({
+						comm_mechanism: new interstate.SameWindowCommWrapper()
 					});
 					psc.on_loaded();
 
 					var wrapper_client = psc.get_wrapper_client(sc_sum);
-					var puppet = window.puppet = red.create_remote_statechart(wrapper_client);
+					var puppet = window.puppet = interstate.create_remote_statechart(wrapper_client);
 					var puppet_view = get_view($(".bl"), puppet);
 
 					window.p = function() {
-						red.print_statechart(master, shadow, puppet, true);
+						interstate.print_statechart(master, shadow, puppet, true);
 					};
 					
 					/*
@@ -185,7 +185,7 @@
 						puppet_view.statechart("destroy").remove();
 						puppet.destroy();
 						wrapper_client = psc.get_wrapper_client(sc_sum);
-						puppet = red.create_remote_statechart(wrapper_client);
+						puppet = interstate.create_remote_statechart(wrapper_client);
 
 						puppet_view = get_view($(".bl"), puppet);
 					};

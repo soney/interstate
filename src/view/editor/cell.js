@@ -1,11 +1,11 @@
 /*jslint nomen: true, vars: true, white: true */
 /*jshint scripturl: true */
-/*global red,esprima,able,uid,console,window,jQuery,Raphael */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
 
-(function (red, $) {
+(function (ist, $) {
 	"use strict";
-	var cjs = red.cjs,
-		_ = red._;
+	var cjs = ist.cjs,
+		_ = ist._;
 
 	var UNSET_RADIUS = 7;
 
@@ -66,7 +66,7 @@
 	};
 	var func_regex = new RegExp("^\\s*function\\s*\\((\\s*[a-zA-Z$][\\w\\$]*\\s*,)*\\s*([a-zA-Z$][\\w\\$]*\\s*)?\\)\\s*{.*}\\s*$");
 
-	$.widget("red.prop_cell", {
+	$.widget("ist.prop_cell", {
 		options: {
 			value: false,
 			left: 0,
@@ -286,7 +286,7 @@
 		}
 	});
 
-	$.widget("red.unset_prop", {
+	$.widget("ist.unset_prop", {
 		options: {
 			left: 0,
 			radius: 7,
@@ -313,4 +313,4 @@
 			}
 		}
 	});
-}(red, jQuery));
+}(interstate, jQuery));
