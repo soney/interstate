@@ -83,7 +83,7 @@
 			}
 			if(page_index === pages.length-1) {
 				this.next_button.text("done").on("click.done", $.proxy(function() {
-					this.instructions.hide();
+					this.instructions_table.hide();
 				}, this));
 			} else {
 				this.next_button.text("next").off("click.done");
