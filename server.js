@@ -105,8 +105,10 @@ process.on('SIGINT', function () {
 });
 
 
-var filter_regex = /\.(js|html|css)$/;
+var filter_regex = /\.(js|html|css|swp)$/; // include swp files because they are added and removed when files get edited...for some reason,
+											// edits aren't otherwise detected
 var cp = require('child_process');
+/*
 var watch = require('node-watch');
 watch(['src/_vendor/cjs/src'], function(filename) {
 	if(filter_regex.test(filename)) {
@@ -130,6 +132,35 @@ watch(['dist', 'src/model', 'src/controller', 'src/view'], function(filename) {
 		});
 	}
 });
+*/
+
+var spawn_build_cjs = function() {
+	var grunt = cp.spawn('grunt', [], {
+		cwd: 'src/_vendor/cjs'
+	});
+
+	grunt.stdout.on('data', function(data) {
+		// relay output to console
+		console.log("%s", data)
+	});
+	grunt.on('close', function() {
+		setTimeout(spawn_build, 1000);
+	});
+};
+
+var spawn_build = function() {
+	var grunt = cp.spawn('grunt', ['quick'])
+
+	grunt.stdout.on('data', function(data) {
+		// relay output to console
+		console.log("%s", data)
+	});
+	grunt.on('close', function() {
+		//setTimeout(spawn_build_cjs, 1000);
+		setTimeout(spawn_build, 2000);
+	});
+};
+spawn_build();
 
 var render_files = function(res, files) {
 	concat_files(files, function(str) {

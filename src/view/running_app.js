@@ -60,7 +60,7 @@
 		return rgbToHex.apply(window, rgb);
 	}
 
-	$.widget("ist.dom_output", {
+	$.widget("interstate.dom_output", {
 		options: {
 			root: undefined,
 			show_edit_button: true,

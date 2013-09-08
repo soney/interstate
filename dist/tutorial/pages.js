@@ -2,7 +2,8 @@ var tutorial_pages = (function() {
 	return [
 		{
 			editor: {
-				text: "<p>This tutorial will teach you all you need to know to use the Interstate editor.<div class='directive'>Click 'next' to continue.</div></p>",
+				text: "<p>This tutorial will teach you all you need to know to use the Interstate editor.</p>" +
+						"<div class='directive'>Click 'next' to continue.</div>",
 				on_enter: function($, post) {
 					this.editor.hide();
 				},
@@ -14,15 +15,20 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p>This is the <span style='color: #AFA'>editor</span> window. The other window is the <span style='color: #AAF'>runtime</span> window.<div class='directive'>Position these windows so you can see both simultaneously.</div></p>",
+				text: "<p>This is the <span style='color: #7493a2'>editor</span> window and the other window is the <span style='color: #c1a562'>runtime</span> window.</p>" +
+						"<div class='directive'>Position these windows so you can see both simultaneously. Place the editor window in the top half of your screen and the runtime window in the bottom half.</div>",
 				on_enter: function($, post) {
 					this.editor.hide();
-					$("html").css("background-color", "#9B9");
-					this.editor_text = $("<span />")	.text("(editor)")
-														.css({
-															"font-size": "3em"
-														})
-														.prependTo(document.body);
+					$("html").css("background-color", "#7493a2");
+					this.editor_text = $("<div />")	.text("editor")
+													.css({ "font-size": "3em",
+														"text-align": "center",
+														"font-family": '"HelveticaNeue-UltraLight", "Helvetica Neue Ultra Light", "Helvetica Neue", Helvetica',
+														"font-weight": "100",
+														"padding-top": "30px",
+														"color": "#f3f0e9"
+													})
+													.prependTo(document.body);
 				},
 				on_exit: function($, post) {
 					$("html").css("background-color", "");
@@ -33,24 +39,37 @@ var tutorial_pages = (function() {
 			},
 			runtime: {
 				on_enter: function($, post) {
-					$("html").css("background-color", "#99B");
-					this.runtime_text = $("<span />")	.text("(runtime)")
+					$("body").css("background-color", "#c1a562");
+					this.runtime_text = $("<div />")	.text("runtime")
 														.css({
-															"font-size": "3em"
+															"font-size": "3em",
+															"text-align": "center",
+															"font-family": '"HelveticaNeue-UltraLight", "Helvetica Neue Ultra Light", "Helvetica Neue", Helvetica',
+															"font-weight": "100",
+															"padding-top": "30px",
+															"color": "#f3f0e9"
 														})
 														.prependTo(document.body);
+					$("svg").hide();
 				},
 				on_exit: function($, post) {
-					$("html").css("background-color", "");
+					$("body").css("background-color", "");
+					$("svg").show();
 					this.runtime_text.remove();
 					delete this.runtime_text;
 				}
 			}
 		}, {
 			editor: {
-				text: "<p>Right now, you are looking at an <em>object</em> named <var>sketch</var> with 7 <em>properties</em>.<br />The value of every property is shown right next to its property name. For instance, <var>width</var> is <code>500</code>. If a property's value is an arrow, that property is another object.<div class='directive'>Click on <var>screen</var>.</div></p>",
-				annotations: {
-					"sketch": "highlight properties *"
+				text: "<p>Right now, you are looking at an <em>object</em> named <var>sketch</var> with seven <em>properties</em> (highlighted in <span style='color:#d17702'>orange</span>).</p>" +
+						"<p>The value of every property is shown right next to its property name. For instance, <var>width</var> is <code>500</code>. If a property's value is an arrow (<code>&gt;</code>), that property is another object. If the value is '(native function)', as it is for <var>on</var>, <var>emit</var>, and <var>find</var>, then the property is built-in and can't be modified.</p>" +
+						"<p>You can refer to objects and their properties with the 'dot' syntax, as in: <code>sketch.screen</code></p>" +
+						"<div class='directive'>Click on the <var>screen</var> property to view the <var>screen</var> object.</div>",
+				on_enter: function($, post) {
+					$(".prop_name").css("color", "#d17702");
+				},
+				on_exit: function($, post) {
+					$(".prop_name").css("color", "");
 				}
 			}
 		}, {
@@ -63,7 +82,7 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p>The greyed out properties are inherited properties. Each of these properties controls some aspect of the circle. To <em>override</em> an inherited property (make it your object's own), click its name.<div class='directive'>Claim <var>cx</var> and <var>cy</var> for <var>my_circle</var>.</div></p>"
+				text: "<p>The greyed out properties are <em>inherited</em> properties. Each of these properties controls some aspect of the circle. To <em>override</em> an inherited property (make it your object's own), click its name.<div class='directive'>Override <var>cx</var> and <var>cy</var> for <var>my_circle</var>.</div></p>"
 			}
 		}, {
 			editor: {
