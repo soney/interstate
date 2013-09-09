@@ -2,7 +2,7 @@ var tutorial_pages = (function() {
 	return [
 		{
 			editor: {
-				text: "<p>This tutorial will teach you the basics of the <em>Interstate</em> editor.</p>" +
+				text: "<p>This tutorial will teach you the basics of the <em>InterState</em> editor.</p>" +
 						"<div class='directive'>Click 'next' to continue.</div>",
 				on_enter: function($, post) {
 					this.editor.hide();
