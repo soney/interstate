@@ -15,9 +15,14 @@ Then run:
 
     git clone https://github.com/soney/interstategit
     cd interstate
-	git submodule update --init --recursive
+    git submodule update --init --recursive
+    npm install .
+    cd src/_vendor/cjs/
     npm install .
     grunt
+    cd ../../..
+    grunt
+    node server
 
 ---
 Contact: [Stephen Oney](http://from.so/) [(soney@cmu.edu)](mailto:soney@cmu.edu)
