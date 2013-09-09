@@ -196,6 +196,7 @@
 				type: "command",
 				command: stringified_command
 			}, callback);
+			return stringified_command;
 		};
 	}(ist.ProgramStateClient));
 }(interstate, jQuery));
