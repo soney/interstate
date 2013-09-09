@@ -328,7 +328,7 @@
 		var getter = function (object, property) {
 			var rv, instances;
 			if (!object) {
-				throw new Error("No parent object");
+				throw new Error("No parent object for property '" + prop + "'");
 				//return undefined;
 			}
 

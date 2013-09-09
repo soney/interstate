@@ -13,6 +13,8 @@
 		},
 		_create: function() {
 			this.env = new ist.Environment();
+			this.env.set("width", "100+400")
+			this.env.set("height", "width/2")
 			this.app = $("<div />")	.appendTo(this.element)
 									.dom_output({
 										root: this.env.get_root(),

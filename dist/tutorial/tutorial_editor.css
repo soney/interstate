@@ -76,9 +76,14 @@ html, body, #tutorial {
 	font-weight: normal;
 }
 kbd {
-	font-family: "Courner New", "Courier";
+	/*font-family: "Courner New", "Courier";*/
 	font-style: normal;
 	font-weight: normal;
+	border: 1px solid #BBB;
+	border-radius: 3px;
+	background-color: #444;
+	padding: 2px;
+	font-size: 0.8em;
 }
 kbd:before {
 	content: "<";
