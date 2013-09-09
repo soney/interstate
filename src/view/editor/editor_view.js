@@ -30,7 +30,8 @@
 			client_id: "",
 			single_col_navigation: display === "phone" || display === "tablet",
 			view_type: display,
-			annotations: {}
+			annotations: {},
+			upload_usage: !ist.__debug
 		},
 
 		_create: function () {
@@ -64,6 +65,35 @@
 			$(window).on("beforeunload.close_editor", _.bind(function () {
 				this.on_unload();
 			}, this));
+			if(this.option("upload_usage")) {
+				this.element.on("command.upload", _.bind(function(event) {
+								console.log(arguments);
+								//this.upload_event({
+									//type: "command",
+									//value: ""
+								//});
+							}, this))
+							.on("child_select.upload", _.bind(function(event, info) {
+								this.upload_event({
+									type: "navigate",
+									value: info.name
+								});
+							}, this))
+							.on("header_click.upload", _.bind(function(event, col) {
+								if(col && col.data && col.data("interstate-column")) {
+									this.upload_event({
+										type: "navigate",
+										value: info.name
+									});
+								}
+								//this.upload_event(event);
+							}, this));
+
+			}
+		},
+
+		upload_event: function(event) {
+			console.log(event);
 		},
 
 		get_client_socket: function() {
@@ -488,6 +518,9 @@
 			this._super();
 			this.navigator.off("command.do_action");
 			this.on_unload();
+			if(this.option("upload_usage")) {
+				this.element.off("command.upload child_select.upload header_click.upload");
+			}
 			$(window)	.off("beforeunload.close_editor")
 						.off("keydown.editor_undo_redo");
 		},
