@@ -466,16 +466,25 @@
 							child_disp	.prop("begin_rename")
 										.on("done_editing.do_open", _.bind(function(event) {
 												child_disp.off("done_editing.do_open");
+
 												if(event.from_str === event.to_str) { //awaiting rename prop won't trigger
-													this.on_child_select(child, child_disp);
-													delete this.awaiting_rename_prop;
+													if(child.value.type() === "dict" || child.value.type() === "stateful") {
+														this.on_child_select(child, child_disp);
+														delete this.awaiting_rename_prop;
+													} else {
+														child_disp.focus();
+													}
 												}
 											}, this));
 							delete this.awaiting_add_prop;
 							this.awaiting_rename_prop = true;
 						} else if(this.awaiting_rename_prop) {
-							this.on_child_select(child, child_disp);
-							delete this.awaiting_rename_prop;
+							if(child.value.type() === "dict" || child.value.type() === "stateful") {
+								this.on_child_select(child, child_disp);
+								delete this.awaiting_rename_prop;
+							} else {
+								child_disp.focus();
+							}
 						} else if(this.awaiting_inherit_prop === child.name) {
 							child_disp.focus();
 							delete this.awaiting_inherit_prop;
