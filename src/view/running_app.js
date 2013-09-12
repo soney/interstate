@@ -323,6 +323,7 @@
 				pause_while_running: true
 			});
 
+/*
 			this._dom_tree_fn = cjs.liven(function () {
 				var dom_attachment = root_contextual_object.get_attachment_instance("dom");
 				var dom_element = dom_attachment.get_dom_obj();
@@ -336,6 +337,7 @@
 				context: this,
 				pause_while_running: true
 			});
+			*/
 		},
 		
 		_remove_change_listeners: function () {

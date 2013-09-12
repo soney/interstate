@@ -15,7 +15,7 @@
 			root = options.root;
 			root_pointer = new ist.Pointer({stack: [root]});
 		} else {
-			root = new ist.Dict({has_protos: false, direct_attachments: [new ist.PaperAttachment(), new ist.DomAttachment({instance_options: {tag: 'div'}})]});
+			root = new ist.Dict({has_protos: false, direct_attachments: [new ist.PaperAttachment()/*, new ist.DomAttachment({instance_options: {tag: 'div'}})*/]});
 
 			root_pointer = new ist.Pointer({stack: [root]});
 			if(!options || options.create_builtins !== false) {
@@ -223,11 +223,13 @@
 			}
 
 			if(builtins === true || (_.indexOf(builtins, "dom") >= 0)) {
+			/*
 				var child_nodes = new ist.Dict({has_protos: false});
 				root_dict.set("child_nodes", child_nodes);
 				var dom = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 				root_dict.set("dom", dom);
 				dom.set("tag", new ist.Cell({str: "'div'"}));
+				*/
 			}
 
 			if(builtins === true || (_.indexOf(builtins, "functions") >= 0)) {
