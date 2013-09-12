@@ -184,7 +184,7 @@ var tutorial_pages = (function() {
 		}, {
 			editor: { // The find function can be used to find objects.
 				text: "<p>The built-in <var>find(root)</var> function can be used to query objects. <var>find</var> accepts a <var>root</var> object to start at and returns a special 'query' object. Find uses 'chaining' to filter its query. For example, <code>find(my_circle).in_state('hover').eq(0)</code> returns every copy of <var>my_circle</var> in the <var>hover</var> state and returns the first one. This property will be <code>undefined</code> until you hover over an object.</p>"
-						+ "<div class='directive'>Create a new object on screen that inherits from <var>shape.rect</var>. Set its <var>following</var> property to the expression <code>find(my_circle).in_state('hover').eq(0)</code> and make it folow the highlighted object by settings <var>y</var> property to <var>following.cy-following.r</var>.</div>"
+						+ "<div class='directive'>Create a new object on screen that inherits from <var>shape.rect</var>. Set its <var>following</var> property to the expression <code>find(my_circle).in_state('hover').eq(0)</code> and make it follow the highlighted object by settings <var>y</var> property to <var>following.cy-following.r</var>.</div>"
 			}
 		}, {
 			editor: {
