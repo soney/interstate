@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Interstate Runtime</title>
+  </head>
+  <body>
+		<div class="content">
+		</div>
+	  <div>
+			<script src='soundjs-NEXT.min.js' type='text/javascript'></script>
+			<%- ist_include(ist_inc.vendor) %>
+			<%- ist_include(ist_inc.runtime) %>
+			<%- ist_include(ist_inc.runtime_style) %>
+
+			<script type="text/javascript">
+				var env, the_div, root;
+				window.save = function(name) {
+					return interstate.save(the_div.dom_output("option", "root"), name);
+				};
+				window.load = function(name) {
+					root = interstate.load(name);
+					if(the_div.data("dom_output")) {
+						the_div.dom_output("destroy")
+					}
+					if(env) {
+						env.destroy();
+					}
+					env = new interstate.Environment({root: root});
+					env.print_on_return = true;
+					the_div.dom_output({
+						root: root,
+						//edit_on_open: true,
+						editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
+					});
+					return root;
+				};
+				window.upload = function(name) {
+					$.ajax({
+						url: "http://interstate.from.so/gallery/upload.php",
+						type: "POST",
+						dataType: "text",
+						data: {
+							root: interstate.stringify(root),
+							name: interstate._.isString(name) ? name : "(no name)"
+						},
+						success: function(data) {
+							console.log(data);
+						}
+					});
+				};
+				window.ls = interstate.ls;
+
+				$(function() {
+					the_div = $("<div />").appendTo(document.body);
+					try {
+						root = load();
+					} catch(e) {
+						console.log("Creating a new project");
+						env = new interstate.Environment();
+
+						root = env.get_root();
+
+						the_div.dom_output({
+							root: root,
+				//			edit_on_open: true,
+							editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
+						}).on("change_root", function(new_root) {
+							console.log(new_root);
+						});
+						//env.print_on_return = true;
+						do_setup(env);
+					}
+				});
+				$(window).on("beforeunload", function() {
+					if(window.nosave !== true) {
+						save();
+					}
+				});
+				window.nuke = function() {
+					nosave = true;
+					interstate.nuke();
+				};
+				nosave = true;
+
+var current_instance;
+var awaiting_play = false;
+var song_instances = {};
+var loadHandler = function(event) {
+    current_instance = song_instances[event.src] = createjs.Sound.play(event.src);  // play using id.  Could also use full sourcepath or event.src.
+
+	if(awaiting_play) {
+		awaiting_play = false;
+	}
+};
+createjs.Sound.addEventListener("fileload", createjs.proxy(loadHandler, this));
+var play = function(song_name) {
+	if(song_name) {
+		if(song_instances.hasOwnProperty(song_name)) {
+			createjs.Sound.play(song_name);
+			current_instance = song_instances[event.src];
+		} else {
+			awaiting_play = true;
+			createjs.Sound.registerSound(song_name);
+		}
+	} else {
+		if(current_instance) {
+			console.log(current_instance);
+			current_instance.play();
+		}
+	}
+	/*
+	if(createjs.Sound.loadComplete(song_name)) {
+			console.log("X");
+		createjs.Sound.play(song_name);
+	*/
+};
+var stop = function() {
+	createjs.Sound.stop();
+};
+var pause = function() {
+	if(current_instance) {
+		current_instance.pause();
+	}
+};
+var resume = function() {
+	if(current_instance) {
+		current_instance.resume();
+	}
+};
+var set_position = function(pct) {
+	if(current_instance) {
+		console.log(pct, current_instance.getDuration());
+		current_instance.setPosition(pct * current_instance.getDuration());
+	}
+};
+var set_volume = function(pct) {
+	createjs.Sound.setVolume(pct);
+};
+
+/*
+createjs.Sound.addEventListener("fileload", createjs.proxy(this.loadHandler, this));
+createjs.Sound.registerSound("test_file.mp3", "sound");
+
+function loadHandler(event) {
+     // This is fired for each sound that is registered.
+     var instance = createjs.Sound.play("sound");  // play using id.  Could also use full sourcepath or event.src.
+     instance.addEventListener("complete", createjs.proxy(this.handleComplete, this));
+     instance.setVolume(0.5);
+}
+*/
+			</script>
+			<script type="text/javascript">
+function do_setup(env) {
+	env
+.unset("width")
+.unset("height")
+.unset("screen")
+.unset("shape")
+.cd("child_nodes")
+}
+			</script>
+	  </div>
+  </body>
+</html>
