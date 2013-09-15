@@ -28,9 +28,9 @@
 					});
 
 					self.fire(event);
-					//_.defer(function () {
+					_.defer(function () {
 						ist.event_queue.signal();
-					//});
+					});
 				};
 				listener.destroy = function() {
 					self = null;
