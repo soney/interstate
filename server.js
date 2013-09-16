@@ -160,7 +160,7 @@ var spawn_build = function() {
 		setTimeout(spawn_build, 2000);
 	});
 };
-spawn_build();
+//spawn_build();
 
 var render_files = function(res, files) {
 	concat_files(files, function(str) {

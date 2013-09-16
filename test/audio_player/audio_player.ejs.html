@@ -94,17 +94,16 @@ var loadHandler = function(event) {
 };
 createjs.Sound.addEventListener("fileload", createjs.proxy(loadHandler, this));
 var play = function(song_name) {
+	//stop();
 	if(song_name) {
 		if(song_instances.hasOwnProperty(song_name)) {
-			createjs.Sound.play(song_name);
-			current_instance = song_instances[event.src];
+			current_instance = song_instances[song_name] = createjs.Sound.play(song_name);
 		} else {
 			awaiting_play = true;
 			createjs.Sound.registerSound(song_name);
 		}
 	} else {
 		if(current_instance) {
-			console.log(current_instance);
 			current_instance.play();
 		}
 	}
@@ -129,9 +128,14 @@ var resume = function() {
 };
 var set_position = function(pct) {
 	if(current_instance) {
-		console.log(pct, current_instance.getDuration());
 		current_instance.setPosition(pct * current_instance.getDuration());
 	}
+};
+var get_position = function () {
+	if(current_instance) {
+		return current_instance.getPosition() / current_instance.getDuration();
+	}
+	return 0;
 };
 var set_volume = function(pct) {
 	createjs.Sound.setVolume(pct);
