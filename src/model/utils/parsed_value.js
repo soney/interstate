@@ -534,9 +534,10 @@
 	};
 
 	var func_regex = new RegExp("^\\s*function\\s*\\((\\s*[a-zA-Z$][\\w\\$]*\\s*,)*\\s*([a-zA-Z$][\\w\\$]*\\s*)?\\)\\s*{.*}\\s*$");
+	var block_regex = new RegExp("^\\s*{.*}\\s*$");
 
 	ist.parse = function (str) {
-		if ((str.replace(/\n/g, "")).match(func_regex)) {
+		if ((str.replace(/\n/g, "")).match(func_regex) || str.match(block_regex)) {
 			str = "(" + str + ")";
 		}
 
