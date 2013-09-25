@@ -119,9 +119,8 @@
 				}
 			}, {
 				context: this,
-				pause_while_running: true,
-				run_on_create: false
-			}).run();
+				pause_while_running: true
+			});
 		};
 
 		proto.add_css_change_listeners = function () {
@@ -511,9 +510,4 @@
 			});
 	}(ist.DomAttachment));
 
-/*
-	ist.define("dom_attachment", function (options) {
-		return new ist.DomAttachment(options);
-	});
-	*/
 }(interstate, jQuery));

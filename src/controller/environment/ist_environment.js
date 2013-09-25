@@ -15,11 +15,12 @@
 			root = options.root;
 			root_pointer = new ist.Pointer({stack: [root]});
 		} else {
-			root = new ist.Dict({has_protos: false, direct_attachments: [new ist.PaperAttachment()]});
+			root = new ist.Dict({has_protos: false, direct_attachments: [new ist.PaperAttachment()/*, new ist.DomAttachment({instance_options: {tag: 'div'}})*/]});
 
 			root_pointer = new ist.Pointer({stack: [root]});
 			if(!options || options.create_builtins !== false) {
-				this.initialize_props(root_pointer);
+				var builtins = options && options.builtins || true;
+				this.initialize_props(root_pointer, builtins);
 			}
 		}
 
@@ -43,186 +44,199 @@
 	(function (my) {
 		var proto = my.prototype;
 
-		proto.initialize_props = function (root_pointer) {
+		proto.initialize_props = function (root_pointer, builtins) {
 			var root_dict = root_pointer.points_at();
+			if(builtins === true || (_.indexOf(builtins, "raphael") >= 0)) {
+				var screen = new ist.Dict({has_protos: false});
+				root_dict.set("screen", screen);
 
-			var screen = new ist.Dict({has_protos: false});
-			root_dict.set("screen", screen);
+				root_dict.set("width", new ist.Cell({str: "500"}));
+				root_dict.set("height", new ist.Cell({str: "500"}));
 
-			root_dict.set("width", new ist.Cell({str: "500"}));
-			root_dict.set("height", new ist.Cell({str: "500"}));
+				var shape = new ist.Dict({has_protos: false});
+				root_dict.set("shape", shape);
 
-			var shape = new ist.Dict({has_protos: false});
-			root_dict.set("shape", shape);
-
-			var circle = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
-																								instance_options: {
-																									shape_type: "circle",
-																									constructor_params: [0, 0, 0]
-																								}
-																						})]
-																					});
-			shape.set("circle", circle);
-			circle.set("show", new ist.Cell({str: "true"}));
-			circle.set("clip_rect", new ist.Cell({str: "null"}));
-			circle.set("cursor", new ist.Cell({str: "'default'"}));
-			circle.set("cx", new ist.Cell({str: "30"}));
-			circle.set("cy", new ist.Cell({str: "50"}));
-			circle.set("fill", new ist.Cell({str: "'none'"}));
-			circle.set("fill_opacity", new ist.Cell({str: "1.0"}));
-			circle.set("opacity", new ist.Cell({str: "1.0"}));
-			circle.set("r", new ist.Cell({str: "50"}));
-			circle.set("stroke", new ist.Cell({str: "'black'"}));
-			circle.set("stroke_dasharray", new ist.Cell({str: "''"}));
-			circle.set("stroke_opacity", new ist.Cell({str: "1.0"}));
-			circle.set("stroke_width", new ist.Cell({str: "1"}));
-			circle.set("transform", new ist.Cell({str: "''"}));
-			circle.set("animated_properties", new ist.Cell({str: "false"}));
-			circle.set("animation_duration", new ist.Cell({str: "300"}));
-			circle.set("animation_easing", new ist.Cell({str: "'linear'"}));
-
-
-			var ellipse = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
-																								instance_options: {
-																									shape_type: "ellipse",
-																									constructor_params: [0, 0, 0, 0]
-																								}
-																						})]
-																					});
-			shape.set("ellipse", ellipse);
-			ellipse.set("show", new ist.Cell({str: "true"}));
-			ellipse.set("clip_rect", new ist.Cell({str: "null"}));
-			ellipse.set("cursor", new ist.Cell({str: "'default'"}));
-			ellipse.set("cx", new ist.Cell({str: "30"}));
-			ellipse.set("cy", new ist.Cell({str: "50"}));
-			ellipse.set("fill", new ist.Cell({str: "'none'"}));
-			ellipse.set("fill_opacity", new ist.Cell({str: "1.0"}));
-			ellipse.set("opacity", new ist.Cell({str: "1.0"}));
-			ellipse.set("rx", new ist.Cell({str: "50"}));
-			ellipse.set("ry", new ist.Cell({str: "20"}));
-			ellipse.set("stroke", new ist.Cell({str: "'black'"}));
-			ellipse.set("stroke_dasharray", new ist.Cell({str: "''"}));
-			ellipse.set("stroke_opacity", new ist.Cell({str: "1.0"}));
-			ellipse.set("stroke_width", new ist.Cell({str: "1"}));
-			ellipse.set("transform", new ist.Cell({str: "''"}));
-			ellipse.set("animated_properties", new ist.Cell({str: "false"}));
-			ellipse.set("animation_duration", new ist.Cell({str: "300"}));
-			ellipse.set("animation_easing", new ist.Cell({str: "'linear'"}));
-			
-			var image = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
-																								instance_options: {
-																									shape_type: "image",
-																									constructor_params: ["", 0, 0, 0, 0]
-																								}
-																						})]
-																					});
-			shape.set("image", image);
-			image.set("show", new ist.Cell({str: "true"}));
-			image.set("clip_rect", new ist.Cell({str: "null"}));
-			image.set("cursor", new ist.Cell({str: "'default'"}));
-			image.set("opacity", new ist.Cell({str: "1.0"}));
-			image.set("src", new ist.Cell({str: "'http://from.so/smile.png'"}));
-			image.set("transform", new ist.Cell({str: "''"}));
-			image.set("x", new ist.Cell({str: "20"}));
-			image.set("y", new ist.Cell({str: "20"}));
-			image.set("width", new ist.Cell({str: "150"}));
-			image.set("height", new ist.Cell({str: "150"}));
-			image.set("animated_properties", new ist.Cell({str: "false"}));
-			image.set("animation_duration", new ist.Cell({str: "300"}));
-			image.set("animation_easing", new ist.Cell({str: "'linear'"}));
+				var circle = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
+																									instance_options: {
+																										shape_type: "circle",
+																										constructor_params: [0, 0, 0]
+																									}
+																							})]
+																						});
+				shape.set("circle", circle);
+				circle.set("show", new ist.Cell({str: "true"}));
+				circle.set("clip_rect", new ist.Cell({str: "null"}));
+				circle.set("cursor", new ist.Cell({str: "'default'"}));
+				circle.set("cx", new ist.Cell({str: "30"}));
+				circle.set("cy", new ist.Cell({str: "50"}));
+				circle.set("fill", new ist.Cell({str: "'none'"}));
+				circle.set("fill_opacity", new ist.Cell({str: "1.0"}));
+				circle.set("opacity", new ist.Cell({str: "1.0"}));
+				circle.set("r", new ist.Cell({str: "50"}));
+				circle.set("stroke", new ist.Cell({str: "'black'"}));
+				circle.set("stroke_dasharray", new ist.Cell({str: "''"}));
+				circle.set("stroke_opacity", new ist.Cell({str: "1.0"}));
+				circle.set("stroke_width", new ist.Cell({str: "1"}));
+				circle.set("transform", new ist.Cell({str: "''"}));
+				circle.set("animated_properties", new ist.Cell({str: "false"}));
+				circle.set("animation_duration", new ist.Cell({str: "300"}));
+				circle.set("animation_easing", new ist.Cell({str: "'linear'"}));
 
 
-			var rect = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
-																								instance_options: {
-																									shape_type: "rect",
-																									constructor_params: [0, 0, 0, 0]
-																								}
-																						})]
-																					});
-			shape.set("rect", rect);
-			rect.set("show", new ist.Cell({str: "true"}));
-			rect.set("clip_rect", new ist.Cell({str: "null"}));
-			rect.set("cursor", new ist.Cell({str: "'default'"}));
-			rect.set("x", new ist.Cell({str: "20"}));
-			rect.set("y", new ist.Cell({str: "30"}));
-			rect.set("fill", new ist.Cell({str: "'red'"}));
-			rect.set("fill_opacity", new ist.Cell({str: "1.0"}));
-			rect.set("opacity", new ist.Cell({str: "1.0"}));
-			rect.set("r", new ist.Cell({str: "0"}));
-			rect.set("stroke", new ist.Cell({str: "'black'"}));
-			rect.set("stroke_dasharray", new ist.Cell({str: "''"}));
-			rect.set("stroke_opacity", new ist.Cell({str: "1.0"}));
-			rect.set("stroke_width", new ist.Cell({str: "1"}));
-			rect.set("transform", new ist.Cell({str: "''"}));
-			rect.set("width", new ist.Cell({str: "40"}));
-			rect.set("height", new ist.Cell({str: "50"}));
-			rect.set("animated_properties", new ist.Cell({str: "false"}));
-			rect.set("animation_duration", new ist.Cell({str: "300"}));
-			rect.set("animation_easing", new ist.Cell({str: "'linear'"}));
-			
-			var text = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
-																								instance_options: {
-																									shape_type: "text",
-																									constructor_params: [0, 0, ""]
-																								}
-																						})]
-																					});
-			shape.set("text", text);
-			text.set("show", new ist.Cell({str: "true"}));
-			text.set("clip_rect", new ist.Cell({str: "null"}));
-			text.set("cursor", new ist.Cell({str: "'default'"}));
-			text.set("x", new ist.Cell({str: "50"}));
-			text.set("y", new ist.Cell({str: "30"}));
-			text.set("opacity", new ist.Cell({str: "1.0"}));
-			text.set("stroke", new ist.Cell({str: "'none'"}));
-			text.set("fill", new ist.Cell({str: "'black'"}));
-			text.set("fill_opacity", new ist.Cell({str: "1.0"}));
-			text.set("stroke_dasharray", new ist.Cell({str: "''"}));
-			text.set("stroke_opacity", new ist.Cell({str: "1.0"}));
-			text.set("stroke_width", new ist.Cell({str: "1"}));
-			text.set("transform", new ist.Cell({str: "''"}));
-			text.set("text", new ist.Cell({str: "'hello world'"}));
-			text.set("text_anchor", new ist.Cell({str: "'middle'"}));
-			text.set("font_family", new ist.Cell({str: "'Arial'"}));
-			text.set("font_size", new ist.Cell({str: "16"}));
-			text.set("font_weight", new ist.Cell({str: "400"}));
-			text.set("font_style", new ist.Cell({str: "'normal'"}));
-			text.set("animated_properties", new ist.Cell({str: "false"}));
-			text.set("animation_duration", new ist.Cell({str: "300"}));
-			text.set("animation_easing", new ist.Cell({str: "'linear'"}));
+				var ellipse = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
+																									instance_options: {
+																										shape_type: "ellipse",
+																										constructor_params: [0, 0, 0, 0]
+																									}
+																							})]
+																						});
+				shape.set("ellipse", ellipse);
+				ellipse.set("show", new ist.Cell({str: "true"}));
+				ellipse.set("clip_rect", new ist.Cell({str: "null"}));
+				ellipse.set("cursor", new ist.Cell({str: "'default'"}));
+				ellipse.set("cx", new ist.Cell({str: "30"}));
+				ellipse.set("cy", new ist.Cell({str: "50"}));
+				ellipse.set("fill", new ist.Cell({str: "'none'"}));
+				ellipse.set("fill_opacity", new ist.Cell({str: "1.0"}));
+				ellipse.set("opacity", new ist.Cell({str: "1.0"}));
+				ellipse.set("rx", new ist.Cell({str: "50"}));
+				ellipse.set("ry", new ist.Cell({str: "20"}));
+				ellipse.set("stroke", new ist.Cell({str: "'black'"}));
+				ellipse.set("stroke_dasharray", new ist.Cell({str: "''"}));
+				ellipse.set("stroke_opacity", new ist.Cell({str: "1.0"}));
+				ellipse.set("stroke_width", new ist.Cell({str: "1"}));
+				ellipse.set("transform", new ist.Cell({str: "''"}));
+				ellipse.set("animated_properties", new ist.Cell({str: "false"}));
+				ellipse.set("animation_duration", new ist.Cell({str: "300"}));
+				ellipse.set("animation_easing", new ist.Cell({str: "'linear'"}));
+				
+				var image = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
+																									instance_options: {
+																										shape_type: "image",
+																										constructor_params: ["", 0, 0, 0, 0]
+																									}
+																							})]
+																						});
+				shape.set("image", image);
+				image.set("show", new ist.Cell({str: "true"}));
+				image.set("clip_rect", new ist.Cell({str: "null"}));
+				image.set("cursor", new ist.Cell({str: "'default'"}));
+				image.set("opacity", new ist.Cell({str: "1.0"}));
+				image.set("src", new ist.Cell({str: "'http://from.so/smile.png'"}));
+				image.set("transform", new ist.Cell({str: "''"}));
+				image.set("x", new ist.Cell({str: "20"}));
+				image.set("y", new ist.Cell({str: "20"}));
+				image.set("width", new ist.Cell({str: "150"}));
+				image.set("height", new ist.Cell({str: "150"}));
+				image.set("animated_properties", new ist.Cell({str: "false"}));
+				image.set("animation_duration", new ist.Cell({str: "300"}));
+				image.set("animation_easing", new ist.Cell({str: "'linear'"}));
 
-			var path = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
-																								instance_options: {
-																									shape_type: "path",
-																									constructor_params: ["M0,0"]
-																								}
-																						})]
-																					});
-			shape.set("path", path);
-			path.set("show", new ist.Cell({str: "true"}));
-			path.set("clip_rect", new ist.Cell({str: "null"}));
-			path.set("cursor", new ist.Cell({str: "'default'"}));
-			path.set("fill", new ist.Cell({str: "'red'"}));
-			path.set("fill_opacity", new ist.Cell({str: "1.0"}));
-			path.set("opacity", new ist.Cell({str: "1.0"}));
-			path.set("stroke", new ist.Cell({str: "'black'"}));
-			path.set("stroke_dasharray", new ist.Cell({str: "''"}));
-			path.set("stroke_opacity", new ist.Cell({str: "1.0"}));
-			path.set("stroke_miterlimit", new ist.Cell({str: "0"}));
-			path.set("stroke_width", new ist.Cell({str: "1"}));
-			path.set("path", new ist.Cell({str: "'M24.132,7.971c-2.203-2.205-5.916-2.098-8.25,0.235L15.5,8.588l-0.382-0.382c-2.334-2.333-6.047-2.44-8.25-0.235c-2.204,2.203-2.098,5.916,0.235,8.249l8.396,8.396l8.396-8.396C26.229,13.887,26.336,10.174,24.132,7.971z'"}));
-			path.set("transform", new ist.Cell({str: "''"}));
-			path.set("animated_properties", new ist.Cell({str: "false"}));
-			path.set("animation_duration", new ist.Cell({str: "300"}));
-			path.set("animation_easing", new ist.Cell({str: "'linear'"}));
 
-			var group = new ist.Dict({has_protos: false, direct_attachments: [new ist.GroupAttachment()]});
-			shape.set("group", group);
-			group.set("show", new ist.Cell({str: "true"}));
+				var rect = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
+																									instance_options: {
+																										shape_type: "rect",
+																										constructor_params: [0, 0, 0, 0]
+																									}
+																							})]
+																						});
+				shape.set("rect", rect);
+				rect.set("show", new ist.Cell({str: "true"}));
+				rect.set("clip_rect", new ist.Cell({str: "null"}));
+				rect.set("cursor", new ist.Cell({str: "'default'"}));
+				rect.set("x", new ist.Cell({str: "20"}));
+				rect.set("y", new ist.Cell({str: "30"}));
+				rect.set("fill", new ist.Cell({str: "'red'"}));
+				rect.set("fill_opacity", new ist.Cell({str: "1.0"}));
+				rect.set("opacity", new ist.Cell({str: "1.0"}));
+				rect.set("r", new ist.Cell({str: "0"}));
+				rect.set("stroke", new ist.Cell({str: "'black'"}));
+				rect.set("stroke_dasharray", new ist.Cell({str: "''"}));
+				rect.set("stroke_opacity", new ist.Cell({str: "1.0"}));
+				rect.set("stroke_width", new ist.Cell({str: "1"}));
+				rect.set("transform", new ist.Cell({str: "''"}));
+				rect.set("width", new ist.Cell({str: "40"}));
+				rect.set("height", new ist.Cell({str: "50"}));
+				rect.set("animated_properties", new ist.Cell({str: "false"}));
+				rect.set("animation_duration", new ist.Cell({str: "300"}));
+				rect.set("animation_easing", new ist.Cell({str: "'linear'"}));
+				
+				var text = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
+																									instance_options: {
+																										shape_type: "text",
+																										constructor_params: [0, 0, ""]
+																									}
+																							})]
+																						});
+				shape.set("text", text);
+				text.set("show", new ist.Cell({str: "true"}));
+				text.set("clip_rect", new ist.Cell({str: "null"}));
+				text.set("cursor", new ist.Cell({str: "'default'"}));
+				text.set("x", new ist.Cell({str: "50"}));
+				text.set("y", new ist.Cell({str: "30"}));
+				text.set("opacity", new ist.Cell({str: "1.0"}));
+				text.set("stroke", new ist.Cell({str: "'none'"}));
+				text.set("fill", new ist.Cell({str: "'black'"}));
+				text.set("fill_opacity", new ist.Cell({str: "1.0"}));
+				text.set("stroke_dasharray", new ist.Cell({str: "''"}));
+				text.set("stroke_opacity", new ist.Cell({str: "1.0"}));
+				text.set("stroke_width", new ist.Cell({str: "1"}));
+				text.set("transform", new ist.Cell({str: "''"}));
+				text.set("text", new ist.Cell({str: "'hello world'"}));
+				text.set("text_anchor", new ist.Cell({str: "'middle'"}));
+				text.set("font_family", new ist.Cell({str: "'Arial'"}));
+				text.set("font_size", new ist.Cell({str: "16"}));
+				text.set("font_weight", new ist.Cell({str: "400"}));
+				text.set("font_style", new ist.Cell({str: "'normal'"}));
+				text.set("animated_properties", new ist.Cell({str: "false"}));
+				text.set("animation_duration", new ist.Cell({str: "300"}));
+				text.set("animation_easing", new ist.Cell({str: "'linear'"}));
 
-			root_dict.set("on", ist.on_event);
-			root_dict.set("find", ist.find_fn);
-			root_dict.set("emit", ist.emit);
+				var path = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
+																									instance_options: {
+																										shape_type: "path",
+																										constructor_params: ["M0,0"]
+																									}
+																							})]
+																						});
+				shape.set("path", path);
+				path.set("show", new ist.Cell({str: "true"}));
+				path.set("clip_rect", new ist.Cell({str: "null"}));
+				path.set("cursor", new ist.Cell({str: "'default'"}));
+				path.set("fill", new ist.Cell({str: "'red'"}));
+				path.set("fill_opacity", new ist.Cell({str: "1.0"}));
+				path.set("opacity", new ist.Cell({str: "1.0"}));
+				path.set("stroke", new ist.Cell({str: "'black'"}));
+				path.set("stroke_dasharray", new ist.Cell({str: "''"}));
+				path.set("stroke_opacity", new ist.Cell({str: "1.0"}));
+				path.set("stroke_miterlimit", new ist.Cell({str: "0"}));
+				path.set("stroke_width", new ist.Cell({str: "1"}));
+				path.set("path", new ist.Cell({str: "'M24.132,7.971c-2.203-2.205-5.916-2.098-8.25,0.235L15.5,8.588l-0.382-0.382c-2.334-2.333-6.047-2.44-8.25-0.235c-2.204,2.203-2.098,5.916,0.235,8.249l8.396,8.396l8.396-8.396C26.229,13.887,26.336,10.174,24.132,7.971z'"}));
+				path.set("transform", new ist.Cell({str: "''"}));
+				path.set("animated_properties", new ist.Cell({str: "false"}));
+				path.set("animation_duration", new ist.Cell({str: "300"}));
+				path.set("animation_easing", new ist.Cell({str: "'linear'"}));
+
+				var group = new ist.Dict({has_protos: false, direct_attachments: [new ist.GroupAttachment()]});
+				shape.set("group", group);
+				group.set("show", new ist.Cell({str: "true"}));
+			}
+
+			if(builtins === true || (_.indexOf(builtins, "dom") >= 0)) {
+			/*
+				var child_nodes = new ist.Dict({has_protos: false});
+				root_dict.set("child_nodes", child_nodes);
+				var dom = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+				root_dict.set("dom", dom);
+				dom.set("tag", new ist.Cell({str: "'div'"}));
+				*/
+			}
+
+			if(builtins === true || (_.indexOf(builtins, "functions") >= 0)) {
+				root_dict.set("on", ist.on_event);
+				root_dict.set("find", ist.find_fn);
+				root_dict.set("emit", ist.emit);
+			}
 		};
 
 		proto.default_return_value = function () {

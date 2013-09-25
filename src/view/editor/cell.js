@@ -66,7 +66,7 @@
 	};
 	var func_regex = new RegExp("^\\s*function\\s*\\((\\s*[a-zA-Z$][\\w\\$]*\\s*,)*\\s*([a-zA-Z$][\\w\\$]*\\s*)?\\)\\s*{.*}\\s*$");
 
-	$.widget("ist.prop_cell", {
+	$.widget("interstate.prop_cell", {
 		options: {
 			value: false,
 			left: 0,
@@ -286,7 +286,7 @@
 		}
 	});
 
-	$.widget("ist.unset_prop", {
+	$.widget("interstate.unset_prop", {
 		options: {
 			left: 0,
 			radius: 7,

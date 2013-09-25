@@ -507,6 +507,12 @@
     
         this._transition = this._options.transition;
         this._statechart = this._options.statechart;
+        if (this._transition.basis && this._transition.basis()) {
+            this._transition = this._transition.basis();
+        }
+        if (this._statechart.basis && this._statechart.basis()) {
+            this._statechart = this._statechart.basis();
+        }
     };
     
     (function (My) {
@@ -555,6 +561,12 @@
     
         this._transition = this._options.transition;
         this._statechart = this._options.statechart;
+        if (this._transition.basis && this._transition.basis()) {
+            this._transition = this._transition.basis();
+        }
+        if (this._statechart.basis && this._statechart.basis()) {
+            this._statechart = this._statechart.basis();
+        }
     };
     
     (function (My) {

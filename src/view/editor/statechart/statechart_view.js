@@ -6,7 +6,7 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	$.widget("ist.statechart", {
+	$.widget("interstate.statechart", {
 		options: {
 			transition_font_family: "Source Sans Pro",
 			transition_font_size: "10px",

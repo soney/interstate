@@ -1,6 +1,7 @@
 /*jslint nomen: true, vars: true */
 /*global interstate,esprima,able,uid,console */
 
+
 (function (ist) {
 	"use strict";
 	var cjs = ist.cjs,

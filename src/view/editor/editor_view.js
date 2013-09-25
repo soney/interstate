@@ -30,7 +30,8 @@
 			client_id: "",
 			single_col_navigation: display === "phone" || display === "tablet",
 			view_type: display,
-			annotations: {}
+			annotations: {},
+			upload_usage: !ist.__debug
 		},
 
 		_create: function () {
@@ -64,6 +65,43 @@
 			$(window).on("beforeunload.close_editor", _.bind(function () {
 				this.on_unload();
 			}, this));
+			if(this.option("upload_usage")) {
+				this.element.on("child_select.upload", _.bind(function(event, info) {
+								this.upload_event({
+									type: "navigate",
+									value: info.name
+								});
+							}, this))
+							.on("header_click.upload", _.bind(function(event, col) {
+								if(col && col.option) {
+									this.upload_event({
+										type: "navigate",
+										value: col.option("name")
+									});
+								}
+								//this.upload_event(event);
+							}, this));
+
+			}
+		},
+
+		upload_event: function(event) {
+			try {
+				$.ajax({
+					url: "http://interstate.from.so/user_study/upload.php",
+					type: "POST",
+					dataType: "text",
+					data: {
+						type: event.type,
+						value: event.value
+					},
+					success: function(data) {
+						//console.log(data);
+					}
+				});
+			} catch(e) {
+				console.error(e);
+			}
 		},
 
 		get_client_socket: function() {
@@ -135,6 +173,7 @@
 		on_command: function(event) {
 			var type = event.command_type;
 			var client, name, value, command, state, transition, statechart_puppet_id, parent_puppet_id;
+			var command_str;
 
 			if(type === "add_property") {
 				client = event.client;
@@ -160,7 +199,7 @@
 					value: value,
 					index: 0
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 
@@ -175,7 +214,7 @@
 					from: event.from_name,
 					to: event.to_name
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -190,7 +229,7 @@
 					name: prop_name
 					//value: { id: to_func(value.cobj_id) }
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -201,7 +240,7 @@
 					parent: { id: to_func(client.obj_id) },
 					name: event.name
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -216,7 +255,7 @@
 					state: { id: to_func(state.cobj_id) },
 					value: value
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 					value.destroy();
@@ -231,7 +270,7 @@
 					stateful_prop: { id: to_func(client.obj_id) },
 					state: { id: to_func(state.cobj_id) }
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -244,7 +283,7 @@
 					cell: { id: to_func(client.cobj_id || client.obj_id) },
 					str: value
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -276,7 +315,7 @@
 					make_start: make_start
 				});
 
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -289,7 +328,7 @@
 					statechart: { id: to_func(parent_puppet_id) },
 					name: name
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -301,7 +340,7 @@
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart.puppet_master_id || transition.id()) }
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -326,7 +365,7 @@
 					value: value,
 					name: name
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 					value.destroy();
@@ -347,7 +386,7 @@
 					event: event,
 					statechart: { id: to_func(statechart_puppet_id) }
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 					event.destroy();
@@ -362,7 +401,7 @@
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart_puppet_id) }
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -375,7 +414,7 @@
 					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
 					statechart: { id: to_func(statechart_puppet_id) }
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -390,7 +429,7 @@
 					from: old_name,
 					to: new_name
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -403,7 +442,7 @@
 					transition: { id: to_func(transition_id) },
 					event: str
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -415,7 +454,7 @@
 					parent: { id: to_func(client.obj_id) },
 					value: value
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -425,7 +464,7 @@
 					in_effect: true,
 					parent: { id: to_func(client.cobj_id) }
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -437,7 +476,7 @@
 					statechart: { id: to_func(state_puppet_id) },
 					concurrent: event.concurrent
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
@@ -456,12 +495,18 @@
 					target_name: target_name,
 					above_below: above_below
 				});
-				this.client_socket.post_command(command, function() {
+				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
 				});
 			} else {
 				console.log("Unhandled type " + type);
+			}
+			if(this.option("upload_usage")) {
+				this.upload_event({
+					type: "command",
+					value: command_str
+				});
 			}
 		},
 
@@ -488,6 +533,9 @@
 			this._super();
 			this.navigator.off("command.do_action");
 			this.on_unload();
+			if(this.option("upload_usage")) {
+				this.element.off("command.upload child_select.upload header_click.upload");
+			}
 			$(window)	.off("beforeunload.close_editor")
 						.off("keydown.editor_undo_redo");
 		},

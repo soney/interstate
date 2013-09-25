@@ -6,13 +6,15 @@
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
-	$.widget("ist.tutorial_running_app", {
+	$.widget("interstate.tutorial_running_app", {
 		options: {
 			pages: [],
 			page_no: 0
 		},
 		_create: function() {
 			this.env = new ist.Environment();
+			this.env.set("width", "100+400")
+			this.env.set("height", "width/2")
 			this.app = $("<div />")	.appendTo(this.element)
 									.dom_output({
 										root: this.env.get_root(),
@@ -20,10 +22,15 @@
 									});
 			//hide the output for now
 			$("svg").hide();
-			this.get_started_message = $("<div />")	.html("Click <span style='font-variant: small-caps'>edit</span> in the top right of this window to start the tutorial")
+			this.get_started_message = $("<div />")	.html("click <span style='font-variant: small-caps'>edit</span> in the top right corner <br /> of this window to start the tutorial")
 													.appendTo(this.element)
 													.css({
-														"font-size": "2em"
+														"font-size": "2em",
+														"text-align": "center",
+														"font-family": '"HelveticaNeue-UltraLight", "Helvetica Neue Ultra Light", "Helvetica Neue", Helvetica',
+														"font-weight": "100",
+														"padding-top": "30px",
+														"color": "#464646"
 													});
 			this.$on_editor_open = $.proxy(this.on_editor_open, this);
 			this.app.on("editor_open", this.$on_editor_open);

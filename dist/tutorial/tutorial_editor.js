@@ -6,7 +6,7 @@
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
-	$.widget("ist.tutorial_editor", {
+	$.widget("interstate.tutorial_editor", {
 		options: {
 			pages: [],
 			root: null,
@@ -15,20 +15,23 @@
 		_create: function() {
 			this.editor = $("<div />")	.appendTo(this.element)
 										.editor({ });
+			this.instructions_table = $("<table />").addClass("instructions")
+													.appendTo(this.element);
+			
+			this.instructions_row = $("<tr />").appendTo(this.instructions_table);
 
-			this.instructions = $("<div />").addClass("instructions")
-											.appendTo(this.element);
-			this.instruction_content = $("<div />")	.addClass("content")
-													.appendTo(this.instructions);
-			this.prev_button = $("<a />")	.attr("href", "javascript:void(0)")
-											.text("prev")
+			//this.instructions = $("<div />").addClass("instructions")
+											//.appendTo(this.element);
+			this.prev_button = $("<td />")	.text("prev")
 											.addClass("prev")
-											.appendTo(this.instructions)
+											.appendTo(this.instructions_row)
 											.on("click", $.proxy(this.prev, this));
-			this.next_button = $("<a />")	.attr("href", "javascript:void(0)")
-											.text("next")
+			this.content_cell = $("<td />")	.addClass("content")
+											.appendTo(this.instructions_row);
+			this.instruction_content = $("<div />").appendTo(this.content_cell);
+			this.next_button = $("<td />")	.text("next")
 											.addClass("next")
-											.appendTo(this.instructions)
+											.appendTo(this.instructions_row)
 											.on("click", $.proxy(this.next, this));
 
 			this.client_socket = this.editor.editor("get_client_socket");
@@ -80,7 +83,7 @@
 			}
 			if(page_index === pages.length-1) {
 				this.next_button.text("done").on("click.done", $.proxy(function() {
-					this.instructions.hide();
+					this.instructions_table.hide();
 				}, this));
 			} else {
 				this.next_button.text("next").off("click.done");

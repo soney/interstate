@@ -11,7 +11,7 @@
 		EDITING: {}
 	};
 
-	$.widget("ist.editable_text", {
+	$.widget("interstate.editable_text", {
 		options: {
 			text: "",
 			placeholder_text: "",
@@ -77,6 +77,8 @@
 		},
 
 		confirm: function() {
+			var old_value = this.option("text");
+
 			var value = this.textbox.val();
 			if(value !== this.option("text")) {
 				var event = new $.Event("text_change");
@@ -89,14 +91,26 @@
 			this.textbox.remove();
 			this.set_state(STATE.IDLE);
 			this.update_static_text();
-			this.element.trigger("done_editing");
+
+			var de_event = new $.Event("done_editing");
+			de_event.from_str = old_value;
+			de_event.to_str = de_event.str = value;
+
+			this.element.trigger(de_event);
 		},
 
 		cancel: function() {
 			this.textbox.remove();
 			this.set_state(STATE.IDLE);
 			this.update_static_text();
-			this.element.trigger("done_editing");
+
+			var str = this.option("text");
+
+			var de_event = new $.Event("done_editing");
+			de_event.from_str = str;
+			de_event.to_str = de_event.str = str;
+
+			this.element.trigger(de_event);
 		},
 
 		get_state: function() {
