@@ -1,6 +1,6 @@
 {
-	"name": "Interstate",
-	"description": "An editor for creating interactive behaviors.",
+	"name": "InterState",
+	"description": "An editor for creating interactive applications.",
 	"version": "0.1.0",
 	"author": "Stephen Oney (Carnegie Mellon)",
 	"maintainers": [{
