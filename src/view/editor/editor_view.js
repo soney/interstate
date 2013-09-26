@@ -31,7 +31,7 @@
 			single_col_navigation: display === "phone" || display === "tablet",
 			view_type: display,
 			annotations: {},
-			upload_usage: !ist.__debug
+			upload_usage: false
 		},
 
 		_create: function () {
