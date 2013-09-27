@@ -28,14 +28,14 @@
 				display: inline-block;
 				width: 150px;
 			}
-			a {
+			li a {
 				text-decoration: none;
 				color: #A00;
 				display: block;
 				padding-top: 20px;
 				padding-bottom: 10px;
 			}
-			a:hover {
+			li a:hover {
 				background-color: #A00;
 				color: white;
 			}
@@ -44,17 +44,32 @@
 				margin-top: 40px;
 				color: #333;
 			}
+			p {
+				text-align: justify;
+				max-width: 800px;
+				margin: auto;
+				margin-bottom:25px;
+			}
+			a {
+				color: #A00;
+				text-decoration: none;
+			}
 		</style>
 	</head>
 	<body>
 		<div class="hero"><img src='images/interstate_logo.png' alt='InterState Logo'/></div>
 		<ul>
-			<li><a href="http://from.so/papers/OneyCHI14v23-SUBMITTED.pdf">Paper</a></li>
+			<li><a href="http://from.so/papers/OneyCHI14v24.pdf">Paper</a></li>
 			<li><a href="tutorial/">Tutorial</a></li>
 			<li><a href="gallery/">Examples</a></li>
 			<li><a href="https://github.com/soney/interstate">Source</a></li>
 			<li><a href="playground.html">Editor</a></li>
 		</ul>
-		<div class="smalltext">Sorry for the minimal website. I figured if you know enouh to visit this (unpublished) site, you probably know what you're doing.</div>
+		<div class="content">
+			<h4>Abstract</h4>
+			<p class="abstract">The event-callback programming model used by most GUI development frameworks frequently leads to disorganized and hard-to-maintain code. We believe there is significant value in designing language primitives that expressly address the challenges of writing and re-using GUI code. To explore this, we created InterState, a language and programming environment for expressing interactive behaviors in graphical applications. With InterState, programmers express behaviors declaratively as combinations of states and constraints. InterState introduces new primitives for defining and re-using behaviors, a visual notation for these primitives, and a live editor. We conducted a laboratory study to evaluate InterState's usability and found that participants were faster at understanding and modifying GUI components written in InterState than in event-callback code. Additionally, to better understand InterState's scope and expressiveness, we used it to implement a series of full-featured interfaces.</p>
+			<iframe width="420" height="315" src="//www.youtube.com/embed/06FjH7dM7-8" frameborder="0" allowfullscreen></iframe>
+		</div>
+		<div class="smalltext">InterState development is ongoing. Please e-mail <a href="mailto:soney@cs.cmu.edu">Stephen Oney</a> for more information.</div>
 	</body>
 </html>
