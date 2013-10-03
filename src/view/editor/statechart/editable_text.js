@@ -19,7 +19,7 @@
 		textbox.style.fontFamily = text.attr("font-family");
 		textbox.style.fontWeight = text.attr("font-weight");
 		textbox.style.fontStyle = text.attr("font-style");
-		textbox.style.fontSize = text.attr("font-size");
+		textbox.style.fontSize = text.attr("font-size") + "px";
 		var box = text.getBBox();
 		textbox.style.top = box.y + "px";
 		textbox.style.outline = "none";

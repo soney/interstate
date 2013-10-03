@@ -95,7 +95,7 @@
 			error_background: "#900",
 			error_foreground: "white",
 			font_family: "Sourse Sans Pro",
-			font_size: "13px",
+			font_size: 14,
 			padding_top: 0,
 			paper_height: 9999,
 			vline_color: "#CCC",

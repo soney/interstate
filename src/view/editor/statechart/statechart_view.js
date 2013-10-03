@@ -9,14 +9,14 @@
 	$.widget("interstate.statechart", {
 		options: {
 			transition_font_family: "Source Sans Pro",
-			transition_font_size: "10px",
+			transition_font_size: 12,
 			transition_arrow_color: "#000",
 			transition_text_background_color: "#FFF",
 			transition_text_color: "#000",
 			active_transition_color: "#007000",
 
 			state_font_family: "Source Sans Pro",
-			state_font_size: "12px",
+			state_font_size: 13,
 			state_text_background_color: "#FFF",
 			state_text_color: "#000",
 			state_fill: "#EEE",
@@ -419,8 +419,25 @@
 			this.live_layout.run();
 		};
 		proto.on_awaiting_state_selection = function(event) {
+			if(this._awaiting_state_selection) {
+				this._awaiting_state_selection();
+			}
 			var states = event.states,
 				on_select = event.on_select;
+			var select_obj_text = this.paper.text(this.paper.width/2, 10, "(click a destination state)")
+											.attr({
+												"font-size": 16,
+												"fill": '#777',
+												"font-family": "Source Sans Pro"
+											})
+			var bbox = select_obj_text.getBBox();
+			var select_obj_bg = this.paper	.rect(bbox.x-3, bbox.y-3, bbox.width+6, bbox.height+6)
+											.attr({
+												"stroke": "none",
+												"fill": "white",
+												"opacity": 0.7
+											});
+			select_obj_text.toFront();
 			var on_keydown = function(e) {
 				if(e.keyCode === 27) { //esc
 					unmake_selectable();
@@ -430,13 +447,16 @@
 
 			var state_views = _.map(states, this.get_view, this);
 
-			var unmake_selectable = _.bind(function() {
+			var unmake_selectable = this._awaiting_state_selection = _.bind(function() {
+				select_obj_text.remove();
+				select_obj_bg.remove();
 				$(window).off("keydown.awaiting_state_selection");
 				_.each(state_views, function(view) {
 					view.unmake_selectable();
 				});
 				on_select = state_views = states = null;
-			});
+				delete this._awaiting_state_selection;
+			}, this);
 
 			_.each(states, function(state, i) {
 				state_views[i].make_selectable(function() {

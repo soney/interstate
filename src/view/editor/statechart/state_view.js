@@ -26,7 +26,7 @@
 			text_foreground: "black",
 			text_background: "white",
 			font_family: "Source Sans Pro",
-			font_size: "12px",
+			font_size: 12,
 			padding_top: 0,
 			paper_height: 9999,
 			vline_color: "#CCC",
@@ -371,8 +371,27 @@
 			}
 			this._selectable_callback = callback;
 			this.path.click(this._selectable_callback);
+			var even = false;
+			var interval_time = 500;
+			this.change_color_interval = window.setInterval(_.bind(function() {
+				if(even) {
+					this.path.animate({
+						"fill": this.option("selectable_fill")
+					}, interval_time);
+				} else {
+					this.path.animate({
+						"fill": "#888"
+					}, interval_time);
+				}
+				even = !even;
+			}, this), interval_time);
 		};
 		proto.unmake_selectable = function() {
+			if(this.change_color_interval) {
+				this.path.stop();
+				window.clearInterval(this.change_color_interval);
+				delete this.change_color_interval;
+			}
 			if(this._selectable_callback) {
 				this.path.unclick(this._selectable_callback);
 				delete this._selectable_callback;
