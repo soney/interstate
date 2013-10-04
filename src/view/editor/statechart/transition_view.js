@@ -103,10 +103,10 @@
 			enabled_dasharray: "",
 			disabled_dasharray: ". "
 		}, options);
-
-
 		var paper = this.option("paper");
 		var paths = this.get_paths();
+
+		this.arrow = new ist.ArrowView();
 
 		this.line_path = paper.path(paths.line.path);
 		this.line_path.attr({
@@ -517,4 +517,69 @@
 			able.destroy_this_optionable(this);
 		};
 	}(ist.TransitionView));
+
+	ist.ArrowView = function (options) {
+		able.make_this_listenable(this);
+		able.make_this_optionable(this, {
+			paper: null,
+			from: {x: 0, y: 0},
+			to: {x: 0, y: 0},
+			arrowLength: 8,
+			radius: 1,
+			arrowAngle: 20,
+			self_pointing_theta: 40,
+			color: "black",
+			active_color: "green",
+			enabled_dasharray: "",
+			disabled_dasharray: ". "
+		}, options);
+		var paper = this.option("paper");
+		this.line_path = paper.path(paths.line.path);
+		this.line_path.attr({
+			stroke: this.option("color")
+		});
+		this.arrow_path = paper.path(paths.arrow.path);
+		this.arrow_path.attr({
+			fill: this.option("color"),
+			stroke: "none"
+		});
+		this.circle = paper.circle(paths.circle.cx, paths.circle.cy, paths.circle.r);
+		this.circle.attr({
+			fill: this.option("color"),
+			stroke: "none"
+		});
+	};
+	(function (My) {
+		var proto = My.prototype;
+		able.make_proto_listenable(proto);
+		able.make_proto_optionable(proto);
+		proto._on_options_set = function (values) {
+			this.line_path.attr("path", paths.line.path);
+			this.arrow_path.attr("path", paths.arrow.path);
+			var event = transition.event();
+			var from = this.option("from");
+			var c = center(from, this.option("to"));
+			this.label.option({
+				x: c.x,
+				y: c.y + 8
+			});
+			this.circle.attr({
+				cx: paths.circle.cx,
+				cy: paths.circle.cy,
+				r: paths.circle.r
+			});
+			this.update_menu_position();
+			this.vline	.attr({
+							path: "M" + from.x + "," + from.y + "V" + paper_height
+						})
+						.toBack();
+		};
+		proto.toFront = function() {
+			this.line_path.toFront();
+			this.circle.toFront();
+			this.arrow_path.toFront();
+			this.vline.toFront();
+			this.label.toFront();
+		};
+	}(ist.ArrowView));
 }(interstate, jQuery));
