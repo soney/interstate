@@ -84,10 +84,6 @@
 			paper: null,
 			from: {x: 0, y: 0},
 			to: {x: 0, y: 0},
-			arrowLength: 8,
-			radius: 1,
-			arrowAngle: 20,
-			self_pointing_theta: 40,
 			color: "black",
 			active_color: "green",
 			text_background: "white",
@@ -100,29 +96,19 @@
 			paper_height: 9999,
 			vline_color: "#CCC",
 			vline_dasharray: ". ",
-			enabled_dasharray: "",
-			disabled_dasharray: ". "
 		}, options);
 		var paper = this.option("paper");
-		var paths = this.get_paths();
 
-		this.arrow = new ist.ArrowView();
-
-		this.line_path = paper.path(paths.line.path);
-		this.line_path.attr({
-			stroke: this.option("color")
-		});
-		this.arrow_path = paper.path(paths.arrow.path);
-		this.arrow_path.attr({
-			fill: this.option("color"),
-			stroke: "none"
-		});
-		this.circle = paper.circle(paths.circle.cx, paths.circle.cy, paths.circle.r);
-		this.circle.attr({
-			fill: this.option("color"),
-			stroke: "none"
+		this.arrow = new ist.ArrowView({
+			paper: paper,
+			color: this.option("color"),
+			active_color: this.option("active_color"),
+			transition: this.option("transition"),
+			from: this.option("from"),
+			to: this.option("to")
 		});
 		var transition = this.option("transition");
+
 		var event = transition.event();
 		var str = "";
 		if (event instanceof ist.ParsedEvent) {
@@ -185,29 +171,12 @@
 								"stroke-dasharray": this.option("vline_dasharray")
 							})
 							.toBack();
-		this.$clickable = $([this.label.text[0], this.line_path[0], this.circle[0], this.arrow_path[0]]);
+		this.$clickable = $([this.label.text[0], this.label.label_background[0], this.arrow.line_path[0], this.arrow.circle[0], this.arrow.arrow_path[0]]);
 		this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
 
 		$(this.label.text[0]).tooltip({
 			tooltipClass: "error"
 		});
-
-		if(highlight_enabled) {
-			this.enabled_fn = cjs.liven(function () {
-				var transition = this.option("transition");
-				if (transition.is_initialized() && transition.get_$enabled()) {
-					if (this.line_path) {
-						this.line_path.attr("stroke-dasharray", this.option("enabled_dasharray"));
-					}
-				} else {
-					if (this.line_path) {
-						this.line_path.attr("stroke-dasharray", this.option("disabled_dasharray"));
-					}
-				}
-			}, {
-				context: this
-			});
-		}
 	};
 
 	(function (My) {
@@ -215,11 +184,9 @@
 		able.make_proto_listenable(proto);
 		able.make_proto_optionable(proto);
 		proto._on_options_set = function (values) {
+			this.arrow.option(values);
 			var transition = this.option("transition");
 			var paper_height = this.option("paper_height");
-			var paths = this.get_paths();
-			this.line_path.attr("path", paths.line.path);
-			this.arrow_path.attr("path", paths.arrow.path);
 			var event = transition.event();
 			var from = this.option("from");
 			var c = center(from, this.option("to"));
@@ -227,22 +194,11 @@
 				x: c.x,
 				y: c.y + 8
 			});
-			this.circle.attr({
-				cx: paths.circle.cx,
-				cy: paths.circle.cy,
-				r: paths.circle.r
-			});
 			this.update_menu_position();
-			this.vline	.attr({
-							path: "M" + from.x + "," + from.y + "V" + paper_height
-						})
-						.toBack();
 		};
 
 		proto.toFront = function() {
-			this.line_path.toFront();
-			this.circle.toFront();
-			this.arrow_path.toFront();
+			this.arrow.toFront();
 			this.vline.toFront();
 			this.label.toFront();
 		};
@@ -259,66 +215,8 @@
 			return str;
 		};
 
-		proto.get_paths = function () {
-			var from = this.option("from"),
-				to = this.option("to"),
-				self_pointing_theta = this.option("self_pointing_theta"),
-				radius = this.option("radius"),
-				arrowLength = this.option("arrowLength"),
-				arrowAngleRadians = this.option("arrowAngle") * Math.PI / 180;
-			
-			return get_arrow_paths(from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians);
-		};
-
-		var anim_time = 400;
 		proto.flash = function () {
-			var paper = this.option("paper");
-			var this_option_color = this.option("color");
-			var this_option_active_color = this.option("active_color");
-			var line_elem = this.line_path;
-			var arrow = this.arrow_path;
-			var len = line_elem.getTotalLength();
-
-			this.circle.attr({
-				r: this.option("radius") * 4,
-				fill: this_option_active_color
-			});
-			this.circle.animate({
-				fill: this_option_color,
-				r: this.option("radius")
-			}, anim_time);
-
-			var the_flash = paper.path(line_elem.getSubpath(0, 0));
-			the_flash.attr({
-				stroke: this_option_active_color,
-				"stroke-width": 3,
-				guide: line_elem,
-				along: [0, 0]
-			});
-
-			var flash_1_to_0_anim = Raphael.animation({
-												path: line_elem.getSubpath(4 * len / 4.1, len)
-											}, anim_time/2, "ease-out", function() {
-												the_flash.remove();
-											});
-			var reset_arrow_color_anim = Raphael.animation({
-												fill: this_option_color
-											}, anim_time/2, "ease_out");
-
-			var flash_0_to_1_anim = Raphael.animation({
-												path: line_elem.getSubpath(0, len)
-											}, anim_time/2, "ease-in", function() {
-												if(paper.height === null) { // we were deleted
-													return;
-												} else if(arrow[0] === null) {
-													the_flash.remove();
-													return;
-												}
-												arrow.attr({"fill": this_option_active_color});
-												the_flash.animate(flash_1_to_0_anim);
-												arrow.animate(reset_arrow_color_anim);
-											});
-			the_flash.animate(flash_0_to_1_anim);
+			this.arrow.flash();
 		};
 
 		proto.show_menu = function(event) {
@@ -479,11 +377,9 @@
 		};
 
 		proto.remove = function () {
+			this.arrow.remove();
 			this.vline.remove();
 			this.label.remove();
-			this.circle.remove();
-			this.line_path.remove();
-			this.arrow_path.remove();
 			if(this.edit_dropdown) {
 				this.edit_dropdown.remove();
 				delete this.edit_dropdown;
@@ -491,6 +387,7 @@
 		};
 
 		proto.destroy = function () {
+			this.arrow.destroy();
 			if($(this.label.text[0]).data("ui-tooltip")) {
 				$(this.label.text[0]).tooltip("destroy");
 			}
@@ -534,6 +431,7 @@
 			disabled_dasharray: ". "
 		}, options);
 		var paper = this.option("paper");
+		var paths = this.get_paths();
 		this.line_path = paper.path(paths.line.path);
 		this.line_path.attr({
 			stroke: this.option("color")
@@ -548,38 +446,119 @@
 			fill: this.option("color"),
 			stroke: "none"
 		});
+
+		if(highlight_enabled) {
+			this.enabled_fn = cjs.liven(function () {
+				var transition = this.option("transition");
+				if (transition.is_initialized() && transition.get_$enabled()) {
+					if (this.line_path) {
+						this.line_path.attr("stroke-dasharray", this.option("enabled_dasharray"));
+					}
+				} else {
+					if (this.line_path) {
+						this.line_path.attr("stroke-dasharray", this.option("disabled_dasharray"));
+					}
+				}
+			}, {
+				context: this
+			});
+		}
 	};
 	(function (My) {
 		var proto = My.prototype;
 		able.make_proto_listenable(proto);
 		able.make_proto_optionable(proto);
+
+		proto.get_paths = function () {
+			var from = this.option("from"),
+				to = this.option("to"),
+				self_pointing_theta = this.option("self_pointing_theta"),
+				radius = this.option("radius"),
+				arrowLength = this.option("arrowLength"),
+				arrowAngleRadians = this.option("arrowAngle") * Math.PI / 180;
+			
+			return get_arrow_paths(from, to, self_pointing_theta, radius, arrowLength, arrowAngleRadians);
+		};
+
 		proto._on_options_set = function (values) {
+			var paths = this.get_paths();
 			this.line_path.attr("path", paths.line.path);
 			this.arrow_path.attr("path", paths.arrow.path);
-			var event = transition.event();
 			var from = this.option("from");
-			var c = center(from, this.option("to"));
-			this.label.option({
-				x: c.x,
-				y: c.y + 8
-			});
 			this.circle.attr({
 				cx: paths.circle.cx,
 				cy: paths.circle.cy,
 				r: paths.circle.r
 			});
-			this.update_menu_position();
-			this.vline	.attr({
-							path: "M" + from.x + "," + from.y + "V" + paper_height
-						})
-						.toBack();
 		};
 		proto.toFront = function() {
 			this.line_path.toFront();
 			this.circle.toFront();
 			this.arrow_path.toFront();
-			this.vline.toFront();
-			this.label.toFront();
+		};
+		var anim_time = 400;
+		proto.flash = function () {
+			var paper = this.option("paper");
+			var this_option_color = this.option("color");
+			var this_option_active_color = this.option("active_color");
+			var line_elem = this.line_path;
+			var arrow = this.arrow_path;
+			var len = line_elem.getTotalLength();
+
+			this.circle.attr({
+				r: this.option("radius") * 4,
+				fill: this_option_active_color
+			});
+			this.circle.animate({
+				fill: this_option_color,
+				r: this.option("radius")
+			}, anim_time);
+
+			var the_flash = paper.path(line_elem.getSubpath(0, 0));
+			the_flash.attr({
+				stroke: this_option_active_color,
+				"stroke-width": 3,
+				guide: line_elem,
+				along: [0, 0]
+			});
+
+			var flash_1_to_0_anim = Raphael.animation({
+												path: line_elem.getSubpath(4 * len / 4.1, len)
+											}, anim_time/2, "ease-out", function() {
+												the_flash.remove();
+											});
+			var reset_arrow_color_anim = Raphael.animation({
+												fill: this_option_color
+											}, anim_time/2, "ease_out");
+
+			var flash_0_to_1_anim = Raphael.animation({
+												path: line_elem.getSubpath(0, len)
+											}, anim_time/2, "ease-in", function() {
+												if(paper.height === null) { // we were deleted
+													return;
+												} else if(arrow[0] === null) {
+													the_flash.remove();
+													return;
+												}
+												arrow.attr({"fill": this_option_active_color});
+												the_flash.animate(flash_1_to_0_anim);
+												arrow.animate(reset_arrow_color_anim);
+											});
+			the_flash.animate(flash_0_to_1_anim);
+		};
+		proto.remove = function () {
+			this.circle.remove();
+			this.line_path.remove();
+			this.arrow_path.remove();
+		};
+
+		proto.destroy = function () {
+			if(this.enabled_fn) {
+				this.enabled_fn.destroy();
+			}
+
+			able.destroy_this_listenable(this);
+			able.destroy_this_optionable(this);
 		};
 	}(ist.ArrowView));
 }(interstate, jQuery));
