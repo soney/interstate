@@ -152,11 +152,11 @@
 						});
 					} else {
 						this.element.removeClass("error");
-						//this.element.attr("title", this.str);
-						this.element.attr("title", "");
+						this.element.attr("title", this.str);
+						//this.element.attr("title", "");
 						this.element.tooltip("option", {
-							tooltipClass: "",
-							content: ""
+							tooltipClass: "cell_text",
+							content: this.str
 						});
 					}
 				}, {
