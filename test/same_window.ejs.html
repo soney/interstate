@@ -24,8 +24,9 @@
 							.add_state("init")
 							.add_state("clicked")
 							.start_at("init")
+							.add_transition("init", "clicked", "on('click', this)")
+							.add_transition("clicked", "init", "on('click', this)")
 							.set("(prototypes)", "(start)", "shape.rect")
-							.set_copies("4")
 							.up()
 
 				/*

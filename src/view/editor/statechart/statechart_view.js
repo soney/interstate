@@ -423,7 +423,8 @@
 				this._awaiting_state_selection();
 			}
 			var states = event.states,
-				on_select = event.on_select;
+				on_select = event.on_select,
+				on_cancel = event.on_cancel;
 			var select_obj_text = this.paper.text(this.paper.width/2, 10, "(click a destination state)")
 											.attr({
 												"font-size": 16,
@@ -440,6 +441,7 @@
 			select_obj_text.toFront();
 			var on_keydown = function(e) {
 				if(e.keyCode === 27) { //esc
+					on_cancel();
 					unmake_selectable();
 				}
 			};
@@ -450,7 +452,7 @@
 			var unmake_selectable = this._awaiting_state_selection = _.bind(function() {
 				select_obj_text.remove();
 				select_obj_bg.remove();
-				$(window).off("keydown.awaiting_state_selection");
+				$(window).off("keydown.awaiting_state_selection mousedown.cancel_state_selection");
 				_.each(state_views, function(view) {
 					view.unmake_selectable();
 				});
@@ -463,6 +465,15 @@
 					on_select(states[i]);
 					unmake_selectable();
 				});
+			});
+			var this_element = $(this.paper.canvas.parentNode);
+			$(window).on("mousedown.cancel_state_selection", function(event) {
+				if(this_element.has(event.target).length === 0) {
+					on_cancel();
+					unmake_selectable();
+					event.preventDefault();
+					event.stopPropagation();
+				}
 			});
 		};
 		proto.remove = function () {

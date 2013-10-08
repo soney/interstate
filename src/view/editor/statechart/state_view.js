@@ -235,7 +235,35 @@
 			var selectable_substates = flat_statecharts.splice(0, flat_statecharts.length-1); // the first element is the major statechart itself
 			this._emit("awaiting_state_selection", {
 				states: selectable_substates,
-				on_select: _.bind(this.add_transition_to_state, this)
+				on_select: _.bind(function() {
+								this.add_transition_to_state.apply(this, arguments)
+								$(window).off("mousemove.update_display_arrow");
+								arrow_disp.remove();
+								arrow_disp.destroy();
+							}, this),
+				on_cancel: _.bind(function() {
+								$(window).off("mousemove.update_display_arrow");
+								arrow_disp.remove();
+								arrow_disp.destroy();
+							}, this)
+			});
+
+			var paper = this.option("paper"),
+				lwe = this.option("lwe"),
+				rwe = this.option("rwe");
+			var cx = (lwe.x + rwe.x) / 2
+			var cy = (this.option("padding_top") + lwe.y)/2
+
+			var arrow_disp = new ist.ArrowView({
+				paper: paper,
+				from: { x: cx, y: cy },
+				to: {x: cx, y: cy}
+			});
+			$(arrow_disp.arrow_path[0]).css("pointer-events", "none");
+			
+			$(window).on("mousemove.update_display_arrow", function(event) {
+				var offset = $(paper.canvas).offset();
+				arrow_disp.option("to", { x: event.clientX - offset.left, y: event.clientY - offset.top });
 			});
 		};
 		proto.on_add_substate_item_pressed = function() {

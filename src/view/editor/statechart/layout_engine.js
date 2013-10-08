@@ -145,6 +145,7 @@
 				STATE_LINE_PADDING_FACTOR = this.option("state_line_padding_factor"),
 				START_STATE_RADIUS = this.option("start_state_radius"),
 				PADDING_TOP = this.option("padding_top");
+			var statecharts_with_add_state_button = this.option("statecharts_with_add_state_button");
 
 			var sc_tree = this.get_statechart_tree();
 			var rows = [];
@@ -227,7 +228,9 @@
 						}
 						var x = t.from();
 						if (x === statechart) {
-							from_to.push({min_x: ri, max_x: ri, type: "self", transition: t});
+							if(!(statechart instanceof ist.StartState)) {
+								from_to.push({min_x: ri, max_x: ri, type: "self", transition: t});
+							}
 						} else {
 							if(x.parent_is_concurrent() && !ist.__debug_statecharts) {
 								return;

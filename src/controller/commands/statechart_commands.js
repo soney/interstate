@@ -129,7 +129,9 @@
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
-                this._state.destroy();
+				if(this._statechart && this._statechart.destroy) {
+					this._statechart.destroy();
+				}
                 _.forEach(this._transitions, function (transition) {
                     transition.destroy();
                 });
