@@ -128,6 +128,7 @@ html.full_window_editor {
 	> #obj_nav {
 		margin: 15px;
 		float: left;
+		clear: both;
 
 		> table.col {
 			border: 1px solid #CCC;
@@ -639,6 +640,11 @@ html.full_window_editor {
 			}
 		}
 	}
+	clear: both;
+}
+
+.pinned {
+	height: 500px;
 }
 
 .dropdown {

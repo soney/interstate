@@ -50,7 +50,12 @@
 			var client = this.option("client");
 			client.signal_interest();
 			this.element.addClass("col")
-						.attr("tabindex", 1);
+						.attr("tabindex", 1)
+						.attr("draggable", true)
+						.on("dragstart", function(event) {
+							console.log("Dragstart");
+							event.stopPropagation();
+						});
 
 			this.tbody = $("<tbody />")	.appendTo(this.element);
 			this.header = $("<tr />")	.appendTo(this.tbody)
@@ -569,6 +574,8 @@
 				}
 				this.selected_child_disp = child_disp;
 				this.selected_child_disp.prop("on_select");
+			} else {
+				console.log("OK");
 			}
 			this.element.trigger("child_select", child_info);
 		},

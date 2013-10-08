@@ -142,6 +142,9 @@
 											})
 											.on("command.do_action", _.bind(this.on_command, this));
 
+			this.pinned = $("<div />")	.appendTo(this.element)
+										.addClass("pinned");
+
 
 			$(window).on("keydown.editor_undo_redo", _.bind(function (event) {
 				if (event.keyCode === 90 && (event.metaKey || event.ctrlKey)) {
