@@ -127,8 +127,8 @@ html.full_window_editor {
 
 	> #obj_nav {
 		margin: 15px;
-		float: left;
 		clear: both;
+		overflow: hidden;
 
 		> table.col {
 			border: 1px solid #CCC;
@@ -640,11 +640,20 @@ html.full_window_editor {
 			}
 		}
 	}
-	clear: both;
 }
 
 .pinned {
-	height: 500px;
+	min-height: 100px;
+	border-top: 5px solid #BADA55;
+	bottom: 0px;
+	position: absolute;
+	width: 100%;
+	box-sizing: border-box;
+	background-color: white;
+	&.droppable {
+		min-height: 100px;
+		border: 10px solid #BADA55;
+	}
 }
 
 .dropdown {
