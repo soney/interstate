@@ -51,11 +51,14 @@
 			client.signal_interest();
 			this.element.addClass("col")
 						.attr("tabindex", 1)
-						.attr("draggable", true)
-						.on("dragstart", function(event) {
+						.attr("draggable", true);
+						/*
+						.on("dragstart.pin", _.bind(function(event) {
+							
 							console.log("Dragstart");
 							event.stopPropagation();
-						});
+						}, this));
+						*/
 
 			this.tbody = $("<tbody />")	.appendTo(this.element);
 			this.header = $("<tr />")	.appendTo(this.tbody)
@@ -545,7 +548,7 @@
 			this.obj_name.off("click.header_click").remove();
 			this.show_hide_options.off("click.show_hide_options").remove();
 			this.add_property_button.off("click.add_property").remove();
-			this.element.off("keydown.on_keydown");
+			this.element.off("keydown.on_keydown, dragstart.pin");
 
 			this.prev_button.off("click.on_click").remove();
 

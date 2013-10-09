@@ -145,6 +145,52 @@
 			this.pinned = $("<div />")	.appendTo(this.element)
 										.addClass("pinned");
 
+			this.element.on("dragstart.pin", _.bind(function(event) {
+				var targ = $(event.target);
+
+				var clear_drag_info = function() {
+					this.pinned.off("dragenter.pin dragleave.pin drop.pin")
+								.removeClass("dropover drop_indicator")
+								.text("");
+					targ.off("dragcancel.pin dragend.pin");
+				};
+
+				this.pinned	.text("drag here to pin")
+							.addClass("drop_indicator")
+							.on("dragenter.pin", _.bind(function(ev2) {
+								this.pinned.addClass("dropover");
+							}, this))
+							.on("dragover.pin", function() {
+								return false;
+							})
+							.on("dragleave.pin", _.bind(function(ev2) {
+								this.pinned.removeClass("dropover");
+							}, this))
+							.on("drop.pin", _.bind(function(ev2) {
+								$("table", this.pinned).column("destroy").remove();
+								clear_drag_info.call(this);
+								var pinned_col = $("<table />")	.appendTo(this.pinned)
+																.column({
+																	client: targ.column("option", "client"),
+																	name: targ.column("option", "name"),
+																	prev_col: false,
+																	show_prev: false,
+																	is_curr_col: true,
+																	show_source: true,
+																	curr_copy_client: targ.column("option", "curr_copy_client"),
+																	client_socket: targ.column("option", "client_socket"),
+																	selected_prop_name: false,
+																	curr_copy_index: targ.column("option", "curr_copy_index")
+																});
+								ev2.preventDefault();
+								ev2.stopPropagation();
+							}, this));
+
+				targ		.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
+								clear_drag_info.call(this);
+							}, this));
+			}, this));
+
 
 			$(window).on("keydown.editor_undo_redo", _.bind(function (event) {
 				if (event.keyCode === 90 && (event.metaKey || event.ctrlKey)) {

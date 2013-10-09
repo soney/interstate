@@ -715,6 +715,7 @@
 				delete this.live_cell_str_fn;
 			}
 			if(this.src_cell) {
+				this.src_cell.remove();
 				delete this.src_cell;
 			}
 		},
