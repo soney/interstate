@@ -139,13 +139,14 @@
 												root_client: root_client,
 												single_col: this.option("single_col_navigation"),
 												client_socket: this.client_socket 
-											})
-											.on("command.do_action", _.bind(this.on_command, this));
+											});
 
 			this.pinned = $("<div />")	.appendTo(this.element)
 										.addClass("pinned");
+			
+			this.element.on("command.do_action", _.bind(this.on_command, this));
 
-			this.element.on("dragstart.pin", _.bind(function(event) {
+			this.navigator.on("dragstart.pin", _.bind(function(event) {
 				var targ = $(event.target);
 
 				var clear_drag_info = function() {
@@ -174,7 +175,7 @@
 																	client: targ.column("option", "client"),
 																	name: targ.column("option", "name"),
 																	prev_col: false,
-																	show_prev: false,
+																	show_prev: true,
 																	is_curr_col: true,
 																	show_source: true,
 																	curr_copy_client: targ.column("option", "curr_copy_client"),
@@ -189,6 +190,9 @@
 				targ		.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
 								clear_drag_info.call(this);
 							}, this));
+			}, this));
+			this.pinned.on("dragstart.pin", _.bind(function(event) {
+				$("table", this.pinned).column("destroy").remove();
 			}, this));
 
 
