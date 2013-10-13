@@ -226,6 +226,7 @@
 			this.textbox.val(this.str);
 			this.focus();
 			this.select();
+			this.element.tooltip("disable");
 		},
 		unset: function() {
 			var event = new $.Event("command");
@@ -265,6 +266,7 @@
 				left: (left - width/2) + "px",
 				width: width + "px"
 			});
+			this.element.tooltip("enable");
 		},
 		focus: function() {
 			if(this.textbox) {

@@ -227,7 +227,9 @@
 				to: to_state
 			});
 		};
-		proto.on_add_transition_item_pressed = function() {
+		proto.on_add_transition_item_pressed = function(event) {
+			event.preventDefault();
+			event.stopPropagation();
 			this.remove_edit_dropdown();
 			var from_state = this.option("state");
 			var root = from_state.root();

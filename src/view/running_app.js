@@ -377,6 +377,23 @@
 					root.reset();
 				} else if (command === "export") {
 					window.open("data:text/plain;charset=utf-8," + ist.stringify(root));
+				} else if (command === "upload") {
+					$.ajax({
+						url: "http://interstate.from.so/gallery/upload.php",
+						type: "POST",
+						dataType: "text",
+						data: {
+							root: interstate.stringify(root),
+							name: interstate._.isString(name) ? name : "(no name)"
+						},
+						success: _.bind(function(url_id) {
+							var url = "http://interstate.from.so/gallery?id="+url_id;
+							this.server_socket.post({
+								type: "upload_url",
+								value: url
+							});
+						}, this)
+					});
 				} else {
 					this._command_stack._do(command);
 				}

@@ -588,7 +588,7 @@
 				this.selected_child_disp = child_disp;
 				this.selected_child_disp.prop("on_select");
 			} else {
-				console.log("OK");
+				//console.log("OK");
 			}
 			this.element.trigger("child_select", child_info);
 		},

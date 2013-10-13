@@ -81,12 +81,23 @@
 		set_percentage: function(index, percentage) {
 			var old_percentage = this.percentages[index];
 			var diff = percentage-old_percentage;
+			var zeroes = [];
+			var sum = 0;
 			for(var i = 0; i<this.percentages.length; i++) {
 				if(index === i) {
 					this.percentages[i] = percentage;
+					sum += percentage;
+				} else if(this.percentages[i] === 0) {
+					zeroes.push(i);
 				} else {
-					this.percentages[i] += diff/this.percentages[i];
+					this.percentages[i] -= diff*this.percentages[i]/(1-old_percentage);
+					sum += this.percentages[i];
 				}
+			}
+			var remaining_space = 1-sum;
+			var to_allocate = remaining_space / zeroes.length;
+			for(var i = 0; i<zeroes.length; i++) {
+				this.percentages[zeroes[i]] = to_allocate;
 			}
 			this._update_heights();
 		},

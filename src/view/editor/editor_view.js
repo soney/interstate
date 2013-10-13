@@ -56,6 +56,25 @@
 			}).on("message", function (data) {
 				if (data.type === "color") {
 					var color = data.value;
+				} else if(data.type === "upload_url") {
+					var url = data.value;
+					var code_container = $("<div />");
+					var qrcode = new QRCode(code_container[0], {
+						text: url,
+						width: 128,
+						height: 128,
+						colorDark : "#000000",
+						colorLight : "#ffffff",
+						correctLevel : QRCode.CorrectLevel.H
+					});
+					var alert = $("<div />").addClass("upload_url")
+											.appendTo(document.body)
+											.append(code_container, $("<a />").attr({"href": url, "target": "_blank"}).text(url));
+					$(window).on("mousedown.close_alert", function(event) {
+						if(!$(event.target).parents().is(alert)) {
+							alert.remove();
+						}
+					});
 				}
 			}, this).on("loaded", function (root_client) {
 				this.load_viewer(root_client);
@@ -85,25 +104,6 @@
 			}
 		},
 
-		upload_event: function(event) {
-			try {
-				$.ajax({
-					url: "http://interstate.from.so/user_study/upload.php",
-					type: "POST",
-					dataType: "text",
-					data: {
-						type: event.type,
-						value: event.value
-					},
-					success: function(data) {
-						//console.log(data);
-					}
-				});
-			} catch(e) {
-				console.error(e);
-			}
-		},
-
 		get_client_socket: function() {
 			return this.client_socket;
 		},
@@ -120,8 +120,11 @@
 											"Redo": {
 												on_select: _.bind(this.redo, this)
 											},
-											"Export": {
+											"Save Locally": {
 												on_select: _.bind(this["export"], this)
+											},
+											"Upload": {
+												on_select: _.bind(this["upload"], this)
 											}
 										}
 									})
@@ -146,9 +149,8 @@
 
 			this.navigator.on("dragstart.pin", _.bind(function(event) {
 				var bottom_indicator_was_hidden = this.element.pane("get_percentage", 0) > 0.99;
-				console.log(bottom_indicator_was_hidden);
 				if(bottom_indicator_was_hidden) {
-					this.element.pane("set_percentage", 0, 0.8);
+					this.element.pane("set_percentage", 0, 0.6);
 				}
 				var targ = $(event.target);
 
@@ -215,6 +217,7 @@
 		},
 
 		upload: function() {
+			this.client_socket.post_command("upload");
 		},
 		save: function() {
 		},

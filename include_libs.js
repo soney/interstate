@@ -116,6 +116,7 @@ exports.runtime_style = cp(src, ["view/editor/style/runtime_style.css"]);
 
 exports.editor = c(
 	cp(src, [
+		"_vendor/qrcode.min.js",
 		"view/editor/jqui_editable_text.js",
 		"view/editor/pane.js",
 		"view/editor/menu.js",

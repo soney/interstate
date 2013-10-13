@@ -473,6 +473,7 @@
 					unmake_selectable();
 					event.preventDefault();
 					event.stopPropagation();
+					return false;
 				}
 			});
 		};
