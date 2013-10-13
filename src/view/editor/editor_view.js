@@ -110,6 +110,7 @@
 
 		load_viewer: function (root_client) {
 			this.element.html("");
+			this.element.pane();
 			this.menu = $("<div />").menu({
 										title: "menu",
 										items: {
@@ -125,39 +126,39 @@
 										}
 									})
 									.appendTo(this.element);
-									/*
-			this.reset_button = $("<a />")	.addClass("reset button")
-											.text("Reset")
-											.appendTo(this.menu)
-											.attr("href", "javascript:void(0)")
-											.on("click", $.proxy(this.reset, this));
-											*/
-											
 
-			this.navigator = $("<div />")	.appendTo(this.element)
-											.navigator({
-												root_client: root_client,
-												single_col: this.option("single_col_navigation"),
-												client_socket: this.client_socket 
-											});
+			this.navigator = $("<div />").addClass("navigator row");
 
-			this.pinned = $("<div />")	.appendTo(this.element)
-										.addClass("pinned");
-			
+			this.element.pane("add", this.navigator);
+
+			this.navigator .navigator({
+								root_client: root_client,
+								single_col: this.option("single_col_navigation"),
+								client_socket: this.client_socket 
+							});
+
+			this.pinned = $("<div />")	.addClass("pinned row");
+			this.pin_indicator = $("<div />").addClass("pin_explanation").text("drag here to pin").appendTo(this.pinned);
+			this.element.pane("add", this.pinned);
+			this.element.pane("set_percentage", 0, 1);
+
 			this.element.on("command.do_action", _.bind(this.on_command, this));
 
 			this.navigator.on("dragstart.pin", _.bind(function(event) {
+				var bottom_indicator_was_hidden = this.element.pane("get_percentage", 0) > 0.99;
+				console.log(bottom_indicator_was_hidden);
+				if(bottom_indicator_was_hidden) {
+					this.element.pane("set_percentage", 0, 0.8);
+				}
 				var targ = $(event.target);
 
 				var clear_drag_info = function() {
 					this.pinned.off("dragenter.pin dragleave.pin drop.pin")
-								.removeClass("dropover drop_indicator")
-								.text("");
+								.removeClass("dropover drop_indicator");
 					targ.off("dragcancel.pin dragend.pin");
 				};
 
-				this.pinned	.text("drag here to pin")
-							.addClass("drop_indicator")
+				this.pinned	.addClass("drop_indicator")
 							.on("dragenter.pin", _.bind(function(ev2) {
 								this.pinned.addClass("dropover");
 							}, this))
@@ -168,31 +169,34 @@
 								this.pinned.removeClass("dropover");
 							}, this))
 							.on("drop.pin", _.bind(function(ev2) {
-								$("table", this.pinned).column("destroy").remove();
 								clear_drag_info.call(this);
 								var pinned_col = $("<table />")	.appendTo(this.pinned)
 																.column({
 																	client: targ.column("option", "client"),
 																	name: targ.column("option", "name"),
-																	prev_col: false,
+																	prev_col: targ.column("option", "prev_col"),
 																	show_prev: true,
 																	is_curr_col: true,
 																	show_source: true,
 																	curr_copy_client: targ.column("option", "curr_copy_client"),
 																	client_socket: targ.column("option", "client_socket"),
 																	selected_prop_name: false,
-																	curr_copy_index: targ.column("option", "curr_copy_index")
+																	curr_copy_index: targ.column("option", "curr_copy_index"),
+																	close_button: true
 																});
 								ev2.preventDefault();
 								ev2.stopPropagation();
 							}, this));
 
 				targ		.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
+								if(bottom_indicator_was_hidden) {
+									this.element.pane("set_percentage", 0, 1);
+								}
 								clear_drag_info.call(this);
 							}, this));
 			}, this));
-			this.pinned.on("dragstart.pin", _.bind(function(event) {
-				$("table", this.pinned).column("destroy").remove();
+			this.pinned.on("close", _.bind(function(event) {
+				$(event.target).column("destroy").remove();
 			}, this));
 
 
@@ -202,10 +206,7 @@
 					else { this.undo(); }
 					event.stopPropagation();
 					event.preventDefault();
-				}/* else if(event.keyCode === 82 && (event.metaKey || event.ctrlKey)) { // 'r': prevent refresh
-					event.stopPropagation();
-					event.preventDefault();
-				}*/
+				}
 			}, this));
 		},
 

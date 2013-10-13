@@ -43,7 +43,8 @@
 			curr_copy_client: false,
 			client_socket: false,
 			selected_prop_name: false,
-			curr_copy_index: false
+			curr_copy_index: false,
+			close_button: false
 		},
 
 		_create: function () {
@@ -94,6 +95,15 @@
 											.prependTo(this.obj_name_cell)
 											.text("<")
 											.hide();
+			if(this.option("close_button")) {
+				this.close_button = $("<a />")	.addClass("close")
+												.attr("href", "javascript:void(0)")
+												.prependTo(this.obj_name_cell)
+												.text("x")
+												.on("click", $.proxy(function() {
+													this.element.trigger("close");
+												}, this));
+			}
 
 
 			this.options_row = $("<tr />")	.appendTo(this.tbody)

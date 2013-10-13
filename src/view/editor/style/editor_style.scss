@@ -45,25 +45,68 @@ $link_color: royalblue;
 }
 
 html.full_window_editor {
-	//height: 100%;
+	height: 100%;
 	background-color: #FEFEFE;
 	background-image: url(images/fabric_plaid.png);
 	
 	> body {
-	//	height: 100%;
+		height: 100%;
 		margin: 0px;
 		box-sizing: border-box;
 		-moz-box-sizing: border-box;
 		
 		> #editor {
-	//		height: 100%;
+			height: 100%;
 		}
 	}
 }
 
+.row {
+	overflow: scroll;
+	box-sizing: border-box;
+	&:first-child {
+		border-top: none;
+	}
+	&:last-child {
+		border-bottom: none;
+	}
+}
+.handle {
+	background-color: red;
+	position: absolute;
+	border: 1px solid #C0C0C0;
+	z-index: 100;
+
+	&.horizontal {
+		border-left: none;
+		border-right: none;
+		height: 8px;
+		cursor: row-resize;
+		width: 100%;
+		background: url(images/handle-h.png) 50% 3px no-repeat;
+		background-color: #F6F6F6;
+		box-shadow: 0 0px 3px #333;
+	}
+}
 
 #editor {
 	font-family: "Source Sans Pro";
+
+	&.pane {
+		height: 100%;
+
+		> .navigator.row {
+
+			> #obj_nav {
+				clear: both;
+				overflow: scroll;
+			}
+		}
+		> .pinned.row {
+			height: 50%;
+			overflow: scroll;
+		}
+	}
 
 	> .menu {
 		position: fixed;
@@ -126,37 +169,39 @@ html.full_window_editor {
 		}
 	}
 
-	> #obj_nav {
-		margin: 15px;
-		clear: both;
-		overflow: hidden;
-	}
 }
 
 .pinned {
-	bottom: 0px;
-	position: absolute;
-	width: 100%;
-	box-sizing: border-box;
 	background-color: white;
 	background-image: url(images/mochaGrunge.png);
-	box-shadow: 10px 10px 5px #888888;
 	&.drop_indicator {
-		padding-top: 15px;
-		text-align: center;
-		vertical-align: middle;
-		display: table-cell;
-		font-size: 3em;
-		color: white;
-		font-weight: 200;
+		.pin_explanation {
+			display: block;
+		}
 		&.dropover {
-			color: #BADA55;
+			.pin_explanation {
+				color: #BADA55;
+			}
 		}
 	}
-}
-.pinned > table.col.curr_col {
-	float: none;
-	margin: auto;
+
+	.pin_explanation {
+		position: absolute;
+		pointer-events: none;
+		display: none;
+		width: 100%;
+		font-weight: 200;
+		font-size: 4em;
+		text-align: center;
+		padding-top: 15px;
+		color: white;
+		text-shadow: 0px 0px 40px #333;
+		background-color: rgba(50, 50, 50, 0.3);
+		height: 100%;
+		vertical-align: middle;
+		box-sizing: border-box;
+		padding-top: 50px;
+	}
 }
 .pinned, #obj_nav {
 	> table.col {
@@ -283,10 +328,22 @@ html.full_window_editor {
 					> a.prev {
 						top: 4px;
 						color: #888;
-						font-size: 1.2em;
+						font-size: 1.5em;
 						text-decoration: none;
 						position: absolute;
 						left: 0px;
+						padding-left: 5px;
+						padding-right: 5px;
+						font-weight: 100;
+					}
+					> a.close {
+						font-weight: 100;
+						top: 4px;
+						color: #888;
+						font-size: 1.5em;
+						text-decoration: none;
+						position: absolute;
+						right: 0px;
 						padding-left: 5px;
 						padding-right: 5px;
 					}
