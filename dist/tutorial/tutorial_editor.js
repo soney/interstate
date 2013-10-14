@@ -14,7 +14,9 @@
 		},
 		_create: function() {
 			this.editor = $("<div />")	.appendTo(this.element)
-										.editor({ });
+										.editor({
+											pinned_row: false
+										});
 			this.instructions_table = $("<table />").addClass("instructions")
 													.appendTo(this.element);
 			

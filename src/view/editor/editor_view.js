@@ -31,7 +31,8 @@
 			single_col_navigation: display === "phone" || display === "tablet",
 			view_type: display,
 			annotations: {},
-			upload_usage: false
+			upload_usage: false,
+			pinned_row: true
 		},
 
 		_create: function () {
@@ -142,7 +143,9 @@
 
 			this.pinned = $("<div />")	.addClass("pinned row");
 			this.pin_indicator = $("<div />").addClass("pin_explanation").text("drag here to pin").appendTo(this.pinned);
-			this.element.pane("add", this.pinned);
+			if(this.option("pinned_row")) {
+				this.element.pane("add", this.pinned);
+			}
 			this.element.pane("set_percentage", 0, 1);
 
 			this.element.on("command.do_action", _.bind(this.on_command, this));
