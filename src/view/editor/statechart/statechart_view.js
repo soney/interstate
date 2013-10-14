@@ -430,7 +430,7 @@
 												"font-size": 16,
 												"fill": '#777',
 												"font-family": "Source Sans Pro"
-											})
+											});
 			var bbox = select_obj_text.getBBox();
 			var select_obj_bg = this.paper	.rect(bbox.x-3, bbox.y-3, bbox.width+6, bbox.height+6)
 											.attr({

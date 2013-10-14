@@ -68,6 +68,10 @@ module.exports = function(grunt) {
 			esprima: {
 				src: "src/_vendor/esprima/esprima.js",
 				dest: build_folder + "/_vendor/esprima.js"
+			},
+			qrcode: {
+				src: "src/_vendor/qrcode.min.js",
+				dest: build_folder + "/_vendor/qrcode.min.js"
 			}
 		},
 		sass: {

@@ -124,7 +124,7 @@
 												on_select: _.bind(this["export"], this)
 											},
 											"Upload": {
-												on_select: _.bind(this["upload"], this)
+												on_select: _.bind(this.upload, this)
 											}
 										}
 									})

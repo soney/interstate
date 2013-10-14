@@ -83,7 +83,8 @@
 			var diff = percentage-old_percentage;
 			var zeroes = [];
 			var sum = 0;
-			for(var i = 0; i<this.percentages.length; i++) {
+			var i = 0;
+			for(i = 0; i<this.percentages.length; i++) {
 				if(index === i) {
 					this.percentages[i] = percentage;
 					sum += percentage;
@@ -96,7 +97,7 @@
 			}
 			var remaining_space = 1-sum;
 			var to_allocate = remaining_space / zeroes.length;
-			for(var i = 0; i<zeroes.length; i++) {
+			for(i = 0; i<zeroes.length; i++) {
 				this.percentages[zeroes[i]] = to_allocate;
 			}
 			this._update_heights();

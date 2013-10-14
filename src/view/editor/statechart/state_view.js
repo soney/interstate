@@ -238,7 +238,7 @@
 			this._emit("awaiting_state_selection", {
 				states: selectable_substates,
 				on_select: _.bind(function() {
-								this.add_transition_to_state.apply(this, arguments)
+								this.add_transition_to_state.apply(this, arguments);
 								$(window).off("mousemove.update_display_arrow");
 								arrow_disp.remove();
 								arrow_disp.destroy();
@@ -253,8 +253,8 @@
 			var paper = this.option("paper"),
 				lwe = this.option("lwe"),
 				rwe = this.option("rwe");
-			var cx = (lwe.x + rwe.x) / 2
-			var cy = (this.option("padding_top") + lwe.y)/2
+			var cx = (lwe.x + rwe.x) / 2;
+			var cy = (this.option("padding_top") + lwe.y)/2;
 
 			var arrow_disp = new ist.ArrowView({
 				paper: paper,

@@ -32,6 +32,7 @@ exports.vendor = c(
 				"jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js",
 				"raphael/raphael.js",
 				"esprima/esprima.js",
+				"qrcode.min.js",
 				//"three.js",
 				//"box2d/Box2dWeb-2.1.a.3.min.js"
 			])
@@ -116,7 +117,6 @@ exports.runtime_style = cp(src, ["view/editor/style/runtime_style.css"]);
 
 exports.editor = c(
 	cp(src, [
-		"_vendor/qrcode.min.js",
 		"view/editor/jqui_editable_text.js",
 		"view/editor/pane.js",
 		"view/editor/menu.js",
