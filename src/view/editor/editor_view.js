@@ -160,6 +160,7 @@
 					targ.off("dragcancel.pin dragend.pin");
 				};
 
+
 				this.pinned	.addClass("drop_indicator")
 							.on("dragenter.pin", _.bind(function(ev2) {
 								this.pinned.addClass("dropover");
@@ -172,6 +173,8 @@
 							}, this))
 							.on("drop.pin", _.bind(function(ev2) {
 								clear_drag_info.call(this);
+								var client = targ.column("option", "client");
+								var client_socket = targ.column("option", "client_socket");
 								var pinned_col = $("<table />")	.appendTo(this.pinned)
 																.column({
 																	client: targ.column("option", "client"),
@@ -181,11 +184,40 @@
 																	is_curr_col: true,
 																	show_source: true,
 																	curr_copy_client: targ.column("option", "curr_copy_client"),
-																	client_socket: targ.column("option", "client_socket"),
-																	selected_prop_name: false,
+																	client_socket: client_socket,
 																	curr_copy_index: targ.column("option", "curr_copy_index"),
 																	close_button: true
 																});
+
+								pinned_col.on("child_select.nav", _.bind(function(event, child_info) {
+									client = child_info.value;
+									pinned_col	.column("destroy")
+												.column({
+													client: client,
+													name: child_info.name,
+													prev_col: true,
+													show_prev: true,
+													is_curr_col: true,
+													show_source: true,
+													client_socket: client_socket,
+													close_button: true
+												});
+								}, this)).on("prev_click.nav", _.bind(function() {
+									client.async_get("parent", function(new_client) {
+										client = new_client;
+										pinned_col	.column("destroy")
+													.column({
+														client: client,
+														name: client.object_summary.name,
+														prev_col: true,
+														show_prev: true,
+														is_curr_col: true,
+														show_source: true,
+														client_socket: client_socket,
+														close_button: true
+													});
+									});
+								}, this));
 								ev2.preventDefault();
 								ev2.stopPropagation();
 							}, this));
@@ -199,6 +231,9 @@
 			}, this));
 			this.pinned.on("close", _.bind(function(event) {
 				$(event.target).column("destroy").remove();
+				if($(".col", this.pinned).size() === 0) {
+					this.element.pane("set_percentage", 0, 1);
+				}
 			}, this));
 
 

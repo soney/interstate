@@ -87,7 +87,7 @@
 				if(index === i) {
 					this.percentages[i] = percentage;
 					sum += percentage;
-				} else if(this.percentages[i] === 0) {
+				} else if(this.percentages[i] <= 0.000001) {
 					zeroes.push(i);
 				} else {
 					this.percentages[i] -= diff*this.percentages[i]/(1-old_percentage);

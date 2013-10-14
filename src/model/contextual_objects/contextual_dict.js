@@ -250,6 +250,11 @@
 			});
 			return children;
 		};
+		proto.parent = function() {
+			var popped_pointer = this.pointer.pop();
+			var contextual_object = ist.find_or_put_contextual_obj(popped_pointer.points_at(), popped_pointer);
+			return contextual_object;
+		};
 		proto.has = function (name, ignore_inherited) {
 			var dict = this.get_object();
 			var i;

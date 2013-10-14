@@ -96,15 +96,14 @@ html.full_window_editor {
 		height: 100%;
 
 		> .navigator.row {
-
 			> #obj_nav {
 				clear: both;
 				overflow: scroll;
 			}
 		}
 		> .pinned.row {
-			height: 50%;
 			overflow: scroll;
+			padding-top: 10px;
 		}
 	}
 

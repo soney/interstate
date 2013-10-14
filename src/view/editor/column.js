@@ -574,6 +574,7 @@
 				this.prev_button.pressable("destroy");
 			}
 			this.obj_name_cell.off("mouseover.header_mouseover mouseout.header_mouseout").remove();
+			this.tbody.remove();
 			delete this.option.client_socket;
 			delete this.options;
 		},
