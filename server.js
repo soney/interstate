@@ -194,3 +194,7 @@ var get_file_string = function(path, callback) {
 		callback(data);
 	});
 };
+var io = require('socket.io').listen(80);
+
+io.sockets.on('connection', function (socket) {
+});
