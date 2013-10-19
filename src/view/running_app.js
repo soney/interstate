@@ -72,7 +72,7 @@
 			editor_window_options: function () {
 				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
 			},
-			client_id: "",
+			client_id: uid.get_prefix(),
 			highlight_colors: {
 				hover: 'red'
 			},
