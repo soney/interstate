@@ -29,7 +29,8 @@
 		"grunt-contrib-clean": ">=0.4",
 		"grunt-contrib-sass": ">=0.5",
 		"node-watch": ">=0.3",
-		"node-sass": ">=0.6"
+		"node-sass": ">=0.6",
+		"socket.io": ">=0.9"
 	},
 	"engines": {
 		"node": ">= 0.4.7"

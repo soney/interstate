@@ -93,39 +93,37 @@
 		};
 	}(ist.SameWindowCommWrapper));
 
-	ist.SocketCommWrapper = function(remote_window, client_id) {
+	ist.SocketCommWrapper = function(client_id, is_server) {
 		able.make_this_listenable(this);
-		this.remote_window = remote_window;
 		this.client_id = client_id;
-
+		this.is_server = is_server;
+		this.socket = io.connect(origin);
+		this.socket.emit("comm_wrapper", this.client_id, this.is_server);
 		this.$on_message = _.bind(this.on_message, this);
-		window.addEventListener("message", this.$on_message);
+		this.socket.on("message", this.$on_message);
 	};
 
 	(function(My) {
 		var proto = My.prototype;
 		able.make_proto_listenable(proto);
-		proto.on_message = function(event) {
-			if(event.source === this.remote_window) {
-				var data = event.data;
-				if(data.client_id === this.client_id) {
-					var message = data.message;
-					this._emit("message", message);
-				}
+
+		proto.on_message = function(data) {
+			if(data.client_id === this.client_id) {
+				this._emit("message", data.message);
 			}
 		};
 		proto.post = function(message, callback) {
-			this.remote_window.postMessage({
+			this.socket.emit("message", {
 				message: message,
 				client_id: this.client_id
-			}, origin);
+			});
 			if(_.isFunction(callback)) {
 				callback();
 			}
 		};
 		proto.destroy = function() {
-			window.removeEventListener("message", this.$on_messsage);
-			delete this.$on_message;
+			this.socket.disconnect();
+			delete this.socket;
 		};
 	}(ist.SocketCommWrapper));
 }(interstate));

@@ -68,6 +68,7 @@
 			editor_url: "editor.html",
 			editor_name: uid.get_prefix() + "ist_editor",
 			open_separate_client_window: true,
+			external_editor: false,
 			editor_window_options: function () {
 				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
 			},
@@ -432,29 +433,54 @@
 			if (this.editor_window) {
 				this.editor_window.focus();
 			} else {
-				var communication_mechanism;
-				if (this.option("open_separate_client_window")) {
+				var on_comm_mechanism_load = function(communication_mechanism) {
+					this.server_socket = this.server_socket || this._create_server_socket();
+					this.server_socket.set_communication_mechanism(communication_mechanism);
+
+					if (this.server_socket.is_connected()) { // It connected immediately
+						if(this.edit_button) {
+							this.edit_button.addClass("active").css(this.edit_active_css);
+						}
+						this.server_socket.post({
+							type: "color",
+							value: this.button_color
+						});
+					}
+					$(window).on("beforeunload.close_editor", _.bind(this.close_editor, this));
+					this.element.trigger("editor_open");
+				};
+
+
+				if(this.option("external_editor")) {
+					interstate.async_js("/socket.io/socket.io.js", _.bind(function() {
+						var socket_wrapper = new ist.SocketCommWrapper(this.option("client_id"), true);
+						var url = this.option("editor_url") + "?comm=socket&client_id="+encodeURIComponent(this.option("client_id"));
+						var code_container = $("<div />");
+						var qrcode = new QRCode(code_container[0], {
+							text: url,
+							width: 128,
+							height: 128,
+							colorDark : "#000000",
+							colorLight : "#ffffff",
+							correctLevel : QRCode.CorrectLevel.H
+						});
+						var alert = $("<div />").addClass("upload_url")
+												.appendTo(document.body)
+												.append(code_container, $("<a />").attr({"href": url, "target": "_blank"}).text(url));
+						$(window).on("mousedown.close_alert", function(event) {
+							if(!$(event.target).parents().is(alert)) {
+								alert.remove();
+							}
+						});
+						on_comm_mechanism_load.call(this, socket_wrapper);
+					}, this));
+				} else if (this.option("open_separate_client_window")) {
 					this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options")());
-					communication_mechanism = new ist.InterWindowCommWrapper(this.editor_window, this.option("client_id")); 
+					on_comm_mechanism_load.call(this, new ist.InterWindowCommWrapper(this.editor_window, this.option("client_id")));
 				} else {
 					this.editor_window = window;
-					communication_mechanism = new ist.SameWindowCommWrapper(this.option("client_id"), 0); 
+					on_comm_mechanism_load.call(this, new ist.SameWindowCommWrapper(this.option("client_id"), 0));
 				}
-
-				this.server_socket = this.server_socket || this._create_server_socket();
-				this.server_socket.set_communication_mechanism(communication_mechanism);
-
-				if (this.server_socket.is_connected()) { // It connected immediately
-					if(this.edit_button) {
-						this.edit_button.addClass("active").css(this.edit_active_css);
-					}
-					this.server_socket.post({
-						type: "color",
-						value: this.button_color
-					});
-				}
-				$(window).on("beforeunload.close_editor", _.bind(this.close_editor, this));
-				this.element.trigger("editor_open");
 			}
 		},
 		

@@ -32,6 +32,7 @@
 			view_type: display,
 			annotations: {},
 			upload_usage: false,
+			use_socket: false,
 			pinned_row: true
 		},
 
@@ -45,41 +46,51 @@
 				$("html").addClass("full_window_editor");
 			}
 			var communication_mechanism;
-			if(this.option("server_window") === window) {
-				communication_mechanism = new ist.SameWindowCommWrapper(this.option("client_id"), 0); 
-			} else {
-				communication_mechanism = new ist.InterWindowCommWrapper(this.option("server_window"), this.option("client_id")); 
-			}
+			var on_comm_mechanism_load = function(communication_mechanism) {
+				this.client_socket = new ist.ProgramStateClient({
+					ready_func: this.option("debug_ready"),
+					comm_mechanism: communication_mechanism
+				}).on("message", function (data) {
+					if (data.type === "color") {
+						var color = data.value;
+					} else if(data.type === "upload_url") {
+						var url = data.value;
+						var code_container = $("<div />");
+						var qrcode = new QRCode(code_container[0], {
+							text: url,
+							width: 128,
+							height: 128,
+							colorDark : "#000000",
+							colorLight : "#ffffff",
+							correctLevel : QRCode.CorrectLevel.H
+						});
+						var alert = $("<div />").addClass("upload_url")
+												.appendTo(document.body)
+												.append(code_container, $("<a />").attr({"href": url, "target": "_blank"}).text(url));
+						$(window).on("mousedown.close_alert", function(event) {
+							if(!$(event.target).parents().is(alert)) {
+								alert.remove();
+							}
+						});
+					}
+				}, this).on("loaded", function (root_client) {
+					this.load_viewer(root_client);
+				}, this);
+			};
 
-			this.client_socket = new ist.ProgramStateClient({
-				ready_func: this.option("debug_ready"),
-				comm_mechanism: communication_mechanism
-			}).on("message", function (data) {
-				if (data.type === "color") {
-					var color = data.value;
-				} else if(data.type === "upload_url") {
-					var url = data.value;
-					var code_container = $("<div />");
-					var qrcode = new QRCode(code_container[0], {
-						text: url,
-						width: 128,
-						height: 128,
-						colorDark : "#000000",
-						colorLight : "#ffffff",
-						correctLevel : QRCode.CorrectLevel.H
-					});
-					var alert = $("<div />").addClass("upload_url")
-											.appendTo(document.body)
-											.append(code_container, $("<a />").attr({"href": url, "target": "_blank"}).text(url));
-					$(window).on("mousedown.close_alert", function(event) {
-						if(!$(event.target).parents().is(alert)) {
-							alert.remove();
-						}
-					});
+			if(this.option("use_socket")) {
+				interstate.async_js("/socket.io/socket.io.js", _.bind(function() {
+					var socket_info = this.option("use_socket");
+					var socket_wrapper = new ist.SocketCommWrapper(socket_info.client_id, false);
+					on_comm_mechanism_load.call(this, socket_wrapper);
+				}, this));
+			} else {
+				if(this.option("server_window") === window) {
+					on_comm_mechanism_load.call(this, new ist.SameWindowCommWrapper(this.option("client_id"), 0));
+				} else {
+					on_comm_mechanism_load.call(this, new ist.InterWindowCommWrapper(this.option("server_window"), this.option("client_id")));
 				}
-			}, this).on("loaded", function (root_client) {
-				this.load_viewer(root_client);
-			}, this);
+			}
 
 			this.element.text("Loading...");
 			$(window).on("beforeunload.close_editor", _.bind(function () {
@@ -616,9 +627,15 @@
 		},
 
 		on_unload: function() {
-			this.navigator.navigator("destroy");
-			this.menu.menu("destroy").remove();
-			this.client_socket.destroy();
+			if(this.navigator) {
+				this.navigator.navigator("destroy");
+			}
+			if(this.menu) {
+				this.menu.menu("destroy").remove();
+			}
+			if(this.client_socket) {
+				this.client_socket.destroy();
+			}
 			delete this.client_socket;
 			delete this.navigator;
 			delete this.menu;
@@ -626,7 +643,9 @@
 
 		_destroy: function () {
 			this._super();
-			this.navigator.off("command.do_action");
+			if(this.navigator) {
+				this.navigator.off("command.do_action");
+			}
 			this.on_unload();
 			if(this.option("upload_usage")) {
 				this.element.off("command.upload child_select.upload header_click.upload");

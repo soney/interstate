@@ -38,5 +38,17 @@ var interstate = (function (root) {
 		return name.match(/^[a-zA-Z_$][0-9a-zA-Z_$]*$/);
 	};
 
+	ist.async_js = function(url, cback) {
+		var doc = root.document,
+			type = 'script',
+			node = doc.createElement(type),
+			head = doc.getElementsByTagName('head')[0];
+
+		node.type = 'text/javascript';
+		node.src = url;
+		if (cback) { node.addEventListener('load', function (e) { cback(e); }, false); }
+		head.appendChild(node);
+	}
+
 	return ist;
 }(this));

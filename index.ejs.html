@@ -29,23 +29,10 @@
 					the_div.dom_output({
 						root: root,
 						//edit_on_open: true,
-						editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
+						editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html",
+						external_editor: true
 					});
 					return root;
-				};
-				window.upload = function(name) {
-					$.ajax({
-						url: "http://interstate.from.so/gallery/upload.php",
-						type: "POST",
-						dataType: "text",
-						data: {
-							root: interstate.stringify(root),
-							name: interstate._.isString(name) ? name : "(no name)"
-						},
-						success: function(data) {
-							console.log(data);
-						}
-					});
 				};
 				window.ls = interstate.ls;
 
@@ -61,8 +48,9 @@
 
 						the_div.dom_output({
 							root: root,
-				//			edit_on_open: true,
-							editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
+							editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html",
+							//edit_on_open: true,
+							external_editor: true
 						}).on("change_root", function(new_root) {
 							console.log(new_root);
 						});

@@ -7,6 +7,7 @@ var fs = require('fs');
 var ejs = require('ejs');
 var sass = require("node-sass");
 var ist_inc = require('./include_libs');
+var http = require("http");
 
 var app = express();
 if(devel_mode) {
@@ -97,13 +98,13 @@ app.configure(function() {
 	});
 });
 
-app.listen(8000);
+var server = http.createServer(app);
+server.listen(8000);
 console.log("Interactive times at http://localhost:8000/");
 process.on('SIGINT', function () {
 	console.log("iao...");
 	process.exit(0);
 });
-
 
 var filter_regex = /\.(js|html|css|swp)$/; // include swp files because they are added and removed when files get edited...for some reason,
 											// edits aren't otherwise detected
@@ -194,7 +195,15 @@ var get_file_string = function(path, callback) {
 		callback(data);
 	});
 };
-var io = require('socket.io').listen(80);
+
+var io = require('socket.io').listen(server);
+io.set("log level", 0);
 
 io.sockets.on('connection', function (socket) {
+	socket.on('comm_wrapper', function(client_id, is_server) {
+		//console.log(client_id, is_server);
+	});
+	socket.on('message', function(message) {
+		socket.broadcast.emit('message', message);
+	});
 });
