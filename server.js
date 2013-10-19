@@ -100,7 +100,6 @@ app.configure(function() {
 
 var server = http.createServer(app);
 server.listen(8000);
-console.log("Interactive times at http://localhost:8000/");
 process.on('SIGINT', function () {
 	console.log("iao...");
 	process.exit(0);
@@ -207,3 +206,18 @@ io.sockets.on('connection', function (socket) {
 		socket.broadcast.emit('message', message);
 	});
 });
+
+var os = require('os')
+
+var interfaces = os.networkInterfaces();
+var addresses = [];
+for (k in interfaces) {
+    for (k2 in interfaces[k]) {
+        var address = interfaces[k][k2];
+        if (address.family == 'IPv4' && !address.internal) {
+            addresses.push(address.address)
+        }
+    }
+}
+
+console.log("Interactive times at http://" + addresses[0] + ":8000/");

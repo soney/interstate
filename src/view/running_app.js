@@ -467,8 +467,9 @@
 						var alert = $("<div />").addClass("upload_url")
 												.appendTo(document.body)
 												.append(code_container, $("<a />").attr({"href": url, "target": "_blank"}).text(url));
-						$(window).on("mousedown.close_alert", function(event) {
+						$(window).on("touchstart.close_alert mousedown.close_alert", function(event) {
 							if(!$(event.target).parents().is(alert)) {
+								$(window).off("touchstart.close_alert mousedown.close_alert");
 								alert.remove();
 							}
 						});
