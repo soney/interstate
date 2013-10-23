@@ -43,7 +43,7 @@
 			dict = rv.item(i);
 			var proto_obj = dict.direct_protos();
 			var proto_val;
-			if (proto_obj instanceof cjs.ArrayConstraint) {
+			if (proto_obj instanceof cjs.Array) {
 				proto_val = proto_obj.toArray();
 			} else if (proto_obj) {
 				var proto_contextual_obj = ist.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {
