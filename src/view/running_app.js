@@ -80,7 +80,7 @@
 		},
 
 		_create: function () {
-			this.element.addClass("euc_runtime");
+			this.element.addClass("ist_runtime");
 			this._command_stack = new ist.CommandStack();
 			this.highlights = [];
 			if (this.option("show_edit_button")) {
@@ -279,7 +279,7 @@
 						.off("beforeunload.close_editor");
 
 			this._remove_change_listeners();
-			this.element.removeClass("euc_runtime");
+			this.element.removeClass("ist_runtime");
 			$(window).off("keydown.open_editor");
 			if (this.edit_button) {
 				this.edit_button.off("mouseover.make_active")
@@ -476,7 +476,7 @@
 						on_comm_mechanism_load.call(this, socket_wrapper);
 					}, this));
 				} else if (this.option("open_separate_client_window")) {
-					this.editor_window = window.open(this.option("editor_url"), this.option("editor_name"), this.option("editor_window_options")());
+					this.editor_window = window.open(this.option("editor_url")+"?client_id="+encodeURIComponent(this.option("client_id")), this.option("editor_name"), this.option("editor_window_options")());
 					on_comm_mechanism_load.call(this, new ist.InterWindowCommWrapper(this.editor_window, this.option("client_id")));
 				} else {
 					this.editor_window = window;

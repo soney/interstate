@@ -29,8 +29,8 @@
 					the_div.dom_output({
 						root: root,
 						//edit_on_open: true,
-						editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html",
-						external_editor: true
+						//external_editor: true,
+						editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
 					});
 					return root;
 				};
@@ -48,9 +48,9 @@
 
 						the_div.dom_output({
 							root: root,
-							editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html",
+							//external_editor: true,
 							//edit_on_open: true,
-							external_editor: true
+							editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
 						}).on("change_root", function(new_root) {
 							console.log(new_root);
 						});

@@ -14,13 +14,13 @@
 	var time = (new Date()).getTime();
 
 	var prefix_length = 6;
-	var random_prefix = "$";
 	var sym_length = symbols.length;
+	var prefix = "";
 	for (i = 0; i < prefix_length - 2; i += 1) {
 		var rand_index = Math.floor(Math.random() * sym_length);
-		random_prefix += symbols[rand_index];
+		prefix += symbols[rand_index];
 	}
-	random_prefix += "_";
+	var random_prefix = "$" + prefix + "_";
 	//prefix_length = 0; random_prefix = "";
 
 	var current_uid = 0;
@@ -33,6 +33,6 @@
 		return uid_str.slice(prefix_length);
 	};
 	window.uid.get_prefix = function () {
-		return random_prefix;
+		return prefix;
 	};
 }());
