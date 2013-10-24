@@ -9,11 +9,11 @@
 	ist.StartState = function (options) {
 		options = options || {};
 		this.outgoingTransition = false;
-		this._transition_to_self = cjs.$(undefined);
+		this._transition_to_self = cjs(undefined);
 		ist.StartState.superclass.constructor.apply(this, arguments);
 		this._running = options.running === true;
 		if(ist.__debug_statecharts) {
-			this.$running = cjs.$(this._running);
+			this.$running = cjs(this._running);
 		}
 	};
 	(function (My) {

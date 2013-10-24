@@ -23,7 +23,7 @@
     
         proto.do_initialize = function (options) {
             ist.install_instance_builtins(this, options, My);
-            this.get_direct_values().set_hash("hash");
+            this.get_direct_values().setHash("hash");
             //this.used_start_transition = options.used_start_transition === true;
             //this._can_inherit = options.can_inherit !== false;
             //this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
@@ -35,7 +35,7 @@
                 "default": function () { return cjs.map(); },
                 env_visible: false,
 				destroy: function(me) {
-					me.each(function(val) {
+					me.forEach(function(val) {
 						val.destroy(true);
 					});
 					me.destroy(true);

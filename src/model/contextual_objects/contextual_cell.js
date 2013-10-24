@@ -8,7 +8,7 @@
 
 	ist.ContextualCell = function (options) {
 		ist.ContextualCell.superclass.constructor.apply(this, arguments);
-		this._errors = cjs.$([]);
+		this._errors = new cjs.Constraint([]);
 		this._type = "cell";
 		//if(this.id() == "402") {
 			//debugger;

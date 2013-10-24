@@ -174,15 +174,15 @@
 				context: options.context
 			});
 			this.$substates = options.substates || cjs.map();
-			this.$substates.set_value_hash("hash");
-			this.$concurrent = cjs.$(options.concurrent === true);
+			this.$substates.setValueHash("hash");
+			this.$concurrent = cjs(options.concurrent === true);
 			this._parent = options.parent;
 			this.$incoming_transitions = options.incoming_transitions || cjs.array();
 			this.$outgoing_transitions = options.outgoing_transitions || cjs.array();
 
 			this._running = options.running === true;
 			if(ist.__debug_statecharts) {
-				this.$running = cjs.$(this._running);
+				this.$running = cjs(this._running);
 			}
 
 			My.superclass.do_initialize.apply(this, arguments);
@@ -205,7 +205,7 @@
 				my_starting_state = this._start_state;
 			}
 
-			this.$local_state = cjs.$(my_starting_state);
+			this.$local_state = new cjs.Constraint(my_starting_state);
 			if(this.is_active()) {
 				if(options.concurrent === true) {
 					if(!this.is_puppet()) {
@@ -280,7 +280,7 @@
 			if(this.$substates) {
 				var rv = {};
 
-				this.$substates.each(function (substate, name) {
+				this.$substates.forEach(function (substate, name) {
 					rv[name] = substate;
 				});
 

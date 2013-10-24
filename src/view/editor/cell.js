@@ -81,7 +81,6 @@
 
 			this.update_position();
 			this.update_active();
-			this.create_live_text_fn();
 
 			this.text = $("<span />")	.addClass("txt")
 										.appendTo(this.element);
@@ -98,6 +97,7 @@
 				show: false,
 				hide: false
 			});
+			this.create_live_text_fn();
 		},
 		_destroy: function() {
 			this._super();

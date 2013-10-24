@@ -310,7 +310,7 @@
 				__type__: "summarized_obj",
 				__value__: "client_wrapper"
 			};
-		} else if (cjs.is_$(value)) {
+		} else if (cjs.is_constraint(value)) {
 			rv = {
 				__type__: "summarized_obj",
 				__value__: "constraint"
@@ -321,11 +321,6 @@
 			rv = {
 				__type__: "summarized_obj",
 				__value__: "function"
-			};
-		} else if (cjs.is_$(value)) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "cjs_object"
 			};
 		} else if (_.isElement(value)) {
 			rv = {

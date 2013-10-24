@@ -45,11 +45,11 @@
 	};
 
 	ist.State = function (options, defer_initialization) {
-		this._initialized = cjs.$(false);
+		this._initialized = cjs(false);
 		options = options || {};
 		able.make_this_listenable(this);
 		this._id = options.id || uid();
-		this._last_run_event = cjs.$(false);
+		this._last_run_event = cjs(false);
 
 		if (defer_initialization !== true) {
 			this.do_initialize(options);
@@ -63,7 +63,7 @@
 		proto.do_initialize = function (options) {
 			this._puppet = options.puppet === true;
 			this._parent = options.parent;
-			this.$active = cjs.$(options.active === true || (!this._parent && !this._puppet));
+			this.$active = cjs(options.active === true || (!this._parent && !this._puppet));
 			this._context = options.context;
 			this.set_basis(options.basis, options.set_basis_as_root);
 		};

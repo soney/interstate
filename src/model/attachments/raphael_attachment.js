@@ -158,7 +158,7 @@
 			ready: function() {
 				this.shape_type = this.options.shape_type;
 				this.constructor_params = this.options.constructor_params;
-				this.$robj = cjs.$(false);
+				this.$robj = cjs(false);
 			},
 			destroy: function(silent) {
 				this.remove();
@@ -275,7 +275,7 @@
 		});
 	ist.GroupAttachment = ist.register_attachment("group", {
 			ready: function() {
-				this.$children = cjs.$(this.child_getter, {context: this});
+				this.$children = cjs(this.child_getter, {context: this});
 			},
 			destroy: function(silent) {
 				this.$children.destroy(silent);

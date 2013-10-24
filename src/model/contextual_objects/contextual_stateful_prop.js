@@ -25,13 +25,13 @@
 			this.$active_value = new cjs.Constraint(this.active_value_getter, { context: this });
 
 			this._has_runtime_errors = false;
-			this.$runtime_errors = cjs.$([]);
+			this.$runtime_errors = new cjs.Constraint([]);
 
-			this.$value.onChange(this.$value.update, this.$value);
+			this.$value.onChange(this.$value.get, this.$value);
 			//if(uid.strip_prefix(this.id()) == 150) {
 				//debugger;
 			//}
-			this.$value.update(false);
+			this.$value.get(false);
 		};
 
 		proto.get_parent = function () {
@@ -497,7 +497,7 @@
 
 		proto.destroy = function () {
 			if(this.constructor === My) { this.emit_begin_destroy(); }
-			this.$value.offChange(this.$value.update, this.$value);
+			this.$value.offChange(this.$value.get, this.$value);
 			this.$active_value.destroy(true);
 			delete this.$active_value;
 			My.superclass.destroy.apply(this, arguments);

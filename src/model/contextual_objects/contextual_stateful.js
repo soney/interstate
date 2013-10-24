@@ -59,7 +59,7 @@
 
 		proto.destroy = function () {
 			if(this.constructor === My) { this.emit_begin_destroy(); }
-			this.statecharts_per_proto.each(function(statechart) {
+			this.statecharts_per_proto.forEach(function(statechart) {
 				statechart.destroy(true);
 			});
 			this.statecharts_per_proto.destroy(true);

@@ -43,7 +43,7 @@
 			statecharts_with_add_state_button: [],
 			statecharts: []
 		}, options);
-		this.$layout = cjs.$(_.bind(this._compute_layout, this));
+		this.$layout = cjs(_.bind(this._compute_layout, this));
 	};
 	(function (My) {
 		var proto = My.prototype;

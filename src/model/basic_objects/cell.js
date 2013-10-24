@@ -21,7 +21,7 @@
 
         My.builtins = {
             "str": {
-                start_with: function () { return cjs.$(""); },
+                start_with: function () { return cjs(""); },
                 getter: function (me) { return me.get(); },
                 setter: function (me, str) {
                     me.set(str, true);
@@ -43,7 +43,7 @@
                 settable: false,
                 serialize: false,
 				destroy: function(me) {
-					me.each(function (value) {
+					me.forEach(function (value) {
 						value.destroy(true);
 					});
 					me.destroy(true);
@@ -57,7 +57,7 @@
         ist.install_proto_builtins(proto, My.builtins);
         proto.do_initialize = function (options) {
             ist.install_instance_builtins(this, options, My);
-            this._tree = cjs.$(function () {
+            this._tree = cjs(function () {
                 var str = this.get_str();
                 return ist.parse(str);
             }, {
@@ -147,7 +147,7 @@
 			*/
 			var ignore_inherited_in_contexts = this.get_ignore_inherited_in_contexts(pcontext);
 
-			var rv = cjs.$(function () {
+			var rv = cjs(function () {
 				var node = this._tree.get();
 				var parsed_$ = ist.get_parsed_$(node, {
 					context: pcontext,

@@ -365,7 +365,7 @@ var RedMap = (function (root) {
             }
             return rv;
         };
-        proto.each = function (func, context) {
+        proto.each = proto.forEach = function (func, context) {
             context = context || window;
 			var ovs = slice.call(this._ordered_values);
             each(ovs, function (ov) {

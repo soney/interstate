@@ -61,7 +61,7 @@
         proto.do_initialize = function (options) {
             ist.install_instance_builtins(this, options, My);
             var direct_props = this.direct_props();
-            direct_props.set_value_equality_check(function (info1, info2) {
+            direct_props.setValueEqualityCheck(function (info1, info2) {
                 return info1.value === info2.value;
             });
         };
@@ -82,8 +82,8 @@
                 "default": function () { return []; },
                 getter_name: "direct_attachments",
 				destroy: function(me) {
-					if (me instanceof cjs.ArrayConstraint) {
-						me.each(function(attachment) {
+					if (me instanceof cjs.Array) {
+						me.forEach(function(attachment) {
 							attachment.destroy(true);
 						});
 						me.destroy(true);
@@ -106,7 +106,7 @@
                 },
                 getter_name: "direct_props",
 				destroy: function(me) {
-					me.each(function(prop_val) {
+					me.forEach(function(prop_val) {
 						if(prop_val.value.destroy) {
 							prop_val.value.destroy(true);
 						}
@@ -118,7 +118,7 @@
             },
     
             "copies": {
-                start_with: function () { return cjs.$(); },
+                start_with: function () { return cjs(); },
                 env_visible: false,
                 env_name: "copies",
                 getter: function (me) { return me.get(); },
@@ -195,10 +195,8 @@
                 if (keyIndex >= 0) {
                     var prop_val = direct_props.get(from_name);
                     cjs.wait();
-                    direct_props.wait()
-                                .remove(from_name)
-                                .put(to_name, prop_val, keyIndex)
-                                .signal();
+                    direct_props.remove(from_name)
+                                .put(to_name, prop_val, keyIndex);
                     cjs.signal();
                 } else {
                     throw new Error("No such property " + from_name);
@@ -280,7 +278,7 @@
     
         proto._get_direct_attachments = function () {
             var direct_attachments = this.direct_attachments();
-            if (direct_attachments instanceof cjs.ArrayConstraint) {
+            if (direct_attachments instanceof cjs.Array) {
                 return this.direct_attachments().toArray();
             } else if (_.isArray(direct_attachments)) {
                 return direct_attachments;
