@@ -123,7 +123,7 @@
 		var pcontext = options.context;
 		var args = _.rest(arguments, 3);
 		if (options.get_constraint) {
-			return cjs.$(function () {
+			return cjs(function () {
 				var op_got = cjs.get(op, options.auto_add_dependency);
 				var args_got = _.map(args, function(arg) {
 													return cjs.get(arg, options.auto_add_dependency);
@@ -165,7 +165,7 @@
 			} else {
 				console.error("Unknown op " + op);
 			}
-			return cjs.$(function () {
+			return cjs(function () {
 				switch (op_id) {
 				case AND_OP:
 					return cjs.get(left, options.auto_add_dependency) && cjs.get(right, options.auto_add_dependency);
@@ -186,7 +186,7 @@
 
 	var get_conditional_val = function (test, consequent, alternate, options) { // test ? consequent : alternate
 		if (options.get_constraint) {
-			return cjs.$(function () {
+			return cjs(function () {
 				var test_got = cjs.get(test, options.auto_add_dependency);
 				if (test_got) {
 					return cjs.get(consequent, options.auto_add_dependency);
@@ -293,7 +293,7 @@
 		};
 
 		if (options.get_constraint) {
-			return cjs.$(getter);
+			return cjs(getter);
 		} else {
 			return getter();
 		}
@@ -318,7 +318,7 @@
 			//return undefined;
 		};
 		if (options.get_constraint) {
-			return cjs.$(getter);
+			return cjs(getter);
 		} else {
 			return getter();
 		}
@@ -374,7 +374,7 @@
 		};
 
 		if (options.get_constraint) {
-			return cjs.$(function () {
+			return cjs(function () {
 				var object = cjs.get(obj, options.auto_add_dependency),
 					property = cjs.get(prop, options.auto_add_dependency);
 				return getter(object, property);
@@ -386,7 +386,7 @@
 
 	var get_array_val = function (elements, options) {
 		if (options.get_constraint) {
-			return cjs.$(function () {
+			return cjs(function () {
 				return _.map(elements, function (element) {
 					return cjs.get(element, options.auto_add_dependency);
 				});
@@ -400,7 +400,7 @@
 		var pcontext = options.context;
 		var args = _.rest(arguments, 3);
 		if (options.get_constraint) {
-			return cjs.$(function () {
+			return cjs(function () {
 				var op_got = cjs.get(op, options.auto_add_dependency);
 				//if(op_got === red.on_event) {
 					//debugger;

@@ -35,8 +35,8 @@
 		if (got_event instanceof ist.Event) {
 			return {event: got_event, actions: actions};
 		} else {
-			if(cjs.is_$(event_constraint)) {
-				cjs.removeDependency(event_constraint, live_event_creator);
+			if(cjs.is_constraint(event_constraint)) {
+				cjs.removeDependency(event_constraint, live_event_creator._constraint);
 			}
 			var event = new ist.ConstraintEvent(event_constraint, got_event);
 			return {event: event/*.throttle(10)*/, actions: actions};
@@ -47,7 +47,6 @@
 		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "parsed_event";
-		this.$errors = cjs.$([]);
 		this._has_errors = false;
 	};
 	(function (My) {
@@ -61,6 +60,7 @@
 		};
 
 		proto.on_create = function (options) {
+			this.$errors = new cjs.Constraint([]);
 			this._id = uid();
 			ist.register_uid(this._id, this);
 

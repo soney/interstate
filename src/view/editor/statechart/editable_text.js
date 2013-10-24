@@ -75,7 +75,7 @@
 			"fill-opacity": this.option("fill-opacity"),
 			stroke: "none"
 		});
-		this.$text = $(this.text[0]);
+		this.$text = $(this.text[0]).tooltip();
 
 		this.$text.on("click.onclick", _.bind(this.onClick, this));
 		this.paper = paper;

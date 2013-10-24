@@ -12,6 +12,9 @@
 			<%- ist_include(ist_inc.runtime_style) %>
 
 			<script type="text/javascript">
+				var cross = function() {
+					console.log(arguments);
+				};
 				var env, the_div, root;
 				window.save = function(name) {
 					return interstate.save(the_div.dom_output("option", "root"), name);

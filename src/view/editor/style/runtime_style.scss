@@ -1,5 +1,5 @@
-$highlight_color: #C00;
-$dim_highlight_color: #C00;
+$highlight_color: #44C;
+$dim_highlight_color: #33F;
 $highlight_size: 20px;
 $dim_highlight_size: 10px;
 body {
@@ -20,6 +20,7 @@ body {
 
 	.highlight {
 		pointer-events: none;
+		background-color: rgba(40, 40, 210, 0.2);
 		box-shadow: 0 0 $dim_highlight_size $highlight_color;
 		-webkit-animation: pusate 0.5s infinite alternate;
 		-moz-animation: pusate 0.5s infinite alternate;

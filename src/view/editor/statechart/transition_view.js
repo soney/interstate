@@ -450,7 +450,7 @@
 		if(highlight_enabled) {
 			this.enabled_fn = cjs.liven(function () {
 				var transition = this.option("transition");
-				if (transition.is_initialized() && transition.get_$enabled()) {
+				if (transition && transition.is_initialized() && transition.get_$enabled()) {
 					if (this.line_path) {
 						this.line_path.attr("stroke-dasharray", this.option("enabled_dasharray"));
 					}
