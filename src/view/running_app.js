@@ -60,6 +60,16 @@
 		return rgbToHex.apply(window, rgb);
 	}
 
+    var platform = window.navigator.platform;
+	var display;
+	if(platform === "iPhone" || platform === "iPod") {
+		display = "phone";
+	} else if(platform === "iPad") {
+		display = "tablet";
+	} else {
+		display = "desktop";
+	}
+
 	$.widget("interstate.dom_output", {
 		options: {
 			root: undefined,
@@ -68,7 +78,7 @@
 			editor_url: "editor.html",
 			editor_name: uid.get_prefix() + "ist_editor",
 			open_separate_client_window: true,
-			external_editor: false,
+			external_editor: display === "phone" || display === "tablet",
 			editor_window_options: function () {
 				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
 			},
