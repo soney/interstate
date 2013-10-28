@@ -360,8 +360,10 @@
 				this._raphael_fn.destroy();
 				delete this._raphael_fn;
 			}
-			this._update_fn.destroy();
-			delete this._update_fn;
+			if(this._update_fn) {
+				this._update_fn.destroy();
+				delete this._update_fn;
+			}
 		},
 
 		_create_server_socket: function() {

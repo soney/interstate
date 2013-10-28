@@ -47,7 +47,7 @@
 
 			this.live_fn = cjs.liven(function () {
 				var type = cjs.get(this.specified_type);
-				var targets = get_targets(cjs.get(this.specified_targets));
+				var targets = ist.get_targets(cjs.get(this.specified_targets));
 				_.each(targets, function(target) { target.type = type; });
 
 				var diff = _.diff(this.targets, targets, function(a, b) {
@@ -120,7 +120,7 @@
 			My.superclass.disable.apply(this, arguments);
 		};
 
-		var get_instance_targs = function(instance) {
+		ist.get_instance_targs = function(instance) {
 			var dom_attachment = instance.get_attachment_instance("dom");
 			if (dom_attachment) {
 				var dom_obj = dom_attachment.get_dom_obj();
@@ -151,7 +151,7 @@
 			return false;
 		};
 
-		var get_targets = function(targs) {
+		ist.get_targets = function(targs) {
 			if (!_.isArray(targs)) {
 				targs = [targs];
 			}
@@ -170,11 +170,11 @@
 						} else if (target_cobj instanceof ist.ContextualDict) {
 							if (target_cobj.is_template()) {
 								return _.chain(target_cobj.instances())
-										.map(get_instance_targs)
+										.map(ist.get_instance_targs)
 										.flatten(true)
 										.value();
 							} else {
-								return get_instance_targs(target_cobj);
+								return ist.get_instance_targs(target_cobj);
 							}
 						} else {
 							return false;

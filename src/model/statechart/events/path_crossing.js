@@ -6,6 +6,45 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+
+	ist.CrossEvent = function () {
+		ist.Event.apply(this, arguments);
+		this._initialize();
+		this._type = "cross";
+	};
+
+	(function (My) {
+		_.proto_extend(My, ist.Event);
+		var proto = My.prototype;
+		proto.on_create = function (path, min_velocity) {
+			this.path = path;
+			this.min_velocity = min_velocity;
+
+			this.live_fn = cjs.liven(function () {
+				removeCrossingPathListener(this.path);
+				var min_velocity = cjs.get(this.min_velocity);
+				var path = cjs.get(this.path);
+				if(!_.isNumber(min_velocity)) {
+					min_velocity = 0;
+				}
+				addCrossingPathListener(this.path, _.bind(function(velocity) {
+					if(velocity >= min_velocity) {
+						this.fire();
+					}
+				}, this));
+			}, {
+				context: this,
+				run_on_create: false
+			});
+			this.live_fn.run(false);
+		};
+		proto.destroy = function () {
+			My.superclass.destroy.apply(this, arguments);
+				removeCrossingPathListener(this.path);
+		};
+	}(ist.CrossEvent));
+
+
 	var lowerCase = String.prototype.toLowerCase,
 		upperCase = String.prototype.toUpperCase,
 		isnan = {"NaN": 1, "Infinity": 1, "-Infinity": 1},
@@ -200,8 +239,8 @@
 		findDotAtSegment = function (p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
 			var t1 = 1 - t;
 			return {
-				x: pow(t1, 3) * p1x + pow(t1, 2) * 3 * t * c1x + t1 * 3 * t * t * c2x + pow(t, 3) * p2x,
-				y: pow(t1, 3) * p1y + pow(t1, 2) * 3 * t * c1y + t1 * 3 * t * t * c2y + pow(t, 3) * p2y
+				x: Math.pow(t1, 3) * p1x + Math.pow(t1, 2) * 3 * t * c1x + t1 * 3 * t * t * c2x + Math.pow(t, 3) * p2x,
+				y: Math.pow(t1, 3) * p1y + Math.pow(t1, 2) * 3 * t * c1y + t1 * 3 * t * t * c2y + Math.pow(t, 3) * p2y
 			};
 		},
 		repush = function(array, item) {
@@ -711,19 +750,19 @@
 		crossingPaths = [],
 		pathCallbacks = [],
 		set_touches = function(to_touches, type) {
-			var finterPath, x, y, j, cp, cpLen = crossingPaths.length, i = 0,
+			var fingerPath, x, y, j, cp, cpLen = crossingPaths.length, i = 0,
 				len = to_touches.length,
 				time = (new Date()).getTime(),
 				dt = time - last_time;
 			last_time = time;
 			if(type === "touchmove") {
-				for(i; i<len; i++) {
+				outer: for(i; i<len; i++) {
 					x = to_touches[i].clientX;
 					y = to_touches[i].clientY;
+					fingerPath = "M"+ touches[i].clientX+","+touches[i].clientY+
+									"L"+x+","+y;
 					for(j = 0; j < cpLen; j++) {
 						cp = crossingPaths[j];
-						fingerPath = "M"+ touches[i].clientX+","+touches[i].clientY+
-										"L"+x+","+y;
 
 						var intersection = interPathHelper(cp, fingerPath);
 						if(intersection.length > 0) {
@@ -732,6 +771,7 @@
 								d = Math.sqrt(Math.pow(dx, 2), Math.pow(dy, 2)),
 								v = d / dt;
 							pathCallbacks[j](v);
+							break outer;
 						}
 					}
 				}
@@ -772,6 +812,4 @@
 				}
 			}
 		};
-		ist.addCrossingPathListener = addCrossingPathListener;
-		ist.removeCrossingPathListener = removeCrossingPathListener;
 }(interstate));

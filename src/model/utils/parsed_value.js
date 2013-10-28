@@ -50,6 +50,13 @@
 		} else if(event_type === "frame") {
 			var frame_event = new ist.FrameEvent();
 			return frame_event;
+		} else if(event_type === "cross") {
+			var args = _.rest(arguments),
+				target = args[0],
+				min_velocity = args[1];
+
+			var cross_event = new ist.CrossEvent(target, min_velocity);
+			return cross_event;
 		} else {
 			var targets = _.rest(arguments);
 			var events = [];
