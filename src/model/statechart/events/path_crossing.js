@@ -168,9 +168,9 @@
 			m2[0] = 2 * m1[0] - m2[0];
 			m2[1] = 2 * m1[1] - m2[1];
 			if (recursive) {
-				return [m2, m3, m4][concat](res);
+				return [m2, m3, m4]["concat"](res);
 			} else {
-				res = [m2, m3, m4][concat](res).join()[split](",");
+				res = [m2, m3, m4]["concat"](res).join()[split](",");
 				var newres = [];
 				for (var i = 0, ii = res.length; i < ii; i++) {
 					newres[i] = i % 2 ? rotate(res[i - 1], res[i], rad).y : rotate(res[i], res[i + 1], rad).x;
@@ -484,6 +484,43 @@
 					(type == "array" && Array.isArray && Array.isArray(o)) ||
 					objectToString.call(o).slice(8, -1).toLowerCase() == type;
 		},
+		catmullRom2bezier = function(crp, z) {
+			var d = [];
+			for (var i = 0, iLen = crp.length; iLen - 2 * !z > i; i += 2) {
+				var p = [
+							{x: +crp[i - 2], y: +crp[i - 1]},
+							{x: +crp[i],     y: +crp[i + 1]},
+							{x: +crp[i + 2], y: +crp[i + 3]},
+							{x: +crp[i + 4], y: +crp[i + 5]}
+						];
+				if (z) {
+					if (!i) {
+						p[0] = {x: +crp[iLen - 2], y: +crp[iLen - 1]};
+					} else if (iLen - 4 == i) {
+						p[3] = {x: +crp[0], y: +crp[1]};
+					} else if (iLen - 2 == i) {
+						p[2] = {x: +crp[0], y: +crp[1]};
+						p[3] = {x: +crp[2], y: +crp[3]};
+					}
+				} else {
+					if (iLen - 4 == i) {
+						p[3] = p[2];
+					} else if (!i) {
+						p[0] = {x: +crp[i], y: +crp[i + 1]};
+					}
+				}
+				d.push(["C",
+					  (-p[0].x + 6 * p[1].x + p[2].x) / 6,
+					  (-p[0].y + 6 * p[1].y + p[2].y) / 6,
+					  (p[1].x + 6 * p[2].x - p[3].x) / 6,
+					  (p[1].y + 6*p[2].y - p[3].y) / 6,
+					  p[2].x,
+					  p[2].y
+				]);
+			}
+
+			return d;
+		},
 		pathToAbsolute = function (pathArray) {
 			var pth = paths(pathArray);
 			if (pth.abs) {
@@ -532,13 +569,13 @@
 							r[1] = +pa[1] + x;
 							break;
 						case "R":
-							var dots = [x, y][concat](pa.slice(1));
+							var dots = [x, y]["concat"](pa.slice(1));
 							for (var j = 2, jj = dots.length; j < jj; j++) {
 								dots[j] = +dots[j] + x;
 								dots[++j] = +dots[j] + y;
 							}
 							res.pop();
-							res = res[concat](catmullRom2bezier(dots, crz));
+							res = res["concat"](catmullRom2bezier(dots, crz));
 							break;
 						case "M":
 							mx = +pa[1] + x;
@@ -549,7 +586,7 @@
 							}
 					}
 				} else if (pa[0] == "R") {
-					dots = [x, y][concat](pa.slice(1));
+					dots = [x, y]["concat"](pa.slice(1));
 					res.pop();
 					res = res["concat"](catmullRom2bezier(dots, crz));
 					r = ["R"]["concat"](pa.slice(-2));
@@ -750,24 +787,26 @@
 		crossingPaths = [],
 		pathCallbacks = [],
 		set_touches = function(to_touches, type) {
-			var fingerPath, x, y, j, cp, cpLen = crossingPaths.length, i = 0,
+			var fingerPath, x, y, tx, ty, j, cp, cpLen = crossingPaths.length, i = 0,
 				len = to_touches.length,
 				time = (new Date()).getTime(),
 				dt = time - last_time;
 			last_time = time;
 			if(type === "touchmove") {
 				outer: for(i; i<len; i++) {
-					x = to_touches[i].clientX;
-					y = to_touches[i].clientY;
-					fingerPath = "M"+ touches[i].clientX+","+touches[i].clientY+
+					x = to_touches[i].x;
+					y = to_touches[i].y;
+					tx = touches[i].x;
+					ty = touches[i].y;
+					fingerPath = "M"+ tx+","+ty+
 									"L"+x+","+y;
 					for(j = 0; j < cpLen; j++) {
 						cp = crossingPaths[j];
 
 						var intersection = interPathHelper(cp, fingerPath);
 						if(intersection.length > 0) {
-							var dx = x - touches[i].clientX,
-								dy = y - touches[i].clientY,
+							var dx = x - tx,
+								dy = y - ty,
 								d = Math.sqrt(Math.pow(dx, 2), Math.pow(dy, 2)),
 								v = d / dt;
 							pathCallbacks[j](v);
@@ -776,10 +815,15 @@
 					}
 				}
 			}
-			touches = to_touches;
+			touches = clone(to_touches);
 		},
 		touch_listener = function(event) {
-			set_touches(event.touches, event.type);
+			var new_touches = [];
+			for(var i = event.touches.length-1; i>=0; i-=1) {
+				new_touches[i] = {x: event.touches[i].pageX, y: event.touches[i].pageY};
+			}
+			set_touches(new_touches, event.type);
+			event.preventDefault();
 		},
 		addTouchListeners = function() {
 			window.addEventListener("touchstart", touch_listener);
