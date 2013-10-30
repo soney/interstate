@@ -389,7 +389,10 @@
 				} else if (command === "reset") {
 					root.reset();
 				} else if (command === "export") {
-					window.open("data:text/plain;charset=utf-8," + ist.stringify(root));
+					this.server_socket.post({
+						type: "stringified_root",
+						value: ist.stringify(root)
+					});
 				} else if (command === "upload") {
 					$.ajax({
 						url: "http://interstate.from.so/gallery/upload.php",
@@ -436,6 +439,10 @@
 							console.log(cobjs);
 							*/
 						}
+					} else if(message.type === "load_file") {
+						var new_root = ist.destringify(message.contents);
+						this.option("root", new_root);
+						this.element.trigger("change_root", new_root);
 					}
 				}
 			}, this);

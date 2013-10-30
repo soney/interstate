@@ -54,6 +54,10 @@ html.full_window_editor {
 		margin: 0px;
 		box-sizing: border-box;
 		-moz-box-sizing: border-box;
+
+		&.drop_target {
+			background-color: #DDD;
+		}
 		
 		> #editor {
 			height: 100%;

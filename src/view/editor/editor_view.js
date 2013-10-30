@@ -72,11 +72,67 @@
 								alert.remove();
 							}
 						});
+					} else if(data.type === "stringified_root") {
+						window.open("data:text/plain;charset=utf-8," + data.value);
 					}
 				}, this).on("loaded", function (root_client) {
 					this.load_viewer(root_client);
 				}, this);
 			};
+
+			$(window) .on("dragover.replace_program", _.bind(function(eve) {
+														var event = eve.originalEvent;
+														event.preventDefault();
+														event.stopPropagation();
+														this.show_drag_over();
+														return false;
+													}, this))
+						.on("dragout.replace_program", _.bind(function(eve) {
+														var event = eve.originalEvent;
+														event.preventDefault();
+														event.stopPropagation();
+														this.hide_drag_over();
+														return false;
+													}, this))
+						.on("dragenter.replace_program", _.bind(function(eve) {
+														var event = eve.originalEvent;
+														event.preventDefault();
+														event.stopPropagation();
+														this.show_drag_over();
+														return false;
+													}, this))
+						.on("dragleave.replace_program", _.bind(function(eve) {
+														var event = eve.originalEvent;
+														event.preventDefault();
+														event.stopPropagation();
+														this.hide_drag_over();
+													}, this))
+
+						.on("drop.replace_program", _.bind(function(eve) {
+														var event = eve.originalEvent;
+														event.preventDefault();
+														event.stopPropagation();
+														// fetch FileList object
+														var files = event.target.files || event.dataTransfer.files;
+														var file = files[0];
+														var fr = new FileReader();
+														this.hide_drag_over();
+														fr.onload = _.bind(function() {
+															console.log(fr.result);
+															//var new_root = ist.destringify(fr.result);
+															//this.option("root", new_root);
+															//this.element.trigger("change_root", new_root);
+															this.client_socket.post({
+																type: "load_file",
+																contents: fr.result
+															});
+
+															delete fr.onload;
+															fr = null;
+														}, this);
+														fr.readAsText(file);
+														return false;
+													}, this));
 
 			if(this.option("use_socket")) {
 				interstate.async_js("/socket.io/socket.io.js", _.bind(function() {
@@ -263,6 +319,31 @@
 
 		"export": function() {
 			this.client_socket.post_command("export");
+		},
+		show_drag_over: function() {
+			$(document.body).addClass("drop_target");
+			if(!this.hasOwnProperty("overlay")) {
+				this.overlay = $("<div />")	.addClass("overlay")
+											.css({
+												"background-color": "#555",
+												"opacity": "0.8",
+												"position": "fixed",
+												"left": "0px",
+												"top": "0px",
+												"width": "100%",
+												"height": "100%",
+												"pointer-events": "none",
+												"border": "10px dashed #DDD",
+												"box-sizing": "border-box"
+											})
+											.appendTo(document.body);
+			}
+		},
+
+		hide_drag_over: function() {
+			$(document.body).removeClass("drop_target");
+			this.overlay.remove();
+			delete this.overlay;
 		},
 
 		upload: function() {
