@@ -59,6 +59,9 @@ app.configure(function() {
 	app.use(express.static(__dirname));
 	app.set('view engine', 'ejs');
 
+	app.get("/e/:uid", function(req, res, next) {
+		res.redirect("src/view/editor/editor.ejs.html?comm=socket&client_id="+req.params.uid);
+	});
 	app.get("*.ejs.html*|/", function(req, res, next) {
 		var relative_url = req.originalUrl.slice(1); //remove the initial '/'
 		var filename;

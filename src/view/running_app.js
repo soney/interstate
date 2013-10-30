@@ -104,7 +104,7 @@
 					padding: "3px",
 					"padding-top": "0px",
 					position: "fixed",
-					top: "0px",
+					top: display === "tablet" ? "15px" : "0px",
 					right: "0px",
 					color: this.button_color,
 					"background-color": "",
@@ -466,12 +466,13 @@
 				if(this.option("external_editor")) {
 					interstate.async_js("/socket.io/socket.io.js", _.bind(function() {
 						var socket_wrapper = new ist.SocketCommWrapper(this.option("client_id"), true);
-						var url = this.option("editor_url") + "?comm=socket&client_id="+encodeURIComponent(this.option("client_id"));
+						var url = origin+"/e/"+encodeURIComponent(this.option("client_id"));
 						var code_container = $("<div />");
+						var size = display === "tablet" ? 500 : 256;
 						var qrcode = new QRCode(code_container[0], {
 							text: url,
-							width: 128,
-							height: 128,
+							width: size,
+							height: size,
 							colorDark : "#000000",
 							colorLight : "#ffffff",
 							correctLevel : QRCode.CorrectLevel.H
