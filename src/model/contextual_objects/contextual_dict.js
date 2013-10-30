@@ -47,7 +47,7 @@
 				proto_val = proto_obj.toArray();
 			} else if (proto_obj) {
 				var proto_contextual_obj = ist.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {
-					check_on_nullify: true,
+					//check_on_nullify: true,
 					equals: proto_eq
 				});
 				//if(window.dbg) {

@@ -31,7 +31,7 @@
 			//if(uid.strip_prefix(this.id()) == 150) {
 				//debugger;
 			//}
-			this.$value.get(false);
+			//this.$value.get(false);
 		};
 
 		proto.get_parent = function () {

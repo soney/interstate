@@ -118,10 +118,6 @@
 														var fr = new FileReader();
 														this.hide_drag_over();
 														fr.onload = _.bind(function() {
-															console.log(fr.result);
-															//var new_root = ist.destringify(fr.result);
-															//this.option("root", new_root);
-															//this.element.trigger("change_root", new_root);
 															this.client_socket.post({
 																type: "load_file",
 																contents: fr.result

@@ -19,13 +19,13 @@ var interstate = (function (root) {
 	able.make_this_listenable(ist);
 	able.make_proto_listenable(ist);
 
-	ist.register_uid = function (uid, obj) {
-		uid_objs[uid] = obj;
-		ist._emit("uid_registered", uid, obj);
+	ist.register_uid = function (id, obj) {
+		uid_objs[id] = obj;
+		ist._emit("uid_registered", id, obj);
 	};
-	ist.unregister_uid = function (uid) {
-		delete uid_objs[uid];
-		ist._emit("uid_unregistered", uid);
+	ist.unregister_uid = function (id) {
+		delete uid_objs[id];
+		ist._emit("uid_unregistered", id);
 	};
 	ist.find_uid = function (uid) {
 		return uid_objs[uid];

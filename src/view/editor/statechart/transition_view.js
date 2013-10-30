@@ -129,8 +129,10 @@
 
 		if (event instanceof ist.ParsedEvent) {
 			event.on("setString", function (e) {
-				var str = e.to;
-				this.label.option("text", str);
+				if(this.label) {
+					var str = e.to;
+					this.label.option("text", str);
+				}
 			}, this);
 			str = event.get_str();
 			this.errors_fn = cjs.liven(function () {

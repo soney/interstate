@@ -661,10 +661,8 @@
 			if (keyIndex >= 0) {
 				var substate = this.$substates.get(from_name);
 				cjs.wait();
-				this.$substates.wait()
-					.remove(from_name)
-					.put(to_name, substate, keyIndex)
-					.signal();
+				this.$substates	.remove(from_name)
+								.put(to_name, substate, keyIndex);
 				this._emit("rename_substate", {
 					type: "rename_substate",
 					state: substate,

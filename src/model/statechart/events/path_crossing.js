@@ -20,18 +20,24 @@
 			this.path = path;
 			this.min_velocity = min_velocity;
 
+			this._curr_path = null;
+			this._crossing_path_listener_id = false;
+
 			this.live_fn = cjs.liven(function () {
-				removeCrossingPathListener(this.path);
+				if(this._crossing_path_listener_id) {
+					removeCrossingPathListener(this._crossing_path_listener_id);
+					this._crossing_path_listener_id = false;
+				}
 				var min_velocity = cjs.get(this.min_velocity);
-				var path = cjs.get(this.path);
+				this._curr_path = cjs.get(this.path);
 				if(!_.isNumber(min_velocity)) {
 					min_velocity = 0;
 				}
-				addCrossingPathListener(this.path, _.bind(function(velocity) {
+				this._crossing_path_listener_id = addCrossingPathListener(this._curr_path, function(velocity) {
 					if(velocity >= min_velocity) {
 						this.fire();
 					}
-				}, this));
+				}, this);
 			}, {
 				context: this,
 				run_on_create: false
@@ -40,7 +46,9 @@
 		};
 		proto.destroy = function () {
 			My.superclass.destroy.apply(this, arguments);
-				removeCrossingPathListener(this.path);
+			if(this._crossing_path_listener_id) {
+				removeCrossingPathListener(this._crossing_path_listener_id);
+			}
 		};
 	}(ist.CrossEvent));
 
@@ -92,8 +100,8 @@
 		a2c = function (x1, y1, rx, ry, angle, large_arc_flag, sweep_flag, x2, y2, recursive) {
 			// for more information of where this math came from visit:
 			// http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
-			var _120 = PI * 120 / 180,
-				rad = PI / 180 * (+angle || 0),
+			var _120 = Math.PI * 120 / 180,
+				rad = Math.PI / 180 * (+angle || 0),
 				res = [],
 				xy,
 				rotate = cacher(function (x, y, rad) {
@@ -108,8 +116,8 @@
 				xy = rotate(x2, y2, -rad);
 				x2 = xy.x;
 				y2 = xy.y;
-				var cos = Math.cos(PI / 180 * angle),
-					sin = Math.sin(PI / 180 * angle),
+				var cos = Math.cos(Math.PI / 180 * angle),
+					sin = Math.sin(Math.PI / 180 * angle),
 					x = (x1 - x2) / 2,
 					y = (y1 - y2) / 2;
 				var h = (x * x) / (rx * rx) + (y * y) / (ry * ry);
@@ -127,15 +135,15 @@
 					f1 = Math.asin(((y1 - cy) / ry).toFixed(9)),
 					f2 = Math.asin(((y2 - cy) / ry).toFixed(9));
 
-				f1 = x1 < cx ? PI - f1 : f1;
-				f2 = x2 < cx ? PI - f2 : f2;
-				f1 < 0 && (f1 = PI * 2 + f1);
-				f2 < 0 && (f2 = PI * 2 + f2);
+				f1 = x1 < cx ? Math.PI - f1 : f1;
+				f2 = x2 < cx ? Math.PI - f2 : f2;
+				f1 < 0 && (f1 = Math.PI * 2 + f1);
+				f2 < 0 && (f2 = Math.PI * 2 + f2);
 				if (sweep_flag && f1 > f2) {
-					f1 = f1 - PI * 2;
+					f1 = f1 - Math.PI * 2;
 				}
 				if (!sweep_flag && f2 > f1) {
-					f2 = f2 - PI * 2;
+					f2 = f2 - Math.PI * 2;
 				}
 			} else {
 				f1 = recursive[0];
@@ -170,7 +178,7 @@
 			if (recursive) {
 				return [m2, m3, m4]["concat"](res);
 			} else {
-				res = [m2, m3, m4]["concat"](res).join()[split](",");
+				res = [m2, m3, m4]["concat"](res).join()["split"](",");
 				var newres = [];
 				for (var i = 0, ii = res.length; i < ii; i++) {
 					newres[i] = i % 2 ? rotate(res[i - 1], res[i], rad).y : rotate(res[i], res[i + 1], rad).x;
@@ -639,7 +647,7 @@
 							d.Y = path[2];
 							break;
 						case "A":
-							path = ["C"]["concat"](a2c[apply](0, [d.x, d.y]["concat"](path.slice(1))));
+							path = ["C"]["concat"](a2c["apply"](0, [d.x, d.y]["concat"](path.slice(1))));
 							break;
 						case "S":
 							if (pcom == "C" || pcom == "S") { // In "S" case we have to take into account, if the previous command is C/S.
@@ -792,7 +800,7 @@
 				time = (new Date()).getTime(),
 				dt = time - last_time;
 			last_time = time;
-			if(type === "touchmove") {
+			if(type === "touchmove" && touches && touches.length === to_touches.length) {
 				outer: for(i; i<len; i++) {
 					x = to_touches[i].x;
 					y = to_touches[i].y;
@@ -809,7 +817,8 @@
 								dy = y - ty,
 								d = Math.sqrt(Math.pow(dx, 2), Math.pow(dy, 2)),
 								v = d / dt;
-							pathCallbacks[j](v);
+							var callback_info = pathCallbacks[j];
+							callback_info.callback.call(callback_info.context || this, v);
 							break outer;
 						}
 					}
@@ -835,18 +844,28 @@
 			window.removeEventListener("touchmove", touch_listener);
 			window.removeEventListener("touchend", touch_listener);
 		},
-		addCrossingPathListener = function(path, callback) {
+		crossing_path_listener_id = 1,
+		addCrossingPathListener = function(path, callback, context) {
+			var cpl_id = crossing_path_listener_id;
+			crossing_path_listener_id+=1;
 			crossingPaths.push(path);
-			pathCallbacks.push(callback);
+			pathCallbacks.push({
+				callback: callback,
+				context: context,
+				id: cpl_id
+			});
 			if(crossingPaths.length === 1) {
 				addTouchListeners();
 			}
+			return cpl_id;
 		},
 		removeCrossingPathListener = function(path) {
-			var i = 0, len = crossingPaths.length, cp;
+			var i = 0, len = crossingPaths.length, cp, linfo;
 			for(i; i<len; i++) {
 				cp = crossingPaths[i];
-				if(cp === path) {
+				linfo = pathCallbacks[i];
+
+				if(cp === path || linfo.id === path) {
 					crossingPaths.splice(i, 1);
 					pathCallbacks.splice(i, 1);
 					len -= 1;
