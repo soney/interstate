@@ -35,7 +35,11 @@
 				}
 				this._crossing_path_listener_id = addCrossingPathListener(this._curr_path, function(velocity) {
 					if(velocity >= min_velocity) {
+						ist.event_queue.wait();
 						this.fire();
+						_.defer(function() {
+							ist.event_queue.signal();
+						});
 					}
 				}, this);
 			}, {
