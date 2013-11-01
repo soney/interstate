@@ -50,7 +50,7 @@
 			delete this.options.client_socket;
 			delete this.options;
 		},
-		on_child_select: function(column, event, child_info) {
+		on_child_select: function(column, event, child_info, collapse) {
 			var value = child_info.value;
 			if(value instanceof ist.WrapperClient && (value.type() === "dict" || value.type() === "stateful")) {
 				this.curr_col.column("option", "is_curr_col", false);
@@ -75,9 +75,11 @@
 				}
 				next_col.focus();
 				this.curr_col = next_col;
+			} else {
+				this.on_header_click(column);
 			}
 		},
-		on_header_click: function(column, event, child_info) {
+		on_header_click: function(column) {
 			var column_index = _.indexOf(this.columns, column);
 			var subsequent_columns = this.columns.slice(column_index + 1);
 			_.each(subsequent_columns, function(col) {

@@ -579,19 +579,23 @@
 			delete this.options;
 		},
 		on_child_select: function(child_info, child_disp, event) {
-			var client = child_info.value;
-			if(client instanceof ist.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
-				if(this.selected_child_disp) {
-					if(this.selected_child_disp.data("interstate-prop")) { // need to check in case this.selected_child_disp was removed
-						this.selected_child_disp.prop("on_deselect");
-					}
-				}
-				this.selected_child_disp = child_disp;
-				this.selected_child_disp.prop("on_select");
+			if($(event.target).hasClass("selected")) {
+				this.on_header_click(event);
 			} else {
-				//console.log("OK");
+				var client = child_info.value;
+				if(client instanceof ist.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
+					if(this.selected_child_disp) {
+						if(this.selected_child_disp.data("interstate-prop")) { // need to check in case this.selected_child_disp was removed
+							this.selected_child_disp.prop("on_deselect");
+						}
+					}
+					this.selected_child_disp = child_disp;
+					this.selected_child_disp.prop("on_select");
+				} else {
+					//console.log("OK");
+				}
+				this.element.trigger("child_select", child_info);
 			}
-			this.element.trigger("child_select", child_info);
 		},
 		build_src_view: function() {
 			this.destroy_src_view();

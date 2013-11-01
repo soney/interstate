@@ -48,9 +48,9 @@
 
 				$(function() {
 					the_div = $("<div />").appendTo(document.body);
-					//try {
+					try {
 						root = load();
-					/*} catch(e) {
+					} catch(e) {
 						console.log("Creating a new project");
 						env = new interstate.Environment();
 
@@ -66,7 +66,6 @@
 						});
 						env.print_on_return = true;
 					}
-						*/
 				});
 				$(window).on("beforeunload", function() {
 					if(window.nosave !== true) {
