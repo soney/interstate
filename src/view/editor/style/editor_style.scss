@@ -50,6 +50,7 @@ html.full_window_editor {
 	background-image: url(images/fabric_plaid.png);
 	
 	> body {
+		overflow: hidden;
 		height: 100%;
 		margin: 0px;
 		box-sizing: border-box;
@@ -66,7 +67,7 @@ html.full_window_editor {
 }
 
 .row {
-	overflow: scroll;
+	overflow: auto;
 	box-sizing: border-box;
 	&:first-child {
 		border-top: none;
@@ -102,11 +103,9 @@ html.full_window_editor {
 		> .navigator.row {
 			> #obj_nav {
 				clear: both;
-				overflow: scroll;
 			}
 		}
 		> .pinned.row {
-			overflow: scroll;
 			padding-top: 10px;
 		}
 	}

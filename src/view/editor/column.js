@@ -579,7 +579,7 @@
 			delete this.options;
 		},
 		on_child_select: function(child_info, child_disp, event) {
-			if($(event.target).hasClass("selected")) {
+			if(event && $(event.target).hasClass("selected")) {
 				this.on_header_click(event);
 			} else {
 				var client = child_info.value;

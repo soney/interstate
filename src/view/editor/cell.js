@@ -223,7 +223,9 @@
 				width: width + "px"
 			});
 
-			this.textbox.val(this.str);
+			if(this.str) {
+				this.textbox.val(this.str);
+			}
 			this.focus();
 			this.select();
 			this.element.tooltip("disable");
