@@ -124,6 +124,7 @@
 				event.stopPropagation();
 			} else {
 				this.begin_editing();
+				event.stopPropagation();
 			}
 		},
 		create_live_text_fn: function() {
