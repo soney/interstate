@@ -25,6 +25,7 @@
 
 			this.live_fn = cjs.liven(function () {
 				if(this._crossing_path_listener_id) {
+					console.log("removed", this._crossing_path_listener_id);
 					removeCrossingPathListener(this._crossing_path_listener_id);
 					this._crossing_path_listener_id = false;
 				}
@@ -42,11 +43,51 @@
 						});
 					}
 				}, this);
+				console.log("added", this._crossing_path_listener_id);
 			}, {
 				context: this,
 				run_on_create: false
 			});
 			this.live_fn.run(false);
+		};
+		proto.enable = function () {
+			if(!this.is_enabled()) {
+				if(this.live_fn.resume()) {
+					this.live_fn.run();
+					if(this._crossing_path_listener_id) {
+						console.log("removed", this._crossing_path_listener_id);
+						removeCrossingPathListener(this._crossing_path_listener_id);
+						this._crossing_path_listener_id = false;
+					}
+					var min_velocity = cjs.get(this.min_velocity);
+					this._curr_path = cjs.get(this.path);
+					if(!_.isNumber(min_velocity)) {
+						min_velocity = 0;
+					}
+					this._crossing_path_listener_id = addCrossingPathListener(this._curr_path, function(velocity) {
+						if(velocity >= min_velocity) {
+							ist.event_queue.wait();
+							this.fire();
+							_.defer(function() {
+								ist.event_queue.signal();
+							});
+						}
+					}, this);
+					console.log("added", this._crossing_path_listener_id);
+				}
+			}
+			My.superclass.enable.apply(this, arguments);
+		};
+		proto.disable = function () {
+			if(this.is_enabled()) {
+				this.live_fn.pause();
+				if(this._crossing_path_listener_id) {
+					console.log("remove", this._crossing_path_listener_id);
+					removeCrossingPathListener(this._crossing_path_listener_id);
+					delete this._crossing_path_listener_id;
+				}
+			}
+			My.superclass.disable.apply(this, arguments);
 		};
 		proto.destroy = function () {
 			My.superclass.destroy.apply(this, arguments);

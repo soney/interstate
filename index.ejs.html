@@ -67,7 +67,7 @@
 						env.print_on_return = true;
 					}
 				});
-				$(window).on("beforeunload", function() {
+				$(window).on("unload", function() {
 					if(window.nosave !== true) {
 						save();
 					}
