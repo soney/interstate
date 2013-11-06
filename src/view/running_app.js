@@ -141,7 +141,7 @@
 														this.edit_button.removeClass("hover").css(this.edit_button_css);
 													}
 												}, this))
-												.on("click.open_editor", _.bind(this.open_editor, this));
+												.on("mousedown.open_editor touchstart.open_editor", _.bind(this.open_editor, this));
 
 				var append_interval = window.setInterval(_.bind(function (element, edit_button) {
 					if (element.parentNode) {
@@ -448,7 +448,9 @@
 			}, this);
 			return server_socket;
 		},
-		open_editor: function () {
+		open_editor: function (event) {
+			event.preventDefault();
+			event.stopPropagation();
 			if (this.editor_window) {
 				this.editor_window.focus();
 			} else {
