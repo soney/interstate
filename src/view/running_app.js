@@ -449,8 +449,10 @@
 			return server_socket;
 		},
 		open_editor: function (event) {
-			event.preventDefault();
-			event.stopPropagation();
+			if(event) {
+				event.preventDefault();
+				event.stopPropagation();
+			}
 			if (this.editor_window) {
 				this.editor_window.focus();
 			} else {

@@ -24,53 +24,45 @@
 			this._crossing_path_listener_id = false;
 
 			this.live_fn = cjs.liven(function () {
-				if(this._crossing_path_listener_id) {
-					removeCrossingPathListener(this._crossing_path_listener_id);
-					this._crossing_path_listener_id = false;
-				}
+				this.remove_listener();
 				var min_velocity = cjs.get(this.min_velocity);
+				if(!_.isNumber(min_velocity)) { min_velocity = 0; }
+				this._min_velocity = min_velocity;
 				this._curr_path = cjs.get(this.path);
-				if(!_.isNumber(min_velocity)) {
-					min_velocity = 0;
-				}
-				this._crossing_path_listener_id = addCrossingPathListener(this._curr_path, function(velocity) {
-					console.log("HIT");
-					if(velocity >= min_velocity) {
-						ist.event_queue.wait();
-						this.fire();
-						_.defer(function() {
-							ist.event_queue.signal();
-						});
-					}
-				}, this);
+				this.add_listener();
 			}, {
 				context: this,
 				run_on_create: false
 			});
 			this.live_fn.run(false);
 		};
+		proto.remove_listener = function() {
+			if(this._crossing_path_listener_id) {
+				removeCrossingPathListener(this._crossing_path_listener_id);
+				this._crossing_path_listener_id = false;
+			}
+		};
+		proto.add_listener = function() {
+			this._crossing_path_listener_id = addCrossingPathListener(this._curr_path, function(velocity) {
+				if(velocity >= this._min_velocity) {
+					ist.event_queue.wait();
+					this.fire();
+					_.defer(function() {
+						if(nts++%2 === 0) {
+							window.ddb = true;
+						}
+						ist.event_queue.signal();
+						window.ddb = false;
+					});
+				}
+			}, this);
+		};
+		var nts = 1;
 		proto.enable = function () {
 			if(!this.is_enabled()) {
 				if(this.live_fn.resume()) {
+					this.add_listener();
 					this.live_fn.run();
-					if(this._crossing_path_listener_id) {
-						removeCrossingPathListener(this._crossing_path_listener_id);
-						this._crossing_path_listener_id = false;
-					}
-					var min_velocity = cjs.get(this.min_velocity);
-					this._curr_path = cjs.get(this.path);
-					if(!_.isNumber(min_velocity)) {
-						min_velocity = 0;
-					}
-					this._crossing_path_listener_id = addCrossingPathListener(this._curr_path, function(velocity) {
-						if(velocity >= min_velocity) {
-							ist.event_queue.wait();
-							this.fire();
-							_.defer(function() {
-								ist.event_queue.signal();
-							});
-						}
-					}, this);
 				}
 			}
 			My.superclass.enable.apply(this, arguments);
@@ -78,10 +70,7 @@
 		proto.disable = function () {
 			if(this.is_enabled()) {
 				this.live_fn.pause();
-				if(this._crossing_path_listener_id) {
-					removeCrossingPathListener(this._crossing_path_listener_id);
-					delete this._crossing_path_listener_id;
-				}
+				this.remove_listener();
 			}
 			My.superclass.disable.apply(this, arguments);
 		};
