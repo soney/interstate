@@ -48,16 +48,11 @@
 					ist.event_queue.wait();
 					this.fire();
 					_.defer(function() {
-						if(nts++%2 === 0) {
-							window.ddb = true;
-						}
 						ist.event_queue.signal();
-						window.ddb = false;
 					});
 				}
 			}, this);
 		};
-		var nts = 1;
 		proto.enable = function () {
 			if(!this.is_enabled()) {
 				if(this.live_fn.resume()) {

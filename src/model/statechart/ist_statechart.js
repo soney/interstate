@@ -155,6 +155,10 @@
 		options = options || {};
 		this._transition_listeners = {};
 		ist.Statechart.superclass.constructor.apply(this, arguments);
+
+		if(uid.strip_prefix(this.id()) == 179) {
+			//debugger;
+		}
 	};
 	(function (My) {
 		_.proto_extend(My, ist.State);

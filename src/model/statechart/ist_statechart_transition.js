@@ -219,9 +219,6 @@
 			if (this.is_puppet()) {
 				this._emit("fire", {type: "fire", target: this});
 			} else if (this.from().on_outgoing_transition_fire(this, event)) {
-				console.log(this.context());
-				if(window.ddb) {
-				}
 				this._emit("fire", {type: "fire", target: this});
 			}
 		};

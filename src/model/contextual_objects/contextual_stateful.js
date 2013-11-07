@@ -27,11 +27,14 @@
 		};
 
 		proto.get_statechart_for_proto = function (proto) {
-			return this.statecharts_per_proto.get_or_put(proto, function () {
+			cjs.wait();
+			var sc = this.statecharts_per_proto.get_or_put(proto, function () {
 				var super_sc = proto.get_own_statechart();
 				var shadow_sc = super_sc.create_shadow({context: this.get_pointer(), running: true});
 				return shadow_sc;
 			}, this);
+			cjs.signal();
+			return sc;
 		};
 
 		proto.get_statecharts = function () {
