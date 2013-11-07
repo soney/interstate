@@ -25,7 +25,6 @@
 
 			this.live_fn = cjs.liven(function () {
 				if(this._crossing_path_listener_id) {
-					console.log("removed", this._crossing_path_listener_id);
 					removeCrossingPathListener(this._crossing_path_listener_id);
 					this._crossing_path_listener_id = false;
 				}
@@ -35,6 +34,7 @@
 					min_velocity = 0;
 				}
 				this._crossing_path_listener_id = addCrossingPathListener(this._curr_path, function(velocity) {
+					console.log("HIT");
 					if(velocity >= min_velocity) {
 						ist.event_queue.wait();
 						this.fire();
@@ -43,7 +43,6 @@
 						});
 					}
 				}, this);
-				console.log("added", this._crossing_path_listener_id);
 			}, {
 				context: this,
 				run_on_create: false
@@ -55,7 +54,6 @@
 				if(this.live_fn.resume()) {
 					this.live_fn.run();
 					if(this._crossing_path_listener_id) {
-						console.log("removed", this._crossing_path_listener_id);
 						removeCrossingPathListener(this._crossing_path_listener_id);
 						this._crossing_path_listener_id = false;
 					}
@@ -73,7 +71,6 @@
 							});
 						}
 					}, this);
-					console.log("added", this._crossing_path_listener_id);
 				}
 			}
 			My.superclass.enable.apply(this, arguments);
@@ -82,7 +79,6 @@
 			if(this.is_enabled()) {
 				this.live_fn.pause();
 				if(this._crossing_path_listener_id) {
-					console.log("remove", this._crossing_path_listener_id);
 					removeCrossingPathListener(this._crossing_path_listener_id);
 					delete this._crossing_path_listener_id;
 				}
