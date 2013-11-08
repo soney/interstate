@@ -37,15 +37,25 @@
 			this.add_message_listeners();
 		};
 
+		proto.set_root = function(new_root) {
+			console.log("set root");
+			this.destroy();
+			//this.root = new_root();
+		};
+
+		proto.send_root = function() {
+			var croot_summary = this.contextual_root ? this.contextual_root.summarize() : null;
+			this.post({
+				type: "croot",
+				summary: croot_summary
+			});
+		};
+
 		proto.on_message = function (data) {
 			var cobj, cobj_id, server, client_id;
 			if(data === "ready") {
 				this.connected = true;
-				var croot_summary = this.contextual_root ? this.contextual_root.summarize() : null;
-				this.post({
-					type: "croot",
-					summary: croot_summary
-				});
+				this.send_root();
 			} else if(data === "loaded") {
 				this._emit("connected");
 			} else if(data === "disconnect") {

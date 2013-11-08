@@ -240,6 +240,7 @@
 
 		_setOption: function(key, value) {
 			if(key === "root") {
+				this._remove_change_listeners();
 				var old_root = this.option("root");
 				if(old_root) {
 					old_root.destroy();
@@ -253,11 +254,9 @@
 					this.close_editor();
 				}
 
-				this._remove_change_listeners();
 				if(this.server_socket) {
-					this.server_socket.destroy();
+					this.server_socket.set_root(this.option("root"));
 				}
-				this.server_socket = this._create_server_socket();
 				this._add_change_listeners();
 
 				if(to_open) {
@@ -311,13 +310,8 @@
 			var root_dict = this.option("root");
 			var root_contextual_object = ist.find_or_put_contextual_obj(root_dict);
 
-			var is_running = false;
 			this._update_fn = cjs.liven(function() {
-				//if(is_running) { debugger; }
-				is_running = true;
 				ist.update_current_contextual_objects(root_dict);
-				is_running = false;
-			}, {
 			});
 
 			this._raphael_fn = cjs.liven(function () {
@@ -434,10 +428,6 @@
 								cobj_id: cobj_id,
 								value: summaries
 							});
-							/*
-							console.log(summaries);
-							console.log(cobjs);
-							*/
 						}
 					} else if(message.type === "load_file") {
 						var new_root = ist.destringify(message.contents);
@@ -472,7 +462,6 @@
 					$(window).on("beforeunload.close_editor", _.bind(this.close_editor, this));
 					this.element.trigger("editor_open");
 				};
-
 
 				if(this.option("external_editor")) {
 					interstate.async_js("/socket.io/socket.io.js", _.bind(function() {
