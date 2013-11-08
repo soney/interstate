@@ -40,7 +40,8 @@
 			this._super();
 			_.each(this.columns, function(col) {
 				col	.off("child_select.nav header_select.nav prev_click.nav child_removed.nav")
-					.column("destroy");
+					.column("destroy")
+					.remove();
 			});
 			var client = this.option("root_client");
 			this.element.off("open_cobj.nav");

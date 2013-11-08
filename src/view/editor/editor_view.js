@@ -76,7 +76,16 @@
 						window.open("data:text/plain;charset=utf-8," + data.value);
 					}
 				}, this).on("loaded", function (root_client) {
+					if(this.displaying_loading_text) {
+						this.element.html("");
+						this.displaying_loading_text = false;
+					}
 					this.load_viewer(root_client);
+				}, this)
+				.on("root_changed", function () {
+					this.navigator.navigator("destroy");
+					$("column", this.pinned).column("destroy").remove();
+					this.element.pane("set_percentage", 0, 1);
 				}, this);
 			};
 
@@ -144,6 +153,7 @@
 				}
 			}
 
+			this.displaying_loading_text = true;
 			this.element.text("Loading...");
 			$(window).on("beforeunload.close_editor", _.bind(function () {
 				this.on_unload();
@@ -172,31 +182,41 @@
 			return this.client_socket;
 		},
 
+		load_navigator: function (root_client) {
+			if(!this.navigator) {
+			}
+		},
+
 		load_viewer: function (root_client) {
-			this.element.html("");
-			this.element.pane();
-			this.menu = $("<div />").menu({
-										title: "menu",
-										items: {
-											"Undo": {
-												on_select: _.bind(this.undo, this)
-											},
-											"Redo": {
-												on_select: _.bind(this.redo, this)
-											},
-											"Save Locally": {
-												on_select: _.bind(this["export"], this)
-											},
-											"Upload": {
-												on_select: _.bind(this.upload, this)
+			if(!this.element.data("interstate.pane")) {
+				this.element.pane();
+			}
+			if(!this.menu) {
+				this.menu = $("<div />").menu({
+											title: "menu",
+											items: {
+												"Undo": {
+													on_select: _.bind(this.undo, this)
+												},
+												"Redo": {
+													on_select: _.bind(this.redo, this)
+												},
+												"Save Locally": {
+													on_select: _.bind(this["export"], this)
+												},
+												"Upload": {
+													on_select: _.bind(this.upload, this)
+												}
 											}
-										}
-									})
-									.appendTo(this.element);
+										})
+										.appendTo(this.element);
+			}
 
-			this.navigator = $("<div />").addClass("navigator row");
+			if(!this.navigator) {
+				this.navigator = $("<div />").addClass("navigator row");
 
-			this.element.pane("add", this.navigator);
+				this.element.pane("add", this.navigator);
+			}
 
 			this.navigator .navigator({
 								root_client: root_client,
@@ -204,77 +224,64 @@
 								client_socket: this.client_socket 
 							});
 
-			this.pinned = $("<div />")	.addClass("pinned row");
-			this.pin_indicator = $("<div />").addClass("pin_explanation").text("drag here to pin").appendTo(this.pinned);
-			if(this.option("pinned_row")) {
-				this.element.pane("add", this.pinned);
-			}
-			this.element.pane("set_percentage", 0, 1);
-
-			this.element.on("command.do_action", _.bind(this.on_command, this));
-
-			this.navigator.on("dragstart.pin", _.bind(function(event) {
-				var bottom_indicator_was_hidden = this.element.pane("get_percentage", 0) > 0.99;
-				if(bottom_indicator_was_hidden) {
-					this.element.pane("set_percentage", 0, 0.6);
+			if(!this.pinned) {
+				this.pinned = $("<div />")	.addClass("pinned row");
+				this.pin_indicator = $("<div />").addClass("pin_explanation").text("drag here to pin").appendTo(this.pinned);
+				if(this.option("pinned_row")) {
+					this.element.pane("add", this.pinned);
 				}
-				var targ = $(event.target);
+				this.element.pane("set_percentage", 0, 1);
 
-				var clear_drag_info = function() {
-					this.pinned.off("dragenter.pin dragleave.pin drop.pin")
-								.removeClass("dropover drop_indicator");
-					targ.off("dragcancel.pin dragend.pin");
-				};
+				this.element.on("command.do_action", _.bind(this.on_command, this));
+
+				this.navigator.on("dragstart.pin", _.bind(function(event) {
+					var bottom_indicator_was_hidden = this.element.pane("get_percentage", 0) > 0.99;
+					if(bottom_indicator_was_hidden) {
+						this.element.pane("set_percentage", 0, 0.6);
+					}
+					var targ = $(event.target);
+
+					var clear_drag_info = function() {
+						this.pinned.off("dragenter.pin dragleave.pin drop.pin")
+									.removeClass("dropover drop_indicator");
+						targ.off("dragcancel.pin dragend.pin");
+					};
 
 
-				this.pinned	.addClass("drop_indicator")
-							.on("dragenter.pin", _.bind(function(ev2) {
-								this.pinned.addClass("dropover");
-							}, this))
-							.on("dragover.pin", function() {
-								return false;
-							})
-							.on("dragleave.pin", _.bind(function(ev2) {
-								this.pinned.removeClass("dropover");
-							}, this))
-							.on("drop.pin", _.bind(function(ev2) {
-								clear_drag_info.call(this);
-								var client = targ.column("option", "client");
-								var client_socket = targ.column("option", "client_socket");
-								var pinned_col = $("<table />")	.appendTo(this.pinned)
-																.column({
-																	client: targ.column("option", "client"),
-																	name: targ.column("option", "name"),
-																	prev_col: targ.column("option", "prev_col"),
-																	show_prev: true,
-																	is_curr_col: true,
-																	show_source: true,
-																	curr_copy_client: targ.column("option", "curr_copy_client"),
-																	client_socket: client_socket,
-																	curr_copy_index: targ.column("option", "curr_copy_index"),
-																	close_button: true
-																});
+					this.pinned	.addClass("drop_indicator")
+								.on("dragenter.pin", _.bind(function(ev2) {
+									this.pinned.addClass("dropover");
+								}, this))
+								.on("dragover.pin", function() {
+									return false;
+								})
+								.on("dragleave.pin", _.bind(function(ev2) {
+									this.pinned.removeClass("dropover");
+								}, this))
+								.on("drop.pin", _.bind(function(ev2) {
+									clear_drag_info.call(this);
+									var client = targ.column("option", "client");
+									var client_socket = targ.column("option", "client_socket");
+									var pinned_col = $("<table />")	.appendTo(this.pinned)
+																	.column({
+																		client: targ.column("option", "client"),
+																		name: targ.column("option", "name"),
+																		prev_col: targ.column("option", "prev_col"),
+																		show_prev: true,
+																		is_curr_col: true,
+																		show_source: true,
+																		curr_copy_client: targ.column("option", "curr_copy_client"),
+																		client_socket: client_socket,
+																		curr_copy_index: targ.column("option", "curr_copy_index"),
+																		close_button: true
+																	});
 
-								pinned_col.on("child_select.nav", _.bind(function(event, child_info) {
-									client = child_info.value;
-									pinned_col	.column("destroy")
-												.column({
-													client: client,
-													name: child_info.name,
-													prev_col: true,
-													show_prev: true,
-													is_curr_col: true,
-													show_source: true,
-													client_socket: client_socket,
-													close_button: true
-												});
-								}, this)).on("prev_click.nav", _.bind(function() {
-									client.async_get("parent", function(new_client) {
-										client = new_client;
+									pinned_col.on("child_select.nav", _.bind(function(event, child_info) {
+										client = child_info.value;
 										pinned_col	.column("destroy")
 													.column({
 														client: client,
-														name: client.object_summary.name,
+														name: child_info.name,
 														prev_col: true,
 														show_prev: true,
 														is_curr_col: true,
@@ -282,35 +289,49 @@
 														client_socket: client_socket,
 														close_button: true
 													});
-									});
+									}, this)).on("prev_click.nav", _.bind(function() {
+										client.async_get("parent", function(new_client) {
+											client = new_client;
+											pinned_col	.column("destroy")
+														.column({
+															client: client,
+															name: client.object_summary.name,
+															prev_col: true,
+															show_prev: true,
+															is_curr_col: true,
+															show_source: true,
+															client_socket: client_socket,
+															close_button: true
+														});
+										});
+									}, this));
+									ev2.preventDefault();
+									ev2.stopPropagation();
 								}, this));
-								ev2.preventDefault();
-								ev2.stopPropagation();
-							}, this));
 
-				targ		.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
-								if(bottom_indicator_was_hidden) {
-									this.element.pane("set_percentage", 0, 1);
-								}
-								clear_drag_info.call(this);
-							}, this));
-			}, this));
-			this.pinned.on("close", _.bind(function(event) {
-				$(event.target).column("destroy").remove();
-				if($(".col", this.pinned).size() === 0) {
-					this.element.pane("set_percentage", 0, 1);
-				}
-			}, this));
+					targ		.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
+									if(bottom_indicator_was_hidden) {
+										this.element.pane("set_percentage", 0, 1);
+									}
+									clear_drag_info.call(this);
+								}, this));
+				}, this));
+				this.pinned.on("close", _.bind(function(event) {
+					$(event.target).column("destroy").remove();
+					if($(".col", this.pinned).size() === 0) {
+						this.element.pane("set_percentage", 0, 1);
+					}
+				}, this));
 
-
-			$(window).on("keydown.editor_undo_redo", _.bind(function (event) {
-				if (event.keyCode === 90 && (event.metaKey || event.ctrlKey)) {
-					if (event.shiftKey) { this.redo(); }
-					else { this.undo(); }
-					event.stopPropagation();
-					event.preventDefault();
-				}
-			}, this));
+				$(window).on("keydown.editor_undo_redo", _.bind(function (event) {
+					if (event.keyCode === 90 && (event.metaKey || event.ctrlKey)) {
+						if (event.shiftKey) { this.redo(); }
+						else { this.undo(); }
+						event.stopPropagation();
+						event.preventDefault();
+					}
+				}, this));
+			}
 		},
 
 		"export": function() {

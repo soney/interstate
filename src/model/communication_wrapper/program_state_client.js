@@ -50,10 +50,15 @@
 		};
 
 		proto.disconnect = function() {
-			_.each(this.clients, function(client) {
-				client.destroy();
-			}, this);
+			this.destroy_every_client();
 			this.post("disconnect");
+		};
+
+		proto.destroy_every_client = function() {
+			_.each(this.clients, function(client, client_id) {
+				client.destroy();
+				delete this.clients[client_id];
+			}, this);
 		};
 
 		var DEREGISTERED = {};
@@ -61,6 +66,10 @@
 			var type = message.type;
 
 			if (type === "croot") {
+				if(this.root_client) {
+					this._emit("root_changed", message);
+				}
+
 				var summary = message.summary;
 
 				if(summary) {
@@ -167,9 +176,7 @@
 			able.destroy_this_listenable(this);
 			this.remove_message_listener();
 
-			_.each(this.wrapper_clients, function(wrapper_client) {
-				wrapper_client.destroy();
-			}, this);
+			this.destroy_every_client();
 			delete this.wrapper_clients;
 			delete this.clients;
 

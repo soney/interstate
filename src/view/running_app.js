@@ -248,20 +248,10 @@
 			}
 			this._super(key, value);
 			if(key === "root") {
-				var to_open = false;
-				if(this.editor_window) {
-					to_open = true;
-					this.close_editor();
-				}
-
 				if(this.server_socket) {
 					this.server_socket.set_root(this.option("root"));
 				}
 				this._add_change_listeners();
-
-				if(to_open) {
-					this.open_editor();
-				}
 			}
 		},
 

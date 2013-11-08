@@ -38,9 +38,12 @@
 		};
 
 		proto.set_root = function(new_root) {
-			console.log("set root");
-			this.destroy();
-			//this.root = new_root();
+			this.destroy_every_wrapper_server();
+
+			this.root = new_root;
+			this.contextual_root = ist.find_or_put_contextual_obj(this.root);
+
+			this.send_root();
 		};
 
 		proto.send_root = function() {
@@ -230,10 +233,19 @@
 			this.connected = false;
 		};
 
+		proto.destroy_every_wrapper_server = function() {
+			_.each(this.wrapper_servers, function(wrapper_server, cobj_id) {
+				wrapper_server.destroy();
+				delete this.wrapper_servers[cobj_id];
+			}, this);
+		};
+
 		proto.destroy = function (dont_destroy_comm_wrapper) {
 			this.cleanup_closed_client();
 			able.destroy_this_listenable(this);
 			this.remove_message_listeners();
+
+			this.destroy_every_wrapper_server();
 
 			delete this.wrapper_servers;
 			delete this.root;
