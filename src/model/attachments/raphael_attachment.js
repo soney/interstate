@@ -60,6 +60,7 @@
 						if(to_show) {
 							children.push(shape_attachment_instance);
 						}
+						children.push.apply(children, shape_attachment_instance.get_children());
 					}
 					var group_attachment_instance = child.get_attachment_instance("group");
 					if(group_attachment_instance) {
@@ -159,6 +160,7 @@
 				this.shape_type = this.options.shape_type;
 				this.constructor_params = this.options.constructor_params;
 				this.$robj = cjs(false);
+				this.$children = cjs(this.child_getter, {context: this});
 			},
 			destroy: function(silent) {
 				this.remove();
@@ -269,6 +271,34 @@
 						robj.remove();
 						this.$robj.set(false);
 					}
+				},
+				child_getter: function() {
+					var contextual_object = this.get_contextual_object();
+					var children, cobj_children, values;
+					var to_show = contextual_object.prop_val("show");
+
+					if(_.isArray(to_show) || _.isString(to_show)) {
+						if(_.isString(to_show)) {
+							to_show = [to_show];
+						}
+						cobj_children = _.filter(contextual_object.children(), function(child_info) {
+							return _.contains(to_show, child_info.name);
+						});
+						values = _.pluck(cobj_children, "value");
+						values.reverse();
+						children = get_children(values);
+					} else if(to_show) {
+						cobj_children = contextual_object.children();
+						values = _.pluck(cobj_children, "value");
+						values.reverse();
+						children = get_children(values);
+					} else {
+						children = [];
+					}
+					return children;
+				},
+				get_children: function() {
+					return this.$children.get();
 				}
 			},
 			attachment_destroy: function() { }
