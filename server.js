@@ -85,8 +85,9 @@ app.configure(function() {
 						return ist_inc.include_templates(files.map(function(file) {
 							return relative_path+file;
 						}));
-					}
-					, ist_inc: ist_inc
+					},
+					ist_inc: ist_inc,
+					addr: addresses[0]
 				};
 
 				
