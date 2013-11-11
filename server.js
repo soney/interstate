@@ -62,6 +62,19 @@ app.configure(function() {
 	app.get("/e/:uid", function(req, res, next) {
 		res.redirect("src/view/editor/editor.ejs.html?comm=socket&client_id="+req.params.uid);
 	});
+	app.get("/auto_open_editor", function(req, res, next) {
+		var exec = require('child_process').exec;
+		exec('open /Applications/Google Chrome Canary.app/ http://'+addresses[0]+'/e/'+req.param('client_id'), function callback(error, stdout, stderr){
+			console.log("OPEN");
+			// result
+		});
+		var body = "";
+		res.writeHead(200, {
+			  'Content-Type': 'text/html'
+			, 'Content-Length': body.length
+		});
+		res.end(body);
+	});
 	app.get("*.ejs.html*|/", function(req, res, next) {
 		var relative_url = req.originalUrl.slice(1); //remove the initial '/'
 		var filename;

@@ -467,6 +467,13 @@
 							colorLight : "#ffffff",
 							correctLevel : QRCode.CorrectLevel.H
 						});
+						$.ajax({
+							url: "auto_open_editor",
+							data: {
+								client_id: this.option("client_id")
+							},
+							type: "GET"
+						});
 						var alert = $("<div />").addClass("upload_url")
 												.appendTo(document.body)
 												.append(code_container, $("<a />").attr({"href": url, "target": "_blank"}).text(url));
