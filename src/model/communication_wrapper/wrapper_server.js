@@ -116,9 +116,11 @@
 		proto.destroy = function () {
 			//console.log("destroy", this.object);
 			this._emit("destroy");
-			this.object.off("begin_destroy", this.on_begin_destroy, this);
-			this.object.off("destroyed", this.destroy, this);
-			this.remove_emission_listeners();
+			if(!this.object.destroyed) {
+				this.object.off("begin_destroy", this.on_begin_destroy, this);
+				this.object.off("destroyed", this.destroy, this);
+				this.remove_emission_listeners();
+			}
 			this.clear_fn_call_constraints();
 			this.fn_call_constraints.destroy();
 			delete this.fn_call_constraints;

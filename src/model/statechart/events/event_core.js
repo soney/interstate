@@ -27,6 +27,7 @@
 			return semaphore >= 0;
 		};
 		this.num_post_event_queue_rounds = 7;
+		this.destroyed = false;
 	};
 	(function (my) {
 		var proto = my.prototype;
@@ -190,6 +191,7 @@
 			return new_event;
 		};
 		proto.destroy = function () {
+			this.destroyed = true;
 			this._emit("destroy");
 			delete this.listeners;
 			delete this._transition;
