@@ -325,6 +325,8 @@
 						type: "stringified_root",
 						value: ist.stringify(root)
 					});
+				} else if (command === "store") {
+					interstate.save(this.option("root"));
 				} else if (command === "upload") {
 					$.ajax({
 						url: "http://interstate.from.so/gallery/upload.php",

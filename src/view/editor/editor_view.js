@@ -206,6 +206,9 @@
 												},
 												"Upload": {
 													on_select: _.bind(this.upload, this)
+												},
+												"Store": {
+													on_select: _.bind(this.store, this)
 												}
 											}
 										})
@@ -365,6 +368,9 @@
 
 		upload: function() {
 			this.client_socket.post_command("upload");
+		},
+		store: function() {
+			this.client_socket.post_command("store");
 		},
 		save: function() {
 		},

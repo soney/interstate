@@ -194,7 +194,7 @@
 
 		proto.post_command = function (command, callback) {
 			var stringified_command;
-			if ((["undo", "redo", "reset", "export", "upload"]).indexOf(command) >= 0) {
+			if ((["undo", "redo", "reset", "export", "upload", "store"]).indexOf(command) >= 0) {
 				stringified_command = command;
 			} else {
 				stringified_command = ist.stringify(command);

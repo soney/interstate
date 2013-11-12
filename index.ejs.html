@@ -34,10 +34,7 @@
 			<%- ist_include(ist_inc.runtime_style) %>
 
 			<script type="text/javascript">
-				var cross = function() {
-					console.log(arguments);
-				};
-				var env, the_div, root, dom_output_options = {
+				var env, the_div, root, nosave = false, dom_output_options = {
 						auto_open_external_editor: true,
 						//external_editor: true,
 						//edit_on_open: true,
@@ -56,6 +53,7 @@
 					}
 					env = new interstate.Environment({root: root});
 					env.print_on_return = true;
+					dom_output_options.root = root;
 					the_div.dom_output(dom_output_options);
 					return root;
 				};
