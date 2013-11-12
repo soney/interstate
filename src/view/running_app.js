@@ -6,59 +6,6 @@
 	var cjs = ist.cjs,
 		_ = ist._,
 		origin = window.location.protocol + "//" + window.location.host;
-		
-	function componentToHex(c) {
-		var hex = c.toString(16);
-		return hex.length === 1 ? "0" + hex : hex;
-	}
-
-	function rgbToHex(r, g, b) {
-		return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-	}
-
-	/**
-	 * Converts an HSL color value to RGB. Conversion formula
-	 * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
-	 * Assumes h, s, and l are contained in the set [0, 1] and
-	 * returns r, g, and b in the set [0, 255].
-	 *
-	 * @param   Number  h       The hue
-	 * @param   Number  s       The saturation
-	 * @param   Number  l       The lightness
-	 * @return  Array           The RGB representation
-	 */
-	function hslToRgb(h, s, l) {
-		var r, g, b, hue2rgb;
-
-		if (s === 0) {
-			r = g = b = l; // achromatic
-		} else {
-			hue2rgb = function (p, q, t) {
-				if (t < 0) { t += 1; }
-				if (t > 1) { t -= 1; }
-				if (t < 1 / 6) { return p + (q - p) * 6 * t; }
-				if (t < 1 / 2) { return q; }
-				if (t < 2 / 3) { return p + (q - p) * (2 / 3 - t) * 6; }
-				return p;
-			};
-
-			var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-			var p = 2 * l - q;
-			r = hue2rgb(p, q, h + 1 / 3);
-			g = hue2rgb(p, q, h);
-			b = hue2rgb(p, q, h - 1 / 3);
-		}
-
-		return [Math.floor(r * 256), Math.floor(g * 256), Math.floor(b * 256)];
-	}
-
-	function randomColor(hrange, srange, lrange) {
-		var h = Math.random() * (hrange[1] - hrange[0]) + hrange[0],
-			s = Math.random() * (srange[1] - srange[0]) + srange[0],
-			l = Math.random() * (lrange[1] - lrange[0]) + lrange[0];
-		var rgb = hslToRgb(h, s, l);
-		return rgbToHex.apply(window, rgb);
-	}
 
     var platform = window.navigator.platform;
 	var display;
@@ -79,6 +26,7 @@
 			editor_name: uid.get_prefix() + "ist_editor",
 			open_separate_client_window: true,
 			external_editor: display === "phone" || display === "tablet",
+			auto_open_external_editor: false,
 			editor_window_options: function () {
 				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
 			},
@@ -456,33 +404,38 @@
 				if(this.option("external_editor")) {
 					interstate.async_js("/socket.io/socket.io.js", _.bind(function() {
 						var socket_wrapper = new ist.SocketCommWrapper(this.option("client_id"), true);
-						var url = origin+"/e/"+encodeURIComponent(this.option("client_id"));
-						var code_container = $("<div />");
-						var size = display === "tablet" ? 500 : 256;
-						var qrcode = new QRCode(code_container[0], {
-							text: url,
-							width: size,
-							height: size,
-							colorDark : "#000000",
-							colorLight : "#ffffff",
-							correctLevel : QRCode.CorrectLevel.H
-						});
-						$.ajax({
-							url: "auto_open_editor",
-							data: {
-								client_id: this.option("client_id")
-							},
-							type: "GET"
-						});
-						var alert = $("<div />").addClass("upload_url")
-												.appendTo(document.body)
-												.append(code_container, $("<a />").attr({"href": url, "target": "_blank"}).text(url));
-						$(window).on("touchstart.close_alert mousedown.close_alert", function(event) {
-							if(!$(event.target).parents().is(alert)) {
-								$(window).off("touchstart.close_alert mousedown.close_alert");
-								alert.remove();
-							}
-						});
+						if(this.option("auto_open_external_editor")) {
+							$.ajax({
+								url: "auto_open_editor",
+								data: {
+									client_id: this.option("client_id")
+								},
+								type: "GET"
+							});
+						} else {
+							var url = origin+"/e/"+encodeURIComponent(this.option("client_id"));
+							var code_container = $("<div />");
+							var size = display === "tablet" ? 500 : 256;
+
+							var qrcode = new QRCode(code_container[0], {
+								text: url,
+								width: size,
+								height: size,
+								colorDark : "#000000",
+								colorLight : "#ffffff",
+								correctLevel : QRCode.CorrectLevel.H
+							});
+
+							var alert = $("<div />").addClass("upload_url")
+													.appendTo(document.body)
+													.append(code_container, $("<a />").attr({"href": url, "target": "_blank"}).text(url));
+							$(window).on("touchstart.close_alert mousedown.close_alert", function(event) {
+								if(!$(event.target).parents().is(alert)) {
+									$(window).off("touchstart.close_alert mousedown.close_alert");
+									alert.remove();
+								}
+							});
+						}
 						on_comm_mechanism_load.call(this, socket_wrapper);
 					}, this));
 				} else if (this.option("open_separate_client_window")) {
@@ -622,4 +575,57 @@
 			}
 		}
 	});
+		
+	function componentToHex(c) {
+		var hex = c.toString(16);
+		return hex.length === 1 ? "0" + hex : hex;
+	}
+
+	function rgbToHex(r, g, b) {
+		return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+	}
+
+	/**
+	 * Converts an HSL color value to RGB. Conversion formula
+	 * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+	 * Assumes h, s, and l are contained in the set [0, 1] and
+	 * returns r, g, and b in the set [0, 255].
+	 *
+	 * @param   Number  h       The hue
+	 * @param   Number  s       The saturation
+	 * @param   Number  l       The lightness
+	 * @return  Array           The RGB representation
+	 */
+	function hslToRgb(h, s, l) {
+		var r, g, b, hue2rgb;
+
+		if (s === 0) {
+			r = g = b = l; // achromatic
+		} else {
+			hue2rgb = function (p, q, t) {
+				if (t < 0) { t += 1; }
+				if (t > 1) { t -= 1; }
+				if (t < 1 / 6) { return p + (q - p) * 6 * t; }
+				if (t < 1 / 2) { return q; }
+				if (t < 2 / 3) { return p + (q - p) * (2 / 3 - t) * 6; }
+				return p;
+			};
+
+			var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+			var p = 2 * l - q;
+			r = hue2rgb(p, q, h + 1 / 3);
+			g = hue2rgb(p, q, h);
+			b = hue2rgb(p, q, h - 1 / 3);
+		}
+
+		return [Math.floor(r * 256), Math.floor(g * 256), Math.floor(b * 256)];
+	}
+
+	function randomColor(hrange, srange, lrange) {
+		var h = Math.random() * (hrange[1] - hrange[0]) + hrange[0],
+			s = Math.random() * (srange[1] - srange[0]) + srange[0],
+			l = Math.random() * (lrange[1] - lrange[0]) + lrange[0];
+		var rgb = hslToRgb(h, s, l);
+		return rgbToHex.apply(window, rgb);
+	}
 }(interstate, jQuery));

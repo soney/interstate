@@ -8,6 +8,7 @@ var ejs = require('ejs');
 var sass = require("node-sass");
 var ist_inc = require('./include_libs');
 var http = require("http");
+var exec = require('child_process').exec;
 
 var app = express();
 if(devel_mode) {
@@ -63,10 +64,7 @@ app.configure(function() {
 		res.redirect("src/view/editor/editor.ejs.html?comm=socket&client_id="+req.params.uid);
 	});
 	app.get("/auto_open_editor", function(req, res, next) {
-		var exec = require('child_process').exec;
-		exec('open /Applications/Google Chrome Canary.app/ http://'+addresses[0]+'/e/'+req.param('client_id'), function callback(error, stdout, stderr){
-			console.log("OPEN");
-			// result
+		exec('open -a /Applications/Google\\ Chrome\\ Canary.app http://'+addresses[0]+':8000/e/'+req.param('client_id'), function callback(error, stdout, stderr){
 		});
 		var body = "";
 		res.writeHead(200, {

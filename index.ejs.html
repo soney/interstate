@@ -37,7 +37,13 @@
 				var cross = function() {
 					console.log(arguments);
 				};
-				var env, the_div, root;
+				var env, the_div, root, dom_output_options = {
+						root: root,
+						auto_open_external_editor: true,
+						//external_editor: true,
+						//edit_on_open: true,
+						editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
+					};
 				window.save = function(name) {
 					return interstate.save(the_div.dom_output("option", "root"), name);
 				};
@@ -51,40 +57,27 @@
 					}
 					env = new interstate.Environment({root: root});
 					env.print_on_return = true;
-					the_div.dom_output({
-						root: root,
-						//external_editor: true,
-						//edit_on_open: true,
-						editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
-					});
+					the_div.dom_output(dom_output_options);
 					return root;
 				};
 				window.ls = interstate.ls;
 
 				$(function() {
 					the_div = $("<div />").appendTo(document.body);
-					/*
 					try {
 						root = load();
 					} catch(e) {
-					*/
 						console.log("Creating a new project");
 						env = new interstate.Environment();
 
 						root = env.get_root();
 
-						the_div.dom_output({
-							root: root,
-							//external_editor: true,
-							//edit_on_open: true,
-							editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
-						});
+						the_div.dom_output(dom_output_options);
 						env.print_on_return = true;
-					//}
+					}
 				});
 				var nosave_delay = false;
 				$(window).on("unload pagehide", function() {
-					console.log("HIDE");
 					if(window.nosave !== true) {
 						if(nosave_delay === false) {
 							save();
