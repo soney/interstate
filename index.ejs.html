@@ -38,7 +38,6 @@
 					console.log(arguments);
 				};
 				var env, the_div, root, dom_output_options = {
-						root: root,
 						auto_open_external_editor: true,
 						//external_editor: true,
 						//edit_on_open: true,
@@ -70,14 +69,14 @@
 						console.log("Creating a new project");
 						env = new interstate.Environment();
 
-						root = env.get_root();
+						dom_output_options.root = env.get_root();
 
 						the_div.dom_output(dom_output_options);
 						env.print_on_return = true;
 					}
 				});
 				var nosave_delay = false;
-				$(window).on("unload pagehide", function() {
+				$(window).on("beforeunload onunload unload pagehide", function() {
 					if(window.nosave !== true) {
 						if(nosave_delay === false) {
 							save();
