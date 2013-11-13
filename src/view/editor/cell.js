@@ -213,7 +213,10 @@
 															event.stopPropagation();
 															this.end_edit();
 														}
-													}, this));
+													}, this))
+													.on("click", function(event) {
+														event.stopPropagation();
+													});
 			}
 			this.textbox.on("blur.prop_cell", _.bind(this.end_edit, this));
 
