@@ -155,9 +155,8 @@
 		options = options || {};
 		this._transition_listeners = {};
 		ist.Statechart.superclass.constructor.apply(this, arguments);
-
-		if(uid.strip_prefix(this.id()) == 179) {
-			//debugger;
+		if(options.context) {
+			debugger;
 		}
 	};
 	(function (My) {

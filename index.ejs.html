@@ -61,8 +61,7 @@
 
 				$(function() {
 					the_div = $("<div />").appendTo(document.body);
-					try {
-						root = load();
+					/*try {/**/ root = load(); /*
 					} catch(e) {
 						console.log("Creating a new project");
 						env = new interstate.Environment();
@@ -72,6 +71,7 @@
 						the_div.dom_output(dom_output_options);
 						env.print_on_return = true;
 					}
+						/**/
 				});
 				var nosave_delay = false;
 				$(window).on("beforeunload onunload unload pagehide", function() {
