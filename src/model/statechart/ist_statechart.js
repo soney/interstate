@@ -155,9 +155,12 @@
 		options = options || {};
 		this._transition_listeners = {};
 		ist.Statechart.superclass.constructor.apply(this, arguments);
+		/*
 		if(options.context) {
+			console.log(options.context);
 			debugger;
 		}
+		*/
 	};
 	(function (My) {
 		_.proto_extend(My, ist.State);
