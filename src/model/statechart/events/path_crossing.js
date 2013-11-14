@@ -816,7 +816,7 @@
 			return res;
 		};
 
-	var touches, last_time,
+	var touches, latest_touches, last_time,
 		crossingPaths = [],
 		pathCallbacks = [],
 		set_touches = function(to_touches, type) {
@@ -825,7 +825,7 @@
 				time = (new Date()).getTime(),
 				dt = time - last_time;
 			last_time = time;
-			if(type === "touchmove" && touches && touches.length === to_touches.length) {
+			if(touches && touches.length === to_touches.length) {
 				outer: for(i; i<len; i++) {
 					x = to_touches[i].x;
 					y = to_touches[i].y;
@@ -851,23 +851,54 @@
 			}
 			touches = clone(to_touches);
 		},
-		touch_listener = function(event) {
-			var new_touches = [];
-			for(var i = event.touches.length-1; i>=0; i-=1) {
-				new_touches[i] = {x: event.touches[i].pageX, y: event.touches[i].pageY};
+		timeout_id = false,
+		interval_listener = function() {
+			timeout_id = false;
+			var new_touches = _.map(latest_touches, function(t) {
+				return {x: t.pageX, y: t.pageY};
+			});
+			set_touches(new_touches);
+		},
+		touchstart_listener = function(event) {
+			latest_touches = event.touches;
+			if(latest_touches.length === 1) {
+				timeout_id = window.setTimeout(interval_listener, 30);
 			}
-			set_touches(new_touches, event.type);
+			event.preventDefault();
+		},
+		touchmove_listener = function(event) {
+			if(timeout_id === false) {
+				timeout_id = window.setTimeout(interval_listener, 30);
+			}
+			latest_touches = event.touches;
+			event.preventDefault();
+		},
+		touchend_listener = function(event) {
+			latest_touches = event.touches;
+			if(latest_touches.length === 0) {
+				if(timeout_id) {
+					window.clearTimeout(timeout_id);
+					timeout_id = false;
+				}
+				latest_touches = event.touches;
+				interval_listener();
+			} else {
+				latest_touches = event.touches;
+				if(timeout_id === false) {
+					timeout_id = window.setTimeout(interval_listener, 30);
+				}
+			}
 			event.preventDefault();
 		},
 		addTouchListeners = function() {
-			window.addEventListener("touchstart", touch_listener);
-			window.addEventListener("touchmove", touch_listener);
-			window.addEventListener("touchend", touch_listener);
+			window.addEventListener("touchstart", touchstart_listener);
+			window.addEventListener("touchmove", touchmove_listener);
+			window.addEventListener("touchend", touchend_listener);
 		},
 		removeTouchListeners = function() {
-			window.removeEventListener("touchstart", touch_listener);
-			window.removeEventListener("touchmove", touch_listener);
-			window.removeEventListener("touchend", touch_listener);
+			window.removeEventListener("touchstart", touchstart_listener);
+			window.removeEventListener("touchmove", touchmove_listener);
+			window.removeEventListener("touchend", touchend_listener);
 		},
 		crossing_path_listener_id = 1,
 		addCrossingPathListener = function(path, callback, context) {
