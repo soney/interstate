@@ -32,11 +32,11 @@
 			var sc = this.statecharts_per_proto.get_or_put(proto, function () {
 				var super_sc = proto.get_own_statechart();
 				var shadow_sc = super_sc.create_shadow({}, true);
-				must_initialize = true;
+				must_initialize = super_sc;
 				return shadow_sc;
 			}, this);
 			if(must_initialize) {
-				var super_sc = proto.get_own_statechart();
+				var super_sc = must_initialize;
 				sc.do_initialize({
 					context: this.get_pointer(),
 					running: true,

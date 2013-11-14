@@ -278,14 +278,16 @@
 						using_as = USING_AS_STATE;
 					} else {
 						var ot = state.get_outgoing_transition();
-						tr = ot.get_times_run();
+						if(ot) { // sometimes called before initialization
+							tr = ot.get_times_run();
 
-						if (tr > this.get_transition_times_run(ot)) {
-							this.set_transition_times_run(ot, tr);
+							if (tr > this.get_transition_times_run(ot)) {
+								this.set_transition_times_run(ot, tr);
 
-							using_val = val;
-							using_state = state;
-							using_as = USING_AS_TRANSITION;
+								using_val = val;
+								using_state = state;
+								using_as = USING_AS_TRANSITION;
+							}
 						}
 					}
 				} else if (state instanceof ist.State) {
