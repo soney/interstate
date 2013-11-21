@@ -375,6 +375,16 @@
 					throw new Error("No such property '" + property + "'");
 				}
 				return rv;
+			} else if(cjs.is_array(object)) {
+				if(_.isNumber(property)) {
+					return object.item(property);
+				} else {
+					if(property === "length") {
+						return object.length();
+					}
+				}
+			} else if(cjs.is_map(object)) {
+				return object.get(property);
 			} else {
 				return object[property];
 			}

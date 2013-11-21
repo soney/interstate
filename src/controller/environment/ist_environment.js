@@ -28,47 +28,56 @@
 		//Context tracking
 		this.pointer = root_pointer;
 		this.print_on_return = false;
-
-			/*
-		if(!options || options.create_builtins !== false) {
-			root.set("emit", ist.emit);
-			root.set("find", function (find_root) {
-				if (arguments.length === 0) {
-					find_root = new ist.ContextualObject({pointer: root_pointer});
-				}
-				return new ist.Query({value: find_root});
-			});
-		}
-			*/
 	};
 
-	var touches = new cjs.Constraint([]);
+	var touches = cjs([]);
 	var touchstart_listener = function(event) {
-		var latest_touches = _.map(event.touches, function(touch) {
-			return {x: cjs(touch.pageX), y: cjs(touch.pageY), id: touch.identifier};
-		});
-		touches.set(latest_touches);
+		touches.push.apply(touches, _.map(event.changedTouches, function(touch) {
+			return cjs({
+				x: touch.pageX,
+				y: touch.pageY,
+				id: touch.identifier
+			});
+		}));
 		event.preventDefault();
 	};
 	var touchmove_listener = function(event) {
-		var tval = touches.get();
-		_.each(event.touches, function(touch, i) {
-			tval[i].x.set(touch.pageX);
-			tval[i].y.set(touch.pageY);
+		var changed_touches = {};
+		_.each(event.changedTouches, function(ct) {
+			changed_touches[ct.identifier] = ct;
 		});
+
+		touches.forEach(function(touch) {
+			var touch_id = touch.get("id");
+			if(_.has(changed_touches, touch_id)) {
+				var changed_touch = changed_touches[touch_id];
+				touch.set("x", changed_touch.pageX);
+				touch.set("y", changed_touch.pageY);
+			}
+		});
+
 		event.preventDefault();
 	};
 	var touchend_listener = function(event) {
-		var tval = touches.get();
-		_.each(tval, function(touch) {
-			for(var i = 0; i<event.changedTouches.length; i++) {
-				if(event.changedTouches[i].identifier === touch.id) {
-					tval.splice(i, 1);
-					touches.invalidate();
-					break;
-				}
+		var new_touches = {};
+		_.each(event.touches, function(t) {
+			new_touches[t.identifier] = true;
+		});
+
+		var remove_indicies = [];
+		touches.forEach(function(touch, i) {
+			var touch_id = touch.get("id");
+			if(!_.has(new_touches, touch_id)) {
+				remove_indicies.push(i);
 			}
 		});
+		cjs.wait();
+		while(remove_indicies.length > 0) {
+			var removed = touches.splice(remove_indicies.pop(), 1);
+			removed[0].destroy();
+		}
+		cjs.signal();
+
 		event.preventDefault();
 	};
 	var addTouchListeners = function() {
@@ -92,8 +101,8 @@
 				var screen = new ist.Dict({has_protos: false});
 				root_dict.set("screen", screen);
 
-				root_dict.set("width", new ist.Cell({str: "500"}));
-				root_dict.set("height", new ist.Cell({str: "500"}));
+				root_dict.set("width", new ist.Cell({str: "" + window.innerWidth}));
+				root_dict.set("height", new ist.Cell({str: "" + window.innerHeight}));
 
 				var shape = new ist.Dict({has_protos: false});
 				root_dict.set("shape", shape);
@@ -109,13 +118,13 @@
 				circle.set("show", new ist.Cell({str: "true"}));
 				circle.set("clip_rect", new ist.Cell({str: "null"}));
 				circle.set("cursor", new ist.Cell({str: "'default'"}));
-				circle.set("cx", new ist.Cell({str: "30"}));
-				circle.set("cy", new ist.Cell({str: "50"}));
-				circle.set("fill", new ist.Cell({str: "'none'"}));
+				circle.set("cx", new ist.Cell({str: "sketch.width/2"}));
+				circle.set("cy", new ist.Cell({str: "sketch.height/2"}));
+				circle.set("fill", new ist.Cell({str: "'teal'"}));
 				circle.set("fill_opacity", new ist.Cell({str: "1.0"}));
 				circle.set("opacity", new ist.Cell({str: "1.0"}));
 				circle.set("r", new ist.Cell({str: "50"}));
-				circle.set("stroke", new ist.Cell({str: "'black'"}));
+				circle.set("stroke", new ist.Cell({str: "'none'"}));
 				circle.set("stroke_dasharray", new ist.Cell({str: "''"}));
 				circle.set("stroke_opacity", new ist.Cell({str: "1.0"}));
 				circle.set("stroke_width", new ist.Cell({str: "1"}));
@@ -136,14 +145,14 @@
 				ellipse.set("show", new ist.Cell({str: "true"}));
 				ellipse.set("clip_rect", new ist.Cell({str: "null"}));
 				ellipse.set("cursor", new ist.Cell({str: "'default'"}));
-				ellipse.set("cx", new ist.Cell({str: "30"}));
-				ellipse.set("cy", new ist.Cell({str: "50"}));
-				ellipse.set("fill", new ist.Cell({str: "'none'"}));
+				ellipse.set("cx", new ist.Cell({str: "sketch.width/3"}));
+				ellipse.set("cy", new ist.Cell({str: "sketch.height/3"}));
+				ellipse.set("fill", new ist.Cell({str: "'yellow'"}));
 				ellipse.set("fill_opacity", new ist.Cell({str: "1.0"}));
 				ellipse.set("opacity", new ist.Cell({str: "1.0"}));
-				ellipse.set("rx", new ist.Cell({str: "50"}));
-				ellipse.set("ry", new ist.Cell({str: "20"}));
-				ellipse.set("stroke", new ist.Cell({str: "'black'"}));
+				ellipse.set("rx", new ist.Cell({str: "150"}));
+				ellipse.set("ry", new ist.Cell({str: "90"}));
+				ellipse.set("stroke", new ist.Cell({str: "'none'"}));
 				ellipse.set("stroke_dasharray", new ist.Cell({str: "''"}));
 				ellipse.set("stroke_opacity", new ist.Cell({str: "1.0"}));
 				ellipse.set("stroke_width", new ist.Cell({str: "1"}));
@@ -164,7 +173,7 @@
 				image.set("clip_rect", new ist.Cell({str: "null"}));
 				image.set("cursor", new ist.Cell({str: "'default'"}));
 				image.set("opacity", new ist.Cell({str: "1.0"}));
-				image.set("src", new ist.Cell({str: "'http://from.so/smile.png'"}));
+				image.set("src", new ist.Cell({str: "'http://interstate.from.so/images/interstate_logo.png'"}));
 				image.set("transform", new ist.Cell({str: "''"}));
 				image.set("x", new ist.Cell({str: "20"}));
 				image.set("y", new ist.Cell({str: "20"}));
@@ -186,19 +195,19 @@
 				rect.set("show", new ist.Cell({str: "true"}));
 				rect.set("clip_rect", new ist.Cell({str: "null"}));
 				rect.set("cursor", new ist.Cell({str: "'default'"}));
-				rect.set("x", new ist.Cell({str: "20"}));
-				rect.set("y", new ist.Cell({str: "30"}));
-				rect.set("fill", new ist.Cell({str: "'red'"}));
+				rect.set("x", new ist.Cell({str: "sketch.width/4"}));
+				rect.set("y", new ist.Cell({str: "sketch.height/4"}));
+				rect.set("fill", new ist.Cell({str: "'Chartreuse'"}));
 				rect.set("fill_opacity", new ist.Cell({str: "1.0"}));
 				rect.set("opacity", new ist.Cell({str: "1.0"}));
 				rect.set("r", new ist.Cell({str: "0"}));
-				rect.set("stroke", new ist.Cell({str: "'black'"}));
+				rect.set("stroke", new ist.Cell({str: "'none'"}));
 				rect.set("stroke_dasharray", new ist.Cell({str: "''"}));
 				rect.set("stroke_opacity", new ist.Cell({str: "1.0"}));
 				rect.set("stroke_width", new ist.Cell({str: "1"}));
 				rect.set("transform", new ist.Cell({str: "''"}));
-				rect.set("width", new ist.Cell({str: "40"}));
-				rect.set("height", new ist.Cell({str: "50"}));
+				rect.set("width", new ist.Cell({str: "140"}));
+				rect.set("height", new ist.Cell({str: "90"}));
 				rect.set("animated_properties", new ist.Cell({str: "false"}));
 				rect.set("animation_duration", new ist.Cell({str: "300"}));
 				rect.set("animation_easing", new ist.Cell({str: "'linear'"}));
@@ -214,11 +223,11 @@
 				text.set("show", new ist.Cell({str: "true"}));
 				text.set("clip_rect", new ist.Cell({str: "null"}));
 				text.set("cursor", new ist.Cell({str: "'default'"}));
-				text.set("x", new ist.Cell({str: "50"}));
-				text.set("y", new ist.Cell({str: "30"}));
+				text.set("x", new ist.Cell({str: "200"}));
+				text.set("y", new ist.Cell({str: "150"}));
 				text.set("opacity", new ist.Cell({str: "1.0"}));
 				text.set("stroke", new ist.Cell({str: "'none'"}));
-				text.set("fill", new ist.Cell({str: "'black'"}));
+				text.set("fill", new ist.Cell({str: "'grey'"}));
 				text.set("fill_opacity", new ist.Cell({str: "1.0"}));
 				text.set("stroke_dasharray", new ist.Cell({str: "''"}));
 				text.set("stroke_opacity", new ist.Cell({str: "1.0"}));
@@ -227,7 +236,7 @@
 				text.set("text", new ist.Cell({str: "'hello world'"}));
 				text.set("text_anchor", new ist.Cell({str: "'middle'"}));
 				text.set("font_family", new ist.Cell({str: "'Arial'"}));
-				text.set("font_size", new ist.Cell({str: "16"}));
+				text.set("font_size", new ist.Cell({str: "40"}));
 				text.set("font_weight", new ist.Cell({str: "400"}));
 				text.set("font_style", new ist.Cell({str: "'normal'"}));
 				text.set("animated_properties", new ist.Cell({str: "false"}));
@@ -245,15 +254,15 @@
 				path.set("show", new ist.Cell({str: "true"}));
 				path.set("clip_rect", new ist.Cell({str: "null"}));
 				path.set("cursor", new ist.Cell({str: "'default'"}));
-				path.set("fill", new ist.Cell({str: "'red'"}));
+				path.set("fill", new ist.Cell({str: "'none'"}));
 				path.set("fill_opacity", new ist.Cell({str: "1.0"}));
 				path.set("opacity", new ist.Cell({str: "1.0"}));
-				path.set("stroke", new ist.Cell({str: "'black'"}));
+				path.set("stroke", new ist.Cell({str: "'RoyalBlue'"}));
 				path.set("stroke_dasharray", new ist.Cell({str: "''"}));
 				path.set("stroke_opacity", new ist.Cell({str: "1.0"}));
 				path.set("stroke_miterlimit", new ist.Cell({str: "0"}));
 				path.set("stroke_width", new ist.Cell({str: "1"}));
-				path.set("path", new ist.Cell({str: "'M24.132,7.971c-2.203-2.205-5.916-2.098-8.25,0.235L15.5,8.588l-0.382-0.382c-2.334-2.333-6.047-2.44-8.25-0.235c-2.204,2.203-2.098,5.916,0.235,8.249l8.396,8.396l8.396-8.396C26.229,13.887,26.336,10.174,24.132,7.971z'"}));
+				path.set("path", new ist.Cell({str: "'M0,0L300,300'"}));
 				path.set("transform", new ist.Cell({str: "''"}));
 				path.set("animated_properties", new ist.Cell({str: "false"}));
 				path.set("animation_duration", new ist.Cell({str: "300"}));

@@ -255,6 +255,15 @@
 			this._raphael_fn = cjs.liven(function () {
 				var paper_attachment = root_contextual_object.get_attachment_instance("paper");
 				var dom_element = paper_attachment.get_dom_obj();
+
+				if(display === "phone") {
+					$(dom_element).css("background-color", "black");
+				} else if(display === "tablet") {
+					$(dom_element).css("background-color", "black");
+				} else {
+					$(dom_element).css("background-color", "white");
+				}
+
 				if (this.element.children().is(dom_element)) {
 					this.element.children().not(dom_element).remove();
 				} else {
