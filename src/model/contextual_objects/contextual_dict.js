@@ -344,7 +344,7 @@
 			if (value instanceof ist.ContextualObject) {
 				return value.val();
 			} else {
-				return value;
+				return cjs.get(value);
 			}
 		};
 

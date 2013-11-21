@@ -201,7 +201,7 @@
 									}
 								} else {
 									try {
-										robj.attr(raph_name, prop_val);
+										robj.attr(raph_name, cjs.get(prop_val));
 									} catch(e) {
 										console.error(e);
 									}

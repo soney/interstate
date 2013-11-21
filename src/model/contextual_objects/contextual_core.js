@@ -15,12 +15,6 @@
 		}
 		this._type = "none";
 		this._destroyed = false;
-		//if(uid.strip_prefix(this.id()) == 75) {
-			//debugger;
-		//}
-		//if(this.sid() === 189) {
-		//	debugger;
-		//}
 	};
 
 	(function (My) {

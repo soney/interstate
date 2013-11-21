@@ -23,6 +23,7 @@
 				this.initialize_props(root_pointer, builtins);
 			}
 		}
+		root.set("touches", touches);
 
 		//Context tracking
 		this.pointer = root_pointer;
@@ -40,6 +41,47 @@
 		}
 			*/
 	};
+
+	var touches = new cjs.Constraint([]);
+	var touchstart_listener = function(event) {
+		var latest_touches = _.map(event.touches, function(touch) {
+			return {x: cjs(touch.pageX), y: cjs(touch.pageY), id: touch.identifier};
+		});
+		touches.set(latest_touches);
+		event.preventDefault();
+	};
+	var touchmove_listener = function(event) {
+		var tval = touches.get();
+		_.each(event.touches, function(touch, i) {
+			tval[i].x.set(touch.pageX);
+			tval[i].y.set(touch.pageY);
+		});
+		event.preventDefault();
+	};
+	var touchend_listener = function(event) {
+		var tval = touches.get();
+		_.each(tval, function(touch) {
+			for(var i = 0; i<event.changedTouches.length; i++) {
+				if(event.changedTouches[i].identifier === touch.id) {
+					tval.splice(i, 1);
+					touches.invalidate();
+					break;
+				}
+			}
+		});
+		event.preventDefault();
+	};
+	var addTouchListeners = function() {
+		window.addEventListener("touchstart", touchstart_listener);
+		window.addEventListener("touchmove", touchmove_listener);
+		window.addEventListener("touchend", touchend_listener);
+	};
+	var removeTouchListeners = function() {
+		window.removeEventListener("touchstart", touchstart_listener);
+		window.removeEventListener("touchmove", touchmove_listener);
+		window.removeEventListener("touchend", touchend_listener);
+	};
+	addTouchListeners();
 
 	(function (my) {
 		var proto = my.prototype;

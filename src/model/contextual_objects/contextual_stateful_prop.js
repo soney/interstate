@@ -28,10 +28,6 @@
 			this.$runtime_errors = new cjs.Constraint([]);
 
 			this.$value.onChange(this.$value.get, this.$value);
-			//if(uid.strip_prefix(this.id()) == 150) {
-				//debugger;
-			//}
-			//this.$value.get(false);
 		};
 
 		proto.get_parent = function () {
