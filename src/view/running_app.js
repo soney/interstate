@@ -257,11 +257,11 @@
 				var dom_element = paper_attachment.get_dom_obj();
 
 				if(display === "phone") {
-					$(dom_element).css("background-color", "black");
+					$("svg", dom_element).css("background-color", "black");
 				} else if(display === "tablet") {
-					$(dom_element).css("background-color", "black");
+					$("svg", dom_element).css("background-color", "black");
 				} else {
-					$(dom_element).css("background-color", "white");
+					$("svg", dom_element).css("background-color", "white");
 				}
 
 				if (this.element.children().is(dom_element)) {

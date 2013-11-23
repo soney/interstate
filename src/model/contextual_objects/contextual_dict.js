@@ -121,6 +121,7 @@
 	};
 
 	ist.ContextualDict = function (options) {
+		this.$all_protos = cjs(this._all_protos_getter, {context: this});
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
 	};
@@ -140,6 +141,9 @@
 		};
 
 		proto.get_all_protos = function () {
+			return this.$all_protos.get();
+		};
+		proto._all_protos_getter = function() {
 			return ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
 		};
 
