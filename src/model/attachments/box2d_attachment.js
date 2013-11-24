@@ -67,6 +67,7 @@
 			ready: function() {
 				var contextual_object = this.get_contextual_object();
 
+/*
 				this.b2x = cjs.$();
 				this.b2y = cjs.$();
 				this.b2vx = cjs.$();
@@ -75,6 +76,7 @@
 				this.b2vt = cjs.$();
 				this.body = cjs.$();
 				this.shape = cjs.$();
+				*/
 
 				window.setInterval(_.bind(function() {
 					var body = this.body.get();

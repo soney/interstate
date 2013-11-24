@@ -121,7 +121,8 @@
 	};
 
 	ist.ContextualDict = function (options) {
-		this.$all_protos = cjs(this._all_protos_getter, {context: this});
+		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
+		//this.get_all_protos = this._get_all_protos;
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
 	};
@@ -140,12 +141,11 @@
 			return dict.has_copies();
 		};
 
-		proto.get_all_protos = function () {
-			return this.$all_protos.get();
-		};
-		proto._all_protos_getter = function() {
+		proto._get_all_protos = function() {
+			//console.log(this.id());
 			return ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
 		};
+		/*
 
 		proto.get_contextual_protos = function () {
 			var proto_objects = this.get_all_protos();
@@ -158,6 +158,7 @@
 			return rv;
 		};
 
+*/
 		proto.raw_children = function (exclude_builtins) {
 			var dict = this.object;
 			var pointer = this.pointer;
@@ -551,6 +552,9 @@
 
 			this._manifestation_objects.destroy(true);
 			delete this._manifestation_objects;
+
+			this.get_all_protos.destroy(true);
+			delete this.get_all_protos;
 
 			My.superclass.destroy.apply(this, arguments);
 		};

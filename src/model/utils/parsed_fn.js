@@ -89,7 +89,7 @@
 			var key = node.name;
 			if (key === "sketch") {
 				return ist.find_or_put_contextual_obj(options.pcontext.root(), options.pcontext.slice(0, 1));
-			} else if (key === "parent") {
+			} else if (key === "container") {
 				found_this = false;
 				curr_context = options.pcontext;
 				context_item = curr_context.points_at();

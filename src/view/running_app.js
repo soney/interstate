@@ -252,6 +252,7 @@
 				ist.update_current_contextual_objects(root_dict);
 			});
 
+/*
 			this._raphael_fn = cjs.liven(function () {
 				var paper_attachment = root_contextual_object.get_attachment_instance("paper");
 				var dom_element = paper_attachment.get_dom_obj();

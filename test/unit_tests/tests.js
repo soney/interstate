@@ -46,6 +46,7 @@
 			start();
 		});
 	});
+	/*
 
 	test("Map Functionality", function() {
 		var m = cjs.map();
@@ -105,6 +106,7 @@
 			});
 		});
 	});
+	*/
 	asyncTest("State Allocation", function() {
 		expect(1);
 		clear_snapshots(function() {

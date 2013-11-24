@@ -20,10 +20,10 @@
 			root_pointer = new ist.Pointer({stack: [root]});
 			if(!options || options.create_builtins !== false) {
 				var builtins = options && options.builtins || true;
-				this.initialize_props(root_pointer, builtins);
+				//this.initialize_props(root_pointer, builtins);
 			}
 		}
-		root.set("touches", touches);
+		//root.set("touches", touches);
 
 		//Context tracking
 		this.pointer = root_pointer;

@@ -221,7 +221,7 @@
 
 		var getter = function () {
 			var i, curr_context, context_item, rv;
-			if (key === "parent") {
+			if (key === "container") {
 				var found_this = false;
 				curr_context = context;
 				context_item = curr_context.points_at();

@@ -217,7 +217,7 @@
 			var client = this.option("client");
 			var $copies_obj = client.get_$("copies_obj");
 			var $copies_str;
-			var $$copies_str = cjs.$(false);
+			var $$copies_str = cjs(false);
 			this.live_copies = cjs.liven(function() {
 				var copies_obj = $copies_obj.get();
 				if(copies_obj instanceof ist.WrapperClient) {

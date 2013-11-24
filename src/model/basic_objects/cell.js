@@ -121,7 +121,7 @@
             var val = contextual_values.get_or_put(pcontext, function () {
                 var ignore_inherited_in_contexts = this.get_ignore_inherited_in_contexts(pcontext);
     
-                var rv = cjs.$(function () {
+                var rv = cjs(function () {
                     var node = this._tree.get();
                     return ist.get_parsed_$(node, {
                         context: pcontext,
