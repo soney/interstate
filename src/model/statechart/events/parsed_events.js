@@ -13,22 +13,10 @@
 			actions = event_constraint.rest();
 			event_constraint = event_constraint.first();
 			got_event = cjs.get(event_constraint);
-			/*
-
-
-			var got_value = cjs.get(event_constraint);
-			event = got_value.first();
-			actions = got_value.rest();
-			*/
 		} else {
 			first_event = event_constraint;
 			got_event = cjs.get(event_constraint);
 			actions = [];
-			/*
-			//got_value = cjs.get(event_constraint);
-			event = cjs.get(event_constraint);
-			actions = [];
-			*/
 		}
 		//var got_value = cjs.get(event_constraint, false);
 		//console.log(got_value);

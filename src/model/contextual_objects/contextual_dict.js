@@ -118,7 +118,8 @@
 	};
 
 	ist.ContextualDict = function (options) {
-		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
+		//this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
+		this.get_all_protos = this._get_all_protos;
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
 	};
@@ -537,7 +538,10 @@
 
 			My.superclass.destroy.apply(this, arguments);
 
-			this.get_all_protos.destroy(true);
+			// Sometimes I switch get_all_protos to a non-memoized form so check
+			if(this.get_all_protos.destroy) {
+				this.get_all_protos.destroy(true);
+			}
 			delete this.get_all_protos;
 		};
 

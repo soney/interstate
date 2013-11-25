@@ -76,8 +76,8 @@
 			stroke: "none"
 		});
 		this.$text = $(this.text[0]).tooltip();
-
 		this.$text.on("click.onclick", _.bind(this.onClick, this));
+
 		this.paper = paper;
 	};
 	(function (my) {
@@ -87,8 +87,9 @@
 
 		proto.destroy = function() {
 			this.$text.off("click.onclick");
+			this.$text.tooltip("destroy")
+						.remove();
 			delete this.$text;
-			this.text.remove();
 			delete this.text;
 			if(this.textbox) {
 				$(this.textbox)	.off("keydown.onkeydown")

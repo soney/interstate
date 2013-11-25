@@ -38,7 +38,16 @@
 				};
 				return listener;
 			}, {
-				context: this
+				context: this,
+				hash: function(args) {
+					return _.map(args, function(x) {
+						if(x instanceof ist.ContextualObject) {
+							return x.hash();
+						} else {
+							return x+"";
+						}
+					}).join("");
+				}
 			});
 
 			this.specified_targets = specified_targets;
@@ -92,8 +101,8 @@
 			this.live_fn.destroy(true);
 			delete this.live_fn;
 			this.remove_listeners();
-			this.get_target_listener.each(function(tl) {
-				tl.destroy();
+			this.get_target_listener.each(function(target_listener) {
+				target_listener.get().destroy();
 			});
 			this.get_target_listener.destroy(true);
 			delete this.get_target_listener;

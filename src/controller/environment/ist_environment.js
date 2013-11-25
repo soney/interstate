@@ -29,6 +29,7 @@
 		this.pointer = root_pointer;
 		this.print_on_return = false;
 	};
+	/*
 
 	var touches = cjs([]);
 	var touchstart_listener = function(event) {
@@ -91,6 +92,7 @@
 		window.removeEventListener("touchend", touchend_listener);
 	};
 	addTouchListeners();
+	*/
 
 	(function (my) {
 		var proto = my.prototype;

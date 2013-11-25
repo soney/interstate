@@ -245,7 +245,6 @@
 				val = info.value;
 
 				if(state instanceof ist.StartState) { // Should actually use the transition and not the state
-					
 					if (state.is_active() && (using_val === NO_VAL || using_state.order(state) < 0)) {
 						using_val = val;
 						using_state = state;

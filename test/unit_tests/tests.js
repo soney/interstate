@@ -46,67 +46,6 @@
 			start();
 		});
 	});
-	/*
-
-	test("Map Functionality", function() {
-		var m = cjs.map();
-		var ma = cjs.$(function() {
-			if(m.has("a")) {
-				return m.get("a");
-			} else {
-				return 'no a';
-			}
-		});
-		equal(ma.get(), 'no a');
-		m.set('a', 1);
-		equal(ma.get(), 1);
-		m.set('a', 2);
-		equal(ma.get(), 2);
-		m.remove('a');
-		equal(ma.get(), 'no a');
-		m.destroy();
-		ma.destroy();
-		m = ma = null;
-	});
-
-	asyncTest("Constraint allocation", function() {
-		expect(3);
-		clear_snapshots(function() {
-			take_snapshot([], function(response) {
-				var x = cjs.$(1);
-				var y = cjs.$(function() { return x.get() + 1; });
-				equal(y.get(), 2);
-				equal(x.get(), 1);
-				x.get();
-				x.destroy();
-				x = null;
-				y = null;
-				take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
-					ok(!response.illegal_strs, "Make sure nothing was allocated");
-					start();
-				});
-			});
-		});
-	});
-
-	asyncTest("Map Allocation", function() {
-		expect(3);
-		clear_snapshots(function() {
-			take_snapshot([], function() {
-				var m = cjs.map();
-				m.put("a", 1);
-				equal(m.get("b"), undefined);
-				equal(m.get("a"), 1);
-				m.destroy();
-				m = null;
-				take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
-					ok(!response.illegal_strs, "Make sure nothing was allocated");
-					start();
-				});
-			});
-		});
-	});
-	*/
 	asyncTest("State Allocation", function() {
 		expect(1);
 		clear_snapshots(function() {

@@ -390,14 +390,10 @@
 
 		proto.destroy = function () {
 			this.arrow.destroy();
-			if($(this.label.text[0]).data("ui-tooltip")) {
-				$(this.label.text[0]).tooltip("destroy");
-			}
 			this.$clickable.off("contextmenu.cm");
 			delete this.$clickable;
 			this.label	.off("cancel", this.on_cancel_rename, this)
 						.off("change", this.on_confirm_rename, this);
-			this.label.remove();
 			this.label.destroy();
 			delete this.label;
 

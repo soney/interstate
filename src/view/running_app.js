@@ -248,10 +248,9 @@
 			var root_dict = this.option("root");
 			var root_contextual_object = ist.find_or_put_contextual_obj(root_dict);
 
-			/*this._update_fn = cjs.liven(function() {
+			this._update_fn = cjs.liven(function() {
 				ist.update_current_contextual_objects(root_dict);
 			});
-			*/
 
 			if(!ist.__empty_files) {
 				this._raphael_fn = cjs.liven(function () {
