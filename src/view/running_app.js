@@ -248,32 +248,35 @@
 			var root_dict = this.option("root");
 			var root_contextual_object = ist.find_or_put_contextual_obj(root_dict);
 
-			this._update_fn = cjs.liven(function() {
+			/*this._update_fn = cjs.liven(function() {
 				ist.update_current_contextual_objects(root_dict);
 			});
+			*/
 
-			this._raphael_fn = cjs.liven(function () {
-				var paper_attachment = root_contextual_object.get_attachment_instance("paper");
-				var dom_element = paper_attachment.get_dom_obj();
+			if(!ist.__empty_files) {
+				this._raphael_fn = cjs.liven(function () {
+					var paper_attachment = root_contextual_object.get_attachment_instance("paper");
+					var dom_element = paper_attachment.get_dom_obj();
 
-				if(display === "phone") {
-					$("svg", dom_element).css("background-color", "black");
-				} else if(display === "tablet") {
-					$("svg", dom_element).css("background-color", "black");
-				} else {
-					$("svg", dom_element).css("background-color", "white");
-				}
+					if(display === "phone") {
+						$("svg", dom_element).css("background-color", "black");
+					} else if(display === "tablet") {
+						$("svg", dom_element).css("background-color", "black");
+					} else {
+						$("svg", dom_element).css("background-color", "white");
+					}
 
-				if (this.element.children().is(dom_element)) {
-					this.element.children().not(dom_element).remove();
-				} else {
-					this.element.children().remove();
-					this.element.append(dom_element);
-				}
-			}, {
-				context: this,
-				pause_while_running: true
-			});
+					if (this.element.children().is(dom_element)) {
+						this.element.children().not(dom_element).remove();
+					} else {
+						this.element.children().remove();
+						this.element.append(dom_element);
+					}
+				}, {
+					context: this,
+					pause_while_running: true
+				});
+			}
 
 /*
 			this._dom_tree_fn = cjs.liven(function () {

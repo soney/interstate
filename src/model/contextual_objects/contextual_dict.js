@@ -6,6 +6,31 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	var proto_eq = function (a, b) {
+		var i;
+		if (_.isArray(a) && _.isArray(b)) {
+			var len = a.length;
+			if (len !== b.length) {
+				return false;
+			}
+		
+			for (i = 0; i < len; i += 1) {
+				if (a[i] !== b[i]) {
+					return false;
+				}
+			}
+			return true;
+		} else {
+			return a === b;
+		}
+	};
+	var each_proto_val = function (x) {
+		if (x && x instanceof ist.ContextualDict) {
+			return x.get_object();
+		} else {
+			return false;
+		}
+	};
 	ist.Dict.get_proto_vals = function (dict, ptr) {
 		var rv = new RedSet({
 			value: [dict],
@@ -14,31 +39,6 @@
 
 		var pointer = ptr;
 		var i = 0;
-		var proto_eq = function (a, b) {
-			var i;
-			if (_.isArray(a) && _.isArray(b)) {
-				var len = a.length;
-				if (len !== b.length) {
-					return false;
-				}
-			
-				for (i = 0; i < len; i += 1) {
-					if (a[i] !== b[i]) {
-						return false;
-					}
-				}
-				return true;
-			} else {
-				return a === b;
-			}
-		};
-		var each_proto_val = function (x) {
-			if (x && x instanceof ist.ContextualDict) {
-				return x.get_object();
-			} else {
-				return false;
-			}
-		};
 		while (i < rv.len()) {
 			dict = rv.item(i);
 			var proto_obj = dict.direct_protos();
@@ -47,7 +47,7 @@
 				proto_val = proto_obj.toArray();
 			} else if (proto_obj) {
 				var proto_contextual_obj = ist.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {
-					//check_on_nullify: true,
+					check_on_nullify: true,
 					equals: proto_eq
 				});
 				proto_val = proto_contextual_obj.val();
@@ -119,7 +119,6 @@
 
 	ist.ContextualDict = function (options) {
 		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
-		//this.get_all_protos = this._get_all_protos;
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
 	};
@@ -139,23 +138,9 @@
 		};
 
 		proto._get_all_protos = function() {
-			//console.log(this.id());
 			return ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
 		};
-		/*
 
-		proto.get_contextual_protos = function () {
-			var proto_objects = this.get_all_protos();
-			var pointer = this.get_pointer();
-
-			var rv = _.map(proto_objects, function (proto_object) {
-				return ist.find_or_put_contextual_obj(proto_object, pointer.push(proto_object));
-			}, this);
-
-			return rv;
-		};
-
-*/
 		proto.raw_children = function (exclude_builtins) {
 			var dict = this.object;
 			var pointer = this.pointer;
@@ -550,10 +535,10 @@
 			this._manifestation_objects.destroy(true);
 			delete this._manifestation_objects;
 
+			My.superclass.destroy.apply(this, arguments);
+
 			this.get_all_protos.destroy(true);
 			delete this.get_all_protos;
-
-			My.superclass.destroy.apply(this, arguments);
 		};
 
 		proto._getter = function () {

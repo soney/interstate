@@ -231,9 +231,6 @@
 
 		
 		proto.active_value_getter = function () {
-			//if(uid.strip_prefix(this.get_object().id()) == 26) {
-				//debugger;
-			//}
 			var stateful_prop = this.get_object();
 			var values = this.get_values();
 			var len = values.length;
@@ -242,32 +239,13 @@
 
 			var using_val = NO_VAL, using_state, fallback_value = NO_VAL, fallback_state;
 			var using_as;
-			/*
-			var invalidate_value = _.bind(function () {
-				this.$value.invalidate();
-			}, this);
-			var needs_invalidation = false;
-			*/
-			//if(this.sid() == 49 && values.length === 2)	{
-				//debugger;
-				//console.log(using_state, state);
-			//}
 			for (i = 0; i < len; i += 1) {
 				info = values[i];
 				state = info.state;
 				val = info.value;
-				/*
-				if(state instanceof ist.StartState) { // Should actually use the transition and not the state
-					state = state.get_outgoing_transition();
-					is_start_state = true;
-				} else {
-					is_start_state = false;
-				}
-				*/
 
 				if(state instanceof ist.StartState) { // Should actually use the transition and not the state
 					
-					//if ((using_val === NO_VAL || using_state.order(state) < 0) && state.is_active()) {
 					if (state.is_active() && (using_val === NO_VAL || using_state.order(state) < 0)) {
 						using_val = val;
 						using_state = state;
@@ -287,7 +265,6 @@
 						}
 					}
 				} else if (state instanceof ist.State) {
-					//if ((using_val === NO_VAL || using_state.order(state) < 0) && state.is_active()) {
 					if (state.is_active() && (using_val === NO_VAL || using_state.order(state) < 0)) {
 						using_val = val;
 						using_state = state;
@@ -310,34 +287,13 @@
 			if (using_val === NO_VAL) {
 				if (this._last_value === NO_VAL) {
 					using_val = using_state = using_as = undefined;
-					/*
-					if (fallback_value === NO_VAL) {
-					} else {
-						using_val = this._last_value = fallback_value;
-						using_state = this._from_state = fallback_state;
-						using_as = this._using_as = fallback_using_as;
-						is_fallback = true;
-					}
-					*/
 				} else {
-				/*
-					if(uid.strip_prefix(this.get_object().id()) == 266) {
-						//console.log(using_val, using_val === NO_VAL, using_state);
-						//debugger;
-					}
-					*/
 					is_fallback = true;
-					//using_val = this._last_value;
 					using_state = this._from_state;
 					using_val = undefined;
 					for(i = 0; i<len; i++) {
 						info = values[i];
 						state = info.state;
-						/*
-						if(state instanceof ist.StartState) { // Should actually use the transition and not the state
-							state = state.get_outgoing_transition();
-						}
-						*/
 						val = info.value;
 						if(state === using_state) {
 							using_val = val;
@@ -355,12 +311,6 @@
 				this._from_state = using_state;
 				this._using_as = using_as;
 			}
-			/*
-			if(needs_invalidation) {
-				_.defer(invalidate_value);
-			}
-			*/
-			//console.log("AVG");
 
 			return {
 				value: using_val,
@@ -375,9 +325,6 @@
 		};
 
 		proto._getter = function () {
-			//if(this.id() == 150) {
-				//debugger;
-			//}
 			var last_last_value = this._last_value;
 
 			var active_value_info = this.active_value();
@@ -386,18 +333,6 @@
 				using_as = active_value_info.using_as,
 				is_fallback = active_value_info.is_fallback;
 			var rv;
-			//if(window.dbg) {
-				//console.log("X");
-				//debugger;
-			//}
-			//if(uid.strip_prefix(this.get_object().id()) == 26) {
-				//console.log(using_val, using_state, using_as, is_fallback, ist.event_queue.event_queue_round);
-					//debugger;
-				//console.log(using_state, using_as, is_fallback);
-				//if(using_as === USING_AS_STATE) { debugger; }
-				//console.log(using_state, last_last_value, using_val, last_last_value === using_val);
-				//debugger;
-			//}
 			if(using_as === USING_AS_TRANSITION) {
 				if(is_fallback) {
 					return this._last_rv;
@@ -425,28 +360,7 @@
 			}
 
 			var stateful_prop = this.get_object();
-			/*
-			if (using_state instanceof ist.StatechartTransition) { // using a transition's old value
-				if(is_fallback) {
-					return this._last_rv;
-				}
-				var invalidate_value = _.bind(function () {
-					if(this.$value) {
-						this.$value.invalidate();
-					}
-				}, this);
-				if(ist.event_queue.end_queue_round === 2) {
-					ist.event_queue.once("end_event_queue_round_3", invalidate_value);
-				} else if(ist.event_queue.end_queue_round === 6) {
-					ist.event_queue.once("end_event_queue_round_7", invalidate_value);
-				} else {
-					_.defer(invalidate_value);
-				}
-				invalidate_value = null;
-			}
-			*/
 
-			//if (using_val instanceof ist.Cell) {
 			if(using_val) {
 				var pointer = this.get_pointer();
 				var event = cjs.get(using_state._last_run_event);
@@ -465,13 +379,10 @@
 							this._has_runtime_errors = false;
 							this.$runtime_errors.set([]);
 						}
-						//console.log(rv);
 					} catch (e1) {
 						rv = undefined;
 						this.$runtime_errors.set([e1.message]);
 						this._has_runtime_errors = true;
-						//rv = new ist.Error(e1.message);
-						//console.error(e1);
 					}
 				}
 
@@ -480,17 +391,6 @@
 			} else {
 				return undefined;
 			}
-			/*
-			} else {
-				try {
-					rv = using_val instanceof ist.ContextualObject ? using_val.val() : using_val;
-				} catch (e2) {
-					console.error(e2);
-				}
-				this._last_rv = rv;
-				return rv;
-			}
-			*/
 		};
 
 		proto.destroy = function () {

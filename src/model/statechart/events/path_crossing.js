@@ -373,11 +373,11 @@
 			}
 			return {x: px, y: py};
 		},
-		interHelper = function(bez1, bez2, justCount) {
+		interHelper = function(bez1, bez2, justBool) {
 			var bbox1 = bezierBBox(bez1),
 				bbox2 = bezierBBox(bez2);
 			if (!isBBoxIntersect(bbox1, bbox2)) {
-				return justCount ? 0 : [];
+				return justBool ? false : [];
 			}
 			var l1 = bezlen.apply(0, bez1),
 				l2 = bezlen.apply(0, bez2),
@@ -386,7 +386,7 @@
 				dots1 = [],
 				dots2 = [],
 				xy = {},
-				res = justCount ? 0 : [];
+				res = justBool ? false : [];
 			for (var i = 0; i < n1 + 1; i++) {
 				var p = findDotsAtSegment.apply(this, bez1.concat(i / n1));
 				dots1.push({x: p.x, y: p.y, t: i / n1});
@@ -412,8 +412,8 @@
 						var t1 = di.t + Math.abs((is[ci] - di[ci]) / (di1[ci] - di[ci])) * (di1.t - di.t),
 							t2 = dj.t + Math.abs((is[cj] - dj[cj]) / (dj1[cj] - dj[cj])) * (dj1.t - dj.t);
 						if (t1 >= 0 && t1 <= 1.001 && t2 >= 0 && t2 <= 1.001) {
-							if (justCount) {
-								res++;
+							if (justBool) {
+								return true;
 							} else {
 								res.push({
 									x: is.x,
@@ -762,11 +762,11 @@
 			}
 			return p2 ? [p, p2] : p;
 		}, null, pathClone),
-		interPathHelper = function(path1, path2, justCount) {
+		interPathHelper = function(path1, path2, justBool) {
 			path1 = _path2curve(path1);
-			path2 = _path2curve(path2);
+			//path2 = _path2curve(path2);
 			var x1, y1, x2, y2, x1m, y1m, x2m, y2m, bez1, bez2,
-				res = justCount ? 0 : [];
+				res = justBool ? false : [];
 			for (var i = 0, ii = path1.length; i < ii; i++) {
 				var pi = path1[i];
 				if (pi[0] == "M") {
@@ -797,9 +797,11 @@
 								x2 = x2m;
 								y2 = y2m;
 							}
-							var intr = interHelper(bez1, bez2, justCount);
-							if (justCount) {
-								res += intr;
+							var intr = interHelper(bez1, bez2, justBool);
+							if (justBool) {
+								if(intr) {
+									return true;
+								}
 							} else {
 								for (var k = 0, kk = intr.length; k < kk; k++) {
 									intr[k].segment1 = i;
@@ -820,7 +822,7 @@
 		crossingPaths = [],
 		pathCallbacks = [],
 		set_touches = function(to_touches, type) {
-			var fingerPath, x, y, tx, ty, j, cp, cpLen = crossingPaths.length, i = 0,
+			var fingerPath, x, y, tx, ty, j, cpLen = crossingPaths.length, i = 0,
 				len = to_touches.length,
 				time = (new Date()).getTime(),
 				dt = time - last_time;
@@ -831,13 +833,11 @@
 					y = to_touches[i].y;
 					tx = touches[i].x;
 					ty = touches[i].y;
-					fingerPath = "M"+ tx+","+ty+
-									"L"+x+","+y;
+					fingerPath = [["M", tx, ty],
+									["C", tx, ty, x, y, x, y]];
 					for(j = 0; j < cpLen; j++) {
-						cp = crossingPaths[j];
-
-						var intersection = interPathHelper(cp, fingerPath);
-						if(intersection.length > 0) {
+						var inter = interPathHelper(crossingPaths[j], fingerPath, true);
+						if(inter) {
 							var dx = x - tx,
 								dy = y - ty,
 								d = Math.sqrt(Math.pow(dx, 2), Math.pow(dy, 2)),
