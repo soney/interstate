@@ -144,7 +144,7 @@
 				return val.id();
 			} else if (_.isArray(val)) {
 				return ("[" + _.map(val, function (v) { return value_to_value_str(v); }).join(", ") + "]");
-			} else if (val instanceof cjs.ArrayConstraint) {
+			} else if (val instanceof cjs.Array) {
 				var array_got = val.toArray();
 				return "$" + value_to_value_str(array_got);
 			} else {

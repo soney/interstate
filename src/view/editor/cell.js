@@ -276,7 +276,11 @@
 		},
 		focus: function() {
 			if(this.textbox) {
-				this.textbox.focus();
+				try {
+					this.textbox.focus();
+				} catch(e) {
+					console.error(e);
+				}
 			}
 		},
 		select: function() {

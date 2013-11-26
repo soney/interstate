@@ -497,7 +497,7 @@
 							delete this.awaiting_add_prop;
 							this.awaiting_rename_prop = true;
 						} else if(this.awaiting_rename_prop) {
-							if(child.value.type() === "dict" || child.value.type() === "stateful") {
+							if(child.value && child.value.type && (child.value.type() === "dict" || child.value.type() === "stateful")) {
 								this.on_child_select(child, child_disp);
 								delete this.awaiting_rename_prop;
 							} else {
@@ -664,10 +664,12 @@
 							this.statechart_view.remove();
 						}
 						_.each(statecharts, function(statechart) {
-							try {
-								statechart.destroy();
-							} catch(e) {
-								console.error(e);
+							if(statechart) {
+								try {
+									statechart.destroy();
+								} catch(e) {
+									console.error(e);
+								}
 							}
 						});
 						$statecharts.signal_destroy();

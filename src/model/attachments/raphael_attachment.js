@@ -155,6 +155,11 @@
 				}
 			}
 		});
+	var can_animate_parameters = ["r", "cx", "cy", "x", "y", "width", "height", "path", "fill", "stroke", "opacity", "fill_opacity", "stroke_opacity", "transform"];
+	var can_animate_dict = {};
+	_.each(can_animate_parameters, function(name) {
+		can_animate_dict[name] = true;
+	});
 	ist.ShapeAttachment = ist.register_attachment("shape", {
 			ready: function() {
 				this.shape_type = this.options.shape_type;
@@ -169,7 +174,6 @@
 				delete this.$robj;
 			},
 			parameters: (function(infos) {
-				var can_animate_parameters = ["r", "cx", "cy", "x", "y", "width", "height", "path", "fill", "stroke", "opacity", "fill_opacity", "stroke_opacity", "transform"];
 				var parameters = {};
 				_.each(infos, function(euc_name, raph_name) {
 					parameters[euc_name] = function(contextual_object) {
@@ -177,11 +181,11 @@
 							var prop_val = contextual_object.prop_val(euc_name);
 							var robj = this.get_robj();
 							if(robj) {
-								var animated_properties = contextual_object.prop_val("animated_properties");
-								if(_.indexOf(can_animate_parameters, euc_name) >= 0 &&
-										((_.isArray(animated_properties) && _.indexOf(animated_properties, euc_name) >= 0) ||
-											animated_properties === true ||
-											animated_properties === "*")) {
+								var animated_properties;
+								if(can_animate_dict[euc_name] === true && (animated_properties = contextual_object.prop_val("animated_properties")) &&
+										(	animated_properties === true ||
+											animated_properties === "*") ||
+											(_.isArray(animated_properties) && _.indexOf(animated_properties, euc_name) >= 0)) {
 									var duration = contextual_object.prop_val("animation_duration");
 									if(!_.isNumber(duration)) {
 										duration = 300;
@@ -193,7 +197,7 @@
 									}
 
 									var anim_options = { };
-									anim_options[raph_name] = prop_val;
+									anim_options[raph_name] = cjs.get(prop_val);
 									//try {
 										robj.animate(anim_options, duration, easing);
 									//} catch(e) {
@@ -320,6 +324,8 @@
 					var contextual_object = this.get_contextual_object();
 					var children, cobj_children, values;
 					var to_show = contextual_object.prop_val("show");
+					//console.log("TO SHOW: " + to_show);
+					//debugger;
 
 					if(_.isArray(to_show) || _.isString(to_show)) {
 						if(_.isString(to_show)) {

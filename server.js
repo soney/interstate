@@ -183,7 +183,7 @@ for (k in interfaces) {
 }
 
 console.log("Interactive times at http://" + addresses[0] + ":8000/");
-if(process.argv[2] === "div") {
+if(process.argv[2] === "dev") {
 	var cjs_grunt = child_process.spawn('grunt', ['dev'], {
 		cwd: "src/_vendor/cjs"
 	});
