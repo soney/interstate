@@ -6,31 +6,6 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	ist.Environment = function (options) {
-		// Undo stack
-		this._command_stack = new ist.CommandStack();
-
-		var root, root_pointer;
-		if (options && _.has(options, "root")) {
-			root = options.root;
-			root_pointer = new ist.Pointer({stack: [root]});
-		} else {
-			root = new ist.Dict({has_protos: false, direct_attachments: [new ist.PaperAttachment()/*, new ist.DomAttachment({instance_options: {tag: 'div'}})*/]});
-
-			root_pointer = new ist.Pointer({stack: [root]});
-			if(!ist.__empty_files && (!options || options.create_builtins !== false)) {
-				var builtins = options && options.builtins || true;
-				this.initialize_props(root_pointer, builtins);
-			}
-		}
-		//root.set("touches", touches);
-
-		//Context tracking
-		this.pointer = root_pointer;
-		this.print_on_return = false;
-	};
-	/*
-
 	var touches = cjs([]);
 	var touchstart_listener = function(event) {
 		touches.push.apply(touches, _.map(event.changedTouches, function(touch) {
@@ -92,7 +67,30 @@
 		window.removeEventListener("touchend", touchend_listener);
 	};
 	addTouchListeners();
-	*/
+
+	ist.Environment = function (options) {
+		// Undo stack
+		this._command_stack = new ist.CommandStack();
+
+		var root, root_pointer;
+		if (options && _.has(options, "root")) {
+			root = options.root;
+			root_pointer = new ist.Pointer({stack: [root]});
+		} else {
+			root = new ist.Dict({has_protos: false, direct_attachments: [new ist.PaperAttachment()/*, new ist.DomAttachment({instance_options: {tag: 'div'}})*/]});
+
+			root_pointer = new ist.Pointer({stack: [root]});
+			if(!ist.__empty_files && (!options || options.create_builtins !== false)) {
+				var builtins = options && options.builtins || true;
+				this.initialize_props(root_pointer, builtins);
+			}
+		}
+		root.set("touches", touches);
+
+		//Context tracking
+		this.pointer = root_pointer;
+		this.print_on_return = false;
+	};
 
 	(function (my) {
 		var proto = my.prototype;
@@ -103,8 +101,8 @@
 				var screen = new ist.Dict({has_protos: false});
 				root_dict.set("screen", screen);
 
-				root_dict.set("width", new ist.Cell({str: "" + (window.innerWidth-5)}));
-				root_dict.set("height", new ist.Cell({str: "" + (window.innerHeight-5)}));
+				root_dict.set("width", new ist.Cell({str: "" + (window.innerWidth-0)}));
+				root_dict.set("height", new ist.Cell({str: "" + (window.innerHeight-0)}));
 
 				var shape = new ist.Dict({has_protos: false});
 				root_dict.set("shape", shape);

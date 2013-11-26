@@ -222,7 +222,10 @@
             return builtins;
         };
         
+		var protos_array = ["prototypes"], empty_array = [];
         proto._get_builtin_prop_names = function () {
+			return this.has_protos() ? protos_array : empty_array;
+			/*
             var rv = [];
             _.each(this.get_builtins(), function (val, name) {
                 if (val.env_visible === true) {
@@ -234,6 +237,7 @@
                 }
             }, this);
             return rv;
+			*/
         };
         proto._get_builtin_prop_info = function (prop_name) {
             var builtins = this.get_builtins();
@@ -260,6 +264,8 @@
             }
         };
         proto._has_builtin_prop = function (prop_name) {
+			return prop_name === "prototypes" && this.has_protos();
+			/*
             var rv = false;
             return _.any(this.get_builtins(), function (val, name) {
                 if (val.env_visible === true) {
@@ -270,6 +276,7 @@
                 }
                 return false;
             });
+			*/
         };
         
         //

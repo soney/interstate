@@ -74,6 +74,11 @@
         // === DIRECT VALUES ===
         //
         proto.set = proto._set_direct_value_for_state = function (state, value) {
+			if(value instanceof ist.Cell) {
+				if(!this.get_can_inherit()) {
+					value.set_ignore_inherited_in_first_dict(true);
+				}
+			}
             state = state_basis(state);
             this.get_direct_values().put(state, value);
         };

@@ -149,7 +149,7 @@
 		};
 
 		var num_to_hash = 3;
-		proto.hash = function () {
+		proto.compute_hash = function () {
 			var hash = 0;
 
 			var len = this._stack.length - 1;
@@ -171,6 +171,15 @@
 
 			return hash;
 		};
+		/* jshint -W093 */
+		proto.hash = function() {
+			if(this.computed_hash) {
+				return this.computed_hash;
+			} else {
+				return this.computed_hash = this.compute_hash();
+			}
+		};
+		/* jshint +W093 */
 
 		proto.toString = function () {
 			return "pointer (" + _.map(this._stack, function (x) { return x.id ? uid.strip_prefix(x.id()) : x.toString(); }).join(", ") + ")";

@@ -183,17 +183,18 @@ for (k in interfaces) {
 }
 
 console.log("Interactive times at http://" + addresses[0] + ":8000/");
+if(process.argv[2] === "div") {
+	var cjs_grunt = child_process.spawn('grunt', ['dev'], {
+		cwd: "src/_vendor/cjs"
+	});
+	cjs_grunt.stdout.on('data', function(data) {
+		// relay output to console
+		console.log("%s", data)
+	});
 
-var cjs_grunt = child_process.spawn('grunt', ['dev'], {
-	cwd: "src/_vendor/cjs"
-});
-cjs_grunt.stdout.on('data', function(data) {
-    // relay output to console
-    console.log("%s", data)
-});
-
-var grunt = child_process.spawn('grunt', ['dev']);
-grunt.stdout.on('data', function(data) {
-    // relay output to console
-    console.log("%s", data)
-});
+	var grunt = child_process.spawn('grunt', ['dev']);
+	grunt.stdout.on('data', function(data) {
+		// relay output to console
+		console.log("%s", data)
+	});
+}

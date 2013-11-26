@@ -118,8 +118,8 @@
 	};
 
 	ist.ContextualDict = function (options) {
-		//this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
-		this.get_all_protos = this._get_all_protos;
+		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
+		//this.get_all_protos = this._get_all_protos;
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
 	};

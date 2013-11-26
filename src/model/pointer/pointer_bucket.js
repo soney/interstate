@@ -315,6 +315,17 @@
 			pointer_bucket.destroy();
 		}
 
+		var hashed_vals;
+		if((hashed_vals = cobj_hashes[pointer.hash()])) {
+			var hvi;
+			for(var i = 0, len = hashed_vals.length; i<len; i++) {
+				if(hashed_vals[i] === cobj) {
+					hashed_vals.splice(i, 1);
+					break;
+				}
+			}
+		}
+
 		if(root_call) {
 			cjs.signal();
 		}
@@ -347,6 +358,7 @@
 		return to_destroy;
 	};
 
+	var cobj_hashes = {};
 	ist.find_or_put_contextual_obj = function (obj, pointer, options) {
 		var pointer_root;
 
@@ -357,6 +369,19 @@
 			pointer_root = obj;
 		}
 
+		var hashed_vals;
+		if((hashed_vals = cobj_hashes[pointer.hash()])) {
+			var hvi;
+			for(var i = 0, len = hashed_vals.length; i<len; i++) {
+				hvi = hashed_vals[i];
+				if(hvi.get_object() === obj && pointer.eq(hvi.get_pointer())) {
+					return hvi;
+				}
+			}
+		} else {
+			hashed_vals = cobj_hashes[pointer.hash()] = [];
+		}
+
 		var pointer_bucket = ist.pointer_buckets.get_or_put(pointer_root, function () {
 			return new ist.PointerBucket({
 				root: pointer_root
@@ -364,6 +389,7 @@
 		});
 
 		var rv = pointer_bucket.find_or_put(obj, pointer, options);
+		hashed_vals.push(rv);
 		return rv;
 	};
 	var get_expired_pointer_trees = function(root) {
