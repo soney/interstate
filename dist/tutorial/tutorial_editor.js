@@ -10,12 +10,14 @@
 		options: {
 			pages: [],
 			root: null,
-			page_no: 0
+			page_no: 0,
+			client_id: false
 		},
 		_create: function() {
 			this.editor = $("<div />")	.appendTo(this.element)
 										.editor({
-											pinned_row: false
+											pinned_row: false,
+											client_id: this.option("client_id")
 										});
 			this.instructions_table = $("<table />").addClass("instructions")
 													.appendTo(this.element);

@@ -19,7 +19,8 @@ var tutorial_pages = (function() {
 						"<div class='directive'>Position these windows so you can see both simultaneously. Place the <span style='color: #c1a562'>runtime</span> window in the top third of your screen and the <span style='color: #7493a2'>editor</span> window in the bottom two thirds.</div>",
 				on_enter: function($, post) {
 					this.editor.hide();
-					$("html").css("background-color", "#7493a2");
+					$("html")	.css("background-color", "#7493a2")
+								.css("background-image", "none");
 					this.editor_text = $("<div />")	.text("editor")
 													.css({ "font-size": "3em",
 														"text-align": "center",
@@ -31,7 +32,8 @@ var tutorial_pages = (function() {
 													.prependTo(document.body);
 				},
 				on_exit: function($, post) {
-					$("html").css("background-color", "");
+					$("html")	.css("background-color", "")
+								.css("background-image", "");
 					this.editor.show();
 					this.editor_text.remove();
 					delete this.editor_text;

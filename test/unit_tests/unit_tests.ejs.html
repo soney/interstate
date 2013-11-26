@@ -5,20 +5,14 @@
 	<title>Interstate Unit Tests</title>
 	<link rel="stylesheet" href="resources/qunit.css">
 	<%- ist_include(ist_inc.vendor) %>
-	<%- ist_include(ist_inc.runtime) %>
-	<%- ist_include(ist_inc.editor) %>
+	<%- ist_include(ist_inc.runtime, true) %>
+	<%- ist_include(ist_inc.editor, true) %>
 </head>
 <body>
 	<div id="qunit"></div>
 	<div id="qunit-fixture"></div>
 	<script src="resources/qunit.js"></script>
-	<script type="text/javascript">
-		//QUnit.config.hidepassed = true;
-		//QUnit.config.notrycatch = true;
-		window.setTimeout(function() {
-			document.location.reload(true);
-		}, 3*60*1000);
-	</script>
+	<script src="memory_tests.js"></script>
 	<script src="tests.js"></script>
 	<script src="runtime_tests.js"></script>
 </body>

@@ -49,7 +49,7 @@ var interstate = (function (root) {
 		node.src = url;
 		if (cback) { node.addEventListener('load', function (e) { cback(e); }, false); }
 		head.appendChild(node);
-	}
+	};
 
 	return ist;
 }(this));

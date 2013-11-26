@@ -28,8 +28,12 @@
 	<script type="text/javascript">
 		$(function () {
 			$("div#tutorial").tutorial_editor({
-				pages: tutorial_pages
+				pages: tutorial_pages,
+				client_id: getURLParameter("client_id")
 			});
+			function getURLParameter(name) {
+				return decodeURI((RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,''])[1]);
+			}
 		});
 	</script>
 </html>

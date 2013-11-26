@@ -2,15 +2,16 @@
 
 var devel_mode = true;
 
-var express = require('express');
-var fs = require('fs');
-var ejs = require('ejs');
-var sass = require("node-sass");
-var ist_inc = require('./include_libs');
-var http = require("http");
-var exec = require('child_process').exec;
+var express = require('express'),
+	fs = require('fs'),
+	ejs = require('ejs'),
+	sass = require("node-sass"),
+	ist_inc = require('./include_libs'),
+	http = require("http"),
+	child_process = require('child_process');
 
 var app = express();
+
 if(devel_mode) {
 	ist_inc.main = ist_inc.main_src;
 } else {
@@ -64,7 +65,7 @@ app.configure(function() {
 		res.redirect("src/view/editor/editor.ejs.html?comm=socket&client_id="+req.params.uid);
 	});
 	app.get("/auto_open_editor", function(req, res, next) {
-		exec('open -a /Applications/Google\\ Chrome\\ Canary.app http://'+addresses[0]+':8000/e/'+req.param('client_id'), function callback(error, stdout, stderr){
+		child_process.exec('open -a /Applications/Google\\ Chrome\\ Canary.app http://'+addresses[0]+':8000/e/'+req.param('client_id'), function callback(error, stdout, stderr){
 		});
 		var body = "";
 		res.writeHead(200, {
@@ -92,10 +93,10 @@ app.configure(function() {
 					relative_path += "../";
 				}
 				var locals = {
-					ist_include: function(files) {
+					ist_include: function(files, ignore_css) {
 						return ist_inc.include_templates(files.map(function(file) {
 							return relative_path+file;
-						}));
+						}), ignore_css);
 					},
 					ist_inc: ist_inc,
 					addr: addresses[0]
@@ -122,60 +123,6 @@ process.on('SIGINT', function () {
 
 var filter_regex = /\.(js|html|css|swp)$/; // include swp files because they are added and removed when files get edited...for some reason,
 											// edits aren't otherwise detected
-var cp = require('child_process');
-/*
-var watch = require('node-watch');
-watch(['src/_vendor/cjs/src'], function(filename) {
-	if(filter_regex.test(filename)) {
-		var grunt = cp.spawn('grunt', [], {
-			cwd: 'src/_vendor/cjs'
-		});
-
-		grunt.stdout.on('data', function(data) {
-			// relay output to console
-			console.log("%s", data)
-		});
-	}
-});
-watch(['dist', 'src/model', 'src/controller', 'src/view'], function(filename) {
-	if(filter_regex.test(filename)) {
-		var grunt = cp.spawn('grunt', ['quick'])
-
-		grunt.stdout.on('data', function(data) {
-			// relay output to console
-			console.log("%s", data)
-		});
-	}
-});
-*/
-
-var spawn_build_cjs = function() {
-	var grunt = cp.spawn('grunt', [], {
-		cwd: 'src/_vendor/cjs'
-	});
-
-	grunt.stdout.on('data', function(data) {
-		// relay output to console
-		console.log("%s", data)
-	});
-	grunt.on('close', function() {
-		setTimeout(spawn_build, 1000);
-	});
-};
-
-var spawn_build = function() {
-	var grunt = cp.spawn('grunt', ['quick'])
-
-	grunt.stdout.on('data', function(data) {
-		// relay output to console
-		console.log("%s", data)
-	});
-	grunt.on('close', function() {
-		//setTimeout(spawn_build_cjs, 1000);
-		setTimeout(spawn_build, 2000);
-	});
-};
-//spawn_build();
 
 var render_files = function(res, files) {
 	concat_files(files, function(str) {
@@ -236,3 +183,17 @@ for (k in interfaces) {
 }
 
 console.log("Interactive times at http://" + addresses[0] + ":8000/");
+
+var cjs_grunt = child_process.spawn('grunt', ['dev'], {
+	cwd: "src/_vendor/cjs"
+});
+cjs_grunt.stdout.on('data', function(data) {
+    // relay output to console
+    console.log("%s", data)
+});
+
+var grunt = child_process.spawn('grunt', ['dev']);
+grunt.stdout.on('data', function(data) {
+    // relay output to console
+    console.log("%s", data)
+});

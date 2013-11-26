@@ -1,51 +1,6 @@
 (function(ist) {
-	var command_id = 0;
-	var callbacks = {};
-	var do_command = function(command_name, parameters, callback) {
-		var id = command_id++;
-		callbacks[id] = callback;
-		var message = { id: id, type: "FROM_PAGE", command: command_name };
-		for(var key in parameters) {
-			if(parameters.hasOwnProperty(key)) {
-				message[key] = parameters[key];
-			}
-		}
-		window.postMessage(message, "*");
-	};
-	var clear_snapshots = function(callback) {
-		do_command("clear_snapshots", {}, callback);
-	};
-	var take_snapshot = function(forbidden_tokens, callback) {
-		do_command("take_snapshot", {forbidden_tokens: forbidden_tokens}, callback);
-	};
-
-	window.addEventListener("message", function(event) {
-		// We only accept messages from ourselves
-		if (event.source != window) { return; }
-
-		if (event.data.type && (event.data.type == "FROM_EXTENSION")) {
-			var id = event.data.id;
-			if(callbacks.hasOwnProperty(id)) {
-				var callback = callbacks[id];
-				delete callbacks[id];
-				callback(event.data.response);
-			}
-		}
-	}, false);
-
 	var cjs = ist.cjs;
-	asyncTest("Debugger connection", function() {
-		expect(1);
-		var timeout_id = window.setTimeout(function() {
-			ok(false, "Could not connect to debugger");
-			start();
-		}, 1000);
-		do_command("ping", {}, function() {
-			ok(true, "Connected to debugger");
-			window.clearTimeout(timeout_id);
-			start();
-		});
-	});
+
 	asyncTest("State Allocation", function() {
 		expect(1);
 		clear_snapshots(function() {
@@ -422,4 +377,5 @@
 		});
 	});
 
+	/**/
 }(interstate));

@@ -44,13 +44,26 @@ module.exports = function(grunt) {
 							'<%= grunt.template.today("yyyy-mm-dd h:MM:ss TT") %> */',
 					global_defs: {
 						DEBUG: false
-					}
+					},
+					sourceMapIn: ".build/interstate.js.map",
+					sourceMap: ".build/interstate.min.js.map",
+					sourceMappingURL: "interstate.min.js.map"
 				},
 				src: build_folder + "/interstate.js",
 				dest: build_folder + "/interstate.min.js"
 			}
 		},
 		concat: {
+			esprima: {
+				src: "src/_vendor/esprima/esprima.js",
+				dest: build_folder + "/_vendor/esprima.js"
+			},
+			qrcode: {
+				src: "src/_vendor/qrcode.min.js",
+				dest: build_folder + "/_vendor/qrcode.min.js"
+			}
+		},
+		concat_sourcemap: {
 			js: {
 				options: {
 					banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
@@ -60,18 +73,11 @@ module.exports = function(grunt) {
 							version: package.version,
 							build_time: grunt.template.today("yyyy-mm-dd h:MM:ss TT")
 						}
-					}
+					},
+					sourceRoot: '..'
 				},
 				src: src_js,
 				dest: build_folder + "/interstate.js"
-			},
-			esprima: {
-				src: "src/_vendor/esprima/esprima.js",
-				dest: build_folder + "/_vendor/esprima.js"
-			},
-			qrcode: {
-				src: "src/_vendor/qrcode.min.js",
-				dest: build_folder + "/_vendor/qrcode.min.js"
 			}
 		},
 		sass: {
@@ -113,6 +119,19 @@ module.exports = function(grunt) {
 		},
 		clean: {
 			build: ["build/"]
+		},
+		qunit: {
+			all: {
+				options: {
+					urls: ['http://localhost:8000/test/unit_tests/unit_tests.ejs.html']
+				}
+			}
+		},
+		watch: {
+			dev: {
+				files: my_src_files.concat(['test/unit_tests/*.js']),
+				tasks: ['jshint', 'qunit']
+			}
 		}
 	});
 
@@ -123,10 +142,14 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-contrib-clean');
 	grunt.loadNpmTasks('grunt-contrib-sass');
+	grunt.loadNpmTasks('grunt-contrib-qunit');
+	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-concat-sourcemap');
 
 	// Default task(s).
-	grunt.registerTask('full', ['jshint', 'concat', 'uglify', 'sass', 'copy']);
-	grunt.registerTask('default', ['concat', 'uglify', 'sass', 'copy']);
-	grunt.registerTask('quick', ['jshint', 'concat', 'sass', 'copy']);
-	grunt.registerTask('test', ['jshint']);
+	grunt.registerTask('full', ['jshint', 'concat', 'concat_sourcemap', 'uglify', 'sass', 'copy']);
+	grunt.registerTask('default', ['concat', 'concat_sourcemap', 'uglify', 'sass', 'copy']);
+	grunt.registerTask('quick', ['jshint', 'concat', 'concat_sourcemap', 'sass', 'copy']);
+	grunt.registerTask('test', ['jshint', 'qunit']);
+	grunt.registerTask('dev', ['jshint', 'qunit', 'watch']);
 };

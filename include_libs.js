@@ -147,12 +147,14 @@ exports.editor = c(
 var ends_with = function(str1, str2) {
 	return str1.slice(str1.length-str2.length) == str2;
 };
-exports.include_templates = function(strs) {
+exports.include_templates = function(strs, exclude_css) {
 	var do_it = function(str) {
 		if(ends_with(str, ".js")) {
 			return "<script type = 'text/javascript' src = '"+str+"'></script>";
-		} else if(ends_with(str, ".css")) {
+		} else if(ends_with(str, ".css") && exclude_css !== true) {
 			return "<link rel = 'stylesheet' href = '"+str+"' media='screen' />";
+		} else {
+			return "";
 		}
 	};
 	if(typeof strs === "string") {

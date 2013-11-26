@@ -104,7 +104,7 @@
 			return t * t2 - 3 * p1 + 3 * p2;
 		},
 		bezlen = function(x1, y1, x2, y2, x3, y3, x4, y4, z) {
-			if (z == null) {
+			if (z === undefined) {
 				z = 1;
 			}
 			z = z > 1 ? 1 : z < 0 ? 0 : z;
@@ -133,7 +133,7 @@
 					var X = x * Math.cos(rad) - y * Math.sin(rad),
 						Y = x * Math.sin(rad) + y * Math.cos(rad);
 					return {x: X, y: Y};
-				});
+				}), f1, f2, cx, cy;
 			if (!recursive) {
 				xy = rotate(x1, y1, -rad);
 				x1 = xy.x;
@@ -145,7 +145,8 @@
 					sin = Math.sin(Math.PI / 180 * angle),
 					x = (x1 - x2) / 2,
 					y = (y1 - y2) / 2;
-				var h = (x * x) / (rx * rx) + (y * y) / (ry * ry);
+				var h = (x * x) / (rx * rx) +
+							(y * y) / (ry * ry);
 				if (h > 1) {
 					h = Math.sqrt(h);
 					rx = h * rx;
@@ -154,16 +155,21 @@
 				var rx2 = rx * rx,
 					ry2 = ry * ry,
 					k = (large_arc_flag == sweep_flag ? -1 : 1) *
-						Math.sqrt(Math.abs((rx2 * ry2 - rx2 * y * y - ry2 * x * x) / (rx2 * y * y + ry2 * x * x))),
-					cx = k * rx * y / ry + (x1 + x2) / 2,
-					cy = k * -ry * x / rx + (y1 + y2) / 2,
-					f1 = Math.asin(((y1 - cy) / ry).toFixed(9)),
-					f2 = Math.asin(((y2 - cy) / ry).toFixed(9));
+						Math.sqrt(Math.abs((rx2 * ry2 - rx2 * y * y - ry2 * x * x) / (rx2 * y * y + ry2 * x * x)));
+				cx = k * rx * y/ry + 0.5*(x1 + x2);
+				cy = k * -ry * x/rx + 0.5*(y1 + y2);
+				f1 = Math.asin(((y1 - cy) / ry).toFixed(9));
+				f2 = Math.asin(((y2 - cy) / ry).toFixed(9));
 
 				f1 = x1 < cx ? Math.PI - f1 : f1;
 				f2 = x2 < cx ? Math.PI - f2 : f2;
-				f1 < 0 && (f1 = Math.PI * 2 + f1);
-				f2 < 0 && (f2 = Math.PI * 2 + f2);
+				if(f1<0) {
+					(f1 = Math.PI * 2 + f1);
+				}
+				if(f2<0) {
+					(f2 = Math.PI * 2 + f2);
+				}
+
 				if (sweep_flag && f1 > f2) {
 					f1 = f1 - Math.PI * 2;
 				}
@@ -201,9 +207,9 @@
 			m2[0] = 2 * m1[0] - m2[0];
 			m2[1] = 2 * m1[1] - m2[1];
 			if (recursive) {
-				return [m2, m3, m4]["concat"](res);
+				return ([m2, m3, m4]).concat(res);
 			} else {
-				res = [m2, m3, m4]["concat"](res).join()["split"](",");
+				res = ([m2, m3, m4]).concat(res).join().split(",");
 				var newres = [];
 				for (var i = 0, ii = res.length; i < ii; i++) {
 					newres[i] = i % 2 ? rotate(res[i - 1], res[i], rad).y : rotate(res[i], res[i + 1], rad).x;
@@ -212,7 +218,7 @@
 			}
 		},
 		bezierBBox = function (p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
-			if (!Ris(p1x, "array")) {
+			if (!r_is(p1x, "array")) {
 				p1x = [p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y];
 			}
 			var bbox = curveDim.apply(null, p1x);
@@ -230,16 +236,16 @@
 		},
 		isBBoxIntersect = function (bbox1, bbox2) {
 			var i = isPointInsideBBox;
-			return i(bbox2, bbox1.x, bbox1.y)
-				|| i(bbox2, bbox1.x2, bbox1.y)
-				|| i(bbox2, bbox1.x, bbox1.y2)
-				|| i(bbox2, bbox1.x2, bbox1.y2)
-				|| i(bbox1, bbox2.x, bbox2.y)
-				|| i(bbox1, bbox2.x2, bbox2.y)
-				|| i(bbox1, bbox2.x, bbox2.y2)
-				|| i(bbox1, bbox2.x2, bbox2.y2)
-				|| (bbox1.x < bbox2.x2 && bbox1.x > bbox2.x || bbox2.x < bbox1.x2 && bbox2.x > bbox1.x)
-				&& (bbox1.y < bbox2.y2 && bbox1.y > bbox2.y || bbox2.y < bbox1.y2 && bbox2.y > bbox1.y);
+			return i(bbox2, bbox1.x, bbox1.y) ||
+					i(bbox2, bbox1.x2, bbox1.y) ||
+					i(bbox2, bbox1.x, bbox1.y2) ||
+					i(bbox2, bbox1.x2, bbox1.y2) ||
+					i(bbox1, bbox2.x, bbox2.y) ||
+					i(bbox1, bbox2.x2, bbox2.y) ||
+					i(bbox1, bbox2.x, bbox2.y2) ||
+					i(bbox1, bbox2.x2, bbox2.y2) ||
+					(bbox1.x < bbox2.x2 && bbox1.x > bbox2.x || bbox2.x < bbox1.x2 && bbox2.x > bbox1.x) &&
+					(bbox1.y < bbox2.y2 && bbox1.y > bbox2.y || bbox2.y < bbox1.y2 && bbox2.y > bbox1.y);
 		},
 		findDotsAtSegment = function (p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
 			var t1 = 1 - t,
@@ -258,7 +264,7 @@
 				cx = t1 * c2x + t * p2x,
 				cy = t1 * c2y + t * p2y,
 				alpha = (90 - Math.atan2(mx - nx, my - ny) * 180 / Math.PI);
-			(mx > nx || my < ny) && (alpha += 180);
+			if(mx > nx || my < ny) { alpha += 180; }
 			return {
 				x: x,
 				y: y,
@@ -291,7 +297,7 @@
 					repush(count, args);
 					return postprocessor ? postprocessor(cache[args]) : cache[args];
 				}
-				count.length >= 1e3 && delete cache[count.shift()];
+				if(count.length >= 1e3) { delete cache[count.shift()]; }
 				count.push(args);
 				cache[args] = f.apply(scope, arg);
 				return postprocessor ? postprocessor(cache[args]) : cache[args];
@@ -307,8 +313,8 @@
 				y = [p1y, p2y],
 				x = [p1x, p2x],
 				dot;
-			Math.abs(t1) > "1e12" && (t1 = .5);
-			Math.abs(t2) > "1e12" && (t2 = .5);
+			if(Math.abs(t1) > "1e12") { t1 = 0.5; }
+			if(Math.abs(t2) > "1e12") { t2 = 0.5; }
 			if (t1 > 0 && t1 < 1) {
 				dot = findDotAtSegment(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t1);
 				x.push(dot.x);
@@ -324,8 +330,8 @@
 			c = p1y - c1y;
 			t1 = (-b + Math.sqrt(b * b - 4 * a * c)) / 2 / a;
 			t2 = (-b - Math.sqrt(b * b - 4 * a * c)) / 2 / a;
-			Math.abs(t1) > "1e12" && (t1 = .5);
-			Math.abs(t2) > "1e12" && (t2 = .5);
+			if(Math.abs(t1) > "1e12") { t1 = 0.5; }
+			if(Math.abs(t2) > "1e12") { t2 = 0.5; }
 			if (t1 > 0 && t1 < 1) {
 				dot = findDotAtSegment(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t1);
 				x.push(dot.x);
@@ -386,9 +392,10 @@
 				dots1 = [],
 				dots2 = [],
 				xy = {},
-				res = justBool ? false : [];
+				res = justBool ? false : [],
+				p;
 			for (var i = 0; i < n1 + 1; i++) {
-				var p = findDotsAtSegment.apply(this, bez1.concat(i / n1));
+				p = findDotsAtSegment.apply(this, bez1.concat(i / n1));
 				dots1.push({x: p.x, y: p.y, t: i / n1});
 			}
 			for (i = 0; i < n2 + 1; i++) {
@@ -401,8 +408,8 @@
 						di1 = dots1[i + 1],
 						dj = dots2[j],
 						dj1 = dots2[j + 1],
-						ci = Math.abs(di1.x - di.x) < .001 ? "y" : "x",
-						cj = Math.abs(dj1.x - dj.x) < .001 ? "y" : "x",
+						ci = Math.abs(di1.x - di.x) < 0.001 ? "y" : "x",
+						cj = Math.abs(dj1.x - dj.x) < 0.001 ? "y" : "x",
 						is = intersect(di.x, di.y, di1.x, di1.y, dj.x, dj.y, dj1.x, dj1.y);
 					if (is) {
 						if (xy[is.x.toFixed(4)] == is.y.toFixed(4)) {
@@ -435,7 +442,7 @@
 			if (typeof obj == "function" || Object(obj) !== obj) {
 				return obj;
 			}
-			var res = new obj.constructor;
+			var res = new obj.constructor();
 			for (var key in obj) if (obj.hasOwnProperty(key)) {
 				res[key] = clone(obj[key]);
 			}
@@ -458,7 +465,7 @@
 			setTimeout(function () {
 				for (var key in p) if (p.hasOwnProperty(key) && key != ps) {
 					p[key].sleep--;
-					!p[key].sleep && delete p[key];
+					if(!p[key].sleep) { delete p[key]; }
 				}
 			});
 			return p[ps];
@@ -474,7 +481,7 @@
 
 			var paramCounts = {a: 7, c: 6, h: 1, l: 2, m: 2, r: 4, q: 4, s: 4, t: 2, v: 1, z: 0},
 				data = [];
-			if (Ris(pathString, "array") && Ris(pathString[0], "array")) { // rough assumption
+			if (r_is(pathString, "array") && r_is(pathString[0], "array")) { // rough assumption
 				data = pathClone(pathString);
 			}
 			if (!data.length) {
@@ -482,17 +489,17 @@
 					var params = [],
 						name = b.toLowerCase();
 					c.replace(pathValues, function (a, b) {
-						b && params.push(+b);
+						if(b) { params.push(+b); }
 					});
 					if (name == "m" && params.length > 2) {
-						data.push([b]["concat"](params.splice(0, 2)));
+						data.push(([b]).concat(params.splice(0, 2)));
 						name = "l";
 						b = b == "m" ? "l" : "L";
 					}
 					if (name == "r") {
-						data.push([b]["concat"](params));
+						data.push(([b]).concat(params));
 					} else while (params.length >= paramCounts[name]) {
-						data.push([b]["concat"](params.splice(0, paramCounts[name])));
+						data.push(([b]).concat(params.splice(0, paramCounts[name])));
 						if (!paramCounts[name]) {
 							break;
 						}
@@ -503,7 +510,7 @@
 			pth.arr = pathClone(data);
 			return data;
 		},
-		Ris = function (o, type) {
+		r_is = function (o, type) {
 			type = lowerCase.call(type);
 			if (type == "finite") {
 				return !isnan[has](+o);
@@ -543,12 +550,12 @@
 					}
 				}
 				d.push(["C",
-					  (-p[0].x + 6 * p[1].x + p[2].x) / 6,
-					  (-p[0].y + 6 * p[1].y + p[2].y) / 6,
-					  (p[1].x + 6 * p[2].x - p[3].x) / 6,
-					  (p[1].y + 6*p[2].y - p[3].y) / 6,
-					  p[2].x,
-					  p[2].y
+					(-p[0].x + 6 * p[1].x + p[2].x) / 6,
+					(-p[0].y + 6 * p[1].y + p[2].y) / 6,
+					(p[1].x + 6 * p[2].x - p[3].x) / 6,
+					(p[1].y + 6*p[2].y - p[3].y) / 6,
+					p[2].x,
+					p[2].y
 				]);
 			}
 
@@ -559,7 +566,7 @@
 			if (pth.abs) {
 				return pathClone(pth.abs);
 			}
-			if (!Ris(pathArray, "array") || !Ris(pathArray && pathArray[0], "array")) { // rough assumption
+			if (!r_is(pathArray, "array") || !r_is(pathArray && pathArray[0], "array")) { // rough assumption
 				pathArray = parsePathString(pathArray);
 			}
 			if (!pathArray || !pathArray.length) {
@@ -570,7 +577,7 @@
 				y = 0,
 				mx = 0,
 				my = 0,
-				start = 0;
+				start = 0, dots;
 			if (pathArray[0][0] == "M") {
 				x = +pathArray[0][1];
 				y = +pathArray[0][2];
@@ -584,6 +591,7 @@
 				res.push(r = []);
 				pa = pathArray[i];
 				if (pa[0] != upperCase.call(pa[0])) {
+					/* jshint -W086 */
 					r[0] = upperCase.call(pa[0]);
 					switch (r[0]) {
 						case "A":
@@ -602,13 +610,13 @@
 							r[1] = +pa[1] + x;
 							break;
 						case "R":
-							var dots = [x, y]["concat"](pa.slice(1));
+							dots = ([x, y]).concat(pa.slice(1));
 							for (var j = 2, jj = dots.length; j < jj; j++) {
 								dots[j] = +dots[j] + x;
 								dots[++j] = +dots[j] + y;
 							}
 							res.pop();
-							res = res["concat"](catmullRom2bezier(dots, crz));
+							res = res.concat(catmullRom2bezier(dots, crz));
 							break;
 						case "M":
 							mx = +pa[1] + x;
@@ -618,16 +626,18 @@
 								r[j] = +pa[j] + ((j % 2) ? x : y);
 							}
 					}
+					/* jshint +W086 */
 				} else if (pa[0] == "R") {
-					dots = [x, y]["concat"](pa.slice(1));
+					dots = ([x, y]).concat(pa.slice(1));
 					res.pop();
-					res = res["concat"](catmullRom2bezier(dots, crz));
-					r = ["R"]["concat"](pa.slice(-2));
+					res = res.concat(catmullRom2bezier(dots, crz));
+					r = (["R"]).concat(pa.slice(-2));
 				} else {
 					for (var k = 0, kk = pa.length; k < kk; k++) {
 						r[k] = pa[k];
 					}
 				}
+				/* jshint -W086 */
 				switch (r[0]) {
 					case "Z":
 						x = mx;
@@ -646,6 +656,7 @@
 						x = r[r.length - 2];
 						y = r[r.length - 1];
 				}
+				/* jshint +W086 */
 			}
 			res.toString = _path2string;
 			pth.abs = pathClone(res);
@@ -665,14 +676,16 @@
 					if (!path) {
 						return ["C", d.x, d.y, d.x, d.y, d.x, d.y];
 					}
-					!(path[0] in {T:1, Q:1}) && (d.qx = d.qy = null);
+					if(!(path[0] in {T:1, Q:1})) {
+						d.qx = d.qy = null;
+					}
 					switch (path[0]) {
 						case "M":
 							d.X = path[1];
 							d.Y = path[2];
 							break;
 						case "A":
-							path = ["C"]["concat"](a2c["apply"](0, [d.x, d.y]["concat"](path.slice(1))));
+							path = (["C"]).concat(a2c.apply(0, ([d.x, d.y]).concat(path.slice(1))));
 							break;
 						case "S":
 							if (pcom == "C" || pcom == "S") { // In "S" case we have to take into account, if the previous command is C/S.
@@ -683,7 +696,7 @@
 								nx = d.x;
 								ny = d.y;
 							}
-							path = ["C", nx, ny]["concat"](path.slice(1));
+							path = (["C", nx, ny]).concat(path.slice(1));
 							break;
 						case "T":
 							if (pcom == "Q" || pcom == "T") { // In "T" case we have to take into account, if the previous command is Q/T.
@@ -694,24 +707,24 @@
 								d.qx = d.x;
 								d.qy = d.y;
 							}
-							path = ["C"]["concat"](q2c(d.x, d.y, d.qx, d.qy, path[1], path[2]));
+							path = (["C"]).concat(q2c(d.x, d.y, d.qx, d.qy, path[1], path[2]));
 							break;
 						case "Q":
 							d.qx = path[1];
 							d.qy = path[2];
-							path = ["C"]["concat"](q2c(d.x, d.y, path[1], path[2], path[3], path[4]));
+							path = (["C"]).concat(q2c(d.x, d.y, path[1], path[2], path[3], path[4]));
 							break;
 						case "L":
-							path = ["C"]["concat"](l2c(d.x, d.y, path[1], path[2]));
+							path = (["C"]).concat(l2c(d.x, d.y, path[1], path[2]));
 							break;
 						case "H":
-							path = ["C"]["concat"](l2c(d.x, d.y, path[1], d.y));
+							path = (["C"]).concat(l2c(d.x, d.y, path[1], d.y));
 							break;
 						case "V":
-							path = ["C"]["concat"](l2c(d.x, d.y, d.x, path[1]));
+							path = (["C"]).concat(l2c(d.x, d.y, d.x, path[1]));
 							break;
 						case "Z":
-							path = ["C"]["concat"](l2c(d.x, d.y, d.X, d.Y));
+							path = (["C"]).concat(l2c(d.x, d.y, d.X, d.Y));
 							break;
 					}
 					return path;
@@ -721,7 +734,7 @@
 						pp[i].shift();
 						var pi = pp[i];
 						while (pi.length) {
-							pp.splice(i++, 0, ["C"]["concat"](pi.splice(0, 6)));
+							pp.splice(i++, 0, (["C"]).concat(pi.splice(0, 6)));
 						}
 						pp.splice(i, 1);
 						ii = Math.max(p.length, p2 && p2.length || 0);
@@ -740,8 +753,10 @@
 			for (var i = 0, ii = Math.max(p.length, p2 && p2.length || 0); i < ii; i++) {
 				p[i] = processPath(p[i], attrs);
 				fixArc(p, i);
-				p2 && (p2[i] = processPath(p2[i], attrs2));
-				p2 && fixArc(p2, i);
+				if(p2) {
+					p2[i] = processPath(p2[i], attrs2);
+					fixArc(p2, i);
+				}
 				fixM(p, p2, attrs, attrs2, i);
 				fixM(p2, p, attrs2, attrs, i);
 				var seg = p[i],

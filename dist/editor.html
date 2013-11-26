@@ -8,13 +8,13 @@
 		<link rel="stylesheet" href="editor/style/fonts/Inconsolata/stylesheet.css" />
 		<link rel="stylesheet" href="editor/style/fonts/SourceSansPro/stylesheet.css" />
 		<link rel="stylesheet" href="editor/style/editor_style.css" />
-		<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
-		<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
 		<script src="_vendor/esprima.js"></script>
 		<script src="_vendor/qrcode.min.js"></script>
-		<script src="interstate.js"></script>
+		<script src="interstate.min.js"></script>
 	</head>
 	<body>
 		<div id="editor"></div>
@@ -23,11 +23,15 @@
 			<script type="text/javascript">
 				$(function () {
 					$("div#editor").editor({
+						client_id: getURLParameter("client_id")
 					//	debug_ready: true,
 					//	debug_env: true,
 					//	command_box: true
 					});
 				});
+				function getURLParameter(name) {
+					return decodeURI((RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,''])[1]);
+				}
 			</script>
 		</div>
 	</body>

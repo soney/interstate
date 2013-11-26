@@ -32,6 +32,7 @@
 			}
 		</style>
 		<link rel="stylesheet" href="editor/style/runtime_style.css" />
+		<link rel="shortcut icon" href="../images/interstate_logo_128.png">
 	</head>
 	<body>
 		<!--
@@ -45,44 +46,20 @@
 		-->
 		<div class="content"></div>
 	</body>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
 	<script src="_vendor/esprima.js"></script>
 	
 	<script src="interstate.min.js"></script>
-	<script src="sample_apps/sample_app_loader.js"></script>
 	<script type="text/javascript">
-		var env, the_div, root;
-
-		var sample_apps = [
-			"hello_world",
-			"simple_hover",
-			"raphael",
-			"three",
-			"box2d"
-		];
-		window.upload = function(name) {
-			$.ajax({
-				url: "http://euc.from.so/gallery/upload.php",
-				type: "POST",
-				dataType: "text",
-				data: {
-					root: interstate.stringify(root),
-					name: interstate._.isString(name) ? name : "(no name)"
-				},
-				success: function(data) {
-					console.log(data);
-				}
-			});
-		};
-
 		$(function() {
-			var post = localStorage.getItem("post");
+			var post = localStorage.getItem("post"),
+				env, root;
 			if(post) {
-				root = interstate.destringify(post);
 				env = new interstate.Environment({root: root});
+				root = interstate.destringify(post);
 				//localStorage.removeItem("post");
 			} else {
 				env = new interstate.Environment();
@@ -91,55 +68,9 @@
 			
 
 			$("div.content").dom_output({
-				root: env.get_root()
+				root: root,
+				external_editor: false
 			});
-			/*
-
-			var load = function(root) {
-				$("div.content").dom_output("destroy");
-				env.destroy();
-
-				env = new interstate.Environment({root: root});
-				$("div.content").dom_output({
-					root: root
-				});
-			};
-			var load_sample_app = function(name) {
-				interstate.load_sample_app(name, function(root) {
-					load(root);
-				});
-				$("#sample_apps a").removeClass("active")
-				$("#sample_apps #"+name+"").addClass("active")
-			};
-			$("#sample_apps").html("");
-			$("#version_no").text("v" + interstate.version);
-			$("#build_time").text("built " + interstate.build_time.replace("2013-", ""));
-			for(var i = 0; i<sample_apps.length; i++) {
-				var sample_app_name = sample_apps[i];
-				var sample_app_link = $("<a />").attr("href", "javascript:void(0)")
-					.attr("id", sample_app_name)
-					.text(sample_app_name.replace("_", " "))
-					.on("click", (function(name) {
-									return function() {
-										load_sample_app(name);
-									};
-								}(sample_app_name)))
-					.appendTo("#sample_apps");
-				if (i < sample_apps.length - 1) {
-					$("#sample_apps").append("&nbsp;|&nbsp;");
-				}
-			}
-			if(window.location.hash) {
-				var hash = window.location.hash.slice(1);
-				var index = sample_apps.indexOf(hash);
-				if(index < 0) {
-					index = 0;
-				}
-				load_sample_app(sample_apps[index]);
-			} else {
-				load_sample_app(sample_apps[0]);
-			}
-			*/
 		});
 	</script>
 </html>

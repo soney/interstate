@@ -1,7 +1,4 @@
 (function(ist) {
-	var check_memory_leaks = true;
-	var step_delay = 10;
-
 	var tests = [
 		{
 			name: "Dynamic Events",
@@ -530,8 +527,7 @@
 									.set("fill", "(start)", "group_fill")
 									.set("x", "(start)", "100*copy_num")
 									.set("y", "(start)", "100*copy_num")
-									.up()
-									;
+									.up();
 				},
 				test: function(env, runtime) {
 					//env.print();
@@ -548,9 +544,11 @@
 					var circles = $("circle", runtime);
 					var rects = $("rect", runtime);
 
-					var event = new Event("click");
-					circles[0].dispatchEvent(event);
-					rects[1].dispatchEvent(event);
+					var ev = document.createEvent("MouseEvent");
+					ev.initMouseEvent("click");
+
+					circles[0].dispatchEvent(ev);
+					rects[1].dispatchEvent(ev);
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
@@ -565,9 +563,11 @@
 					var circles = $("circle", runtime);
 					var rects = $("rect", runtime);
 
-					var event = new Event("click");
-					circles[1].dispatchEvent(event);
-					rects[0].dispatchEvent(event);
+					var ev = document.createEvent("MouseEvent");
+					ev.initMouseEvent("click");
+
+					circles[1].dispatchEvent(ev);
+					rects[0].dispatchEvent(ev);
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
@@ -583,7 +583,7 @@
 			name: "Bouncing Ball",
 			expect: 0,
 			create_builtins: true,
-			delay: 15000,
+			delay: 1000,
 			steps: [{
 				setup: function(env) {
 					env	.cd("screen")
@@ -594,8 +594,8 @@
 								.add_state("moving")
 								.start_at("moving")
 								.add_transition("moving", "moving", "on('frame')")
-								.set("vx", "(start)", "1")
-								.set("vy", "(start)", "1")
+								.set("vx", "(start)", "10")
+								.set("vy", "(start)", "10")
 								.set("cx", "(start)", "Math.random() * sketch.width")
 								.set("cy", "(start)", "Math.random() * sketch.height")
 								.set("cx", "moving-0>moving", "cx+vx")
@@ -716,101 +716,7 @@
 		/**/
 	];
 
-	var command_id = 0;
-	var callbacks = {};
-	var do_command = function(command_name, parameters, callback) {
-		var id = command_id++;
-		callbacks[id] = callback;
-		var message = { id: id, type: "FROM_PAGE", command: command_name };
-		for(var key in parameters) {
-			if(parameters.hasOwnProperty(key)) {
-				message[key] = parameters[key];
-			}
-		}
-		window.postMessage(message, "*");
-	};
-	var clear_snapshots = function(callback) {
-		do_command("clear_snapshots", {}, callback);
-	};
-	var take_snapshot = function(forbidden_tokens, callback) {
-		do_command("take_snapshot", {forbidden_tokens: forbidden_tokens}, callback);
-	};
-
-	window.addEventListener("message", function(event) {
-		// We only accept messages from ourselves
-		if (event.source != window) { return; }
-
-		if (event.data.type && (event.data.type == "FROM_EXTENSION")) {
-			var id = event.data.id;
-			if(callbacks.hasOwnProperty(id)) {
-				var callback = callbacks[id];
-				delete callbacks[id];
-				callback(event.data.response);
-			}
-		}
-	}, false);
-
 	tests.forEach(function(test) {
-		asyncTest(test.name, function() {
-			var env, root, runtime_div;
-			var delay = test.delay || step_delay;
-
-			var root_setup = function() {
-				env = new ist.Environment({create_builtins: test.create_builtins !== false});
-				root = env.get_root();
-				runtime_div = $("<div />")	.appendTo(document.body)
-											.dom_output({
-												root: root,
-												show_edit_button: false
-											});
-			};
-			var run_step = function(step, callback) {
-				step.setup(env, runtime_div);
-				window.setTimeout(function() {
-					step.test(env, runtime_div);
-					window.setTimeout(function() {
-						callback();
-					}, delay);
-				}, 0);
-			};
-			var run_tests = function(callback, test_index) {
-				if(arguments.length === 1) {
-					test_index = 0;
-				}
-				if(test_index >= test.steps.length) {
-					callback();
-				} else {
-					run_step(test.steps[test_index], function() { run_tests(callback, test_index+1); });
-				}
-			};
-			var destroy = function() {
-				runtime_div.dom_output("destroy").remove();
-				env.destroy();
-				env = root = null;
-			};
-
-			if(check_memory_leaks) {
-				expect(test.expect + 1);
-				clear_snapshots(function() {
-					take_snapshot([], function() {
-						root_setup();
-						run_tests(function() {
-							destroy();
-							take_snapshot(["ConstraintNode", "SettableConstraint", "ist.", "interstate.", "$.(anonymous function).(anonymous function)"], function(response) {
-								ok(!response.illegal_strs, "Make sure nothing was allocated");
-								start();
-							});
-						});
-					});
-				});
-			} else {
-				expect(test.expect);
-				root_setup();
-				run_tests(function() {
-					destroy();
-					start();
-				});
-			}
-		});
+		dt(test.name, test);
 	});
 }(interstate));
