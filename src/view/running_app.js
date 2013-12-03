@@ -148,10 +148,7 @@
 														var file = files[0];
 														var fr = new FileReader();
 														fr.onload = _.bind(function() {
-															var new_root = ist.destringify(fr.result);
-															this.option("root", new_root);
-															this.element.trigger("change_root", new_root);
-
+															this.load_str(fr.result, file.name);
 															delete fr.onload;
 															fr = null;
 														}, this);
@@ -203,6 +200,16 @@
 			}
 		},
 
+		import_component: function(name, obj) {
+			var root = this.option("root");
+			var orig_name = name;
+			var i = 1;
+			while(root._has_direct_prop(name)) {
+				name = orig_name+"_"+i;
+				i++;
+			}
+			root.set(name, obj);
+		},
 
 		get_server_socket: function() {
 			return this.server_socket;
@@ -384,23 +391,34 @@
 							});
 						}
 					} else if(message.type === "load_file") {
-						var new_root = ist.destringify(message.contents);
-						this.option("root", new_root);
-						this.element.trigger("change_root", new_root);
+						this.load_str(message.contents, message.name);
 					} else if(message.type === "export_component") {
 						cobj_id = message.cobj_id;
 						cobj = ist.find_uid(message.cobj_id);
 						if(cobj) {
-							console.log(ist.stringify(cobj));
+							var obj = cobj.get_object();
 							this.server_socket.post({
-								type: "cobj",
-								value: ist.stringify(cobj)
+								type: "stringified_obj",
+								value: ist.stringify(obj)
 							});
 						}
 					}
 				}
 			}, this);
 			return server_socket;
+		},
+		load_str: function(fr_result, filename) {
+			var result = fr_result.replace(/^COMPONENT:/, ""),
+				is_component = result.length !== fr_result.length,
+				obj = ist.destringify(result),
+				name = filename.replace(/\.\w*$/, "");
+
+			if(is_component) {
+				this.import_component(name, obj);
+			} else {
+				this.option("root", obj);
+				this.element.trigger("change_root", obj);
+			}
 		},
 		open_editor: function (event) {
 			if(event) {

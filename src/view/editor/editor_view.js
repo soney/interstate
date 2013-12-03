@@ -74,6 +74,8 @@
 						});
 					} else if(data.type === "stringified_root") {
 						window.open("data:text/plain;charset=utf-8," + data.value);
+					} else if(data.type === "stringified_obj") {
+						window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
 					}
 				}, this).on("loaded", function (root_client) {
 					if(this.displaying_loading_text) {
@@ -129,7 +131,8 @@
 														fr.onload = _.bind(function() {
 															this.client_socket.post({
 																type: "load_file",
-																contents: fr.result
+																contents: fr.result,
+																name: file.name
 															});
 
 															delete fr.onload;
@@ -189,8 +192,7 @@
 
 		export_component: function(event) {
 			var obj = event.obj;
-			var client_socket = this.option("client_socket");
-			client_socket.post({
+			this.client_socket.post({
 				type: "export_component",
 				cobj_id: obj ? obj.cobj_id : false
 			});
