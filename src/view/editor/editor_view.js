@@ -187,6 +187,15 @@
 			}
 		},
 
+		export_component: function(event) {
+			var obj = event.obj;
+			var client_socket = this.option("client_socket");
+			client_socket.post({
+				type: "export_component",
+				cobj_id: obj ? obj.cobj_id : false
+			});
+		},
+
 		load_viewer: function (root_client) {
 			if(!this.element.data("interstate.pane")) {
 				this.element.pane();
@@ -235,7 +244,8 @@
 				}
 				this.element.pane("set_percentage", 0, 1);
 
-				this.element.on("command.do_action", _.bind(this.on_command, this));
+				this.element.on("command.do_action", _.bind(this.on_command, this))
+							.on("export", _.bind(this.export_component, this));
 
 				this.navigator.on("dragstart.pin", _.bind(function(event) {
 					var bottom_indicator_was_hidden = this.element.pane("get_percentage", 0) > 0.99;

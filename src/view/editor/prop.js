@@ -119,6 +119,11 @@
 						} else {
 							change_to_type = "Property";
 						}
+						this.export_component_button = $("<div />")	.appendTo(this.edit_menu)
+																	.addClass("item")
+																	.on("mousedown.prop", _.bind(this.export_component, this))
+																	.attr("tabindex", 2)
+																	.text("Export Component");
 					}
 					this.set_type_expand = $("<div />")	.appendTo(this.edit_menu)
 														.addClass("item")
@@ -450,6 +455,11 @@
 				e.stopPropagation();
 			}, this);
 			$(window).on("mousedown", this.close_edit_menu_listener);
+		},
+		export_component: function() {
+			var event = new $.Event("export");
+			event.obj = this.option("value");
+			this.element.trigger(event);
 		},
 		hide_edit_menu: function() {
 			this.edit_menu.hide();

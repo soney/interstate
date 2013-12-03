@@ -361,14 +361,15 @@
 					this._command_stack._do(command);
 				}
 			}, this).on("message", function(message) {
+				var cobj, cobj_id;
 				if(message) {
 					if(message.type === "add_highlight") {
 						this.add_highlight(ist.find_uid(message.cobj_id), message.highlight_type);
 					} else if(message.type === "remove_highlight") {
 						this.remove_highlight(ist.find_uid(message.cobj_id), message.highlight_type);
 					} else if(message.type === "get_ptr") {
-						var cobj_id = message.cobj_id;
-						var cobj = ist.find_uid(message.cobj_id);
+						cobj_id = message.cobj_id;
+						cobj = ist.find_uid(message.cobj_id);
 						if(cobj) {
 							var ptr = cobj.get_pointer();
 							var cobjs = [];
@@ -386,6 +387,16 @@
 						var new_root = ist.destringify(message.contents);
 						this.option("root", new_root);
 						this.element.trigger("change_root", new_root);
+					} else if(message.type === "export_component") {
+						cobj_id = message.cobj_id;
+						cobj = ist.find_uid(message.cobj_id);
+						if(cobj) {
+							console.log(ist.stringify(cobj));
+							this.server_socket.post({
+								type: "cobj",
+								value: ist.stringify(cobj)
+							});
+						}
 					}
 				}
 			}, this);
