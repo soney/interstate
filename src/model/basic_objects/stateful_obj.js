@@ -31,7 +31,7 @@
                 getter_name: "get_own_statechart",
                 settable: false,
 				destroy: function(me) {
-					me.destroy();
+					me.destroy(true);
 				}
             }
         };
