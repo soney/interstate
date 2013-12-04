@@ -6,6 +6,7 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+/*
 	var touches = cjs([]);
 	var touchstart_listener = function(event) {
 		touches.push.apply(touches, _.map(event.changedTouches, function(touch) {
@@ -67,6 +68,7 @@
 		window.removeEventListener("touchend", touchend_listener);
 	};
 	addTouchListeners();
+	*/
 
 	ist.Environment = function (options) {
 		// Undo stack
@@ -77,7 +79,7 @@
 			root = options.root;
 			root_pointer = new ist.Pointer({stack: [root]});
 		} else {
-			root = new ist.Dict({has_protos: false, direct_attachments: [new ist.PaperAttachment()/*, new ist.DomAttachment({instance_options: {tag: 'div'}})*/]});
+			root = new ist.Dict({has_protos: false, direct_attachments: [new ist.PaperAttachment(), new ist.DomAttachment({instance_options: {tag: 'div'}})]});
 
 			root_pointer = new ist.Pointer({stack: [root]});
 			if(!ist.__empty_files && (!options || options.create_builtins !== false)) {
@@ -85,7 +87,7 @@
 				this.initialize_props(root_pointer, builtins);
 			}
 		}
-		root.set("touches", touches);
+		//root.set("touches", touches);
 
 		//Context tracking
 		this.pointer = root_pointer;
@@ -276,7 +278,7 @@
 			if(builtins === true || (_.indexOf(builtins, "dom") >= 0)) {
 			/*
 				var child_nodes = new ist.Dict({has_protos: false});
-				root_dict.set("child_nodes", child_nodes);
+				//root_dict.set("child_nodes", child_nodes);
 				var dom = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 				root_dict.set("dom", dom);
 				dom.set("tag", new ist.Cell({str: "'div'"}));

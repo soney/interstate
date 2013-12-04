@@ -1,5 +1,5 @@
 /*jslint nomen: true, vars: true */
-/*global interstate,esprima,able,uid,console,RedMap,jQuery,window,Raphael */
+/*global interstate,esprima,able,uid,console,RedMap,jQuery,window,Snap */
 
 (function (ist, $) {
 	"use strict";
