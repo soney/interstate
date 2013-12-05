@@ -239,36 +239,16 @@
 					context_item = curr_context.points_at();
 				}
 			}
-			//if(key == "animation_duration") {
-				//debugger;
-			//}
 
 			curr_context = context;
 			context_item = curr_context.points_at();
-			//if(window.dbg) {
-				//debugger;
-			//}
 				
 			while (!curr_context.is_empty()) {
 				if (context_item instanceof ist.Dict) {
 					var contextual_obj = ist.find_or_put_contextual_obj(context_item, curr_context);
-					if (_.indexOf(ignore_inherited_in_contexts, context_item) >= 0) {
-						if (contextual_obj.has(key, true)) {
-							rv = contextual_obj.prop_val(key);
-							return rv;
-						}
-					} else {
-						//if(red.dbg) {
-							//console.log(curr_context);
-							//curr_context = curr_context.pop();
-							//context_item = curr_context.points_at();
-							//return;
-							//continue;
-						//}
-						if (contextual_obj.has(key)) {
-							rv = contextual_obj.prop_val(key);
-							return rv;
-						}
+					if (contextual_obj.has(key, _.indexOf(ignore_inherited_in_contexts, context_item)>=0)) {
+						rv = contextual_obj.prop_val(key);
+						return rv;
 					}
 				} else if (context_item instanceof ist.ProvisionalContext) {
 					if(context_item.has(key)) {
@@ -340,7 +320,7 @@
 			}
 
 			if (object instanceof ist.ContextualObject) {
-				if (property === "parent") {
+				if (property === "container") {
 					var found_this = false;
 					var curr_context = object.get_pointer();
 					var context_item = curr_context.points_at();
