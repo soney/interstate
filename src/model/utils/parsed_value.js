@@ -276,7 +276,7 @@
 						var sc = special_contexts[i];
 						var context_obj = sc.get_context_obj();
 						if (context_obj.hasOwnProperty(key)) {
-							return context_obj[key].value;
+							return cjs.get(context_obj[key].value);
 						}
 					}
 				}
@@ -567,6 +567,7 @@
 		} else if (type === "Program") {
 			if(node.body.length === 1) {
 				rv = get_val(node.body[0], options);
+				/*
 			} else {
 				rv = new ist.MultiExpression(_.map(node.body, function(bodyi, i) {
 					if(!options.only_parse_first || i === 0) {
@@ -575,6 +576,7 @@
 						return bodyi;
 					}
 				}));
+				*/
 			}
 			//return get_val(node.body[0], options);
 		} else {

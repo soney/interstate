@@ -96,6 +96,12 @@
 					});
 					return rv;
 				}
+			} else if(this.contextual_object instanceof ist.ContextualStatefulProp) {
+				var my_pointer = cobj.get_pointer();
+				return _.map(cobj.get_values(), function(val) {
+					var value = val.value;
+					return {obj: value, pointer: my_pointer.push(value)};
+				});
 			} else {
 				return [];
 			}
