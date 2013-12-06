@@ -5,7 +5,21 @@
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._,
-		esprima = window.esprima;
+		esprima = window.esprima,
+		destroy_if_constraint = function(x, silent) {
+			if(cjs.is_constraint(x)) {
+				x.destroy(silent);
+			}
+		},
+		set_destroy = function(x, func) {
+			if(cjs.is_constraint(x)) {
+				var old_destroy = x.destroy;
+				x.destroy = function() {
+					func.apply(x, arguments);
+					old_destroy.apply(x, arguments);
+				};
+			}
+		};
 
 	ist.construct = function(constructor, args) {
 		if(constructor === Date) { // Functions check to see if date object
@@ -127,8 +141,8 @@
 	};
 
 	var get_op_val = function (options, calling_context, op) {
-		var pcontext = options.context;
-		var args = _.rest(arguments, 3);
+		var pcontext = options.context,
+			args = _.rest(arguments, 3);
 		if (options.get_constraint) {
 			return cjs(function () {
 				var op_got = cjs.get(op, options.auto_add_dependency);
@@ -150,8 +164,7 @@
 			});
 		} else {
 			if (_.isFunction(op)) {
-				var rv = op.apply(calling_context, args);
-				return rv;
+				return op.apply(calling_context, args);
 			} else if (op instanceof ist.ParsedFunction) {
 				return op._apply(calling_context, pcontext, args);
 			} else {
@@ -432,25 +445,34 @@
 		}
 	};
 
+		//destroy_if_constraint(x, silent);
+		//set_destroy(x, func);
 	var get_val = ist.get_parsed_val = function (node, options) {
-		var op_func, left_arg, right_arg, arg, callee, op_context, args;
+		var op_func, left_arg, right_arg, arg, callee, op_context, args, rv;
 		if (!node) {
 			return undefined;
 		}
 		var type = node.type;
 		if (type === "ExpressionStatement") {
-			return get_val(node.expression, options);
+			rv = get_val(node.expression, options);
 		} else if (type === "Literal") {
-			return node.value;
+			rv = node.value;
 		} else if (type === "BinaryExpression") {
 			op_func = ist.binary_operators[node.operator];
 			left_arg = get_val(node.left, options);
 			right_arg = get_val(node.right, options);
-			return get_op_val(options, window, op_func, left_arg, right_arg);
+			rv = get_op_val(options, window, op_func, left_arg, right_arg);
+			set_destroy(rv, function(silent) {
+				destroy_if_constraint(left_arg, silent);
+				destroy_if_constraint(right_arg, silent);
+			});
 		} else if (type === "UnaryExpression") {
 			op_func = ist.unary_operators[node.operator];
 			arg = get_val(node.argument, options);
-			return get_op_val(options, window, op_func, arg);
+			rv = get_op_val(options, window, op_func, arg);
+			set_destroy(rv, function(silent) {
+				destroy_if_constraint(arg, silent);
+			});
 		} else if (type === "CallExpression") {
 			callee = get_val(node.callee, options);
 			op_context = window;
@@ -460,28 +482,58 @@
 			args = _.map(node["arguments"], function (arg) {
 				return get_val(arg, options);
 			});
-			return get_op_val.apply(this, ([options, op_context, callee]).concat(args));
+			rv = get_op_val.apply(this, ([options, op_context, callee]).concat(args));
+
+			set_destroy(rv, function(silent) {
+				destroy_if_constraint(callee);
+				destroy_if_constraint(op_context);
+				_.each(args, function(arg) {
+					destroy_if_constraint(arg, silent);
+				});
+			});
 		} else if (type === "Identifier") {
-			return get_identifier_val(node.name, options);
+			rv = get_identifier_val(node.name, options);
 		} else if (type === "ThisExpression") {
-			return get_this_val(options);
+			rv = get_this_val(options);
 		} else if (type === "MemberExpression") {
 			var object = get_val(node.object, options);
 			var property = node.computed ? get_val(node.property, options) : node.property.name;
-			return get_member_val(object, property, options);
+			rv = get_member_val(object, property, options);
+			set_destroy(rv, function(silent) {
+				destroy_if_constraint(object);
+				destroy_if_constraint(property);
+			});
 		} else if (type === "ArrayExpression") {
 			var elements = _.map(node.elements, function (element) {
 				return get_val(element, options);
 			});
-			return get_array_val(elements, options);
+			rv = get_array_val(elements, options);
+			set_destroy(rv, function(silent) {
+				_.each(element, function(elem) {
+					destroy_if_constraint(elem, silent);
+				});
+			});
 		} else if (type === "ConditionalExpression") {
-			return get_conditional_val(get_val(node.test, options), get_val(node.consequent, options), get_val(node.alternate, options), options);
+			var test = get_val(node.test, options),
+				consequent = get_val(node.consequent, options),
+				alternate = get_val(node.alternate, options);
+			rv = get_conditional_val(test, consequent, alternate, options);
+
+			set_destroy(rv, function(silent) {
+				destroy_if_constraint(test, silent);
+				destroy_if_constraint(consequent, silent);
+				destroy_if_constraint(alternate, silent);
+			});
 		} else if (type === "LogicalExpression") {
 			left_arg = get_val(node.left, options);
 			right_arg = get_val(node.right, options);
-			return get_logical_val(node.operator, left_arg, right_arg, options);
+			rv = get_logical_val(node.operator, left_arg, right_arg, options);
+			set_destroy(rv, function(silent) {
+				destroy_if_constraint(left_arg, silent);
+				destroy_if_constraint(right_arg, silent);
+			});
 		} else if (type === "FunctionExpression") {
-			return ist.get_fn_$(node, options);
+			rv = ist.get_fn_$(node, options);
 		} else if (type === "NewExpression") {
 			callee = get_val(node.callee, options);
 			op_context = window;
@@ -491,24 +543,32 @@
 			args = _.map(node["arguments"], function (arg) {
 				return get_val(arg, options);
 			});
-			return get_new_$.apply(this, ([options, op_context, callee]).concat(args));
+			rv = get_new_$.apply(this, ([options, op_context, callee]).concat(args));
+
+			set_destroy(rv, function(silent) {
+				destroy_if_constraint(callee, silent);
+				destroy_if_constraint(op_context, silent);
+
+				_.each(args, function(arg) {
+					destroy_if_constraint(arg, silent);
+				});
+			});
 		} else if (type === "ObjectExpression") {
 			if(options.get_constraint) {
 				console.error("not set");
 			} else {
-				var rv = {};
+				rv = {};
 				_.each(node.properties, function (prop_node) {
 					var key = prop_node.key.name,
 						value = get_val(prop_node.value, options);
 					rv[key] = value;
 				});
-				return rv;
 			}
 		} else if (type === "Program") {
 			if(node.body.length === 1) {
-				return get_val(node.body[0], options);
+				rv = get_val(node.body[0], options);
 			} else {
-				return new ist.MultiExpression(_.map(node.body, function(bodyi, i) {
+				rv = new ist.MultiExpression(_.map(node.body, function(bodyi, i) {
 					if(!options.only_parse_first || i === 0) {
 						return get_val(bodyi, options);
 					} else {
@@ -520,6 +580,7 @@
 		} else {
 			console.log(type, node);
 		}
+		return rv;
 	};
 
 	ist.get_parsed_$ = function (node, options) {

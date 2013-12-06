@@ -64,6 +64,9 @@
 			var state = this.get_state();
 			return state.get_event();
 		};
+		proto.eq = function(other_context) {
+			return other_context instanceof My && other_context.state === this.state;
+		};
 	}(ist.StateContext));
 
 	var ec_counter = 1;

@@ -26,6 +26,7 @@
 			}, {
 				context: this
 			});
+			//console.log("Created Contextual Cell", this.get_pointer(), this.get_object());
 
 			//if(this.id() == "402") {
 				//debugger;
