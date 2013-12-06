@@ -6,7 +6,6 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-/*
 	var touches = cjs([]);
 	var touchstart_listener = function(event) {
 		touches.push.apply(touches, _.map(event.changedTouches, function(touch) {
@@ -68,7 +67,6 @@
 		window.removeEventListener("touchend", touchend_listener);
 	};
 	addTouchListeners();
-	*/
 
 	ist.Environment = function (options) {
 		// Undo stack
@@ -87,7 +85,7 @@
 				this.initialize_props(root_pointer, builtins);
 			}
 		}
-		//root.set("touches", touches);
+		root.set("touches", touches);
 
 		//Context tracking
 		this.pointer = root_pointer;
