@@ -362,15 +362,20 @@
 
 			if(using_val) {
 				var pointer = this.get_pointer();
-				var event = cjs.get(using_state._last_run_event);
+				//var event = cjs.get(using_state._last_run_event);
 
-				var eventized_pointer = pointer.push(using_val, new ist.EventContext(event));
+				var eventized_pointer = pointer.push(using_val, new ist.StateContext(using_state));
+				var cobj = ist.find_or_put_contextual_obj(using_val, eventized_pointer);
+				
+				//console.log(cobj, cobj.val());
 		
 				if(ist.__debug) {
-					rv = using_val.get_value(eventized_pointer);
+					//rv = using_val.get_value(eventized_pointer);
+					rv = cobj.val();
 				} else {
 					try {
-						rv = using_val.get_value(eventized_pointer);
+						rv = cobj.val();
+						//rv = using_val.get_value(eventized_pointer);
 						if(rv instanceof ist.Error) {
 							rv = undefined;
 						}

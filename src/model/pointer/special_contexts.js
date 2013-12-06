@@ -50,6 +50,7 @@
 		ist.StateContext.superclass.constructor.apply(this, arguments);
 		this.state = state;
 		this.context_obj = {
+			event: { value: state._last_run_event }
 		};
 	};
 

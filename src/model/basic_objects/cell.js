@@ -147,6 +147,7 @@
 			*/
 			var ignore_inherited_in_contexts = this.get_ignore_inherited_in_contexts(pcontext);
 
+/*
 			var rv = cjs(function () {
 				var node = this._tree.get();
 				var parsed_$ = ist.get_parsed_$(node, {
@@ -164,7 +165,13 @@
 			});
 
 			return rv;
-
+			*/
+			var rv = ist.get_parsed_$(this._tree.get(), {
+						context: pcontext,
+						ignore_inherited_in_contexts: ignore_inherited_in_contexts,
+						get_constraint: true
+					});
+			return rv;
         };
 		proto.remove_constraint_in_context = function(pcontext) {
             //var contextual_values = this.get_contextual_values();

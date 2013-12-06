@@ -10,6 +10,7 @@
 		ist.ContextualCell.superclass.constructor.apply(this, arguments);
 		this._errors = new cjs.Constraint([]);
 		this._type = "cell";
+		//this.$update_value_constraint = _.bind(this.update_value_constraint, this);
 		//if(this.id() == "402") {
 			//debugger;
 		//}
@@ -20,17 +21,40 @@
 		var proto = My.prototype;
 		proto.initialize = function(options) {
 			My.superclass.initialize.apply(this, arguments);
+			this.value_constraint = cjs(function() {
+				return this.object.constraint_in_context(this.get_pointer());
+			}, {
+				context: this
+			});
+
 			//if(this.id() == "402") {
 				//debugger;
 			//}
+			//this.value_constraint = this.object.constraint_in_context(this.get_pointer());
+			//this.object._tree.onChange(_.bind(this.value_constraint.invalidate, this.value_constraint));
+			//this.object._tree.onChange(this.$update_value_constraint);
+			//function() {
+				//if(cjs.is_constraint(this.value_constraint)) {
+					
+				//}
+			//});
+		};
+		/*
+		proto.update_value_constraint = function() {
+			if(cjs.is_constraint(this.value_constraint)) {
+				this.value_constraint.destroy(true);
+			}
 			this.value_constraint = this.object.constraint_in_context(this.get_pointer());
 		};
+		*/
 		proto.destroy = function () {
 			//if(this.id() == "402" || this.id() == 260) {
 				//debugger;
 			//}
 			if(this.constructor === My) { this.emit_begin_destroy(); }
-			this.value_constraint.destroy(true);
+			if(cjs.is_constraint(this.value_constraint)) {
+				this.value_constraint.destroy(true);
+			}
 			delete this.value_constraint;
 			this.object.remove_constraint_in_context(this.get_pointer());
 			My.superclass.destroy.apply(this, arguments);
@@ -38,10 +62,10 @@
 		proto._getter = function () {
 			var value;
 			if(ist.__debug) {
-				value = cjs.get(this.value_constraint);
+				value = cjs.get(this.value_constraint.get());
 			} else {
 				try {
-					value = cjs.get(this.value_constraint);
+					value = cjs.get(this.value_constraint.get());
 				} catch (e) {
 					console.error(e);
 				}
