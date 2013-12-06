@@ -108,75 +108,15 @@
         };
 		proto.get_syntax_errors = function() {
             var tree = this._tree.get();
-			if(tree instanceof ist.Error) {
-				return [tree.message()];
-			} else {
-				return [];
-			}
+			return tree instanceof ist.Error ? [tree.message()] : [];
 		};
         proto.constraint_in_context = function (pcontext) {
-		/*
-            var contextual_values = this.get_contextual_values();
-    
-            var val = contextual_values.get_or_put(pcontext, function () {
-                var ignore_inherited_in_contexts = this.get_ignore_inherited_in_contexts(pcontext);
-    
-                var rv = cjs(function () {
-                    var node = this._tree.get();
-                    return ist.get_parsed_$(node, {
-                        context: pcontext,
-                        ignore_inherited_in_contexts: ignore_inherited_in_contexts,
-						get_constraint: false
-                    });
-                }, {
-					context: this
-				});
-				//if(this.id() == 14) {
-					//if(pcontext.points_at(-2).id() == 237) {
-						//rv.destroy = function() {
-							//debugger;
-							//console.log("XXX");
-						//}
-					//}
-				//}
-
-                return rv;
-            }, this);
-    
-            return val;
-			*/
-			var ignore_inherited_in_contexts = this.get_ignore_inherited_in_contexts(pcontext);
-
-/*
-			var rv = cjs(function () {
-				var node = this._tree.get();
-				var parsed_$ = ist.get_parsed_$(node, {
-					context: pcontext,
-					ignore_inherited_in_contexts: ignore_inherited_in_contexts,
-					get_constraint: false
-				});
-				if(parsed_$ instanceof ist.MultiExpression) {
-					return parsed_$.last();
-				} else {
-					return parsed_$;
-				}
-			}, {
-				context: this
-			});
-
-			return rv;
-			*/
-			var rv = ist.get_parsed_$(this._tree.get(), {
+			return ist.get_parsed_$(this._tree.get(), {
 						context: pcontext,
-						ignore_inherited_in_contexts: ignore_inherited_in_contexts,
+						ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext),
 						get_constraint: true
 					});
-			return rv;
         };
-		proto.remove_constraint_in_context = function(pcontext) {
-            //var contextual_values = this.get_contextual_values();
-            //contextual_values.remove(pcontext);
-		};
         proto.destroy = function () {
 			this.emit_begin_destroy();
             this._tree.destroy();
