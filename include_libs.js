@@ -31,9 +31,9 @@ exports.vendor = c(
 				"jquery-ui-1.10.3.custom/js/jquery-2.0.3.min.js",
 				"jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js",
 				"raphael/raphael.js",
-				//"Snap.svg-0.1.0/dist/snap.svg.js",
 				"esprima/esprima.js",
-				"qrcode.min.js",
+				"qrcode.min.js"
+				//"Snap.svg-0.1.0/dist/snap.svg.js",
 				//"three.js",
 				//"box2d/Box2dWeb-2.1.a.3.min.js"
 			])
