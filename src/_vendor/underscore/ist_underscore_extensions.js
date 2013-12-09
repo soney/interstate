@@ -70,20 +70,10 @@
 			}
 			return false;
 		},
-		diff: function(oldArray, newArray, equality_check) {
-			/*
-			diff returns an object with attributes:
-			removed, added, and moved.
-			Every item in removed has the format: {item, index}
-			Every item in added has the format: {item, index}
-			Every item in moved has the format: {from_index, to_index}
-
-			When oldArray removes every item in removed, adds every item in added,
-			and moves every item in moved in sequence, it will result in an array
-			that is equivalent to newArray.
-			*/
-			return getArrayDiff(oldArray, newArray, equality_check);
-		},
+		diff: cjs.arrayDiff,
+		//function(oldArray, newArray, equality_check) {
+			//return getArrayDiff(oldArray, newArray, equality_check);
+		//},
 
 		proto_extend: function (subClass, superClass) {
 				var F = function() {};

@@ -42,7 +42,6 @@ exports.vendor = c(
 exports.runtime = c(
 	cp(vendor_src, [
 				"stopwatch.js",
-				"array_diff.js",
 				"set.js",
 				"map.js",
 				"uid.js",
