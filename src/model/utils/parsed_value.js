@@ -7,12 +7,12 @@
 		_ = ist._,
 		esprima = window.esprima,
 		destroy_if_constraint = function(x, silent) {
-			if(cjs.is_constraint(x)) {
+			if(cjs.isConstraint(x)) {
 				x.destroy(silent);
 			}
 		},
 		set_destroy = function(x, func) {
-			if(cjs.is_constraint(x)) {
+			if(cjs.isConstraint(x)) {
 				var old_destroy = x.destroy;
 				x.destroy = function() {
 					func.apply(x, arguments);
@@ -368,7 +368,7 @@
 					throw new Error("No such property '" + property + "'");
 				}
 				return rv;
-			} else if(cjs.is_array(object)) {
+			} else if(cjs.isArrayConstraint(object)) {
 				if(_.isNumber(property)) {
 					return object.item(property);
 				} else {
@@ -376,7 +376,7 @@
 						return object.length();
 					}
 				}
-			} else if(cjs.is_map(object)) {
+			} else if(cjs.isMapConstraint(object)) {
 				return object.get(property);
 			} else {
 				return object[property];

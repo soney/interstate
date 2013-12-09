@@ -312,7 +312,7 @@
 				__type__: "summarized_obj",
 				__value__: "client_wrapper"
 			};
-		} else if (cjs.is_constraint(value)) {
+		} else if (cjs.isConstraint(value)) {
 			rv = {
 				__type__: "summarized_obj",
 				__value__: "constraint"

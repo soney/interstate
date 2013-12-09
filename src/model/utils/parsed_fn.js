@@ -43,7 +43,7 @@
 					init = call_fn(declaration.init, options);
 				// Do some cleanup here
 				var old_value = var_map[id];
-				if (old_value && cjs.is_constraint(old_value)) {
+				if (old_value && cjs.isConstraint(old_value)) {
 					old_value.destroy();
 				}
 				var_map[id] = init;
@@ -61,7 +61,7 @@
 			if (left.type === "Identifier") {
 				id = left.name;
 				var old_value = var_map[id];
-				if (old_value && cjs.is_constraint(old_value)) {
+				if (old_value && cjs.isConstraint(old_value)) {
 					old_value.destroy();
 				}
 				var_map[id] = assignments[node.operator](old_value, right_val);

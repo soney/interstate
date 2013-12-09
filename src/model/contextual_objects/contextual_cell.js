@@ -35,14 +35,14 @@
 			//this.object._tree.onChange(_.bind(this.value_constraint.invalidate, this.value_constraint));
 			//this.object._tree.onChange(this.$update_value_constraint);
 			//function() {
-				//if(cjs.is_constraint(this.value_constraint)) {
+				//if(cjs.isConstraint(this.value_constraint)) {
 					
 				//}
 			//});
 		};
 		/*
 		proto.update_value_constraint = function() {
-			if(cjs.is_constraint(this.value_constraint)) {
+			if(cjs.isConstraint(this.value_constraint)) {
 				this.value_constraint.destroy(true);
 			}
 			this.value_constraint = this.object.constraint_in_context(this.get_pointer());
@@ -54,11 +54,11 @@
 				//debugger;
 			//}
 			if(this.constructor === My) { this.emit_begin_destroy(); }
-			if(cjs.is_constraint(this.value_constraint)) {
+			if(cjs.isConstraint(this.value_constraint)) {
 				this.value_constraint.destroy(true);
 			}
 			delete this.value_constraint;
-			this.object.remove_constraint_in_context(this.get_pointer());
+			//this.object.remove_constraint_in_context(this.get_pointer());
 			My.superclass.destroy.apply(this, arguments);
 		};
 		proto._getter = function () {

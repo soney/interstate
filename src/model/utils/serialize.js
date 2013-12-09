@@ -77,7 +77,7 @@
 
 	ist.register_serializable_type("cjs_array",
 		function (x) {
-			return cjs.is_array(x);
+			return cjs.isArrayConstraint(x);
 		},
 		function () {
 			var args = _.toArray(arguments);
@@ -100,7 +100,7 @@
 
 	ist.register_serializable_type("cjs_map",
 		function (x) {
-			return cjs.is_map(x);
+			return cjs.isMapConstraint(x);
 		},
 		function () {
 			var args = _.toArray(arguments);

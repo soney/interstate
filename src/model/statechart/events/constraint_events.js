@@ -38,7 +38,7 @@ var UNDEF = {};
 			}
 		};
 		proto.destroy = function () {
-			if(cjs.is_constraint(this.constraint)) {
+			if(cjs.isConstraint(this.constraint)) {
 				this.constraint.offChange(this.check_constraint_val, this);
 				this.constraint.destroy(true);
 			}
@@ -47,7 +47,7 @@ var UNDEF = {};
 
 		proto.enable = function () {
 			My.superclass.enable.apply(this, arguments);
-			if(cjs.is_constraint(this.constraint)) {
+			if(cjs.isConstraint(this.constraint)) {
 				this.constraint.onChange(this.check_constraint_val, this);
 				//if (!this.constraint.is_valid()) {
 					//this.check_constraint_val();
@@ -60,7 +60,7 @@ var UNDEF = {};
 		};
 		proto.disable = function () {
 			My.superclass.disable.apply(this, arguments);
-			if(cjs.is_constraint(this.constraint)) {
+			if(cjs.isConstraint(this.constraint)) {
 				this.constraint.offChange(this.check_constraint_val, this);
 			}
 		};

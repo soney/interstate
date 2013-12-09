@@ -15,7 +15,7 @@
 			var discarded_commands = stack.splice(index + 1, stack.length - index);
 
 			_.forEach(discarded_commands, function (discarded_command) {
-				if (cjs.is_constraint(discarded_command)) {
+				if (cjs.isConstraint(discarded_command)) {
 					discarded_command.destroy();
 				}
 			});

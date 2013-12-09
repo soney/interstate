@@ -82,7 +82,7 @@
                 "default": function () { return []; },
                 getter_name: "direct_attachments",
 				destroy: function(me) {
-					if (me instanceof cjs.Array) {
+					if (cjs.isArrayConstraint(me)) {
 						me.forEach(function(attachment) {
 							attachment.destroy(true);
 						});
@@ -285,7 +285,7 @@
     
         proto._get_direct_attachments = function () {
             var direct_attachments = this.direct_attachments();
-            if (direct_attachments instanceof cjs.Array) {
+            if (cjs.isArrayConstraint(direct_attachments)) {
                 return this.direct_attachments().toArray();
             } else if (_.isArray(direct_attachments)) {
                 return direct_attachments;

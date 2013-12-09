@@ -23,7 +23,7 @@
 		if (got_event instanceof ist.Event) {
 			return {event: got_event, actions: actions};
 		} else {
-			if(cjs.is_constraint(event_constraint)) {
+			if(cjs.isConstraint(event_constraint)) {
 				cjs.removeDependency(event_constraint, live_event_creator._constraint);
 			}
 			var event = new ist.ConstraintEvent(event_constraint, got_event);
@@ -53,7 +53,7 @@
 			ist.register_uid(this._id, this);
 
 			this.options = options;
-			this._str = cjs.is_constraint(options.str) ? options.str : cjs(options.str);
+			this._str = cjs.isConstraint(options.str) ? options.str : cjs(options.str);
 			if (options.inert !== true) {
 				var SOandC = ist.find_stateful_obj_and_context(options.context);
 
