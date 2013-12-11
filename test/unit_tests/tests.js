@@ -1,6 +1,25 @@
 (function(ist) {
 	var cjs = ist.cjs;
 
+	asyncTest("Remote Constraints", function() {
+		expect(1);
+		clear_snapshots(function() {
+			take_snapshot([], function() {
+				var comm_wrapper = new ist.SameWindowCommWrapper();
+				var x = cjs(1);
+				var constraint_server = new ist.RemoveConstraintServer(comm_wrapper, x);
+				var constraint_client = new ist.RemoteConstraintClient(comm_wrapper, constraint_server.id());
+				console.log(constraint_server);
+				window.setTimeout(function() {
+					take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
+						ok(true, "Make sure nothing was allocated");
+						start();
+					});
+				}, 350);
+			});
+		});
+	});
+	
 	asyncTest("State Allocation", function() {
 		expect(1);
 		clear_snapshots(function() {

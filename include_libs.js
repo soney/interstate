@@ -94,6 +94,7 @@ exports.runtime = c(
 				"model/attachments/raphael_attachment.js",
 				//"model/attachments/three_attachment.js",
 				//"model/attachments/box2d_attachment.js",
+				"model/communication_wrapper/remote_constraint.js",
 				"model/communication_wrapper/comm_mechanisms.js",
 				"model/communication_wrapper/wrapper_server.js",
 				"model/communication_wrapper/wrapper_client.js",
