@@ -5,11 +5,12 @@
 		expect(1);
 		clear_snapshots(function() {
 			take_snapshot([], function() {
-				var comm_wrapper = new ist.SameWindowCommWrapper();
+				var comm_wrapper1 = new ist.SameWindowCommWrapper();
+				var comm_wrapper2 = new ist.SameWindowCommWrapper();
 				var x = cjs(1);
-				var constraint_server = new ist.RemoveConstraintServer(comm_wrapper, x);
-				var constraint_client = new ist.RemoteConstraintClient(comm_wrapper, constraint_server.id());
-				console.log(constraint_server);
+				var constraint_server = new ist.RemoveConstraintServer(comm_wrapper1, x);
+				var constraint_client = new ist.RemoteConstraintClient(comm_wrapper2, constraint_server.id());
+				console.log(constraint_client.get());
 				window.setTimeout(function() {
 					take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
 						ok(true, "Make sure nothing was allocated");

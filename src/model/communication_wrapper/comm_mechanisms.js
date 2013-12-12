@@ -24,7 +24,7 @@
 				var data = event.data;
 				if(data.client_id === this.client_id) {
 					var message = data.message;
-					this._emit("message", message);
+					this._emit(message.type, message);
 				}
 			}
 		};
@@ -76,10 +76,10 @@
 			if(this.message_delay || _.isNumber(this.message_delay)) {
 				var message_delay = _.isNumber(this.message_delay) ? this.message_delay : 0;
 				_.defer(_.bind(function() {
-					this._emit("message", message);
+					this._emit(message.type, message);
 				}, this), message_delay);
 			} else {
-				this._emit("message", message);
+				this._emit(message.type, message);
 			}
 		};
 
