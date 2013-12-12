@@ -21,7 +21,9 @@
 		able.make_proto_listenable(proto);
 
 		proto.add_message_listeners = function () {
-			this.comm_mechanism.on("message", this.on_message, this);
+			this.comm_mechanism	.on("ready", this.on_ready, this)
+								.on("message", this.on_message, this)
+								.on("disconnect", this.on_disconnect, this)
 		};
 		proto.remove_message_listeners = function () {
 			if(this.comm_mechanism) {
@@ -54,117 +56,125 @@
 			});
 		};
 
-		proto.on_message = function (data) {
-			var cobj, cobj_id, server, client_id;
-			if(data === "ready") {
-				this.connected = true;
-				this.send_root();
-			} else if(data === "loaded") {
-				this._emit("connected");
-			} else if(data === "disconnect") {
-				this.on_client_closed();
-			} else {
-				var type = data.type;
-				if (type === "command") {
-					var stringified_command = data.command;
-					if ((["undo", "redo", "reset", "export", "upload", "store"]).indexOf(stringified_command) >= 0) {
-						this._emit("command", stringified_command);
-					} else {
-						var command = ist.destringify(stringified_command);
-						this._emit("command", command);
-					}
-				} else if(type === "wrapper_client") {
-					var message = data.message;
-					var mtype = message.type;
-					var wrapper_server;
-					if (mtype === "register_listener") {
-						cobj_id = message.cobj_id;
-						cobj = ist.find_uid(cobj_id);
-						client_id = data.client_id;
+		proto.on_ready = function() {
+			this.connected = true;
+			this.send_root();
+		};
 
+		proto.on_loaded = function() {
+			this._emit("connected");
+		};
+		proto.on_disconnect = function() {
+			_.each(this.wrapper_servers, function(wrapper_server, cobj_id) {
+				if(!wrapper_server.has_clients()) {
+					wrapper_server.destroy();
+					delete this.wrapper_servers[cobj_id];
+				}
+			}, this);
+			this.cleanup_closed_client();
+			this._emit("disconnected");
+		};
+
+		proto.on_command = function(command) {
+			if (type === "command") {
+				var stringified_command = data.command;
+				if ((["undo", "redo", "reset", "export", "upload", "store"]).indexOf(stringified_command) >= 0) {
+					this._emit("command", stringified_command);
+				} else {
+					var command = ist.destringify(stringified_command);
+					this._emit("command", command);
+				}
+			} else if(type === "wrapper_client") {
+				var message = data.message;
+				var mtype = message.type;
+				var wrapper_server;
+				if (mtype === "register_listener") {
+					cobj_id = message.cobj_id;
+					cobj = ist.find_uid(cobj_id);
+					client_id = data.client_id;
+
+					server = this.get_wrapper_server(cobj, client_id);
+					server.on("emit", _.bind(function(evt) {
+						var full_message = {
+							type: "wrapper_server",
+							server_message: _.extend({type: "emit", client_id: client_id}, evt)
+						};
+						this.post(full_message);
+					},this)).on("changed", _.bind(function(getting) {
+						var full_message = {
+							type: "wrapper_server",
+							server_message: {
+								type: "changed",
+								cobj_id: cobj_id,
+								getting: getting,
+								client_id: client_id
+							}
+						};
+						//if(client_id === 8) debugger;
+						this.post(full_message);
+					}, this));
+				} else if (mtype === "get_$" || mtype === "async_get") { // async request
+					cobj_id = data.cobj_id;
+					cobj = ist.find_uid(cobj_id);
+					client_id = data.client_id;
+					var request_id = data.message_id;
+					if(cobj) {
 						server = this.get_wrapper_server(cobj, client_id);
-						server.on("emit", _.bind(function(evt) {
-							var full_message = {
-								type: "wrapper_server",
-								server_message: _.extend({type: "emit", client_id: client_id}, evt)
-							};
-							this.post(full_message);
-						},this)).on("changed", _.bind(function(getting) {
-							var full_message = {
-								type: "wrapper_server",
-								server_message: {
-									type: "changed",
-									cobj_id: cobj_id,
-									getting: getting,
-									client_id: client_id
-								}
-							};
-							//if(client_id === 8) debugger;
-							this.post(full_message);
-						}, this));
-					} else if (mtype === "get_$" || mtype === "async_get") { // async request
-						cobj_id = data.cobj_id;
-						cobj = ist.find_uid(cobj_id);
-						client_id = data.client_id;
-						var request_id = data.message_id;
-						if(cobj) {
-							server = this.get_wrapper_server(cobj, client_id);
 
-							var create_constraint = data.message.type === "get_$";
+						var create_constraint = data.message.type === "get_$";
 
-							server.request(data.message.getting, _.bind(function (response) {
-								this.post({
-									type: "response",
-									request_id: request_id,
-									client_id: client_id,
-									response: response
-								});
-							}, this), create_constraint, client_id);
-						} else {
+						server.request(data.message.getting, _.bind(function (response) {
 							this.post({
 								type: "response",
 								request_id: request_id,
 								client_id: client_id,
-								error: "cobj_destroyed"
+								response: response
 							});
-						}
-					} else if(mtype === "destroy_$") {
-						cobj_id = data.cobj_id;
-						client_id = data.client_id;
+						}, this), create_constraint, client_id);
+					} else {
+						this.post({
+							type: "response",
+							request_id: request_id,
+							client_id: client_id,
+							error: "cobj_destroyed"
+						});
+					}
+				} else if(mtype === "destroy_$") {
+					cobj_id = data.cobj_id;
+					client_id = data.client_id;
 
-						if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
-							wrapper_server = this.wrapper_servers[cobj_id];
-							wrapper_server.client_destroyed(data.message.getting, client_id);
-						}
-					} else if(mtype === "destroy") {
-						cobj_id = data.cobj_id;
-						client_id = data.client_id;
+					if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
+						wrapper_server = this.wrapper_servers[cobj_id];
+						wrapper_server.client_destroyed(data.message.getting, client_id);
+					}
+				} else if(mtype === "destroy") {
+					cobj_id = data.cobj_id;
+					client_id = data.client_id;
 
-						if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
-							wrapper_server = this.wrapper_servers[cobj_id];
-							wrapper_server.remove_client_id(client_id);
-							if(!wrapper_server.has_clients()) {
-								wrapper_server.destroy();
-								delete this.wrapper_servers[cobj_id];
-							}
-						}
-					} else if(mtype === "pause") {
-						cobj_id = data.cobj_id;
-						client_id = data.client_id;
-
-						if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
-							wrapper_server = this.wrapper_servers[cobj_id];
-							wrapper_server.client_paused(cobj_id);
-						}
-					} else if(mtype === "resume") {
-						if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
-							wrapper_server = this.wrapper_servers[cobj_id];
-							wrapper_server.client_resumed(cobj_id);
+					if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
+						wrapper_server = this.wrapper_servers[cobj_id];
+						wrapper_server.remove_client_id(client_id);
+						if(!wrapper_server.has_clients()) {
+							wrapper_server.destroy();
+							delete this.wrapper_servers[cobj_id];
 						}
 					}
+				} else if(mtype === "pause") {
+					cobj_id = data.cobj_id;
+					client_id = data.client_id;
+
+					if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
+						wrapper_server = this.wrapper_servers[cobj_id];
+						wrapper_server.client_paused(cobj_id);
+					}
+				} else if(mtype === "resume") {
+					if (this.wrapper_servers.hasOwnProperty(cobj_id)) {
+						wrapper_server = this.wrapper_servers[cobj_id];
+						wrapper_server.client_resumed(cobj_id);
+					}
 				}
-				this._emit("message", data);
 			}
+			this._emit("message", data);
 		};
 
 		proto.get_wrapper_server = function(object, client_id) {
@@ -212,17 +222,6 @@
 			} else {
 				throw new Error("Trying to send a message to a disconnected client");
 			}
-		};
-
-		proto.on_client_closed = function () {
-			_.each(this.wrapper_servers, function(wrapper_server, cobj_id) {
-				if(!wrapper_server.has_clients()) {
-					wrapper_server.destroy();
-					delete this.wrapper_servers[cobj_id];
-				}
-			}, this);
-			this.cleanup_closed_client();
-			this._emit("disconnected");
 		};
 
 		proto.is_connected = function () {

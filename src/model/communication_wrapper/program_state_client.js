@@ -62,6 +62,51 @@
 		};
 
 		var DEREGISTERED = {};
+		proto.on_croot = function(message) {
+			if(this.root_client) {
+				this._emit("root_changed", message);
+			}
+
+			var summary = message.summary;
+
+			if(summary) {
+				this.root_client = this.get_wrapper_client(summary);
+			}
+
+			this._emit("loaded", this.root_client);
+			this.post("loaded");
+		};
+		proto.on_wrapper_server = function(message) {
+			var server_message = message.server_message;
+			var client_id = server_message.client_id;
+
+			var smtype = server_message.type;
+			var client = this.clients[client_id];
+			if(client) {
+				if (smtype === "changed") {
+					client.on_change.apply(client, server_message.getting);
+				} else if (smtype === "emit") {
+					client.on_emit.apply(client, ([server_message.event_type]).concat(server_message.args));
+				}
+			}
+		};
+		proto.on_response = function(message) {
+			var request_id = message.request_id,
+				response = message.response;
+			if (this.response_listeners.hasOwnProperty(request_id)) {
+				var response_listener = this.response_listeners[request_id];
+				if(response_listener !== DEREGISTERED) {
+					response_listener(response);
+				}
+				delete this.response_listeners[request_id];
+			} else {
+				this.pending_responses[request_id] = response;
+			}
+		};
+		proto.on_cobj_links = function(message) {
+			this._emit("cobj_links", message);
+		};
+		/*
 		proto.on_message = function (message) {
 			var type = message.type;
 
@@ -79,7 +124,6 @@
 				this._emit("loaded", this.root_client);
 				this.post("loaded");
 			} else if (type === "wrapper_server") {
-				this._emit("message", message);
 				var server_message = message.server_message;
 				var client_id = server_message.client_id;
 
@@ -110,6 +154,7 @@
 
 			this._emit("message", message);
 		};
+		*/
 
 		proto.register_response_listener = function (id, listener) {
 			if (this.pending_responses.hasOwnProperty(id)) {
