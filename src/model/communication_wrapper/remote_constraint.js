@@ -49,6 +49,10 @@
 			}
 		};
 		proto.destroy = function() {
+			this.comm_mechanism.post({
+				type: this.message_signature,
+				subtype: DESTROY_SERVER_TYPE
+			});
 			this.comm_mechanism.off(this.message_signature, this.$on_message);
 			this.value.offChange(this.$onChange);
 			this.value.destroy(true);
@@ -71,11 +75,11 @@
 		var proto = my.prototype;
 
 		proto.requestUpdate = function() {
-				this.comm_mechanism.post({
-					type: this.message_signature,
-					subtype: GET_TYPE,
-					client_id: this._id
-				});
+			this.comm_mechanism.post({
+				type: this.message_signature,
+				subtype: GET_TYPE,
+				client_id: this._id
+			});
 		};
 
 		proto.get = function() {
@@ -85,11 +89,20 @@
 			return this.$value.get();
 		};
 		proto.onMessage = function(message) {
-			if(message.subtype === VALUE_TYPE) {
-				this.$value.set(message.value);
+			switch(message.subtype) {
+				case VALUE_TYPE:
+					this.$value.set(message.value);
+					break;
+				case CHANGED_TYPE:
+					this.$value.invalidate();
+					break;
 			}
 		};
 		proto.destroy = function() {
+			this.comm_mechanism.post({
+				type: this.message_signature,
+				subtype: DESTROY_CLIENT_TYPE
+			});
 			this.$value.destroy(true);
 			this.comm_mechanism.off(this.message_signature, this.$on_message);
 		};

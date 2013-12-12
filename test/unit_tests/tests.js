@@ -2,7 +2,7 @@
 	var cjs = ist.cjs;
 
 	asyncTest("Remote Constraints", function() {
-		expect(1);
+		expect(3);
 		clear_snapshots(function() {
 			take_snapshot([], function() {
 				var comm_wrapper1 = new ist.SameWindowCommWrapper();
@@ -10,7 +10,9 @@
 				var x = cjs(1);
 				var constraint_server = new ist.RemoveConstraintServer(comm_wrapper1, x);
 				var constraint_client = new ist.RemoteConstraintClient(comm_wrapper2, constraint_server.id());
-				console.log(constraint_client.get());
+				equal(constraint_client.get(), 1);
+				x.set(2);
+				equal(constraint_client.get(), 2);
 				window.setTimeout(function() {
 					take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
 						ok(true, "Make sure nothing was allocated");
