@@ -28,6 +28,11 @@
 				window.addEventListener("load", _.bind(this.on_loaded, this));
 			}
 		}
+
+		this.comm_mechanism	.on("croot", this.on_croot, this)
+							.on("response", this.on_response, this)
+							.on("cobj_links", this.on_cobj_links, this)
+							.on("wrapper_server", this.on_wrapper_server, this);
 	};
 
 	(function (my) {
@@ -38,7 +43,9 @@
 			if(!this.loaded) {
 				this.loaded = true;
 				this.add_message_listener();
-				this.post("ready");
+				this.post({
+					type: "ready"
+				});
 			}
 		};
 
