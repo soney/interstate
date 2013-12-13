@@ -27,7 +27,7 @@
 			debug_ready: false,
 			full_window: true,
 			server_window: window.opener,
-			client_id: "",
+			client_id: uid.get_prefix(),
 			single_col_navigation: display === "phone" || display === "tablet",
 			view_type: display,
 			annotations: {},
@@ -50,10 +50,22 @@
 				this.client_socket = new ist.ProgramStateClient({
 					ready_func: this.option("debug_ready"),
 					comm_mechanism: communication_mechanism
-				}).on("message", function (data) {
-					if (data.type === "color") {
-						var color = data.value;
-					} else if(data.type === "upload_url") {
+				})
+				.on("loaded", function (root_client) {
+					if(this.displaying_loading_text) {
+						this.element.html("");
+						this.displaying_loading_text = false;
+					}
+					this.load_viewer(root_client);
+				}, this)
+				.on("root_changed", function () {
+					this.navigator.navigator("destroy");
+					$("column", this.pinned).column("destroy").remove();
+					this.element.pane("set_percentage", 0, 1);
+				}, this);
+				/*
+				.on("message", function (data) {
+					if(data.type === "upload_url") {
 						var url = data.value;
 						var code_container = $("<div />");
 						var qrcode = new QRCode(code_container[0], {
@@ -77,18 +89,8 @@
 					} else if(data.type === "stringified_obj") {
 						window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
 					}
-				}, this).on("loaded", function (root_client) {
-					if(this.displaying_loading_text) {
-						this.element.html("");
-						this.displaying_loading_text = false;
-					}
-					this.load_viewer(root_client);
 				}, this)
-				.on("root_changed", function () {
-					this.navigator.navigator("destroy");
-					$("column", this.pinned).column("destroy").remove();
-					this.element.pane("set_percentage", 0, 1);
-				}, this);
+				*/
 			};
 
 			$(window) .on("dragover.replace_program", _.bind(function(eve) {

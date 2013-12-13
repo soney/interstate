@@ -116,13 +116,7 @@
 		proto.post = function (message) {
 			var m_id = message_id;
 			message_id += 1;
-			/*
-			if(uid.strip_prefix(this.cobj_id) == 279) {
-				if(m_id == 74) {
-					debugger;
-				}
-			}
-			*/
+			//console.log(message);
 			this.comm_mechanism.post({
 				type: "wrapper_client",
 				client_id: this.id(),

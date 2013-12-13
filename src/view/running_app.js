@@ -42,8 +42,7 @@
 			this._command_stack = new ist.CommandStack();
 			this.highlights = [];
 			if (this.option("show_edit_button")) {
-				this.button_color = randomColor([0, 1], [0.1, 0.7], [0.4, 0.6]);
-				//this.button_color = "#990000";
+				this.button_color = "#990000";
 				this.edit_button_css = {
 					float: "right",
 					opacity: 0.7,
@@ -325,10 +324,6 @@
 				if(this.edit_button) {
 					this.edit_button.addClass("active").css(this.edit_active_css);
 				}
-				this.server_socket.post({
-					type: "color",
-					value: this.button_color
-				});
 			}, this).on("disconnected", function () {
 				this.cleanup_closed_editor();
 			}, this).on("command", function (command) {
@@ -617,57 +612,4 @@
 			}
 		}
 	});
-		
-	function componentToHex(c) {
-		var hex = c.toString(16);
-		return hex.length === 1 ? "0" + hex : hex;
-	}
-
-	function rgbToHex(r, g, b) {
-		return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-	}
-
-	/**
-	 * Converts an HSL color value to RGB. Conversion formula
-	 * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
-	 * Assumes h, s, and l are contained in the set [0, 1] and
-	 * returns r, g, and b in the set [0, 255].
-	 *
-	 * @param   Number  h       The hue
-	 * @param   Number  s       The saturation
-	 * @param   Number  l       The lightness
-	 * @return  Array           The RGB representation
-	 */
-	function hslToRgb(h, s, l) {
-		var r, g, b, hue2rgb;
-
-		if (s === 0) {
-			r = g = b = l; // achromatic
-		} else {
-			hue2rgb = function (p, q, t) {
-				if (t < 0) { t += 1; }
-				if (t > 1) { t -= 1; }
-				if (t < 1 / 6) { return p + (q - p) * 6 * t; }
-				if (t < 1 / 2) { return q; }
-				if (t < 2 / 3) { return p + (q - p) * (2 / 3 - t) * 6; }
-				return p;
-			};
-
-			var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-			var p = 2 * l - q;
-			r = hue2rgb(p, q, h + 1 / 3);
-			g = hue2rgb(p, q, h);
-			b = hue2rgb(p, q, h - 1 / 3);
-		}
-
-		return [Math.floor(r * 256), Math.floor(g * 256), Math.floor(b * 256)];
-	}
-
-	function randomColor(hrange, srange, lrange) {
-		var h = Math.random() * (hrange[1] - hrange[0]) + hrange[0],
-			s = Math.random() * (srange[1] - srange[0]) + srange[0],
-			l = Math.random() * (lrange[1] - lrange[0]) + lrange[0];
-		var rgb = hslToRgb(h, s, l);
-		return rgbToHex.apply(window, rgb);
-	}
 }(interstate, jQuery));

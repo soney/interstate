@@ -58,7 +58,7 @@
 
 		proto.disconnect = function() {
 			this.destroy_every_client();
-			this.post("disconnect");
+			this.post({type: "disconnect"});
 		};
 
 		proto.destroy_every_client = function() {
@@ -81,7 +81,7 @@
 			}
 
 			this._emit("loaded", this.root_client);
-			this.post("loaded");
+			this.post({type: "loaded"});
 		};
 		proto.on_wrapper_server = function(message) {
 			var server_message = message.server_message;

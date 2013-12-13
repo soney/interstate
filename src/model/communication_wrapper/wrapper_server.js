@@ -99,8 +99,6 @@
 			}
 		};
 		proto.on_begin_destroy = function() {
-			//console.log("on_begin_destroy", this.object);
-			//debugger;
 			this.object.off("begin_destroy", this.on_begin_destroy, this);
 			this.remove_emission_listeners();
 			this.clear_fn_call_constraints();
@@ -114,7 +112,6 @@
 		};
 
 		proto.destroy = function () {
-			//console.log("destroy", this.object);
 			this._emit("destroy");
 			if(!this.object.destroyed) {
 				this.object.off("begin_destroy", this.on_begin_destroy, this);
