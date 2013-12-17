@@ -146,10 +146,6 @@
 				var child_tree = to_destroy_info.value;
 				var key = to_destroy_info.key;
 				var child = child_tree.get_contextual_object();
-				//console.log("destroy", child);
-				//if(uid.strip_prefix(child.id()) == 75) {
-					//debugger;
-				//}
 				child.destroy(true, true);
 				this.remove_child(key.child, key.special_contexts);
 			}, this);
@@ -158,7 +154,7 @@
 		proto.create_current_contextual_objects = function () {
 			var child_pointers = this.get_valid_child_pointers();
 			_.each(child_pointers, function(child_pointer) {
-				var child_tree = this.get_or_put_child(child_pointer.obj, child_pointer.pointer.special_contexts());
+				var child_tree = this.getOrPut(child_pointer.obj, child_pointer.pointer.special_contexts());
 				child_tree.create_current_contextual_objects();
 			}, this);
 		};

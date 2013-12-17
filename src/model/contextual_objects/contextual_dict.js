@@ -433,7 +433,7 @@
 
 			var pointer = this.get_pointer();
 			var manifestation_pointers = _.map(manifestations_value, function (basis, index) {
-					var manifestation_obj = this._manifestation_objects.get_or_put(basis, function () {
+					var manifestation_obj = this._manifestation_objects.getOrPut(basis, function () {
 						return new ist.CopyContext(this, basis, index);
 					}, this);
 					var manifestation_pointer = pointer.push_special_context(manifestation_obj);
