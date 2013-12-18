@@ -110,11 +110,12 @@
 
 		proto.on_message = function(data) {
 			if(data.client_id === this.client_id) {
-				this._emit("message", data.message);
+				this._emit(data.type, data.message);
 			}
 		};
 		proto.post = function(message, callback) {
 			this.socket.emit("message", {
+				type: message.type,
 				message: message,
 				client_id: this.client_id
 			});

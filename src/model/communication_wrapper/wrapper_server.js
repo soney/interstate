@@ -138,7 +138,7 @@
 		proto.remote_emit = function () {
 			var event_type = _.last(arguments);
 			var args = _.first(arguments, arguments.length - 1);
-			args = _.map(args, summarize_value);
+			args = _.map(args, ist.summarize_value_for_comm_wrapper);
 			this._emit("emit", {
 				event_type: event_type,
 				args: args
@@ -160,7 +160,7 @@
 		};
 
 		proto.request = function (pre_processed_getting, callback, create_constraint, client_id) {
-			var getting = process_args(pre_processed_getting);
+			var getting = pre_processed_getting;
 			var fn_name = getting[0];
 			var args = _.rest(getting);
 			var object = this.get_object();
@@ -202,10 +202,10 @@
 				}
 				var constraint = constraint_info.constraint;
 
-				callback(summarize_value(constraint.get()));
+				callback(ist.summarize_value_for_comm_wrapper(constraint.get()));
 			} else {
 				var rv = object[fn_name].apply(object, args);
-				callback(summarize_value(rv));
+				callback(ist.summarize_value_for_comm_wrapper(rv));
 			}
 		};
 	}(ist.WrapperServer));
@@ -214,137 +214,6 @@
 		return arg;
 	};
 	var process_args = function (args) { return _.map(args, process_arg); };
-
-	var summarize_value = function (value, avoid_dict_followup) {
-		var rv;
-		if (value instanceof ist.ContextualObject) {
-			var id = value.id();
-			var type = value.type();
-			var object_summary = {
-				type: type,
-				id: id,
-				obj_id: value.get_object().id(),
-				colloquial_name: value.get_colloquial_name(),
-				name: value.get_name()
-			};
-
-			if((type === "dict" || type === "stateful") && avoid_dict_followup !== true) {
-				var is_template = value.is_template();
-				var is_instance;
-				var template, index, instances;
-
-				if(is_template) {
-					is_instance = index = template = false;
-					instances = value.instances();
-				} else {
-					instances = false;
-					is_instance = value.is_instance();
-					if(is_instance) {
-						var template_info = value.get_template_info();
-						template = template_info.cobj;
-						index = template_info.index;
-					} else {
-						template = index = false;
-					}
-				}
-				object_summary.is_template = is_template;
-				object_summary.is_instance = is_instance;
-				object_summary.template = summarize_value(template, true);
-				object_summary.instances = instances ? _.map(instances, function(x) { return summarize_value(x, true); }) : instances;
-				object_summary.index = index;
-			}
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "contextual_obj",
-				object_summary: object_summary
-			};
-		} else if (value instanceof ist.StartState) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "state",
-				object_summary: {
-					type: 'start_state',
-					id: value.id()
-				}
-			};
-		} else if (value instanceof ist.Statechart) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "state",
-				object_summary: {
-					type: 'statechart',
-					id: value.id()
-				}
-			};
-		} else if (value instanceof ist.StatechartTransition) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "transition",
-				object_summary: {
-					type: 'transition',
-					id: value.id()
-				}
-			};
-		} else if (value instanceof ist.Event) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "event",
-				object_summary: {
-					type: 'event',
-					id: value.id(),
-					event_type: value.type()
-				}
-			};
-		} else if (value instanceof ist.Cell) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "contextual_obj",
-				object_summary: {
-					type: 'raw_cell',
-					id: value.id()
-				}
-			};
-		} else if (value instanceof ist.WrapperClient) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "client_wrapper"
-			};
-		} else if (cjs.isConstraint(value)) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "constraint"
-			};
-		} else if (_.isArray(value)) {
-			rv = _.map(value, summarize_value);
-		} else if (_.isFunction(value)) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "function"
-			};
-		} else if (_.isElement(value)) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "dom_elem"
-			};
-		} else if (window.Box2D && value instanceof Box2D.Dynamics.b2World) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "box2d_world"
-			};
-		} else if(value instanceof ist.ParsedFunction) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "function"
-			};
-		} else if (_.isObject(value)) {
-			rv = {};
-			_.each(value, function (v, k) { rv[k] = summarize_value(v); });
-		} else {
-			rv = value;
-		}
-		return rv;
-	};
-	ist.summarize_value_for_comm_wrapper = summarize_value;
 
 	var chop = function (args) {
 		return _.first(args, args.length - 1);

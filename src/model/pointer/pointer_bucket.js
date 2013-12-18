@@ -47,9 +47,6 @@
 			return this.contextual_object !== false;
 		};
 		proto.remove_child = function(child, special_contexts) {
-			//if(uid.strip_prefix(child.id()) == 75) {
-				//debugger;
-			//}
 			var value = this.children.remove({
 				child: child,
 				special_contexts: special_contexts
@@ -74,7 +71,8 @@
 			return child_tree;
 		};
 		proto.get_valid_child_pointers = function() {
-			var cobj = this.get_contextual_object();
+			var cobj = this.get_contextual_object(),
+				my_pointer;
 			if(cobj instanceof ist.ContextualDict) {
 				var rv;
 				if(cobj.is_template()) {
@@ -87,7 +85,7 @@
 				} else {
 					rv = [];
 					var child_infos = cobj.raw_children();
-					var my_pointer = cobj.get_pointer();
+					my_pointer = cobj.get_pointer();
 					_.each(child_infos, function(child_info) {
 						var value = child_info.value;
 						if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
@@ -97,7 +95,7 @@
 					return rv;
 				}
 			} else if(this.contextual_object instanceof ist.ContextualStatefulProp) {
-				var my_pointer = cobj.get_pointer();
+				my_pointer = cobj.get_pointer();
 				return _.map(cobj.get_values(), function(val) {
 					var value = val.value;
 					return {obj: value, pointer: my_pointer.push(value)};

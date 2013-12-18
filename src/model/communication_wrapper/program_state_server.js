@@ -70,7 +70,6 @@
 		};
 
 		proto.on_loaded = function() {
-			console.log("OK LOADED");
 			this._emit("connected");
 		};
 		proto.on_disconnect = function() {

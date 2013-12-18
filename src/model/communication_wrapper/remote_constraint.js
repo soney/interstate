@@ -111,7 +111,7 @@
 	ist.RemoveConstraintServer = RemoteConstraintServer;
 	ist.RemoteConstraintClient = RemoteConstraintClient;
 
-	ist.summarize_value_for_comm_wrapper = function (value, avoid_dict_followup) {
+	var summarize_value = ist.summarize_value_for_comm_wrapper = function (value, avoid_dict_followup) {
 		var rv;
 		if (value instanceof ist.ContextualObject) {
 			var id = value.id();
