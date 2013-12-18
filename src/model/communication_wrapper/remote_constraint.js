@@ -15,8 +15,8 @@
 		DESTROY_SERVER_TYPE = "destroy_server",
 		DESTROY_CLIENT_TYPE = "destroy_client";
 
-	var RemoteConstraintServer = function(comm_mechanism, value) {
-		this.comm_mechanism = comm_mechanism;
+	var RemoteConstraintServer = function(value) {
+		this.comm_mechanism = false;
 		this._id = rc_id++;
 		this.message_signature = "rc_" + this._id;
 		this.value = cjs(function() {
@@ -26,7 +26,6 @@
 		this.$onChange = _.bind(this.onChange, this);
 		this.$onMessage = _.bind(this.onMessage, this);
 
-		this.comm_mechanism.on(this.message_signature, this.$onMessage);
 		this.value.onChange(this.$onChange);
 	};
 	(function(my) {
@@ -57,19 +56,24 @@
 			this.value.offChange(this.$onChange);
 			this.value.destroy(true);
 		};
+		proto.set_communication_mechanism = function(comm_mechanism) {
+			if(this.comm_mechanism) {
+				this.comm_mechanism.off(this.message_signature, this.$on_message);
+			}
+			this.comm_mechanism = comm_mechanism;
+			this.comm_mechanism.on(this.message_signature, this.$onMessage);
+		};
 	}(RemoteConstraintServer));
 
 	var client_id = 0;
-	var RemoteConstraintClient = function(comm_mechanism, server_id) {
-		this.comm_mechanism = comm_mechanism;
+	var RemoteConstraintClient = function(server_id) {
+		this.comm_mechanism = false;
 		this._id = client_id++;
 		this.server_id = server_id;
 		this.message_signature = "rc_" + this.server_id;
 
 		this.$onMessage = _.bind(this.onMessage, this);
-		this.comm_mechanism.on(this.message_signature, this.$onMessage);
 		this.$value = cjs();
-		this.requestUpdate();
 	};
 	(function(my) {
 		var proto = my.prototype;
@@ -106,9 +110,18 @@
 			this.$value.destroy(true);
 			this.comm_mechanism.off(this.message_signature, this.$on_message);
 		};
+
+		proto.set_communication_mechanism = function(comm_mechanism) {
+			if(this.comm_mechanism) {
+				this.comm_mechanism.off(this.message_signature, this.$on_message);
+			}
+			this.comm_mechanism = comm_mechanism;
+			this.comm_mechanism.on(this.message_signature, this.$onMessage);
+			this.requestUpdate();
+		};
 	}(RemoteConstraintClient));
 
-	ist.RemoveConstraintServer = RemoteConstraintServer;
+	ist.RemoteConstraintServer = RemoteConstraintServer;
 	ist.RemoteConstraintClient = RemoteConstraintClient;
 
 	var summarize_value = ist.summarize_value_for_comm_wrapper = function (value, avoid_dict_followup) {

@@ -301,46 +301,113 @@
 		return ist.destringify.apply(ist, ([str]).concat(rest_args));
 	};
 
-	var storage_prefix = "_";
-	ist.save = function (root, name) {
-		if (!_.isString(name)) {
-			name = "default";
+
+	var type_maps = {};
+	ist.getSavedProgramMap = function(type) {
+		if(!_.isString(type)) {
+			type = "";
 		}
-		name = storage_prefix + name;
-		window.localStorage.setItem(name, ist.stringify(root));
-		return ist.ls();
+
+		var val = {};
+		_.each(ist.ls(type), function(prog_name) {
+			var name = storage_prefix + prog_name + type_prefix + type,
+				prog_str = window.localStorage.getItem(name);
+			val[prog_name] = prog_str;
+		});
+
+		var map = cjs(val);
+		var maps = type_maps[type];
+		if(_.isArray(maps)) {
+			type_maps[type].push(map);
+		} else {
+			type_maps[type] = [map];
+		}
+
+		var old_destroy = map.destroy;
+		map.destroy = function() {
+			if(type_maps[type].length === 1) {
+				delete type_maps[type];
+			} else {
+				var index = type_maps[type].indexOf(map);
+				type_maps[type].splice(index, 1);
+			}
+			old_destroy.apply(map, arguments);
+		};
+		map.savedType = function() {
+			return type;
+		};
+
+		return map;
 	};
-	ist.load = function (name) {
+
+	var storage_prefix = "_",
+		type_prefix = "$";
+
+	ist.save = function (root, name, type) {
 		if (!_.isString(name)) {
 			name = "default";
 		}
-		name = storage_prefix + name;
-		var root = ist.destringify(window.localStorage.getItem(name));
+		if (!_.isString(type)) {
+			type = "";
+		}
+		var storage_name = storage_prefix + name + type_prefix + type;
+		var val = ist.stringify(root);
+		window.localStorage.setItem(storage_name, val);
+		_.each(type_maps[type], function(map) {
+			map.item(name, val);
+		});
+		return ist.ls(type);
+	};
+	ist.load = function (name, type) {
+		if (!_.isString(name)) {
+			name = "default";
+		}
+		if (!_.isString(type)) {
+			type = "";
+		}
+		var storage_name = storage_prefix + name + type_prefix + type;
+		var root = ist.destringify(window.localStorage.getItem(storage_name));
 		return root;
 	};
-	ist.ls = function () {
+	ist.ls = function (type) {
 		var len = window.localStorage.length;
 		var rv = [];
 		var i;
+		if (!_.isString(type)) {
+			type = "";
+		}
+		var name_regex = new RegExp("^" + storage_prefix + "(.*)" + "\\" + type_prefix + type + "$");
+		var match;
 		for (i = 0; i < len; i += 1) {
 			var key = window.localStorage.key(i);
-			if (key.substr(0, storage_prefix.length) === storage_prefix) {
-				rv.push(key.slice(storage_prefix.length));
+			if ((match = key.match(name_regex))) {
+				rv.push(match[1]);
 			}
 		}
 		return rv;
 	};
-	ist.rm = function (name) {
+	ist.rm = function (name, type) {
 		if (!_.isString(name)) {
 			name = "default";
 		}
-		name = storage_prefix + name;
-		window.localStorage.removeItem(name);
+		if (!_.isString(type)) {
+			type = "";
+		}
+		var storage_name = storage_prefix + name + type_prefix + type;
+		_.each(type_maps[type], function(map) {
+			map.remove(name);
+		});
+		window.localStorage.removeItem(storage_name);
 		return ist.ls();
 	};
 	ist.nuke = function () {
 		var program_names = ist.ls();
 		_.each(program_names, ist.rm);
+		_.each(type_maps, function(tm) {
+			_.each(tm, function(map) {
+				map.clear();
+			});
+		});
 		return ist.ls();
 	};
 }(interstate));

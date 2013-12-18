@@ -8,8 +8,10 @@
 				var comm_wrapper1 = new ist.SameWindowCommWrapper();
 				var comm_wrapper2 = new ist.SameWindowCommWrapper();
 				var x = cjs(1);
-				var constraint_server = new ist.RemoveConstraintServer(comm_wrapper1, x);
-				var constraint_client = new ist.RemoteConstraintClient(comm_wrapper2, constraint_server.id());
+				var constraint_server = new ist.RemoteConstraintServer(x);
+				var constraint_client = new ist.RemoteConstraintClient(constraint_server.id());
+				constraint_server.set_communication_mechanism(comm_wrapper1);
+				constraint_client.set_communication_mechanism(comm_wrapper2);
 				equal(constraint_client.get(), 1);
 				x.set(2);
 				equal(constraint_client.get(), 2);

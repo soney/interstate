@@ -14,6 +14,14 @@
 		}
 		this.connected = false;
 		this.wrapper_servers = {};
+
+		this.full_programs = ist.getSavedProgramMap();
+		this.program_components = ist.getSavedProgramMap("component");
+
+		this.info_servers = {
+			programs: new ist.RemoteConstraintServer(this.full_programs),
+			components: new ist.RemoteConstraintServer(this.program_components)
+		};
 	};
 
 	(function (my) {
@@ -45,6 +53,9 @@
 			}
 			this.comm_mechanism = comm_mechanism;
 			this.add_message_listeners();
+			_.each(this.info_servers, function(info_server) {
+				info_server.set_communication_mechanism(comm_mechanism);
+			});
 		};
 
 		proto.set_root = function(new_root) {
@@ -53,20 +64,25 @@
 			this.root = new_root;
 			this.contextual_root = ist.find_or_put_contextual_obj(this.root);
 
-			this.send_root();
+			this.send_info();
 		};
 
-		proto.send_root = function() {
-			var croot_summary = this.contextual_root ? this.contextual_root.summarize() : null;
+		proto.send_info = function() {
+			var croot_summary = this.contextual_root ? this.contextual_root.summarize() : null,
+				info_servers = {};
+			_.each(this.info_servers, function(info_server, name) {
+				info_servers[name] = info_server.id();
+			});
 			this.post({
 				type: "croot",
-				summary: croot_summary
+				summary: croot_summary,
+				info_servers: info_servers
 			});
 		};
 
 		proto.on_ready = function() {
 			this.connected = true;
-			this.send_root();
+			this.send_info();
 		};
 
 		proto.on_loaded = function() {
