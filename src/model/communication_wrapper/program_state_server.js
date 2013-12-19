@@ -19,8 +19,12 @@
 		this.program_components = ist.getSavedProgramMap("component");
 
 		this.info_servers = {
-			programs: new ist.RemoteConstraintServer(this.full_programs),
-			components: new ist.RemoteConstraintServer(this.program_components)
+			programs: new ist.RemoteConstraintServer(cjs(function() {
+								return this.full_programs.keys();
+							}, {context: this})),
+			components: new ist.RemoteConstraintServer(cjs(function() {
+								return this.program_components.keys();
+							}, {context: this}))
 		};
 	};
 
@@ -34,7 +38,17 @@
 								.on("message", this.on_message, this)
 								.on("disconnect", this.on_disconnect, this)
 								.on("command", this.on_command, this)
-								.on("wrapper_client", this.on_wrapper_client, this);
+								.on("wrapper_client", this.on_wrapper_client, this)
+								.on("remove_storage", this.on_remove_storage, this)
+								.on("save_curr", this.on_save_curr, this)
+								.on("download_program", this.download_program, this)
+								.on("upload_program", this.download_program, this)
+								.on("load_program", this.load_program, this)
+								.on("stringified_root", this.post_forward, this)
+								.on("load_file", this.post_forward, this)
+								.on("save_component", this.post_forward, this)
+								.on("copy_component", this.post_forward, this)
+								;
 		};
 		proto.remove_message_listeners = function () {
 			if(this.comm_mechanism) {
@@ -43,9 +57,38 @@
 									.off("message", this.on_message, this)
 									.off("disconnect", this.on_disconnect, this)
 									.off("command", this.on_command, this)
-									.off("wrapper_client", this.on_wrapper_client, this);
+									.off("wrapper_client", this.on_wrapper_client, this)
+									.off("remove_storage", this.on_remove_storage, this)
+									.off("save_curr", this.on_save_curr, this)
+									.off("download_program", this.download_program, this)
+									.off("upload_program", this.download_program, this)
+									.off("load_program", this.load_program, this)
+									.off("stringified_root", this.post_forward, this)
+									.off("load_file", this.post_forward, this)
+									.off("save_component", this.post_forward, this)
+									.off("copy_component", this.post_forward, this)
+									;
 			}
 		};
+		proto.post_forward = function(event) {
+			this._emit(event.type, event);
+		};
+		proto.on_remove_storage = function(event) {
+			ist.rm(event.name, event.storage_type==="component" ? "component" : "");
+		};
+		proto.on_save_curr = function(event) {
+			ist.save(this.root, event.name, event.storage_type==="component" ? "component" : "");
+		};
+		proto.download_program = function(event) {
+			this._emit("download_program", event.name, event.storage_type==="component" ? "component" : "");
+		};
+		proto.upload_program = function(event) {
+			console.log("upload", event);
+		};
+		proto.load_program = function(event) {
+			this._emit("load_program", event.name);
+		};
+
 		proto.set_communication_mechanism = function(comm_mechanism) {
 			if(this.comm_mechanism) {
 				this.remove_message_listeners();

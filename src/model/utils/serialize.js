@@ -358,7 +358,7 @@
 		});
 		return ist.ls(type);
 	};
-	ist.load = function (name, type) {
+	ist.loadString = function(name, type) {
 		if (!_.isString(name)) {
 			name = "default";
 		}
@@ -366,7 +366,11 @@
 			type = "";
 		}
 		var storage_name = storage_prefix + name + type_prefix + type;
-		var root = ist.destringify(window.localStorage.getItem(storage_name));
+		return window.localStorage.getItem(storage_name);
+	};
+	ist.load = function (name, type) {
+		var str = ist.loadString(name, type),
+			root = ist.destringify(str);
 		return root;
 	};
 	ist.ls = function (type) {
@@ -399,6 +403,9 @@
 		});
 		window.localStorage.removeItem(storage_name);
 		return ist.ls();
+	};
+	ist.rename = function(from_name, to_name, type) {
+		var storage_name = storage_prefix + name + type_prefix + type;
 	};
 	ist.nuke = function () {
 		var program_names = ist.ls();

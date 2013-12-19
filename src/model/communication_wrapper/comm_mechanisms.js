@@ -57,7 +57,6 @@
 		able.make_proto_listenable(proto);
 
 		proto.post = function(message, callback) {
-			//console.log(message);
 			var len = same_window_comm_wrappers.length;
 			var my_client_id = this.client_id;
 			

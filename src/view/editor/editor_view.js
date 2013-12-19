@@ -62,7 +62,13 @@
 					this.navigator.navigator("destroy");
 					$("column", this.pinned).column("destroy").remove();
 					this.element.pane("set_percentage", 0, 1);
-				}, this);
+				}, this)
+				.on("stringified_root", function(data) {
+					window.open("data:text/plain;charset=utf-8," + data.value);
+				}, this)
+				.on("stringified_obj", function(data) {
+					window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
+				}, this)
 				/*
 				.on("message", function (data) {
 					if(data.type === "upload_url") {
@@ -93,56 +99,6 @@
 				*/
 			};
 
-			$(window) .on("dragover.replace_program", _.bind(function(eve) {
-														var event = eve.originalEvent;
-														event.preventDefault();
-														event.stopPropagation();
-														this.show_drag_over();
-														return false;
-													}, this))
-						.on("dragout.replace_program", _.bind(function(eve) {
-														var event = eve.originalEvent;
-														event.preventDefault();
-														event.stopPropagation();
-														this.hide_drag_over();
-														return false;
-													}, this))
-						.on("dragenter.replace_program", _.bind(function(eve) {
-														var event = eve.originalEvent;
-														event.preventDefault();
-														event.stopPropagation();
-														this.show_drag_over();
-														return false;
-													}, this))
-						.on("dragleave.replace_program", _.bind(function(eve) {
-														var event = eve.originalEvent;
-														event.preventDefault();
-														event.stopPropagation();
-														this.hide_drag_over();
-													}, this))
-
-						.on("drop.replace_program", _.bind(function(eve) {
-														var event = eve.originalEvent;
-														event.preventDefault();
-														event.stopPropagation();
-														// fetch FileList object
-														var files = event.target.files || event.dataTransfer.files;
-														var file = files[0];
-														var fr = new FileReader();
-														this.hide_drag_over();
-														fr.onload = _.bind(function() {
-															this.client_socket.post({
-																type: "load_file",
-																contents: fr.result,
-																name: file.name
-															});
-
-															delete fr.onload;
-															fr = null;
-														}, this);
-														fr.readAsText(file);
-														return false;
-													}, this));
 
 			if(this.option("use_socket")) {
 				interstate.async_js("/socket.io/socket.io.js", _.bind(function() {
@@ -249,7 +205,50 @@
 				this.element.pane("set_percentage", 0, 1);
 
 				this.element.on("command.do_action", _.bind(this.on_command, this))
-							.on("export", _.bind(this.export_component, this));
+							.on("export", _.bind(this.export_component, this))
+							.on("remove_storage", _.bind(function(event) {
+								this.client_socket.post({
+									type: "remove_storage",
+									name: event.name,
+									storage_type: event.storage_type
+								});
+							}, this))
+							.on("save_curr", _.bind(function(event) {
+								this.client_socket.post({
+									type: "save_curr",
+									name: event.name,
+									storage_type: event.storage_type
+								});
+							}, this))
+							.on("download_program", _.bind(function(event) {
+								this.client_socket.post({
+									type: "download_program",
+									name: event.name,
+									storage_type: event.storage_type
+								});
+							}, this))
+							.on("load_program", _.bind(function(event) {
+								this.client_socket.post({
+									type: "load_program",
+									name: event.name,
+									storage_type: event.storage_type
+								});
+							}, this))
+							.on("load_saved_file", _.bind(function(event) {
+								this.client_socket.post({
+									type: "load_file",
+									contents: event.filecontents,
+									name: event.filename
+								});
+							}, this))
+							.on("copy_component", _.bind(function(event) {
+								this.client_socket.post({
+									type: "copy_component",
+									name: event.name,
+									target_obj_id: event.target_obj_id,
+									above_below: event.above_below,
+								});
+							}, this));
 
 				this.navigator.on("dragstart.pin", _.bind(function(event) {
 					var bottom_indicator_was_hidden = this.element.pane("get_percentage", 0) > 0.99;
@@ -261,8 +260,20 @@
 					var clear_drag_info = function() {
 						this.pinned.off("dragenter.pin dragleave.pin drop.pin")
 									.removeClass("dropover drop_indicator");
+						this.component_list.off("dragover.pin drop.pin dragenter.pin dragleave.pin");
 						targ.off("dragcancel.pin dragend.pin");
 					};
+
+					this.component_list.on("dragover.pin", function() { })
+										.on("dragenter.pin", function() { })
+										.on("drop.pin", _.bind(function() {
+											var client = targ.column("option", "client");
+											
+											this.client_socket.post({
+												type: "save_component",
+												cobj_id: client.cobj_id
+											});
+										}, this));
 
 
 					this.pinned	.addClass("drop_indicator")
@@ -348,37 +359,16 @@
 						event.preventDefault();
 					}
 				}, this));
-				$("<div />").appendTo(this.element).component_list({info_servers: info_servers});
+				this.component_list = $("<div />").css({
+						position: "absolute",
+						top: "0px",
+						right: "0px"
+					}).appendTo(this.element).component_list({info_servers: info_servers});
 			}
 		},
 
 		"export": function() {
 			this.client_socket.post_command("export");
-		},
-		show_drag_over: function() {
-			$(document.body).addClass("drop_target");
-			if(!this.hasOwnProperty("overlay")) {
-				this.overlay = $("<div />")	.addClass("overlay")
-											.css({
-												"background-color": "#555",
-												"opacity": "0.8",
-												"position": "fixed",
-												"left": "0px",
-												"top": "0px",
-												"width": "100%",
-												"height": "100%",
-												"pointer-events": "none",
-												"border": "10px dashed #DDD",
-												"box-sizing": "border-box"
-											})
-											.appendTo(document.body);
-			}
-		},
-
-		hide_drag_over: function() {
-			$(document.body).removeClass("drop_target");
-			this.overlay.remove();
-			delete this.overlay;
 		},
 
 		upload: function() {

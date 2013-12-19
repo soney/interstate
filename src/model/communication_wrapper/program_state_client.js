@@ -33,7 +33,10 @@
 		this.comm_mechanism	.on("croot", this.on_croot, this)
 							.on("response", this.on_response, this)
 							.on("cobj_links", this.on_cobj_links, this)
-							.on("wrapper_server", this.on_wrapper_server, this);
+							.on("wrapper_server", this.on_wrapper_server, this)
+							.on("stringified_root", this.post_forward, this)
+							.on("stringified_obj", this.post_forward, this)
+							;
 	};
 
 	(function (my) {
@@ -67,6 +70,10 @@
 				client.destroy();
 				delete this.clients[client_id];
 			}, this);
+		};
+
+		proto.post_forward = function(event) {
+			this._emit(event.type, event);
 		};
 
 		var DEREGISTERED = {};

@@ -109,6 +109,7 @@
 			}
 
 			this._add_change_listeners();
+			/*
 			this.$window = $(window);
 			this.$window.on("dragover.replace_program", _.bind(function(eve) {
 														var event = eve.originalEvent;
@@ -154,6 +155,7 @@
 														fr.readAsText(file);
 														return false;
 													}, this));
+													*/
 		},
 
 		show_drag_over: function() {
@@ -360,7 +362,46 @@
 				} else {
 					this._command_stack._do(command);
 				}
-			}, this).on("message", function(message) {
+			}, this).on("load_program", function (name) {
+				var new_root = ist.load(name);
+				this.option("root", new_root);
+			}, this).on("load_file", function (message) {
+				this.load_str(message.contents, message.name);
+			}, this).on("download_program", function (name, type) {
+				if(type === "component") {
+					this.server_socket.post({
+						type: "stringified_obj",
+						value: ist.loadString(name, type)
+					});
+				} else {
+					this.server_socket.post({
+						type: "stringified_root",
+						value: ist.loadString(name)
+					});
+				}
+			}, this).on("save_component", function (event) {
+				var cobj_id = event.cobj_id,
+					cobj = ist.find_uid(cobj_id);
+				if(cobj) {
+					var obj = cobj.get_object();
+					ist.save(obj, cobj.get_name(), "component");
+					/*
+					console.log(cobj.get_name());
+					console.log(cobj);
+					this.server_socket.post({
+						type: "stringified_obj",
+						value: ist.stringify(obj)
+					});
+					*/
+				}
+			}, this).on("copy_component", function (event) {
+				var target_obj_id = event.target_obj_id;
+				var target_obj = ist.find_uid(target_obj_id);
+				//var tobj = target_cobj.get_object();
+				var component = ist.load(event.name, "component");
+				target_obj.set(event.name, component);
+			}, this)
+			/*
 				var cobj, cobj_id;
 				if(message) {
 					if(message.type === "add_highlight") {
@@ -398,6 +439,7 @@
 					}
 				}
 			}, this);
+			*/
 			return server_socket;
 		},
 		load_str: function(fr_result, filename) {
@@ -405,12 +447,13 @@
 				is_component = result.length !== fr_result.length,
 				obj = ist.destringify(result),
 				name = filename.replace(/\.\w*$/, "");
-
 			if(is_component) {
 				this.import_component(name, obj);
+				interstate.save(obj, name, "component");
 			} else {
 				this.option("root", obj);
 				this.element.trigger("change_root", obj);
+				interstate.save(obj, name);
 			}
 		},
 		open_editor: function (event) {
@@ -429,10 +472,6 @@
 						if(this.edit_button) {
 							this.edit_button.addClass("active").css(this.edit_active_css);
 						}
-						this.server_socket.post({
-							type: "color",
-							value: this.button_color
-						});
 					}
 					$(window).on("beforeunload.close_editor", _.bind(this.close_editor, this));
 					this.element.trigger("editor_open");
