@@ -37,6 +37,7 @@
 
 		_create: function() {
 			var info_servers = this.option("info_servers");
+			this.element.addClass("component_list");
 			this.$programs = cjs(function() {
 				return info_servers.programs.get();
 			}, {
@@ -47,11 +48,15 @@
 			}, {
 				context: this
 			});
+			var close_button = $("<a href='javascript:void(0)' class='close'>x</a>").appendTo(this.element).on("click", _.bind(function() {
+				this.element.hide();
+			}, this));
 			
 			$("<h3 />").text("Programs").appendTo(this.element);
 			this.progs = $("<div />")	.addClass("programs")
 										.appendTo(this.element);
-			this.save_button = $("<a>").attr("href", "javascript:void(0)").text("x")
+			this.save_button = $("<a>").attr("href", "javascript:void(0)")
+										.addClass("save")
 										.appendTo(this.element)
 										.text("save")
 										.on("click", _.bind(this.save_curr, this));
@@ -155,7 +160,7 @@
 														event.preventDefault();
 														event.stopPropagation();
 														var files = event.target.files || event.dataTransfer.files;
-														if(files) {
+														if(files && files.length > 0) {
 															// fetch FileList object
 															var file = files[0];
 															var fr = new FileReader();
@@ -238,25 +243,31 @@
 		},
 
 		_create: function() {
+			this.element.addClass("row " + this.option("type"));
 			this.close_button = $("<a>").attr("href", "javascript:void(0)")
 										.appendTo(this.element)
-										.text("x")
+										.addClass("action")
+										.text("(delete)")
 										.on("click", _.bind(this.close, this));
 			this.download_button = $("<a>") .attr("href", "javascript:void(0)")
 										.appendTo(this.element)
-										.text("v")
+										.addClass("action")
+										.text("(save)")
 										.on("click", _.bind(this.download, this));
-			this.label = $("<span />")	.text(this.option("name"))
+			this.label = $("<a />")	.text(this.option("name"))
+									.attr("href", "javascript:void(0)")
+									.addClass("label")
 										//.editable_text({ text: this.option("name") })
 										.appendTo(this.element);
 			if(this.option("type") === "component") {
 				this.element.attr("draggable", true)
 							.on("dragstart.ondragstart", _.bind(this.on_drag_start, this));
 			} else {
-				this.load_button = $("<a>") .attr("href", "javascript:void(0)")
-											.appendTo(this.element)
-											.text("^")
-											.on("click", _.bind(this.load, this));
+				this.label.on("click", _.bind(this.load, this));
+				//this.load_button = $("<a>") .attr("href", "javascript:void(0)")
+											//.appendTo(this.element)
+											//.text("^")
+											//.on("click", _.bind(this.load, this));
 			}
 		},
 
@@ -274,6 +285,7 @@
 			this.element.trigger(event);
 		},
 		on_drag_start: function(event) {
+			this.element.addClass("dragging");
 			var name = this.option("name");
 			event.preventDefault();
 			event.stopPropagation();

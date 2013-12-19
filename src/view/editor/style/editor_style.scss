@@ -901,3 +901,65 @@ html.full_window_editor {
 		font-weight: 100;
 	}
 }
+.component_list {
+	top: 25px;
+	position: absolute;
+	right: 0px;
+	background-color: #EEE;
+	border: 1px solid #BBB;
+	border-right: none;
+	h3 {
+		background-color: #DEDEDE;
+		margin: 0px;
+		padding: 15px;
+	}
+	.row {
+		font-family: "Source Sans Pro";
+		&.program {
+			cursor: pointer;
+		}
+		&.dragging {
+			background-color: $nav_selected_color;
+			color: white;
+		}
+		&:hover {
+			background-color: #EAEAEA;
+			> a.action {
+				visibility: visible;
+			}
+		}
+		a {
+			text-decoration: none;
+			&:hover {
+				text-decoration: underline;
+			}
+		}
+		a.label {
+			color: black;
+		}
+
+		> a.action {
+			float: right;
+			visibility: hidden;
+			padding-left: 3px;
+			padding-right: 3px;
+		}
+		padding: 2px;
+	}
+	input {
+		width: 100%;
+		font-size: 1.2em;
+		font-family: "Source Sans Pro";
+		box-sizing: border-box;
+	}
+	> a.save {
+		display: block;
+		text-align: center;
+	}
+	> a.close {
+		position: absolute;
+		right: 5px;
+		color: #777;
+		text-decoration: none;
+	}
+}

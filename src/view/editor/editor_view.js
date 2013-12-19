@@ -170,15 +170,9 @@
 												"Redo": {
 													on_select: _.bind(this.redo, this)
 												},
-												"Save Locally": {
-													on_select: _.bind(this["export"], this)
+												"Components": {
+													on_select: _.bind(this.toggle_components, this)
 												},
-												"Upload": {
-													on_select: _.bind(this.upload, this)
-												},
-												"Store": {
-													on_select: _.bind(this.store, this)
-												}
 											}
 										})
 										.appendTo(this.element);
@@ -359,31 +353,9 @@
 						event.preventDefault();
 					}
 				}, this));
-				this.component_list = $("<div />").css({
-						position: "absolute",
-						top: "0px",
-						right: "0px"
-					}).appendTo(this.element).component_list({info_servers: info_servers});
+				this.component_list = $("<div>").appendTo(this.element).component_list({info_servers: info_servers}).hide();
 			}
 		},
-
-		"export": function() {
-			this.client_socket.post_command("export");
-		},
-
-		upload: function() {
-			this.client_socket.post_command("upload");
-		},
-		store: function() {
-			this.client_socket.post_command("store");
-		},
-		save: function() {
-		},
-		save_as: function() {
-		},
-		open: function() {
-		},
-
 	
 		on_command: function(event) {
 			var type = event.command_type;
@@ -731,8 +703,8 @@
 		redo: function() {
 			this.client_socket.post_command("redo");
 		},
-		reset: function() {
-			this.client_socket.post_command("reset");
+		toggle_components: function() {
+			this.component_list.show();
 		},
 
 		on_unload: function() {
