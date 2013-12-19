@@ -124,6 +124,7 @@ exports.editor = c(
 		"view/editor/menu.js",
 		"view/editor/pressable.js",
 		"view/editor/editor_view.js",
+		"view/editor/component_list.js",
 		"view/editor/dropdown.js",
 		"view/editor/navigator.js",
 		"view/editor/column.js",

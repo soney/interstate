@@ -29,6 +29,7 @@
 			}
 		}
 
+		this.info_servers = {};
 		this.comm_mechanism	.on("croot", this.on_croot, this)
 							.on("response", this.on_response, this)
 							.on("cobj_links", this.on_cobj_links, this)
@@ -74,14 +75,23 @@
 				this._emit("root_changed", message);
 			}
 
-			var summary = message.summary;
+			var summary = message.summary,
+				info_server_info = message.info_servers;
 
 			if(summary) {
 				this.root_client = this.get_wrapper_client(summary);
+				_.each(message.info_servers, function(id, name) {
+					this.info_servers[name] = new ist.RemoteConstraintClient(id);
+					this.info_servers[name].set_communication_mechanism(this.comm_mechanism);
+				}, this);
 			}
 
-			this._emit("loaded", this.root_client);
+			this._emit("loaded", this.root_client, this.info_servers);
 			this.post({type: "loaded"});
+			
+			this.clist = $("<div />").appendTo(this.element).component_list({
+				info_servers: this.info_servers
+			});
 		};
 		proto.on_wrapper_server = function(message) {
 			var server_message = message.server_message;

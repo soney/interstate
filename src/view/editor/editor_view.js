@@ -51,12 +51,12 @@
 					ready_func: this.option("debug_ready"),
 					comm_mechanism: communication_mechanism
 				})
-				.on("loaded", function (root_client) {
+				.on("loaded", function (root_client, info_servers) {
 					if(this.displaying_loading_text) {
 						this.element.html("");
 						this.displaying_loading_text = false;
 					}
-					this.load_viewer(root_client);
+					this.load_viewer(root_client, info_servers);
 				}, this)
 				.on("root_changed", function () {
 					this.navigator.navigator("destroy");
@@ -200,7 +200,7 @@
 			});
 		},
 
-		load_viewer: function (root_client) {
+		load_viewer: function (root_client, info_servers) {
 			if(!this.element.data("interstate.pane")) {
 				this.element.pane();
 			}
@@ -348,6 +348,7 @@
 						event.preventDefault();
 					}
 				}, this));
+				$("<div />").appendTo(this.element).component_list({info_servers: info_servers});
 			}
 		},
 
