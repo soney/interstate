@@ -23,7 +23,7 @@ var c = function () {
 var path = "";
 var src = cp(path, "src");
 var vendor_src = cp(src, "_vendor");
-var cjs_path = cp(vendor_src, "cjs");
+var cjs_path = cp(vendor_src, "constraintjs");
 
 exports.vendor = c(
 	cp(vendor_src, [
@@ -47,7 +47,7 @@ exports.runtime = c(
 				"uid.js",
 				"aware_split.js",
 	]),
-	cp(cjs_path, ["build/cjs.js"]),
+	cp(cjs_path, ["cjs.js"]),
 	cp(vendor_src, [
 				"ablejs/able.js",
 				"underscore/underscore.deferred.js",

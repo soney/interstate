@@ -35,8 +35,7 @@
 							.on("cobj_links", this.on_cobj_links, this)
 							.on("wrapper_server", this.on_wrapper_server, this)
 							.on("stringified_root", this.post_forward, this)
-							.on("stringified_obj", this.post_forward, this)
-							;
+							.on("stringified_obj", this.post_forward, this);
 	};
 
 	(function (my) {
