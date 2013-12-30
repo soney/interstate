@@ -176,12 +176,4 @@
                 return rv;
             });
     }(ist.Cell));
-	/*
-    
-    ist.define("cell", function (options) {
-        var cell = new ist.Cell(options);
-        return cell;
-    });
-	*/
-
 }(interstate));

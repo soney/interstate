@@ -69,10 +69,6 @@
 												});
 				if(this.option("single_col")) {
 					this.curr_col.hide();
-				} else {
-					//next_col.hide()
-							//.show("fade", "fast");
-
 				}
 				next_col.focus();
 				this.curr_col = next_col;

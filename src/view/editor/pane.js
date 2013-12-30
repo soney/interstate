@@ -66,8 +66,6 @@
 		},
 		_on_drag_handle: function(handle_index, clientY) {
 			var percentage = Math.max(0, Math.min(1, clientY/window.innerHeight));
-			//var item_before = this.children[handle_index],
-				//item_after = this.children[handle_index+1];
 			this.percentages[handle_index] = percentage;
 			this.percentages[handle_index+1] = 1-percentage;
 			this._update_heights();

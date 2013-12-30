@@ -25,7 +25,6 @@
 			this.update_static_text();
 		},
 
-
 		update_static_text: function() {
 			var text = this.option("text");
 			if(text) {

@@ -109,53 +109,6 @@
 			}
 
 			this._add_change_listeners();
-			/*
-			this.$window = $(window);
-			this.$window.on("dragover.replace_program", _.bind(function(eve) {
-														var event = eve.originalEvent;
-														event.preventDefault();
-														event.stopPropagation();
-														this.show_drag_over();
-														return false;
-													}, this))
-						.on("dragout.replace_program", _.bind(function(eve) {
-														var event = eve.originalEvent;
-														event.preventDefault();
-														event.stopPropagation();
-														this.hide_drag_over();
-														return false;
-													}, this))
-						.on("dragenter.replace_program", _.bind(function(eve) {
-														var event = eve.originalEvent;
-														event.preventDefault();
-														event.stopPropagation();
-														this.show_drag_over();
-														return false;
-													}, this))
-						.on("dragleave.replace_program", _.bind(function(eve) {
-														var event = eve.originalEvent;
-														event.preventDefault();
-														event.stopPropagation();
-														this.hide_drag_over();
-													}, this))
-						.on("drop.replace_program", _.bind(function(eve) {
-														var event = eve.originalEvent;
-														event.preventDefault();
-														event.stopPropagation();
-														this.hide_drag_over();
-														// fetch FileList object
-														var files = event.target.files || event.dataTransfer.files;
-														var file = files[0];
-														var fr = new FileReader();
-														fr.onload = _.bind(function() {
-															this.load_str(fr.result, file.name);
-															delete fr.onload;
-															fr = null;
-														}, this);
-														fr.readAsText(file);
-														return false;
-													}, this));
-													*/
 		},
 
 		show_drag_over: function() {
@@ -385,14 +338,6 @@
 				if(cobj) {
 					var obj = cobj.get_object();
 					ist.save(obj, cobj.get_name(), "component");
-					/*
-					console.log(cobj.get_name());
-					console.log(cobj);
-					this.server_socket.post({
-						type: "stringified_obj",
-						value: ist.stringify(obj)
-					});
-					*/
 				}
 			}, this).on("copy_component", function (event) {
 				var target_obj_id = event.target_obj_id;
@@ -401,45 +346,6 @@
 				var component = ist.load(event.name, "component");
 				target_obj.set(event.name, component);
 			}, this)
-			/*
-				var cobj, cobj_id;
-				if(message) {
-					if(message.type === "add_highlight") {
-						this.add_highlight(ist.find_uid(message.cobj_id), message.highlight_type);
-					} else if(message.type === "remove_highlight") {
-						this.remove_highlight(ist.find_uid(message.cobj_id), message.highlight_type);
-					} else if(message.type === "get_ptr") {
-						cobj_id = message.cobj_id;
-						cobj = ist.find_uid(message.cobj_id);
-						if(cobj) {
-							var ptr = cobj.get_pointer();
-							var cobjs = [];
-							for(var i = ptr.length(); i>=2; i--) {
-								cobjs[i-2] = ist.find_or_put_contextual_obj(ptr.points_at(i), ptr.slice(0, i));
-							}
-							var summaries = ist.summarize_value_for_comm_wrapper(cobjs);
-							this.server_socket.post({
-								type: "cobj_links",
-								cobj_id: cobj_id,
-								value: summaries
-							});
-						}
-					} else if(message.type === "load_file") {
-						this.load_str(message.contents, message.name);
-					} else if(message.type === "export_component") {
-						cobj_id = message.cobj_id;
-						cobj = ist.find_uid(message.cobj_id);
-						if(cobj) {
-							var obj = cobj.get_object();
-							this.server_socket.post({
-								type: "stringified_obj",
-								value: ist.stringify(obj)
-							});
-						}
-					}
-				}
-			}, this);
-			*/
 			return server_socket;
 		},
 		load_str: function(fr_result, filename) {

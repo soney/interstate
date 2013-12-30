@@ -19,7 +19,6 @@
 		return arg1 === arg2;
 	};
 
-
 	var client_id = 0;
 	var message_id = 0;
 

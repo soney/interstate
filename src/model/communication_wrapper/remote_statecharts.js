@@ -184,11 +184,9 @@
 							statechart.set_active(false);
 						},
 						run: function(event) {
-							//console.log("run", statechart.sid());
 							statechart.run();
 						},
 						stop: function(event) {
-							//console.log("stop", statechart.sid());
 							statechart.stop();
 						}
 
@@ -217,7 +215,6 @@
 					wrapper_client.async_get('is_running', function (is_it) {
 						is_running_value = is_it;
 						is_running.resolve();
-						//console.log(is_running_value, statechart.sid());
 					});
 
 					promises = [outgoing_transition.promise(), is_active.promise(), is_running.promise()];

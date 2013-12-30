@@ -41,11 +41,11 @@ exports.vendor = c(
 
 exports.runtime = c(
 	cp(vendor_src, [
-				"stopwatch.js",
+				//"stopwatch.js",
 				"set.js",
 				"map.js",
 				"uid.js",
-				"aware_split.js",
+				//"aware_split.js",
 	]),
 	cp(cjs_path, ["cjs.js"]),
 	cp(vendor_src, [
