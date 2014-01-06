@@ -7,6 +7,85 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	var tmplate = cjs.createTemplate(
+		"{{#fsm edit_state}}" +
+			"{{#state idle}}" +
+				"{{#if value===''}}" +
+					"<span class='unset_cell'>(unset)</span>" +
+				"{{#else}}" +
+					"<span class='cell'>{{value}}</span>" +
+				"{{/if}}" +
+			"{{#state editing}}" +
+				"<textarea data-cjs-on-keydown=keydown_ta data-cjs-on-blur=blur_ta/>" +
+		"{{/fsm}}"
+	);
+	
+
+	$.widget("interstate.prop_cell", {
+		options: {
+			value: false,
+			left: 0,
+			width: 0,
+			edit_width: 150,
+			active: false,
+			parent: false
+		},
+		_create: function() {
+			var client = this.option("value");
+			client.signal_interest();
+
+			var edit_state = cjs.fsm("idle", "editing")
+								.startsAt("idle")
+								.on("idle->editing", function() {
+									var textarea = cell.getElementsByTagName("textarea")[0];
+									textarea.value = value.get();
+									textarea.select();
+									textarea.focus();
+								}),
+				on_cancel = edit_state.addTransition("editing", "idle"),
+				on_confirm = edit_state.addTransition("editing", "idle"),
+				cell = tmplate({
+						edit_state: edit_state,
+						value: value,
+						keydown_ta: function(event) {
+							var keyCode = event.keyCodeVal || event.keyCode;
+							if(keyCode === 27) { // esc
+								on_cancel(event);
+							} else if(keyCode === 13) { // enter
+								value.set(event.target.value);
+								on_confirm(event);
+							}
+						},
+						blur_ta: function(event) {
+							if(edit_state.is("editing")) {
+								value.set(event.target.value);
+								on_confirm(event);
+							}
+						}
+				}, this.element);
+
+			edit_state.addTransition("idle", "editing", cjs.on("click", cell))
+		},
+		_destroy: function() {
+			this._super();
+			cjs.destroyTemplate(this.element);
+			client.signal_destroy();
+			delete this.options;
+		}
+	});
+		/*,
+		on_click: function(event) {
+			if(this.is_editing()) {
+				event.stopPropagation();
+			} else {
+				this.begin_editing();
+				event.stopPropagation();
+			}
+		},
+
+	
+	/*
+
 	var UNSET_RADIUS = 7;
 
 	var on_cell_key_down = function(event) {
@@ -325,4 +404,5 @@
 			}
 		}
 	});
+	*/
 }(interstate, jQuery));
