@@ -134,20 +134,6 @@
 		}
 	};
 
-/*
-	var cell_template = cjs.createTemplate(
-		"{{#fsm edit_state}}" +
-			"{{#state idle}}" +
-				"{{#if value===''}}" +
-					"<span class='unset_cell'>(unset)</span>" +
-				"{{#else}}" +
-					"<span class='cell'>{{value}}</span>" +
-				"{{/if}}" +
-			"{{#state editing}}" +
-				"<textarea data-cjs-on-keydown=keydown_ta data-cjs-on-blur=blur_ta/>" +
-		"{{/fsm}}"
-	);
-	*/
 	var cell_template = cjs.createTemplate(
 		"{{#fsm edit_state}}" +
 			"{{#state unset}}" +
@@ -221,6 +207,19 @@
 					}, this)
 				}, this.element);
 
+			this.element.addClass("cell");
+
+			this.$width = cjs(this.option("width"));
+			this.$left = cjs(this.option("left"));
+			this.$edit_width = cjs(this.option("edit_width"));
+			this.$active = cjs(this.option("active"));
+
+			this.position_binding = cjs.css(this.element, {
+				left: this.$left.sub(this.$width.div(2)).add("px"),
+				width: this.$width.add("px")
+			});
+			this.class_binding = cjs.class(this.element, this.$active.iif("active", ""));
+
 			client.signal_interest();
 		},
 		_destroy: function() {
@@ -281,6 +280,18 @@
 			});
 			this.element.tooltip("enable");
 			*/
+		},
+		_setOption: function(key, value) {
+			this._super(key, value);
+			if(key === "left") {
+				this.$left.set(value);
+			} else if(key === "width") {
+				this.$width.set(value);
+			} else if(key === "active") {
+				this.$active.set(value);
+			}
+		},
+		begin_editing: function() {
 		}
 		/*
 		,

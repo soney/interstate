@@ -600,8 +600,8 @@
 							if(to_edit_view) {
 								if(to_edit_view.data("interstate-prop_cell")) {
 									to_edit_view.prop_cell("begin_editing")
-												.prop_cell("select")
-												.prop_cell("focus");
+												//.prop_cell("select")
+												//.prop_cell("focus");
 								}
 							}
 						}, {
