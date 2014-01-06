@@ -134,7 +134,6 @@
 		}
 	};
 
-/*
 	var cell_template = cjs.createTemplate(
 		"{{#fsm edit_state}}" +
 			"{{#state idle}}" +
@@ -147,26 +146,6 @@
 				"<textarea data-cjs-on-keydown=keydown_ta data-cjs-on-blur=blur_ta/>" +
 		"{{/fsm}}"
 	);
-	*/
-	var cell_template = cjs.createTemplate(
-		"{{#fsm edit_state}}" +
-			"{{#state unset}}" +
-				"<span class='unset'></span>" +
-			"{{#state idle}}" +
-				"<span cjs-on-click=do_edit>{{str}}</span>" +
-			"{{#state editing}}" +
-				"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
-		"{{/fsm}}"
-	);
-
-	var eqProp = function(prop_name, values, thisArg) {
-		return function(x) {
-			var val = x[prop_name];
-			if(values[val]) {
-				return values[val].apply(thisArg || this, arguments);
-			}
-		};
-	};
 
 	$.widget("interstate.prop_cell", {
 		options: {
@@ -178,55 +157,32 @@
 			parent: false
 		},
 		_create: function() {
-			var client = this.option("value"),
-				$str = client.get_$("get_str"),
-				edit_state = cjs.fsm("unset", "idle", "editing")
-								.startsAt("idle"),
-				do_edit = edit_state.addTransition("idle", "editing"),
-				cancel_edit = edit_state.addTransition("editing", "idle"),
-				confirm_edit = edit_state.addTransition("editing", "idle"),
-				cell = cell_template({
-					edit_state: edit_state,
-					client: client,
-					str: $str,
-					do_edit: _.bind(function(event) {
-						do_edit(event);
-						var textarea = $("textarea", cell);
-						textarea.val($str.get())
-								.select()
-								.focus();
-						event.stopPropagation();
-					}, this),
-					on_edit_blur: _.bind(function(event) {
-						if(edit_state.is("editing")) {
-							this.emit_new_value($("textarea", cell).val());
-							confirm_edit(event);
-						}
-					}, this),
-					on_edit_keydown: eqProp("keyCode", {
-						"27": function(event) { // esc
-							cancel_edit(event);
-							event.preventDefault();
-							event.stopPropagation();
-						},
-						"13": function(event) { // enter
-							if(!event.shiftKey && !event.ctrlKey && !event.metaKey) {
-								this.emit_new_value($("textarea", cell).val());
-								confirm_edit(event);
-
-								event.preventDefault();
-								event.stopPropagation();
-							}
-						}
-					}, this)
-				}, this.element);
-
+			var client = this.option("value");
 			client.signal_interest();
+
+			this.update_position();
+			this.update_active();
+
+			this.text = $("<span />")	.addClass("txt")
+										.appendTo(this.element);
+			this.element.on("keydown.prop_cell", _.bind(on_cell_key_down, this))
+						.on("click.prop_cell", _.bind(this.on_click, this))
+						.addClass("cell")
+						.attr("tabindex", 1);
+			this.element.tooltip({
+				position: {
+					my: "center bottom-1",
+					at: "center top"
+				},
+				tooltipClass: "error",
+				show: false,
+				hide: false
+			});
+			this.create_live_text_fn();
 		},
 		_destroy: function() {
 			var client = this.option("value");
 			this._super();
-			/*
 
 			this.element.off("keydown.prop_cell click.prop_cell")
 						.removeClass("cell");
@@ -239,51 +195,10 @@
 			this.text.remove();
 			this.destroy_live_text_fn();
 			this.element.tooltip("destroy");
-			*/
 
-			cjs.destroyTemplate(this.element);
 			client.signal_destroy();
 			delete this.options;
 		},
-		emit_new_value: function(value) {
-			var event = new $.Event("command");
-			event.command_type = "set_str";
-			event.str = value;
-			event.client = this.option("value");
-
-			this.element.trigger(event);
-		/*
-			this.element.on("click.prop_cell", _.bind(this.on_click, this));
-			this.textbox.off("blur.prop_cell");
-			if(cancel !== true) {
-				var val = this.textbox.val();
-				if(val.trim() === "" && this.option("prop") && this.option("state")) {
-					this.unset();
-				} else {
-					var event = new $.Event("command");
-					event.command_type = "set_str";
-					event.str = val;
-					event.client = this.option("value");
-
-					this.element.trigger(event);
-				}
-			}
-			this.text.show();
-			this.textbox.hide();
-			this.element.focus();
-			this.element.removeClass("editing");
-
-			var width = this.option("width"),
-				left = this.option("left");
-			this.element.css({
-				left: (left - width/2) + "px",
-				width: width + "px"
-			});
-			this.element.tooltip("enable");
-			*/
-		}
-		/*
-		,
 		on_click: function(event) {
 			if(this.is_editing()) {
 				event.stopPropagation();
@@ -461,7 +376,6 @@
 				this.update_active();
 			}
 		}
-		*/
 	});
 
 	$.widget("interstate.unset_prop", {

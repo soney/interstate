@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>InterState Editor</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+		<link rel="shortcut icon" href="../../../dist/images/interstate_logo_128.png" /> 
+		<link rel="apple-touch-icon-precomposed" href="../../../dist/images/interstate_logo_512.png"/>
+	</head>
+	<body>
+		<div id="editor"></div>
+		<div>
+			<%- ist_include(ist_inc.vendor) %>
+			<%- ist_include(ist_inc.runtime) %>
+			<%- ist_include(ist_inc.editor) %>
+			<script type="text/javascript">
+				$(function () {
+					var use_socket = false;
+					if(getURLParameter("comm") === "socket") {
+						use_socket = {
+							client_id: getURLParameter("client_id")
+						};
+					}
+					$("div#editor").editor({
+						use_socket: use_socket,
+						client_id: getURLParameter("client_id")
+					//	debug_ready: true,
+					//	debug_env: true,
+					//	command_box: true
+					});
+					function getURLParameter(name) {
+						return decodeURI((RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,''])[1]);
+					}
+				});
+			</script>
+		</div>
+	</body>
+</html>
