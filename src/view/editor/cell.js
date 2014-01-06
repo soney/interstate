@@ -6,6 +6,7 @@
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
+		/*
 
 	var tmplate = cjs.createTemplate(
 		"{{#fsm edit_state}}" +
@@ -73,18 +74,7 @@
 			delete this.options;
 		}
 	});
-		/*,
-		on_click: function(event) {
-			if(this.is_editing()) {
-				event.stopPropagation();
-			} else {
-				this.begin_editing();
-				event.stopPropagation();
-			}
-		},
-
-	
-	/*
+	*/
 
 	var UNSET_RADIUS = 7;
 
@@ -143,7 +133,19 @@
 			}
 		}
 	};
-	var func_regex = new RegExp("^\\s*function\\s*\\((\\s*[a-zA-Z$][\\w\\$]*\\s*,)*\\s*([a-zA-Z$][\\w\\$]*\\s*)?\\)\\s*{.*}\\s*$");
+
+	var cell_template = cjs.createTemplate(
+		"{{#fsm edit_state}}" +
+			"{{#state idle}}" +
+				"{{#if value===''}}" +
+					"<span class='unset_cell'>(unset)</span>" +
+				"{{#else}}" +
+					"<span class='cell'>{{value}}</span>" +
+				"{{/if}}" +
+			"{{#state editing}}" +
+				"<textarea data-cjs-on-keydown=keydown_ta data-cjs-on-blur=blur_ta/>" +
+		"{{/fsm}}"
+	);
 
 	$.widget("interstate.prop_cell", {
 		options: {
@@ -179,6 +181,7 @@
 			this.create_live_text_fn();
 		},
 		_destroy: function() {
+			var client = this.option("value");
 			this._super();
 
 			this.element.off("keydown.prop_cell click.prop_cell")
@@ -192,8 +195,6 @@
 			this.text.remove();
 			this.destroy_live_text_fn();
 			this.element.tooltip("destroy");
-
-			var client = this.option("value");
 
 			client.signal_destroy();
 			delete this.options;
@@ -404,5 +405,4 @@
 			}
 		}
 	});
-	*/
 }(interstate, jQuery));
