@@ -208,8 +208,14 @@
 				}, this.element);
 
 			this.element.addClass("cell");
+			this.element.tooltip("enable");
 
-			this.$width = cjs(this.option("width"));
+			this.$specified_width = cjs(this.option("width"));
+			this.$width = this.$specified_width;
+			//cjs.inFSM(edit_state, {
+				//idle: this.$specified_width,
+				//editing: this.option("edit_width")
+			//});
 			this.$left = cjs(this.option("left"));
 			this.$edit_width = cjs(this.option("edit_width"));
 			this.$active = cjs(this.option("active"));
@@ -286,7 +292,7 @@
 			if(key === "left") {
 				this.$left.set(value);
 			} else if(key === "width") {
-				this.$width.set(value);
+				this.$specified_width.set(value);
 			} else if(key === "active") {
 				this.$active.set(value);
 			}

@@ -181,7 +181,7 @@
 			this.name_span	.off("text_change.name_span done_editing.name_span")
 							.editable_text("destroy")
 							.remove();
-			this.element.tooltip("destroy");
+			//this.element.tooltip("destroy");
 			//this.element.pressable("destroy");
 			var value = this.option("value");
 			if(value instanceof ist.WrapperClient) {
