@@ -29,7 +29,7 @@ module.exports = function(grunt) {
 	});
 
 	var package = grunt.file.readJSON('package.json');
-	// Project configuration.
+	// Project configuration
 	grunt.initConfig({
 		pkg: package,
 		jshint: {
