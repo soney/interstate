@@ -144,8 +144,8 @@
 							event.preventDefault();
 							event.stopPropagation();
 						});
-						this.element.attr("title", plain_val);
-						this.element.tooltip("option", "content", plain_val);
+						//this.element.attr("title", plain_val);
+						//this.element.tooltip("option", "content", plain_val);
 					}, {
 						context: this,
 						on_destroy: function() {

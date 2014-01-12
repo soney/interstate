@@ -69,7 +69,7 @@
 			"{{#state unset}}" +
 				"<span class='unset'></span>" +
 			"{{#state idle}}" +
-				"<span cjs-on-click=do_edit>{{str}}</span>" +
+				"<span>{{str}}</span>" +
 			"{{#state editing}}" +
 				"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
 		"{{/fsm}}"
@@ -102,7 +102,6 @@
 									.startsAt("idle");
 			this.$active = cjs(this.option("active"));
 
-
 			this.add_content_bindings();
 			this.add_tooltip();
 			this.add_class_bindings();
@@ -111,7 +110,7 @@
 		},
 		_destroy: function() {
 			var client = this.option("value");
-			this.remvoe_content_bindings();
+			this.remove_content_bindings();
 			this.remove_tooltip();
 			this.remove_position_bindings();
 			this.remove_class_bindings();
@@ -150,14 +149,6 @@
 					edit_state: this.edit_state,
 					client: this.option("value"),
 					str: this.$str,
-					do_edit: _.bind(function(event) {
-						do_edit(event);
-						var textarea = $("textarea", cell);
-						textarea.val(this.$str.get())
-								.select()
-								.focus();
-						event.stopPropagation();
-					}, this),
 					on_edit_blur: _.bind(function(event) {
 						if(this.edit_state.is("editing")) {
 							this.emit_new_value($("textarea", cell).val());
@@ -181,12 +172,22 @@
 						}
 					}, this)
 				}, this.element);
+			this.element.on("click", _.bind(function(event) {
+				if(this.edit_state.is("idle")) {
+					do_edit(event);
+					var textarea = $("textarea", cell);
+					textarea.val(this.$str.get())
+							.select()
+							.focus();
+				}
+				event.stopPropagation();
+			}, this));
 		},
 		remove_content_bindings: function() {
 		},
 		add_class_bindings: function() {
 			this.element.addClass("cell");
-			this._class_binding = cjs.class(this.element, this.$active.iif("active", ""));
+			this._class_binding = cjs.class(this.element, this.$active.iif("active", ""), this.edit_state.state);
 		},
 		remove_class_bindings: function() {
 			this.element.removeClass("cell");
@@ -201,13 +202,19 @@
 			this.$left = cjs(this.option("left"));
 			this.$edit_width = cjs(this.option("edit_width"));
 
+			this.$z_index = cjs.inFSM(this.edit_state, {
+				idle: 0,
+				editing: 99
+			});
+			this.element.css("min-width", this.option("width"));
+
 			this.position_binding = cjs.css(this.element, {
 				left: this.$left.sub(this.$width.div(2)).add("px"),
-				width: this.$width.add("px")
+				"z-index": this.$z_index
 			});
 		},
 		remove_position_bindings: function() {
-			each([this.$specified_width, this.$width, this.$left, this.$edit_width, this.$active, this.position_binding],
+			_.each([this.$specified_width, this.$width, this.$left, this.$edit_width, this.$active, this.position_binding],
 					function(x) {
 						x.destroy(true);
 					});
@@ -221,6 +228,8 @@
 				show: false,
 				hide: false
 			});
+			var enable_tooltip = _.bind(function() { this.element.tooltip("enable"); }, this);
+			var disable_tooltip = _.bind(function() { this.element.tooltip("disable"); }, this);
 			this._tooltip_live_fn = cjs.liven(function() {
 				var syntax_errors = this.$syntax_errors.get();
 				if(syntax_errors && syntax_errors.length > 0) {
@@ -246,8 +255,13 @@
 				context: this,
 				on_destroy: function() {
 					this.element.tooltip("destroy");
+					this.edit_state	.off("idle->editing", disable_tooltip)
+									.off("editing->idle", enable_tooltip);
 				}
 			});
+
+			this.edit_state	.on("idle->editing", disable_tooltip)
+							.on("editing->idle", enable_tooltip);
 		},
 		remove_tooltip: function() {
 			this._tooltip_live_fn.destroy();
