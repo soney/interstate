@@ -4,9 +4,9 @@
 	"version": "0.1.0",
 	"author": "Stephen Oney (Carnegie Mellon)",
 	"maintainers": [{
-		"name": "Stephen Oney",
-		"email": "soney@cs.cmu.edu",
-		"web": "http://from.so/"
+		name: "Stephen Oney",
+		email: "soney@cs.cmu.edu",
+		web: "http://from.so/"
 	}],
 	"licenses": [{
 		"type": "MIT",
