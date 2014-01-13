@@ -102,6 +102,8 @@
 									.startsAt("idle");
 			this.$active = cjs(this.option("active"));
 
+			this.do_edit = this.edit_state.addTransition("idle", "editing"),
+
 			this.add_content_bindings();
 			this.add_tooltip();
 			this.add_class_bindings();
@@ -142,8 +144,7 @@
 			}
 		},
 		add_content_bindings: function() {
-			var do_edit = this.edit_state.addTransition("idle", "editing"),
-				cancel_edit = this.edit_state.addTransition("editing", "idle"),
+			var cancel_edit = this.edit_state.addTransition("editing", "idle"),
 				confirm_edit = this.edit_state.addTransition("editing", "idle"),
 				cell = cell_template({
 					edit_state: this.edit_state,
@@ -173,13 +174,7 @@
 					}, this)
 				}, this.element);
 			this.element.on("click", _.bind(function(event) {
-				if(this.edit_state.is("idle")) {
-					do_edit(event);
-					var textarea = $("textarea", cell);
-					textarea.val(this.$str.get())
-							.select()
-							.focus();
-				}
+				this.begin_editing(event);
 				event.stopPropagation();
 			}, this));
 		},
@@ -267,7 +262,14 @@
 			this._tooltip_live_fn.destroy();
 			delete this._tooltip_live_fn;
 		},
-		begin_editing: function() {
+		begin_editing: function(event) {
+			if(this.edit_state.is("idle")) {
+				this.do_edit(event);
+				var textarea = $("textarea", this.element);
+				textarea.val(this.$str.get())
+						.select()
+						.focus();
+			}
 		}
 	});
 
