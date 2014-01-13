@@ -5,64 +5,15 @@
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
+	
+	cjs.registerPartial("propCell", function(options, parent_elem) {
+		if(!parent_elem) {
+			parent_elem = $("<span />");
+		}
+		return parent_elem.prop_cell(options);
+	});
 
 	var UNSET_RADIUS = 7;
-
-	var on_cell_key_down = function(event) {
-		var keyCode = event.keyCode;
-		var prev, next, next_focusable, prev_focusable;
-		if(this.element.is(event.target)) {
-			if(keyCode === 79 || keyCode === 13) { // o or ENTER
-				event.preventDefault();
-				event.stopPropagation();
-				if(this.element.hasClass("unset")) {
-					this.element.trigger("click");
-				} else {
-					this.begin_editing();
-				}
-			} else if(keyCode === 39 || keyCode === 76) { // Right or o or k
-				next_focusable = this.element.next(":focusable");
-				if(next_focusable.length>0) {
-					next_focusable.focus();
-				} else {
-					var prop = this.element.parents(":focusable").first();
-					next = prop.next();
-					if(next.length>0) {
-						next.focus();
-					} else {
-						prop.focus();
-					}
-				}
-			} else if(keyCode === 37 || keyCode === 72) { // Left
-				prev_focusable = this.element.prev(":focusable");
-				if(prev_focusable.length>0) {
-					prev_focusable.focus();
-				} else {
-					this.element.parents(":focusable").first().focus();
-				}
-			} else if(keyCode === 40 || keyCode === 74) { //down or j
-				var next_prop = this.element.parents(":focusable").first().next();
-				next_focusable = $(":focusable", next_prop).eq(this.element.index());
-				if(next_focusable.length>0) {
-					next_focusable.focus();
-				} else {
-					next_prop.focus();
-				}
-			} else if(keyCode === 38 || keyCode === 75) { // up or k
-				var prev_prop = this.element.parents(":focusable").first().prev();
-				prev_focusable = $(":focusable", prev_prop).eq(this.element.index());
-				if(prev_focusable.length>0) {
-					prev_focusable.focus();
-				} else {
-					prev_prop.focus();
-				}
-			} else if(keyCode === 8) { //backspace
-				if(this.element.hasClass("cell")) {
-					this.unset();
-				}
-			}
-		}
-	};
 
 	var cell_template = cjs.createTemplate(
 		"{{#fsm edit_state}}" +
@@ -300,4 +251,60 @@
 			}
 		}
 	});
+
+	function on_cell_key_down(event) {
+		var keyCode = event.keyCode;
+		var prev, next, next_focusable, prev_focusable;
+		if(this.element.is(event.target)) {
+			if(keyCode === 79 || keyCode === 13) { // o or ENTER
+				event.preventDefault();
+				event.stopPropagation();
+				if(this.element.hasClass("unset")) {
+					this.element.trigger("click");
+				} else {
+					this.begin_editing();
+				}
+			} else if(keyCode === 39 || keyCode === 76) { // Right or o or k
+				next_focusable = this.element.next(":focusable");
+				if(next_focusable.length>0) {
+					next_focusable.focus();
+				} else {
+					var prop = this.element.parents(":focusable").first();
+					next = prop.next();
+					if(next.length>0) {
+						next.focus();
+					} else {
+						prop.focus();
+					}
+				}
+			} else if(keyCode === 37 || keyCode === 72) { // Left
+				prev_focusable = this.element.prev(":focusable");
+				if(prev_focusable.length>0) {
+					prev_focusable.focus();
+				} else {
+					this.element.parents(":focusable").first().focus();
+				}
+			} else if(keyCode === 40 || keyCode === 74) { //down or j
+				var next_prop = this.element.parents(":focusable").first().next();
+				next_focusable = $(":focusable", next_prop).eq(this.element.index());
+				if(next_focusable.length>0) {
+					next_focusable.focus();
+				} else {
+					next_prop.focus();
+				}
+			} else if(keyCode === 38 || keyCode === 75) { // up or k
+				var prev_prop = this.element.parents(":focusable").first().prev();
+				prev_focusable = $(":focusable", prev_prop).eq(this.element.index());
+				if(prev_focusable.length>0) {
+					prev_focusable.focus();
+				} else {
+					prev_prop.focus();
+				}
+			} else if(keyCode === 8) { //backspace
+				if(this.element.hasClass("cell")) {
+					this.unset();
+				}
+			}
+		}
+	}
 }(interstate, jQuery));

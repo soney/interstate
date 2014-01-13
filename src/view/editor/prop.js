@@ -6,7 +6,35 @@
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
-	
+
+	var prop_template = cjs.createTemplate(
+		"<td class='name'>" +
+			"<span class='prop_name'>{{ prop_name }}</span>" +
+		"</td>" +
+		"<td class='value_summary'>" +
+			"{{{ getValueSummary(value) }}}" +
+		"</td>" +
+		"<td class='src'>" +
+			"{{#each state}}" +
+				"{{> propCell state }}"
+			"{{/each}}" +
+		"</td>"
+	);
+	$.widget("interstate.prop", {
+		options: {
+			name: "",
+			value: false,
+			inherited: false,
+			builtin: false,
+			layout_manager: false,
+			show_src: false,
+			obj: false,
+			client_socket: false
+		},
+
+	});
+
+	/*
 	var insert_at = function (child_node, parent_node, index) {
 		var children = parent_node.childNodes;
 		if (children.length <= index) {
@@ -766,4 +794,5 @@
 			}
 		}
 	});
+	*/
 }(interstate, jQuery));
