@@ -16,7 +16,7 @@
 		"</td>" +
 		"<td class='src'>" +
 			"{{#each state}}" +
-				"{{> propCell state }}"
+				"{{> propCell state }}" +
 			"{{/each}}" +
 		"</td>"
 	);
@@ -31,6 +31,8 @@
 			obj: false,
 			client_socket: false
 		},
+
+
 
 	});
 
