@@ -624,49 +624,51 @@ html.full_window_editor {
 					display: block;
 					vertical-align: top;
 
-					> .cell, >.unset {
-						position: absolute;
-					}
+					&.stateful_prop {
+						> .cell, >.unset {
+							position: absolute;
+						}
 
-					> .cell {
-						@include non-selectable;
-						background-color: #EEE;
-						border-left: 1px solid #CCC;
-						border-right: 1px solid #CCC;
-						cursor: pointer;
-						text-align: center;
-						overflow: hidden;
-						word-break: break-all;
-						white-space: nowrap;
-
-						&.active {
-							color: green;
-							border-left: 1px solid green;
-							border-right: 1px solid green;
-						}
-						&.error {
-							color: white;
-							background-color: #900;
-						}
-						&.editing {
-							z-index: 99;
-							padding: 0px;
-							overflow: visible;
-							background: none;
-							border: none;
-						}
-						> textarea {
-							width: 100%;
-							font-family: inherit;
-							text-align: inherit;
-							font-size: inherit;
-							padding: 2px;
-							margin: 0px;
-							height: 16px;
-							text-align: left;
+						> .cell {
+							@include non-selectable;
 							background-color: #EEE;
-							border: 1px solid #CCC;
-							box-shadow: 0px 0px 5px #777;
+							border-left: 1px solid #CCC;
+							border-right: 1px solid #CCC;
+							cursor: pointer;
+							text-align: center;
+							overflow: hidden;
+							word-break: break-all;
+							white-space: nowrap;
+
+							&.active {
+								color: green;
+								border-left: 1px solid green;
+								border-right: 1px solid green;
+							}
+							&.error {
+								color: white;
+								background-color: #900;
+							}
+							&.editing {
+								z-index: 99;
+								padding: 0px;
+								overflow: visible;
+								background: none;
+								border: none;
+							}
+							> textarea {
+								width: 100%;
+								font-family: inherit;
+								text-align: inherit;
+								font-size: inherit;
+								padding: 2px;
+								margin: 0px;
+								height: 16px;
+								text-align: left;
+								background-color: #EEE;
+								border: 1px solid #CCC;
+								box-shadow: 0px 0px 5px #777;
+							}
 						}
 					}
 

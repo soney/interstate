@@ -18,13 +18,19 @@
 		"</td>" +
 		"{{> valueSummary getValueSummaryOptions() }}"  +
 		"{{#if show_src}}" +
-			"<td class='src'>" +
-				"{{#if type==='stateful_prop'}}" +
-					"stateful prop" +
-				"{{#elif type==='cell'}}" +
-					"cell" +
-				"{{/if}}" +
-			"</td>" +
+			"{{#if type==='stateful_prop'}}" +
+				"<td class='stateful_prop src'>" +
+					"{{#each states}}" +
+						"{{this}}" +
+					"{{/each}}" +
+				"</td>" +
+			"{{#elif type==='cell'}}" +
+				"<td class='src'>" +
+					"{{> propCell getPurePropCellOptions() }}" +
+				"</td>" +
+			"{{#else}}" +
+				"<td class='cannot_modify src' />" +
+			"{{/if}}" +
 		"{{/if}}"
 	);
 	$.widget("interstate.prop", {
@@ -40,26 +46,27 @@
 		},
 
 		_create: function() {
+			var client = this.option("value");
+
 			this.$prop_name = cjs(this.option("name"));
 			this.$inherited = cjs(this.option("inherited"));
 			this.$show_src  = cjs(this.option("show_src"));
 			this.$selected  = cjs(false);
 
-			var value = this.option("value");
 			this.$type = cjs(function() {
-				if(value instanceof ist.WrapperClient) {
-					return value.type();
+				if(client instanceof ist.WrapperClient) {
+					return client.type();
 				} else {
 					return "";
 				}
 			});
-			console.log(this.$type.get());
 
 			this.name_edit_state = cjs	.fsm("idle", "editing")
 										.startsAt("idle");
 
 			this.element.on("click.expand", _.bind(this._trigger_expand, this));
 
+			this._create_state_map();
 			this._add_content_bindings();
 			this._add_class_bindings();
 		},
@@ -67,6 +74,26 @@
 			this._super();
 			this._remove_content_bindings();
 			this._remove_class_bindings();
+			this._destroy_state_map();
+		},
+
+		_create_state_map: function() {
+			var client = this.option("value");
+			if(client instanceof ist.WrapperClient && client.type() === "stateful_prop") {
+				this.$states = client.get_$("get_states");
+				this.$values = client.get_$("get_values");
+				this.$active_value = client.get_$("active_value");
+
+				this.$prop_values = cjs.map({});
+			}
+		},
+		_destroy_state_map: function() {
+			if(this.$states) {
+				this.$states.destroy();
+				this.$values.destroy();
+				this.$active_value.destroy();
+				this.$prop_values.destroy();
+			}
 		},
 
 		_add_content_bindings: function() {
@@ -74,11 +101,18 @@
 				prop_name: this.$prop_name,
 				name_edit_state: this.name_edit_state,
 				getValueSummaryOptions: _.bind(function() {
-					return { value: this.option("value") };
+					return {
+						value: this.option("value")
+					};
+				}, this),
+				getPurePropCellOptions: _.bind(function() {
+					return { pure: true, value: this.option("value") };
 				}, this),
 				show_src: this.$show_src,
 				value: this.option("value"),
-				type: this.$type
+				type: this.$type,
+				states: this.$states,
+				values: this.$values
 			}, this.element);
 		},
 

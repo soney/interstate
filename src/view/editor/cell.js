@@ -8,9 +8,10 @@
 	
 	cjs.registerPartial("propCell", function(options, parent_elem) {
 		if(!parent_elem) {
-			parent_elem = $("<span />");
+			parent_elem = $("<span />")[0];
 		}
-		return parent_elem.prop_cell(options);
+		$(parent_elem).prop_cell(options);
+		return parent_elem;
 	});
 
 	var UNSET_RADIUS = 7;
@@ -42,7 +43,8 @@
 			width: 0,
 			edit_width: 150,
 			active: false,
-			parent: false
+			parent: false,
+			pure: false // just a cell and not part of a larger stateful property
 		},
 		_create: function() {
 			var client = this.option("value");
@@ -52,6 +54,7 @@
 			this.edit_state = cjs	.fsm("unset", "idle", "editing")
 									.startsAt("idle");
 			this.$active = cjs(this.option("active"));
+			this.$pure = cjs(this.option("pure"));
 
 			this.do_edit = this.edit_state.addTransition("idle", "editing"),
 
@@ -92,6 +95,8 @@
 				this.$specified_width.set(value);
 			} else if(key === "active") {
 				this.$active.set(value);
+			} else if(key === "pure") {
+				this.$pure.set(value);
 			}
 		},
 		add_content_bindings: function() {
@@ -133,7 +138,10 @@
 		},
 		add_class_bindings: function() {
 			this.element.addClass("cell");
-			this._class_binding = cjs.class(this.element, this.$active.iif("active", ""), this.edit_state.state);
+			this._class_binding = cjs.class(this.element,
+									this.$active.iif("active", ""),
+									this.$pure.iif("pure_cell", ""),
+									this.edit_state.state);
 		},
 		remove_class_bindings: function() {
 			this.element.removeClass("cell");
