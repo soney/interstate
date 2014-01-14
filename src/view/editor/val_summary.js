@@ -7,6 +7,14 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	cjs.registerPartial("valueSummary", function(options, parent_elem) {
+		if(!parent_elem) {
+			parent_elem = $("<td />")[0];
+		}
+		$(parent_elem).value_summary(options);
+		return parent_elem;
+	});
+
 	var round_num = function(num, decimals) {
 		var n = Math.pow(10, decimals);
 		return Math.round(num*n)/n;
@@ -66,9 +74,7 @@
 
 	$.widget("interstate.value_summary", {
 		options: {
-			value: false,
-			inherited: false,
-			builtin: false
+			value: false
 		},
 		_create: function() {
 			this.element.addClass("value_summary");
@@ -179,6 +185,7 @@
 		begin_editing: function() {
 			this.element.addClass("editing");
 			this.summary_span.hide();
+			/*
 			if(this.option("inherited")) {
 				this.inherit_button = $("<span />")	.addClass("inherit_button")
 													.appendTo(this.element)
@@ -190,6 +197,7 @@
 													})
 													.text("inherit");
 			}
+			*/
 		},
 		done_editing: function() {
 			this.element.removeClass("editing");

@@ -1,4 +1,4 @@
-//     ConstraintJS (CJS) <%= version %>
+//     ConstraintJS (CJS) 0.9.3-beta
 //     ConstraintJS may be freely distributed under the MIT License
 //     http://cjs.from.so/
 
@@ -8,8 +8,6 @@
 /** @expose cjs */
 var cjs = (function (root) {
 "use strict";
-
-/*jslint eqnull: true */
 
 // Utility functions
 // -----------------
@@ -1312,7 +1310,7 @@ Constraint = function (value, options) {
 	 *
 	 * @example
 	 *
-	 *     var x = c1.iif(c2, c3);
+	 *     var x = is_selected.iif(selected_val, nonselected_val);
 	 */
 	proto.iif = function(true_val, other_val) {
 		var me = this;
@@ -1876,7 +1874,7 @@ extend(cjs, {
 	 * @property {string} cjs.version
 	 * @see cjs.toString
 	 */
-	version: "<%= version %>", // This template will be filled in by the builder
+	version: "0.9.3-beta", // This template will be filled in by the builder
 
 	/**
 	 * Print out the name and version of ConstraintJS
@@ -5046,13 +5044,6 @@ extend(cjs, {
 	isFSM: function(obj) { return obj instanceof FSM; }
 });
 
-/**
- * **Note:** the preferred way to create this object is with the `cjs.on` function
- * Creates an event that can be used in a finite-state machine transition
- * @class cjs.CJSEvent
- * @classdesc A constraint object communicates with the constraint solver to store and maintain constraint values
- * @see cjs.on
- */
 var CJSEvent = function(parent, filter, onAddTransition, onRemoveTransition) {
 	this._listeners = []; // parent events that want to know when I fire
 	this._transitions = []; // a list of transitions that I'm attached to
@@ -6016,25 +6007,27 @@ var child_is_dynamic_html		= function(child)	{ return child.type === "unary_hb" 
 					getNodes: function() {
 						var len = template.sub_conditions.length,
 							cond = !!get_node_value(template.condition, context, lineage),
-							i = -1, children, memo_index;
+							i, children = false, memo_index;
 
 						if(template.reverse) {
 							cond = !cond;
 						}
 
 						if(cond) {
-							i = 0;
+							i = 0; children = template.children;
 						} else if(len > 0) {
 							for(i = 0; i<len; i++) {
 								cond = template.sub_conditions[i];
 
 								if(cond.condition === ELSE_COND || get_node_value(cond.condition, context, lineage)) {
-									i++; break;
+									children = cond.children;
+									i++;
+									break;
 								}
 							}
 						}
 
-						if(i < 0) {
+						if(!children) {
 							return [];
 						} else {
 							if(!instance_children[i]) {
@@ -6866,5 +6859,3 @@ if (typeof module !== 'undefined' && module.exports) {
 	/** @exports cjs */
 	module.exports = cjs;
 }
-
-//# sourceMappingURL=cjs.js.map

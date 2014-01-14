@@ -9,16 +9,23 @@
 
 	var prop_template = cjs.createTemplate(
 		"<td class='name'>" +
-			"<span class='prop_name'>{{ prop_name }}</span>" +
+			"{{#fsm name_edit_state}}" +
+				"{{#state idle}}" +
+					"<span>{{ prop_name }}</span>" +
+				"{{#state editing}}" +
+					"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
+			"{{/fsm}}" +
 		"</td>" +
-		"<td class='value_summary'>" +
-			"{{{ getValueSummary(value) }}}" +
-		"</td>" +
-		"<td class='src'>" +
-			"{{#each state}}" +
-				"{{> propCell state }}" +
-			"{{/each}}" +
-		"</td>"
+		"{{> valueSummary getValueSummaryOptions() }}"  +
+		"{{#if show_src}}" +
+			"<td class='src'>" +
+				"{{#if type==='stateful_prop'}}" +
+					"stateful prop" +
+				"{{#elif type==='cell'}}" +
+					"cell" +
+				"{{/if}}" +
+			"</td>" +
+		"{{/if}}"
 	);
 	$.widget("interstate.prop", {
 		options: {
@@ -32,8 +39,85 @@
 			client_socket: false
 		},
 
+		_create: function() {
+			this.$prop_name = cjs(this.option("name"));
+			this.$inherited = cjs(this.option("inherited"));
+			this.$show_src  = cjs(this.option("show_src"));
+			this.$selected  = cjs(false);
 
+			var value = this.option("value");
+			this.$type = cjs(function() {
+				if(value instanceof ist.WrapperClient) {
+					return value.type();
+				} else {
+					return "";
+				}
+			});
+			console.log(this.$type.get());
 
+			this.name_edit_state = cjs	.fsm("idle", "editing")
+										.startsAt("idle");
+
+			this.element.on("click.expand", _.bind(this._trigger_expand, this));
+
+			this._add_content_bindings();
+			this._add_class_bindings();
+		},
+		_destroy: function() {
+			this._super();
+			this._remove_content_bindings();
+			this._remove_class_bindings();
+		},
+
+		_add_content_bindings: function() {
+			prop_template({
+				prop_name: this.$prop_name,
+				name_edit_state: this.name_edit_state,
+				getValueSummaryOptions: _.bind(function() {
+					return { value: this.option("value") };
+				}, this),
+				show_src: this.$show_src,
+				value: this.option("value"),
+				type: this.$type
+			}, this.element);
+		},
+
+		_remove_content_bindings: function() {
+		},
+
+		_add_class_bindings: function() {
+			this._class_binding = cjs.class(this.element, "child",
+									this.$selected.iif("selected", ""),
+									this.$inherited.iif("inherited", ""));
+		},
+
+		_remove_class_bindings: function() {
+			this._class_binding.destroy();
+		},
+
+		_setOption: function(key, value) {
+			this._super(key, value);
+			if(key === "name") {
+				this.$prop_name.set(value);
+			} else if(key === "inherited") {
+				this.$inherited.set(value);
+			} else if(key === "show_src") {
+				this.$show_src.set(value);
+			}
+		},
+
+		_trigger_expand: function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+			if(this.element.not(".selected")) {
+				this.element.trigger("expand");
+			}
+		},
+
+		on_select: function() { this.$selected.set(true); },
+		on_deselect: function() { this.$selected.set(false); },
+		begin_rename: function() {
+		}
 	});
 
 	/*
