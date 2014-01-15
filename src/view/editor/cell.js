@@ -42,6 +42,7 @@
 			left: 0,
 			width: 0,
 			edit_width: 150,
+			unset_radius: 7,
 			active: false,
 			parent: false,
 			pure: false // just a cell and not part of a larger stateful property
@@ -49,10 +50,11 @@
 		_create: function() {
 			var client = this.option("value");
 
-			this.$str = client.get_$("get_str");
-			this.$syntax_errors = client.get_$("get_syntax_errors");
+			this.$str = client ? client.get_$("get_str") : cjs();
+			this.$syntax_errors = client ? client.get_$("get_syntax_errors") : cjs();
+
 			this.edit_state = cjs	.fsm("unset", "idle", "editing")
-									.startsAt("idle");
+									.startsAt(client ? "idle" : "unset");
 			this.$active = cjs(this.option("active"));
 			this.$pure = cjs(this.option("pure"));
 
@@ -62,7 +64,9 @@
 			this.add_tooltip();
 			this.add_class_bindings();
 			this.add_position_bindings();
-			client.signal_interest();
+			if(client) {
+				client.signal_interest();
+			}
 		},
 		_destroy: function() {
 			var client = this.option("value");
@@ -72,7 +76,10 @@
 			this.remove_class_bindings();
 
 			cjs.destroyTemplate(this.element);
-			client.signal_destroy();
+
+			if(client) {
+				client.signal_destroy();
+			}
 
 			this._super();
 
@@ -150,6 +157,7 @@
 		add_position_bindings: function() {
 			this.$specified_width = cjs(this.option("width"));
 			this.$width = cjs.inFSM(this.edit_state, {
+				unset: this.option("unset_radius")*2,
 				idle: this.$specified_width,
 				editing: this.option("edit_width")
 			});

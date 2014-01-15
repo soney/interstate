@@ -137,6 +137,7 @@
 		},
 
 		_add_content_bindings: function() {
+			var layout_manager = this.option("layout_manager");
 			prop_template({
 				prop_name: this.$prop_name,
 				name_edit_state: this.name_edit_state,
@@ -149,8 +150,12 @@
 					return { pure: true, value: this.option("value") };
 				}, this),
 				getPropCellOptions: _.bind(function(key) {
-					var value = this.$prop_values.getItemConstraint(key);
-					return { value: value };
+					var value = this.$prop_values.get(key),
+						left = function() {
+							console.log(key, layout_manager.get_x(key));
+							return layout_manager.get_x(key);
+						};
+					return { value: value, left: left };
 				}, this),
 				show_src: this.$show_src,
 				value: this.option("value"),
