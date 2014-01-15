@@ -20,8 +20,8 @@
 		"{{#if show_src}}" +
 			"{{#if type==='stateful_prop'}}" +
 				"<td class='stateful_prop src'>" +
-					"{{#each states}}" +
-						"{{this}}" +
+					"{{#each propValues}}" +
+						"{{> propCell getPropCellOptions(@key) }}" +
 					"{{/each}}" +
 				"</td>" +
 			"{{#elif type==='cell'}}" +
@@ -85,6 +85,46 @@
 				this.$active_value = client.get_$("active_value");
 
 				this.$prop_values = cjs.map({});
+				var old_keys = [],
+					old_vals = [];
+				cjs.liven(function() {
+					var keys = this.$states.get() || [],
+						vals = this.$values.get() || [],
+						indexed_vals = [];
+
+					_.each(keys, function(key, i) {
+						indexed_vals[i] = undefined;
+					});
+
+					_.each(vals, function(val) {
+						var key_index = keys.indexOf(val.state);
+						indexed_vals[key_index] = val;
+					}, this);
+
+					var map_diff = ist.get_map_diff(old_keys, keys, old_vals, indexed_vals);
+
+					_.each(map_diff.set, function(info) {
+						this.$prop_values.put(info.key, info.value, info.index)
+					}, this);
+					_.each(map_diff.value_change, function(info) {
+						var key = keys[info.index];
+						this.$prop_values.put(key, info.to);
+					}, this);
+					_.each(map_diff.key_change, function(info) {
+						this.$prop_values.rename(info.from, info.to);
+					}, this);
+					_.each(map_diff.moved, function(info) {
+						this.$prop_values.move(info.key, info.to);
+					}, this);
+					_.each(map_diff.unset, function(info) {
+						this.$prop_values.remove(info.key);
+					}, this);
+
+					old_keys = keys;
+					old_vals = indexed_vals;
+				}, {
+					context: this
+				});
 			}
 		},
 		_destroy_state_map: function() {
@@ -108,11 +148,14 @@
 				getPurePropCellOptions: _.bind(function() {
 					return { pure: true, value: this.option("value") };
 				}, this),
+				getPropCellOptions: _.bind(function(key) {
+					var value = this.$prop_values.getItemConstraint(key);
+					return { value: value };
+				}, this),
 				show_src: this.$show_src,
 				value: this.option("value"),
 				type: this.$type,
-				states: this.$states,
-				values: this.$values
+				propValues: this.$prop_values 
 			}, this.element);
 		},
 

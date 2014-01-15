@@ -61,6 +61,7 @@ exports.runtime = c(
 				"model/utils/debug.js",
 				"model/utils/parsed_value.js",
 				"model/utils/parsed_fn.js",
+				"model/utils/map_diff.js",
 				"model/basic_objects/cell.js",
 				"model/basic_objects/dict.js",
 				"model/basic_objects/stateful_obj.js",

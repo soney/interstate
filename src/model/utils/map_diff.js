@@ -1,7 +1,18 @@
+/*jslint nomen: true, vars: true, white: true */
+/*jshint scripturl: true */
+/*global interstate,esprima,able,uid,console,window,jQuery,Raphael,RedMap */
+
+(function (ist, $) {
+	"use strict";
+	var cjs = ist.cjs,
+		_ = ist._;
+
+	var removeIndex = function(arr, i) { arr.splice(i, 1); };
+
 	// Compute the differences between two objects
 	var compute_map_diff = function (key_diff, value_diff) {
-		key_diff = clone(key_diff);
-		value_diff = clone(value_diff);
+		key_diff = _.clone(key_diff);
+		value_diff = _.clone(value_diff);
 		var set = [], unset = [], key_change = [], value_change = [], index_changed = [], moved = [];
 		var i, j, added_key, removed_key;
 		for(i = 0; i<key_diff.added.length; i++) {
@@ -87,6 +98,12 @@
 		return { set: set, unset: unset, key_change: key_change, value_change: value_change, index_changed: index_changed, moved: moved};
 	};
 
+	ist.get_map_diff = function(from_keys, to_keys, from_vals, to_vals, key_eq_check, val_eq_check) {
+		var key_diff = cjs.arrayDiff(from_keys, to_keys, key_eq_check),
+			val_diff = cjs.arrayDiff(from_vals, to_vals, val_eq_check);
+		return compute_map_diff(key_diff, val_diff);
+	};
+/*
 	var get_map_diff = function (from_obj, to_obj, equality_check) {
 		var from_keys = keys(from_obj),
 			to_keys = keys(to_obj),
@@ -97,3 +114,5 @@
 
 		return compute_map_diff(key_diff, value_diff);
 	};
+	*/
+}(interstate, jQuery));
