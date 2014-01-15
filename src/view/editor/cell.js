@@ -17,14 +17,14 @@
 	var UNSET_RADIUS = 7;
 
 	var cell_template = cjs.createTemplate(
-		"{{#fsm edit_state}}" +
-			"{{#state unset}}" +
-				"<span class='unset'></span>" +
-			"{{#state idle}}" +
-				"<span>{{str}}</span>" +
-			"{{#state editing}}" +
-				"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
-		"{{/fsm}}"
+		"{{#if is_set}}" +
+			"{{#fsm edit_state}}" +
+				"{{#state idle}}" +
+					"{{str}}" +
+				"{{#state editing}}" +
+					"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
+			"{{/fsm}}" +
+		"{{/if}}"
 	);
 
 	var eqProp = function(prop_name, values, thisArg) {
@@ -39,7 +39,7 @@
 	$.widget("interstate.prop_cell", {
 		options: {
 			value: false,
-			left: 0,
+			left: undefined,
 			width: 0,
 			edit_width: 150,
 			unset_radius: 7,
@@ -53,10 +53,13 @@
 			this.$str = client ? client.get_$("get_str") : cjs();
 			this.$syntax_errors = client ? client.get_$("get_syntax_errors") : cjs();
 
-			this.edit_state = cjs	.fsm("unset", "idle", "editing")
-									.startsAt(client ? "idle" : "unset");
+			this.edit_state = cjs	.fsm("idle", "editing")
+									.startsAt("idle");
 			this.$active = cjs(this.option("active"));
 			this.$pure = cjs(this.option("pure"));
+			this.$left = cjs(this.option("left"));
+			this.$is_set = cjs(client ? true : false);
+			this.$visible = this.$left.neq(undefined);
 
 			this.do_edit = this.edit_state.addTransition("idle", "editing"),
 
@@ -64,12 +67,14 @@
 			this.add_tooltip();
 			this.add_class_bindings();
 			this.add_position_bindings();
+
 			if(client) {
 				client.signal_interest();
 			}
 		},
 		_destroy: function() {
 			var client = this.option("value");
+
 			this.remove_content_bindings();
 			this.remove_tooltip();
 			this.remove_position_bindings();
@@ -134,7 +139,9 @@
 								event.stopPropagation();
 							}
 						}
-					}, this)
+					}, this),
+					visible: this.$visible,
+					is_set: this.$is_set
 				}, this.element);
 			this.element.on("click", _.bind(function(event) {
 				this.begin_editing(event);
@@ -148,6 +155,7 @@
 			this._class_binding = cjs.class(this.element,
 									this.$active.iif("active", ""),
 									this.$pure.iif("pure_cell", ""),
+									this.$is_set.iif("", "unset"),
 									this.edit_state.state);
 		},
 		remove_class_bindings: function() {
@@ -157,11 +165,9 @@
 		add_position_bindings: function() {
 			this.$specified_width = cjs(this.option("width"));
 			this.$width = cjs.inFSM(this.edit_state, {
-				unset: this.option("unset_radius")*2,
-				idle: this.$specified_width,
+				idle: this.$is_set.iif(this.$specified_width, this.option("unset_radius")*2),
 				editing: this.option("edit_width")
 			});
-			this.$left = cjs(this.option("left"));
 			this.$edit_width = cjs(this.option("edit_width"));
 
 			this.$z_index = cjs.inFSM(this.edit_state, {
@@ -172,7 +178,8 @@
 
 			this.position_binding = cjs.css(this.element, {
 				left: this.$left.sub(this.$width.div(2)).add("px"),
-				"z-index": this.$z_index
+				"z-index": this.$z_index,
+				"visibility": this.$visible.iif("visible", "hidden")
 			});
 		},
 		remove_position_bindings: function() {
@@ -236,34 +243,6 @@
 				textarea.val(this.$str.get())
 						.select()
 						.focus();
-			}
-		}
-	});
-
-	$.widget("interstate.unset_prop", {
-		options: {
-			left: 0,
-			radius: 7,
-			state: null
-		},
-		_create: function() {
-			this.element.addClass("unset")
-						.attr("tabindex", 1)
-						.on("keydown.unset", _.bind(on_cell_key_down, this));
-			this.update_left();
-		},
-		_destroy: function() {
-			this.element.removeClass("unset")
-						.off("keydown.unset");
-			delete this.options.state;
-		},
-		update_left: function() {
-			this.element.css("left", (this.option("left") - this.option("radius")) + "px");
-		},
-		_setOption: function(key, value) {
-			this._super(key, value);
-			if(key === "left" || key === "radius") {
-				this.update_left();
 			}
 		}
 	});

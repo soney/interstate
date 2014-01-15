@@ -7,6 +7,36 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	var column_template = cjs.createTemplate(
+		"<tbody>" +
+			"<tr class='header'>" +
+				"<th colspan='2' class='obj_name'>" +
+					"<h2>{{name}}</h2>" +
+				"</th>" +
+				"{{#if stateful}}" +
+					"<th rowspan='2' class='statechart_cell'>" +
+						"{{>statechartView getStatechartViewOptions() }}" +
+					"</th>" +
+				"{{/if}}" +
+			"</tr>" +
+			"<tr class='add_prop'>" +
+				"<td colspan='2' class='add_prop'>" +
+					"<div class='add_prop'>Add Property</div>" +
+				"</td>" +
+			"</tr>" +
+			"{{#each children}}" +
+				"{{>propertyView getPropertyViewOptions(this)}}" +
+				"{{#else}}" +
+					"<tr>" +
+						"<td>No properties</td>" +
+					"</tr>" +
+			"{{/each}}" +
+		"</tbody>"
+	);
+
+
+	/*
+
 	var insert_at = function (child_node, parent_node, index) {
 		var children = parent_node.childNodes;
 		if (children.length <= index) {
@@ -53,13 +83,6 @@
 			this.element.addClass("col")
 						.attr("tabindex", 1)
 						.attr("draggable", true);
-						/*
-						.on("dragstart.pin", _.bind(function(event) {
-							
-							console.log("Dragstart");
-							event.stopPropagation();
-						}, this));
-						*/
 
 			this.tbody = $("<tbody />")	.appendTo(this.element);
 			this.header = $("<tr />")	.appendTo(this.tbody)
@@ -762,4 +785,5 @@
 			}
 		}
 	});
+	*/
 }(interstate, jQuery));
