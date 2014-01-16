@@ -7,6 +7,14 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	cjs.registerPartial("prop", function(options, parent_elem) {
+		if(!parent_elem) {
+			parent_elem = $("<tr />")[0];
+		}
+		$(parent_elem).prop(options);
+		return parent_elem;
+	});
+
 	var prop_template = cjs.createTemplate(
 		"<td class='name'>" +
 			"{{#fsm name_edit_state}}" +
@@ -84,47 +92,26 @@
 				this.$values = client.get_$("get_values");
 				this.$active_value = client.get_$("active_value");
 
-				this.$prop_values = cjs.map({});
-				var old_keys = [],
-					old_vals = [];
-				cjs.liven(function() {
-					var keys = this.$states.get() || [],
-						vals = this.$values.get() || [],
+				this.$full_values = cjs(function() {
+					var values = this.$values.get() || [], 
+						states = this.$states.get() || [],
 						indexed_vals = [];
 
-					_.each(keys, function(key, i) {
+					_.each(states, function(state, i) {
 						indexed_vals[i] = undefined;
 					});
 
-					_.each(vals, function(val) {
-						var key_index = keys.indexOf(val.state);
-						indexed_vals[key_index] = val;
-					}, this);
+					_.each(values, function(value) {
+						var key_index = states.indexOf(value.state);
+						indexed_vals[key_index] = value;
+					});
 
-					var map_diff = ist.get_map_diff(old_keys, keys, old_vals, indexed_vals);
-
-					_.each(map_diff.set, function(info) {
-						this.$prop_values.put(info.key, info.value, info.index)
-					}, this);
-					_.each(map_diff.value_change, function(info) {
-						var key = keys[info.index];
-						this.$prop_values.put(key, info.to);
-					}, this);
-					_.each(map_diff.key_change, function(info) {
-						this.$prop_values.rename(info.from, info.to);
-					}, this);
-					_.each(map_diff.moved, function(info) {
-						this.$prop_values.move(info.key, info.to);
-					}, this);
-					_.each(map_diff.unset, function(info) {
-						this.$prop_values.remove(info.key);
-					}, this);
-
-					old_keys = keys;
-					old_vals = indexed_vals;
+					return indexed_vals;
 				}, {
 					context: this
 				});
+
+				this.$prop_values = ist.create_key_val_map(this.$states, this.$full_values);
 			}
 		},
 		_destroy_state_map: function() {

@@ -714,4 +714,47 @@
 			}
 		}
 	});
+
+	ist.create_key_val_map = function(key_constraint, value_constraint) {
+		var map = cjs.map({}),
+			old_keys = [],
+			old_vals = [];
+
+		var live_fn = cjs.liven(function() {
+			var keys = key_constraint.get() || [],
+				vals = value_constraint.get() || [];
+
+			var map_diff = ist.get_map_diff(old_keys, keys, old_vals, vals);
+
+			_.each(map_diff.set, function(info) {
+				this.$prop_values.put(info.key, info.value, info.index)
+			}, this);
+			_.each(map_diff.value_change, function(info) {
+				var key = keys[info.index];
+				this.$prop_values.put(key, info.to);
+			}, this);
+			_.each(map_diff.key_change, function(info) {
+				this.$prop_values.rename(info.from, info.to);
+			}, this);
+			_.each(map_diff.moved, function(info) {
+				this.$prop_values.move(info.key, info.to);
+			}, this);
+			_.each(map_diff.unset, function(info) {
+				this.$prop_values.remove(info.key);
+			}, this);
+
+			old_keys = keys;
+			old_vals = vals;
+		}, {
+			context: this
+		});
+
+		var old_destroy = map.destroy;
+		map.destroy = function() {
+			old_destroy.apply(this, arguments);
+			live_fn.destroy();
+		};
+
+		return map;
+	}
 }(interstate, jQuery));

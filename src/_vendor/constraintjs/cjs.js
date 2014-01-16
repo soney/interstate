@@ -1,4 +1,4 @@
-//     ConstraintJS (CJS) 0.9.3-beta
+//     ConstraintJS (CJS) 0.9.4-beta
 //     ConstraintJS may be freely distributed under the MIT License
 //     http://cjs.from.so/
 
@@ -14,7 +14,8 @@ var cjs = (function (root) {
 
 // Many of the functions here are from http://underscorejs.org/
 // Save bytes in the minified (but not gzipped) version:
-var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
+var ArrayProto = Array.prototype, ObjProto = Object.prototype,
+	FuncProto = Function.prototype, StringProto = String.prototype;
 
 // Create quick reference variables for speed access to core prototypes.
 var slice         = ArrayProto.slice,
@@ -31,10 +32,14 @@ var nativeSome    = ArrayProto.some,
 	nativeKeys    = Object.keys,
 	nativeFilter  = ArrayProto.filter,
 	nativeReduce  = ArrayProto.reduce,
-	nativeMap     = ArrayProto.map;
+	nativeMap     = ArrayProto.map,
+	nativeTrim    = StringProto.trim;
 
 //Bind a function to a context
 var bind = function (func, context) { return function () { return func.apply(context, arguments); }; },
+	trim = function(str){
+		return nativeTrim ? nativeTrim.call(str) : String(str).replace(/^\s+|\s+$/g, '');
+    },
 	doc	= root.document,
 	sTO = bind(root.setTimeout, root),
 	cTO = bind(root.clearTimeout, root),
@@ -55,6 +60,16 @@ var bind = function (func, context) { return function () { return func.apply(con
 						"<<":  function (a, b) { return a << b; }, ">>": function (a, b) { return a >> b; },
 						">>>": function (a, b) { return a >>> b;}
 	};
+
+
+var getTextContent, setTextContent;
+if(doc && !('textContent' in doc.createElement('div'))) {
+	getTextContent = function(node) { return node.innerText; };
+	setTextContent = function(node, val) { node.innerText = val; };
+} else {
+	getTextContent = function(node) { return node.textContent; };
+	setTextContent = function(node, val) { node.textContent = val; };
+}
 
 // Establish the object that gets returned to break out of a loop iteration.
 var breaker = {};
@@ -1873,7 +1888,7 @@ extend(cjs, {
 	 * @property {string} cjs.version
 	 * @see cjs.toString
 	 */
-	version: "0.9.3-beta", // This template will be filled in by the builder
+	version: "0.9.4-beta", // This template will be filled in by the builder
 
 	/**
 	 * Print out the name and version of ConstraintJS
@@ -4221,30 +4236,30 @@ var create_list_binding = function(list_binding_getter, list_binding_setter, lis
 	/**
 	 * Constrain a DOM node's text content
 	 *
-	 * @method cjs.text
+	 * @method cjs.bindText
 	 * @param {dom} element - The DOM element
 	 * @param {*} ...values - The desired text value
 	 * @return {Binding} - A binding object
 	 * @example If `my_elem` is a dom element
 	 *
 	 *     var message = cjs('hello');
-	 *     cjs.text(my_elem, message);
+	 *     cjs.bindText(my_elem, message);
 	 */
 var text_binding = create_textual_binding(function(element, value) { // set the escaped text of a node
-		element.textContent = value;
+		setTextContent(element, value);
 	}),
 
 	/**
 	 * Constrain a DOM node's HTML content
 	 *
-	 * @method cjs.html
+	 * @method cjs.bindHTML
 	 * @param {dom} element - The DOM element
 	 * @param {*} ...values - The desired html content
 	 * @return {Binding} - A binding object
 	 * @example If `my_elem` is a dom element
 	 *
 	 *     var message = cjs('<b>hello</b>');
-	 *     cjs.text(my_elem, message);
+	 *     cjs.bindHTML(my_elem, message);
 	 */
 	html_binding = create_textual_binding(function(element, value) { // set the non-escaped inner HTML of a node
 		element.innerHTML = value;
@@ -4253,14 +4268,14 @@ var text_binding = create_textual_binding(function(element, value) { // set the 
 	/**
 	 * Constrain a DOM node's value
 	 *
-	 * @method cjs.val
+	 * @method cjs.bindValue
 	 * @param {dom} element - The DOM element
 	 * @param {*} ...values - The value the element should have
 	 * @return {Binding} - A binding object
 	 * @example If `my_elem` is a text input element
 	 *
 	 *     var value = cjs('hello');
-	 *     cjs.val(my_elem, message);
+	 *     cjs.bindValue(my_elem, message);
 	 */
 	val_binding = create_textual_binding(function(element, value) { // set the value of a node
 		element.val = value;
@@ -4269,14 +4284,14 @@ var text_binding = create_textual_binding(function(element, value) { // set the 
 	/**
 	 * Constrain a DOM node's class names
 	 *
-	 * @method cjs.class
+	 * @method cjs.bindClass
 	 * @param {dom} element - The DOM element
 	 * @param {*} ...values - The list of classes the element should have. The binding automatically flattens them.
 	 * @return {Binding} - A binding object
 	 * @example If `my_elem` is a dom element
 	 *
 	 *     var classes = cjs('class1 class2');
-	 *     cjs.class(my_elem, classes);
+	 *     cjs.bindClass(my_elem, classes);
 	 */
 	class_binding = create_list_binding(function(args) { // set the class of a node
 		return flatten(map(args, cjs.get), true);
@@ -4290,7 +4305,7 @@ var text_binding = create_textual_binding(function(element, value) { // set the 
 		// and add all of the added classes
 		curr_class_name += map(ad.added, function(x) { return x.item; }).join(" ");
 
-		curr_class_name = curr_class_name.trim(); // and trim to remove extra spaces
+		curr_class_name = trim(curr_class_name); // and trim to remove extra spaces
 
 		element.className = curr_class_name; // finally, do the work of setting the class
 	}, []), // say that we don't have any classes to start with
@@ -4298,14 +4313,14 @@ var text_binding = create_textual_binding(function(element, value) { // set the 
 	/**
 	 * Constrain a DOM node's children
 	 *
-	 * @method cjs.children
+	 * @method cjs.bindChildren
 	 * @param {dom} element - The DOM element
 	 * @param {*} ...elements - The elements to use as the constraint. The binding automatically flattens them.
 	 * @return {Binding} - A binding object
 	 * @example If `my_elem`, `child1`, and `child2` are dom elements
 	 *
 	 *     var nodes = cjs(child1, child2);
-	 *     cjs.children(my_elem, nodes);
+	 *     cjs.bindChildren(my_elem, nodes);
 	 */
 	children_binding = create_list_binding(function(args) {
 		var arg_val_arr = map(args, cjs.get);
@@ -4322,7 +4337,7 @@ var text_binding = create_textual_binding(function(element, value) { // set the 
 	/**
 	 * Constrain a DOM node's CSS style
 	 *
-	 * @method cjs.css
+	 * @method cjs.bindCSS
 	 * @param {dom} element - The DOM element
 	 * @param {object} values - An object whose key-value pairs are the CSS property names and values respectively
 	 * @return {Binding} - A binding object representing the link from constraints to CSS styles
@@ -4331,7 +4346,7 @@ var text_binding = create_textual_binding(function(element, value) { // set the 
 	 *
 	 *     var color = cjs('red'),
 	 *     left = cjs(0);
-	 *     cjs.css(my_elem, {
+	 *     cjs.bindCSS(my_elem, {
 	 *         "background-color": color,
 	 *         left: left.add('px')
 	 *     });
@@ -4339,7 +4354,7 @@ var text_binding = create_textual_binding(function(element, value) { // set the 
 	/**
 	 * Constrain a DOM node's CSS style
 	 *
-	 * @method cjs.css^2
+	 * @method cjs.bindCSS^2
 	 * @param {string} key - The name of the CSS attribute to constraint
 	 * @param {cjs.Constraint|string} value - The value of this CSS attribute
 	 * @return {Binding} - A binding object representing the link from constraints to elements
@@ -4347,7 +4362,7 @@ var text_binding = create_textual_binding(function(element, value) { // set the 
 	 * @example If `my_elem` is a dom element
 	 *
 	 *     var color = cjs('red');
-	 *     cjs.css(my_elem, ''background-color', color);
+	 *     cjs.bindCSS(my_elem, ''background-color', color);
 	 */
 	css_binding = create_obj_binding(function(element, key, value) {
 		element.style[camel_case(key)] = value;
@@ -4356,7 +4371,7 @@ var text_binding = create_textual_binding(function(element, value) { // set the 
 	/**
 	 * Constrain a DOM node's attribute values
 	 *
-	 * @method cjs.attr
+	 * @method cjs.bindAttr
 	 * @param {dom} element - The DOM element
 	 * @param {object} values - An object whose key-value pairs are the attribute names and values respectively
 	 * @return {Binding} - A binding object representing the link from constraints to elements
@@ -4364,12 +4379,12 @@ var text_binding = create_textual_binding(function(element, value) { // set the 
 	 * @example If `my_elem` is an input element
 	 *
 	 *     var default_txt = cjs('enter name');
-	 *     cjs.attr(my_elem, 'placeholder', default_txt);
+	 *     cjs.bindAttr(my_elem, 'placeholder', default_txt);
 	 */
 	/**
 	 * Constrain a DOM node's attribute value
 	 *
-	 * @method cjs.attr^2
+	 * @method cjs.bindAttr^2
 	 * @param {string} key - The name of the attribute to constraint
 	 * @param {cjs.Constraint|string} value - The value of this attribute
 	 * @return {Binding} - A binding object representing the link from constraints to elements
@@ -4378,7 +4393,7 @@ var text_binding = create_textual_binding(function(element, value) { // set the 
 	 *
 	 *     var default_txt = cjs('enter name'),
 	 *         name = cjs('my_name');
-	 *     cjs.attr(my_elem, {
+	 *     cjs.bindAttr(my_elem, {
 	 *         placeholder: default_txt,
 	 *         name: name
 	 *     });
@@ -4444,20 +4459,20 @@ var inp_change_events = ["keyup", "input", "paste", "propertychange", "change"],
 	};
 
 extend(cjs, {
-	/** @expose cjs.text */
-	text: text_binding,
-	/** @expose cjs.html */
-	html: html_binding,
-	/** @expose cjs.val */
-	val: val_binding,
-	/** @expose cjs.children */
-	children: children_binding,
-	/** @expose cjs.attr */
-	attr: attr_binding,
-	/** @expose cjs.css */
-	css: css_binding,
-	/** @expose cjs.class */
-	"class": class_binding,
+	/** @expose cjs.bindText */
+	bindText: text_binding,
+	/** @expose cjs.bindHTML */
+	bindHTML: html_binding,
+	/** @expose cjs.bindValue */
+	bindValue: val_binding,
+	/** @expose cjs.bindChildren */
+	bindChildren: children_binding,
+	/** @expose cjs.bindAttr */
+	bindAttr: attr_binding,
+	/** @expose cjs.bindCSS */
+	bindCSS: css_binding,
+	/** @expose cjs.bindClass */
+	bindClass: class_binding,
 	/** @expose cjs.inputValue */
 	inputValue: getInputValueConstraint,
 	/** @expose cjs.Binding */
@@ -4587,7 +4602,7 @@ var parse_single_state_spec = function(str) {
 // Parse one side of the transition
 var parse_state_spec = function(str) {
 	// Split by , and remove any excess spacing
-	var state_spec_strs = map(str.split(","), function(ss) { return ss.trim(); }); 
+	var state_spec_strs = map(str.split(","), function(ss) { return trim(ss); }); 
 
 	// The user only specified one state
 	if(state_spec_strs.length === 1) {
@@ -5129,8 +5144,7 @@ var CJSEvent = function(parent, filter, onAddTransition, onRemoveTransition) {
 /** @lends */
 
 var isElementOrWindow = function(elem) { return elem === root || isElement(elem); },
-	do_trim = function(x) { return x.trim(); },
-	split_and_trim = function(x) { return map(x.split(" "), do_trim); },
+	split_and_trim = function(x) { return map(x.split(" "), trim); },
 	timeout_event_type = "timeout";
 
 extend(cjs, {
@@ -5627,7 +5641,7 @@ var child_is_dynamic_html		= function(child)	{ return child.type === "unary_hb" 
 	},
 	get_escaped_html = function(c) {
 		if(c.nodeType === 3) {
-			return escapeHTML(c.textContent);
+			return escapeHTML(getTextContent(c));
 		} else {
 			return escapeHTML(c.outerHTML);
 		}
@@ -5927,7 +5941,7 @@ var child_is_dynamic_html		= function(child)	{ return child.type === "unary_hb" 
 				node, txt_binding;
 			if(!literal) {
 				node = doc.createTextNode("");
-				txt_binding = cjs.text(node, val_constraint);
+				txt_binding = text_binding(node, val_constraint);
 			}
 			return {
 				type: type,
@@ -5936,7 +5950,7 @@ var child_is_dynamic_html		= function(child)	{ return child.type === "unary_hb" 
 				node: node,
 				destroy: function() { if(txt_binding) txt_binding.destroy(true); },
 				pause: function() { if(txt_binding) txt_binding.pause(); },
-				resume: function() { if(txt_binding) txt_binding.resume(); },
+				resume: function() { if(txt_binding) txt_binding.resume(); }
 			};
 		} else if (type === "hb") {
 			var tag = template.tag;
@@ -6306,9 +6320,9 @@ extend(cjs, {
 	createTemplate:		function(template_str) {
 							if(!isString(template_str)) {
 								if(is_jquery_obj(template_str) || isNList(template_str)) {
-									template_str = template_str.length > 0 ? template_str[0].textContent.trim() : "";
+									template_str = template_str.length > 0 ? trim(getTextContent(template_str[0])) : "";
 								} else if(isElement(template_str)) {
-									template_str = template_str.textContent.trim();
+									template_str = trim(getTextContent(template_str));
 								} else {
 									template_str = "" + template_str;
 								}

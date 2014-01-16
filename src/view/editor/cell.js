@@ -63,10 +63,10 @@
 
 			this.do_edit = this.edit_state.addTransition("idle", "editing"),
 
-			this.add_content_bindings();
-			this.add_tooltip();
-			this.add_class_bindings();
-			this.add_position_bindings();
+			this._add_content_bindings();
+			this._add_tooltip();
+			this._add_class_bindings();
+			this._add_position_bindings();
 
 			if(client) {
 				client.signal_interest();
@@ -75,10 +75,10 @@
 		_destroy: function() {
 			var client = this.option("value");
 
-			this.remove_content_bindings();
-			this.remove_tooltip();
-			this.remove_position_bindings();
-			this.remove_class_bindings();
+			this._remove_content_bindings();
+			this._remove_tooltip();
+			this._remove_position_bindings();
+			this._remove_class_bindings();
 
 			cjs.destroyTemplate(this.element);
 
@@ -111,7 +111,7 @@
 				this.$pure.set(value);
 			}
 		},
-		add_content_bindings: function() {
+		_add_content_bindings: function() {
 			var cancel_edit = this.edit_state.addTransition("editing", "idle"),
 				confirm_edit = this.edit_state.addTransition("editing", "idle"),
 				cell = cell_template({
@@ -148,9 +148,9 @@
 				event.stopPropagation();
 			}, this));
 		},
-		remove_content_bindings: function() {
+		_remove_content_bindings: function() {
 		},
-		add_class_bindings: function() {
+		_add_class_bindings: function() {
 			this.element.addClass("cell");
 			this._class_binding = cjs.bindClass(this.element,
 									this.$active.iif("active", ""),
@@ -158,11 +158,11 @@
 									this.$is_set.iif("", "unset"),
 									this.edit_state.state);
 		},
-		remove_class_bindings: function() {
+		_remove_class_bindings: function() {
 			this.element.removeClass("cell");
 			this._class_binding.destroy();
 		},
-		add_position_bindings: function() {
+		_add_position_bindings: function() {
 			this.$specified_width = cjs(this.option("width"));
 			this.$width = cjs.inFSM(this.edit_state, {
 				idle: this.$is_set.iif(this.$specified_width, this.option("unset_radius")*2),
@@ -176,19 +176,19 @@
 			});
 			this.element.css("min-width", this.option("width"));
 
-			this.position_binding = cjs.css(this.element, {
+			this.position_binding = cjs.bindCSS(this.element, {
 				left: this.$left.sub(this.$width.div(2)).add("px"),
 				"z-index": this.$z_index,
 				"visibility": this.$visible.iif("visible", "hidden")
 			});
 		},
-		remove_position_bindings: function() {
+		_remove_position_bindings: function() {
 			_.each([this.$specified_width, this.$width, this.$left, this.$edit_width, this.$active, this.position_binding],
 					function(x) {
 						x.destroy(true);
 					});
 		},
-		add_tooltip: function() {
+		_add_tooltip: function() {
 			this.element.tooltip({
 				position: {
 					my: "center bottom-1",
@@ -232,7 +232,7 @@
 			this.edit_state	.on("idle->editing", disable_tooltip)
 							.on("editing->idle", enable_tooltip);
 		},
-		remove_tooltip: function() {
+		_remove_tooltip: function() {
 			this._tooltip_live_fn.destroy();
 			delete this._tooltip_live_fn;
 		},
