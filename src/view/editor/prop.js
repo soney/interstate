@@ -58,7 +58,7 @@
 
 			this.$prop_name = cjs(this.option("name"));
 			this.$inherited = cjs(this.option("inherited"));
-			this.$show_src  = cjs(this.option("show_src"));
+			this.$show_src  = this.option("show_src");
 			this.$selected  = cjs(false);
 
 			this.$type = cjs(function() {
@@ -77,6 +77,10 @@
 			this._create_state_map();
 			this._add_content_bindings();
 			this._add_class_bindings();
+
+			if(this.option("inherited")) {
+				this.element.on("click.inherit", _.bind(this.inherit, this));
+			}
 		},
 		_destroy: function() {
 			this._super();
@@ -156,6 +160,7 @@
 		},
 
 		_remove_content_bindings: function() {
+			cjs.destroyTemplate(this.element);
 		},
 
 		_add_class_bindings: function() {
@@ -185,6 +190,15 @@
 			if(this.element.not(".selected")) {
 				this.element.trigger("expand");
 			}
+		},
+		inherit: function() {
+			var event = new $.Event("command");
+			event.command_type = "inherit";
+			event.name = this.option("name");
+			event.client = this.option("obj");
+			//event.value = this.option("value");
+
+			this.element.trigger(event);
 		},
 
 		on_select: function() { this.$selected.set(true); },

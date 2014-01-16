@@ -59,7 +59,7 @@
 			this.$pure = cjs(this.option("pure"));
 			this.$left = cjs(this.option("left"));
 			this.$is_set = cjs(client ? true : false);
-			this.$visible = this.$left.neq(undefined);
+			this.$visible = this.$pure.or(this.$left.neq(undefined));
 
 			this.do_edit = this.edit_state.addTransition("idle", "editing"),
 

@@ -727,26 +727,24 @@
 			var map_diff = ist.get_map_diff(old_keys, keys, old_vals, vals);
 
 			_.each(map_diff.set, function(info) {
-				this.$prop_values.put(info.key, info.value, info.index)
-			}, this);
+				map.put(info.key, info.value, info.index)
+			});
 			_.each(map_diff.value_change, function(info) {
 				var key = keys[info.index];
-				this.$prop_values.put(key, info.to);
-			}, this);
+				map.put(key, info.to);
+			});
 			_.each(map_diff.key_change, function(info) {
-				this.$prop_values.rename(info.from, info.to);
-			}, this);
+				map.rename(info.from, info.to);
+			});
 			_.each(map_diff.moved, function(info) {
-				this.$prop_values.move(info.key, info.to);
-			}, this);
+				map.move(info.key, info.to);
+			});
 			_.each(map_diff.unset, function(info) {
-				this.$prop_values.remove(info.key);
-			}, this);
+				map.remove(info.key);
+			});
 
 			old_keys = keys;
 			old_vals = vals;
-		}, {
-			context: this
 		});
 
 		var old_destroy = map.destroy;

@@ -6,6 +6,13 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	cjs.registerPartial("statechartView", function(options, parent_elem) {
+		if(!parent_elem) {
+			parent_elem = $("<div />")[0];
+		}
+		$(parent_elem).statechart(options);
+		return parent_elem;
+	});
 	$.widget("interstate.statechart", {
 		options: {
 			transition_font_family: "Source Sans Pro",
