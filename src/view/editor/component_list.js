@@ -252,7 +252,7 @@
 			this.download_button = $("<a>") .attr("href", "javascript:void(0)")
 										.appendTo(this.element)
 										.addClass("action")
-										.text("(save)")
+										.text("(download)")
 										.on("click", _.bind(this.download, this));
 			this.label = $("<a />")	.text(this.option("name"))
 									.attr("href", "javascript:void(0)")

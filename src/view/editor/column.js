@@ -62,6 +62,9 @@
 			var client = this.option("client");
 			client.signal_interest();
 
+			this.element.attr("draggable", true);
+			
+
 			this.$name = client.get_$("get_name");
 			this.$is_curr_col = this.option("is_curr_col");
 			this.$is_curr_col.onChange(function() {
