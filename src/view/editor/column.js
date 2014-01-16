@@ -34,34 +34,6 @@
 		"</tbody>"
 	);
 
-
-	/*
-
-	var insert_at = function (child_node, parent_node, index) {
-		var children = parent_node.childNodes;
-		if (children.length <= index) {
-			parent_node.appendChild(child_node);
-		} else {
-			var before_child = children[index];
-			parent_node.insertBefore(child_node, before_child);
-		}
-	};
-	var remove = function (child_node) {
-		var parent_node = child_node.parentNode;
-		if (parent_node) {
-			parent_node.removeChild(child_node);
-		}
-	};
-	var move = function (child_node, from_index, to_index) {
-		var parent_node = child_node.parentNode;
-		if (parent_node) {
-			if (from_index < to_index) { //If it's less than the index we're inserting at...
-				to_index += 1; //Increase the index by 1, to make up for the fact that we're removing me at the beginning
-			}
-			insert_at(child_node, parent_node, to_index);
-		}
-	};
-
 	$.widget("interstate.column", {
 		options: {
 			client: false,
@@ -75,6 +47,43 @@
 			selected_prop_name: false,
 			curr_copy_index: false,
 			close_button: false
+		},
+
+		_create: function() {
+			var client = this.option("client");
+			client.signal_interest();
+
+		},
+		_destroy: function() {
+			var client = this.option("client");
+			client.signal_destroy();
+
+			this._super();
+		},
+
+		_add_content_bindings: function() {
+		},
+
+		_remove_content_bindings: function() {
+		},
+
+		_add_class_bindings: function() {
+			this._class_binding = cjs.bindClass();
+		},
+
+		_remove_class_bindings: function() {
+			this._class_binding.destroy();
+		},
+
+		_setOption: function(key, value) {
+			this._super(key, value);
+		}
+	});
+
+
+	/*
+	$.widget("interstate.column", {
+		options: {
 		},
 
 		_create: function () {

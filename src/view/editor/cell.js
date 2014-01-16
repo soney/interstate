@@ -152,7 +152,7 @@
 		},
 		add_class_bindings: function() {
 			this.element.addClass("cell");
-			this._class_binding = cjs.class(this.element,
+			this._class_binding = cjs.bindClass(this.element,
 									this.$active.iif("active", ""),
 									this.$pure.iif("pure_cell", ""),
 									this.$is_set.iif("", "unset"),

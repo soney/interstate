@@ -172,7 +172,7 @@
 		},
 
 		_add_class_bindings: function() {
-			this._class_binding = cjs.class(this.element, "child",
+			this._class_binding = cjs.bindClass(this.element, "child",
 									this.$selected.iif("selected", ""),
 									this.$inherited.iif("inherited", ""));
 		},
