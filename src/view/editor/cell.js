@@ -45,6 +45,8 @@
 			unset_radius: 7,
 			active: false,
 			parent: false,
+			state: false,
+			prop: false,
 			pure: false // just a cell and not part of a larger stateful property
 		},
 		_create: function() {
@@ -144,7 +146,11 @@
 					is_set: this.$is_set
 				}, this.element);
 			this.element.on("click", _.bind(function(event) {
-				this.begin_editing(event);
+				if(this.$is_set.get()) {
+					this.begin_editing(event);
+				} else {
+					this._set_value_for_state(event);
+				}
 				event.stopPropagation();
 			}, this));
 		},
@@ -244,6 +250,14 @@
 						.select()
 						.focus();
 			}
+		},
+		_set_value_for_state: function(event) {
+			var event = new $.Event("command");
+			event.command_type = "set_stateful_prop_for_state";
+			event.prop = this.option("prop");
+			event.state = this.option("state");
+
+			this.element.trigger(event);
 		}
 	});
 

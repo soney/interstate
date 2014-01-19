@@ -150,7 +150,11 @@
 						};
 
 					// top fifty bad lines of code I've ever written: `value: value ? value.value : value`
-					return { value: value ? value.value : value, left: left, width: width };
+					return {prop: this.option("value"),
+							state: key,
+							value: value ? value.value : value,
+							left: left,
+							width: width };
 				}, this),
 				show_src: this.$show_src,
 				value: this.option("value"),
