@@ -74,9 +74,12 @@
 			if(child instanceof ist.WrapperClient && (child.type() === "dict" || child.type() === "stateful")) {
 				var column_index = this.$columns.indexOf(child);
 				if(column_index >= 0) {
-					this.$columns.splice(column_index, this.$columns.length()-column_index-1);
+					this.$columns.splice(column_index, this.$columns.length()-column_index);
+				} else {
+					var parent_col = $(event.target).column("option", "client");
+					column_index = this.$columns.indexOf(parent_col);
+					this.$columns.splice(column_index+1, this.$columns.length()-column_index - 1, child);
 				}
-				this.$columns.push(child);
 			} else {
 				this.on_header_click(event, child);
 			}

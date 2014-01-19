@@ -14,13 +14,15 @@
 		return parent_elem;
 	});
 
-	var UNSET_RADIUS = 7;
-
 	var cell_template = cjs.createTemplate(
 		"{{#if is_set}}" +
 			"{{#fsm edit_state}}" +
 				"{{#state idle}}" +
-					"{{str}}" +
+					"{{#if str===''}}" +
+						"<span class='empty'>(empty)</span>" +
+					"{{#else}}" +
+						"{{str}}" +
+					"{{/if}}" +
 				"{{#state editing}}" +
 					"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
 			"{{/fsm}}" +
@@ -46,21 +48,39 @@
 			active: false,
 			parent: false,
 			state: false,
-			prop: false,
-			pure: false // just a cell and not part of a larger stateful property
+			prop: false
 		},
 		_create: function() {
-			var client = this.option("value");
+			var client = this.option("value"),
+				client_val = client.get();
 
-			this.$str = client ? client.get_$("get_str") : cjs();
-			this.$syntax_errors = client ? client.get_$("get_syntax_errors") : cjs();
+			if(client_val) {
+				client_val.signal_interest();
+				this.$str = client_val.get_$("get_str");
+				this.$syntax_errors = client_val.get_$("get_syntax_errors");
+			} else {
+				this.$str = cjs();
+				this.$syntax_errors = cjs();
+			}
+
+			client.onChange(function() {
+				var client_val = client.get();
+				if(client_val) {
+					client_val.signal_interest();
+					this.$str.set(client_val.get_$("get_str"));
+					this.$syntax_errors.set(client_val.get_$("get_syntax_errors"));
+				} else {
+					this.$str.set();
+					this.$syntax_errors.set();
+				}
+			}, this);
 
 			this.edit_state = cjs	.fsm("idle", "editing")
 									.startsAt("idle");
 			this.$active = cjs(this.option("active"));
-			this.$pure = cjs(this.option("pure"));
 			this.$left = cjs(this.option("left"));
-			this.$is_set = cjs(client ? true : false);
+			this.$is_set = client.iif(true, false);
+			this.$pure = cjs(!this.option("prop"));
 			this.$visible = this.$pure.or(this.$left.neq(undefined));
 
 			this.do_edit = this.edit_state.addTransition("idle", "editing"),
@@ -69,13 +89,10 @@
 			this._add_tooltip();
 			this._add_class_bindings();
 			this._add_position_bindings();
-
-			if(client) {
-				client.signal_interest();
-			}
 		},
 		_destroy: function() {
-			var client = this.option("value");
+			var client = this.option("value"),
+				client_val = client.get();
 
 			this._remove_content_bindings();
 			this._remove_tooltip();
@@ -84,8 +101,8 @@
 
 			cjs.destroyTemplate(this.element);
 
-			if(client) {
-				client.signal_destroy();
+			if(client_val) {
+				client_val.signal_destroy();
 			}
 
 			this._super();
@@ -94,12 +111,21 @@
 		},
 
 		emit_new_value: function(value) {
-			var event = new $.Event("command");
-			event.command_type = "set_str";
-			event.str = value;
-			event.client = this.option("value");
+			if(this.option("prop") && value === "") {
+				var event = new $.Event("command");
+				event.command_type = "unset_stateful_prop_for_state";
+				event.prop = this.option("prop");
+				event.state = this.option("state");
 
-			this.element.trigger(event);
+				this.element.trigger(event);
+			} else {
+				var event = new $.Event("command");
+				event.command_type = "set_str";
+				event.str = value;
+				event.client = cjs.get(this.option("value"));
+
+				this.element.trigger(event);
+			}
 		},
 		_setOption: function(key, value) {
 			this._super(key, value);
@@ -109,8 +135,6 @@
 				this.$specified_width.set(value);
 			} else if(key === "active") {
 				this.$active.set(value);
-			} else if(key === "pure") {
-				this.$pure.set(value);
 			}
 		},
 		_add_content_bindings: function() {
@@ -118,7 +142,6 @@
 				confirm_edit = this.edit_state.addTransition("editing", "idle"),
 				cell = cell_template({
 					edit_state: this.edit_state,
-					client: this.option("value"),
 					str: this.$str,
 					on_edit_blur: _.bind(function(event) {
 						if(this.edit_state.is("editing")) {
@@ -142,7 +165,6 @@
 							}
 						}
 					}, this),
-					visible: this.$visible,
 					is_set: this.$is_set
 				}, this.element);
 			this.element.on("click", _.bind(function(event) {
@@ -201,7 +223,8 @@
 					at: "center top"
 				},
 				show: false,
-				hide: false
+				hide: false,
+				content: ""
 			});
 			var enable_tooltip = _.bind(function() { this.element.tooltip("enable"); }, this);
 			var disable_tooltip = _.bind(function() { this.element.tooltip("disable"); }, this);
@@ -217,7 +240,7 @@
 									content: syntax_error_text
 								});
 				} else {
-					var str = this.$str.get();
+					var str = this.$str.get() || "";
 
 					this.element.removeClass("error")
 								.attr("title", str)

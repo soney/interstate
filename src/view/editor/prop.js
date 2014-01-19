@@ -77,16 +77,67 @@
 			this._create_state_map();
 			this._add_content_bindings();
 			this._add_class_bindings();
+			this._add_tooltip();
 
 			if(this.option("inherited")) {
 				this.element.on("click.inherit", _.bind(this.inherit, this));
 			}
+
 		},
 		_destroy: function() {
 			this._super();
+			this._remove_tooltip();
 			this._remove_content_bindings();
 			this._remove_class_bindings();
 			this._destroy_state_map();
+		},
+
+		_add_tooltip: function() {
+			var client = this.option("value");
+			if(client.type() === "stateful_prop") {
+				this.$runtime_errors = client.get_$("get_runtime_errors");
+				this.element.tooltip({
+					position: {
+						my: "center bottom-1",
+						at: "center top"
+					},
+					show: false,
+					hide: false,
+					content: ""
+				});
+				this._tooltip_live_fn = cjs.liven(function() {
+					var runtime_errors = this.$runtime_errors.get();
+					if(runtime_errors && runtime_errors.length > 0) {
+						var runtime_error_text = runtime_errors[0];
+
+						this.element.addClass("error")
+									.attr("title", runtime_error_text)
+									.tooltip("option", {
+										tooltipClass: "error",
+										content: runtime_error_text
+									});
+					} else {
+						this.element.removeClass("error")
+									.attr("title", "")
+									.tooltip("option", {
+										tooltipClass: "",
+										content: ""
+									});
+					}
+				}, {
+					context: this,
+					on_destroy: function() {
+						this.element.tooltip("destroy");
+					}
+				});
+			}
+		},
+
+		_remove_tooltip: function() {
+			if(this._tooltip_live_fn) {
+				this._tooltip_live_fn.destroy();
+				delete this._tooltip_live_fn;
+			}
 		},
 
 		_create_state_map: function() {
@@ -107,7 +158,7 @@
 
 					_.each(values, function(value) {
 						var key_index = states.indexOf(value.state);
-						indexed_vals[key_index] = value;
+						indexed_vals[key_index] = value.value;
 					});
 
 					return indexed_vals;
@@ -138,21 +189,21 @@
 					};
 				}, this),
 				getPurePropCellOptions: _.bind(function() {
-					return { pure: true, value: this.option("value") };
+					return { value: cjs(this.option("value")), prop: false };
 				}, this),
 				getPropCellOptions: _.bind(function(key) {
-					var value = this.$prop_values.get(key),
+					var value = this.$prop_values.itemConstraint(key),
 						left = function() {
 							return layout_manager.get_x(key);
 						},
 						width = function() {
-							return value ? layout_manager.get_width(key) : 7;
+							return value.get() ? layout_manager.get_width(key) : 7;
 						};
 
 					// top fifty bad lines of code I've ever written: `value: value ? value.value : value`
 					return {prop: this.option("value"),
 							state: key,
-							value: value ? value.value : value,
+							value: value,
 							left: left,
 							width: width };
 				}, this),

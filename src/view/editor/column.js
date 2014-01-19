@@ -31,7 +31,7 @@
 			"</tr>" +
 			"<tr class='add_prop'>" +
 				"<td colspan='2' class='add_prop'>" +
-					"<div class='add_prop'>Add Property</div>" +
+					"<div class='add_prop' data-cjs-on-click=addProperty>Add Property</div>" +
 				"</td>" +
 			"</tr>" +
 			"{{#each children}}" +
@@ -177,7 +177,8 @@
 				getStatechartView: _.bind(function() {
 					return this.statechart_view;
 				}, this),
-				headerClicked: _.bind(this.on_header_click, this)
+				headerClicked: _.bind(this.on_header_click, this),
+				addProperty: _.bind(this._add_property, this)
 			}, this.element);
 		},
 
@@ -224,6 +225,12 @@
 				}
 				this.element.trigger("child_select", client);
 			}
-		}
+		},
+		_add_property: function() {
+			var event = new $.Event("command");
+			event.command_type = "add_property";
+			event.client = this.option("client");
+			this.element.trigger(event);
+		},
 	});
 }(interstate, jQuery));

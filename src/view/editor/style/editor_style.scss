@@ -640,6 +640,10 @@ html.full_window_editor {
 							word-break: break-all;
 							white-space: nowrap;
 
+							>.empty {
+								color: #BBB;
+							}
+
 							&.active {
 								color: green;
 								border-left: 1px solid green;
