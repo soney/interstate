@@ -76,23 +76,6 @@ html.full_window_editor {
 		border-bottom: none;
 	}
 }
-.handle {
-	background-color: red;
-	position: absolute;
-	border: 1px solid #C0C0C0;
-	z-index: 100;
-
-	&.horizontal {
-		border-left: none;
-		border-right: none;
-		height: 8px;
-		cursor: row-resize;
-		width: 100%;
-		background: url(images/handle-h.png) 50% 3px no-repeat;
-		background-color: #F6F6F6;
-		box-shadow: 0 0px 3px #333;
-	}
-}
 
 #editor {
 	font-family: "Source Sans Pro";
@@ -295,13 +278,11 @@ html.full_window_editor {
 				}
 
 				> td {
+					text-align: center;
 					@include non-selectable;
 					font-weight: 100;
 					cursor: pointer;
-					text-align: left;
 					padding: 5px;
-					padding-left: $drag_handle_width;
-					background-color: white;
 					color: #999;
 				}
 			}

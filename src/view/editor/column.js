@@ -37,8 +37,8 @@
 			"{{#each children}}" +
 				"{{>prop getPropertyViewOptions(this)}}" +
 				"{{#else}}" +
-					"<tr>" +
-						"<td>No properties</td>" +
+					"<tr class='no_children'>" +
+						"<td colspan='2'>No properties</td>" +
 					"</tr>" +
 			"{{/each}}" +
 		"</tbody>"

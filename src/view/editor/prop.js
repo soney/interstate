@@ -94,7 +94,7 @@
 
 		_add_tooltip: function() {
 			var client = this.option("value");
-			if(client.type() === "stateful_prop") {
+			if(client instanceof ist.WrapperClient && client.type() === "stateful_prop") {
 				this.$runtime_errors = client.get_$("get_runtime_errors");
 				this.element.tooltip({
 					position: {
@@ -189,7 +189,7 @@
 					};
 				}, this),
 				getPurePropCellOptions: _.bind(function() {
-					return { value: cjs(this.option("value")), prop: false };
+					return { value: cjs.constraint(this.option("value")), prop: false };
 				}, this),
 				getPropCellOptions: _.bind(function(key) {
 					var value = this.$prop_values.itemConstraint(key),
