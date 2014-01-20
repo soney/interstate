@@ -94,12 +94,19 @@
 			var client = this.option("value"),
 				client_val = client.get();
 
-			this._remove_content_bindings();
-			this._remove_tooltip();
 			this._remove_position_bindings();
 			this._remove_class_bindings();
+			this._remove_tooltip();
+			this._remove_content_bindings();
 
-			cjs.destroyTemplate(this.element);
+			this.$str.destroy();
+			this.$syntax_errors.destroy();
+			this.$active.destroy();
+			this.$left.destroy();
+			this.$is_set.destroy();
+			this.$pure.destroy();
+			this.$visible.destroy();
+			this.edit_state.destroy();
 
 			if(client_val) {
 				client_val.signal_destroy();
@@ -167,7 +174,7 @@
 					}, this),
 					is_set: this.$is_set
 				}, this.element);
-			this.element.on("click", _.bind(function(event) {
+			this.element.on("click.start_edit", _.bind(function(event) {
 				if(this.$is_set.get()) {
 					this.begin_editing(event);
 				} else {
@@ -177,6 +184,8 @@
 			}, this));
 		},
 		_remove_content_bindings: function() {
+			this.element.off("click.start_edit");
+			cjs.destroyTemplate(this.element);
 		},
 		_add_class_bindings: function() {
 			this.element.addClass("cell");
