@@ -110,10 +110,7 @@ exports.runtime = c(
 				"controller/environment/command_stack.js",
 				"controller/environment/ist_environment.js",
 				"view/running_app.js",
-			]),
-	cp("sample_apps", [
-		"sample_app_loader.js"
-	])
+			])
 );
 
 exports.runtime_style = cp(src, ["view/editor/style/runtime_style.css"]);

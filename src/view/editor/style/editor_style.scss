@@ -473,6 +473,9 @@ html.full_window_editor {
 					}
 				}
 				border-top: 1px solid #EEE;
+				&.menuized {
+					border: 1px solid red;
+				}
 
 				&:focus {
 				//	outline: none;
@@ -948,5 +951,34 @@ html.full_window_editor {
 		right: 5px;
 		color: #777;
 		text-decoration: none;
+	}
+}
+
+.menuized {
+	border: 1px solid red;
+}
+
+.col  .menu {
+	list-style: none;
+	padding: 0px;
+	position: absolute;
+	margin: 0px;
+	border: 1px solid red;
+	border-top: 1px solid #EEE;
+	background-color: #F9F9F9;
+	z-index: 200;
+	.menu-item {
+		padding: 1px;
+		padding-left: 10px;
+		padding-right: 10px;
+		cursor: pointer;
+		&:first-child {
+			border-top: none;
+		}
+		border-top: 1px solid #CCC;
+		&:hover {
+			text-decoration: underline;
+			color: $link_color;
+		}
 	}
 }

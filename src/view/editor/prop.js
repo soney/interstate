@@ -23,6 +23,12 @@
 				"{{#state editing}}" +
 					"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
 			"{{/fsm}}" +
+			"{{#if show_menu}}" +
+				"<ul class='menu'>" +
+					"<li class='menu-item'>Delete</li>" +
+					"<li class='menu-item'>Rename</li>" +
+				"</ul>" +
+			"{{/if}}" +
 		"</td>" +
 		"{{> valueSummary getValueSummaryOptions() }}"  +
 		"{{#if show_src}}" +
@@ -60,6 +66,7 @@
 			this.$inherited = cjs(this.option("inherited"));
 			this.$show_src  = this.option("show_src");
 			this.$selected  = cjs(false);
+			this.$show_menu  = cjs(false);
 
 			this.$type = cjs(function() {
 				if(client instanceof ist.WrapperClient) {
@@ -83,6 +90,36 @@
 				this.element.on("click.inherit", _.bind(this.inherit, this));
 			}
 
+			this.menu_state = cjs.fsm("hidden", "holding", "on_release", "on_click")
+									.addTransition("hidden", "holding", cjs.on("contextmenu", this.element[0]))
+									.addTransition("holding", "on_click", cjs.on("mouseup"))
+									.addTransition("holding", "on_release", cjs.on("timeout", 500))
+									.startsAt("hidden");
+			var on_mup_holding = this.menu_state.addTransition("");
+
+			this.menu_state.on("hidden->holding", function(event) {
+				this.$show_menu.set(true);
+				event.stopPropagation();
+				event.preventDefault();
+				var my_position = this.element.position();
+				
+				$("ul.menu", this.element).css({
+					left: (event.pageX-my_position.left)+"px"
+				});
+
+				return false;
+			}, this);
+
+			this.menu_state.on("on_click", function(event) {
+				console.log("must click");
+			}, this);
+			this.menu_state.on("on_release", function(event) {
+				console.log("on_release");
+			}, this);
+
+			this.menu_state.on("*->hidden", function(event) {
+				this.$show-menu.set(false);
+			});
 		},
 		_destroy: function() {
 			this._super();
@@ -210,7 +247,8 @@
 				show_src: this.$show_src,
 				value: this.option("value"),
 				type: this.$type,
-				propValues: this.$prop_values 
+				propValues: this.$prop_values,
+				show_menu: this.$show_menu
 			}, this.element);
 		},
 
@@ -221,7 +259,8 @@
 		_add_class_bindings: function() {
 			this._class_binding = cjs.bindClass(this.element, "child",
 									this.$selected.iif("selected", ""),
-									this.$inherited.iif("inherited", ""));
+									this.$inherited.iif("inherited", ""),
+									this.$show_menu.iif("menuized", ""));
 		},
 
 		_remove_class_bindings: function() {
