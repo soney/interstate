@@ -7,12 +7,13 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	cjs.registerPartial("col", function(options, parent_elem) {
-		if(!parent_elem) {
-			parent_elem = $("<table />")[0];
+	cjs.registerCustomPartial("col", {
+		createNode: function(options) {
+			return $("<table />").column(options);
+		},
+		destroyNode: function(node) {
+			$(node).column("destroy");
 		}
-		$(parent_elem).column(options);
-		return parent_elem;
 	});
 
 	var column_template = cjs.createTemplate(

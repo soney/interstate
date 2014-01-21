@@ -7,12 +7,13 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	cjs.registerPartial("prop", function(options, parent_elem) {
-		if(!parent_elem) {
-			parent_elem = $("<tr />")[0];
+	cjs.registerCustomPartial("prop", {
+		createNode: function(options) {
+			return $("<tr />").prop(options);
+		},
+		destroyNode: function(node) {
+			$(node).prop("destroy");
 		}
-		$(parent_elem).prop(options);
-		return parent_elem;
 	});
 
 	var prop_template = cjs.createTemplate(

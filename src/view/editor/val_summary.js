@@ -7,12 +7,13 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	cjs.registerPartial("valueSummary", function(options, parent_elem) {
-		if(!parent_elem) {
-			parent_elem = $("<td />")[0];
+	cjs.registerCustomPartial("valueSummary", {
+		createNode: function(options) {
+			return $("<td />").value_summary(options);
+		},
+		destroyNode: function(node) {
+			$(node).value_summary("destroy");
 		}
-		$(parent_elem).value_summary(options);
-		return parent_elem;
 	});
 
 	var round_num = function(num, decimals) {

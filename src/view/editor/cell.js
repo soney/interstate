@@ -6,12 +6,13 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 	
-	cjs.registerPartial("propCell", function(options, parent_elem) {
-		if(!parent_elem) {
-			parent_elem = $("<span />")[0];
+	cjs.registerCustomPartial("propCell", {
+		createNode: function(options) {
+			return $("<span />").prop_cell(options);
+		},
+		destroyNode: function(node) {
+			$(node).prop_cell("destroy");
 		}
-		$(parent_elem).prop_cell(options);
-		return parent_elem;
 	});
 
 	var cell_template = cjs.createTemplate(
