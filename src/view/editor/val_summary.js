@@ -164,7 +164,7 @@
 				}
 			} else {
 				this.summary_span	.addClass("constant")
-									.text(summarized_val(value));
+									.text(summarized_val(client));
 			}
 		},
 		_destroy: function() {

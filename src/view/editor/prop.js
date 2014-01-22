@@ -92,7 +92,10 @@
 			if(this.option("inherited")) {
 				this.element.on("click.inherit", _.bind(this.inherit, this));
 			}
-			client.signal_interest();
+
+			if(client instanceof ist.WrapperClient) {
+				client.signal_interest();
+			}
 			/*
 
 			this.menu_state = cjs.fsm("hidden", "holding", "on_release", "on_click")
@@ -134,7 +137,9 @@
 			this._remove_class_bindings();
 			this._destroy_state_map();
 
-			client.signal_destroy();
+			if(client instanceof ist.WrapperClient) {
+				client.signal_destroy();
+			}
 			this._super();
 		},
 

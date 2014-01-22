@@ -53,27 +53,56 @@
 		},
 		_create: function() {
 			var client = this.option("client"),
-				client_val = client.get();
+				client_val = client.get(),
+				old_client = client_val;
 
+			var client_is_valid;
+
+			this.$$STR = false;
+			this.$$SE = false;
 			if(client_val) {
+				client_is_valid = true;
 				client_val.signal_interest();
-				this.$str = client_val.get_$("get_str");
-				this.$syntax_errors = client_val.get_$("get_syntax_errors");
+				this.$$STR = client_val.get_$("get_str");
+				this.$$SE = client_val.get_$("get_syntax_errors");
+				this.$$STR.signal_interest();
+				this.$$SE.signal_interest();
 			} else {
-				this.$str = cjs();
-				this.$syntax_errors = cjs();
+				client_is_valid = false;
 			}
+			this.$str = cjs(this.$$STR);
+			this.$syntax_errors = cjs(this.$$SE);
+
 
 			client.onChange(function() {
-				var client_val = client.get();
-				if(client_val) {
-					client_val.signal_interest();
-					this.$str.set(client_val.get_$("get_str"));
-					this.$syntax_errors.set(client_val.get_$("get_syntax_errors"));
-				} else {
-					this.$str.set();
-					this.$syntax_errors.set();
+				var client_was_valid = client_is_valid,
+					client_val = client.get();
+				if(this.$$STR) {
+					this.$$STR.signal_destroy();
+					this.$$SE.signal_destroy();
 				}
+				if(client_val) {
+					client_is_valid = true;
+					this.$$STR = client_val.get_$("get_str");
+					this.$$SE = client_val.get_$("get_syntax_errors");
+
+				} else {
+					client_is_valid = false;
+					this.$$STR = false;
+					this.$$SE = false;
+				}
+				this.$str.set(this.$$STR);
+				this.$syntax_errors.set(this.$$SE);
+
+				if(client_is_valid && !client_was_valid) {
+					client_val.signal_interest();
+				} else if(client_was_valid && !client_is_valid) {
+					old_client.signal_destroy();
+				} else if(client_was_valid && client_is_valid) {
+					old_client.signal_destroy();
+					client_val.signal_interest();
+				}
+				old_client = client_val;
 			}, this);
 
 			this.edit_state = cjs	.fsm("idle", "editing")
@@ -83,7 +112,7 @@
 			this.$is_set = client.iif(true, false);
 			this.$pure = cjs(!this.option("prop"));
 			this.$visible = this.$pure.or(this.$left.neq(undefined));
-
+			
 			this.do_edit = this.edit_state.addTransition("idle", "editing"),
 
 			this._add_content_bindings();
@@ -94,6 +123,7 @@
 		_destroy: function() {
 			var client = this.option("client"),
 				client_val = client.get();
+			client.destroy();
 
 			this._remove_position_bindings();
 			this._remove_class_bindings();
@@ -102,6 +132,15 @@
 
 			this.$str.destroy();
 			this.$syntax_errors.destroy();
+
+			if(this.$$STR) {
+				this.$$STR.signal_destroy();
+				this.$$SE.signal_destroy();
+			}
+			if(client_val) {
+				client_val.signal_destroy();
+			}
+
 			this.$active.destroy();
 			this.$left.destroy();
 			this.$is_set.destroy();

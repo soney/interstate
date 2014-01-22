@@ -726,6 +726,12 @@
 
 			var map_diff = ist.get_map_diff(old_keys, keys, old_vals, vals);
 
+			console.log('---');
+			console.log(old_keys, keys);
+			console.log(old_vals, vals);
+			console.log(map_diff);
+			console.log('---');
+
 			_.each(map_diff.set, function(info) {
 				map.put(info.key, info.value, info.index)
 			});

@@ -178,13 +178,6 @@
 		_destroy: function () {
 			this._super();
 			delete this.highlights;
-			this.$window.off("dragover.replace_program")
-						.off("dragout.replace_program")
-						.off("dragenter.replace_program")
-						.off("dragleave.replace_program")
-						.off("drop.replace_program")
-						.off("keydown.open_editor")
-						.off("beforeunload.close_editor");
 
 			this._remove_change_listeners();
 			this.element.removeClass("ist_runtime");
