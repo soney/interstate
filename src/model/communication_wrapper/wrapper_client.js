@@ -115,7 +115,6 @@
 		proto.post = function (message) {
 			var m_id = message_id;
 			message_id += 1;
-			//console.log(message);
 			this.comm_mechanism.post({
 				type: "wrapper_client",
 				client_id: this.id(),

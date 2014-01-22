@@ -12,7 +12,6 @@
 			return $("<table />").column(options);
 		},
 		destroyNode: function(node) {
-			console.log("destroy");
 			$(node).column("destroy");
 		}
 	});
@@ -142,10 +141,9 @@
 			this._remove_content_bindings();
 
 			if(this.$statecharts) {
-				this.$statecharts.destroy();
-				this.statechart_view.destroy();
-				this.layout_manager.destroy();
+				this.statechart_view.statechart("destroy");
 				this.sc_live_fn.destroy();
+				this.$statecharts.destroy();
 			}
 
 			this.$name.destroy();
@@ -165,7 +163,7 @@
 				stateful: client.type() === "stateful",
 				getPropertyViewOptions: _.bind(function(child) {
 					return {
-						value: child.value,
+						client: child.value,
 						name: child.name,
 						inherited: child.inherited,
 						builtin: child.builtin,
@@ -185,7 +183,7 @@
 		},
 
 		_remove_content_bindings: function() {
-			cjs.destroyTemplate(this.element, column_template);
+			cjs.destroyTemplate(this.element);
 		},
 
 		_add_class_bindings: function() {
@@ -214,7 +212,7 @@
 				this.on_header_click(event);
 			} else {
 				var target = $(event.target),
-					client = target.data("interstate-prop") ? target.prop("option", "value"): false;
+					client = target.data("interstate-prop") ? target.prop("option", "client"): false;
 
 				if(client instanceof ist.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
 					if(this.selected_child_disp) {

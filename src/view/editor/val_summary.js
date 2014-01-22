@@ -75,7 +75,7 @@
 
 	$.widget("interstate.value_summary", {
 		options: {
-			value: false
+			client: false
 		},
 		_create: function() {
 			this.element.addClass("value_summary");
@@ -92,10 +92,9 @@
 				tooltipClass: "val_summary"
 			});
 			this.summary_span = $("<span />").appendTo(this.element);
-			var value = this.option("value");
-			if(value instanceof ist.WrapperClient) {
-				value.signal_interest();
-				var client = value;
+			var client = this.option("client");
+			if(client instanceof ist.WrapperClient) {
+				client.signal_interest();
 				var $prop_val;
 				var type = client.type();
 
@@ -169,7 +168,6 @@
 			}
 		},
 		_destroy: function() {
-			this._super();
 			this.element.tooltip("destroy");
 			this.summary_span.remove();
 			if(this.live_value_fn) {
@@ -178,10 +176,12 @@
 			if(this.live_copies_fn) {
 				this.live_copies_fn.destroy();
 			}
-			var value = this.option("value");
-			if(value instanceof ist.WrapperClient) {
-				value.signal_destroy();
+			var client = this.option("client");
+			if(client instanceof ist.WrapperClient) {
+				client.signal_destroy();
 			}
+
+			this._super();
 		},
 		begin_editing: function() {
 			this.element.addClass("editing");

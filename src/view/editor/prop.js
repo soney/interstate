@@ -24,12 +24,14 @@
 				"{{#state editing}}" +
 					"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
 			"{{/fsm}}" +
+			/*
 			"{{#if show_menu}}" +
 				"<ul class='menu'>" +
 					"<li class='menu-item'>Delete</li>" +
 					"<li class='menu-item'>Rename</li>" +
 				"</ul>" +
 			"{{/if}}" +
+			*/
 		"</td>" +
 		"{{> valueSummary getValueSummaryOptions() }}"  +
 		"{{#if show_src}}" +
@@ -51,7 +53,7 @@
 	$.widget("interstate.prop", {
 		options: {
 			name: "",
-			value: false,
+			client: false,
 			inherited: false,
 			builtin: false,
 			layout_manager: false,
@@ -61,7 +63,7 @@
 		},
 
 		_create: function() {
-			var client = this.option("value");
+			var client = this.option("client");
 
 			this.$prop_name = cjs(this.option("name"));
 			this.$inherited = cjs(this.option("inherited"));
@@ -90,6 +92,8 @@
 			if(this.option("inherited")) {
 				this.element.on("click.inherit", _.bind(this.inherit, this));
 			}
+			client.signal_interest();
+			/*
 
 			this.menu_state = cjs.fsm("hidden", "holding", "on_release", "on_click")
 									.addTransition("hidden", "holding", cjs.on("contextmenu", this.element[0]))
@@ -121,17 +125,21 @@
 			this.menu_state.on("*->hidden", function(event) {
 				this.$show-menu.set(false);
 			});
+			*/
 		},
 		_destroy: function() {
-			this._super();
+			var client = this.option("client");
 			this._remove_tooltip();
 			this._remove_content_bindings();
 			this._remove_class_bindings();
 			this._destroy_state_map();
+
+			client.signal_destroy();
+			this._super();
 		},
 
 		_add_tooltip: function() {
-			var client = this.option("value");
+			var client = this.option("client");
 			if(client instanceof ist.WrapperClient && client.type() === "stateful_prop") {
 				this.$runtime_errors = client.get_$("get_runtime_errors");
 				this.element.tooltip({
@@ -179,7 +187,7 @@
 		},
 
 		_create_state_map: function() {
-			var client = this.option("value");
+			var client = this.option("client");
 			if(client instanceof ist.WrapperClient && client.type() === "stateful_prop") {
 				this.$states = client.get_$("get_states");
 				this.$values = client.get_$("get_values");
@@ -209,9 +217,11 @@
 		},
 		_destroy_state_map: function() {
 			if(this.$states) {
-				this.$states.destroy();
-				this.$values.destroy();
-				this.$active_value.destroy();
+				this.$states.signal_destroy();
+				this.$values.signal_destroy();
+				this.$active_value.signal_destroy();
+
+				this.$full_values.destroy();
 				this.$prop_values.destroy();
 			}
 		},
@@ -223,11 +233,11 @@
 				name_edit_state: this.name_edit_state,
 				getValueSummaryOptions: _.bind(function() {
 					return {
-						value: this.option("value")
+						client: this.option("client")
 					};
 				}, this),
 				getPurePropCellOptions: _.bind(function() {
-					return { value: cjs.constraint(this.option("value")), prop: false };
+					return { client: cjs.constraint(this.option("client")), prop: false };
 				}, this),
 				getPropCellOptions: _.bind(function(key) {
 					var value = this.$prop_values.itemConstraint(key),
@@ -239,17 +249,17 @@
 						};
 
 					// top fifty bad lines of code I've ever written: `value: value ? value.value : value`
-					return {prop: this.option("value"),
+					return {prop: this.option("client"),
 							state: key,
-							value: value,
+							client: value,
 							left: left,
 							width: width };
 				}, this),
 				show_src: this.$show_src,
-				value: this.option("value"),
+				value: this.option("client"),
 				type: this.$type,
 				propValues: this.$prop_values,
-				show_menu: this.$show_menu
+				//show_menu: this.$show_menu
 			}, this.element);
 		},
 
@@ -291,7 +301,6 @@
 			event.command_type = "inherit";
 			event.name = this.option("name");
 			event.client = this.option("obj");
-			//event.value = this.option("value");
 
 			this.element.trigger(event);
 		},

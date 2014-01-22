@@ -11,7 +11,6 @@
 			return $("<span />").prop_cell(options);
 		},
 		destroyNode: function(node) {
-			console.log("destroy");
 			$(node).prop_cell("destroy");
 		}
 	});
@@ -42,7 +41,7 @@
 
 	$.widget("interstate.prop_cell", {
 		options: {
-			value: false,
+			client: false,
 			left: undefined,
 			width: 0,
 			edit_width: 150,
@@ -53,7 +52,7 @@
 			prop: false
 		},
 		_create: function() {
-			var client = this.option("value"),
+			var client = this.option("client"),
 				client_val = client.get();
 
 			if(client_val) {
@@ -93,7 +92,7 @@
 			this._add_position_bindings();
 		},
 		_destroy: function() {
-			var client = this.option("value"),
+			var client = this.option("client"),
 				client_val = client.get();
 
 			this._remove_position_bindings();
@@ -131,7 +130,7 @@
 				var event = new $.Event("command");
 				event.command_type = "set_str";
 				event.str = value;
-				event.client = cjs.get(this.option("value"));
+				event.client = cjs.get(this.option("client"));
 
 				this.element.trigger(event);
 			}
@@ -198,8 +197,8 @@
 									this.edit_state.state);
 		},
 		_remove_class_bindings: function() {
-			this.element.removeClass("cell");
 			this._class_binding.destroy();
+			this.element.removeClass("cell");
 		},
 		_add_position_bindings: function() {
 			this.$specified_width = cjs(this.option("width"));
@@ -222,7 +221,7 @@
 			});
 		},
 		_remove_position_bindings: function() {
-			_.each([this.$specified_width, this.$width, this.$left, this.$edit_width, this.$active, this.position_binding],
+			_.each([this.$specified_width, this.$width, this.$left, this.$edit_width, this.$z_index, this.$active, this.position_binding],
 					function(x) {
 						x.destroy(true);
 					});
