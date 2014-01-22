@@ -12,6 +12,7 @@
 			return $("<table />").column(options);
 		},
 		destroyNode: function(node) {
+			console.log("destroy");
 			$(node).column("destroy");
 		}
 	});
@@ -184,7 +185,7 @@
 		},
 
 		_remove_content_bindings: function() {
-			cjs.destroyTemplate(this.element);
+			cjs.destroyTemplate(this.element, column_template);
 		},
 
 		_add_class_bindings: function() {

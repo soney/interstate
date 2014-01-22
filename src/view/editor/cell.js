@@ -11,6 +11,7 @@
 			return $("<span />").prop_cell(options);
 		},
 		destroyNode: function(node) {
+			console.log("destroy");
 			$(node).prop_cell("destroy");
 		}
 	});
