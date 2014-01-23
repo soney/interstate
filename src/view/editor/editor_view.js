@@ -33,7 +33,7 @@
 			annotations: {},
 			upload_usage: false,
 			use_socket: false,
-			pinned_row: true
+			pinned_row: false
 		},
 
 		_create: function () {
@@ -406,7 +406,7 @@
 			} else if(type === "set_stateful_prop_for_state") {
 				client = event.prop;
 				state = event.state;
-				value = new ist.Cell({str: '', substantiated: false});
+				value = new ist.Cell({str: event.text || '', substantiated: false});
 
 				command = new ist.SetStatefulPropValueCommand({
 					in_effect: true,

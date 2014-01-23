@@ -31,12 +31,14 @@
 
 			this._add_content_bindings();
 			this._add_class_bindings();
+			this._add_destroy_check();
 		},
 		_destroy: function() {
 			var client = this.option("root_client");
 
 			this._remove_class_bindings();
 			this._remove_content_bindings();
+			this._remove_destroy_check();
 
 			client.signal_destroy();
 
@@ -70,6 +72,27 @@
 		},
 
 		_remove_class_bindings: function() {
+		},
+		_add_destroy_check: function() {
+			var old_cols = [],
+				ondestroy = function() {
+					console.log('destroy');
+				};
+			this._destroy_check_fn = cjs.liven(function() {
+				_.each(old_cols, function(c) {
+					c.off('destroy', ondestroy);
+				}, this);
+				var cols = this.$columns.toArray();
+				_.each(cols, function(c) {
+					c.on('destroy', ondestroy);
+				}, this);
+				old_cols = cols;
+			}, {
+				context: this
+			});
+		},
+		_remove_destroy_check: function() {
+			this._destroy_check_fn.destroy();
 		},
 
 		on_child_select: function(event, child) {

@@ -51,9 +51,6 @@
 		able.make_proto_listenable(proto);
 
 		proto.id = function() { return this._id; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
 
 		proto.add_client_id = function(client_id) {
 			if(!this.client_ids.hasOwnProperty(client_id)) {

@@ -16,18 +16,21 @@
 	});
 
 	var cell_template = cjs.createTemplate(
-		"{{#if is_set}}" +
-			"{{#fsm edit_state}}" +
-				"{{#state idle}}" +
-					"{{#if str===''}}" +
-						"<span class='empty'>(empty)</span>" +
-					"{{#else}}" +
-						"{{str}}" +
-					"{{/if}}" +
-				"{{#state editing}}" +
-					"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
-			"{{/fsm}}" +
-		"{{/if}}"
+		"{{#fsm client_state}}" +
+			"{{#state initialedit}}" +
+				"<textarea />" +
+			"{{#state set}}" +
+				"{{#fsm edit_state}}" +
+					"{{#state idle}}" +
+						"{{#if str===''}}" +
+							"<span class='empty'>(empty)</span>" +
+						"{{#else}}" +
+							"{{str}}" +
+						"{{/if}}" +
+					"{{#state editing}}" +
+						"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
+				"{{/fsm}}" +
+		"{{/fsm}}"
 	);
 
 	var eqProp = function(prop_name, values, thisArg) {
@@ -58,6 +61,9 @@
 
 			var client_is_valid;
 
+			//this.$is_set = client.iif(true, false);
+			this.client_state = cjs.fsm('unset', 'initialedit', 'set');
+
 			this.$$STR = false;
 			this.$$SE = false;
 			if(client_val) {
@@ -67,7 +73,9 @@
 				this.$$SE = client_val.get_$("get_syntax_errors");
 				this.$$STR.signal_interest();
 				this.$$SE.signal_interest();
+				this.client_state._setState('set');
 			} else {
+				this.client_state._setState('unset');
 				client_is_valid = false;
 			}
 			this.$str = cjs(this.$$STR);
@@ -85,24 +93,18 @@
 					client_is_valid = true;
 					this.$$STR = client_val.get_$("get_str");
 					this.$$SE = client_val.get_$("get_syntax_errors");
-
+					this.client_state._setState('set');
 				} else {
 					client_is_valid = false;
 					this.$$STR = false;
 					this.$$SE = false;
+					this.client_state._setState('unset');
 				}
 				this.$str.set(this.$$STR);
 				this.$syntax_errors.set(this.$$SE);
 
 				if(client_is_valid && !client_was_valid) {
 					client_val.signal_interest();
-					if(this.__waiting) {
-						delete this.__waiting;
-
-						_.delay(_.bind(function() {
-							this.begin_editing();
-						}, this), 100);
-					}
 				} else if(client_was_valid && !client_is_valid) {
 					old_client.signal_destroy();
 				} else if(client_was_valid && client_is_valid) {
@@ -116,7 +118,8 @@
 									.startsAt("idle");
 			this.$active = cjs(this.option("active"));
 			this.$left = cjs(this.option("left"));
-			this.$is_set = client.iif(true, false);
+
+								
 			this.$pure = cjs(!this.option("prop"));
 			this.$visible = this.$pure.or(this.$left.neq(undefined));
 			
@@ -150,7 +153,7 @@
 
 			this.$active.destroy();
 			this.$left.destroy();
-			this.$is_set.destroy();
+			this.client_state.destroy();
 			this.$pure.destroy();
 			this.$visible.destroy();
 			this.edit_state.destroy();
@@ -219,13 +222,13 @@
 							}
 						}
 					}, this),
-					is_set: this.$is_set
+					client_state: this.client_state
 				}, this.element);
 			this.element.on("click.start_edit", _.bind(function(event) {
-				if(this.$is_set.get()) {
+				if(this.client_state.is("set")) {
 					this.begin_editing(event);
 				} else {
-					this._set_value_for_state(event);
+					this._edit_initial_value(event);
 				}
 				event.stopPropagation();
 			}, this));
@@ -239,7 +242,11 @@
 			this._class_binding = cjs.bindClass(this.element,
 									this.$active.iif("active", ""),
 									this.$pure.iif("pure_cell", ""),
-									this.$is_set.iif("", "unset"),
+									cjs.inFSM(this.client_state, {
+										unset: 'unset',
+										set: '',
+										initialedit: 'editing'
+									}),
 									this.edit_state.state);
 		},
 		_remove_class_bindings: function() {
@@ -249,13 +256,21 @@
 		_add_position_bindings: function() {
 			this.$specified_width = cjs(this.option("width"));
 			this.$width = cjs.inFSM(this.edit_state, {
-				idle: this.$is_set.iif(this.$specified_width, this.option("unset_radius")*2),
+				idle: cjs.inFSM(this.client_state, {
+					unset: this.option("unset_radius")*2,
+					set: this.$specified_width,
+					initialedit: this.option("edit_width")
+				}),
 				editing: this.option("edit_width")
 			});
 			this.$edit_width = cjs(this.option("edit_width"));
 
 			this.$z_index = cjs.inFSM(this.edit_state, {
-				idle: 0,
+				idle: cjs.inFSM(this.client_state, {
+					unset: 0,
+					set: 0,
+					initialedit: 99
+				}),
 				editing: 99
 			});
 			this.element.css("min-width", this.option("width"));
@@ -263,7 +278,15 @@
 			this.position_binding = cjs.bindCSS(this.element, {
 				left: this.$left.sub(this.$width.div(2)).add("px"),
 				"z-index": this.$z_index,
-				"visibility": this.$visible.iif("visible", "hidden")
+				"visibility": this.$visible.iif("visible", "hidden"),
+				'max-width': cjs.inFSM(this.edit_state, {
+					idle: cjs.inFSM(this.client_state, {
+						unset: this.option("unset_radius")*2,
+						set: '90px',
+						initialedit: 'none'
+					}),
+					editing: 'none'
+				})
 			});
 		},
 		_remove_position_bindings: function() {
@@ -330,16 +353,40 @@
 						.focus();
 			}
 		},
-		_set_value_for_state: function(event) {
+		_edit_initial_value: function(event) {
+			this.client_state._setState('initialedit');
+			var textarea = $("textarea", this.element);
+			textarea.select()
+					.focus()
+					.on("keydown", _.bind(function(e) {
+						var keyCode = e.keyCode;
+						if(keyCode === 27) { // esc
+							this.client_state._setState('unset');
+							event.preventDefault();
+							event.stopPropagation();
+						} else if(keyCode == 13) { // enter
+							if(!e.shiftKey && !e.ctrlKey && !e.metaKey) {
+								var val = $("textarea", this.element).val();
+								this.client_state._setState('unset');
+								this._set_value_for_state(val);
+
+								event.preventDefault();
+								event.stopPropagation();
+							}
+						}
+					}, this))
+					.on("blur", _.bind(function() {
+						var val = $("textarea", this.element).val();
+						this.client_state._setState('unset');
+						this._set_value_for_state(val);
+					}, this));
+		},
+		_set_value_for_state: function(val) {
 			var event = new $.Event("command");
 			event.command_type = "set_stateful_prop_for_state";
 			event.prop = this.option("prop");
 			event.state = this.option("state");
-
-			this.__waiting = true;
-			_.delay(_.bind(function() {
-				delete this.__waiting;
-			}, this), 100);
+			event.text = val || "";
 
 			this.element.trigger(event);
 		}
