@@ -345,7 +345,7 @@
 				//var tobj = target_cobj.get_object();
 				var component = ist.load(event.name, "component");
 				target_obj.set(event.name, component);
-			}, this)
+			}, this);
 			return server_socket;
 		},
 		load_str: function(fr_result, filename) {

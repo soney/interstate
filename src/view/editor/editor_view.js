@@ -68,7 +68,7 @@
 				}, this)
 				.on("stringified_obj", function(data) {
 					window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
-				}, this)
+				}, this);
 				/*
 				.on("message", function (data) {
 					if(data.type === "upload_url") {

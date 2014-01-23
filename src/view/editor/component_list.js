@@ -197,10 +197,10 @@
 				if(event.keyCode === 13) {
 					var val = inp.val();
 					if(val.length > 0) {
-						var event = new $.Event("save_curr");
-						event.name = val;
-						event.storage_type = "";
-						this.element.trigger(event);
+						var new_event = new $.Event("save_curr");
+						new_event.name = val;
+						new_event.storage_type = "";
+						this.element.trigger(new_event);
 					}
 					inp.remove();
 				} else if(event.keyCode === 27) {
