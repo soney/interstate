@@ -518,14 +518,12 @@ html.full_window_editor {
 						display: inline-block;
 					}
 					
-					> .prop_name {
-						> input {
-							background: none;
-							border: none;
-							font-size: inherit;
-							font-family: inherit;
-							color: inherit;
-						}
+					> input {
+						background: none;
+						border: none;
+						font-size: inherit;
+						font-family: inherit;
+						color: inherit;
 					}
 
 					> .edit {

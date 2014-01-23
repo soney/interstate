@@ -126,6 +126,15 @@
 																concurrent: !my_state.is_concurrent()
 															});
 														}, this));
+			this.reset_item = $("<div />")	.addClass("menu_item")
+													.text("Reset")
+													.pressable()
+													.on("pressed", _.bind(function() {
+														this.remove_edit_dropdown();
+														this._emit("reset", {
+															parent: my_state
+														});
+													}, this));
 
 			var x = this.option("from_x");
 			var y = this.option("y");
@@ -134,7 +143,7 @@
 			var paper = this.option("paper");
 			var parentElement = paper.canvas.parentNode;
 
-			this.edit_dropdown = $("<div />")	.append(this.add_substate_item, this.toggle_concurrency_item)
+			this.edit_dropdown = $("<div />")	.append(this.add_substate_item, this.toggle_concurrency_item, this.reset_item)
 												.addClass("dropdown")
 												.css({
 													position: "absolute",

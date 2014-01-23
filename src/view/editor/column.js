@@ -88,7 +88,8 @@
 				var statecharts = [], wrappers = [], wrapper_infos = [];
 
 				this.statechart_view = $("<div />")	.statechart({
-														statecharts: statecharts
+														statecharts: statecharts,
+														client: this.option("client")
 													});
 				this.layout_manager = this.statechart_view.statechart("get_layout_manager");
 

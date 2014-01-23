@@ -22,7 +22,7 @@
 				"{{#state idle}}" +
 					"<span>{{ prop_name }}</span>" +
 				"{{#state editing}}" +
-					"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
+					"<input cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
 			"{{/fsm}}" +
 			"{{#if show_menu}}" +
 				"<ul class='menu'>" +
@@ -90,6 +90,9 @@
 
 			if(this.option("inherited")) {
 				this.element.on("click.inherit", _.bind(this.inherit, this));
+			} else {
+				this.element.attr("draggable", true)
+							.on("dragstart.ondragstart", _.bind(this.on_drag_start, this));
 			}
 
 			if(client instanceof ist.WrapperClient) {
@@ -204,6 +207,8 @@
 
 				this.element.trigger(event);
 			} else if(action_name === 'rename') {
+				this.name_edit_state._setState('editing');
+				$('td.name input', this.element).val(this.$prop_name.get()).select().focus();
 			}
 		},
 
@@ -328,7 +333,29 @@
 				value: this.option("client"),
 				type: this.$type,
 				propValues: this.$prop_values,
-				show_menu: this.$show_menu
+				show_menu: this.$show_menu,
+				on_edit_blur: _.bind(function(event) {
+					if(this.name_edit_state.is("editing")) {
+						this._emit_new_name($(".name input", this.element).val());
+						this.name_edit_state._setState('idle');
+					}
+				}, this),
+				on_edit_keydown: eqProp("keyCode", {
+					"27": function(event) { // esc
+						this.name_edit_state._setState('idle');
+						event.preventDefault();
+						event.stopPropagation();
+					},
+					"13": function(event) { // enter
+						if(!event.shiftKey && !event.ctrlKey && !event.metaKey) {
+							this._emit_new_name($(".name input", this.element).val());
+							this.name_edit_state._setState('idle');
+
+							event.preventDefault();
+							event.stopPropagation();
+						}
+					}
+				}, this),
 			}, this.element);
 		},
 
@@ -374,8 +401,103 @@
 			this.element.trigger(event);
 		},
 
-		//on_select: function() { this.$selected.set(true); },
-		//on_deselect: function() { this.$selected.set(false); },
-		//begin_rename: function() { }
+		_emit_new_name: function(str) {
+			if(ist.is_valid_prop_name(str)) {
+				var to_return = false;
+				var self = this;
+				$("span.prop_name", this.element.parent()).each(function() {
+					var child_parent = $(this).parents(".child");
+					if(child_parent !== self && child_parent.data("interstate-prop") && child_parent.prop("option", "name") === str) {
+						to_return = true;
+						self.name_span.editable_text("option", "text", old_name);
+						window.alert("Property with name '" + str + "' already exists");
+					}
+				});
+				if(to_return) { return; }
+				var event = new $.Event("command");
+				event.command_type = "rename";
+				event.from_name = this.$prop_name.get();
+				event.to_name = str;
+				event.client = this.option("obj");
+
+				if(event.from_name !== event.to_name) {
+					this.element.trigger(event);
+				}
+			}
+		},
+
+		on_drag_start: function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+			if(this.element.is(".inherited") || this.element.is(".builtin")) {
+				return;
+			}
+			this.element.addClass("dragging");
+			var curr_target = false;
+			var above_below = false;
+			var on_mmove = function(e) {
+				above_below = 2 * e.offsetY > curr_target.height() ? "below" : "above";
+				curr_target.addClass(above_below === "above" ? "dragtop" : "dragbottom");
+				curr_target.removeClass(above_below === "above" ? "dragbottom" : "dragtop");
+			};
+			var on_mover_child = function(e) {
+				curr_target = $(this);
+				curr_target.addClass("dragtop");
+				curr_target.on("mousemove", on_mmove);
+			};
+			var on_mout_child = function(e) {
+				if(curr_target) {
+					curr_target.removeClass("dragtop dragbottom");
+					curr_target.off("mousemove", on_mmove);
+					curr_target = false;
+				}
+			};
+			var on_mup = _.bind(function() {
+				targets.off("mouseover", on_mover_child);
+				targets.off("mouseout", on_mout_child);
+				$(window).off("mouseup", on_mup);
+				this.element.removeClass("dragging");
+				if(curr_target) {
+					var my_obj = this.option("obj"),
+						my_name = this.option("name");
+					var target_name, target_obj;
+					if(curr_target.is("tr.no_children")) {
+						target_obj = curr_target.parents(".col").column("option", "client");
+						target_name = false;
+					} else {
+						target_obj = curr_target.prop("option", "obj");
+						target_name = curr_target.prop("option", "name");
+					}
+
+					curr_target.removeClass("dragtop dragbottom");
+					curr_target.off("mousemove", on_mmove);
+					curr_target = false;
+
+					var event = new $.Event("command");
+					event.command_type = "move_prop";
+					event.from_obj = my_obj;
+					event.from_name = my_name;
+					event.target_obj = target_obj;
+					event.target_name = target_name;
+					event.above_below = above_below;
+
+					this.element.trigger(event);
+				}
+			}, this);
+			var targets = $("tr.child").not(".inherited").add("tr.no_children");
+
+			targets.on("mouseover", on_mover_child);
+			targets.on("mouseout", on_mout_child);
+			$(window).on("mouseup", on_mup);
+		},
 	});
+
+	var eqProp = function(prop_name, values, thisArg) {
+		return function(x) {
+			var val = x[prop_name];
+			if(values[val]) {
+				return values[val].apply(thisArg || this, arguments);
+			}
+		};
+	};
 }(interstate, jQuery));
