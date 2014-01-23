@@ -18,7 +18,7 @@
 	var cell_template = cjs.createTemplate(
 		"{{#fsm client_state}}" +
 			"{{#state initialedit}}" +
-				"<textarea />" +
+				"{{>editing_text ''}}" +
 			"{{#state set}}" +
 				"{{#fsm edit_state}}" +
 					"{{#state idle}}" +
@@ -28,7 +28,8 @@
 							"{{str}}" +
 						"{{/if}}" +
 					"{{#state editing}}" +
-						"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
+						"{{>editing_text str}}" +
+						//"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
 				"{{/fsm}}" +
 		"{{/fsm}}"
 	);

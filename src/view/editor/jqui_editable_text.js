@@ -5,6 +5,66 @@
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
+	
+	var editing_text_template = cjs.createTemplate("<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />");
+
+	cjs.registerCustomPartial("editing_text", {
+		createNode: function(init_val) {
+			var node = editing_text_template({
+				on_edit_blur: function(event) {
+					$(node).editing_text('confirm', $(node).val());
+
+					event.preventDefault();
+					event.stopPropagation();
+				},
+				on_edit_keydown: function(event) {
+					var keyCode = event.keyCode;
+					if(keyCode === 27) { //esc
+						$(node).editing_text('cancel');
+
+						event.preventDefault();
+						event.stopPropagation();
+					} else if(keyCode === 13) { //enter
+						if(!event.shiftKey && !event.ctrlKey && !event.metaKey) {
+							$(node).editing_text('confirm', $(node).val());
+
+							event.preventDefault();
+							event.stopPropagation();
+						}
+					}
+				}
+			});
+			$(node).editing_text({value: init_val});
+			return node;
+		},
+		destroyNode: function(node) {
+			$(node).prop_cell("destroy");
+		}
+	});
+
+	$.widget("interstate.editing_text", {
+		options: {
+			value: ''
+		},
+		_create: function() {
+			this.element.val(this.option("value"))
+						.select()
+						.focus();
+		},
+		_destroy: function() {
+			this._super();
+		},
+		confirm: function(new_value) {
+			var event = new $.Event("confirm_value");
+			event.value = new_value;
+			this.element.trigger(event);
+		},
+		cancel: function() {
+			var event = new $.Event("cancel_value");
+			this.element.trigger(event);
+		}
+	});
+		/*
 
 	var STATE = {
 		IDLE: {},
@@ -132,4 +192,5 @@
 		}
 	});
 
+*/
 }(interstate, jQuery));
