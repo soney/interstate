@@ -24,14 +24,12 @@
 				"{{#state editing}}" +
 					"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
 			"{{/fsm}}" +
-			/*
 			"{{#if show_menu}}" +
 				"<ul class='menu'>" +
-					"<li class='menu-item'>Delete</li>" +
-					"<li class='menu-item'>Rename</li>" +
+					"<li class='menu-item' data-action='delete'>Delete</li>" +
+					"<li class='menu-item' data-action='rename'>Rename</li>" +
 				"</ul>" +
 			"{{/if}}" +
-			*/
 		"</td>" +
 		"{{> valueSummary getValueSummaryOptions() }}"  +
 		"{{#if show_src}}" +
@@ -59,7 +57,8 @@
 			layout_manager: false,
 			show_src: false,
 			obj: false,
-			client_socket: false
+			client_socket: false,
+			selected: false
 		},
 
 		_create: function() {
@@ -68,8 +67,7 @@
 			this.$prop_name = cjs(this.option("name"));
 			this.$inherited = cjs(this.option("inherited"));
 			this.$show_src  = this.option("show_src");
-			this.$selected  = cjs(false);
-			this.$show_menu  = cjs(false);
+			this.$selected  = this.option("selected");
 
 			this.$type = cjs(function() {
 				if(client instanceof ist.WrapperClient) {
@@ -84,6 +82,7 @@
 
 			this.element.on("click.expand", _.bind(this._trigger_expand, this));
 
+			this._add_menu();
 			this._create_state_map();
 			this._add_content_bindings();
 			this._add_class_bindings();
@@ -96,39 +95,6 @@
 			if(client instanceof ist.WrapperClient) {
 				client.signal_interest();
 			}
-			/*
-
-			this.menu_state = cjs.fsm("hidden", "holding", "on_release", "on_click")
-									.addTransition("hidden", "holding", cjs.on("contextmenu", this.element[0]))
-									.addTransition("holding", "on_click", cjs.on("mouseup"))
-									.addTransition("holding", "on_release", cjs.on("timeout", 500))
-									.startsAt("hidden");
-			var on_mup_holding = this.menu_state.addTransition("");
-
-			this.menu_state.on("hidden->holding", function(event) {
-				this.$show_menu.set(true);
-				event.stopPropagation();
-				event.preventDefault();
-				var my_position = this.element.position();
-				
-				$("ul.menu", this.element).css({
-					left: (event.pageX-my_position.left)+"px"
-				});
-
-				return false;
-			}, this);
-
-			this.menu_state.on("on_click", function(event) {
-				console.log("must click");
-			}, this);
-			this.menu_state.on("on_release", function(event) {
-				console.log("on_release");
-			}, this);
-
-			this.menu_state.on("*->hidden", function(event) {
-				this.$show-menu.set(false);
-			});
-			*/
 		},
 		_destroy: function() {
 			var client = this.option("client");
@@ -136,11 +102,109 @@
 			this._remove_content_bindings();
 			this._remove_class_bindings();
 			this._destroy_state_map();
+			this._destroy_menu();
 
 			if(client instanceof ist.WrapperClient) {
 				client.signal_destroy();
 			}
+
+			this.$prop_name.destroy();
+			this.$inherited.destroy();
+			this.$show_menu.destroy();
+			this.$type.destroy();
+			this.name_edit_state.destroy();
+
 			this._super();
+		},
+
+		_add_menu: function() {
+			this.$show_menu  = cjs(false);
+			this.menu_state = cjs.fsm("hidden", "holding", "on_release", "on_click")
+									.addTransition("hidden", "holding", cjs.on("contextmenu", this.element[0]))
+									.addTransition("holding", "on_click", cjs.on("mouseup"))
+									.addTransition("holding", "on_release", cjs.on("timeout", 500))
+									.startsAt("hidden");
+			var on_mup_holding = this.menu_state.addTransition("holding", "hidden"),
+				on_mup_orelease = this.menu_state.addTransition("on_release", "hidden"),
+				on_mup_oclick = this.menu_state.addTransition("on_click", "hidden");
+
+			this.menu_state.on("hidden->holding", function(event) {
+				this.$show_menu.set(true);
+				event.stopPropagation();
+				event.preventDefault();
+				var my_position = this.element.position();
+				
+				//$("ul.menu", this.element).css({
+					//left: (event.pageX-my_position.left)+"px"
+				//});
+
+				return false;
+			}, this);
+
+			var on_click = function(event) {
+				$("ul.menu > li", this.element).off('.menu_item');
+				$(window).off('.menu_item');
+
+				$("ul.menu > li", this.element).on('click.menu_item', _.bind(function(e) {
+					this.on_menu_action(e.target.getAttribute('data-action'));
+					on_mup_oclick(e);
+					e.stopPropagation();
+					e.preventDefault();
+				}, this));
+				$(window).on('mousedown.menu_item', function(e) {
+					if(!$(e.target).parents().is($("ul.menu", this.element))) {
+						on_mup_oclick(e);
+						e.stopPropagation();
+						e.preventDefault();
+					}
+				});
+			},
+			on_hold = function(event) {
+				$("ul.menu > li", this.element).on('mouseup.menu_item', _.bind(function(e) {
+					this.on_menu_action(e.target.getAttribute('data-action'));
+					on_mup_holding(e);
+					on_mup_orelease(e);
+					e.stopPropagation();
+					e.preventDefault();
+				}, this));
+
+				$(window).on('mouseup.menu_item', function(e) {
+					if(!$(e.target).parents().is($("ul.menu", this.element))) {
+						on_mup_holding(e);
+						on_mup_orelease(e);
+						e.stopPropagation();
+						e.preventDefault();
+					}
+				});
+			},
+			on_hidden = function(event) {
+				this.menu_state .off("on_click", on_click, this)
+								.off("holding", on_hold, this)
+								.off("hidden", on_hidden, this);
+				this.$show_menu.set(false);
+				$("ul.menu > li", this.element).off('.menu_item');
+				$(window).off('mousedown.menu_item');
+			};
+			this.menu_state.on("on_click", on_click, this);
+			this.menu_state.on("holding", on_hold, this);
+			this.menu_state.on("hidden", on_hidden, this);
+		},
+		_destroy_menu: function() {
+			$("ul.menu > li", this.element).off('.menu_item');
+			$(window).off('.menu_item');
+			this.menu_state.destroy();
+			this.$show_menu.destroy();
+		},
+		on_menu_action: function(action_name) {
+			if(action_name === 'delete') {
+				var event = new $.Event("command");
+				event.command_type = "unset";
+				event.name = this.$prop_name.get();
+				event.client = this.option("obj");
+
+				this.element.trigger(event);
+			} else if(action_name === 'rename') {
+			}
 		},
 
 		_add_tooltip: function() {
@@ -264,7 +328,7 @@
 				value: this.option("client"),
 				type: this.$type,
 				propValues: this.$prop_values,
-				//show_menu: this.$show_menu
+				show_menu: this.$show_menu
 			}, this.element);
 		},
 
@@ -310,9 +374,8 @@
 			this.element.trigger(event);
 		},
 
-		on_select: function() { this.$selected.set(true); },
-		on_deselect: function() { this.$selected.set(false); },
-		begin_rename: function() {
-		}
+		//on_select: function() { this.$selected.set(true); },
+		//on_deselect: function() { this.$selected.set(false); },
+		//begin_rename: function() { }
 	});
 }(interstate, jQuery));

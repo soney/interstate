@@ -20,7 +20,7 @@
 		"<tbody>" +
 			"<tr class='header'>" +
 				"<th colspan='2' class='obj_name'>" +
-					"<h2 data-cjs-on-click='headerClicked'>{{name}}</h2>" +
+					"<h2 data-cjs-on-click='headerClicked'>{{ci}}{{name}}</h2>" +
 				"</th>" +
 				"{{#if stateful}}" +
 					"<th rowspan='2' class='statechart_cell'>" +
@@ -56,7 +56,9 @@
 			client_socket: false,
 			selected_prop_name: false,
 			curr_copy_index: false,
-			close_button: false
+			close_button: false,
+			columns: false,
+			column_index: -1
 		},
 
 		_create: function() {
@@ -66,14 +68,16 @@
 			this.element.attr("draggable", true);
 			
 
+			this.$selected_prop = this.option("columns").itemConstraint(this.option("column_index")+1);
+
 			this.$name = client.get_$("get_name");
 			this.$is_curr_col = this.option("is_curr_col");
 			this.$is_curr_col.onChange(function() {
 				var is_curr_col = this.$is_curr_col.get();
 				if(is_curr_col) {
-					if(this.selected_child_disp) {
-						this.selected_child_disp.prop("on_deselect");
-					}
+					//if(this.selected_child_disp) {
+						//this.selected_child_disp.prop("on_deselect");
+					//}
 				}
 			}, this);
 			this.$children = client.get_$("children");
@@ -171,7 +175,8 @@
 						show_src: this.$is_curr_col,
 						obj: this.option("client"),
 						client_socket: this.option("client_socket"),
-						statechart_view: this.statechart_view
+						statechart_view: this.statechart_view,
+						selected: this.$selected_prop.eqStrict(child.value)
 					}
 				}, this),
 				getStatechartView: _.bind(function() {
@@ -214,15 +219,15 @@
 				var target = $(event.target),
 					client = target.data("interstate-prop") ? target.prop("option", "client"): false;
 
-				if(client instanceof ist.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
-					if(this.selected_child_disp) {
-						if(this.selected_child_disp.data("interstate-prop")) { // need to check in case this.selected_child_disp was removed
-							this.selected_child_disp.prop("on_deselect");
-						}
-					}
-					this.selected_child_disp = target;
-					this.selected_child_disp.prop("on_select");
-				}
+				//if(client instanceof ist.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
+					//if(this.selected_child_disp) {
+						//if(this.selected_child_disp.data("interstate-prop")) { // need to check in case this.selected_child_disp was removed
+							//this.selected_child_disp.prop("on_deselect");
+						//}
+					//}
+					//this.selected_child_disp = target;
+					//this.selected_child_disp.prop("on_select");
+				//}
 				this.element.trigger("child_select", client);
 			}
 		},

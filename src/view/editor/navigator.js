@@ -9,7 +9,7 @@
 
 	var navigator_template = cjs.createTemplate(
 		"{{#each columns}}" +
-			"{{> col getColumnOptions(this) }}" +
+			"{{> col getColumnOptions(this, @index) }}" +
 		"{{/each}}"
 	);
 
@@ -49,11 +49,13 @@
 			var client_socket = this.option("client_socket");
 			navigator_template({
 				columns: this.$columns,
-				getColumnOptions: _.bind(function(client) {
+				getColumnOptions: _.bind(function(client, index) {
 					return {
 						client: client,
 						client_socket: client_socket,
-						is_curr_col: this.$selected_column.eqStrict(client)
+						is_curr_col: this.$selected_column.eqStrict(client),
+						columns: this.$columns,
+						column_index: index
 					};
 				}, this)
 			}, this.element);

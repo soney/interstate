@@ -4,43 +4,53 @@
 	test("Map diff", function() {
 		var md;
 		md = ist.get_map_diff(['a'], ['a'], [1], [1]);
-		equal(md.key_change.length, 0);
 		equal(md.set.length, 0);
-		equal(md.moved.length, 0);
+		equal(md.unset.length, 0);
+		equal(md.key_change.length, 0);
+		equal(md.value_change.length, 0);
 
 		md = ist.get_map_diff(['a'], ['b'], [1], [1]);
-		equal(md.key_change.length, 1);
 		equal(md.set.length, 0);
-		equal(md.moved.length, 0);
+		equal(md.unset.length, 0);
+		equal(md.key_change.length, 1);
+		equal(md.value_change.length, 0);
 
 		md = ist.get_map_diff(['a','b','c'], ['b'], [1,2,3], [2]);
-		equal(md.key_change.length, 0);
-		equal(md.unset.length, 2);
 		equal(md.set.length, 0);
-		equal(md.moved.length, 0);
+		equal(md.unset.length, 2);
+		equal(md.key_change.length, 0);
+		equal(md.value_change.length, 0);
 
 		md = ist.get_map_diff(['b'], ['a','b','c'], [2], [1,2,3]);
-		equal(md.key_change.length, 0);
-		equal(md.unset.length, 0);
 		equal(md.set.length, 2);
-		equal(md.moved.length, 0);
+		equal(md.unset.length, 0);
+		equal(md.key_change.length, 0);
+		equal(md.value_change.length, 0);
 
 		md = ist.get_map_diff(['b', 'a', 'c'], ['a','b','c'], [2,1,3], [1,2,3]);
-		equal(md.key_change.length, 0);
-		equal(md.unset.length, 0);
 		equal(md.set.length, 0);
-		equal(md.moved.length, 1);
+		equal(md.unset.length, 0);
+		equal(md.key_change.length, 0);
+		equal(md.value_change.length, 0);
 
 		md = ist.get_map_diff(['a'], ['b','c','a'], [undefined], [undefined,undefined,undefined]);
 		equal(md.set.length, 2);
 		equal(md.unset.length, 0);
+		equal(md.key_change.length, 0);
+		equal(md.value_change.length, 0);
 
 		md = ist.get_map_diff(['a', 'b', 'c'], ['a','b','c'], [2,1,3], [1,2,3]);
-		equal(md.key_change.length, 0);
-		equal(md.unset.length, 0);
 		equal(md.set.length, 0);
-		equal(md.moved.length, 0);
+		equal(md.unset.length, 0);
 		equal(md.value_change.length, 2);
+		equal(md.key_change.length, 0);
+
+		md = ist.get_map_diff(['c', 'a', 'd'], ['a','b','c'], [2,3,1], [1,2,3]);
+		equal(md.set.length, 1);
+		equal(md.unset.length, 1);
+		equal(md.key_change.length, 0);
+		equal(md.value_change.length, 2);
+		/**/
 	});
 	asyncTest("Remote Constraints", function() {
 		expect(3);

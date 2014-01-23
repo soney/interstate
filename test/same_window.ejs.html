@@ -13,10 +13,10 @@
 			<%- ist_include(ist_inc.editor) %>
 			<%- ist_include(ist_inc.runtime_style) %>
 			<script type="text/javascript">
-				var env = new interstate.Environment({create_builtins: false});
+				var env = new interstate.Environment({create_builtins: true});
 				var root = env.get_root();
 
-				env	//.set("height", "100")
+				env	.set("height", "100")
 					//.set("a1", "screen.a")
 					//.cd("screen")
 					//.set("b", "<stateful>")

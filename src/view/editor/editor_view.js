@@ -726,27 +726,17 @@
 
 			var map_diff = ist.get_map_diff(old_keys, keys, old_vals, vals);
 
-			console.log('---');
-			console.log(old_keys, keys);
-			console.log(old_vals, vals);
-			console.log(map_diff);
-			console.log('---');
-
-			_.each(map_diff.set, function(info) {
-				map.put(info.key, info.value, info.index)
-			});
-			_.each(map_diff.value_change, function(info) {
-				var key = keys[info.index];
-				map.put(key, info.to);
-			});
 			_.each(map_diff.key_change, function(info) {
 				map.rename(info.from, info.to);
 			});
-			_.each(map_diff.moved, function(info) {
-				map.move(info.key, info.to);
+			_.each(map_diff.set, function(info) {
+				map.put(info.key, info.value)
 			});
 			_.each(map_diff.unset, function(info) {
 				map.remove(info.key);
+			});
+			_.each(map_diff.value_change, function(info) {
+				map.put(info.key, info.to);
 			});
 
 			old_keys = keys;
@@ -758,7 +748,9 @@
 			old_destroy.apply(this, arguments);
 			live_fn.destroy();
 		};
+		window.m.push(map);
 
 		return map;
 	}
+		window.m = [];
 }(interstate, jQuery));
