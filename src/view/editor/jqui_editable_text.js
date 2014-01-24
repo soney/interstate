@@ -37,8 +37,13 @@
 			$(node).editing_text({value: init_val});
 			return node;
 		},
+		onAdd: function(node) {
+			_.defer(function() { $(node).select().focus(); });
+		},
+		onRemove: function(node) {
+		},
 		destroyNode: function(node) {
-			$(node).prop_cell("destroy");
+			$(node).editing_text("destroy");
 		}
 	});
 
@@ -47,9 +52,7 @@
 			value: ''
 		},
 		_create: function() {
-			this.element.val(this.option("value"))
-						.select()
-						.focus();
+			this.element.val(this.option("value"));
 		},
 		_destroy: function() {
 			this._super();

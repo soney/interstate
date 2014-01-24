@@ -63,7 +63,19 @@
 			var client_is_valid;
 
 			//this.$is_set = client.iif(true, false);
-			this.client_state = cjs.fsm('unset', 'initialedit', 'set');
+			
+			var elem = this.element;
+			this.client_state = cjs.fsm('unset', 'initialedit', 'set')
+									.addTransition('unset', 'initialedit', cjs.on('click', this.element))
+									.addTransition('initialedit', 'set', function(dt) {
+										elem.on('confirm_value', dt);
+									})
+									.addTransition('initialedit', 'unset', function(dt) {
+										elem.on('cancel_value', dt);
+									})
+									.on('initialedit->set', function(event) {
+										this._set_value_for_state(event.value);
+									}, this);
 
 			this.$$STR = false;
 			this.$$SE = false;
@@ -116,7 +128,23 @@
 			}, this);
 
 			this.edit_state = cjs	.fsm("idle", "editing")
-									.startsAt("idle");
+									.startsAt("idle")
+									.addTransition('idle', 'editing', cjs.on('click', this.element).guard(_.bind(function() {
+										console.log(client_is_valid);
+										return client_is_valid;
+									}, this)))
+									.addTransition('editing', 'idle', function(dt) {
+										elem.on('confirm_value', dt);
+									})
+									.addTransition('editing', 'idle', function(dt) {
+										elem.on('cancel_value', dt);
+									})
+									.on('editing->idle', function(event) {
+										if(event.type === 'confirm_value') {
+											this._emit_new_value(event.value);
+										}
+									}, this);
+
 			this.$active = cjs(this.option("active"));
 			this.$left = cjs(this.option("left"));
 
@@ -168,7 +196,7 @@
 			delete this.options;
 		},
 
-		emit_new_value: function(value) {
+		_emit_new_value: function(value) {
 			if(this.option("prop") && value === "") {
 				var event = new $.Event("command");
 				event.command_type = "unset_stateful_prop_for_state";
@@ -225,6 +253,7 @@
 					}, this),
 					client_state: this.client_state
 				}, this.element);
+				/*
 			this.element.on("click.start_edit", _.bind(function(event) {
 				if(this.client_state.is("set")) {
 					this.begin_editing(event);
@@ -233,6 +262,7 @@
 				}
 				event.stopPropagation();
 			}, this));
+			*/
 		},
 		_remove_content_bindings: function() {
 			this.element.off("click.start_edit");
