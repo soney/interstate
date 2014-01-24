@@ -130,7 +130,6 @@
 			this.edit_state = cjs	.fsm("idle", "editing")
 									.startsAt("idle")
 									.addTransition('idle', 'editing', cjs.on('click', this.element).guard(_.bind(function() {
-										console.log(client_is_valid);
 										return client_is_valid;
 									}, this)))
 									.addTransition('editing', 'idle', function(dt) {
@@ -138,6 +137,9 @@
 									})
 									.addTransition('editing', 'idle', function(dt) {
 										elem.on('cancel_value', dt);
+									})
+									.on('editing<-idle', function(event) {
+										console.log(event);
 									})
 									.on('editing->idle', function(event) {
 										if(event.type === 'confirm_value') {
