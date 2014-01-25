@@ -53,7 +53,6 @@
 				var parent_pointer = pointer.slice(0, my_index-1);
 				if(parent_obj instanceof ist.Dict) {
 					var sp_contexts = pointer.special_contexts();
-					//console.log(sp_contexts);
 					var extra_txt = "";
 					if(sp_contexts.length > 0) {
 						var sp_context;
@@ -117,8 +116,6 @@
 		};
 
 		proto.val = function () {
-			//var rv = this.$value.get();
-			//return rv;
 			return this.$value.get();
 		};
 		proto.emit_begin_destroy = function() {
@@ -126,12 +123,6 @@
 		};
 
 		proto.destroy = function (silent, avoid_destroy_call) {
-			//if(this.sid() === 189) {
-				//debugger;
-			//}
-			//if(uid.strip_prefix(this.id()) == 143) {
-				//debugger;
-			//}
 			if(this.object) {
 				this.object.off("begin_destroy", this.destroy, this);
 			}
@@ -140,9 +131,6 @@
 
 			if(avoid_destroy_call !== true) {
 				ist.destroy_contextual_obj(this);
-			//} else {
-				//debugger;
-				//console.log("A");
 			}
 
 			this.$value.destroy(true);
@@ -183,15 +171,6 @@
 			return itema === itemb;
 		}
 	};
-	/*
-	ist.check_contextual_object_equality_eqeq = function (itema, itemb) {
-		if (itema instanceof ist.ContextualObject && itemb instanceof ist.ContextualObject) {
-			return itema.get_pointer().eq(itemb.get_pointer()) && itema.get_object() == itemb.get_object();
-		} else {
-			return itema == itemb;
-		}
-	};
-	*/
 
 	ist.create_contextual_object = function (object, pointer, options) {
 		options = _.extend({

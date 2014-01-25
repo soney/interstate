@@ -180,9 +180,6 @@
 			return rv;
 		};
 		proto.destroy = function() {
-			//if(uid.strip_prefix(this.contextual_object.id()) == 4) {
-				//debugger;
-			//}
 			this.children.each(function(child) {
 				child.destroy();
 			});
