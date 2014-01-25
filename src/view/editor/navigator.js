@@ -80,11 +80,11 @@
 				};
 			this._destroy_check_fn = cjs.liven(function() {
 				_.each(old_cols, function(c) {
-					c.off('destroy', ondestroy);
+					c.off('begin_destroy', ondestroy);
 				}, this);
 				var cols = this.$columns.toArray();
 				_.each(cols, function(c) {
-					c.on('destroy', ondestroy);
+					c.on('begin_destroy', ondestroy);
 				}, this);
 				old_cols = cols;
 			}, {

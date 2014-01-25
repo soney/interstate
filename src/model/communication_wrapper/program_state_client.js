@@ -111,6 +111,7 @@
 				} else if (smtype === "emit") {
 					client.on_emit.apply(client, ([server_message.event_type]).concat(server_message.args));
 				}
+				//console.log(smtype);
 			}
 		};
 		proto.on_response = function(message) {

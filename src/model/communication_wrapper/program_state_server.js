@@ -177,7 +177,6 @@
 							client_id: client_id
 						}
 					};
-					//if(client_id === 8) debugger;
 					this.post(full_message);
 				}, this));
 			} else if (mtype === "get_$" || mtype === "async_get") { // async request
@@ -283,6 +282,7 @@
 
 		proto.post = function (message) {
 			if (this.connected) {
+				//console.log(message);
 				this.comm_mechanism.post(message);
 			} else {
 				throw new Error("Trying to send a message to a disconnected client");

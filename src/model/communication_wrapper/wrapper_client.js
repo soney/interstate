@@ -228,6 +228,7 @@
 			var args = _.rest(arguments);
 			args = this.process_value(args);
 
+			//console.log(event_type);
 			this._emit.apply(this, ([event_type]).concat(args));
 		};
 		proto.process_value = function (value) {

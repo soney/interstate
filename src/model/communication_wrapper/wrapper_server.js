@@ -96,6 +96,7 @@
 			}
 		};
 		proto.on_begin_destroy = function() {
+			this._emit("begin_destroy");
 			this.object.off("begin_destroy", this.on_begin_destroy, this);
 			this.remove_emission_listeners();
 			this.clear_fn_call_constraints();
