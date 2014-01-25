@@ -138,15 +138,9 @@
 									.addTransition("hidden", "holding", cjs.on("contextmenu", this.element[0]))
 									.addTransition("holding", "on_click", cjs.on("mouseup"))
 									.addTransition("holding", "on_release", cjs.on("timeout", 500))
-									.addTransition("holding", "hidden", cjs.on("keydown").guard(function(event) {
-										return event.keyCode === 27;
-									}))
-									.addTransition("on_click", "hidden", cjs.on("keydown").guard(function(event) {
-										return event.keyCode === 27;
-									}))
-									.addTransition("on_release", "hidden", cjs.on("keydown").guard(function(event) {
-										return event.keyCode === 27;
-									}))
+									.addTransition("holding", "hidden", cjs.on("keydown").guard('keyCode', 27))
+									.addTransition("on_click", "hidden", cjs.on("keydown").guard('keyCode', 27))
+									.addTransition("on_release", "hidden", cjs.on("keydown").guard('keyCode', 27))
 									.startsAt("hidden");
 			var on_mup_holding = this.menu_state.addTransition("holding", "hidden"),
 				on_mup_orelease = this.menu_state.addTransition("on_release", "hidden"),
