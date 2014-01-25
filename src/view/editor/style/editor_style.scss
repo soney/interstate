@@ -518,12 +518,13 @@ html.full_window_editor {
 						display: inline-block;
 					}
 					
-					> input {
+					> textarea {
 						background: none;
 						border: none;
 						font-size: inherit;
 						font-family: inherit;
 						color: inherit;
+						height: 16px;
 					}
 
 					> .edit {

@@ -24,7 +24,9 @@
 				"</th>" +
 				"{{#if stateful}}" +
 					"<th rowspan='2' class='statechart_cell'>" +
-						"{{getStatechartView()}}" +
+						"{{#if show_statechart}}" +
+							"{{statechart_view}}" +
+						"{{/if}}" +
 					"</th>" +
 				"{{#else}}" +
 					"<th rowspan='2'></th>" +
@@ -72,14 +74,6 @@
 
 			this.$name = client.get_$("get_name");
 			this.$is_curr_col = this.option("is_curr_col");
-			this.$is_curr_col.onChange(function() {
-				var is_curr_col = this.$is_curr_col.get();
-				if(is_curr_col) {
-					//if(this.selected_child_disp) {
-						//this.selected_child_disp.prop("on_deselect");
-					//}
-				}
-			}, this);
 			this.$children = client.get_$("children");
 			if(client.type() === "stateful") {
 				this.$statecharts = client.get_$("get_statecharts");
@@ -180,9 +174,8 @@
 						selected: this.$selected_prop.eqStrict(child.value)
 					}
 				}, this),
-				getStatechartView: _.bind(function() {
-					return this.statechart_view;
-				}, this),
+				statechart_view: this.statechart_view,
+				show_statechart: this.$is_curr_col,
 				headerClicked: _.bind(this.on_header_click, this),
 				addProperty: _.bind(this._add_property, this)
 			}, this.element);

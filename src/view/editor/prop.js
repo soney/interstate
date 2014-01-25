@@ -22,7 +22,7 @@
 				"{{#state idle}}" +
 					"<span>{{ prop_name }}</span>" +
 				"{{#state editing}}" +
-					"<input cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
+					"{{>editing_text prop_name 'input'}}" +
 			"{{/fsm}}" +
 			"{{#if show_menu}}" +
 				"<ul class='menu'>" +
@@ -77,8 +77,20 @@
 				}
 			});
 
+			var elem = this.element;
 			this.name_edit_state = cjs	.fsm("idle", "editing")
-										.startsAt("idle");
+										.startsAt("idle")
+										.addTransition('editing', 'idle', function(dt) {
+											elem.on('confirm_value', dt);
+										})
+										.addTransition('editing', 'idle', function(dt) {
+											elem.on('cancel_value', dt);
+										})
+										.on('editing->idle', function(event) {
+											if(event.type === 'confirm_value') {
+												this._emit_new_name(event.value);
+											}
+										}, this);
 
 			this.element.on("click.expand", _.bind(this._trigger_expand, this));
 
@@ -126,6 +138,15 @@
 									.addTransition("hidden", "holding", cjs.on("contextmenu", this.element[0]))
 									.addTransition("holding", "on_click", cjs.on("mouseup"))
 									.addTransition("holding", "on_release", cjs.on("timeout", 500))
+									.addTransition("holding", "hidden", cjs.on("keydown").guard(function(event) {
+										return event.keyCode === 27;
+									}))
+									.addTransition("on_click", "hidden", cjs.on("keydown").guard(function(event) {
+										return event.keyCode === 27;
+									}))
+									.addTransition("on_release", "hidden", cjs.on("keydown").guard(function(event) {
+										return event.keyCode === 27;
+									}))
 									.startsAt("hidden");
 			var on_mup_holding = this.menu_state.addTransition("holding", "hidden"),
 				on_mup_orelease = this.menu_state.addTransition("on_release", "hidden"),
@@ -137,10 +158,6 @@
 				event.preventDefault();
 				var my_position = this.element.position();
 				
-				//$("ul.menu", this.element).css({
-					//left: (event.pageX-my_position.left)+"px"
-				//});
-
 				return false;
 			}, this);
 
@@ -333,29 +350,7 @@
 				value: this.option("client"),
 				type: this.$type,
 				propValues: this.$prop_values,
-				show_menu: this.$show_menu,
-				on_edit_blur: _.bind(function(event) {
-					if(this.name_edit_state.is("editing")) {
-						this._emit_new_name($(".name input", this.element).val());
-						this.name_edit_state._setState('idle');
-					}
-				}, this),
-				on_edit_keydown: eqProp("keyCode", {
-					"27": function(event) { // esc
-						this.name_edit_state._setState('idle');
-						event.preventDefault();
-						event.stopPropagation();
-					},
-					"13": function(event) { // enter
-						if(!event.shiftKey && !event.ctrlKey && !event.metaKey) {
-							this._emit_new_name($(".name input", this.element).val());
-							this.name_edit_state._setState('idle');
-
-							event.preventDefault();
-							event.stopPropagation();
-						}
-					}
-				}, this),
+				show_menu: this.$show_menu
 			}, this.element);
 		},
 

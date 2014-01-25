@@ -29,7 +29,6 @@
 						"{{/if}}" +
 					"{{#state editing}}" +
 						"{{>editing_text str}}" +
-						//"<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />" +
 				"{{/fsm}}" +
 		"{{/fsm}}"
 	);
@@ -62,8 +61,6 @@
 
 			var client_is_valid;
 
-			//this.$is_set = client.iif(true, false);
-			
 			var elem = this.element;
 			this.client_state = cjs.fsm('unset', 'initialedit', 'set')
 									.addTransition('unset', 'initialedit', cjs.on('click', this.element))
@@ -137,9 +134,6 @@
 									})
 									.addTransition('editing', 'idle', function(dt) {
 										elem.on('cancel_value', dt);
-									})
-									.on('editing<-idle', function(event) {
-										console.log(event);
 									})
 									.on('editing->idle', function(event) {
 										if(event.type === 'confirm_value') {
@@ -231,40 +225,8 @@
 				cell = cell_template({
 					edit_state: this.edit_state,
 					str: this.$str,
-					on_edit_blur: _.bind(function(event) {
-						if(this.edit_state.is("editing")) {
-							this.emit_new_value($("textarea", cell).val());
-							confirm_edit(event);
-						}
-					}, this),
-					on_edit_keydown: eqProp("keyCode", {
-						"27": function(event) { // esc
-							cancel_edit(event);
-							event.preventDefault();
-							event.stopPropagation();
-						},
-						"13": function(event) { // enter
-							if(!event.shiftKey && !event.ctrlKey && !event.metaKey) {
-								this.emit_new_value($("textarea", cell).val());
-								confirm_edit(event);
-
-								event.preventDefault();
-								event.stopPropagation();
-							}
-						}
-					}, this),
 					client_state: this.client_state
 				}, this.element);
-				/*
-			this.element.on("click.start_edit", _.bind(function(event) {
-				if(this.client_state.is("set")) {
-					this.begin_editing(event);
-				} else {
-					this._edit_initial_value(event);
-				}
-				event.stopPropagation();
-			}, this));
-			*/
 		},
 		_remove_content_bindings: function() {
 			this.element.off("click.start_edit");
@@ -376,43 +338,6 @@
 		_remove_tooltip: function() {
 			this._tooltip_live_fn.destroy();
 			delete this._tooltip_live_fn;
-		},
-		begin_editing: function(event) {
-			if(this.edit_state.is("idle")) {
-				this.do_edit(event);
-				var textarea = $("textarea", this.element);
-				textarea.val(this.$str.get())
-						.select()
-						.focus();
-			}
-		},
-		_edit_initial_value: function(event) {
-			this.client_state._setState('initialedit');
-			var textarea = $("textarea", this.element);
-			textarea.select()
-					.focus()
-					.on("keydown", _.bind(function(e) {
-						var keyCode = e.keyCode;
-						if(keyCode === 27) { // esc
-							this.client_state._setState('unset');
-							event.preventDefault();
-							event.stopPropagation();
-						} else if(keyCode == 13) { // enter
-							if(!e.shiftKey && !e.ctrlKey && !e.metaKey) {
-								var val = $("textarea", this.element).val();
-								this.client_state._setState('unset');
-								this._set_value_for_state(val);
-
-								event.preventDefault();
-								event.stopPropagation();
-							}
-						}
-					}, this))
-					.on("blur", _.bind(function() {
-						var val = $("textarea", this.element).val();
-						this.client_state._setState('unset');
-						this._set_value_for_state(val);
-					}, this));
 		},
 		_set_value_for_state: function(val) {
 			var event = new $.Event("command");
