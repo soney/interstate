@@ -26,6 +26,7 @@
 			"{{/fsm}}" +
 			"{{#if show_menu}}" +
 				"<ul class='menu'>" +
+					"<li class='menu-item' data-action='change_type'>Change to {{ (type === 'stateful_prop' || type==='cell') ? 'object' : 'property'}}</li>" +
 					"<li class='menu-item' data-action='delete'>Delete</li>" +
 					"<li class='menu-item' data-action='rename'>Rename</li>" +
 				"</ul>" +
