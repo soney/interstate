@@ -185,10 +185,12 @@
 			});
 			this.children.destroy();
 			delete this.children;
-			if(!this.contextual_object.is_destroyed()) {
-				this.contextual_object.destroy(true, true); // silent & avoid re-calling ist.destroy_cobj
+			if(this.has_contextual_object()) {
+				if(!this.contextual_object.is_destroyed()) {
+					this.contextual_object.destroy(true, true); // silent & avoid re-calling ist.destroy_cobj
+				}
+				delete this.contextual_object;
 			}
-			delete this.contextual_object;
 		};
 	}(ist.PointerTree));
 

@@ -336,27 +336,34 @@
 
 			if(type === "add_property") {
 				client = event.client;
-				var prop_type;
+				var prop_type = event.prop_type;
+				/*
 				if(client.type() === "dict") {
 					prop_type = "stateful_obj";
 				} else {
 					prop_type = "stateful_prop";
 				}
+				*/
 
-				if(prop_type === "stateful_obj") {
+				if(prop_type === "object") {
 					value = new ist.StatefulObj(undefined, true);
 					value.do_initialize({
 						direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: value })
 					});
-				} else if(prop_type === "stateful_prop") {
-					value = new ist.StatefulProp();
+				} else if(prop_type === "property") {
+					if(client.type() === "dict") {
+						value = new ist.Cell({str: ''});
+					} else {
+						value = new ist.StatefulProp();
+					}
 				}
 
 				command = new ist.SetPropCommand({
 					in_effect: true,
 					parent: { id: to_func(client.obj_id) },
 					value: value,
-					index: 0
+					index: 0,
+					name: event.prop_name
 				});
 				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();

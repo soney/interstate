@@ -75,9 +75,11 @@
 		},
 		_add_destroy_check: function() {
 			var old_cols = [],
-				ondestroy = function() {
-					console.log('destroy');
-				};
+				ondestroy = _.bind(function(client) {
+					var index = this.$columns.indexOf(client);
+					this.$columns.splice(index, this.$columns.length()-index);
+				}, this);
+
 			this._destroy_check_fn = cjs.liven(function() {
 				_.each(old_cols, function(c) {
 					c.off('begin_destroy', ondestroy);
@@ -106,7 +108,7 @@
 					this.$columns.splice(column_index+1, this.$columns.length()-column_index - 1, child);
 				}
 			} else {
-				this.on_header_click(event, child);
+				this.on_header_click(event, $(event.target).column("option", "client"));
 			}
 		},
 		on_header_click: function(event, client) {

@@ -218,9 +218,12 @@
 
 				this.element.trigger(event);
 			} else if(action_name === 'rename') {
-				this.name_edit_state._setState('editing');
-				$('td.name input', this.element).val(this.$prop_name.get()).select().focus();
+				this.begin_rename();
 			}
+		},
+
+		begin_rename: function() {
+			this.name_edit_state._setState('editing');
 		},
 
 		_add_tooltip: function() {

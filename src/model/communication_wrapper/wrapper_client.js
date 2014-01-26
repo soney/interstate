@@ -55,6 +55,7 @@
 				}
 			}
 		});
+		//console.log('CLIENT:'+this.cobj_id);
 	};
 
 	(function (my) {

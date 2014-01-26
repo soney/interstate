@@ -441,7 +441,7 @@ html.full_window_editor {
 				}
 			}
 
-			> .child {
+			> .child, >.new_field {
 				@include non-selectable;
 				color: $nav_column_text_color;
 
@@ -500,6 +500,7 @@ html.full_window_editor {
 					cursor: pointer;
 				}
 
+
 				> .name {
 					padding-left: 2px;
 					padding-right: 5px;
@@ -518,13 +519,16 @@ html.full_window_editor {
 						display: inline-block;
 					}
 					
-					> textarea {
+					> textarea, input {
 						background: none;
 						border: none;
 						font-size: inherit;
 						font-family: inherit;
 						color: inherit;
 						height: 16px;
+					}
+					input {
+						color: black;
 					}
 
 					> .edit {
@@ -691,6 +695,9 @@ html.full_window_editor {
 							background-color: #EEE;
 							border: 1px solid #CCC;
 							box-shadow: 0px 0px 5px #777;
+						}
+						> .empty {
+							color: #BBB;
 						}
 					}
 

@@ -34,18 +34,33 @@
 			"</tr>" +
 			"<tr class='add_prop'>" +
 				"<td colspan='2' class='add_prop'>" +
-					"<div class='add_prop' data-cjs-on-click=addProperty>Add Property</div>" +
+					"<div class='add_prop' data-cjs-on-click=addProperty>Add Field</div>" +
 				"</td>" +
 			"</tr>" +
+
+			"{{#if adding_field}}" +
+				"<tr class='new_field'>" +
+					"<td class='name'><input placeholder='Field name' class='name' /></td>" +
+					"<td colspan='2'>" +
+						"<select class='type'>" + 
+							"<option value='object'>Object</option>" +
+							"<option value='property'>Property</option>" +
+						"</select>" + 
+					"</td>" +
+				"</tr>" +
+			"{{/if}}" +
+
 			"{{#each children}}" +
 				"{{>prop getPropertyViewOptions(this)}}" +
 				"{{#else}}" +
-					"<tr class='no_children'>" +
-						"<td colspan='2'>No properties</td>" +
-					"</tr>" +
+					"{{#if !adding_field}}" +
+						"<tr class='no_children'>" +
+							"<td colspan='2'>No fields</td>" +
+						"</tr>" +
+					"{{/if}}" +
 			"{{/each}}" +
 		"</tbody>"
-	);
+		);
 
 	$.widget("interstate.column", {
 		options: {
@@ -70,6 +85,7 @@
 			this.element.attr("draggable", true);
 			
 
+			this.$adding_field = cjs(false);
 			this.$selected_prop = this.option("columns").itemConstraint(this.option("column_index")+1);
 
 			this.$name = client.get_$("get_name");
@@ -113,10 +129,10 @@
 					_.forEach(diff.moved, function (info) {
 						var from_index = info.from, to_index = info.to, child = info.item;
 
-						var wrapper = wrappers[from_index];
+						//var wrapper = wrappers[from_index];
 						var statechart = statecharts[from_index];
-						wrapper.splice(from_index, 1);
-						wrappers.splice(to_index, 0, wrapper);
+						//wrapper.splice(from_index, 1);
+						//wrappers.splice(to_index, 0, wrapper);
 						statecharts.splice(from_index, 1);
 						statecharts.splice(to_index, 0, statechart);
 					}, this);
@@ -177,8 +193,25 @@
 				statechart_view: this.statechart_view,
 				show_statechart: this.$is_curr_col,
 				headerClicked: _.bind(this.on_header_click, this),
-				addProperty: _.bind(this._add_property, this)
+				addProperty: _.bind(this._add_property, this),
+				adding_field: this.$adding_field
 			}, this.element);
+			this._select_just_added_name = cjs.liven(function() {
+				var children = this.$children.get();
+				if(this._just_added_prop_name) {
+					var child;
+					for(var i = 0; i<children.length; i++) {
+						child = children[i];
+						if(child.name === this._just_added_prop_name) {
+							this._trigger_child_select(child.value);
+							delete this._just_added_prop_name;
+							return;
+						}
+					}
+				}
+			}, {
+				context: this
+			});
 		},
 
 		_remove_content_bindings: function() {
@@ -212,24 +245,65 @@
 			} else {
 				var target = $(event.target),
 					client = target.data("interstate-prop") ? target.prop("option", "client"): false;
-
-				//if(client instanceof ist.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
-					//if(this.selected_child_disp) {
-						//if(this.selected_child_disp.data("interstate-prop")) { // need to check in case this.selected_child_disp was removed
-							//this.selected_child_disp.prop("on_deselect");
-						//}
-					//}
-					//this.selected_child_disp = target;
-					//this.selected_child_disp.prop("on_select");
-				//}
-				this.element.trigger("child_select", client);
+				this._trigger_child_select(client);
 			}
 		},
+		_trigger_child_select: function(client) {
+			this.element.trigger("child_select", client);
+		},
 		_add_property: function() {
-			var event = new $.Event("command");
-			event.command_type = "add_property";
-			event.client = this.option("client");
-			this.element.trigger(event);
+			var child_names = _.pluck(this.$children.get(), "name"),
+				default_name = "field_"+(child_names.length+1),
+				name = default_name,
+				i = 1,
+				client = this.option("client");
+				
+			while(child_names.indexOf(name) >= 0) {
+				name = default_name + "_" + i;
+				i++;
+			}
+
+			this.$adding_field.set(true);
+			if(client.type() === "stateful") {
+				$("select.type", this.element).val("property");
+			} else {
+				$("select.type", this.element).val("object");
+			}
+
+			$('.new_field input.name', this.element).val(name)
+												.select()
+												.focus();
+			var trigger_add_prop = _.bind(function() {
+				$('select.type,input', this.element).off('.addfield');
+				clearTimeout(onFormBlur);
+
+				var event = new $.Event("command");
+				event.command_type = "add_property";
+				event.client = this.option("client");
+				this._just_added_prop_name = event.prop_name = $('.new_field input.name', this.element).val();
+				window.setTimeout(_.bind(function() {
+					delete this._just_added_prop_name;
+				}, this), 200);
+				event.prop_type = $('select.type', this.element).val();
+
+				this.element.trigger(event);
+
+				this.$adding_field.set(false);
+			}, this);
+			var onFormBlur;
+			$('select.type,input', this.element).on('blur.addfield', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				onFormBlur = setTimeout(function() {
+					trigger_add_prop();
+				}, 50);
+			}).on('focus.addfield', function() {
+				clearTimeout(onFormBlur);
+			}).on('keydown.addfield', function(event) {
+				if(event.keyCode === 13) { // enter
+					trigger_add_prop();
+				}
+			});
 		},
 	});
 }(interstate, jQuery));

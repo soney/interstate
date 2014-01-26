@@ -260,7 +260,7 @@
 				} else if (object instanceof ist.ParsedEvent) {
 					listen_to = ["setString"];
 				} else {
-					listen_to = [];
+					listen_to = ['destroy', 'begin_destroy'];
 				}
 				
 				rv = new ist.WrapperServer({
