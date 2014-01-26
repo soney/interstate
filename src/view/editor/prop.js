@@ -220,6 +220,13 @@
 				this.element.trigger(event);
 			} else if(action_name === 'rename') {
 				this.begin_rename();
+			} else if(action_name === 'change_type') {
+				var client = this.option("client"),
+					client_type = client.type(),
+					obj = this.option("obj"),
+					obj_type = obj.type(),
+					new_type = (client_type === 'cell' || client_type === 'stateful_prop') ? 'stateful' : (obj_type === 'stateful' ? 'stateful_prop' : 'cell');
+				this._change_type(new_type);
 			}
 		},
 
@@ -417,6 +424,16 @@
 					this.element.trigger(event);
 				}
 			}
+		},
+
+		_change_type: function(type) {
+			var event = new $.Event("command");
+			event.command_type = "set_type";
+			event.client = this.option("obj");
+			event.prop_name = this.$prop_name.get();
+			event.type_name = type;
+
+			this.element.trigger(event);
 		},
 
 		on_drag_start: function(event) {

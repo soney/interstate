@@ -43,8 +43,8 @@
 					"<td class='name'><input placeholder='Field name' class='name' /></td>" +
 					"<td colspan='2'>" +
 						"<select class='type'>" + 
-							"<option value='object'>Object</option>" +
-							"<option value='property'>Property</option>" +
+							"<option value='stateful'>Object</option>" +
+							"<option value='stateful_prop'>Property</option>" +
 						"</select>" + 
 					"</td>" +
 				"</tr>" +
@@ -265,9 +265,9 @@
 
 			this.$adding_field.set(true);
 			if(client.type() === "stateful") {
-				$("select.type", this.element).val("property");
+				$("select.type", this.element).val("stateful_prop");
 			} else {
-				$("select.type", this.element).val("object");
+				$("select.type", this.element).val("stateful");
 			}
 
 			$('.new_field input.name', this.element).val(name)

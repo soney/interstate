@@ -10,7 +10,7 @@
         ist.ChangeCellCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
-        if (!this._options.cell || !this._options.str) {
+        if (!this._options.cell || !_.isString(this._options.str)) {
             throw new Error("Must select a cell");
         }
     

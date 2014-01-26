@@ -345,12 +345,12 @@
 				}
 				*/
 
-				if(prop_type === "object") {
+				if(prop_type === "stateful") {
 					value = new ist.StatefulObj(undefined, true);
 					value.do_initialize({
 						direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: value })
 					});
-				} else if(prop_type === "property") {
+				} else if(prop_type === "stateful_prop") {
 					if(client.type() === "dict") {
 						value = new ist.Cell({str: ''});
 					} else {
@@ -514,14 +514,14 @@
 				var to_type = event.type_name;
 				name = event.prop_name;
 				client = event.client;
-				if(to_type === "Object") {
+				if(to_type === "stateful") {
 					value = new ist.StatefulObj(undefined, true);
 					value.do_initialize({
 						direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: value })
 					});
-				} else if(to_type === "Property") {
+				} else if(to_type === "stateful_prop") {
 					value = new ist.StatefulProp();
-				} else if(to_type === "Cell") {
+				} else if(to_type === "cell") {
 					value = new ist.Cell();
 				}
 
