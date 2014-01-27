@@ -30,6 +30,7 @@
 			insert_at(child_node, parent_node, to_index);
 		}
 	};
+
 	cjs.registerCustomPartial("widgetList", {
 		createNode: function(info_servers) {
 			return $("<div />").component_list({
@@ -41,22 +42,87 @@
 		}
 	});
 
-	var tlate = "<div class='programs'>" +
-		"<h3>Programs</h3>" +
-		"{{#each programs}}" +
-			"<div clas='program'>" +
-				"{{this.name}}" +
-			"</div>" +
-		"{{/each}}" +
-	"</div>" +
-	"<div class='components'>" +
-		"<h3>Components</h3>" +
-		"{{#each components}}" +
-			"<div clas='component'>" +
-				"{{this.name}}" +
-			"</div>" +
-		"{{/each}}" +
-	"</div>";
+	var tlate = cjs.createTemplate(
+				"<div class='programs'>" +
+					"<h3>my programs</h3>" +
+					"{{#each programs}}" +
+						"<div data-name='{{this}}' class='program entry {{this===loaded_program ? \"selected\" : \"\"}}' " +
+							"data-cjs-on-click='load_program'>" +
+							"{{this}}" +
+							/*
+							"{{#if this===loaded_program}}" +
+								"<span class='saved'>(saved)</span>" +
+							"{{/if}}" +
+							*/
+						"</div>" +
+					"{{/each}}" +
+					"<button class='save_sketch btn btn-block btn-default'>" +
+						"<span class='glyphicon glyphicon-floppy-disk'></span>" +
+						" Save as..." +
+					"</button>" +
+				"</div>" +
+				""
+				/*
+				"<div class='components'>" +
+					"<h3>Components</h3>" +
+					"{{#each components}}" +
+						"<div class='component entry'>" +
+							"{{this}}" +
+						"</div>" +
+					"{{/each}}" +
+				"</div>"
+				*/
+				);
+	
+	$.widget("interstate.component_list", {
+		options: {
+			info_servers: false
+		},
+		_create: function() {
+			var info_servers = this.option("info_servers");
+
+			this.$program_names = cjs(function() {
+				return info_servers.programs.get();
+			});
+			this.$component_names = cjs(function() {
+				return info_servers.components.get();
+			});
+			this.$loaded_program = cjs(function() {
+				return info_servers.loaded_program.get();
+			});
+
+			this._addContentBindings();
+			this._addClassBindings();
+		},
+		_destroy: function() {
+			this._removeContentBindings();
+			this._removeClassBindings();
+
+			this._super();
+		},
+		_addContentBindings: function() {
+			tlate({
+				programs: this.$program_names,
+				components: this.$component_names,
+				load_program: _.bind(function(event) {
+					var e = new $.Event("load_program");
+					e.storage_type = 'program';
+					e.name = $(event.target).attr("data-name");
+					this.element.trigger(e);
+				}, this),
+				loaded_program: this.$loaded_program
+			}, this.element);
+		},
+		_removeContentBindings: function() {
+			cjs.destroyTemplate(this.element);
+		},
+		_addClassBindings: function() {
+			this.element.addClass("component_list");
+		},
+		_removeClassBindings: function() {
+		}
+	});
+				/*
 	$.widget("interstate.component_list", {
 		options: {
 			info_servers: false
@@ -380,4 +446,5 @@
 			this.element.trigger(event);
 		}
 	});
+	*/
 }(interstate, jQuery));

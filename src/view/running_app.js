@@ -40,6 +40,7 @@
 		_create: function () {
 			this.element.addClass("ist_runtime");
 			this._command_stack = new ist.CommandStack();
+
 			this.highlights = [];
 			if (this.option("show_edit_button")) {
 				this.button_color = "#990000";
@@ -147,6 +148,7 @@
 			}
 			this._super(key, value);
 			if(key === "root") {
+				this._command_stack.clear();
 				if(this.server_socket) {
 					this.server_socket.set_root(this.option("root"));
 				}
@@ -267,7 +269,8 @@
 			var root = this.option("root");
 
 			var server_socket = new ist.ProgramStateServer({
-				root: root
+				root: root,
+				command_stack: this._command_stack 
 			}).on("connected", function () {
 				if(this.edit_button) {
 					this.edit_button.addClass("active").css(this.edit_active_css);

@@ -24,6 +24,10 @@
 				stack.push(command);
 				index += 1;
 			}
+			cjs.wait();
+			this.$undo_description.invalidate();
+			this.$redo_description.invalidate();
+			cjs.signal();
 		};
 
 		this._undo = function() {
@@ -31,6 +35,11 @@
 				var last_command = stack[index];
 				last_command._undo();
 				index -= 1;
+
+				cjs.wait();
+				this.$undo_description.invalidate();
+				this.$redo_description.invalidate();
+				cjs.signal();
 			}
 		};
 
@@ -39,6 +48,11 @@
 				var last_command = stack[index + 1];
 				last_command._do();
 				index += 1;
+
+				cjs.wait();
+				this.$undo_description.invalidate();
+				this.$redo_description.invalidate();
+				cjs.signal();
 			}
 		};
 
@@ -50,11 +64,43 @@
 			return index < stack.length - 1;
 		};
 
-		this.destroy = function() {
+		this.get_undo_description = function() {
+			if(this.can_undo()) {
+				var last_command = stack[index];
+				return last_command.to_undo_string();
+			} else {
+				return false;
+			}
+		};
+
+		this.get_redo_description = function() {
+			if(this.can_redo()) {
+				var last_command = stack[index + 1];
+				return last_command.to_redo_string();
+			} else {
+				return false;
+			}
+		};
+
+		this.$undo_description = cjs(this.get_undo_description, {context: this});
+		this.$redo_description = cjs(this.get_redo_description, {context: this});
+
+		this.clear = function() {
 			for(var i = 0; i<stack.length; i++) {
 				stack[i].destroy();
 			}
-			stack = null;
+			stack = [];
+			index = -1;
+
+			cjs.wait();
+			this.$undo_description.invalidate();
+			this.$redo_description.invalidate();
+			cjs.signal();
+		};
+		
+
+		this.destroy = function() {
+			this.clear();
 		};
 	};
 }(interstate));

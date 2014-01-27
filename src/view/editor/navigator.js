@@ -19,6 +19,14 @@
 		},
 		destroyNode: function(node) {
 			$(node).navigator("destroy");
+		},
+		onAdd: function(node, options) {
+			if(!$(node).data("interstate-navigator")) {
+				$(node).navigator(options);
+			}
+		},
+		onRemove: function(node) {
+			$(node).navigator("destroy");
 		}
 	});
 
@@ -44,6 +52,8 @@
 		},
 		_destroy: function() {
 			var client = this.option("root_client");
+
+			this.element.off(".nav");
 
 			this._remove_class_bindings();
 			this._remove_content_bindings();

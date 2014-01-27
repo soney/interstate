@@ -10,14 +10,31 @@
 	var editor_template = cjs.createTemplate(
 		"<nav class='navbar navbar-default' role='navigation'>" +
 			"<div class='undoredo_group btn-group navbar-left'>" +
-				"<button type='button' class='btn btn-sm btn-default' data-cjs-on-click='undo'>" +
-					"<span class='glyphicon glyphicon-arrow-left'></span> " +
-					"Undo" +
-				"</button>" +
-				"<button type='button' class='btn btn-sm btn-default' data-cjs-on-click='redo'>" +
-					"Redo" +
-					" <span class='glyphicon glyphicon-arrow-right'></span>" +
-				"</button>" +
+				"{{#if undo_desc}}" +
+					"<div type='button' class='btn btn btn-default' data-cjs-on-click='undo'>" +
+						"<div class='tooltip'>{{undo_desc}}</div>" +
+						"<span class='glyphicon glyphicon-arrow-left'></span> " +
+						"Undo" +
+					"</div>" +
+				"{{#else}}" +
+					"<div disabled type='button' class='btn btn btn-default'>" +
+						"<span class='glyphicon glyphicon-arrow-left'></span> " +
+						"Undo" +
+					"</div>" +
+				"{{/if}}" +
+
+				"{{#if redo_desc}}" +
+					"<div type='button' class='btn btn btn-default' data-cjs-on-click='redo'>" +
+						"<div class='tooltip'>{{redo_desc}}</div>" +
+						"Redo" +
+						" <span class='glyphicon glyphicon-arrow-right'></span>" +
+					"</div>" +
+				"{{#else}}" +
+					"<div disabled type='button' class='btn btn btn-default'>" +
+						"Redo" +
+						" <span class='glyphicon glyphicon-arrow-right'></span>" +
+					"</div>" +
+				"{{/if}}" +
 			"</div>" + // btn group
 			"<table id='cell_group' class='input-group navbar-left'>" +
 				"<tr>" +
@@ -25,18 +42,18 @@
 						"<pre id='ace_ajax_editor'></pre>" +
 					"</td>" +
 					"<td id='confirm'>" +
-						"<span id='confirm_button' class='glyphicon glyphicon-ok-circle'></span>" +
+						"<span title='Confirm cell' id='confirm_button' class='glyphicon glyphicon-ok-circle'></span>" +
 					"</td>" +
 					"<td id='cancel'>" +
-						"<span id='cancel_button' class='glyphicon glyphicon-remove-circle'></span>" +
+						"<span title='Cancel' id='cancel_button' class='glyphicon glyphicon-remove-circle'></span>" +
 					"</td>" +
 				"</tr>" +
 			"</table>" +
 			"<div class='widget_group btn-group navbar-right'>" +
-				"<button type='button' class='btn btn-sm btn-default {{show_components ? \"active\" : \"\"}}' data-cjs-on-click='toggle_show_widgets'>" +
+				"<div type='button' class='btn btn btn-default {{show_components ? \"active\" : \"\"}}' data-cjs-on-click='toggle_show_widgets'>" +
 					"Widgets" +
-					" <span class='glyphicon glyphicon-chevron-down'></span>" +
-				"</button>" +
+					" <span class='glyphicon {{show_components ? \"glyphicon-chevron-up\" : \"glyphicon-chevron-down\"}}'></span>" +
+				"</div>" +
 			"</div>" +
 		"</nav>" +
 
@@ -72,6 +89,18 @@
 
 			this.$show_components = cjs(true);
 			this.$info_servers = cjs(false);
+			this.$undo_client = this.$info_servers.prop("undo_description");
+			this.$redo_client = this.$info_servers.prop("redo_description");
+
+			this.$undo_desc = cjs(function() {
+				var client = this.$undo_client.get();
+				return client ? client.get() : false;
+			}, { context: this});
+
+			this.$redo_desc = cjs(function() {
+				var client = this.$redo_client.get();
+				return client ? client.get() : false;
+			}, { context: this});
 
 			var on_comm_mechanism_load = function(communication_mechanism) {
 				this.client_socket = new ist.ProgramStateClient({
@@ -141,7 +170,9 @@
 				toggle_show_widgets: _.bind(function() {
 					this.$show_components.set(!this.$show_components.get());
 				}, this),
-				info_servers: this.$info_servers
+				info_servers: this.$info_servers,
+				undo_desc: this.$undo_desc,
+				redo_desc: this.$redo_desc
 			}, this.element);
 			var ace_editor = $("nav #ace_ajax_editor", this.element);
 			ace_editor.css("width", "100%");
@@ -155,7 +186,7 @@
 			});
 			$(window).on("resize.owr", _.bind(this.$window_inner_width.invalidate, this.$window_inner_width));
 
-			this._cellwidth_binding = cjs.bindCSS(ace_editor, "width", this.$window_inner_width.sub((this.$window_inner_width.le(767).iif(0, 270))).add("px"));
+			this._cellwidth_binding = cjs.bindCSS(ace_editor, "width", this.$window_inner_width.sub((this.$window_inner_width.le(767).iif(60, 300))).add("px"));
 			this.$window_inner_width.onChange(function() {
 				this.editor.resize();
 			}, this);

@@ -95,7 +95,11 @@
 			var on_editor_blur = _.bind(function(e) {
 					this._helper_focused = false;
 					_.delay(_.bind(function() {
-						if(!this.element.is(":focus")) {
+						if(editor.isFocused()) {
+							this._helper_focused = true;
+						} else if(this.element.is(":focus")) {
+							this._helper_focused = false;
+						} else {
 							do_confirm();
 						}
 					}, this), 50);

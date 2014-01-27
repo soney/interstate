@@ -97,6 +97,12 @@
                     index: obj.index
                 });
             });
+        proto.to_undo_string = function () {
+            return "remove '" + this._prop_name + "'";
+        };
+        proto.to_redo_string = function () {
+            return "add '" + this._prop_name + "'";
+        };
     }(ist.SetPropCommand));
     
     ist.InheritPropCommand = function (options) {

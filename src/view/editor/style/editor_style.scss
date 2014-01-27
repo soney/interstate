@@ -104,9 +104,29 @@ html.full_window_editor {
 		.widget_group {
 			border-left: 1px solid #DDD;
 		}
-		button {
+		div.btn {
 			border: none;
 			border-radius: 0px;
+			&:hover {
+				> .tooltip {
+					display: block;
+					opacity: 1;
+				}
+			}
+			> .tooltip {
+				position: absolute;
+				display: none;
+				opacity: 0;
+				background-color: #e0e0e0;
+				padding: 5px;
+				border: 1px solid #CCC;
+				border-top: none;
+				top: 28px;
+				border-bottom-left-radius: 2px;
+				border-bottom-right-radius: 2px;
+				pointer-events: none;
+				max-width: 300px;
+			}
 		}
 		#cell_group {
 			margin:0px;
@@ -131,12 +151,22 @@ html.full_window_editor {
 			}
 			&.disabled {
 				#confirm_button,#cancel_button {
+					display: none;
 					color: #AAA;
 					cursor: default;
 				}
+				.ace_scroller {
+					background: none;
+				}
+				.ace-tm {
+					background: none;
+					.ace_cursor {
+						display: none;
+					}
+				}
 			}
 		}
-		#ace_ajax_editor {
+		.ace-tm {
 			border-radius: 0px;
 			border: none;
 			min-height: 30px;
@@ -144,64 +174,6 @@ html.full_window_editor {
 			margin-left:10px;
 		}
 	}
-
-	> .lllmenu {
-		position: fixed;
-		right: 0px;
-		top: 0px;
-		z-index: 999999;
-		> .title {
-			cursor: pointer;
-			top: 5px;
-			position: relative;
-			padding: 5px;
-			font-variant: small-caps;
-			background-color: #555;
-			color: white;
-			&:hover {
-				text-decoration: underline;
-			}
-			@include non-selectable;
-		}
-		> .contents {
-			box-shadow: 0px 0px 10px #666;
-			background-color: #EEE;
-			border: 1px solid #AAA;
-			border-top: none;
-			border-right: none;
-			width: 200px;
-			font-size: 0.9em;
-			> .item {
-				padding: 3px;
-				border-top: 1px solid #DDD;
-				cursor: pointer;
-				@include non-selectable;
-				&:first-child {
-					border-top: none;
-				}
-				&:hover {
-					background-color: #E0E0E0;
-				}
-				&.disabled {
-					color: #BBB;
-					cursor: default;
-					&:hover {
-						background-color: #EEE;
-					}
-				}
-			}
-		}
-	}
-
-	&.phone {
-		> #obj_nav {
-			width: 100%;
-			> table.col {
-				width: 100%;
-			}
-		}
-	}
-
 }
 
 .pinned {
@@ -965,70 +937,64 @@ html.full_window_editor {
 .component_list {
 	position: absolute;
 	right: 0px;
-	background-color: #EEE;
+	background-color: rgba(255, 255, 255, 0.8);
 	border: 1px solid #BBB;
 	border-right: none;
 	border-top: none;
+	border-bottom-left-radius: 3px;
+	z-index: 500;
 	@include non-selectable;
 	h3 {
+		font-family: "Source Sans Pro";
 		cursor: default;
 		background-color: #DEDEDE;
 		margin: 0px;
 		padding: 5px;
+		padding-left: 10px;
+		padding-right: 10px;
 		font-weight: 200;
 		text-align: center;
-		color: #AAA;
-		text-shadow: 1px 1px 1px #EEE;
+		color: #777;
+		text-shadow: 1px 1px 1px #DDD;
 		border-bottom: 1px solid #CCC;
 	}
 	.entry {
-		font-family: "Source Sans Pro";
-		&.program {
-			cursor: pointer;
-		}
-		&.dragging {
-			background-color: $nav_selected_color;
-			color: white;
-		}
+		border-bottom: 1px solid #EEE;
+		font-family: "Inconsolata";
+		cursor: pointer;
+		padding: 2px;
+		color: #333;
+
 		&:hover {
-			background-color: #EAEAEA;
-			> a.action {
-				visibility: visible;
+			background-color: $nav_header_hover_color;
+			color: $link_color;
+			text-decoration: underline;
+			&.selected {
+				text-decoration: none;
 			}
-		}
-		a {
-			text-decoration: none;
-			&:hover {
-				text-decoration: underline;
-			}
-		}
-		a.name {
-			color: black;
 		}
 
-		> a.action {
-			float: right;
-			visibility: hidden;
-			padding-left: 3px;
-			padding-right: 3px;
+		&.selected {
+			background-color: $nav_selected_color;
+			color: white;
+			cursor: default;
+			span.saved  {
+				font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+				font-weight: 200;
+				font-size: 0.9em;
+				opacity: 0.5;
+				float: right;
+				padding-left: 5px;
+				position: relative;
+				top: -1px;
+			}
 		}
-		padding: 2px;
 	}
-	input {
-		width: 100%;
-		font-size: 1.2em;
-		font-family: "Source Sans Pro";
-		box-sizing: border-box;
-	}
-	> a.save {
-		display: block;
-		text-align: center;
-	}
-	> a.close {
-		position: absolute;
-		right: 5px;
-		color: #777;
-		text-decoration: none;
+	.save_sketch {
+		border: none;
+		border-radius: 0px;
+		border-top: 1px solid #BBB;
+		border-bottom: 1px solid #BBB;
 	}
 }
 

@@ -12,6 +12,7 @@
 		if(this.root) {
 			this.contextual_root = ist.find_or_put_contextual_obj(this.root);
 		}
+		this.command_stack = options.command_stack;
 		this.connected = false;
 		this.wrapper_servers = {};
 
@@ -24,7 +25,10 @@
 							}, {context: this})),
 			components: new ist.RemoteConstraintServer(cjs(function() {
 								return this.program_components.keys();
-							}, {context: this}))
+							}, {context: this})),
+			loaded_program: new ist.RemoteConstraintServer(ist.loaded_program_name),
+			undo_description: new ist.RemoteConstraintServer(this.command_stack.$undo_description),
+			redo_description: new ist.RemoteConstraintServer(this.command_stack.$redo_description)
 		};
 	};
 

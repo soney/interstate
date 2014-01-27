@@ -303,6 +303,8 @@
 
 
 	var type_maps = {};
+	ist.loaded_program_name = cjs();
+
 	ist.getSavedProgramMap = function(type) {
 		if(!_.isString(type)) {
 			type = "";
@@ -371,6 +373,11 @@
 	ist.load = function (name, type) {
 		var str = ist.loadString(name, type),
 			root = ist.destringify(str);
+
+		if(!type) { // program
+			ist.loaded_program_name.set(name);	
+		}
+
 		return root;
 	};
 	ist.ls = function (type) {
