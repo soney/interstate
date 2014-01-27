@@ -33,17 +33,21 @@
 				"</tr>" +
 			"</table>" +
 			"<div class='widget_group btn-group navbar-right'>" +
-				"<button type='button' class='btn btn-sm btn-default' data-cjs-on-click='redo'>" +
+				"<button type='button' class='btn btn-sm btn-default {{show_components ? \"active\" : \"\"}}' data-cjs-on-click='toggle_show_widgets'>" +
 					"Widgets" +
 					" <span class='glyphicon glyphicon-chevron-down'></span>" +
 				"</button>" +
 			"</div>" +
 		"</nav>" +
 
+
 		"{{#fsm loading_state}}" +
 			"{{#state loading}}" +
 				"<div class='loading'>loading editor...</div>" +
 			"{{#state loaded}}" +
+				"{{#if show_components}}" +
+					"{{> widgetList info_servers}}" +
+				"{{/if}}" + // show components
 				"{{> navigator getNavigatorOptions()}}" +
 		"{{/fsm}}" +
 
@@ -66,6 +70,9 @@
 			var on_load = this.loading_state.addTransition("loading", "loaded"),
 				on_rootchange = this.loading_state.addTransition("loaded", "loading");
 
+			this.$show_components = cjs(true);
+			this.$info_servers = cjs(false);
+
 			var on_comm_mechanism_load = function(communication_mechanism) {
 				this.client_socket = new ist.ProgramStateClient({
 					ready_func: this.option("debug_ready"),
@@ -73,15 +80,11 @@
 				})
 				.on("loaded", function (root_client, info_servers) {
 					this.root_client = root_client;
-					if(this.displaying_loading_text) {
-						this.element.html("");
-						this.displaying_loading_text = false;
-					}
+					this.$info_servers.set(info_servers);
 					on_load();
 				}, this)
 				.on("root_changed", function () {
 					on_rootchange();
-					//this.navigator.navigator("destroy");
 				}, this)
 				.on("stringified_root", function(data) {
 					window.open("data:text/plain;charset=utf-8," + data.value);
@@ -114,6 +117,7 @@
 			this._removeContentBindings();
 			this._removeEventListeners();
 			this._removeClassBindings();
+			this.$show_components.destroy();
 
 			this._super();
 		},
@@ -132,7 +136,12 @@
 				}, this),
 				redo: _.bind(function() {
 					this.client_socket.post_command("redo");
-				}, this)
+				}, this),
+				show_components: this.$show_components,
+				toggle_show_widgets: _.bind(function() {
+					this.$show_components.set(!this.$show_components.get());
+				}, this),
+				info_servers: this.$info_servers
 			}, this.element);
 			var ace_editor = $("nav #ace_ajax_editor", this.element);
 			ace_editor.css("width", "100%");

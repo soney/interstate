@@ -30,6 +30,17 @@
 			insert_at(child_node, parent_node, to_index);
 		}
 	};
+	cjs.registerCustomPartial("widgetList", {
+		createNode: function(info_servers) {
+			return $("<div />").component_list({
+				info_servers: info_servers
+			});
+		},
+		destroyNode: function(node) {
+			$(node).component_list("destroy");
+		}
+	});
+
 	$.widget("interstate.component_list", {
 		options: {
 			info_servers: false
@@ -48,9 +59,6 @@
 			}, {
 				context: this
 			});
-			var close_button = $("<a href='javascript:void(0)' class='close'>x</a>").appendTo(this.element).on("click", _.bind(function() {
-				this.element.hide();
-			}, this));
 			
 			$("<h3 />").text("Programs").appendTo(this.element);
 			this.progs = $("<div />")	.addClass("programs")
@@ -243,7 +251,7 @@
 		},
 
 		_create: function() {
-			this.element.addClass("row " + this.option("type"));
+			this.element.addClass("entry " + this.option("type"));
 			this.close_button = $("<a>").attr("href", "javascript:void(0)")
 										.appendTo(this.element)
 										.addClass("action")
@@ -256,7 +264,7 @@
 										.on("click", _.bind(this.download, this));
 			this.label = $("<a />")	.text(this.option("name"))
 									.attr("href", "javascript:void(0)")
-									.addClass("label")
+									.addClass("name")
 										//.editable_text({ text: this.option("name") })
 										.appendTo(this.element);
 			if(this.option("type") === "component") {

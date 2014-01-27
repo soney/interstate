@@ -24,7 +24,7 @@
 				"</th>" +
 				"{{#if stateful}}" +
 					"<th rowspan='2' class='statechart_cell'>" +
-						"{{#if show_statechart}}" +
+						"{{#if is_curr_col}}" +
 							"{{statechart_view}}" +
 						"{{/if}}" +
 					"</th>" +
@@ -32,22 +32,28 @@
 					"<th rowspan='2'></th>" +
 				"{{/if}}" +
 			"</tr>" +
-			"<tr class='add_prop'>" +
-				"<td colspan='2' class='add_prop'>" +
-					"<div class='add_prop' data-cjs-on-click=addProperty>Add Field</div>" +
-				"</td>" +
-			"</tr>" +
 
-			"{{#if adding_field}}" +
-				"<tr class='new_field'>" +
-					"<td class='name'><input placeholder='Field name' class='name' /></td>" +
-					"<td colspan='2'>" +
-						"<select class='type'>" + 
-							"<option value='stateful'>Object</option>" +
-							"<option value='stateful_prop'>Property</option>" +
-						"</select>" + 
+			"{{#if is_curr_col}}" +
+				"<tr class='add_prop'>" +
+					"<td colspan='2' class='add_prop'>" +
+						"<div class='add_prop' data-cjs-on-click=addProperty>Add Field</div>" +
 					"</td>" +
 				"</tr>" +
+
+				"{{#if adding_field}}" +
+					"<tr class='new_field'>" +
+						"<td class='name'><input placeholder='Field name' class='name' /></td>" +
+						"<td class='type'>" +
+							"<select class='type'>" + 
+								"<option value='stateful'>Object</option>" +
+								"<option value='stateful_prop'>Property</option>" +
+							"</select>" + 
+						"</td>" +
+						"<td class='confirm_field'>" +
+							"<a href='javascript:void(0)'>OK</a>" +
+						"</td>" +
+					"</tr>" +
+				"{{/if}}" +
 			"{{/if}}" +
 
 			"{{#each children}}" +
@@ -55,7 +61,7 @@
 				"{{#else}}" +
 					"{{#if !adding_field}}" +
 						"<tr class='no_children'>" +
-							"<td colspan='2'>No fields</td>" +
+							"<td colspan='3'>No fields</td>" +
 						"</tr>" +
 					"{{/if}}" +
 			"{{/each}}" +
@@ -84,7 +90,6 @@
 
 			this.element.attr("draggable", true);
 			
-
 			this.$adding_field = cjs(false);
 			this.$selected_prop = this.option("columns").itemConstraint(this.option("column_index")+1);
 
@@ -191,7 +196,7 @@
 					}
 				}, this),
 				statechart_view: this.statechart_view,
-				show_statechart: this.$is_curr_col,
+				is_curr_col: this.$is_curr_col,
 				headerClicked: _.bind(this.on_header_click, this),
 				addProperty: _.bind(this._add_property, this),
 				adding_field: this.$adding_field
@@ -274,22 +279,26 @@
 												.select()
 												.focus();
 			var trigger_add_prop = _.bind(function() {
-				$('select.type,input', this.element).off('.addfield');
-				clearTimeout(onFormBlur);
+					$('select.type,input', this.element).off('.addfield');
+					clearTimeout(onFormBlur);
 
-				var event = new $.Event("command");
-				event.command_type = "add_property";
-				event.client = this.option("client");
-				this._just_added_prop_name = event.prop_name = $('.new_field input.name', this.element).val();
-				window.setTimeout(_.bind(function() {
-					delete this._just_added_prop_name;
-				}, this), 200);
-				event.prop_type = $('select.type', this.element).val();
+					var event = new $.Event("command");
+					event.command_type = "add_property";
+					event.client = this.option("client");
+					this._just_added_prop_name = event.prop_name = $('.new_field input.name', this.element).val();
+					window.setTimeout(_.bind(function() {
+						delete this._just_added_prop_name;
+					}, this), 200);
+					event.prop_type = $('select.type', this.element).val();
 
-				this.element.trigger(event);
+					this.element.trigger(event);
 
-				this.$adding_field.set(false);
-			}, this);
+					this.$adding_field.set(false);
+				}, this),
+				cancel_add_prop = _.bind(function() {
+					$('select.type,input', this.element).off('.addfield');
+					this.$adding_field.set(false);
+				}, this);
 			var onFormBlur;
 			$('select.type,input', this.element).on('blur.addfield', function(e) {
 				e.preventDefault();
@@ -302,6 +311,8 @@
 			}).on('keydown.addfield', function(event) {
 				if(event.keyCode === 13) { // enter
 					trigger_add_prop();
+				} else if(event.keyCode === 27) { //esc
+					cancel_add_prop();
 				}
 			});
 		},
