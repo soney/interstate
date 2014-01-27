@@ -72,7 +72,9 @@
 									})
 									.on('initialedit->set', function(event) {
 										this._set_value_for_state(event.value);
-									}, this);
+									}, this)
+									.on("unset->initialedit", this._emit_begin_editing, this)
+									.on("initialedit->*", this._emit_done_editing, this);
 
 			this.$$STR = false;
 			this.$$SE = false;

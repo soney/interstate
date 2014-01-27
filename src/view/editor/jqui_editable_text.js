@@ -26,9 +26,11 @@
 		},
 		onAdd: function(node, init_val) {
 			_.defer(function() { $(node).val(init_val).select().focus(); });
+			$(node).editing_text("onAdd");
 		},
 		onRemove: function(node) {
 			$(node).editing_text("option", "helper", false);
+			$(node).editing_text("onRemove");
 		},
 		destroyNode: function(node) {
 			$(node).editing_text("destroy");
@@ -42,15 +44,24 @@
 		_create: function () {
 			this._helper_focused = false;
 			this.element.val(this.option("init_val"));
-			$("#cancel_button").on("click", _.bind(function() {
-			}, this);
-			$("#confirm_button").on("click", _.bind(function() {
-			}, this);
+			this._confirm = _.bind(this._confirm_edit, this);
+			this._cancel = _.bind(this._cancel_edit, this);
 		},
 		_destroy: function () {
 			this.option("helper", false);
 			this._super();
 		},
+
+		onAdd: function() {
+			$("#confirm_button").on("mousedown", this._confirm);
+			$("#cancel_button").on("mousedown", this._cancel);
+		},
+
+		onRemove: function() {
+			$("#confirm_button").off("mousedown", this._confirm);
+			$("#cancel_button").off("mousedown", this._cancel);
+		},
+
 		_setOption: function(key, value) {
 			if(key === "helper") {
 				var editor = value,
@@ -76,15 +87,12 @@
 		on_edit_blur: function(event) {
 			var editor = this.option("helper"),
 				do_confirm = _.bind(function() {
-					var e = new $.Event("confirm_value");
-					e.value = this.element.val();
-
-					this.element.trigger(e);
+					this._confirm_edit();
 				}, this);
 			event.preventDefault();
 			event.stopPropagation();
 
-			var on_editor_blur = _.bind(function() {
+			var on_editor_blur = _.bind(function(e) {
 					this._helper_focused = false;
 					_.delay(_.bind(function() {
 						if(!this.element.is(":focus")) {
@@ -121,19 +129,25 @@
 			if(keyCode === 27) { //esc
 				event.preventDefault();
 				event.stopPropagation();
-
-				var e = new $.Event("cancel_value");
-				this.element.trigger(e);
+				this._cancel_edit();
 			} else if(keyCode === 13) { //enter
 				if(!event.shiftKey && !event.ctrlKey && !event.metaKey) {
 					event.preventDefault();
 					event.stopPropagation();
 
-					var e = new $.Event("confirm_value");
-					e.value = this.element.val();
-					this.element.trigger(e);
+					this._confirm_edit();
 				}
 			}
+		},
+
+		_confirm_edit: function() {
+			var e = new $.Event("confirm_value");
+			e.value = this.element.val();
+			this.element.trigger(e);
+		},
+		_cancel_edit: function() {
+			var e = new $.Event("cancel_value");
+			this.element.trigger(e);
 		}
 	});
 }(interstate, jQuery));
