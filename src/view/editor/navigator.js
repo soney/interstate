@@ -13,6 +13,15 @@
 		"{{/each}}"
 	);
 
+	cjs.registerCustomPartial("navigator", {
+		createNode: function(options) {
+			return $("<div />").navigator(options);
+		},
+		destroyNode: function(node) {
+			$(node).navigator("destroy");
+		}
+	});
+
 	$.widget("interstate.navigator", {
 		options: {
 			root_client: false,
@@ -72,6 +81,7 @@
 		},
 
 		_remove_class_bindings: function() {
+			this.element.attr("id", "");
 		},
 		_add_destroy_check: function() {
 			var old_cols = [],

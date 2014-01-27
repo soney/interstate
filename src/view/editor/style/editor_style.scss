@@ -79,21 +79,71 @@ html.full_window_editor {
 
 #editor {
 	font-family: "Source Sans Pro";
+	> #obj_nav {
+		overflow: hidden;
+		clear: both;
+	}
 
 	&.pane {
 		height: 100%;
 
-		> .navigator.row {
-			> #obj_nav {
-				clear: both;
-			}
-		}
 		> .pinned.row {
 			padding-top: 10px;
 		}
 	}
 
-	> .menu {
+	>nav {
+		background: rgba(255,255,255,0.3);
+		border-bottom: 1px solid #999;
+		border-radius: 0px;
+		.undoredo_group {
+			border-right: 1px solid #DDD;
+		}
+		.widget_group {
+			border-left: 1px solid #DDD;
+		}
+		button {
+			border: none;
+			border-radius: 0px;
+		}
+		#cell_group {
+			margin:0px;
+			padding:0px;
+			vertical-align: top;
+			tr,td {
+				margin:0px;
+				padding:0px;
+			}
+			td#confirm,td#cancel{
+				padding:3px;
+			}
+			#confirm_button {
+				color: #090;
+				font-size: 1.0em;
+				cursor: pointer;
+			}
+			#cancel_button {
+				color: #900;
+				font-size: 1.0em;
+				cursor: pointer;
+			}
+			&.disabled {
+				#confirm_button,#cancel_button {
+					color: #AAA;
+					cursor: default;
+				}
+			}
+		}
+		#ace_ajax_editor {
+			border-radius: 0px;
+			border: none;
+			min-height: 30px;
+			margin: 0px;
+			margin-left:10px;
+		}
+	}
+
+	> .lllmenu {
 		position: fixed;
 		right: 0px;
 		top: 0px;
@@ -139,10 +189,6 @@ html.full_window_editor {
 				}
 			}
 		}
-	}
-
-	&.tablet, &.phone {
-		font-size: 1.5em;
 	}
 
 	&.phone {
@@ -303,6 +349,7 @@ html.full_window_editor {
 					text-align: center;
 					position: relative;
 					> h2 {
+						font-family: "Source Sans Pro";
 						font-size: 1.7em;
 						font-weight: 100;
 						margin: 0px;
@@ -525,7 +572,7 @@ html.full_window_editor {
 						font-size: inherit;
 						font-family: inherit;
 						color: inherit;
-						height: 16px;
+						height: 18px;
 					}
 					input {
 						color: black;
@@ -654,7 +701,7 @@ html.full_window_editor {
 								font-size: inherit;
 								padding: 2px;
 								margin: 0px;
-								height: 16px;
+								height: 18px;
 								text-align: left;
 								background-color: #EEE;
 								border: 1px solid #CCC;
@@ -690,7 +737,8 @@ html.full_window_editor {
 							font-size: inherit;
 							padding: 2px;
 							margin: 0px;
-							height: 16px;
+							height: 20px;
+							min-width:50px;
 							text-align: left;
 							background-color: #EEE;
 							border: 1px solid #CCC;
@@ -964,16 +1012,18 @@ html.full_window_editor {
 	border: 1px solid red;
 }
 
-.col  .menu {
+.col .menu {
 	list-style: none;
 	padding: 0px;
 	position: absolute;
 	margin: 0px;
 	border: 1px solid red;
+	font-family: "Source Sans Pro";
 	border-top: 1px solid #EEE;
 	background-color: #F9F9F9;
-	z-index: 200;
+	z-index: 100;
 	color: black;
+	font-size: 0.9em;
 	.menu-item {
 		padding: 1px;
 		padding-left: 10px;

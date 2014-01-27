@@ -333,7 +333,9 @@
 			});
 
 			this.edit_state	.on("idle->editing", disable_tooltip)
-							.on("editing->idle", enable_tooltip);
+							.on("idle->editing", this._emit_begin_editing, this)
+							.on("editing->idle", enable_tooltip)
+							.on("editing->idle", this._emit_done_editing, this);
 		},
 		_remove_tooltip: function() {
 			this._tooltip_live_fn.destroy();
@@ -346,6 +348,16 @@
 			event.state = this.option("state");
 			event.text = val || "";
 
+			this.element.trigger(event);
+		},
+		_emit_begin_editing: function() {
+			var event = new $.Event("begin_editing_cell");
+			event.initial_val = this.$str.get();
+			event.textarea = $("textarea", this.element)[0];
+			this.element.trigger(event);
+		},
+		_emit_done_editing: function() {
+			var event = new $.Event("done_editing_cell");
 			this.element.trigger(event);
 		}
 	});

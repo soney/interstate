@@ -32,7 +32,9 @@ exports.vendor = c(
 				"jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.js",
 				"raphael/raphael.js",
 				"esprima/esprima.js",
-				"qrcode.min.js"
+				"qrcode.min.js",
+				"ace/ace.js"
+
 				//"Snap.svg-0.1.0/dist/snap.svg.js",
 				//"three.js",
 				//"box2d/Box2dWeb-2.1.a.3.min.js"
@@ -140,7 +142,9 @@ exports.editor = c(
 		"view/editor/statechart/hrange.js",
 		"view/editor/style/editor_style.css",
 		"view/editor/style/fonts/Inconsolata/stylesheet.css",
-		"view/editor/style/fonts/SourceSansPro/stylesheet.css"
+		"view/editor/style/fonts/SourceSansPro/stylesheet.css",
+		"_vendor/bootstrap-3.0.3/css/bootstrap.css",
+		"_vendor/bootstrap-3.0.3/css/bootstrap-theme.css"
 	])
 );
 

@@ -7,34 +7,259 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	var display;
-    var platform = window.navigator.platform;
+	var editor_template = cjs.createTemplate(
+		"<nav class='navbar navbar-default' role='navigation'>" +
+			"<div class='undoredo_group btn-group navbar-left'>" +
+				"<button type='button' class='btn btn-sm btn-default' data-cjs-on-click='undo'>" +
+					"<span class='glyphicon glyphicon-arrow-left'></span> " +
+					"Undo" +
+				"</button>" +
+				"<button type='button' class='btn btn-sm btn-default' data-cjs-on-click='redo'>" +
+					"Redo" +
+					" <span class='glyphicon glyphicon-arrow-right'></span>" +
+				"</button>" +
+			"</div>" + // btn group
+			"<table id='cell_group' class='input-group navbar-left'>" +
+				"<tr>" +
+					"<td>" +
+						"<pre id='ace_ajax_editor'></pre>" +
+					"</td>" +
+					"<td id='confirm'>" +
+						"<span id='confirm_button' class='glyphicon glyphicon-ok-circle'></span>" +
+					"</td>" +
+					"<td id='cancel'>" +
+						"<span id='cancel_button' class='glyphicon glyphicon-remove-circle'></span>" +
+					"</td>" +
+				"</tr>" +
+			"</table>" +
+			"<div class='widget_group btn-group navbar-right'>" +
+				"<button type='button' class='btn btn-sm btn-default' data-cjs-on-click='redo'>" +
+					"Widgets" +
+					" <span class='glyphicon glyphicon-chevron-down'></span>" +
+				"</button>" +
+			"</div>" +
+		"</nav>" +
 
-	var to_func = function (value) {
-		return function () { return value; };
-	};
+		"{{#fsm loading_state}}" +
+			"{{#state loading}}" +
+				"<div class='loading'>loading editor...</div>" +
+			"{{#state loaded}}" +
+				"{{> navigator getNavigatorOptions()}}" +
+		"{{/fsm}}" +
 
-	if(platform === "iPhone" || platform === "iPod") {
-		display = "phone";
-	} else if(platform === "iPad") {
-		display = "tablet";
-	} else {
-		display = "desktop";
-	}
-
+		"<div class='pinned'>" +
+		"</div>"
+	);
 	$.widget("interstate.editor", {
 		options: {
-			debug_ready: false,
 			full_window: true,
 			server_window: window.opener,
 			client_id: uid.get_prefix(),
-			single_col_navigation: display === "phone" || display === "tablet",
-			view_type: display,
-			annotations: {},
 			upload_usage: false,
 			use_socket: false,
-			pinned_row: false
+			pinned_row: true
 		},
+		_create: function () {
+			this.loading_state = cjs.fsm("loading", "loaded")
+									.startsAt("loading");
+
+			var on_load = this.loading_state.addTransition("loading", "loaded"),
+				on_rootchange = this.loading_state.addTransition("loaded", "loading");
+
+			var on_comm_mechanism_load = function(communication_mechanism) {
+				this.client_socket = new ist.ProgramStateClient({
+					ready_func: this.option("debug_ready"),
+					comm_mechanism: communication_mechanism
+				})
+				.on("loaded", function (root_client, info_servers) {
+					this.root_client = root_client;
+					if(this.displaying_loading_text) {
+						this.element.html("");
+						this.displaying_loading_text = false;
+					}
+					on_load();
+				}, this)
+				.on("root_changed", function () {
+					on_rootchange();
+					//this.navigator.navigator("destroy");
+				}, this)
+				.on("stringified_root", function(data) {
+					window.open("data:text/plain;charset=utf-8," + data.value);
+				}, this)
+				.on("stringified_obj", function(data) {
+					window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
+				}, this);
+			};
+
+
+			if(this.option("use_socket")) {
+				interstate.async_js("/socket.io/socket.io.js", _.bind(function() {
+					var socket_info = this.option("use_socket");
+					var socket_wrapper = new ist.SocketCommWrapper(socket_info.client_id, false);
+					on_comm_mechanism_load.call(this, socket_wrapper);
+				}, this));
+			} else {
+				if(this.option("server_window") === window) {
+					on_comm_mechanism_load.call(this, new ist.SameWindowCommWrapper(this.option("client_id"), 0));
+				} else {
+					on_comm_mechanism_load.call(this, new ist.InterWindowCommWrapper(this.option("server_window"), this.option("client_id")));
+				}
+			}
+
+			this._addClassBindings();
+			this._addEventListeners();
+			this._addContentBindings();
+		},
+		_destroy: function () {
+			this._removeContentBindings();
+			this._removeEventListeners();
+			this._removeClassBindings();
+
+			this._super();
+		},
+
+		_addContentBindings: function() {
+			editor_template({
+				loading_state: this.loading_state,
+				getNavigatorOptions: _.bind(function() {
+					return {
+						root_client: this.root_client,
+						client_socket: this.client_socket 
+					};
+				}, this),
+				undo: _.bind(function() {
+					this.client_socket.post_command("undo");
+				}, this),
+				redo: _.bind(function() {
+					this.client_socket.post_command("redo");
+				}, this)
+			}, this.element);
+			var ace_editor = $("nav #ace_ajax_editor", this.element);
+			ace_editor.css("width", "100%");
+			this.editor = ace.edit(ace_editor[0]);
+			this.editor.setHighlightActiveLine(false);
+			this.editor.setShowPrintMargin(false);
+			this.editor.renderer.setShowGutter(false); 
+			this.editor.getSession().setMode("ace/mode/javascript");
+			this.$window_inner_width = cjs(function() {
+				return window.innerWidth;
+			});
+			$(window).on("resize.owr", _.bind(this.$window_inner_width.invalidate, this.$window_inner_width));
+
+			this._cellwidth_binding = cjs.bindCSS(ace_editor, "width", this.$window_inner_width.sub((this.$window_inner_width.le(767).iif(0, 270))).add("px"));
+			this.$window_inner_width.onChange(function() {
+				this.editor.resize();
+			}, this);
+			this._disable_editor();
+		},
+		_removeContentBindings: function() {
+			this.editor.destroy();
+			cjs.destroyTemplate(this.element);
+			$(window).off("resize.owr");
+			this._cellwidth_binding.destroy();
+			this.$window_inner_width.destroy();
+		},
+		_addClassBindings: function() {
+			if(this.option("full_window")) {
+				$("html").addClass("full_window_editor");
+			}
+		},
+		_removeClassBindings: function() {
+			if(this.option("full_window")) {
+				$("html").removeClass("full_window_editor");
+			}
+		},
+
+		_disable_editor: function() {
+			$("table#cell_group", this.element).addClass("disabled");
+			this.editor.setReadOnly(true)
+		},
+
+		_enable_editor: function() {
+			$("table#cell_group", this.element).removeClass("disabled");
+			this.editor.setReadOnly(false)
+		},
+
+		_addEventListeners: function() {
+			this.element.on("command.editor", _.bind(this.on_command, this))
+						.on("export.editor", _.bind(function(event) {
+							var obj = event.obj;
+							this.client_socket.post({
+								type: "export_component",
+								cobj_id: obj ? obj.cobj_id : false
+							});
+						}, this))
+						.on("remove_storage.editor", _.bind(function(event) {
+							this.client_socket.post({
+								type: "remove_storage",
+								name: event.name,
+								storage_type: event.storage_type
+							});
+						}, this))
+						.on("save_curr.editor", _.bind(function(event) {
+							this.client_socket.post({
+								type: "save_curr",
+								name: event.name,
+								storage_type: event.storage_type
+							});
+						}, this))
+						.on("download_program.editor", _.bind(function(event) {
+							this.client_socket.post({
+								type: "download_program",
+								name: event.name,
+								storage_type: event.storage_type
+							});
+						}, this))
+						.on("load_program.editor", _.bind(function(event) {
+							this.client_socket.post({
+								type: "load_program",
+								name: event.name,
+								storage_type: event.storage_type
+							});
+						}, this))
+						.on("load_saved_file.editor", _.bind(function(event) {
+							this.client_socket.post({
+								type: "load_file",
+								contents: event.filecontents,
+								name: event.filename
+							});
+						}, this))
+						.on("copy_component.editor", _.bind(function(event) {
+							this.client_socket.post({
+								type: "copy_component",
+								name: event.name,
+								target_obj_id: event.target_obj_id,
+								above_below: event.above_below,
+							});
+						}, this))
+						.on("begin_editing_cell", _.bind(function(event) {
+						/*
+							this.editor.setValue(event.initial_val);
+							this.editor.clearSelection();
+							*/
+
+							this._enable_editor();
+							$(event.textarea).editing_text("option", "helper", this.editor);
+							/*
+							editing_text
+							this.$textarea_binding = cjs(textarea);
+							this.$textarea_binding.onChange(function() {
+								this.editor.setValue(this.$textarea_binding.get());
+								this.editor.clearSelection();
+							}, this);
+
+							*/
+						}, this))
+						.on("done_editing_cell", _.bind(function(event) {
+							this.editor.setValue("");
+							this._disable_editor();
+						}, this));
+		},
+
+		_removeEventListeners: function() {
+			this.element.off(".editor");
+		},
+	/*
 
 		_create: function () {
 			this.element.addClass(this.option("view_type"))
@@ -329,6 +554,52 @@
 			}
 		},
 	
+		undo: function() {
+			this.client_socket.post_command("undo");
+		},
+		redo: function() {
+			this.client_socket.post_command("redo");
+		},
+		toggle_components: function() {
+			this.component_list.show();
+		},
+
+		on_unload: function() {
+			if(this.navigator) {
+				this.navigator.navigator("destroy");
+			}
+			if(this.menu) {
+				this.menu.menu("destroy").remove();
+			}
+			if(this.client_socket) {
+				this.client_socket.destroy();
+			}
+			delete this.client_socket;
+			delete this.navigator;
+			delete this.menu;
+		},
+
+		_destroy: function () {
+			this._super();
+			if(this.navigator) {
+				this.navigator.off("command.do_action");
+			}
+			this.on_unload();
+			if(this.option("upload_usage")) {
+				this.element.off("command.upload child_select.upload header_click.upload");
+			}
+			$(window)	.off("beforeunload.close_editor")
+						.off("keydown.editor_undo_redo");
+		},
+
+		_setOption: function(key, value) {
+			this._super(key, value);
+			if(key === "anotations") {
+				this.navigator.navigator("option", key, value);
+			}
+		}
+	});
+	*/
 		on_command: function(event) {
 			var type = event.command_type;
 			var client, name, value, command, state, transition, statechart_puppet_id, parent_puppet_id;
@@ -337,13 +608,6 @@
 			if(type === "add_property") {
 				client = event.client;
 				var prop_type = event.prop_type;
-				/*
-				if(client.type() === "dict") {
-					prop_type = "stateful_obj";
-				} else {
-					prop_type = "stateful_prop";
-				}
-				*/
 
 				if(prop_type === "stateful") {
 					value = new ist.StatefulObj(undefined, true);
@@ -675,51 +939,6 @@
 				});
 			}
 		},
-
-		undo: function() {
-			this.client_socket.post_command("undo");
-		},
-		redo: function() {
-			this.client_socket.post_command("redo");
-		},
-		toggle_components: function() {
-			this.component_list.show();
-		},
-
-		on_unload: function() {
-			if(this.navigator) {
-				this.navigator.navigator("destroy");
-			}
-			if(this.menu) {
-				this.menu.menu("destroy").remove();
-			}
-			if(this.client_socket) {
-				this.client_socket.destroy();
-			}
-			delete this.client_socket;
-			delete this.navigator;
-			delete this.menu;
-		},
-
-		_destroy: function () {
-			this._super();
-			if(this.navigator) {
-				this.navigator.off("command.do_action");
-			}
-			this.on_unload();
-			if(this.option("upload_usage")) {
-				this.element.off("command.upload child_select.upload header_click.upload");
-			}
-			$(window)	.off("beforeunload.close_editor")
-						.off("keydown.editor_undo_redo");
-		},
-
-		_setOption: function(key, value) {
-			this._super(key, value);
-			if(key === "anotations") {
-				this.navigator.navigator("option", key, value);
-			}
-		}
 	});
 
 	ist.create_key_val_map = function(key_constraint, value_constraint) {
@@ -755,9 +974,10 @@
 			old_destroy.apply(this, arguments);
 			live_fn.destroy();
 		};
-		window.m.push(map);
 
 		return map;
 	}
-		window.m = [];
+	function to_func(value) {
+		return function () { return value; };
+	};
 }(interstate, jQuery));
