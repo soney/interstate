@@ -30,6 +30,22 @@
 			insert_at(child_node, parent_node, to_index);
 		}
 	};
+	"<div class='programs'>" +
+		"<h3>Programs</h3>" +
+		"{{#each programs}}" +
+			"<div clas='program'>" +
+				"{{this.name}}" +
+			"</div>" +
+		"{{/each}}" +
+	"</div>" +
+	"<div class='components'>" +
+		"<h3>Components</h3>" +
+		"{{#each components}}" +
+			"<div clas='component'>" +
+				"{{this.name}}" +
+			"</div>" +
+		"{{/each}}" +
+	"</div>" +
 	$.widget("interstate.component_list", {
 		options: {
 			info_servers: false
