@@ -16,6 +16,7 @@
 				var env = new interstate.Environment({create_builtins: true});
 				var root = env.get_root();
 
+				/*
 				env	.set("height", "100")
 					//.set("a1", "screen.a")
 					//.cd("screen")
@@ -31,7 +32,6 @@
 						//.set("prop1")
 						.up()
 
-				/*
 				env	.set("height", "200")
 					.set("rect", "<stateful>")
 					.cd("rect")
@@ -75,13 +75,14 @@ env.set("a", "<stateful>")
 	.set("(prototypes)", "(start)", "a")
 	.top();
 				*/
+				var root = interstate.load();
 
 				$("div#editor").editor({
 					debug_env: true,
 					server_window: window
 				});
 				$("div.output").dom_output({
-					root: root,
+					//root: root,
 					open_separate_client_window: false,
 					edit_on_open: true,
 					show_edit_button: false

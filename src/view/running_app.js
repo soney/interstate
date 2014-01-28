@@ -41,6 +41,15 @@
 			this.element.addClass("ist_runtime");
 			this._command_stack = new ist.CommandStack();
 
+			if(!this.option("root")) {
+				root = ist.load();
+				if(!root) {
+					root = ist.get_default_root();
+					ist.saveAndSetCurrent(root);
+				}
+				this.option("root", root);
+			}
+
 			this.highlights = [];
 			if (this.option("show_edit_button")) {
 				this.button_color = "#990000";
@@ -103,7 +112,8 @@
 				this.open_editor();
 			}
 
-			$(window).on("keydown.open_editor", _.bind(this.on_key_down, this));
+			$(window)	.on("keydown.open_editor", _.bind(this.on_key_down, this))
+						.on("beforeunload onunload unload pagehide", _.bind(this._save, this));
 
 			if(this.option("immediately_create_server_socket")) {
 				this.server_socket = this._create_server_socket();
@@ -204,33 +214,37 @@
 			var root_dict = this.option("root");
 			var root_contextual_object = ist.find_or_put_contextual_obj(root_dict);
 
-			this._update_fn = cjs.liven(function() {
-				ist.update_current_contextual_objects(root_dict);
-			});
+			if(!this._update_fn) {
+				this._update_fn = cjs.liven(function() {
+					ist.update_current_contextual_objects(root_dict);
+				});
+			}
 
 			if(!ist.__empty_files) {
-				this._raphael_fn = cjs.liven(function () {
-					var paper_attachment = root_contextual_object.get_attachment_instance("paper");
-					var dom_element = paper_attachment.get_dom_obj();
+				if(!this._raphael_fn) {
+					this._raphael_fn = cjs.liven(function () {
+						var paper_attachment = root_contextual_object.get_attachment_instance("paper");
+						var dom_element = paper_attachment.get_dom_obj();
 
-					if(display === "phone") {
-						$("svg", dom_element).css("background-color", "black");
-					} else if(display === "tablet") {
-						$("svg", dom_element).css("background-color", "black");
-					} else {
-						$("svg", dom_element).css("background-color", "white");
-					}
+						if(display === "phone") {
+							$("svg", dom_element).css("background-color", "black");
+						} else if(display === "tablet") {
+							$("svg", dom_element).css("background-color", "black");
+						} else {
+							$("svg", dom_element).css("background-color", "white");
+						}
 
-					if (this.element.children().is(dom_element)) {
-						this.element.children().not(dom_element).remove();
-					} else {
-						this.element.children().remove();
-						this.element.append(dom_element);
-					}
-				}, {
-					context: this,
-					pause_while_running: true
-				});
+						if (this.element.children().is(dom_element)) {
+							this.element.children().not(dom_element).remove();
+						} else {
+							this.element.children().remove();
+							this.element.append(dom_element);
+						}
+					}, {
+						context: this,
+						pause_while_running: true
+					});
+				}
 			}
 
 /*
@@ -291,23 +305,6 @@
 					});
 				} else if (command === "store") {
 					interstate.save(this.option("root"));
-				} else if (command === "upload") {
-					$.ajax({
-						url: "http://interstate.from.so/gallery/upload.php",
-						type: "POST",
-						dataType: "text",
-						data: {
-							root: interstate.stringify(root),
-							name: interstate._.isString(name) ? name : "(no name)"
-						},
-						success: _.bind(function(url_id) {
-							var url = "http://interstate.from.so/gallery?id="+url_id;
-							this.server_socket.post({
-								type: "upload_url",
-								value: url
-							});
-						}, this)
-					});
 				} else {
 					this._command_stack._do(command);
 				}
@@ -431,6 +428,10 @@
 				this.editor_window.close();
 				this.cleanup_closed_editor();
 			}
+		},
+
+		_save: function() {
+			ist.save();
 		},
 
 		cleanup_closed_editor: function () {

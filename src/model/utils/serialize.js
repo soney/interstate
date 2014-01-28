@@ -347,7 +347,15 @@
 
 	ist.save = function (root, name, type) {
 		if (!_.isString(name)) {
-			name = "default";
+			var names = ist.ls(),
+				original_name = "sketch_"+names.length,
+				i = 0,
+				name = original_name;
+
+			while(names.indexOf(name)>=0) {
+				name = original_name + "_" + i;
+				i++;
+			}
 		}
 		if (!_.isString(type)) {
 			type = "";
@@ -358,24 +366,48 @@
 		_.each(type_maps[type], function(map) {
 			map.item(name, val);
 		});
-		return ist.ls(type);
+
+		if(!type) { // program
+			ist.setDefaultProgramName(name);
+		}
+
+		return name;
+	};
+	ist.saveAndSetCurrent = function(root, name, type) {
+		name = ist.save(root, name, type);
+		ist.loaded_program_name.set(name);	
+		return name;
 	};
 	ist.loadString = function(name, type) {
-		if (!_.isString(name)) {
-			name = "default";
-		}
-		if (!_.isString(type)) {
-			type = "";
-		}
 		var storage_name = storage_prefix + name + type_prefix + type;
 		return window.localStorage.getItem(storage_name);
 	};
 	ist.load = function (name, type) {
-		var str = ist.loadString(name, type),
-			root = ist.destringify(str);
+		if (!_.isString(name)) {
+			name = ist.getDefaultProgramName();
+			if (!name) {
+				return false;
+			}
+		}
+		if (!_.isString(type)) {
+			type = "";
+		}
+
+		var str = ist.loadString(name, type);
+		if(!str) {
+			return false;
+		}
+		try {
+			var root = ist.destringify(str);
+		} catch(e) {
+			console.error("Error loading " + name + ":");
+			console.error(e);
+			return false;
+		}
 
 		if(!type) { // program
 			ist.loaded_program_name.set(name);	
+			ist.setDefaultProgramName(name);
 		}
 
 		return root;
@@ -423,5 +455,15 @@
 			});
 		});
 		return ist.ls();
+	};
+
+	var default_program_name = "IST_DEFAULT_PROGRAM";
+	ist.getDefaultProgramName = function() {
+		var rv = localStorage.getItem(default_program_name);
+		return rv === null ? false : rv;
+	};
+
+	ist.setDefaultProgramName = function(name) {
+		window.localStorage.setItem(default_program_name, name);
 	};
 }(interstate));

@@ -110,6 +110,7 @@ exports.runtime = c(
 				"controller/commands/statechart_commands.js",
 				"controller/commands/combined_commands.js",
 				"controller/environment/command_stack.js",
+				"controller/environment/initialize_root.js",
 				"controller/environment/ist_environment.js",
 				"view/running_app.js",
 			])
