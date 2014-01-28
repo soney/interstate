@@ -20,8 +20,8 @@
 			var screen = new ist.Dict({has_protos: false});
 			root_dict.set("screen", screen);
 
-			root_dict.set("width", new ist.Cell({str: "" + (window.innerWidth-0)}));
-			root_dict.set("height", new ist.Cell({str: "" + (window.innerHeight-0)}));
+			root_dict.set("width", new ist.Cell({str: "100"/* + (window.innerWidth-0)*/}));
+			root_dict.set("height", new ist.Cell({str: "100"/* + (window.innerHeight-0)*/}));
 
 			var shape = new ist.Dict({has_protos: false});
 			root_dict.set("shape", shape);

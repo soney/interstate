@@ -13,89 +13,15 @@
 			<%- ist_include(ist_inc.editor) %>
 			<%- ist_include(ist_inc.runtime_style) %>
 			<script type="text/javascript">
-				var env = new interstate.Environment({create_builtins: true});
-				var root = env.get_root();
-
-				/*
-				env	.set("height", "100")
-					//.set("a1", "screen.a")
-					//.cd("screen")
-					//.set("b", "<stateful>")
-					.set("a", "<stateful>")
-					.cd("a")
-						//.add_state("init")
-						//.add_state("clicked")
-						//.start_at("init")
-						//.add_transition("init", "clicked", "on('click', this)")
-						//.add_transition("clicked", "init", "on('click', this)")
-						//.set("(prototypes)", "(start)", "shape.rect")
-						//.set("prop1")
-						.up()
-
-				env	.set("height", "200")
-					.set("rect", "<stateful>")
-					.cd("rect")
-					.set("width", "(start)", "10+5")
-					.set("height", "(start)", "width")
-					.up()
-					.set("my_rect", "<stateful>")
-					.cd("my_rect")
-					//.set("(prototypes)", "(start)", "rect")
-					.set("width", "(start)", "20")
-				/*
-				env	.set("height", "200")
-					.cd("screen")
-					.set("my_obj", "<stateful>")
-					.cd("my_obj")
-					.add_state("init")
-					.add_state("other")
-					.start_at("init")
-					.add_transition("init", "other", "on('timeout', 1000)")
-					.set("(prototypes)", "(start)", "shape.rect")
-					.set("fill", "(start)", "'orange'")
-					.set("fill", "other", "'red'");
-					/*
-env.cd("screen")
-	.set("rect", "<stateful>")
-	.cd("rect")
-	.set("(prototypes)", "(start)", "shape.rect");
-				/*
-env.set("a", "<stateful>")
-	.cd("a")
-	.set("(copies)", "3")
-	.add_state("init")
-	.start_at("init")
-	.add_state("hover")
-	.add_transition("init", "hover", "on('mouseover', this)")
-	.set("prop1")
-	.set("prop1", "init", "'item_'+my_copy")
-	.up()
-	.set("b", "<stateful>")
-	.cd("b")
-	.set("(prototypes)", "(start)", "a")
-	.top();
-				*/
-				var root = interstate.load();
-
 				$("div#editor").editor({
 					debug_env: true,
 					server_window: window
 				});
 				$("div.output").dom_output({
-					//root: root,
 					open_separate_client_window: false,
 					edit_on_open: true,
 					show_edit_button: false
 				});
-
-				/*
-				window.setTimeout(function() {
-					$("tr").eq(9).click();
-				}, 1000);
-				window.setTimeout(function() {
-					$("tr").eq(14).click();
-				}, 2000);
-				*/
 			</script>
 	  </div>
   </body>

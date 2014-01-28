@@ -40,9 +40,10 @@
 		_create: function () {
 			this.element.addClass("ist_runtime");
 			this._command_stack = new ist.CommandStack();
+			this.$dirty_program = cjs(false);
 
 			if(!this.option("root")) {
-				root = ist.load();
+				var root = ist.load();
 				if(!root) {
 					root = ist.get_default_root();
 					ist.saveAndSetCurrent(root);
@@ -163,6 +164,7 @@
 					this.server_socket.set_root(this.option("root"));
 				}
 				this._add_change_listeners();
+				this.$dirty_program.set(false);
 			}
 		},
 
@@ -284,7 +286,8 @@
 
 			var server_socket = new ist.ProgramStateServer({
 				root: root,
-				command_stack: this._command_stack 
+				command_stack: this._command_stack,
+				dirty_program: this.$dirty_program
 			}).on("connected", function () {
 				if(this.edit_button) {
 					this.edit_button.addClass("active").css(this.edit_active_css);
@@ -294,10 +297,13 @@
 			}, this).on("command", function (command) {
 				if (command === "undo") {
 					this._command_stack._undo();
+					this.$dirty_program.set(true);
 				} else if (command === "redo") {
 					this._command_stack._redo();
+					this.$dirty_program.set(true);
 				} else if (command === "reset") {
 					root.reset();
+					this.$dirty_program.set(true);
 				} else if (command === "export") {
 					this.server_socket.post({
 						type: "stringified_root",
@@ -307,12 +313,13 @@
 					interstate.save(this.option("root"));
 				} else {
 					this._command_stack._do(command);
+					this.$dirty_program.set(true);
 				}
 			}, this).on("load_program", function (name) {
 				var new_root = ist.load(name);
 				this.option("root", new_root);
 			}, this).on("load_file", function (message) {
-				this.load_str(message.contents, message.name);
+				this.load_str(message.contents, message.name, message.also_load);
 			}, this).on("download_program", function (name, type) {
 				if(type === "component") {
 					this.server_socket.post({
@@ -332,6 +339,16 @@
 					var obj = cobj.get_object();
 					ist.save(obj, cobj.get_name(), "component");
 				}
+			}, this).on("save_curr", function (event) {
+				this._save();
+			}, this).on("save_curr_as", function (event) {
+				this._save();
+				ist.saveAndSetCurrent(this.option("root"), event.name);
+			}, this).on("create_program", function (event) {
+				this._save();
+				var newroot = ist.get_default_root();
+				ist.saveAndSetCurrent(newroot, event.name);
+				this.option("root", newroot);
 			}, this).on("copy_component", function (event) {
 				var target_obj_id = event.target_obj_id;
 				var target_obj = ist.find_uid(target_obj_id);
@@ -341,7 +358,7 @@
 			}, this)
 			return server_socket;
 		},
-		load_str: function(fr_result, filename) {
+		load_str: function(fr_result, filename, also_load) {
 			var result = fr_result.replace(/^COMPONENT:/, ""),
 				is_component = result.length !== fr_result.length,
 				obj = ist.destringify(result),
@@ -350,9 +367,19 @@
 				this.import_component(name, obj);
 				interstate.save(obj, name, "component");
 			} else {
+				this._save();
+				if(also_load) {
+					ist.saveAndSetCurrent(obj, name);
+					this.option("root", obj);
+					this.element.trigger("change_root", obj);
+				} else {
+					ist.save(obj, name);
+				}
+			/*
 				this.option("root", obj);
 				this.element.trigger("change_root", obj);
 				interstate.save(obj, name);
+				*/
 			}
 		},
 		open_editor: function (event) {
@@ -431,7 +458,10 @@
 		},
 
 		_save: function() {
-			ist.save();
+			if(this.$dirty_program.get()) {
+				this.$dirty_program.set(false);
+				ist.save(this.option("root"));
+			}
 		},
 
 		cleanup_closed_editor: function () {

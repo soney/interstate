@@ -157,7 +157,7 @@
 				getNavigatorOptions: _.bind(function() {
 					return {
 						root_client: this.root_client,
-						client_socket: this.client_socket 
+						client_socket: this.client_socket
 					};
 				}, this),
 				undo: _.bind(function() {
@@ -172,7 +172,8 @@
 				}, this),
 				info_servers: this.$info_servers,
 				undo_desc: this.$undo_desc,
-				redo_desc: this.$redo_desc
+				redo_desc: this.$redo_desc,
+				dirty_program: this.$dirty_program
 			}, this.element);
 			var ace_editor = $("nav #ace_ajax_editor", this.element);
 			ace_editor.css("width", "100%");
@@ -238,9 +239,19 @@
 						}, this))
 						.on("save_curr.editor", _.bind(function(event) {
 							this.client_socket.post({
-								type: "save_curr",
-								name: event.name,
-								storage_type: event.storage_type
+								type: "save_curr"
+							});
+						}, this))
+						.on("save_curr_as.editor", _.bind(function(event) {
+							this.client_socket.post({
+								type: "save_curr_as",
+								name: event.name
+							});
+						}, this))
+						.on("create_program.editor", _.bind(function(event) {
+							this.client_socket.post({
+								type: "create_program",
+								name: event.name
 							});
 						}, this))
 						.on("download_program.editor", _.bind(function(event) {
@@ -261,7 +272,8 @@
 							this.client_socket.post({
 								type: "load_file",
 								contents: event.filecontents,
-								name: event.filename
+								name: event.filename,
+								also_load: event.also_load
 							});
 						}, this))
 						.on("copy_component.editor", _.bind(function(event) {

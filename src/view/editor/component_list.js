@@ -6,30 +6,6 @@
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
-	var insert_at = function (child_node, parent_node, index) {
-		var children = parent_node.childNodes;
-		if (children.length <= index) {
-			parent_node.appendChild(child_node);
-		} else {
-			var before_child = children[index];
-			parent_node.insertBefore(child_node, before_child);
-		}
-	};
-	var remove = function (child_node) {
-		var parent_node = child_node.parentNode;
-		if (parent_node) {
-			parent_node.removeChild(child_node);
-		}
-	};
-	var move = function (child_node, from_index, to_index) {
-		var parent_node = child_node.parentNode;
-		if (parent_node) {
-			if (from_index < to_index) { //If it's less than the index we're inserting at...
-				to_index += 1; //Increase the index by 1, to make up for the fact that we're removing me at the beginning
-			}
-			insert_at(child_node, parent_node, to_index);
-		}
-	};
 
 	cjs.registerCustomPartial("widgetList", {
 		createNode: function(info_servers) {
@@ -56,10 +32,60 @@
 							*/
 						"</div>" +
 					"{{/each}}" +
-					"<button class='save_sketch btn btn-block btn-default'>" +
-						"<span class='glyphicon glyphicon-floppy-disk'></span>" +
-						" Save as..." +
-					"</button>" +
+					"{{#if new_program}}" +
+						"<div class='new_prog'>" +
+							"{{>editing_text getDefaultSketchName()}}" +
+							"<button type='button' class='btn btn-success btn-xs'>OK</button>" +
+							"<button cjs-on-mousedown='cancel_newprog' type='button' class='btn btn-danger btn-xs'>Cancel</button>" +
+						"</div>" +
+					"{{/if}}" +
+					"<div class='btn-group'>" +
+						"{{#if new_program}}" +
+							"<button disabled class='new_sketch btn btn-sm btn-default'>" +
+								"<span class='glyphicon glyphicon-file'></span>" +
+								" New" +
+							"</button>" +
+						"{{#else}}" +
+							"<button class='new_sketch btn btn-sm btn-default' data-cjs-on-click='createNewSketch'>" +
+								"<span class='glyphicon glyphicon-file'></span>" +
+								" New" +
+							"</button>" +
+						"{{/if}}" +
+						"{{#if dirty_program}}" +
+							"<button class='save_sketch btn btn-sm btn-default' data-cjs-on-click='saveSketch'>" +
+								"<span class='glyphicon glyphicon-floppy-disk'></span>" +
+								" Save" +
+							"</button>" +
+						"{{#else}}" +
+							"<button disabled class='save_sketch btn btn-sm btn-default'>" +
+								"<span class='glyphicon glyphicon-floppy-saved'></span>" +
+								" Saved" +
+							"</button>" +
+						"{{/if}}" +
+						"{{#if new_program}}" +
+							"<button disabled class='saveas_sketch btn btn-sm btn-default'>" +
+								"<span class='glyphicon glyphicon-floppy-save'></span>" +
+								" Save as..." +
+							"</button>" +
+						"{{#else}}" +
+							"<button class='saveas_sketch btn btn-sm btn-default' data-cjs-on-click='saveSketchAs'>" +
+								"<span class='glyphicon glyphicon-floppy-save'></span>" +
+								" Save as..." +
+							"</button>" +
+						"{{/if}}" +
+						"{{#if new_program}}" +
+							"<button disabled class='saveas_sketch btn btn-sm btn-default'>" +
+								"<span class='glyphicon glyphicon-cloud-upload'></span>" +
+								" Import" +
+							"</button>" +
+						"{{#else}}" +
+							"<div style='position:relative' id='import_btn' class='btn btn-sm btn-default'>" +
+								"<span class='glyphicon glyphicon-cloud-upload'></span>" +
+								" Import" +
+								"<input multiple data-cjs-on-change='onImport' style='width:100%;position:absolute;top:0px;left:-3px;height:30px;opacity:0' title='Import' type='file'/>" +
+							"</div>" +
+						"{{/if}}" +
+					"</div>" +
 				"</div>" +
 				""
 				/*
@@ -90,6 +116,13 @@
 			this.$loaded_program = cjs(function() {
 				return info_servers.loaded_program.get();
 			});
+			this.$dirty_program = cjs(function() {
+				return info_servers.dirty_program.get();
+			});
+			this.$dirty_program = cjs(function() {
+				return info_servers.dirty_program.get();
+			});
+			this.$new_program = cjs(false);
 
 			this._addContentBindings();
 			this._addClassBindings();
@@ -101,6 +134,27 @@
 			this._super();
 		},
 		_addContentBindings: function() {
+			this.element.on('confirm_value', _.bind(function(event) {
+							var event_type;
+							if(this.__next_action === 'create') {
+								event_type = "create_program";
+							} else if(this.__next_action === 'saveAs') {
+								event_type = "save_curr_as";
+							} else {
+								return;
+							}
+
+							var e = new $.Event(event_type);
+							e.name = event.value;
+							this.element.trigger(e);
+							
+							this.$new_program.set(false);
+							delete this.__next_action;
+						}, this))
+						.on('cancel_value', _.bind(function(event) {
+							this.$new_program.set(false);
+						}, this));
+
 			tlate({
 				programs: this.$program_names,
 				components: this.$component_names,
@@ -110,7 +164,64 @@
 					e.name = $(event.target).attr("data-name");
 					this.element.trigger(e);
 				}, this),
-				loaded_program: this.$loaded_program
+				cancel_newprog: _.bind(function(event) {
+					$(".new_prog > textarea", this.element).editing_text("cancel");
+					event.preventDefault();
+					event.stopPropagation();
+					this.$new_program.set(false);
+					return false;
+				}, this),
+				loaded_program: this.$loaded_program,
+				new_program: this.$new_program,
+				createNewSketch: _.bind(function() {
+					this.__next_action = 'create';
+					this.$new_program.set(true);
+				}, this),
+				saveSketch: _.bind(function() {
+					var e = new $.Event("save_curr");
+					this.element.trigger(e);
+				}, this),
+				saveSketchAs: _.bind(function() {
+					this.__next_action = 'saveAs';
+					this.$new_program.set(true);
+				}, this),
+				dirty_program: this.$dirty_program,
+				getDefaultSketchName: _.bind(function() {
+					var names = this.$program_names.get(),
+						original_name = "sketch_"+(names.length+1),
+						i = 1,
+						name = original_name;
+
+					while(names.indexOf(name)>=0) {
+						name = original_name + "_" + i;
+						i++;
+					}
+					return name;
+				}, this),
+				onImport: _.bind(function(event) {
+					var files = event.target.files || event.dataTransfer.files;
+					if(files && files.length > 0) {
+						var also_load_index = files.length-1;
+						_.each(files, function(file, index) {
+							var fr = new FileReader();
+							fr.onload = _.bind(function() {
+								var result = fr.result,name = file.name;
+								_.defer(_.bind(function() {
+									var event = new $.Event("load_saved_file");
+									event.filecontents = result;
+									event.filename = name;
+									event.also_load = also_load_index === index;
+
+									this.element.trigger(event);
+								}, this));
+
+								delete fr.onload;
+								fr = null;
+							}, this);
+							fr.readAsText(file);
+						}, this);
+					}
+				}, this)
 			}, this.element);
 		},
 		_removeContentBindings: function() {
@@ -124,100 +235,7 @@
 	});
 				/*
 	$.widget("interstate.component_list", {
-		options: {
-			info_servers: false
-		},
-
-		_create: function() {
-			var info_servers = this.option("info_servers");
-			this.element.addClass("component_list");
-			this.$programs = cjs(function() {
-				return info_servers.programs.get();
-			}, {
-				context: this
-			});
-			this.$components = cjs(function() {
-				return info_servers.components.get();
-			}, {
-				context: this
-			});
-			
-			$("<h3 />").text("Programs").appendTo(this.element);
-			this.progs = $("<div />")	.addClass("programs")
-										.appendTo(this.element);
-			this.save_button = $("<a>").attr("href", "javascript:void(0)")
-										.addClass("save")
-										.appendTo(this.element)
-										.text("save")
-										.on("click", _.bind(this.save_curr, this));
-			$("<h3 />").text("Components").appendTo(this.element);
-			this.components = $("<div />")	.addClass("components")
-											.appendTo(this.element);
-			var old_progs = [];
-			this.progs_change_listener = cjs.liven(function() {
-				var progs = this.$programs.get();
-				var children = progs ? progs : [];
-				var diff = _.diff(old_progs, children);
-
-				_.forEach(diff.removed, function (info) {
-					var index = info.from, child = info.from_item;
-					var child_disp = this.progs.children().eq(index);
-					child_disp	.component_item("destroy")
-								.remove();
-				}, this);
-				_.forEach(diff.added, function (info) {
-					var index = info.to, child = info.item;
-					var child_disp = $("<div />").component_item({
-						name: child,
-						type: "program"
-					});
-					insert_at(child_disp[0], this.progs[0], index);
-				}, this);
-				_.forEach(diff.moved, function (info) {
-					var from_index = info.from, to_index = info.to, child = info.item;
-					var child_disp = this.progs.children().eq(from_index);
-					move(child_disp[0], from_index, to_index);
-				}, this);
-				old_progs = children;
-			}, {
-				context: this,
-				on_destroy: function() {
-				}
-			});
-
-			var old_components = [];
-			this.components_change_listener = cjs.liven(function() {
-				var progs = this.$components.get();
-				var children = progs ? progs : [];
-				var diff = _.diff(old_components, children);
-
-				_.forEach(diff.removed, function (info) {
-					var index = info.from, child = info.from_item;
-					var child_disp = this.components.children().eq(index);
-					child_disp	.component_item("destroy")
-								.remove();
-				}, this);
-				_.forEach(diff.added, function (info) {
-					var index = info.to, child = info.item;
-					var child_disp = $("<div />").component_item({
-						name: child,
-						type: "component"
-					});
-					insert_at(child_disp[0], this.components[0], index);
-				}, this);
-				_.forEach(diff.moved, function (info) {
-					var from_index = info.from, to_index = info.to, child = info.item;
-					var child_disp = this.components.children().eq(from_index);
-					move(child_disp[0], from_index, to_index);
-				}, this);
-				old_components = children;
-			}, {
-				context: this,
-				on_destroy: function() {
-				}
-			});
-
-			$(this.element) .on("dragover.replace_program", _.bind(function(eve) {
+		dragover.replace_program", _.bind(function(eve) {
 														var event = eve.originalEvent;
 														event.preventDefault();
 														event.stopPropagation();

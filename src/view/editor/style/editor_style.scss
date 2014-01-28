@@ -996,6 +996,34 @@ html.full_window_editor {
 		border-top: 1px solid #BBB;
 		border-bottom: 1px solid #BBB;
 	}
+
+	button.btn-block {
+		margin-top: 0px;
+	}
+	#import_btn {
+		input {
+			//;color: transparent;
+		}
+		input::-webkit-file-upload-button {
+			//]display: none;
+		}
+		input::before {
+		  //content: 'Import';
+		}
+	}
+	.new_prog {
+		text-align: right;
+		textarea {
+			width: 100%;
+			background: none;
+			height: 22px;
+			resize: none;
+		}
+		button {
+			margin-left: 2px;
+			margin-right: 2px;
+		}
+	}
 }
 
 .menuized {

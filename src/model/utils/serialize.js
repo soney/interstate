@@ -347,14 +347,17 @@
 
 	ist.save = function (root, name, type) {
 		if (!_.isString(name)) {
-			var names = ist.ls(),
-				original_name = "sketch_"+names.length,
-				i = 0,
-				name = original_name;
+			name = ist.loaded_program_name.get();
+			if(!name) {
+				var names = ist.ls(),
+					original_name = "sketch_"+names.length,
+					i = 0,
+					name = original_name;
 
-			while(names.indexOf(name)>=0) {
-				name = original_name + "_" + i;
-				i++;
+				while(names.indexOf(name)>=0) {
+					name = original_name + "_" + i;
+					i++;
+				}
 			}
 		}
 		if (!_.isString(type)) {
@@ -370,6 +373,7 @@
 		if(!type) { // program
 			ist.setDefaultProgramName(name);
 		}
+		console.log("save ", name);
 
 		return name;
 	};
@@ -404,6 +408,7 @@
 			console.error(e);
 			return false;
 		}
+		console.log("load ", name);
 
 		if(!type) { // program
 			ist.loaded_program_name.set(name);	
