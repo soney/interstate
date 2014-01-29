@@ -19,10 +19,10 @@
 	});
 
 	var tlate = cjs.createTemplate(
+				"<h3>my programs</h3>" +
 				"<div class='programs'>" +
-					"<h3>my programs</h3>" +
 					"{{#each programs}}" +
-						"<div data-name='{{this}}' class='program entry {{this===loaded_program ? \"selected\" : \"\"}}' " +
+						"<div data-name='{{this}}' class='menuized program entry {{this===loaded_program ? \"selected\" : \"\"}}' " +
 							"data-cjs-on-click='load_program'>" +
 							"{{this}}" +
 							/*
@@ -31,73 +31,45 @@
 							"{{/if}}" +
 							*/
 						"</div>" +
+						"<ul class='menu'>" +
+							"<li class='menu-item' data-action='export'>Export</li>" +
+							"<li class='menu-item' data-action='delete'>Delete</li>" +
+							"<li class='menu-item' data-action='rename'>Rename</li>" +
+						"</ul>" +
 					"{{/each}}" +
-					"{{#if new_program}}" +
-						"<div class='new_prog'>" +
-							"{{>editing_text getDefaultSketchName()}}" +
-							"<button type='button' class='btn btn-success btn-xs'>OK</button>" +
-							"<button cjs-on-mousedown='cancel_newprog' type='button' class='btn btn-danger btn-xs'>Cancel</button>" +
-						"</div>" +
-					"{{/if}}" +
-					"<div class='btn-group'>" +
-						"{{#if new_program}}" +
-							"<button disabled class='new_sketch btn btn-sm btn-default'>" +
-								"<span class='glyphicon glyphicon-file'></span>" +
-								" New" +
-							"</button>" +
-						"{{#else}}" +
-							"<button class='new_sketch btn btn-sm btn-default' data-cjs-on-click='createNewSketch'>" +
-								"<span class='glyphicon glyphicon-file'></span>" +
-								" New" +
-							"</button>" +
-						"{{/if}}" +
-						"{{#if dirty_program}}" +
-							"<button class='save_sketch btn btn-sm btn-default' data-cjs-on-click='saveSketch'>" +
+				"</div>" +
+				"{{#if new_program}}" +
+					"<div class='new_prog'>" +
+						"{{>editing_text getDefaultSketchName()}}" +
+						"<button type='button' class='btn btn-success btn-xs'>OK</button>" +
+						"<button cjs-on-mousedown='cancel_newprog' type='button' class='btn btn-danger btn-xs'>Cancel</button>" +
+					"</div>" +
+				"{{/if}}" +
+				"<div class='btn-group'>" +
+						"<button disabled={{new_program}} class='new_sketch btn btn-sm btn-default' data-cjs-on-click='createNewSketch'>" +
+							"<span class='glyphicon glyphicon-file'></span>" +
+							" New" +
+						"</button>" +
+						"<button disabled={{disable_save_btn}} class='save_sketch btn btn-sm btn-default' data-cjs-on-click='saveSketch'>" +
+							"{{#if dirty_program}}" +
 								"<span class='glyphicon glyphicon-floppy-disk'></span>" +
 								" Save" +
-							"</button>" +
-						"{{#else}}" +
-							"<button disabled class='save_sketch btn btn-sm btn-default'>" +
+							"{{#else}}" +
 								"<span class='glyphicon glyphicon-floppy-saved'></span>" +
 								" Saved" +
-							"</button>" +
-						"{{/if}}" +
-						"{{#if new_program}}" +
-							"<button disabled class='saveas_sketch btn btn-sm btn-default'>" +
-								"<span class='glyphicon glyphicon-floppy-save'></span>" +
-								" Save as..." +
-							"</button>" +
-						"{{#else}}" +
-							"<button class='saveas_sketch btn btn-sm btn-default' data-cjs-on-click='saveSketchAs'>" +
-								"<span class='glyphicon glyphicon-floppy-save'></span>" +
-								" Save as..." +
-							"</button>" +
-						"{{/if}}" +
-						"{{#if new_program}}" +
-							"<button disabled class='saveas_sketch btn btn-sm btn-default'>" +
-								"<span class='glyphicon glyphicon-cloud-upload'></span>" +
-								" Import" +
-							"</button>" +
-						"{{#else}}" +
-							"<div style='position:relative' id='import_btn' class='btn btn-sm btn-default'>" +
-								"<span class='glyphicon glyphicon-cloud-upload'></span>" +
-								" Import" +
-								"<input multiple data-cjs-on-change='onImport' style='width:100%;position:absolute;top:0px;left:-3px;height:30px;opacity:0' title='Import' type='file'/>" +
-							"</div>" +
-						"{{/if}}" +
-					"</div>" +
+							"{{/if}}" +
+						"</button>" +
+						"<button disabled={{new_program}} class='saveas_sketch btn btn-sm btn-default' data-cjs-on-click='saveSketchAs'>" +
+							"<span class='glyphicon glyphicon-floppy-save'></span>" +
+							" Save as..." +
+						"</button>" +
+						"<div disabled={{new_program}} style='position:relative' id='import_btn' class='btn btn-sm btn-default'>" +
+							"<span class='glyphicon glyphicon-cloud-upload'></span>" +
+							" Import" +
+							"<input multiple data-cjs-on-change='onImport' style='width:100%;position:absolute;top:0px;left:-3px;height:30px;opacity:0' title='Import' type='file'/>" +
+						"</div>" +
 				"</div>" +
 				""
-				/*
-				"<div class='components'>" +
-					"<h3>Components</h3>" +
-					"{{#each components}}" +
-						"<div class='component entry'>" +
-							"{{this}}" +
-						"</div>" +
-					"{{/each}}" +
-				"</div>"
-				*/
 				);
 	
 	$.widget("interstate.component_list", {
@@ -173,6 +145,8 @@
 				}, this),
 				loaded_program: this.$loaded_program,
 				new_program: this.$new_program,
+				dirty_program: this.$dirty_program,
+				disable_save_btn: (this.$dirty_program.not()).or(this.$new_program),
 				createNewSketch: _.bind(function() {
 					this.__next_action = 'create';
 					this.$new_program.set(true);
@@ -185,7 +159,6 @@
 					this.__next_action = 'saveAs';
 					this.$new_program.set(true);
 				}, this),
-				dirty_program: this.$dirty_program,
 				getDefaultSketchName: _.bind(function() {
 					var names = this.$program_names.get(),
 						original_name = "sketch_"+(names.length+1),

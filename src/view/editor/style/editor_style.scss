@@ -1024,13 +1024,17 @@ html.full_window_editor {
 			margin-right: 2px;
 		}
 	}
+	.programs {
+		overflow-y: auto;
+		max-height: 500px;
+	}
 }
 
 .menuized {
 	border: 1px solid red;
 }
 
-.col .menu {
+.menu {
 	list-style: none;
 	padding: 0px;
 	position: absolute;
