@@ -153,7 +153,6 @@
 				var targ = $(event.target),
 					component_list = $(".components", this.element);
 				var clear_drag_info = function() {
-												console.log("Clear");
                                                 component_list	.removeClass("drop_indicator")
 																.off("dragover.pin drop.pin dragenter.pin dragleave.pin");
                                                 targ.off("dragcancel.pin dragend.pin");
@@ -168,7 +167,6 @@
 										type: "save_component",
 										cobj_id: client.cobj_id
 									});
-									console.log("save");
 									clear_drag_info.call(this);
 								}, this));
 				

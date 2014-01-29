@@ -40,6 +40,10 @@
 					"</td>" +
 				"</tr>" +
 
+			//"{{#each builtins}}" +
+				//"{{>prop getPropertyViewOptions(this)}}" +
+			//"{{/each}}" +
+
 				"{{#if adding_field}}" +
 					"<tr class='new_field'>" +
 						"<td class='name'><input placeholder='Field name' class='name' /></td>" +
@@ -95,7 +99,8 @@
 
 			this.$name = client.get_$("get_name");
 			this.$is_curr_col = this.option("is_curr_col");
-			this.$children = client.get_$("children");
+			this.$children = client.get_$("children", true);
+			this.$builtins = client.get_$("builtin_children");
 			if(client.type() === "stateful") {
 				this.$statecharts = client.get_$("get_statecharts");
 
@@ -169,6 +174,7 @@
 			this.$name.destroy();
 			this.$is_curr_col.destroy();
 			this.$children.destroy();
+			this.$builtins.destroy();
 
 			client.signal_destroy();
 
@@ -180,13 +186,14 @@
 			column_template({
 				name: this.$name,
 				children: this.$children,
+				builtins: this.$builtins,
 				stateful: client.type() === "stateful",
 				getPropertyViewOptions: _.bind(function(child) {
 					return {
 						client: child.value,
 						name: child.name,
 						inherited: child.inherited,
-						builtin: child.builtin,
+						//builtin: child.builtin,
 						layout_manager: this.layout_manager,
 						show_src: this.$is_curr_col,
 						obj: this.option("client"),

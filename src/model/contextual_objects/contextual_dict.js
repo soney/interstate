@@ -228,6 +228,20 @@
 
 			return rv;
 		};
+		proto.builtin_children = function() {
+			var dict = this.object,
+				pointer = this.pointer,
+				builtin_names = dict._get_builtin_prop_names(),
+				infos = _.map(builtin_names, function (name) {
+					return dict._get_builtin_prop_info(name);
+				}),
+				contextual_objects = _.map(infos, function (info, i) {
+					var name = builtin_names[i];
+					return {name: name, value: info.value, inherited: false, builtin: true };
+				}, this);
+			console.log("ABC");
+			return contextual_objects;
+		};
 		proto.children = function (exclude_builtins) {
 			var raw_children = this.raw_children(exclude_builtins);
 			var pointer = this.pointer;
