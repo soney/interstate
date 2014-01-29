@@ -254,6 +254,14 @@
 								name: event.name
 							});
 						}, this))
+						.on("rename_storage.editor", _.bind(function(event) {
+							this.client_socket.post({
+								type: "rename_program",
+								from_name: event.from_name,
+								to_name: event.to_name,
+								storage_type: event.storage_type
+							});
+						}, this))
 						.on("download_program.editor", _.bind(function(event) {
 							this.client_socket.post({
 								type: "download_program",

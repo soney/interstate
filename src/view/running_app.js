@@ -329,7 +329,7 @@
 				} else {
 					this.server_socket.post({
 						type: "stringified_root",
-						value: ist.loadString(name)
+						value: ist.loadString(name, type)
 					});
 				}
 			}, this).on("save_component", function (event) {
@@ -355,14 +355,31 @@
 				//var tobj = target_cobj.get_object();
 				var component = ist.load(event.name, "component");
 				target_obj.set(event.name, component);
+			}, this).on("rename_program", function(event) {
+				var from_name = event.from_name,
+					to_name = event.to_name,
+					storage_type = event.storage_type;
+
+				this._save();
+				ist.rename(from_name, to_name, storage_type);
 			}, this)
+			;
 			return server_socket;
 		},
 		load_str: function(fr_result, filename, also_load) {
 			var result = fr_result.replace(/^COMPONENT:/, ""),
 				is_component = result.length !== fr_result.length,
-				obj = ist.destringify(result),
+				obj,
 				name = filename.replace(/\.\w*$/, "");
+
+			try {
+				obj = ist.destringify(result);
+			} catch(e) {
+				console.error("Error loading " + filename);
+				console.error(e);
+				return;
+			}
+
 			if(is_component) {
 				this.import_component(name, obj);
 				interstate.save(obj, name, "component");
@@ -375,11 +392,6 @@
 				} else {
 					ist.save(obj, name);
 				}
-			/*
-				this.option("root", obj);
-				this.element.trigger("change_root", obj);
-				interstate.save(obj, name);
-				*/
 			}
 		},
 		open_editor: function (event) {

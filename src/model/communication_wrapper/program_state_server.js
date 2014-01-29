@@ -56,6 +56,7 @@
 								.on("load_file", this.post_forward, this)
 								.on("save_component", this.post_forward, this)
 								.on("copy_component", this.post_forward, this)
+								.on("rename_program", this.post_forward, this)
 								;
 		};
 		proto.remove_message_listeners = function () {
@@ -77,6 +78,7 @@
 									.off("load_file", this.post_forward, this)
 									.off("save_component", this.post_forward, this)
 									.off("copy_component", this.post_forward, this)
+									.off("rename_program", this.post_forward, this)
 									;
 			}
 		};

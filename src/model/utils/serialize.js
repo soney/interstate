@@ -449,7 +449,23 @@
 		return ist.ls();
 	};
 	ist.rename = function(from_name, to_name, type) {
-		var storage_name = storage_prefix + name + type_prefix + type;
+		var old_storage_name = storage_prefix + from_name + type_prefix + type,
+			new_storage_name = storage_prefix + to_name   + type_prefix + type,
+			change_current = ist.loaded_program_name.get() === from_name;
+
+		if(localStorage.getItem(new_storage_name)) {
+			return false;
+		} else {
+			localStorage.setItem(new_storage_name, localStorage.getItem(old_storage_name));
+			localStorage.removeItem(old_storage_name);
+			if(change_current) {
+				ist.loaded_program_name.set(to_name);
+			}
+			_.each(type_maps[type], function(type_map) {
+				type_map.item(to_name, type_map.item(from_name));
+				type_map.remove(from_name);
+			});
+		}
 	};
 	ist.nuke = function () {
 		var program_names = ist.ls();

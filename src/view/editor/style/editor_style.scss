@@ -944,19 +944,49 @@ html.full_window_editor {
 	border-bottom-left-radius: 3px;
 	z-index: 500;
 	@include non-selectable;
-	h3 {
-		font-family: "Source Sans Pro";
-		cursor: default;
+	.header {
+		&.components {
+			border-top: 1px solid #CCC;
+		}
+
 		background-color: #DEDEDE;
-		margin: 0px;
-		padding: 5px;
-		padding-left: 10px;
-		padding-right: 10px;
-		font-weight: 200;
+		color: #777;
+		border-bottom: 1px solid #CCC;
 		text-align: center;
+		text-shadow: 1px 1px 1px #DDD;
+		font-family: "Source Sans Pro";
+		font-weight: 200;
+
+		h3 {
+			cursor: default;
+			margin: 0px;
+			padding: 5px;
+			padding-left: 10px;
+			padding-right: 10px;
+			font-weight: 300;
+		}
+		p {
+			margin-bottom: 5px;
+		}
+	}
+	.toolbar {
+		background-color: #EEE;
 		color: #777;
 		text-shadow: 1px 1px 1px #DDD;
-		border-bottom: 1px solid #CCC;
+		font-family: "Source Sans Pro";
+		font-weight: 200;
+		text-align: right;
+		.explanation {
+			margin-left: 5px;
+			margin-right: 30px;
+		}
+	}
+	.none {
+		padding: 10px;
+		color: #BBB;
+		font-family: "Source Sans Pro";
+		font-weight: 200;
+		text-align: center;
 	}
 	.entry {
 		border-bottom: 1px solid #EEE;
@@ -1027,6 +1057,11 @@ html.full_window_editor {
 	.programs {
 		overflow-y: auto;
 		max-height: 500px;
+		textarea {
+			height: 22px;
+			resize: none;
+			width: 100%;
+		}
 	}
 }
 
