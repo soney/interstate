@@ -138,6 +138,42 @@
 				}
 			}
 
+			$(window).on("keydown.editor_undo_redo", _.bind(function (event) {
+				if (event.keyCode === 90 && (event.metaKey || event.ctrlKey)) {
+					if (event.shiftKey) { this._redo(); }
+					else { this._undo(); }
+					event.stopPropagation();
+					event.preventDefault();
+				}
+			}, this));
+			this.element.on("dragstart.pin", _.bind(function(event) {
+				var targ = $(event.target),
+					component_list = $(".components", this.element);
+				var clear_drag_info = function() {
+												console.log("Clear");
+                                                component_list	.removeClass("drop_indicator")
+																.off("dragover.pin drop.pin dragenter.pin dragleave.pin");
+                                                targ.off("dragcancel.pin dragend.pin");
+                                        };
+				component_list	.addClass("drop_indicator")
+								.on("dragover.pin", function() { })
+								.on("dragenter.pin", function() { })
+								.on("drop.pin", _.bind(function() {
+									var client = targ.column("option", "client");
+									
+									this.client_socket.post({
+										type: "save_component",
+										cobj_id: client.cobj_id
+									});
+									console.log("save");
+									clear_drag_info.call(this);
+								}, this));
+				
+				targ.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
+					clear_drag_info.call(this);
+				}, this));
+			}, this));
+
 			this._addClassBindings();
 			this._addEventListeners();
 			this._addContentBindings();
@@ -151,6 +187,13 @@
 			this._super();
 		},
 
+		_undo: function() {
+			this.client_socket.post_command("undo");
+		},
+		_redo: function() {
+			this.client_socket.post_command("redo");
+		},
+
 		_addContentBindings: function() {
 			editor_template({
 				loading_state: this.loading_state,
@@ -160,12 +203,8 @@
 						client_socket: this.client_socket
 					};
 				}, this),
-				undo: _.bind(function() {
-					this.client_socket.post_command("undo");
-				}, this),
-				redo: _.bind(function() {
-					this.client_socket.post_command("redo");
-				}, this),
+				undo: _.bind(this._undo, this),
+				redo: _.bind(this._redo, this),
 				show_components: this.$show_components,
 				toggle_show_widgets: _.bind(function() {
 					this.$show_components.set(!this.$show_components.get());

@@ -945,7 +945,7 @@ html.full_window_editor {
 	z-index: 500;
 	@include non-selectable;
 	.header {
-		&.components {
+		&.components_header {
 			border-top: 1px solid #CCC;
 		}
 
@@ -1008,16 +1008,17 @@ html.full_window_editor {
 			background-color: $nav_selected_color;
 			color: white;
 			cursor: default;
-			span.saved  {
-				font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-				font-weight: 200;
-				font-size: 0.9em;
-				opacity: 0.5;
-				float: right;
-				padding-left: 5px;
-				position: relative;
-				top: -1px;
-			}
+		}
+		span.hover_tip  {
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+			font-weight: 200;
+			font-size: 0.9em;
+			opacity: 0.5;
+			float: right;
+			padding-left: 5px;
+			position: relative;
+			top: -1px;
+			visibility: hidden;
 		}
 	}
 	.save_sketch {
@@ -1031,7 +1032,9 @@ html.full_window_editor {
 		margin-top: 0px;
 	}
 	#import_btn {
+		cursor: pointer;
 		input {
+			cursor: pointer;
 			//;color: transparent;
 		}
 		input::-webkit-file-upload-button {
@@ -1054,13 +1057,30 @@ html.full_window_editor {
 			margin-right: 2px;
 		}
 	}
-	.programs {
+	.programs, .components {
 		overflow-y: auto;
 		max-height: 500px;
 		textarea {
 			height: 22px;
 			resize: none;
 			width: 100%;
+		}
+		&.drop_indicator {
+			background-color: #BADA55;
+			.none, .entry {
+				color: white;
+			}
+		}
+	}
+	.components {
+		.entry {
+			cursor: default;
+			&:hover {
+				color: inherit;
+				.hover_tip {
+					visibility: visible;
+				}
+			}
 		}
 	}
 }

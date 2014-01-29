@@ -27,7 +27,9 @@
 					"{{#each programs}}" +
 						"{{>widgetItem getWidgetItemOptions(this, '')}}" +
 					"{{#else}}" +
-						"<div class='none'>no programs</div>" +
+						"{{#if !new_program}}" +
+							"<div class='none'>no programs</div>" +
+						"{{/if}}" +
 					"{{/each}}" +
 				"</div>" +
 				"{{#if new_program}}" +
@@ -61,16 +63,16 @@
 						"<input multiple data-cjs-on-change='onImport' style='width:100%;position:absolute;top:0px;left:-3px;height:30px;opacity:0' title='Import' type='file'/>" +
 					"</div>" +
 				"</div>" +
-				"<div class='components header'>" +
+				"<div class='header components_header'>" +
 					"<h3>my components</h3>" +
 					"<p>reusable parts</p>" +
 				"</div>" +
 
-				"<div class='components'>" +
+				"<div class='components' data-cjs-on-dragover=dragoverComponent data-cjs-on-dragout=dragoutComponent data-cjs-on-dragenter=dragEnterComponent data-cjs-on-dragleave=dragLeaveComponent>" +
 					"{{#each components}}" +
 						"{{>widgetItem getWidgetItemOptions(this, 'component')}}" +
 					"{{#else}}" +
-						"<div class='none'>(drag objects in to add)</div>" +
+						"<div class='none'>(drop objects here)</div>" +
 					"{{/each}}" +
 				"</div>" +
 
@@ -167,7 +169,8 @@
 					return {
 						name: name,
 						selected: this.$loaded_program.eqStrict(name),
-						storage_type: type
+						storage_type: type,
+						hover_tip: type === "component" ? "drag & drop in" : ""
 					};
 				}, this),
 				getDefaultSketchName: _.bind(function() {
@@ -205,6 +208,26 @@
 							fr.readAsText(file);
 						}, this);
 					}
+				}, this),
+				dragoverComponent: _.bind(function(event) {
+					event.preventDefault();
+					event.stopPropagation();
+					return false;
+				}, this),
+				dragoutComponent: _.bind(function(event) {
+					event.preventDefault();
+					event.stopPropagation();
+					return false;
+				}, this),
+				dragEnterComponent: _.bind(function(event) {
+					event.preventDefault();
+					event.stopPropagation();
+					return false;
+				}, this),
+				dragLeaveComponent: _.bind(function(event) {
+					event.preventDefault();
+					event.stopPropagation();
+					return false;
 				}, this)
 			}, this.element);
 		},
@@ -215,7 +238,32 @@
 			this.element.addClass("component_list");
 		},
 		_removeClassBindings: function() {
-		}
+		},
+		show_drag_over: function() {
+			$(this.element).addClass("drop_target");
+			if(!this.hasOwnProperty("overlay")) {
+				this.overlay = $("<div />")	.addClass("overlay")
+											.css({
+												"background-color": "#555",
+												"opacity": "0.8",
+												"position": "absolute",
+												//"left": "0px",
+												//"top": "0px",
+												"width": "100%",
+												"height": "100%",
+												"pointer-events": "none",
+												"border": "10px dashed #DDD",
+												"box-sizing": "border-box"
+											})
+											.prependTo(this.element);
+			}
+		},
+
+		hide_drag_over: function() {
+			$(this.element).removeClass("drop_target");
+			this.overlay.remove();
+			delete this.overlay;
+		},
 	});
 
 	cjs.registerCustomPartial("widgetItem", {
@@ -232,15 +280,10 @@
 						"{{#fsm name_edit_state}}" +
 							"{{#state idle}}" +
 								"{{name}}" +
+								"<span class='hover_tip'>{{hover_tip}}</span>" +
 							"{{#state editing}}" +
 								"{{>editing_text name 'input'}}" +
 						"{{/fsm}}" +
-						/*
-						"{{#if this===loaded_program}}" +
-							"<span class='saved'>(saved)</span>" +
-						"{{/if}}" +
-
-						*/
 					"</div>" +
 					"{{#if show_menu}}" +
 						"<ul class='menu'>" +
@@ -255,7 +298,8 @@
 		options: {
 			name: "",
 			selected: false,
-			storage_type: ""
+			storage_type: "",
+			hover_tip: ""
 		},
 		_create: function() {
 			this.$name = this.option("name");
@@ -275,6 +319,10 @@
 												this._emit_new_name(event.value);
 											}
 										}, this);
+			if(this.option("storage_type") === "component") {
+				this.element.attr("draggable", true)
+							.on("dragstart.ondragstart", _.bind(this.on_drag_start, this));
+			}
 
 			this._addMenu();
 			this._addContentBindings();
@@ -380,11 +428,14 @@
 				selected: this.$selected,
 				show_menu: this.$show_menu,
 				load_program: _.bind(function(event) {
-					var e = new $.Event("load_program");
-					e.storage_type = this.option("storage_type");
-					e.name = $(event.target).attr("data-name");
-					this.element.trigger(e);
+					if(this.option("type") === "") {
+						var e = new $.Event("load_program");
+						e.storage_type = this.option("storage_type");
+						e.name = $(event.target).attr("data-name");
+						this.element.trigger(e);
+					}
 				}, this),
+				hover_tip: this.option("hover_tip"),
 				name_edit_state: this.name_edit_state
 			}, this.element);
 		},

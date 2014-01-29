@@ -460,6 +460,7 @@
 			localStorage.removeItem(old_storage_name);
 			if(change_current) {
 				ist.loaded_program_name.set(to_name);
+				ist.setDefaultProgramName(to_name);
 			}
 			_.each(type_maps[type], function(type_map) {
 				type_map.item(to_name, type_map.item(from_name));
