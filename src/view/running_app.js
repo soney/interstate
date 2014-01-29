@@ -381,7 +381,7 @@
 			}
 
 			if(is_component) {
-				this.import_component(name, obj);
+				//this.import_component(name, obj);
 				interstate.save(obj, name, "component");
 			} else {
 				this._save();

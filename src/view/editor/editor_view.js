@@ -48,6 +48,9 @@
 						"<span title='Cancel' id='cancel_button' class='glyphicon glyphicon-remove-circle'></span>" +
 					"</td>" +
 				"</tr>" +
+				"<tr>" +
+					"<td class='resize_bar' data-cjs-on-mousedown='beginResizeAce'></td>" +
+				"</tr>" +
 			"</table>" +
 			"<div class='widget_group btn-group navbar-right'>" +
 				"<div type='button' class='btn btn btn-default {{show_components ? \"active\" : \"\"}}' data-cjs-on-click='toggle_show_widgets'>" +
@@ -212,7 +215,24 @@
 				info_servers: this.$info_servers,
 				undo_desc: this.$undo_desc,
 				redo_desc: this.$redo_desc,
-				dirty_program: this.$dirty_program
+				dirty_program: this.$dirty_program,
+				beginResizeAce: _.bind(function(event) {
+					if(!$("table#cell_group", this.element).hasClass("disabled")) {
+						var origY = event.clientY,
+							height_diff = 0,
+							origHeight = ace_editor.height();
+						$(window).on("mousemove.resize_editor", _.bind(function(e) {
+							height_diff = e.clientY - origY;
+							var height = origHeight + height_diff;
+							ace_editor.height(height);
+							this.editor.resize();
+						}, this)).on("mouseup.resize_editor", _.bind(function(e) {
+							$(window).off(".resize_editor");
+						}, this));
+						event.preventDefault();
+						event.stopPropagation();
+					}
+				}, this)
 			}, this.element);
 			var ace_editor = $("nav #ace_ajax_editor", this.element);
 			ace_editor.css("width", "100%");

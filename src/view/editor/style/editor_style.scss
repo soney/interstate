@@ -129,14 +129,18 @@ html.full_window_editor {
 			}
 		}
 		#cell_group {
+			position: absolute;
+			z-index: 600;
 			margin:0px;
 			padding:0px;
 			vertical-align: top;
+			left: 150px;
 			tr,td {
 				margin:0px;
 				padding:0px;
+				vertical-align: top;
 			}
-			td#confirm,td#cancel{
+			td#confirm,td#cancel {
 				padding:3px;
 			}
 			#confirm_button {
@@ -149,29 +153,21 @@ html.full_window_editor {
 				font-size: 1.0em;
 				cursor: pointer;
 			}
-			&.disabled {
-				#confirm_button,#cancel_button {
-					display: none;
-					color: #AAA;
-					cursor: default;
-				}
-				.ace_scroller {
-					background: none;
-				}
-				.ace-tm {
-					background: none;
-					.ace_cursor {
-						display: none;
-					}
-				}
+			.ace-tm {
+				border-radius: 0px;
+				border: none;
+				min-height: 30px;
+				margin: 0px;
 			}
-		}
-		.ace-tm {
-			border-radius: 0px;
-			border: none;
-			min-height: 30px;
-			margin: 0px;
-			margin-left:10px;
+			&.disabled {
+				display: none;
+			}
+			.resize_bar {
+				padding-left: 10px;
+				height: 4px;
+				background-color: #AAA;
+				cursor: ns-resize;
+			}
 		}
 	}
 }
