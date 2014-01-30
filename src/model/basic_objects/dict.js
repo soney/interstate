@@ -118,7 +118,9 @@
             },
     
             "copies": {
-                start_with: function () { return cjs(); },
+                start_with: function () { 
+					return cjs.constraint(new ist.Cell({str: ""}));
+				},
                 env_visible: false,
                 env_name: "copies",
                 getter: function (me) { return me.get(); },

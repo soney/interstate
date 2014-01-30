@@ -23,7 +23,7 @@
 					"<h2 data-cjs-on-click='headerClicked'>{{ci}}{{name}}</h2>" +
 				"</th>" +
 				"{{#if stateful}}" +
-					"<th rowspan='2' class='statechart_cell'>" +
+					"<th rowspan='3' class='statechart_cell'>" +
 						"{{#if is_curr_col}}" +
 							"{{statechart_view}}" +
 						"{{/if}}" +
@@ -34,6 +34,15 @@
 			"</tr>" +
 
 			"{{#if is_curr_col}}" +
+				"{{#if stateful}}" +
+					"<tr class='copies_spec'>" +
+						"<td colspan='2' class='copies_spec'>" +
+							"<span class='copies_label'>Copies: </span>" +
+							"{{> propCell getCopiesCellOptions() }}" +
+						"</td>" +
+					"</tr>" +
+				"{{/if}}" +
+
 				"<tr class='add_prop'>" +
 					"<td colspan='2' class='add_prop'>" +
 						"<div class='add_prop' data-cjs-on-click=addProperty>Add Field</div>" +
@@ -63,7 +72,7 @@
 			"{{#each children}}" +
 				"{{>prop getPropertyViewOptions(this)}}" +
 				"{{#else}}" +
-					"{{#if !adding_field && buildings.length===0}}" +
+					"{{#if !adding_field && builtins.length===0}}" +
 						"<tr class='no_children'>" +
 							"<td colspan='3'>No fields</td>" +
 						"</tr>" +
@@ -97,10 +106,12 @@
 			this.$adding_field = cjs(false);
 			this.$selected_prop = this.option("columns").itemConstraint(this.option("column_index")+1);
 
-			this.$name = client.get_$("get_name");
 			this.$is_curr_col = this.option("is_curr_col");
+			this.$name = client.get_$("get_name");
 			this.$children = client.get_$("children", true);
 			this.$builtins = client.get_$("builtin_children");
+			this.$copies_obj = client.get_$("copies_obj");
+
 			if(client.type() === "stateful") {
 				this.$statecharts = client.get_$("get_statecharts");
 
@@ -171,10 +182,11 @@
 				this.$statecharts.destroy();
 			}
 
-			this.$name.destroy();
 			this.$is_curr_col.destroy();
-			this.$children.destroy();
-			this.$builtins.destroy();
+			this.$name.signal_destroy();
+			this.$children.signal_destroy();
+			this.$copies_obj.signal_destroy();
+			this.$builtins.signal_destroy();
 
 			client.signal_destroy();
 
@@ -206,7 +218,12 @@
 				is_curr_col: this.$is_curr_col,
 				headerClicked: _.bind(this.on_header_click, this),
 				addProperty: _.bind(this._add_property, this),
-				adding_field: this.$adding_field
+				adding_field: this.$adding_field,
+				getCopiesCellOptions: _.bind(function() {
+					return {
+						client: cjs.constraint(this.$copies_obj)
+					};
+				}, this)
 			}, this.element);
 			this._select_just_added_name = cjs.liven(function() {
 				var children = this.$children.get();

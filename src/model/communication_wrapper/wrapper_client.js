@@ -174,6 +174,7 @@
 			var self = this;
 			var constraint = this.fn_call_constraints.get_or_put(args, function () {
 				var rv = new cjs.Constraint();
+				var id = rv._id;
 				var old_destroy = rv.destroy;
 				rv.destroy = function() {
 					self.destroy_$(rv, args);

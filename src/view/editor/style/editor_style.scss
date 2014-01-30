@@ -216,6 +216,42 @@ html.full_window_editor {
 		border-collapse: collapse;
 		margin: 5px;
 
+		.copies_spec {
+			background-color: $nav_header_color;
+			font-size: 0.9em;
+			font-family: "Source Sans Pro";
+			padding: 3px;
+			color: #777;
+			.copies_label {
+				float: left;
+				padding-left: 5px;
+				padding-right: 3px;
+				padding-top: 4px;
+			}
+			.cell {
+				float: left;
+				display: inline-block;
+				overflow-x: hidden;
+				white-space: pre;
+				border: 1px solid #AAA;
+				background-color: #EEE;
+				padding: 2px;
+				.empty {
+					color: #BBB;
+				}
+
+				textarea {
+					font-family: inherit;
+					display: block;
+					color: black;
+					background-color: #DDD;
+					border: 1px solid #666;
+					font-size: inherit;
+					height: 20px;
+				}
+			}
+		}
+
 		&.template {
 			box-shadow: 0 -5px 0 -4px #fff,
 						0 -5px 0 -3px #c2c0b8,
