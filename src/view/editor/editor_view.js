@@ -271,11 +271,13 @@
 		_disable_editor: function() {
 			$("table#cell_group", this.element).addClass("disabled");
 			this.editor.setReadOnly(true)
+			//console.log("READ ONLY");
 		},
 
 		_enable_editor: function() {
 			$("table#cell_group", this.element).removeClass("disabled");
 			this.editor.setReadOnly(false)
+			//console.log("NOT READ ONLY");
 		},
 
 		_addEventListeners: function() {

@@ -222,14 +222,15 @@ html.full_window_editor {
 			font-family: "Source Sans Pro";
 			padding: 3px;
 			color: #777;
+			text-align: center;
 			.copies_label {
-				float: left;
+				position: relative;
+				top: -6px;
 				padding-left: 5px;
 				padding-right: 3px;
-				padding-top: 4px;
+				text-align: left;
 			}
 			.cell {
-				float: left;
 				display: inline-block;
 				overflow-x: hidden;
 				white-space: pre;

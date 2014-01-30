@@ -52,7 +52,8 @@
 			active: false,
 			parent: false,
 			state: false,
-			prop: false
+			prop: false,
+			default_max_width: 90
 		},
 		_create: function() {
 			var client = this.option("client"),
@@ -279,7 +280,7 @@
 				'max-width': cjs.inFSM(this.edit_state, {
 					idle: cjs.inFSM(this.client_state, {
 						unset: this.option("unset_radius")*2,
-						set: '90px',
+						set: this.option("default_max_width") + 'px',
 						initialedit: 'none'
 					}),
 					editing: 'none'

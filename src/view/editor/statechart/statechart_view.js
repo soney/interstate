@@ -187,8 +187,10 @@
 		reset: function(e) {
 			var event = new $.Event("command");
 			event.command_type = "reset";
-			event.client = this.option("client");
-			this.element.trigger(event);
+			event.client = cjs.get(this.option("client"));
+			if(event.client) {
+				this.element.trigger(event);
+			}
 		}
 	});
 

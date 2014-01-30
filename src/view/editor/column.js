@@ -54,7 +54,7 @@
 				"{{>prop getPropertyViewOptions(this, true)}}" +
 			"{{/each}}" +
 
-			"{{#if adding_field}}" +
+			"{{#if adding_field&&is_curr_col}}" +
 				"<tr class='new_field'>" +
 					"<td class='name'><input placeholder='Field name' class='name' /></td>" +
 					"<td class='type'>" +
@@ -111,16 +111,56 @@
 			this.$children = client.get_$("children", true);
 			this.$builtins = client.get_$("builtin_children");
 			this.$copies_obj = client.get_$("copies_obj");
+			this.$is_template = client.get_$("is_template");
+			this.$instances = client.get_$("instances");
+
+			this.$curr_copy_index = cjs(0);
+			this.$curr_copy_client = cjs(function() {
+				if(this.$is_template.get()) {
+					var instances = this.$instances.get(),
+						curr_copy_index = this.$curr_copy_index.get();
+					if(instances[curr_copy_index]) {
+						return instances[curr_copy_index];
+					} else {
+						return false;
+					}
+				} else {
+					return client;
+				}
+			}, {context: this});
+
+			this.$prev_copy_client = cjs(function() {
+				if(this.$is_template.get()) {
+					var instances = this.$instances.get(),
+						copy_index = this.$curr_copy_index.get()-1;
+					if(instances[curr_copy_index]) {
+						return instances[curr_copy_index];
+					}
+				}
+
+				return false;
+			}, {context: this});
+
+			this.$next_copy_client = cjs(function() {
+				if(this.$is_template.get()) {
+					var instances = this.$instances.get(),
+						copy_index = this.$curr_copy_index.get()-1;
+					if(instances[curr_copy_index]) {
+						return instances[curr_copy_index];
+					}
+				}
+
+				return false;
+			}, {context: this});
 
 			if(client.type() === "stateful") {
 				this.$statecharts = client.get_$("get_statecharts");
-
 
 				var statecharts = [], wrappers = [], wrapper_infos = [];
 
 				this.statechart_view = $("<div />")	.statechart({
 														statecharts: statecharts,
-														client: this.option("client")
+														client: this.$curr_copy_client
 													});
 				this.layout_manager = this.statechart_view.statechart("get_layout_manager");
 
@@ -182,8 +222,13 @@
 				this.$statecharts.destroy();
 			}
 
+			this.$curr_copy_client.destroy();
+			this.$prev_copy_client.destroy();
+			this.$next_copy_client.destroy();
+			this.$is_template.signal_destroy();
 			this.$is_curr_col.destroy();
 			this.$name.signal_destroy();
+			this.$instances.signal_destroy();
 			this.$children.signal_destroy();
 			this.$copies_obj.signal_destroy();
 			this.$builtins.signal_destroy();
@@ -249,7 +294,8 @@
 
 		_add_class_bindings: function() {
 			this._class_binding = cjs.bindClass(this.element, "col",
-									this.$is_curr_col.iif("curr_col"));
+									this.$is_curr_col.iif("curr_col"),
+									this.$is_template.iif("template"));
 		},
 
 		_remove_class_bindings: function() {
