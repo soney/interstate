@@ -119,10 +119,12 @@
 					on_rootchange();
 				}, this)
 				.on("stringified_root", function(data) {
-					window.open("data:text/plain;charset=utf-8," + data.value);
+					downloadWithName(data.value, data.name+".ist");
+					//window.open("data:text/plain;charset=utf-8," + data.value);
 				}, this)
 				.on("stringified_obj", function(data) {
-					window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
+					downloadWithName("COMPONENT:"+data.value, data.name+".istc");
+					//window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
 				}, this);
 			};
 
@@ -1098,5 +1100,32 @@
 	}
 	function to_func(value) {
 		return function () { return value; };
-	};
+	}
+
+	function eventFire(el, etype) {
+		if (el.fireEvent) {
+			(el.fireEvent('on' + etype));
+		} else {
+			var evObj = document.createEvent('Events');
+			evObj.initEvent(etype, true, false);
+			el.dispatchEvent(evObj);
+		}
+	}
+
+	function downloadWithName(data, name) {
+		var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+
+		if(is_chrome) {
+			var link = document.createElement("a");
+			link.download = name;
+			link.href = "data:," + data;
+			eventFire(link, "click");
+		} else {
+			//window.open("data:text/plain;charset=utf-8," + data);
+			var link = document.createElement("a");
+			link.download = name;
+			link.href = "data:," + data;
+			eventFire(link, "click");
+		}
+	}
 }(interstate, jQuery));

@@ -428,7 +428,7 @@
 				selected: this.$selected,
 				show_menu: this.$show_menu,
 				load_program: _.bind(function(event) {
-					if(this.option("type") === "") {
+					if(!this.option("type")) {
 						var e = new $.Event("load_program");
 						e.storage_type = this.option("storage_type");
 						e.name = $(event.target).attr("data-name");

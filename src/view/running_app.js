@@ -301,6 +301,7 @@
 				} else if (command === "redo") {
 					this._command_stack._redo();
 					this.$dirty_program.set(true);
+					/*
 				} else if (command === "reset") {
 					root.reset();
 					this.$dirty_program.set(true);
@@ -311,6 +312,7 @@
 					});
 				} else if (command === "store") {
 					interstate.save(this.option("root"));
+					*/
 				} else {
 					this._command_stack._do(command);
 					this.$dirty_program.set(true);
@@ -324,12 +326,14 @@
 				if(type === "component") {
 					this.server_socket.post({
 						type: "stringified_obj",
-						value: ist.loadString(name, type)
+						value: ist.loadString(name, type),
+						name: name
 					});
 				} else {
 					this.server_socket.post({
 						type: "stringified_root",
-						value: ist.loadString(name, type)
+						value: ist.loadString(name, type),
+						name: name
 					});
 				}
 			}, this).on("save_component", function (event) {
