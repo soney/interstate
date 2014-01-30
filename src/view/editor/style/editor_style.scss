@@ -459,6 +459,14 @@ html.full_window_editor {
 
 			> .child, >.new_field {
 				@include non-selectable;
+
+				&.builtin {
+					color: #777;
+					text-shadow: 0px 1px 1px #FFF;
+					background-color: #EEE;
+					border-bottom: 1px solid #DDD;
+				}
+
 				color: $nav_column_text_color;
 
 				font-family: "Inconsolata";

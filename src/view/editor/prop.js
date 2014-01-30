@@ -135,14 +135,22 @@
 
 		_add_menu: function() {
 			this.$show_menu  = cjs(false);
-			this.menu_state = cjs.fsm("hidden", "holding", "on_release", "on_click")
-									.addTransition("hidden", "holding", cjs.on("contextmenu", this.element[0]))
-									.addTransition("holding", "on_click", cjs.on("mouseup"))
-									.addTransition("holding", "on_release", cjs.on("timeout", 500))
-									.addTransition("holding", "hidden", cjs.on("keydown").guard('keyCode', 27))
-									.addTransition("on_click", "hidden", cjs.on("keydown").guard('keyCode', 27))
-									.addTransition("on_release", "hidden", cjs.on("keydown").guard('keyCode', 27))
-									.startsAt("hidden");
+			this.menu_state = cjs.fsm("hidden", "holding", "on_release", "on_click");
+			if(this.option("builtin")) {
+				this.element.on("contextmenu", function(event) {
+					event.preventDefault();
+					event.stopPropagation();
+				});
+			} else {
+				this.menu_state.addTransition("hidden", "holding", cjs.on("contextmenu", this.element[0]));
+			}
+			this.menu_state	.addTransition("holding", "on_click", cjs.on("mouseup"))
+							.addTransition("holding", "on_release", cjs.on("timeout", 500))
+							.addTransition("holding", "hidden", cjs.on("keydown").guard('keyCode', 27))
+							.addTransition("on_click", "hidden", cjs.on("keydown").guard('keyCode', 27))
+							.addTransition("on_release", "hidden", cjs.on("keydown").guard('keyCode', 27))
+							.startsAt("hidden");
+
 			var on_mup_holding = this.menu_state.addTransition("holding", "hidden"),
 				on_mup_orelease = this.menu_state.addTransition("on_release", "hidden"),
 				on_mup_oclick = this.menu_state.addTransition("on_click", "hidden");
@@ -337,12 +345,8 @@
 				}, this),
 				getPropCellOptions: _.bind(function(key) {
 					var value = this.$prop_values.itemConstraint(key),
-						left = function() {
-							return layout_manager.get_x(key);
-						},
-						width = function() {
-							return value.get() ? layout_manager.get_width(key) : 7;
-						};
+						left = function() { return layout_manager.get_x(key); },
+						width = function() { return value.get() ? layout_manager.get_width(key) : 7; };
 
 					// top fifty bad lines of code I've ever written: `value: value ? value.value : value`
 					return {prop: this.option("client"),
@@ -364,7 +368,7 @@
 		},
 
 		_add_class_bindings: function() {
-			this._class_binding = cjs.bindClass(this.element, "child",
+			this._class_binding = cjs.bindClass(this.element, "child", this.option("builtin") ? "builtin":"",
 									this.$selected.iif("selected", ""),
 									this.$inherited.iif("inherited", ""),
 									this.$show_menu.iif("menuized", ""));

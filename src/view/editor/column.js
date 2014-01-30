@@ -39,31 +39,31 @@
 						"<div class='add_prop' data-cjs-on-click=addProperty>Add Field</div>" +
 					"</td>" +
 				"</tr>" +
+			"{{/if}}" +
 
-			//"{{#each builtins}}" +
-				//"{{>prop getPropertyViewOptions(this)}}" +
-			//"{{/each}}" +
+			"{{#each builtins}}" +
+				"{{>prop getPropertyViewOptions(this, true)}}" +
+			"{{/each}}" +
 
-				"{{#if adding_field}}" +
-					"<tr class='new_field'>" +
-						"<td class='name'><input placeholder='Field name' class='name' /></td>" +
-						"<td class='type'>" +
-							"<select class='type'>" + 
-								"<option value='stateful'>Object</option>" +
-								"<option value='stateful_prop'>Property</option>" +
-							"</select>" + 
-						"</td>" +
-						"<td class='confirm_field'>" +
-							"<a href='javascript:void(0)'>OK</a>" +
-						"</td>" +
-					"</tr>" +
-				"{{/if}}" +
+			"{{#if adding_field}}" +
+				"<tr class='new_field'>" +
+					"<td class='name'><input placeholder='Field name' class='name' /></td>" +
+					"<td class='type'>" +
+						"<select class='type'>" + 
+							"<option value='stateful'>Object</option>" +
+							"<option value='stateful_prop'>Property</option>" +
+						"</select>" + 
+					"</td>" +
+					"<td class='confirm_field'>" +
+						"<a href='javascript:void(0)'>OK</a>" +
+					"</td>" +
+				"</tr>" +
 			"{{/if}}" +
 
 			"{{#each children}}" +
 				"{{>prop getPropertyViewOptions(this)}}" +
 				"{{#else}}" +
-					"{{#if !adding_field}}" +
+					"{{#if !adding_field && buildings.length===0}}" +
 						"<tr class='no_children'>" +
 							"<td colspan='3'>No fields</td>" +
 						"</tr>" +
@@ -193,7 +193,7 @@
 						client: child.value,
 						name: child.name,
 						inherited: child.inherited,
-						//builtin: child.builtin,
+						builtin: child.builtin,
 						layout_manager: this.layout_manager,
 						show_src: this.$is_curr_col,
 						obj: this.option("client"),

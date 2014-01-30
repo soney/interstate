@@ -238,9 +238,13 @@
 				contextual_objects = _.map(infos, function (info, i) {
 					var name = builtin_names[i];
 					return {name: name, value: info.value, inherited: false, builtin: true };
-				}, this);
-			console.log("ABC");
-			return contextual_objects;
+				}, this),
+				children = _.map(contextual_objects, function(raw_child) {
+					return _.extend({}, raw_child, {
+						value: get_contextual_object(raw_child.value, pointer)
+					});
+				});
+			return children;
 		};
 		proto.children = function (exclude_builtins) {
 			var raw_children = this.raw_children(exclude_builtins);
