@@ -54,7 +54,7 @@
 			"</table>" +
 			"<div class='widget_group btn-group navbar-right'>" +
 				"<div type='button' class='btn btn btn-default {{show_components ? \"active\" : \"\"}}' data-cjs-on-click='toggle_show_widgets'>" +
-					"Widgets" +
+					"Files" +
 					" <span class='glyphicon {{show_components ? \"glyphicon-chevron-up\" : \"glyphicon-chevron-down\"}}'></span>" +
 				"</div>" +
 			"</div>" +
