@@ -32,7 +32,13 @@
 				"</ul>" +
 			"{{/if}}" +
 		"</td>" +
+		"{{#if show_prev_value}}" +
+			"{{> valueSummary getPrevValueSummaryOptions() }}"  +
+		"{{/if}}" +
 		"{{> valueSummary getValueSummaryOptions() }}"  +
+		"{{#if show_next_value}}" +
+			"{{> valueSummary getNextValueSummaryOptions() }}"  +
+		"{{/if}}" +
 		"{{#if show_src}}" +
 			"{{#if type==='stateful_prop'}}" +
 				"<td class='stateful_prop src'>" +
@@ -59,7 +65,9 @@
 			show_src: false,
 			obj: false,
 			client_socket: false,
-			selected: false
+			selected: false,
+			prev: false,
+			next: false
 		},
 
 		_create: function() {
@@ -69,6 +77,16 @@
 			this.$inherited = cjs(this.option("inherited"));
 			this.$show_src  = this.option("show_src");
 			this.$selected  = this.option("selected");
+
+			this.$prev_dict_client = this.option("prev");
+			this.$next_dict_client = this.option("next");
+
+			this.$show_prev_value = cjs(true);
+			this.$show_next_value = cjs(true);
+
+			this.prev_value = ist.indirectClient(this.$prev_dict_client, ["prop_val", this.option("name")]);
+			this.next_value = ist.indirectClient(this.$next_dict_client, ["prop_val", this.option("name")]);
+
 
 			this.$type = cjs(function() {
 				if(client instanceof ist.WrapperClient) {
@@ -335,10 +353,14 @@
 			prop_template({
 				prop_name: this.$prop_name,
 				name_edit_state: this.name_edit_state,
+				getPrevValueSummaryOptions: _.bind(function() {
+					return { client: this.prev_value };
+				}, this),
 				getValueSummaryOptions: _.bind(function() {
-					return {
-						client: this.option("client")
-					};
+					return { client: this.option("client") };
+				}, this),
+				getNextValueSummaryOptions: _.bind(function() {
+					return { client: this.next_value };
 				}, this),
 				getPurePropCellOptions: _.bind(function() {
 					return { client: cjs.constraint(this.option("client")), prop: false };
@@ -355,6 +377,8 @@
 							left: left,
 							width: width };
 				}, this),
+				show_prev_value: this.$show_prev_value,
+				show_next_value: this.$show_next_value,
 				show_src: this.$show_src,
 				value: this.option("client"),
 				type: this.$type,

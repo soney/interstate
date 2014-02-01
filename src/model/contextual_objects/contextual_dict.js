@@ -332,7 +332,7 @@
 				i,
 				len;
 			if (dict._has_builtin_prop(name)) {
-				info = dict._get_builtin_info(name);
+				info = dict._get_builtin_prop_info(name);
 			} else if (dict._has_direct_prop(name)) {
 				info = dict._get_direct_prop_info(name);
 			} else {

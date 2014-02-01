@@ -111,7 +111,6 @@
 				} else if (smtype === "emit") {
 					client.on_emit.apply(client, ([server_message.event_type]).concat(server_message.args));
 				}
-				//console.log(smtype);
 			}
 		};
 		proto.on_response = function(message) {
@@ -244,7 +243,7 @@
 				})
 			});
 		} else {
-			var args = _.isArray(prop_names[0]) ? prop_name[0] : [prop_name[0]];
+			var args = _.isArray(prop_names[0]) ? prop_names[0] : [prop_names[0]];
 			rv = cjs.constraint(client_val ? client_val.get_$.apply(client_val, args) : false);
 		}
 
@@ -264,13 +263,8 @@
 					}
 				});
 			} else {
-				var old_value = rv.get();
-				if(old_value) {
-					old_value.signal_destroy();
-				}
-
 				if(client_val) {
-					var args = _.isArray(prop_names[0]) ? prop_name[0] : [prop_name[0]];
+					var args = _.isArray(prop_names[0]) ? prop_names[0] : [prop_names[0]];
 					rv.set(client_val.get_$.apply(client_val, args));
 				} else {
 					rv.set(false);

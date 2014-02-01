@@ -131,8 +131,8 @@
 				if(this.$is_template.get()) {
 					var instances = this.$instances.get(),
 						copy_index = this.$curr_copy_index.get()-1;
-					if(instances[curr_copy_index]) {
-						return instances[curr_copy_index];
+					if(instances[copy_index]) {
+						return instances[copy_index];
 					}
 				}
 
@@ -142,9 +142,9 @@
 			this.$next_copy_client = cjs(function() {
 				if(this.$is_template.get()) {
 					var instances = this.$instances.get(),
-						copy_index = this.$curr_copy_index.get()-1;
-					if(instances[curr_copy_index]) {
-						return instances[curr_copy_index];
+						copy_index = this.$curr_copy_index.get()+1;
+					if(instances[copy_index]) {
+						return instances[copy_index];
 					}
 				}
 
@@ -156,7 +156,8 @@
 			this.$builtins = this.$column_info.itemConstraint("builtin_children");
 
 			if(client.type() === "stateful") {
-				this.$statecharts = client.get_$("get_statecharts");
+				this.$statecharts = ist.indirectClient(this.$curr_copy_client, "get_statecharts");
+				//client.get_$("get_statecharts");
 
 				var statecharts = [], wrappers = [], wrapper_infos = [];
 
@@ -242,6 +243,21 @@
 			this._super();
 		},
 
+/*
+			this.$prev_copy_client = cjs(function() {
+				if(this.$is_template.get()) {
+					var instances = this.$instances.get(),
+						copy_index = this.$curr_copy_index.get()-1;
+					if(instances[curr_copy_index]) {
+						return instances[curr_copy_index];
+					}
+				}
+
+				return false;
+			}, {context: this});
+
+			this.$next_copy_client = cjs(function() {
+			*/
 		_add_content_bindings: function() {
 			var client = this.option("client");
 			column_template({
@@ -260,7 +276,9 @@
 						obj: this.option("client"),
 						client_socket: this.option("client_socket"),
 						statechart_view: this.statechart_view,
-						selected: this.$selected_prop.eqStrict(child.value)
+						selected: this.$selected_prop.eqStrict(child.value),
+						prev: this.$prev_copy_client,
+						next: this.$next_copy_client
 					}
 				}, this),
 				statechart_view: this.statechart_view,
