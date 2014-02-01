@@ -130,55 +130,6 @@
 		proto.on_cobj_links = function(message) {
 			this._emit("cobj_links", message);
 		};
-		/*
-		proto.on_message = function (message) {
-			var type = message.type;
-
-			if (type === "croot") {
-				if(this.root_client) {
-					this._emit("root_changed", message);
-				}
-
-				var summary = message.summary;
-
-				if(summary) {
-					this.root_client = this.get_wrapper_client(summary);
-				}
-
-				this._emit("loaded", this.root_client);
-				this.post("loaded");
-			} else if (type === "wrapper_server") {
-				var server_message = message.server_message;
-				var client_id = server_message.client_id;
-
-				var smtype = server_message.type;
-				var client = this.clients[client_id];
-				if(client) {
-					if (smtype === "changed") {
-						client.on_change.apply(client, server_message.getting);
-					} else if (smtype === "emit") {
-						client.on_emit.apply(client, ([server_message.event_type]).concat(server_message.args));
-					}
-				}
-			} else if (type === "response") {
-				var request_id = message.request_id,
-					response = message.response;
-				if (this.response_listeners.hasOwnProperty(request_id)) {
-					var response_listener = this.response_listeners[request_id];
-					if(response_listener !== DEREGISTERED) {
-						response_listener(response);
-					}
-					delete this.response_listeners[request_id];
-				} else {
-					this.pending_responses[request_id] = response;
-				}
-			} else if(type === "cobj_links") {
-				this._emit("cobj_links", message);
-			}
-
-			this._emit("message", message);
-		};
-		*/
 
 		proto.register_response_listener = function (id, listener) {
 			if (this.pending_responses.hasOwnProperty(id)) {
@@ -277,125 +228,77 @@
 	}(ist.ProgramStateClient));
 
 	ist.indirectClient = function(client_constraint) {
-		var client_val = client.get(),
+		var client_val = client_constraint.get(),
 			old_client = client_val,
 			prop_names = _.rest(arguments),
-			client_is_valid = !!client, rv, is_arr = prop_names.length !== 1;
+			client_is_valid = !!client_val, rv, is_arr = prop_names.length !== 1;
 
 		if(is_arr) {
 			rv = cjs.map({
-				keys: prop_names,
+				keys: _.map(prop_names, function(prop_name) {
+					return _.isArray(prop_name) ? prop_name[0] : prop_name;
+				}),
 				values: _.map(prop_names, function(prop_name) {
-					return client_val ? client_val.get_$(prop_name) : false;
+					var args = _.isArray(prop_name) ? prop_name : [prop_name];
+					return client_val ? client_val.get_$.apply(client_val, args) : false;
 				})
 			});
 		} else {
-			rv = cjs.constraint(client_val ? client_val.get_$(prop_names[0]) : false);
+			var args = _.isArray(prop_names[0]) ? prop_name[0] : [prop_name[0]];
+			rv = cjs.constraint(client_val ? client_val.get_$.apply(client_val, args) : false);
 		}
 
-		client.onChange(function() {
+		
+		var on_change_fn = function() {
 			var client_was_valid = client_is_valid;
-			client_val = client.get();
+			client_val = client_constraint.get();
+			client_is_valid = !!client_val;
+
 			if(is_arr) {
-				rv.each(function(old_value, prop_name) {
+				_.each(prop_names, function(prop_name) {
+					if(client_val) {
+						var args = _.isArray(prop_name) ? prop_name : [prop_name];
+						rv.put(prop_name, client_val.get_$.apply(client_val, args));
+					} else {
+						rv.remove(prop_name);
+					}
 				});
-				/*
-				rv = cjs.map({
-					keys: prop_names,
-					values: _.map(prop_names, function(prop_name) {
-						return client_val ? client_val.get_$(prop_name) : false;
-					})
-				});
-				*/
 			} else {
 				var old_value = rv.get();
-			/*
+				if(old_value) {
+					old_value.signal_destroy();
+				}
 
-				rv = cjs.constraint(client_val ? client_val.get_$(prop_names[0]) : false);
-				*/
+				if(client_val) {
+					var args = _.isArray(prop_names[0]) ? prop_name[0] : [prop_name[0]];
+					rv.set(client_val.get_$.apply(client_val, args));
+				} else {
+					rv.set(false);
+				}
 			}
-		/*
-			client_val = client.get();
-			if(client_val) {
-				client_is_valid = true;
+
+			if(client_is_valid && !client_was_valid) {
 				client_val.signal_interest();
-			} else {
+			} else if(client_was_valid && !client_is_valid) {
+				old_client.signal_destroy();
+			} else if(client_was_valid && client_is_valid) {
+				old_client.signal_destroy();
+				client_val.signal_interest();
 			}
-			*/
-		});
+			old_client = client_val;
+		};
+
+		client_constraint.onChange(on_change_fn);
+
+		var old_destroy = rv.destroy;
+		rv.destroy = function() {
+			client_constraint.offChange(on_change_fn);
+			old_destroy.apply(rv, arguments);
+			if(client_val) {
+				client_val.signal_destroy();
+			}
+		};
 
 		return rv;
 	};
-	/*
-			var client = this.option("client"),
-				client_val = client.get(),
-				old_client = client_val;
-
-			var client_is_valid;
-
-			var elem = this.element;
-			this.client_state = cjs.fsm('unset', 'initialedit', 'set')
-									.addTransition('unset', 'initialedit', cjs.on('click', this.element))
-									.addTransition('initialedit', 'set', function(dt) {
-										elem.on('confirm_value', dt);
-									})
-									.addTransition('initialedit', 'unset', function(dt) {
-										elem.on('cancel_value', dt);
-									})
-									.on('initialedit->set', function(event) {
-										this._set_value_for_state(event.value);
-									}, this)
-									.on("unset->initialedit", this._emit_begin_editing, this)
-									.on("initialedit->*", this._emit_done_editing, this);
-
-			this.$$STR = false;
-			this.$$SE = false;
-			if(client_val) {
-				client_is_valid = true;
-				client_val.signal_interest();
-				this.$$STR = client_val.get_$("get_str");
-				this.$$SE = client_val.get_$("get_syntax_errors");
-				this.$$STR.signal_interest();
-				this.$$SE.signal_interest();
-				this.client_state._setState('set');
-			} else {
-				this.client_state._setState('unset');
-				client_is_valid = false;
-			}
-			this.$str = cjs(this.$$STR);
-			this.$syntax_errors = cjs(this.$$SE);
-
-
-			client.onChange(function() {
-				var client_was_valid = client_is_valid,
-					client_val = client.get();
-				if(this.$$STR) {
-					this.$$STR.signal_destroy();
-					this.$$SE.signal_destroy();
-				}
-				if(client_val) {
-					client_is_valid = true;
-					this.$$STR = client_val.get_$("get_str");
-					this.$$SE = client_val.get_$("get_syntax_errors");
-					this.client_state._setState('set');
-				} else {
-					client_is_valid = false;
-					this.$$STR = false;
-					this.$$SE = false;
-					this.client_state._setState('unset');
-				}
-				this.$str.set(this.$$STR);
-				this.$syntax_errors.set(this.$$SE);
-
-				if(client_is_valid && !client_was_valid) {
-					client_val.signal_interest();
-				} else if(client_was_valid && !client_is_valid) {
-					old_client.signal_destroy();
-				} else if(client_was_valid && client_is_valid) {
-					old_client.signal_destroy();
-					client_val.signal_interest();
-				}
-				old_client = client_val;
-			}, this);
-			*/
 }(interstate, jQuery));

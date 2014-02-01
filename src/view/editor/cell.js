@@ -56,11 +56,7 @@
 			default_max_width: 90
 		},
 		_create: function() {
-			var client = this.option("client"),
-				client_val = client.get(),
-				old_client = client_val;
-
-			var client_is_valid;
+			var client = this.option("client");
 
 			var elem = this.element;
 			this.client_state = cjs.fsm('unset', 'initialedit', 'set')
@@ -77,60 +73,20 @@
 									.on("unset->initialedit", this._emit_begin_editing, this)
 									.on("initialedit->*", this._emit_done_editing, this);
 
-			this.$$STR = false;
-			this.$$SE = false;
-			if(client_val) {
-				client_is_valid = true;
-				client_val.signal_interest();
-				this.$$STR = client_val.get_$("get_str");
-				this.$$SE = client_val.get_$("get_syntax_errors");
-				this.$$STR.signal_interest();
-				this.$$SE.signal_interest();
-				this.client_state._setState('set');
-			} else {
-				this.client_state._setState('unset');
-				client_is_valid = false;
-			}
-			this.$str = cjs(this.$$STR);
-			this.$syntax_errors = cjs(this.$$SE);
-
-
+			this.client_state._setState(client.get() ? 'set' : 'unset');
 			client.onChange(function() {
-				var client_was_valid = client_is_valid,
-					client_val = client.get();
-				if(this.$$STR) {
-					this.$$STR.signal_destroy();
-					this.$$SE.signal_destroy();
-				}
-				if(client_val) {
-					client_is_valid = true;
-					this.$$STR = client_val.get_$("get_str");
-					this.$$SE = client_val.get_$("get_syntax_errors");
-					this.client_state._setState('set');
-				} else {
-					client_is_valid = false;
-					this.$$STR = false;
-					this.$$SE = false;
-					this.client_state._setState('unset');
-				}
-				this.$str.set(this.$$STR);
-				this.$syntax_errors.set(this.$$SE);
-
-				if(client_is_valid && !client_was_valid) {
-					client_val.signal_interest();
-				} else if(client_was_valid && !client_is_valid) {
-					old_client.signal_destroy();
-				} else if(client_was_valid && client_is_valid) {
-					old_client.signal_destroy();
-					client_val.signal_interest();
-				}
-				old_client = client_val;
+				this.client_state._setState(client.get() ? 'set' : 'unset');
 			}, this);
+
+			this.$cell_info = ist.indirectClient(this.option("client"), "get_str", "get_syntax_errors");
+
+			this.$str = this.$cell_info.itemConstraint("get_str");
+			this.$syntax_errors = this.$cell_info.itemConstraint("get_syntax_errors");
 
 			this.edit_state = cjs	.fsm("idle", "editing")
 									.startsAt("idle")
 									.addTransition('idle', 'editing', cjs.on('click', this.element).guard(_.bind(function() {
-										return client_is_valid;
+										return !!client.get();
 									}, this)))
 									.addTransition('editing', 'idle', function(dt) {
 										elem.on('confirm_value', dt);
@@ -159,25 +115,18 @@
 			this._add_position_bindings();
 		},
 		_destroy: function() {
-			var client = this.option("client"),
-				client_val = client.get();
-			client.destroy();
+			var client = this.option("client");
 
 			this._remove_position_bindings();
 			this._remove_class_bindings();
 			this._remove_tooltip();
 			this._remove_content_bindings();
 
+
 			this.$str.destroy();
 			this.$syntax_errors.destroy();
 
-			if(this.$$STR) {
-				this.$$STR.signal_destroy();
-				this.$$SE.signal_destroy();
-			}
-			if(client_val) {
-				client_val.signal_destroy();
-			}
+			this.$cell_info.destroy();
 
 			this.$active.destroy();
 			this.$left.destroy();
@@ -186,13 +135,9 @@
 			this.$visible.destroy();
 			this.edit_state.destroy();
 
-			if(client_val) {
-				client_val.signal_destroy();
-			}
+			client.destroy();
 
 			this._super();
-
-			delete this.options;
 		},
 
 		_emit_new_value: function(value) {

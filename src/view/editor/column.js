@@ -108,8 +108,6 @@
 
 			this.$is_curr_col = this.option("is_curr_col");
 			this.$name = client.get_$("get_name");
-			this.$children = client.get_$("children", true);
-			this.$builtins = client.get_$("builtin_children");
 			this.$copies_obj = client.get_$("copies_obj");
 			this.$is_template = client.get_$("is_template");
 			this.$instances = client.get_$("instances");
@@ -152,6 +150,10 @@
 
 				return false;
 			}, {context: this});
+
+			this.$column_info = ist.indirectClient(this.$curr_copy_client, ["children", true], "builtin_children");
+			this.$children = this.$column_info.itemConstraint("children");
+			this.$builtins = this.$column_info.itemConstraint("builtin_children");
 
 			if(client.type() === "stateful") {
 				this.$statecharts = client.get_$("get_statecharts");
@@ -229,9 +231,11 @@
 			this.$is_curr_col.destroy();
 			this.$name.signal_destroy();
 			this.$instances.signal_destroy();
-			this.$children.signal_destroy();
 			this.$copies_obj.signal_destroy();
-			this.$builtins.signal_destroy();
+			this.$children.destroy();
+			this.$builtins.destroy();
+
+			this.$column_info.destroy();
 
 			client.signal_destroy();
 

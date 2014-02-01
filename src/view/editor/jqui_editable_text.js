@@ -48,6 +48,7 @@
 			this._cancel = _.bind(this._cancel_edit, this);
 		},
 		_destroy: function () {
+			if(this.$textarea_binding) { this.$textarea_binding.destroy(); };
 			this.option("helper", false);
 			this._super();
 		},
@@ -67,18 +68,17 @@
 				var editor = value,
 					old_editor = this.option("helper");
 
+				if(this.$textarea_binding) { this.$textarea_binding.destroy(); };
+
 				if(old_editor) {
 					old_editor.setValue("");
-					old_editor.clearSelection();
 				}
 
 				if(editor) {
-					editor.setValue(this.element.val());
-					editor.clearSelection();
+					editor.setValue(this.element.val(), 1);
 					this.$textarea_binding = cjs(this.element[0]);
 					this.$textarea_binding.onChange(function() {
-						editor.setValue(this.$textarea_binding.get());
-						editor.clearSelection();
+						editor.setValue(this.$textarea_binding.get(), 1);
 					}, this);
 				}
 			}

@@ -121,9 +121,6 @@ exports.runtime_style = cp(src, ["view/editor/style/runtime_style.css"]);
 exports.editor = c(
 	cp(src, [
 		"view/editor/jqui_editable_text.js",
-		"view/editor/pane.js",
-		"view/editor/menu.js",
-		"view/editor/pressable.js",
 		"view/editor/editor_view.js",
 		"view/editor/component_list.js",
 		"view/editor/navigator.js",
