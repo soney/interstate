@@ -304,7 +304,14 @@ html.full_window_editor {
 
 		> tbody {
 			> tr > .value_summary {
-				max-width: $value_summary_width;
+				&.primary {
+					max-width: $value_summary_width;
+				}
+				&.prev, &.next {
+					max-width: 5px;
+					text-align: center;
+					opacity: .4;
+				}
 				overflow: hidden;
 				text-align: right;
 				word-break: break-all;
@@ -580,6 +587,7 @@ html.full_window_editor {
 				> .name {
 					padding-left: 2px;
 					padding-right: 5px;
+					border-right: 1px solid #DDD;
 
 					> .drag_handle {
 						cursor: -moz-grab;

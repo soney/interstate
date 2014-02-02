@@ -19,11 +19,16 @@
 	var column_template = cjs.createTemplate(
 		"<tbody>" +
 			"<tr class='header'>" +
-				"<th colspan='2' class='obj_name'>" +
-					"<h2 data-cjs-on-click='headerClicked'>{{ci}}{{name}}</h2>" +
+				"<th colspan={{num_curr_values+1}} class='obj_name'>" +
+					"<h2 data-cjs-on-click='headerClicked'>" +
+						"{{ci}}{{name}}" +
+						"{{#if is_template}}" +
+							"[{{curr_copy_index}}]" +
+						"{{/if}}" +
+					"</h2>" +
 				"</th>" +
 				"{{#if stateful}}" +
-					"<th rowspan='3' class='statechart_cell'>" +
+					"<th rowspan='{{is_template ? 4 : 3}}' class='statechart_cell'>" +
 						"{{#if is_curr_col}}" +
 							"{{statechart_view}}" +
 						"{{/if}}" +
@@ -36,7 +41,7 @@
 			"{{#if is_curr_col}}" +
 				"{{#if stateful}}" +
 					"<tr class='copies_spec'>" +
-						"<td colspan='2' class='copies_spec'>" +
+						"<td colspan='{{num_curr_values+1}}' class='copies_spec'>" +
 							"<span class='copies_label'>Copies: </span>" +
 							"{{> propCell getCopiesCellOptions() }}" +
 						"</td>" +
@@ -44,12 +49,29 @@
 				"{{/if}}" +
 
 				"<tr class='add_prop'>" +
-					"<td colspan='2' class='add_prop'>" +
+					"<td colspan='{{num_curr_values+1}}' class='add_prop'>" +
 						"<div class='add_prop' data-cjs-on-click=addProperty>Add Field</div>" +
 					"</td>" +
 				"</tr>" +
+				"{{#if is_template}}" +
+					"<tr class='switch_copy'>" +
+						"<td></td>" +
+						"{{#if show_prev_value}}" +
+							"<td data-cjs-on-click='selectPrevClient'>" +
+								"<span class='glyphicon glyphicon-chevron-left'></span>" +
+							"</td>" +
+						"{{/if}}" +
+						"<td>" +
+							"copy {{curr_copy_index}} of {{num_instances}}" +
+						"</td>" +
+						"{{#if show_next_value}}" +
+							"<td data-cjs-on-click='selectNextClient'>" +
+								"<span class='glyphicon glyphicon-chevron-right'></span>" +
+							"</td>" +
+						"{{/if}}" +
+					"</tr>" +
+				"{{/if}}" +
 			"{{/if}}" +
-
 			"{{#each builtins}}" +
 				"{{>prop getPropertyViewOptions(this, true)}}" +
 			"{{/each}}" +
@@ -74,7 +96,7 @@
 				"{{#else}}" +
 					"{{#if !adding_field && builtins.length===0}}" +
 						"<tr class='no_children'>" +
-							"<td colspan='3'>No fields</td>" +
+							"<td colspan='{{num_curr_values+2}}'>No fields</td>" +
 						"</tr>" +
 					"{{/if}}" +
 			"{{/each}}" +
@@ -111,6 +133,8 @@
 			this.$copies_obj = client.get_$("copies_obj");
 			this.$is_template = client.get_$("is_template");
 			this.$instances = client.get_$("instances");
+
+			this.$num_instances = this.$instances.prop("length");
 
 			this.$curr_copy_index = cjs(0);
 			this.$curr_copy_client = cjs(function() {
@@ -150,6 +174,11 @@
 
 				return false;
 			}, {context: this});
+
+			this.$show_prev_value = cjs(this.$prev_copy_client);
+			this.$show_next_value = cjs(this.$next_copy_client);
+
+			this.$num_curr_values = this.$is_template.iif(this.$prev_copy_client.iif(2,1).add(this.$next_copy_client.iif(1,0)), 1);
 
 			this.$column_info = ist.indirectClient(this.$curr_copy_client, ["children", true], "builtin_children");
 			this.$children = this.$column_info.itemConstraint("children");
@@ -243,21 +272,6 @@
 			this._super();
 		},
 
-/*
-			this.$prev_copy_client = cjs(function() {
-				if(this.$is_template.get()) {
-					var instances = this.$instances.get(),
-						copy_index = this.$curr_copy_index.get()-1;
-					if(instances[curr_copy_index]) {
-						return instances[curr_copy_index];
-					}
-				}
-
-				return false;
-			}, {context: this});
-
-			this.$next_copy_client = cjs(function() {
-			*/
 		_add_content_bindings: function() {
 			var client = this.option("client");
 			column_template({
@@ -265,6 +279,7 @@
 				children: this.$children,
 				builtins: this.$builtins,
 				stateful: client.type() === "stateful",
+				is_template: this.$is_template,
 				getPropertyViewOptions: _.bind(function(child) {
 					return {
 						client: child.value,
@@ -290,7 +305,18 @@
 					return {
 						client: cjs.constraint(this.$copies_obj)
 					};
-				}, this)
+				}, this),
+				num_curr_values: this.$num_curr_values,
+				curr_copy_index: this.$curr_copy_index,
+				show_prev_value: this.$show_prev_value,
+				show_next_value: this.$show_next_value,
+				selectPrevClient: _.bind(function() {
+					this.$curr_copy_index.set(this.$curr_copy_index.get() - 1);
+				}, this),
+				selectNextClient: _.bind(function() {
+					this.$curr_copy_index.set(this.$curr_copy_index.get() + 1);
+				}, this),
+				num_instances: this.$num_instances 
 			}, this.element);
 			this._select_just_added_name = cjs.liven(function() {
 				var children = this.$children.get();

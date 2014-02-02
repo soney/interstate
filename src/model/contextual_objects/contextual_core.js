@@ -29,6 +29,8 @@
 			});
 			this.set_options(options);
 		};
+		proto.is_template = function() { return false; };
+		proto.instances = function() { return false; };
 		proto.get_name = function() {
 			var pointer = this.get_pointer();
 			var my_index = pointer.indexOf(this.get_object());

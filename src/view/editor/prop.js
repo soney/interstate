@@ -81,12 +81,11 @@
 			this.$prev_dict_client = this.option("prev");
 			this.$next_dict_client = this.option("next");
 
-			this.$show_prev_value = cjs(true);
-			this.$show_next_value = cjs(true);
+			this.$show_prev_value = cjs(this.$prev_dict_client);
+			this.$show_next_value = cjs(this.$next_dict_client);
 
 			this.prev_value = ist.indirectClient(this.$prev_dict_client, ["prop_val", this.option("name")]);
 			this.next_value = ist.indirectClient(this.$next_dict_client, ["prop_val", this.option("name")]);
-
 
 			this.$type = cjs(function() {
 				if(client instanceof ist.WrapperClient) {
@@ -354,18 +353,19 @@
 				prop_name: this.$prop_name,
 				name_edit_state: this.name_edit_state,
 				getPrevValueSummaryOptions: _.bind(function() {
-					return { client: this.prev_value };
+					return { is_primary: false, client: this.prev_value, itemClass:'prev'};
 				}, this),
 				getValueSummaryOptions: _.bind(function() {
-					return { client: this.option("client") };
+					return { is_primary: true, client: this.option("client"), itemClass:'primary' };
 				}, this),
 				getNextValueSummaryOptions: _.bind(function() {
-					return { client: this.next_value };
+					return { is_primary: false, client: this.next_value, itemClass:'next'};
 				}, this),
 				getPurePropCellOptions: _.bind(function() {
 					return { client: cjs.constraint(this.option("client")), prop: false };
 				}, this),
 				getPropCellOptions: _.bind(function(key) {
+					console.log(key);
 					var value = this.$prop_values.itemConstraint(key),
 						left = function() { return layout_manager.get_x(key); },
 						width = function() { return value.get() ? layout_manager.get_width(key) : 7; };

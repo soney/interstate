@@ -227,10 +227,10 @@
 	}(ist.ProgramStateClient));
 
 	ist.indirectClient = function(client_constraint) {
-		var client_val = client_constraint.get(),
+		var client_val = cjs.get(client_constraint),
 			old_client = client_val,
 			prop_names = _.rest(arguments),
-			client_is_valid = !!client_val, rv, is_arr = prop_names.length !== 1;
+			client_is_valid = (client_val instanceof ist.WrapperClient), rv, is_arr = prop_names.length !== 1;
 
 		if(is_arr) {
 			rv = cjs.map({
@@ -239,23 +239,22 @@
 				}),
 				values: _.map(prop_names, function(prop_name) {
 					var args = _.isArray(prop_name) ? prop_name : [prop_name];
-					return client_val ? client_val.get_$.apply(client_val, args) : false;
+					return (client_val instanceof ist.WrapperClient) ? client_val.get_$.apply(client_val, args) : false;
 				})
 			});
 		} else {
 			var args = _.isArray(prop_names[0]) ? prop_names[0] : [prop_names[0]];
-			rv = cjs.constraint(client_val ? client_val.get_$.apply(client_val, args) : false);
+			rv = cjs.constraint((client_val instanceof ist.WrapperClient) ? client_val.get_$.apply(client_val, args) : false);
 		}
-
 		
 		var on_change_fn = function() {
 			var client_was_valid = client_is_valid;
-			client_val = client_constraint.get();
-			client_is_valid = !!client_val;
+			client_val = cjs.get(client_constraint);
+			client_is_valid = client_val instanceof ist.WrapperClient;
 
 			if(is_arr) {
 				_.each(prop_names, function(prop_name) {
-					if(client_val) {
+					if(client_val instanceof ist.WrapperClient) {
 						var args = _.isArray(prop_name) ? prop_name : [prop_name];
 						rv.put(prop_name, client_val.get_$.apply(client_val, args));
 					} else {
@@ -263,7 +262,7 @@
 					}
 				});
 			} else {
-				if(client_val) {
+				if(client_val instanceof ist.WrapperClient) {
 					var args = _.isArray(prop_names[0]) ? prop_names[0] : [prop_names[0]];
 					rv.set(client_val.get_$.apply(client_val, args));
 				} else {
@@ -282,13 +281,17 @@
 			old_client = client_val;
 		};
 
-		client_constraint.onChange(on_change_fn);
+		if(cjs.isConstraint(client_constraint)) {
+			client_constraint.onChange(on_change_fn);
+		}
 
 		var old_destroy = rv.destroy;
 		rv.destroy = function() {
-			client_constraint.offChange(on_change_fn);
+			if(cjs.isConstraint(client_constraint)) {
+				client_constraint.offChange(on_change_fn);
+			}
 			old_destroy.apply(rv, arguments);
-			if(client_val) {
+			if(client_val instanceof ist.WrapperClient) {
 				client_val.signal_destroy();
 			}
 		};
