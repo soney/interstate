@@ -6,7 +6,7 @@
 	var cjs = ist.cjs,
 		_ = ist._,
 		PROP_NAME_WIDTH = 30,
-		PROP_ID_WIDTH = 5,
+		PROP_ID_WIDTH = 8,
 		PROP_VALUE_WIDTH = 40,
 		STATE_NAME_WIDTH = 40,
 		STATE_ID_WIDTH = 10,
@@ -89,7 +89,7 @@
 
 	function print(current_pointer, logging_mechanism) {
 		logging_mechanism = logging_mechanism || console;
-		var value_to_value_str = function (val) {
+		var value_to_value_str = function (val, cobj) {
 			var points_at, special_contexts, str, special_contexts_str;
 			if (_.isUndefined(val)) {
 				return "(undefined)";
@@ -104,7 +104,7 @@
 			} else if (_.isElement(val)) {
 				return "(dom)";
 			} else if (val instanceof ist.StatefulObj) {
-				return "(stateful:" + uid.strip_prefix(val.id()) + ")";
+				return "(stateful:" + ((cobj && cobj instanceof ist.ContextualObject) ? (uid.strip_prefix(cobj.id())+":") : "") + uid.strip_prefix(val.id()) + ")";
 			} else if (val instanceof ist.Dict) {
 				return "(dict:" + uid.strip_prefix(val.id()) + ")";
 			} else if (val instanceof ist.Cell) {
@@ -132,7 +132,7 @@
 				var ptr = val.get_pointer();
 				points_at = ptr.points_at();
 				special_contexts = ptr.special_contexts();
-				str = value_to_value_str(points_at);
+				str = value_to_value_str(points_at, val);
 				special_contexts_str = _.map(special_contexts, function (sc) { return sc.id().toString(); }).join(",");
 
 				if (special_contexts.length > 0) {
@@ -220,7 +220,7 @@
 
 						if (prop_points_at instanceof ist.StatefulProp) {
 							prop_text = pad(prop_text, PROP_NAME_WIDTH);
-							prop_text = prop_text + pad("(" + uid.strip_prefix(prop_points_at.id()) + ")", PROP_ID_WIDTH);
+							prop_text = prop_text + pad("(" + (child instanceof ist.ContextualObject ? (uid.strip_prefix(child.id())+":"):"") + uid.strip_prefix(prop_points_at.id()) + ")", PROP_ID_WIDTH);
 						} else {
 							prop_text = pad(prop_text, PROP_NAME_WIDTH + PROP_ID_WIDTH);
 						}
@@ -292,9 +292,9 @@
 		var root = current_pointer.points_at(0);
 		var root_str;
 		if (current_pointer.points_at() === root) {
-			root_str = ">root";
+			root_str = ">sketch";
 		} else {
-			root_str = "root";
+			root_str = "sketch";
 		}
 		logging_mechanism.log(pad(root_str, PROP_NAME_WIDTH)  + value_to_value_str(root));
 		var contextual_root = ist.find_or_put_contextual_obj(root);

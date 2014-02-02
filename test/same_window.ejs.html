@@ -22,6 +22,11 @@
 					edit_on_open: true,
 					show_edit_button: false
 				});
+				window.getRoot = function() {
+					return $("div.output").dom_output("option", "root");
+				};
+				window.getEnvironment = function() {
+				};
 			</script>
 	  </div>
   </body>

@@ -252,6 +252,10 @@
 			client_val = cjs.get(client_constraint);
 			client_is_valid = client_val instanceof ist.WrapperClient;
 
+			if(rv.do_debug) {
+				console.log(old_client, client_val);
+			}
+
 			if(is_arr) {
 				_.each(prop_names, function(prop_name) {
 					if(client_val instanceof ist.WrapperClient) {

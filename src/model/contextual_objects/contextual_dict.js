@@ -190,6 +190,7 @@
 				});
 			});
 
+
 			var rv = [];
 			_.each([
 				["special_context", special_context_names],
@@ -287,6 +288,11 @@
 					value: get_contextual_object(raw_child.value, pointer)
 				});
 			});
+			/*
+			if(uid.strip_prefix(this.id()) == 37) {
+				console.log(children);
+			}
+			*/
 			return children;
 		};
 		proto.parent = function() {

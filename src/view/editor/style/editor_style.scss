@@ -650,18 +650,15 @@ html.full_window_editor {
 					
 					color: #888;
 
-					> .dict {
-						text-align: right;
-						cursor: pointer;
+					cursor: pointer;
 
-						>.copies {
-							color: #BBB;
-							padding-right: 3px;
-						}
+					>.copies {
+						color: #BBB;
+						padding-right: 3px;
+					}
 
-						>.expand_arrow {
-							color: #CCC;
-						}
+					>.expand_arrow {
+						color: #CCC;
 					}
 					
 					&.constant {
