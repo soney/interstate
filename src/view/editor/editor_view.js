@@ -152,30 +152,30 @@
 				}
 			}, this));
 			this.element.on("dragstart.pin", _.bind(function(event) {
-				var targ = $(event.target),
-					component_list = $(".components", this.element);
-				var clear_drag_info = function() {
-                                                component_list	.removeClass("drop_indicator")
-																.off("dragover.pin drop.pin dragenter.pin dragleave.pin");
-                                                targ.off("dragcancel.pin dragend.pin");
-                                        };
-				component_list	.addClass("drop_indicator")
-								.on("dragover.pin", function() { })
-								.on("dragenter.pin", function() { })
-								.on("drop.pin", _.bind(function() {
-									var client = targ.column("option", "client");
-									
-									this.client_socket.post({
-										type: "save_component",
-										cobj_id: client.cobj_id
-									});
-									clear_drag_info.call(this);
-								}, this));
-				
-				targ.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
-					clear_drag_info.call(this);
+					var targ = $(event.target),
+						component_list = $(".components", this.element);
+					var clear_drag_info = function() {
+													component_list	.removeClass("drop_indicator")
+																	.off("dragover.pin drop.pin dragenter.pin dragleave.pin");
+													targ.off("dragcancel.pin dragend.pin");
+											};
+					component_list	.addClass("drop_indicator")
+									.on("dragover.pin", function() { })
+									.on("dragenter.pin", function() { })
+									.on("drop.pin", _.bind(function() {
+										var client = targ.column("option", "client");
+										
+										this.client_socket.post({
+											type: "save_component",
+											cobj_id: client.cobj_id
+										});
+										clear_drag_info.call(this);
+									}, this));
+					
+					targ.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
+						clear_drag_info.call(this);
+					}, this));
 				}, this));
-			}, this));
 
 			this._addClassBindings();
 			this._addEventListeners();
@@ -707,46 +707,6 @@
 					value: command_str
 				});
 			}
-		},
-		open_cobj: function(event) {
-			var client_socket = this.option("client_socket");
-			var cobj_id = event.cobj_id;
-			client_socket.once("cobj_links", function(message) {
-				if(message.cobj_id === cobj_id) {
-					var vals = message.value;
-					var wrapper_clients = _.map(vals, function(val) {
-						return client_socket.get_wrapper_client(val.object_summary);
-					}, this);
-
-					this.curr_col.column("option", "is_curr_col", false);
-
-					var subsequent_columns = this.columns.slice(1);
-					_.each(subsequent_columns, function(col) {
-						col.column("destroy").remove();
-					});
-					this.columns.length = 1;
-					var len = wrapper_clients.length;
-					var next_col = this.columns[0];
-					var single_col = this.option("single_col");
-					var last_col;
-					for(var i = 0; i<len; i++) {
-						var wc = wrapper_clients[i];
-						var is_last = i===len-1;
-						last_col = next_col;
-						last_col.column("option", "selected_prop_name", wc.object_summary.name);
-						next_col = this.get_column(wc, {
-							is_curr_col: is_last,
-							prev_col: last_col,
-							show_prev: single_col
-						});
-						if(is_last) {
-							next_col.focus();
-						}
-					}
-					this.curr_col = next_col;
-				}
-			}, this);
-			client_socket.post({type: "get_ptr", cobj_id: cobj_id});
 		}
 	});
 

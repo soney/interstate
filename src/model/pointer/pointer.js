@@ -185,6 +185,12 @@
 			return "pointer (" + _.map(this._stack, function (x) { return x.id ? uid.strip_prefix(x.id()) : x.toString(); }).join(", ") + ")";
 		};
 
+		proto.getContextualObjects = function() {
+			return _.map(this._stack, function(item, i) {
+				return ist.find_or_put_contextual_obj(item, this.slice(0, i+1));
+			}, this);
+		}
+
 		proto.summarize = function () {
 			var stack_ids = _.map(this._stack, function (x) {
 				return x.id();
