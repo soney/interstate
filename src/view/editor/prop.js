@@ -32,13 +32,10 @@
 				"</ul>" +
 			"{{/if}}" +
 		"</td>" +
-		/*
 		"{{#if show_prev_value}}" +
 			"{{> valueSummary getPrevValueSummaryOptions() }}"  +
 		"{{/if}}" +
-		*/
 		"{{> valueSummary getValueSummaryOptions() }}"  +
-		/*
 		"{{#if show_next_value}}" +
 			"{{> valueSummary getNextValueSummaryOptions() }}"  +
 		"{{/if}}" +
@@ -57,7 +54,6 @@
 				"<td class='cannot_modify src' />" +
 			"{{/if}}" +
 		"{{/if}}"
-		*/""
 	);
 	$.widget("interstate.prop", {
 		options: {

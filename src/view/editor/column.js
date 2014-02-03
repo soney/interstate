@@ -72,11 +72,9 @@
 					"</tr>" +
 				"{{/if}}" +
 			"{{/if}}" +
-			/*
 			"{{#each builtins}}" +
 				"{{>prop getPropertyViewOptions(this, true)}}" +
 			"{{/each}}" +
-			*/
 
 			"{{#if adding_field&&is_curr_col}}" +
 				"<tr class='new_field'>" +
@@ -183,13 +181,11 @@
 			this.$num_curr_values = this.$is_template.iif(this.$prev_copy_client.iif(2,1).add(this.$next_copy_client.iif(1,0)), 1);
 
 			this.$column_info = ist.indirectClient(this.$curr_copy_client, ["children", true], "builtin_children");
-			this.$column_info.do_debug = true;
 			this.$children = this.$column_info.itemConstraint("children");
 			this.$builtins = this.$column_info.itemConstraint("builtin_children");
 
 			if(client.type() === "stateful") {
 				this.$statecharts = ist.indirectClient(this.$curr_copy_client, "get_statecharts");
-				//client.get_$("get_statecharts");
 
 				var statecharts = [], wrappers = [], wrapper_infos = [];
 

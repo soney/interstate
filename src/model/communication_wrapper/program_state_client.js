@@ -252,15 +252,16 @@
 			client_val = cjs.get(client_constraint);
 			client_is_valid = client_val instanceof ist.WrapperClient;
 
-			if(rv.do_debug) {
-				console.log(old_client, client_val);
-			}
-
 			if(is_arr) {
 				_.each(prop_names, function(prop_name) {
 					if(client_val instanceof ist.WrapperClient) {
 						var args = _.isArray(prop_name) ? prop_name : [prop_name];
-						rv.put(prop_name, client_val.get_$.apply(client_val, args));
+						rv.put(args[0], client_val.get_$.apply(client_val, args));
+
+						if(rv.do_debug) {
+							console.log(prop_name, args);
+						}
+
 					} else {
 						rv.remove(prop_name);
 					}
