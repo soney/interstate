@@ -82,6 +82,7 @@
 			pinned_row: true
 		},
 		_create: function () {
+			this.$pinned_columns = cjs([]);
 			this.loading_state = cjs.fsm("loading", "loaded")
 									.startsAt("loading");
 
@@ -90,10 +91,45 @@
 			var on_load = this.loading_state.addTransition("loading", "loaded"),
 				on_rootchange = this.loading_state.addTransition("loaded", "loading");
 
+			this.$window_inner_width = cjs(function() { return window.innerWidth; });
+			this.$window_inner_height = cjs(function() { return window.innerHeight; });
+			$(window).on("resize.owr", _.bind(function() {
+				this.$window_inner_width.invalidate();
+				this.$window_inner_height.invalidate();
+			}, this));
+
 			this.$show_components = cjs(true);
 			this.$info_servers = cjs(false);
 			this.$undo_client = this.$info_servers.prop("undo_description");
 			this.$redo_client = this.$info_servers.prop("redo_description");
+			this.$pinned_height_pct = cjs(0.5);
+
+			var get_pinned_height_pct = _.bind(function() {
+				if(this.$pinned_columns.length() === 0) {
+					if(this.$dragging_client.get()) {
+						return .3;
+					} else {
+						return 0;
+					}
+				} else {
+					return this.$pinned_height_pct.get();
+				}
+			}, this);
+			this.$obj_nav_y = cjs(function() {
+				var obj_nav_pos = $("#obj_nav", this.element).position();
+				return obj_nav_pos ? obj_nav_pos.top : 0;
+			}, {context: this});
+			_.delay(_.bind(function() {
+				this.$obj_nav_y.invalidate();
+			}, this), 500);
+			this.$nav_height = cjs(function() {
+				var obj_nav_y = this.$obj_nav_y.get();
+				return (this.$window_inner_height.get() - obj_nav_y)*(1-get_pinned_height_pct());
+			}, {context: this});
+			this.$pinned_height = cjs(function() {
+				var obj_nav_y = this.$obj_nav_y.get();
+				return (this.$window_inner_height.get() - obj_nav_y)*get_pinned_height_pct();
+			}, {context: this});
 
 			this.$undo_desc = cjs(function() {
 				var client = this.$undo_client.get();
@@ -179,6 +215,13 @@
 				targ.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
 					clear_drag_info.call(this);
 				}, this));
+			}, this))
+			.on("resize_pinned", _.bind(function(event) {
+				var obj_nav_y = $("#obj_nav", this.element).position().top,
+					obj_nav_height = Math.max(200, event.clientY - obj_nav_y),
+					pinned_height = Math.max(200, window.innerHeight - obj_nav_height - obj_nav_y);
+
+				this.$pinned_height_pct.set(pinned_height / (pinned_height + obj_nav_height));
 			}, this));
 
 			this._addClassBindings();
@@ -208,19 +251,17 @@
 					return {
 						root_client: this.root_client,
 						client_socket: this.client_socket,
-						editor: this
+						editor: this,
+						height: this.$nav_height
 					};
 				}, this),
 				getPinnedOptions: _.bind(function() {
 					return {
 						root_client: this.root_client,
 						client_socket: this.client_socket,
-						editor: this
-					};
-				}, this),
-				getPinnedRowOptions: _.bind(function() {
-					return {
-						client_socket: this.client_socket
+						editor: this,
+						columns: this.$pinned_columns,
+						height: this.$pinned_height
 					};
 				}, this),
 				undo: _.bind(this._undo, this),
@@ -264,10 +305,6 @@
 			this.editor.setShowPrintMargin(false);
 			this.editor.renderer.setShowGutter(false); 
 			this.editor.getSession().setMode("ace/mode/javascript");
-			this.$window_inner_width = cjs(function() {
-				return window.innerWidth;
-			});
-			$(window).on("resize.owr", _.bind(this.$window_inner_width.invalidate, this.$window_inner_width));
 
 			this._cellwidth_binding = cjs.bindCSS(ace_editor, "width", this.$window_inner_width.sub((this.$window_inner_width.le(767).iif(60, 300))).add("px"));
 			this.$window_inner_width.onChange(function() {

@@ -193,13 +193,11 @@
 		}
 
 		if(builtins !== false || (_.indexOf(builtins, "dom") >= 0)) {
-		/*
 			var child_nodes = new ist.Dict({has_protos: false});
 			//root_dict.set("child_nodes", child_nodes);
 			var dom = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 			root_dict.set("dom", dom);
 			dom.set("tag", new ist.Cell({str: "'div'"}));
-			*/
 		}
 
 		if(builtins !== false || (_.indexOf(builtins, "functions") >= 0)) {

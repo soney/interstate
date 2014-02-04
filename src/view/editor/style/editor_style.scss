@@ -80,7 +80,7 @@ html.full_window_editor {
 #editor {
 	font-family: "Source Sans Pro";
 	> #obj_nav {
-		overflow: hidden;
+		overflow: auto;
 		clear: both;
 		padding-top: 15px;
 	}
@@ -173,7 +173,12 @@ html.full_window_editor {
 }
 
 #pinned {
-	overflow: hidden;
+	>.resize_bar {
+		height: 5px;
+		cursor: ns-resize;
+		background-color: #CCC;
+	}
+	overflow: auto;
 	clear: both;
 	background-color: white;
 	background-image: url(images/mochaGrunge.png);

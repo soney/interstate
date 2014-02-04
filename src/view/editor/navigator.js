@@ -35,7 +35,8 @@
 			root_client: false,
 			single_col: false,
 			client_socket: false,
-			editor: false
+			editor: false,
+			height: false
 		},
 		_create: function() {
 			var client = this.option("root_client");
@@ -91,10 +92,12 @@
 
 		_add_class_bindings: function() {
 			this.element.attr("id", "obj_nav");
+			this._height_binding = cjs.bindCSS(this.element, "height", this.option("height").add("px"));
 		},
 
 		_remove_class_bindings: function() {
 			this.element.attr("id", "");
+			this._height_binding.destroy();
 		},
 		_add_destroy_check: function() {
 			var old_cols = [],

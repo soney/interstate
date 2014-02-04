@@ -13,6 +13,9 @@
 				"Drop here to pin" +
 			"</div>" +
 		"{{#else}}" +
+			"{{#if columns.length()>0}}" +
+				"<div class='resize_bar' data-cjs-on-mousedown=beginResize />" +
+			"{{/if}}" +
 			"<div class='pinned_cols'>" +
 				"{{#each columns}}" +
 					"{{> col getColumnOptions(this, @index) }}" +
@@ -43,10 +46,11 @@
 			single_col: false,
 			client_socket: false,
 			editor: false,
-			root_client: false
+			root_client: false,
+			columns: false
 		},
 		_create: function() {
-			this.$columns = cjs([this.option("root_client")]);
+			this.$columns = this.option("columns");
 			this.$dragging = this.option("editor").getDraggingClientConstraint();
 
 			this.$show_instructions = cjs(function() {
@@ -94,7 +98,22 @@
 						pinned: true
 					};
 				}, this),
-				show_instructions: this.$show_instructions 
+				show_instructions: this.$show_instructions,
+				beginResize: _.bind(function(event) {
+					var origY = event.clientY;
+
+					$(window).on("mousemove.resize_pinned", _.bind(function(e) {
+						var event = new $.Event("resize_pinned");
+						event.clientY = e.clientY;
+
+						this.element.trigger(event);
+
+					}, this)).on("mouseup.resize_pinned", _.bind(function(e) {
+						$(window).off(".resize_pinned");
+					}, this));
+					event.preventDefault();
+					event.stopPropagation();
+				}, this)
 			}, this.element);
 		},
 
@@ -104,9 +123,11 @@
 
 		_add_class_bindings: function() {
 			this.element.attr("id", "pinned");
+			this._height_binding = cjs.bindCSS(this.element, "height", this.option("height").add("px"));
 		},
 
 		_remove_class_bindings: function() {
+			this._height_binding.destroy();
 			this.element.attr("id", "");
 		},
 		_add_destroy_check: function() {
