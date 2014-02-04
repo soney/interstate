@@ -15,7 +15,8 @@ module.exports = function(grunt) {
 		"raphael\\.js",
 		"underscore\\.js",
 		"underscore\\.deferred\\.js",
-		"esprima\\.js"
+		"esprima\\.js",
+		"ace\\.js"
 	];
 
 	var my_src_files = src_js.filter(function(f) { 
@@ -108,6 +109,12 @@ module.exports = function(grunt) {
 			carousel_images: {
 				files: [
 					{ expand: true, cwd: "carousel_images/", src: ["**"], dest: build_folder + "/carousel_images" }
+				]
+			},
+
+			ace: {
+				files: [
+					{ expand: true, cwd: "src/_vendor/ace", src: ["**"], dest: build_folder + "/_vendor/ace" },
 				]
 			},
 
