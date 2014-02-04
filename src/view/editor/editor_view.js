@@ -98,7 +98,7 @@
 				this.$window_inner_height.invalidate();
 			}, this));
 
-			this.$show_components = cjs(true);
+			this.$show_components = cjs(false);
 			this.$info_servers = cjs(false);
 			this.$undo_client = this.$info_servers.prop("undo_description");
 			this.$redo_client = this.$info_servers.prop("redo_description");

@@ -44,12 +44,19 @@ $link_color: royalblue;
 	}
 }
 
+html {
+	font-size: 100% !important;
+}
+
 html.full_window_editor {
 	height: 100%;
-	background-color: #FEFEFE;
-	background-image: url(images/fabric_plaid.png);
 	
 	> body {
+		font-size: 1em;
+		line-height: 1;
+		background-color: #FEFEFE;
+		background-image: url(images/fabric_plaid.png);
+
 		overflow: hidden;
 		height: 100%;
 		margin: 0px;
@@ -94,6 +101,7 @@ html.full_window_editor {
 	}
 
 	>nav {
+		min-height: 30px;
 		background: rgba(255,255,255,0.3);
 		border-bottom: 1px solid #999;
 		border-radius: 0px;
