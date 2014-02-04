@@ -8,10 +8,8 @@
 		_ = ist._;
 
 	cjs.registerCustomPartial("widgetList", {
-		createNode: function(info_servers) {
-			return $("<div />").component_list({
-				info_servers: info_servers
-			});
+		createNode: function(options) {
+			return $("<div />").component_list(options);
 		},
 		destroyNode: function(node) {
 			$(node).component_list("destroy");
@@ -87,10 +85,11 @@
 	
 	$.widget("interstate.component_list", {
 		options: {
-			info_servers: false
+			info_servers: false,
+			editor: false
 		},
 		_create: function() {
-			var info_servers = this.option("info_servers");
+			var info_servers = this.option("info_servers").get();
 
 			this.$program_names = cjs(function() {
 				return info_servers.programs.get();
@@ -108,6 +107,7 @@
 				return info_servers.dirty_program.get();
 			});
 			this.$new_program = cjs(false);
+			this.$dragging = this.option("editor").getDraggingClientConstraint();
 
 			this._addContentBindings();
 			this._addClassBindings();
@@ -472,6 +472,7 @@
 		on_drag_start: function(event) {
 			this.element.addClass("dragging");
 			var name = this.option("name");
+			this.$dragging.set(name);
 			event.preventDefault();
 			event.stopPropagation();
 			var curr_target = false;
@@ -494,6 +495,7 @@
 				}
 			};
 			var on_mup = _.bind(function() {
+				this.$dragging.set(false);
 				targets.off("mouseover", on_mover_child);
 				targets.off("mouseout", on_mout_child);
 				$(window).off("mouseup", on_mup);

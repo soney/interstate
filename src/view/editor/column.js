@@ -20,6 +20,10 @@
 		"<tbody>" +
 			"<tr class='header'>" +
 				"<th colspan={{num_curr_values+1}} class='obj_name'>" +
+					"{{#if pinned}}" +
+						"<span title='Previous' data-cjs-on-click='prev_col' class='prev_btn glyphicon glyphicon-chevron-left'/>" +
+						"<span title='Close' data-cjs-on-click='close_col' class='close_btn glyphicon glyphicon-remove'/>" +
+					"{{/if}}" +
 					"<h2 data-cjs-on-click='headerClicked'>" +
 						"{{ci}}{{name}}" +
 						"{{#if is_template}}" +
@@ -116,14 +120,18 @@
 			curr_copy_index: false,
 			close_button: false,
 			columns: false,
-			column_index: -1
+			column_index: -1,
+			editor: false,
+			pinned: false
 		},
 
 		_create: function() {
 			var client = this.option("client");
+
 			client.signal_interest();
 
 			this.element.attr("draggable", true);
+			this.$dragging = this.option("editor").getDraggingClientConstraint();
 			
 			this.$adding_field = cjs(false);
 			this.$selected_prop = this.option("columns").itemConstraint(this.option("column_index")+1);
@@ -293,12 +301,15 @@
 						statechart_view: this.statechart_view,
 						selected: this.$selected_prop.eqStrict(child.value),
 						prev: this.$prev_copy_client,
-						next: this.$next_copy_client
+						next: this.$next_copy_client,
+						editor: this.option("editor")
 					}
 				}, this),
 				statechart_view: this.statechart_view,
 				is_curr_col: this.$is_curr_col,
 				headerClicked: _.bind(this.on_header_click, this),
+				close_col: _.bind(this.close_col, this),
+				prev_col: _.bind(this.prev_col, this),
 				addProperty: _.bind(this._add_property, this),
 				adding_field: this.$adding_field,
 				getCopiesCellOptions: _.bind(function() {
@@ -316,7 +327,8 @@
 				selectNextClient: _.bind(function() {
 					this.$curr_copy_index.set(this.$curr_copy_index.get() + 1);
 				}, this),
-				num_instances: this.$num_instances 
+				num_instances: this.$num_instances,
+				pinned: this.option("pinned")
 			}, this.element);
 			this._select_just_added_name = cjs.liven(function() {
 				var children = this.$children.get();
@@ -357,6 +369,20 @@
 			}
 		},
 
+		close_col: function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+
+			var e = new $.Event("close_column");
+			this.element.trigger(e);
+		},
+		prev_col: function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+
+			var e = new $.Event("prev_column");
+			this.element.trigger(e);
+		},
 		on_header_click: function(event) {
 			this.element.trigger("header_click", this.option("client"));
 			event.stopPropagation();

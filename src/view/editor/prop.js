@@ -73,6 +73,7 @@
 		_create: function() {
 			var client = this.option("client");
 
+			this.$dragging = this.option("editor").getDraggingClientConstraint();
 			this.$prop_name = cjs(this.option("name"));
 			this.$inherited = cjs(this.option("inherited"));
 			this.$show_src  = this.option("show_src");
@@ -470,6 +471,9 @@
 			if(this.element.is(".inherited") || this.element.is(".builtin")) {
 				return;
 			}
+
+			this.$dragging.set(this.option("client"));
+
 			this.element.addClass("dragging");
 			var curr_target = false;
 			var above_below = false;
@@ -491,6 +495,7 @@
 				}
 			};
 			var on_mup = _.bind(function() {
+				this.$dragging.set(false);
 				targets.off("mouseover", on_mover_child);
 				targets.off("mouseout", on_mout_child);
 				$(window).off("mouseup", on_mup);

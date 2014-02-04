@@ -66,13 +66,11 @@
 				"<div class='loading'>loading editor...</div>" +
 			"{{#state loaded}}" +
 				"{{#if show_components}}" +
-					"{{> widgetList info_servers}}" +
+					"{{> widgetList getWidgetListOptions()}}" +
 				"{{/if}}" + // show components
 				"{{> navigator getNavigatorOptions()}}" +
-		"{{/fsm}}" +
-
-		"<div class='pinned'>" +
-		"</div>"
+				"{{> pinned getPinnedOptions()}}" +
+		"{{/fsm}}"
 	);
 	$.widget("interstate.editor", {
 		options: {
@@ -86,6 +84,8 @@
 		_create: function () {
 			this.loading_state = cjs.fsm("loading", "loaded")
 									.startsAt("loading");
+
+			this.$dragging_client = cjs(false);
 
 			var on_load = this.loading_state.addTransition("loading", "loaded"),
 				on_rootchange = this.loading_state.addTransition("loaded", "loading");
@@ -152,25 +152,29 @@
 				}
 			}, this));
 			this.element.on("dragstart.pin", _.bind(function(event) {
+				this.$dragging_client.set(true);
 				var targ = $(event.target),
-					component_list = $(".components", this.element);
+					component_list = $(".components", this.element),
+					pinned = $("#pinned", this.element);
 				var clear_drag_info = function() {
-                                                component_list	.removeClass("drop_indicator")
-																.off("dragover.pin drop.pin dragenter.pin dragleave.pin");
+												this.$dragging_client.set(false);
+                                                component_list.add(pinned)	.removeClass("drop_indicator")
+																			.off("dragover.pin drop.pin dragenter.pin dragleave.pin");
                                                 targ.off("dragcancel.pin dragend.pin");
                                         };
-				component_list	.addClass("drop_indicator")
-								.on("dragover.pin", function() { })
-								.on("dragenter.pin", function() { })
-								.on("drop.pin", _.bind(function() {
-									var client = targ.column("option", "client");
-									
-									this.client_socket.post({
-										type: "save_component",
-										cobj_id: client.cobj_id
-									});
-									clear_drag_info.call(this);
-								}, this));
+				component_list.add(pinned)	.addClass("drop_indicator")
+											.on("drop.pin", _.bind(function(e) {
+												var client = targ.column("option", "client");
+												if($(e.target).is(".components")) {
+													this.client_socket.post({
+														type: "save_component",
+														cobj_id: client.cobj_id
+													});
+												} else {
+													clear_drag_info.call(this);
+													pinned.pinned("addClient", client);
+												}
+											}, this));
 				
 				targ.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
 					clear_drag_info.call(this);
@@ -203,7 +207,15 @@
 				getNavigatorOptions: _.bind(function() {
 					return {
 						root_client: this.root_client,
-						client_socket: this.client_socket
+						client_socket: this.client_socket,
+						editor: this
+					};
+				}, this),
+				getPinnedOptions: _.bind(function() {
+					return {
+						root_client: this.root_client,
+						client_socket: this.client_socket,
+						editor: this
 					};
 				}, this),
 				undo: _.bind(this._undo, this),
@@ -212,7 +224,12 @@
 				toggle_show_widgets: _.bind(function() {
 					this.$show_components.set(!this.$show_components.get());
 				}, this),
-				info_servers: this.$info_servers,
+				getWidgetListOptions: _.bind(function() {
+					return {
+						info_servers: this.$info_servers,
+						editor: this
+					};
+				}, this),
 				undo_desc: this.$undo_desc,
 				redo_desc: this.$redo_desc,
 				dirty_program: this.$dirty_program,
@@ -232,7 +249,8 @@
 						event.preventDefault();
 						event.stopPropagation();
 					}
-				}, this)
+				}, this),
+				dragging_client: this.$dragging_client
 			}, this.element);
 			var ace_editor = $("nav #ace_ajax_editor", this.element);
 			ace_editor.css("width", "100%");
@@ -263,11 +281,13 @@
 			if(this.option("full_window")) {
 				$("html").addClass("full_window_editor");
 			}
+			this.element.addClass("editor_view");
 		},
 		_removeClassBindings: function() {
 			if(this.option("full_window")) {
 				$("html").removeClass("full_window_editor");
 			}
+			this.element.removeClass("editor_view");
 		},
 
 		_disable_editor: function() {
@@ -367,6 +387,10 @@
 
 		_removeEventListeners: function() {
 			this.element.off(".editor");
+		},
+
+		getDraggingClientConstraint: function() {
+			return this.$dragging_client;
 		},
 
 		on_command: function(event) {

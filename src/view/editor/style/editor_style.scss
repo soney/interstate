@@ -88,7 +88,7 @@ html.full_window_editor {
 	&.pane {
 		height: 100%;
 
-		> .pinned.row {
+		> #pinned {
 			padding-top: 10px;
 		}
 	}
@@ -172,7 +172,7 @@ html.full_window_editor {
 	}
 }
 
-.pinned {
+#pinned {
 	background-color: white;
 	background-image: url(images/mochaGrunge.png);
 	&.drop_indicator {
@@ -186,11 +186,9 @@ html.full_window_editor {
 		}
 	}
 
-	.pin_explanation {
+	.instructions {
 		z-index: 200;
-		position: absolute;
 		pointer-events: none;
-		display: none;
 		width: 100%;
 		font-weight: 200;
 		font-size: 4em;
@@ -205,7 +203,7 @@ html.full_window_editor {
 		padding-top: 50px;
 	}
 }
-.pinned, #obj_nav {
+#pinned, #obj_nav {
 	> table.col {
 		background-color: white;
 		border: 1px solid #CCC;
@@ -361,6 +359,19 @@ html.full_window_editor {
 					cursor: pointer;
 					text-align: center;
 					position: relative;
+					>.prev_btn {
+						position: absolute;
+						left: 5px;
+						top: 10px;
+						//font-weight: 100;
+						//font-size: 1.7em;
+						//color: #CCC;
+					}
+					>.close_btn {
+						position: absolute;
+						right: 5px;
+						top: 10px;
+					}
 					> h2 {
 						font-family: "Source Sans Pro";
 						font-size: 1.7em;
@@ -368,6 +379,8 @@ html.full_window_editor {
 						margin: 0px;
 						padding-top: 4px;
 						padding-bottom: 2px;
+						padding-left: 10px;
+						padding-right: 10px;
 					}
 					> a.prev {
 						top: 4px;
