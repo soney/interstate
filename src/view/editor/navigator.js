@@ -46,6 +46,7 @@
 
 			this.element.on("child_select.nav", _.bind(this.on_child_select, this))
 						.on("header_click.nav", _.bind(this.on_header_click, this))
+						.on("open_cobj.nav", _.bind(this.open_cobj, this));
 
 			this._add_content_bindings();
 			this._add_class_bindings();
@@ -139,5 +140,19 @@
 				this.$columns.splice(column_index + 1, this.$columns.length()-column_index-1);
 			}
 		},
+		open_cobj: function(event) {
+			var client_socket = this.option("client_socket");
+			var cobj_id = event.cobj_id;
+			client_socket.once("get_ptr_response", function(message) {
+				if(message.cobj_id === cobj_id) {
+					var cobjs = message.cobjs,
+						wrapper_clients = _.map(cobjs, function(cobj) {
+							return client_socket.get_wrapper_client(cobj);
+						});
+					this.$columns.setValue(wrapper_clients);
+				}
+			}, this);
+			client_socket.post({type: "get_ptr", cobj_id: cobj_id});
+		}
 	});
 }(interstate, jQuery));

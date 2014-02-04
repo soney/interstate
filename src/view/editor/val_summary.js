@@ -103,6 +103,14 @@
 
 			this._add_content_bindings();
 			this._add_class_bindings();
+			this.element.on("click.navigate", _.bind(function(event) {
+				var cobj_id = $(event.target).attr("data-cobj_id");
+				if(cobj_id) {
+					this.open_cobj(cobj_id);
+					event.preventDefault();
+					event.stopPropagation();
+				}
+			}, this));
 		},
 		_destroy: function() {
 			this._remove_content_bindings();
@@ -137,6 +145,12 @@
 		},
 		_remove_class_bindings: function() {
 			this.element.removeClass("value_summary");
+		},
+		open_cobj: function(cobj_id) {
+			var event = new $.Event("open_cobj");
+			event.cobj_id = cobj_id;
+
+			this.element.trigger(event);
 		}
 	});
 

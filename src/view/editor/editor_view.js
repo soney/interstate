@@ -218,6 +218,11 @@
 						editor: this
 					};
 				}, this),
+				getPinnedRowOptions: _.bind(function() {
+					return {
+						client_socket: this.client_socket
+					};
+				}, this),
 				undo: _.bind(this._undo, this),
 				redo: _.bind(this._redo, this),
 				show_components: this.$show_components,
@@ -293,13 +298,11 @@
 		_disable_editor: function() {
 			$("table#cell_group", this.element).addClass("disabled");
 			this.editor.setReadOnly(true)
-			//console.log("READ ONLY");
 		},
 
 		_enable_editor: function() {
 			$("table#cell_group", this.element).removeClass("disabled");
 			this.editor.setReadOnly(false)
-			//console.log("NOT READ ONLY");
 		},
 
 		_addEventListeners: function() {
@@ -731,7 +734,7 @@
 					value: command_str
 				});
 			}
-		},
+		}
 	});
 
 	ist.create_key_val_map = function(key_constraint, value_constraint) {

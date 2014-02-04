@@ -57,6 +57,7 @@
 								.on("save_component", this.post_forward, this)
 								.on("copy_component", this.post_forward, this)
 								.on("rename_program", this.post_forward, this)
+								.on("get_ptr", this.get_ptr, this)
 								;
 		};
 		proto.remove_message_listeners = function () {
@@ -79,6 +80,7 @@
 									.off("save_component", this.post_forward, this)
 									.off("copy_component", this.post_forward, this)
 									.off("rename_program", this.post_forward, this)
+									.off("get_ptr", this.get_ptr, this)
 									;
 			}
 		};
@@ -90,6 +92,22 @@
 		};
 		proto.on_save_curr = function(event) {
 			ist.save(this.root, event.name, event.storage_type==="component" ? "component" : "");
+		};
+		proto.get_ptr = function(event) {
+			var cobj_id = event.cobj_id,
+				cobj = ist.find_uid(cobj_id);
+
+			if(cobj) {
+				var pointer = cobj.get_pointer();
+
+				this.post({
+					type: "get_ptr_response",
+					cobj_id: cobj_id,
+					cobjs: _.map(pointer.getContextualObjects(), function(x) {
+						return x.summarize()
+					})
+				});
+			}
 		};
 		proto.download_program = function(event) {
 			this._emit("download_program", event.name, event.storage_type==="component" ? "component" : "");

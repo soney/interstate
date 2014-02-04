@@ -20,9 +20,8 @@
 		"<tbody>" +
 			"<tr class='header'>" +
 				"<th colspan={{num_curr_values+1}} class='obj_name'>" +
-					"{{#if pinned}}" +
+					"{{#if pinned && !is_root}}" +
 						"<span title='Previous' data-cjs-on-click='prev_col' class='prev_btn glyphicon glyphicon-chevron-left'/>" +
-						"<span title='Close' data-cjs-on-click='close_col' class='close_btn glyphicon glyphicon-remove'/>" +
 					"{{/if}}" +
 					"<h2 data-cjs-on-click='headerClicked'>" +
 						"{{ci}}{{name}}" +
@@ -30,6 +29,9 @@
 							"[{{curr_copy_index}}]" +
 						"{{/if}}" +
 					"</h2>" +
+					"{{#if pinned}}" +
+						"<span title='Close' data-cjs-on-click='close_col' class='close_btn glyphicon glyphicon-remove'/>" +
+					"{{/if}}" +
 				"</th>" +
 				"{{#if stateful}}" +
 					"<th rowspan='{{is_template ? 4 : 3}}' class='statechart_cell'>" +
@@ -132,9 +134,16 @@
 
 			this.element.attr("draggable", true);
 			this.$dragging = this.option("editor").getDraggingClientConstraint();
+
+			var root_client = this.option("editor").root_client; 
+			this.is_root = client === root_client;
 			
 			this.$adding_field = cjs(false);
-			this.$selected_prop = this.option("columns").itemConstraint(this.option("column_index")+1);
+			if(this.option("pinned")) {
+				this.$selected_prop = cjs(false);
+			} else {
+				this.$selected_prop = this.option("columns").itemConstraint(this.option("column_index")+1);
+			}
 
 			this.$is_curr_col = this.option("is_curr_col");
 			this.$name = client.get_$("get_name");
@@ -328,7 +337,8 @@
 					this.$curr_copy_index.set(this.$curr_copy_index.get() + 1);
 				}, this),
 				num_instances: this.$num_instances,
-				pinned: this.option("pinned")
+				pinned: this.option("pinned"),
+				is_root: this.is_root 
 			}, this.element);
 			this._select_just_added_name = cjs.liven(function() {
 				var children = this.$children.get();

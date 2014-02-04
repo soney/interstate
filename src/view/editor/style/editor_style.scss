@@ -173,6 +173,8 @@ html.full_window_editor {
 }
 
 #pinned {
+	overflow: hidden;
+	clear: both;
 	background-color: white;
 	background-image: url(images/mochaGrunge.png);
 	&.drop_indicator {
@@ -203,7 +205,7 @@ html.full_window_editor {
 		padding-top: 50px;
 	}
 }
-#pinned, #obj_nav {
+#pinned > .pinned_cols, #obj_nav {
 	> table.col {
 		background-color: white;
 		border: 1px solid #CCC;

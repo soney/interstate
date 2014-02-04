@@ -13,9 +13,11 @@
 				"Drop here to pin" +
 			"</div>" +
 		"{{#else}}" +
-			"{{#each columns}}" +
-				"{{> col getColumnOptions(this, @index) }}" +
-			"{{/each}}" +
+			"<div class='pinned_cols'>" +
+				"{{#each columns}}" +
+					"{{> col getColumnOptions(this, @index) }}" +
+				"{{/each}}" +
+			"</div>" +
 		"{{/if}}"
 	);
 
@@ -57,6 +59,7 @@
 			this.element.on("child_select.nav", _.bind(this.on_child_select, this))
 						.on("close_column.nav", _.bind(this.on_close_col, this))
 						.on("prev_column.nav", _.bind(this.on_prev_col, this))
+						.on("open_cobj.nav", _.bind(this.open_cobj, this));
 
 			this._add_content_bindings();
 			this._add_class_bindings();
@@ -87,8 +90,6 @@
 						client: client,
 						client_socket: client_socket,
 						is_curr_col: cjs(true),
-						columns: this.$columns,
-						column_index: index,
 						editor: this.option("editor"),
 						pinned: true
 					};
@@ -141,19 +142,50 @@
 			}
 		},
 		on_close_col: function(event) {
-			console.log(event);
 			var column_index = $(event.target).index();
 			if(column_index >= 0) {
 				this.$columns.splice(column_index, 1);
 			}
 		},
 		on_prev_col: function(event) {
-			console.log(event);
+			var client = $(event.target).column("option", "client"),
+				column_index = $(event.target).index();
+			if(column_index >= 0) {
+				var client_socket = this.option("client_socket"),
+					cobj_id = client.cobj_id;
+
+				client_socket.once("get_ptr_response", function(message) {
+					if(message.cobj_id === cobj_id) {
+						var cobjs = message.cobjs;
+						if(cobjs.length > 1) {
+							var wrapper_client = client_socket.get_wrapper_client(cobjs[cobjs.length-2]);
+							this.$columns.splice(column_index, 1, wrapper_client);
+						}
+					}
+				}, this);
+				client_socket.post({type: "get_ptr", cobj_id: cobj_id});
+			}
 		},
 
 		addClient: function(client) {
 			this.$columns.unshift(client);
 		},
+		open_cobj: function(event) {
+			var column_index = $(event.target).parents(".col").index();
+			if(column_index >= 0) {
+				var client_socket = this.option("client_socket"),
+					cobj_id = event.cobj_id;
+				client_socket.once("get_ptr_response", function(message) {
+					if(message.cobj_id === cobj_id) {
+						var cobjs = message.cobjs,
+							wrapper_client = client_socket.get_wrapper_client(cobjs[cobjs.length-1]);
+						this.$columns.splice(column_index, 1, wrapper_client);
+					}
+				}, this);
+				client_socket.post({type: "get_ptr", cobj_id: cobj_id});
+			}
+		},
+
 
 		dragoverComponent: _.bind(function(event) {
 			event.preventDefault();
