@@ -66,11 +66,11 @@
 					"<p>reusable parts</p>" +
 				"</div>" +
 
-				"<div class='components' data-cjs-on-dragover=dragoverComponent data-cjs-on-dragout=dragoutComponent data-cjs-on-dragenter=dragEnterComponent data-cjs-on-dragleave=dragLeaveComponent>" +
+				"<div class='components component_drop' data-cjs-on-dragover=dragoverComponent data-cjs-on-dragout=dragoutComponent data-cjs-on-dragenter=dragEnterComponent data-cjs-on-dragleave=dragLeaveComponent>" +
 					"{{#each components}}" +
 						"{{>widgetItem getWidgetItemOptions(this, 'component')}}" +
 					"{{#else}}" +
-						"<div class='none'>(drop objects here)</div>" +
+						"<div class='none component_drop'>(drop objects here)</div>" +
 					"{{/each}}" +
 				"</div>" +
 
@@ -170,7 +170,8 @@
 						name: name,
 						selected: this.$loaded_program.eqStrict(name),
 						storage_type: type,
-						hover_tip: type === "component" ? "drag & drop in" : ""
+						hover_tip: type === "component" ? "drag & drop in" : "",
+						editor: this.option("editor")
 					};
 				}, this),
 				getDefaultSketchName: _.bind(function() {
@@ -299,11 +300,13 @@
 			name: "",
 			selected: false,
 			storage_type: "",
-			hover_tip: ""
+			hover_tip: "",
+			editor: false
 		},
 		_create: function() {
 			this.$name = this.option("name");
 			this.$selected = this.option("selected");
+			this.$dragging = this.option("editor").getDraggingClientConstraint();
 
 			var elem = this.element;
 			this.name_edit_state = cjs	.fsm("idle", "editing")
