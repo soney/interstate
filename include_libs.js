@@ -125,6 +125,7 @@ exports.editor = c(
 		"view/editor/component_list.js",
 		"view/editor/navigator.js",
 		"view/editor/column.js",
+		"view/editor/pinned_row.js",
 		"view/editor/prop.js",
 		"view/editor/cell.js",
 		"view/editor/copies.js",

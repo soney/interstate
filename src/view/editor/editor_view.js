@@ -69,10 +69,10 @@
 					"{{> widgetList info_servers}}" +
 				"{{/if}}" + // show components
 				"{{> navigator getNavigatorOptions()}}" +
-		"{{/fsm}}" +
-
-		"<div class='pinned'>" +
-		"</div>"
+				"{{#if show_pinned_row}}" +
+					"{{> pinned_row getPinnedRowOptions()}}" +
+				"{{/if}}" + // pinned row
+		"{{/fsm}}"
 	);
 	$.widget("interstate.editor", {
 		options: {
@@ -206,6 +206,11 @@
 						client_socket: this.client_socket
 					};
 				}, this),
+				getPinnedRowOptions: _.bind(function() {
+					return {
+						client_socket: this.client_socket
+					};
+				}, this),
 				undo: _.bind(this._undo, this),
 				redo: _.bind(this._redo, this),
 				show_components: this.$show_components,
@@ -232,7 +237,8 @@
 						event.preventDefault();
 						event.stopPropagation();
 					}
-				}, this)
+				}, this),
+				show_pinned_row: this.option("pinned_row")
 			}, this.element);
 			var ace_editor = $("nav #ace_ajax_editor", this.element);
 			ace_editor.css("width", "100%");
@@ -273,13 +279,11 @@
 		_disable_editor: function() {
 			$("table#cell_group", this.element).addClass("disabled");
 			this.editor.setReadOnly(true)
-			//console.log("READ ONLY");
 		},
 
 		_enable_editor: function() {
 			$("table#cell_group", this.element).removeClass("disabled");
 			this.editor.setReadOnly(false)
-			//console.log("NOT READ ONLY");
 		},
 
 		_addEventListeners: function() {
