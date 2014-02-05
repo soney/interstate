@@ -343,12 +343,13 @@
 						cobj_children = contextual_object.children();
 						children = [];
 						_.each(show, function(show_child) {
-							var child_index = _.index_where(children, function(child) {
+							var child_index = _.index_where(cobj_children, function(child) {
 								return child.value === show_child || child.name === show_child;
 							});
 
 							if(child_index >= 0) {
-								children.push.apply(children, get_children(cobj_children[child_index]).value);
+								console.log(child_index);
+								children.push.apply(children, get_children([cobj_children[child_index].value]));
 							}
 						}, this);
 					} else if(show !== false) {
