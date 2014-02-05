@@ -106,9 +106,11 @@
 			this.element.on("click.navigate", _.bind(function(event) {
 				var cobj_id = $(event.target).attr("data-cobj_id");
 				if(cobj_id) {
-					this.open_cobj(cobj_id);
-					event.preventDefault();
-					event.stopPropagation();
+					if(this.element.parents().is(".col.curr_col")) {
+						this.open_cobj(cobj_id);
+						event.preventDefault();
+						event.stopPropagation();
+					}
 				}
 			}, this));
 		},

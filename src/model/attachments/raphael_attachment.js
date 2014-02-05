@@ -136,16 +136,24 @@
 						}
 					},
 					getter: function(contextual_object) {
-						var screen = contextual_object.prop_val("screen");
+						//var screen = contextual_object.prop_val("child_nodes");
+						var screen = _.pluck(contextual_object.children(), "value");
+
+						screen.reverse();
+
+						var screen_contents = get_children(screen);
+						/*
+						console.log(screen);
 						var screen_contents = [];
 						if(screen instanceof ist.ContextualDict) {
 							screen_contents = screen.children();
 						}
+						*/
 				
-						var values = _.pluck(screen_contents, "value");
-						values.reverse();
-						var children = get_children(values);
-						return children;
+						//var values = _.pluck(screen_contents, "value");
+						//var children = get_children(values);
+						//return children;
+						return screen_contents
 					}
 				}
 			},

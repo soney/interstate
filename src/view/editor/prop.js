@@ -120,7 +120,7 @@
 			this._add_tooltip();
 
 			if(this.option("inherited")) {
-				this.element.on("click.inherit", _.bind(this.inherit, this));
+				this.element.on("mousedown.inherit", _.bind(this.inherit, this));
 			} else {
 				this.element.attr("draggable", true)
 							.on("dragstart.ondragstart", _.bind(this.on_drag_start, this));

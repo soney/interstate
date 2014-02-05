@@ -58,7 +58,7 @@
 			this._dom_obj = window.document.createElement(options.tag);
 			this._dom_obj.__ist_contextual_object__ = this.contextual_object;
 		} else {
-			this._dom_obj = cjs.$();
+			this._dom_obj = cjs();
 			this._tag_change_listener = this.add_tag_change_listener();
 		}
 
@@ -271,7 +271,7 @@
 					return [dom_attachment, dom_obj];
 				}
 			} else {
-				var raphael_attachment = contextual_dict.get_attachment_instance("raphael");
+				var raphael_attachment = contextual_dict.get_attachment_instance("paper");
 				if(raphael_attachment) {
 					dom_obj = raphael_attachment.get_dom_obj();
 
@@ -395,13 +395,15 @@
 				if (text !== undefined) {
 					dom_obj.textContent = text;
 				} else {
-					var children = contextual_object.prop("child_nodes");
+					var children = _.pluck(contextual_object.children(), "value")//contextual_object.prop("child_nodes");
+					var cc = children
 
 					var current_children = _.toArray(dom_obj.childNodes);
 					var desired_children_srcs = [];
 					var desired_children = [];
 
-					if (children) {
+					if (cc) {
+					/*
 						var cc;
 						if (children instanceof ist.ContextualDict) {
 							cc = _.pluck(children.children(true), "value");
@@ -411,6 +413,7 @@
 								cc = [cc];
 							}
 						}
+						*/
 
 						_.each(cc, function (c) {
 							if (_.isElement(c)) {
