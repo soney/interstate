@@ -16,7 +16,7 @@
 		return root;
 	};
 	ist.initialize_root = function (root_dict, builtins) {
-		if(builtins !== false || (_.indexOf(builtins, "raphael") >= 0)) {
+		if(builtins !== false || (_.indexOf(builtins, "svg") >= 0)) {
 			var svg = new ist.Dict({has_protos: false});
 			root_dict.set("svg", svg);
 
@@ -26,6 +26,7 @@
 			});
 			paper.set("width", new ist.Cell({str: "400"}));
 			paper.set("height", new ist.Cell({str: "400"}));
+			paper.set("fill", new ist.Cell({str: "'white'"}));
 			svg.set("paper", paper);
 
 			var circle = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
@@ -195,11 +196,52 @@
 		}
 
 		if(builtins !== false || (_.indexOf(builtins, "dom") >= 0)) {
-			var child_nodes = new ist.Dict({has_protos: false});
-			//root_dict.set("child_nodes", child_nodes);
-			var dom = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			var dom = new ist.Dict({has_protos: false});
 			root_dict.set("dom", dom);
-			dom.set("tag", new ist.Cell({str: "'div'"}));
+
+			var node = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("node", node);
+			node.set("tag", new ist.Cell({str: "'div'"}));
+
+			var div = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("div", div);
+			div.set("tag", new ist.Cell({str: "'div'"}));
+
+			var strong = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("strong", strong);
+			strong.set("tag", new ist.Cell({str: "'strong'"}));
+
+			var span = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("span", span);
+			span.set("tag", new ist.Cell({str: "'span'"}));
+
+			var ul = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("ul", ul);
+			ul.set("tag", new ist.Cell({str: "'ul'"}));
+
+			var li = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("li", li);
+			li.set("tag", new ist.Cell({str: "'li'"}));
+
+			var h1 = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("h1", h1);
+			h1.set("tag", new ist.Cell({str: "'h1'"}));
+
+			var h2 = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("h2", h2);
+			h2.set("tag", new ist.Cell({str: "'h2'"}));
+
+			var h3 = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("h3", h3);
+			h3.set("tag", new ist.Cell({str: "'h3'"}));
+
+			var h4 = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("h4", h4);
+			h4.set("tag", new ist.Cell({str: "'h4'"}));
+
+			var input = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("input", input);
+			input.set("tag", new ist.Cell({str: "'input'"}));
 		}
 
 		if(builtins !== false || (_.indexOf(builtins, "functions") >= 0)) {

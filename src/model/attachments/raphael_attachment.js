@@ -90,6 +90,12 @@
 						height = contextual_object.prop_val("height");
 					this.paper.setSize(width, height);
 				},
+				fill: function(contextual_object) {
+					var fill = contextual_object.prop_val("fill"),
+						dom_obj = this.get_dom_obj();
+
+					dom_obj.style.backgroundColor = fill;
+				},
 				screen: {
 					type: "list",
 					add: function(shape_attachment_instance, to_index) {
@@ -331,28 +337,27 @@
 				child_getter: function() {
 					var contextual_object = this.get_contextual_object();
 					var children, cobj_children, values;
-					var to_show = contextual_object.prop_val("show");
-					//console.log("TO SHOW: " + to_show);
-					//debugger;
+					var show = contextual_object.prop_val("show");
 
-					if(_.isArray(to_show) || _.isString(to_show)) {
-						if(_.isString(to_show)) {
-							to_show = [to_show];
-						}
-						cobj_children = _.filter(contextual_object.children(), function(child_info) {
-							return _.contains(to_show, child_info.name);
-						});
-						values = _.pluck(cobj_children, "value");
-						values.reverse();
-						children = get_children(values);
-					} else if(to_show) {
+					if(_.isArray(show)) { // put in order
 						cobj_children = contextual_object.children();
-						values = _.pluck(cobj_children, "value");
-						values.reverse();
-						children = get_children(values);
+						children = [];
+						_.each(show, function(show_child) {
+							var child_index = _.index_where(children, function(child) {
+								return child.value === show_child || child.name === show_child;
+							});
+
+							if(child_index >= 0) {
+								children.push.apply(children, get_children(cobj_children[child_index]).value);
+							}
+						}, this);
+					} else if(show !== false) {
+						cobj_children = contextual_object.children();
+						children = get_children(_.pluck(cobj_children, "value"));
 					} else {
 						children = [];
 					}
+
 					return children;
 				},
 				get_children: function() {

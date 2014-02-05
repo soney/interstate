@@ -62,14 +62,14 @@
 			this._tag_change_listener = this.add_tag_change_listener();
 		}
 
-		this._css_change_listener = this.add_css_change_listeners();
+		this._style_change_listener = this.add_style_change_listeners();
 		this._attr_change_listener = this.add_attribute_change_listeners();
 
 		this._children_change_listener = this.add_children_change_listener();
 		this.current_children_srcs = [];
 
-		this.pause();
-		this.on_ready();
+		//this.pause();
+		//this.on_ready();
 	};
 	(function (my) {
 		_.proto_extend(my, ist.AttachmentInstance);
@@ -81,10 +81,10 @@
 		};
 		proto.destroy = function () {
 			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.destroy(); }
-			if (_.has(this, "_css_change_listener")) { this._css_change_listener.destroy(); }
+			if (_.has(this, "_style_change_listener")) { this._style_change_listener.destroy(); }
 			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.destroy(); }
-			if (_.has(this, "_css_change_listeners")) {
-				_.each(this._css_change_listeners, function (x) {
+			if (_.has(this, "_style_change_listeners")) {
+				_.each(this._style_change_listeners, function (x) {
 					x.destroy();
 				});
 			}
@@ -93,6 +93,7 @@
 					x.destroy();
 				});
 			}
+			//console.log("destroy");
 			if (_.has(this, "_children_change_listener")) { this._children_change_listener.destroy(); }
 		};
 		proto.get_dom_obj = function () {
@@ -102,6 +103,7 @@
 		};
 
 		proto.add_tag_change_listener = function () {
+			//console.log("add tag change listener");
 			var contextual_object = this.get_contextual_object();
 
 			var old_tag;
@@ -123,19 +125,19 @@
 			});
 		};
 
-		proto.add_css_change_listeners = function () {
+		proto.add_style_change_listeners = function () {
 			var contextual_object = this.get_contextual_object(),
 				current_listener_prop_names = [],
 				current_listeners = {},
 				desired_listener_prop_names;
-			this._css_change_listeners = current_listeners;
+			this._style_change_listeners = current_listeners;
 
 			return cjs.liven(function () {
 				var children;
-				var css = contextual_object.prop("css");
+				var style = contextual_object.prop("style");
 				var child_vals = {};
-				if (css instanceof ist.ContextualDict) {
-					children = css.children(true);
+				if (style instanceof ist.ContextualDict) {
+					children = style.children(true);
 					var prop_names = _.pluck(children, "name");
 					_.each(children, function (child) {
 						child_vals[child.name] = child.value;
@@ -166,14 +168,14 @@
 				}, this);
 				_.each(diff.added, function (info) {
 					var name = info.item;
-					current_listeners[name] = this.add_css_change_listener(name, child_vals[name]);
+					current_listeners[name] = this.add_style_change_listener(name, child_vals[name]);
 				}, this);
 			}, {
 				context: this,
 				pause_while_running: true
 			});
 		};
-		proto.add_css_change_listener = function (name, child_val) {
+		proto.add_style_change_listener = function (name, child_val) {
 			var contextual_object = this.get_contextual_object();
 
 			return cjs.liven(function () {
@@ -290,6 +292,33 @@
 				}
 			}
 			return false;
+		},
+		get_dom_children = function(c) {
+			var srcs = [],
+				children = [];
+			if (c instanceof ist.ContextualDict) {
+				if (c.is_template()) {
+					var instances = c.instances();
+					var cs_and_dom_objs = _.chain(instances)
+											.map(get_dom_obj_and_src)
+											.compact()
+											.value();
+
+					var obj_srcs = _.pluck(cs_and_dom_objs, 0);
+					var dom_objs = _.pluck(cs_and_dom_objs, 1);
+
+					srcs.push.apply(desired_children_srcs, obj_srcs);
+					children.push.apply(desired_children, dom_objs);
+				} else {
+					var dom_obj_and_src = get_dom_obj_and_src(c);
+					if (dom_obj_and_src) {
+						srcs.push(dom_obj_and_src[0]);
+						children.push(dom_obj_and_src[1]);
+					}
+				}
+			}
+			//console.log(c, srcs, children);
+			return {srcs: srcs, children: children};
 		};
 
 		proto.is_paused = function() {
@@ -297,12 +326,13 @@
 		};
 
 		proto.pause = function () {
+			//console.log("PAUSE");
 			this._paused = true;
 			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.pause(); }
-			if (_.has(this, "_css_change_listener")) { this._css_change_listener.pause(); }
+			if (_.has(this, "_style_change_listener")) { this._style_change_listener.pause(); }
 			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.pause(); }
-			if (_.has(this, "_css_change_listeners")) {
-				_.each(this._css_change_listeners, function (x) {
+			if (_.has(this, "_style_change_listeners")) {
+				_.each(this._style_change_listeners, function (x) {
 					x.pause();
 				});
 			}
@@ -327,12 +357,13 @@
 		};
 
 		proto.resume = function () {
+			//console.log("RESUME");
 			this._paused = false;
 			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.resume(); }
-			if (_.has(this, "_css_change_listener")) { this._css_change_listener.resume(); }
+			if (_.has(this, "_style_change_listener")) { this._style_change_listener.resume(); }
 			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.resume(); }
-			if (_.has(this, "_css_change_listeners")) {
-				_.each(this._css_change_listeners, function (x) {
+			if (_.has(this, "_style_change_listeners")) {
+				_.each(this._style_change_listeners, function (x) {
 					x.resume();
 					x.run();
 				});
@@ -346,7 +377,7 @@
 			if (_.has(this, "_children_change_listener")) { this._children_change_listener.resume(); }
 
 			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.run(); }
-			if (_.has(this, "_css_change_listener")) { this._css_change_listener.run(); }
+			if (_.has(this, "_style_change_listener")) { this._style_change_listener.run(); }
 			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.run(); }
 
 			if (_.has(this, "_children_change_listener")) { this._children_change_listener.run(); }
@@ -365,6 +396,7 @@
 
 		proto.on_remove = function() {
 			var dom_obj = this.get_dom_obj();
+			//console.log("REMOVE");
 			if (!dom_obj || !isInDOMTree(dom_obj)) {
 				this.pause();
 			}
@@ -373,71 +405,57 @@
 		proto.on_add = function() {
 			var dom_obj = this.get_dom_obj();
 
+			//console.log("ADD");
 			if (dom_obj && isInDOMTree(dom_obj)) {
 				this.resume();
 			}
 		};
 
 		proto.add_children_change_listener = function () {
+			//console.log("Add children change listener");
 			var contextual_object = this.get_contextual_object();
 
 			var cc = cjs.liven(function () {
 				var dom_obj = this.get_dom_obj();
+				//console.log(dom_obj);
 				if (!_.isElement(dom_obj)) {
 					return;
 				}
-				var text;
 
-				if (contextual_object.has("text")) {
-					text = contextual_object.prop_val("text");
-				}
-				
-				if (text !== undefined) {
-					dom_obj.textContent = text;
+				if (contextual_object.has("textContent")) {
+					dom_obj.textContent = contextual_object.prop_val("textContent");
+					return;
+				} else if (contextual_object.has("innerHTML")) {
+					dom_obj.innerHTML = contextual_object.prop_val("innerHTML");
+					return;
 				} else {
-					var children = _.pluck(contextual_object.children(), "value")//contextual_object.prop("child_nodes");
-					var cc = children
+					var	children, 
+						current_children = _.toArray(dom_obj.childNodes),
+						desired_children_srcs = [],
+						desired_children = [],
+						show = contextual_object.prop_val("show");
+					if(show === undefined) { show = true; }
 
-					var current_children = _.toArray(dom_obj.childNodes);
-					var desired_children_srcs = [];
-					var desired_children = [];
+					if(_.isArray(show)) { // put in order
+						children = contextual_object.children();
+						_.each(show, function(show_child) {
+							var child_index = _.index_where(children, function(child) {
+								return child.value === show_child || child.name === show_child;
+							});
 
-					if (cc) {
-					/*
-						var cc;
-						if (children instanceof ist.ContextualDict) {
-							cc = _.pluck(children.children(true), "value");
-						} else if (children instanceof ist.ContextualObject) {
-							cc = children.val();
-							if (!_.isArray(cc)) {
-								cc = [cc];
+							if(child_index >= 0) {
+								var cdc = get_dom_children(children[child_index].value);
+								desired_children_srcs.push.apply(desired_children_srcs, cdc.srcs);
+								desired_children.push.apply(desired_children, cdc.children);
 							}
-						}
-						*/
-
-						_.each(cc, function (c) {
-							if (_.isElement(c)) {
-								desired_children.push(c);
-							} else if (c instanceof ist.ContextualDict) {
-								if (c.is_template()) {
-									var instances = c.instances();
-									var cs_and_dom_objs = _.chain(instances)
-										.map(get_dom_obj_and_src)
-										.compact()
-										.value();
-
-									var obj_srcs = _.pluck(cs_and_dom_objs, 0);
-									var dom_objs = _.pluck(cs_and_dom_objs, 1);
-
-									desired_children_srcs.push.apply(desired_children_srcs, obj_srcs);
-									desired_children.push.apply(desired_children, dom_objs);
-								} else {
-									var dom_obj_and_src = get_dom_obj_and_src(c);
-									if (dom_obj_and_src) {
-										desired_children_srcs.push(dom_obj_and_src[0]);
-										desired_children.push(dom_obj_and_src[1]);
-									}
-								}
+						}, this);
+					} else if(show !== false) {
+						children = contextual_object.children();
+						_.each(children, function (child) {
+							if(show===true || show === child.name || show === child.value) {
+								var cdc = get_dom_children(child.value);
+								desired_children_srcs.push.apply(desired_children_srcs, cdc.srcs);
+								desired_children.push.apply(desired_children, cdc.children);
 							}
 						}, this);
 					}
