@@ -93,8 +93,7 @@
 				fill: function(contextual_object) {
 					var fill = contextual_object.prop_val("fill"),
 						dom_obj = this.get_dom_obj();
-
-					dom_obj.style.backgroundColor = fill;
+					$("svg", dom_obj).css("background-color", fill);
 				},
 				screen: {
 					type: "list",

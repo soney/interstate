@@ -219,6 +219,10 @@
 			dom.set("ul", ul);
 			ul.set("tag", new ist.Cell({str: "'ul'"}));
 
+			var ol = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("ol", ol);
+			ol.set("tag", new ist.Cell({str: "'ol'"}));
+
 			var li = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 			dom.set("li", li);
 			li.set("tag", new ist.Cell({str: "'li'"}));
@@ -226,22 +230,96 @@
 			var h1 = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 			dom.set("h1", h1);
 			h1.set("tag", new ist.Cell({str: "'h1'"}));
+			h1.set("textContent", new ist.Cell({str: "'Header 1'"}));
 
 			var h2 = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 			dom.set("h2", h2);
 			h2.set("tag", new ist.Cell({str: "'h2'"}));
+			h2.set("textContent", new ist.Cell({str: "'Header 2'"}));
 
 			var h3 = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 			dom.set("h3", h3);
 			h3.set("tag", new ist.Cell({str: "'h3'"}));
+			h3.set("textContent", new ist.Cell({str: "'Header 3'"}));
 
 			var h4 = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 			dom.set("h4", h4);
 			h4.set("tag", new ist.Cell({str: "'h4'"}));
+			h4.set("textContent", new ist.Cell({str: "'Header 4'"}));
+
+			var h5 = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("h5", h5);
+			h5.set("tag", new ist.Cell({str: "'h5'"}));
+			h5.set("textContent", new ist.Cell({str: "'Header 5'"}));
+
+			var h6 = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("h6", h4);
+			h6.set("tag", new ist.Cell({str: "'h6'"}))
+				.set("textContent", new ist.Cell({str: "'Header 6'"}));
 
 			var input = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 			dom.set("input", input);
 			input.set("tag", new ist.Cell({str: "'input'"}));
+
+			var table = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("table", table);
+			table.set("tag", new ist.Cell({str: "'table'"}));
+
+			var tbody = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("tbody", table);
+			tbody.set("tbody", new ist.Cell({str: "'tbody'"}));
+
+			var tr = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("tr", tr);
+			tr.set("tag", new ist.Cell({str: "'tr'"}));
+
+			var td = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("td", td);
+			td.set("tag", new ist.Cell({str: "'td'"}));
+
+			var th = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("th", td);
+			th.set("tag", new ist.Cell({str: "'th'"}));
+
+			var p = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("p", p);
+			p.set("tag", new ist.Cell({str: "'p'"}));
+
+			var pre = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("pre", pre);
+			pre.set("tag", new ist.Cell({str: "'pre'"}));
+
+			var br = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("br", br);
+			br.set("tag", new ist.Cell({str: "'br'"}));
+
+			var a = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("a", a);
+			br.set("tag", new ist.Cell({str: "'a'"}));
+			
+			var label = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("label", label);
+			label.set("tag", new ist.Cell({str: "'label'"}));
+			
+			var img = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("img", img);
+			img.set("tag", new ist.Cell({str: "'img'"}));
+
+			var select = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("select", select);
+			select.set("tag", new ist.Cell({str: "'select'"}));
+
+			var option = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("option", option);
+			option.set("tag", new ist.Cell({str: "'option'"}));
+
+			var button = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("button", button);
+			button.set("tag", new ist.Cell({str: "'button'"}));
+
+			var hr = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+			dom.set("hr", hr);
+			hr.set("tag", new ist.Cell({str: "'hr'"}));
 		}
 
 		if(builtins !== false || (_.indexOf(builtins, "functions") >= 0)) {
