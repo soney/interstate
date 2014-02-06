@@ -316,6 +316,7 @@
 			var button = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 			dom.set("button", button);
 			button.set("tag", new ist.Cell({str: "'button'"}));
+			button.set("textContent", new ist.Cell({str: "'do something'"}));
 
 			var hr = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 			dom.set("hr", hr);

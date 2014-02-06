@@ -40,6 +40,22 @@
 			ist.unset_instance_builtins(this, My);
             My.superclass.destroy.apply(this, arguments);
         };
+
+		proto.clone = function() {
+			var dpops = htis.direct_props(),
+				dstatechart = this.get_own_statechart();
+			return new ist.StatefulObj({
+				direct_statechart: dstatechart.clone(),
+				keys: dpop.keys(),
+				values: _.map(dpop.values, function(v) {
+					if(v instanceof ist.Dict || v instanceof ist.StatefulProp || v instanceof ist.Cell) {
+						return v.clone();
+					} else {
+						return v;
+					}
+				})
+			});
+		};
     
         ist.register_serializable_type("stateful_obj",
             function (x) {

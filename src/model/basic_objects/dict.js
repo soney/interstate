@@ -300,6 +300,20 @@
 		if(ist.__debug) {
 			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		}
+
+		proto.clone = function() {
+			var dpops = htis.direct_props();
+			return new ist.Dict({
+				keys: dpop.keys(),
+				values: _.map(dpop.values, function(v) {
+					if(v instanceof ist.Dict || v instanceof ist.StatefulProp || v instanceof ist.Cell) {
+						return v.clone();
+					} else {
+						return v;
+					}
+				})
+			});
+		};
     
         //
         // === BYE BYE ===
