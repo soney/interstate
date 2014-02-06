@@ -71,6 +71,32 @@
 			}
 		}, this);
 		return children;
+	},
+	get_cobj_children = function(contextual_object) {
+		var children, cobj_children, values;
+		var show = contextual_object.prop_val("show");
+
+		if(_.isArray(show)) { // put in order
+			cobj_children = contextual_object.children();
+			children = [];
+			_.each(show, function(show_child) {
+				var child_index = _.index_where(cobj_children, function(child) {
+					return child.value === show_child || child.name === show_child;
+				});
+
+				if(child_index >= 0) {
+					children.push.apply(children, get_children([cobj_children[child_index].value]));
+					cobj_children.splice(child_index, 1);
+				}
+			});
+		} else if(show !== false) {
+			cobj_children = contextual_object.children();
+			children = get_children(_.pluck(cobj_children, "value"));
+		} else {
+			children = [];
+		}
+
+		return children;
 	};
 
 	ist.PaperAttachment = ist.register_attachment("paper", {
@@ -141,24 +167,7 @@
 						}
 					},
 					getter: function(contextual_object) {
-						//var screen = contextual_object.prop_val("child_nodes");
-						var screen = _.pluck(contextual_object.children(), "value");
-
-						screen.reverse();
-
-						var screen_contents = get_children(screen);
-						/*
-						console.log(screen);
-						var screen_contents = [];
-						if(screen instanceof ist.ContextualDict) {
-							screen_contents = screen.children();
-						}
-						*/
-				
-						//var values = _.pluck(screen_contents, "value");
-						//var children = get_children(values);
-						//return children;
-						return screen_contents
+						return get_cobj_children(contextual_object);
 					}
 				}
 			},
@@ -335,30 +344,7 @@
 			proto_props: {
 				child_getter: function() {
 					var contextual_object = this.get_contextual_object();
-					var children, cobj_children, values;
-					var show = contextual_object.prop_val("show");
-
-					if(_.isArray(show)) { // put in order
-						cobj_children = contextual_object.children();
-						children = [];
-						_.each(show, function(show_child) {
-							var child_index = _.index_where(cobj_children, function(child) {
-								return child.value === show_child || child.name === show_child;
-							});
-
-							if(child_index >= 0) {
-								console.log(child_index);
-								children.push.apply(children, get_children([cobj_children[child_index].value]));
-							}
-						}, this);
-					} else if(show !== false) {
-						cobj_children = contextual_object.children();
-						children = get_children(_.pluck(cobj_children, "value"));
-					} else {
-						children = [];
-					}
-
-					return children;
+					return get_cobj_children(contextual_object);
 				},
 				get_children: function() {
 					return this.$children.get();

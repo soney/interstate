@@ -447,6 +447,8 @@
 								var cdc = get_dom_children(children[child_index].value);
 								desired_children_srcs.push.apply(desired_children_srcs, cdc.srcs);
 								desired_children.push.apply(desired_children, cdc.children);
+
+								children.splice(child_index, 1);
 							}
 						}, this);
 					} else if(show !== false) {

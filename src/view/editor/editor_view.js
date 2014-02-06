@@ -201,7 +201,6 @@
 				component_list.add(pinned)	.addClass("drop_indicator")
 											.on("drop.pin", _.bind(function(e) {
 												var client = targ.column("option", "client");
-												console.log(e.target);
 												if($(e.target).is(".component_drop")) {
 													this.client_socket.post({
 														type: "save_component",
