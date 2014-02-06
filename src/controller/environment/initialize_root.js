@@ -253,7 +253,7 @@
 			h5.set("textContent", new ist.Cell({str: "'Header 5'"}));
 
 			var h6 = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
-			dom.set("h6", h4);
+			dom.set("h6", h6);
 			h6.set("tag", new ist.Cell({str: "'h6'"}))
 				.set("textContent", new ist.Cell({str: "'Header 6'"}));
 
@@ -266,7 +266,7 @@
 			table.set("tag", new ist.Cell({str: "'table'"}));
 
 			var tbody = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
-			dom.set("tbody", table);
+			dom.set("tbody", tbody);
 			tbody.set("tbody", new ist.Cell({str: "'tbody'"}));
 
 			var tr = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
@@ -278,7 +278,7 @@
 			td.set("tag", new ist.Cell({str: "'td'"}));
 
 			var th = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
-			dom.set("th", td);
+			dom.set("th", th);
 			th.set("tag", new ist.Cell({str: "'th'"}));
 
 			var p = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
@@ -295,7 +295,7 @@
 
 			var a = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 			dom.set("a", a);
-			br.set("tag", new ist.Cell({str: "'a'"}));
+			a.set("tag", new ist.Cell({str: "'a'"}));
 			
 			var label = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 			dom.set("label", label);

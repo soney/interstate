@@ -307,8 +307,8 @@
 					var obj_srcs = _.pluck(cs_and_dom_objs, 0);
 					var dom_objs = _.pluck(cs_and_dom_objs, 1);
 
-					srcs.push.apply(desired_children_srcs, obj_srcs);
-					children.push.apply(desired_children, dom_objs);
+					srcs.push.apply(srcs, obj_srcs);
+					children.push.apply(children, dom_objs);
 				} else {
 					var dom_obj_and_src = get_dom_obj_and_src(c);
 					if (dom_obj_and_src) {

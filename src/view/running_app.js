@@ -123,32 +123,6 @@
 			this._add_change_listeners();
 		},
 
-		show_drag_over: function() {
-			$(document.body).addClass("drop_target");
-			if(!this.hasOwnProperty("overlay")) {
-				this.overlay = $("<div />")	.addClass("overlay")
-											.css({
-												"background-color": "#555",
-												"opacity": "0.8",
-												"position": "fixed",
-												"left": "0px",
-												"top": "0px",
-												"width": "100%",
-												"height": "100%",
-												"pointer-events": "none",
-												"border": "10px dashed #DDD",
-												"box-sizing": "border-box"
-											})
-											.appendTo(document.body);
-			}
-		},
-
-		hide_drag_over: function() {
-			$(document.body).removeClass("drop_target");
-			this.overlay.remove();
-			delete this.overlay;
-		},
-
 		_setOption: function(key, value) {
 			if(key === "root") {
 				this._remove_change_listeners();
