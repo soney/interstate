@@ -302,17 +302,7 @@
 		}
 
 		proto.clone = function() {
-			var dpops = htis.direct_props();
-			return new ist.Dict({
-				keys: dpop.keys(),
-				values: _.map(dpop.values, function(v) {
-					if(v instanceof ist.Dict || v instanceof ist.StatefulProp || v instanceof ist.Cell) {
-						return v.clone();
-					} else {
-						return v;
-					}
-				})
-			});
+			return ist.deserialize(ist.serialize(this, false));
 		};
     
         //

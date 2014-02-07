@@ -554,16 +554,12 @@
 				});
 			});
 		} else if (type === "ObjectExpression") {
-			if(options.get_constraint) {
-				console.error("not set");
-			} else {
-				rv = {};
-				_.each(node.properties, function (prop_node) {
-					var key = prop_node.key.name,
-						value = get_val(prop_node.value, options);
-					rv[key] = value;
-				});
-			}
+			rv = {};
+			_.each(node.properties, function (prop_node) {
+				var key = prop_node.key.name,
+					value = get_val(prop_node.value, options);
+				rv[key] = value;
+			});
 		} else if (type === "Program") {
 			if(node.body.length === 1) {
 				rv = get_val(node.body[0], options);

@@ -34,62 +34,11 @@
 			<%- ist_include(ist_inc.runtime_style) %>
 
 			<script type="text/javascript">
-				var env, the_div, root, nosave = false, dom_output_options = {
-						auto_open_external_editor: true,
-						//external_editor: true,
-						//edit_on_open: true,
-						editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
-					};
-				window.save = function(name, type) {
-					return interstate.save(the_div.dom_output("option", "root"), name, type);
-				};
-				window.load = function(name, type) {
-					root = interstate.load(name, type);
-					if(the_div.data("dom_output")) {
-						the_div.dom_output("destroy")
-					}
-					if(env) {
-						env.destroy();
-					}
-					env = new interstate.Environment({root: root});
-					env.print_on_return = true;
-					dom_output_options.root = root;
-					the_div.dom_output(dom_output_options);
-					return root;
-				};
-				window.ls = interstate.ls;
-
 				$(function() {
-					the_div = $("<div />").appendTo(document.body);
-					try {/**/ root = load(); //*
-					} catch(e) {
-						console.log("Creating a new project");
-						env = new interstate.Environment();
-
-						dom_output_options.root = env.get_root();
-
-						the_div.dom_output(dom_output_options);
-						env.print_on_return = true;
-					}
-						/**/
+					$(document.body).dom_output({
+						editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
+					});
 				});
-				var nosave_delay = false;
-				$(window).on("beforeunload onunload unload pagehide", function() {
-					if(window.nosave !== true) {
-						if(nosave_delay === false) {
-							save();
-							nosave_delay = true;
-							setTimeout(function() {
-								nosave_delay = false;
-							}, 400);
-						}
-					}
-				});
-				window.nuke = function() {
-					nosave = true;
-					interstate.nuke();
-				};
-				//nosave = true;
 			</script>
 	  </div>
   </body>
