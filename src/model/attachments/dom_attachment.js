@@ -77,12 +77,10 @@
 		proto.get_owner = function () {
 			return this._owner;
 		};
-		proto.on_ready = function () {
-		};
 		proto.destroy = function () {
-			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.destroy(); }
-			if (_.has(this, "_style_change_listener")) { this._style_change_listener.destroy(); }
-			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.destroy(); }
+			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.destroy(); delete this._tag_change_listener; }
+			if (_.has(this, "_style_change_listener")) { this._style_change_listener.destroy(); delete this._style_change_listener; }
+			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.destroy(); delete this._attr_change_listener; }
 			if (_.has(this, "_style_change_listeners")) {
 				_.each(this._style_change_listeners, function (x) {
 					x.destroy();
@@ -94,7 +92,11 @@
 				});
 			}
 			//console.log("destroy");
-			if (_.has(this, "_children_change_listener")) { this._children_change_listener.destroy(); }
+			if (_.has(this, "_children_change_listener")) { this._children_change_listener.destroy(); delete this._children_change_listener; }
+
+			if(this._dom_obj.destroy) {
+				this._dom_obj.destroy();
+			}
 		};
 		proto.get_dom_obj = function () {
 			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.run(); }

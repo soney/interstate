@@ -231,7 +231,14 @@
 		var client_val = cjs.get(client_constraint),
 			old_client = client_val,
 			prop_names = _.rest(arguments),
-			client_is_valid = (client_val instanceof ist.WrapperClient), rv, is_arr = prop_names.length !== 1;
+			client_is_valid, rv, is_arr = prop_names.length !== 1;
+
+		if (client_val instanceof ist.WrapperClient) {
+			client_val.signal_interest();
+			client_is_valid = true;
+		} else {
+			client_is_valid = false;
+		}
 
 		if(is_arr) {
 			rv = cjs.map({
@@ -249,7 +256,9 @@
 		}
 		
 		var on_change_fn = function() {
-			var client_was_valid = client_is_valid;
+			old_client = client_val;
+			var client_was_valid = old_client instanceof ist.WrapperClient;
+
 			client_val = cjs.get(client_constraint);
 			client_is_valid = client_val instanceof ist.WrapperClient;
 
@@ -262,7 +271,6 @@
 						if(rv.do_debug) {
 							console.log(prop_name, args);
 						}
-
 					} else {
 						rv.remove(prop_name);
 					}
@@ -281,10 +289,11 @@
 			} else if(client_was_valid && !client_is_valid) {
 				old_client.signal_destroy();
 			} else if(client_was_valid && client_is_valid) {
-				old_client.signal_destroy();
-				client_val.signal_interest();
+				if(old_client !== client_val) {
+					old_client.signal_destroy();
+					client_val.signal_interest();
+				}
 			}
-			old_client = client_val;
 		};
 
 		if(cjs.isConstraint(client_constraint)) {

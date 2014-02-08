@@ -36,11 +36,11 @@
 			if(ist.__debug) {
 				value = cjs.get(this.value_constraint.get());
 			} else {
-				try {
+				//try {
 					value = cjs.get(this.value_constraint.get());
-				} catch (e) {
-					console.error(e);
-				}
+				//} catch (e) {
+					//console.error(e);
+				//}
 			}
 			return value;
 		};

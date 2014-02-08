@@ -106,8 +106,7 @@
 			var my_state = this.option("state");
 			this.add_substate_item = $("<div />")	.addClass("menu_item")
 													.text("Add substate")
-													.pressable()
-													.on("pressed", _.bind(function() {
+													.on("click", _.bind(function() {
 														this.remove_edit_dropdown();
 														this._emit("add_state", {
 															parent: my_state
@@ -118,8 +117,7 @@
 			var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
 			this.toggle_concurrency_item = $("<div />")	.addClass("menu_item")
 														.html("Concurrent " + checkbox_mark)
-														.pressable()
-														.on("pressed", _.bind(function() {
+														.on("click", _.bind(function() {
 															this.remove_edit_dropdown();
 															this._emit("make_concurrent", {
 																state: my_state,
@@ -128,8 +126,7 @@
 														}, this));
 			this.reset_item = $("<div />")	.addClass("menu_item")
 													.text("Reset")
-													.pressable()
-													.on("pressed", _.bind(function() {
+													.on("click", _.bind(function() {
 														this.remove_edit_dropdown();
 														this._emit("reset", {
 															parent: my_state

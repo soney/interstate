@@ -19,7 +19,7 @@
 			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var self = this;
 				var listener = function (event) {
-					event.preventDefault();
+					//event.preventDefault();
 
 					ist.event_queue.wait();
 
@@ -87,7 +87,11 @@
 		proto.add_listener = function(target_info) {
 			var dom_obj = target_info.dom_obj,
 				cobj = target_info.cobj;
-			dom_obj.addEventListener(target_info.type, this.get_target_listener(cobj), false); // Bubble
+			if(_.isString(target_info.type)) {
+				_.each(target_info.type.split(","), function(type) {
+					dom_obj.addEventListener(type, this.get_target_listener(cobj), false); // Bubble
+				}, this);
+			}
 		};
 		proto.remove_listeners = function () {
 			_.each(this.targets, this.remove_listener, this);
@@ -95,7 +99,11 @@
 		proto.remove_listener = function(target_info) {
 			var dom_obj = target_info.dom_obj,
 				cobj = target_info.cobj;
-			dom_obj.removeEventListener(target_info.type, this.get_target_listener(cobj), false); // Bubble
+			if(_.isString(target_info.type)) {
+				_.each(target_info.type.split(","), function(type) {
+					dom_obj.removeEventListener(type, this.get_target_listener(cobj), false); // Bubble
+				}, this);
+			}
 		};
 		proto.destroy = function () {
 			this.live_fn.destroy(true);

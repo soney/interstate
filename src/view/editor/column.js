@@ -129,7 +129,6 @@
 
 		_create: function() {
 			var client = this.option("client");
-
 			client.signal_interest();
 
 			this.element.attr("draggable", true);
@@ -146,6 +145,7 @@
 			}
 
 			this.$is_curr_col = this.option("is_curr_col");
+
 			this.$name = client.get_$("get_name");
 			this.$copies_obj = client.get_$("copies_obj");
 			this.$is_template = client.get_$("is_template");

@@ -116,6 +116,20 @@
 			return value;
 		}
 	};
+	interstate.get_dom_obj = function(cdict) {
+		if(cdict.get_dom_obj) {
+			return cdict.get_dom_obj();
+		} else {
+			return false;
+		}
+	};
+	interstate.get_dom_obj = function(cdict) {
+		if(cdict.get_dom_obj) {
+			return cdict.get_dom_obj();
+		} else {
+			return false;
+		}
+	};
 
 	ist.ContextualDict = function (options) {
 		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
@@ -140,6 +154,26 @@
 
 		proto._get_all_protos = function() {
 			return ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
+		};
+		proto.get_dom_obj = function() {
+			var dom_attachment = this.get_attachment_instance("dom"),
+				dom_obj;
+			if (dom_attachment) {
+				dom_obj = dom_attachment.get_dom_obj();
+				if(dom_obj) {
+					return dom_obj;
+				}
+			} else {
+				var raphael_attachment = this.get_attachment_instance("paper");
+				if(raphael_attachment) {
+					dom_obj = raphael_attachment.get_dom_obj();
+
+					if(dom_obj) {
+						return dom_obj;
+					}
+				}
+			}
+			return false;
 		};
 
 		proto.raw_children = function (exclude_builtins) {
@@ -281,19 +315,23 @@
 			return children;
 		};
 		proto.children = function (exclude_builtins) {
-			var raw_children = this.raw_children(exclude_builtins);
-			var pointer = this.pointer;
-			var children = _.map(raw_children, function(raw_child) {
-				return _.extend({}, raw_child, {
-					value: get_contextual_object(raw_child.value, pointer)
+			if(this.is_template()) {
+				// This is a bit of a hack; when "copies" changes from "" to "5", then my
+				// children's contextual objects are destroyed. However, when I switch back
+				// any constraints on the value of children aren't nullified.
+				//
+				// Adding the is_template() check ensures that they will be nullified
+				return [];
+			} else {
+				var raw_children = this.raw_children(exclude_builtins);
+				var pointer = this.pointer;
+				var children = _.map(raw_children, function(raw_child) {
+					return _.extend({}, raw_child, {
+						value: get_contextual_object(raw_child.value, pointer)
+					});
 				});
-			});
-			/*
-			if(uid.strip_prefix(this.id()) == 37) {
-				console.log(children);
+				return children;
 			}
-			*/
-			return children;
 		};
 		proto.parent = function() {
 			var popped_pointer = this.pointer.pop();
@@ -414,7 +452,7 @@
 			}
 		};
 
-		proto.is_template = function () {
+		proto.is_instance = function() {
 			var pointer = this.get_pointer();
 			var object = this.get_object();
 			var obj_index = pointer.lastIndexOf(object);
@@ -426,13 +464,20 @@
 				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
 					special_context = special_contexts[i];
 					if (special_context instanceof ist.CopyContext) {
-						return false;
+						return true;
 					}
 				}
 			}
+			return false;
+		};
 
-			var manifestations_value = this.get_manifestations_value();
-			return (_.isNumber(manifestations_value) && !isNaN(manifestations_value)) || _.isArray(manifestations_value);
+		proto.is_template = function () {
+			if(this.is_instance()) {
+				return false;
+			} else {
+				var manifestations_value = this.get_manifestations_value();
+				return (_.isNumber(manifestations_value) && !isNaN(manifestations_value)) || _.isArray(manifestations_value);
+			}
 		};
 
 		proto.is_instance = function () {

@@ -74,18 +74,18 @@
 			var cobj = this.get_contextual_object(),
 				my_pointer;
 			if(cobj instanceof ist.ContextualDict) {
-				var rv;
+				my_pointer = cobj.get_pointer();
+				var copies_obj = cobj.copies_obj(),
+					rv = cobj.is_instance() ? [] : [{pointer: my_pointer.push(copies_obj), obj: copies_obj}];
 				if(cobj.is_template()) {
 					var instance_pointers = cobj.instance_pointers();
 					var obj = cobj.get_object();
-					rv = _.map(instance_pointers, function(instance_pointer) {
+					rv.push.apply(rv, _.map(instance_pointers, function(instance_pointer) {
 						return { pointer: instance_pointer, obj: obj };
-					});
+					}));
 					return rv;
 				} else {
-					rv = [];
 					var child_infos = cobj.raw_children();
-					my_pointer = cobj.get_pointer();
 					_.each(child_infos, function(child_info) {
 						var value = child_info.value;
 						if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
@@ -185,6 +185,7 @@
 			});
 			this.children.destroy();
 			delete this.children;
+
 			if(this.has_contextual_object()) {
 				if(!this.contextual_object.is_destroyed()) {
 					this.contextual_object.destroy(true, true); // silent & avoid re-calling ist.destroy_cobj

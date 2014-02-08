@@ -31,9 +31,6 @@
 				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
 			},
 			client_id: uid.get_prefix(),
-			highlight_colors: {
-				hover: 'red'
-			},
 			immediately_create_server_socket: false
 		},
 
@@ -51,7 +48,6 @@
 				this.option("root", root);
 			}
 
-			this.highlights = [];
 			if (this.option("show_edit_button")) {
 				this.button_color = "#990000";
 				this.edit_button_css = {
@@ -165,7 +161,6 @@
 
 		_destroy: function () {
 			this._super();
-			delete this.highlights;
 
 			this._remove_change_listeners();
 			this.element.removeClass("ist_runtime");
@@ -181,8 +176,8 @@
 				delete this.server_socket;
 			}
 			this._command_stack.destroy();
-			delete this._command_stack;
 
+			delete this._command_stack;
 			delete this.options;
 		},
 
@@ -193,6 +188,8 @@
 			if(!this._update_fn) {
 				this._update_fn = cjs.liven(function() {
 					ist.update_current_contextual_objects(root_dict);
+				}, {
+					pause_while_running: true
 				});
 			}
 
@@ -460,118 +457,5 @@
 			}
 			delete this.editor_window;
 		},
-
-		add_highlight: function(cobj, highlight_type) {
-			if(cobj instanceof ist.ContextualDict) {
-				var len = this.highlights.length;
-				var highlight;
-				for(var i = 0; i < len; i++) {
-					highlight = this.highlights[i];
-					if(highlight.cobj === cobj && highlight.type === highlight_type) {
-						return false;
-					}
-				}
-				this.highlights.push({
-					cobj: cobj,
-					type: highlight_type
-				});
-				this.update_highlights();
-				return true;
-			} else {
-				return false;
-			}
-		},
-
-		remove_highlight: function(cobj, highlight_type) {
-			var len = this.highlights.length;
-			var highlight;
-			var remove_elem = function(elem) {
-				elem.remove();
-			};
-			for(var i = 0; i < len; i++) {
-				highlight = this.highlights[i];
-				if(highlight.cobj === cobj && highlight.type === highlight_type) {
-					if(highlight.elems) {
-						_.each(highlight.elems, remove_elem);
-					}
-					this.highlights.splice(i, 1);
-					this.update_highlights();
-					return true;
-				}
-			}
-			return false;
-		},
-
-		update_highlights: function() {
-			var len = this.highlights.length;
-			var highlight;
-			var per_instance = function(instance) {
-				var shape_attachment_instance = instance.get_attachment_instance("shape");
-				if(shape_attachment_instance) {
-					var robj = shape_attachment_instance.get_robj();
-					return robj;
-				} else {
-					var group_attachment_instance = instance.get_attachment_instance("group");
-					if(group_attachment_instance) {
-						var children = group_attachment_instance.get_children();
-						return _.map(children, function(child) {
-							return child.get_robj();
-						});
-					}
-				}
-			};
-			var getbboxes = function(robj) {
-				var bbox = robj.getBBox();
-				return {bbox: bbox, robj: robj};
-			};
-			var get_highlight_elem = function(info) {
-				var bbox = info.bbox,
-					robj = info.robj;
-				var elem = $("<div />")	.addClass("highlight")
-										.css({
-											left: bbox.x,
-											top: bbox.y,
-											width: bbox.width,
-											height: bbox.height
-										})
-										.appendTo(this.element);
-				if(robj.type === "circle" || robj.type === "ellipse") {
-					elem.css("border-radius", Math.max(bbox.width, bbox.height)+"px");	
-				}
-				return elem;
-			};
-			var remove_elem = function(elem) {
-				elem.remove();
-			};
-			var bboxes = [];
-			for(var i = 0; i < len; i++) {
-				highlight = this.highlights[i];
-				var cobj = highlight.cobj;
-
-				if(cobj.is_destroyed()) {
-					this.highlights.splice(i, 1);
-					i--;
-					len--;
-					if(highlight.elems) {
-						_.each(highlight.elems, remove_elem);
-					}
-					continue;
-				}
-
-				var instances;
-				if(cobj.is_template()) {
-					instances = cobj.instances();
-				} else {
-					instances = [cobj];
-				}
-				var highlight_objs = _	.chain(instances)
-										.map(per_instance)
-										.flatten(true)
-										.compact()
-										.value();
-				var bounding_boxes = _	.map(highlight_objs, getbboxes);
-				highlight.elems = _.map(bounding_boxes, get_highlight_elem, this);
-			}
-		}
 	});
 }(interstate, jQuery));
