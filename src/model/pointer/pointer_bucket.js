@@ -40,7 +40,7 @@
 		proto.set_contextual_object = function(cobj) {
 			this.contextual_object = cobj;
 			console.log(cobj);
-			if(cobj.sid() >= 54) debugger;
+			if(cobj.sid() >= 58) debugger;
 		};
 		proto.get_contextual_object = function(cobj) {
 			return this.contextual_object;
@@ -74,10 +74,9 @@
 		};
 		proto.get_valid_child_pointers = function() {
 			var cobj = this.get_contextual_object(),
-				my_pointer;
+				my_pointer, rv;
 			if(cobj instanceof ist.ContextualDict) {
 				my_pointer = cobj.get_pointer();
-				var rv;
 				if(cobj.is_instance()) {
 					rv = [];
 				} else {
@@ -133,10 +132,11 @@
 				*/
 			} else if(cobj instanceof ist.ContextualStatefulProp) {
 				my_pointer = cobj.get_pointer();
-				return _.map(cobj.get_values(), function(val) {
+				rv = _.map(cobj.get_values(), function(val) {
 					var value = val.value;
 					return {obj: value, pointer: my_pointer.push(value)};
 				});
+				return rv;
 			} else {
 				return [];
 			}
