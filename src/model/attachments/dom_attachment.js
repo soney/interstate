@@ -111,15 +111,16 @@
 			var old_tag;
 			return cjs.liven(function () {
 				var tag = contextual_object.prop_val("tag");
+				if (!_.isString(tag)) {
+					tag=tag+"";
+				}
+				tag=tag.replace(/[^a-zA-Z0-9]/g, "");
+
 				if (tag !== old_tag) {
 					old_tag = tag;
-					if (_.isString(tag)) {
-						var dom_obj = window.document.createElement(tag);
-						dom_obj.__ist_contextual_object__ = contextual_object;
-						this._dom_obj.set(dom_obj);
-					} else {
-						this._dom_obj.set(undefined);
-					}
+					var dom_obj = window.document.createElement(tag);
+					dom_obj.__ist_contextual_object__ = contextual_object;
+					this._dom_obj.set(dom_obj);
 				}
 			}, {
 				context: this,

@@ -72,7 +72,7 @@
 
 		var rv = direct_props.keyForValue({value: value});
 		if (_.isUndefined(rv) && pcontext) {
-			var protos = ist.Dict.get_proto_vals(dict, pcontext);
+			var protos = ist.Dict.get_proto_vals(dict, pcontext.pop());
 			for (i = 0; i < protos.length; i += 1) {
 				var protoi = protos[i];
 				direct_props = protoi.direct_props();
@@ -264,55 +264,64 @@
 			return rv;
 		};
 		proto.builtin_children = function() {
-			var dict = this.object,
-				pointer = this.pointer,
-				my_ptr_index = pointer.lastIndexOf(dict),
-				builtin_names = dict._get_builtin_prop_names(),
-				special_context_names = [],
-				owners = {},
-				builtin_infos = _.map(builtin_names, function (name) {
-					return dict._get_builtin_prop_info(name);
-				}),
-				builtin_contextual_objects = _.map(builtin_infos, function (info, i) {
-					var name = builtin_names[i];
-					return {name: name, value: info.value, inherited: false, builtin: true };
-				}, this);
-
-			if (my_ptr_index >= 0) {
-				var special_contexts = pointer.special_contexts(my_ptr_index),
-					len = special_contexts.length,
-					sc, co, i,
-					each_co = function (v, k) {
-						owners[k] = sc;
-						special_context_names.push(k);
-					};
-
-				for (i = 0; i < len; i += 1) {
-					sc = special_contexts[i];
-					co = sc.get_context_obj();
-					_.each(co, each_co);
-				}
-			}
-
-			var special_context_infos = _.map(special_context_names, function (name) {
-						var sc = owners[name];
-						var co = sc.get_context_obj();
-						return co[name];
+			if(this.is_template()) {
+				// This is a bit of a hack; when "copies" changes from "" to "5", then my
+				// children's contextual objects are destroyed. However, when I switch back
+				// any constraints on the value of children aren't nullified.
+				//
+				// Adding the is_template() check ensures that they will be nullified
+				return [];
+			} else {
+				var dict = this.object,
+					pointer = this.pointer,
+					my_ptr_index = pointer.lastIndexOf(dict),
+					builtin_names = dict._get_builtin_prop_names(),
+					special_context_names = [],
+					owners = {},
+					builtin_infos = _.map(builtin_names, function (name) {
+						return dict._get_builtin_prop_info(name);
 					}),
-				special_context_contextual_objects = _.map(special_context_infos, function (info, i) {
-					var name = special_context_names[i];
-					return {name: name, value: info.value, inherited: false, builtin: true };
-				}, this);
-			
-			var contextual_objects = special_context_contextual_objects.concat(builtin_contextual_objects),
-				children = _.map(contextual_objects, function(raw_child) {
-					return _.extend({}, raw_child, {
-						value: get_contextual_object(raw_child.value, pointer)
+					builtin_contextual_objects = _.map(builtin_infos, function (info, i) {
+						var name = builtin_names[i];
+						return {name: name, value: info.value, inherited: false, builtin: true };
+					}, this);
+
+				if (my_ptr_index >= 0) {
+					var special_contexts = pointer.special_contexts(my_ptr_index),
+						len = special_contexts.length,
+						sc, co, i,
+						each_co = function (v, k) {
+							owners[k] = sc;
+							special_context_names.push(k);
+						};
+
+					for (i = 0; i < len; i += 1) {
+						sc = special_contexts[i];
+						co = sc.get_context_obj();
+						_.each(co, each_co);
+					}
+				}
+
+				var special_context_infos = _.map(special_context_names, function (name) {
+							var sc = owners[name];
+							var co = sc.get_context_obj();
+							return co[name];
+						}),
+					special_context_contextual_objects = _.map(special_context_infos, function (info, i) {
+						var name = special_context_names[i];
+						return {name: name, value: info.value, inherited: false, builtin: true };
+					}, this);
+				
+				var contextual_objects = special_context_contextual_objects.concat(builtin_contextual_objects),
+					children = _.map(contextual_objects, function(raw_child) {
+						return _.extend({}, raw_child, {
+							value: get_contextual_object(raw_child.value, pointer)
+						});
 					});
-				});
 
 
-			return children;
+				return children;
+			}
 		};
 		proto.children = function (exclude_builtins) {
 			if(this.is_template()) {
