@@ -13,7 +13,7 @@
 			<%- ist_include(ist_inc.editor) %>
 			<%- ist_include(ist_inc.runtime_style) %>
 			<script type="text/javascript">
-				var root = interstate.get_default_root(true);
+				var root = interstate.get_default_root();
 				$("div#editor").editor({
 					debug_env: true,
 					server_window: window
@@ -32,8 +32,8 @@
 				}
 				window.env = getEnvironment();
 				env.set("a", "<stateful>")
-				env.set("b", "<stateful>")
 				/*
+				env.set("b", "<stateful>")
 
 				env.cd("super_obj");
 

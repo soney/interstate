@@ -72,7 +72,7 @@
 
 		var rv = direct_props.keyForValue({value: value});
 		if (_.isUndefined(rv) && pcontext) {
-			var protos = ist.Dict.get_proto_vals(dict, pcontext.pop());
+			var protos = ist.Dict.get_proto_vals(dict, pcontext);
 			for (i = 0; i < protos.length; i += 1) {
 				var protoi = protos[i];
 				direct_props = protoi.direct_props();

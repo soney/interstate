@@ -6,17 +6,15 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	ist.get_default_root = function(dont_initialize, builtins) {
+	ist.get_default_root = function(builtins) {
 		var root = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment({instance_options: {tag: 'div'}})]});
 
-		if(!dont_initialize) {
-			ist.initialize_root(root, builtins);
-		}
+		ist.initialize_root(root, builtins);
 
 		return root;
 	};
 	ist.initialize_root = function (root_dict, builtins) {
-		if(builtins !== false || (_.indexOf(builtins, "svg") >= 0)) {
+		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "svg") >= 0)) {
 			var svg = new ist.Dict({has_protos: false});
 			root_dict.set("svg", svg);
 
@@ -195,7 +193,7 @@
 			group.set("show", new ist.Cell({str: "true"}));
 		}
 
-		if(builtins !== false || (_.indexOf(builtins, "dom") >= 0)) {
+		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "dom") >= 0)) {
 			var dom = new ist.Dict({has_protos: false});
 			root_dict.set("dom", dom);
 
@@ -229,7 +227,7 @@
 					});
 		}
 
-		if(builtins !== false || (_.indexOf(builtins, "functions") >= 0)) {
+		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "functions") >= 0)) {
 			root_dict.set("on", ist.on_event);
 			root_dict.set("find", ist.find_fn);
 			root_dict.set("emit", ist.emit);
