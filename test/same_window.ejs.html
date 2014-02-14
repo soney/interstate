@@ -13,7 +13,7 @@
 			<%- ist_include(ist_inc.editor) %>
 			<%- ist_include(ist_inc.runtime_style) %>
 			<script type="text/javascript">
-				var root = interstate.get_default_root();
+				var root = interstate.get_default_root(["dom"]);
 				$("div#editor").editor({
 					debug_env: true,
 					server_window: window
@@ -30,13 +30,12 @@
 				function getEnvironment() {
 					return new interstate.Environment({root: getRoot()});
 				}
-				/*
 				window.env = getEnvironment();
 				console.log("Begin setting objects");
 				env.set("a", "<stateful>")
 					.cd("a")
 					.set("(prototypes)", "(start)", "dom.div")
-					.set("(copies)", "1000");
+					.set("textContent", "(start)", "false");
 				console.log("Done creating");
 				env .top()
 					.unset("a")
