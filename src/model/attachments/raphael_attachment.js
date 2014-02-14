@@ -8,44 +8,6 @@
 
 	var is_paper = function(obj) { return obj instanceof Raphael._Paper; };
 
-	var insert_at = function (child_node, parent_node, index) {
-		var paper = parent_node;
-		var paper_children = [];
-		var child_index;
-		paper.forEach(function(child) {
-			paper_children.push(child);
-		});
-		child_index = _.indexOf(paper_children, child_node);
-		if(child_index >= 0) {
-			move(child_node, child_index, index);
-		} else {
-			if(paper_children.length <= index) {
-				child_node.insertAfter(paper.bottom);
-			} else {
-				var before_child = paper_children[index];
-				child_node.insertBefore(before_child);
-			}
-		}
-	};
-	var remove = function (child_node) {
-		child_node.remove();
-	};
-	var move = function (child_node, from_index, to_index) {
-		var paper = child_node.paper;
-		var paper_children = [];
-		paper.forEach(function(child) {
-			paper_children.push(child);
-		});
-
-		if (from_index < to_index) { //If it's less than the index we're inserting at...
-			to_index += 1; //Increase the index by 1, to make up for the fact that we're removing me at the beginning
-		}
-		var before_child = paper_children[to_index];
-		if(to_index >= paper_children.length) {
-			before_child = paper.bottom;
-		}
-		child_node.insertBefore(before_child);
-	};
 	var get_children = function(child_nodes) {
 		var children = [];
 		_.each(child_nodes, function(child) {

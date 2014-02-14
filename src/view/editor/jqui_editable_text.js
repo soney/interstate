@@ -75,7 +75,7 @@
 				}
 
 				if(editor) {
-					editor.setValue(this.element.val(), 1);
+					editor.setValue(this.element.val() || " ", 1);
 					this.$textarea_binding = cjs(this.element[0]);
 					this.$textarea_binding.onChange(function() {
 						editor.setValue(this.$textarea_binding.get(), 1);
@@ -150,7 +150,7 @@
 				this.__blocked = true;
 
 				var e = new $.Event("confirm_value");
-				e.value = this.element.val();
+				e.value = this.element.val().trim();
 				this.element.trigger(e);
 
 				_.delay(_.bind(function() {

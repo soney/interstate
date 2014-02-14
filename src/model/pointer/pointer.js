@@ -213,7 +213,7 @@
 			var special_context_infos = _.map(this._special_contexts, function (sc) {
 				if (_.isArray(sc)) {
 					return _.map(sc, function (c) {
-						if (c instanceof ist.ManifestationContext) {
+						if (c instanceof ist.CopyContext) {
 							return {
 								type: "manifestation_context",
 								index: c.get_basis_index()
@@ -264,13 +264,6 @@
 			return rv;
 		};
 	}(ist.Pointer));
-	/*
-
-	ist.define("pointer", function (options) {
-		var context = new ist.Pointer(options);
-		return context;
-	});
-	*/
 
 	ist.is_pointer = function (obj) {
 		return obj instanceof ist.Cell || obj instanceof ist.StatefulProp;
@@ -284,15 +277,7 @@
 			return itema === itemb;
 		}
 	};
-	/*
-	ist.check_pointer_equality_eqeq = function (itema, itemb) {
-		if (itema instanceof ist.Pointer && itemb instanceof ist.Pointer) {
-			return itema.eq(itemb);
-		} else {
-			return itema == itemb;
-		}
-	};
-	*/
+
 	ist.pointer_hash = function(item) {
 		if(item && item.hash) {
 			return item.hash();

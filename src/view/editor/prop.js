@@ -421,7 +421,11 @@
 				this.element.trigger("expand");
 			}
 		},
-		inherit: function() {
+		inherit: function(e) {
+			if(e) {
+				e.preventDefault();
+				e.stopPropagation();
+			}
 			var event = new $.Event("command");
 			event.command_type = "inherit";
 			event.name = this.option("name");

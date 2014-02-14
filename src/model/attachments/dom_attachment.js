@@ -552,4 +552,84 @@
 			});
 	}(ist.DomAttachment));
 
+/*
+	ist.DomAttachment = ist.register_attachment("dom", {
+			ready: function() {
+				this.dom_obj = window.document.createElement("div");
+				this.paper = new Raphael(this.dom_obj, 0, 0);
+			},
+			destroy: function(silent) {
+				this.paper.clear();
+				this.paper.remove();
+				delete this.paper;
+				delete this.dom_obj;
+			},
+			parameters: {
+				width_height: function(contextual_object) {
+					var width = contextual_object.prop_val("width"),
+						height = contextual_object.prop_val("height");
+					this.paper.setSize(width, height);
+				},
+				fill: function(contextual_object) {
+					var fill = contextual_object.prop_val("fill"),
+						dom_obj = this.get_dom_obj();
+					$("svg", dom_obj).css("background-color", fill);
+				},
+				screen: {
+					type: "list",
+					add: function(shape_attachment_instance, to_index) {
+						var shape = shape_attachment_instance.create_robj(this.paper);
+						var itemi, len;
+						var index = 0;
+						var item;
+						this.paper.forEach(function(elem) {
+							if(index === to_index) {
+								itemi = elem;
+							}
+							len = index;
+							index++;
+						});
+						if(itemi !== shape) {
+							if(to_index >= len) {
+								shape.toBack();
+							} else {
+								shape.insertBefore(itemi);
+							}
+						}
+					},
+					remove: function(shape_attachment_instance) {
+						shape_attachment_instance.remove();
+					},
+					move: function(item, from_index, to_index) {
+						var shape = item.get_robj();
+						var index = 0;
+						if (from_index < to_index) { //If it's less than the index we're inserting at...
+							to_index += 1; //Increase the index by 1, to make up for the fact that we're removing me at the beginning
+						}
+						var itemi, len;
+						this.paper.forEach(function(elem) {
+							if(index === to_index) {
+								itemi = elem;
+							}
+							len = index;
+							index++;
+						});
+						if(to_index >= len) {
+							shape.toBack();
+						} else {
+							shape.insertBefore(itemi);
+						}
+					},
+					getter: function(contextual_object) {
+						return get_cobj_children(contextual_object);
+					}
+				}
+			},
+			proto_props: {
+				get_dom_obj: function() {
+					return this.dom_obj;
+				}
+			}
+		});
+		*/
 }(interstate, jQuery));
