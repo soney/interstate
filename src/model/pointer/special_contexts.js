@@ -69,23 +69,6 @@
 		};
 	}(ist.StateContext));
 
-	var ec_counter = 1;
-	ist.EventContext = function (event) {
-		ist.EventContext.superclass.constructor.apply(this, arguments);
-		this.event = event;
-		this.context_obj = {
-			event: { value: event }
-		};
-	};
-
-	(function (My) {
-		_.proto_extend(My, ist.SpecialContext);
-		var proto = My.prototype;
-		proto.get_event = function () {
-			return this.event;
-		};
-	}(ist.EventContext));
-
 	ist.CopyContext = function (owner, my_copy, copy_num, options) {
 		ist.CopyContext.superclass.constructor.apply(this, arguments);
 		this.my_copy = my_copy;
@@ -104,6 +87,9 @@
 		_.proto_extend(My, ist.SpecialContext);
 		var proto = My.prototype;
 		proto.get_copy_num = function () {
+			return this.copy_num;
+		};
+		proto.hash = function () {
 			return this.copy_num;
 		};
 	}(ist.CopyContext));

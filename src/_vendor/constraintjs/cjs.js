@@ -1,4 +1,4 @@
-//     ConstraintJS (CJS) 0.9.4
+//     ConstraintJS (CJS) 0.9.5-beta
 //     ConstraintJS may be freely distributed under the MIT License
 //     http://cjs.from.so/
 
@@ -799,9 +799,10 @@ var constraint_solver = {
 		return node._cached_value;
 	},
 	
-	// Utility function to mark a listener as being in the call stack
+	// Utility function to mark a listener as being in the call stack. `this` refers to the constraint node here
 	add_in_call_stack: function(nl) {
 		nl.in_call_stack = true;
+		nl.node._num_listeners_in_call_stack++;
 	},
 	nullify: function(node) {
 		// Unfortunately, running nullification listeners can, in some cases cause nullify to be indirectly called by itself
@@ -985,6 +986,7 @@ var constraint_solver = {
 				context = nullified_info.context || root;
 
 				nullified_info.in_call_stack = false;
+				nullified_info.node._num_listeners_in_call_stack--;
 				// If in debugging mode, then call the callback outside of a `try` statement
 				if(cjs.__debug) {
 					callback.apply(context, nullified_info.args);
@@ -1004,6 +1006,7 @@ var constraint_solver = {
 	},
 	remove_from_call_stack: function(info) {
 		remove(this.nullified_call_stack, info);
+		info.node._num_listeners_in_call_stack--;
 	}
 };
 
@@ -1039,6 +1042,7 @@ Constraint = function (value, options) {
 	this._inEdges = {}; // The nodes that I depend on, key is link to edge object (with properties toNode=this, fromNode)
 	this._changeListeners = []; // A list of callbacks that will be called when I'm nullified
 	this._tstamp = 0; // Marks the last time I was updated
+	this._num_listeners_in_call_stack = 0; // the number of listeners that are in the call stack
 
 	if(this._options.literal || (!isFunction(this._value) && !is_constraint(this._value))) {
 		// We already have a value that doesn't need to be computed
@@ -1222,12 +1226,17 @@ Constraint = function (value, options) {
 	 *     x.destroy(); // ...x is no longer needed
 	 */
 	proto.destroy = function (silent) {
-		each(this._changeListeners, function(cl) {
-			// remove it from the call stack
-			if (cl.in_call_stack) {
-				constraint_solver.remove_from_call_stack(cl);
-			}
-		});
+		if(this._num_listeners_in_call_stack > 0) {
+			each(this._changeListeners, function(cl) {
+				// remove it from the call stack
+				if (cl.in_call_stack) {
+					constraint_solver.remove_from_call_stack(cl);
+					if(this._num_listeners_in_call_stack === 0) {
+						return breaker;
+					}
+				}
+			}, this);
+		}
 		this.remove(silent);
 		this._changeListeners = [];
 		return this;
@@ -1257,7 +1266,8 @@ Constraint = function (value, options) {
 			callback: callback, // function
 			context: thisArg, // 'this' when called
 			args: slice.call(arguments, 2), // arguments to pass into the callback
-			in_call_stack: false // internally keeps track of if this function will be called in the near future
+			in_call_stack: false, // internally keeps track of if this function will be called in the near future
+			node: this
 		});
 		if(this._options.run_on_add_listener !== false) {
 			// Make sure my current value is up to date but don't add outgoing constraints.
@@ -1940,7 +1950,7 @@ extend(cjs, {
 	 * @property {string} cjs.version
 	 * @see cjs.toString
 	 */
-	version: "0.9.4", // This template will be filled in by the builder
+	version: "0.9.5-beta", // This template will be filled in by the builder
 
 	/**
 	 * Print out the name and version of ConstraintJS
@@ -5862,15 +5872,6 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 				}
 		}
 	},
-	create_node_constraint = function(node, context, lineage) {
-		var args = arguments;
-		if(node.type === LITERAL) {
-			return get_node_value.apply(root, args);
-		}
-		return cjs(function() {
-			return get_node_value.apply(root, args);
-		});
-	},
 	get_escaped_html = function(c) {
 		if(c.nodeType === 3) {
 			return escapeHTML(getTextContent(c));
@@ -6752,7 +6753,33 @@ extend(cjs, {
 							var instance = get_template_instance(dom_node);
 							if(instance) { instance.resume(); }
 							return this;
-						}
+						},
+
+	/**
+	 * Parses a string and returns a constraint whose value represents the result of `eval`ing
+	 * that string
+	 *
+	 * @method cjs.createParsedConstraint
+	 * @param {string} str - The string to parse
+	 * @param {object} context - The context in which to look for variables
+	 * @return {cjs.Cosntraint} - Whether the template was successfully resumed
+	 * @example
+	 * var a = cjs(1);
+	 * var x = cjs.createParsedConstraint("a+b", {a: a, b: cjs(2)})
+	 * x.get(); // 3
+	 * a.set(2);
+	 * x.get(); // 4
+	 */
+	createParsedConstraint: function(str, context) {
+		var node = jsep(str);
+		if(node.type === LITERAL) {
+			return node.value;
+		}
+
+		return cjs(function() {
+			return get_node_value(node, context, [context]);
+		});
+	}
 });
 
 // Node Types

@@ -8,6 +8,8 @@
 
 	ist.PointerTree = function (options) {
 		this.contextual_object = options && options.contextual_object || false;
+		this.pointer = options.pointer;
+
 		this.children = cjs.map({
 			hash: function (info) {
 				var child = info.child,
@@ -39,8 +41,7 @@
 		var proto = my.prototype;
 		proto.set_contextual_object = function(cobj) {
 			this.contextual_object = cobj;
-			//console.log(cobj);
-			//if(cobj.sid() === 50) { debugger; }
+			console.log(cobj);
 		};
 		proto.get_contextual_object = function(cobj) {
 			return this.contextual_object;
@@ -67,9 +68,11 @@
 				child: child,
 				special_contexts: special_contexts
 			}, function () {
-				var tree = new ist.PointerTree();
+				var tree = new ist.PointerTree({
+					pointer: this.pointer.push(child, special_contexts)
+				});
 				return tree;
-			});
+			}, this);
 			return child_tree;
 		};
 		proto.printValidChildPointers = function() {
@@ -95,9 +98,8 @@
 
 		proto.get_valid_child_pointers = function() {
 			var cobj = this.get_contextual_object(),
-				my_pointer, rv;
+				my_pointer = this.pointer, rv;
 			if(cobj instanceof ist.ContextualDict) {
-				my_pointer = cobj.get_pointer();
 				if(cobj.is_instance()) {
 					rv = [];
 				} else {
@@ -136,34 +138,7 @@
 				});
 
 				return rv;
-				/*
-				if(cobj.is_instance()) {
-					rv = [];
-				} else {
-					var copies_obj = cobj.copies_obj();
-					rv = [{pointer: my_pointer.push(copies_obj), obj: copies_obj}];
-
-					if(cobj.is_template()) {
-						var instance_pointers = cobj.instance_pointers();
-						var obj = cobj.get_object();
-						rv.push.apply(rv, _.map(instance_pointers, function(instance_pointer) {
-							return { pointer: instance_pointer, obj: obj };
-						}));
-						return rv;
-					}
-				}
-
-				var child_infos = cobj.raw_children();
-				_.each(child_infos, function(child_info) {
-					var value = child_info.value;
-					if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
-						rv.push({obj: value, pointer: my_pointer.push(value)});
-					}
-				});
-				return rv;
-				*/
 			} else if(cobj instanceof ist.ContextualStatefulProp) {
-				my_pointer = cobj.get_pointer();
 				rv = _.map(cobj.get_values(), function(val) {
 					var value = val.value;
 					return {obj: value, pointer: my_pointer.push(value)};
@@ -267,15 +242,17 @@
 	}(ist.PointerTree));
 
 	ist.PointerBucket = function (options) {
-		var root = options.root;
-		var root_pointer = new ist.Pointer({stack: [root]});
+		var root = options.root,
+			root_pointer = new ist.Pointer({stack: [root]});
+
 		this.contextual_root = new ist.ContextualDict({
 			object: root,
 			pointer: root_pointer
 		});
 
 		this.tree = new ist.PointerTree({
-			contextual_object: this.contextual_root
+			contextual_object: this.contextual_root,
+			pointer: root_pointer
 		});
 	};
 
@@ -323,10 +300,10 @@
 			return rv;
 		};
 		proto.destroy_cobj = function(cobj) {
-			var pointer = cobj.get_pointer();
-			var node = this.tree;
-			var parent_node;
-			var i = 1, len = pointer.length(), ptr_i, sc_i;
+			var pointer = this.pointer,
+				node = this.tree,
+				i = 1, len = pointer.length(), ptr_i, sc_i,
+				parent_node;
 
 			while (i < len) {
 				ptr_i = pointer.points_at(i);

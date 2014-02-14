@@ -104,7 +104,7 @@
 			} else if (_.isElement(val)) {
 				return "(dom)";
 			} else if (val instanceof ist.StatefulObj) {
-				return "(stateful:" + ((cobj && cobj instanceof ist.ContextualObject) ? (uid.strip_prefix(cobj.id())+":") : "") + uid.strip_prefix(val.id()) + ")";
+				return cobj.get_pointer().hash() + " (stateful:" + ((cobj && cobj instanceof ist.ContextualObject) ? (uid.strip_prefix(cobj.id())+":") : "") + uid.strip_prefix(val.id()) + ")";
 			} else if (val instanceof ist.Dict) {
 				return "(dict:" + uid.strip_prefix(val.id()) + ")";
 			} else if (val instanceof ist.Cell) {
