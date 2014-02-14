@@ -27,9 +27,10 @@
 				function getRoot() {
 					return $("div.output").dom_output("option", "root");
 				}
-				 function getEnvironment() {
+				function getEnvironment() {
 					return new interstate.Environment({root: getRoot()});
 				}
+				/*
 				window.env = getEnvironment();
 				console.log("Begin setting objects");
 				env.set("a", "<stateful>")

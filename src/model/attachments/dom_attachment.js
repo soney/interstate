@@ -268,28 +268,40 @@
 		};
 
 		var get_dom_obj_and_src = function (contextual_dict) {
-			var dom_obj;
-			var dom_attachment = contextual_dict.get_attachment_instance("dom");
+			var dom_obj,
+				dom_attachment = contextual_dict.get_attachment_instance("dom"),
+				show;
+
 			if (dom_attachment) {
-				dom_obj = dom_attachment.get_dom_obj();
-				if(dom_obj) {
-					return [dom_attachment, dom_obj];
+				show = contextual_dict.prop_val("show");
+				show = show===undefined ? true : !!show;
+
+				if(show) {
+					dom_obj = dom_attachment.get_dom_obj();
+					if(dom_obj) {
+						return [dom_attachment, dom_obj];
+					}
 				}
 			} else {
 				var raphael_attachment = contextual_dict.get_attachment_instance("paper");
-				if(raphael_attachment) {
-					dom_obj = raphael_attachment.get_dom_obj();
+				show = contextual_dict.prop_val("show");
+				show = show===undefined ? true : !!show;
 
-					if(dom_obj) {
-						return [raphael_attachment, dom_obj];
-					}
-				} else {
-					var three_scene_attachment = contextual_dict.get_attachment_instance("three_scene");
-					if(three_scene_attachment) {
-						dom_obj = three_scene_attachment.get_dom_obj();
+				if(show) {
+					if(raphael_attachment) {
+						dom_obj = raphael_attachment.get_dom_obj();
 
 						if(dom_obj) {
-							return [three_scene_attachment, dom_obj];
+							return [raphael_attachment, dom_obj];
+						}
+					} else {
+						var three_scene_attachment = contextual_dict.get_attachment_instance("three_scene");
+						if(three_scene_attachment) {
+							dom_obj = three_scene_attachment.get_dom_obj();
+
+							if(dom_obj) {
+								return [three_scene_attachment, dom_obj];
+							}
 						}
 					}
 				}
@@ -425,10 +437,7 @@
 					return;
 				}
 
-				if (contextual_object.has("textContent")) {
-					dom_obj.textContent = contextual_object.prop_val("textContent");
-					return;
-				} else if (contextual_object.has("innerHTML")) {
+				if (contextual_object.has("innerHTML")) {
 					dom_obj.innerHTML = contextual_object.prop_val("innerHTML");
 					return;
 				} else {
@@ -436,7 +445,14 @@
 						current_children = _.toArray(dom_obj.childNodes),
 						desired_children_srcs = [],
 						desired_children = [],
-						show = contextual_object.prop_val("show");
+						show = contextual_object.prop_val("showChildren"),
+						textContent = contextual_object.prop_val("textContent");
+					
+					if(textContent) {
+						desired_children.push(document.createTextNode(textContent));
+						desired_children_srcs.push(false);
+					}
+
 					if(show === undefined) { show = true; }
 
 					if(_.isArray(show)) { // put in order

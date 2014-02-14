@@ -190,7 +190,7 @@
 
 			var group = new ist.Dict({has_protos: false, direct_attachments: [new ist.GroupAttachment()]});
 			svg.set("group", group);
-			group.set("show", new ist.Cell({str: "true"}));
+			group.set("showChildren", new ist.Cell({str: "true"}));
 		}
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "dom") >= 0)) {
@@ -204,6 +204,7 @@
 			node.set("style", new ist.StatefulObj());
 			node.set("textContent", new ist.Cell({str: "'no text'"}));
 			node.set("show", new ist.Cell({str: "true"}));
+			node.set("showChildren", new ist.Cell({str: "true"}));
 
 			var div = new ist.Dict();
 			dom.set("div", div);

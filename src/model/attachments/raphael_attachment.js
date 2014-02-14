@@ -74,7 +74,7 @@
 	},
 	get_cobj_children = function(contextual_object) {
 		var children, cobj_children, values;
-		var show = contextual_object.prop_val("show");
+		var show = contextual_object.prop_val("showChildren");
 
 		if(_.isArray(show)) { // put in order
 			cobj_children = contextual_object.children();
