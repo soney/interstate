@@ -112,10 +112,10 @@ var clone = function(obj) {
 // Returns the keys of an object
 var keys = nativeKeys || function (obj) {
 	if (obj !== Object(obj)) { throw new TypeError('Invalid object'); }
-	var keys = [], key;
+	var keys = [], key, len = 0;
 	for (key in obj) {
-		if (obj.hasOwnProperty(key)) {
-			keys[keys.length] = key;
+		if (hOP.call(obj, key)) {
+			keys[len++] = key;
 		}
 	}
 	return keys;
@@ -270,22 +270,26 @@ var hOP = ObjProto.hasOwnProperty,
 	};
 
 // Run through each element and calls `iterator` where `this` === `context`
-var each = function (obj, iterator, context) {
-	var i, key, l;
+
+var each = function(obj, iterator, context) {
+	var i, length;
 	if (!obj) { return; }
 	if (nativeForEach && obj.forEach === nativeForEach) {
 		obj.forEach(iterator, context);
 	} else if (obj.length === +obj.length) {
-		for (i = 0, l = obj.length; i < l; i++) {
-			if (has(obj, i) && iterator.call(context, obj[i], i, obj) === breaker) { return; }
+		i=0; length = obj.length;
+		for (; i < length; i++) {
+			if (iterator.call(context, obj[i], i, obj) === breaker) return;
 		}
 	} else {
-		for (key in obj) {
-			if (has(obj, key)) {
-				if (iterator.call(context, obj[key], key, obj) === breaker) { return; }
-			}
+		var kys = keys(obj);
+		i=0; length = kys.length;
+		
+		for (; i < length; i++) {
+			if (iterator.call(context, obj[kys[i]], kys[i], obj) === breaker) return;
 		}
 	}
+	return obj;
 };
 
 // Run through each element and calls 'iterator' where 'this' === context
@@ -951,29 +955,33 @@ var constraint_solver = {
 	running_listeners: false,
 	// Clear all of the dependencies
 	clearEdges: function(node, silent) {
-		if(silent !== true) {
-			this.wait();
-		}
-		var node_id = node._id;
+		var loud = silent !== true,
+			node_id = node._id,
+			edge, key, inEdges = node._inEdges,
+			outEdges = node._outEdges;
+
+		if(loud) { this.wait(); }
+
 		// Clear the incoming edges
-		each(node._inEdges, function (edge, key) {
-			var fromNode = edge.from;
-			delete fromNode._outEdges[node_id];
-			delete node._inEdges[key];
-		});
-		// and the outgoing edges
-		each(node._outEdges, function (edge, key) {
-			var toNode = edge.to;
-			
-			if (silent !== true) {
-				constraint_solver.nullify(toNode);
+		for(key in inEdges) {
+			if(has(inEdges, key)) {
+				delete inEdges[key].from._outEdges[node_id];
+				delete inEdges[key];
 			}
-			delete toNode._inEdges[node_id];
-			delete node._outEdges[key];
-		});
-		if(silent !== true) {
-			this.signal();
 		}
+
+		// and the outgoing edges
+		for(key in outEdges) {
+			if(has(outEdges, key)) {
+				var toNode = outEdges[key].to;
+				if (loud) { constraint_solver.nullify(toNode); }
+				
+				delete toNode._inEdges[node_id];
+				delete outEdges[key];
+			}
+		}
+
+		if(loud) { this.signal(); }
 	},
 	run_nullified_listeners: function () {
 		var nullified_info, callback, context;
@@ -1306,6 +1314,7 @@ Constraint = function (value, options) {
 				if (cl.in_call_stack) {
 					constraint_solver.remove_from_call_stack(cl);
 				}
+				delete cl.node;
 				// Only searching for the last one
 				break;
 			}

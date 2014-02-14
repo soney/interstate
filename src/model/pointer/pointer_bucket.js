@@ -41,7 +41,6 @@
 		var proto = my.prototype;
 		proto.set_contextual_object = function(cobj) {
 			this.contextual_object = cobj;
-			console.log(cobj);
 		};
 		proto.get_contextual_object = function(cobj) {
 			return this.contextual_object;

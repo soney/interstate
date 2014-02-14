@@ -67,6 +67,9 @@
 		proto.eq = function(other_context) {
 			return other_context instanceof My && other_context.state === this.state;
 		};
+		proto.hash = function() {
+			return this.state.hash();
+		};
 	}(ist.StateContext));
 
 	ist.CopyContext = function (owner, my_copy, copy_num, options) {
