@@ -226,6 +226,7 @@
 						obj._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
 						obj.set("tag", new ist.Cell({str: "'" + tag_name + "'"}));
 					});
+			/**/
 		}
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "functions") >= 0)) {

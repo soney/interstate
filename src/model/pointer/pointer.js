@@ -216,7 +216,7 @@
 						if (c instanceof ist.CopyContext) {
 							return {
 								type: "manifestation_context",
-								index: c.get_basis_index()
+								index: c.get_copy_num()
 							};
 						} else if (c instanceof ist.StateContext) {
 							return {

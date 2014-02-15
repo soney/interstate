@@ -455,7 +455,6 @@
 				delete this.$active;
 			}
 			this._initialized.destroy(silent);
-			delete this._initialized;
 			this._last_run_event.destroy(silent);
 			delete this._last_run_event;
 			if (this._basis) {

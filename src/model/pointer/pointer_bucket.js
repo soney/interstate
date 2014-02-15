@@ -49,11 +49,12 @@
 			return this.contextual_object !== false;
 		};
 		proto.remove_child = function(child, special_contexts) {
-			var value = this.children.remove({
-				child: child,
-				special_contexts: special_contexts
-			});
-			value.destroy();
+			var info = { child: child, special_contexts: special_contexts },
+				value = this.children.get(info);
+			if(value) {
+				this.children.remove(info);
+				value.destroy();
+			}
 		};
 		proto.get_child = function(child, special_contexts) {
 			var child_tree = this.children.get({
@@ -147,7 +148,6 @@
 				return [];
 			}
 		};
-		var c = 0;
 		proto.update_current_contextual_objects = function() {
 			var cobj = this.get_contextual_object();
 			var children = _.clone(this.children.values());
@@ -171,6 +171,7 @@
 					to_destroy.push({key: key, value: child});
 				}
 			}, this);
+
 			_.each(valid_children, function(valid_child) {
 				var obj = valid_child.obj,
 					ptr = valid_child.pointer;
@@ -185,8 +186,7 @@
 				}
 				node.update_current_contextual_objects();
 			}, this);
-			//if(to_destroy.length>0) { debugger; }
-			if(c++>8000) debugger;
+
 			_.each(to_destroy, function(to_destroy_info) {
 				var child_tree = to_destroy_info.value;
 				var key = to_destroy_info.key;
@@ -227,7 +227,7 @@
 			return rv;
 		};
 		proto.destroy = function() {
-			this.children.each(function(child) {
+			this.children.forEach(function(child) {
 				child.destroy();
 			});
 			this.children.destroy();
