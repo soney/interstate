@@ -147,6 +147,7 @@
 				return [];
 			}
 		};
+		var c = 0;
 		proto.update_current_contextual_objects = function() {
 			var cobj = this.get_contextual_object();
 			var children = _.clone(this.children.values());
@@ -185,6 +186,7 @@
 				node.update_current_contextual_objects();
 			}, this);
 			//if(to_destroy.length>0) { debugger; }
+			if(c++>8000) debugger;
 			_.each(to_destroy, function(to_destroy_info) {
 				var child_tree = to_destroy_info.value;
 				var key = to_destroy_info.key;
