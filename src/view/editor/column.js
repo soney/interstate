@@ -225,15 +225,18 @@
 						var wrapper = wrappers[index];
 						var statechart = statecharts[index];
 
+						wrapper.signal_destroy();
+
 						wrappers.splice(index, 1);
 						statecharts.splice(index, 1);
-						statechart.destroy();
+						//statechart.destroy();
 					}, this);
 					_.forEach(diff.added, function (info) {
 						var index = info.to, child = info.item;
 						var wrapper = child;
 						var statechart = ist.create_remote_statechart(wrapper);
 						wrappers.splice(index, 0, wrapper);
+						wrapper.signal_interest();
 						statecharts.splice(index, 0, statechart);
 					}, this);
 					_.forEach(diff.moved, function (info) {
@@ -250,7 +253,12 @@
 						this.statechart_view.statechart("option", "statecharts", statecharts);
 					}
 				}, {
-					context: this
+					context: this,
+					on_destroy: function() {
+						_.each(wrappers, function(wrapper) {
+							wrapper.signal_destroy();
+						});
+					}
 				});
 			}
 

@@ -30,17 +30,12 @@
 				function getEnvironment() {
 					return new interstate.Environment({root: getRoot()});
 				}
-				/*
 				window.env = getEnvironment();
 				console.log("Begin setting objects");
 				env.set("a", "<stateful>")
 					.cd("a")
-					.set("(prototypes)", "(start)", "dom.div")
-					.set("textContent", "(start)", "false");
-				console.log("Done creating");
+					.set("(copies)", "5")
 				env .top()
-					//.unset("a")
-				console.log("Done unsetting");
 				/*
 				env.print();
 				env.set("b", "<stateful>")
