@@ -118,6 +118,12 @@ module.exports = function(grunt) {
 				]
 			},
 
+			box2d: {
+				files: [
+					{ expand: true, cwd: "src/_vendor/Box2dWeb-2.1a.3", src: ["**"], dest: build_folder + "/_vendor/Box2dWeb-2.1a.3" },
+				]
+			},
+
 			dist: {
 				files: [
 					{ expand: true, cwd: "dist/", src: ["**"], dest: build_folder + "/" }

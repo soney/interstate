@@ -31,8 +31,7 @@
 	var bodyDef = new B2BodyDef();
 	bodyDef.type = b2Body.b2_dynamicBody;
 	
-	ist.register_attachments({
-		"box2d_world": {
+	ist.WorldAttachment = ist.register_attachment("box2d_world", {
 			ready: function() {
 				this.world = new B2World(new B2Vec2(0, 0), true);
 
@@ -62,21 +61,19 @@
 					return this.world;
 				}
 			}
-		},
-		"box2d_fixture": {
+		});
+	ist.FixtureAttachment = ist.register_attachment("box2d_fixture", {
 			ready: function() {
 				var contextual_object = this.get_contextual_object();
 
-/*
-				this.b2x = cjs.$();
-				this.b2y = cjs.$();
-				this.b2vx = cjs.$();
-				this.b2vy= cjs.$();
-				this.b2t = cjs.$();
-				this.b2vt = cjs.$();
-				this.body = cjs.$();
-				this.shape = cjs.$();
-				*/
+				this.b2x = cjs.constraint();
+				this.b2y = cjs.constraint();
+				this.b2vx = cjs.constraint();
+				this.b2vy= cjs.constraint();
+				this.b2t = cjs.constraint();
+				this.b2vt = cjs.constraint();
+				this.body = cjs.constraint();
+				this.shape = cjs.constraint();
 
 				window.setInterval(_.bind(function() {
 					var body = this.body.get();
@@ -157,6 +154,5 @@
 					return this.shape;
 				}
 			}
-		}
-	});
+		});
 }(interstate, jQuery));

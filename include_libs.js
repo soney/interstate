@@ -33,7 +33,8 @@ exports.vendor = c(
 				"raphael/raphael.js",
 				"esprima/esprima.js",
 				"qrcode.min.js",
-				"ace/ace.js"
+				"ace/ace.js",
+				"Box2dWeb-2.1a.3/Box2dWeb-2.1.a.3.js"
 			])
 );
 
@@ -90,7 +91,7 @@ exports.runtime = c(
 				"model/attachments/dom_attachment.js",
 				"model/attachments/raphael_attachment.js",
 				//"model/attachments/three_attachment.js",
-				//"model/attachments/box2d_attachment.js",
+				"model/attachments/box2d_attachment.js",
 				"model/communication_wrapper/remote_constraint.js",
 				"model/communication_wrapper/comm_mechanisms.js",
 				"model/communication_wrapper/wrapper_server.js",

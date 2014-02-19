@@ -234,6 +234,27 @@
 			/**/
 		}
 
+		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "physics") >= 0)) {
+			var physics = new ist.Dict({has_protos: false});
+			root_dict.set("physics", physics);
+
+			var world = new ist.Dict({direct_attachments: [new ist.WorldAttachment()]});
+			physics.set("world", world);
+			world.set("gx", new ist.Cell({str: "0.0"}));
+			world.set("gy", new ist.Cell({str: "9.8"}));
+
+			var fixture = new ist.Dict({direct_attachments: [new ist.FixtureAttachment()]});
+			physics.set("fixture", fixture);
+			fixture.set("fixed", new ist.Cell({str: "true"}));
+			fixture.set("world", new ist.Cell({str: "physics.world"}));
+			fixture.set("computed_x", new ist.Cell({str: "fetch_physics_info(this, 'x')"}));
+			fixture.set("fetch_physics_info", new ist.Cell({str: "function(parent, prop_name) {" +
+				"console.log(parent);" +
+				"var fixture_attachment = parent.get_attachment_instance('box2d_fixture');" +
+				"return fixture_attachment[prop_name];" +
+			"}"}));
+		}
+
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "functions") >= 0)) {
 			root_dict.set("on", ist.on_event);
 			root_dict.set("find", ist.find_fn);
