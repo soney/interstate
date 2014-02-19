@@ -17,6 +17,16 @@
 		display = "desktop";
 	}
 
+/*	var run_edit_template = cjs.createTemplate(
+		"{{#fsm run_state}}" +
+			"{{#state edit}}" +
+				"<a class='edit'>edit</span>" +
+			"{{#state run}}" +
+				"<a class='run'>run</span>" +				
+		"{{/fsm}}"
+	);
+*/
+
 	$.widget("interstate.dom_output", {
 		options: {
 			root: undefined,
@@ -50,6 +60,8 @@
 				this.option("root", root);
 			}
 
+
+
 			this.highlights = [];
 			if (this.option("show_edit_button")) {
 				this.button_color = "#990000";
@@ -70,6 +82,34 @@
 					cursor: "pointer",
 					"border-bottom": ""
 				};
+				this.running_button_css = {
+					float: "left",
+					position: "fixed",
+					top: "0",
+					"padding-left": "5px",
+					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+					"font-variant": "small-caps",
+					color: this.button_color,
+					"-webkit-touch-callout": "none",
+					"-webkit-user-select": "none",
+					"-khtml-user-select": "none",
+					"-moz-user-select": "none",
+					"-ms-user-select": "none",
+					"user-select": "none"							
+				};
+				this.editing_button_css = {
+					left: "60px"
+				};
+				this.run_edit_active_css = {
+					"font-weight": "bold",
+					"border-bottom-width": "5px",
+					"border-bottom-style": "solid",
+					"border-bottom-color": "rgb(153, 0, 0)"
+				};
+				this.run_edit_inactive_css = {
+					"font-weight": "normal",
+					"border": "none"
+				};
 				this.edit_hover_css = {
 					opacity: 1.0,
 					color: "white",
@@ -83,6 +123,15 @@
 					"background-color": "",
 					cursor: "default",
 					"border-bottom": "5px solid " + this.button_color
+				},
+				this.palette_css = {
+					position: "absolute",
+					top: "20px",
+					"padding-left": "0",
+					display: "block"
+				}, 
+				this.palette_css_hidden = {
+					display: "none"
 				};
 
 
@@ -100,13 +149,72 @@
 												}, this))
 												.on("mousedown.open_editor touchstart.open_editor", _.bind(this.open_editor, this));
 
-				var append_interval = window.setInterval(_.bind(function (element, edit_button) {
+				var that = this;
+				
+				this.running_button = $("<a />").text("running")
+												.css(this.running_button_css);
+				this.editing_button = $("<a />").text("editing")
+												.css(this.running_button_css)
+												.css(this.editing_button_css)
+												.css(this.run_edit_active_css);
+				this.palette = $("<ul />")		.append("<button class='circle'>circle</button>")
+												.append("<button class='rectangle'>rectangle</button>")
+												.append("<button class='ellipse'>ellipse</button>")
+												.css(this.palette_css)
+												.on('click', function(e){
+													if (e.target.className === 'circle') {
+														that.create_new_object('circle');
+													}
+													else if (e.target.className === 'rectangle') {
+														that.create_new_object('rect');
+													}
+													else if (e.target.className === 'ellipse') {
+														that.create_new_object('ellipse');
+													}		
+													else if (e.target.className === 'text') {
+														//that.create_new_object('text');
+													}																										
+												});
+
+
+				this.run_state = cjs.fsm('run', 'edit')
+												.addTransition('run', 'edit', cjs.on('click', this.running_button))
+												.addTransition('edit', 'run', cjs.on('click', this.editing_button))
+												.on('run->edit', function(){
+													$("body").on("click.doSetProp", _.bind(function(e) {
+														var command = new ist.SetPropCommand({
+															name: 'something', 
+															value: e.clientX, 
+															parent: that.option('root')
+														});
+													}));
+													this.running_button.css(this.run_edit_active_css);
+													this.editing_button.css(this.run_edit_inactive_css);
+													this.palette.css(this.palette_css_hidden);																									
+												}, this)
+												.on('edit->run', function() {
+													$("body").off("click.doSetProp");
+													this.editing_button.css(this.run_edit_active_css);
+													this.running_button.css(this.run_edit_inactive_css);
+													this.palette.css(this.palette_css);													
+												}, this);
+
+				var append_interval = window.setInterval(_.bind(function (element, edit_button, running_button, editing_button, palette) {
 					if (element.parentNode) {
 						element.parentNode.appendChild(edit_button);
+						element.parentNode.appendChild(running_button);
+						element.parentNode.appendChild(editing_button);
+						element.parentNode.appendChild(palette);						
 						window.clearInterval(append_interval);
 					}
-				}, window, this.element[0], this.edit_button[0]), 100);
+				}, window, this.element[0], this.edit_button[0], this.running_button[0], this.editing_button[0], this.palette[0]), 100);
+
+
 			}
+
+		/*	var run_edit = run_edit_template({
+					run_state: this.run_state
+				}, this.element);*/
 
 			if (this.option("edit_on_open")) {
 				this.open_editor();
@@ -120,6 +228,32 @@
 			}
 
 			this._add_change_listeners();
+		},
+
+		create_new_object: function(object) {
+			var stateful_obj = new ist.StatefulObj(undefined, true),
+			protos_stateful_prop = new ist.StatefulProp({can_inherit: false,
+				statechart_parent: stateful_obj});
+			stateful_obj.do_initialize({
+				direct_protos: protos_stateful_prop
+			});
+
+			var statechart = stateful_obj.get_own_statechart(),
+			start_state = statechart.get_start_state(),
+			protos_cell = new ist.Cell({str: "shape."+object, ignore_inherited_in_first_dict: true});
+
+			protos_stateful_prop.set(start_state, protos_cell);
+
+			var sketch = this.option("root"),
+			screen = sketch._get_direct_prop('screen'),
+			propCommand = new ist.SetPropCommand({parent: screen, value: stateful_obj});
+			var circle_context = ist.find_or_put_contextual_obj(stateful_obj);														
+			this._command_stack._do(propCommand);
+			/*var shape_attachment_instance = circle_context.get_attachment_instance("shape");
+			if(shape_attachment_instance) {
+				var dom_element = shape_attachment_instance.get_dom_obj();
+			}*/
+			this._add_event_listeners(stateful_obj, object);																	
 		},
 
 		show_drag_over: function() {
@@ -277,6 +411,109 @@
 				this._update_fn.destroy();
 				delete this._update_fn;
 			}
+		},
+
+		_add_event_listeners: function(element, obj) {
+	      	var touchedEl,dragData=null;
+	      	var objectX, objectY = 0;
+	      	var nameX, nameY = "";
+	      	var that = this;
+			$(obj).on("mousedown", function(ev) {
+				touchedEl = this;
+		        if(!dragData) {
+		          ev=ev||event;
+		          if (obj === 'rect' || obj === 'text') {
+		          	console.log(dragData, ev.clientX, ev.clientY,touchedEl.x);
+		          	dragData={
+			            x: ev.clientX-touchedEl.x.baseVal.value,
+			            y: ev.clientY-touchedEl.y.baseVal.value
+		          	}
+		          	nameX = "x";
+		          	nameY = "y";
+		          }
+      			  else if (obj === 'ellipse' || obj === 'circle') {
+			        dragData={
+						x: ev.clientX-touchedEl.cx.baseVal.value,
+			            y: ev.clientY-touchedEl.cy.baseVal.value
+			        }
+			          nameX = "cx";
+			          nameY = "cy";
+		          }					                    	
+		        };
+			});
+
+			$('body').on("mouseup", function(ev) {				
+		        if(dragData) {
+		          ev=ev||event;
+		          objectX=ev.clientX-dragData.x;
+		          objectY=ev.clientY-dragData.y;
+				  var x_stateful_prop = new ist.StatefulProp({statechart_parent: element});
+				  var y_stateful_prop = new ist.StatefulProp({statechart_parent: element});
+
+				  var stringX = objectX + '';
+				  var stringY = objectY + '';				
+
+				  var x_cell  = new ist.Cell({str: stringX});
+				  var y_cell  = new ist.Cell({str: stringY});		
+
+				  var statechart = element.get_own_statechart(),
+					  start_state = statechart.get_start_state();
+				  
+				  x_stateful_prop.set(start_state, x_cell);
+				  y_stateful_prop.set(start_state, y_cell);	
+
+				  var sketch = that.option("root"),
+					  screen = sketch._get_direct_prop('screen'),
+					  propCommandX = new ist.SetPropCommand({
+							parent: element,
+							name: nameX,
+							value: stringX
+					  }),
+					  propCommandY = new ist.SetPropCommand({
+							parent: element,
+							name: nameY,
+							value: stringY
+					  });
+				 var combined_command = new ist.CombinedCommand({
+				 	commands: [propCommandX, propCommandY]
+				 });
+
+				  that._command_stack._do(combined_command);
+
+				  element.set_prop(nameX, x_stateful_prop);				  
+				  element.set_prop(nameY, y_stateful_prop);		
+
+		          dragData=null;
+		        }
+			});			
+
+			$('body').on("mousemove", function(ev) {	
+		        if(dragData) {
+		          ev=ev||event;							          
+		          objectX=ev.clientX-dragData.x;
+				  objectY=ev.clientY-dragData.y;
+				  var x_stateful_prop = new ist.StatefulProp({statechart_parent: element});
+				  var y_stateful_prop = new ist.StatefulProp({statechart_parent: element});
+
+				  var stringX = objectX + '';
+				  var stringY = objectY + '';				
+
+				  var x_cell  = new ist.Cell({str: stringX});
+				  var y_cell  = new ist.Cell({str: stringY});		
+
+				  var statechart = element.get_own_statechart(),
+					  start_state = statechart.get_start_state();
+				  
+				  x_stateful_prop.set(start_state, x_cell);
+				  y_stateful_prop.set(start_state, y_cell);	
+
+				  element.set_prop(nameX, x_stateful_prop);				  
+				  element.set_prop(nameY, y_stateful_prop);		
+
+
+		        }
+			});						
+			console.log(screen);
 		},
 
 		_create_server_socket: function() {
