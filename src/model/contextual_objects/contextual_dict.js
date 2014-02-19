@@ -659,5 +659,36 @@
 		proto._getter = function () {
 			return this;
 		};
+
+		proto.get_dom_object = function() {
+			var dom_attachment = this.get_attachment_instance("dom");
+			if (dom_attachment) {
+				var dom_obj = dom_attachment.get_dom_obj();
+				if (dom_obj) {
+					return dom_obj;
+				}
+			} else {
+				var raphael_attachment = this.get_attachment_instance("shape");
+				if(raphael_attachment) {
+					var robj = raphael_attachment.get_robj();
+					if(robj) {
+						return robj[0];
+					}
+				} else {
+					var group_attachment_instance = this.get_attachment_instance("group");
+					if(group_attachment_instance) {
+						return _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
+							var robj = raphael_attachment.get_robj();
+							if(robj) {
+								return robj[0];
+							} else {
+								return false;
+							}
+						}));
+					}
+				}
+			}
+			return false;
+		};
 	}(ist.ContextualDict));
 }(interstate));
