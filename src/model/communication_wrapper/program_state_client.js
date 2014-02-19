@@ -35,6 +35,7 @@
 							.on("cobj_links", this.on_cobj_links, this)
 							.on("wrapper_server", this.on_wrapper_server, this)
 							.on("stringified_root", this.post_forward, this)
+							.on("get_ptr_response", this.post_forward, this)
 							.on("stringified_obj", this.post_forward, this);
 	};
 
@@ -111,7 +112,6 @@
 				} else if (smtype === "emit") {
 					client.on_emit.apply(client, ([server_message.event_type]).concat(server_message.args));
 				}
-				//console.log(smtype);
 			}
 		};
 		proto.on_response = function(message) {
@@ -130,55 +130,6 @@
 		proto.on_cobj_links = function(message) {
 			this._emit("cobj_links", message);
 		};
-		/*
-		proto.on_message = function (message) {
-			var type = message.type;
-
-			if (type === "croot") {
-				if(this.root_client) {
-					this._emit("root_changed", message);
-				}
-
-				var summary = message.summary;
-
-				if(summary) {
-					this.root_client = this.get_wrapper_client(summary);
-				}
-
-				this._emit("loaded", this.root_client);
-				this.post("loaded");
-			} else if (type === "wrapper_server") {
-				var server_message = message.server_message;
-				var client_id = server_message.client_id;
-
-				var smtype = server_message.type;
-				var client = this.clients[client_id];
-				if(client) {
-					if (smtype === "changed") {
-						client.on_change.apply(client, server_message.getting);
-					} else if (smtype === "emit") {
-						client.on_emit.apply(client, ([server_message.event_type]).concat(server_message.args));
-					}
-				}
-			} else if (type === "response") {
-				var request_id = message.request_id,
-					response = message.response;
-				if (this.response_listeners.hasOwnProperty(request_id)) {
-					var response_listener = this.response_listeners[request_id];
-					if(response_listener !== DEREGISTERED) {
-						response_listener(response);
-					}
-					delete this.response_listeners[request_id];
-				} else {
-					this.pending_responses[request_id] = response;
-				}
-			} else if(type === "cobj_links") {
-				this._emit("cobj_links", message);
-			}
-
-			this._emit("message", message);
-		};
-		*/
 
 		proto.register_response_listener = function (id, listener) {
 			if (this.pending_responses.hasOwnProperty(id)) {
@@ -275,4 +226,91 @@
 			return stringified_command;
 		};
 	}(ist.ProgramStateClient));
+
+	ist.indirectClient = function(client_constraint) {
+		var client_val = cjs.get(client_constraint),
+			old_client = client_val,
+			prop_names = _.rest(arguments),
+			client_is_valid, rv, is_arr = prop_names.length !== 1;
+
+		if (client_val instanceof ist.WrapperClient) {
+			client_val.signal_interest();
+			client_is_valid = true;
+		} else {
+			client_is_valid = false;
+		}
+
+		if(is_arr) {
+			rv = cjs.map({
+				keys: _.map(prop_names, function(prop_name) {
+					return _.isArray(prop_name) ? prop_name[0] : prop_name;
+				}),
+				values: _.map(prop_names, function(prop_name) {
+					var args = _.isArray(prop_name) ? prop_name : [prop_name];
+					return (client_val instanceof ist.WrapperClient) ? client_val.get_$.apply(client_val, args) : false;
+				})
+			});
+		} else {
+			var args = _.isArray(prop_names[0]) ? prop_names[0] : [prop_names[0]];
+			rv = cjs.constraint((client_val instanceof ist.WrapperClient) ? client_val.get_$.apply(client_val, args) : false);
+		}
+		
+		var on_change_fn = function() {
+			old_client = client_val;
+			var client_was_valid = old_client instanceof ist.WrapperClient;
+
+			client_val = cjs.get(client_constraint);
+			client_is_valid = client_val instanceof ist.WrapperClient;
+
+			if(is_arr) {
+				_.each(prop_names, function(prop_name) {
+					if(client_val instanceof ist.WrapperClient) {
+						var args = _.isArray(prop_name) ? prop_name : [prop_name];
+						rv.put(args[0], client_val.get_$.apply(client_val, args));
+
+						if(rv.do_debug) {
+							console.log(prop_name, args);
+						}
+					} else {
+						rv.remove(prop_name);
+					}
+				});
+			} else {
+				if(client_val instanceof ist.WrapperClient) {
+					var args = _.isArray(prop_names[0]) ? prop_names[0] : [prop_names[0]];
+					rv.set(client_val.get_$.apply(client_val, args));
+				} else {
+					rv.set(false);
+				}
+			}
+
+			if(client_is_valid && !client_was_valid) {
+				client_val.signal_interest();
+			} else if(client_was_valid && !client_is_valid) {
+				old_client.signal_destroy();
+			} else if(client_was_valid && client_is_valid) {
+				if(old_client !== client_val) {
+					old_client.signal_destroy();
+					client_val.signal_interest();
+				}
+			}
+		};
+
+		if(cjs.isConstraint(client_constraint)) {
+			client_constraint.onChange(on_change_fn);
+		}
+
+		var old_destroy = rv.destroy;
+		rv.destroy = function() {
+			if(cjs.isConstraint(client_constraint)) {
+				client_constraint.offChange(on_change_fn);
+			}
+			old_destroy.apply(rv, arguments);
+			if(client_val instanceof ist.WrapperClient) {
+				client_val.signal_destroy();
+			}
+		};
+
+		return rv;
+	};
 }(interstate, jQuery));

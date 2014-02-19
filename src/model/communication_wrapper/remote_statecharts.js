@@ -235,10 +235,13 @@
 				destroyed = true;
 				statechart.off("destroy", on_destroy);
 				wrapper_client.off(listeners);
-				wrapper_client.signal_destroy();
+				//wrapper_client.signal_destroy();
 				delete statecharts[id];
 			};
 			statechart.on("destroy", on_destroy);
+			wrapper_client.on("wc_destroy", function() {
+				statechart.destroy();
+			});
 		}
 		return statechart;
 	};

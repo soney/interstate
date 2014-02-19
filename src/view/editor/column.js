@@ -19,11 +19,22 @@
 	var column_template = cjs.createTemplate(
 		"<tbody>" +
 			"<tr class='header'>" +
-				"<th colspan='2' class='obj_name'>" +
-					"<h2 data-cjs-on-click='headerClicked'>{{ci}}{{name}}</h2>" +
+				"<th colspan={{num_curr_values+1}} class='obj_name'>" +
+					"{{#if pinned && !is_root}}" +
+						"<span title='Previous' data-cjs-on-click='prev_col' class='prev_btn glyphicon glyphicon-chevron-left'/>" +
+					"{{/if}}" +
+					"<h2 data-cjs-on-click='headerClicked'>" +
+						"{{ci}}{{name}}" +
+						"{{#if is_template}}" +
+							"[{{curr_copy_index}}]" +
+						"{{/if}}" +
+					"</h2>" +
+					"{{#if pinned}}" +
+						"<span title='Close' data-cjs-on-click='close_col' class='close_btn glyphicon glyphicon-remove'/>" +
+					"{{/if}}" +
 				"</th>" +
 				"{{#if stateful}}" +
-					"<th rowspan='2' class='statechart_cell'>" +
+					"<th rowspan='{{is_template ? 4 : 3}}' class='statechart_cell'>" +
 						"{{#if is_curr_col}}" +
 							"{{statechart_view}}" +
 						"{{/if}}" +
@@ -34,34 +45,64 @@
 			"</tr>" +
 
 			"{{#if is_curr_col}}" +
-				"<tr class='add_prop'>" +
-					"<td colspan='2' class='add_prop'>" +
-						"<div class='add_prop' data-cjs-on-click=addProperty>Add Field</div>" +
-					"</td>" +
-				"</tr>" +
-
-				"{{#if adding_field}}" +
-					"<tr class='new_field'>" +
-						"<td class='name'><input placeholder='Field name' class='name' /></td>" +
-						"<td class='type'>" +
-							"<select class='type'>" + 
-								"<option value='stateful'>Object</option>" +
-								"<option value='stateful_prop'>Property</option>" +
-							"</select>" + 
-						"</td>" +
-						"<td class='confirm_field'>" +
-							"<a href='javascript:void(0)'>OK</a>" +
+				"{{#if stateful}}" +
+					"<tr class='copies_spec'>" +
+						"<td colspan='{{num_curr_values+1}}' class='copies_spec'>" +
+							"<span class='copies_label'>Copies: </span>" +
+							"{{> propCell getCopiesCellOptions() }}" +
 						"</td>" +
 					"</tr>" +
 				"{{/if}}" +
+
+				"<tr class='add_prop'>" +
+					"<td colspan='{{num_curr_values+1}}' class='add_prop'>" +
+						"<div class='add_prop' data-cjs-on-click=addProperty>Add Field</div>" +
+					"</td>" +
+				"</tr>" +
+				"{{#if is_template}}" +
+					"<tr class='switch_copy'>" +
+						"<td></td>" +
+						"{{#if show_prev_value}}" +
+							"<td data-cjs-on-click='selectPrevClient'>" +
+								"<span class='glyphicon glyphicon-chevron-left'></span>" +
+							"</td>" +
+						"{{/if}}" +
+						"<td>" +
+							"copy {{curr_copy_index+1}} of {{num_instances}}" +
+						"</td>" +
+						"{{#if show_next_value}}" +
+							"<td data-cjs-on-click='selectNextClient'>" +
+								"<span class='glyphicon glyphicon-chevron-right'></span>" +
+							"</td>" +
+						"{{/if}}" +
+					"</tr>" +
+				"{{/if}}" +
+			"{{/if}}" +
+			"{{#each builtins}}" +
+				"{{>prop getPropertyViewOptions(this, true)}}" +
+			"{{/each}}" +
+
+			"{{#if adding_field&&is_curr_col}}" +
+				"<tr class='new_field'>" +
+					"<td class='name'><input placeholder='Field name' class='name' /></td>" +
+					"<td class='type'>" +
+						"<select class='type'>" + 
+							"<option value='stateful'>Object</option>" +
+							"<option value='stateful_prop'>Property</option>" +
+						"</select>" + 
+					"</td>" +
+					"<td class='confirm_field'>" +
+						"<a href='javascript:void(0)'>OK</a>" +
+					"</td>" +
+				"</tr>" +
 			"{{/if}}" +
 
 			"{{#each children}}" +
 				"{{>prop getPropertyViewOptions(this)}}" +
 				"{{#else}}" +
-					"{{#if !adding_field}}" +
+					"{{#if !adding_field && builtins.length===0}}" +
 						"<tr class='no_children'>" +
-							"<td colspan='3'>No fields</td>" +
+							"<td colspan='{{num_curr_values+2}}'>No fields</td>" +
 						"</tr>" +
 					"{{/if}}" +
 			"{{/each}}" +
@@ -81,7 +122,9 @@
 			curr_copy_index: false,
 			close_button: false,
 			columns: false,
-			column_index: -1
+			column_index: -1,
+			editor: false,
+			pinned: false
 		},
 
 		_create: function() {
@@ -89,23 +132,85 @@
 			client.signal_interest();
 
 			this.element.attr("draggable", true);
+			this.$dragging = this.option("editor").getDraggingClientConstraint();
+
+			var root_client = this.option("editor").root_client; 
+			this.is_root = client === root_client;
 			
 			this.$adding_field = cjs(false);
-			this.$selected_prop = this.option("columns").itemConstraint(this.option("column_index")+1);
+			if(this.option("pinned")) {
+				this.$selected_prop = cjs(false);
+			} else {
+				this.$selected_prop = this.option("columns").itemConstraint(this.option("column_index")+1);
+			}
+
+			this.$is_curr_col = this.option("is_curr_col");
 
 			this.$name = client.get_$("get_name");
-			this.$is_curr_col = this.option("is_curr_col");
-			this.$children = client.get_$("children");
-			if(client.type() === "stateful") {
-				this.$statecharts = client.get_$("get_statecharts");
+			this.$copies_obj = client.get_$("copies_obj");
+			this.$is_template = client.get_$("is_template");
+			this.$instances = client.get_$("instances");
 
+			this.$num_instances = this.$instances.prop("length");
+
+			this.$curr_copy_index = cjs(0);
+			this.$curr_copy_client = cjs(function() {
+				if(this.$is_template.get()) {
+					var instances = this.$instances.get(),
+						curr_copy_index = this.$curr_copy_index.get();
+					if(instances[curr_copy_index]) {
+						return instances[curr_copy_index];
+					} else {
+						return false;
+					}
+				} else {
+					return client;
+				}
+			}, {context: this});
+
+			this.$prev_copy_client = cjs(function() {
+				if(this.$is_template.get()) {
+					var instances = this.$instances.get(),
+						copy_index = this.$curr_copy_index.get()-1;
+					if(instances[copy_index]) {
+						return instances[copy_index];
+					}
+				}
+
+				return false;
+			}, {context: this});
+
+			this.$next_copy_client = cjs(function() {
+				if(this.$is_template.get()) {
+					var instances = this.$instances.get(),
+						copy_index = this.$curr_copy_index.get()+1;
+					if(instances[copy_index]) {
+						return instances[copy_index];
+					}
+				}
+
+				return false;
+			}, {context: this});
+
+			this.$show_prev_value = cjs(this.$prev_copy_client);
+			this.$show_next_value = cjs(this.$next_copy_client);
+
+			this.$num_curr_values = this.$is_template.iif(this.$prev_copy_client.iif(2,1).add(this.$next_copy_client.iif(1,0)), 1);
+
+			this.$column_info = ist.indirectClient(this.$curr_copy_client, ["children", true], "builtin_children");
+			this.$children = this.$column_info.itemConstraint("children");
+			this.$builtins = this.$column_info.itemConstraint("builtin_children");
+
+			if(client.type() === "stateful") {
+				this.$statecharts = ist.indirectClient(this.$curr_copy_client, "get_statecharts");
 
 				var statecharts = [], wrappers = [], wrapper_infos = [];
 
 				this.statechart_view = $("<div />")	.statechart({
 														statecharts: statecharts,
-														client: this.option("client")
+														client: this.$curr_copy_client
 													});
+
 				this.layout_manager = this.statechart_view.statechart("get_layout_manager");
 
 				this.sc_live_fn = cjs.liven(function() {
@@ -120,15 +225,18 @@
 						var wrapper = wrappers[index];
 						var statechart = statecharts[index];
 
+						wrapper.signal_destroy();
+
 						wrappers.splice(index, 1);
 						statecharts.splice(index, 1);
-						statechart.destroy();
+						//statechart.destroy();
 					}, this);
 					_.forEach(diff.added, function (info) {
 						var index = info.to, child = info.item;
 						var wrapper = child;
 						var statechart = ist.create_remote_statechart(wrapper);
 						wrappers.splice(index, 0, wrapper);
+						wrapper.signal_interest();
 						statecharts.splice(index, 0, statechart);
 					}, this);
 					_.forEach(diff.moved, function (info) {
@@ -145,7 +253,12 @@
 						this.statechart_view.statechart("option", "statecharts", statecharts);
 					}
 				}, {
-					context: this
+					context: this,
+					on_destroy: function() {
+						_.each(wrappers, function(wrapper) {
+							wrapper.signal_destroy();
+						});
+					}
 				});
 			}
 
@@ -166,9 +279,18 @@
 				this.$statecharts.destroy();
 			}
 
-			this.$name.destroy();
+			this.$curr_copy_client.destroy();
+			this.$prev_copy_client.destroy();
+			this.$next_copy_client.destroy();
+			this.$is_template.signal_destroy();
 			this.$is_curr_col.destroy();
+			this.$name.signal_destroy();
+			this.$instances.signal_destroy();
+			this.$copies_obj.signal_destroy();
 			this.$children.destroy();
+			this.$builtins.destroy();
+
+			this.$column_info.destroy();
 
 			client.signal_destroy();
 
@@ -180,7 +302,9 @@
 			column_template({
 				name: this.$name,
 				children: this.$children,
+				builtins: this.$builtins,
 				stateful: client.type() === "stateful",
+				is_template: this.$is_template,
 				getPropertyViewOptions: _.bind(function(child) {
 					return {
 						client: child.value,
@@ -192,14 +316,37 @@
 						obj: this.option("client"),
 						client_socket: this.option("client_socket"),
 						statechart_view: this.statechart_view,
-						selected: this.$selected_prop.eqStrict(child.value)
+						selected: this.$selected_prop.eqStrict(child.value),
+						prev: this.$prev_copy_client,
+						next: this.$next_copy_client,
+						editor: this.option("editor")
 					}
 				}, this),
 				statechart_view: this.statechart_view,
 				is_curr_col: this.$is_curr_col,
 				headerClicked: _.bind(this.on_header_click, this),
+				close_col: _.bind(this.close_col, this),
+				prev_col: _.bind(this.prev_col, this),
 				addProperty: _.bind(this._add_property, this),
-				adding_field: this.$adding_field
+				adding_field: this.$adding_field,
+				getCopiesCellOptions: _.bind(function() {
+					return {
+						client: cjs.constraint(this.$copies_obj)
+					};
+				}, this),
+				num_curr_values: this.$num_curr_values,
+				curr_copy_index: this.$curr_copy_index,
+				show_prev_value: this.$show_prev_value,
+				show_next_value: this.$show_next_value,
+				selectPrevClient: _.bind(function() {
+					this.$curr_copy_index.set(this.$curr_copy_index.get() - 1);
+				}, this),
+				selectNextClient: _.bind(function() {
+					this.$curr_copy_index.set(this.$curr_copy_index.get() + 1);
+				}, this),
+				num_instances: this.$num_instances,
+				pinned: this.option("pinned"),
+				is_root: this.is_root 
 			}, this.element);
 			this._select_just_added_name = cjs.liven(function() {
 				var children = this.$children.get();
@@ -225,7 +372,8 @@
 
 		_add_class_bindings: function() {
 			this._class_binding = cjs.bindClass(this.element, "col",
-									this.$is_curr_col.iif("curr_col"));
+									this.$is_curr_col.iif("curr_col"),
+									this.$is_template.iif("template"));
 		},
 
 		_remove_class_bindings: function() {
@@ -239,6 +387,20 @@
 			}
 		},
 
+		close_col: function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+
+			var e = new $.Event("close_column");
+			this.element.trigger(e);
+		},
+		prev_col: function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+
+			var e = new $.Event("prev_column");
+			this.element.trigger(e);
+		},
 		on_header_click: function(event) {
 			this.element.trigger("header_click", this.option("client"));
 			event.stopPropagation();

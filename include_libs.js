@@ -28,26 +28,20 @@ var cjs_path = cp(vendor_src, "constraintjs");
 exports.vendor = c(
 	cp(vendor_src, [
 				"underscore/underscore.js",
-				"jquery-ui-1.10.4.custom/js/jquery-2.0.3.js",
+				"jquery-ui-1.10.4.custom/js/jquery-2.1.0.js",
 				"jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.js",
 				"raphael/raphael.js",
 				"esprima/esprima.js",
 				"qrcode.min.js",
 				"ace/ace.js"
-
-				//"Snap.svg-0.1.0/dist/snap.svg.js",
-				//"three.js",
-				//"box2d/Box2dWeb-2.1.a.3.min.js"
 			])
 );
 
 exports.runtime = c(
 	cp(vendor_src, [
-				//"stopwatch.js",
 				"set.js",
 				"map.js",
-				"uid.js",
-				//"aware_split.js",
+				"uid.js"
 	]),
 	cp(cjs_path, ["cjs.js"]),
 	cp(vendor_src, [
@@ -121,13 +115,10 @@ exports.runtime_style = cp(src, ["view/editor/style/runtime_style.css"]);
 exports.editor = c(
 	cp(src, [
 		"view/editor/jqui_editable_text.js",
-		"view/editor/pane.js",
-		"view/editor/menu.js",
-		"view/editor/pressable.js",
 		"view/editor/editor_view.js",
 		"view/editor/component_list.js",
-		"view/editor/dropdown.js",
 		"view/editor/navigator.js",
+		"view/editor/pinned.js",
 		"view/editor/column.js",
 		"view/editor/prop.js",
 		"view/editor/cell.js",
@@ -144,8 +135,8 @@ exports.editor = c(
 		"view/editor/style/editor_style.css",
 		"view/editor/style/fonts/Inconsolata/stylesheet.css",
 		"view/editor/style/fonts/SourceSansPro/stylesheet.css",
-		"_vendor/bootstrap-3.0.3/css/bootstrap.css",
-		"_vendor/bootstrap-3.0.3/css/bootstrap-theme.css"
+		"_vendor/bootstrap-3.1.0/css/bootstrap.css",
+		"_vendor/bootstrap-3.1.0/css/bootstrap-theme.css"
 	])
 );
 

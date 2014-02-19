@@ -347,14 +347,17 @@
 
 	ist.save = function (root, name, type) {
 		if (!_.isString(name)) {
-			var names = ist.ls(),
-				original_name = "sketch_"+names.length,
-				i = 0,
-				name = original_name;
+			name = ist.loaded_program_name.get();
+			if(!name) {
+				var names = ist.ls(),
+					original_name = "sketch_"+names.length,
+					i = 0,
+					name = original_name;
 
-			while(names.indexOf(name)>=0) {
-				name = original_name + "_" + i;
-				i++;
+				while(names.indexOf(name)>=0) {
+					name = original_name + "_" + i;
+					i++;
+				}
 			}
 		}
 		if (!_.isString(type)) {
@@ -370,6 +373,7 @@
 		if(!type) { // program
 			ist.setDefaultProgramName(name);
 		}
+		console.log("save ", name);
 
 		return name;
 	};
@@ -404,6 +408,7 @@
 			console.error(e);
 			return false;
 		}
+		console.log("load ", name);
 
 		if(!type) { // program
 			ist.loaded_program_name.set(name);	
@@ -444,7 +449,24 @@
 		return ist.ls();
 	};
 	ist.rename = function(from_name, to_name, type) {
-		var storage_name = storage_prefix + name + type_prefix + type;
+		var old_storage_name = storage_prefix + from_name + type_prefix + type,
+			new_storage_name = storage_prefix + to_name   + type_prefix + type,
+			change_current = ist.loaded_program_name.get() === from_name;
+
+		if(localStorage.getItem(new_storage_name)) {
+			return false;
+		} else {
+			localStorage.setItem(new_storage_name, localStorage.getItem(old_storage_name));
+			localStorage.removeItem(old_storage_name);
+			if(change_current) {
+				ist.loaded_program_name.set(to_name);
+				ist.setDefaultProgramName(to_name);
+			}
+			_.each(type_maps[type], function(type_map) {
+				type_map.item(to_name, type_map.item(from_name));
+				type_map.remove(from_name);
+			});
+		}
 	};
 	ist.nuke = function () {
 		var program_names = ist.ls();

@@ -19,7 +19,7 @@
 			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var self = this;
 				var listener = function (event) {
-					event.preventDefault();
+					//event.preventDefault();
 
 					ist.event_queue.wait();
 
@@ -87,7 +87,11 @@
 		proto.add_listener = function(target_info) {
 			var dom_obj = target_info.dom_obj,
 				cobj = target_info.cobj;
-			dom_obj.addEventListener(target_info.type, this.get_target_listener(cobj), false); // Bubble
+			if(_.isString(target_info.type)) {
+				_.each(target_info.type.split(","), function(type) {
+					dom_obj.addEventListener(type, this.get_target_listener(cobj), false); // Bubble
+				}, this);
+			}
 		};
 		proto.remove_listeners = function () {
 			_.each(this.targets, this.remove_listener, this);
@@ -95,7 +99,11 @@
 		proto.remove_listener = function(target_info) {
 			var dom_obj = target_info.dom_obj,
 				cobj = target_info.cobj;
-			dom_obj.removeEventListener(target_info.type, this.get_target_listener(cobj), false); // Bubble
+			if(_.isString(target_info.type)) {
+				_.each(target_info.type.split(","), function(type) {
+					dom_obj.removeEventListener(type, this.get_target_listener(cobj), false); // Bubble
+				}, this);
+			}
 		};
 		proto.destroy = function () {
 			this.live_fn.destroy(true);
@@ -130,34 +138,18 @@
 		};
 
 		ist.get_instance_targs = function(instance) {
-			var dom_attachment = instance.get_attachment_instance("dom");
-			if (dom_attachment) {
-				var dom_obj = dom_attachment.get_dom_obj();
-				if (dom_obj) {
-					return {dom_obj: dom_obj, cobj: instance};
+			var dom_objs = instance.get_dom_object();
+			if(dom_objs) {
+				if(_.isArray(dom_objs)) {
+					return _.map(dom_objs, function(dom_obj) {
+						return {dom_obj: dom_obj, cobj: instance};
+					});
+				} else {
+					return {dom_obj: dom_objs, cobj: instance};
 				}
 			} else {
-				var raphael_attachment = instance.get_attachment_instance("shape");
-				if(raphael_attachment) {
-					var robj = raphael_attachment.get_robj();
-					if(robj) {
-						return {dom_obj: robj[0], cobj: instance};
-					}
-				} else {
-					var group_attachment_instance = instance.get_attachment_instance("group");
-					if(group_attachment_instance) {
-						return _.map(group_attachment_instance.get_children(), function(raphael_attachment) {
-							var robj = raphael_attachment.get_robj();
-							if(robj) {
-								return {dom_obj: robj[0], cobj: instance};
-							} else {
-								return false;
-							}
-						});
-					}
-				}
+				return false;
 			}
-			return false;
 		};
 
 		ist.get_targets = function(targs) {

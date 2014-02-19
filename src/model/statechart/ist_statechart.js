@@ -735,7 +735,7 @@
 			return this;
 		};
 		proto.destroy = function (silent) {
-			//if(this.sid() == 257) {
+			//if(this.sid() == 785) {
 				//debugger;
 			//}
 			this._emit("destroy", {

@@ -116,20 +116,6 @@
     
         this._parent = this._options.parent;
 		this._prop_name = this._options.name;
-		if(this._parent instanceof ist.ContextualStatefulObj) {
-			var value = this._parent.prop(this._prop_name);
-			var vobj = value.get_object();
-
-			if(vobj instanceof ist.Cell) {
-				var own_statechart = this._parent.get_own_statechart();
-				var start_state = own_statechart.get_start_state();
-
-				this._prop_value = new ist.StatefulProp();
-				this._prop_value.set(start_state, vobj.clone());
-			} else if(vobj instanceof ist.StatefulProp) {
-				this._prop_value = vobj.clone(value);
-			}
-		}
 		/*
 		this._value = this._options.value;
 		if(this._parent instanceof ist.ContextualStatefulObj) {
@@ -152,6 +138,24 @@
     
         proto._execute = function () {
 			var parent_obj = this._parent.get_object();
+			if(!this._prop_value && this._parent instanceof ist.ContextualStatefulObj) {
+				var value = this._parent.prop(this._prop_name);
+				var vobj = value.get_object();
+
+				if(vobj instanceof ist.Cell) {
+					var own_statechart = this._parent.get_own_statechart();
+					var start_state = own_statechart.get_start_state();
+
+					this._prop_value = new ist.StatefulProp();
+					this._prop_value.set(start_state, vobj.clone());
+				} else if(vobj instanceof ist.StatefulProp) {
+					this._prop_value = vobj.clone(value);
+				} else if(vobj instanceof ist.Dict) {
+					this._prop_value = vobj.clone();
+				} else {
+					this._prop_value = vobj;
+				}
+			}
            parent_obj.set_prop(this._prop_name, this._prop_value);
         };
         proto._unexecute = function () {

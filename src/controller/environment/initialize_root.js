@@ -6,25 +6,26 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	ist.get_default_root = function(dont_initialize, builtins) {
-		var root = new ist.Dict({has_protos: false, direct_attachments: [new ist.PaperAttachment(), new ist.DomAttachment({instance_options: {tag: 'div'}})]});
+	ist.get_default_root = function(builtins) {
+		var root = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment({instance_options: {tag: 'div'}})]});
 
-		if(!dont_initialize) {
-			ist.initialize_root(root, builtins);
-		}
+		ist.initialize_root(root, builtins);
 
 		return root;
 	};
 	ist.initialize_root = function (root_dict, builtins) {
-		if(builtins !== false || (_.indexOf(builtins, "raphael") >= 0)) {
-			var screen = new ist.Dict({has_protos: false});
-			root_dict.set("screen", screen);
+		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "svg") >= 0)) {
+			var svg = new ist.Dict({has_protos: false});
+			root_dict.set("svg", svg);
 
-			root_dict.set("width", new ist.Cell({str: "" + (window.innerWidth-0)}));
-			root_dict.set("height", new ist.Cell({str: "" + (window.innerHeight-0)}));
-
-			var shape = new ist.Dict({has_protos: false});
-			root_dict.set("shape", shape);
+			var paper = new ist.Dict({
+				has_protos: false,
+				direct_attachments: [new ist.PaperAttachment()]
+			});
+			paper.set("width", new ist.Cell({str: "400"}));
+			paper.set("height", new ist.Cell({str: "400"}));
+			paper.set("fill", new ist.Cell({str: "'white'"}));
+			svg.set("paper", paper);
 
 			var circle = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
@@ -33,12 +34,12 @@
 																								}
 																						})]
 																					});
-			shape.set("circle", circle);
+			svg.set("circle", circle);
 			circle.set("show", new ist.Cell({str: "true"}));
 			circle.set("clip_rect", new ist.Cell({str: "null"}));
 			circle.set("cursor", new ist.Cell({str: "'default'"}));
-			circle.set("cx", new ist.Cell({str: "sketch.width/2"}));
-			circle.set("cy", new ist.Cell({str: "sketch.height/2"}));
+			circle.set("cx", new ist.Cell({str: "2*r"}));
+			circle.set("cy", new ist.Cell({str: "2*r"}));
 			circle.set("fill", new ist.Cell({str: "'teal'"}));
 			circle.set("fill_opacity", new ist.Cell({str: "1.0"}));
 			circle.set("opacity", new ist.Cell({str: "1.0"}));
@@ -60,12 +61,12 @@
 																								}
 																						})]
 																					});
-			shape.set("ellipse", ellipse);
+			svg.set("ellipse", ellipse);
 			ellipse.set("show", new ist.Cell({str: "true"}));
 			ellipse.set("clip_rect", new ist.Cell({str: "null"}));
 			ellipse.set("cursor", new ist.Cell({str: "'default'"}));
-			ellipse.set("cx", new ist.Cell({str: "sketch.width/3"}));
-			ellipse.set("cy", new ist.Cell({str: "sketch.height/3"}));
+			ellipse.set("cx", new ist.Cell({str: "2*rx"}));
+			ellipse.set("cy", new ist.Cell({str: "2*ry"}));
 			ellipse.set("fill", new ist.Cell({str: "'yellow'"}));
 			ellipse.set("fill_opacity", new ist.Cell({str: "1.0"}));
 			ellipse.set("opacity", new ist.Cell({str: "1.0"}));
@@ -87,7 +88,7 @@
 																								}
 																						})]
 																					});
-			shape.set("image", image);
+			svg.set("image", image);
 			image.set("show", new ist.Cell({str: "true"}));
 			image.set("clip_rect", new ist.Cell({str: "null"}));
 			image.set("cursor", new ist.Cell({str: "'default'"}));
@@ -110,12 +111,12 @@
 																								}
 																						})]
 																					});
-			shape.set("rect", rect);
+			svg.set("rect", rect);
 			rect.set("show", new ist.Cell({str: "true"}));
 			rect.set("clip_rect", new ist.Cell({str: "null"}));
 			rect.set("cursor", new ist.Cell({str: "'default'"}));
-			rect.set("x", new ist.Cell({str: "sketch.width/4"}));
-			rect.set("y", new ist.Cell({str: "sketch.height/4"}));
+			rect.set("x", new ist.Cell({str: "10"}));
+			rect.set("y", new ist.Cell({str: "10"}));
 			rect.set("fill", new ist.Cell({str: "'Chartreuse'"}));
 			rect.set("fill_opacity", new ist.Cell({str: "1.0"}));
 			rect.set("opacity", new ist.Cell({str: "1.0"}));
@@ -138,7 +139,7 @@
 																								}
 																						})]
 																					});
-			shape.set("text", text);
+			svg.set("text", text);
 			text.set("show", new ist.Cell({str: "true"}));
 			text.set("clip_rect", new ist.Cell({str: "null"}));
 			text.set("cursor", new ist.Cell({str: "'default'"}));
@@ -169,7 +170,7 @@
 																								}
 																						})]
 																					});
-			shape.set("path", path);
+			svg.set("path", path);
 			path.set("show", new ist.Cell({str: "true"}));
 			path.set("clip_rect", new ist.Cell({str: "null"}));
 			path.set("cursor", new ist.Cell({str: "'default'"}));
@@ -188,21 +189,52 @@
 			path.set("animation_easing", new ist.Cell({str: "'linear'"}));
 
 			var group = new ist.Dict({has_protos: false, direct_attachments: [new ist.GroupAttachment()]});
-			shape.set("group", group);
-			group.set("show", new ist.Cell({str: "true"}));
+			svg.set("group", group);
+			group.set("showChildren", new ist.Cell({str: "true"}));
+
+			var screen = new ist.StatefulObj(undefined, true);
+			screen.do_initialize({
+				direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: screen })
+			});
 		}
 
-		if(builtins !== false || (_.indexOf(builtins, "dom") >= 0)) {
-		/*
-			var child_nodes = new ist.Dict({has_protos: false});
-			//root_dict.set("child_nodes", child_nodes);
-			var dom = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
+		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "dom") >= 0)) {
+			var dom = new ist.Dict({has_protos: false});
 			root_dict.set("dom", dom);
-			dom.set("tag", new ist.Cell({str: "'div'"}));
-			*/
+
+			var node = new ist.Dict({direct_attachments: [new ist.DomAttachment()]});
+			dom.set("node", node);
+			node.set("tag", new ist.Cell({str: "'div'"}));
+			node.set("attr", new ist.StatefulObj());
+			node.set("style", new ist.StatefulObj());
+			node.set("textContent", new ist.Cell({str: "'no text'"}));
+			node.set("show", new ist.Cell({str: "true"}));
+			node.set("showChildren", new ist.Cell({str: "true"}));
+
+			var div = new ist.Dict();
+			dom.set("div", div);
+			div._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
+			div.set("tag", new ist.Cell({str: "'div'"}));
+
+			var input = new ist.Dict();
+			dom.set("input", input);
+			input._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
+			input.set("tag", new ist.Cell({str: "'input'"}))
+				.set("textContent", new ist.Cell({str: "''"}))
+
+			_.each(["strong", "span", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5",
+					"h6", "table", "tbody", "tr", "td", "th", "p", "pre", "br", "a",
+					"label", "img", "select", "option", "button", "hr"],
+					function(tag_name) {
+						var obj = new ist.Dict();
+						dom.set(tag_name, obj);
+						obj._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
+						obj.set("tag", new ist.Cell({str: "'" + tag_name + "'"}));
+					});
+			/**/
 		}
 
-		if(builtins !== false || (_.indexOf(builtins, "functions") >= 0)) {
+		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "functions") >= 0)) {
 			root_dict.set("on", ist.on_event);
 			root_dict.set("find", ist.find_fn);
 			root_dict.set("emit", ist.emit);

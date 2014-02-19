@@ -1,4 +1,4 @@
-//     ConstraintJS (CJS) 0.9.4-beta
+//     ConstraintJS (CJS) 0.9.5-beta
 //     ConstraintJS may be freely distributed under the MIT License
 //     http://cjs.from.so/
 
@@ -112,10 +112,10 @@ var clone = function(obj) {
 // Returns the keys of an object
 var keys = nativeKeys || function (obj) {
 	if (obj !== Object(obj)) { throw new TypeError('Invalid object'); }
-	var keys = [], key;
+	var keys = [], key, len = 0;
 	for (key in obj) {
-		if (obj.hasOwnProperty(key)) {
-			keys[keys.length] = key;
+		if (hOP.call(obj, key)) {
+			keys[len++] = key;
 		}
 	}
 	return keys;
@@ -270,22 +270,26 @@ var hOP = ObjProto.hasOwnProperty,
 	};
 
 // Run through each element and calls `iterator` where `this` === `context`
-var each = function (obj, iterator, context) {
-	var i, key, l;
+
+var each = function(obj, iterator, context) {
+	var i, length;
 	if (!obj) { return; }
 	if (nativeForEach && obj.forEach === nativeForEach) {
 		obj.forEach(iterator, context);
 	} else if (obj.length === +obj.length) {
-		for (i = 0, l = obj.length; i < l; i++) {
-			if (has(obj, i) && iterator.call(context, obj[i], i, obj) === breaker) { return; }
+		i=0; length = obj.length;
+		for (; i < length; i++) {
+			if (iterator.call(context, obj[i], i, obj) === breaker) return;
 		}
 	} else {
-		for (key in obj) {
-			if (has(obj, key)) {
-				if (iterator.call(context, obj[key], key, obj) === breaker) { return; }
-			}
+		var kys = keys(obj);
+		i=0; length = kys.length;
+		
+		for (; i < length; i++) {
+			if (iterator.call(context, obj[kys[i]], kys[i], obj) === breaker) return;
 		}
 	}
+	return obj;
 };
 
 // Run through each element and calls 'iterator' where 'this' === context
@@ -799,9 +803,10 @@ var constraint_solver = {
 		return node._cached_value;
 	},
 	
-	// Utility function to mark a listener as being in the call stack
+	// Utility function to mark a listener as being in the call stack. `this` refers to the constraint node here
 	add_in_call_stack: function(nl) {
 		nl.in_call_stack = true;
+		nl.node._num_listeners_in_call_stack++;
 	},
 	nullify: function(node) {
 		// Unfortunately, running nullification listeners can, in some cases cause nullify to be indirectly called by itself
@@ -950,29 +955,33 @@ var constraint_solver = {
 	running_listeners: false,
 	// Clear all of the dependencies
 	clearEdges: function(node, silent) {
-		if(silent !== true) {
-			this.wait();
-		}
-		var node_id = node._id;
+		var loud = silent !== true,
+			node_id = node._id,
+			edge, key, inEdges = node._inEdges,
+			outEdges = node._outEdges;
+
+		if(loud) { this.wait(); }
+
 		// Clear the incoming edges
-		each(node._inEdges, function (edge, key) {
-			var fromNode = edge.from;
-			delete fromNode._outEdges[node_id];
-			delete node._inEdges[key];
-		});
-		// and the outgoing edges
-		each(node._outEdges, function (edge, key) {
-			var toNode = edge.to;
-			
-			if (silent !== true) {
-				constraint_solver.nullify(toNode);
+		for(key in inEdges) {
+			if(has(inEdges, key)) {
+				delete inEdges[key].from._outEdges[node_id];
+				delete inEdges[key];
 			}
-			delete toNode._inEdges[node_id];
-			delete node._outEdges[key];
-		});
-		if(silent !== true) {
-			this.signal();
 		}
+
+		// and the outgoing edges
+		for(key in outEdges) {
+			if(has(outEdges, key)) {
+				var toNode = outEdges[key].to;
+				if (loud) { constraint_solver.nullify(toNode); }
+				
+				delete toNode._inEdges[node_id];
+				delete outEdges[key];
+			}
+		}
+
+		if(loud) { this.signal(); }
 	},
 	run_nullified_listeners: function () {
 		var nullified_info, callback, context;
@@ -985,6 +994,7 @@ var constraint_solver = {
 				context = nullified_info.context || root;
 
 				nullified_info.in_call_stack = false;
+				nullified_info.node._num_listeners_in_call_stack--;
 				// If in debugging mode, then call the callback outside of a `try` statement
 				if(cjs.__debug) {
 					callback.apply(context, nullified_info.args);
@@ -1004,6 +1014,7 @@ var constraint_solver = {
 	},
 	remove_from_call_stack: function(info) {
 		remove(this.nullified_call_stack, info);
+		info.node._num_listeners_in_call_stack--;
 	}
 };
 
@@ -1039,6 +1050,7 @@ Constraint = function (value, options) {
 	this._inEdges = {}; // The nodes that I depend on, key is link to edge object (with properties toNode=this, fromNode)
 	this._changeListeners = []; // A list of callbacks that will be called when I'm nullified
 	this._tstamp = 0; // Marks the last time I was updated
+	this._num_listeners_in_call_stack = 0; // the number of listeners that are in the call stack
 
 	if(this._options.literal || (!isFunction(this._value) && !is_constraint(this._value))) {
 		// We already have a value that doesn't need to be computed
@@ -1222,12 +1234,17 @@ Constraint = function (value, options) {
 	 *     x.destroy(); // ...x is no longer needed
 	 */
 	proto.destroy = function (silent) {
-		each(this._changeListeners, function(cl) {
-			// remove it from the call stack
-			if (cl.in_call_stack) {
-				constraint_solver.remove_from_call_stack(cl);
-			}
-		});
+		if(this._num_listeners_in_call_stack > 0) {
+			each(this._changeListeners, function(cl) {
+				// remove it from the call stack
+				if (cl.in_call_stack) {
+					constraint_solver.remove_from_call_stack(cl);
+					if(this._num_listeners_in_call_stack === 0) {
+						return breaker;
+					}
+				}
+			}, this);
+		}
 		this.remove(silent);
 		this._changeListeners = [];
 		return this;
@@ -1257,7 +1274,8 @@ Constraint = function (value, options) {
 			callback: callback, // function
 			context: thisArg, // 'this' when called
 			args: slice.call(arguments, 2), // arguments to pass into the callback
-			in_call_stack: false // internally keeps track of if this function will be called in the near future
+			in_call_stack: false, // internally keeps track of if this function will be called in the near future
+			node: this
 		});
 		if(this._options.run_on_add_listener !== false) {
 			// Make sure my current value is up to date but don't add outgoing constraints.
@@ -1296,6 +1314,7 @@ Constraint = function (value, options) {
 				if (cl.in_call_stack) {
 					constraint_solver.remove_from_call_stack(cl);
 				}
+				delete cl.node;
 				// Only searching for the last one
 				break;
 			}
@@ -1940,7 +1959,7 @@ extend(cjs, {
 	 * @property {string} cjs.version
 	 * @see cjs.toString
 	 */
-	version: "0.9.4-beta", // This template will be filled in by the builder
+	version: "0.9.5-beta", // This template will be filled in by the builder
 
 	/**
 	 * Print out the name and version of ConstraintJS
@@ -4461,7 +4480,11 @@ var text_binding = create_textual_binding(function(element, value) { // set the 
 	 *     });
 	 */
 	attr_binding = create_obj_binding(function(element, key, value) {
-		element.setAttribute(key, value);
+		if(fillAttrs[key] && !value) { // attributes like disabled that should be there or not
+			element.removeAttribute(key);
+		} else {
+			element.setAttribute(key, value);
+		}
 	});
 
 var inp_change_events = ["keyup", "input", "paste", "propertychange", "change"],
@@ -5331,10 +5354,11 @@ var makeMap = function(str){
 };
 
 // Regular Expressions for parsing tags and attributes
-var startTag = /^<([\-A-Za-z0-9_]+)((?:\s+[a-zA-Z0-9_\-]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/,
+var startTag = /^<([\-A-Za-z0-9_]+)((?:\s+[a-zA-Z0-9_\-]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|(?:[^>\s]+)))?)*)\s*(\/?)>/,
 	endTag = /^<\/([\-A-Za-z0-9_]+)[^>]*>/,
 	handlebar = /^\{\{([#=!>|{\/])?\s*((?:(?:"[^"]*")|(?:'[^']*')|[^\}])*)\s*(\/?)\}?\}\}/,
 	attr = /([\-A-Za-z0-9_]+)(?:\s*=\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^\/>\s]+)))?/g,
+	//hb_attr = /\{\{([^\}]*)\}\}/g,
 	HB_TYPE = "hb",
 	HTML_TYPE = "html";
 	
@@ -5857,15 +5881,6 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 				}
 		}
 	},
-	create_node_constraint = function(node, context, lineage) {
-		var args = arguments;
-		if(node.type === LITERAL) {
-			return get_node_value.apply(root, args);
-		}
-		return cjs(function() {
-			return get_node_value.apply(root, args);
-		});
-	},
 	get_escaped_html = function(c) {
 		if(c.nodeType === 3) {
 			return escapeHTML(getTextContent(c));
@@ -5881,7 +5896,7 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 					if(child.literal) {
 						return get_node_value(child.val, context, lineage);
 					} else {
-						return escapeHTML(get_node_value(child.val, context, lineage));
+						return escapeHTML(get_node_value(child.val, context, lineage)+"");
 					}
 				} else {
 					var child_val = get_instance_nodes(child);
@@ -5912,6 +5927,7 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 	hb_regex = /^\{\{([^\}]+)\}\}/,
 	get_constraint = function(str, context, lineage) {
 		var has_constraint = false,
+			has_str = false,
 			strs = [],
 			index, match_val, len = 0, substr,
 			last_val_is_str = false;
@@ -5945,21 +5961,22 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 			} else {
 				strs[len++] = substr;
 			}
-			last_val_is_str = true;
+			has_str = last_val_is_str = true;
 		}
 
 		if(has_constraint) {
-			return cjs(function() {
-				return map(strs, function(str) {
-					if(is_constraint(str)) {
-						return str.get();
-					} else if(is_array(str)) {
-						return str.join(" ");
-					} else {
-						return "" + str;
-					}
-				}).join("");
-			});
+			return (!has_str && strs.length===1) ? strs[0] :
+					cjs(function() {
+						return map(strs, function(str) {
+							if(is_constraint(str)) {
+								return str.get();
+							} else if(is_array(str)) {
+								return str.join(" ");
+							} else {
+								return "" + str;
+							}
+						}).join("");
+					});
 		} else {
 			return strs.join("");
 		}
@@ -6016,18 +6033,19 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 			}
 
 			each(template.attributes, function(attr) {
-				if(attr.name.match(name_regex)) {
-					context[attr.value] = getInputValueConstraint(element);
-				} else if((on_regex_match = attr.name.match(on_regex))) {
+				var name = attr.name, value = attr.value;
+				if(name.match(name_regex)) {
+					context[value] = getInputValueConstraint(element);
+				} else if((on_regex_match = name.match(on_regex))) {
 					var event_name = on_regex_match[2];
-					aEL(element, event_name, context[attr.value]);
+					aEL(element, event_name, context[value]);
 				} else {
-					var constraint = get_constraint(attr.value, context, lineage);
+					var constraint = get_constraint(value, context, lineage);
 					if(is_constraint(constraint)) {
 						if(attr.name === "class") {
 							bindings.push(class_binding(element, constraint));
 						} else {
-							bindings.push(attr_binding(element, attr.name, constraint));
+							bindings.push(attr_binding(element, name, constraint));
 						}
 					} else {
 						element.setAttribute(attr.name, constraint);
@@ -6213,10 +6231,11 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 					resume: function() { resume_each(active_children); },
 					destroy: function() {
 						if(old_index >= 0) {
-							destroy_each(active_children);
+							//destroy_each(active_children);
 							active_children=[];
 							old_index=-1;
 						}
+						each(instance_children, destroy_each);
 					},
 					getNodes: function() {
 						var len = template.sub_conditions.length,
@@ -6445,6 +6464,7 @@ extend(cjs, {
 	 *
 	 * ### Literals
 	 * If the tags in a node should be treated as HTML, use triple braces: `{{{ literal_val }}}`.
+	 * These literals (triple braces) should be created immediately under a DOM node.
 	 *
 	 *      <h1>{{title}}</h1>
 	 *      <p>{{{subtext}}}</p>
@@ -6742,7 +6762,33 @@ extend(cjs, {
 							var instance = get_template_instance(dom_node);
 							if(instance) { instance.resume(); }
 							return this;
-						}
+						},
+
+	/**
+	 * Parses a string and returns a constraint whose value represents the result of `eval`ing
+	 * that string
+	 *
+	 * @method cjs.createParsedConstraint
+	 * @param {string} str - The string to parse
+	 * @param {object} context - The context in which to look for variables
+	 * @return {cjs.Cosntraint} - Whether the template was successfully resumed
+	 * @example
+	 * var a = cjs(1);
+	 * var x = cjs.createParsedConstraint("a+b", {a: a, b: cjs(2)})
+	 * x.get(); // 3
+	 * a.set(2);
+	 * x.get(); // 4
+	 */
+	createParsedConstraint: function(str, context) {
+		var node = jsep(str);
+		if(node.type === LITERAL) {
+			return node.value;
+		}
+
+		return cjs(function() {
+			return get_node_value(node, context, [context]);
+		});
+	}
 });
 
 // Node Types

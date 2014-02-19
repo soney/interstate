@@ -34,7 +34,9 @@
 		options: {
 			root_client: false,
 			single_col: false,
-			client_socket: false
+			client_socket: false,
+			editor: false,
+			height: false
 		},
 		_create: function() {
 			var client = this.option("root_client");
@@ -45,6 +47,7 @@
 
 			this.element.on("child_select.nav", _.bind(this.on_child_select, this))
 						.on("header_click.nav", _.bind(this.on_header_click, this))
+						.on("open_cobj.nav", _.bind(this.open_cobj, this));
 
 			this._add_content_bindings();
 			this._add_class_bindings();
@@ -76,7 +79,8 @@
 						client_socket: client_socket,
 						is_curr_col: this.$selected_column.eqStrict(client),
 						columns: this.$columns,
-						column_index: index
+						column_index: index,
+						editor: this.option("editor")
 					};
 				}, this)
 			}, this.element);
@@ -88,10 +92,12 @@
 
 		_add_class_bindings: function() {
 			this.element.attr("id", "obj_nav");
+			this._height_binding = cjs.bindCSS(this.element, "height", this.option("height").add("px"));
 		},
 
 		_remove_class_bindings: function() {
 			this.element.attr("id", "");
+			this._height_binding.destroy();
 		},
 		_add_destroy_check: function() {
 			var old_cols = [],
@@ -137,5 +143,19 @@
 				this.$columns.splice(column_index + 1, this.$columns.length()-column_index-1);
 			}
 		},
+		open_cobj: function(event) {
+			var client_socket = this.option("client_socket");
+			var cobj_id = event.cobj_id;
+			client_socket.once("get_ptr_response", function(message) {
+				if(message.cobj_id === cobj_id) {
+					var cobjs = message.cobjs,
+						wrapper_clients = _.map(cobjs, function(cobj) {
+							return client_socket.get_wrapper_client(cobj);
+						});
+					this.$columns.setValue(wrapper_clients);
+				}
+			}, this);
+			client_socket.post({type: "get_ptr", cobj_id: cobj_id});
+		}
 	});
 }(interstate, jQuery));

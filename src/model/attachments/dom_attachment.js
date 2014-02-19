@@ -58,18 +58,18 @@
 			this._dom_obj = window.document.createElement(options.tag);
 			this._dom_obj.__ist_contextual_object__ = this.contextual_object;
 		} else {
-			this._dom_obj = cjs.$();
+			this._dom_obj = cjs();
 			this._tag_change_listener = this.add_tag_change_listener();
 		}
 
-		this._css_change_listener = this.add_css_change_listeners();
+		this._style_change_listener = this.add_style_change_listeners();
 		this._attr_change_listener = this.add_attribute_change_listeners();
 
 		this._children_change_listener = this.add_children_change_listener();
 		this.current_children_srcs = [];
 
-		this.pause();
-		this.on_ready();
+		//this.pause();
+		//this.on_ready();
 	};
 	(function (my) {
 		_.proto_extend(my, ist.AttachmentInstance);
@@ -77,14 +77,12 @@
 		proto.get_owner = function () {
 			return this._owner;
 		};
-		proto.on_ready = function () {
-		};
 		proto.destroy = function () {
-			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.destroy(); }
-			if (_.has(this, "_css_change_listener")) { this._css_change_listener.destroy(); }
-			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.destroy(); }
-			if (_.has(this, "_css_change_listeners")) {
-				_.each(this._css_change_listeners, function (x) {
+			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.destroy(); delete this._tag_change_listener; }
+			if (_.has(this, "_style_change_listener")) { this._style_change_listener.destroy(); delete this._style_change_listener; }
+			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.destroy(); delete this._attr_change_listener; }
+			if (_.has(this, "_style_change_listeners")) {
+				_.each(this._style_change_listeners, function (x) {
 					x.destroy();
 				});
 			}
@@ -93,7 +91,12 @@
 					x.destroy();
 				});
 			}
-			if (_.has(this, "_children_change_listener")) { this._children_change_listener.destroy(); }
+			//console.log("destroy");
+			if (_.has(this, "_children_change_listener")) { this._children_change_listener.destroy(); delete this._children_change_listener; }
+
+			if(this._dom_obj.destroy) {
+				this._dom_obj.destroy();
+			}
 		};
 		proto.get_dom_obj = function () {
 			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.run(); }
@@ -102,20 +105,22 @@
 		};
 
 		proto.add_tag_change_listener = function () {
+			//console.log("add tag change listener");
 			var contextual_object = this.get_contextual_object();
 
 			var old_tag;
 			return cjs.liven(function () {
 				var tag = contextual_object.prop_val("tag");
+				if (!_.isString(tag)) {
+					tag=tag+"";
+				}
+				tag=tag.replace(/[^a-zA-Z0-9]/g, "");
+
 				if (tag !== old_tag) {
 					old_tag = tag;
-					if (_.isString(tag)) {
-						var dom_obj = window.document.createElement(tag);
-						dom_obj.__ist_contextual_object__ = contextual_object;
-						this._dom_obj.set(dom_obj);
-					} else {
-						this._dom_obj.set(undefined);
-					}
+					var dom_obj = window.document.createElement(tag);
+					dom_obj.__ist_contextual_object__ = contextual_object;
+					this._dom_obj.set(dom_obj);
 				}
 			}, {
 				context: this,
@@ -123,19 +128,19 @@
 			});
 		};
 
-		proto.add_css_change_listeners = function () {
+		proto.add_style_change_listeners = function () {
 			var contextual_object = this.get_contextual_object(),
 				current_listener_prop_names = [],
 				current_listeners = {},
 				desired_listener_prop_names;
-			this._css_change_listeners = current_listeners;
+			this._style_change_listeners = current_listeners;
 
 			return cjs.liven(function () {
 				var children;
-				var css = contextual_object.prop("css");
+				var style = contextual_object.prop("style");
 				var child_vals = {};
-				if (css instanceof ist.ContextualDict) {
-					children = css.children(true);
+				if (style instanceof ist.ContextualDict) {
+					children = style.children(true);
 					var prop_names = _.pluck(children, "name");
 					_.each(children, function (child) {
 						child_vals[child.name] = child.value;
@@ -166,14 +171,14 @@
 				}, this);
 				_.each(diff.added, function (info) {
 					var name = info.item;
-					current_listeners[name] = this.add_css_change_listener(name, child_vals[name]);
+					current_listeners[name] = this.add_style_change_listener(name, child_vals[name]);
 				}, this);
 			}, {
 				context: this,
 				pause_while_running: true
 			});
 		};
-		proto.add_css_change_listener = function (name, child_val) {
+		proto.add_style_change_listener = function (name, child_val) {
 			var contextual_object = this.get_contextual_object();
 
 			return cjs.liven(function () {
@@ -263,33 +268,72 @@
 		};
 
 		var get_dom_obj_and_src = function (contextual_dict) {
-			var dom_obj;
-			var dom_attachment = contextual_dict.get_attachment_instance("dom");
+			var dom_obj,
+				dom_attachment = contextual_dict.get_attachment_instance("dom"),
+				show;
+
 			if (dom_attachment) {
-				dom_obj = dom_attachment.get_dom_obj();
-				if(dom_obj) {
-					return [dom_attachment, dom_obj];
+				show = contextual_dict.prop_val("show");
+				show = show===undefined ? true : !!show;
+
+				if(show) {
+					dom_obj = dom_attachment.get_dom_obj();
+					if(dom_obj) {
+						return [dom_attachment, dom_obj];
+					}
 				}
 			} else {
-				var raphael_attachment = contextual_dict.get_attachment_instance("raphael");
-				if(raphael_attachment) {
-					dom_obj = raphael_attachment.get_dom_obj();
+				var raphael_attachment = contextual_dict.get_attachment_instance("paper");
+				show = contextual_dict.prop_val("show");
+				show = show===undefined ? true : !!show;
 
-					if(dom_obj) {
-						return [raphael_attachment, dom_obj];
-					}
-				} else {
-					var three_scene_attachment = contextual_dict.get_attachment_instance("three_scene");
-					if(three_scene_attachment) {
-						dom_obj = three_scene_attachment.get_dom_obj();
+				if(show) {
+					if(raphael_attachment) {
+						dom_obj = raphael_attachment.get_dom_obj();
 
 						if(dom_obj) {
-							return [three_scene_attachment, dom_obj];
+							return [raphael_attachment, dom_obj];
+						}
+					} else {
+						var three_scene_attachment = contextual_dict.get_attachment_instance("three_scene");
+						if(three_scene_attachment) {
+							dom_obj = three_scene_attachment.get_dom_obj();
+
+							if(dom_obj) {
+								return [three_scene_attachment, dom_obj];
+							}
 						}
 					}
 				}
 			}
 			return false;
+		},
+		get_dom_children = function(c) {
+			var srcs = [],
+				children = [];
+			if (c instanceof ist.ContextualDict) {
+				if (c.is_template()) {
+					var instances = c.instances();
+					var cs_and_dom_objs = _.chain(instances)
+											.map(get_dom_obj_and_src)
+											.compact()
+											.value();
+
+					var obj_srcs = _.pluck(cs_and_dom_objs, 0);
+					var dom_objs = _.pluck(cs_and_dom_objs, 1);
+
+					srcs.push.apply(srcs, obj_srcs);
+					children.push.apply(children, dom_objs);
+				} else {
+					var dom_obj_and_src = get_dom_obj_and_src(c);
+					if (dom_obj_and_src) {
+						srcs.push(dom_obj_and_src[0]);
+						children.push(dom_obj_and_src[1]);
+					}
+				}
+			}
+			//console.log(c, srcs, children);
+			return {srcs: srcs, children: children};
 		};
 
 		proto.is_paused = function() {
@@ -297,12 +341,13 @@
 		};
 
 		proto.pause = function () {
+			//console.log("PAUSE");
 			this._paused = true;
 			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.pause(); }
-			if (_.has(this, "_css_change_listener")) { this._css_change_listener.pause(); }
+			if (_.has(this, "_style_change_listener")) { this._style_change_listener.pause(); }
 			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.pause(); }
-			if (_.has(this, "_css_change_listeners")) {
-				_.each(this._css_change_listeners, function (x) {
+			if (_.has(this, "_style_change_listeners")) {
+				_.each(this._style_change_listeners, function (x) {
 					x.pause();
 				});
 			}
@@ -327,12 +372,13 @@
 		};
 
 		proto.resume = function () {
+			//console.log("RESUME");
 			this._paused = false;
 			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.resume(); }
-			if (_.has(this, "_css_change_listener")) { this._css_change_listener.resume(); }
+			if (_.has(this, "_style_change_listener")) { this._style_change_listener.resume(); }
 			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.resume(); }
-			if (_.has(this, "_css_change_listeners")) {
-				_.each(this._css_change_listeners, function (x) {
+			if (_.has(this, "_style_change_listeners")) {
+				_.each(this._style_change_listeners, function (x) {
 					x.resume();
 					x.run();
 				});
@@ -346,7 +392,7 @@
 			if (_.has(this, "_children_change_listener")) { this._children_change_listener.resume(); }
 
 			if (_.has(this, "_tag_change_listener")) { this._tag_change_listener.run(); }
-			if (_.has(this, "_css_change_listener")) { this._css_change_listener.run(); }
+			if (_.has(this, "_style_change_listener")) { this._style_change_listener.run(); }
 			if (_.has(this, "_attr_change_listener")) { this._attr_change_listener.run(); }
 
 			if (_.has(this, "_children_change_listener")) { this._children_change_listener.run(); }
@@ -365,6 +411,7 @@
 
 		proto.on_remove = function() {
 			var dom_obj = this.get_dom_obj();
+			//console.log("REMOVE");
 			if (!dom_obj || !isInDOMTree(dom_obj)) {
 				this.pause();
 			}
@@ -373,68 +420,63 @@
 		proto.on_add = function() {
 			var dom_obj = this.get_dom_obj();
 
+			//console.log("ADD");
 			if (dom_obj && isInDOMTree(dom_obj)) {
 				this.resume();
 			}
 		};
 
 		proto.add_children_change_listener = function () {
+			//console.log("Add children change listener");
 			var contextual_object = this.get_contextual_object();
 
 			var cc = cjs.liven(function () {
 				var dom_obj = this.get_dom_obj();
+				//console.log(dom_obj);
 				if (!_.isElement(dom_obj)) {
 					return;
 				}
-				var text;
 
-				if (contextual_object.has("text")) {
-					text = contextual_object.prop_val("text");
-				}
-				
-				if (text !== undefined) {
-					dom_obj.textContent = text;
+				if (contextual_object.has("innerHTML")) {
+					dom_obj.innerHTML = contextual_object.prop_val("innerHTML");
+					return;
 				} else {
-					var children = contextual_object.prop("child_nodes");
+					var	children, 
+						current_children = _.toArray(dom_obj.childNodes),
+						desired_children_srcs = [],
+						desired_children = [],
+						show = contextual_object.prop_val("showChildren"),
+						textContent = contextual_object.prop_val("textContent");
+					
+					if(textContent) {
+						desired_children.push(document.createTextNode(textContent));
+						desired_children_srcs.push(false);
+					}
 
-					var current_children = _.toArray(dom_obj.childNodes);
-					var desired_children_srcs = [];
-					var desired_children = [];
+					if(show === undefined) { show = true; }
 
-					if (children) {
-						var cc;
-						if (children instanceof ist.ContextualDict) {
-							cc = _.pluck(children.children(true), "value");
-						} else if (children instanceof ist.ContextualObject) {
-							cc = children.val();
-							if (!_.isArray(cc)) {
-								cc = [cc];
+					if(_.isArray(show)) { // put in order
+						children = contextual_object.children();
+						_.each(show, function(show_child) {
+							var child_index = _.index_where(children, function(child) {
+								return child.value === show_child || child.name === show_child;
+							});
+
+							if(child_index >= 0) {
+								var cdc = get_dom_children(children[child_index].value);
+								desired_children_srcs.push.apply(desired_children_srcs, cdc.srcs);
+								desired_children.push.apply(desired_children, cdc.children);
+
+								children.splice(child_index, 1);
 							}
-						}
-
-						_.each(cc, function (c) {
-							if (_.isElement(c)) {
-								desired_children.push(c);
-							} else if (c instanceof ist.ContextualDict) {
-								if (c.is_template()) {
-									var instances = c.instances();
-									var cs_and_dom_objs = _.chain(instances)
-										.map(get_dom_obj_and_src)
-										.compact()
-										.value();
-
-									var obj_srcs = _.pluck(cs_and_dom_objs, 0);
-									var dom_objs = _.pluck(cs_and_dom_objs, 1);
-
-									desired_children_srcs.push.apply(desired_children_srcs, obj_srcs);
-									desired_children.push.apply(desired_children, dom_objs);
-								} else {
-									var dom_obj_and_src = get_dom_obj_and_src(c);
-									if (dom_obj_and_src) {
-										desired_children_srcs.push(dom_obj_and_src[0]);
-										desired_children.push(dom_obj_and_src[1]);
-									}
-								}
+						}, this);
+					} else if(show !== false) {
+						children = contextual_object.children();
+						_.each(children, function (child) {
+							if(show===true || show === child.name || show === child.value) {
+								var cdc = get_dom_children(child.value);
+								desired_children_srcs.push.apply(desired_children_srcs, cdc.srcs);
+								desired_children.push.apply(desired_children, cdc.children);
 							}
 						}, this);
 					}
@@ -510,4 +552,84 @@
 			});
 	}(ist.DomAttachment));
 
+/*
+	ist.DomAttachment = ist.register_attachment("dom", {
+			ready: function() {
+				this.dom_obj = window.document.createElement("div");
+				this.paper = new Raphael(this.dom_obj, 0, 0);
+			},
+			destroy: function(silent) {
+				this.paper.clear();
+				this.paper.remove();
+				delete this.paper;
+				delete this.dom_obj;
+			},
+			parameters: {
+				width_height: function(contextual_object) {
+					var width = contextual_object.prop_val("width"),
+						height = contextual_object.prop_val("height");
+					this.paper.setSize(width, height);
+				},
+				fill: function(contextual_object) {
+					var fill = contextual_object.prop_val("fill"),
+						dom_obj = this.get_dom_obj();
+					$("svg", dom_obj).css("background-color", fill);
+				},
+				screen: {
+					type: "list",
+					add: function(shape_attachment_instance, to_index) {
+						var shape = shape_attachment_instance.create_robj(this.paper);
+						var itemi, len;
+						var index = 0;
+						var item;
+						this.paper.forEach(function(elem) {
+							if(index === to_index) {
+								itemi = elem;
+							}
+							len = index;
+							index++;
+						});
+						if(itemi !== shape) {
+							if(to_index >= len) {
+								shape.toBack();
+							} else {
+								shape.insertBefore(itemi);
+							}
+						}
+					},
+					remove: function(shape_attachment_instance) {
+						shape_attachment_instance.remove();
+					},
+					move: function(item, from_index, to_index) {
+						var shape = item.get_robj();
+						var index = 0;
+						if (from_index < to_index) { //If it's less than the index we're inserting at...
+							to_index += 1; //Increase the index by 1, to make up for the fact that we're removing me at the beginning
+						}
+						var itemi, len;
+						this.paper.forEach(function(elem) {
+							if(index === to_index) {
+								itemi = elem;
+							}
+							len = index;
+							index++;
+						});
+						if(to_index >= len) {
+							shape.toBack();
+						} else {
+							shape.insertBefore(itemi);
+						}
+					},
+					getter: function(contextual_object) {
+						return get_cobj_children(contextual_object);
+					}
+				}
+			},
+			proto_props: {
+				get_dom_obj: function() {
+					return this.dom_obj;
+				}
+			}
+		});
+		*/
 }(interstate, jQuery));

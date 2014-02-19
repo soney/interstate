@@ -48,10 +48,13 @@
 						"<span title='Cancel' id='cancel_button' class='glyphicon glyphicon-remove-circle'></span>" +
 					"</td>" +
 				"</tr>" +
+				"<tr>" +
+					"<td class='resize_bar' data-cjs-on-mousedown='beginResizeAce'></td>" +
+				"</tr>" +
 			"</table>" +
 			"<div class='widget_group btn-group navbar-right'>" +
 				"<div type='button' class='btn btn btn-default {{show_components ? \"active\" : \"\"}}' data-cjs-on-click='toggle_show_widgets'>" +
-					"Widgets" +
+					"Files" +
 					" <span class='glyphicon {{show_components ? \"glyphicon-chevron-up\" : \"glyphicon-chevron-down\"}}'></span>" +
 				"</div>" +
 			"</div>" +
@@ -63,13 +66,11 @@
 				"<div class='loading'>loading editor...</div>" +
 			"{{#state loaded}}" +
 				"{{#if show_components}}" +
-					"{{> widgetList info_servers}}" +
+					"{{> widgetList getWidgetListOptions()}}" +
 				"{{/if}}" + // show components
 				"{{> navigator getNavigatorOptions()}}" +
-		"{{/fsm}}" +
-
-		"<div class='pinned'>" +
-		"</div>"
+				"{{> pinned getPinnedOptions()}}" +
+		"{{/fsm}}"
 	);
 	$.widget("interstate.editor", {
 		options: {
@@ -81,16 +82,54 @@
 			pinned_row: true
 		},
 		_create: function () {
+			this.$pinned_columns = cjs([]);
 			this.loading_state = cjs.fsm("loading", "loaded")
 									.startsAt("loading");
+
+			this.$dragging_client = cjs(false);
 
 			var on_load = this.loading_state.addTransition("loading", "loaded"),
 				on_rootchange = this.loading_state.addTransition("loaded", "loading");
 
-			this.$show_components = cjs(true);
+			this.$window_inner_width = cjs(function() { return window.innerWidth; });
+			this.$window_inner_height = cjs(function() { return window.innerHeight; });
+			$(window).on("resize.owr", _.bind(function() {
+				this.$window_inner_width.invalidate();
+				this.$window_inner_height.invalidate();
+			}, this));
+
+			this.$show_components = cjs(false);
 			this.$info_servers = cjs(false);
 			this.$undo_client = this.$info_servers.prop("undo_description");
 			this.$redo_client = this.$info_servers.prop("redo_description");
+			this.$pinned_height_pct = cjs(0.5);
+
+			var get_pinned_height_pct = _.bind(function() {
+				if(this.$pinned_columns.length() === 0) {
+					if(this.$dragging_client.get()) {
+						return .3;
+					} else {
+						return 0;
+					}
+				} else {
+					return this.$pinned_height_pct.get();
+				}
+			}, this);
+			this.$obj_nav_y = cjs(function() {
+				var obj_nav_pos = $("#obj_nav", this.element).position();
+				return obj_nav_pos ? obj_nav_pos.top : 0;
+			}, {context: this});
+			_.delay(_.bind(function() {
+				this.$obj_nav_y.invalidate();
+			}, this), 500);
+			this.$nav_height = cjs(function() {
+				var obj_nav_y = this.$obj_nav_y.get();
+				return (this.$window_inner_height.get() - obj_nav_y)*(1-get_pinned_height_pct());
+			}, {context: this});
+			this.$pinned_height = cjs(function() {
+				var obj_nav_y = this.$obj_nav_y.get();
+				return (this.$window_inner_height.get() - obj_nav_y)*get_pinned_height_pct();
+			}, {context: this});
 
 			this.$undo_desc = cjs(function() {
 				var client = this.$undo_client.get();
@@ -116,10 +155,12 @@
 					on_rootchange();
 				}, this)
 				.on("stringified_root", function(data) {
-					window.open("data:text/plain;charset=utf-8," + data.value);
+					downloadWithName(data.value, data.name+".ist");
+					//window.open("data:text/plain;charset=utf-8," + data.value);
 				}, this)
 				.on("stringified_obj", function(data) {
-					window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
+					downloadWithName("COMPONENT:"+data.value, data.name+".istc");
+					//window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
 				}, this);
 			};
 
@@ -138,6 +179,51 @@
 				}
 			}
 
+			$(window).on("keydown.editor_undo_redo", _.bind(function (event) {
+				if (event.keyCode === 90 && (event.metaKey || event.ctrlKey)) {
+					if (event.shiftKey) { this._redo(); }
+					else { this._undo(); }
+					event.stopPropagation();
+					event.preventDefault();
+				}
+			}, this));
+			this.element.on("dragstart.pin", _.bind(function(event) {
+				this.$dragging_client.set(true);
+				var targ = $(event.target),
+					component_list = $(".components", this.element),
+					pinned = $("#pinned", this.element);
+				var clear_drag_info = function() {
+												this.$dragging_client.set(false);
+                                                component_list.add(pinned)	.removeClass("drop_indicator")
+																			.off("dragover.pin drop.pin dragenter.pin dragleave.pin");
+                                                targ.off("dragcancel.pin dragend.pin");
+                                        };
+				component_list.add(pinned)	.addClass("drop_indicator")
+											.on("drop.pin", _.bind(function(e) {
+												var client = targ.column("option", "client");
+												if($(e.target).is(".component_drop")) {
+													this.client_socket.post({
+														type: "save_component",
+														cobj_id: client.cobj_id
+													});
+												} else {
+													clear_drag_info.call(this);
+													pinned.pinned("addClient", client);
+												}
+											}, this));
+				
+				targ.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
+					clear_drag_info.call(this);
+				}, this));
+			}, this))
+			.on("resize_pinned", _.bind(function(event) {
+				var obj_nav_y = $("#obj_nav", this.element).position().top,
+					obj_nav_height = Math.max(200, event.clientY - obj_nav_y),
+					pinned_height = Math.max(200, window.innerHeight - obj_nav_height - obj_nav_y);
+
+				this.$pinned_height_pct.set(pinned_height / (pinned_height + obj_nav_height));
+			}, this));
+
 			this._addClassBindings();
 			this._addEventListeners();
 			this._addContentBindings();
@@ -151,28 +237,66 @@
 			this._super();
 		},
 
+		_undo: function() {
+			this.client_socket.post_command("undo");
+		},
+		_redo: function() {
+			this.client_socket.post_command("redo");
+		},
+
 		_addContentBindings: function() {
 			editor_template({
 				loading_state: this.loading_state,
 				getNavigatorOptions: _.bind(function() {
 					return {
 						root_client: this.root_client,
-						client_socket: this.client_socket 
+						client_socket: this.client_socket,
+						editor: this,
+						height: this.$nav_height
 					};
 				}, this),
-				undo: _.bind(function() {
-					this.client_socket.post_command("undo");
+				getPinnedOptions: _.bind(function() {
+					return {
+						root_client: this.root_client,
+						client_socket: this.client_socket,
+						editor: this,
+						columns: this.$pinned_columns,
+						height: this.$pinned_height
+					};
 				}, this),
-				redo: _.bind(function() {
-					this.client_socket.post_command("redo");
-				}, this),
+				undo: _.bind(this._undo, this),
+				redo: _.bind(this._redo, this),
 				show_components: this.$show_components,
 				toggle_show_widgets: _.bind(function() {
 					this.$show_components.set(!this.$show_components.get());
 				}, this),
-				info_servers: this.$info_servers,
+				getWidgetListOptions: _.bind(function() {
+					return {
+						info_servers: this.$info_servers,
+						editor: this
+					};
+				}, this),
 				undo_desc: this.$undo_desc,
-				redo_desc: this.$redo_desc
+				redo_desc: this.$redo_desc,
+				dirty_program: this.$dirty_program,
+				beginResizeAce: _.bind(function(event) {
+					if(!$("table#cell_group", this.element).hasClass("disabled")) {
+						var origY = event.clientY,
+							height_diff = 0,
+							origHeight = ace_editor.height();
+						$(window).on("mousemove.resize_editor", _.bind(function(e) {
+							height_diff = e.clientY - origY;
+							var height = origHeight + height_diff;
+							ace_editor.height(height);
+							this.editor.resize();
+						}, this)).on("mouseup.resize_editor", _.bind(function(e) {
+							$(window).off(".resize_editor");
+						}, this));
+						event.preventDefault();
+						event.stopPropagation();
+					}
+				}, this),
+				dragging_client: this.$dragging_client
 			}, this.element);
 			var ace_editor = $("nav #ace_ajax_editor", this.element);
 			ace_editor.css("width", "100%");
@@ -181,10 +305,6 @@
 			this.editor.setShowPrintMargin(false);
 			this.editor.renderer.setShowGutter(false); 
 			this.editor.getSession().setMode("ace/mode/javascript");
-			this.$window_inner_width = cjs(function() {
-				return window.innerWidth;
-			});
-			$(window).on("resize.owr", _.bind(this.$window_inner_width.invalidate, this.$window_inner_width));
 
 			this._cellwidth_binding = cjs.bindCSS(ace_editor, "width", this.$window_inner_width.sub((this.$window_inner_width.le(767).iif(60, 300))).add("px"));
 			this.$window_inner_width.onChange(function() {
@@ -203,11 +323,13 @@
 			if(this.option("full_window")) {
 				$("html").addClass("full_window_editor");
 			}
+			this.element.addClass("editor_view");
 		},
 		_removeClassBindings: function() {
 			if(this.option("full_window")) {
 				$("html").removeClass("full_window_editor");
 			}
+			this.element.removeClass("editor_view");
 		},
 
 		_disable_editor: function() {
@@ -238,8 +360,26 @@
 						}, this))
 						.on("save_curr.editor", _.bind(function(event) {
 							this.client_socket.post({
-								type: "save_curr",
-								name: event.name,
+								type: "save_curr"
+							});
+						}, this))
+						.on("save_curr_as.editor", _.bind(function(event) {
+							this.client_socket.post({
+								type: "save_curr_as",
+								name: event.name
+							});
+						}, this))
+						.on("create_program.editor", _.bind(function(event) {
+							this.client_socket.post({
+								type: "create_program",
+								name: event.name
+							});
+						}, this))
+						.on("rename_storage.editor", _.bind(function(event) {
+							this.client_socket.post({
+								type: "rename_program",
+								from_name: event.from_name,
+								to_name: event.to_name,
 								storage_type: event.storage_type
 							});
 						}, this))
@@ -261,7 +401,8 @@
 							this.client_socket.post({
 								type: "load_file",
 								contents: event.filecontents,
-								name: event.filename
+								name: event.filename,
+								also_load: event.also_load
 							});
 						}, this))
 						.on("copy_component.editor", _.bind(function(event) {
@@ -273,22 +414,10 @@
 							});
 						}, this))
 						.on("begin_editing_cell", _.bind(function(event) {
-						/*
-							this.editor.setValue(event.initial_val);
-							this.editor.clearSelection();
-							*/
+							this.editor.setValue(event.initial_val, 1);
 
 							this._enable_editor();
 							$(event.textarea).editing_text("option", "helper", this.editor);
-							/*
-							editing_text
-							this.$textarea_binding = cjs(textarea);
-							this.$textarea_binding.onChange(function() {
-								this.editor.setValue(this.$textarea_binding.get());
-								this.editor.clearSelection();
-							}, this);
-
-							*/
 						}, this))
 						.on("done_editing_cell", _.bind(function(event) {
 							this.editor.setValue("");
@@ -299,347 +428,11 @@
 		_removeEventListeners: function() {
 			this.element.off(".editor");
 		},
-	/*
 
-		_create: function () {
-			this.element.addClass(this.option("view_type"))
-						.attr({
-							id: "editor"
-						});
-
-			if(this.option("full_window")) {
-				$("html").addClass("full_window_editor");
-			}
-			var communication_mechanism;
-			var on_comm_mechanism_load = function(communication_mechanism) {
-				this.client_socket = new ist.ProgramStateClient({
-					ready_func: this.option("debug_ready"),
-					comm_mechanism: communication_mechanism
-				})
-				.on("loaded", function (root_client, info_servers) {
-					if(this.displaying_loading_text) {
-						this.element.html("");
-						this.displaying_loading_text = false;
-					}
-					this.load_viewer(root_client, info_servers);
-				}, this)
-				.on("root_changed", function () {
-					this.navigator.navigator("destroy");
-					$("column", this.pinned).column("destroy").remove();
-					this.element.pane("set_percentage", 0, 1);
-				}, this)
-				.on("stringified_root", function(data) {
-					window.open("data:text/plain;charset=utf-8," + data.value);
-				}, this)
-				.on("stringified_obj", function(data) {
-					window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
-				}, this);
-			};
-
-
-			if(this.option("use_socket")) {
-				interstate.async_js("/socket.io/socket.io.js", _.bind(function() {
-					var socket_info = this.option("use_socket");
-					var socket_wrapper = new ist.SocketCommWrapper(socket_info.client_id, false);
-					on_comm_mechanism_load.call(this, socket_wrapper);
-				}, this));
-			} else {
-				if(this.option("server_window") === window) {
-					on_comm_mechanism_load.call(this, new ist.SameWindowCommWrapper(this.option("client_id"), 0));
-				} else {
-					on_comm_mechanism_load.call(this, new ist.InterWindowCommWrapper(this.option("server_window"), this.option("client_id")));
-				}
-			}
-
-			this.displaying_loading_text = true;
-			this.element.text("Loading...");
-			$(window).on("beforeunload.close_editor", _.bind(function () {
-				this.on_unload();
-			}, this));
-			if(this.option("upload_usage")) {
-				this.element.on("child_select.upload", _.bind(function(event, info) {
-								this.upload_event({
-									type: "navigate",
-									value: info.name
-								});
-							}, this))
-							.on("header_click.upload", _.bind(function(event, col) {
-								if(col && col.option) {
-									this.upload_event({
-										type: "navigate",
-										value: col.option("name")
-									});
-								}
-								//this.upload_event(event);
-							}, this));
-
-			}
+		getDraggingClientConstraint: function() {
+			return this.$dragging_client;
 		},
 
-		get_client_socket: function() {
-			return this.client_socket;
-		},
-
-		load_navigator: function (root_client) {
-			if(!this.navigator) {
-			}
-		},
-
-		export_component: function(event) {
-			var obj = event.obj;
-			this.client_socket.post({
-				type: "export_component",
-				cobj_id: obj ? obj.cobj_id : false
-			});
-		},
-
-		load_viewer: function (root_client, info_servers) {
-			if(!this.element.data("interstate.pane")) {
-				this.element.pane();
-			}
-			if(!this.menu) {
-				this.menu = $("<div />").menu({
-											title: "menu",
-											items: {
-												"Undo": {
-													on_select: _.bind(this.undo, this)
-												},
-												"Redo": {
-													on_select: _.bind(this.redo, this)
-												},
-												"Components": {
-													on_select: _.bind(this.toggle_components, this)
-												},
-											}
-										})
-										.appendTo(this.element);
-			}
-
-			if(!this.navigator) {
-				this.navigator = $("<div />").addClass("navigator row");
-
-				this.element.pane("add", this.navigator);
-			}
-
-			this.navigator .navigator({
-								root_client: root_client,
-								single_col: this.option("single_col_navigation"),
-								client_socket: this.client_socket 
-							});
-
-			if(!this.pinned) {
-				this.pinned = $("<div />")	.addClass("pinned row");
-				this.pin_indicator = $("<div />").addClass("pin_explanation").text("drag here to pin").appendTo(this.pinned);
-				if(this.option("pinned_row")) {
-					this.element.pane("add", this.pinned);
-				}
-				this.element.pane("set_percentage", 0, 1);
-
-				this.element.on("command.do_action", _.bind(this.on_command, this))
-							.on("export", _.bind(this.export_component, this))
-							.on("remove_storage", _.bind(function(event) {
-								this.client_socket.post({
-									type: "remove_storage",
-									name: event.name,
-									storage_type: event.storage_type
-								});
-							}, this))
-							.on("save_curr", _.bind(function(event) {
-								this.client_socket.post({
-									type: "save_curr",
-									name: event.name,
-									storage_type: event.storage_type
-								});
-							}, this))
-							.on("download_program", _.bind(function(event) {
-								this.client_socket.post({
-									type: "download_program",
-									name: event.name,
-									storage_type: event.storage_type
-								});
-							}, this))
-							.on("load_program", _.bind(function(event) {
-								this.client_socket.post({
-									type: "load_program",
-									name: event.name,
-									storage_type: event.storage_type
-								});
-							}, this))
-							.on("load_saved_file", _.bind(function(event) {
-								this.client_socket.post({
-									type: "load_file",
-									contents: event.filecontents,
-									name: event.filename
-								});
-							}, this))
-							.on("copy_component", _.bind(function(event) {
-								this.client_socket.post({
-									type: "copy_component",
-									name: event.name,
-									target_obj_id: event.target_obj_id,
-									above_below: event.above_below,
-								});
-							}, this));
-
-				this.navigator.on("dragstart.pin", _.bind(function(event) {
-					var bottom_indicator_was_hidden = this.element.pane("get_percentage", 0) > 0.99;
-					if(bottom_indicator_was_hidden) {
-						this.element.pane("set_percentage", 0, 0.6);
-					}
-					var targ = $(event.target);
-
-					var clear_drag_info = function() {
-						this.pinned.off("dragenter.pin dragleave.pin drop.pin")
-									.removeClass("dropover drop_indicator");
-						this.component_list.off("dragover.pin drop.pin dragenter.pin dragleave.pin");
-						targ.off("dragcancel.pin dragend.pin");
-					};
-
-					this.component_list.on("dragover.pin", function() { })
-										.on("dragenter.pin", function() { })
-										.on("drop.pin", _.bind(function() {
-											var client = targ.column("option", "client");
-											
-											this.client_socket.post({
-												type: "save_component",
-												cobj_id: client.cobj_id
-											});
-										}, this));
-
-
-					this.pinned	.addClass("drop_indicator")
-								.on("dragenter.pin", _.bind(function(ev2) {
-									this.pinned.addClass("dropover");
-								}, this))
-								.on("dragover.pin", function() {
-									return false;
-								})
-								.on("dragleave.pin", _.bind(function(ev2) {
-									this.pinned.removeClass("dropover");
-								}, this))
-								.on("drop.pin", _.bind(function(ev2) {
-									clear_drag_info.call(this);
-									var client = targ.column("option", "client");
-									var client_socket = targ.column("option", "client_socket");
-									var pinned_col = $("<table />")	.appendTo(this.pinned)
-																	.column({
-																		client: targ.column("option", "client"),
-																		name: targ.column("option", "name"),
-																		prev_col: targ.column("option", "prev_col"),
-																		show_prev: true,
-																		is_curr_col: true,
-																		show_source: true,
-																		curr_copy_client: targ.column("option", "curr_copy_client"),
-																		client_socket: client_socket,
-																		curr_copy_index: targ.column("option", "curr_copy_index"),
-																		close_button: true
-																	});
-
-									pinned_col.on("child_select.nav", _.bind(function(event, child_info) {
-										client = child_info.value;
-										pinned_col	.column("destroy")
-													.column({
-														client: client,
-														name: child_info.name,
-														prev_col: true,
-														show_prev: true,
-														is_curr_col: true,
-														show_source: true,
-														client_socket: client_socket,
-														close_button: true
-													});
-									}, this)).on("prev_click.nav", _.bind(function() {
-										client.async_get("parent", function(new_client) {
-											client = new_client;
-											pinned_col	.column("destroy")
-														.column({
-															client: client,
-															name: client.object_summary.name,
-															prev_col: true,
-															show_prev: true,
-															is_curr_col: true,
-															show_source: true,
-															client_socket: client_socket,
-															close_button: true
-														});
-										});
-									}, this));
-									ev2.preventDefault();
-									ev2.stopPropagation();
-								}, this));
-
-					targ		.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
-									if(bottom_indicator_was_hidden) {
-										this.element.pane("set_percentage", 0, 1);
-									}
-									clear_drag_info.call(this);
-								}, this));
-				}, this));
-				this.pinned.on("close", _.bind(function(event) {
-					$(event.target).column("destroy").remove();
-					if($(".col", this.pinned).size() === 0) {
-						this.element.pane("set_percentage", 0, 1);
-					}
-				}, this));
-
-				$(window).on("keydown.editor_undo_redo", _.bind(function (event) {
-					if (event.keyCode === 90 && (event.metaKey || event.ctrlKey)) {
-						if (event.shiftKey) { this.redo(); }
-						else { this.undo(); }
-						event.stopPropagation();
-						event.preventDefault();
-					}
-				}, this));
-				this.component_list = $("<div>").appendTo(this.element).component_list({info_servers: info_servers}).hide();
-			}
-		},
-	
-		undo: function() {
-			this.client_socket.post_command("undo");
-		},
-		redo: function() {
-			this.client_socket.post_command("redo");
-		},
-		toggle_components: function() {
-			this.component_list.show();
-		},
-
-		on_unload: function() {
-			if(this.navigator) {
-				this.navigator.navigator("destroy");
-			}
-			if(this.menu) {
-				this.menu.menu("destroy").remove();
-			}
-			if(this.client_socket) {
-				this.client_socket.destroy();
-			}
-			delete this.client_socket;
-			delete this.navigator;
-			delete this.menu;
-		},
-
-		_destroy: function () {
-			this._super();
-			if(this.navigator) {
-				this.navigator.off("command.do_action");
-			}
-			this.on_unload();
-			if(this.option("upload_usage")) {
-				this.element.off("command.upload child_select.upload header_click.upload");
-			}
-			$(window)	.off("beforeunload.close_editor")
-						.off("keydown.editor_undo_redo");
-		},
-
-		_setOption: function(key, value) {
-			this._super(key, value);
-			if(key === "anotations") {
-				this.navigator.navigator("option", key, value);
-			}
-		}
-	});
-	*/
 		on_command: function(event) {
 			var type = event.command_type;
 			var client, name, value, command, state, transition, statechart_puppet_id, parent_puppet_id;
@@ -978,7 +771,7 @@
 					value: command_str
 				});
 			}
-		},
+		}
 	});
 
 	ist.create_key_val_map = function(key_constraint, value_constraint) {
@@ -1019,5 +812,32 @@
 	}
 	function to_func(value) {
 		return function () { return value; };
-	};
+	}
+
+	function eventFire(el, etype) {
+		if (el.fireEvent) {
+			(el.fireEvent('on' + etype));
+		} else {
+			var evObj = document.createEvent('Events');
+			evObj.initEvent(etype, true, false);
+			el.dispatchEvent(evObj);
+		}
+	}
+
+	function downloadWithName(data, name) {
+		var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+
+		if(is_chrome) {
+			var link = document.createElement("a");
+			link.download = name;
+			link.href = "data:," + data;
+			eventFire(link, "click");
+		} else {
+			//window.open("data:text/plain;charset=utf-8," + data);
+			var link = document.createElement("a");
+			link.download = name;
+			link.href = "data:," + data;
+			eventFire(link, "click");
+		}
+	}
 }(interstate, jQuery));

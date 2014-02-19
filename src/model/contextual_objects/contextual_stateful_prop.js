@@ -215,6 +215,12 @@
 			rv = rv.sort(function(a, b) {
 				return a.root_sv_index - b.root_sv_index;
 			});
+
+/*
+			if(uid.strip_prefix(this.id()) == 55) {
+				console.log(rv);
+			}
+			*/
 			return rv;
 		};
 
@@ -389,6 +395,11 @@
 						this._has_runtime_errors = true;
 					}
 				}
+				/*
+				if(uid.strip_prefix(this.id()) == 55) {
+					console.log(rv);
+				}
+				*/
 
 				this._last_rv = rv;
 				return rv;

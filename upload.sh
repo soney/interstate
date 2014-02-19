@@ -3,4 +3,4 @@
 echo "BUILDING"
 grunt full
 echo "UPLOADING"
-scp -r .build/* soney@from.so:interstate.from.so/
+scp -r .build/* soney@from.so:interstate.from.so/su

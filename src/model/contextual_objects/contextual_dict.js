@@ -116,6 +116,20 @@
 			return value;
 		}
 	};
+	interstate.get_dom_obj = function(cdict) {
+		if(cdict.get_dom_obj) {
+			return cdict.get_dom_obj();
+		} else {
+			return false;
+		}
+	};
+	interstate.get_dom_obj = function(cdict) {
+		if(cdict.get_dom_obj) {
+			return cdict.get_dom_obj();
+		} else {
+			return false;
+		}
+	};
 
 	ist.ContextualDict = function (options) {
 		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
@@ -141,6 +155,26 @@
 		proto._get_all_protos = function() {
 			return ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
 		};
+		proto.get_dom_obj = function() {
+			var dom_attachment = this.get_attachment_instance("dom"),
+				dom_obj;
+			if (dom_attachment) {
+				dom_obj = dom_attachment.get_dom_obj();
+				if(dom_obj) {
+					return dom_obj;
+				}
+			} else {
+				var raphael_attachment = this.get_attachment_instance("paper");
+				if(raphael_attachment) {
+					dom_obj = raphael_attachment.get_dom_obj();
+
+					if(dom_obj) {
+						return dom_obj;
+					}
+				}
+			}
+			return false;
+		};
 
 		proto.raw_children = function (exclude_builtins) {
 			var dict = this.object;
@@ -160,7 +194,7 @@
 
 			var my_ptr_index = pointer.lastIndexOf(dict);
 			var special_context_names = [];
-			if (my_ptr_index >= 0) {
+			if (exclude_builtins !== true && my_ptr_index >= 0) {
 				var special_contexts = pointer.special_contexts(my_ptr_index);
 				var len = special_contexts.length;
 				var sc, co;
@@ -190,11 +224,12 @@
 				});
 			});
 
+
 			var rv = [];
 			_.each([
+				["special_context", special_context_names],
 				["builtin", builtin_names],
 				["direct", direct_names],
-				["special_context", special_context_names],
 				["inherited", inherited_names]
 			], function (info) {
 				var type = info[0];
@@ -228,15 +263,84 @@
 
 			return rv;
 		};
+		proto.builtin_children = function() {
+			if(this.is_template()) {
+				// This is a bit of a hack; when "copies" changes from "" to "5", then my
+				// children's contextual objects are destroyed. However, when I switch back
+				// any constraints on the value of children aren't nullified.
+				//
+				// Adding the is_template() check ensures that they will be nullified
+				return [];
+			} else {
+				var dict = this.object,
+					pointer = this.pointer,
+					my_ptr_index = pointer.lastIndexOf(dict),
+					builtin_names = dict._get_builtin_prop_names(),
+					special_context_names = [],
+					owners = {},
+					builtin_infos = _.map(builtin_names, function (name) {
+						return dict._get_builtin_prop_info(name);
+					}),
+					builtin_contextual_objects = _.map(builtin_infos, function (info, i) {
+						var name = builtin_names[i];
+						return {name: name, value: info.value, inherited: false, builtin: true };
+					}, this);
+
+				if (my_ptr_index >= 0) {
+					var special_contexts = pointer.special_contexts(my_ptr_index),
+						len = special_contexts.length,
+						sc, co, i,
+						each_co = function (v, k) {
+							owners[k] = sc;
+							special_context_names.push(k);
+						};
+
+					for (i = 0; i < len; i += 1) {
+						sc = special_contexts[i];
+						co = sc.get_context_obj();
+						_.each(co, each_co);
+					}
+				}
+
+				var special_context_infos = _.map(special_context_names, function (name) {
+							var sc = owners[name];
+							var co = sc.get_context_obj();
+							return co[name];
+						}),
+					special_context_contextual_objects = _.map(special_context_infos, function (info, i) {
+						var name = special_context_names[i];
+						return {name: name, value: info.value, inherited: false, builtin: true };
+					}, this);
+				
+				var contextual_objects = special_context_contextual_objects.concat(builtin_contextual_objects),
+					children = _.map(contextual_objects, function(raw_child) {
+						return _.extend({}, raw_child, {
+							value: get_contextual_object(raw_child.value, pointer)
+						});
+					});
+
+
+				return children;
+			}
+		};
 		proto.children = function (exclude_builtins) {
-			var raw_children = this.raw_children(exclude_builtins);
-			var pointer = this.pointer;
-			var children = _.map(raw_children, function(raw_child) {
-				return _.extend({}, raw_child, {
-					value: get_contextual_object(raw_child.value, pointer)
+			if(this.is_template()) {
+				// This is a bit of a hack; when "copies" changes from "" to "5", then my
+				// children's contextual objects are destroyed. However, when I switch back
+				// any constraints on the value of children aren't nullified.
+				//
+				// Adding the is_template() check ensures that they will be nullified
+				return [];
+			} else {
+				var raw_children = this.raw_children(exclude_builtins);
+				var pointer = this.pointer;
+				var children = _.map(raw_children, function(raw_child) {
+					return _.extend({}, raw_child, {
+						value: get_contextual_object(raw_child.value, pointer)
+					});
 				});
-			});
-			return children;
+				return children;
+			}
 		};
 		proto.parent = function() {
 			var popped_pointer = this.pointer.pop();
@@ -281,7 +385,7 @@
 				i,
 				len;
 			if (dict._has_builtin_prop(name)) {
-				info = dict._get_builtin_info(name);
+				info = dict._get_builtin_prop_info(name);
 			} else if (dict._has_direct_prop(name)) {
 				info = dict._get_direct_prop_info(name);
 			} else {
@@ -357,7 +461,7 @@
 			}
 		};
 
-		proto.is_template = function () {
+		proto.is_instance = function() {
 			var pointer = this.get_pointer();
 			var object = this.get_object();
 			var obj_index = pointer.lastIndexOf(object);
@@ -369,13 +473,20 @@
 				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
 					special_context = special_contexts[i];
 					if (special_context instanceof ist.CopyContext) {
-						return false;
+						return true;
 					}
 				}
 			}
+			return false;
+		};
 
-			var manifestations_value = this.get_manifestations_value();
-			return (_.isNumber(manifestations_value) && !isNaN(manifestations_value)) || _.isArray(manifestations_value);
+		proto.is_template = function () {
+			if(this.is_instance()) {
+				return false;
+			} else {
+				var manifestations_value = this.get_manifestations_value();
+				return (_.isNumber(manifestations_value) && !isNaN(manifestations_value)) || _.isArray(manifestations_value);
+			}
 		};
 
 		proto.is_instance = function () {
@@ -547,6 +658,37 @@
 
 		proto._getter = function () {
 			return this;
+		};
+
+		proto.get_dom_object = function() {
+			var dom_attachment = this.get_attachment_instance("dom");
+			if (dom_attachment) {
+				var dom_obj = dom_attachment.get_dom_obj();
+				if (dom_obj) {
+					return dom_obj;
+				}
+			} else {
+				var raphael_attachment = this.get_attachment_instance("shape");
+				if(raphael_attachment) {
+					var robj = raphael_attachment.get_robj();
+					if(robj) {
+						return robj[0];
+					}
+				} else {
+					var group_attachment_instance = this.get_attachment_instance("group");
+					if(group_attachment_instance) {
+						return _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
+							var robj = raphael_attachment.get_robj();
+							if(robj) {
+								return robj[0];
+							} else {
+								return false;
+							}
+						}));
+					}
+				}
+			}
+			return false;
 		};
 	}(ist.ContextualDict));
 }(interstate));

@@ -46,6 +46,7 @@
     
         this.type = "ist_dict";
         this._id = options.uid || uid();
+        this._hash = uid.strip_prefix(this._id);
         this.options = options;
         ist.register_uid(this._id, this);
         if (defer_initialization !== true) {
@@ -118,7 +119,9 @@
             },
     
             "copies": {
-                start_with: function () { return cjs(); },
+                start_with: function () { 
+					return cjs.constraint(new ist.Cell({str: ""}));
+				},
                 env_visible: false,
                 env_name: "copies",
                 getter: function (me) { return me.get(); },
@@ -294,10 +297,15 @@
             }
         };
     
-        proto.id = proto.hash = function () { return this._id; };
+        proto.id = function () { return this._id; };
+		proto.hash = function () { return this._hash; };
 		if(ist.__debug) {
 			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		}
+
+		proto.clone = function() {
+			return ist.deserialize(ist.serialize(this, false));
+		};
     
         //
         // === BYE BYE ===

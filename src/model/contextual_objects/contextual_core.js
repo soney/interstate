@@ -29,6 +29,8 @@
 			});
 			this.set_options(options);
 		};
+		proto.is_template = function() { return false; };
+		proto.instances = function() { return false; };
 		proto.get_name = function() {
 			var pointer = this.get_pointer();
 			var my_index = pointer.indexOf(this.get_object());
@@ -38,7 +40,7 @@
 				var parent_obj = pointer.points_at(my_index-1);
 				var parent_pointer = pointer.slice(0, my_index-1);
 				if(parent_obj instanceof ist.Dict) {
-					var name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer());
+					var name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer().pop());
 					return name;
 				}
 			}
@@ -64,7 +66,7 @@
 							}
 						}
 					}
-					var name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer());
+					var name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer().pop());
 
 					return "("+name+extra_txt+")";
 				} else {
