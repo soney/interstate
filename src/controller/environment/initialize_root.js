@@ -249,6 +249,7 @@
 			fixture.set("world", new ist.Cell({str: "physics.world"}));
 			fixture.set("computed_x", new ist.Cell({str: "fetch_physics_info(this, 'getComputedX')"}));
 			fixture.set("computed_y", new ist.Cell({str: "fetch_physics_info(this, 'getComputedY')"}));
+			fixture.set("computed_theta", new ist.Cell({str: "fetch_physics_info(this, 'getComputedTheta')"}));
 			fixture.set("fetch_physics_info", new ist.Cell({str: "function(p, prop_name) {" +
 				"var fixture_attachment = interstate.get_attachment(p, 'box2d_fixture');" +
 				"return fixture_attachment[prop_name]();" +

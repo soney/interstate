@@ -21,7 +21,8 @@
 		B2MassData = Box2D.Collision.Shapes.b2MassData,
 		B2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape,
 		B2CircleShape = Box2D.Collision.Shapes.b2CircleShape,
-		B2MouseJointDef =  Box2D.Dynamics.Joints.b2MouseJointDef;
+		B2MouseJointDef =  Box2D.Dynamics.Joints.b2MouseJointDef,
+		b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
 
 	var fixDef = new B2FixtureDef();
 	fixDef.density = 1.0;
@@ -38,8 +39,20 @@
 				var update_world = _.bind(function() {
 					this.world.Step(1 / 60, 10, 10);
 					ist.requestAnimationFrame.call(window, update_world);
+					 this.world.DrawDebugData();
+					 console.log("DD");
 				}, this);
 				ist.requestAnimationFrame.call(window, update_world);
+
+				var world = this.world;
+
+				 var debugDraw = new b2DebugDraw();
+					debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
+					debugDraw.SetDrawScale(30.0);
+					debugDraw.SetFillAlpha(0.3);
+					debugDraw.SetLineThickness(1.0);
+					debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+					world.SetDebugDraw(debugDraw);
 			},
 			parameters: {
 				gravity: function(contextual_object) {
@@ -103,19 +116,36 @@
 			},
 			parameters: {
 				radius: function(contextual_object) {
-					var radius = contextual_object.prop_val("r");
 					var shape = this.shape.get();
-					if(shape) {
+					if(shape instanceof B2CircleShape) {
+						var radius = contextual_object.prop_val("r");
 						shape.SetRadius(radius/PIXELS_PER_METER);
 					}
-				}, fixed: function(contextual_object) {
+				}, 
+				path: function(contextual_object) {
+					var shape = this.shape.get();
+					if(shape instanceof B2PolygonShape) {
+						var width = contextual_object.prop_val("width"),
+							height = contextual_object.prop_val("height");
+						shape.SetAsBox(width/(2*PIXELS_PER_METER),
+										height/(2*PIXELS_PER_METER));
+					}
+				},
+				fixed: function(contextual_object) {
 					var fixed = contextual_object.prop_val("fixed");
 					var body = this.body.get();
 
 					if(body) {
 						if(fixed) {
-							var x = contextual_object.prop_val("cx") / PIXELS_PER_METER;
-							var y = contextual_object.prop_val("cy") / PIXELS_PER_METER;
+							var shape = this.shape.get(), x, y;
+							if(shape instanceof B2CircleShape) {
+								var radius = contextual_object.prop_val("r");
+								x = (contextual_object.prop_val("cx")-radius) / PIXELS_PER_METER;
+								y = (contextual_object.prop_val("cy")-radius) / PIXELS_PER_METER;
+							} else if(shape instanceof B2PolygonShape) {
+								x = contextual_object.prop_val("x") / PIXELS_PER_METER;
+								y = contextual_object.prop_val("y") / PIXELS_PER_METER;
+							}
 							body.SetType(b2Body.b2_fixedBody);
 							body.SetPosition(new B2Vec2(x, y));
 						} else {
@@ -138,8 +168,8 @@
 									var cy = contextual_object.prop_val("cy");
 									var radius = contextual_object.prop_val("r");
 
-									bodyDef.position.x = cx / PIXELS_PER_METER;
-									bodyDef.position.y = cy / PIXELS_PER_METER;
+									bodyDef.position.x = (cx-radius) / PIXELS_PER_METER;
+									bodyDef.position.y = (cy-radius) / PIXELS_PER_METER;
 									fixDef.shape = new B2CircleShape(radius/PIXELS_PER_METER);
 
 									this.world = world;
@@ -151,11 +181,19 @@
 										y = contextual_object.prop_val("y"),
 										width = contextual_object.prop_val("width"),
 										height = contextual_object.prop_val("height");
-									
-									console.log(x,y,width,height);
+
+									bodyDef.position.x = x / PIXELS_PER_METER;
+									bodyDef.position.y = y / PIXELS_PER_METER;
+									fixDef.shape = new B2PolygonShape();
+									fixDef.shape.SetAsBox(width/(2*PIXELS_PER_METER),
+															height/(2*PIXELS_PER_METER));
+
+									this.world = world;
+									this.fixture = this.world.CreateBody(bodyDef).CreateFixture(fixDef);
+									this.body.set(this.fixture.GetBody());
+									this.shape.set(this.fixture.GetShape());
 								}
 							}
-							console.log(shape_attachment);
 						}
 					}
 				}
