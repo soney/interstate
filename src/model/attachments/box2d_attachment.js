@@ -39,20 +39,21 @@
 				var update_world = _.bind(function() {
 					this.world.Step(1 / 60, 10, 10);
 					ist.requestAnimationFrame.call(window, update_world);
-					 this.world.DrawDebugData();
-					 console.log("DD");
+					//this.world.DrawDebugData();
 				}, this);
 				ist.requestAnimationFrame.call(window, update_world);
 
 				var world = this.world;
 
-				 var debugDraw = new b2DebugDraw();
-					debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
-					debugDraw.SetDrawScale(30.0);
-					debugDraw.SetFillAlpha(0.3);
-					debugDraw.SetLineThickness(1.0);
-					debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
-					world.SetDebugDraw(debugDraw);
+/*
+				var debugDraw = new b2DebugDraw();
+				debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
+				debugDraw.SetDrawScale(PIXELS_PER_METER);
+				debugDraw.SetFillAlpha(0.3);
+				debugDraw.SetLineThickness(1.0);
+				debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+				world.SetDebugDraw(debugDraw);
+				*/
 			},
 			parameters: {
 				gravity: function(contextual_object) {
@@ -140,11 +141,13 @@
 							var shape = this.shape.get(), x, y;
 							if(shape instanceof B2CircleShape) {
 								var radius = contextual_object.prop_val("r");
-								x = (contextual_object.prop_val("cx")-radius) / PIXELS_PER_METER;
-								y = (contextual_object.prop_val("cy")-radius) / PIXELS_PER_METER;
+								x = (contextual_object.prop_val("cx")) / PIXELS_PER_METER;
+								y = (contextual_object.prop_val("cy")) / PIXELS_PER_METER;
 							} else if(shape instanceof B2PolygonShape) {
-								x = contextual_object.prop_val("x") / PIXELS_PER_METER;
-								y = contextual_object.prop_val("y") / PIXELS_PER_METER;
+								var width = contextual_object.prop_val("width");
+								var height = contextual_object.prop_val("height");
+								x = (contextual_object.prop_val("x")+.5*width) / PIXELS_PER_METER;
+								y = (contextual_object.prop_val("y")+.5*height) / PIXELS_PER_METER;
 							}
 							body.SetType(b2Body.b2_fixedBody);
 							body.SetPosition(new B2Vec2(x, y));
@@ -168,8 +171,8 @@
 									var cy = contextual_object.prop_val("cy");
 									var radius = contextual_object.prop_val("r");
 
-									bodyDef.position.x = (cx-radius) / PIXELS_PER_METER;
-									bodyDef.position.y = (cy-radius) / PIXELS_PER_METER;
+									bodyDef.position.x = (cx) / PIXELS_PER_METER;
+									bodyDef.position.y = (cy) / PIXELS_PER_METER;
 									fixDef.shape = new B2CircleShape(radius/PIXELS_PER_METER);
 
 									this.world = world;
@@ -182,8 +185,8 @@
 										width = contextual_object.prop_val("width"),
 										height = contextual_object.prop_val("height");
 
-									bodyDef.position.x = x / PIXELS_PER_METER;
-									bodyDef.position.y = y / PIXELS_PER_METER;
+									bodyDef.position.x = (x+.5*width) / PIXELS_PER_METER;
+									bodyDef.position.y = (y+.5*height) / PIXELS_PER_METER;
 									fixDef.shape = new B2PolygonShape();
 									fixDef.shape.SetAsBox(width/(2*PIXELS_PER_METER),
 															height/(2*PIXELS_PER_METER));
