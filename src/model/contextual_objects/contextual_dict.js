@@ -635,6 +635,9 @@
 				return undefined;
 			}
 		};
+		proto.update_attachments = function() {
+			this.get_attachment_instance("box2d_fixture");
+		};
 
 		proto.destroy = function () {
 			if(this.constructor === My) { this.emit_begin_destroy(); }

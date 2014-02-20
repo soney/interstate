@@ -194,6 +194,9 @@
 				child.destroy(true, true);
 				this.remove_child(key.child, key.special_contexts);
 			}, this);
+			if(cobj instanceof ist.ContextualDict) {
+				cobj.update_attachments();
+			}
 		};
 			
 		proto.create_current_contextual_objects = function () {
