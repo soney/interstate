@@ -98,4 +98,8 @@
 			return false;
 		}
 	};
+	Array.prototype.without = function(arr, x) {
+		console.log(arr);
+		return _.filter(cjs.get(arr), function(y) { return x!==y; });
+	};
 }(interstate));

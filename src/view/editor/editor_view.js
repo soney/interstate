@@ -223,6 +223,9 @@
 
 				this.$pinned_height_pct.set(pinned_height / (pinned_height + obj_nav_height));
 			}, this));
+			$(window).on("beforeunload.close_editor", _.bind(function () {
+				this.on_unload();
+			}, this));
 
 			this._addClassBindings();
 			this._addEventListeners();
@@ -233,6 +236,7 @@
 			this._removeEventListeners();
 			this._removeClassBindings();
 			this.$show_components.destroy();
+			this.on_unload();
 
 			this._super();
 		},
@@ -340,6 +344,13 @@
 		_enable_editor: function() {
 			$("table#cell_group", this.element).removeClass("disabled");
 			this.editor.setReadOnly(false)
+		},
+
+		on_unload: function() {
+			if(this.client_socket) {
+				this.client_socket.destroy();
+				delete this.client_socket;
+			}
 		},
 
 		_addEventListeners: function() {
