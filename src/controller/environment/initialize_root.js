@@ -247,11 +247,11 @@
 			physics.set("fixture", fixture);
 			fixture.set("fixed", new ist.Cell({str: "true"}));
 			fixture.set("world", new ist.Cell({str: "physics.world"}));
-			fixture.set("computed_x", new ist.Cell({str: "fetch_physics_info(this, 'x')"}));
-			fixture.set("fetch_physics_info", new ist.Cell({str: "function(parent, prop_name) {" +
-				"console.log(parent);" +
-				"var fixture_attachment = parent.get_attachment_instance('box2d_fixture');" +
-				"return fixture_attachment[prop_name];" +
+			fixture.set("computed_x", new ist.Cell({str: "fetch_physics_info(this, 'getComputedX')"}));
+			fixture.set("computed_y", new ist.Cell({str: "fetch_physics_info(this, 'getComputedY')"}));
+			fixture.set("fetch_physics_info", new ist.Cell({str: "function(p, prop_name) {" +
+				"var fixture_attachment = interstate.get_attachment(p, 'box2d_fixture');" +
+				"return fixture_attachment[prop_name]();" +
 			"}"}));
 		}
 

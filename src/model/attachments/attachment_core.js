@@ -204,4 +204,9 @@
 
 		return AttachmentType;
 	};
+
+	ist.get_attachment = function(obj, attachment_name) {
+		var attachment = obj.get_attachment_instance(attachment_name);
+		return attachment;
+	};
 }(interstate));

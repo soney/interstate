@@ -75,7 +75,7 @@
 				this.body = cjs.constraint();
 				this.shape = cjs.constraint();
 
-				window.setInterval(_.bind(function() {
+				this._update_interval = window.setInterval(_.bind(function() {
 					var body = this.body.get();
 					if(body) {
 						var position = body.GetPosition();
@@ -98,6 +98,9 @@
 					}
 				}, this), 1000 / 60);
 			},
+			destroy: function(silent) {
+				window.clearInterval(this._update_interval);
+			},
 			parameters: {
 				radius: function(contextual_object) {
 					var radius = contextual_object.prop_val("r");
@@ -111,8 +114,8 @@
 
 					if(body) {
 						if(fixed) {
-							var x = contextual_object.prop_val("x") / PIXELS_PER_METER;
-							var y = contextual_object.prop_val("y") / PIXELS_PER_METER;
+							var x = contextual_object.prop_val("cx") / PIXELS_PER_METER;
+							var y = contextual_object.prop_val("cy") / PIXELS_PER_METER;
 							body.SetType(b2Body.b2_fixedBody);
 							body.SetPosition(new B2Vec2(x, y));
 						} else {
@@ -127,18 +130,32 @@
 						var world_attachment = world_val.get_attachment_instance("box2d_world");
 						var world = world_attachment.get_world();
 						if(this.world !== world) {
-							var x = contextual_object.prop_val("x") || 50;
-							var y = contextual_object.prop_val("y") || 50;
-							var radius = contextual_object.prop_val("r") || 50;
+							var shape_attachment = contextual_object.get_attachment_instance("shape");
+							if(shape_attachment) {
+								var shape_type = shape_attachment.shape_type;
+								if(shape_type === "circle") {
+									var cx = contextual_object.prop_val("cx");
+									var cy = contextual_object.prop_val("cy");
+									var radius = contextual_object.prop_val("r");
 
-							bodyDef.position.x = x / PIXELS_PER_METER;
-							bodyDef.position.y = y / PIXELS_PER_METER;
-							fixDef.shape = new B2CircleShape(radius/PIXELS_PER_METER);
+									bodyDef.position.x = cx / PIXELS_PER_METER;
+									bodyDef.position.y = cy / PIXELS_PER_METER;
+									fixDef.shape = new B2CircleShape(radius/PIXELS_PER_METER);
 
-							this.world = world;
-							this.fixture = this.world.CreateBody(bodyDef).CreateFixture(fixDef);
-							this.body.set(this.fixture.GetBody());
-							this.shape.set(this.fixture.GetShape());
+									this.world = world;
+									this.fixture = this.world.CreateBody(bodyDef).CreateFixture(fixDef);
+									this.body.set(this.fixture.GetBody());
+									this.shape.set(this.fixture.GetShape());
+								} else if(shape_type === "rect") {
+									var x = contextual_object.prop_val("x"),
+										y = contextual_object.prop_val("y"),
+										width = contextual_object.prop_val("width"),
+										height = contextual_object.prop_val("height");
+									
+									console.log(x,y,width,height);
+								}
+							}
+							console.log(shape_attachment);
 						}
 					}
 				}
@@ -152,7 +169,16 @@
 				},
 				get_shape: function() {
 					return this.shape;
-				}
+				},
+				getComputedX: function() {
+					return this.b2x.get();
+				},
+				getComputedY: function() {
+					return this.b2y.get();
+				},
+				getComputedTheta: function() {
+					return this.b2t.get();
+				},
 			}
 		});
 }(interstate, jQuery));

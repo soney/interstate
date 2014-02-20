@@ -294,15 +294,6 @@
 						if(dom_obj) {
 							return [raphael_attachment, dom_obj];
 						}
-					} else {
-						var three_scene_attachment = contextual_dict.get_attachment_instance("three_scene");
-						if(three_scene_attachment) {
-							dom_obj = three_scene_attachment.get_dom_obj();
-
-							if(dom_obj) {
-								return [three_scene_attachment, dom_obj];
-							}
-						}
 					}
 				}
 			}
