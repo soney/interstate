@@ -250,14 +250,12 @@
 			fixture.set("computed_x", new ist.Cell({str: "fetch_physics_info(this, 'getComputedX')"}));
 			fixture.set("computed_y", new ist.Cell({str: "fetch_physics_info(this, 'getComputedY')"}));
 			fixture.set("computed_theta", new ist.Cell({str: "fetch_physics_info(this, 'getComputedTheta')"}));
-			/*
 			fixture.set("applyForce", new ist.Cell({str: "fetch_physics_info(this, 'applyForce')"}));
 			fixture.set("applyImpulse", new ist.Cell({str: "fetch_physics_info(this, 'applyImpulse')"}));
 			fixture.set("physics_call", new ist.Cell({str: "function(p, prop_name) {" +
 				"var fixture_attachment = interstate.get_attachment(p, 'box2d_fixture');" +
 				"return fixture_attachment[prop_name].bind(fixture_attachment);" +
 			"}"}));
-			*/
 			fixture.set("fetch_physics_info", new ist.Cell({str: "function(p, prop_name) {" +
 				"var fixture_attachment = interstate.get_attachment(p, 'box2d_fixture');" +
 				"return fixture_attachment[prop_name]();" +
