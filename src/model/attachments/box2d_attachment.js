@@ -203,13 +203,13 @@
 			},
 			proto_props: {
 				get_fixture: function() {
-					return this.fixture;
+					return this.fixture.get();
 				},
 				get_body: function() {
-					return this.body;
+					return this.body.get();
 				},
 				get_shape: function() {
-					return this.shape;
+					return this.shape.get();
 				},
 				getComputedX: function() {
 					return this.b2x.get();
@@ -220,6 +220,18 @@
 				getComputedTheta: function() {
 					return this.b2t.get();
 				},
+				applyForce: function(x, y) {
+					var body = this.get_body();
+					if(body) {
+						body.ApplyForce(new B2Vec2(x, y), body.GetWorldCenter());
+					}
+				},
+				applyImpulse: function(x, y) {
+					var body = this.get_body();
+					if(body) {
+						body.ApplyImpulse(new B2Vec2(x, y), body.GetWorldCenter());
+					}
+				}
 			}
 		});
 }(interstate, jQuery));

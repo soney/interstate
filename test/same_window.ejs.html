@@ -14,7 +14,7 @@
 			<%- ist_include(ist_inc.editor) %>
 			<%- ist_include(ist_inc.runtime_style) %>
 			<script type="text/javascript">
-				//var root = interstate.get_default_root();
+				var root = interstate.get_default_root();
 				$("div#editor").editor({
 					debug_env: true,
 					server_window: window
@@ -23,7 +23,7 @@
 					open_separate_client_window: false,
 					edit_on_open: true,
 					show_edit_button: false,
-					//root: root
+					root: root
 				});
 				function getRoot() {
 					return $("div.output").dom_output("option", "root");
@@ -31,12 +31,29 @@
 				function getEnvironment() {
 					return new interstate.Environment({root: getRoot()});
 				}
-				/*
 				window.env = getEnvironment();
 				console.log("Begin setting objects");
-				env.set("a", "<stateful>")
-					.cd("a")
-					.set("(prototypes)", "(start)", "[svg.rect, physics.fixture]")
+				env.set("steves_world", "<stateful>")
+					.cd("steves_world")
+					.set("(prototypes)", "(start)", "[physics.world]")
+					.set("gy", "(start)", "0.0")
+					.top()
+					.set("sketch", "<stateful>")
+					.cd("sketch")
+					.set("(prototypes)", "(start)", "svg.paper")
+					.set("circ", "<stateful>")
+					.cd("circ")
+					.set("cx", "(start)", "200")
+					.set("cy", "(start)", "200")
+					.set("fixed", "(start)", "true")
+					.add_state("init")
+					.start_at("init")
+					.set("(prototypes)", "(start)", "[svg.circle, physics.fixture]")
+					//.set("cx", "init", "computed_x")
+					//.set("cy", "init", "computed_y")
+					//.set("fixed", "init", "false")
+					.set("world", "(start)", "steves_world")
+
 				env .top()
 				/*
 				env.print();

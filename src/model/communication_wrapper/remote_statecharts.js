@@ -239,9 +239,11 @@
 				delete statecharts[id];
 			};
 			statechart.on("destroy", on_destroy);
-			wrapper_client.on("wc_destroy", function() {
-				statechart.destroy();
-			});
+			if(!statechart_parent) {
+				wrapper_client.on("wc_destroy", function() {
+					statechart.destroy();
+				});
+			}
 		}
 		return statechart;
 	};
