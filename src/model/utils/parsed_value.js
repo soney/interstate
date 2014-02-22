@@ -561,9 +561,10 @@
 				rv[key] = value;
 			});
 		} else if (type === "Program") {
-			if(node.body.length === 1) {
+			if(node.body.length === 0) {
+				rv = null;
+			} else if(node.body.length === 1) {
 				rv = get_val(node.body[0], options);
-				/*
 			} else {
 				rv = new ist.MultiExpression(_.map(node.body, function(bodyi, i) {
 					if(!options.only_parse_first || i === 0) {
@@ -572,9 +573,7 @@
 						return bodyi;
 					}
 				}));
-				*/
 			}
-			//return get_val(node.body[0], options);
 		} else {
 			console.log(type, node);
 		}

@@ -90,7 +90,7 @@
 
 	ist.event_queue = new EventQueue();
 
-var id;
+	var id = 0;
 	ist.Event = function () {
 		able.make_this_listenable(this);
 		this._initialize();

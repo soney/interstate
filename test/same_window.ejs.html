@@ -49,6 +49,7 @@
 					.add_state("init")
 					.start_at("init")
 					.set("(prototypes)", "(start)", "[svg.circle, physics.fixture]")
+					.add_transition("init", "init", "on('click');emit('hi')")
 					//.set("cx", "init", "computed_x")
 					//.set("cy", "init", "computed_y")
 					//.set("fixed", "init", "false")
