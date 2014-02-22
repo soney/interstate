@@ -25,5 +25,4 @@ Then run:
     node server
 
 ---
-
 Contact: [Stephen Oney](http://from.so/) [(soney@cmu.edu)](mailto:soney@cmu.edu)
