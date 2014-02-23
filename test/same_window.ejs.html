@@ -14,7 +14,7 @@
 			<%- ist_include(ist_inc.editor) %>
 			<%- ist_include(ist_inc.runtime_style) %>
 			<script type="text/javascript">
-				var root = interstate.get_default_root();
+				var root = interstate.get_default_root([]);
 				$("div#editor").editor({
 					debug_env: true,
 					server_window: window
@@ -32,7 +32,19 @@
 					return new interstate.Environment({root: getRoot()});
 				}
 				window.env = getEnvironment();
-				console.log("Begin setting objects");
+				env.set("a", "<stateful>")
+				/*
+				env.set("message", "<stateful>")
+					.cd("message")
+					.add_state("init")
+					.add_state("other")
+					.start_at("init")
+					.add_transition("init", "other", "on('mousedown', this);event.preventDefault()")
+					.add_transition("other", "init", "on('timeout', 500)")
+					.set("(prototypes)", "(start)", "dom.h1")
+					.set("textContent", "init", "'hello'")
+					.set("textContent", "other", "'goodbye'")
+				/*
 				env.set("steves_world", "<stateful>")
 					.cd("steves_world")
 					.set("(prototypes)", "(start)", "[physics.world]")

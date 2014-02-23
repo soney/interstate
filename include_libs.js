@@ -78,6 +78,7 @@ exports.runtime = c(
 				"model/statechart/ist_statechart_transition.js",
 				"model/statechart/events/event_core.js",
 				"model/statechart/events/animation_events.js",
+				"model/statechart/events/box2d_events.js",
 				"model/statechart/events/ist_obj_events.js",
 				"model/statechart/events/manual_event.js",
 				"model/statechart/events/dom_events.js",

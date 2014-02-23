@@ -241,7 +241,9 @@
 			statechart.on("destroy", on_destroy);
 			if(!statechart_parent) {
 				wrapper_client.on("wc_destroy", function() {
-					statechart.destroy();
+					if(!statechart.destroyed) {
+						statechart.destroy();
+					}
 				});
 			}
 		}
