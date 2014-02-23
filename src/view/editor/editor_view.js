@@ -224,7 +224,7 @@
 				this.$pinned_height_pct.set(pinned_height / (pinned_height + obj_nav_height));
 			}, this));
 			$(window).on("beforeunload.close_editor", _.bind(function () {
-				this.on_unload();
+				this.destroy();
 			}, this));
 
 			this._addClassBindings();
