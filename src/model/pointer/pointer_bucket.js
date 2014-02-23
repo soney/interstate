@@ -304,7 +304,7 @@
 			return rv;
 		};
 		proto.destroy_cobj = function(cobj) {
-			var pointer = this.pointer,
+			var pointer = cobj.get_pointer(),
 				node = this.tree,
 				i = 1, len = pointer.length(), ptr_i, sc_i,
 				parent_node;

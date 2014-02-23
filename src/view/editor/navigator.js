@@ -102,7 +102,6 @@
 		_add_destroy_check: function() {
 			var old_cols = [],
 				ondestroy = _.bind(function(client) {
-					console.log("begin destroy");
 					var index = this.$columns.indexOf(client);
 					this.$columns.splice(index, this.$columns.length()-index);
 				}, this);

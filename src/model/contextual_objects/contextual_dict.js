@@ -640,7 +640,6 @@
 		};
 
 		proto.destroy = function () {
-			console.log("emit begin destroy");
 			if(this.constructor === My) { this.emit_begin_destroy(); }
 			//The attachment instances might be listening for property changes for destroy them first
 			_.each(this._attachment_instances, function(attachment_instance) {

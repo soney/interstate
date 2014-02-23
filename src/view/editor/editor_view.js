@@ -52,7 +52,7 @@
 					"<td class='resize_bar' data-cjs-on-mousedown='beginResizeAce'></td>" +
 				"</tr>" +
 			"</table>" +
-			"<div class='widget_group btn-group navbar-right'>" +
+			"<div class='widget_group navbar-right pull-right'>" +
 				"<div type='button' class='btn btn btn-default {{show_components ? \"active\" : \"\"}}' data-cjs-on-click='toggle_show_widgets'>" +
 					"Files" +
 					" <span class='glyphicon {{show_components ? \"glyphicon-chevron-up\" : \"glyphicon-chevron-down\"}}'></span>" +
@@ -310,7 +310,7 @@
 			this.editor.renderer.setShowGutter(false); 
 			this.editor.getSession().setMode("ace/mode/javascript");
 
-			this._cellwidth_binding = cjs.bindCSS(ace_editor, "width", this.$window_inner_width.sub((this.$window_inner_width.le(767).iif(60, 300))).add("px"));
+			this._cellwidth_binding = cjs.bindCSS(ace_editor, "width", this.$window_inner_width.sub((this.$window_inner_width.le(767).iif(300, 300))).add("px"));
 			this.$window_inner_width.onChange(function() {
 				this.editor.resize();
 			}, this);
