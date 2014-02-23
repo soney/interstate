@@ -22,7 +22,8 @@
 		B2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape,
 		B2CircleShape = Box2D.Collision.Shapes.b2CircleShape,
 		B2MouseJointDef =  Box2D.Dynamics.Joints.b2MouseJointDef,
-		b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
+		b2DebugDraw = Box2D.Dynamics.b2DebugDraw,
+		b2ContactListener = Box2D.Dynamics.b2ContactListener;
 
 	var fixDef = new B2FixtureDef();
 	fixDef.density = 1.0;
@@ -31,10 +32,41 @@
 
 	var bodyDef = new B2BodyDef();
 	bodyDef.type = b2Body.b2_dynamicBody;
+
+	ist.contact_listeners = new RedMap({
+		equals: ist.check_contextual_object_equality,
+		hash: function(obj) {
+			if(obj.hash) {
+				return obj.hash();
+			} else {
+				return obj.toString();
+			}
+		}
+	});
 	
 	ist.WorldAttachment = ist.register_attachment("box2d_world", {
 			ready: function() {
 				this.world = new B2World(new B2Vec2(0, 0), true);
+				this.world.SetContactListener({
+					BeginContact: function() { },
+					EndContact: function(contact) {
+						var cobj_a = contact.m_fixtureA.cobj,
+							cobj_b = contact.m_fixtureB.cobj;
+
+						var contact_listeners = _.filter(ist.contact_listeners.get(cobj_a), function(x) {
+							return ist.check_contextual_object_equality(x.target, cobj_b);
+						}).concat(_.filter(ist.contact_listeners.get(cobj_b), function(x) {
+							return ist.check_contextual_object_equality(x.target, cobj_a);
+						}));
+						window.setTimeout(function() {
+							_.each(contact_listeners, function(x) {
+								x.callback(contact);
+							});
+						}, 0);
+					},
+					PreSolve: function() { },
+					PostSolve: function() { }
+				});
 
 				var update_world = _.bind(function() {
 					this.world.Step(1 / 60, 10, 10);
@@ -43,9 +75,8 @@
 				}, this);
 				ist.requestAnimationFrame.call(window, update_world);
 
+				/*
 				var world = this.world;
-
-/*
 				var debugDraw = new b2DebugDraw();
 				debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
 				debugDraw.SetDrawScale(PIXELS_PER_METER);
@@ -90,7 +121,7 @@
 				this.shape = cjs.constraint();
 
 				this._update_interval = window.setInterval(_.bind(function() {
-					var body = this.body.get();
+					var body = this.get_body();
 					if(body) {
 						var position = body.GetPosition();
 						var angle = body.GetAngle();
@@ -114,6 +145,12 @@
 			},
 			destroy: function(silent) {
 				window.clearInterval(this._update_interval);
+
+				var body = this.get_body();
+				if(body) {
+					var world = body.m_world;
+					world.DestroyBody(body);
+				}
 			},
 			parameters: {
 				radius: function(contextual_object) {
@@ -177,6 +214,8 @@
 
 									this.world = world;
 									this.fixture = this.world.CreateBody(bodyDef).CreateFixture(fixDef);
+									this.fixture.cobj = contextual_object;
+
 									this.body.set(this.fixture.GetBody());
 									this.shape.set(this.fixture.GetShape());
 								} else if(shape_type === "rect") {
@@ -193,6 +232,8 @@
 
 									this.world = world;
 									this.fixture = this.world.CreateBody(bodyDef).CreateFixture(fixDef);
+									this.fixture.cobj = contextual_object;
+
 									this.body.set(this.fixture.GetBody());
 									this.shape.set(this.fixture.GetShape());
 								}

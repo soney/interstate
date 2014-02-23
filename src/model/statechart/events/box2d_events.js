@@ -6,39 +6,17 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	var get_box2d_shape = function(instance) {
-		var fixture_attachment = this.get_attachment_instance("box2d_fixture");
 
-		if(fixture_attachment) {
-			var shape = fixture_attachment.get_dom_obj();
-			if (shape) {
-				return shape;
-			}
-		}
-
-		return false;
-	};
-	/*
-		ist.get_instance_targs = function(instance) {
-			var dom_objs = instance.get_dom_object();
-			if(dom_objs) {
-				if(_.isArray(dom_objs)) {
-					return _.map(dom_objs, function(dom_obj) {
-						return {dom_obj: dom_obj, cobj: instance};
-					});
-				} else {
-					return {dom_obj: dom_objs, cobj: instance};
-				}
-			} else {
-				return false;
-			}
-		};
-		*/
-
-	ist.CollisionEvent = function () {
+	ist.CollisionEvent = function (targa, targb) {
 		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "collision";
+		var clisteners = ist.contact_listeners.get(targa);
+		if(clisteners) {
+			clisteners.push({target: targb, callback: _.bind(this.notify, this)})
+		} else {
+			ist.contact_listeners.put(targa, [{target: targb, callback: _.bind(this.notify, this)}]);
+		}
 	};
 
 	(function (My) {
@@ -59,7 +37,7 @@
 		};
 		proto.leave_listener = function() {
 		};
-		proto.notify = function () {
+		proto.notify = function (contact) {
 			ist.event_queue.wait();
 			this.fire({
 				type: "collision"
