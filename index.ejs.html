@@ -1,45 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>InterState Runtime</title>
-	<meta charset="utf-8" />
-	<meta author="Stephen Oney" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-	<% 
-		var color = "";
-		if(addr === "128.2.177.95") {
-			color = "";
-		} else if(addr === "192.168.1.3") {
-			color = "green";
-		} else if(addr === "192.168.1.13") {
-			color = "blue";
-		} else {
-			color = "";
-		}
-		var big_logo_url = color === "" ? "interstate_logo_512" : "interstate_logo_512_"+color;
-		var small_logo_url = "interstate_logo_128";
-	%>
+	<head>
+		<title>InterState Runtime</title>
+		<meta charset="utf-8" />
+		<meta author="Stephen Oney" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<% 
+			var color = "";
+			if(addr === "128.2.177.95") {
+				color = "";
+			} else if(addr === "192.168.1.3") {
+				color = "green";
+			} else if(addr === "192.168.1.13") {
+				color = "blue";
+			} else {
+				color = "";
+			}
+			var big_logo_url = color === "" ? "interstate_logo_512" : "interstate_logo_512_"+color;
+			var small_logo_url = "interstate_logo_128";
+		%>
 
-	<link rel="shortcut icon" href="dist/images/<%=small_logo_url %>.png" /> 
-	<link rel="apple-touch-icon-precomposed" href="dist/images/<%=big_logo_url %>.png" />
-  </head>
-  <body>
+		<link rel="shortcut icon" href="dist/images/<%=small_logo_url %>.png" /> 
+		<link rel="apple-touch-icon-precomposed" href="dist/images/<%=big_logo_url %>.png" />
+	</head>
+	<body>
 		<div class="content">
 		</div>
-	  <div>
+		<div>
 			<%- ist_include(ist_inc.vendor) %>
 			<%- ist_include(ist_inc.runtime) %>
 			<%- ist_include(ist_inc.runtime_style) %>
 
 			<script type="text/javascript">
 				$(function() {
-					$(document.body).dom_output({
+					$(".content", document.body).dom_output({
 						editor_url: window.location.protocol + "//" + window.location.host + "/src/view/editor/editor.ejs.html"
 					});
 				});
 			</script>
-	  </div>
-  </body>
+		</div>
+	</body>
 </html>
