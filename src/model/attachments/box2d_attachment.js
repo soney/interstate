@@ -160,6 +160,19 @@
 						shape.SetRadius(radius/PIXELS_PER_METER);
 					}
 				}, 
+				fixture_attributes: function(contextual_object) {
+					var fixture = this.get_fixture();
+					if(fixture) {
+						var density = contextual_object.prop_val("density"),
+							friction = contextual_object.prp_val("friction"),
+							restitution = contextual_object.prop_val("restitution");
+
+						fixture.density = density;
+						fixture.friction = friction;
+						fixture.restition = restitution;
+						fixture.ComputeMassData();
+					}
+				},
 				path: function(contextual_object) {
 					var shape = this.shape.get();
 					if(shape instanceof B2PolygonShape) {

@@ -61,6 +61,7 @@ var UNDEF = {};
 		proto.disable = function () {
 			My.superclass.disable.apply(this, arguments);
 			if(cjs.isConstraint(this.constraint)) {
+				console.log("disable");
 				this.constraint.offChange(this.check_constraint_val, this);
 			}
 		};

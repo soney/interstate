@@ -246,6 +246,9 @@
 			var fixture = new ist.Dict({direct_attachments: [new ist.FixtureAttachment()]});
 			physics.set("fixture", fixture);
 			fixture.set("fixed", new ist.Cell({str: "true"}));
+			fixture.set("restitution", new ist.Cell({str: "0.2"}));
+			fixture.set("friction", new ist.Cell({str: "0.5"}));
+			fixture.set("density", new ist.Cell({str: "1.0"}));
 			fixture.set("world", new ist.Cell({str: "physics.world"}));
 			fixture.set("computed_x", new ist.Cell({str: "fetch_physics_info(this, 'getComputedX')"}));
 			fixture.set("computed_y", new ist.Cell({str: "fetch_physics_info(this, 'getComputedY')"}));
