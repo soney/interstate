@@ -171,8 +171,6 @@
 						fixture.density = density;
 						fixture.friction = friction;
 						fixture.restition = restitution;
-						window.fixture = fixture;
-						fixture.ComputeMassData();
 					}
 				},
 				path: function(contextual_object) {
@@ -220,7 +218,7 @@
 								var shape_type = shape_attachment.shape_type;
 								if(shape_type === "circle" || shape_type === "rect") {
 									var density = contextual_object.prop_val("density"),
-										friction = contextual_object.porp_val("friction"),
+										friction = contextual_object.prop_val("friction"),
 										restitution = contextual_object.prop_val("restitution");
 									var fixture;
 									fixDef.density = density;

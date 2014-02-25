@@ -182,17 +182,17 @@
 
 									var anim_options = { };
 									anim_options[raph_name] = cjs.get(prop_val);
-									//try {
+									try {
 										robj.animate(anim_options, duration, easing);
-									//} catch(e) {
-										//console.error(e);
-									//}
+									} catch(e) {
+										console.error(e);
+									}
 								} else {
-									//try {
+									try {
 										robj.attr(raph_name, cjs.get(prop_val));
-									//} catch(e) {
-										//console.error(e);
-									//}
+									} catch(e) {
+										console.error(e);
+									}
 								}
 							}
 						}
