@@ -15,12 +15,7 @@ Then run:
 
     git clone https://github.com/soney/interstate.git
     cd interstate
-    git submodule update --init --recursive
     npm install .
-    cd src/_vendor/cjs/
-    npm install .
-    grunt
-    cd ../../..
     grunt
     node server
 
