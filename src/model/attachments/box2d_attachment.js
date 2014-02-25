@@ -119,6 +119,7 @@
 				this.b2vt = cjs.constraint();
 				this.body = cjs.constraint();
 				this.shape = cjs.constraint();
+				this.fixture = cjs.constraint();
 
 				this._update_interval = window.setInterval(_.bind(function() {
 					var body = this.get_body();
@@ -164,12 +165,13 @@
 					var fixture = this.get_fixture();
 					if(fixture) {
 						var density = contextual_object.prop_val("density"),
-							friction = contextual_object.prp_val("friction"),
+							friction = contextual_object.prop_val("friction"),
 							restitution = contextual_object.prop_val("restitution");
 
 						fixture.density = density;
 						fixture.friction = friction;
 						fixture.restition = restitution;
+						window.fixture = fixture;
 						fixture.ComputeMassData();
 					}
 				},
@@ -216,39 +218,45 @@
 							var shape_attachment = contextual_object.get_attachment_instance("shape");
 							if(shape_attachment) {
 								var shape_type = shape_attachment.shape_type;
-								if(shape_type === "circle") {
-									var cx = contextual_object.prop_val("cx");
-									var cy = contextual_object.prop_val("cy");
-									var radius = contextual_object.prop_val("r");
+								if(shape_type === "circle" || shape_type === "rect") {
+									var density = contextual_object.prop_val("density"),
+										friction = contextual_object.porp_val("friction"),
+										restitution = contextual_object.prop_val("restitution");
+									var fixture;
+									fixDef.density = density;
+									fixDef.friction = friction;
+									fixDef.restitution = restitution;
 
-									bodyDef.position.x = (cx) / PIXELS_PER_METER;
-									bodyDef.position.y = (cy) / PIXELS_PER_METER;
-									fixDef.shape = new B2CircleShape(radius/PIXELS_PER_METER);
+									if(shape_type === "circle") {
+										var cx = contextual_object.prop_val("cx");
+										var cy = contextual_object.prop_val("cy");
+										var radius = contextual_object.prop_val("r");
 
+										bodyDef.position.x = (cx) / PIXELS_PER_METER;
+										bodyDef.position.y = (cy) / PIXELS_PER_METER;
+										fixDef.shape = new B2CircleShape(radius/PIXELS_PER_METER);
+
+									} else if(shape_type === "rect") {
+										var x = contextual_object.prop_val("x"),
+											y = contextual_object.prop_val("y"),
+											width = contextual_object.prop_val("width"),
+											height = contextual_object.prop_val("height");
+
+										bodyDef.position.x = (x+.5*width) / PIXELS_PER_METER;
+										bodyDef.position.y = (y+.5*height) / PIXELS_PER_METER;
+										fixDef.shape = new B2PolygonShape();
+										fixDef.shape.SetAsBox(width/(2*PIXELS_PER_METER),
+																height/(2*PIXELS_PER_METER));
+
+									}
+									fixture = world.CreateBody(bodyDef).CreateFixture(fixDef);
+									fixture.cobj = contextual_object;
+
+									this.body.set(fixture.GetBody());
+									this.shape.set(fixture.GetShape());
+
+									this.fixture.set(fixture);
 									this.world = world;
-									this.fixture = this.world.CreateBody(bodyDef).CreateFixture(fixDef);
-									this.fixture.cobj = contextual_object;
-
-									this.body.set(this.fixture.GetBody());
-									this.shape.set(this.fixture.GetShape());
-								} else if(shape_type === "rect") {
-									var x = contextual_object.prop_val("x"),
-										y = contextual_object.prop_val("y"),
-										width = contextual_object.prop_val("width"),
-										height = contextual_object.prop_val("height");
-
-									bodyDef.position.x = (x+.5*width) / PIXELS_PER_METER;
-									bodyDef.position.y = (y+.5*height) / PIXELS_PER_METER;
-									fixDef.shape = new B2PolygonShape();
-									fixDef.shape.SetAsBox(width/(2*PIXELS_PER_METER),
-															height/(2*PIXELS_PER_METER));
-
-									this.world = world;
-									this.fixture = this.world.CreateBody(bodyDef).CreateFixture(fixDef);
-									this.fixture.cobj = contextual_object;
-
-									this.body.set(this.fixture.GetBody());
-									this.shape.set(this.fixture.GetShape());
 								}
 							}
 						}
