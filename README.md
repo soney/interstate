@@ -13,7 +13,7 @@ To build from scratch, you will need:
 
 Then run:
 
-    git clone https://github.com/soney/interstategit
+    git clone https://github.com/soney/interstate.git
     cd interstate
     git submodule update --init --recursive
     npm install .
