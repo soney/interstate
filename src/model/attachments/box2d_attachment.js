@@ -71,7 +71,7 @@
 				var update_world = _.bind(function() {
 					this.world.Step(1 / 60, 10, 10);
 					ist.requestAnimationFrame.call(window, update_world);
-					//this.world.DrawDebugData();
+					this.world.DrawDebugData();
 				}, this);
 				ist.requestAnimationFrame.call(window, update_world);
 
@@ -199,7 +199,7 @@
 								x = (contextual_object.prop_val("x")+.5*width) / PIXELS_PER_METER;
 								y = (contextual_object.prop_val("y")+.5*height) / PIXELS_PER_METER;
 							}
-							body.SetType(b2Body.b2_fixedBody);
+							body.SetType(b2Body.b2_staticBody);
 							body.SetPosition(new B2Vec2(x, y));
 						} else {
 							body.SetType(b2Body.b2_dynamicBody);
@@ -219,11 +219,15 @@
 								if(shape_type === "circle" || shape_type === "rect") {
 									var density = contextual_object.prop_val("density"),
 										friction = contextual_object.prop_val("friction"),
-										restitution = contextual_object.prop_val("restitution");
-									var fixture;
+										restitution = contextual_object.prop_val("restitution"),
+										fixed = contextual_object.prop_val("fixed"),
+										fixture;
+
 									fixDef.density = density;
 									fixDef.friction = friction;
 									fixDef.restitution = restitution;
+
+									bodyDef.type = fixed ? b2Body.b2_staticBody : b2Body.b2_dynamicBody;
 
 									if(shape_type === "circle") {
 										var cx = contextual_object.prop_val("cx");
@@ -233,7 +237,6 @@
 										bodyDef.position.x = (cx) / PIXELS_PER_METER;
 										bodyDef.position.y = (cy) / PIXELS_PER_METER;
 										fixDef.shape = new B2CircleShape(radius/PIXELS_PER_METER);
-
 									} else if(shape_type === "rect") {
 										var x = contextual_object.prop_val("x"),
 											y = contextual_object.prop_val("y"),
@@ -250,10 +253,28 @@
 									fixture = world.CreateBody(bodyDef).CreateFixture(fixDef);
 									fixture.cobj = contextual_object;
 
-									this.body.set(fixture.GetBody());
+									this.fixture.set(fixture);
+
+									var body = fixture.GetBody();
+
+									this.body.set(body);
 									this.shape.set(fixture.GetShape());
 
-									this.fixture.set(fixture);
+									var position = body.GetPosition();
+									var angle = body.GetAngle();
+									var linearVelocity = body.GetLinearVelocity();
+									var angularVelocity = body.GetAngularVelocity();
+
+									this.b2x.set(position.x * PIXELS_PER_METER);
+									this.b2y.set(position.y * PIXELS_PER_METER);
+
+									this.b2vx.set(linearVelocity.x);
+									this.b2vy.set(linearVelocity.y);
+
+									this.b2t.set(angle);
+
+									this.b2vt.set(angularVelocity);
+
 									this.world = world;
 								}
 							}

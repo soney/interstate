@@ -47,6 +47,7 @@ var UNDEF = {};
 
 			if (val && (last_val !== val)) {
 				ist.event_queue.wait();
+				console.log("FIRE");
 				this.fire({
 					value: val,
 					timestamp: (new Date()).getTime()

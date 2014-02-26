@@ -338,6 +338,10 @@
 				using_as = active_value_info.using_as,
 				is_fallback = active_value_info.is_fallback;
 			var rv;
+
+			if(this.sid() === 220) {
+				console.log(active_value_info);
+			}
 			if(using_as === USING_AS_TRANSITION) {
 				if(is_fallback) {
 					return this._last_rv;
