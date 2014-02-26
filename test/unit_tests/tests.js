@@ -149,7 +149,8 @@
 				//env.print();
 
 				var pss = new ist.ProgramStateServer({
-					root: env.get_root()
+					root: env.get_root(),
+					command_stack: env._command_stack
 				});
 
 				pss.set_communication_mechanism(new ist.SameWindowCommWrapper());

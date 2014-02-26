@@ -52,6 +52,7 @@
 			circle.set("animated_properties", new ist.Cell({str: "false"}));
 			circle.set("animation_duration", new ist.Cell({str: "300"}));
 			circle.set("animation_easing", new ist.Cell({str: "'linear'"}));
+			circle.set("shape", new ist.Cell({str: "'circle'"}));
 
 
 			var ellipse = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
@@ -80,6 +81,7 @@
 			ellipse.set("animated_properties", new ist.Cell({str: "false"}));
 			ellipse.set("animation_duration", new ist.Cell({str: "300"}));
 			ellipse.set("animation_easing", new ist.Cell({str: "'linear'"}));
+			ellipse.set("shape", new ist.Cell({str: "'ellipse'"}));
 			
 			var image = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
@@ -102,6 +104,7 @@
 			image.set("animated_properties", new ist.Cell({str: "false"}));
 			image.set("animation_duration", new ist.Cell({str: "300"}));
 			image.set("animation_easing", new ist.Cell({str: "'linear'"}));
+			image.set("shape", new ist.Cell({str: "'image'"}));
 
 
 			var rect = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
@@ -111,7 +114,7 @@
 																								}
 																						})]
 																					});
-			svg.set("rect", rect);
+			svg.set("rectangle", rect);
 			rect.set("show", new ist.Cell({str: "true"}));
 			rect.set("clip_rect", new ist.Cell({str: "null"}));
 			rect.set("cursor", new ist.Cell({str: "'default'"}));
@@ -131,6 +134,7 @@
 			rect.set("animated_properties", new ist.Cell({str: "false"}));
 			rect.set("animation_duration", new ist.Cell({str: "300"}));
 			rect.set("animation_easing", new ist.Cell({str: "'linear'"}));
+			rect.set("shape", new ist.Cell({str: "'rectangle'"}));
 			
 			var text = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
@@ -162,6 +166,7 @@
 			text.set("animated_properties", new ist.Cell({str: "false"}));
 			text.set("animation_duration", new ist.Cell({str: "300"}));
 			text.set("animation_easing", new ist.Cell({str: "'linear'"}));
+			text.set("shape", new ist.Cell({str: "'text'"}));
 
 			var path = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
@@ -187,6 +192,7 @@
 			path.set("animated_properties", new ist.Cell({str: "false"}));
 			path.set("animation_duration", new ist.Cell({str: "300"}));
 			path.set("animation_easing", new ist.Cell({str: "'linear'"}));
+			path.set("shape", new ist.Cell({str: "'path'"}));
 
 			var group = new ist.Dict({has_protos: false, direct_attachments: [new ist.GroupAttachment()]});
 			svg.set("group", group);
@@ -232,6 +238,41 @@
 						obj.set("tag", new ist.Cell({str: "'" + tag_name + "'"}));
 					});
 			/**/
+		}
+
+		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "physics") >= 0)) {
+			var physics = new ist.Dict({has_protos: false});
+			root_dict.set("physics", physics);
+
+			var world = new ist.Dict({direct_attachments: [new ist.WorldAttachment()]});
+			physics.set("world", world);
+			world.set("gx", new ist.Cell({str: "0.0"}));
+			world.set("gy", new ist.Cell({str: "9.8"}));
+
+			var fixture = new ist.Dict({direct_attachments: [new ist.FixtureAttachment()]});
+			physics.set("fixture", fixture);
+			fixture.set("fixed", new ist.Cell({str: "true"}));
+			fixture.set("restitution", new ist.Cell({str: "0.2"}));
+			fixture.set("friction", new ist.Cell({str: "0.5"}));
+			fixture.set("density", new ist.Cell({str: "1.0"}));
+			fixture.set("world", new ist.Cell({str: "physics.world"}));
+			fixture.set("computed_x", new ist.Cell({str: "fetch_physics_info(this, 'getComputedX')"}));
+			fixture.set("computed_y", new ist.Cell({str: "fetch_physics_info(this, 'getComputedY')"}));
+			fixture.set("computed_theta", new ist.Cell({str: "fetch_physics_info(this, 'getComputedTheta')"}));
+			fixture.set("applyForce", new ist.Cell({str: "physics_call(this, 'applyForce')"}));
+			fixture.set("applyImpulse", new ist.Cell({str: "physics_call(this, 'applyImpulse')"}));
+			fixture.set("physics_call", new ist.Cell({str: "function(p, prop_name) {" +
+				"var fixture_attachment = interstate.get_attachment(p, 'box2d_fixture');" +
+				//"if(fixture_attachment) {" +
+				"return fixture_attachment[prop_name].bind(fixture_attachment);" +
+				//"}" +
+			"}"}));
+			fixture.set("fetch_physics_info", new ist.Cell({str: "function(p, prop_name) {" +
+				"var fixture_attachment = interstate.get_attachment(p, 'box2d_fixture');" +
+				//"if(fixture_attachment) {" +
+				"return fixture_attachment[prop_name]();" +
+				//"}" +
+			"}"}));
 		}
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "functions") >= 0)) {

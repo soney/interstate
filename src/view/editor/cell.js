@@ -53,7 +53,8 @@
 			parent: false,
 			state: false,
 			prop: false,
-			default_max_width: 90
+			default_max_width: 90,
+			char_limit: 200
 		},
 		_create: function() {
 			var client = this.option("client");
@@ -263,6 +264,10 @@
 								});
 				} else {
 					var str = this.$str.get() || "";
+
+					if(str.length > this.option("char_limit")) {
+						str = str.slice(0, this.option("char_limit")-3)+"..."
+					}
 
 					this.element.removeClass("error")
 								.attr("title", str)

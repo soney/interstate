@@ -194,6 +194,9 @@
 				child.destroy(true, true);
 				this.remove_child(key.child, key.special_contexts);
 			}, this);
+			if(cobj instanceof ist.ContextualDict) {
+				cobj.update_attachments();
+			}
 		};
 			
 		proto.create_current_contextual_objects = function () {
@@ -301,7 +304,7 @@
 			return rv;
 		};
 		proto.destroy_cobj = function(cobj) {
-			var pointer = this.pointer,
+			var pointer = cobj.get_pointer(),
 				node = this.tree,
 				i = 1, len = pointer.length(), ptr_i, sc_i,
 				parent_node;

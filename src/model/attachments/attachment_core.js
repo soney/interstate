@@ -101,7 +101,7 @@
 			InstanceType.superclass.constructor.apply(this, arguments);
 
 			this.type = attachment_name;
-			this.on_ready();
+			//this.on_ready();
 		};
 		(function(My) {
 			_.proto_extend(My, ist.AttachmentInstance);
@@ -203,5 +203,10 @@
 		}(AttachmentType));
 
 		return AttachmentType;
+	};
+
+	ist.get_attachment = function(obj, attachment_name) {
+		var attachment = obj.get_attachment_instance(attachment_name);
+		return attachment;
 	};
 }(interstate));

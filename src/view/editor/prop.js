@@ -183,8 +183,7 @@
 			}, this);
 
 			var on_click = function(event) {
-				$("ul.menu > li", this.element).off('.menu_item');
-				$(window).off('.menu_item');
+				$(window).add("ul.menu > li", this.element).off('.menu_item');
 
 				$("ul.menu > li", this.element).on('click.menu_item', _.bind(function(e) {
 					this.on_menu_action(e.target.getAttribute('data-action'));
@@ -223,8 +222,7 @@
 								.off("holding", on_hold, this)
 								.off("hidden", on_hidden, this);
 				this.$show_menu.set(false);
-				$("ul.menu > li", this.element).off('.menu_item');
-				$(window).off('mousedown.menu_item');
+				$(window).add("ul.menu > li", this.element).off('.menu_item');
 			};
 			this.menu_state.on("on_click", on_click, this);
 			this.menu_state.on("holding", on_hold, this);

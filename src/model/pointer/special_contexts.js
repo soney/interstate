@@ -45,6 +45,22 @@
 		};
 	}(ist.ProvisionalContext));
 
+	var ec_counter = 1;
+	ist.EventContext = function (event) {
+		ist.EventContext.superclass.constructor.apply(this, arguments);
+		this.event = event;
+		this.context_obj = {
+			event: { value: event }
+		};
+	};
+
+	(function (My) {
+		_.proto_extend(My, ist.SpecialContext);
+		var proto = My.prototype;
+		proto.get_event = function () {
+			return this.event;
+		};
+	}(ist.EventContext));
 
 	ist.StateContext = function (state) {
 		ist.StateContext.superclass.constructor.apply(this, arguments);
