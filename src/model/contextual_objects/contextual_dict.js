@@ -574,9 +574,11 @@
 					if(attachment_instance.get_creator() !== info.attachment) {
 						attachment_instance.destroy();
 						attachment_instance = this._attachment_instances[type] = attachment.create_instance(this, info.owner);
+						attachment_instance.on_ready();
 					}
 				} else {
 					attachment_instance = this._attachment_instances[type] = attachment.create_instance(this, info.owner);
+					attachment_instance.on_ready();
 				}
 				return attachment_instance;
 			} else {
@@ -585,40 +587,43 @@
 		};
 
 		proto.get_attachment_instance_and_src = function (type) {
-			var dict = this.get_object();
-			var direct_attachments = dict.direct_attachments();
-			var len = direct_attachments.length;
-			var attachment, info, i, j, attachment_instance;
+			var info;
+			if(!this.is_template()) {
+				var dict = this.get_object(),
+					direct_attachments = dict.direct_attachments(),
+					len = direct_attachments.length,
+					attachment, i, j, attachment_instance;
 
-			for (i = 0; i < len; i += 1) {
-				attachment = direct_attachments[i];
-				if (attachment.get_type() === type) {
-					info = {
-						attachment: attachment,
-						owner: dict
-					};
-					break;
+				for (i = 0; i < len; i += 1) {
+					attachment = direct_attachments[i];
+					if (attachment.get_type() === type) {
+						info = {
+							attachment: attachment,
+							owner: dict
+						};
+						break;
+					}
 				}
-			}
 
-			if (!info) {
-				var proto_objects = this.get_all_protos();
-				var plen = proto_objects.length;
-				var proto_obj;
+				if (!info) {
+					var proto_objects = this.get_all_protos();
+					var plen = proto_objects.length;
+					var proto_obj;
 
-				outer_loop:
-				for (i = 0; i < plen; i += 1) {
-					proto_obj = proto_objects[i];
-					direct_attachments = proto_obj.direct_attachments();
-					len = direct_attachments.length;
-					for (j = 0; j < len; j += 1) {
-						attachment = direct_attachments[j];
-						if (attachment.get_type() === type) {
-							info = {
-								attachment: attachment,
-								owner: dict
-							};
-							break outer_loop;
+					outer_loop:
+					for (i = 0; i < plen; i += 1) {
+						proto_obj = proto_objects[i];
+						direct_attachments = proto_obj.direct_attachments();
+						len = direct_attachments.length;
+						for (j = 0; j < len; j += 1) {
+							attachment = direct_attachments[j];
+							if (attachment.get_type() === type) {
+								info = {
+									attachment: attachment,
+									owner: dict
+								};
+								break outer_loop;
+							}
 						}
 					}
 				}
@@ -636,6 +641,8 @@
 			}
 		};
 		proto.update_attachments = function() {
+			this.get_attachment_instance("dom");
+			this.get_attachment_instance("shape");
 			this.get_attachment_instance("box2d_fixture");
 		};
 

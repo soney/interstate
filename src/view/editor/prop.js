@@ -183,6 +183,8 @@
 			}, this);
 
 			var on_click = function(event) {
+				$(window).add("ul.menu > li", this.element).off('.menu_item');
+
 				$("ul.menu > li", this.element).on('click.menu_item', _.bind(function(e) {
 					this.on_menu_action(e.target.getAttribute('data-action'));
 					on_mup_oclick(e);

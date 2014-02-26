@@ -71,19 +71,25 @@
 				var update_world = _.bind(function() {
 					this.world.Step(1 / 60, 10, 10);
 					ist.requestAnimationFrame.call(window, update_world);
-					this.world.DrawDebugData();
+					/*
+					if(this.world.m_gravity.y < 5) {
+						this.world.DrawDebugData();
+					}
+					*/
 				}, this);
 				ist.requestAnimationFrame.call(window, update_world);
 
-				/*
+/*
 				var world = this.world;
-				var debugDraw = new b2DebugDraw();
-				debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
-				debugDraw.SetDrawScale(PIXELS_PER_METER);
-				debugDraw.SetFillAlpha(0.3);
-				debugDraw.SetLineThickness(1.0);
-				debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
-				world.SetDebugDraw(debugDraw);
+				if(world.m_gravity.y < 5) {
+					var debugDraw = new b2DebugDraw();
+					debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
+					debugDraw.SetDrawScale(PIXELS_PER_METER);
+					debugDraw.SetFillAlpha(0.3);
+					debugDraw.SetLineThickness(1.0);
+					debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+					world.SetDebugDraw(debugDraw);
+				}
 				*/
 			},
 			parameters: {
@@ -111,12 +117,34 @@
 			ready: function() {
 				var contextual_object = this.get_contextual_object();
 
-				this.b2x = cjs.constraint();
-				this.b2y = cjs.constraint();
-				this.b2vx = cjs.constraint();
-				this.b2vy= cjs.constraint();
-				this.b2t = cjs.constraint();
-				this.b2vt = cjs.constraint();
+				this.b2x = cjs.constraint(function() {
+					var shape_type = contextual_object.prop_val("shape");
+					if(shape_type === "circle") {
+						return contextual_object.prop_val("cx");
+					} else if(shape_type === "rectangle") {
+						var x = contextual_object.prop_val("x"),
+							width = contextual_object.prop_val("width");
+						return x+width/2;
+					} else {
+						return -1;
+					}
+				});
+				this.b2y = cjs.constraint(function() {
+					var shape_type = contextual_object.prop_val("shape");
+					if(shape_type === "circle") {
+						return contextual_object.prop_val("cy");
+					} else if(shape_type === "rectangle") {
+						var y = contextual_object.prop_val("y"),
+							height = contextual_object.prop_val("height");
+						return y+height/2;
+					} else {
+						return -1;
+					}
+				});
+				this.b2vx = cjs.constraint(0);
+				this.b2vy= cjs.constraint(0);
+				this.b2t = cjs.constraint(0);
+				this.b2vt = cjs.constraint(0);
 				this.body = cjs.constraint();
 				this.shape = cjs.constraint();
 				this.fixture = cjs.constraint();
@@ -142,6 +170,7 @@
 
 						cjs.signal();
 					}
+					/**/
 				}, this), 1000 / 60);
 			},
 			destroy: function(silent) {
@@ -213,70 +242,67 @@
 						var world_attachment = world_val.get_attachment_instance("box2d_world");
 						var world = world_attachment.get_world();
 						if(this.world !== world) {
-							var shape_attachment = contextual_object.get_attachment_instance("shape");
-							if(shape_attachment) {
-								var shape_type = shape_attachment.shape_type;
-								if(shape_type === "circle" || shape_type === "rect") {
-									var density = contextual_object.prop_val("density"),
-										friction = contextual_object.prop_val("friction"),
-										restitution = contextual_object.prop_val("restitution"),
-										fixed = contextual_object.prop_val("fixed"),
-										fixture;
+							var shape_type = contextual_object.prop_val("shape");
+							if(shape_type === "circle" || shape_type === "rectangle") {
+								var density = contextual_object.prop_val("density"),
+									friction = contextual_object.prop_val("friction"),
+									restitution = contextual_object.prop_val("restitution"),
+									fixed = contextual_object.prop_val("fixed"),
+									fixture;
 
-									fixDef.density = density;
-									fixDef.friction = friction;
-									fixDef.restitution = restitution;
+								fixDef.density = density;
+								fixDef.friction = friction;
+								fixDef.restitution = restitution;
 
-									bodyDef.type = fixed ? b2Body.b2_staticBody : b2Body.b2_dynamicBody;
+								bodyDef.type = fixed ? b2Body.b2_staticBody : b2Body.b2_dynamicBody;
 
-									if(shape_type === "circle") {
-										var cx = contextual_object.prop_val("cx");
-										var cy = contextual_object.prop_val("cy");
-										var radius = contextual_object.prop_val("r");
+								if(shape_type === "circle") {
+									var cx = contextual_object.prop_val("cx"),
+										cy = contextual_object.prop_val("cy"),
+										radius = contextual_object.prop_val("r");
 
-										bodyDef.position.x = (cx) / PIXELS_PER_METER;
-										bodyDef.position.y = (cy) / PIXELS_PER_METER;
-										fixDef.shape = new B2CircleShape(radius/PIXELS_PER_METER);
-									} else if(shape_type === "rect") {
-										var x = contextual_object.prop_val("x"),
-											y = contextual_object.prop_val("y"),
-											width = contextual_object.prop_val("width"),
-											height = contextual_object.prop_val("height");
+									bodyDef.position.x = (cx) / PIXELS_PER_METER;
+									bodyDef.position.y = (cy) / PIXELS_PER_METER;
+									fixDef.shape = new B2CircleShape(radius/PIXELS_PER_METER);
+								} else if(shape_type === "rectangle") {
+									var x = contextual_object.prop_val("x"),
+										y = contextual_object.prop_val("y"),
+										width = contextual_object.prop_val("width"),
+										height = contextual_object.prop_val("height");
 
-										bodyDef.position.x = (x+.5*width) / PIXELS_PER_METER;
-										bodyDef.position.y = (y+.5*height) / PIXELS_PER_METER;
-										fixDef.shape = new B2PolygonShape();
-										fixDef.shape.SetAsBox(width/(2*PIXELS_PER_METER),
-																height/(2*PIXELS_PER_METER));
+									bodyDef.position.x = (x+.5*width) / PIXELS_PER_METER;
+									bodyDef.position.y = (y+.5*height) / PIXELS_PER_METER;
+									fixDef.shape = new B2PolygonShape();
+									fixDef.shape.SetAsBox(width/(2*PIXELS_PER_METER),
+															height/(2*PIXELS_PER_METER));
 
-									}
-									fixture = world.CreateBody(bodyDef).CreateFixture(fixDef);
-									fixture.cobj = contextual_object;
-
-									this.fixture.set(fixture);
-
-									var body = fixture.GetBody();
-
-									this.body.set(body);
-									this.shape.set(fixture.GetShape());
-
-									var position = body.GetPosition();
-									var angle = body.GetAngle();
-									var linearVelocity = body.GetLinearVelocity();
-									var angularVelocity = body.GetAngularVelocity();
-
-									this.b2x.set(position.x * PIXELS_PER_METER);
-									this.b2y.set(position.y * PIXELS_PER_METER);
-
-									this.b2vx.set(linearVelocity.x);
-									this.b2vy.set(linearVelocity.y);
-
-									this.b2t.set(angle);
-
-									this.b2vt.set(angularVelocity);
-
-									this.world = world;
 								}
+								fixture = world.CreateBody(bodyDef).CreateFixture(fixDef);
+								fixture.cobj = contextual_object;
+
+								this.fixture.set(fixture);
+
+								var body = fixture.GetBody();
+
+								this.body.set(body);
+								this.shape.set(fixture.GetShape());
+
+								var position = body.GetPosition();
+								var angle = body.GetAngle();
+								var linearVelocity = body.GetLinearVelocity();
+								var angularVelocity = body.GetAngularVelocity();
+
+								this.b2x.set(position.x * PIXELS_PER_METER);
+								this.b2y.set(position.y * PIXELS_PER_METER);
+
+								this.b2vx.set(linearVelocity.x);
+								this.b2vy.set(linearVelocity.y);
+
+								this.b2t.set(angle);
+
+								this.b2vt.set(angularVelocity);
+
+								this.world = world;
 							}
 						}
 					}

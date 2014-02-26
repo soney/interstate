@@ -74,6 +74,7 @@
 	(function (my) {
 		_.proto_extend(my, ist.AttachmentInstance);
 		var proto = my.prototype;
+		proto.on_ready = function() {};
 		proto.get_owner = function () {
 			return this._owner;
 		};
