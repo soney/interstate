@@ -107,7 +107,7 @@
 		var the_div = $("<div />").appendTo(document.body);
 		clear_snapshots(function() {
 			take_snapshot([], function() {
-				var env = new ist.Environment({create_builtins: true});
+				var env = new ist.Environment({builtins: true});
 				env	.cd("screen")
 						.set("my_circle", "<stateful>")
 						.cd("my_circle")
@@ -145,7 +145,7 @@
 		expect(3);
 		clear_snapshots(function() {
 			take_snapshot([], function() {
-				var env = new ist.Environment({create_builtins: true});
+				var env = new ist.Environment({builtins: true});
 				//env.print();
 
 				var pss = new ist.ProgramStateServer({
@@ -351,9 +351,9 @@
 		expect(1);
 		clear_snapshots(function() {
 			take_snapshot([], function() {
-				var env = new ist.Environment({create_builtins: true});
-				env	.set("height", "10")
-					.set("obj", "<stateful>");
+				var env = new ist.Environment({builtins: false});
+				//env	.set("height", "10")
+					//.set("obj", "<stateful>");
 				var root = env.get_root();
 
 				var runtime_div = $("<div />").appendTo(document.body);

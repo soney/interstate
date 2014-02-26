@@ -44,7 +44,6 @@
 				}
 			}
 		});
-		//console.log('SERVER:'+this.object.id());
 	};
 
 	(function (my) {

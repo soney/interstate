@@ -63,6 +63,7 @@
 		proto.disconnect = function() {
 			this.destroy_every_client();
 			this.post({type: "disconnect"});
+			console.log("disconnect");
 		};
 
 		proto.destroy_every_client = function() {

@@ -76,12 +76,7 @@
 		if (options && _.has(options, "root")) {
 			root = options.root;
 		} else {
-			root = ist.get_default_root(true);
-
-			if(!ist.__empty_files && (!options || options.create_builtins !== false)) {
-				var builtins = options && options.builtins || true;
-				ist.initialize_root(root, builtins);
-			}
+			root = ist.get_default_root(!options || options.builtins);
 		}
 		//root.set("touches", touches);
 
