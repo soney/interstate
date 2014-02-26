@@ -235,13 +235,30 @@
 
 			var statechart = stateful_obj.get_own_statechart(),
 			start_state = statechart.get_start_state(),
-			protos_cell = new ist.Cell({str: "shape."+object, ignore_inherited_in_first_dict: true});
+			protos_cell = new ist.Cell({str: "svg."+object, ignore_inherited_in_first_dict: true});
 
 			protos_stateful_prop.set(start_state, protos_cell);
 
 			var sketch = this.option("root"),
-			screen = sketch._get_direct_prop('screen'),
-			propCommand = new ist.SetPropCommand({parent: screen, value: stateful_obj});
+				screen = sketch._get_direct_prop('screen');
+
+			if(!screen) {
+				screen = new ist.StatefulObj(undefined, true);
+				protos_stateful_prop = new ist.StatefulProp({can_inherit: false,
+					statechart_parent: screen});
+				screen.do_initialize({
+					direct_protos: protos_stateful_prop
+				});
+				sketch._set_direct_prop("screen", screen);
+
+				statechart = screen.get_own_statechart(),
+				start_state = statechart.get_start_state(),
+				protos_cell = new ist.Cell({str: "svg.paper", ignore_inherited_in_first_dict: true});
+
+				protos_stateful_prop.set(start_state, protos_cell);
+			}
+
+			var propCommand = new ist.SetPropCommand({parent: screen, value: stateful_obj});
 			var circle_context = ist.find_or_put_contextual_obj(stateful_obj);														
 			this._command_stack._do(propCommand);
 			/*var shape_attachment_instance = circle_context.get_attachment_instance("shape");
