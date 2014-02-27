@@ -155,6 +155,16 @@
 			var my_ptr = this.contextual_object.get_pointer();
 
 			var valid_children = this.get_valid_child_pointers();
+			var valid_children_map = {};
+			_.each(valid_children, function(vc) {
+				var hash = vc.pointer.hash();
+				if(_.has(valid_children_map, hash)) {
+					valid_children_map[hash].push(vc);
+				} else {
+					valid_children_map[hash] = [vc];
+				}
+			});
+
 			var to_destroy = [];
 			_.each(children, function(child, index) {
 				var key = keys[index];
@@ -162,10 +172,19 @@
 				var obj = key.child;
 				var special_context = key.special_context;
 				var ptr = my_ptr.push(obj, special_context);
+				var hash = ptr.hash();
 
-				var found = _.find(valid_children, function(c) {
-						return c.obj === obj && c.pointer.eq(ptr);
-					});
+				var found = false;
+				if(_.has(valid_children_map, hash)) {
+					var vcm = valid_children_map[hash], len = vcm.length, vc;
+					for(var i = 0; i<len; i++) {
+						vc = vcm[i];
+						if(vc.obj === obj && vc.pointer.eq(ptr)) {
+							found = true;
+							break;
+						}
+					}
+				}
 
 				if(!found) {
 					to_destroy.push({key: key, value: child});
