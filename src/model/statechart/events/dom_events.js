@@ -23,14 +23,18 @@
 
 					ist.event_queue.wait();
 
-					event = _.extend({}, event, {
-						ist_target: specified_target
+					var new_event = _.extend({}, event, {
+						ist_target: specified_target,
+						preventDefault: event.preventDefault ? _.bind(event.preventDefault, event) : function(){},
+						stopPropagation: event.stopPropagation ? _.bind(event.stopPropagation, event) : function(){},
+						stopImmediatePropagation: event.stopImmediatePropagation ? _.bind(event.stopImmediatePropagation, event) : function(){}
 					});
 
-					self.fire(event);
-					_.defer(function () {
+					self.fire(new_event);
+					// Removing defer statement so that stopPropagation and preventDefault work
+					//_.defer(function () {
 						ist.event_queue.signal();
-					});
+					//});
 				};
 				listener.destroy = function() {
 					self = null;

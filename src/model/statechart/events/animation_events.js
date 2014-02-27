@@ -14,6 +14,9 @@
 			window.setTimeout(callback, 1000/60);
 		};
 	})();
+
+	ist.requestAnimationFrame = requestAnimFrame;
+
 	ist.FrameEvent = function () {
 		ist.Event.apply(this, arguments);
 		this._initialize();

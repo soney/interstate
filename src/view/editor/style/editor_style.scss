@@ -108,6 +108,7 @@ html.full_window_editor {
 		margin: 0px;
 		.undoredo_group {
 			border-right: 1px solid #DDD;
+			display: block;
 		}
 		.widget_group {
 			border-left: 1px solid #DDD;
@@ -1138,6 +1139,7 @@ html.full_window_editor {
 			height: 22px;
 			resize: none;
 			width: 100%;
+			color: black;
 		}
 		&.drop_indicator {
 			background-color: #BADA55;

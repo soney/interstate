@@ -52,7 +52,7 @@
 					"<td class='resize_bar' data-cjs-on-mousedown='beginResizeAce'></td>" +
 				"</tr>" +
 			"</table>" +
-			"<div class='widget_group btn-group navbar-right'>" +
+			"<div class='widget_group navbar-right pull-right'>" +
 				"<div type='button' class='btn btn btn-default {{show_components ? \"active\" : \"\"}}' data-cjs-on-click='toggle_show_widgets'>" +
 					"Files" +
 					" <span class='glyphicon {{show_components ? \"glyphicon-chevron-up\" : \"glyphicon-chevron-down\"}}'></span>" +
@@ -201,7 +201,7 @@
 				component_list.add(pinned)	.addClass("drop_indicator")
 											.on("drop.pin", _.bind(function(e) {
 												var client = targ.column("option", "client");
-												if($(e.target).is(".component_drop")) {
+												if($(e.target).parents().is(".component_drop")) {
 													this.client_socket.post({
 														type: "save_component",
 														cobj_id: client.cobj_id
@@ -223,6 +223,9 @@
 
 				this.$pinned_height_pct.set(pinned_height / (pinned_height + obj_nav_height));
 			}, this));
+			$(window).on("beforeunload.close_editor", _.bind(function () {
+				this.destroy();
+			}, this));
 
 			this._addClassBindings();
 			this._addEventListeners();
@@ -233,6 +236,7 @@
 			this._removeEventListeners();
 			this._removeClassBindings();
 			this.$show_components.destroy();
+			this.on_unload();
 
 			this._super();
 		},
@@ -306,7 +310,7 @@
 			this.editor.renderer.setShowGutter(false); 
 			this.editor.getSession().setMode("ace/mode/javascript");
 
-			this._cellwidth_binding = cjs.bindCSS(ace_editor, "width", this.$window_inner_width.sub((this.$window_inner_width.le(767).iif(60, 300))).add("px"));
+			this._cellwidth_binding = cjs.bindCSS(ace_editor, "width", this.$window_inner_width.sub((this.$window_inner_width.le(767).iif(300, 300))).add("px"));
 			this.$window_inner_width.onChange(function() {
 				this.editor.resize();
 			}, this);
@@ -340,6 +344,13 @@
 		_enable_editor: function() {
 			$("table#cell_group", this.element).removeClass("disabled");
 			this.editor.setReadOnly(false)
+		},
+
+		on_unload: function() {
+			if(this.client_socket) {
+				this.client_socket.destroy();
+				delete this.client_socket;
+			}
 		},
 
 		_addEventListeners: function() {

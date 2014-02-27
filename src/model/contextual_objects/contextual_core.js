@@ -9,6 +9,7 @@
 	ist.ContextualObject = function (options) {
 		able.make_this_listenable(this);
 		this._id = uid();
+        this._hash = uid.strip_prefix(this._id);
 		ist.register_uid(this._id, this);
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
@@ -75,10 +76,11 @@
 			}
 		};
 
-		proto.id = proto.hash = function () { return this._id; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
+		proto.id = function () { return this._id; };
+		proto.hash = function() { return this._hash; };
+		//if(ist.__debug) {
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
+		//}
 
 		proto.get_pointer = function () { return this.pointer; };
 		proto.set_options = function (options) {

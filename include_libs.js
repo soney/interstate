@@ -31,9 +31,11 @@ exports.vendor = c(
 				"jquery-ui-1.10.4.custom/js/jquery-2.1.0.js",
 				"jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.js",
 				"raphael/raphael.js",
+				"snap/snap.svg.js",
 				"esprima/esprima.js",
 				"qrcode.min.js",
-				"ace/ace.js"
+				"ace/ace.js",
+				"Box2dWeb-2.1a.3/Box2dWeb-2.1.a.3.js"
 			])
 );
 
@@ -77,6 +79,7 @@ exports.runtime = c(
 				"model/statechart/ist_statechart_transition.js",
 				"model/statechart/events/event_core.js",
 				"model/statechart/events/animation_events.js",
+				"model/statechart/events/box2d_events.js",
 				"model/statechart/events/ist_obj_events.js",
 				"model/statechart/events/manual_event.js",
 				"model/statechart/events/dom_events.js",
@@ -90,7 +93,7 @@ exports.runtime = c(
 				"model/attachments/dom_attachment.js",
 				"model/attachments/raphael_attachment.js",
 				//"model/attachments/three_attachment.js",
-				//"model/attachments/box2d_attachment.js",
+				"model/attachments/box2d_attachment.js",
 				"model/communication_wrapper/remote_constraint.js",
 				"model/communication_wrapper/comm_mechanisms.js",
 				"model/communication_wrapper/wrapper_server.js",

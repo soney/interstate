@@ -83,7 +83,8 @@
 		options: {
 			client: false,
 			is_primary: true,
-			itemClass: ""
+			itemClass: "",
+			char_limit: 200
 		},
 		_create: function() {
 			var client = this.option("client");
@@ -103,6 +104,7 @@
 
 			this._add_content_bindings();
 			this._add_class_bindings();
+			this._add_tooltip();
 			this.element.on("click.navigate", _.bind(function(event) {
 				var cobj_id = $(event.target).attr("data-cobj_id");
 				if(cobj_id) {
@@ -115,6 +117,7 @@
 			}, this));
 		},
 		_destroy: function() {
+			this._remove_tooltip();
 			this._remove_content_bindings();
 			this._remove_class_bindings();
 
@@ -153,7 +156,45 @@
 			event.cobj_id = cobj_id;
 
 			this.element.trigger(event);
-		}
+		},
+		_add_tooltip: function() {
+			this.element.tooltip({
+				position: {
+					my: "center bottom-1",
+					at: "center top"
+				},
+				show: false,
+				hide: false,
+				content: ""
+			});
+			var enable_tooltip = _.bind(function() { this.element.tooltip("enable"); }, this);
+			var disable_tooltip = _.bind(function() { this.element.tooltip("disable"); }, this);
+			this._tooltip_live_fn = cjs.liven(function() {
+				var type = this.$type;
+				if(type === "stateful_prop" || type === "cell") {
+					var str = summarize_plain_val(cjs.get(this.$value));
+
+					if(str.length > this.option("char_limit")) {
+						str = str.slice(0, this.option("char_limit")-3)+"..."
+					}
+
+					this.element.attr("title", str)
+								.tooltip("option", {
+									tooltipClass: "val_summary",
+									content: str
+								});
+				}
+			}, {
+				context: this,
+				on_destroy: function() {
+					this.element.tooltip("destroy");
+				}
+			});
+		},
+		_remove_tooltip: function() {
+			this._tooltip_live_fn.destroy();
+			delete this._tooltip_live_fn;
+		},
 	});
 
 	var entityMap = {

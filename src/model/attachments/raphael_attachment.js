@@ -147,6 +147,9 @@
 	ist.ShapeAttachment = ist.register_attachment("shape", {
 			ready: function() {
 				this.shape_type = this.options.shape_type;
+				if(this.shape_type === "rectangle") {
+					this.shape_type = "rect";
+				}
 				this.constructor_params = this.options.constructor_params;
 				this.$robj = cjs(false);
 				this.$children = cjs(this.child_getter, {context: this});
@@ -182,17 +185,17 @@
 
 									var anim_options = { };
 									anim_options[raph_name] = cjs.get(prop_val);
-									//try {
+									try {
 										robj.animate(anim_options, duration, easing);
-									//} catch(e) {
-										//console.error(e);
-									//}
+									} catch(e) {
+										console.error(e);
+									}
 								} else {
-									//try {
+									try {
 										robj.attr(raph_name, cjs.get(prop_val));
-									//} catch(e) {
-										//console.error(e);
-									//}
+									} catch(e) {
+										console.error(e);
+									}
 								}
 							}
 						}

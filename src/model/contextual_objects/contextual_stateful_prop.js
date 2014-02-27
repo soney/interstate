@@ -27,7 +27,14 @@
 			this._has_runtime_errors = false;
 			this.$runtime_errors = new cjs.Constraint([]);
 
+			var active_value_info = this.active_value();
 			this.$value.onChange(this.$value.get, this.$value);
+			// If we went back to set my value to the start transition's value,
+			// then invalidate the active value so that it gets recomputed before
+			// any transitions run
+			if(active_value_info.is_fallback) {
+				this.$active_value.invalidate();
+			}
 		};
 
 		proto.get_parent = function () {
@@ -338,6 +345,7 @@
 				using_as = active_value_info.using_as,
 				is_fallback = active_value_info.is_fallback;
 			var rv;
+
 			if(using_as === USING_AS_TRANSITION) {
 				if(is_fallback) {
 					return this._last_rv;
@@ -363,6 +371,14 @@
 					invalidate_value = invalidate_active_value = null;
 				}
 			}
+
+/*
+			if(this.sid() === 427) {
+				if(this.$value.get() === 200) {
+				}
+				console.log(this.$value.get());
+			}
+			*/
 
 			var stateful_prop = this.get_object();
 

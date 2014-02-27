@@ -373,7 +373,7 @@
 		if(!type) { // program
 			ist.setDefaultProgramName(name);
 		}
-		console.log("save ", name);
+		//console.log("save ", name);
 
 		return name;
 	};
@@ -408,7 +408,7 @@
 			console.error(e);
 			return false;
 		}
-		console.log("load ", name);
+		//console.log("load ", name);
 
 		if(!type) { // program
 			ist.loaded_program_name.set(name);	

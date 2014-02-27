@@ -201,7 +201,9 @@
 				}
 				return object.prop_val(prop);
 			} else {
-				return object[prop];
+				if(object) {
+					return object[prop];
+				}
 			}
 		} else if (type === "CallExpression") {
 			op_context = window;

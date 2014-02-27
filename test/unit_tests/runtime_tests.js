@@ -97,17 +97,19 @@
 			expect: 6,
 			steps: [{
 				setup: function(env) {
-					env	.cd("screen")
+					env	.set("screen", "<stateful>")
+						.cd("screen")
+							.set("(prototypes)", "(start)", "svg.paper")
 							.set("circ1", "<stateful>")
 							.cd("circ1")
-								.set("(prototypes)", "(start)", "shape.circle")
+								.set("(prototypes)", "(start)", "svg.circle")
 								.set("fill", "(start)", "'red'")
 								.set("cx", "(start)", "80")
 								.set("cy", "(start)", "80")
 								.up()
 							.set("circ2", "<stateful>")
 							.cd("circ2")
-								.set("(prototypes)", "(start)", "shape.circle")
+								.set("(prototypes)", "(start)", "svg.circle")
 								.set("fill", "(start)", "'blue'")
 								.set("cx", "(start)", "100")
 								.set("cy", "(start)", "100")
@@ -116,8 +118,8 @@
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
-					equal(circles.eq(0).attr("fill"), "#0000ff");
-					equal(circles.eq(1).attr("fill"), "#ff0000");
+					equal(circles.eq(0).attr("fill"), "#ff0000");
+					equal(circles.eq(1).attr("fill"), "#0000ff");
 				}
 			}, {
 				setup: function(env) {
@@ -125,8 +127,8 @@
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
-					equal(circles.eq(0).attr("fill"), "#ff0000");
-					equal(circles.eq(1).attr("fill"), "#0000ff");
+					equal(circles.eq(0).attr("fill"), "#0000ff");
+					equal(circles.eq(1).attr("fill"), "#ff0000");
 				}
 			}, {
 				setup: function(env) {
@@ -134,8 +136,8 @@
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
-					equal(circles.eq(0).attr("fill"), "#0000ff");
-					equal(circles.eq(1).attr("fill"), "#ff0000");
+					equal(circles.eq(0).attr("fill"), "#ff0000");
+					equal(circles.eq(1).attr("fill"), "#0000ff");
 				}
 			}]
 		},
@@ -144,20 +146,22 @@
 			expect: 2,
 			steps: [{
 				setup: function(env) {
-					env	.cd("screen")
+					env	.set("screen", "<stateful>")
+						.cd("screen")
+						.set("(prototypes)", "(start)", "svg.paper")
 						.set("compound1", "<stateful>")
 							.cd("compound1")
-								.set("(prototypes)", "(start)", "shape.group")
+								.set("(prototypes)", "(start)", "svg.group")
 								.set("circ1", "<stateful>")
 								.cd("circ1")
-									.set("(prototypes)", "(start)", "shape.circle")
+									.set("(prototypes)", "(start)", "svg.circle")
 									.set("fill", "(start)", "'red'")
 									.set("cx", "(start)", "80")
 									.set("cy", "(start)", "80")
 									.up()
 								.set("circ2", "<stateful>")
 								.cd("circ2")
-									.set("(prototypes)", "(start)", "shape.circle")
+									.set("(prototypes)", "(start)", "svg.circle")
 									.set("fill", "(start)", "'blue'")
 									.set("cx", "(start)", "100")
 									.set("cy", "(start)", "100")
@@ -166,8 +170,8 @@
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
-					equal(circles.eq(0).attr("fill"), "#0000ff");
-					equal(circles.eq(1).attr("fill"), "#ff0000");
+					equal(circles.eq(0).attr("fill"), "#ff0000");
+					equal(circles.eq(1).attr("fill"), "#0000ff");
 				}
 			}]
 		},
@@ -201,10 +205,12 @@
 			expect: 6,
 			steps: [{
 				setup: function(env) {
-					env	.cd("screen")
+					env	.set("screen", "<stateful>")
+						.cd("screen")
+							.set("(prototypes)", "(start)", "svg.paper")
 							.set("obj", "<stateful>")
 							.cd("obj")
-								.set("(prototypes)", "(start)", "shape.rect")
+								.set("(prototypes)", "(start)", "svg.rectangle")
 								.set("fill", "(start)", "'#00ff00'")
 								.add_state("state1")
 								.add_state("state2")
@@ -240,10 +246,12 @@
 			expect: 6,
 			steps: [{
 				setup: function(env) {
-					env	.cd("screen")
+					env	.set("screen", "<stateful>")
+						.cd("screen")
+							.set("(prototypes)", "(start)", "svg.paper")
 							.set("obj", "<stateful>")
 							.cd("obj")
-								.set("(prototypes)", "(start)", "shape.ellipse")
+								.set("(prototypes)", "(start)", "svg.ellipse")
 								.set("fill", "(start)", "'#bada55'")
 								.add_state("state1")
 								.add_state("state2")
@@ -281,7 +289,9 @@
 							.set("x", "0")
 							.set("y", "0")
 							.up()
+						.set("screen", "<stateful>")
 						.cd("screen")
+							.set("(prototypes)", "(start)", "svg.paper")
 							.set("obj", "<stateful>")
 							.cd("obj")
 								.add_state("init")
@@ -289,7 +299,7 @@
 								.add_transition("init", "dragging", "on('drag')")
 								.add_transition("dragging", "init", "on('stop')")
 								.start_at("init")
-								.set("(prototypes)", "(start)", "shape.rect")
+								.set("(prototypes)", "(start)", "svg.rectangle")
 								.set("hx")
 								.set("hy")
 								.set("x")
@@ -367,7 +377,9 @@
 			steps: [{
 				setup: function(env) {
 					env	
+						.set("screen", "<stateful>")
 						.cd("screen")
+							.set("(prototypes)", "(start)", "svg.paper")
 							.set("obj", "<stateful>")
 							.cd("obj")
 								.add_state("s1")
@@ -375,7 +387,7 @@
 								.add_transition("s1", "s2", "on('e1')")
 								.add_transition("s2", "s1", "on('e2')")
 								.start_at("s1")
-								.set("(prototypes)", "(start)", "shape.rect")
+								.set("(prototypes)", "(start)", "svg.rectangle")
 								.set("width")
 								.set("tv1")
 								.set("tv2")
@@ -455,10 +467,13 @@
 			create_builtins: true,
 			steps: [{
 				setup: function(env) {
-					env	.cd("screen")
+					env	
+						.set("screen", "<stateful>")
+						.cd("screen")
+							.set("(prototypes)", "(start)", "svg.paper")
 							.set("my_shape", "<stateful>")
 							.cd("my_shape")
-								.set("(prototypes)", "(start)", "shape.circle")
+								.set("(prototypes)", "(start)", "svg.circle")
 								.set_copies("3")
 								.set("cx", "(start)", "copy_num * 30")
 								.up()
@@ -502,11 +517,14 @@
 			create_builtins: true,
 			steps: [{
 				setup: function(env, runtime) {
-					env	.cd("screen")
+					env	
+						.set("screen", "<stateful>")
+						.cd("screen")
+							.set("(prototypes)", "(start)", "svg.paper")
 							.set("compound1", "<stateful>")
 							.cd("compound1")
 								.set_copies("['#ff0000', '#0000ff']")
-								.set("(prototypes)", "(start)", "shape.group")
+								.set("(prototypes)", "(start)", "svg.group")
 								.add_state("init")
 								.add_state("clicked")
 								.add_transition("init", "clicked", "on('click', this)")
@@ -516,14 +534,14 @@
 								.set("group_fill", "clicked", "'#00ff00'")
 								.set("circ1", "<stateful>")
 								.cd("circ1")
-									.set("(prototypes)", "(start)", "shape.circle")
+									.set("(prototypes)", "(start)", "svg.circle")
 									.set("fill", "(start)", "group_fill")
 									.set("cx", "(start)", "80*copy_num")
 									.set("cy", "(start)", "80*copy_num")
 									.up()
 								.set("circ2", "<stateful>")
 								.cd("circ2")
-									.set("(prototypes)", "(start)", "shape.rect")
+									.set("(prototypes)", "(start)", "svg.rectangle")
 									.set("fill", "(start)", "group_fill")
 									.set("x", "(start)", "100*copy_num")
 									.set("y", "(start)", "100*copy_num")
@@ -586,24 +604,27 @@
 			delay: 1000,
 			steps: [{
 				setup: function(env) {
-					env	.cd("screen")
+					env	
+						.set("screen", "<stateful>")
+						.cd("screen")
+							.set("(prototypes)", "(start)", "svg.paper")
 							.set("ball", "<stateful>")
 							.cd("ball")
-								.set("(prototypes)", "(start)", "shape.circle")
+								.set("(prototypes)", "(start)", "svg.circle")
 								.set("r", "(start)", "10")
 								.add_state("moving")
 								.start_at("moving")
 								.add_transition("moving", "moving", "on('frame')")
 								.set("vx", "(start)", "10")
 								.set("vy", "(start)", "10")
-								.set("cx", "(start)", "Math.random() * sketch.width")
-								.set("cy", "(start)", "Math.random() * sketch.height")
+								.set("cx", "(start)", "Math.random() * screen.width")
+								.set("cy", "(start)", "Math.random() * screen.height")
 								.set("cx", "moving-0>moving", "cx+vx")
 								.set("cy", "moving-0>moving", "cy+vy")
 								.add_transition("moving", "moving", "cx < r")
 								.add_transition("moving", "moving", "cy < r")
-								.add_transition("moving", "moving", "cx + r > sketch.width")
-								.add_transition("moving", "moving", "cy + r > sketch.height")
+								.add_transition("moving", "moving", "cx + r > screen.width")
+								.add_transition("moving", "moving", "cy + r > screen.height")
 								.set("vx", "moving-1>moving", "-vx")
 								.set("vx", "moving-3>moving", "-vx")
 								.set("vy", "moving-2>moving", "-vy")
@@ -611,9 +632,9 @@
 								.up()
 							.set("outline", "<stateful>")
 							.cd("outline")
-								.set("(prototypes)", "(start)", "shape.rect")
-								.set("width", "(start)", "sketch.width")
-								.set("height", "(start)", "sketch.height")
+								.set("(prototypes)", "(start)", "svg.rectangle")
+								.set("width", "(start)", "screen.width")
+								.set("height", "(start)", "screen.height")
 								.set("fill", "(start)", "'none'")
 								.set("x", "(start)", "0")
 								.set("y", "(start)", "0")
