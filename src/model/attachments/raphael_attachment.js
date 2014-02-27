@@ -147,6 +147,9 @@
 	ist.ShapeAttachment = ist.register_attachment("shape", {
 			ready: function() {
 				this.shape_type = this.options.shape_type;
+				if(this.shape_type === "rectangle") {
+					this.shape_type = "rect";
+				}
 				this.constructor_params = this.options.constructor_params;
 				this.$robj = cjs(false);
 				this.$children = cjs(this.child_getter, {context: this});

@@ -63,7 +63,6 @@
 		proto.disconnect = function() {
 			this.destroy_every_client();
 			this.post({type: "disconnect"});
-			console.log("disconnect");
 		};
 
 		proto.destroy_every_client = function() {
@@ -102,16 +101,18 @@
 			});
 		};
 		proto.on_wrapper_server = function(message) {
-			var server_message = message.server_message;
-			var client_id = server_message.client_id;
+			if(this.clients) { // I haven't been destroyed
+				var server_message = message.server_message,
+					client_id = server_message.client_id,
+					smtype = server_message.type,
+					client = this.clients[client_id];
 
-			var smtype = server_message.type;
-			var client = this.clients[client_id];
-			if(client) {
-				if (smtype === "changed") {
-					client.on_change.apply(client, server_message.getting);
-				} else if (smtype === "emit") {
-					client.on_emit.apply(client, ([server_message.event_type]).concat(server_message.args));
+				if(client) {
+					if (smtype === "changed") {
+						client.on_change.apply(client, server_message.getting);
+					} else if (smtype === "emit") {
+						client.on_emit.apply(client, ([server_message.event_type]).concat(server_message.args));
+					}
 				}
 			}
 		};

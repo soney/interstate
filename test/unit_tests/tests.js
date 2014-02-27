@@ -351,7 +351,7 @@
 		expect(1);
 		clear_snapshots(function() {
 			take_snapshot([], function() {
-				var env = new ist.Environment({builtins: false});
+				var env = new ist.Environment({builtins: true});
 				//env	.set("height", "10")
 					//.set("obj", "<stateful>");
 				var root = env.get_root();

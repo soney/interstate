@@ -118,8 +118,8 @@
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
-					equal(circles.eq(0).attr("fill"), "#0000ff");
-					equal(circles.eq(1).attr("fill"), "#ff0000");
+					equal(circles.eq(0).attr("fill"), "#ff0000");
+					equal(circles.eq(1).attr("fill"), "#0000ff");
 				}
 			}, {
 				setup: function(env) {
@@ -127,8 +127,8 @@
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
-					equal(circles.eq(0).attr("fill"), "#ff0000");
-					equal(circles.eq(1).attr("fill"), "#0000ff");
+					equal(circles.eq(0).attr("fill"), "#0000ff");
+					equal(circles.eq(1).attr("fill"), "#ff0000");
 				}
 			}, {
 				setup: function(env) {
@@ -136,8 +136,8 @@
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
-					equal(circles.eq(0).attr("fill"), "#0000ff");
-					equal(circles.eq(1).attr("fill"), "#ff0000");
+					equal(circles.eq(0).attr("fill"), "#ff0000");
+					equal(circles.eq(1).attr("fill"), "#0000ff");
 				}
 			}]
 		},
@@ -170,8 +170,8 @@
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
-					equal(circles.eq(0).attr("fill"), "#0000ff");
-					equal(circles.eq(1).attr("fill"), "#ff0000");
+					equal(circles.eq(0).attr("fill"), "#ff0000");
+					equal(circles.eq(1).attr("fill"), "#0000ff");
 				}
 			}]
 		},
@@ -541,7 +541,7 @@
 									.up()
 								.set("circ2", "<stateful>")
 								.cd("circ2")
-									.set("(prototypes)", "(start)", "svg.rect")
+									.set("(prototypes)", "(start)", "svg.rectangle")
 									.set("fill", "(start)", "group_fill")
 									.set("x", "(start)", "100*copy_num")
 									.set("y", "(start)", "100*copy_num")
