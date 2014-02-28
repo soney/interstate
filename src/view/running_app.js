@@ -161,7 +161,7 @@
 														that.create_new_object('circle');
 													}
 													else if (e.target.className === 'rectangle') {
-														that.create_new_object('rect');
+														that.create_new_object('rectangle');
 													}
 													else if (e.target.className === 'ellipse') {
 														that.create_new_object('ellipse');
@@ -259,12 +259,10 @@
 			}
 
 			var propCommand = new ist.SetPropCommand({parent: screen, value: stateful_obj});
-			var circle_context = ist.find_or_put_contextual_obj(stateful_obj);														
 			this._command_stack._do(propCommand);
-			/*var shape_attachment_instance = circle_context.get_attachment_instance("shape");
-			if(shape_attachment_instance) {
-				var dom_element = shape_attachment_instance.get_dom_obj();
-			}*/
+			var circle_context = ist.find_or_put_contextual_obj(stateful_obj, new ist.Pointer({stack:[sketch,screen,stateful_obj]}));														
+			var dom_element = circle_context.get_dom_obj();
+			console.log(dom_element);
 			this._add_event_listeners(stateful_obj, object);																	
 		},
 

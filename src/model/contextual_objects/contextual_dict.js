@@ -123,13 +123,6 @@
 			return false;
 		}
 	};
-	interstate.get_dom_obj = function(cdict) {
-		if(cdict.get_dom_obj) {
-			return cdict.get_dom_obj();
-		} else {
-			return false;
-		}
-	};
 
 	ist.ContextualDict = function (options) {
 		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
@@ -154,26 +147,6 @@
 
 		proto._get_all_protos = function() {
 			return ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
-		};
-		proto.get_dom_obj = function() {
-			var dom_attachment = this.get_attachment_instance("dom"),
-				dom_obj;
-			if (dom_attachment) {
-				dom_obj = dom_attachment.get_dom_obj();
-				if(dom_obj) {
-					return dom_obj;
-				}
-			} else {
-				var raphael_attachment = this.get_attachment_instance("paper");
-				if(raphael_attachment) {
-					dom_obj = raphael_attachment.get_dom_obj();
-
-					if(dom_obj) {
-						return dom_obj;
-					}
-				}
-			}
-			return false;
 		};
 
 		proto.raw_children = function (exclude_builtins) {
@@ -670,7 +643,7 @@
 			return this;
 		};
 
-		proto.get_dom_object = function() {
+		proto.get_dom_obj = function() {
 			var dom_attachment = this.get_attachment_instance("dom");
 			if (dom_attachment) {
 				var dom_obj = dom_attachment.get_dom_obj();
