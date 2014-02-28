@@ -360,6 +360,7 @@
 							;
 				},
 				test: function(env, runtime) {
+					interstate.printCurrentChildPointers()
 					ist.emit("my_fire");
 					//debugger;
 					ist.update_current_contextual_objects(env.get_root());

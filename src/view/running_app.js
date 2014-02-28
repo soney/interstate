@@ -185,14 +185,6 @@
 			var root_dict = this.option("root");
 			var root_contextual_object = ist.find_or_put_contextual_obj(root_dict);
 
-			if(!this._update_fn) {
-				//ist.update_current_contextual_objects(root_dict);
-				this._update_fn = cjs.liven(function() {
-					ist.update_current_contextual_objects(root_dict);
-				}, {
-					pause_while_running: true
-				});
-			}
 
 			if(!ist.__empty_files) {
 			/*
@@ -235,7 +227,16 @@
 					pause_while_running: true
 				});
 			}
-
+			if(!this._update_fn) {
+			/*
+				ist.update_current_contextual_objects(root_dict, true);
+				this._update_fn = cjs.liven(function() {
+					ist.update_current_contextual_objects(root_dict);
+				}, {
+					pause_while_running: true
+				});
+				*/
+			}
 		},
 		
 		_remove_change_listeners: function () {
