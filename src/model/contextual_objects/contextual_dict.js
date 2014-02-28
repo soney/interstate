@@ -116,14 +116,7 @@
 			return value;
 		}
 	};
-	interstate.get_dom_obj = function(cdict) {
-		if(cdict.get_dom_obj) {
-			return cdict.get_dom_obj();
-		} else {
-			return false;
-		}
-	};
-	interstate.get_dom_obj = function(cdict) {
+	ist.get_dom_obj = function(cdict) {
 		if(cdict.get_dom_obj) {
 			return cdict.get_dom_obj();
 		} else {
@@ -155,6 +148,7 @@
 		proto._get_all_protos = function() {
 			return ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
 		};
+		/*
 		proto.get_dom_obj = function() {
 			var dom_attachment = this.get_attachment_instance("dom"),
 				dom_obj;
@@ -175,6 +169,7 @@
 			}
 			return false;
 		};
+		*/
 
 		proto.raw_children = function (exclude_builtins) {
 			var dict = this.object;
@@ -670,7 +665,7 @@
 			return this;
 		};
 
-		proto.get_dom_object = function() {
+		proto.get_dom_obj = function() {
 			var dom_attachment = this.get_attachment_instance("dom");
 			if (dom_attachment) {
 				var dom_obj = dom_attachment.get_dom_obj();
