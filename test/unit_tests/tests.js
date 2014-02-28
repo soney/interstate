@@ -116,7 +116,7 @@
 							.start_at("init")
 							.add_transition("init", "hover", "on('mouseover', this)")
 							.add_transition("hover", "init", "on('mouseout', this)")
-							.set("(prototypes)", "init", "shape.circle")
+							.set("(prototypes)", "init", "svg.circle")
 							.set("fill")
 							.set("fill", "init", "'red'")
 							.set("fill", "hover", "'blue'")
@@ -210,6 +210,7 @@
 		expect(7);
 		//clear_snapshots(function() {
 			//take_snapshot([], function(response) {
+				ist.__garbage_collect = false;
 				var root = new ist.Dict();
 				var a_dict = new ist.Dict();
 				var b_dict = new ist.Dict();
@@ -237,6 +238,7 @@
 				take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
 					ok(!response.illegal_strs, "Make sure nothing was allocated");
 					start();
+					ist.__garbage_collect = true;
 				});
 			//});
 		//});

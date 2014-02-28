@@ -43,12 +43,14 @@
 	(function (my) {
 		var proto = my.prototype;
 		proto.initialize = function() {
-			this._live_updater = cjs.liven(function() {
-				this.update_current_contextual_objects();
-			}, {
-				context: this,
-				pause_while_running: true
-			});
+			if(ist.__garbage_collect) {
+				this._live_updater = cjs.liven(function() {
+					this.update_current_contextual_objects();
+				}, {
+					context: this,
+					pause_while_running: true
+				});
+			}
 		};
 		proto.set_contextual_object = function(cobj) {
 			this.contextual_object = cobj;
