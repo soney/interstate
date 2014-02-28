@@ -28,27 +28,11 @@ var interstate = (function (root) {
 		delete uid_objs[id];
 		ist._emit("uid_unregistered", id);
 	};
-	ist.find_uid = function (uid) {
-		return uid_objs[uid];
-	};
-	ist.each_registered_obj = function (func, context) {
-		ist._.each(uid_objs, func, context);
-	};
+	ist.find_uid = function (uid) { return uid_objs[uid]; };
 
+	var valid_prop_name_regex = /^[a-zA-Z_$][0-9a-zA-Z_$]*$/;
 	ist.is_valid_prop_name = function(name) {
-		return name.match(/^[a-zA-Z_$][0-9a-zA-Z_$]*$/);
-	};
-
-	ist.async_js = function(url, cback) {
-		var doc = root.document,
-			type = 'script',
-			node = doc.createElement(type),
-			head = doc.getElementsByTagName('head')[0];
-
-		node.type = 'text/javascript';
-		node.src = url;
-		if (cback) { node.addEventListener('load', function (e) { cback(e); }, false); }
-		head.appendChild(node);
+		return name.match(valid_prop_name_regex);
 	};
 
 	return ist;
