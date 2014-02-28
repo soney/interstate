@@ -35,10 +35,23 @@
 			keys: options && options.pointer_keys || [],
 			values: options && options.pointer_values || []
 		});
+		if(!options || !options.defer_initialization) {
+			this.initialize();
+		}
 	};
 
 	(function (my) {
 		var proto = my.prototype;
+		proto.initialize = function() {
+			if(ist.__garbage_collect) {
+				this._live_updater = cjs.liven(function() {
+					this.update_current_contextual_objects();
+				}, {
+					context: this,
+					pause_while_running: true
+				});
+			}
+		};
 		proto.set_contextual_object = function(cobj) {
 			this.contextual_object = cobj;
 		};
@@ -69,7 +82,8 @@
 				special_contexts: special_contexts
 			}, function () {
 				var tree = new ist.PointerTree({
-					pointer: this.pointer.push(child, special_contexts)
+					pointer: this.pointer.push(child, special_contexts),
+					defer_initialization: true
 				});
 				return tree;
 			}, this);
@@ -148,7 +162,7 @@
 				return [];
 			}
 		};
-		proto.update_current_contextual_objects = function() {
+		proto.update_current_contextual_objects = function(recursive) {
 			var cobj = this.get_contextual_object();
 			var children = _.clone(this.children.values());
 			var keys = _.clone(this.children.keys());
@@ -202,8 +216,11 @@
 						object: obj,
 						pointer: ptr
 					});
+					node.initialize();
 				}
-				node.update_current_contextual_objects();
+				if(recursive) {
+					node.update_current_contextual_objects(recursive);
+				}
 			}, this);
 
 			_.each(to_destroy, function(to_destroy_info) {
@@ -213,9 +230,8 @@
 				child.destroy(true, true);
 				this.remove_child(key.child, key.special_contexts);
 			}, this);
-			if(cobj instanceof ist.ContextualDict) {
-				cobj.update_attachments();
-			}
+
+			if(cobj instanceof ist.ContextualDict) { cobj.update_attachments(); }
 		};
 			
 		proto.create_current_contextual_objects = function () {
@@ -249,6 +265,8 @@
 			return rv;
 		};
 		proto.destroy = function() {
+			if(this._live_updater) { this._live_updater.destroy(); }
+
 			this.children.forEach(function(child) {
 				child.destroy();
 			});
@@ -275,12 +293,17 @@
 
 		this.tree = new ist.PointerTree({
 			contextual_object: this.contextual_root,
-			pointer: root_pointer
+			pointer: root_pointer,
+			defer_initialization: true
 		});
 	};
 
 	(function (my) {
 		var proto = my.prototype;
+
+		proto.initialize = function() {
+			this.tree.initialize();
+		};
 
 		proto.get_contextual_root = function () {
 			return this.contextual_root;
@@ -318,6 +341,7 @@
 					object: obj,
 					pointer: pointer
 				}, options));
+				node.initialize();
 			}
 
 			return rv;
@@ -345,8 +369,8 @@
 				throw new Error("Couldn't find correct node to remove;");
 			}
 		};
-		proto.update_current_contextual_objects = function() {
-			return this.tree.update_current_contextual_objects();
+		proto.update_current_contextual_objects = function(recursive) {
+			return this.tree.update_current_contextual_objects(recursive);
 		};
 		proto.get_expired_children = function() {
 			return this.tree.get_expired_children();
@@ -454,11 +478,16 @@
 			hashed_vals = cobj_hashes[pointer.hash()] = [];
 		}
 
-		var pointer_bucket = ist.pointer_buckets.getOrPut(pointer_root, function () {
-			return new ist.PointerBucket({
-				root: pointer_root
+		var must_initialize = false,
+			pointer_bucket = ist.pointer_buckets.getOrPut(pointer_root, function () {
+				must_initialize = true;
+				return new ist.PointerBucket({
+					root: pointer_root
+				});
 			});
-		});
+		if(must_initialize) {
+			pointer_bucket.initialize();
+		}
 
 		var rv = pointer_bucket.find_or_put(obj, pointer, options);
 		hashed_vals.push(rv);
@@ -482,11 +511,11 @@
 		}
 	};
 
-	ist.update_current_contextual_objects = function(root) {
+	ist.update_current_contextual_objects = function(root, recursive) {
 		cjs.wait();
 		var root_bucket = ist.pointer_buckets.get(root);
 		if(root_bucket) {
-			root_bucket.update_current_contextual_objects();
+			root_bucket.update_current_contextual_objects(recursive);
 		}
 		cjs.signal();
 	};

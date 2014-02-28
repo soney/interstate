@@ -212,6 +212,7 @@
 		expect(7);
 		//clear_snapshots(function() {
 			//take_snapshot([], function(response) {
+				ist.__garbage_collect = false;
 				var root = new ist.Dict();
 				var a_dict = new ist.Dict();
 				var b_dict = new ist.Dict();
@@ -239,6 +240,7 @@
 				take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
 					ok(!response.illegal_strs, "Make sure nothing was allocated");
 					start();
+					ist.__garbage_collect = true;
 				});
 			//});
 		//});
