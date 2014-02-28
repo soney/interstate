@@ -108,7 +108,9 @@
 		//clear_snapshots(function() {
 			//take_snapshot([], function() {
 				var env = new ist.Environment({builtins: true});
-				env	.cd("screen")
+				env	.set("screen", "<stateful>")
+					.cd("screen")
+						.set("(prototypes)", "(start)", "svg.paper")
 						.set("my_circle", "<stateful>")
 						.cd("my_circle")
 							.add_state("init")
@@ -116,7 +118,7 @@
 							.start_at("init")
 							.add_transition("init", "hover", "on('mouseover', this)")
 							.add_transition("hover", "init", "on('mouseout', this)")
-							.set("(prototypes)", "init", "shape.circle")
+							.set("(prototypes)", "init", "svg.circle")
 							.set("fill")
 							.set("fill", "init", "'red'")
 							.set("fill", "hover", "'blue'")

@@ -142,7 +142,7 @@
 		};
 
 		ist.get_instance_targs = function(instance) {
-			var dom_objs = instance.get_dom_object();
+			var dom_objs = instance.get_dom_obj();
 			if(dom_objs) {
 				if(_.isArray(dom_objs)) {
 					return _.map(dom_objs, function(dom_obj) {
