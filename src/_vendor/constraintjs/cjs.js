@@ -27,6 +27,7 @@ var slice         = ArrayProto.slice,
 // are declared here.
 var nativeSome    = ArrayProto.some,
 	nativeIndexOf = ArrayProto.indexOf,
+	nativeLastIndexOf = ArrayProto.lastIndexOf,
 	nativeEvery   = ArrayProto.every,
 	nativeForEach = ArrayProto.forEach,
 	nativeKeys    = Object.keys,
@@ -333,25 +334,39 @@ var extend = function (obj) {
 	
 // Return the first item in arr where test is true
 var indexWhere = function (arr, test, start_index) {
-	var i, len = arr.length;
-	for (i = start_index || 0; i < len; i++) {
-		if (test(arr[i], i)) { return i; }
-	}
-	return -1;
-};
+		var i, len = arr.length;
+		for (i = start_index || 0; i < len; i++) {
+			if (test(arr[i], i)) { return i; }
+		}
+		return -1;
+	},
+	lastIndexWhere = function(arr, test) {
+		var i, len = arr.length;
+		for (i = len-1; i >= 0; i--) {
+			if (test(arr[i], i)) { return i; }
+		}
+		return -1;
+	};
 
 // The default equality check function
 var eqeqeq = function (a, b) { return a === b; };
 
 // Return the first item in arr equal to item (where equality is defined in equality_check)
 var indexOf = function (arr, item, start_index, equality_check) {
-	if(!equality_check && !start_index && nativeIndexOf && arr.indexOf === nativeIndexOf) {
-		return arr.indexOf(item);
-	} else {
-		equality_check = equality_check || eqeqeq;
-		return indexWhere(arr, function (x) { return equality_check(item, x); }, start_index);
-	}
-};
+		if(!equality_check && !start_index && nativeIndexOf && arr.indexOf === nativeIndexOf) {
+			return arr.indexOf(item);
+		} else {
+			equality_check = equality_check || eqeqeq;
+			return indexWhere(arr, function (x) { return equality_check(item, x); }, start_index);
+		}
+	}, lastIndexOf = function(arr, item, equality_check) {
+		if(nativeLastIndexOf && arr.lastIndexOf === nativeLastIndexOf) {
+			return arr.lastIndexOf(item);
+		} else {
+			equality_check = equality_check || eqeqeq;
+			return lastIndexWhere(arr, function (x) { return equality_check(item, x); });
+		}
+	};
 	
 // Remove an item in an array
 var remove = function (arr, obj) {
@@ -776,31 +791,98 @@ var constraint_solver = {
 			}
 		}
 
-		// If the node's cached value is invalid...
-		if (!node._valid) {
-			// Push node onto the stack to make it clear that it's being fetched
-			stack[stack_len] = node;
-			// Mark it as valid
-			node._valid = true;
-
+		// This node is waiting for an asyncronous value
+		if(node._paused_info) {
+			// So return its temporary value until then
+			return node._paused_info.temporaryValue;
+		} else if (!node._valid) {
+			// If the node's cached value is invalid...
 			// Set the timestamp before fetching in case a constraint depends on itself
 			node._tstamp++;
+
+			// Push node onto the stack to make it clear that it's being fetched
+			stack[stack_len] = node;
+
+			// Mark it as valid
+			node._valid = true;
 
 			if (node._options.cache_value !== false) {
 				// Check if dynamic value. If it is, then call it. If not, just fetch it
 				// set this to the node's cached value, which will be returned
 				node._cached_value = node._options.literal ? node._value :
-											(isFunction(node._value) ? node._value.call(node._options.context || node) :
+											(isFunction(node._value) ? node._value.call(node._options.context || node, node) :
 																		cjs.get(node._value));
+
+				// The node paused as if this was going to be an asyncronous value but it ended up being syncronous.
+				// Use that to set the value
+				if(node._sync_value) {
+					node._cached_value = node._sync_value.value;
+					delete node._sync_value;
+				} else if(constraint_solver._paused_node && constraint_solver._paused_node.node === node) {
+					// The node said it would have an asyncronous value and it did
+					// Save the paused information to the node and remove it from the constraint solver
+					node._paused_info = constraint_solver._paused_node;
+					delete constraint_solver._paused_node;
+					//Restore the stack to avoid adding a self-dependency
+					stack.length = stack_len;
+					// And return the temporary value
+					return node._paused_info.temporaryValue;
+				}
 			} else if(isFunction(node._value)) {
 				// if it's just a non-cached function call, just call the function
 				node._value.call(node._options.context);
 			}
+
 			// Pop the item off the stack
 			stack.length = stack_len;
 		}
 
 		return node._cached_value;
+	},
+
+	// Called when a constraint's getter is paused
+	pauseNodeGetter: function(temporaryValue) {
+		constraint_solver._paused_node = {
+			temporaryValue: temporaryValue,
+			node: this
+		};
+	},
+	// Called when a constraint's getter is resumed
+	resumeNodeGetter: function(value) {
+		var node = this, old_stack;
+
+		// Hey! The node said its value would be asyncronous but it ended up being syncronous
+		// We know because, it paused and then resumed before the constraint solver's paused node information could even
+		// be removed.
+		if(constraint_solver._paused_node && constraint_solver._paused_node.node === node) {
+			delete constraint_solver._paused_node;
+			node._sync_value = { value: value };
+		} else {
+			// Nullify every dependent node and update this node's cached value
+			old_stack = constraint_solver.stack;
+
+			delete node._paused_info;
+			node._tstamp++;
+			node._valid = true;
+
+			constraint_solver.stack = [node];
+
+			if (node._options.cache_value !== false) {
+				// Check if dynamic value. If it is, then call it. If not, just fetch it
+				// set this to the node's cached value, which will be returned
+				node._cached_value = node._options.literal ? value :
+											(isFunction(value) ? value.call(node._options.context || node, node) :
+																		cjs.get(value));
+			} else if(isFunction(node._value)) {
+				// if it's just a non-cached function call, just call the function
+				value.call(node._options.context);
+			}
+
+			constraint_solver.nullify.apply(constraint_solver, map(node._outEdges, function(edge) {
+				return edge.to;
+			}));
+			constraint_solver.stack = old_stack;
+		}
 	},
 	
 	// Utility function to mark a listener as being in the call stack. `this` refers to the constraint node here
@@ -808,14 +890,14 @@ var constraint_solver = {
 		nl.in_call_stack++;
 		nl.node._num_listeners_in_call_stack++;
 	},
-	nullify: function(node) {
+	nullify: function() {
 		// Unfortunately, running nullification listeners can, in some cases cause nullify to be indirectly called by itself
 		// (as in while running `nullify`). The variable is_root will prevent another call to `run_nullification_listeners` at
 		// the bottom of this function
 		var i, outgoingEdges, toNodeID, invalid, curr_node, equals, old_value, new_value, changeListeners,
-			to_nullify = [node],
-			to_nullify_len = 1,
-			is_root = !this._is_nullifying;
+			to_nullify = toArray(arguments),
+			to_nullify_len = to_nullify.length,
+			is_root = !this._is_nullifying,curr_node_id;
 
 		if (is_root) {
 			// This variable is used to track `is_root` for any potential future calls
@@ -857,6 +939,7 @@ var constraint_solver = {
 
 					// Then, get every outgoing edge and add it to the nullify queue
 					outgoingEdges = curr_node._outEdges;
+					curr_node_id = curr_node._id;
 					for (toNodeID in outgoingEdges) {
 						if (has(outgoingEdges, toNodeID)) {
 							var outgoingEdge = outgoingEdges[toNodeID];
@@ -866,7 +949,7 @@ var constraint_solver = {
 							// any more and remove it
 							if (outgoingEdge.tstamp < dependentNode._tstamp) {
 								delete curr_node._outEdges[toNodeID];
-								delete dependentNode._inEdges[node._id];
+								delete dependentNode._inEdges[curr_node_id];
 							} else {
 								// But if the dependency still is being used, then add it to the nullification
 								// queue
@@ -1250,6 +1333,32 @@ Constraint = function (value, options) {
 		}
 		this.remove(silent);
 		this._changeListeners = [];
+		return this;
+	};
+
+	/**
+	 * Signal that this constraint's value will be computed later. For instance, for asyncronous values.
+	 *
+	 * @method pauseGetter
+	 * @param {*} temporaryValue - The temporary value to use for this node until it is resumed
+	 * @return {cjs.Constraint} - `this`
+	 * @see resumeGetter
+	 */
+	proto.pauseGetter  = function () {
+		constraint_solver.pauseNodeGetter.apply(this, arguments);
+		return this;
+	};
+	/**
+	 * Signal that this Constraint, which has been paused with `pauseGetter` now has a value.
+	 *
+	 * @method resumeGetter
+	 * @param {*} value - This node's value
+	 * @return {cjs.Constraint} - `this`
+	 * @see pauseGetter
+	 *
+	 */
+	proto.resumeGetter = function () {
+		constraint_solver.resumeNodeGetter.apply(this, arguments);
 		return this;
 	};
 
