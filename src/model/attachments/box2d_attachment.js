@@ -158,8 +158,17 @@
 						var angularVelocity = body.GetAngularVelocity();
 
 						cjs.wait();
-						this.b2x.set(position.x * PIXELS_PER_METER);
-						this.b2y.set(position.y * PIXELS_PER_METER);
+						var shape = this.shape.get();
+						if(shape instanceof B2CircleShape) {
+							this.b2x.set(position.x * PIXELS_PER_METER);
+							this.b2y.set(position.y * PIXELS_PER_METER);
+						} else if(shape instanceof B2PolygonShape) {
+							if(Math.random() < 0.001) {
+								console.log(shape);
+							}
+							this.b2x.set((position.x) * PIXELS_PER_METER);
+							this.b2y.set((position.y) * PIXELS_PER_METER);
+						}
 
 						this.b2vx.set(linearVelocity.x);
 						this.b2vy.set(linearVelocity.y);
