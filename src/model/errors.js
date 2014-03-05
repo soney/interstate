@@ -38,11 +38,6 @@
 		}, options);
 	}));
 
-	var valid_prop_name_regex = /^[a-zA-Z_$][0-9a-zA-Z_$]*$/;
-	ist.is_valid_prop_name = function(name) {
-		return name.match(valid_prop_name_regex);
-	};
-
 	ist.get_prop_name_error = function(name) {
 		if(name.length === 0) {
 			return "Must be at least one character";

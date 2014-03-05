@@ -35,10 +35,23 @@
 			keys: options && options.pointer_keys || [],
 			values: options && options.pointer_values || []
 		});
+		if(!options || !options.defer_initialization) {
+			this.initialize();
+		}
 	};
 
 	(function (my) {
 		var proto = my.prototype;
+		proto.initialize = function() {
+			if(ist.__garbage_collect) {
+				this._live_updater = cjs.liven(function() {
+					this.update_current_contextual_objects();
+				}, {
+					context: this,
+					pause_while_running: true
+				});
+			}
+		};
 		proto.set_contextual_object = function(cobj) {
 			this.contextual_object = cobj;
 		};
@@ -69,7 +82,8 @@
 				special_contexts: special_contexts
 			}, function () {
 				var tree = new ist.PointerTree({
-					pointer: this.pointer.push(child, special_contexts)
+					pointer: this.pointer.push(child, special_contexts),
+					defer_initialization: true
 				});
 				return tree;
 			}, this);
@@ -148,13 +162,23 @@
 				return [];
 			}
 		};
-		proto.update_current_contextual_objects = function() {
+		proto.update_current_contextual_objects = function(recursive) {
 			var cobj = this.get_contextual_object();
 			var children = _.clone(this.children.values());
 			var keys = _.clone(this.children.keys());
 			var my_ptr = this.contextual_object.get_pointer();
 
 			var valid_children = this.get_valid_child_pointers();
+			var valid_children_map = {};
+			_.each(valid_children, function(vc) {
+				var hash = vc.pointer.hash();
+				if(_.has(valid_children_map, hash)) {
+					valid_children_map[hash].push(vc);
+				} else {
+					valid_children_map[hash] = [vc];
+				}
+			});
+
 			var to_destroy = [];
 			_.each(children, function(child, index) {
 				var key = keys[index];
@@ -162,10 +186,19 @@
 				var obj = key.child;
 				var special_context = key.special_context;
 				var ptr = my_ptr.push(obj, special_context);
+				var hash = ptr.hash();
 
-				var found = _.find(valid_children, function(c) {
-						return c.obj === obj && c.pointer.eq(ptr);
-					});
+				var found = false;
+				if(_.has(valid_children_map, hash)) {
+					var vcm = valid_children_map[hash], len = vcm.length, vc;
+					for(var i = 0; i<len; i++) {
+						vc = vcm[i];
+						if(vc.obj === obj && vc.pointer.eq(ptr)) {
+							found = true;
+							break;
+						}
+					}
+				}
 
 				if(!found) {
 					to_destroy.push({key: key, value: child});
@@ -183,8 +216,11 @@
 						object: obj,
 						pointer: ptr
 					});
+					node.initialize();
 				}
-				node.update_current_contextual_objects();
+				if(recursive) {
+					node.update_current_contextual_objects(recursive);
+				}
 			}, this);
 
 			_.each(to_destroy, function(to_destroy_info) {
@@ -194,9 +230,8 @@
 				child.destroy(true, true);
 				this.remove_child(key.child, key.special_contexts);
 			}, this);
-			if(cobj instanceof ist.ContextualDict) {
-				cobj.update_attachments();
-			}
+
+			if(cobj instanceof ist.ContextualDict) { cobj.update_attachments(); }
 		};
 			
 		proto.create_current_contextual_objects = function () {
@@ -230,6 +265,8 @@
 			return rv;
 		};
 		proto.destroy = function() {
+			if(this._live_updater) { this._live_updater.destroy(); }
+
 			this.children.forEach(function(child) {
 				child.destroy();
 			});
@@ -256,12 +293,17 @@
 
 		this.tree = new ist.PointerTree({
 			contextual_object: this.contextual_root,
-			pointer: root_pointer
+			pointer: root_pointer,
+			defer_initialization: true
 		});
 	};
 
 	(function (my) {
 		var proto = my.prototype;
+
+		proto.initialize = function() {
+			this.tree.initialize();
+		};
 
 		proto.get_contextual_root = function () {
 			return this.contextual_root;
@@ -299,6 +341,7 @@
 					object: obj,
 					pointer: pointer
 				}, options));
+				node.initialize();
 			}
 
 			return rv;
@@ -326,8 +369,8 @@
 				throw new Error("Couldn't find correct node to remove;");
 			}
 		};
-		proto.update_current_contextual_objects = function() {
-			return this.tree.update_current_contextual_objects();
+		proto.update_current_contextual_objects = function(recursive) {
+			return this.tree.update_current_contextual_objects(recursive);
 		};
 		proto.get_expired_children = function() {
 			return this.tree.get_expired_children();
@@ -435,11 +478,16 @@
 			hashed_vals = cobj_hashes[pointer.hash()] = [];
 		}
 
-		var pointer_bucket = ist.pointer_buckets.getOrPut(pointer_root, function () {
-			return new ist.PointerBucket({
-				root: pointer_root
+		var must_initialize = false,
+			pointer_bucket = ist.pointer_buckets.getOrPut(pointer_root, function () {
+				must_initialize = true;
+				return new ist.PointerBucket({
+					root: pointer_root
+				});
 			});
-		});
+		if(must_initialize) {
+			pointer_bucket.initialize();
+		}
 
 		var rv = pointer_bucket.find_or_put(obj, pointer, options);
 		hashed_vals.push(rv);
@@ -463,11 +511,11 @@
 		}
 	};
 
-	ist.update_current_contextual_objects = function(root) {
+	ist.update_current_contextual_objects = function(root, recursive) {
 		cjs.wait();
 		var root_bucket = ist.pointer_buckets.get(root);
 		if(root_bucket) {
-			root_bucket.update_current_contextual_objects();
+			root_bucket.update_current_contextual_objects(recursive);
 		}
 		cjs.signal();
 	};

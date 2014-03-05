@@ -54,8 +54,8 @@
 	});
 	asyncTest("Remote Constraints", function() {
 		expect(3);
-		clear_snapshots(function() {
-			take_snapshot([], function() {
+		//clear_snapshots(function() {
+			//take_snapshot([], function() {
 				var comm_wrapper1 = new ist.SameWindowCommWrapper();
 				var comm_wrapper2 = new ist.SameWindowCommWrapper();
 				var x = cjs(1);
@@ -72,14 +72,14 @@
 						start();
 					});
 				}, 350);
-			});
-		});
+			//});
+		//});
 	});
 	
 	asyncTest("State Allocation", function() {
 		expect(1);
-		clear_snapshots(function() {
-			take_snapshot([], function() {
+		//clear_snapshots(function() {
+			//take_snapshot([], function() {
 				var sc = new ist.Statechart();
 				sc.add_state("state_1");
 				sc.add_state("state_2");
@@ -99,16 +99,18 @@
 						start();
 					});
 				}, 350);
-			});
-		});
+			//});
+		//});
 	});
 	asyncTest("Environment Collection", function() {
 		expect(1);
 		var the_div = $("<div />").appendTo(document.body);
-		clear_snapshots(function() {
-			take_snapshot([], function() {
-				var env = new ist.Environment({create_builtins: true});
-				env	.cd("screen")
+		//clear_snapshots(function() {
+			//take_snapshot([], function() {
+				var env = new ist.Environment({builtins: true});
+				env	.set("screen", "<stateful>")
+					.cd("screen")
+						.set("(prototypes)", "(start)", "svg.paper")
 						.set("my_circle", "<stateful>")
 						.cd("my_circle")
 							.add_state("init")
@@ -116,7 +118,7 @@
 							.start_at("init")
 							.add_transition("init", "hover", "on('mouseover', this)")
 							.add_transition("hover", "init", "on('mouseout', this)")
-							.set("(prototypes)", "init", "shape.circle")
+							.set("(prototypes)", "init", "svg.circle")
 							.set("fill")
 							.set("fill", "init", "'red'")
 							.set("fill", "hover", "'blue'")
@@ -138,14 +140,14 @@
 						start();
 					});
 				}, 2000);
-			});
-		});
+			//});
+		//});
 	});
 	asyncTest("Communication Wrapper", function() {
 		expect(3);
-		clear_snapshots(function() {
-			take_snapshot([], function() {
-				var env = new ist.Environment({create_builtins: true});
+		//clear_snapshots(function() {
+			//take_snapshot([], function() {
+				var env = new ist.Environment({builtins: true});
 				//env.print();
 
 				var pss = new ist.ProgramStateServer({
@@ -202,14 +204,15 @@
 					ok(!response.illegal_strs, "Make sure nothing was allocated");
 					start();
 				});
-			});
-		});
+			//});
+		//});
 	});
 
 	asyncTest("Pointer Bucket Collection", function() {
 		expect(7);
-		clear_snapshots(function() {
-			take_snapshot([], function(response) {
+		//clear_snapshots(function() {
+			//take_snapshot([], function(response) {
+				ist.__garbage_collect = false;
 				var root = new ist.Dict();
 				var a_dict = new ist.Dict();
 				var b_dict = new ist.Dict();
@@ -237,9 +240,10 @@
 				take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
 					ok(!response.illegal_strs, "Make sure nothing was allocated");
 					start();
+					ist.__garbage_collect = true;
 				});
-			});
-		});
+			//});
+		//});
 	});
 	asyncTest("Basic Statechart View", function() {
 		expect(1);
@@ -316,8 +320,8 @@
 												}
 											});
 
-		clear_snapshots(function() {
-			take_snapshot([], function() {
+		//clear_snapshots(function() {
+			//take_snapshot([], function() {
 				var cleanup_button = $("<a />")	.attr("href", "javascript:void(0)")
 												.text("Clean up")
 												.appendTo(document.body)
@@ -344,16 +348,16 @@
 						cleanup_button.click();
 					}
 				}, 2000);
-			});
-		});
+			//});
+		//});
 	});
 	asyncTest("Basic Editor", function() {
 		expect(1);
-		clear_snapshots(function() {
-			take_snapshot([], function() {
-				var env = new ist.Environment({create_builtins: true});
-				env	.set("height", "10")
-					.set("obj", "<stateful>");
+		//clear_snapshots(function() {
+			//take_snapshot([], function() {
+				var env = new ist.Environment({builtins: true});
+				//env	.set("height", "10")
+					//.set("obj", "<stateful>");
 				var root = env.get_root();
 
 				var runtime_div = $("<div />").appendTo(document.body);
@@ -396,14 +400,14 @@
 						cleanup_button.click();
 					}
 				}, 2000);
-			});
-		});
+			//});
+		//});
 	});
 
 	asyncTest("Loading Files", function() {
 		expect(1);
-		clear_snapshots(function() {
-			take_snapshot([], function() {
+		//clear_snapshots(function() {
+			//take_snapshot([], function() {
 				var env = new ist.Environment({create_builtins: true});
 				env	.set("height", "10")
 					.set("obj", "<stateful>");
@@ -449,8 +453,8 @@
 						cleanup_button.click();
 					}
 				}, 2000);
-			});
-		});
+			//});
+		//});
 	});
 
 	/**/

@@ -805,7 +805,7 @@ var constraint_solver = {
 	
 	// Utility function to mark a listener as being in the call stack. `this` refers to the constraint node here
 	add_in_call_stack: function(nl) {
-		nl.in_call_stack = true;
+		nl.in_call_stack++;
 		nl.node._num_listeners_in_call_stack++;
 	},
 	nullify: function(node) {
@@ -993,7 +993,7 @@ var constraint_solver = {
 				callback = nullified_info.callback;
 				context = nullified_info.context || root;
 
-				nullified_info.in_call_stack = false;
+				nullified_info.in_call_stack--;
 				nullified_info.node._num_listeners_in_call_stack--;
 				// If in debugging mode, then call the callback outside of a `try` statement
 				if(cjs.__debug) {
@@ -1013,8 +1013,11 @@ var constraint_solver = {
 		}
 	},
 	remove_from_call_stack: function(info) {
-		remove(this.nullified_call_stack, info);
-		info.node._num_listeners_in_call_stack--;
+		while(info.in_call_stack > 0) {
+			remove(this.nullified_call_stack, info);
+			info.in_call_stack--;
+			info.node._num_listeners_in_call_stack--;
+		}
 	}
 };
 
@@ -1237,7 +1240,7 @@ Constraint = function (value, options) {
 		if(this._num_listeners_in_call_stack > 0) {
 			each(this._changeListeners, function(cl) {
 				// remove it from the call stack
-				if (cl.in_call_stack) {
+				if (cl.in_call_stack>0) {
 					constraint_solver.remove_from_call_stack(cl);
 					if(this._num_listeners_in_call_stack === 0) {
 						return breaker;
@@ -1274,7 +1277,7 @@ Constraint = function (value, options) {
 			callback: callback, // function
 			context: thisArg, // 'this' when called
 			args: slice.call(arguments, 2), // arguments to pass into the callback
-			in_call_stack: false, // internally keeps track of if this function will be called in the near future
+			in_call_stack: 0, // internally keeps track of if this function will be called in the near future
 			node: this
 		});
 		if(this._options.run_on_add_listener !== false) {
@@ -1311,7 +1314,7 @@ Constraint = function (value, options) {
 				// Then get rid of it
 				removeIndex(this._changeListeners, i);
 				// And remove it if it's in the callback
-				if (cl.in_call_stack) {
+				if (cl.in_call_stack>0) {
 					constraint_solver.remove_from_call_stack(cl);
 				}
 				delete cl.node;
@@ -4587,6 +4590,7 @@ var Transition = function(fsm, from_state, to_state, name) {
 	this._to = to_state; // to state (fetch with getTo)
 	this._name = name; // name (fetch with getName)
 	this._id = uniqueId(); // useful for storage
+	this._event = false; // the CJSEvent (if created) for this transition
 };
 
 (function(my) {
@@ -4596,6 +4600,15 @@ var Transition = function(fsm, from_state, to_state, name) {
 	proto.getName = function() { return this._name; }; // name getter
 	proto.getFSM = function() { return this._fsm; }; // FSM getter
 	proto.id = function() { return this._id; }; // getter for id
+	proto.destroy = function() {
+		var ev = this._event;
+		if(ev) { ev._removeTransition(this); }
+		delete this._event;
+		delete this._fsm;
+		delete this._from;
+		delete this._to;
+	};
+	proto.setEvent = function(event) { this._event = event; };
 	proto.run = function() {
 		var fsm = this.getFSM();
 		// do_transition should be called by the user's code
@@ -4958,6 +4971,7 @@ var FSM = function() {
 		} else {
 			if(add_transition_fn instanceof CJSEvent) {
 				add_transition_fn._addTransition(transition);
+				transition.setEvent(add_transition_fn);
 			} else {
 				// call the supplied function with the code to actually perform the transition
 				add_transition_fn.call(this, bind(transition.run, transition), this);
@@ -5012,6 +5026,7 @@ var FSM = function() {
 	proto.destroy = function() {
 		this.state.destroy();
 		this._states = {};
+		each(this._transitions, function(t) { t.destroy(); });
 		this._transitions = [];
 		this._curr_state = null;
 	};
@@ -5208,12 +5223,12 @@ var CJSEvent = function(parent, filter, onAddTransition, onRemoveTransition) {
 		if(remove(this._transitions, transition)) {
 			if(this._on_remove_transition) {
 				this._on_remove_transition(transition);
-			}
 
-			// clear the live fn
-			var tid = transition.id();
-			this._live_fns[tid].destroy();
-			delete this._live_fns[tid];
+				// clear the live fn
+				var tid = transition.id();
+				this._live_fns[tid].destroy();
+				delete this._live_fns[tid];
+			}
 		}
 		if(this._parent && this._parent._on_remove_transition) {
 			this._parent._on_remove_transition(transition);
@@ -6035,7 +6050,7 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 			each(template.attributes, function(attr) {
 				var name = attr.name, value = attr.value;
 				if(name.match(name_regex)) {
-					context[value] = getInputValueConstraint(element);
+					bindings.push((context[value] = getInputValueConstraint(element)));
 				} else if((on_regex_match = name.match(on_regex))) {
 					var event_name = on_regex_match[2];
 					aEL(element, event_name, context[value]);
@@ -6231,7 +6246,6 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 					resume: function() { resume_each(active_children); },
 					destroy: function() {
 						if(old_index >= 0) {
-							//destroy_each(active_children);
 							active_children=[];
 							old_index=-1;
 						}
@@ -6709,7 +6723,11 @@ extend(cjs, {
 	 * @see cjs.registerPartial
 	 * @see cjs.registerCustomPartial
 	 */
-	unregisterPartial:	function(name) { delete partials[name]; return this;},
+	unregisterPartial:	function(name) {
+		delete partials[name];
+		delete custom_partials[name];
+		return this;
+	},
 
 	/**
 	 * Destroy a template instance
