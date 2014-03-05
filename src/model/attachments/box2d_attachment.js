@@ -163,11 +163,12 @@
 							this.b2x.set(position.x * PIXELS_PER_METER);
 							this.b2y.set(position.y * PIXELS_PER_METER);
 						} else if(shape instanceof B2PolygonShape) {
-							if(Math.random() < 0.001) {
-								console.log(shape);
-							}
-							this.b2x.set((position.x) * PIXELS_PER_METER);
-							this.b2y.set((position.y) * PIXELS_PER_METER);
+							var v0 = shape.m_vertices[0],
+								v1 = shape.m_vertices[2],
+								width = Math.abs(v0.x-v1.x),
+								height = Math.abs(v0.y-v1.y);
+							this.b2x.set((position.x-width/2) * PIXELS_PER_METER);
+							this.b2y.set((position.y-height/2) * PIXELS_PER_METER);
 						}
 
 						this.b2vx.set(linearVelocity.x);
