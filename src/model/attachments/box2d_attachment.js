@@ -340,13 +340,17 @@
 				applyForce: function(x, y) {
 					var body = this.get_body();
 					if(body) {
-						body.ApplyForce(new B2Vec2(x, y), body.GetWorldCenter());
+						setTimeout(function() {
+							body.ApplyForce(new B2Vec2(x, y), body.GetWorldCenter());
+						});
 					}
 				},
 				applyImpulse: function(x, y) {
 					var body = this.get_body();
 					if(body) {
-						body.ApplyImpulse(new B2Vec2(x, y), body.GetWorldCenter());
+						setTimeout(function() {
+							body.ApplyImpulse(new B2Vec2(x, y), body.GetWorldCenter());
+						});
 					}
 				}
 			}
