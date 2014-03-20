@@ -155,6 +155,8 @@
 				this.palette = $("<ul />")		.append("<button class='circle'>circle</button>")
 												.append("<button class='rectangle'>rectangle</button>")
 												.append("<button class='ellipse'>ellipse</button>")
+												.append("<button class='text'>text</button>")												
+												.append("<button class='image'>image</button>")												
 												.css(this.palette_css)
 												.on('click', function(e){
 													if (e.target.className === 'circle') {
@@ -167,8 +169,11 @@
 														that.create_new_object('ellipse');
 													}		
 													else if (e.target.className === 'text') {
-														//that.create_new_object('text');
-													}																										
+														that.create_new_object('text');
+													}																									
+													else if (e.target.className === 'image') {
+														that.create_new_object('image');
+													}																									
 												});
 
 
@@ -239,6 +244,54 @@
 
 			protos_stateful_prop.set(start_state, protos_cell);
 
+			var stateful_obj_small = new ist.StatefulObj(undefined, true),
+			protos_stateful_prop_small = new ist.StatefulProp({can_inherit: false,
+				statechart_parent: stateful_obj_small});
+			stateful_obj_small.do_initialize({
+				direct_protos: protos_stateful_prop_small
+			});
+
+			var statechart_small = stateful_obj_small.get_own_statechart(),
+			start_state_small = statechart_small.get_start_state(),
+			protos_cell_small = new ist.Cell({str: "svg.rectangle", ignore_inherited_in_first_dict: true});
+
+			protos_stateful_prop_small.set(start_state_small, protos_cell_small);
+			var propCommandX = new ist.SetPropCommand({
+							parent: stateful_obj_small,
+							name: "x",
+							value: "140"
+			}),
+			propCommandY = new ist.SetPropCommand({
+							parent: stateful_obj_small,
+							name: "y",
+							value: "90"
+			});
+
+			var widthProp = new ist.SetPropCommand({
+							parent: stateful_obj_small,
+							name: "width",
+							value: "10"
+			}),
+			heightProp = new ist.SetPropCommand({
+							parent: stateful_obj_small,
+							name: "height",
+							value: "10"
+			});			
+
+			var colorProp = new ist.SetPropCommand({
+							parent: stateful_obj_small,
+							name: "fill",
+							value: "red"
+			})			
+			var combined_command = new ist.CombinedCommand({
+				commands: [propCommandX, propCommandY]
+			});
+
+			var size_command = new ist.CombinedCommand({
+				commands: [widthProp, heightProp]
+			});
+
+
 			var sketch = this.option("root"),
 				screen = sketch._get_direct_prop('screen');
 
@@ -256,16 +309,27 @@
 				protos_cell = new ist.Cell({str: "svg.paper", ignore_inherited_in_first_dict: true});
 
 				protos_stateful_prop.set(start_state, protos_cell);
-			}
+			}			
 
 			var propCommand = new ist.SetPropCommand({parent: screen, value: stateful_obj});
 			this._command_stack._do(propCommand);
+			
+			var propCommandSmall = new ist.SetPropCommand({parent: screen, value: stateful_obj_small});
+			this._command_stack._do(propCommandSmall);
+
+			this._command_stack._do(combined_command);
+			this._command_stack._do(size_command);			
+			this._command_stack._do(colorProp);						
 			var circle_context = ist.find_or_put_contextual_obj(stateful_obj, new ist.Pointer({stack:[sketch,screen,stateful_obj]}));														
 			var dom_element = circle_context.get_dom_obj();
-			console.log(dom_element);
-			this._add_event_listeners(stateful_obj, object);																	
-		},
 
+
+			var rect_context = ist.find_or_put_contextual_obj(stateful_obj, new ist.Pointer({stack:[sketch,screen,stateful_obj_small]}));														
+			var dom_element_small = rect_context.get_dom_obj();
+
+			this._add_event_listeners(stateful_obj_small, dom_element_small, stateful_obj, dom_element, object);		
+			this._add_resize_listener(stateful_obj_small, dom_element_small, stateful_obj, dom_element, object);
+		},
 		show_drag_over: function() {
 			$(document.body).addClass("drop_target");
 			if(!this.hasOwnProperty("overlay")) {
@@ -427,65 +491,76 @@
 			}
 		},
 
-		_add_event_listeners: function(element, obj) {
-	      	var touchedEl,dragData=null;
+
+		// fields and values are arrays, must have the same length
+		_save_state_multiple_fields: function(element, fields, values) {
+			if (fields.length != values.length) {
+				//@TODO, make error handling better
+				console.log("ERROR, SHOULD NOT HAVE REACHED HERE");
+			}
+			for (var i = 0; i < fields.length; i++) {
+				_save_state_single_field(element, fields[i], values[i]);
+			}
+
+		},
+
+		/*
+		field is a string
+		value need not be a string
+		*/
+		_save_state_single_field: function(element, field, value) {
+			var field_stateful_prop = new ist.StatefulProp({statechart_parent: element});
+			var string_value = value + '';
+			var field_cell  = new ist.Cell({str: string_value});
+
+			var statechart = element.get_own_statechart(),
+			start_state = statechart.get_start_state();
+
+			field_stateful_prop.set(start_state, field_cell);
+			element.set_prop(field, field_stateful_prop);				  
+
+		},
+
+		_add_resize_listener: function(rect_element, rect_dom_element, element, dom_element, obj) {
+			var dragData = null;
+			var dragDataRed = null;		
+			var dx,dy = 2;
 	      	var objectX, objectY = 0;
-	      	var nameX, nameY = "";
-	      	var that = this;
-			$(obj).on("mousedown", function(ev) {
-				touchedEl = this;
+	      	var that = this;	   
+	      	var origWidth,origHeight;
+	      	// element is small rectangle, and dom_element is larger shape
+	      	var redWidth = rect_dom_element.x.baseVal.value;  
+	      	console.log(dom_element);
+			$(rect_dom_element).on("mousedown", function(ev) {
+				if (obj === 'rectangle' || obj === 'image') {
+					origHeight = dom_element.height.baseVal.value;
+			    	origWidth = dom_element.width.baseVal.value;						
+				}
+			
 		        if(!dragData) {
-		          ev=ev||event;
-		          if (obj === 'rect' || obj === 'text') {
-		          	console.log(dragData, ev.clientX, ev.clientY,touchedEl.x);
-		          	dragData={
-			            x: ev.clientX-touchedEl.x.baseVal.value,
-			            y: ev.clientY-touchedEl.y.baseVal.value
-		          	}
-		          	nameX = "x";
-		          	nameY = "y";
-		          }
-      			  else if (obj === 'ellipse' || obj === 'circle') {
-			        dragData={
-						x: ev.clientX-touchedEl.cx.baseVal.value,
-			            y: ev.clientY-touchedEl.cy.baseVal.value
-			        }
-			          nameX = "cx";
-			          nameY = "cy";
-		          }					                    	
-		        };
+		          	ev=ev||event;
+					dragData = {
+						x: ev.clientX,
+			            y: ev.clientY
+			        }	
+
+				}
 			});
 
-			$('body').on("mouseup", function(ev) {				
+			$(rect_dom_element).on("mouseup", function(ev) {
 		        if(dragData) {
-		          ev=ev||event;
-		          objectX=ev.clientX-dragData.x;
-		          objectY=ev.clientY-dragData.y;
-				  var x_stateful_prop = new ist.StatefulProp({statechart_parent: element});
-				  var y_stateful_prop = new ist.StatefulProp({statechart_parent: element});
-
-				  var stringX = objectX + '';
-				  var stringY = objectY + '';				
-
-				  var x_cell  = new ist.Cell({str: stringX});
-				  var y_cell  = new ist.Cell({str: stringY});		
-
-				  var statechart = element.get_own_statechart(),
-					  start_state = statechart.get_start_state();
-				  
-				  x_stateful_prop.set(start_state, x_cell);
-				  y_stateful_prop.set(start_state, y_cell);	
-
-				  var sketch = that.option("root"),
+		        	that._resize_mouse_move(ev, dragData, element, rect_element, dom_element, rect_dom_element, origWidth, origHeight);
+		        	//UNDO STACK
+			/*	  var sketch = that.option("root"),
 					  screen = sketch._get_direct_prop('screen'),
 					  propCommandX = new ist.SetPropCommand({
-							parent: element,
-							name: nameX,
+							parent: rect,
+							name: "x",
 							value: stringX
 					  }),
 					  propCommandY = new ist.SetPropCommand({
-							parent: element,
-							name: nameY,
+							parent: rect,
+							name: "y",
 							value: stringY
 					  });
 				 var combined_command = new ist.CombinedCommand({
@@ -494,40 +569,125 @@
 
 				  that._command_stack._do(combined_command);
 
-				  element.set_prop(nameX, x_stateful_prop);				  
-				  element.set_prop(nameY, y_stateful_prop);		
+				  rect.set_prop("x", x_stateful_prop);				  
+				  rect.set_prop("y", y_stateful_prop);	*/	
 
 		          dragData=null;
+		        }
+			});		
+
+			$('body').on("mousemove", function(ev) {	
+		        if(dragData) {
+
+		        	that._resize_mouse_move(ev,dragData, element, rect_element, dom_element, rect_dom_element, origWidth, origHeight);
+		        }
+			});					
+		},
+
+
+		_resize_mouse_move: function(ev, dragData, element, rect_element, dom_element, rect_dom_element, width, height) {
+			ev = ev || event;			
+			var rect_width = rect_dom_element.width.baseVal.value;
+			var rect_height = rect_dom_element.height.baseVal.value;
+
+			// Remove magic number
+			var new_width = Math.max((ev.clientX - dragData.x + width), 20);
+			var new_height = Math.max((ev.clientY - dragData.y + height), 20);
+
+			var new_red_x = (dom_element.x.baseVal.value + new_width - rect_width) ;
+			var new_red_y = (dom_element.y.baseVal.value + new_height - rect_height) ;
+
+			this._save_state_single_field(element, 'width', new_width);
+			this._save_state_single_field(element, 'height', new_height);
+			this._save_state_single_field(rect_element, 'x', new_red_x);
+			this._save_state_single_field(rect_element, 'y', new_red_y);
+
+		},
+		_mouse_move : function(ev, nameX, nameY, dragData, dragDataRed, element, rect_element) {
+			ev = ev || event;
+			this._save_state_single_field(element, nameX, ev.clientX - dragData.x);
+			this._save_state_single_field(element, nameY, ev.clientY - dragData.y);
+			this._save_state_single_field(rect_element, 'x', ev.clientX - dragDataRed.x);
+			this._save_state_single_field(rect_element, 'y', ev.clientY - dragDataRed.y);			
+			// return {sX: stringX, sY: stringY, sRedX : stringRedX, sRedY: stringRedY};
+
+		},
+
+		_add_event_listeners: function(rect_element, rect_dom_element, element, dom_element, obj) {
+	      	var touchedElement,dragData,dragDataRed=null;
+	      	var objectX, objectY = 0;
+	      	var redObjectX, redObjectY = 0;	      	
+	      	var nameX, nameY = "";
+	      	var that = this;
+	      	var red_square_size = rect_dom_element.width.baseVal.value;      				      	
+			$(dom_element).on("mousedown", function(ev) {
+				touchedElement = this;
+				if(!dragData) {
+					if (obj === 'rectangle' || obj === 'text' || obj === 'image') {
+						nameX = 'x';
+						nameY = 'y';
+					}
+
+					else if (obj === 'ellipse' || obj === 'circle') {
+						nameX = 'cx';
+						nameY = 'cy';		          
+					}
+					if (obj !== 'text') {
+						dragData={
+							x: ev.clientX - touchedElement[nameX].baseVal.value,
+							y: ev.clientY - touchedElement[nameY].baseVal.value
+						}						
+					}
+					else {
+						dragData={
+							x: ev.clientX - touchedElement[nameX].baseVal.getItem(0).value,
+							y: ev.clientY - touchedElement[nameY].baseVal.getItem(0).value
+						}						
+					}
+
+
+					dragDataRed = {
+						x : ev.clientX - rect_dom_element.x.baseVal.value,
+						y : ev.clientY - rect_dom_element.y.baseVal.value
+					}		          	
+		        };
+			});
+
+			$(dom_element).on("mouseup", function(ev) {
+		        if(dragData) {
+		          console.log('INSIDE MOUSE UP');	
+		          var objStrings = that._mouse_move(ev, nameX, nameY, dragData, dragDataRed, element, rect_element);
+				  // UNDO STACK
+			/*	  var sketch = that.option("root"),
+					  screen = sketch._get_direct_prop('screen'),
+					  propCommandX = new ist.SetPropCommand({
+							parent: element,
+							name: nameX,
+							value: objStrings.sX
+					  }),
+					  propCommandY = new ist.SetPropCommand({
+							parent: element,
+							name: nameY,
+							value: objStrings.sY
+					  });
+
+				 var combined_command = new ist.CombinedCommand({
+				 	commands: [propCommandX, propCommandY]
+				 });
+
+				  that._command_stack._do(combined_command);*/
+
+		          dragData = null;
+				  dragDataRed = null;		          
 		        }
 			});			
 
 			$('body').on("mousemove", function(ev) {	
-		        if(dragData) {
-		          ev=ev||event;							          
-		          objectX=ev.clientX-dragData.x;
-				  objectY=ev.clientY-dragData.y;
-				  var x_stateful_prop = new ist.StatefulProp({statechart_parent: element});
-				  var y_stateful_prop = new ist.StatefulProp({statechart_parent: element});
-
-				  var stringX = objectX + '';
-				  var stringY = objectY + '';				
-
-				  var x_cell  = new ist.Cell({str: stringX});
-				  var y_cell  = new ist.Cell({str: stringY});		
-
-				  var statechart = element.get_own_statechart(),
-					  start_state = statechart.get_start_state();
-				  
-				  x_stateful_prop.set(start_state, x_cell);
-				  y_stateful_prop.set(start_state, y_cell);	
-
-				  element.set_prop(nameX, x_stateful_prop);				  
-				  element.set_prop(nameY, y_stateful_prop);		
-
-
+		        if(dragData) {			
+				  console.log("inside move");
+				  that._mouse_move(ev, nameX, nameY, dragData,dragDataRed,element,rect_element);
 		        }
-			});						
-			console.log(screen);
+			});							
 		},
 
 		_create_server_socket: function() {
