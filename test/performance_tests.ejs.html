@@ -6,100 +6,207 @@
   </head>
   <body>
 		<div class="output"></div>
-		<!--<canvas id="canvas" width="400" height="600"></canvas>-->
-		<div id="editor"></div>
 	  <div>
 			<%- ist_include(ist_inc.vendor) %>
 			<%- ist_include(ist_inc.runtime) %>
 			<%- ist_include(ist_inc.editor) %>
 			<%- ist_include(ist_inc.runtime_style) %>
 			<script type="text/javascript">
-				//var root = interstate.get_default_root();
-				$("div#editor").editor({
-					debug_env: true,
-					server_window: window
-				});
+				window.env = new interstate.Environment();
+				function getTime() {
+					return (new Date()).getTime();
+				}
+
+				var do_test = function(test_info, min_N, max_N) {
+					var times = [0],
+						n = min_N,
+						startTime;
+
+					for(; n<=max_N; n++) {
+						test_info.do_setup(n);
+						startTime = getTime();
+						test_info.do_test(n);
+						times[n] = getTime() - startTime;
+						if(!test_info.verify(n)) {
+							throw new Error("Incorrect output for n="+n);
+						}
+						test_info.do_cleanup(n);
+					}
+					return times;
+				};
+
 				$("div.output").dom_output({
 					open_separate_client_window: false,
-					edit_on_open: true,
 					show_edit_button: false,
-					//root: root
+					root: env.get_root()
 				});
-				function getRoot() {
-					return $("div.output").dom_output("option", "root");
-				}
-				function getEnvironment() {
-					return new interstate.Environment({root: getRoot()});
-				}
-				window.env = getEnvironment();
-				/*
-				env.set("message", "<stateful>")
-					.cd("message")
-					.add_state("init")
-					.add_state("other")
-					.start_at("init")
-					.add_transition("init", "other", "on('mousedown', this);event.preventDefault()")
-					.add_transition("other", "init", "on('timeout', 500)")
-					.set("(prototypes)", "(start)", "dom.h1")
-					.set("textContent", "init", "'hello'")
-					.set("textContent", "other", "'goodbye'")
-				*/
-				/*
-				env.set("steves_world", "<stateful>")
-					.cd("steves_world")
-					.set("(prototypes)", "(start)", "[physics.world]")
-					.set("gy", "(start)", "10.0")
-					.top()
-					.set("sketch", "<stateful>")
-					.cd("sketch")
-					.set("(prototypes)", "(start)", "svg.paper")
-					.set("circ", "<stateful>")
-					.cd("circ")
-					.set("world", "(start)", "steves_world")
-					.set("cx", "(start)", "200")
-					.set("cy", "(start)", "20")
-					.set("fixed", "(start)", "true")
-					.add_state("init")
-					.add_state("other")
-					.start_at("init")
-					.set("(prototypes)", "(start)", "[svg.circle, physics.fixture]")
-					.add_transition("init", "other", "on('timeout',500);")
-					.set("cx", "other", "computed_x")
-					.set("cy", "other", "computed_y")
-					.set("fixed", "init", "false")
-					.up()
-					.set("rect", "<stateful>")
-					.cd("rect")
-					.add_state("init")
-					.start_at("init")
-					.add_state("dead")
-					.add_transition("init", "dead", "on('collision', this, circ)")
-					.set("(prototypes)", "(start)", "[svg.rect, physics.fixture]")
-					.set("x", "(start)", "120")
-					.set("y", "(start)", "300")
-					.set("(prototypes)", "dead", "[]")
 
-					.set("world", "(start)", "steves_world")
+				var min_N = 1,
+					max_N = 10000;
 
-				env .top()
-				/*
-				env.print();
-				env.set("b", "<stateful>")
+				var results = interstate._.map([{
+						do_setup: function(n) {
+							env	.set("obj", "<stateful>")
+								.cd("obj")
+									.set("(prototypes)", "(start)", "dom.div")
+									.set("(copies)", n+"")
+									.top();
+						},
+						do_test: function(n) {
+							env	.cd("obj")
+									.set("textContent", "'target'")
+									.top();
+						},
+						do_cleanup: function(n) {
+							env	.unset("obj")
+								.top();
+						},
+						verify: function(n) {
+							var output = $("div.output > div > div");
+							if(output.length === n) {
+								for(var i = 0; i<output.length; i++) {
+									if($(output[i]).text()!=='target') {
+										return false;
+									}
+								}
+								return true;
+							}
+							return false;
+						}
+					}, {
+						do_setup: function(n) {
+							for(var i = 0; i<n; i++) {
+								env	.set("obj_"+i, "<stateful>")
+									.cd("obj_"+i)
+										.set("(prototypes)", "(start)", "dom.div")
+										.top();
+							}
+						},
+						do_test: function(n) {
+							env	.cd("obj_0")
+									.set("textContent", "'target'")
+									.top();
+						},
+						do_cleanup: function(n) {
+							for(var i = 0; i<n; i++) {
+								env.unset("obj_"+i);
+							}
+							env.top();
+						},
+						verify: function(n) {
+							var output = $("div.output > div > div");
+							if(output.length === n) {
+								for(var i = 0; i<output.length; i++) {
+									if($(output[i]).text()!==(i===0?'target':'no text')) {
+										return false;
+									}
+								}
+								return true;
+							}
+							return false;
+						}
+					}, {
+						do_setup: function(n) {
+							var protos_list = [];
+							for(var i = 0; i<n; i++) {
+								env	.set("proto_"+i, "<stateful>")
+									.cd("proto_"+i)
+										.set("show", "(start)", "false");
 
-				env.cd("super_obj");
+								if(i === 0) {
+									env.set("(prototypes)", "(start)", "dom.div");
+								}
 
-				var super_obj = env.get_pointer_obj;
-				var cobj = interstate.find_or_put_contextual_obj(super_obj, env.pointer);
+								env.top();
+								protos_list.push("proto_" + i);
+							}
 
-				interstate.cjs.liven(function() {
-					console.log(cobj.children());
-				});
-			
+							var protos_str = "[" + protos_list.join(",") + "]";
 
-				//env.print_on_return = true;
-				env.set("(copies)", "1")
-					.set("(copies)", "")
-				*/
+							env	.set("obj", "<stateful>")
+								.cd("obj")
+									.set("(prototypes)", "(start)", protos_str)
+									.set("show", "(start)", "true")
+									.top();
+						},
+						do_test: function(n) {
+							env	.cd("proto_0")
+									.set("textContent", "'target'")
+									.top();
+						},
+						do_cleanup: function(n) {
+							for(var i = 0; i<n; i++) {
+								env.unset("proto_"+i);
+							}
+							env	.top()
+								.unset("obj")
+								.top();
+						},
+						verify: function(n) {
+							var output = $("div.output > div > div");
+							if(output.length === 1) {
+								for(var i = 0; i<output.length; i++) {
+									if($(output[i]).text()!=='target') {
+										return false;
+									}
+								}
+								return true;
+							}
+							return false;
+						}
+					}, {
+						do_setup: function(n) {
+							var protos_list = ["dom.div"];
+							for(var i = 0; i<n; i++) {
+								env	.set("proto_"+i, "<stateful>")
+									.cd("proto_"+i)
+										.set("(prototypes)", "(start)", (i===0 ? "dom.div" : ("proto_"+(n-1))))
+										.set("show", "(start)", "false")
+										.top();
+								protos_list.push("proto_" + i);
+							}
+
+							var protos_str = "[" + protos_list.join(",") + "]";
+
+							env	.set("obj", "<stateful>")
+								.cd("obj")
+								.set("(prototypes)", "(start)", protos_str)
+									.set("show", "(start)", "true")
+									.top();
+						},
+						do_test: function(n) {
+							env	.cd("proto_0")
+									.set("textContent", "'target'")
+									.top();
+						},
+						do_cleanup: function(n) {
+							for(var i = 0; i<n; i++) {
+								env.unset("proto_"+i);
+							}
+							env	.top()
+								.unset("obj")
+								.top();
+						},
+						verify: function(n) {
+							return true;
+							var output = $("div.output > div > div");
+							if(output.length === 1) {
+								for(var i = 0; i<output.length; i++) {
+									if($(output[i]).text()!=='target') {
+										return false;
+									}
+								}
+								return true;
+							}
+							return false;
+						}
+					}], function(test_info) {
+						return do_test(test_info, min_N, max_N);
+					});
+					var results_str = interstate._.map(results, function(result) {
+							return result.join(",");
+						}).join("\n");
+					$("body").html("<pre>"+results_str+"</pre>");
 			</script>
 	  </div>
   </body>

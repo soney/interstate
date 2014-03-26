@@ -185,7 +185,6 @@
 			var root_dict = this.option("root");
 			var root_contextual_object = ist.find_or_put_contextual_obj(root_dict);
 
-
 			if(!ist.__empty_files) {
 			/*
 				if(!this._raphael_fn) {
