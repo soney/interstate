@@ -36,6 +36,7 @@
 				for(var i = min_N; i<max_N; i*=1.5) {
 					ens.push(Math.round(i));
 				}
+				ens = [1000];
 				//ens.reverse();
 				//interstate.__garbage_collect = false;
 
@@ -134,10 +135,12 @@
 									.top();
 						},
 						do_cleanup: function(n) {
+							return;
 							env	.unset("obj")
 								.top();
 						},
 						verify: function(n) {
+							return true;
 							var output = $("div.output > div > div");
 							if(output.length === n) {
 								for(var i = 0; i<output.length; i++) {
@@ -149,7 +152,7 @@
 							}
 							return false;
 						}
-					}, {
+					}/*, {
 						do_setup: function(n) {
 							for(var i = 0; i<n; i++) {
 								env	.set("obj_"+i, "<stateful>")
@@ -276,7 +279,7 @@
 							}
 							return false;
 						}
-					}];
+					}/**/];
 				var test_num = 0,
 					trial_num = 0,
 					next_test = function(cback) {
