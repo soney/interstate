@@ -78,10 +78,11 @@
 					"border-bottom": ""
 				};
 				this.running_button_css = {
-					float: "left",
+					float: "right",
 					position: "fixed",
-					top: "0",
+					top: "25px",
 					"padding-left": "5px",
+					right: "5px",
 					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
 					"font-variant": "small-caps",
 					color: this.button_color,
@@ -93,7 +94,7 @@
 					"user-select": "none"							
 				};
 				this.editing_button_css = {
-					left: "60px"
+					right: "60px"
 				};
 				this.run_edit_active_css = {
 					"font-weight": "bold",
@@ -120,13 +121,23 @@
 					"border-bottom": "5px solid " + this.button_color
 				},
 				this.palette_css = {
-					position: "absolute",
-					top: "20px",
+					"float":"right",					
+					"position": "fixed",
+					top: "40px",
+					right:"10px",
 					"padding-left": "0",
-					display: "block"
+					display: "block",
+					"border": "1px solid #808080",
+					"padding": "10px",
+					"font-size": "0.95em",
+					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+					color: this.button_color				
 				}, 
 				this.palette_css_hidden = {
 					display: "none"
+				},
+				this.palette_li_css = {
+					"border": "1px solid black"
 				};
 
 
@@ -152,11 +163,10 @@
 												.css(this.running_button_css)
 												.css(this.editing_button_css)
 												.css(this.run_edit_active_css);
-				this.palette = $("<ul />")		.append("<button class='circle'>circle</button>")
-												.append("<button class='rectangle'>rectangle</button>")
-												.append("<button class='ellipse'>ellipse</button>")
-												.append("<button class='text'>text</button>")												
-												.append("<button class='image'>image</button>")												
+				this.palette = $("<ul />")		.append("<p class='rectangle'>rectangle</p>")
+												.append("<p class='ellipse'>ellipse</p>")
+												.append("<p class='text'>text</p>")												
+												.append("<p class='image'>image</p>")												
 												.css(this.palette_css)
 												.on('click', function(e){
 													if (e.target.className === 'circle') {
@@ -175,8 +185,7 @@
 														that.create_new_object('image');
 													}																									
 												});
-
-
+				console.log($('ul'));
 				this.run_state = cjs.fsm('run', 'edit')
 												.addTransition('run', 'edit', cjs.on('click', this.running_button))
 												.addTransition('edit', 'run', cjs.on('click', this.editing_button))
@@ -256,15 +265,33 @@
 			protos_cell_small = new ist.Cell({str: "svg.rectangle", ignore_inherited_in_first_dict: true});
 
 			protos_stateful_prop_small.set(start_state_small, protos_cell_small);
+
+			var xVal = 1;
+			var yVal = 1;
+
+			if (object === "rectangle") {
+				xVal = 140;
+				yVal = 90;
+			}
+			else if (object === "ellipse") {
+				xVal = 450;
+				yVal = 270;
+			}
+			else if (object === "image") {
+				xVal = 160;
+				yVal = 160;
+
+			}
+
 			var propCommandX = new ist.SetPropCommand({
 							parent: stateful_obj_small,
 							name: "x",
-							value: "140"
+							value: xVal
 			}),
 			propCommandY = new ist.SetPropCommand({
 							parent: stateful_obj_small,
 							name: "y",
-							value: "90"
+							value: yVal
 			});
 
 			var widthProp = new ist.SetPropCommand({
@@ -310,25 +337,55 @@
 
 				protos_stateful_prop.set(start_state, protos_cell);
 			}			
+			var parent = this.option("root");
+			console.log(screen);
+            var prop_names = screen._get_direct_prop_names();
+            var prefix = "obj";
+            var prefix_small = "resize"
+            console.log(prop_names);
+            var len = 0;
+            if (parent instanceof ist.Dict) {
+            	if (object === "rectangle") {
+            		prefix = "rect";
+            	}
+            	else if (object === "ellipse") {
+            		prefix = "ellipse";
+            	}
+            	else if (object === "text") {
+            		prefix = "text";
+            	}
+            	else if (object === "image") {
+            		prefix = "image";
+            	}
+            }
+            var new_prop_name = prefix + "_" +  prop_names.length;
+            console.log(new_prop_name);
 
-			var propCommand = new ist.SetPropCommand({parent: screen, value: stateful_obj});
+			var propCommand = new ist.SetPropCommand({parent: screen, value: stateful_obj, name: new_prop_name});
 			this._command_stack._do(propCommand);
 			
-			var propCommandSmall = new ist.SetPropCommand({parent: screen, value: stateful_obj_small});
-			this._command_stack._do(propCommandSmall);
+			var new_prop_name_small = prefix_small + "_" + screen._get_direct_prop_names().length;
+			
+			var circle_context = ist.find_or_put_contextual_obj(stateful_obj, new ist.Pointer({stack:[sketch,screen,stateful_obj]}));
+			var dom_element = circle_context.get_dom_obj();			
+			
+			if (object !== 'text') {
+				var propCommandSmall = new ist.SetPropCommand({parent: screen, value: stateful_obj_small, name: new_prop_name_small});
+				this._command_stack._do(propCommandSmall);
+				this._command_stack._do(combined_command);
+				this._command_stack._do(size_command);			
+				this._command_stack._do(colorProp);			
 
-			this._command_stack._do(combined_command);
-			this._command_stack._do(size_command);			
-			this._command_stack._do(colorProp);						
-			var circle_context = ist.find_or_put_contextual_obj(stateful_obj, new ist.Pointer({stack:[sketch,screen,stateful_obj]}));														
-			var dom_element = circle_context.get_dom_obj();
+				var rect_context = ist.find_or_put_contextual_obj(stateful_obj, new ist.Pointer({stack:[sketch,screen,stateful_obj_small]}));														
+				var dom_element_small = rect_context.get_dom_obj();
+				
+				this._add_resize_listener(stateful_obj_small, dom_element_small, stateful_obj, dom_element, object);											
+			}
 
 
-			var rect_context = ist.find_or_put_contextual_obj(stateful_obj, new ist.Pointer({stack:[sketch,screen,stateful_obj_small]}));														
-			var dom_element_small = rect_context.get_dom_obj();
-
+			
 			this._add_event_listeners(stateful_obj_small, dom_element_small, stateful_obj, dom_element, object);		
-			this._add_resize_listener(stateful_obj_small, dom_element_small, stateful_obj, dom_element, object);
+
 		},
 		show_drag_over: function() {
 			$(document.body).addClass("drop_target");
@@ -517,39 +574,58 @@
 			start_state = statechart.get_start_state();
 
 			field_stateful_prop.set(start_state, field_cell);
-			element.set_prop(field, field_stateful_prop);				  
+			//element.set_prop(field, field_stateful_prop);				  
 
+			var command = ist.SetPropCommand({
+				parent: element,
+				name: field,
+				value: field_stateful_prop
+			});
+
+			return {
+				command: command,
+				cell: field_cell
+			}
 		},
 
 		_add_resize_listener: function(rect_element, rect_dom_element, element, dom_element, obj) {
-			var dragData = null;
-			var dragDataRed = null;		
-			var dx,dy = 2;
-	      	var objectX, objectY = 0;
 	      	var that = this;	   
-	      	var origWidth,origHeight;
-	      	// element is small rectangle, and dom_element is larger shape
-	      	var redWidth = rect_dom_element.x.baseVal.value;  
-	      	console.log(dom_element);
+	      	var element_initial_state = null;
+	      	var cells = false;
+
 			$(rect_dom_element).on("mousedown", function(ev) {
 				if (obj === 'rectangle' || obj === 'image') {
-					origHeight = dom_element.height.baseVal.value;
-			    	origWidth = dom_element.width.baseVal.value;						
+					element_initial_state = {
+						origHeight: dom_element.height.baseVal.value,
+			    		origWidth: dom_element.width.baseVal.value
+					};
 				}
-			
-		        if(!dragData) {
-		          	ev=ev||event;
-					dragData = {
-						x: ev.clientX,
-			            y: ev.clientY
-			        }	
 
+				else if (obj === 'ellipse') {
+					element_initial_state = {
+						origRadiusY: dom_element.ry.baseVal.value,
+						origRadiusX: dom_element.rx.baseVal.value
+					}
 				}
+		         
+		         ev=ev||event;
+				 element_initial_state['origClickX'] = ev.clientX;
+			     element_initial_state['origClickY'] = ev.clientY;
 			});
 
-			$(rect_dom_element).on("mouseup", function(ev) {
-		        if(dragData) {
-		        	that._resize_mouse_move(ev, dragData, element, rect_element, dom_element, rect_dom_element, origWidth, origHeight);
+			$('body').on("mouseup", function(ev) {
+		        if (element_initial_state) {
+		        	if (obj === 'rectangle' || obj === 'image') {
+		        		that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);
+		       		}
+
+		       		else if (obj === 'ellipse') {
+		       			var new_cells = that._resize_mouse_move_ellipse(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);	
+
+		       			if(new_cells) {
+		       				cells = new_cells;
+		       			}
+		       		}
 		        	//UNDO STACK
 			/*	  var sketch = that.option("root"),
 					  screen = sketch._get_direct_prop('screen'),
@@ -572,30 +648,98 @@
 				  rect.set_prop("x", x_stateful_prop);				  
 				  rect.set_prop("y", y_stateful_prop);	*/	
 
-		          dragData=null;
+		          element_initial_state = null;
 		        }
 			});		
 
 			$('body').on("mousemove", function(ev) {	
-		        if(dragData) {
+		        if(element_initial_state) {
+		        	if (obj === 'rectangle' || obj === 'image') {
+		        		that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);
+		       		}
 
-		        	that._resize_mouse_move(ev,dragData, element, rect_element, dom_element, rect_dom_element, origWidth, origHeight);
+		       		else if (obj === 'ellipse') {
+		       			console.log("inside ellipse");
+		       			var new_cells = that._resize_mouse_move_ellipse(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);	
+		       			if(new_cells) {
+		       				cells = new_cells;
+		       			}
+		       		}
 		        }
 			});					
 		},
 
-
-		_resize_mouse_move: function(ev, dragData, element, rect_element, dom_element, rect_dom_element, width, height) {
-			ev = ev || event;			
+		_resize_mouse_move_ellipse: function(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells) {
 			var rect_width = rect_dom_element.width.baseVal.value;
 			var rect_height = rect_dom_element.height.baseVal.value;
 
-			// Remove magic number
-			var new_width = Math.max((ev.clientX - dragData.x + width), 20);
-			var new_height = Math.max((ev.clientY - dragData.y + height), 20);
+			var radius_x = element_initial_state.origRadiusX;
+			var radius_y = element_initial_state.origRadiusY;
+			var new_radius_x = Math.max((ev.clientX - element_initial_state.origClickX + radius_x), 15);
+			var new_radius_y = Math.max((ev.clientY - element_initial_state.origClickY + radius_y), 15);
+			var cx = dom_element.cx.baseVal.value;
+			var cy = dom_element.cy.baseVal.value;
+			var rect_x = cx + new_radius_x;
+			var rect_y = cy + new_radius_y;
 
-			var new_red_x = (dom_element.x.baseVal.value + new_width - rect_width) ;
-			var new_red_y = (dom_element.y.baseVal.value + new_height - rect_height) ;
+			console.log(cells);
+			if(cells) {
+				//...set cell code
+				var change_cell_commands = {
+					rx: ist.ChangeCellCommand({
+						cell: cells.rx,
+						str: new_radius_x
+					}),
+					ry: ist.ChangeCellCommand({
+						cell: cells.ry,
+						str: new_radius_y
+					}),
+					x: ist.ChangeCellCommand({
+						cell: cells.x,
+						str: rect_x
+					}),
+					y: ist.ChangeCellCommand({
+						cell: cells.y,
+						str: rect_y
+					})
+				};
+				var combined_command = new ist.CombinedCommand({
+				 	commands: _.values(change_cell_commands)
+				});
+				this._command_stack._do(combined_command);
+				return false;
+			} else {
+				var rx_info = this._save_state_single_field(element, 'rx', new_radius_x),
+					ry_info = this._save_state_single_field(element, 'ry', new_radius_y),
+					x_info = this._save_state_single_field(rect_element, 'x', rect_x), // cx - (rect_width/2)
+					y_info = this._save_state_single_field(rect_element, 'y', rect_y); // cy - (rect_height/2)
+				var cells = {
+					rx: rx_info.cell,
+					ry: ry_info.cell,
+					x: x_info.cell,
+					y: y_info.cell,
+				};
+				
+				var combined_command = new ist.CombinedCommand({
+				 	commands: _.pluck(_.values(change_cell_commands), "command")
+				});
+
+				console.log(cells, combined_command);
+				this._command_stack._do(combined_command);
+				return cells;
+			}
+		},
+
+		_resize_mouse_move_rectangle: function(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element) {
+			var rect_width = rect_dom_element.width.baseVal.value;
+			var rect_height = rect_dom_element.height.baseVal.value;
+			var width = element_initial_state.origWidth;
+			var height = element_initial_state.origHeight;
+			// Remove magic number
+			var new_width = Math.max((ev.clientX - element_initial_state.origClickX + width), 20);
+			var new_height = Math.max((ev.clientY - element_initial_state.origClickY + height), 20);
+			var new_red_x = (dom_element['x'].baseVal.value + new_width - rect_width) ;
+			var new_red_y = (dom_element['y'].baseVal.value + new_height - rect_height) ;
 
 			this._save_state_single_field(element, 'width', new_width);
 			this._save_state_single_field(element, 'height', new_height);
@@ -603,12 +747,21 @@
 			this._save_state_single_field(rect_element, 'y', new_red_y);
 
 		},
+
+/*		_resize_mouse_move: function(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element) {
+			ev = ev || event;
+
+			this._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);			
+
+		}, */
 		_mouse_move : function(ev, nameX, nameY, dragData, dragDataRed, element, rect_element) {
 			ev = ev || event;
 			this._save_state_single_field(element, nameX, ev.clientX - dragData.x);
 			this._save_state_single_field(element, nameY, ev.clientY - dragData.y);
-			this._save_state_single_field(rect_element, 'x', ev.clientX - dragDataRed.x);
-			this._save_state_single_field(rect_element, 'y', ev.clientY - dragDataRed.y);			
+			if (dragDataRed) {
+				this._save_state_single_field(rect_element, 'x', ev.clientX - dragDataRed.x);
+				this._save_state_single_field(rect_element, 'y', ev.clientY - dragDataRed.y);							
+			}
 			// return {sX: stringX, sY: stringY, sRedX : stringRedX, sRedY: stringRedY};
 
 		},
@@ -619,7 +772,9 @@
 	      	var redObjectX, redObjectY = 0;	      	
 	      	var nameX, nameY = "";
 	      	var that = this;
-	      	var red_square_size = rect_dom_element.width.baseVal.value;      				      	
+	      	if (rect_dom_element) {
+	      		var red_square_size = rect_dom_element.width.baseVal.value;      				      		      		
+	      	}
 			$(dom_element).on("mousedown", function(ev) {
 				touchedElement = this;
 				if(!dragData) {
@@ -636,7 +791,12 @@
 						dragData={
 							x: ev.clientX - touchedElement[nameX].baseVal.value,
 							y: ev.clientY - touchedElement[nameY].baseVal.value
-						}						
+						}				
+
+						dragDataRed = {
+							x : ev.clientX - rect_dom_element.x.baseVal.value,
+							y : ev.clientY - rect_dom_element.y.baseVal.value
+						}									
 					}
 					else {
 						dragData={
@@ -644,12 +804,6 @@
 							y: ev.clientY - touchedElement[nameY].baseVal.getItem(0).value
 						}						
 					}
-
-
-					dragDataRed = {
-						x : ev.clientX - rect_dom_element.x.baseVal.value,
-						y : ev.clientY - rect_dom_element.y.baseVal.value
-					}		          	
 		        };
 			});
 
