@@ -31,12 +31,12 @@
 
 				var ens = [],
 					min_N = 10,
-					max_N = 11111,
+					max_N = 111,
 					trials = 3;
 				for(var i = min_N; i<max_N; i*=1.5) {
 					ens.push(Math.round(i));
 				}
-				ens = [1000];
+				//ens = [1000];
 				//ens.reverse();
 				//interstate.__garbage_collect = false;
 
@@ -125,7 +125,7 @@
 						do_setup: function(n) {
 							env	.set("obj", "<stateful>")
 								.cd("obj")
-									.set("(prototypes)", "(start)", "dom.div")
+									.set("(prototypes)", "(start)", "")
 									.set("(copies)", n+"")
 									.top();
 						},
@@ -135,7 +135,6 @@
 									.top();
 						},
 						do_cleanup: function(n) {
-							return;
 							env	.unset("obj")
 								.top();
 						},
