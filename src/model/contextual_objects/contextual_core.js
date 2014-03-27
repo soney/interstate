@@ -133,6 +133,7 @@
 			if(this.constructor === My) { this.emit_begin_destroy(); }
 			this._destroyed = true;
 
+			ist.remove_cobj_cached_item(this);
 			if(avoid_destroy_call !== true) {
 				ist.destroy_contextual_obj(this);
 			}

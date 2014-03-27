@@ -269,6 +269,8 @@
 		};
 
 		var get_dom_obj_and_src = function (contextual_dict) {
+			return contextual_dict.get_dom_obj_and_src();
+			/*
 			var dom_obj,
 				dom_attachment = contextual_dict.get_attachment_instance("dom"),
 				show;
@@ -299,6 +301,7 @@
 				}
 			}
 			return false;
+			*/
 		},
 		get_dom_children = function(c) {
 			var srcs = [],
@@ -311,16 +314,16 @@
 											.compact()
 											.value();
 
-					var obj_srcs = _.pluck(cs_and_dom_objs, 0);
-					var dom_objs = _.pluck(cs_and_dom_objs, 1);
+					var dom_objs = _.pluck(cs_and_dom_objs, 0);
+					var obj_srcs = _.pluck(cs_and_dom_objs, 1);
 
 					srcs.push.apply(srcs, obj_srcs);
 					children.push.apply(children, dom_objs);
 				} else {
 					var dom_obj_and_src = get_dom_obj_and_src(c);
 					if (dom_obj_and_src) {
-						srcs.push(dom_obj_and_src[0]);
-						children.push(dom_obj_and_src[1]);
+						children.push(dom_obj_and_src[0]);
+						srcs.push(dom_obj_and_src[1]);
 					}
 				}
 			}

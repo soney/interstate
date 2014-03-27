@@ -49,7 +49,7 @@
         this._hash = uid.strip_prefix(this._id);
         this.options = options;
         ist.register_uid(this._id, this);
-        if (defer_initialization !== true) {
+		if(this.constructor === ist.Dict && defer_initialization !== true) {
             this.do_initialize(options);
         }
     };
@@ -127,6 +127,10 @@
                 getter: function (me) { return me.get(); },
                 setter: function (me, val) { me.set(val, true); },
 				destroy: function(me) {
+					if(this.sid() === 159) {
+						debugger;
+					}
+
 					var val = me.get();
 					if(val && val.destroy) {
 						val.destroy();
@@ -299,9 +303,7 @@
     
         proto.id = function () { return this._id; };
 		proto.hash = function () { return this._hash; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 
 		proto.clone = function() {
 			return ist.deserialize(ist.serialize(this, false));

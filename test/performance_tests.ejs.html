@@ -30,12 +30,14 @@
 				}
 
 				var ens = [],
-					min_N = 10,
-					max_N = 100,
+					min_N = 1,
+					max_N = 11111,
 					trials = 3;
-				for(var i = min_N; i<max_N; i*=1.5) {
+				for(var i = min_N; i<max_N; i*=1.6) {
 					ens.push(Math.round(i));
 				}
+				//ens.reverse();
+				//interstate.__garbage_collect = false;
 
 				var results = [],
 					update_results = function() {
@@ -96,7 +98,7 @@
 								test_info.do_setup(n);
 								startTime = getTime();
 								test_info.do_test(n);
-								times[n] = getTime() - startTime;
+								times[i] = getTime() - startTime;
 								if(!test_info.verify(n)) {
 									throw new Error("Incorrect output for n="+n);
 								}
@@ -128,7 +130,7 @@
 						},
 						do_test: function(n) {
 							env	.cd("obj")
-									.set("textContent", "'target'")
+									.set("textContent", "(start)", "'target'")
 									.top();
 						},
 						do_cleanup: function(n) {
@@ -158,7 +160,7 @@
 						},
 						do_test: function(n) {
 							env	.cd("obj_0")
-									.set("textContent", "'target'")
+									.set("textContent", "(start)", "'target'")
 									.top();
 						},
 						do_cleanup: function(n) {
@@ -294,7 +296,9 @@
 						next_test(function() {
 							trial_num++;
 							if(trial_num >= trials) {
-								$("div.output").text("done");
+								env.destroy();
+								$("div.output")	.dom_output("destroy")
+												.text("done");
 							} else {
 								test_num = 0;
 								do_trial();
@@ -302,7 +306,12 @@
 							update_results();
 						});
 					};
-				do_trial();
+				setTimeout(function() {
+					console.log("Begin");
+					setTimeout(function() {
+						do_trial();
+					}, 50);
+				}, 50);
 			</script>
 	  </div>
   </body>

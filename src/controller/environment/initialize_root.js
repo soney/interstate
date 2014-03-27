@@ -197,11 +197,6 @@
 			var group = new ist.Dict({has_protos: false, direct_attachments: [new ist.GroupAttachment()]});
 			svg.set("group", group);
 			group.set("showChildren", new ist.Cell({str: "true"}));
-
-			var screen = new ist.StatefulObj(undefined, true);
-			screen.do_initialize({
-				direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: screen })
-			});
 		}
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "dom") >= 0)) {

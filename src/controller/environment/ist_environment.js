@@ -251,8 +251,8 @@
 					*/
 				} else if (value === "<stateful_prop>") {
 					value = new ist.StatefulProp();
-				} else {
-					value = new ist.Cell({str: value});
+				//} else {
+					//value = new ist.Cell({str: value});
 				}
 			}
 
@@ -269,11 +269,19 @@
 					val = parent_obj[getter_name]();
 					if (val) {
 						if (val instanceof ist.StatefulProp) {
-							commands.push(new ist.SetStatefulPropValueCommand({
-								stateful_prop: val,
-								state: state,
-								value: value
-							}));
+							var val_for_state = val._direct_value_for_state(state);
+							if(val_for_state instanceof ist.Cell && _.isString(value)) {
+								commands.push(new ist.ChangeCellCommand({
+									cell: val_for_state,
+									str: value
+								}));
+							} else {
+								commands.push(new ist.SetStatefulPropValueCommand({
+									stateful_prop: val,
+									state: state,
+									value: _.isString(value) ? new ist.Cell({str: value}) : value
+								}));
+							}
 						} else {
 							throw new Error("Trying to set value for non stateful prop");
 						}
@@ -307,14 +315,14 @@
 									commands.push(new ist.SetStatefulPropValueCommand({
 										stateful_prop: val,
 										state: state,
-										value: value
+										value: _.isString(value) ? new ist.Cell({str: value}) : value
 									}));
 								}
 							} else {
 								commands.push(new ist.SetStatefulPropValueCommand({
 									stateful_prop: val,
 									state: state,
-									value: value
+									value: _.isString(value) ? new ist.Cell({str: value}) : value
 								}));
 							}
 						} else {
@@ -328,7 +336,7 @@
 							commands.push(new ist.SetStatefulPropValueCommand({
 								stateful_prop: val,
 								state: state,
-								value: value
+								value: _.isString(value) ? new ist.Cell({str: value}) : value
 							}));
 						}
 					} else {
@@ -342,7 +350,7 @@
 						commands.push(new ist.SetStatefulPropValueCommand({
 							stateful_prop: val,
 							state: state,
-							value: value
+							value: _.isString(value) ? new ist.Cell({str: value}) : value
 						}));
 					}
 				}
@@ -386,7 +394,7 @@
 							commands.push(new ist.SetPropCommand({
 								parent: parent_obj,
 								name: prop_name,
-								value: value,
+								value: _.isString(value) ? new ist.Cell({str: value}) : value,
 								index: index
 							}));
 						}
@@ -394,11 +402,12 @@
 						commands.push(new ist.SetPropCommand({
 							parent: parent_obj,
 							name: prop_name,
-							value: value,
+							value: _.isString(value) ? new ist.Cell({str: value}) : value,
 							index: index
 						}));
 					}
 				}
+				/*
 			} else if (arguments.length === 1) {
 				if (builtin_info) {
 					getter_name = builtin_info._get_getter_name();
@@ -415,6 +424,7 @@
 						index: index
 					}));
 				}
+				*/
 			}
 			var command;
 			if (commands.length === 1) {

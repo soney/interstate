@@ -119,6 +119,10 @@
 					});
         };
         proto.destroy = function () {
+			if(this.sid() === 138) {
+				console.log("DES");
+			}
+
 			this.emit_begin_destroy();
             this._tree.destroy();
 			delete this._tree;
@@ -131,9 +135,7 @@
     
         proto.id = function () { return this._id; };
 		proto.hash = function () { return this._hash; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
     
         proto.summarize = function () {
             return this.id();

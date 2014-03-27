@@ -126,6 +126,7 @@
 
 	ist.ContextualDict = function (options) {
 		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
+		this.get_dom_obj_and_src = cjs.memoize(this._get_dom_obj_and_src, {context: this});
 		//this.get_all_protos = this._get_all_protos;
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
@@ -148,28 +149,6 @@
 		proto._get_all_protos = function() {
 			return ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
 		};
-		/*
-		proto.get_dom_obj = function() {
-			var dom_attachment = this.get_attachment_instance("dom"),
-				dom_obj;
-			if (dom_attachment) {
-				dom_obj = dom_attachment.get_dom_obj();
-				if(dom_obj) {
-					return dom_obj;
-				}
-			} else {
-				var raphael_attachment = this.get_attachment_instance("paper");
-				if(raphael_attachment) {
-					dom_obj = raphael_attachment.get_dom_obj();
-
-					if(dom_obj) {
-						return dom_obj;
-					}
-				}
-			}
-			return false;
-		};
-		*/
 
 		proto.raw_children = function (exclude_builtins) {
 			var dict = this.object;
@@ -659,41 +638,50 @@
 				this.get_all_protos.destroy(true);
 			}
 			delete this.get_all_protos;
+			this.get_dom_obj_and_src.destroy();
 		};
 
 		proto._getter = function () {
 			return this;
 		};
-
-		proto.get_dom_obj = function() {
-			var dom_attachment = this.get_attachment_instance("dom");
-			if (dom_attachment) {
-				var dom_obj = dom_attachment.get_dom_obj();
-				if (dom_obj) {
-					return dom_obj;
-				}
-			} else {
-				var raphael_attachment = this.get_attachment_instance("shape");
-				if(raphael_attachment) {
-					var robj = raphael_attachment.get_robj();
-					if(robj) {
-						return robj[0];
+		proto._get_dom_obj_and_src = function () {
+			var dom_attachment = this.get_attachment_instance("dom"),
+				show = this.prop_val("show");
+				show = show===undefined ? true : !!show;
+			if(show) {
+				if (dom_attachment) {
+					var dom_obj = dom_attachment.get_dom_obj();
+					if (dom_obj) {
+						return [dom_obj, dom_attachment];
 					}
 				} else {
-					var group_attachment_instance = this.get_attachment_instance("group");
-					if(group_attachment_instance) {
-						return _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
-							var robj = raphael_attachment.get_robj();
-							if(robj) {
-								return robj[0];
-							} else {
-								return false;
-							}
-						}));
+					var raphael_attachment = this.get_attachment_instance("shape");
+					if(raphael_attachment) {
+						var robj = raphael_attachment.get_robj();
+						if(robj) {
+							return [robj[0], raphael_attachment];
+						}
+					} else {
+						var group_attachment_instance = this.get_attachment_instance("group");
+						if(group_attachment_instance) {
+							return _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
+								var robj = raphael_attachment.get_robj();
+								if(robj) {
+									return [robj[0], raphael_attachment];
+								} else {
+									return false;
+								}
+							}));
+						}
 					}
 				}
 			}
 			return false;
+		};
+
+		proto.get_dom_obj = function() {
+			var info = this.get_dom_obj_and_src();
+			return info[0];
 		};
 	}(ist.ContextualDict));
 }(interstate));

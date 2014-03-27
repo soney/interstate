@@ -895,7 +895,7 @@ var constraint_solver = {
 		// (as in while running `nullify`). The variable is_root will prevent another call to `run_nullification_listeners` at
 		// the bottom of this function
 		var i, outgoingEdges, toNodeID, invalid, curr_node, equals, old_value, new_value, changeListeners,
-			to_nullify = toArray(arguments),
+			to_nullify = slice.call(arguments),
 			to_nullify_len = to_nullify.length,
 			is_root = !this._is_nullifying,curr_node_id;
 
@@ -4121,7 +4121,7 @@ extend(cjs, {
 
 		// When getting a value either create a constraint or return the existing value
 		var rv = function () {
-			var args = toArray(arguments),
+			var args = slice.call(arguments),
 				constraint = args_map.getOrPut(args, function() {
 					return new Constraint(function () {
 						return getter_fn.apply(options.context, args);
@@ -6162,14 +6162,18 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 					bindings.push((context[value] = getInputValueConstraint(element)));
 				} else if((on_regex_match = name.match(on_regex))) {
 					var event_name = on_regex_match[2];
-					aEL(element, event_name, context[value]);
+					aEL(element, event_name, bind(context[value], cjs.get(last(lineage).this_exp)));
 				} else {
 					var constraint = get_constraint(value, context, lineage);
 					if(is_constraint(constraint)) {
 						if(attr.name === "class") {
-							bindings.push(class_binding(element, constraint));
+							var class_constraint = cjs(function() {
+								var cval = constraint.get();
+								return cval.split(" ");
+							});
+							bindings.push(constraint, class_constraint, class_binding(element, class_constraint));
 						} else {
-							bindings.push(attr_binding(element, name, constraint));
+							bindings.push(constraint, attr_binding(element, name, constraint));
 						}
 					} else {
 						element.setAttribute(attr.name, constraint);
@@ -6269,6 +6273,9 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 									x.is_obj = IS_OBJ;
 								});
 							} else {
+								if(is_constraint(arr_val)) {
+									arr_val = arr_val.get();
+								}
 								// IS_OBJ provides a way to ensure the user didn't happen to pass in a similarly formatted array
 								arr_val = map(arr_val, function(v, k) { return { key: k, value: v, is_obj: IS_OBJ }; });
 							}
@@ -6279,6 +6286,7 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 						var diff = get_array_diff(old_arr_val, arr_val, map_aware_array_eq),
 							rv = [],
 							added_nodes = [], removed_nodes = [];
+						old_arr_val = arr_val;
 						each(diff.index_changed, function(ic_info) {
 							var lastLineageItem = lastLineages[ic_info.from];
 							if(lastLineageItem && lastLineageItem.at && lastLineageItem.at.index) {
@@ -6327,9 +6335,6 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 							lastLineages.splice(to_index, 0, lastLineageItem);
 						});
 
-
-						old_arr_val = arr_val;
-
 						onremove_each(removed_nodes);
 						destroy_each(removed_nodes);
 						onadd_each(added_nodes);
@@ -6362,7 +6367,7 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 					},
 					getNodes: function() {
 						var len = template.sub_conditions.length,
-							cond = !!get_node_value(template.condition, context, lineage),
+							cond = !!cjs.get(get_node_value(template.condition, context, lineage)),
 							i, children = false, memo_index, rv;
 
 						if(template.reverse) {
