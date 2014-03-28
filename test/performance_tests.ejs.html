@@ -13,6 +13,60 @@
 			<%- ist_include(ist_inc.editor) %>
 			<%- ist_include(ist_inc.runtime_style) %>
 			<script type="text/javascript">
+				var callbacks = {},
+					command_id = 0,
+					do_command = function(command_name, parameters, callback) {
+						var id = command_id++,
+							message = { id: id, type: "FROM_PAGE", command: command_name },
+							key;
+
+						callbacks[id] = callback;
+						for(key in parameters) {
+							if(parameters.hasOwnProperty(key)) {
+								message[key] = parameters[key];
+							}
+						}
+						window.postMessage(message, "*");
+					},
+					start_profile,
+					stop_profiler,
+					timeout_id = setTimeout(function() {
+						start_profiler = function(callback) {
+							callback();
+						};
+
+						stop_profiler = function(forbidden_tokens, callback) {
+							callback();
+						};
+					}, 500);
+
+					do_command("ping", {}, function() {
+						clearTimeout(timeout_id);
+
+						start_profiler = function(name, callback) {
+							do_command("start_profiler", {name: name}, callback);
+						};
+
+						stop_profiler = function(name, callback) {
+							do_command("stop_profiler", {name: name}, callback);
+						};
+						start_profiler("HI");
+					});
+				window.addEventListener("message", function(event) {
+					// We only accept messages from ourselves
+					if (event.source != window) { return; }
+
+					if (event.data.type && (event.data.type == "FROM_EXTENSION")) {
+						var id = event.data.id,
+							callback = callbacks[id];
+						if(callback) {
+							delete callbacks[id];
+							callback(event.data.response);
+						}
+					}
+				}, false);
+					/*
+
 				window.env = new interstate.Environment();
 				function getTime() {
 					return (new Date()).getTime();
@@ -32,11 +86,11 @@
 				var ens = [],
 					min_N = 10,
 					max_N = 111,
-					trials = 3;
+					trials = 1;
 				for(var i = min_N; i<max_N; i*=1.5) {
 					ens.push(Math.round(i));
 				}
-				//ens = [1000];
+				ens = [100];
 				//ens.reverse();
 				//interstate.__garbage_collect = false;
 
@@ -278,7 +332,7 @@
 							}
 							return false;
 						}
-					}/**/];
+					}/**//*];
 				var test_num = 0,
 					trial_num = 0,
 					next_test = function(cback) {
@@ -314,6 +368,7 @@
 						do_trial();
 					}, 50);
 				}, 50);
+					*/
 			</script>
 	  </div>
   </body>
