@@ -655,23 +655,32 @@
 						return [dom_obj, dom_attachment];
 					}
 				} else {
-					var raphael_attachment = this.get_attachment_instance("shape");
-					if(raphael_attachment) {
-						var robj = raphael_attachment.get_robj();
-						if(robj) {
-							return [robj[0], raphael_attachment];
+					var paper_attachment = this.get_attachment_instance("paper");
+					if(paper_attachment) {
+						var dom_obj = paper_attachment.get_dom_obj();
+
+						if(dom_obj) {
+							return [dom_obj, paper_attachment];
 						}
 					} else {
-						var group_attachment_instance = this.get_attachment_instance("group");
-						if(group_attachment_instance) {
-							return _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
-								var robj = raphael_attachment.get_robj();
-								if(robj) {
-									return [robj[0], raphael_attachment];
-								} else {
-									return false;
-								}
-							}));
+						var raphael_attachment = this.get_attachment_instance("shape");
+						if(raphael_attachment) {
+							var robj = raphael_attachment.get_robj();
+							if(robj) {
+								return [robj[0], raphael_attachment];
+							}
+						} else {
+							var group_attachment_instance = this.get_attachment_instance("group");
+							if(group_attachment_instance) {
+								return _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
+									var robj = raphael_attachment.get_robj();
+									if(robj) {
+										return [robj[0], raphael_attachment];
+									} else {
+										return false;
+									}
+								}));
+							}
 						}
 					}
 				}

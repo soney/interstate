@@ -220,7 +220,6 @@
 								.set("x", "state2", "6")
 								.set("y", "(start)", "33")
 								;
-
 				},
 				test: function(env, runtime) {
 					ist.emit('my_event')
@@ -572,9 +571,9 @@
 					var circles = $("circle", runtime);
 					var rects = $("rect", runtime);
 					equal(circles.eq(0).attr("fill"), "#00ff00");
-					equal(circles.eq(1).attr("fill"), "#00ff00");
+					equal(circles.eq(1).attr("fill"), "#0000ff");
 					equal(rects.eq(0).attr("fill"), "#00ff00");
-					equal(rects.eq(1).attr("fill"), "#00ff00");
+					equal(rects.eq(1).attr("fill"), "#0000ff");
 				}
 			}, {
 				setup: function(env, runtime) {
@@ -590,10 +589,10 @@
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
 					var rects = $("rect", runtime);
-					equal(circles.eq(0).attr("fill"), "#ff0000");
-					equal(circles.eq(1).attr("fill"), "#0000ff");
-					equal(rects.eq(0).attr("fill"), "#ff0000");
-					equal(rects.eq(1).attr("fill"), "#0000ff");
+					equal(circles.eq(0).attr("fill"), "#00ff00");
+					equal(circles.eq(1).attr("fill"), "#00ff00");
+					equal(rects.eq(0).attr("fill"), "#00ff00");
+					equal(rects.eq(1).attr("fill"), "#00ff00");
 				}
 			}]
 		},

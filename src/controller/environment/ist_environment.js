@@ -307,10 +307,8 @@
 								if (sp_val instanceof ist.Cell && _.isString(arg2)) {
 									commands.push(new ist.ChangeCellCommand({
 										cell: sp_val,
-										str: arg2
+										str: value
 									}));
-									
-									value.destroy();
 								} else {
 									commands.push(new ist.SetStatefulPropValueCommand({
 										stateful_prop: val,
@@ -387,9 +385,8 @@
 						if (val instanceof ist.Cell && _.isString(arg1)) {
 							commands.push(new ist.ChangeCellCommand({
 								cell: val,
-								str: arg1
+								str: value
 							}));
-							value.destroy();
 						} else {
 							commands.push(new ist.SetPropCommand({
 								parent: parent_obj,

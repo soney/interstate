@@ -44,12 +44,14 @@
 		var proto = my.prototype;
 		proto.initialize = function() {
 			if(ist.__garbage_collect) {
-				this._live_updater = cjs.liven(function() {
-					this.update_current_contextual_objects();
-				}, {
-					context: this,
-					pause_while_running: true
-				});
+				if(this.contextual_object instanceof ist.ContextualDict || this.contextual_object instanceof ist.ContextualStatefulProp) {
+					this._live_updater = cjs.liven(function() {
+						this.update_current_contextual_objects();
+					}, {
+						context: this,
+						pause_while_running: true
+					});
+				}
 			}
 		};
 		proto.set_contextual_object = function(cobj) {
@@ -162,7 +164,10 @@
 				return [];
 			}
 		};
+		window.ids = {};
+		window.nc = 0;
 		proto.update_current_contextual_objects = function(recursive) {
+			nc++;
 			cjs.wait();
 			var cobj = this.get_contextual_object(),
 				children = _.clone(this.children.values()),
@@ -171,6 +176,9 @@
 
 				valid_children = this.get_valid_child_pointers(),
 				valid_children_map = {};
+
+			ids[cobj.id()+"_"+cobj.type()] = (ids[cobj.id()+"_"+cobj.type()] || 0) + 1;
+			if(ids[cobj.id()+"_"+cobj.type()] > 4) debugger;
 
 			_.each(valid_children, function(vc) {
 				var hash = vc.pointer.hash();

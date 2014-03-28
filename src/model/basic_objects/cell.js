@@ -119,10 +119,6 @@
 					});
         };
         proto.destroy = function () {
-			if(this.sid() === 138) {
-				console.log("DES");
-			}
-
 			this.emit_begin_destroy();
             this._tree.destroy();
 			delete this._tree;
