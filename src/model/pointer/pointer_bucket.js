@@ -12,15 +12,17 @@
 
 		this.children = cjs.map({
 			hash: function (info) {
+				return info.hash;
+			/*
 				var child = info.child,
 					special_contexts = info.special_contexts,
-					hash = ist.pointer_hash(child);
-				
-				var i;
-				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
+					hash = ist.pointer_hash(child), i;
+
+				for (i = special_contexts.length - 1; i >= 0; i--) {
 					hash += special_contexts[i].hash();
 				}
 				return hash;
+				*/
 			},
 			equals: function (info1, info2) {
 				if (info1.child === info2.child) {
@@ -63,25 +65,27 @@
 		proto.has_contextual_object = function() {
 			return this.contextual_object !== false;
 		};
-		proto.remove_child = function(child, special_contexts) {
-			var info = { child: child, special_contexts: special_contexts },
+		proto.remove_child = function(child, special_contexts, hash) {
+			var info = { child: child, special_contexts: special_contexts, hash: hash },
 				value = this.children.get(info);
 			if(value) {
 				this.children.remove(info);
 				value.destroy(true);
 			}
 		};
-		proto.get_child = function(child, special_contexts) {
+		proto.get_child = function(child, special_contexts, hash) {
 			var child_tree = this.children.get({
 				child: child,
-				special_contexts: special_contexts
+				special_contexts: special_contexts,
+				hash: hash
 			});
 			return child_tree;
 		};
-		proto.get_or_put_child = function (child, special_contexts) {
+		proto.get_or_put_child = function (child, special_contexts, hash) {
 			var child_tree = this.children.getOrPut({
 				child: child,
-				special_contexts: special_contexts
+				special_contexts: special_contexts,
+				hash: hash
 			}, function () {
 				var tree = new ist.PointerTree({
 					pointer: this.pointer.push(child, special_contexts),
@@ -123,7 +127,8 @@
 					rv = [{pointer: my_pointer.push(copies_obj), obj: copies_obj}];
 				}
 
-				var protos_objs = ist.Dict.get_proto_vals(cobj.get_object(), cobj.get_pointer());
+				var protos_objs = cobj.get_all_protos();
+				//ist.Dict.get_proto_vals(cobj.get_object(), cobj.get_pointer());
 				rv.push.apply(rv, _.chain(protos_objs)
 									.map(function(o) {
 										var proto_obj = o.direct_protos();
@@ -164,10 +169,7 @@
 				return [];
 			}
 		};
-		window.ids = {};
-		window.nc = 0;
 		proto.update_current_contextual_objects = function(recursive) {
-			nc++;
 			cjs.wait();
 			var cobj = this.get_contextual_object(),
 				children = _.clone(this.children.values()),
@@ -176,9 +178,6 @@
 
 				valid_children = this.get_valid_child_pointers(),
 				valid_children_map = {};
-
-			ids[cobj.id()+"_"+cobj.type()] = (ids[cobj.id()+"_"+cobj.type()] || 0) + 1;
-			if(ids[cobj.id()+"_"+cobj.type()] > 4) debugger;
 
 			_.each(valid_children, function(vc) {
 				var hash = vc.pointer.hash();
@@ -217,7 +216,8 @@
 			_.each(valid_children, function(valid_child) {
 				var obj = valid_child.obj,
 					ptr = valid_child.pointer,
-					node = this.get_or_put_child(obj, ptr.special_contexts());
+					len_minus_1 = ptr.length()-1,
+					node = this.get_or_put_child(obj, ptr.special_contexts(len_minus_1), ptr.itemHash(len_minus_1));
 				if(!node.has_contextual_object()) {
 					var cobj = ist.create_contextual_object(obj, ptr, {defer_initialization: true});
 					node.set_contextual_object(cobj);
@@ -237,7 +237,7 @@
 				var key = to_destroy_info.key;
 				var child = child_tree.get_contextual_object();
 				child.destroy(true, true);
-				this.remove_child(key.child, key.special_contexts);
+				this.remove_child(key.child, key.special_contexts, key.hash);
 			}, this);
 
 			if(cobj instanceof ist.ContextualDict) { cobj.update_attachments(); }
@@ -331,13 +331,14 @@
 
 		proto.find_or_put = function (obj, pointer, options) {
 			var node = this.tree;
-			var i = 1, len = pointer.length(), ptr_i, sc_i;
+			var i = 1, len = pointer.length(), ptr_i, sc_i, hash_i;
 
 
 			while (i < len) {
 				ptr_i = pointer.points_at(i);
 				sc_i = pointer.special_contexts(i);
-				node = node.get_or_put_child(ptr_i, sc_i);
+				hash_i = pointer.itemHash(i);
+				node = node.get_or_put_child(ptr_i, sc_i, hash_i);
 				i += 1;
 			}
 
@@ -359,19 +360,20 @@
 		proto.destroy_cobj = function(cobj) {
 			var pointer = cobj.get_pointer(),
 				node = this.tree,
-				i = 1, len = pointer.length(), ptr_i, sc_i,
+				i = 1, len = pointer.length(), ptr_i, sc_i, hash_i,
 				parent_node;
 
 			while (i < len) {
 				ptr_i = pointer.points_at(i);
 				sc_i = pointer.special_contexts(i);
+				hash_i = pointer.itemHash(i);
 				parent_node = node;
-				node = node.get_child(ptr_i, sc_i);
+				node = node.get_child(ptr_i, sc_i, hash_i);
 				i += 1;
 			}
 			if(node.get_contextual_object() === cobj) {
 				if(parent_node) {
-					parent_node.remove_child(ptr_i, sc_i);
+					parent_node.remove_child(ptr_i, sc_i, hash_i);
 				} else { // It's the root
 					ist.pointer_buckets.remove(pointer.root());
 				}

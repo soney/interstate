@@ -37,9 +37,7 @@
 				for(var i = min_N; i<max_N; i*=1.5) {
 					ens.push(Math.round(i));
 				}
-				ens = [100];
-				//ens.reverse();
-				//interstate.__garbage_collect = false;
+				ens = [1000];
 
 				var results = [],
 					update_results = function() {
@@ -98,6 +96,7 @@
 								callback();
 							} else {
 								test_info.do_setup(n);
+								console.profile("Test " + i);
 								startTime = getTime();
 								test_info.do_test(n);
 								times[i] = getTime() - startTime;
@@ -105,6 +104,7 @@
 									throw new Error("Incorrect output for n="+n);
 								}
 								test_info.do_cleanup(n);
+								console.profileEnd("Test " + i);
 								update_results();
 
 								setTimeout(function() {
@@ -126,23 +126,21 @@
 						do_setup: function(n) {
 							env	.set("obj", "<stateful>")
 								.cd("obj")
-									.set("(prototypes)", "(start)", "")
+									.set("(prototypes)", "(start)", "dom.div")
 									.set("(copies)", n+"")
+									.set("textContent", "(start)", "'not yet set'")
 									.top();
 						},
 						do_test: function(n) {
-							console.profile("Test1");
 							env	.cd("obj")
 									.set("textContent", "(start)", "'target'")
 									.top();
-							console.profileEnd("Test1");
 						},
 						do_cleanup: function(n) {
 							env	.unset("obj")
 								.top();
 						},
 						verify: function(n) {
-							return true;
 							var output = $("div.output > div > div");
 							if(output.length === n) {
 								for(var i = 0; i<output.length; i++) {
@@ -154,7 +152,7 @@
 							}
 							return false;
 						}
-					}/*, {
+					}, {
 						do_setup: function(n) {
 							for(var i = 0; i<n; i++) {
 								env	.set("obj_"+i, "<stateful>")

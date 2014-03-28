@@ -24,6 +24,7 @@
 
 	ist.Pointer = function (options) {
 		this._stack = (options && options.stack) || [];
+		this._hashes = (options && options.hashes) || [];
 		this._special_contexts = (options && options.special_contexts) || new Array(this._stack.length);
 
 		if (this._stack.length !== this._special_contexts.length) {
@@ -61,15 +62,23 @@
 		proto.slice = function () {
 			return new ist.Pointer({
 				stack: this._stack.slice.apply(this._stack, arguments),
-				special_contexts: this._special_contexts.slice.apply(this._special_contexts, arguments)
+				special_contexts: this._special_contexts.slice.apply(this._special_contexts, arguments),
+				hashes: this._hashes.slice.apply(this._hashes, arguments)
 			});
 		};
 		proto.splice = function () {
-			var stack_copy = _.clone(this._stack);
-			var special_contexts_copy = _.clone(this._special_contexts);
+			var stack_copy = _.clone(this._stack),
+				special_contexts_copy = _.clone(this._special_contexts),
+				hashes_copy = _.clone(this._hashes);
+
 			stack_copy.splice.apply(stack_copy, arguments);
 			special_contexts_copy.splice.apply(special_contexts_copy, arguments);
-			return new ist.Pointer({ stack: stack_copy, special_contexts: special_contexts_copy });
+			hahes_copy.splice.apply(hashes_copy, arguments);
+			return new ist.Pointer({
+				stack: stack_copy,
+				special_contexts: special_contexts_copy,
+				hashees: hashes_copy
+			});
 		};
 		proto.push = function (onto_stack, onto_special_contexts) {
 			var new_special_contexts;
@@ -88,7 +97,8 @@
 			}
 			return new ist.Pointer({
 				stack: this._stack.concat(onto_stack),
-				special_contexts: new_special_contexts
+				special_contexts: new_special_contexts,
+				hashes: _.clone(this.hashes)
 			});
 		};
 		proto.push_special_context = function (special_context) {
@@ -102,13 +112,16 @@
 			}
 			return new ist.Pointer({
 				stack: this._stack,
-				special_contexts: new_special_contexts_obj
+				special_contexts: new_special_contexts_obj,
+				hashes: _.clone(this.hashes)
 			});
 		};
 		proto.pop = function () {
+			var len_minus_1 = this._stack.length-1;
 			return new ist.Pointer({
-				stack: this._stack.slice(0, this._stack.length - 1),
-				special_contexts: this._special_contexts.slice(0, this._stack.length - 1)
+				stack: this._stack.slice(0, len_minus_1),
+				special_contexts: this._special_contexts.slice(0, len_minus_1),
+				hashes: this._hashes.slice(0, len_minus_1)
 			});
 		};
 		proto.has = function (item) {
@@ -166,33 +179,41 @@
 			}
 		};
 
-		var num_to_hash = 3;
+		var num_to_hash = 2;
 		proto.compute_hash = function () {
-			var hash = 1,
-				len = this._stack.length - 1,
-				mini = Math.max(0, len - num_to_hash),
-				sc,
-				i, j, lenj;
+			var hash = 0,
+				i = this._stack.length - 1,
+				mini = Math.max(0, i - num_to_hash);
 
-			for (i = len; i >= mini; i--) {
-				if (this._stack[i].hash) {
-					hash += this._stack[i].hash();
-				}
-				sc = this._special_contexts[i];
-				if (sc) {
-					lenj = sc.length;
-
-					for (j = 0; j < lenj; j++) {
-						hash += sc[j].hash();
-					}
-				}
+			while(i >= mini) {
+				hash += this.itemHash(i--);
 			}
 
 			return hash;
 		};
+
+		proto.compute_item_hash = function(i) {
+			var hash = 1, j = 0, lenj, sc = this._special_contexts[i];
+			if(this._stack[i].hash) {
+				hash += this._stack[i].hash();
+			}
+
+			if (sc) {
+				lenj = sc.length;
+
+				while(j < lenj) {
+					hash += sc[j++].hash();
+				}
+			}
+			return hash;
+		};
+
 		/* jshint -W093 */
 		proto.hash = function() {
 			return this.computed_hash || (this.computed_hash = this.compute_hash());
+		};
+		proto.itemHash = function(i) {
+			return this._hashes[i] || (this._hashes[i] = this.compute_item_hash(i));
 		};
 		/* jshint +W093 */
 
