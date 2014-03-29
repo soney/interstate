@@ -107,7 +107,7 @@
                 },
                 getter_name: "direct_props",
 				destroy: function(me) {
-					me.forEach(function(prop_val) {
+					me.forEach(function(prop_val, name) {
 						if(prop_val.value.destroy) {
 							prop_val.value.destroy(true);
 						}

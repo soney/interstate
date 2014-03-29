@@ -11,6 +11,11 @@
 		this._id = uid();
         this._hash = uid.strip_prefix(this._id);
 		ist.register_uid(this._id, this);
+		this._initialized = false;
+
+		if (_.has(options, "object")) { this.object = options.object; }
+		if (_.has(options, "pointer")) { this.pointer = options.pointer; }
+
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
 		}
@@ -22,13 +27,15 @@
 		var proto = My.prototype;
 		able.make_proto_listenable(proto);
 		proto.initialize = function(options) {
-			if(!options) { options = {}; }
+			//if(!options) { options = {}; }
 			this.$value = new cjs.Constraint(this._getter, {
 				context: this,
-				check_on_nullify: options.check_on_nullify === true,
-				equals: options.equals || undefined
+				check_on_nullify: options && (options.check_on_nullify === true),
+				equals: (options && options.equals) || undefined
 			});
-			this.set_options(options);
+			//this.set_options(options);
+			this.object.on("begin_destroy", this.destroy, this);
+			this._initialized = true;
 		};
 		proto.is_template = function() { return false; };
 		proto.instances = function() { return false; };
@@ -83,6 +90,7 @@
 		//}
 
 		proto.get_pointer = function () { return this.pointer; };
+		/*
 		proto.set_options = function (options) {
 			if (options) {
 				if (_.has(options, "object")) {
@@ -94,6 +102,7 @@
 				}
 			}
 		};
+		*/
 
 		proto.summarize = function () {
 			var pointer = this.get_pointer();

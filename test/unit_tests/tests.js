@@ -137,7 +137,7 @@
 						ok(!response.illegal_strs, "Make sure nothing was allocated");
 						start();
 					});
-				}, 2000);
+				}, 1000);
 			//});
 		//});
 	});

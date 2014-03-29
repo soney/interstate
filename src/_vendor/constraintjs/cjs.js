@@ -1146,6 +1146,9 @@ Constraint = function (value, options) {
 		this._valid = false;
 		this._cached_value = undefined;
 	}
+	if(this._id == 12697) {
+		//debugger;
+	}
 };
 
 (function(My) {

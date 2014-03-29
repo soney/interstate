@@ -122,9 +122,7 @@
         
         proto.id = function () { return this._id; };
 		proto.hash = function () { return this._hash; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
     
         proto.destroy = function () {
 			ist.unset_instance_builtins(this, My);

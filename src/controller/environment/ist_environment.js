@@ -404,24 +404,22 @@
 						}));
 					}
 				}
-				/*
 			} else if (arguments.length === 1) {
 				if (builtin_info) {
 					getter_name = builtin_info._get_getter_name();
 					commands.push(new ist.SetBuiltinCommand({
 						parent: parent_obj,
 						name: builtin_name,
-						value: value
+						value: _.isString(value) ? new ist.Cell({str: value}) : value
 					}));
 				} else {
 					commands.push(new ist.SetPropCommand({
 						parent: parent_obj,
 						name: prop_name,
-						value: value,
+						value: _.isString(value) ? new ist.Cell({str: value}) : value,
 						index: index
 					}));
 				}
-				*/
 			}
 			var command;
 			if (commands.length === 1) {

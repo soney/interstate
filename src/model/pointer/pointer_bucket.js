@@ -221,10 +221,7 @@
 				if(!node.has_contextual_object()) {
 					var cobj = ist.create_contextual_object(obj, ptr, {defer_initialization: true});
 					node.set_contextual_object(cobj);
-					cobj.initialize({
-						object: obj,
-						pointer: ptr
-					});
+					cobj.initialize();
 					node.initialize();
 				}
 				if(recursive) {
@@ -329,7 +326,7 @@
 			this.tree.printCurrentChildPointers();
 		};
 
-		proto.find_or_put = function (obj, pointer, options) {
+		proto.find_or_put = function (obj, pointer, options, avoid_initialization) {
 			var node = this.tree;
 			var i = 1, len = pointer.length(), ptr_i, sc_i, hash_i;
 
@@ -342,20 +339,25 @@
 				i += 1;
 			}
 
-			var rv;
-			if(node.has_contextual_object()) {
-				rv = node.get_contextual_object();
-			} else {
-				rv = ist.create_contextual_object(obj, pointer, {defer_initialization: true});
-				node.set_contextual_object(rv);
-				rv.initialize(_.extend({
-					object: obj,
-					pointer: pointer
-				}, options));
-				node.initialize();
+			//var rv;
+			if(!node.has_contextual_object()) {
+				//return node;
+				//rv = node.get_contextual_object();
+			//} else {
+				var new_cobj = ist.create_contextual_object(obj, pointer, {defer_initialization: true});
+				node.set_contextual_object(new_cobj);
+				if(!avoid_initialization) {
+					new_cobj.initialize(_.extend({
+						object: obj,
+						pointer: pointer
+					}, options));
+					node.initialize();
+				}
 			}
-
-			return rv;
+			return node;
+//
+			//
+			//return rv;
 		};
 		proto.destroy_cobj = function(cobj) {
 			var pointer = cobj.get_pointer(),
@@ -402,7 +404,8 @@
 	var in_call = false;
 	ist.remove_cobj_cached_item = function(cobj) {
 		var pointer = cobj.get_pointer(),
-			hash = pointer.hash(),
+			obj = cobj.get_object(),
+			hash = pointer.hash() + obj.hash(),
 			hashes = cobj_hashes[hash],
 			len, i;
 		if(hashes) {
@@ -435,7 +438,9 @@
 		var pointer = cobj.get_pointer(),
 			pointer_root = pointer.root(),
 			pointer_bucket = ist.pointer_buckets.get(pointer_root),
-			hash = pointer.hash();
+			object = cobj.get_object(),
+			hash = pointer.hash() + object.hash();
+
 		if(pointer_bucket) {
 			pointer_bucket.destroy_cobj(cobj);
 		}
@@ -444,7 +449,7 @@
 		}
 
 		var hashed_vals;
-		if((hashed_vals = cobj_hashes[pointer.hash()])) {
+		if((hashed_vals = cobj_hashes[hash])) {
 			var hvi;
 			for(var i = 0, len = hashed_vals.length; i<len; i++) {
 				if(hashed_vals[i] === cobj) {
@@ -486,6 +491,7 @@
 	};
 
 	var cobj_hashes = {};
+	window.ch = cobj_hashes;
 	ist.find_or_put_contextual_obj = function (obj, pointer, options) {
 		var pointer_root;
 
@@ -496,8 +502,9 @@
 			pointer_root = obj;
 		}
 
-		var hashed_vals;
-		if((hashed_vals = cobj_hashes[pointer.hash()])) {
+		var hashed_vals,
+			hash = pointer.hash() + obj.hash();
+		if((hashed_vals = cobj_hashes[hash])) {
 			var hvi;
 			for(var i = 0, len = hashed_vals.length; i<len; i++) {
 				hvi = hashed_vals[i];
@@ -506,7 +513,7 @@
 				}
 			}
 		} else {
-			hashed_vals = cobj_hashes[pointer.hash()] = [];
+			hashed_vals = cobj_hashes[hash] = [];
 		}
 
 		var must_initialize = false,
@@ -520,9 +527,28 @@
 			pointer_bucket.initialize();
 		}
 
-		var rv = pointer_bucket.find_or_put(obj, pointer, options);
+		var tree = pointer_bucket.find_or_put(obj, pointer, options, true),
+			rv = tree.get_contextual_object();
+
+		hashed_vals.push(rv);
+		if(!rv._initialized) {
+			rv.initialize(options);
+			tree.initialize();
+		}
+		return rv;
+		/*
+		for(var i = 0, len = hashed_vals.length; i<len; i++) {
+			hvi = hashed_vals[i];
+			if(hvi.get_object() === obj && pointer.eq(hvi.get_pointer())) {
+				return hvi;
+			}
+		}
+		if(pointer.hash() == 292) {
+			debugger;
+		}
 		hashed_vals.push(rv);
 		return rv;
+		*/
 	};
 	var get_expired_pointer_trees = function(root) {
 		var bucket_roots = ist.pointer_buckets.keys();
