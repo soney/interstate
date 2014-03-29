@@ -96,7 +96,13 @@
 			if (_.has(this, "_children_change_listener")) { this._children_change_listener.destroy(); delete this._children_change_listener; }
 
 			if(this._dom_obj.destroy) {
+				var val = this._dom_obj.get();
+				if(val) {
+					delete val.__ist_contextual_object__;
+				}
 				this._dom_obj.destroy();
+			} else {
+				delete this._dom_obj.__ist_contextual_object__;
 			}
 		};
 		proto.get_dom_obj = function () {

@@ -157,8 +157,10 @@
 			destroy: function(silent) {
 				this.remove();
 				this.$robj.destroy(silent);
+				this.$children.destroy(silent);
 				delete this.constructor_params;
 				delete this.$robj;
+				delete this.$children;
 			},
 			parameters: (function(infos) {
 				var parameters = {};

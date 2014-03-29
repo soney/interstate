@@ -130,6 +130,14 @@
 		//this.get_all_protos = this._get_all_protos;
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
+		/*
+		if(this.sid() == 885) {
+			debugger;
+		}
+		if(this.sid() == 1439) {
+			debugger;
+		}
+		*/
 	};
 
 	(function (My) {
@@ -639,6 +647,7 @@
 			}
 			delete this.get_all_protos;
 			this.get_dom_obj_and_src.destroy();
+			delete this.get_dom_obj_and_src;
 		};
 
 		proto._getter = function () {

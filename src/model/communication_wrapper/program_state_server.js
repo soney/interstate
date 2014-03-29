@@ -20,13 +20,16 @@
 		this.program_components = ist.getSavedProgramMap("component");
 		this.$dirty_program = options.dirty_program;
 
-		this.info_servers = {
-			programs: new ist.RemoteConstraintServer(cjs(function() {
+		this.$programs = cjs(function() {
 								return this.full_programs.keys();
-							}, {context: this})),
-			components: new ist.RemoteConstraintServer(cjs(function() {
+							}, {context: this});
+
+		this.$components = cjs(function() {
 								return this.program_components.keys();
-							}, {context: this})),
+							}, {context: this});
+		this.info_servers = {
+			programs: new ist.RemoteConstraintServer(this.$programs),
+			components: new ist.RemoteConstraintServer(this.$components),
 			loaded_program: new ist.RemoteConstraintServer(ist.loaded_program_name),
 			undo_description: new ist.RemoteConstraintServer(this.command_stack.$undo_description),
 			redo_description: new ist.RemoteConstraintServer(this.command_stack.$redo_description),
@@ -341,9 +344,16 @@
 
 			this.destroy_every_wrapper_server();
 
+			_.each(this.info_servers, function(info_server) {
+				info_server.destroy();
+			});
+
+			this.$programs.destroy();
+			this.$components.destroy();
 			delete this.wrapper_servers;
 			delete this.root;
 			delete this.contextual_root;
+			delete this.command_stack;
 
 			if(dont_destroy_comm_wrapper !== false && this.comm_mechanism) {
 				this.comm_mechanism.destroy();
