@@ -368,7 +368,7 @@
 					} else {
 						_.defer(invalidate_active_value);
 					}
-					invalidate_value = invalidate_active_value = null;
+					//invalidate_value = invalidate_active_value = null;
 				}
 			}
 

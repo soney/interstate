@@ -21,6 +21,7 @@
 		}
 		this._type = "none";
 		this._destroyed = false;
+		//if(this.sid() === 65) debugger;
 	};
 
 	(function (My) {
@@ -136,6 +137,10 @@
 		};
 
 		proto.destroy = function (silent, avoid_destroy_call) {
+			if(this.sid() === 3202) {
+				//debugger;
+			}
+
 			if(this.object) {
 				this.object.off("begin_destroy", this.destroy, this);
 			}

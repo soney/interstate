@@ -31,13 +31,13 @@
 				}
 
 				var ens = [],
-					min_N = 10,
-					max_N = 100,
-					trials = 3;
+					min_N = 100,
+					max_N = 150,
+					trials = 1;
 				for(var i = min_N; i<max_N; i*=1.5) {
 					ens.push(Math.round(i));
 				}
-				ens.reverse();
+				//ens.reverse();
 
 				var results = [],
 					update_results = function() {
@@ -100,11 +100,14 @@
 								startTime = getTime();
 								test_info.do_test(n);
 								times[i] = getTime() - startTime;
+								/*
 								if(!test_info.verify(n)) {
 									throw new Error("Incorrect output for n="+n);
 								}
-								test_info.do_cleanup(n);
+								*/
+
 								console.profileEnd("Test " + i);
+								test_info.do_cleanup(ens[i-1]);
 								update_results();
 
 								setTimeout(function() {
@@ -122,7 +125,7 @@
 					root: env.get_root()
 				});
 
-				var tests = [/*{
+				var tests = [{
 						do_setup: function(n) {
 							env	.set("obj", "<stateful>")
 								.cd("obj")
@@ -152,7 +155,7 @@
 							}
 							return false;
 						}
-					}, {
+					}, /*{
 						do_setup: function(n) {
 							for(var i = 0; i<n; i++) {
 								env	.set("obj_"+i, "<stateful>")
@@ -184,13 +187,13 @@
 							}
 							return false;
 						}
-					}, */{
+					},*/ /*{
 						do_setup: function(n) {
 							var protos_list = [];
 							for(var i = 0; i<n; i++) {
 								env	.set("proto_"+i, "<stateful>")
 									.cd("proto_"+i)
-										.set("show", "(start)", "false");
+										//.set("show", "(start)", "false");
 
 								if(i === 0) {
 									env.set("(prototypes)", "(start)", "dom.div");
@@ -205,7 +208,7 @@
 							env	.set("obj", "<stateful>")
 								.cd("obj")
 									.set("(prototypes)", "(start)", protos_str)
-									.set("show", "(start)", "true")
+									//.set("show", "(start)", "true")
 									.top();
 						},
 						do_test: function(n) {
@@ -223,7 +226,7 @@
 						},
 						verify: function(n) {
 							var output = $("div.output > div > div");
-							if(output.length === 1) {
+							if(output.length === 2) {
 								for(var i = 0; i<output.length; i++) {
 									if($(output[i]).text()!=='target') {
 										return false;
@@ -239,7 +242,7 @@
 							for(var i = 0; i<n; i++) {
 								env	.set("proto_"+i, "<stateful>")
 									.cd("proto_"+i)
-										.set("(prototypes)", "(start)", (i===0 ? "dom.div" : ("proto_"+(n-1))))
+										.set("(prototypes)", "(start)", (i===0 ? "dom.div" : ("proto_"+(i-1))))
 										.set("show", "(start)", "false")
 										.top();
 								protos_list.push("proto_" + i);

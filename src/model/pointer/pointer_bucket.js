@@ -90,7 +90,7 @@
 			}
 		};
 		proto.remove_off_center_object = function(obj) {
-			this.off_center_objects.unset(obj);
+			this.off_center_objects.remove(obj);
 		};
 		proto.remove_child = function(child, special_contexts, hash) {
 			var info = { child: child, special_contexts: special_contexts, hash: hash },
@@ -264,7 +264,33 @@
 				this.remove_child(key.child, key.special_contexts, key.hash);
 			}, this);
 
-			if(cobj instanceof ist.ContextualDict) { cobj.update_attachments(); }
+			if(cobj instanceof ist.ContextualDict) {
+				cobj.update_attachments();
+				//console.log("run");
+				/*
+				var valid_off_center_objects = cobj.is_template() ? [] : cobj.get_all_protos(),
+					current_off_center_objects = _.clone(this.off_center_objects.keys());
+				_.each(current_off_center_objects, function(coce) {
+					var index = valid_off_center_objects.indexOf(coce);
+					if(index >= 0) {
+						valid_off_center_objects.splice(index, 1);
+					} else {
+						var off_center_cobj = this.off_center_objects.get(coce);
+						off_center_cobj.destroy(true);
+						//this.off_center_objects.remove(coce);
+						//debugger;
+						//console.log("Remove", coce);
+					}
+				}, this);
+				_.each(valid_off_center_objects, function(voce) {
+					var off_center_cobj = ist.create_contextual_object(voce, my_ptr, {defer_initialization: true});
+					this.off_center_objects.put(voce, off_center_cobj);
+					off_center_cobj.initialize();
+					//console.log("Add", voce);
+				}, this);
+				/**/
+			}
+
 			cjs.signal();
 		};
 			
@@ -531,6 +557,19 @@
 						//depth_first_destroy(instance);
 						to_destroy.push.apply(to_destroy, get_to_destroy(instance));
 					});
+				} else {
+				/*
+					var ptr = root.get_pointer(),
+						obj = root.get_object();
+					if(ptr.points_at() === obj) {
+						var valid_off_center_objects = root.get_all_protos();
+						_.each(valid_off_center_objects, function(o) {
+							var cobj = ist.find_or_put_contextual_obj(o, ptr);
+
+							to_destroy.push(cobj);
+						});
+					}
+					*/
 				}
 				var children = root.children();
 				_.each(children, function(child_info) {

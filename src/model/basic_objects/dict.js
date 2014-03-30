@@ -321,6 +321,7 @@
 			ist.unset_instance_builtins(this, My);
 			ist.unregister_uid(this.id());
 			able.destroy_this_listenable(this);
+			this._destroyed = true;
         };
     
         proto.toString = function () {

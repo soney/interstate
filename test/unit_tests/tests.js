@@ -116,12 +116,12 @@
 							.start_at("init")
 							.add_transition("init", "hover", "on('mouseover', this)")
 							.add_transition("hover", "init", "on('mouseout', this)")
-							.set("(prototypes)", "init", "svg.circle")
-							.set("fill")
+							.set("(prototypes)", "init", "svg.circle");
+							env.print();
+							env.set("fill")
 							.set("fill", "init", "'red'")
 							.set("fill", "hover", "'blue'")
 				;
-				//env.print();
 				var root = env.get_root();
 				the_div.dom_output({
 					root: root,

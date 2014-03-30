@@ -127,6 +127,7 @@
 			ist.unregister_uid(this.id());
 			this._emit("destroyed");
 			able.destroy_this_listenable(this);
+			this._destroyed = true;
         };
     
         proto.id = function () { return this._id; };
