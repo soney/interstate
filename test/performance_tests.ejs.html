@@ -31,10 +31,10 @@
 				}
 
 				var ens = [],
-					min_N = 100,
-					max_N = 150,
-					trials = 1;
-				for(var i = min_N; i<max_N; i*=1.5) {
+					min_N = 500,
+					max_N = 3000,
+					trials = 3;
+				for(var i = min_N; i<max_N; i*=1.3) {
 					ens.push(Math.round(i));
 				}
 				//ens.reverse();
@@ -100,14 +100,12 @@
 								startTime = getTime();
 								test_info.do_test(n);
 								times[i] = getTime() - startTime;
-								/*
+								
 								if(!test_info.verify(n)) {
 									throw new Error("Incorrect output for n="+n);
 								}
-								*/
-
 								console.profileEnd("Test " + i);
-								test_info.do_cleanup(ens[i-1]);
+								test_info.do_cleanup(n);
 								update_results();
 
 								setTimeout(function() {
@@ -125,7 +123,7 @@
 					root: env.get_root()
 				});
 
-				var tests = [{
+				var tests = [/*{
 						do_setup: function(n) {
 							env	.set("obj", "<stateful>")
 								.cd("obj")
@@ -155,39 +153,7 @@
 							}
 							return false;
 						}
-					}, /*{
-						do_setup: function(n) {
-							for(var i = 0; i<n; i++) {
-								env	.set("obj_"+i, "<stateful>")
-									.cd("obj_"+i)
-										.set("(prototypes)", "(start)", "dom.div")
-										.top();
-							}
-						},
-						do_test: function(n) {
-							env	.cd("obj_0")
-									.set("textContent", "(start)", "'target'")
-									.top();
-						},
-						do_cleanup: function(n) {
-							for(var i = 0; i<n; i++) {
-								env.unset("obj_"+i);
-							}
-							env.top();
-						},
-						verify: function(n) {
-							var output = $("div.output > div > div");
-							if(output.length === n) {
-								for(var i = 0; i<output.length; i++) {
-									if($(output[i]).text()!==(i===0?'target':'no text')) {
-										return false;
-									}
-								}
-								return true;
-							}
-							return false;
-						}
-					},*/ /*{
+					}, */{
 						do_setup: function(n) {
 							var protos_list = [];
 							for(var i = 0; i<n; i++) {
@@ -236,7 +202,7 @@
 							}
 							return false;
 						}
-					}, {
+					}/*, {
 						do_setup: function(n) {
 							var protos_list = ["dom.div"];
 							for(var i = 0; i<n; i++) {
