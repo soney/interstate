@@ -1,0 +1,51 @@
+<html>
+<head >
+    <meta charset="UTF-8">  
+	<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
+
+    <script type="text/template" id="list-template">
+      <li><a href="<%= href %>"><%= text %></a></li>
+    </script>
+
+    <script type="text/javascript">
+		$(function() {
+
+			model = new Backbone.Model({
+				data: [
+					{text: "Google", href: "google.com"},
+					{text: "Facebook", href: "facebook.com"},
+					{text: "Yahoo", href: "yahoo.com"}
+				]
+			});
+
+
+			var View = Backbone.View.extend({
+				el: "#container",
+				events: {
+					"click button": "render"
+				},
+				render: function(){
+					var data = this.model.get('data');
+					for(var i = 0; i<data.length; i++){
+						var variables = { href: data[i].href, text: data[i].text };
+						var li = _.template( $("#list-template").html(), variables );
+						this.$el.find('ul').append(li);
+					}
+				}
+			});
+
+			var view = new View({ model: model });
+		});
+
+    </script>
+</head>
+<body>
+    <div id="container">
+        <button>Load</button>
+        <ul id="list">
+    </ul>
+    </div>
+</body>
+</html>
