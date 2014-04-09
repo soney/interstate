@@ -27,11 +27,13 @@
 			}, {
 				context: this,
 			});
+			var old_destroy = this.value_constraint.destroy;
 			this.value_constraint.destroy = function() {
 				if(constraint && constraint.destroy) {
 					constraint.destroy(true);
 					constraint = false;
 				}
+				old_destroy.apply(this, arguments);
 			};
 		};
 		proto.destroy = function () {

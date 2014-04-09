@@ -310,31 +310,11 @@
 			*/
 		},
 		get_dom_children = function(c) {
-			var srcs = [],
-				children = [];
 			if (c instanceof ist.ContextualDict) {
-				if (c.is_template()) {
-					var instances = c.instances();
-					var cs_and_dom_objs = _.chain(instances)
-											.map(get_dom_obj_and_src)
-											.compact()
-											.value();
-
-					var dom_objs = _.pluck(cs_and_dom_objs, 0);
-					var obj_srcs = _.pluck(cs_and_dom_objs, 1);
-
-					srcs.push.apply(srcs, obj_srcs);
-					children.push.apply(children, dom_objs);
-				} else {
-					var dom_obj_and_src = get_dom_obj_and_src(c);
-					if (dom_obj_and_src) {
-						children.push(dom_obj_and_src[0]);
-						srcs.push(dom_obj_and_src[1]);
-					}
-				}
+				return c.get_dom_children();
+			} else {
+				return false;
 			}
-			//console.log(c, srcs, children);
-			return {srcs: srcs, children: children};
 		};
 
 		proto.is_paused = function() {
@@ -465,8 +445,10 @@
 
 							if(child_index >= 0) {
 								var cdc = get_dom_children(children[child_index].value);
-								desired_children_srcs.push.apply(desired_children_srcs, cdc.srcs);
-								desired_children.push.apply(desired_children, cdc.children);
+								if(cdc) {
+									desired_children_srcs.push.apply(desired_children_srcs, cdc.srcs);
+									desired_children.push.apply(desired_children, cdc.children);
+								}
 
 								children.splice(child_index, 1);
 							}
@@ -476,10 +458,31 @@
 						_.each(children, function (child) {
 							if(show===true || show === child.name || show === child.value) {
 								var cdc = get_dom_children(child.value);
-								desired_children_srcs.push.apply(desired_children_srcs, cdc.srcs);
-								desired_children.push.apply(desired_children, cdc.children);
+								if(cdc) {
+									desired_children_srcs.push.apply(desired_children_srcs, cdc.srcs);
+									desired_children.push.apply(desired_children, cdc.children);
+								}
 							}
 						}, this);
+					}
+
+					var len = current_children.length, i, nothing_changed = false;
+					if(len === desired_children.length) {
+						var found_change = false;
+						for(i = 0; i<len; i++){ 
+							if(current_children[i] !== desired_children[i]) {
+								found_change = true;
+								break;
+							}
+						}
+						if(!found_change) {
+							nothing_changed = true;
+						}
+					}
+
+					if(nothing_changed) {
+						this.current_children_srcs = desired_children_srcs;
+						return;
 					}
 
 					var diff = _.diff(current_children, desired_children);

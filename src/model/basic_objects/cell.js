@@ -64,6 +64,23 @@
             }, {
 				context: this
 			});
+			this._is_static = cjs(function () {
+				var tree = this._tree.get();
+				return tree.body.length === 0 ||
+					(tree.body.length === 1 &&
+						tree.body[0].type === 'ExpressionStatement' &&
+						tree.body[0].expression.type === 'Literal');
+			}, {
+				context: this
+			});
+			this._static_value = cjs(function() {
+				var tree = this._tree.get();
+				if(tree.body.length > 0) {
+					return tree.body[0].expression.value;
+				}
+			}, {
+				context: this
+			});
         };
 		proto.substantiate = function() {
 			this.set_substantiated(true);
@@ -91,37 +108,53 @@
             return [];
         };
     
+	/*
         proto.get_value = function (pcontext) {
-            var tree = this._tree.get();
-			if(tree instanceof ist.Error) {
-				return undefined;
+			if(this._is_static.get()) {
+				console.log("STATIC!");
+				return this._static_value.get();
 			} else {
-				var parsed_$ = ist.get_parsed_val(tree, {
-					context: pcontext,
-					ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext)
-				});
-				if(parsed_$ instanceof ist.MultiExpression) {
-					return parsed_$.last();
+				var tree = this._tree.get();
+				if(tree instanceof ist.Error) {
+					return undefined;
 				} else {
-					return parsed_$;
+					var parsed_$ = ist.get_parsed_val(tree, {
+						context: pcontext,
+						ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext)
+					});
+					if(parsed_$ instanceof ist.MultiExpression) {
+						return parsed_$.last();
+					} else {
+						return parsed_$;
+					}
 				}
 			}
         };
+		*/
 		proto.get_syntax_errors = function() {
             var tree = this._tree.get();
 			return tree instanceof ist.Error ? [tree.message()] : [];
 		};
         proto.constraint_in_context = function (pcontext) {
-			return ist.get_parsed_$(this._tree.get(), {
-						context: pcontext,
-						ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext),
-						get_constraint: true
-					});
+			if(this._is_static.get()) {
+				return this._static_value.get();
+			} else {
+				var tree = this._tree.get();
+				return ist.get_parsed_$(tree, {
+							context: pcontext,
+							ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext),
+							get_constraint: true
+						});
+			}
         };
         proto.destroy = function () {
 			this.emit_begin_destroy();
-            this._tree.destroy();
+            this._tree.destroy(true);
 			delete this._tree;
+			this._static_value.destroy(true);
+			delete this._static_value;
+			this._is_static.destroy(true);
+			delete this._is_static;
 
 			ist.unset_instance_builtins(this, My);
 			ist.unregister_uid(this.id());

@@ -14,7 +14,7 @@ var interstate = (function (root) {
 	ist.build_time = "<%= build_time %>";
 	ist.__debug = false;
 	ist.__empty_files = false;
-	ist.__garbage_collect = true;
+	ist.__garbage_collect = false;
 	ist.cjs.__debug = ist.__debug;
 	ist.__debug_statecharts = ist.__debug;
 
