@@ -129,8 +129,8 @@
 			rect.set("stroke_opacity", new ist.Cell({str: "1.0"}));
 			rect.set("stroke_width", new ist.Cell({str: "1"}));
 			rect.set("transform", new ist.Cell({str: "''"}));
-			rect.set("width", new ist.Cell({str: "140"}));
-			rect.set("height", new ist.Cell({str: "90"}));
+			rect.set("width", new ist.Cell({str: "150"}));
+			rect.set("height", new ist.Cell({str: "100"}));
 			rect.set("animated_properties", new ist.Cell({str: "false"}));
 			rect.set("animation_duration", new ist.Cell({str: "300"}));
 			rect.set("animation_easing", new ist.Cell({str: "'linear'"}));
