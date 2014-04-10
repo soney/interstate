@@ -6,7 +6,7 @@
 	</body>
 
 	<script type="text/javascript">
-		var num_objs = 2100, objs = [], x = cjs('hello');
+		var num_objs = 2000, objs = [], x = cjs('...');
 
 		for(var i = 0; i<num_objs; i++) {
 			objs.push(i);
@@ -24,9 +24,10 @@
 
 		setTimeout(function() {
 			var start_time = (new Date()).getTime();
-			x.set('bye');
+			x.set('done');
 			var end_time = (new Date()).getTime();
-			console.log(end_time - start_time);
-		}, 5000);
+			//alert(end_time - start_time);
+			document.body.textContent = (end_time-start_time);
+		}, 1000);
 	</script>
 </html>

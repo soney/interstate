@@ -5,9 +5,9 @@
 			var phonecatApp = angular.module('phonecatApp', []);
 
 			phonecatApp.controller('PhoneListCtrl', function ($scope) {
-				var num_phones = 2000, phones = [];
+				var num_phones = 10500, phones = [];
 				for(var i = 0; i<num_phones; i++) {
-					phones.push({name: "Phone " + i});
+					phones.push({name: "..."});
 				}
 				$scope.phones = phones;
 
@@ -20,12 +20,11 @@
 						});
 					var end_time = (new Date()).getTime();
 					console.log(end_time - start_time);
-				}, 5000);
+				}, 1000);
 			});
 		</script>
 	</head>
 	<body ng-controller="PhoneListCtrl">
-		<input type="text" ng-model="yourName">
 		<div ng-repeat="phone in phones">
 			{{phone.name}}
 		</div>
