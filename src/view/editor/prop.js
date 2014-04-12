@@ -17,7 +17,7 @@
 	});
 
 	var prop_template = cjs.createTemplate(
-		"<td class='name'>" +
+		"<td data-cjs-on-mouseover='propMOver' data-cjs-on-mouseout='propMOut' class='name'>" +
 			"{{#fsm name_edit_state}}" +
 				"{{#state idle}}" +
 					"<span>{{ prop_name }}</span>" +
@@ -382,7 +382,15 @@
 				value: this.option("client"),
 				type: this.$type,
 				propValues: this.$prop_values,
-				show_menu: this.$show_menu
+				show_menu: this.$show_menu,
+				propMOver: _.bind(function() {
+					var client = this.option("client");
+					console.log("over ", client);
+				}, this),
+				propMOut: _.bind(function() {
+					var client = this.option("client");
+					console.log("out ", client);
+				}, this)
 			}, this.element);
 		},
 

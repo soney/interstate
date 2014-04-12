@@ -12,7 +12,7 @@ var interstate = (function (root) {
 	ist._ = _.noConflict();
 	ist.version = "<%= version %>";
 	ist.build_time = "<%= build_time %>";
-	ist.__debug = false;
+	ist.__debug = true;
 	ist.__empty_files = false;
 	ist.__garbage_collect = true;
 	ist.cjs.__debug = ist.__debug;

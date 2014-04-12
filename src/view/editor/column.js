@@ -23,7 +23,7 @@
 					"{{#if pinned && !is_root}}" +
 						"<span title='Previous' data-cjs-on-click='prev_col' class='prev_btn glyphicon glyphicon-chevron-left'/>" +
 					"{{/if}}" +
-					"<h2 data-cjs-on-click='headerClicked'>" +
+					"<h2 data-cjs-on-mouseover='headerMOver' data-cjs-on-mouseout='headerMOut' data-cjs-on-click='headerClicked'>" +
 						"{{ci}}{{name}}" +
 						"{{#if is_template}}" +
 							"[{{curr_copy_index}}]" +
@@ -63,15 +63,15 @@
 					"<tr class='switch_copy'>" +
 						"<td></td>" +
 						"{{#if show_prev_value}}" +
-							"<td data-cjs-on-click='selectPrevClient'>" +
+							"<td class='prev_copy' data-cjs-on-mouseover='prevMOver' data-cjs-on-mouseout='prevMOut' data-cjs-on-click='selectPrevClient'>" +
 								"<span class='glyphicon glyphicon-chevron-left'></span>" +
 							"</td>" +
 						"{{/if}}" +
-						"<td>" +
+						"<td class='curr_copy' data-cjs-on-mouseover='currMOver' data-cjs-on-mouseout='currMOut'>" +
 							"copy {{curr_copy_index+1}} of {{num_instances}}" +
 						"</td>" +
 						"{{#if show_next_value}}" +
-							"<td data-cjs-on-click='selectNextClient'>" +
+							"<td class='next_copy' data-cjs-on-mouseover='nextMOver' data-cjs-on-mouseout='nextMOut' data-cjs-on-click='selectNextClient'>" +
 								"<span class='glyphicon glyphicon-chevron-right'></span>" +
 							"</td>" +
 						"{{/if}}" +
@@ -346,7 +346,44 @@
 				}, this),
 				num_instances: this.$num_instances,
 				pinned: this.option("pinned"),
-				is_root: this.is_root 
+				is_root: this.is_root,
+				headerMOver: _.bind(function() {
+					var copy_client = this.$curr_copy_client.get();
+					console.log("over", copy_client);
+					/*
+			this.$curr_copy_client = cjs(function() {
+				if(this.$is_template.get()) {
+					var instances = this.$instances.get(),
+						curr_copy_index = this.$curr_copy_index.get();
+					if(instances[curr_copy_index]) {
+						return instances[curr_copy_index];
+					} else {
+						return false;
+					}
+				} else {
+					return client;
+				}
+			}, {context: this});
+
+			this.$prev_copy_client = cjs(function() {
+				if(this.$is_template.get()) {
+					var instances = this.$instances.get(),
+						copy_index = this.$curr_copy_index.get()-1;
+					if(instances[copy_index]) {
+						return instances[copy_index];
+					}
+				}
+
+				return false;
+			}, {context: this});
+
+			this.$next_copy_client = cjs(function() {
+			*/
+				}, this),
+				headerMOut: _.bind(function() {
+					var copy_client = this.$curr_copy_client.get();
+					console.log("out", copy_client);
+				}, this)
 			}, this.element);
 			this._select_just_added_name = cjs.liven(function() {
 				var children = this.$children.get();
