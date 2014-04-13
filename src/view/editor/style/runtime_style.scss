@@ -12,6 +12,7 @@ body {
 		box-shadow: 0 0 $dim_highlight_size $highlight_color;
 		-webkit-animation: pusate 0.5s infinite alternate;
 		-moz-animation: pusate 0.5s infinite alternate;
+		cursor: default;
 
 		&.svg_follow {
 			pointer-events: none;

@@ -39,6 +39,8 @@
 			this._command_stack = new ist.CommandStack();
 			this.$dirty_program = cjs(false);
 			this.$highlighting_objects = cjs([]);
+			this.$inspecting_hover_object = cjs(false);
+			this.$breakpoints = cjs({});
 
 			if(!this.option("root")) {
 				var root = ist.load();
@@ -156,14 +158,24 @@
 		},
 
 		on_key_down: function(event) {
-			if(event.keyCode === 69 && event.altKey && event.metaKey) {
-				this.open_editor();
+			if(event.altKey && event.metaKey) {
+				if(event.keyCode === 69) { // e
+					this.open_editor();
+				} else if(event.keyCode === 84) { // i
+					this.begin_inspect();
+					event.preventDefault();
+					event.stopPropagation();
+				}
 			}
 		},
 
 		_destroy: function () {
 			this._super();
 			this._remove_highlight_listeners();
+
+			this.$highlighting_objects.destroy(true);
+			this.$inspecting_hover_object.destroy(true);
+
 			this._remove_change_listeners();
 			this.element.removeClass("ist_runtime");
 			$(window).off("keydown.open_editor");
@@ -200,10 +212,12 @@
 												.map(function(obj) {
 													return obj.get_dom_obj();
 												})
-												.compact()
+												//.compact()
 												.flatten()
-												.value(),
-					diff = _.diff(old_highlighting_elements, highlighting_elements);
+												.value()
+												.concat(this.$inspecting_hover_object.get());
+				highlighting_elements = _.compact(highlighting_elements);
+				var diff = _.diff(old_highlighting_elements, highlighting_elements);
 
 				_.each(diff.added, function(info) {
 					var dom_node = info.item;
@@ -466,7 +480,7 @@
 				}
 			}
 		},
-		open_editor: function (event) {
+		open_editor: function (event, cobj) {
 			if(event) {
 				event.preventDefault();
 				event.stopPropagation();
@@ -475,7 +489,7 @@
 				this.editor_window.focus();
 			} else {
 				var on_comm_mechanism_load = function(communication_mechanism) {
-					this.server_socket = this.server_socket || this._create_server_socket();
+					this.server_socket = this.server_socket || this._create_server_socket(cobj);
 					this.server_socket.set_communication_mechanism(communication_mechanism);
 
 					if (this.server_socket.is_connected()) { // It connected immediately
@@ -554,5 +568,71 @@
 			}
 			delete this.editor_window;
 		},
+		begin_inspect: function () {
+			if(this._inspecting) {
+				this.cancel_inspect();
+			} else {
+				this._inspecting = true;
+				this._inspecting_target = false;
+
+				this._on_mover = _.bind(function(mo_event) {
+					var target = this._inspecting_target = mo_event.target;
+					this.$inspecting_hover_object.set(target);
+					//console.log(target);
+				}, this);
+				this._on_mout = _.bind(function(mo_event) {
+					if(mo_event.target === this._inspecting_target) {
+						this.$inspecting_hover_object.set(false);
+						this._inspecting_target = false;
+					}
+				}, this);
+				this._on_click = _.bind(function(c_event) {
+					var target = c_event.target,
+						cobj = target.__ist_contextual_object__;
+					this.inspect_cobj(cobj);
+				}, this);
+
+				$(this.element).get(0).addEventListener("mouseover", this._on_mover, true);
+				$(this.element).get(0).addEventListener("mouseout", this._on_mout, true);
+				$(this.element).get(0).addEventListener("click", this._on_click, true);
+				$(window).on("keydown.inspector", _.bind(function(kd_event) {
+					if(kd_event.keyCode === 27) { // esc
+						this.cancel_inspect();
+					} else if(kd_event.keyCode === 13) { // enter
+						if(this._inspecting_target) {
+							var cobj = this._inspecting_target.__ist_contextual_object__;
+
+							this.inspect_cobj(cobj);
+						}
+					}
+				}, this));
+			}
+
+		},
+		cancel_inspect: function() {
+			if(this._inspecting) {
+				this._inspecting = false;
+				this._inspecting_target = false;
+				this.$inspecting_hover_object.set(false);
+
+				$(this.element).get(0).removeEventListener("mouseover", this._on_mover, true);
+				$(this.element).get(0).removeEventListener("mouseout", this._on_mout, true);
+				$(this.element).get(0).removeEventListener("click", this._on_click, true);
+				$(window).off("keydown.inspector");
+			}
+		},
+		inspect_cobj: function(cobj) {
+
+			if (this.editor_window) {
+				this.server_socket.post({
+					type: "inspect",
+					cobj_id: cobj.id()
+				});
+				this.editor_window.focus();
+			} else {
+				this.open_editor();
+			}
+			this.cancel_inspect();
+		}
 	});
 }(interstate, jQuery));

@@ -161,6 +161,9 @@
 				.on("stringified_obj", function(data) {
 					downloadWithName("COMPONENT:"+data.value, data.name+".istc");
 					//window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
+				}, this)
+				.on("inspect", function(data) {
+					$("#obj_nav", this.element).navigator("open_cobj", data);
 				}, this);
 			};
 
