@@ -38,6 +38,7 @@
 			this.element.addClass("ist_runtime");
 			this._command_stack = new ist.CommandStack();
 			this.$dirty_program = cjs(false);
+			this.$highlighting_objects = cjs([]);
 
 			if(!this.option("root")) {
 				var root = ist.load();
@@ -117,6 +118,7 @@
 			}
 
 			this._add_change_listeners();
+			this._add_highlight_listeners();
 		},
 
 		_setOption: function(key, value) {
@@ -161,7 +163,7 @@
 
 		_destroy: function () {
 			this._super();
-
+			this._remove_highlight_listeners();
 			this._remove_change_listeners();
 			this.element.removeClass("ist_runtime");
 			$(window).off("keydown.open_editor");
@@ -179,6 +181,85 @@
 
 			delete this._command_stack;
 			delete this.options;
+		},
+
+		_add_highlight_listeners: function () {
+			var old_highlighting_elements = [],
+				svg_followers = [];
+			this._highlight_fn = cjs.liven(function() {
+				var highlighting_objects = this.$highlighting_objects.toArray(),
+					highlighting_elements = _	.chain(highlighting_objects)
+												.map(function(cobj) {
+													if(cobj.is_template()) {
+														return cobj.instances();
+													} else {
+														return cobj;
+													}
+												})
+												.flatten()
+												.map(function(obj) {
+													return obj.get_dom_obj();
+												})
+												.compact()
+												.flatten()
+												.value(),
+					diff = _.diff(old_highlighting_elements, highlighting_elements);
+
+				_.each(diff.added, function(info) {
+					var dom_node = info.item;
+					$(dom_node).addClass("highlight");
+					if(dom_node instanceof SVGElement) {
+						var bounding_rect = dom_node.getBoundingClientRect(),
+							tagName = dom_node.tagName,
+							follower = $("<div />").appendTo(document.body)
+													.addClass("highlight svg_follow")
+													.css({
+														left: bounding_rect.left+"px",
+														top: bounding_rect.top+"px",
+														width: bounding_rect.width+"px",
+														height: bounding_rect.height+"px",
+														borderRadius: tagName.toUpperCase() === "CIRCLE" ? bounding_rect.width/2+"px" : "0px"
+													});
+						svg_followers.push({
+							following: dom_node,
+							follower: follower
+						});
+					}
+				});
+				_.each(diff.removed, function(info) {
+					var dom_node = info.from_item;
+					$(dom_node).removeClass("highlight");
+					if(dom_node instanceof SVGElement) {
+						_.each(svg_followers, function(info, index) {
+							if(info.following === dom_node) {
+								info.follower.remove();
+								svg_followers.splice(index, 1);
+							}
+						});
+					}
+				});
+
+				old_highlighting_elements = highlighting_elements;
+			}, {
+				context: this,
+				on_destroy: function() {
+					_.each(old_highlighting_elements, function(dom_node) {
+						$(dom_node).removeClass("highlight");
+						if(dom_node instanceof SVGElement) {
+							_.each(svg_followers, function(info, index) {
+								if(info.following === dom_node) {
+									info.follower.remove();
+									svg_followers.splice(index, 1);
+								}
+							});
+						}
+					});
+				}
+			});
+		},
+
+		_remove_highlight_listeners: function () {
+			this._highlight_fn.destroy();
 		},
 
 		_add_change_listeners: function () {
@@ -338,6 +419,21 @@
 
 				this._save();
 				ist.rename(from_name, to_name, storage_type);
+			}, this).on("add_highlight", function(event) {
+				var cobj_id = event.cobj_id,
+					cobj = ist.find_uid(cobj_id);
+				if(cobj) {
+					this.$highlighting_objects.push(cobj);
+				}
+			}, this).on("remove_highlight", function(event) {
+				var cobj_id = event.cobj_id,
+					cobj = ist.find_uid(cobj_id);
+				if(cobj) {
+					var index = this.$highlighting_objects.indexOf(cobj);
+					if(index >= 0) {
+						this.$highlighting_objects.splice(index, 1);
+					}
+				}
 			}, this)
 			;
 			return server_socket;

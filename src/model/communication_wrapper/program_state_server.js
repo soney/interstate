@@ -60,6 +60,8 @@
 								.on("save_component", this.post_forward, this)
 								.on("copy_component", this.post_forward, this)
 								.on("rename_program", this.post_forward, this)
+								.on("add_highlight", this.post_forward, this)
+								.on("remove_highlight", this.post_forward, this)
 								.on("get_ptr", this.get_ptr, this)
 								;
 		};

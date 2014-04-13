@@ -251,6 +251,7 @@
 						return robj;
 					} else {
 						robj = paper[this.shape_type].apply(paper, this.constructor_params);
+						robj[0].__ist_contextual_object__ = this.get_contextual_object();
 						this.$robj.set(robj);
 						return robj;
 					}

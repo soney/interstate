@@ -369,7 +369,7 @@
 						left = function() { return layout_manager.get_x(key); },
 						width = function() { return value.get() ? layout_manager.get_width(key) : 7; };
 
-					// top fifty bad lines of code I've ever written: `value: value ? value.value : value`
+					// One of the worst lines of code I've ever written was here: `value: value ? value.value : value`
 					return {prop: this.option("client"),
 							state: key,
 							client: value,
@@ -384,12 +384,18 @@
 				propValues: this.$prop_values,
 				show_menu: this.$show_menu,
 				propMOver: _.bind(function() {
-					var client = this.option("client");
-					console.log("over ", client);
+					var client = this.option("client"),
+						event = new $.Event("add_highlight");
+					event.client = client;
+
+					this.element.trigger(event);
 				}, this),
 				propMOut: _.bind(function() {
-					var client = this.option("client");
-					console.log("out ", client);
+					var client = this.option("client"),
+						event = new $.Event("remove_highlight");
+					event.client = client;
+
+					this.element.trigger(event);
 				}, this)
 			}, this.element);
 		},

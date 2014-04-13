@@ -348,41 +348,52 @@
 				pinned: this.option("pinned"),
 				is_root: this.is_root,
 				headerMOver: _.bind(function() {
-					var copy_client = this.$curr_copy_client.get();
-					console.log("over", copy_client);
-					/*
-			this.$curr_copy_client = cjs(function() {
-				if(this.$is_template.get()) {
-					var instances = this.$instances.get(),
-						curr_copy_index = this.$curr_copy_index.get();
-					if(instances[curr_copy_index]) {
-						return instances[curr_copy_index];
-					} else {
-						return false;
-					}
-				} else {
-					return client;
-				}
-			}, {context: this});
-
-			this.$prev_copy_client = cjs(function() {
-				if(this.$is_template.get()) {
-					var instances = this.$instances.get(),
-						copy_index = this.$curr_copy_index.get()-1;
-					if(instances[copy_index]) {
-						return instances[copy_index];
-					}
-				}
-
-				return false;
-			}, {context: this});
-
-			this.$next_copy_client = cjs(function() {
-			*/
+					var copy_client = this.$curr_copy_client.get(),
+						event = new $.Event("add_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
 				}, this),
 				headerMOut: _.bind(function() {
-					var copy_client = this.$curr_copy_client.get();
-					console.log("out", copy_client);
+					var copy_client = this.$curr_copy_client.get(),
+						event = new $.Event("remove_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				prevMOver: _.bind(function() {
+					var copy_client = this.$prev_copy_client.get(),
+						event = new $.Event("add_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				prevMOut: _.bind(function() {
+					var copy_client = this.$prev_copy_client.get(),
+						event = new $.Event("remove_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				nextMOver: _.bind(function() {
+					var copy_client = this.$next_copy_client.get(),
+						event = new $.Event("add_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				nextMOut: _.bind(function() {
+					var copy_client = this.$next_copy_client.get(),
+						event = new $.Event("remove_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				currMOver: _.bind(function() {
+					var copy_client = this.$curr_copy_client.get(),
+						event = new $.Event("add_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				currMOut: _.bind(function() {
+					var copy_client = this.$curr_copy_client.get(),
+						event = new $.Event("remove_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
 				}, this)
 			}, this.element);
 			this._select_just_added_name = cjs.liven(function() {

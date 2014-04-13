@@ -7,26 +7,18 @@ body {
 	margin: 0px;
 	padding: 0px;
 
-	&.drop_target {
-		background-color: #DDD;
-	}
-
-	.ist_runtime svg {
-		//border: 1px solid black;
-		//border-top: none;
-		//border-left: none;
-		//background-color: white;
-	}
-
 	.highlight {
-		pointer-events: none;
 		background-color: rgba(40, 40, 210, 0.2);
 		box-shadow: 0 0 $dim_highlight_size $highlight_color;
 		-webkit-animation: pusate 0.5s infinite alternate;
 		-moz-animation: pusate 0.5s infinite alternate;
-		position: absolute;
-		z-index: 999;
-		box-sizing: border-box;
+
+		&.svg_follow {
+			pointer-events: none;
+			position: absolute;
+			z-index: 999;
+			box-sizing: border-box;
+		}
 	}
 }
 

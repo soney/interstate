@@ -433,7 +433,27 @@
 						.on("done_editing_cell", _.bind(function(event) {
 							this.editor.setValue("");
 							this._disable_editor();
-						}, this));
+						}, this))
+						.on("add_highlight", _.bind(function(event) {
+							var client = event.client,
+								type = client.type ? client.type() : false;
+							if(type === "stateful" || type === "dict") {
+								this.client_socket.post({
+									type: "add_highlight",
+									cobj_id: client.cobj_id
+								});
+							}
+						}, this))
+						.on("remove_highlight", _.bind(function(event) {
+							var client = event.client,
+								type = client.type ? client.type() : false;
+							if(type === "stateful" || type === "dict") {
+								this.client_socket.post({
+									type: "remove_highlight",
+									cobj_id: client.cobj_id
+								});
+							}
+						}, this)) ;
 		},
 
 		_removeEventListeners: function() {
