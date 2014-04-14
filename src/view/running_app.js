@@ -210,7 +210,9 @@
 												})
 												.flatten()
 												.map(function(obj) {
-													return obj.get_dom_obj();
+													if(!obj._destroyed) {
+														return obj.get_dom_obj();
+													}
 												})
 												//.compact()
 												.flatten()
@@ -563,6 +565,7 @@
 		},
 
 		cleanup_closed_editor: function () {
+			this.$highlighting_objects.setValue([]);
 			if(this.edit_button) {
 				this.edit_button.removeClass("active").css(this.edit_button_css);
 			}

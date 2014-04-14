@@ -451,10 +451,12 @@
 							var client = event.client,
 								type = client.type ? client.type() : false;
 							if(type === "stateful" || type === "dict") {
-								this.client_socket.post({
-									type: "remove_highlight",
-									cobj_id: client.cobj_id
-								});
+								if(this.client_socket) { // this might happen after everything was destroyed
+									this.client_socket.post({
+										type: "remove_highlight",
+										cobj_id: client.cobj_id
+									});
+								}
 							}
 						}, this)) ;
 		},

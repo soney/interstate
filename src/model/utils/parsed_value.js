@@ -356,8 +356,8 @@
 		var getter = function (object, property) {
 			var rv, instances;
 			if (!object) {
-				throw new Error("No parent object for property '" + prop + "'");
-				//return undefined;
+				//throw new Error("No parent object for property '" + prop + "'");
+				return undefined;
 			}
 
 			if (object instanceof ist.ContextualObject) {

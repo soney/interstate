@@ -340,6 +340,7 @@
 			var last_last_value = this._last_value;
 
 			var active_value_info = this.active_value();
+			if(!active_value_info) { return; }
 			var using_val = active_value_info.value,
 				using_state = active_value_info.state,
 				using_as = active_value_info.using_as,
