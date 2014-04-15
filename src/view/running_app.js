@@ -62,29 +62,26 @@
 				this.button_color = "#990000";
 				this.edit_button_css = {
 					float: "right",
-					opacity: 0.7,
 					"text-decoration": "none",
 					"font-variant": "small-caps",
-					padding: "3px",
 					"padding-top": "0px",
 					position: "fixed",
 					top: display === "tablet" ? "15px" : "0px",
-					right: "0px",
+					right: "70px",
 					color: this.button_color,
 					"background-color": "",
-					"font-size": "0.95em",
+					"font-size": "1.2em",
 					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
 					cursor: "pointer",
-					"border-bottom": ""
+					"border-bottom": "5px solid " + this.button_color
 				};
 				this.running_button_css = {
 					float: "right",
 					position: "fixed",
-					top: "25px",
+					top: "20px",
 					"padding-left": "5px",
-					right: "5px",
+					right: "20px",
 					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-					"font-variant": "small-caps",
 					color: this.button_color,
 					"-webkit-touch-callout": "none",
 					"-webkit-user-select": "none",
@@ -93,18 +90,24 @@
 					"-ms-user-select": "none",
 					"user-select": "none"							
 				};
-				this.editing_button_css = {
-					right: "60px"
+				this.editing_button_css = {					
+					position: "fixed",
+					top: "40px"
+				};
+				this.editing_button_open_css = {
+					top: "60px"
+				};
+				this.hidden_button_css = {
+					display: "none"
+				};
+				this.shown_button_css = {
+					display: "block"
 				};
 				this.run_edit_active_css = {
-					"font-weight": "bold",
-					"border-bottom-width": "5px",
-					"border-bottom-style": "solid",
-					"border-bottom-color": "rgb(153, 0, 0)"
+					"font-weight": "bold"
 				};
 				this.run_edit_inactive_css = {
-					"font-weight": "normal",
-					"border": "none"
+					"font-weight": "normal"
 				};
 				this.edit_hover_css = {
 					opacity: 1.0,
@@ -119,27 +122,44 @@
 					"background-color": "",
 					cursor: "default",
 					"border-bottom": "5px solid " + this.button_color
-				},
+				};
 				this.palette_css = {
 					"float":"right",					
 					"position": "fixed",
-					top: "40px",
-					right:"10px",
+					top: "65px",
+					right:"13px",
 					"padding-left": "0",
-					display: "block",
-					"border": "1px solid #808080",
-					"padding": "10px",
+					"margin": "0",
+					display: "none",
 					"font-size": "0.95em",
+					"list-style-type": "none",
 					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
 					color: this.button_color				
-				}, 
-				this.palette_css_hidden = {
+				};
+				this.palette_css_show = {
+					display: "block"
+				};
+				this.inspect_css = {
+					display: "block",
+					top: "42px",
+					right: "25px"
+				};
+				this.code_view_css = {
+					right: "25px"
+				}
+				this.inspect_css_show = {
 					display: "none"
-				},
-				this.palette_li_css = {
-					"border": "1px solid black"
+				};
+				this.undo_redo_css = {
+					float: "right",
+					position: "fixed",
+					right: "0px",
+					padding: "5px",
+					top: "0",
+					display: "none"
 				};
 
+				var that = this;
 
 				this.edit_button = $("<a />")	.text("edit")
 												.css(this.edit_button_css)
@@ -155,18 +175,25 @@
 												}, this))
 												.on("mousedown.open_editor touchstart.open_editor", _.bind(this.open_editor, this));
 
-				var that = this;
+				this.undo_redo_buttons = $("<div />").append("<img src='src/view/editor/style/images/undo.png' width='23px' style='margin:3px'>")
+												.append("<img src='src/view/editor/style/images/redo.png' width='23px' style='margin:3px'>")
+												.css(this.undo_redo_css)
+												.on("mousedown.undo_redo touchstart.undo_redo", _.bind(this.undo_redo, this));
 				
-				this.running_button = $("<a />").text("running")
-												.css(this.running_button_css);
-				this.editing_button = $("<a />").text("editing")
+				this.running_button = $("<ul />").text("Code View")
+												.css(this.running_button_css)
+												.css(this.hidden_button_css)
+												.css(this.code_view_css);											
+				this.editing_button = $("<ul />").text("Design View")
 												.css(this.running_button_css)
 												.css(this.editing_button_css)
-												.css(this.run_edit_active_css);
-				this.palette = $("<ul />")		.append("<p class='rectangle'>rectangle</p>")
-												.append("<p class='ellipse'>ellipse</p>")
-												.append("<p class='text'>text</p>")												
-												.append("<p class='image'>image</p>")												
+												.css(this.hidden_button_css);
+				this.inspect = $("<ul />")		.append("<li><p class='first'><img src='src/view/editor/style/images/circle_info.png' width='15px'/> Inspect</p></li>")
+												.css(this.palette_css)
+				this.palette = $("<ul />")		.append("<li><p class='rectangle'><img src='src/view/editor/style/images/square.png' width='15px'/> Rectangle</p></li>")
+												.append("<li><p class='ellipse'><img src='src/view/editor/style/images/circle.png' width='15px'> Ellipse</p></li>")
+												.append("<li><p class='text'><img src='src/view/editor/style/images/font.png' width='15px'> Text</p></li>")												
+												.append("<li><p class='image'><img src='src/view/editor/style/images/picture.png' width='15px'> Image</p></li>")												
 												.css(this.palette_css)
 												.on('click', function(e){
 													if (e.target.className === 'circle') {
@@ -185,11 +212,10 @@
 														that.create_new_object('image');
 													}																									
 												});
-				console.log($('ul'));
-				this.run_state = cjs.fsm('run', 'edit')
-												.addTransition('run', 'edit', cjs.on('click', this.running_button))
-												.addTransition('edit', 'run', cjs.on('click', this.editing_button))
-												.on('run->edit', function(){
+				this.run_state = cjs.fsm('code', 'design')
+												.addTransition('code', 'design', cjs.on('click', this.running_button))
+												.addTransition('design', 'code', cjs.on('click', this.editing_button))
+												.on('code->design', function(){
 													$("body").on("click.doSetProp", _.bind(function(e) {
 														var command = new ist.SetPropCommand({
 															name: 'something', 
@@ -198,25 +224,35 @@
 														});
 													}));
 													this.running_button.css(this.run_edit_active_css);
+													this.editing_button.css(this.editing_button_css);													
 													this.editing_button.css(this.run_edit_inactive_css);
-													this.palette.css(this.palette_css_hidden);																									
+													this.editing_button.css(this.editing_button_open_css);
+													this.palette.css(this.palette_css);
+													this.inspect.css(this.inspect_css);
+													this.undo_redo_buttons.css(this.shown_button_css);													
 												}, this)
-												.on('edit->run', function() {
+												.on('design->code', function() {
 													$("body").off("click.doSetProp");
 													this.editing_button.css(this.run_edit_active_css);
 													this.running_button.css(this.run_edit_inactive_css);
-													this.palette.css(this.palette_css);													
+													this.running_button.css(this.running_button_css);	
+													this.editing_button.css(this.editing_button_css);																									
+													this.palette.css(this.palette_css_show);
+													this.inspect.css(this.inspect_css_show);																																																													
+													this.undo_redo_buttons.css(this.shown_button_css);		
 												}, this);
 
-				var append_interval = window.setInterval(_.bind(function (element, edit_button, running_button, editing_button, palette) {
+				var append_interval = window.setInterval(_.bind(function (element, edit_button, running_button, editing_button, palette, inspect, undo_redo_buttons) {
 					if (element.parentNode) {
 						element.parentNode.appendChild(edit_button);
+						element.parentNode.appendChild(undo_redo_buttons);
 						element.parentNode.appendChild(running_button);
+						element.parentNode.appendChild(inspect);												
 						element.parentNode.appendChild(editing_button);
 						element.parentNode.appendChild(palette);						
 						window.clearInterval(append_interval);
 					}
-				}, window, this.element[0], this.edit_button[0], this.running_button[0], this.editing_button[0], this.palette[0]), 100);
+				}, window, this.element[0], this.edit_button[0], this.running_button[0], this.editing_button[0], this.palette[0], this.inspect[0], this.undo_redo_buttons[0]), 100);
 
 
 			}
@@ -237,6 +273,10 @@
 			}
 
 			this._add_change_listeners();
+		},
+
+		undo_redo: function() {
+			this.client_socket.post_command("undo");
 		},
 
 		create_new_object: function(object) {
@@ -338,11 +378,9 @@
 				protos_stateful_prop.set(start_state, protos_cell);
 			}			
 			var parent = this.option("root");
-			console.log(screen);
             var prop_names = screen._get_direct_prop_names();
             var prefix = "obj";
             var prefix_small = "resize"
-            console.log(prop_names);
             var len = 0;
             if (parent instanceof ist.Dict) {
             	if (object === "rectangle") {
@@ -359,7 +397,6 @@
             	}
             }
             var new_prop_name = prefix + "_" +  prop_names.length;
-            console.log(new_prop_name);
 
 			var propCommand = new ist.SetPropCommand({parent: screen, value: stateful_obj, name: new_prop_name});
 			this._command_stack._do(propCommand);
@@ -576,7 +613,7 @@
 			field_stateful_prop.set(start_state, field_cell);
 			//element.set_prop(field, field_stateful_prop);				  
 
-			var command = ist.SetPropCommand({
+			var command = new ist.SetPropCommand({
 				parent: element,
 				name: field,
 				value: field_stateful_prop
@@ -626,27 +663,6 @@
 		       				cells = new_cells;
 		       			}
 		       		}
-		        	//UNDO STACK
-			/*	  var sketch = that.option("root"),
-					  screen = sketch._get_direct_prop('screen'),
-					  propCommandX = new ist.SetPropCommand({
-							parent: rect,
-							name: "x",
-							value: stringX
-					  }),
-					  propCommandY = new ist.SetPropCommand({
-							parent: rect,
-							name: "y",
-							value: stringY
-					  });
-				 var combined_command = new ist.CombinedCommand({
-				 	commands: [propCommandX, propCommandY]
-				 });
-
-				  that._command_stack._do(combined_command);
-
-				  rect.set_prop("x", x_stateful_prop);				  
-				  rect.set_prop("y", y_stateful_prop);	*/	
 
 		          element_initial_state = null;
 		        }
@@ -659,7 +675,6 @@
 		       		}
 
 		       		else if (obj === 'ellipse') {
-		       			console.log("inside ellipse");
 		       			var new_cells = that._resize_mouse_move_ellipse(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);	
 		       			if(new_cells) {
 		       				cells = new_cells;
@@ -682,7 +697,6 @@
 			var rect_x = cx + new_radius_x;
 			var rect_y = cy + new_radius_y;
 
-			console.log(cells);
 			if(cells) {
 				//...set cell code
 				var change_cell_commands = {
@@ -706,6 +720,9 @@
 				var combined_command = new ist.CombinedCommand({
 				 	commands: _.values(change_cell_commands)
 				});
+				
+				var combined_command_red = new ist.CombinedCommand
+
 				this._command_stack._do(combined_command);
 				return false;
 			} else {
@@ -724,7 +741,6 @@
 				 	commands: _.pluck(_.values(change_cell_commands), "command")
 				});
 
-				console.log(cells, combined_command);
 				this._command_stack._do(combined_command);
 				return cells;
 			}
@@ -754,15 +770,60 @@
 			this._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);			
 
 		}, */
-		_mouse_move : function(ev, nameX, nameY, dragData, dragDataRed, element, rect_element) {
-			ev = ev || event;
-			this._save_state_single_field(element, nameX, ev.clientX - dragData.x);
-			this._save_state_single_field(element, nameY, ev.clientY - dragData.y);
+		_mouse_move : function(ev, nameX, nameY, dragData, dragDataRed, element, rect_element, cells) {
+			ev = ev || event;	
+			var new_position_x = ev.clientX - dragData.x;
+			var new_position_y = ev.clientY - dragData.y;		
+
 			if (dragDataRed) {
-				this._save_state_single_field(rect_element, 'x', ev.clientX - dragDataRed.x);
-				this._save_state_single_field(rect_element, 'y', ev.clientY - dragDataRed.y);							
+				var x_info_red = this._save_state_single_field(rect_element, 'x', ev.clientX - dragDataRed.x);
+				var y_info_red = this._save_state_single_field(rect_element, 'y', ev.clientY - dragDataRed.y);							
+
+				var combined_command_red = new ist.CombinedCommand({
+					commands: _.pluck([x_info_red, y_info_red], "command")
+				});
+
+				this._command_stack._do(combined_command_red);
 			}
-			// return {sX: stringX, sY: stringY, sRedX : stringRedX, sRedY: stringRedY};
+
+			if(cells) {
+				//...set cell code
+				var change_cell_commands = {
+					x: new ist.ChangeCellCommand({
+						cell: cells.x,
+						str: (new_position_x + '')
+					}),
+					y: new ist.ChangeCellCommand({
+						cell: cells.y,
+						str: (new_position_y + '')
+					})
+				};
+
+				var combined_command = new ist.CombinedCommand({
+				 	commands: _.values(change_cell_commands)
+				});
+
+				this._command_stack._do(combined_command);
+
+				return false;
+			} else {
+				var x_info = this._save_state_single_field(element, nameX, new_position_x), // cx - (rect_width/2)
+					y_info = this._save_state_single_field(element, nameY, new_position_y); // cy - (rect_height/2)
+
+				var cells = {
+					x: x_info.cell,
+					y: y_info.cell
+				};
+				
+				var combined_command = new ist.CombinedCommand({
+				 	commands: _.pluck([x_info, y_info], "command")
+				});
+
+				this._command_stack._do(combined_command);
+				return cells;
+			}						
+
+
 
 		},
 
@@ -772,6 +833,7 @@
 	      	var redObjectX, redObjectY = 0;	      	
 	      	var nameX, nameY = "";
 	      	var that = this;
+	      	var cells = false;
 	      	if (rect_dom_element) {
 	      		var red_square_size = rect_dom_element.width.baseVal.value;      				      		      		
 	      	}
@@ -809,27 +871,10 @@
 
 			$(dom_element).on("mouseup", function(ev) {
 		        if(dragData) {
-		          console.log('INSIDE MOUSE UP');	
-		          var objStrings = that._mouse_move(ev, nameX, nameY, dragData, dragDataRed, element, rect_element);
-				  // UNDO STACK
-			/*	  var sketch = that.option("root"),
-					  screen = sketch._get_direct_prop('screen'),
-					  propCommandX = new ist.SetPropCommand({
-							parent: element,
-							name: nameX,
-							value: objStrings.sX
-					  }),
-					  propCommandY = new ist.SetPropCommand({
-							parent: element,
-							name: nameY,
-							value: objStrings.sY
-					  });
-
-				 var combined_command = new ist.CombinedCommand({
-				 	commands: [propCommandX, propCommandY]
-				 });
-
-				  that._command_stack._do(combined_command);*/
+		          var new_cells = that._mouse_move(ev, nameX, nameY, dragData, dragDataRed, element, rect_element, cells);
+		          if (new_cells) {
+		          	cells = new_cells;
+		          }
 
 		          dragData = null;
 				  dragDataRed = null;		          
@@ -838,8 +883,10 @@
 
 			$('body').on("mousemove", function(ev) {	
 		        if(dragData) {			
-				  console.log("inside move");
-				  that._mouse_move(ev, nameX, nameY, dragData,dragDataRed,element,rect_element);
+				  var new_cells = that._mouse_move(ev, nameX, nameY, dragData,dragDataRed,element,rect_element, cells);
+		          if (new_cells) {
+		          	cells = new_cells;
+		          }				  
 		        }
 			});							
 		},
@@ -961,7 +1008,10 @@
 				}
 			}
 		},
-		open_editor: function (event) {
+		open_editor: function (event) {																																																														
+			this.editing_button.css(this.shown_button_css);
+			this.running_button.css(this.shown_button_css);
+			this.undo_redo_buttons.css(this.shown_button_css);
 			if(event) {
 				event.preventDefault();
 				event.stopPropagation();
