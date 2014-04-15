@@ -24,6 +24,7 @@
 
 					ist.event_queue.wait();
 
+				
 					var new_event = _.extend({}, event, {
 						ist_target: specified_target,
 						preventDefault: event.preventDefault ? _.bind(event.preventDefault, event) : function(){},
@@ -33,9 +34,9 @@
 
 					self.fire(new_event);
 					// Removing defer statement so that stopPropagation and preventDefault work
-					_.defer(function () {
+					//_.defer(function () {
 						ist.event_queue.signal();
-					});
+					//});
 				};
 				listener.destroy = function() {
 					self = null;

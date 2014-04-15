@@ -61,7 +61,7 @@
 					padding: "3px",
 					"padding-top": "0px",
 					position: "fixed",
-					top: display === "tablet" ? "15px" : "0px",
+					top: (display === "tablet" || display === "phone") ? "15px" : "0px",
 					right: "0px",
 					color: this.button_color,
 					"background-color": "",
