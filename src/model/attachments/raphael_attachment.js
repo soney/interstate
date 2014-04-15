@@ -63,7 +63,7 @@
 
 	ist.PaperAttachment = ist.register_attachment("paper", {
 			ready: function() {
-				this.dom_obj = window.document.createElement("div");
+				this.dom_obj = window.document.createElement("span");
 				this.paper = new Raphael(this.dom_obj, 0, 0);
 			},
 			destroy: function(silent) {

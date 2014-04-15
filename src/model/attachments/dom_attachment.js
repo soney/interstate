@@ -27,7 +27,9 @@
 	var insert_at = function (child_node, parent_node, index) {
 		var children = parent_node.childNodes;
 		if (children.length <= index) {
+		try{
 			parent_node.appendChild(child_node);
+			}catch(e){}
 		} else {
 			var before_child = children[index];
 			parent_node.insertBefore(child_node, before_child);

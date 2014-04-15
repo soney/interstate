@@ -20,6 +20,7 @@
 				var self = this;
 				var listener = function (event) {
 					//event.preventDefault();
+					//event.stopPropagation();
 
 					ist.event_queue.wait();
 
@@ -32,9 +33,9 @@
 
 					self.fire(new_event);
 					// Removing defer statement so that stopPropagation and preventDefault work
-					//_.defer(function () {
+					_.defer(function () {
 						ist.event_queue.signal();
-					//});
+					});
 				};
 				listener.destroy = function() {
 					self = null;
@@ -93,7 +94,9 @@
 				cobj = target_info.cobj;
 			if(_.isString(target_info.type)) {
 				_.each(target_info.type.split(","), function(type) {
-					dom_obj.addEventListener(type, this.get_target_listener(cobj), false); // Bubble
+					//if(_.has(dom_obj, 'addEventListener')) {
+						dom_obj.addEventListener(type, this.get_target_listener(cobj), false); // Bubble
+					//}
 				}, this);
 			}
 		};
@@ -105,7 +108,9 @@
 				cobj = target_info.cobj;
 			if(_.isString(target_info.type)) {
 				_.each(target_info.type.split(","), function(type) {
-					dom_obj.removeEventListener(type, this.get_target_listener(cobj), false); // Bubble
+					//if(_.has(dom_obj, 'removeEventListener')) {
+						dom_obj.removeEventListener(type, this.get_target_listener(cobj), false); // Bubble
+					//}
 				}, this);
 			}
 		};

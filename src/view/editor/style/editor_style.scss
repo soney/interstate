@@ -692,6 +692,7 @@ html.full_window_editor {
 							overflow: hidden;
 							word-break: break-all;
 							white-space: nowrap;
+							color: #999;
 
 							>.empty {
 								color: #BBB;
@@ -699,8 +700,8 @@ html.full_window_editor {
 
 							&.active {
 								color: green;
-								border-left: 1px solid green;
-								border-right: 1px solid green;
+								border-left: 2px solid green;
+								border-right: 2px solid green;
 							}
 							&.error {
 								color: white;
