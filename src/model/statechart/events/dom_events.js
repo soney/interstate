@@ -19,8 +19,8 @@
 			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var self = this;
 				var listener = function (event) {
-					event.preventDefault();
-					event.stopPropagation();
+					//event.preventDefault();
+					//event.stopPropagation();
 
 					ist.event_queue.wait();
 
@@ -94,7 +94,9 @@
 				cobj = target_info.cobj;
 			if(_.isString(target_info.type)) {
 				_.each(target_info.type.split(","), function(type) {
-					dom_obj.addEventListener(type, this.get_target_listener(cobj), false); // Bubble
+					//if(_.has(dom_obj, 'addEventListener')) {
+						dom_obj.addEventListener(type, this.get_target_listener(cobj), false); // Bubble
+					//}
 				}, this);
 			}
 		};
@@ -106,7 +108,9 @@
 				cobj = target_info.cobj;
 			if(_.isString(target_info.type)) {
 				_.each(target_info.type.split(","), function(type) {
-					dom_obj.removeEventListener(type, this.get_target_listener(cobj), false); // Bubble
+					//if(_.has(dom_obj, 'removeEventListener')) {
+						dom_obj.removeEventListener(type, this.get_target_listener(cobj), false); // Bubble
+					//}
 				}, this);
 			}
 		};

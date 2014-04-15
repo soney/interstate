@@ -366,6 +366,7 @@
 				}, this),
 				getPropCellOptions: _.bind(function(key) {
 					var value = this.$prop_values.itemConstraint(key),
+						$active = true,
 						left = function() { return layout_manager.get_x(key); },
 						width = function() { return value.get() ? layout_manager.get_width(key) : 7; };
 
@@ -374,7 +375,9 @@
 							state: key,
 							client: value,
 							left: left,
-							width: width };
+							width: width,
+							active_value: this.$active_value
+							};
 				}, this),
 				show_prev_value: this.$show_prev_value,
 				show_next_value: this.$show_next_value,
