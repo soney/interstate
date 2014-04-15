@@ -1,76 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>InterState</title>
-		<link rel="icon" type="image/gif" href="images/interstate_logo_128.png">
+		<title>interstate.from.so</title>
 		<style type="text/css">
-			html, body {
-				padding: 0px;
-				margin: 0px;
+			#examples, #version_info {
 				font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
 				font-weight: 300;
-				padding-bottom: 10px;
-			}
-			.hero {
-				background-color: #CCC;
-				padding-top: 15px;
-			}
-			body {
-				text-align: center;
-			}
-			ul {
-				list-style-type: none;
-				padding: 0px;
-				font-size: 1.3em;
-				margin: 0px;
-			}
-			li {
-				padding: 0px;
-				display: inline-block;
-				width: 150px;
-			}
-			li a {
-				text-decoration: none;
-				color: #A00;
-				display: block;
-				padding-top: 20px;
-				padding-bottom: 10px;
-			}
-			li a:hover {
-				background-color: #A00;
-				color: white;
-			}
-			.smalltext {
 				font-size: 0.8em;
-				margin-top: 40px;
-				color: #333;
+				position: absolute;
+				z-index: 10;
+				height: 3em;
+				bottom: 0px;
 			}
-			p {
-				text-align: justify;
-				max-width: 640px;
-				margin: auto;
-				margin-bottom:25px;
+			#version_info {
+				right: 5px;
 			}
-			a {
-				color: #A00;
+			#version_no {
+				font-weight: bold;
+			}
+			#build_time {
+				margin-right: 5px;
+			}
+			#examples a {
 				text-decoration: none;
+			}
+			#examples a:hover {
+				text-decoration: underline;
+			}
+			#examples a.active {
+				font-weight: bold;
 			}
 		</style>
+		<link rel="stylesheet" href="editor/style/runtime_style.css" />
+		<link rel="shortcut icon" href="../images/interstate_logo_128.png">
 	</head>
 	<body>
-		<div class="hero"><img src='images/interstate_logo.png' alt='InterState Logo'/></div>
-		<ul>
-			<li><a target="_blank" href="http://from.so/papers/OneyCHI14v24.pdf">Paper</a></li>
-			<li><a target="_blank" href="tutorial/">Tutorial</a></li>
-			<li><a target="_blank" href="gallery/">Examples</a></li>
-			<li><a target="_blank" href="https://github.com/soney/interstate">Source</a></li>
-			<li><a target="_blank" href="playground.html">Editor</a></li>
-		</ul>
-		<div class="content">
-			<h4>Abstract</h4>
-			<p class="abstract">The event-callback programming model used by most GUI development frameworks frequently leads to disorganized and hard-to-maintain code. We believe there is significant value in designing language primitives that expressly address the challenges of writing and re-using GUI code. To explore this, we created InterState, a language and programming environment for expressing interactive behaviors in graphical applications. With InterState, programmers express behaviors declaratively as combinations of states and constraints. InterState introduces new primitives for defining and re-using behaviors, a visual notation for these primitives, and a live editor. We conducted a laboratory study to evaluate InterState's usability and found that participants were faster at understanding and modifying GUI components written in InterState than in event-callback code. Additionally, to better understand InterState's scope and expressiveness, we used it to implement a series of full-featured interfaces.</p>
-			<iframe width="640" height="480" src="//www.youtube.com/embed/06FjH7dM7-8" frameborder="0" allowfullscreen></iframe>
-		</div>
-		<div class="smalltext">InterState development is ongoing. Please e-mail <a href="mailto:soney@cs.cmu.edu">Stephen Oney</a> for more information.</div>
+		<div class="content"></div>
 	</body>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
+	<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.2/raphael-min.js"></script>
+	<script src="_vendor/Box2dWeb-2.1a.3/Box2dWeb-2.1.a.3.js"></script>
+	<script src="_vendor/esprima.js"></script>
+	<script src="_vendor/ace/ace.js"></script>
+	
+	<script src="interstate.min.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			$("div.content").dom_output({
+				external_editor: false
+			});
+		});
+	</script>
 </html>
