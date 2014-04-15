@@ -9,6 +9,7 @@
 	ist.ContextualObject = function (options) {
 		able.make_this_listenable(this);
 		this._id = uid();
+        this._hash = uid.strip_prefix(this._id);
 		ist.register_uid(this._id, this);
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
@@ -29,6 +30,8 @@
 			});
 			this.set_options(options);
 		};
+		proto.is_template = function() { return false; };
+		proto.instances = function() { return false; };
 		proto.get_name = function() {
 			var pointer = this.get_pointer();
 			var my_index = pointer.indexOf(this.get_object());
@@ -38,7 +41,7 @@
 				var parent_obj = pointer.points_at(my_index-1);
 				var parent_pointer = pointer.slice(0, my_index-1);
 				if(parent_obj instanceof ist.Dict) {
-					var name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer());
+					var name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer().pop());
 					return name;
 				}
 			}
@@ -53,7 +56,6 @@
 				var parent_pointer = pointer.slice(0, my_index-1);
 				if(parent_obj instanceof ist.Dict) {
 					var sp_contexts = pointer.special_contexts();
-					//console.log(sp_contexts);
 					var extra_txt = "";
 					if(sp_contexts.length > 0) {
 						var sp_context;
@@ -65,7 +67,7 @@
 							}
 						}
 					}
-					var name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer());
+					var name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer().pop());
 
 					return "("+name+extra_txt+")";
 				} else {
@@ -74,10 +76,11 @@
 			}
 		};
 
-		proto.id = proto.hash = function () { return this._id; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
+		proto.id = function () { return this._id; };
+		proto.hash = function() { return this._hash; };
+		//if(ist.__debug) {
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
+		//}
 
 		proto.get_pointer = function () { return this.pointer; };
 		proto.set_options = function (options) {
@@ -117,8 +120,6 @@
 		};
 
 		proto.val = function () {
-			//var rv = this.$value.get();
-			//return rv;
 			return this.$value.get();
 		};
 		proto.emit_begin_destroy = function() {
@@ -126,12 +127,6 @@
 		};
 
 		proto.destroy = function (silent, avoid_destroy_call) {
-			//if(this.sid() === 189) {
-				//debugger;
-			//}
-			//if(uid.strip_prefix(this.id()) == 143) {
-				//debugger;
-			//}
 			if(this.object) {
 				this.object.off("begin_destroy", this.destroy, this);
 			}
@@ -140,9 +135,6 @@
 
 			if(avoid_destroy_call !== true) {
 				ist.destroy_contextual_obj(this);
-			//} else {
-				//debugger;
-				//console.log("A");
 			}
 
 			this.$value.destroy(true);
@@ -183,15 +175,6 @@
 			return itema === itemb;
 		}
 	};
-	/*
-	ist.check_contextual_object_equality_eqeq = function (itema, itemb) {
-		if (itema instanceof ist.ContextualObject && itemb instanceof ist.ContextualObject) {
-			return itema.get_pointer().eq(itemb.get_pointer()) && itema.get_object() == itemb.get_object();
-		} else {
-			return itema == itemb;
-		}
-	};
-	*/
 
 	ist.create_contextual_object = function (object, pointer, options) {
 		options = _.extend({

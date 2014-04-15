@@ -12,11 +12,13 @@
 		if(this.root) {
 			this.contextual_root = ist.find_or_put_contextual_obj(this.root);
 		}
+		this.command_stack = options.command_stack;
 		this.connected = false;
 		this.wrapper_servers = {};
 
 		this.full_programs = ist.getSavedProgramMap();
 		this.program_components = ist.getSavedProgramMap("component");
+		this.$dirty_program = options.dirty_program;
 
 		this.info_servers = {
 			programs: new ist.RemoteConstraintServer(cjs(function() {
@@ -24,7 +26,11 @@
 							}, {context: this})),
 			components: new ist.RemoteConstraintServer(cjs(function() {
 								return this.program_components.keys();
-							}, {context: this}))
+							}, {context: this})),
+			loaded_program: new ist.RemoteConstraintServer(ist.loaded_program_name),
+			undo_description: new ist.RemoteConstraintServer(this.command_stack.$undo_description),
+			redo_description: new ist.RemoteConstraintServer(this.command_stack.$redo_description),
+			dirty_program: new ist.RemoteConstraintServer(this.$dirty_program)
 		};
 	};
 
@@ -40,7 +46,9 @@
 								.on("command", this.on_command, this)
 								.on("wrapper_client", this.on_wrapper_client, this)
 								.on("remove_storage", this.on_remove_storage, this)
-								.on("save_curr", this.on_save_curr, this)
+								.on("save_curr", this.post_forward, this)
+								.on("save_curr_as", this.post_forward, this)
+								.on("create_program", this.post_forward, this)
 								.on("download_program", this.download_program, this)
 								.on("upload_program", this.download_program, this)
 								.on("load_program", this.load_program, this)
@@ -48,6 +56,8 @@
 								.on("load_file", this.post_forward, this)
 								.on("save_component", this.post_forward, this)
 								.on("copy_component", this.post_forward, this)
+								.on("rename_program", this.post_forward, this)
+								.on("get_ptr", this.get_ptr, this)
 								;
 		};
 		proto.remove_message_listeners = function () {
@@ -59,7 +69,9 @@
 									.off("command", this.on_command, this)
 									.off("wrapper_client", this.on_wrapper_client, this)
 									.off("remove_storage", this.on_remove_storage, this)
-									.off("save_curr", this.on_save_curr, this)
+									.off("save_curr", this.post_forward, this)
+									.off("save_curr_as", this.post_forward, this)
+									.off("create_program", this.post_forward, this)
 									.off("download_program", this.download_program, this)
 									.off("upload_program", this.download_program, this)
 									.off("load_program", this.load_program, this)
@@ -67,6 +79,8 @@
 									.off("load_file", this.post_forward, this)
 									.off("save_component", this.post_forward, this)
 									.off("copy_component", this.post_forward, this)
+									.off("rename_program", this.post_forward, this)
+									.off("get_ptr", this.get_ptr, this)
 									;
 			}
 		};
@@ -78,6 +92,22 @@
 		};
 		proto.on_save_curr = function(event) {
 			ist.save(this.root, event.name, event.storage_type==="component" ? "component" : "");
+		};
+		proto.get_ptr = function(event) {
+			var cobj_id = event.cobj_id,
+				cobj = ist.find_uid(cobj_id);
+
+			if(cobj) {
+				var pointer = cobj.get_pointer();
+
+				this.post({
+					type: "get_ptr_response",
+					cobj_id: cobj_id,
+					cobjs: _.map(pointer.getContextualObjects(), function(x) {
+						return x.summarize()
+					})
+				});
+			}
 		};
 		proto.download_program = function(event) {
 			this._emit("download_program", event.name, event.storage_type==="component" ? "component" : "");
@@ -177,7 +207,6 @@
 							client_id: client_id
 						}
 					};
-					//if(client_id === 8) debugger;
 					this.post(full_message);
 				}, this));
 			} else if (mtype === "get_$" || mtype === "async_get") { // async request
@@ -261,7 +290,7 @@
 				} else if (object instanceof ist.ParsedEvent) {
 					listen_to = ["setString"];
 				} else {
-					listen_to = [];
+					listen_to = ['destroy', 'begin_destroy'];
 				}
 				
 				rv = new ist.WrapperServer({
@@ -283,6 +312,7 @@
 
 		proto.post = function (message) {
 			if (this.connected) {
+				//console.log(message);
 				this.comm_mechanism.post(message);
 			} else {
 				throw new Error("Trying to send a message to a disconnected client");

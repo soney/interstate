@@ -30,7 +30,7 @@
 	};
 
 	window.uid.strip_prefix = function (uid_str) {
-		return uid_str.slice(prefix_length);
+		return parseInt(uid_str.slice(prefix_length));
 	};
 	window.uid.get_prefix = function () {
 		return prefix;

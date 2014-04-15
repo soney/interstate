@@ -90,17 +90,22 @@
 
 	ist.event_queue = new EventQueue();
 
+	var id = 0;
 	ist.Event = function () {
 		able.make_this_listenable(this);
 		this._initialize();
 		this._transition = undefined;
 		this._enabled = false;
+		this._id = id++;
 		this.on_create.apply(this, arguments);
 	};
 
 	(function (my) {
 		var proto = my.prototype;
 		able.make_proto_listenable(proto);
+		proto.id = function() {
+			return this._id;
+		};
 		proto._initialize = function () {
 			this.listeners = [];
 		};

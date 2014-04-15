@@ -8,7 +8,9 @@
 
 	ist.PointerTree = function (options) {
 		this.contextual_object = options && options.contextual_object || false;
-		this.children = new RedMap({
+		this.pointer = options.pointer;
+
+		this.children = cjs.map({
 			hash: function (info) {
 				var child = info.child,
 					special_contexts = info.special_contexts,
@@ -33,10 +35,23 @@
 			keys: options && options.pointer_keys || [],
 			values: options && options.pointer_values || []
 		});
+		if(!options || !options.defer_initialization) {
+			this.initialize();
+		}
 	};
 
 	(function (my) {
 		var proto = my.prototype;
+		proto.initialize = function() {
+			if(ist.__garbage_collect) {
+				this._live_updater = cjs.liven(function() {
+					this.update_current_contextual_objects();
+				}, {
+					context: this,
+					pause_while_running: true
+				});
+			}
+		};
 		proto.set_contextual_object = function(cobj) {
 			this.contextual_object = cobj;
 		};
@@ -47,11 +62,12 @@
 			return this.contextual_object !== false;
 		};
 		proto.remove_child = function(child, special_contexts) {
-			var value = this.children.remove({
-				child: child,
-				special_contexts: special_contexts
-			});
-			value.destroy();
+			var info = { child: child, special_contexts: special_contexts },
+				value = this.children.get(info);
+			if(value) {
+				this.children.remove(info);
+				value.destroy();
+			}
 		};
 		proto.get_child = function(child, special_contexts) {
 			var child_tree = this.children.get({
@@ -61,55 +77,108 @@
 			return child_tree;
 		};
 		proto.get_or_put_child = function (child, special_contexts) {
-			var child_tree = this.children.get_or_put({
+			var child_tree = this.children.getOrPut({
 				child: child,
 				special_contexts: special_contexts
 			}, function () {
-				var tree = new ist.PointerTree();
+				var tree = new ist.PointerTree({
+					pointer: this.pointer.push(child, special_contexts),
+					defer_initialization: true
+				});
 				return tree;
-			});
+			}, this);
 			return child_tree;
 		};
+		proto.printValidChildPointers = function() {
+			var child_pointers = this.get_valid_child_pointers();
+		};
+		proto.printCurrentChildPointers = function() {
+			var child_pointers = this.children.values();
+			var cobj = this.get_contextual_object(),
+				obj = cobj.get_object();
+			var name = cobj.get_name();
+			var log_msg = (name ? name+", " : "") + cobj.type() + " (" + uid.strip_prefix(cobj.id()) + ":" + uid.strip_prefix(obj.id()) + ")";
+
+			if(this.children.isEmpty()) {
+				console.log(log_msg);
+			} else {
+				console.group(log_msg);
+				this.children.forEach(function(child) {
+					child.printCurrentChildPointers();
+				});
+				console.groupEnd();
+			}
+		};
+
 		proto.get_valid_child_pointers = function() {
 			var cobj = this.get_contextual_object(),
-				my_pointer;
+				my_pointer = this.pointer, rv;
 			if(cobj instanceof ist.ContextualDict) {
-				var rv;
-				if(cobj.is_template()) {
-					var instance_pointers = cobj.instance_pointers();
-					var obj = cobj.get_object();
-					rv = _.map(instance_pointers, function(instance_pointer) {
-						return { pointer: instance_pointer, obj: obj };
-					});
-					return rv;
-				} else {
+				if(cobj.is_instance()) {
 					rv = [];
-					var child_infos = cobj.raw_children();
-					my_pointer = cobj.get_pointer();
-					_.each(child_infos, function(child_info) {
-						var value = child_info.value;
-						if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
-							rv.push({obj: value, pointer: my_pointer.push(value)});
-						}
-					});
-					return rv;
+				} else {
+					var copies_obj = cobj.copies_obj();
+					rv = [{pointer: my_pointer.push(copies_obj), obj: copies_obj}];
 				}
-			} else if(this.contextual_object instanceof ist.ContextualStatefulProp) {
-				my_pointer = cobj.get_pointer();
-				return _.map(cobj.get_values(), function(val) {
+
+				var protos_objs = ist.Dict.get_proto_vals(cobj.get_object(), cobj.get_pointer());
+				rv.push.apply(rv, _.chain(protos_objs)
+									.map(function(o) {
+										var proto_obj = o.direct_protos();
+										if(proto_obj instanceof ist.StatefulProp || proto_obj instanceof ist.Dict || proto_obj instanceof ist.Cell) {
+											return {obj: proto_obj, pointer: my_pointer.push(proto_obj)};
+										}
+									})
+									.compact()
+									.value());
+
+				var child_infos = cobj.raw_children();
+				_.each(child_infos, function(child_info) {
+					var value = child_info.value;
+					if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
+						var ptr = my_pointer.push(value);
+						rv.push({obj: value, pointer: ptr});
+
+						if(value instanceof ist.Dict) {
+							var cobj = ist.find_or_put_contextual_obj(value, ptr);
+							if(cobj.is_template()) {
+								var instances = cobj.instances();
+								rv.push.apply(rv, _.map(instances, function(i) {
+									return {obj: i.get_object(), pointer: i.get_pointer()};
+								}));
+							}
+						}
+					}
+				});
+
+				return rv;
+			} else if(cobj instanceof ist.ContextualStatefulProp) {
+				rv = _.map(cobj.get_values(), function(val) {
 					var value = val.value;
 					return {obj: value, pointer: my_pointer.push(value)};
 				});
+				return rv;
 			} else {
 				return [];
 			}
 		};
-		proto.update_current_contextual_objects = function() {
+		proto.update_current_contextual_objects = function(recursive) {
+			var cobj = this.get_contextual_object();
 			var children = _.clone(this.children.values());
 			var keys = _.clone(this.children.keys());
 			var my_ptr = this.contextual_object.get_pointer();
 
 			var valid_children = this.get_valid_child_pointers();
+			var valid_children_map = {};
+			_.each(valid_children, function(vc) {
+				var hash = vc.pointer.hash();
+				if(_.has(valid_children_map, hash)) {
+					valid_children_map[hash].push(vc);
+				} else {
+					valid_children_map[hash] = [vc];
+				}
+			});
+
 			var to_destroy = [];
 			_.each(children, function(child, index) {
 				var key = keys[index];
@@ -117,15 +186,25 @@
 				var obj = key.child;
 				var special_context = key.special_context;
 				var ptr = my_ptr.push(obj, special_context);
+				var hash = ptr.hash();
 
-				var found = _.find(valid_children, function(c) {
-						return c.obj === obj && c.pointer.eq(ptr);
-					});
+				var found = false;
+				if(_.has(valid_children_map, hash)) {
+					var vcm = valid_children_map[hash], len = vcm.length, vc;
+					for(var i = 0; i<len; i++) {
+						vc = vcm[i];
+						if(vc.obj === obj && vc.pointer.eq(ptr)) {
+							found = true;
+							break;
+						}
+					}
+				}
 
 				if(!found) {
 					to_destroy.push({key: key, value: child});
 				}
 			}, this);
+
 			_.each(valid_children, function(valid_child) {
 				var obj = valid_child.obj,
 					ptr = valid_child.pointer;
@@ -137,9 +216,13 @@
 						object: obj,
 						pointer: ptr
 					});
+					node.initialize();
 				}
-				node.update_current_contextual_objects();
+				if(recursive) {
+					node.update_current_contextual_objects(recursive);
+				}
 			}, this);
+
 			_.each(to_destroy, function(to_destroy_info) {
 				var child_tree = to_destroy_info.value;
 				var key = to_destroy_info.key;
@@ -147,6 +230,8 @@
 				child.destroy(true, true);
 				this.remove_child(key.child, key.special_contexts);
 			}, this);
+
+			if(cobj instanceof ist.ContextualDict) { cobj.update_attachments(); }
 		};
 			
 		proto.create_current_contextual_objects = function () {
@@ -180,42 +265,58 @@
 			return rv;
 		};
 		proto.destroy = function() {
-			//if(uid.strip_prefix(this.contextual_object.id()) == 4) {
-				//debugger;
-			//}
-			this.children.each(function(child) {
+			if(this._live_updater) { this._live_updater.destroy(); }
+
+			this.children.forEach(function(child) {
 				child.destroy();
 			});
 			this.children.destroy();
 			delete this.children;
-			if(!this.contextual_object.is_destroyed()) {
-				this.contextual_object.destroy(true, true); // silent & avoid re-calling ist.destroy_cobj
+
+			if(this.has_contextual_object()) {
+				if(!this.contextual_object.is_destroyed()) {
+					this.contextual_object.destroy(true, true); // silent & avoid re-calling ist.destroy_cobj
+				}
+				delete this.contextual_object;
 			}
-			delete this.contextual_object;
 		};
 	}(ist.PointerTree));
 
 	ist.PointerBucket = function (options) {
-		var root = options.root;
-		var root_pointer = new ist.Pointer({stack: [root]});
+		var root = options.root,
+			root_pointer = new ist.Pointer({stack: [root]});
+
 		this.contextual_root = new ist.ContextualDict({
 			object: root,
 			pointer: root_pointer
 		});
 
 		this.tree = new ist.PointerTree({
-			contextual_object: this.contextual_root
+			contextual_object: this.contextual_root,
+			pointer: root_pointer,
+			defer_initialization: true
 		});
 	};
 
 	(function (my) {
 		var proto = my.prototype;
 
+		proto.initialize = function() {
+			this.tree.initialize();
+		};
+
 		proto.get_contextual_root = function () {
 			return this.contextual_root;
 		};
 		proto.create_current_contextual_objects = function () {
 			this.tree.create_current_contextual_objects();
+		};
+
+		proto.printValidChildPointers = function() {
+			this.tree.printValidChildPointers();
+		};
+		proto.printCurrentChildPointers = function() {
+			this.tree.printCurrentChildPointers();
 		};
 
 		proto.find_or_put = function (obj, pointer, options) {
@@ -240,15 +341,16 @@
 					object: obj,
 					pointer: pointer
 				}, options));
+				node.initialize();
 			}
 
 			return rv;
 		};
 		proto.destroy_cobj = function(cobj) {
-			var pointer = cobj.get_pointer();
-			var node = this.tree;
-			var parent_node;
-			var i = 1, len = pointer.length(), ptr_i, sc_i;
+			var pointer = cobj.get_pointer(),
+				node = this.tree,
+				i = 1, len = pointer.length(), ptr_i, sc_i,
+				parent_node;
 
 			while (i < len) {
 				ptr_i = pointer.points_at(i);
@@ -267,8 +369,8 @@
 				throw new Error("Couldn't find correct node to remove;");
 			}
 		};
-		proto.update_current_contextual_objects = function() {
-			return this.tree.update_current_contextual_objects();
+		proto.update_current_contextual_objects = function(recursive) {
+			return this.tree.update_current_contextual_objects(recursive);
 		};
 		proto.get_expired_children = function() {
 			return this.tree.get_expired_children();
@@ -280,14 +382,8 @@
 		};
 	}(ist.PointerBucket));
 
-/*
 	ist.pointer_buckets = cjs.map({
-		hash: "hash",
-		create_unsubstantiated: false
-	});
-	*/
-	ist.pointer_buckets = new RedMap({
-		hash: "hash"
+		hash: function(x) { return x.hash(); }
 	});
 
 	var in_call = false;
@@ -382,11 +478,16 @@
 			hashed_vals = cobj_hashes[pointer.hash()] = [];
 		}
 
-		var pointer_bucket = ist.pointer_buckets.get_or_put(pointer_root, function () {
-			return new ist.PointerBucket({
-				root: pointer_root
+		var must_initialize = false,
+			pointer_bucket = ist.pointer_buckets.getOrPut(pointer_root, function () {
+				must_initialize = true;
+				return new ist.PointerBucket({
+					root: pointer_root
+				});
 			});
-		});
+		if(must_initialize) {
+			pointer_bucket.initialize();
+		}
 
 		var rv = pointer_bucket.find_or_put(obj, pointer, options);
 		hashed_vals.push(rv);
@@ -401,11 +502,22 @@
 		return invalid_bucket_roots.concat(other_expired_buckets);
 	};
 
-	ist.update_current_contextual_objects = function(root) {
+	ist.printCurrentChildPointers = function() {
+		var pointer_bucket = ist.pointer_buckets.values()[0];
+		if(pointer_bucket) {
+			pointer_bucket.printCurrentChildPointers();
+		} else {
+			console.log("...no pointer bucket");
+		}
+	};
+
+	ist.update_current_contextual_objects = function(root, recursive) {
+		cjs.wait();
 		var root_bucket = ist.pointer_buckets.get(root);
 		if(root_bucket) {
-			root_bucket.update_current_contextual_objects();
+			root_bucket.update_current_contextual_objects(recursive);
 		}
+		cjs.signal();
 	};
 
 	ist.get_expired_contextual_objects = function(root) {

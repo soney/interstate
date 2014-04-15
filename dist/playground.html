@@ -35,40 +35,20 @@
 		<link rel="shortcut icon" href="../images/interstate_logo_128.png">
 	</head>
 	<body>
-		<!--
-		<div id="examples">
-			<strong>Pre-built examples: </strong> <span id="sample_apps">(loading...)</span>
-		</div>
-		<div id="version_info">
-			<span id="build_time"></span>
-			<span id="version_no"></span>
-		</div>
-		-->
 		<div class="content"></div>
 	</body>
 	<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-	<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+	<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.2/raphael-min.js"></script>
+	<script src="_vendor/Box2dWeb-2.1a.3/Box2dWeb-2.1.a.3.js"></script>
 	<script src="_vendor/esprima.js"></script>
+	<script src="_vendor/ace/ace.js"></script>
 	
 	<script src="interstate.min.js"></script>
 	<script type="text/javascript">
 		$(function() {
-			var post = localStorage.getItem("post"),
-				env, root;
-			if(post) {
-				env = new interstate.Environment({root: root});
-				root = interstate.destringify(post);
-				//localStorage.removeItem("post");
-			} else {
-				env = new interstate.Environment();
-				root = env.get_root();
-			}
-			
-
 			$("div.content").dom_output({
-				root: root,
 				external_editor: false
 			});
 		});

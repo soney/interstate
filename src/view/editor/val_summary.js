@@ -7,37 +7,53 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	cjs.registerCustomPartial("valueSummary", {
+		createNode: function(options) {
+			return $("<td />").value_summary(options);
+		},
+		destroyNode: function(node) {
+			$(node).value_summary("destroy");
+		}
+	});
+
+	var value_summary_template = cjs.createTemplate(
+		"{{#if type ==='dict' || type === 'stateful'}}" + 
+			"{{#if is_template}}" + 
+				"<span class='copies'>" +
+					"[{{num_instances}}]" +
+				"</span>" +
+			"{{/if}}" +
+			"<span class='expand_arrow'>></span>" +
+		"{{#else}}" +
+			"<span>{{{ summarize_val(value, is_primary) }}}</span>" +
+		"{{/if}}"
+	);
+
 	var round_num = function(num, decimals) {
 		var n = Math.pow(10, decimals);
 		return Math.round(num*n)/n;
 	};
 	var NAN = NaN;
-	var summarized_val = function(val) {
+	var summarize_val = function(val, is_primary) {
 		if(_.isString(val)) {
 			if(val === "(native function)") {
 				return val;
 			} else {
 				return "'" + escapeHtml(val) + "'";
 			}
-		} else if(_.isNumber(val)) {
-			return round_num(val, 2)+"";
-		} else if(val === undefined) {
-			return "undefined";
-		} else if(val === null) {
-			return "null";
-		} else if(val === NAN) {
-			return "NaN";
-		} else if(_.isFunction(val)) {
-			return "(func)";
 		} else if(_.isArray(val)) {
-			return "[" + _.map(val, summarized_val).join(", ") + "]";
+			return "[" + _.map(val, function(v) { return summarize_val(v, is_primary); }).join(", ") + "]";
 		} else if(val instanceof ist.WrapperClient) {
-			return "<span class='cobj_link' data-cobj_id='"+val.cobj_id+"'>" + val.colloquial_name + "</span>";
+			if(is_primary) {
+				return "<span class='cobj_link' data-cobj_id='"+val.cobj_id+"'>" + val.colloquial_name + "</span>";
+			} else {
+				return "";
+			}
 		} else {
-			return val+"";
+			return summarize_plain_val.apply(this, arguments);
 		}
 	};
-	var summarized_plain_val = function(val) {
+	var summarize_plain_val = function(val) {
 		if(_.isString(val)) {
 			if(val === "(native function)") {
 				return val;
@@ -55,7 +71,7 @@
 		} else if(_.isFunction(val)) {
 			return "(func)";
 		} else if(_.isArray(val)) {
-			return "[" + _.map(val, summarized_plain_val).join(", ") + "]";
+			return "[" + _.map(val, summarize_plain_val).join(", ") + "]";
 		} else if(val instanceof ist.WrapperClient) {
 			return val.colloquial_name;
 		} else {
@@ -63,148 +79,124 @@
 		}
 	};
 
-
 	$.widget("interstate.value_summary", {
 		options: {
-			value: false,
-			inherited: false,
-			builtin: false
+			client: false,
+			is_primary: true,
+			itemClass: "",
+			char_limit: 200
 		},
 		_create: function() {
-			this.element.addClass("value_summary");
-			this.element.tooltip({
-				position: {
-					my: "center bottom-1",
-					at: "center top"
-				},
-				show: {
-					effect: "none",
-					delay: 800
-				}, // no animation
-				hide: false, // no animation
-				tooltipClass: "val_summary"
-			});
-			this.summary_span = $("<span />").appendTo(this.element);
-			var value = this.option("value");
-			if(value instanceof ist.WrapperClient) {
-				value.signal_interest();
-				var client = value;
-				var $prop_val;
-				var type = client.type();
+			var client = this.option("client");
 
-				if(type === "dict" || type === "stateful") {
-					if(type === "dict") {
-						this.summary_span.addClass("dict");
-					} else {
-						this.summary_span.addClass("stateful dict");
-					}
-
-					var copies_span = $("<span />").addClass("copies");
-					var arrow_span = $("<span />").addClass("expand_arrow").text(">");
-
-					var $is_template = client.get_$("is_template");
-					var $copies = client.get_$("instances");
-					this.live_copies_fn = cjs.liven(function() {
-						var is_template = $is_template.get();
-						if(is_template) {
-							var copies = $copies.get();
-
-							if(_.isArray(copies)) {
-								var num_copies = copies.length;
-								copies_span.text("[" + num_copies + "]");
-							} else {
-								copies_span.text("");
-							}
-						} else {
-							copies_span.text("");
-						}
-					}, {
-						on_destroy: function() {
-							$copies.signal_destroy();
-							$is_template.signal_destroy();
-						}
-					});
-
-					this.summary_span.append(copies_span, arrow_span);
-				} else if(type === "stateful_prop" || type === "cell") {
-					$prop_val = client.get_$("val");
-
-					this.summary_span	.addClass(type)
-										.text("");
-					var open_cobj = _.bind(this.open_cobj, this);
-					this.live_value_fn = cjs.liven(function() {
-						var prop_val = $prop_val.get();
-						var val = summarized_val(prop_val);
-						var plain_val = summarized_plain_val(prop_val);
-
-						this.summary_span.html(val);
-						$("span.cobj_link", this.summary_span).on("mousedown", function(event) {
-							var cobj_id = $(this).attr("data-cobj_id");
-							open_cobj(cobj_id);
-							event.preventDefault();
-							event.stopPropagation();
-						});
-						this.element.attr("title", plain_val);
-						this.element.tooltip("option", "content", plain_val);
-					}, {
-						context: this,
-						on_destroy: function() {
-							$prop_val.signal_destroy();
-							open_cobj = null;
-						}
-					});
-				} else {
-					console.log(type);
-				}
+			if(client instanceof ist.WrapperClient) {
+				this.$type = client.type();
+				this.$value = ist.indirectClient(client, "val");
 			} else {
-				this.summary_span	.addClass("constant")
-									.text(summarized_val(value));
+				this.$type = false
+				this.$value = client;
 			}
+
+			this.$client_info = ist.indirectClient(client, "is_template", "instances", "val");
+			this.$is_template = this.$client_info.itemConstraint("is_template");
+			this.$instances = this.$client_info.itemConstraint("instances");
+			this.$num_instances = this.$instances.prop("length");
+
+			this._add_content_bindings();
+			this._add_class_bindings();
+			this._add_tooltip();
+			this.element.on("click.navigate", _.bind(function(event) {
+				var cobj_id = $(event.target).attr("data-cobj_id");
+				if(cobj_id) {
+					if(this.element.parents().is(".col.curr_col")) {
+						this.open_cobj(cobj_id);
+						event.preventDefault();
+						event.stopPropagation();
+					}
+				}
+			}, this));
 		},
 		_destroy: function() {
+			this._remove_tooltip();
+			this._remove_content_bindings();
+			this._remove_class_bindings();
+
+			this.$num_instances.destroy();
+			this.$instances.destroy();
+			this.$is_template.destroy();
+			this.$client_info.destroy();
+			if(this.$value && this.$value.destroy) {
+				this.$value.destroy();
+			}
+
 			this._super();
-			this.element.tooltip("destroy");
-			this.summary_span.remove();
-			if(this.live_value_fn) {
-				this.live_value_fn.destroy();
-			}
-			if(this.live_copies_fn) {
-				this.live_copies_fn.destroy();
-			}
-			var value = this.option("value");
-			if(value instanceof ist.WrapperClient) {
-				value.signal_destroy();
-			}
 		},
-		begin_editing: function() {
-			this.element.addClass("editing");
-			this.summary_span.hide();
-			if(this.option("inherited")) {
-				this.inherit_button = $("<span />")	.addClass("inherit_button")
-													.appendTo(this.element)
-													.pressable()
-													.on("pressed", function(event) {
-														console.log("inherit");
-														event.preventDefault();
-														event.stopPropagation();
-													})
-													.text("inherit");
-			}
+		_add_content_bindings: function() {
+			var val_summary = value_summary_template({
+					is_dict: this.$is_dict,
+					is_template: this.$is_template,
+					num_instances: this.$num_instances,
+					summarize_val: summarize_val,
+					value: this.$value,
+					type: this.$type,
+					is_primary: this.option("is_primary")
+				}, this.element);
 		},
-		done_editing: function() {
-			this.element.removeClass("editing");
-			if(this.inherit_button) {
-				this.inherit_button.remove();
-			}
-			this.summary_span.show();
+		_remove_content_bindings: function() {
+			cjs.destroyTemplate(this.element);
+		},
+		_add_class_bindings: function() {
+			this.element.addClass("value_summary " + this.option("itemClass"));
+		},
+		_remove_class_bindings: function() {
+			this.element.removeClass("value_summary");
 		},
 		open_cobj: function(cobj_id) {
 			var event = new $.Event("open_cobj");
 			event.cobj_id = cobj_id;
 
 			this.element.trigger(event);
-		}
+		},
+		_add_tooltip: function() {
+			this.element.tooltip({
+				position: {
+					my: "center bottom-1",
+					at: "center top"
+				},
+				show: false,
+				hide: false,
+				content: ""
+			});
+			var enable_tooltip = _.bind(function() { this.element.tooltip("enable"); }, this);
+			var disable_tooltip = _.bind(function() { this.element.tooltip("disable"); }, this);
+			this._tooltip_live_fn = cjs.liven(function() {
+				var type = this.$type;
+				if(type === "stateful_prop" || type === "cell") {
+					var str = summarize_plain_val(cjs.get(this.$value));
+
+					if(str.length > this.option("char_limit")) {
+						str = str.slice(0, this.option("char_limit")-3)+"..."
+					}
+
+					this.element.attr("title", str)
+								.tooltip("option", {
+									tooltipClass: "val_summary",
+									content: str
+								});
+				}
+			}, {
+				context: this,
+				on_destroy: function() {
+					this.element.tooltip("destroy");
+				}
+			});
+		},
+		_remove_tooltip: function() {
+			this._tooltip_live_fn.destroy();
+			delete this._tooltip_live_fn;
+		},
 	});
+
 	var entityMap = {
 		"&": "&amp;",
 		"<": "&lt;",

@@ -8,44 +8,6 @@
 
 	var is_paper = function(obj) { return obj instanceof Raphael._Paper; };
 
-	var insert_at = function (child_node, parent_node, index) {
-		var paper = parent_node;
-		var paper_children = [];
-		var child_index;
-		paper.forEach(function(child) {
-			paper_children.push(child);
-		});
-		child_index = _.indexOf(paper_children, child_node);
-		if(child_index >= 0) {
-			move(child_node, child_index, index);
-		} else {
-			if(paper_children.length <= index) {
-				child_node.insertAfter(paper.bottom);
-			} else {
-				var before_child = paper_children[index];
-				child_node.insertBefore(before_child);
-			}
-		}
-	};
-	var remove = function (child_node) {
-		child_node.remove();
-	};
-	var move = function (child_node, from_index, to_index) {
-		var paper = child_node.paper;
-		var paper_children = [];
-		paper.forEach(function(child) {
-			paper_children.push(child);
-		});
-
-		if (from_index < to_index) { //If it's less than the index we're inserting at...
-			to_index += 1; //Increase the index by 1, to make up for the fact that we're removing me at the beginning
-		}
-		var before_child = paper_children[to_index];
-		if(to_index >= paper_children.length) {
-			before_child = paper.bottom;
-		}
-		child_node.insertBefore(before_child);
-	};
 	var get_children = function(child_nodes) {
 		var children = [];
 		_.each(child_nodes, function(child) {
@@ -71,6 +33,32 @@
 			}
 		}, this);
 		return children;
+	},
+	get_cobj_children = function(contextual_object) {
+		var children, cobj_children, values;
+		var show = contextual_object.prop_val("showChildren");
+
+		if(_.isArray(show)) { // put in order
+			cobj_children = contextual_object.children();
+			children = [];
+			_.each(show, function(show_child) {
+				var child_index = _.index_where(cobj_children, function(child) {
+					return child.value === show_child || child.name === show_child;
+				});
+
+				if(child_index >= 0) {
+					children.push.apply(children, get_children([cobj_children[child_index].value]));
+					cobj_children.splice(child_index, 1);
+				}
+			});
+		} else if(show !== false) {
+			cobj_children = contextual_object.children();
+			children = get_children(_.pluck(cobj_children, "value"));
+		} else {
+			children = [];
+		}
+
+		return children;
 	};
 
 	ist.PaperAttachment = ist.register_attachment("paper", {
@@ -89,6 +77,11 @@
 					var width = contextual_object.prop_val("width"),
 						height = contextual_object.prop_val("height");
 					this.paper.setSize(width, height);
+				},
+				fill: function(contextual_object) {
+					var fill = contextual_object.prop_val("fill"),
+						dom_obj = this.get_dom_obj();
+					$("svg", dom_obj).css("background-color", fill);
 				},
 				screen: {
 					type: "list",
@@ -136,16 +129,7 @@
 						}
 					},
 					getter: function(contextual_object) {
-						var screen = contextual_object.prop_val("screen");
-						var screen_contents = [];
-						if(screen instanceof ist.ContextualDict) {
-							screen_contents = screen.children();
-						}
-				
-						var values = _.pluck(screen_contents, "value");
-						values.reverse();
-						var children = get_children(values);
-						return children;
+						return get_cobj_children(contextual_object);
 					}
 				}
 			},
@@ -163,6 +147,9 @@
 	ist.ShapeAttachment = ist.register_attachment("shape", {
 			ready: function() {
 				this.shape_type = this.options.shape_type;
+				if(this.shape_type === "rectangle") {
+					this.shape_type = "rect";
+				}
 				this.constructor_params = this.options.constructor_params;
 				this.$robj = cjs(false);
 				this.$children = cjs(this.child_getter, {context: this});
@@ -198,17 +185,17 @@
 
 									var anim_options = { };
 									anim_options[raph_name] = cjs.get(prop_val);
-									//try {
+									try {
 										robj.animate(anim_options, duration, easing);
-									//} catch(e) {
-										//console.error(e);
-									//}
+									} catch(e) {
+										console.error(e);
+									}
 								} else {
-									//try {
+									try {
 										robj.attr(raph_name, cjs.get(prop_val));
-									//} catch(e) {
-										//console.error(e);
-									//}
+									} catch(e) {
+										console.error(e);
+									}
 								}
 							}
 						}
@@ -322,30 +309,7 @@
 			proto_props: {
 				child_getter: function() {
 					var contextual_object = this.get_contextual_object();
-					var children, cobj_children, values;
-					var to_show = contextual_object.prop_val("show");
-					//console.log("TO SHOW: " + to_show);
-					//debugger;
-
-					if(_.isArray(to_show) || _.isString(to_show)) {
-						if(_.isString(to_show)) {
-							to_show = [to_show];
-						}
-						cobj_children = _.filter(contextual_object.children(), function(child_info) {
-							return _.contains(to_show, child_info.name);
-						});
-						values = _.pluck(cobj_children, "value");
-						values.reverse();
-						children = get_children(values);
-					} else if(to_show) {
-						cobj_children = contextual_object.children();
-						values = _.pluck(cobj_children, "value");
-						values.reverse();
-						children = get_children(values);
-					} else {
-						children = [];
-					}
-					return children;
+					return get_cobj_children(contextual_object);
 				},
 				get_children: function() {
 					return this.$children.get();

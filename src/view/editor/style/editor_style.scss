@@ -44,12 +44,19 @@ $link_color: royalblue;
 	}
 }
 
+html {
+	font-size: 100% !important;
+}
+
 html.full_window_editor {
 	height: 100%;
-	background-color: #FEFEFE;
-	background-image: url(images/fabric_plaid.png);
 	
 	> body {
+		font-size: 1em;
+		line-height: 1;
+		background-color: #FEFEFE;
+		background-image: url(images/fabric_plaid.png);
+
 		overflow: hidden;
 		height: 100%;
 		margin: 0px;
@@ -76,104 +83,112 @@ html.full_window_editor {
 		border-bottom: none;
 	}
 }
-.handle {
-	background-color: red;
-	position: absolute;
-	border: 1px solid #C0C0C0;
-	z-index: 100;
-
-	&.horizontal {
-		border-left: none;
-		border-right: none;
-		height: 8px;
-		cursor: row-resize;
-		width: 100%;
-		background: url(images/handle-h.png) 50% 3px no-repeat;
-		background-color: #F6F6F6;
-		box-shadow: 0 0px 3px #333;
-	}
-}
 
 #editor {
 	font-family: "Source Sans Pro";
+	> #obj_nav {
+		overflow: auto;
+		clear: both;
+		padding-top: 15px;
+	}
 
 	&.pane {
 		height: 100%;
 
-		> .navigator.row {
-			> #obj_nav {
-				clear: both;
-			}
-		}
-		> .pinned.row {
+		> #pinned {
 			padding-top: 10px;
 		}
 	}
 
-	> .menu {
-		position: fixed;
-		right: 0px;
-		top: 0px;
-		z-index: 999999;
-		> .title {
-			cursor: pointer;
-			top: 5px;
-			position: relative;
-			padding: 5px;
-			font-variant: small-caps;
-			background-color: #555;
-			color: white;
+	>nav {
+		min-height: 30px;
+		background: rgba(255,255,255,0.7);
+		border-bottom: 1px solid #999;
+		border-radius: 0px;
+		margin: 0px;
+		.undoredo_group {
+			border-right: 1px solid #DDD;
+			display: block;
+		}
+		.widget_group {
+			border-left: 1px solid #DDD;
+		}
+		div.btn {
+			border: none;
+			border-radius: 0px;
 			&:hover {
-				text-decoration: underline;
+				> .tooltip {
+					display: block;
+					opacity: 1;
+				}
 			}
-			@include non-selectable;
+			> .tooltip {
+				position: absolute;
+				display: none;
+				opacity: 0;
+				background-color: #e0e0e0;
+				padding: 5px;
+				border: 1px solid #CCC;
+				border-top: none;
+				top: 28px;
+				border-bottom-left-radius: 2px;
+				border-bottom-right-radius: 2px;
+				pointer-events: none;
+				max-width: 300px;
+			}
 		}
-		> .contents {
-			box-shadow: 0px 0px 10px #666;
-			background-color: #EEE;
-			border: 1px solid #AAA;
-			border-top: none;
-			border-right: none;
-			width: 200px;
-			font-size: 0.9em;
-			> .item {
-				padding: 3px;
-				border-top: 1px solid #DDD;
+		#cell_group {
+			position: absolute;
+			z-index: 600;
+			margin:0px;
+			padding:0px;
+			vertical-align: top;
+			left: 150px;
+			tr,td {
+				margin:0px;
+				padding:0px;
+				vertical-align: top;
+			}
+			td#confirm,td#cancel {
+				padding:3px;
+			}
+			#confirm_button {
+				color: #090;
+				font-size: 1.0em;
 				cursor: pointer;
-				@include non-selectable;
-				&:first-child {
-					border-top: none;
-				}
-				&:hover {
-					background-color: #E0E0E0;
-				}
-				&.disabled {
-					color: #BBB;
-					cursor: default;
-					&:hover {
-						background-color: #EEE;
-					}
-				}
+			}
+			#cancel_button {
+				color: #900;
+				font-size: 1.0em;
+				cursor: pointer;
+			}
+			.ace-tm {
+				border-radius: 0px;
+				border: none;
+				min-height: 30px;
+				margin: 0px;
+			}
+			&.disabled {
+				display: none;
+			}
+			.resize_bar {
+				padding-left: 10px;
+				height: 4px;
+				background-color: #AAA;
+				cursor: ns-resize;
 			}
 		}
 	}
-
-	&.tablet, &.phone {
-		font-size: 1.5em;
-	}
-
-	&.phone {
-		> #obj_nav {
-			width: 100%;
-			> table.col {
-				width: 100%;
-			}
-		}
-	}
-
 }
 
-.pinned {
+#pinned {
+	>.resize_bar {
+		height: 5px;
+		cursor: ns-resize;
+		background-color: #CCC;
+	}
+	overflow: auto;
+	clear: both;
 	background-color: white;
 	background-image: url(images/mochaGrunge.png);
 	&.drop_indicator {
@@ -187,11 +202,9 @@ html.full_window_editor {
 		}
 	}
 
-	.pin_explanation {
+	.instructions {
 		z-index: 200;
-		position: absolute;
 		pointer-events: none;
-		display: none;
 		width: 100%;
 		font-weight: 200;
 		font-size: 4em;
@@ -206,7 +219,7 @@ html.full_window_editor {
 		padding-top: 50px;
 	}
 }
-.pinned, #obj_nav {
+#pinned > .pinned_cols, #obj_nav {
 	> table.col {
 		background-color: white;
 		border: 1px solid #CCC;
@@ -216,6 +229,43 @@ html.full_window_editor {
 		float: left;
 		border-collapse: collapse;
 		margin: 5px;
+
+		.copies_spec {
+			background-color: $nav_header_color;
+			font-size: 0.9em;
+			font-family: "Source Sans Pro";
+			padding: 3px;
+			color: #777;
+			text-align: center;
+			.copies_label {
+				position: relative;
+				top: -6px;
+				padding-left: 5px;
+				padding-right: 3px;
+				text-align: left;
+			}
+			.cell {
+				display: inline-block;
+				overflow-x: hidden;
+				white-space: pre;
+				border: 1px solid #AAA;
+				background-color: #EEE;
+				padding: 2px;
+				.empty {
+					color: #BBB;
+				}
+
+				textarea {
+					font-family: inherit;
+					display: block;
+					color: black;
+					background-color: #DDD;
+					border: 1px solid #666;
+					font-size: inherit;
+					height: 20px;
+				}
+			}
+		}
 
 		&.template {
 			box-shadow: 0 -5px 0 -4px #fff,
@@ -227,7 +277,7 @@ html.full_window_editor {
 		}
 
 		&.curr_col {
-			min-width: 250px;
+			min-width: 150px;
 			box-shadow: 2px 2px 10px #666;
 			&.template {
 				box-shadow: 0 -7px 0 -4px #fff,
@@ -255,7 +305,6 @@ html.full_window_editor {
 					}
 					> .value_summary {
 						max-width: $active_obj_value_summary_width;
-						border-right: 1px solid #DDD;
 						&.stateful_prop {
 							border-right: 1px solid #999;
 						}
@@ -269,7 +318,14 @@ html.full_window_editor {
 
 		> tbody {
 			> tr > .value_summary {
-				max-width: $value_summary_width;
+				&.primary {
+					max-width: $value_summary_width;
+				}
+				&.prev, &.next {
+					max-width: 5px;
+					text-align: center;
+					opacity: .4;
+				}
 				overflow: hidden;
 				text-align: right;
 				word-break: break-all;
@@ -295,13 +351,11 @@ html.full_window_editor {
 				}
 
 				> td {
+					text-align: center;
 					@include non-selectable;
 					font-weight: 100;
 					cursor: pointer;
-					text-align: left;
 					padding: 5px;
-					padding-left: $drag_handle_width;
-					background-color: white;
 					color: #999;
 				}
 			}
@@ -321,12 +375,28 @@ html.full_window_editor {
 					cursor: pointer;
 					text-align: center;
 					position: relative;
+					>.prev_btn {
+						position: absolute;
+						left: 5px;
+						top: 10px;
+						//font-weight: 100;
+						//font-size: 1.7em;
+						//color: #CCC;
+					}
+					>.close_btn {
+						position: absolute;
+						right: 5px;
+						top: 10px;
+					}
 					> h2 {
+						font-family: "Source Sans Pro";
 						font-size: 1.7em;
 						font-weight: 100;
 						margin: 0px;
 						padding-top: 4px;
 						padding-bottom: 2px;
+						padding-left: 10px;
+						padding-right: 10px;
 					}
 					> a.prev {
 						top: 4px;
@@ -460,8 +530,16 @@ html.full_window_editor {
 				}
 			}
 
-			> .child {
+			> .child, >.new_field {
 				@include non-selectable;
+
+				&.builtin {
+					color: #777;
+					text-shadow: 0px 1px 1px #FFF;
+					background-color: #EEE;
+					border-bottom: 1px solid #DDD;
+				}
+
 				color: $nav_column_text_color;
 
 				font-family: "Inconsolata";
@@ -492,6 +570,18 @@ html.full_window_editor {
 					}
 				}
 				border-top: 1px solid #EEE;
+				&.menuized {
+					border: 1px solid red;
+				}
+
+				.confirm_field {
+					padding-left: 5px;
+					padding-right: 5px;
+					border-left: 1px solid #DDD;
+					a {
+						display: block;
+					}
+				}
 
 				&:focus {
 				//	outline: none;
@@ -516,9 +606,17 @@ html.full_window_editor {
 					cursor: pointer;
 				}
 
+				> .type {
+					text-align: center;
+					margin-left:2px;
+					margin-right:2px;
+					border-left: 1px solid #EEE;
+				}
+
 				> .name {
 					padding-left: 2px;
 					padding-right: 5px;
+					border-right: 1px solid #DDD;
 
 					> .drag_handle {
 						cursor: -moz-grab;
@@ -534,14 +632,16 @@ html.full_window_editor {
 						display: inline-block;
 					}
 					
-					> .prop_name {
-						> input {
-							background: none;
-							border: none;
-							font-size: inherit;
-							font-family: inherit;
-							color: inherit;
-						}
+					> textarea, input {
+						background: none;
+						border: none;
+						font-size: inherit;
+						font-family: inherit;
+						color: inherit;
+						height: 18px;
+					}
+					input {
+						color: black;
 					}
 
 					> .edit {
@@ -575,22 +675,19 @@ html.full_window_editor {
 					-moz-box-sizing: border-box;
 					padding-right: 2px;
 					text-align: right;
+					border-right: 1px solid #DDD;
 					
-					border-left: 1px solid #EEE;
 					color: #888;
 
-					> .dict {
-						text-align: right;
-						cursor: pointer;
+					cursor: pointer;
 
-						>.copies {
-							color: #BBB;
-							padding-right: 3px;
-						}
+					>.copies {
+						color: #BBB;
+						padding-right: 3px;
+					}
 
-						>.expand_arrow {
-							color: #CCC;
-						}
+					>.expand_arrow {
+						color: #CCC;
 					}
 					
 					&.constant {
@@ -620,53 +717,60 @@ html.full_window_editor {
 				}
 
 				> .src {
+					border-left: 1px solid #DDD;
 					position: relative;
 					display: block;
 					vertical-align: top;
 
-					> .cell, >.unset {
-						position: absolute;
-					}
+					&.stateful_prop {
+						> .cell, >.unset {
+							position: absolute;
+						}
 
-					> .cell {
-						@include non-selectable;
-						background-color: #EEE;
-						border-left: 1px solid #CCC;
-						border-right: 1px solid #CCC;
-						cursor: pointer;
-						text-align: center;
-						overflow: hidden;
-						word-break: break-all;
-						white-space: nowrap;
-
-						&.active {
-							color: green;
-							border-left: 1px solid green;
-							border-right: 1px solid green;
-						}
-						&.error {
-							color: white;
-							background-color: #900;
-						}
-						&.editing {
-							z-index: 99;
-							padding: 0px;
-							overflow: visible;
-							background: none;
-							border: none;
-						}
-						> textarea {
-							width: 100%;
-							font-family: inherit;
-							text-align: inherit;
-							font-size: inherit;
-							padding: 2px;
-							margin: 0px;
-							height: 16px;
-							text-align: left;
+						> .cell {
+							@include non-selectable;
 							background-color: #EEE;
-							border: 1px solid #CCC;
-							box-shadow: 0px 0px 5px #777;
+							border-left: 1px solid #CCC;
+							border-right: 1px solid #CCC;
+							cursor: pointer;
+							text-align: center;
+							overflow: hidden;
+							word-break: break-all;
+							white-space: nowrap;
+
+							>.empty {
+								color: #BBB;
+							}
+
+							&.active {
+								color: green;
+								border-left: 1px solid green;
+								border-right: 1px solid green;
+							}
+							&.error {
+								color: white;
+								background-color: #900;
+							}
+							&.editing {
+								z-index: 99;
+								padding: 0px;
+								overflow: visible;
+								background: none;
+								border: none;
+							}
+							> textarea {
+								width: 100%;
+								font-family: inherit;
+								text-align: inherit;
+								font-size: inherit;
+								padding: 2px;
+								margin: 0px;
+								height: 18px;
+								text-align: left;
+								background-color: #EEE;
+								border: 1px solid #CCC;
+								box-shadow: 0px 0px 5px #777;
+							}
 						}
 					}
 
@@ -697,11 +801,15 @@ html.full_window_editor {
 							font-size: inherit;
 							padding: 2px;
 							margin: 0px;
-							height: 16px;
+							height: 20px;
+							min-width:50px;
 							text-align: left;
 							background-color: #EEE;
 							border: 1px solid #CCC;
 							box-shadow: 0px 0px 5px #777;
+						}
+						> .empty {
+							color: #BBB;
 						}
 					}
 
@@ -902,64 +1010,185 @@ html.full_window_editor {
 	}
 }
 .component_list {
-	top: 25px;
 	position: absolute;
 	right: 0px;
-	background-color: #EEE;
+	background-color: rgba(255, 255, 255, 0.8);
 	border: 1px solid #BBB;
 	border-right: none;
-	h3 {
-		background-color: #DEDEDE;
-		margin: 0px;
-		padding: 15px;
-	}
-	.row {
-		font-family: "Source Sans Pro";
-		&.program {
-			cursor: pointer;
-		}
-		&.dragging {
-			background-color: $nav_selected_color;
-			color: white;
-		}
-		&:hover {
-			background-color: #EAEAEA;
-			> a.action {
-				visibility: visible;
-			}
-		}
-		a {
-			text-decoration: none;
-			&:hover {
-				text-decoration: underline;
-			}
-		}
-		a.label {
-			color: black;
+	border-top: none;
+	border-bottom-left-radius: 3px;
+	z-index: 500;
+	@include non-selectable;
+	.header {
+		&.components_header {
+			border-top: 1px solid #CCC;
 		}
 
-		> a.action {
-			float: right;
-			visibility: hidden;
-			padding-left: 3px;
-			padding-right: 3px;
-		}
-		padding: 2px;
-	}
-	input {
-		width: 100%;
-		font-size: 1.2em;
+		background-color: #DEDEDE;
+		color: #777;
+		border-bottom: 1px solid #CCC;
+		text-align: center;
+		text-shadow: 1px 1px 1px #DDD;
 		font-family: "Source Sans Pro";
-		box-sizing: border-box;
+		font-weight: 200;
+
+		h3 {
+			cursor: default;
+			margin: 0px;
+			padding: 5px;
+			padding-left: 10px;
+			padding-right: 10px;
+			font-weight: 300;
+		}
+		p {
+			margin-bottom: 5px;
+		}
 	}
-	> a.save {
-		display: block;
+	.toolbar {
+		background-color: #EEE;
+		color: #777;
+		text-shadow: 1px 1px 1px #DDD;
+		font-family: "Source Sans Pro";
+		font-weight: 200;
+		text-align: right;
+		.explanation {
+			margin-left: 5px;
+			margin-right: 30px;
+		}
+	}
+	.none {
+		padding: 10px;
+		color: #BBB;
+		font-family: "Source Sans Pro";
+		font-weight: 200;
 		text-align: center;
 	}
-	> a.close {
-		position: absolute;
-		right: 5px;
-		color: #777;
-		text-decoration: none;
+	.entry {
+		border-bottom: 1px solid #EEE;
+		font-family: "Inconsolata";
+		cursor: pointer;
+		padding: 2px;
+		color: #333;
+
+		&:hover {
+			background-color: $nav_header_hover_color;
+			color: $link_color;
+			text-decoration: underline;
+			&.selected {
+				text-decoration: none;
+			}
+		}
+
+		&.selected {
+			background-color: $nav_selected_color;
+			color: white;
+			cursor: default;
+		}
+		span.hover_tip  {
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+			font-weight: 200;
+			font-size: 0.9em;
+			opacity: 0.5;
+			float: right;
+			padding-left: 5px;
+			position: relative;
+			top: -1px;
+			visibility: hidden;
+		}
+	}
+	.save_sketch {
+		border: none;
+		border-radius: 0px;
+		border-top: 1px solid #BBB;
+		border-bottom: 1px solid #BBB;
+	}
+
+	button.btn-block {
+		margin-top: 0px;
+	}
+	#import_btn {
+		cursor: pointer;
+		input {
+			cursor: pointer;
+			//;color: transparent;
+		}
+		input::-webkit-file-upload-button {
+			//]display: none;
+		}
+		input::before {
+		  //content: 'Import';
+		}
+	}
+	.new_prog {
+		text-align: right;
+		textarea {
+			width: 100%;
+			background: none;
+			height: 22px;
+			resize: none;
+		}
+		button {
+			margin-left: 2px;
+			margin-right: 2px;
+		}
+	}
+	.programs, .components {
+		overflow-y: auto;
+		max-height: 500px;
+		textarea {
+			height: 22px;
+			resize: none;
+			width: 100%;
+			color: black;
+		}
+		&.drop_indicator {
+			background-color: #BADA55;
+			.none, .entry {
+				color: white;
+			}
+		}
+	}
+	.components {
+		.entry {
+			cursor: default;
+			&:hover {
+				color: inherit;
+				.hover_tip {
+					visibility: visible;
+				}
+			}
+		}
+	}
+}
+
+.menuized {
+	border: 1px solid red;
+}
+
+.menu {
+	list-style: none;
+	padding: 0px;
+	position: absolute;
+	margin: 0px;
+	border: 1px solid red;
+	font-family: "Source Sans Pro";
+	border-top: 1px solid #EEE;
+	background-color: #F9F9F9;
+	z-index: 100;
+	color: black;
+	font-size: 0.9em;
+	.menu-item {
+		padding: 1px;
+		padding-left: 10px;
+		padding-right: 10px;
+		cursor: pointer;
+		&:first-child {
+			border-top: none;
+		}
+		border-top: 1px solid #CCC;
+		&:hover {
+			text-decoration: underline;
+			color: $link_color;
+		}
 	}
 }

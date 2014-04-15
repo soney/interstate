@@ -6,6 +6,13 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	cjs.registerPartial("statechartView", function(options, parent_elem) {
+		if(!parent_elem) {
+			parent_elem = $("<div />")[0];
+		}
+		$(parent_elem).statechart(options);
+		return parent_elem;
+	});
 	$.widget("interstate.statechart", {
 		options: {
 			transition_font_family: "Source Sans Pro",
@@ -33,6 +40,8 @@
 			hrange_y: 5,
 			hrange_height: 14,
 
+			client: false,
+
 			padding_top: function() {
 				return this.option("hrange_y") + this.option("hrange_height");
 			}
@@ -59,6 +68,7 @@
 			this.statechart_view.on("rename", this.rename_state, this);
 			this.statechart_view.on("set_str", this.set_transition_str, this);
 			this.statechart_view.on("make_concurrent", this.make_concurrent, this);
+			this.statechart_view.on("reset", this.reset, this);
 		},
 		_destroy: function () {
 			this._super();
@@ -71,6 +81,7 @@
 			this.statechart_view.off("rename", this.rename_state, this);
 			this.statechart_view.off("set_str", this.set_transition_str, this);
 			this.statechart_view.off("make_concurrent", this.make_concurrent, this);
+			this.statechart_view.off("reset", this.reset, this);
 			this.statechart_view.destroy();
 
 			delete this.statechart_view;
@@ -172,6 +183,14 @@
 			event.concurrent = e.concurrent;
 
 			this.element.trigger(event);
+		},
+		reset: function(e) {
+			var event = new $.Event("command");
+			event.command_type = "reset";
+			event.client = cjs.get(this.option("client"));
+			if(event.client) {
+				this.element.trigger(event);
+			}
 		}
 	});
 
@@ -255,6 +274,7 @@
 							hrange = this.get_hrange(state, text, layout_info);
 							hrange.on("add_state", this.forward_event, this);
 							hrange.on("make_concurrent", this.forward_event, this);
+							hrange.on("reset", this.forward_event, this);
 						}
 						return; //it's a root statechart
 					}

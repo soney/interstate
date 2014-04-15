@@ -40,7 +40,7 @@
 			ist.unset_instance_builtins(this, My);
             My.superclass.destroy.apply(this, arguments);
         };
-    
+
         ist.register_serializable_type("stateful_obj",
             function (x) {
                 return x instanceof My;

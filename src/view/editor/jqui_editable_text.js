@@ -5,131 +5,168 @@
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
+	
+	var editing_text_template = cjs.createTemplate("<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />");
 
-	var STATE = {
-		IDLE: {},
-		EDITING: {}
-	};
+	cjs.registerCustomPartial("editing_text", {
+		createNode: function(init_val) {
+			var node = editing_text_template({
+				on_edit_blur: function(event) {
+					$(node).editing_text("on_edit_blur", event);
+				},
+				on_edit_keydown: function(event) {
+					$(node).editing_text("on_edit_keydown", event);
+				}
+			});
+			$(node).editing_text({
+				init_val: init_val
+			});
 
-	$.widget("interstate.editable_text", {
+			return node;
+		},
+		onAdd: function(node, init_val) {
+			_.defer(function() { $(node).val(init_val).select().focus(); });
+			$(node).editing_text("onAdd");
+		},
+		onRemove: function(node) {
+			$(node).editing_text("option", "helper", false);
+			$(node).editing_text("onRemove");
+		},
+		destroyNode: function(node) {
+			$(node).editing_text("destroy");
+		}
+	});
+	$.widget("interstate.editing_text", {
 		options: {
-			text: "",
-			placeholder_text: "",
-			edit_event: "click",
-			tag: "input"
+			init_val: "",
+			helper: false
 		},
-
-		_create: function() {
-			this.$edit = $.proxy(this.edit, this);
-			this.set_state(STATE.IDLE);
-			this.update_static_text();
+		_create: function () {
+			this._helper_focused = false;
+			this.element.val(this.option("init_val"));
+			this._confirm = _.bind(this._confirm_edit, this);
+			this._cancel = _.bind(this._cancel_edit, this);
 		},
-
-		update_static_text: function() {
-			var text = this.option("text");
-			if(text) {
-				this.element.removeClass("placeholder");
-			} else {
-				text = this.option("placeholder_text");
-				this.element.addClass("placeholder");
-			}
-
-			this.element.text(text);
-			if(this.option("edit_event")) {
-				this.element.on(this.option("edit_event"), this.$edit);
-			}
-		},
-
-		edit: function(event) {
-			if(event) {
-				event.preventDefault();
-				event.stopPropagation();
-			}
-			if(this.get_state() === STATE.IDLE) {
-				this.element.removeClass("placeholder");
-				this.element.off(this.option("edit_event"), this.$edit);
-				this.element.html(""); // Clear the children
-				this.textbox = $("<" + this.option("tag") + " />")	.attr({
-														type: "text"
-													})
-													.val(this.option("text"))
-													.appendTo(this.element)
-													.focus()
-													.select()
-													.on("keydown", $.proxy(function(event) {
-														var keyCode = event.keyCode;
-														if(keyCode === 27 && !event.shiftKey) { // ESC
-															this.cancel();
-														} else if(keyCode === 13 && !event.shiftKey) { // Enter
-															this.confirm();
-														}
-													}, this))
-													.on("blur", $.proxy(function(event) {
-														if(this.get_state() === STATE.EDITING) {
-															this.confirm();
-														}
-													}, this));
-				this.set_state(STATE.EDITING);
-
-				this.element.trigger("begin_edit");
-			}
-		},
-
-		confirm: function() {
-			var old_value = this.option("text");
-
-			var value = this.textbox.val();
-			if(value !== this.option("text")) {
-				var event = new $.Event("text_change");
-				event.str = this.textbox.val();
-				this.option("text", value);
-
-				this.element.trigger(event);
-			}
-
-			this.textbox.remove();
-			this.set_state(STATE.IDLE);
-			this.update_static_text();
-
-			var de_event = new $.Event("done_editing");
-			de_event.from_str = old_value;
-			de_event.to_str = de_event.str = value;
-
-			this.element.trigger(de_event);
-		},
-
-		cancel: function() {
-			this.textbox.remove();
-			this.set_state(STATE.IDLE);
-			this.update_static_text();
-
-			var str = this.option("text");
-
-			var de_event = new $.Event("done_editing");
-			de_event.from_str = str;
-			de_event.to_str = de_event.str = str;
-
-			this.element.trigger(de_event);
-		},
-
-		get_state: function() {
-			return this.state;
-		},
-
-		set_state: function(state) {
-			this.state = state;
-		},
-
-		_destroy: function() {
+		_destroy: function () {
+			if(this.$textarea_binding) { this.$textarea_binding.destroy(); };
+			this.option("helper", false);
 			this._super();
 		},
 
+		onAdd: function() {
+			$("#confirm_button").on("mousedown", this._confirm);
+			$("#cancel_button").on("mousedown", this._cancel);
+		},
+
+		onRemove: function() {
+			$("#confirm_button").off("mousedown", this._confirm);
+			$("#cancel_button").off("mousedown", this._cancel);
+		},
+
 		_setOption: function(key, value) {
+			if(key === "helper") {
+				var editor = value,
+					old_editor = this.option("helper");
+
+				if(this.$textarea_binding) { this.$textarea_binding.destroy(); };
+
+				if(old_editor) {
+					old_editor.setValue("");
+				}
+
+				if(editor) {
+					editor.setValue(this.element.val() || " ", 1);
+					this.$textarea_binding = cjs(this.element[0]);
+					this.$textarea_binding.onChange(function() {
+						editor.setValue(this.$textarea_binding.get(), 1);
+					}, this);
+				}
+			}
 			this._super(key, value);
-			if(key === "text") {
-				this.update_static_text();
+		},
+		on_edit_blur: function(event) {
+			var editor = this.option("helper"),
+				do_confirm = _.bind(this._confirm_edit, this);
+			event.preventDefault();
+			event.stopPropagation();
+
+			var on_editor_blur = _.bind(function(e) {
+					this._helper_focused = false;
+					_.delay(_.bind(function() {
+						if(editor.isFocused()) {
+							this._helper_focused = true;
+						} else if(this.element.is(":focus")) {
+							this._helper_focused = false;
+						} else {
+							do_confirm();
+						}
+					}, this), 50);
+
+					editor.off("blur", on_editor_blur);
+					editor.off("change", on_editor_change);
+				}, this),
+				on_editor_change = _.bind(function(event) {
+					if(this._helper_focused) {
+						this.element.val(editor.getValue());
+					}
+				}, this);
+
+			if(editor) { // they might have clicked on the helper
+				_.delay(_.bind(function() {
+					if(editor.isFocused()) {
+						this._helper_focused = true;
+						editor.on("change", on_editor_change);
+						editor.on("blur", on_editor_blur);
+					} else {
+						do_confirm();
+					}
+				}, this), 50);
+			} else {
+				do_confirm();
+			}
+		},
+		on_edit_keydown: function(event) {
+			var keyCode = event.keyCode;
+
+			if(keyCode === 27) { //esc
+				event.preventDefault();
+				event.stopPropagation();
+				this._cancel_edit();
+			} else if(keyCode === 13) { //enter
+				if(!event.shiftKey && !event.ctrlKey && !event.metaKey) {
+					event.preventDefault();
+					event.stopPropagation();
+
+					this._confirm_edit();
+				}
+			}
+		},
+		cancel: function() {
+			return this._cancel_edit();
+		},
+
+		_confirm_edit: function() {
+			if(!this.__blocked) {
+				this.__blocked = true;
+
+				var e = new $.Event("confirm_value");
+				e.value = this.element.val().trim();
+				this.element.trigger(e);
+
+				_.delay(_.bind(function() {
+					delete this.__blocked;
+				}, this), 50);
+			}
+		},
+		_cancel_edit: function() {
+			if(!this.__blocked) {
+				this.__blocked = true;
+				var e = new $.Event("cancel_value");
+				this.element.trigger(e);
+				_.delay(_.bind(function() {
+					delete this.__blocked;
+				}, this), 50);
 			}
 		}
 	});
-
 }(interstate, jQuery));

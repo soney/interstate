@@ -55,6 +55,9 @@
 			}
 			return _.isArray(this._special_contexts[index]);
 		};
+		proto.raw_last_special_contexts = function(index) {
+			return this._special_contexts[this._special_contexts.length-1];
+		};
 		proto.slice = function () {
 			return new ist.Pointer({
 				stack: this._stack.slice.apply(this._stack, arguments),
@@ -71,7 +74,15 @@
 		proto.push = function (onto_stack, onto_special_contexts) {
 			var new_special_contexts;
 			if (onto_special_contexts) {
-				new_special_contexts = this._special_contexts.concat([[onto_special_contexts]]);
+				if(_.isArray(onto_special_contexts)) {
+					if(onto_special_contexts.length > 0) {
+						new_special_contexts = this._special_contexts.concat([onto_special_contexts]);
+					} else {
+						new_special_contexts = this._special_contexts.concat(undefined);
+					}
+				} else {
+					new_special_contexts = this._special_contexts.concat([[onto_special_contexts]]);
+				}
 			} else {
 				new_special_contexts = this._special_contexts.concat(undefined);
 			}
@@ -118,52 +129,60 @@
 		};
 
 		proto.eq = function (other) {
-			var my_stack = this._stack;
-			var other_stack = other._stack;
-
-			if (my_stack.length !== other_stack.length) {
+			if(this.hash() !== other.hash()) {
 				return false;
-			}
-			var i, j;
-			for (i = my_stack.length - 1; i >= 0; i -= 1) {
-				if (my_stack[i] !== other_stack[i]) {
+			} else  {
+				var my_stack = this._stack,
+					other_stack = other._stack,
+					my_stack_len = my_stack.length,
+					other_stack_len = other_stack.length;
+
+				if (my_stack_len !== other_stack_len) {
 					return false;
 				}
-				var my_special_contexts = this._special_contexts[i],
-					other_special_contexts = other._special_contexts[i];
-				if (my_special_contexts && other_special_contexts) {
-					var my_len = my_special_contexts.length;
-					if (my_len !== other_special_contexts.length) {
+				var i, j;
+				for (i = my_stack_len - 1; i >= 0; i -= 1) {
+					if (my_stack[i] !== other_stack[i]) {
 						return false;
 					}
-					for (j = 0; j < my_len; j += 1) {
-						if (!my_special_contexts[j].eq(other_special_contexts[j])) {
+
+					var my_special_contexts = this._special_contexts[i],
+						other_special_contexts = other._special_contexts[i];
+					if (my_special_contexts && other_special_contexts) {
+						var my_len = my_special_contexts.length;
+						if (my_len !== other_special_contexts.length) {
 							return false;
 						}
+						for (j = 0; j < my_len; j += 1) {
+							if (!my_special_contexts[j].eq(other_special_contexts[j])) {
+								return false;
+							}
+						}
+					} else if (my_special_contexts || other_special_contexts) { // One is an array and the other is not, assumes the previous IF FAILED
+						return false;
 					}
-				} else if (my_special_contexts || other_special_contexts) { // One is an array and the other is not, assumes the previous IF FAILED
-					return false;
 				}
+				return true;
 			}
-			return true;
 		};
 
 		var num_to_hash = 3;
 		proto.compute_hash = function () {
-			var hash = 0;
+			var hash = 1,
+				len = this._stack.length - 1,
+				mini = Math.max(0, len - num_to_hash),
+				sc,
+				i, j, lenj;
 
-			var len = this._stack.length - 1;
-			var mini = Math.max(0, len - num_to_hash);
-			var sc;
-			var i, j, lenj;
-
-			for (i = len; i >= mini; i -= 1) {
+			for (i = len; i >= mini; i--) {
 				if (this._stack[i].hash) {
 					hash += this._stack[i].hash();
 				}
 				sc = this._special_contexts[i];
 				if (sc) {
-					for (j = 0; j < lenj && j < num_to_hash; j += 1) {
+					lenj = sc.length;
+
+					for (j = 0; j < lenj; j++) {
 						hash += sc[j].hash();
 					}
 				}
@@ -173,17 +192,19 @@
 		};
 		/* jshint -W093 */
 		proto.hash = function() {
-			if(this.computed_hash) {
-				return this.computed_hash;
-			} else {
-				return this.computed_hash = this.compute_hash();
-			}
+			return this.computed_hash || (this.computed_hash = this.compute_hash());
 		};
 		/* jshint +W093 */
 
 		proto.toString = function () {
 			return "pointer (" + _.map(this._stack, function (x) { return x.id ? uid.strip_prefix(x.id()) : x.toString(); }).join(", ") + ")";
 		};
+
+		proto.getContextualObjects = function() {
+			return _.map(this._stack, function(item, i) {
+				return ist.find_or_put_contextual_obj(item, this.slice(0, i+1));
+			}, this);
+		}
 
 		proto.summarize = function () {
 			var stack_ids = _.map(this._stack, function (x) {
@@ -192,12 +213,12 @@
 			var special_context_infos = _.map(this._special_contexts, function (sc) {
 				if (_.isArray(sc)) {
 					return _.map(sc, function (c) {
-						if (c instanceof ist.ManifestationContext) {
+						if (c instanceof ist.CopyContext) {
 							return {
 								type: "manifestation_context",
-								index: c.get_basis_index()
+								index: c.get_copy_num()
 							};
-						} else if (c instanceof ist.EventContext) {
+						} else if (c instanceof ist.StateContext) {
 							return {
 								type: "event_context"
 							};
@@ -243,13 +264,6 @@
 			return rv;
 		};
 	}(ist.Pointer));
-	/*
-
-	ist.define("pointer", function (options) {
-		var context = new ist.Pointer(options);
-		return context;
-	});
-	*/
 
 	ist.is_pointer = function (obj) {
 		return obj instanceof ist.Cell || obj instanceof ist.StatefulProp;
@@ -263,15 +277,7 @@
 			return itema === itemb;
 		}
 	};
-	/*
-	ist.check_pointer_equality_eqeq = function (itema, itemb) {
-		if (itema instanceof ist.Pointer && itemb instanceof ist.Pointer) {
-			return itema.eq(itemb);
-		} else {
-			return itema == itemb;
-		}
-	};
-	*/
+
 	ist.pointer_hash = function(item) {
 		if(item && item.hash) {
 			return item.hash();

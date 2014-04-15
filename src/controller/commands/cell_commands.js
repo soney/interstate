@@ -10,7 +10,7 @@
         ist.ChangeCellCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
-        if (!this._options.cell || !this._options.str) {
+        if (!this._options.cell || !_.isString(this._options.str)) {
             throw new Error("Must select a cell");
         }
     
@@ -53,6 +53,12 @@
                     str: obj.str
                 });
             });
+        proto.to_undo_string = function () {
+            return "change cell back to '" + this._from_str + "'";
+        };
+        proto.to_redo_string = function () {
+            return "change cell to '" + this._to_str + "'";
+        };
     
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);

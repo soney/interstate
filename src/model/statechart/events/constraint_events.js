@@ -23,18 +23,35 @@ var UNDEF = {};
 			this._last_val = UNDEF;
 		};
 
+		proto.set_transition = function (transition) {
+			this._transition = transition;
+			if (transition) {
+				var from = transition.from();
+
+				from.on("active", this.enter_listener, this);
+				from.on("inactive", this.leave_listener, this);
+
+				_.defer(function (self) {
+					if (from.is_active()) {
+						self.enter_listener();
+					}
+				}, this);
+			}
+		};
+
 		proto.check_constraint_val = function () {
-			var val = cjs.get(this.constraint, false);
-			if (val && (this._last_val !== val)) {
-				this._last_val = val;
+			var val = cjs.get(this.constraint, false),
+				last_val = this._last_val;
+
+			this._last_val = val;
+
+			if (val && (last_val !== val)) {
 				ist.event_queue.wait();
 				this.fire({
 					value: val,
 					timestamp: (new Date()).getTime()
 				});
 				ist.event_queue.signal();
-			} else {
-				this._last_val = val;
 			}
 		};
 		proto.destroy = function () {
@@ -63,6 +80,11 @@ var UNDEF = {};
 			if(cjs.isConstraint(this.constraint)) {
 				this.constraint.offChange(this.check_constraint_val, this);
 			}
+		};
+		proto.enter_listener = function() {
+			this._last_val = UNDEF;
+		};
+		proto.leave_listener = function() {
 		};
 	}(ist.ConstraintEvent));
 }(interstate));

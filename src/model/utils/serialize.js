@@ -303,6 +303,8 @@
 
 
 	var type_maps = {};
+	ist.loaded_program_name = cjs();
+
 	ist.getSavedProgramMap = function(type) {
 		if(!_.isString(type)) {
 			type = "";
@@ -345,7 +347,18 @@
 
 	ist.save = function (root, name, type) {
 		if (!_.isString(name)) {
-			name = "default";
+			name = ist.loaded_program_name.get();
+			if(!name) {
+				var names = ist.ls(),
+					original_name = "sketch_"+names.length,
+					i = 0,
+					name = original_name;
+
+				while(names.indexOf(name)>=0) {
+					name = original_name + "_" + i;
+					i++;
+				}
+			}
 		}
 		if (!_.isString(type)) {
 			type = "";
@@ -356,21 +369,52 @@
 		_.each(type_maps[type], function(map) {
 			map.item(name, val);
 		});
-		return ist.ls(type);
+
+		if(!type) { // program
+			ist.setDefaultProgramName(name);
+		}
+		//console.log("save ", name);
+
+		return name;
+	};
+	ist.saveAndSetCurrent = function(root, name, type) {
+		name = ist.save(root, name, type);
+		ist.loaded_program_name.set(name);	
+		return name;
 	};
 	ist.loadString = function(name, type) {
-		if (!_.isString(name)) {
-			name = "default";
-		}
-		if (!_.isString(type)) {
-			type = "";
-		}
 		var storage_name = storage_prefix + name + type_prefix + type;
 		return window.localStorage.getItem(storage_name);
 	};
 	ist.load = function (name, type) {
-		var str = ist.loadString(name, type),
-			root = ist.destringify(str);
+		if (!_.isString(name)) {
+			name = ist.getDefaultProgramName();
+			if (!name) {
+				return false;
+			}
+		}
+		if (!_.isString(type)) {
+			type = "";
+		}
+
+		var str = ist.loadString(name, type);
+		if(!str) {
+			return false;
+		}
+		try {
+			var root = ist.destringify(str);
+		} catch(e) {
+			console.error("Error loading " + name + ":");
+			console.error(e);
+			return false;
+		}
+		//console.log("load ", name);
+
+		if(!type) { // program
+			ist.loaded_program_name.set(name);	
+			ist.setDefaultProgramName(name);
+		}
+
 		return root;
 	};
 	ist.ls = function (type) {
@@ -405,7 +449,24 @@
 		return ist.ls();
 	};
 	ist.rename = function(from_name, to_name, type) {
-		var storage_name = storage_prefix + name + type_prefix + type;
+		var old_storage_name = storage_prefix + from_name + type_prefix + type,
+			new_storage_name = storage_prefix + to_name   + type_prefix + type,
+			change_current = ist.loaded_program_name.get() === from_name;
+
+		if(localStorage.getItem(new_storage_name)) {
+			return false;
+		} else {
+			localStorage.setItem(new_storage_name, localStorage.getItem(old_storage_name));
+			localStorage.removeItem(old_storage_name);
+			if(change_current) {
+				ist.loaded_program_name.set(to_name);
+				ist.setDefaultProgramName(to_name);
+			}
+			_.each(type_maps[type], function(type_map) {
+				type_map.item(to_name, type_map.item(from_name));
+				type_map.remove(from_name);
+			});
+		}
 	};
 	ist.nuke = function () {
 		var program_names = ist.ls();
@@ -416,5 +477,15 @@
 			});
 		});
 		return ist.ls();
+	};
+
+	var default_program_name = "IST_DEFAULT_PROGRAM";
+	ist.getDefaultProgramName = function() {
+		var rv = localStorage.getItem(default_program_name);
+		return rv === null ? false : rv;
+	};
+
+	ist.setDefaultProgramName = function(name) {
+		window.localStorage.setItem(default_program_name, name);
 	};
 }(interstate));

@@ -45,6 +45,22 @@
 		};
 	}(ist.ProvisionalContext));
 
+	var ec_counter = 1;
+	ist.EventContext = function (event) {
+		ist.EventContext.superclass.constructor.apply(this, arguments);
+		this.event = event;
+		this.context_obj = {
+			event: { value: event }
+		};
+	};
+
+	(function (My) {
+		_.proto_extend(My, ist.SpecialContext);
+		var proto = My.prototype;
+		proto.get_event = function () {
+			return this.event;
+		};
+	}(ist.EventContext));
 
 	ist.StateContext = function (state) {
 		ist.StateContext.superclass.constructor.apply(this, arguments);
@@ -67,24 +83,10 @@
 		proto.eq = function(other_context) {
 			return other_context instanceof My && other_context.state === this.state;
 		};
+		proto.hash = function() {
+			return this.state.hash();
+		};
 	}(ist.StateContext));
-
-	var ec_counter = 1;
-	ist.EventContext = function (event) {
-		ist.EventContext.superclass.constructor.apply(this, arguments);
-		this.event = event;
-		this.context_obj = {
-			event: { value: event }
-		};
-	};
-
-	(function (My) {
-		_.proto_extend(My, ist.SpecialContext);
-		var proto = My.prototype;
-		proto.get_event = function () {
-			return this.event;
-		};
-	}(ist.EventContext));
 
 	ist.CopyContext = function (owner, my_copy, copy_num, options) {
 		ist.CopyContext.superclass.constructor.apply(this, arguments);
@@ -104,6 +106,9 @@
 		_.proto_extend(My, ist.SpecialContext);
 		var proto = My.prototype;
 		proto.get_copy_num = function () {
+			return this.copy_num;
+		};
+		proto.hash = function () {
 			return this.copy_num;
 		};
 	}(ist.CopyContext));

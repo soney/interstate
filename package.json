@@ -8,12 +8,10 @@
 		"email": "soney@cs.cmu.edu",
 		"web": "http://from.so/"
 	}],
-	"licenses": [
-	{
+	"licenses": [{
 		"type": "MIT",
 		"url": "https://github.com/soney/interstate/blob/master/LICENSE"
-	}
-	],
+	}],
 	"private": true,
 	"dependencies": {
 		"express": ">= 2.4.3",

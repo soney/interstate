@@ -35,10 +35,10 @@
         proto._unexecute = function () { };
         proto._do_destroy = function (in_effect) {};
         proto.to_undo_string = function () {
-            return "Undo generic command";
+            return "Undo";
         };
         proto.to_redo_string = function () {
-            return "Redo generic command";
+            return "Redo";
         };
     }(ist.Command));
 

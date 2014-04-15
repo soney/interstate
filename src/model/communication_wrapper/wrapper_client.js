@@ -55,6 +55,7 @@
 				}
 			}
 		});
+		//console.log('CLIENT:'+this.cobj_id);
 	};
 
 	(function (my) {
@@ -115,7 +116,6 @@
 		proto.post = function (message) {
 			var m_id = message_id;
 			message_id += 1;
-			//console.log(message);
 			this.comm_mechanism.post({
 				type: "wrapper_client",
 				client_id: this.id(),
@@ -174,6 +174,7 @@
 			var self = this;
 			var constraint = this.fn_call_constraints.get_or_put(args, function () {
 				var rv = new cjs.Constraint();
+				var id = rv._id;
 				var old_destroy = rv.destroy;
 				rv.destroy = function() {
 					self.destroy_$(rv, args);
@@ -229,6 +230,7 @@
 			var args = _.rest(arguments);
 			args = this.process_value(args);
 
+			//console.log(event_type);
 			this._emit.apply(this, ([event_type]).concat(args));
 		};
 		proto.process_value = function (value) {

@@ -51,9 +51,6 @@
 		able.make_proto_listenable(proto);
 
 		proto.id = function() { return this._id; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
 
 		proto.add_client_id = function(client_id) {
 			if(!this.client_ids.hasOwnProperty(client_id)) {
@@ -99,6 +96,7 @@
 			}
 		};
 		proto.on_begin_destroy = function() {
+			this._emit("begin_destroy");
 			this.object.off("begin_destroy", this.on_begin_destroy, this);
 			this.remove_emission_listeners();
 			this.clear_fn_call_constraints();

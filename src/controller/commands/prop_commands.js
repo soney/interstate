@@ -97,6 +97,12 @@
                     index: obj.index
                 });
             });
+        proto.to_undo_string = function () {
+            return "remove '" + this._prop_name + "'";
+        };
+        proto.to_redo_string = function () {
+            return "add '" + this._prop_name + "'";
+        };
     }(ist.SetPropCommand));
     
     ist.InheritPropCommand = function (options) {
@@ -110,20 +116,6 @@
     
         this._parent = this._options.parent;
 		this._prop_name = this._options.name;
-		if(this._parent instanceof ist.ContextualStatefulObj) {
-			var value = this._parent.prop(this._prop_name);
-			var vobj = value.get_object();
-
-			if(vobj instanceof ist.Cell) {
-				var own_statechart = this._parent.get_own_statechart();
-				var start_state = own_statechart.get_start_state();
-
-				this._prop_value = new ist.StatefulProp();
-				this._prop_value.set(start_state, vobj.clone());
-			} else if(vobj instanceof ist.StatefulProp) {
-				this._prop_value = vobj.clone(value);
-			}
-		}
 		/*
 		this._value = this._options.value;
 		if(this._parent instanceof ist.ContextualStatefulObj) {
@@ -146,6 +138,24 @@
     
         proto._execute = function () {
 			var parent_obj = this._parent.get_object();
+			if(!this._prop_value && this._parent instanceof ist.ContextualStatefulObj) {
+				var value = this._parent.prop(this._prop_name);
+				var vobj = value.get_object();
+
+				if(vobj instanceof ist.Cell) {
+					var own_statechart = this._parent.get_own_statechart();
+					var start_state = own_statechart.get_start_state();
+
+					this._prop_value = new ist.StatefulProp();
+					this._prop_value.set(start_state, vobj.clone());
+				} else if(vobj instanceof ist.StatefulProp) {
+					this._prop_value = vobj.clone(value);
+				} else if(vobj instanceof ist.Dict) {
+					this._prop_value = vobj.clone();
+				} else {
+					this._prop_value = vobj;
+				}
+			}
            parent_obj.set_prop(this._prop_name, this._prop_value);
         };
         proto._unexecute = function () {
@@ -266,7 +276,7 @@
     ist.RenamePropCommand = function (options) {
         ist.RenamePropCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
-    
+        console.log(this._options.parent, this._options.from, this._options.to);
         if (!this._options.parent || !this._options.from || !this._options.to) {
             throw new Error("Must select a parent object");
         }

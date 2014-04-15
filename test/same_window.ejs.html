@@ -6,6 +6,7 @@
   </head>
   <body>
 		<div class="output"></div>
+		<!--<canvas id="canvas" width="400" height="600"></canvas>-->
 		<div id="editor"></div>
 	  <div>
 			<%- ist_include(ist_inc.vendor) %>
@@ -13,85 +14,91 @@
 			<%- ist_include(ist_inc.editor) %>
 			<%- ist_include(ist_inc.runtime_style) %>
 			<script type="text/javascript">
-				var env = new interstate.Environment();
-				var root = env.get_root();
-
-				env	.set("height", "100")
-					.set("a1", "screen.a")
-					.cd("screen")
-						.set("a", "<stateful>")
-						.cd("a")
-							.add_state("init")
-							.add_state("clicked")
-							.start_at("init")
-							.add_transition("init", "clicked", "on('click', this)")
-							.add_transition("clicked", "init", "on('click', this)")
-							.set("(prototypes)", "(start)", "shape.rect")
-							.up()
-
-				/*
-				env	.set("height", "200")
-					.set("rect", "<stateful>")
-					.cd("rect")
-					.set("width", "(start)", "10+5")
-					.set("height", "(start)", "width")
-					.up()
-					.set("my_rect", "<stateful>")
-					.cd("my_rect")
-					//.set("(prototypes)", "(start)", "rect")
-					.set("width", "(start)", "20")
-				/*
-				env	.set("height", "200")
-					.cd("screen")
-					.set("my_obj", "<stateful>")
-					.cd("my_obj")
-					.add_state("init")
-					.add_state("other")
-					.start_at("init")
-					.add_transition("init", "other", "on('timeout', 1000)")
-					.set("(prototypes)", "(start)", "shape.rect")
-					.set("fill", "(start)", "'orange'")
-					.set("fill", "other", "'red'");
-					/*
-env.cd("screen")
-	.set("rect", "<stateful>")
-	.cd("rect")
-	.set("(prototypes)", "(start)", "shape.rect");
-				/*
-env.set("a", "<stateful>")
-	.cd("a")
-	.set("(copies)", "3")
-	.add_state("init")
-	.start_at("init")
-	.add_state("hover")
-	.add_transition("init", "hover", "on('mouseover', this)")
-	.set("prop1")
-	.set("prop1", "init", "'item_'+my_copy")
-	.up()
-	.set("b", "<stateful>")
-	.cd("b")
-	.set("(prototypes)", "(start)", "a")
-	.top();
-				*/
-
+				var root = interstate.get_default_root();
 				$("div#editor").editor({
 					debug_env: true,
 					server_window: window
 				});
 				$("div.output").dom_output({
-					root: root,
 					open_separate_client_window: false,
 					edit_on_open: true,
-					show_edit_button: false
+					show_edit_button: false,
+					root: root
 				});
-
+				function getRoot() {
+					return $("div.output").dom_output("option", "root");
+				}
+				function getEnvironment() {
+					return new interstate.Environment({root: getRoot()});
+				}
+				window.env = getEnvironment();
 				/*
-				window.setTimeout(function() {
-					$("tr").eq(9).click();
-				}, 1000);
-				window.setTimeout(function() {
-					$("tr").eq(14).click();
-				}, 2000);
+				env.set("message", "<stateful>")
+					.cd("message")
+					.add_state("init")
+					.add_state("other")
+					.start_at("init")
+					.add_transition("init", "other", "on('mousedown', this);event.preventDefault()")
+					.add_transition("other", "init", "on('timeout', 500)")
+					.set("(prototypes)", "(start)", "dom.h1")
+					.set("textContent", "init", "'hello'")
+					.set("textContent", "other", "'goodbye'")
+				*/
+				/*
+				env.set("steves_world", "<stateful>")
+					.cd("steves_world")
+					.set("(prototypes)", "(start)", "[physics.world]")
+					.set("gy", "(start)", "10.0")
+					.top()
+					.set("sketch", "<stateful>")
+					.cd("sketch")
+					.set("(prototypes)", "(start)", "svg.paper")
+					.set("circ", "<stateful>")
+					.cd("circ")
+					.set("world", "(start)", "steves_world")
+					.set("cx", "(start)", "200")
+					.set("cy", "(start)", "20")
+					.set("fixed", "(start)", "true")
+					.add_state("init")
+					.add_state("other")
+					.start_at("init")
+					.set("(prototypes)", "(start)", "[svg.circle, physics.fixture]")
+					.add_transition("init", "other", "on('timeout',500);")
+					.set("cx", "other", "computed_x")
+					.set("cy", "other", "computed_y")
+					.set("fixed", "init", "false")
+					.up()
+					.set("rect", "<stateful>")
+					.cd("rect")
+					.add_state("init")
+					.start_at("init")
+					.add_state("dead")
+					.add_transition("init", "dead", "on('collision', this, circ)")
+					.set("(prototypes)", "(start)", "[svg.rect, physics.fixture]")
+					.set("x", "(start)", "120")
+					.set("y", "(start)", "300")
+					.set("(prototypes)", "dead", "[]")
+
+					.set("world", "(start)", "steves_world")
+
+				env .top()
+				/*
+				env.print();
+				env.set("b", "<stateful>")
+
+				env.cd("super_obj");
+
+				var super_obj = env.get_pointer_obj;
+				var cobj = interstate.find_or_put_contextual_obj(super_obj, env.pointer);
+
+				interstate.cjs.liven(function() {
+					console.log(cobj.children());
+				});
+			
+
+				//env.print_on_return = true;
+				env.set("(copies)", "1")
+					.set("(copies)", "")
 				*/
 			</script>
 	  </div>

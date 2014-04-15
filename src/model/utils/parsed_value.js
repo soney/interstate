@@ -53,7 +53,7 @@
 		};
 	}(ist.MultiExpression));
 
-	ist.on_event = function (event_type, arg1) {
+	ist.on_event = function (event_type, arg1, arg2) {
 		if (event_type === "timeout") {
 			//console.log(arg1);
 			var timeout_event = new ist.TimeoutEvent(arg1);
@@ -65,12 +65,17 @@
 			var frame_event = new ist.FrameEvent();
 			return frame_event;
 		} else if(event_type === "cross") {
-			var args = _.rest(arguments),
-				target = args[0],
-				min_velocity = args[1];
+			var target = arg1,
+				min_velocity = arg2,
+				cross_event = new ist.CrossEvent(target, min_velocity);
 
-			var cross_event = new ist.CrossEvent(target, min_velocity);
 			return cross_event;
+		} else if(event_type === "collision") {
+			var	targs_a = arg1,
+				targs_b = arg2,
+				collision_event = new ist.CollisionEvent(targs_a, targs_b);
+
+			return collision_event;
 		} else {
 			var targets = _.rest(arguments);
 			var events = [];
@@ -554,20 +559,17 @@
 				});
 			});
 		} else if (type === "ObjectExpression") {
-			if(options.get_constraint) {
-				console.error("not set");
-			} else {
-				rv = {};
-				_.each(node.properties, function (prop_node) {
-					var key = prop_node.key.name,
-						value = get_val(prop_node.value, options);
-					rv[key] = value;
-				});
-			}
+			rv = {};
+			_.each(node.properties, function (prop_node) {
+				var key = prop_node.key.name,
+					value = get_val(prop_node.value, options);
+				rv[key] = value;
+			});
 		} else if (type === "Program") {
-			if(node.body.length === 1) {
+			if(node.body.length === 0) {
+				rv = null;
+			} else if(node.body.length === 1) {
 				rv = get_val(node.body[0], options);
-				/*
 			} else {
 				rv = new ist.MultiExpression(_.map(node.body, function(bodyi, i) {
 					if(!options.only_parse_first || i === 0) {
@@ -576,9 +578,7 @@
 						return bodyi;
 					}
 				}));
-				*/
 			}
-			//return get_val(node.body[0], options);
 		} else {
 			console.log(type, node);
 		}

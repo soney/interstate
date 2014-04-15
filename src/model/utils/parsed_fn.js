@@ -185,9 +185,25 @@
 				}
 			}
 			if (object instanceof ist.ContextualObject) {
+				if (object.is_template && object.is_template()) {
+					var instances;
+					if( _.isNumber(prop)) {
+						instances = object.instances();
+						if(instances.hasOwnProperty(prop)) {
+							return instances[prop];
+						} else {
+							throw new Error("No such property '" + prop+ "'");
+						}
+					} else if(prop=== "length") {
+						instances = object.instances();
+						return instances.length;
+					}
+				}
 				return object.prop_val(prop);
 			} else {
-				return object[prop];
+				if(object) {
+					return object[prop];
+				}
 			}
 		} else if (type === "CallExpression") {
 			op_context = window;

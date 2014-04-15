@@ -6,7 +6,6 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-
 	ist.CrossEvent = function () {
 		ist.Event.apply(this, arguments);
 		this._initialize();

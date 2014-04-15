@@ -1,408 +1,317 @@
 /*jslint nomen: true, vars: true, white: true */
-/*jshint scripturl: true */
 /*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
 
 (function (ist, $) {
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
-		/*
-
-	var tmplate = cjs.createTemplate(
-		"{{#fsm edit_state}}" +
-			"{{#state idle}}" +
-				"{{#if value===''}}" +
-					"<span class='unset_cell'>(unset)</span>" +
-				"{{#else}}" +
-					"<span class='cell'>{{value}}</span>" +
-				"{{/if}}" +
-			"{{#state editing}}" +
-				"<textarea data-cjs-on-keydown=keydown_ta data-cjs-on-blur=blur_ta/>" +
-		"{{/fsm}}"
-	);
 	
-
-	$.widget("interstate.prop_cell", {
-		options: {
-			value: false,
-			left: 0,
-			width: 0,
-			edit_width: 150,
-			active: false,
-			parent: false
+	cjs.registerCustomPartial("propCell", {
+		createNode: function(options) {
+			return $("<span />").prop_cell(options);
 		},
-		_create: function() {
-			var client = this.option("value");
-			client.signal_interest();
-
-			var edit_state = cjs.fsm("idle", "editing")
-								.startsAt("idle")
-								.on("idle->editing", function() {
-									var textarea = cell.getElementsByTagName("textarea")[0];
-									textarea.value = value.get();
-									textarea.select();
-									textarea.focus();
-								}),
-				on_cancel = edit_state.addTransition("editing", "idle"),
-				on_confirm = edit_state.addTransition("editing", "idle"),
-				cell = tmplate({
-						edit_state: edit_state,
-						value: value,
-						keydown_ta: function(event) {
-							var keyCode = event.keyCodeVal || event.keyCode;
-							if(keyCode === 27) { // esc
-								on_cancel(event);
-							} else if(keyCode === 13) { // enter
-								value.set(event.target.value);
-								on_confirm(event);
-							}
-						},
-						blur_ta: function(event) {
-							if(edit_state.is("editing")) {
-								value.set(event.target.value);
-								on_confirm(event);
-							}
-						}
-				}, this.element);
-
-			edit_state.addTransition("idle", "editing", cjs.on("click", cell))
-		},
-		_destroy: function() {
-			this._super();
-			cjs.destroyTemplate(this.element);
-			client.signal_destroy();
-			delete this.options;
+		destroyNode: function(node) {
+			$(node).prop_cell("destroy");
 		}
 	});
-	*/
-
-	var UNSET_RADIUS = 7;
-
-	var on_cell_key_down = function(event) {
-		var keyCode = event.keyCode;
-		var prev, next, next_focusable, prev_focusable;
-		if(this.element.is(event.target)) {
-			if(keyCode === 79 || keyCode === 13) { // o or ENTER
-				event.preventDefault();
-				event.stopPropagation();
-				if(this.element.hasClass("unset")) {
-					this.element.trigger("click");
-				} else {
-					this.begin_editing();
-				}
-			} else if(keyCode === 39 || keyCode === 76) { // Right or o or k
-				next_focusable = this.element.next(":focusable");
-				if(next_focusable.length>0) {
-					next_focusable.focus();
-				} else {
-					var prop = this.element.parents(":focusable").first();
-					next = prop.next();
-					if(next.length>0) {
-						next.focus();
-					} else {
-						prop.focus();
-					}
-				}
-			} else if(keyCode === 37 || keyCode === 72) { // Left
-				prev_focusable = this.element.prev(":focusable");
-				if(prev_focusable.length>0) {
-					prev_focusable.focus();
-				} else {
-					this.element.parents(":focusable").first().focus();
-				}
-			} else if(keyCode === 40 || keyCode === 74) { //down or j
-				var next_prop = this.element.parents(":focusable").first().next();
-				next_focusable = $(":focusable", next_prop).eq(this.element.index());
-				if(next_focusable.length>0) {
-					next_focusable.focus();
-				} else {
-					next_prop.focus();
-				}
-			} else if(keyCode === 38 || keyCode === 75) { // up or k
-				var prev_prop = this.element.parents(":focusable").first().prev();
-				prev_focusable = $(":focusable", prev_prop).eq(this.element.index());
-				if(prev_focusable.length>0) {
-					prev_focusable.focus();
-				} else {
-					prev_prop.focus();
-				}
-			} else if(keyCode === 8) { //backspace
-				if(this.element.hasClass("cell")) {
-					this.unset();
-				}
-			}
-		}
-	};
 
 	var cell_template = cjs.createTemplate(
-		"{{#fsm edit_state}}" +
-			"{{#state idle}}" +
-				"{{#if value===''}}" +
-					"<span class='unset_cell'>(unset)</span>" +
-				"{{#else}}" +
-					"<span class='cell'>{{value}}</span>" +
-				"{{/if}}" +
-			"{{#state editing}}" +
-				"<textarea data-cjs-on-keydown=keydown_ta data-cjs-on-blur=blur_ta/>" +
+		"{{#fsm client_state}}" +
+			"{{#state initialedit}}" +
+				"{{>editing_text ''}}" +
+			"{{#state set}}" +
+				"{{#fsm edit_state}}" +
+					"{{#state idle}}" +
+						"{{#if str===''}}" +
+							"<span class='empty'>(empty)</span>" +
+						"{{#else}}" +
+							"{{str}}" +
+						"{{/if}}" +
+					"{{#state editing}}" +
+						"{{>editing_text str}}" +
+				"{{/fsm}}" +
 		"{{/fsm}}"
 	);
 
+	var eqProp = function(prop_name, values, thisArg) {
+		return function(x) {
+			var val = x[prop_name];
+			if(values[val]) {
+				return values[val].apply(thisArg || this, arguments);
+			}
+		};
+	};
+
 	$.widget("interstate.prop_cell", {
 		options: {
-			value: false,
-			left: 0,
+			client: false,
+			left: undefined,
 			width: 0,
 			edit_width: 150,
+			unset_radius: 7,
 			active: false,
-			parent: false
+			parent: false,
+			state: false,
+			prop: false,
+			default_max_width: 90,
+			char_limit: 200
 		},
 		_create: function() {
-			var client = this.option("value");
-			client.signal_interest();
+			var client = this.option("client");
 
-			this.update_position();
-			this.update_active();
+			var elem = this.element;
+			this.client_state = cjs.fsm('unset', 'initialedit', 'set')
+									.addTransition('unset', 'initialedit', cjs.on('click', this.element))
+									.addTransition('initialedit', 'set', function(dt) {
+										elem.on('confirm_value', dt);
+									})
+									.addTransition('initialedit', 'unset', function(dt) {
+										elem.on('cancel_value', dt);
+									})
+									.on('initialedit->set', function(event) {
+										this._set_value_for_state(event.value);
+									}, this)
+									.on("unset->initialedit", this._emit_begin_editing, this)
+									.on("initialedit->*", this._emit_done_editing, this);
 
-			this.text = $("<span />")	.addClass("txt")
-										.appendTo(this.element);
-			this.element.on("keydown.prop_cell", _.bind(on_cell_key_down, this))
-						.on("click.prop_cell", _.bind(this.on_click, this))
-						.addClass("cell")
-						.attr("tabindex", 1);
+			this.client_state._setState(client.get() ? 'set' : 'unset');
+			client.onChange(function() {
+				this.client_state._setState(client.get() ? 'set' : 'unset');
+			}, this);
+
+			this.$cell_info = ist.indirectClient(this.option("client"), "get_str", "get_syntax_errors");
+
+			this.$str = this.$cell_info.itemConstraint("get_str");
+			this.$syntax_errors = this.$cell_info.itemConstraint("get_syntax_errors");
+
+			this.edit_state = cjs	.fsm("idle", "editing")
+									.startsAt("idle")
+									.addTransition('idle', 'editing', cjs.on('click', this.element).guard(_.bind(function() {
+										return !!client.get();
+									}, this)))
+									.addTransition('editing', 'idle', function(dt) {
+										elem.on('confirm_value', dt);
+									})
+									.addTransition('editing', 'idle', function(dt) {
+										elem.on('cancel_value', dt);
+									})
+									.on('editing->idle', function(event) {
+										if(event.type === 'confirm_value') {
+											this._emit_new_value(event.value);
+										}
+									}, this);
+
+			this.$active = cjs(this.option("active"));
+			this.$left = cjs(this.option("left"));
+
+								
+			this.$pure = cjs(!this.option("prop"));
+			this.$visible = this.$pure.or(this.$left.neq(undefined));
+			
+			this.do_edit = this.edit_state.addTransition("idle", "editing"),
+
+			this._add_content_bindings();
+			this._add_tooltip();
+			this._add_class_bindings();
+			this._add_position_bindings();
+		},
+		_destroy: function() {
+			var client = this.option("client");
+
+			this._remove_position_bindings();
+			this._remove_class_bindings();
+			this._remove_tooltip();
+			this._remove_content_bindings();
+
+
+			this.$str.destroy();
+			this.$syntax_errors.destroy();
+
+			this.$cell_info.destroy();
+
+			this.$active.destroy();
+			this.$left.destroy();
+			this.client_state.destroy();
+			this.$pure.destroy();
+			this.$visible.destroy();
+			this.edit_state.destroy();
+
+			client.destroy();
+
+			this._super();
+		},
+
+		_emit_new_value: function(value) {
+			if(this.option("prop") && value === "") {
+				var event = new $.Event("command");
+				event.command_type = "unset_stateful_prop_for_state";
+				event.prop = this.option("prop");
+				event.state = this.option("state");
+
+				this.element.trigger(event);
+			} else {
+				var event = new $.Event("command");
+				event.command_type = "set_str";
+				event.str = value;
+				event.client = cjs.get(this.option("client"));
+
+				this.element.trigger(event);
+			}
+		},
+		_setOption: function(key, value) {
+			this._super(key, value);
+			if(key === "left") {
+				this.$left.set(value);
+			} else if(key === "width") {
+				this.$specified_width.set(value);
+			} else if(key === "active") {
+				this.$active.set(value);
+			}
+		},
+		_add_content_bindings: function() {
+			var cancel_edit = this.edit_state.addTransition("editing", "idle"),
+				confirm_edit = this.edit_state.addTransition("editing", "idle"),
+				cell = cell_template({
+					edit_state: this.edit_state,
+					str: this.$str,
+					client_state: this.client_state
+				}, this.element);
+		},
+		_remove_content_bindings: function() {
+			this.element.off("click.start_edit");
+			cjs.destroyTemplate(this.element);
+		},
+		_add_class_bindings: function() {
+			this.element.addClass("cell");
+			this._class_binding = cjs.bindClass(this.element,
+									this.$active.iif("active", ""),
+									this.$pure.iif("pure_cell", ""),
+									cjs.inFSM(this.client_state, {
+										unset: 'unset',
+										set: '',
+										initialedit: 'editing'
+									}),
+									this.edit_state.state);
+		},
+		_remove_class_bindings: function() {
+			this._class_binding.destroy();
+			this.element.removeClass("cell");
+		},
+		_add_position_bindings: function() {
+			this.$specified_width = cjs(this.option("width"));
+			this.$width = cjs.inFSM(this.edit_state, {
+				idle: cjs.inFSM(this.client_state, {
+					unset: this.option("unset_radius")*2,
+					set: this.$specified_width,
+					initialedit: this.option("edit_width")
+				}),
+				editing: this.option("edit_width")
+			});
+			this.$edit_width = cjs(this.option("edit_width"));
+
+			this.$z_index = cjs.inFSM(this.edit_state, {
+				idle: cjs.inFSM(this.client_state, {
+					unset: 0,
+					set: 0,
+					initialedit: 99
+				}),
+				editing: 99
+			});
+			this.element.css("min-width", this.option("width"));
+
+			this.position_binding = cjs.bindCSS(this.element, {
+				left: this.$left.sub(this.$width.div(2)).add("px"),
+				"z-index": this.$z_index,
+				"visibility": this.$visible.iif("visible", "hidden"),
+				'max-width': cjs.inFSM(this.edit_state, {
+					idle: cjs.inFSM(this.client_state, {
+						unset: this.option("unset_radius")*2,
+						set: this.option("default_max_width") + 'px',
+						initialedit: 'none'
+					}),
+					editing: 'none'
+				})
+			});
+		},
+		_remove_position_bindings: function() {
+			_.each([this.$specified_width, this.$width, this.$left, this.$edit_width, this.$z_index, this.$active, this.position_binding],
+					function(x) {
+						x.destroy(true);
+					});
+		},
+		_add_tooltip: function() {
 			this.element.tooltip({
 				position: {
 					my: "center bottom-1",
 					at: "center top"
 				},
-				tooltipClass: "error",
 				show: false,
-				hide: false
+				hide: false,
+				content: ""
 			});
-			this.create_live_text_fn();
-		},
-		_destroy: function() {
-			var client = this.option("value");
-			this._super();
+			var enable_tooltip = _.bind(function() { this.element.tooltip("enable"); }, this);
+			var disable_tooltip = _.bind(function() { this.element.tooltip("disable"); }, this);
+			this._tooltip_live_fn = cjs.liven(function() {
+				var syntax_errors = this.$syntax_errors.get();
+				if(syntax_errors && syntax_errors.length > 0) {
+					var syntax_error_text = syntax_errors[0];
 
-			this.element.off("keydown.prop_cell click.prop_cell")
-						.removeClass("cell");
+					this.element.addClass("error")
+								.attr("title", syntax_error_text)
+								.tooltip("option", {
+									tooltipClass: "error",
+									content: syntax_error_text
+								});
+				} else {
+					var str = this.$str.get() || "";
 
-			if(this.textbox) {
-				this.textbox.off("keydown.prop_cell blur.prop_cell")
-							.remove();
-			}
-
-			this.text.remove();
-			this.destroy_live_text_fn();
-			this.element.tooltip("destroy");
-
-			client.signal_destroy();
-			delete this.options;
-		},
-		on_click: function(event) {
-			if(this.is_editing()) {
-				event.stopPropagation();
-			} else {
-				this.begin_editing();
-				event.stopPropagation();
-			}
-		},
-		create_live_text_fn: function() {
-			var value = this.option("value");
-			var is_err = false;
-			if(value.type() === "raw_cell") {
-				var $str = value.get_$("get_str");
-				var $syntax_errors = value.get_$("get_syntax_errors");
-				this.live_text_fn = cjs.liven(function() {
-					var str = $str.get();
-					this.str = str;
-					if(str === "") {
-						this.text.html("&nbsp;");
-					} else {
-						this.text.text(this.str);
+					if(str.length > this.option("char_limit")) {
+						str = str.slice(0, this.option("char_limit")-3)+"..."
 					}
-					
-					var syntax_errors = $syntax_errors.get();
-					if(syntax_errors && syntax_errors.length > 0) {
-						this.element.addClass("error");
-						var syntax_error_text = syntax_errors[0];
-						this.element.attr("title", syntax_error_text);
-						this.element.tooltip("option", {
-							tooltipClass: "error",
-							content: syntax_error_text
-						});
-					} else {
-						this.element.removeClass("error");
-						this.element.attr("title", this.str);
-						//this.element.attr("title", "");
-						this.element.tooltip("option", {
-							tooltipClass: "cell_text",
-							content: this.str
-						});
-					}
-				}, {
-					context: this,
-					on_destroy: function() {
-						$str.signal_destroy();
-						$syntax_errors.signal_destroy();
-					}
-				});
-			}
-		},
-		destroy_live_text_fn: function() {
-			if(this.live_text_fn) {
-				this.live_text_fn.destroy();
-				delete this.live_text_fn;
-			}
-		},
-		update_position: function() {
-			var left = this.option("left"),
-				width = this.is_editing() ? this.option("edit_width") : this.option("width");
-			this.element.css({
-				left: (left - width/2) + "px",
-				width: width + "px"
-			});
-		},
-		update_active: function() {
-			if(this.option("active")) {
-				this.element.addClass("active");
-			} else {
-				this.element.removeClass("active");
-			}
-		},
-		is_editing: function() {
-			return this.element.hasClass("editing");
-		},
-		begin_editing: function() {
-			this.element.addClass("editing");
-			this.element.off("click.prop_cell");
-			this.text.hide();
 
-			if(this.textbox) {
-				this.textbox.show();
-			} else {
-				this.textbox = $("<textarea />")	.attr("type", "text")
-													.appendTo(this.element)
-													.on("keydown.prop_cell", _.bind(function(event) {
-														if(event.keyCode === 27) {
-															event.preventDefault();
-															event.stopPropagation();
-															this.end_edit(true);
-														} else if(event.keyCode === 13 && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
-															event.preventDefault();
-															event.stopPropagation();
-															this.end_edit();
-														}
-													}, this))
-													.on("click", function(event) {
-														event.stopPropagation();
-													});
-			}
-			this.textbox.on("blur.prop_cell", _.bind(this.end_edit, this));
-
-			var width = this.option("edit_width"),
-				left = this.option("left");
-			this.element.css({
-				left: (left - width/2) + "px",
-				width: width + "px"
+					this.element.removeClass("error")
+								.attr("title", str)
+								.tooltip("option", {
+									tooltipClass: "cell_text",
+									content: str
+								});
+				}
+			}, {
+				context: this,
+				on_destroy: function() {
+					this.element.tooltip("destroy");
+					this.edit_state	.off("idle->editing", disable_tooltip)
+									.off("editing->idle", enable_tooltip);
+				}
 			});
 
-			if(this.str) {
-				this.textbox.val(this.str);
-			}
-			this.focus();
-			this.select();
-			this.element.tooltip("disable");
+			this.edit_state	.on("idle->editing", disable_tooltip)
+							.on("idle->editing", this._emit_begin_editing, this)
+							.on("editing->idle", enable_tooltip)
+							.on("editing->idle", this._emit_done_editing, this);
 		},
-		unset: function() {
+		_remove_tooltip: function() {
+			this._tooltip_live_fn.destroy();
+			delete this._tooltip_live_fn;
+		},
+		_set_value_for_state: function(val) {
 			var event = new $.Event("command");
-			event.command_type = "unset_stateful_prop_for_state";
+			event.command_type = "set_stateful_prop_for_state";
 			event.prop = this.option("prop");
 			event.state = this.option("state");
+			event.text = val || "";
 
 			this.element.trigger(event);
 		},
-		end_edit: function(cancel) {
-			if(!this.is_editing()) {
-				return;
-			}
-			this.element.on("click.prop_cell", _.bind(this.on_click, this));
-			this.textbox.off("blur.prop_cell");
-			if(cancel !== true) {
-				var val = this.textbox.val();
-				if(val.trim() === "" && this.option("prop") && this.option("state")) {
-					this.unset();
-				} else {
-					var event = new $.Event("command");
-					event.command_type = "set_str";
-					event.str = val;
-					event.client = this.option("value");
-
-					this.element.trigger(event);
-				}
-			}
-			this.text.show();
-			this.textbox.hide();
-			this.element.focus();
-			this.element.removeClass("editing");
-
-			var width = this.option("width"),
-				left = this.option("left");
-			this.element.css({
-				left: (left - width/2) + "px",
-				width: width + "px"
-			});
-			this.element.tooltip("enable");
+		_emit_begin_editing: function() {
+			var event = new $.Event("begin_editing_cell");
+			event.initial_val = this.$str.get();
+			event.textarea = $("textarea", this.element)[0];
+			this.element.trigger(event);
 		},
-		focus: function() {
-			if(this.textbox) {
-				try {
-					this.textbox.focus();
-				} catch(e) {
-					console.error(e);
-				}
-			}
-		},
-		select: function() {
-			if(this.textbox) {
-				this.textbox.select();
-			}
-		},
-		_setOption: function(key, value) {
-			this._super(key, value);
-			if(key === "left" || key === "width") {
-				this.update_position();
-			} else if(key === "active") {
-				this.update_active();
-			}
-		}
-	});
-
-	$.widget("interstate.unset_prop", {
-		options: {
-			left: 0,
-			radius: 7,
-			state: null
-		},
-		_create: function() {
-			this.element.addClass("unset")
-						.attr("tabindex", 1)
-						.on("keydown.unset", _.bind(on_cell_key_down, this));
-			this.update_left();
-		},
-		_destroy: function() {
-			this.element.removeClass("unset")
-						.off("keydown.unset");
-			delete this.options.state;
-		},
-		update_left: function() {
-			this.element.css("left", (this.option("left") - this.option("radius")) + "px");
-		},
-		_setOption: function(key, value) {
-			this._super(key, value);
-			if(key === "left" || key === "radius") {
-				this.update_left();
-			}
+		_emit_done_editing: function() {
+			var event = new $.Event("done_editing_cell");
+			this.element.trigger(event);
 		}
 	});
 }(interstate, jQuery));

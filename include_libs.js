@@ -28,24 +28,22 @@ var cjs_path = cp(vendor_src, "constraintjs");
 exports.vendor = c(
 	cp(vendor_src, [
 				"underscore/underscore.js",
-				"jquery-ui-1.10.3.custom/js/jquery-2.0.3.min.js",
-				"jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.js",
+				"jquery-ui-1.10.4.custom/js/jquery-2.1.0.js",
+				"jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.js",
 				"raphael/raphael.js",
+				"snap/snap.svg.js",
 				"esprima/esprima.js",
-				"qrcode.min.js"
-				//"Snap.svg-0.1.0/dist/snap.svg.js",
-				//"three.js",
-				//"box2d/Box2dWeb-2.1.a.3.min.js"
+				"qrcode.min.js",
+				"ace/ace.js",
+				"Box2dWeb-2.1a.3/Box2dWeb-2.1.a.3.js"
 			])
 );
 
 exports.runtime = c(
 	cp(vendor_src, [
-				//"stopwatch.js",
 				"set.js",
 				"map.js",
-				"uid.js",
-				//"aware_split.js",
+				"uid.js"
 	]),
 	cp(cjs_path, ["cjs.js"]),
 	cp(vendor_src, [
@@ -61,6 +59,7 @@ exports.runtime = c(
 				"model/utils/debug.js",
 				"model/utils/parsed_value.js",
 				"model/utils/parsed_fn.js",
+				"model/utils/map_diff.js",
 				"model/basic_objects/cell.js",
 				"model/basic_objects/dict.js",
 				"model/basic_objects/stateful_obj.js",
@@ -80,6 +79,7 @@ exports.runtime = c(
 				"model/statechart/ist_statechart_transition.js",
 				"model/statechart/events/event_core.js",
 				"model/statechart/events/animation_events.js",
+				"model/statechart/events/box2d_events.js",
 				"model/statechart/events/ist_obj_events.js",
 				"model/statechart/events/manual_event.js",
 				"model/statechart/events/dom_events.js",
@@ -93,7 +93,7 @@ exports.runtime = c(
 				"model/attachments/dom_attachment.js",
 				"model/attachments/raphael_attachment.js",
 				//"model/attachments/three_attachment.js",
-				//"model/attachments/box2d_attachment.js",
+				"model/attachments/box2d_attachment.js",
 				"model/communication_wrapper/remote_constraint.js",
 				"model/communication_wrapper/comm_mechanisms.js",
 				"model/communication_wrapper/wrapper_server.js",
@@ -107,12 +107,10 @@ exports.runtime = c(
 				"controller/commands/statechart_commands.js",
 				"controller/commands/combined_commands.js",
 				"controller/environment/command_stack.js",
+				"controller/environment/initialize_root.js",
 				"controller/environment/ist_environment.js",
 				"view/running_app.js",
-			]),
-	cp("sample_apps", [
-		"sample_app_loader.js"
-	])
+			])
 );
 
 exports.runtime_style = cp(src, ["view/editor/style/runtime_style.css"]);
@@ -120,13 +118,10 @@ exports.runtime_style = cp(src, ["view/editor/style/runtime_style.css"]);
 exports.editor = c(
 	cp(src, [
 		"view/editor/jqui_editable_text.js",
-		"view/editor/pane.js",
-		"view/editor/menu.js",
-		"view/editor/pressable.js",
 		"view/editor/editor_view.js",
 		"view/editor/component_list.js",
-		"view/editor/dropdown.js",
 		"view/editor/navigator.js",
+		"view/editor/pinned.js",
 		"view/editor/column.js",
 		"view/editor/prop.js",
 		"view/editor/cell.js",
@@ -142,7 +137,9 @@ exports.editor = c(
 		"view/editor/statechart/hrange.js",
 		"view/editor/style/editor_style.css",
 		"view/editor/style/fonts/Inconsolata/stylesheet.css",
-		"view/editor/style/fonts/SourceSansPro/stylesheet.css"
+		"view/editor/style/fonts/SourceSansPro/stylesheet.css",
+		"_vendor/bootstrap-3.1.0/css/bootstrap.css",
+		"_vendor/bootstrap-3.1.0/css/bootstrap-theme.css"
 	])
 );
 
