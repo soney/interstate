@@ -1,0 +1,33 @@
+<html ng-app="phonecatApp">
+	<head>
+		<script src="http://cjs.from.so/builds/constraintjs-latest/cjs.min.js"></script>
+	</head>
+	<body>
+	</body>
+
+	<script type="text/javascript">
+		var num_objs = 2000, objs = [], x = cjs('...');
+
+		for(var i = 0; i<num_objs; i++) {
+			objs.push(i);
+		}
+
+		var tlate = cjs.createTemplate(
+				"{{#each objs}}" +
+					"<div>{{x}}</div>" +
+				"{{/each}}",  {
+				objs: objs,
+				x: x
+			});
+
+		document.body.appendChild(tlate);
+
+		setTimeout(function() {
+			var start_time = (new Date()).getTime();
+			x.set('done');
+			var end_time = (new Date()).getTime();
+			//alert(end_time - start_time);
+			document.body.textContent = (end_time-start_time);
+		}, 1000);
+	</script>
+</html>

@@ -127,9 +127,24 @@
 
 	ist.ContextualDict = function (options) {
 		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
+		this.get_dom_obj_and_src = cjs.memoize(this._get_dom_obj_and_src, {context: this});
+		this.prop_val = cjs.memoize(this._prop_val, {context: this});
+		this.prop = cjs.memoize(this._prop, {context: this});
+		this.children = cjs.memoize(this._children, {context: this});
+		this.instances = cjs.memoize(this._instances, {context: this});
+		this.is_template = cjs.memoize(this._is_template, {context: this});
+		this.get_dom_children = cjs.memoize(this._get_dom_children, {context: this});
 		//this.get_all_protos = this._get_all_protos;
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
+		/*
+		if(this.sid() == 885) {
+			debugger;
+		}
+		if(this.sid() == 1439) {
+			debugger;
+		}
+		*/
 	};
 
 	(function (My) {
@@ -297,7 +312,7 @@
 				return children;
 			}
 		};
-		proto.children = function (exclude_builtins) {
+		proto._children = function (exclude_builtins) {
 			if(this.is_template()) {
 				// This is a bit of a hack; when "copies" changes from "" to "5", then my
 				// children's contextual objects are destroyed. However, when I switch back
@@ -393,7 +408,7 @@
 			}
 			return info;
 		};
-		proto.prop = function (name, ignore_inherited) {
+		proto._prop = function (name, ignore_inherited) {
 			var info = this.prop_info(name, ignore_inherited);
 
 			if (info) {
@@ -405,7 +420,7 @@
 			}
 		};
 
-		proto.prop_val = function (name, ignore_inherited) {
+		proto._prop_val = function (name, ignore_inherited) {
 			var value = this.prop(name, ignore_inherited);
 			if (value instanceof ist.ContextualObject) {
 				return value.val();
@@ -454,7 +469,7 @@
 			return false;
 		};
 
-		proto.is_template = function () {
+		proto._is_template = function () {
 			if(this.is_instance()) {
 				return false;
 			} else {
@@ -527,7 +542,7 @@
 
 			return manifestation_pointers;
 		};
-		proto.instances = function () {
+		proto._instances = function () {
 			var object = this.get_object();
 			var instance_pointers = this.instance_pointers();
 			var manifestation_contextual_objects = _.map(instance_pointers, function(instance_pointer) {
@@ -638,38 +653,93 @@
 				this.get_all_protos.destroy(true);
 			}
 			delete this.get_all_protos;
+			this.get_dom_obj_and_src.destroy(true);
+			delete this.get_dom_obj_and_src;
+			this.prop_val.destroy(true);
+			delete this.prop_val;
+			this.prop.destroy(true);
+			delete this.prop;
+			this.children.destroy(true);
+			delete this.children;
+			this.instances.destroy(true);
+			delete this.instances;
+			this.is_template.destroy(true);
+			delete this.is_template;
+			this.get_dom_children.destroy(true);
+			delete this.get_dom_children;
 		};
 
 		proto._getter = function () {
 			return this;
 		};
-
-		proto.get_dom_obj = function() {
-			var dom_attachment = this.get_attachment_instance("dom");
-			if (dom_attachment) {
-				var dom_obj = dom_attachment.get_dom_obj();
-				if (dom_obj) {
-					return dom_obj;
-				}
-			} else {
-				var raphael_attachment = this.get_attachment_instance("shape");
-				if(raphael_attachment) {
-					var robj = raphael_attachment.get_robj();
-					if(robj) {
-						return robj[0];
+		proto._get_dom_obj_and_src = function () {
+			var dom_attachment = this.get_attachment_instance("dom"),
+				show = this.prop_val("show");
+				show = show===undefined ? true : !!show;
+			if(show) {
+				if (dom_attachment) {
+					var dom_obj = dom_attachment.get_dom_obj();
+					if (dom_obj) {
+						return [dom_obj, dom_attachment];
 					}
 				} else {
-					var group_attachment_instance = this.get_attachment_instance("group");
-					if(group_attachment_instance) {
-						return _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
+					var paper_attachment = this.get_attachment_instance("paper");
+					if(paper_attachment) {
+						var dom_obj = paper_attachment.get_dom_obj();
+
+						if(dom_obj) {
+							return [dom_obj, paper_attachment];
+						}
+					} else {
+						var raphael_attachment = this.get_attachment_instance("shape");
+						if(raphael_attachment) {
 							var robj = raphael_attachment.get_robj();
 							if(robj) {
-								return robj[0];
-							} else {
-								return false;
+								return [robj[0], raphael_attachment];
 							}
-						}));
+						} else {
+							var group_attachment_instance = this.get_attachment_instance("group");
+							if(group_attachment_instance) {
+								return _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
+									var robj = raphael_attachment.get_robj();
+									if(robj) {
+										return [robj[0], raphael_attachment];
+									} else {
+										return false;
+									}
+								}));
+							}
+						}
 					}
+				}
+			}
+			return false;
+		};
+
+		proto.get_dom_obj = function() {
+			var info = this.get_dom_obj_and_src();
+			return info[0];
+		};
+
+		proto._get_dom_children = function() {
+			var srcs = [],
+				children = [];
+			if (this.is_template()) {
+				var instances = this.instances();
+				var cs_and_dom_objs = _.chain(instances)
+										.map(function(instance) {
+											return instance.get_dom_obj_and_src();
+										})
+										.compact()
+										.value();
+
+				var dom_objs = _.pluck(cs_and_dom_objs, 0);
+				var obj_srcs = _.pluck(cs_and_dom_objs, 1);
+				return {srcs: obj_srcs, children: dom_objs};
+			} else {
+				var dom_obj_and_src = this.get_dom_obj_and_src();
+				if (dom_obj_and_src) {
+					return {srcs: [dom_obj_and_src[1]], children: [dom_obj_and_src[0]]};
 				}
 			}
 			return false;

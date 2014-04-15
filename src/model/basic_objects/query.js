@@ -34,21 +34,11 @@
             this.options.value = [this.options.value];
         }
         this.options.value = _	.chain(this.options.value)
-								.map(function (pointer_object) {
-									if(pointer_object) {
-										var pointer = pointer_object.get_pointer();
-										var points_at = pointer.points_at();
-										var cobj;
-										if (points_at instanceof ist.Dict) {
-											cobj = ist.find_or_put_contextual_obj(points_at, pointer);
-											if (cobj.is_template()) {
-												return cobj.instances();
-											} else {
-												return cobj;
-											}
+								.map(function (cobj) {
+									if(cobj) {
+										if (cobj.is_template()) {
+											return cobj.instances();
 										} else {
-											cobj = ist.find_or_put_contextual_obj(points_at, pointer);
-											//new ist.ContextualObject({pointer: pointer});
 											return cobj;
 										}
 									} else {

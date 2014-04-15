@@ -237,10 +237,6 @@
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
-                if (this._old_prop_value) {
-                    this._old_prop_value.destroy(true);
-                }
-            } else {
                 if (this._prop_value) {
                     this._prop_value.destroy(true);
                 }
@@ -387,29 +383,39 @@
     
         this._stateful_prop = this._options.stateful_prop;
         this._state = this._options.state;
-        this._value = this._options.value;
+		this._value = this._options.value;
     };
     (function (My) {
         _.proto_extend(My, ist.Command);
         var proto = My.prototype;
     
         proto._execute = function () {
+			this._old_value = this._stateful_prop._direct_value_for_state(this._state);
             this._stateful_prop.set(this._state, this._value);
         };
         proto._unexecute = function () {
-            this._stateful_prop.unset(this._state);
+			if(this._old_value) {
+				this._stateful_prop.set(this._state, this._old_value);
+			} else {
+				this._stateful_prop.unset(this._state);
+			}
         };
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
-            if (!in_effect) {
+            if (in_effect) {
+                if (this._old_value && this._old_value.destroy) {
+                    this._old_value.destroy(true);
+                }
+            } else {
                 if (this._value && this._value.destroy) {
                     this._value.destroy(true);
                 }
-            }
+			}
 			delete this._options;
 			delete this._stateful_prop;
 			delete this._state;
 			delete this._value;
+			delete this._old_value;
         };
         ist.register_serializable_type("set_stateful_prop_value_command",
             function (x) {

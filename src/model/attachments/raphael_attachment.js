@@ -63,7 +63,7 @@
 
 	ist.PaperAttachment = ist.register_attachment("paper", {
 			ready: function() {
-				this.dom_obj = window.document.createElement("div");
+				this.dom_obj = window.document.createElement("span");
 				this.paper = new Raphael(this.dom_obj, 0, 0);
 			},
 			destroy: function(silent) {
@@ -157,8 +157,10 @@
 			destroy: function(silent) {
 				this.remove();
 				this.$robj.destroy(silent);
+				this.$children.destroy(silent);
 				delete this.constructor_params;
 				delete this.$robj;
+				delete this.$children;
 			},
 			parameters: (function(infos) {
 				var parameters = {};
@@ -249,6 +251,7 @@
 						return robj;
 					} else {
 						robj = paper[this.shape_type].apply(paper, this.constructor_params);
+						robj[0].__ist_contextual_object__ = this.get_contextual_object();
 						this.$robj.set(robj);
 						return robj;
 					}

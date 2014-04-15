@@ -48,6 +48,9 @@
 			this.element.addClass("ist_runtime");
 			this._command_stack = new ist.CommandStack();
 			this.$dirty_program = cjs(false);
+			this.$highlighting_objects = cjs([]);
+			this.$inspecting_hover_object = cjs(false);
+			this.$breakpoints = cjs({});
 
 			if(!this.option("root")) {
 				var root = ist.load();
@@ -66,7 +69,7 @@
 					"font-variant": "small-caps",
 					"padding-top": "0px",
 					position: "fixed",
-					top: display === "tablet" ? "15px" : "0px",
+					top: (display === "tablet" || display === "phone") ? "15px" : "0px",
 					right: "70px",
 					color: this.button_color,
 					"background-color": "",
@@ -190,6 +193,7 @@
 												.css(this.hidden_button_css);
 				this.inspect = $("<ul />")		.append("<li><p class='first'><img src='src/view/editor/style/images/circle_info.png' width='15px'/> Inspect</p></li>")
 												.css(this.palette_css)
+												.on("click", _.bind(this.begin_inspect, this));
 				this.palette = $("<ul />")		.append("<li><p class='rectangle'><img src='src/view/editor/style/images/square.png' width='15px'/> Rectangle</p></li>")
 												.append("<li><p class='ellipse'><img src='src/view/editor/style/images/circle.png' width='15px'> Ellipse</p></li>")
 												.append("<li><p class='text'><img src='src/view/editor/style/images/font.png' width='15px'> Text</p></li>")												
@@ -273,6 +277,7 @@
 			}
 
 			this._add_change_listeners();
+			this._add_highlight_listeners();
 		},
 
 		undo_redo: function() {
@@ -485,13 +490,23 @@
 		},
 
 		on_key_down: function(event) {
-			if(event.keyCode === 69 && event.altKey && event.metaKey) {
-				this.open_editor();
+			if(event.altKey && event.metaKey) {
+				if(event.keyCode === 69) { // e
+					this.open_editor();
+				} else if(event.keyCode === 84) { // i
+					this.begin_inspect();
+					event.preventDefault();
+					event.stopPropagation();
+				}
 			}
 		},
 
 		_destroy: function () {
 			this._super();
+			this._remove_highlight_listeners();
+
+			this.$highlighting_objects.destroy(true);
+			this.$inspecting_hover_object.destroy(true);
 
 			this._remove_change_listeners();
 			this.element.removeClass("ist_runtime");
@@ -512,10 +527,92 @@
 			delete this.options;
 		},
 
+		_add_highlight_listeners: function () {
+			var old_highlighting_elements = [],
+				svg_followers = [];
+			this._highlight_fn = cjs.liven(function() {
+				var highlighting_objects = this.$highlighting_objects.toArray(),
+					highlighting_elements = _	.chain(highlighting_objects)
+												.map(function(cobj) {
+													if(cobj.is_template()) {
+														return cobj.instances();
+													} else {
+														return cobj;
+													}
+												})
+												.flatten()
+												.map(function(obj) {
+													if(!obj._destroyed) {
+														return obj.get_dom_obj();
+													}
+												})
+												//.compact()
+												.flatten()
+												.value()
+												.concat(this.$inspecting_hover_object.get());
+				highlighting_elements = _.compact(highlighting_elements);
+				var diff = _.diff(old_highlighting_elements, highlighting_elements);
+
+				_.each(diff.added, function(info) {
+					var dom_node = info.item;
+					$(dom_node).addClass("highlight");
+					if(dom_node instanceof SVGElement) {
+						var bounding_rect = dom_node.getBoundingClientRect(),
+							tagName = dom_node.tagName,
+							follower = $("<div />").appendTo(document.body)
+													.addClass("highlight svg_follow")
+													.css({
+														left: bounding_rect.left+"px",
+														top: bounding_rect.top+"px",
+														width: bounding_rect.width+"px",
+														height: bounding_rect.height+"px",
+														borderRadius: tagName.toUpperCase() === "CIRCLE" ? bounding_rect.width/2+"px" : "0px"
+													});
+						svg_followers.push({
+							following: dom_node,
+							follower: follower
+						});
+					}
+				});
+				_.each(diff.removed, function(info) {
+					var dom_node = info.from_item;
+					$(dom_node).removeClass("highlight");
+					if(dom_node instanceof SVGElement) {
+						_.each(svg_followers, function(info, index) {
+							if(info.following === dom_node) {
+								info.follower.remove();
+								svg_followers.splice(index, 1);
+							}
+						});
+					}
+				});
+
+				old_highlighting_elements = highlighting_elements;
+			}, {
+				context: this,
+				on_destroy: function() {
+					_.each(old_highlighting_elements, function(dom_node) {
+						$(dom_node).removeClass("highlight");
+						if(dom_node instanceof SVGElement) {
+							_.each(svg_followers, function(info, index) {
+								if(info.following === dom_node) {
+									info.follower.remove();
+									svg_followers.splice(index, 1);
+								}
+							});
+						}
+					});
+				}
+			});
+		},
+
+		_remove_highlight_listeners: function () {
+			this._highlight_fn.destroy();
+		},
+
 		_add_change_listeners: function () {
 			var root_dict = this.option("root");
 			var root_contextual_object = ist.find_or_put_contextual_obj(root_dict);
-
 
 			if(!ist.__empty_files) {
 			/*
@@ -976,6 +1073,21 @@
 
 				this._save();
 				ist.rename(from_name, to_name, storage_type);
+			}, this).on("add_highlight", function(event) {
+				var cobj_id = event.cobj_id,
+					cobj = ist.find_uid(cobj_id);
+				if(cobj) {
+					this.$highlighting_objects.push(cobj);
+				}
+			}, this).on("remove_highlight", function(event) {
+				var cobj_id = event.cobj_id,
+					cobj = ist.find_uid(cobj_id);
+				if(cobj) {
+					var index = this.$highlighting_objects.indexOf(cobj);
+					if(index >= 0) {
+						this.$highlighting_objects.splice(index, 1);
+					}
+				}
 			}, this)
 			;
 			return server_socket;
@@ -1008,7 +1120,7 @@
 				}
 			}
 		},
-		open_editor: function (event) {																																																														
+		open_editor: function (event, cobj) {
 			this.editing_button.css(this.shown_button_css);
 			this.running_button.css(this.shown_button_css);
 			this.undo_redo_buttons.css(this.shown_button_css);
@@ -1020,7 +1132,7 @@
 				this.editor_window.focus();
 			} else {
 				var on_comm_mechanism_load = function(communication_mechanism) {
-					this.server_socket = this.server_socket || this._create_server_socket();
+					this.server_socket = this.server_socket || this._create_server_socket(cobj);
 					this.server_socket.set_communication_mechanism(communication_mechanism);
 
 					if (this.server_socket.is_connected()) { // It connected immediately
@@ -1094,10 +1206,77 @@
 		},
 
 		cleanup_closed_editor: function () {
+			this.$highlighting_objects.setValue([]);
 			if(this.edit_button) {
 				this.edit_button.removeClass("active").css(this.edit_button_css);
 			}
 			delete this.editor_window;
 		},
+		begin_inspect: function () {
+			if(this._inspecting) {
+				this.cancel_inspect();
+			} else {
+				this._inspecting = true;
+				this._inspecting_target = false;
+
+				this._on_mover = _.bind(function(mo_event) {
+					var target = this._inspecting_target = mo_event.target;
+					this.$inspecting_hover_object.set(target);
+					//console.log(target);
+				}, this);
+				this._on_mout = _.bind(function(mo_event) {
+					if(mo_event.target === this._inspecting_target) {
+						this.$inspecting_hover_object.set(false);
+						this._inspecting_target = false;
+					}
+				}, this);
+				this._on_click = _.bind(function(c_event) {
+					var target = c_event.target,
+						cobj = target.__ist_contextual_object__;
+					this.inspect_cobj(cobj);
+				}, this);
+
+				$(this.element).get(0).addEventListener("mouseover", this._on_mover, true);
+				$(this.element).get(0).addEventListener("mouseout", this._on_mout, true);
+				$(this.element).get(0).addEventListener("click", this._on_click, true);
+				$(window).on("keydown.inspector", _.bind(function(kd_event) {
+					if(kd_event.keyCode === 27) { // esc
+						this.cancel_inspect();
+					} else if(kd_event.keyCode === 13) { // enter
+						if(this._inspecting_target) {
+							var cobj = this._inspecting_target.__ist_contextual_object__;
+
+							this.inspect_cobj(cobj);
+						}
+					}
+				}, this));
+			}
+
+		},
+		cancel_inspect: function() {
+			if(this._inspecting) {
+				this._inspecting = false;
+				this._inspecting_target = false;
+				this.$inspecting_hover_object.set(false);
+
+				$(this.element).get(0).removeEventListener("mouseover", this._on_mover, true);
+				$(this.element).get(0).removeEventListener("mouseout", this._on_mout, true);
+				$(this.element).get(0).removeEventListener("click", this._on_click, true);
+				$(window).off("keydown.inspector");
+			}
+		},
+		inspect_cobj: function(cobj) {
+
+			if (this.editor_window) {
+				this.server_socket.post({
+					type: "inspect",
+					cobj_id: cobj.id()
+				});
+				this.editor_window.focus();
+			} else {
+				this.open_editor();
+			}
+			this.cancel_inspect();
+		}
 	});
 }(interstate, jQuery));

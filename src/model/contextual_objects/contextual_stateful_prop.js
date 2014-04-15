@@ -340,6 +340,7 @@
 			var last_last_value = this._last_value;
 
 			var active_value_info = this.active_value();
+			if(!active_value_info) { return; }
 			var using_val = active_value_info.value,
 				using_state = active_value_info.state,
 				using_as = active_value_info.using_as,
@@ -368,7 +369,7 @@
 					} else {
 						_.defer(invalidate_active_value);
 					}
-					invalidate_value = invalidate_active_value = null;
+					//invalidate_value = invalidate_active_value = null;
 				}
 			}
 
@@ -383,10 +384,14 @@
 			var stateful_prop = this.get_object();
 
 			if(using_val) {
-				var pointer = this.get_pointer();
-				//var event = cjs.get(using_state._last_run_event);
+				var pointer = this.get_pointer(),
+					eventized_pointer;
+				if(using_state instanceof ist.StartState) {
+					eventized_pointer = pointer.push(using_val);
+				} else {
+					eventized_pointer = pointer.push(using_val, new ist.StateContext(using_state));
+				}
 
-				var eventized_pointer = pointer.push(using_val, new ist.StateContext(using_state));
 				var cobj = ist.find_or_put_contextual_obj(using_val, eventized_pointer);
 				
 				//console.log(cobj, cobj.val());

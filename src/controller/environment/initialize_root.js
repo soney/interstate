@@ -129,8 +129,8 @@
 			rect.set("stroke_opacity", new ist.Cell({str: "1.0"}));
 			rect.set("stroke_width", new ist.Cell({str: "1"}));
 			rect.set("transform", new ist.Cell({str: "''"}));
-			rect.set("width", new ist.Cell({str: "140"}));
-			rect.set("height", new ist.Cell({str: "90"}));
+			rect.set("width", new ist.Cell({str: "150"}));
+			rect.set("height", new ist.Cell({str: "100"}));
 			rect.set("animated_properties", new ist.Cell({str: "false"}));
 			rect.set("animation_duration", new ist.Cell({str: "300"}));
 			rect.set("animation_easing", new ist.Cell({str: "'linear'"}));
@@ -197,11 +197,6 @@
 			var group = new ist.Dict({has_protos: false, direct_attachments: [new ist.GroupAttachment()]});
 			svg.set("group", group);
 			group.set("showChildren", new ist.Cell({str: "true"}));
-
-			var screen = new ist.StatefulObj(undefined, true);
-			screen.do_initialize({
-				direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: screen })
-			});
 		}
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "dom") >= 0)) {
@@ -281,4 +276,69 @@
 			root_dict.set("emit", ist.emit);
 		}
 	};
+
+/*
+	var touches = cjs([]);
+	var touchstart_listener = function(event) {
+		touches.push.apply(touches, _.map(event.changedTouches, function(touch) {
+			return cjs({
+				x: touch.pageX,
+				y: touch.pageY,
+				id: touch.identifier
+			});
+		}));
+		event.preventDefault();
+	};
+	var touchmove_listener = function(event) {
+		var changed_touches = {};
+		_.each(event.changedTouches, function(ct) {
+			changed_touches[ct.identifier] = ct;
+		});
+
+		touches.forEach(function(touch) {
+			var touch_id = touch.get("id");
+			if(_.has(changed_touches, touch_id)) {
+				var changed_touch = changed_touches[touch_id];
+				touch.set("x", changed_touch.pageX);
+				touch.set("y", changed_touch.pageY);
+			}
+		});
+
+		event.preventDefault();
+	};
+	var touchend_listener = function(event) {
+		var new_touches = {};
+		_.each(event.touches, function(t) {
+			new_touches[t.identifier] = true;
+		});
+
+		var remove_indicies = [];
+		touches.forEach(function(touch, i) {
+			var touch_id = touch.get("id");
+			if(!_.has(new_touches, touch_id)) {
+				remove_indicies.push(i);
+			}
+		});
+		cjs.wait();
+		while(remove_indicies.length > 0) {
+			var removed = touches.splice(remove_indicies.pop(), 1);
+			removed[0].destroy();
+		}
+		cjs.signal();
+
+		event.preventDefault();
+	};
+	var addTouchListeners = function() {
+		window.addEventListener("touchstart", touchstart_listener);
+		window.addEventListener("touchmove", touchmove_listener);
+		window.addEventListener("touchend", touchend_listener);
+	};
+	var removeTouchListeners = function() {
+		window.removeEventListener("touchstart", touchstart_listener);
+		window.removeEventListener("touchmove", touchmove_listener);
+		window.removeEventListener("touchend", touchend_listener);
+	};
+	addTouchListeners();
+	root.set("touches", touches);
+	*/
 }(interstate));

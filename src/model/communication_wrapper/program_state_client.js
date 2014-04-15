@@ -36,6 +36,7 @@
 							.on("wrapper_server", this.on_wrapper_server, this)
 							.on("stringified_root", this.post_forward, this)
 							.on("get_ptr_response", this.post_forward, this)
+							.on("inspect", this.post_forward, this)
 							.on("stringified_obj", this.post_forward, this);
 	};
 

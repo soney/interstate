@@ -145,11 +145,13 @@
 		"typeof":	function (a) { return typeof a; }
 	};
 
+	var destroy_constraint_fn = cjs.Constraint.prototype.destroy;
+
 	var get_op_val = function (options, calling_context, op) {
 		var pcontext = options.context,
 			args = _.rest(arguments, 3);
 		if (options.get_constraint) {
-			return cjs(function () {
+			var constraint = cjs(function () {
 				var op_got = cjs.get(op, options.auto_add_dependency);
 				var args_got = _.map(args, function(arg) {
 													return cjs.get(arg, options.auto_add_dependency);
@@ -167,6 +169,10 @@
 					//return undefined;
 				}
 			});
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			if (_.isFunction(op)) {
 				return op.apply(calling_context, args);
@@ -190,7 +196,7 @@
 			} else {
 				console.error("Unknown op " + op);
 			}
-			return cjs(function () {
+			var constraint = cjs(function () {
 				switch (op_id) {
 				case AND_OP:
 					return cjs.get(left, options.auto_add_dependency) && cjs.get(right, options.auto_add_dependency);
@@ -198,6 +204,10 @@
 					return cjs.get(left, options.auto_add_dependency) || cjs.get(right, options.auto_add_dependency);
 				}
 			});
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			if (op === "&&") {
 				return left && right;
@@ -211,7 +221,7 @@
 
 	var get_conditional_val = function (test, consequent, alternate, options) { // test ? consequent : alternate
 		if (options.get_constraint) {
-			return cjs(function () {
+			var constraint = cjs(function () {
 				var test_got = cjs.get(test, options.auto_add_dependency);
 				if (test_got) {
 					return cjs.get(consequent, options.auto_add_dependency);
@@ -219,6 +229,10 @@
 					return cjs.get(alternate, options.auto_add_dependency);
 				}
 			});
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			if (test) {
 				return consequent;
@@ -298,7 +312,12 @@
 		};
 
 		if (options.get_constraint) {
-			return cjs(getter);
+			var constraint = cjs(getter);
+			constraint.destroy = function() {
+				context = false;
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			return getter();
 		}
@@ -323,7 +342,11 @@
 			//return undefined;
 		};
 		if (options.get_constraint) {
-			return cjs(getter);
+			var constraint = cjs(getter);
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			return getter();
 		}
@@ -333,8 +356,8 @@
 		var getter = function (object, property) {
 			var rv, instances;
 			if (!object) {
-				throw new Error("No parent object for property '" + prop + "'");
-				//return undefined;
+				//throw new Error("No parent object for property '" + prop + "'");
+				return undefined;
 			}
 
 			if (object instanceof ist.ContextualObject) {
@@ -389,11 +412,15 @@
 		};
 
 		if (options.get_constraint) {
-			return cjs(function () {
+			var constraint = cjs(function () {
 				var object = cjs.get(obj, options.auto_add_dependency),
 					property = cjs.get(prop, options.auto_add_dependency);
 				return getter(object, property);
 			});
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			return getter(obj, prop);
 		}
@@ -401,11 +428,15 @@
 
 	var get_array_val = function (elements, options) {
 		if (options.get_constraint) {
-			return cjs(function () {
+			var constraint = cjs(function () {
 				return _.map(elements, function (element) {
 					return cjs.get(element, options.auto_add_dependency);
 				});
 			});
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			return elements;
 		}
@@ -415,7 +446,7 @@
 		var pcontext = options.context;
 		var args = _.rest(arguments, 3);
 		if (options.get_constraint) {
-			return cjs(function () {
+			var constraint = cjs(function () {
 				var op_got = cjs.get(op, options.auto_add_dependency);
 				//if(op_got === red.on_event) {
 					//debugger;
@@ -437,6 +468,10 @@
 					//return undefined;
 				}
 			});
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			if (_.isFunction(op)) {
 				var rv = ist.construct.call(calling_context, op, args);
@@ -490,8 +525,8 @@
 			rv = get_op_val.apply(this, ([options, op_context, callee]).concat(args));
 
 			set_destroy(rv, function(silent) {
-				destroy_if_constraint(callee);
-				destroy_if_constraint(op_context);
+				destroy_if_constraint(callee, silent);
+				destroy_if_constraint(op_context, silent);
 				_.each(args, function(arg) {
 					destroy_if_constraint(arg, silent);
 				});
@@ -505,8 +540,8 @@
 			var property = node.computed ? get_val(node.property, options) : node.property.name;
 			rv = get_member_val(object, property, options);
 			set_destroy(rv, function(silent) {
-				destroy_if_constraint(object);
-				destroy_if_constraint(property);
+				destroy_if_constraint(object, silent);
+				destroy_if_constraint(property, silent);
 			});
 		} else if (type === "ArrayExpression") {
 			var elements = _.map(node.elements, function (element) {
@@ -514,7 +549,7 @@
 			});
 			rv = get_array_val(elements, options);
 			set_destroy(rv, function(silent) {
-				_.each(element, function(elem) {
+				_.each(elements, function(elem) {
 					destroy_if_constraint(elem, silent);
 				});
 			});

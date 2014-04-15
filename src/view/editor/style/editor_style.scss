@@ -460,58 +460,13 @@ html.full_window_editor {
 				}
 			}
 
-			> .options {
-				background-color: $nav_header_color;
-				form.options {
-					> fieldset {
-						> legend {
-							color: #888;
-							text-align: right;
-						}
-						background-color: #EEE;
-						border: 1px solid #888;
-						font-size: 0.8em;
-						margin: 10px;
-
-						> div.copies_option_container {
-							> input#copies {
-								display: block;
-								font-family: "Inconsolata";
-								color: black;
-								background-color: #DDD;
-								border: 1px solid #666;
-								font-size: inherit;
-							}
-						}
-
-						> div.state_machine_option_container {
-							margin-top: 9px;
-							margin-bottom: 5px;
-							border-top: 1px solid #AAA;
-							padding-top: 8px;
-							> #own_label, #none_label {
-								margin-right: 10px;
-							}
-						}
-
-						> div.can_inherit_option_container {
-							margin-top: 9px;
-							margin-bottom: 5px;
-							padding-top: 8px;
-							border-top: 1px solid #AAA;
-						}
-
-						> hr {
-							border: 1px solid #DDD;
-						}
-
-						> .reset.button {
-							@include link;
-						}
-					}
-					margin-bottom: 5px;
+			> .switch_copy {
+				> .prev_copy, > .next_copy, > .curr_copy {
+					border: 1px solid #DDD;
+					padding: 2px;
 				}
 			}
+
 			
 			> .add_prop {
 				> td.add_prop {
@@ -737,6 +692,7 @@ html.full_window_editor {
 							overflow: hidden;
 							word-break: break-all;
 							white-space: nowrap;
+							color: #999;
 
 							>.empty {
 								color: #BBB;
@@ -744,8 +700,8 @@ html.full_window_editor {
 
 							&.active {
 								color: green;
-								border-left: 1px solid green;
-								border-right: 1px solid green;
+								border-left: 2px solid green;
+								border-right: 2px solid green;
 							}
 							&.error {
 								color: white;

@@ -158,8 +158,18 @@
 						var angularVelocity = body.GetAngularVelocity();
 
 						cjs.wait();
-						this.b2x.set(position.x * PIXELS_PER_METER);
-						this.b2y.set(position.y * PIXELS_PER_METER);
+						var shape = this.shape.get();
+						if(shape instanceof B2CircleShape) {
+							this.b2x.set(position.x * PIXELS_PER_METER);
+							this.b2y.set(position.y * PIXELS_PER_METER);
+						} else if(shape instanceof B2PolygonShape) {
+							var v0 = shape.m_vertices[0],
+								v1 = shape.m_vertices[2],
+								width = Math.abs(v0.x-v1.x),
+								height = Math.abs(v0.y-v1.y);
+							this.b2x.set((position.x-width/2) * PIXELS_PER_METER);
+							this.b2y.set((position.y-height/2) * PIXELS_PER_METER);
+						}
 
 						this.b2vx.set(linearVelocity.x);
 						this.b2vy.set(linearVelocity.y);
@@ -330,13 +340,17 @@
 				applyForce: function(x, y) {
 					var body = this.get_body();
 					if(body) {
-						body.ApplyForce(new B2Vec2(x, y), body.GetWorldCenter());
+						setTimeout(function() {
+							body.ApplyForce(new B2Vec2(x, y), body.GetWorldCenter());
+						});
 					}
 				},
 				applyImpulse: function(x, y) {
 					var body = this.get_body();
 					if(body) {
-						body.ApplyImpulse(new B2Vec2(x, y), body.GetWorldCenter());
+						setTimeout(function() {
+							body.ApplyImpulse(new B2Vec2(x, y), body.GetWorldCenter());
+						});
 					}
 				}
 			}

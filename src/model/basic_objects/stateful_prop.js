@@ -122,14 +122,13 @@
         
         proto.id = function () { return this._id; };
 		proto.hash = function () { return this._hash; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
     
         proto.destroy = function () {
 			ist.unset_instance_builtins(this, My);
 			ist.unregister_uid(this.id());
 			able.destroy_this_listenable(this);
+			this._destroyed = true;
         };
     
         ist.register_serializable_type("stateful_prop",

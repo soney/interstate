@@ -6,68 +6,6 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	var touches = cjs([]);
-	var touchstart_listener = function(event) {
-		touches.push.apply(touches, _.map(event.changedTouches, function(touch) {
-			return cjs({
-				x: touch.pageX,
-				y: touch.pageY,
-				id: touch.identifier
-			});
-		}));
-		event.preventDefault();
-	};
-	var touchmove_listener = function(event) {
-		var changed_touches = {};
-		_.each(event.changedTouches, function(ct) {
-			changed_touches[ct.identifier] = ct;
-		});
-
-		touches.forEach(function(touch) {
-			var touch_id = touch.get("id");
-			if(_.has(changed_touches, touch_id)) {
-				var changed_touch = changed_touches[touch_id];
-				touch.set("x", changed_touch.pageX);
-				touch.set("y", changed_touch.pageY);
-			}
-		});
-
-		event.preventDefault();
-	};
-	var touchend_listener = function(event) {
-		var new_touches = {};
-		_.each(event.touches, function(t) {
-			new_touches[t.identifier] = true;
-		});
-
-		var remove_indicies = [];
-		touches.forEach(function(touch, i) {
-			var touch_id = touch.get("id");
-			if(!_.has(new_touches, touch_id)) {
-				remove_indicies.push(i);
-			}
-		});
-		cjs.wait();
-		while(remove_indicies.length > 0) {
-			var removed = touches.splice(remove_indicies.pop(), 1);
-			removed[0].destroy();
-		}
-		cjs.signal();
-
-		event.preventDefault();
-	};
-	var addTouchListeners = function() {
-		window.addEventListener("touchstart", touchstart_listener);
-		window.addEventListener("touchmove", touchmove_listener);
-		window.addEventListener("touchend", touchend_listener);
-	};
-	var removeTouchListeners = function() {
-		window.removeEventListener("touchstart", touchstart_listener);
-		window.removeEventListener("touchmove", touchmove_listener);
-		window.removeEventListener("touchend", touchend_listener);
-	};
-	addTouchListeners();
-
 	ist.Environment = function (options) {
 		// Undo stack
 		this._command_stack = new ist.CommandStack();
@@ -78,7 +16,6 @@
 		} else {
 			root = ist.get_default_root(!options || options.builtins);
 		}
-		//root.set("touches", touches);
 
 		//Context tracking
 		this.pointer = new ist.Pointer({stack: [root]});
@@ -251,8 +188,8 @@
 					*/
 				} else if (value === "<stateful_prop>") {
 					value = new ist.StatefulProp();
-				} else {
-					value = new ist.Cell({str: value});
+				//} else {
+					//value = new ist.Cell({str: value});
 				}
 			}
 
@@ -269,11 +206,19 @@
 					val = parent_obj[getter_name]();
 					if (val) {
 						if (val instanceof ist.StatefulProp) {
-							commands.push(new ist.SetStatefulPropValueCommand({
-								stateful_prop: val,
-								state: state,
-								value: value
-							}));
+							var val_for_state = val._direct_value_for_state(state);
+							if(val_for_state instanceof ist.Cell && _.isString(value)) {
+								commands.push(new ist.ChangeCellCommand({
+									cell: val_for_state,
+									str: value
+								}));
+							} else {
+								commands.push(new ist.SetStatefulPropValueCommand({
+									stateful_prop: val,
+									state: state,
+									value: _.isString(value) ? new ist.Cell({str: value}) : value
+								}));
+							}
 						} else {
 							throw new Error("Trying to set value for non stateful prop");
 						}
@@ -299,22 +244,20 @@
 								if (sp_val instanceof ist.Cell && _.isString(arg2)) {
 									commands.push(new ist.ChangeCellCommand({
 										cell: sp_val,
-										str: arg2
+										str: value
 									}));
-									
-									value.destroy();
 								} else {
 									commands.push(new ist.SetStatefulPropValueCommand({
 										stateful_prop: val,
 										state: state,
-										value: value
+										value: _.isString(value) ? new ist.Cell({str: value}) : value
 									}));
 								}
 							} else {
 								commands.push(new ist.SetStatefulPropValueCommand({
 									stateful_prop: val,
 									state: state,
-									value: value
+									value: _.isString(value) ? new ist.Cell({str: value}) : value
 								}));
 							}
 						} else {
@@ -328,7 +271,7 @@
 							commands.push(new ist.SetStatefulPropValueCommand({
 								stateful_prop: val,
 								state: state,
-								value: value
+								value: _.isString(value) ? new ist.Cell({str: value}) : value
 							}));
 						}
 					} else {
@@ -342,7 +285,7 @@
 						commands.push(new ist.SetStatefulPropValueCommand({
 							stateful_prop: val,
 							state: state,
-							value: value
+							value: _.isString(value) ? new ist.Cell({str: value}) : value
 						}));
 					}
 				}
@@ -379,14 +322,13 @@
 						if (val instanceof ist.Cell && _.isString(arg1)) {
 							commands.push(new ist.ChangeCellCommand({
 								cell: val,
-								str: arg1
+								str: value
 							}));
-							value.destroy();
 						} else {
 							commands.push(new ist.SetPropCommand({
 								parent: parent_obj,
 								name: prop_name,
-								value: value,
+								value: _.isString(value) ? new ist.Cell({str: value}) : value,
 								index: index
 							}));
 						}
@@ -394,7 +336,7 @@
 						commands.push(new ist.SetPropCommand({
 							parent: parent_obj,
 							name: prop_name,
-							value: value,
+							value: _.isString(value) ? new ist.Cell({str: value}) : value,
 							index: index
 						}));
 					}
@@ -405,13 +347,13 @@
 					commands.push(new ist.SetBuiltinCommand({
 						parent: parent_obj,
 						name: builtin_name,
-						value: value
+						value: _.isString(value) ? new ist.Cell({str: value}) : value
 					}));
 				} else {
 					commands.push(new ist.SetPropCommand({
 						parent: parent_obj,
 						name: prop_name,
-						value: value,
+						value: _.isString(value) ? new ist.Cell({str: value}) : value,
 						index: index
 					}));
 				}

@@ -101,6 +101,8 @@
 
 		this.destroy = function() {
 			this.clear();
+			this.$undo_description.destroy();
+			this.$redo_description.destroy();
 		};
 	};
 }(interstate));

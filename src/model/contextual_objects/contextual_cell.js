@@ -17,17 +17,29 @@
 		var proto = My.prototype;
 		proto.initialize = function(options) {
 			My.superclass.initialize.apply(this, arguments);
+			var constraint = false;
 			this.value_constraint = cjs(function() {
-				return this.object.constraint_in_context(this.get_pointer());
+				if(constraint && constraint.destroy) {
+					constraint.destroy(true);
+				}
+
+				return (constraint = this.object.constraint_in_context(this.get_pointer()));
 			}, {
-				context: this
+				context: this,
 			});
+			var old_destroy = this.value_constraint.destroy;
+			this.value_constraint.destroy = function() {
+				if(constraint && constraint.destroy) {
+					constraint.destroy(true);
+					constraint = false;
+				}
+				old_destroy.apply(this, arguments);
+			};
 		};
 		proto.destroy = function () {
 			if(this.constructor === My) { this.emit_begin_destroy(); }
-			if(cjs.isConstraint(this.value_constraint)) {
-				this.value_constraint.destroy(true);
-			}
+
+			this.value_constraint.destroy(true);
 			delete this.value_constraint;
 			My.superclass.destroy.apply(this, arguments);
 		};

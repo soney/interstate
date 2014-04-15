@@ -1,0 +1,32 @@
+<html ng-app="phonecatApp">
+	<head>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+		<script type="text/javascript">
+			var phonecatApp = angular.module('phonecatApp', []);
+
+			phonecatApp.controller('PhoneListCtrl', function ($scope) {
+				var num_phones = 10500, phones = [];
+				for(var i = 0; i<num_phones; i++) {
+					phones.push({name: "..."});
+				}
+				$scope.phones = phones;
+
+				setTimeout(function() {
+					var start_time = (new Date()).getTime();
+						$scope.$apply(function () {
+					for(var i = 0; i<num_phones; i++) {
+							phones[i].name = "done";
+					}
+						});
+					var end_time = (new Date()).getTime();
+					console.log(end_time - start_time);
+				}, 1000);
+			});
+		</script>
+	</head>
+	<body ng-controller="PhoneListCtrl">
+		<div ng-repeat="phone in phones">
+			{{phone.name}}
+		</div>
+	</body>
+</html>

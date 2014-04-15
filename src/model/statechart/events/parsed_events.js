@@ -21,6 +21,7 @@
 		//var got_value = cjs.get(event_constraint, false);
 		//console.log(got_value);
 		if (got_event instanceof ist.Event) {
+			//event_constraint.destroy(true);
 			return {event: got_event, actions: actions};
 		} else {
 			if(cjs.isConstraint(event_constraint)) {

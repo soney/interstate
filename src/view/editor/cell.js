@@ -101,7 +101,13 @@
 										}
 									}, this);
 
-			this.$active = cjs(this.option("active"));
+			this.$active = cjs(function() {
+				var active_value = this.option("active_value"),
+					avval = cjs.get(active_value),
+					av = avval ? avval.value : false;
+
+				return av && av === cjs.get(this.option("client"));
+			}, {context: this});
 			this.$left = cjs(this.option("left"));
 
 								

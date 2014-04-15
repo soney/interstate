@@ -113,7 +113,7 @@
 					root_setup();
 					run_tests(function() {
 						destroy();
-						take_snapshot(["ConstraintNode", "SettableConstraint", "ist.", "interstate.", "$.(anonymous function).(anonymous function)"], function(response) {
+						take_snapshot(["ist.", "interstate.", "$.(anonymous function).(anonymous function)"], function(response) {
 							ok(!response.illegal_strs, "Make sure nothing was allocated");
 							start();
 						});

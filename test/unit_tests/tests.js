@@ -67,7 +67,7 @@
 				x.set(2);
 				equal(constraint_client.get(), 2);
 				window.setTimeout(function() {
-					take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
+					take_snapshot(["interstate.", "ist."], function(response) {
 						ok(true, "Make sure nothing was allocated");
 						start();
 					});
@@ -94,7 +94,7 @@
 					//sc.print();
 					sc.destroy();
 					sc = null;
-					take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
+					take_snapshot(["interstate.", "ist."], function(response) {
 						ok(true, "Make sure nothing was allocated");
 						start();
 					});
@@ -118,12 +118,12 @@
 							.start_at("init")
 							.add_transition("init", "hover", "on('mouseover', this)")
 							.add_transition("hover", "init", "on('mouseout', this)")
-							.set("(prototypes)", "init", "svg.circle")
-							.set("fill")
+							.set("(prototypes)", "init", "svg.circle");
+							env.print();
+							env.set("fill")
 							.set("fill", "init", "'red'")
 							.set("fill", "hover", "'blue'")
 				;
-				//env.print();
 				var root = env.get_root();
 				the_div.dom_output({
 					root: root,
@@ -135,11 +135,11 @@
 					env.destroy();
 					env = null;
 					the_div.remove();
-					take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
+					take_snapshot(["interstate.", "ist."], function(response) {
 						ok(!response.illegal_strs, "Make sure nothing was allocated");
 						start();
 					});
-				}, 2000);
+				}, 1000);
 			//});
 		//});
 	});
@@ -200,7 +200,7 @@
 				env.destroy();
 				env = null;
 
-				take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
+				take_snapshot(["interstate.", "ist."], function(response) {
 					ok(!response.illegal_strs, "Make sure nothing was allocated");
 					start();
 				});
@@ -237,7 +237,7 @@
 				root.destroy();
 				a_dict = b_dict = croot = root = null;
 
-				take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist."], function(response) {
+				take_snapshot(["interstate.", "ist."], function(response) {
 					ok(!response.illegal_strs, "Make sure nothing was allocated");
 					start();
 					ist.__garbage_collect = true;
@@ -336,7 +336,7 @@
 													dict = null;
 													context = null;
 													window.setTimeout(function() {
-														take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist.", "$.(anonymous function).(anonymous function)"], function(response) {
+														take_snapshot(["interstate.", "ist.", "$.(anonymous function).(anonymous function)"], function(response) {
 															ok(!response.illegal_strs, "Make sure nothing was allocated");
 															start();
 														});
@@ -386,7 +386,7 @@
 													editor_div.editor("destroy").remove();
 													runtime_div.dom_output("destroy").remove();
 													window.setTimeout(function() {
-														take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist.", "$.(anonymous function).(anonymous function)"], function(response) {
+														take_snapshot(["interstate.", "ist.", "$.(anonymous function).(anonymous function)"], function(response) {
 															ok(!response.illegal_strs, "Make sure nothing was allocated");
 															editor_div.remove();
 															runtime_div.remove();
@@ -439,7 +439,7 @@
 													editor_div.editor("destroy").remove();
 													runtime_div.dom_output("destroy").remove();
 													window.setTimeout(function() {
-														take_snapshot(["ConstraintNode", "SettableConstraint", "interstate.", "ist.", "$.(anonymous function).(anonymous function)"], function(response) {
+														take_snapshot(["interstate.", "ist.", "$.(anonymous function).(anonymous function)"], function(response) {
 															ok(!response.illegal_strs, "Make sure nothing was allocated");
 															editor_div.remove();
 															runtime_div.remove();

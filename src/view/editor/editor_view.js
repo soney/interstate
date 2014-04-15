@@ -161,6 +161,9 @@
 				.on("stringified_obj", function(data) {
 					downloadWithName("COMPONENT:"+data.value, data.name+".istc");
 					//window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
+				}, this)
+				.on("inspect", function(data) {
+					$("#obj_nav", this.element).navigator("open_cobj", data);
 				}, this);
 			};
 
@@ -433,7 +436,29 @@
 						.on("done_editing_cell", _.bind(function(event) {
 							this.editor.setValue("");
 							this._disable_editor();
-						}, this));
+						}, this))
+						.on("add_highlight", _.bind(function(event) {
+							var client = event.client,
+								type = client.type ? client.type() : false;
+							if(type === "stateful" || type === "dict") {
+								this.client_socket.post({
+									type: "add_highlight",
+									cobj_id: client.cobj_id
+								});
+							}
+						}, this))
+						.on("remove_highlight", _.bind(function(event) {
+							var client = event.client,
+								type = client.type ? client.type() : false;
+							if(type === "stateful" || type === "dict") {
+								if(this.client_socket) { // this might happen after everything was destroyed
+									this.client_socket.post({
+										type: "remove_highlight",
+										cobj_id: client.cobj_id
+									});
+								}
+							}
+						}, this)) ;
 		},
 
 		_removeEventListeners: function() {

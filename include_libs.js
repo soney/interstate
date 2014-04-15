@@ -151,7 +151,7 @@ exports.include_templates = function(strs, exclude_css) {
 		if(ends_with(str, ".js")) {
 			return "<script type = 'text/javascript' src = '"+str+"'></script>";
 		} else if(ends_with(str, ".css") && exclude_css !== true) {
-			return "<link rel = 'stylesheet' href = '"+str+"' media='screen' />";
+			return "<link rel = 'stylesheet' href = '"+str+"' />";
 		} else {
 			return "";
 		}
