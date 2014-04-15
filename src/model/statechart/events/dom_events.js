@@ -19,7 +19,8 @@
 			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var self = this;
 				var listener = function (event) {
-					//event.preventDefault();
+					event.preventDefault();
+					event.stopPropagation();
 
 					ist.event_queue.wait();
 
@@ -32,9 +33,9 @@
 
 					self.fire(new_event);
 					// Removing defer statement so that stopPropagation and preventDefault work
-					//_.defer(function () {
+					_.defer(function () {
 						ist.event_queue.signal();
-					//});
+					});
 				};
 				listener.destroy = function() {
 					self = null;
