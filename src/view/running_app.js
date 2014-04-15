@@ -190,6 +190,7 @@
 												.css(this.hidden_button_css);
 				this.inspect = $("<ul />")		.append("<li><p class='first'><img src='src/view/editor/style/images/circle_info.png' width='15px'/> Inspect</p></li>")
 												.css(this.palette_css)
+												.on("click", _.bind())
 				this.palette = $("<ul />")		.append("<li><p class='rectangle'><img src='src/view/editor/style/images/square.png' width='15px'/> Rectangle</p></li>")
 												.append("<li><p class='ellipse'><img src='src/view/editor/style/images/circle.png' width='15px'> Ellipse</p></li>")
 												.append("<li><p class='text'><img src='src/view/editor/style/images/font.png' width='15px'> Text</p></li>")												
