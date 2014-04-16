@@ -127,11 +127,11 @@
 	ist.ContextualDict = function (options) {
 		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
 		this.get_dom_obj_and_src = cjs.memoize(this._get_dom_obj_and_src, {context: this});
-		this.prop_val = cjs.memoize(this._prop_val, {context: this});
-		this.prop = cjs.memoize(this._prop, {context: this});
+		//this.prop_val = cjs.memoize(this._prop_val, {context: this});
+		//this.prop = cjs.memoize(this._prop, {context: this});
 		this.children = cjs.memoize(this._children, {context: this});
-		this.instances = cjs.memoize(this._instances, {context: this});
-		this.is_template = cjs.memoize(this._is_template, {context: this});
+		//this.instances = cjs.memoize(this._instances, {context: this});
+		//this.is_template = cjs.memoize(this._is_template, {context: this});
 		this.get_dom_children = cjs.memoize(this._get_dom_children, {context: this});
 		//this.get_all_protos = this._get_all_protos;
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
@@ -407,7 +407,7 @@
 			}
 			return info;
 		};
-		proto._prop = function (name, ignore_inherited) {
+		proto.prop = function (name, ignore_inherited) {
 			var info = this.prop_info(name, ignore_inherited);
 
 			if (info) {
@@ -419,7 +419,7 @@
 			}
 		};
 
-		proto._prop_val = function (name, ignore_inherited) {
+		proto.prop_val = function (name, ignore_inherited) {
 			var value = this.prop(name, ignore_inherited);
 			if (value instanceof ist.ContextualObject) {
 				return value.val();
@@ -468,7 +468,7 @@
 			return false;
 		};
 
-		proto._is_template = function () {
+		proto.is_template = function () {
 			if(this.is_instance()) {
 				return false;
 			} else {
@@ -541,7 +541,7 @@
 
 			return manifestation_pointers;
 		};
-		proto._instances = function () {
+		proto.instances = function () {
 			var object = this.get_object();
 			var instance_pointers = this.instance_pointers();
 			var manifestation_contextual_objects = _.map(instance_pointers, function(instance_pointer) {
@@ -654,16 +654,25 @@
 			delete this.get_all_protos;
 			this.get_dom_obj_and_src.destroy(true);
 			delete this.get_dom_obj_and_src;
-			this.prop_val.destroy(true);
-			delete this.prop_val;
-			this.prop.destroy(true);
-			delete this.prop;
+			if(this.prop_val.destroy) {
+				this.prop_val.destroy(true);
+				delete this.prop_val;
+			}
+			if(this.prop.destroy) {
+				this.prop.destroy(true);
+				delete this.prop;
+			}
+
 			this.children.destroy(true);
 			delete this.children;
-			this.instances.destroy(true);
-			delete this.instances;
-			this.is_template.destroy(true);
-			delete this.is_template;
+			if(this.instance.destroy) {
+				this.instances.destroy(true);
+				delete this.instances;
+			}
+			if(this.is_template.destroy) {
+				this.is_template.destroy(true);
+				delete this.is_template;
+			}
 			this.get_dom_children.destroy(true);
 			delete this.get_dom_children;
 		};
