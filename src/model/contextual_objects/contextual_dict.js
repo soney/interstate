@@ -125,7 +125,7 @@
 	};
 
 	ist.ContextualDict = function (options) {
-		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
+		//this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
 		this.get_dom_obj_and_src = cjs.memoize(this._get_dom_obj_and_src, {context: this});
 		//this.prop_val = cjs.memoize(this._prop_val, {context: this});
 		//this.prop = cjs.memoize(this._prop, {context: this});
@@ -160,7 +160,7 @@
 			return dict.has_copies();
 		};
 
-		proto._get_all_protos = function() {
+		proto.get_all_protos = function() {
 			return ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
 		};
 
@@ -650,8 +650,8 @@
 			// Sometimes I switch get_all_protos to a non-memoized form so check
 			if(this.get_all_protos.destroy) {
 				this.get_all_protos.destroy(true);
+				delete this.get_all_protos;
 			}
-			delete this.get_all_protos;
 			this.get_dom_obj_and_src.destroy(true);
 			delete this.get_dom_obj_and_src;
 			if(this.prop_val.destroy) {

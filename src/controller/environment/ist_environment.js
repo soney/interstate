@@ -6,6 +6,104 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+
+	var tp = {}
+	var touches = {
+		points: cjs([]),
+		starts: cjs([]),
+		getTouch: function(index, get_start) {
+			if(get_start) {
+				return this.starts.get(index);
+			} else {
+				return this.points.get(index);
+			}
+		},
+		count: cjs(0)
+	};
+	window.touches = touches;
+	var touchstart_listener = function(event) {
+		cjs.wait();
+		_.each(event.changedTouches, function(ct) {
+			var touch = tp[ct.identifier]
+			if(!touch) {
+				touch = tp[ct.identifier] = {
+					x: cjs(event.pageX),
+					y: cjs(event.pageY),
+					id: event.identifier
+				};
+				touches.points.push(touch);
+				touches.starts.push({
+					x: event.pageX,
+					y: event.pageY
+				});
+			} else {
+				touch.x.set(event.pageX);
+				touch.y.set(event.pageY);
+			}
+		});
+
+		touches.count.set(event.touches.length);
+
+		cjs.signal();
+		event.preventDefault();
+	};
+	var touchmove_listener = function(event) {
+		cjs.wait();
+		_.each(event.changedTouches, function(ct) {
+			var touch = tp[ct.identifier]
+			if(!touch) {
+				touch = tp[ct.identifier] = {
+					x: cjs(event.pageX),
+					y: cjs(event.pageY),
+					id: event.identifier
+				};
+
+				touches.points.push(touch);
+				touches.starts.push({
+					x: event.pageX,
+					y: event.pageY
+				});
+			} else {
+				touch.x.set(event.pageX);
+				touch.y.set(event.pageY);
+			}
+		});
+		cjs.signal();
+		event.preventDefault();
+	};
+	var touchend_listener = function(event) {
+		cjs.wait();
+		_.each(event.changedTouches, function(ct) {
+			var touch = tp[ct.identifier]
+			if(touch) {
+				touch.x.destroy();
+				touch.y.destroy();
+
+				var index = touches.points.indexOf(touch);
+
+				if(index >= 0) {
+					touches.points.splice(index, 1);
+					touches.starts.splice(index, 1);
+				}
+				delete tp[ct.identifier];
+			}
+		});
+		touches.count.set(event.touches.length);
+		cjs.signal();
+		event.preventDefault();
+	};
+	var addTouchListeners = function() {
+		window.addEventListener("touchstart", touchstart_listener);
+		window.addEventListener("touchmove", touchmove_listener);
+		window.addEventListener("touchend", touchend_listener);
+	};
+	var removeTouchListeners = function() {
+		window.removeEventListener("touchstart", touchstart_listener);
+		window.removeEventListener("touchmove", touchmove_listener);
+		window.removeEventListener("touchend", touchend_listener);
+	};
+	addTouchListeners();
+
 	ist.Environment = function (options) {
 		// Undo stack
 		this._command_stack = new ist.CommandStack();
@@ -16,6 +114,7 @@
 		} else {
 			root = ist.get_default_root(!options || options.builtins);
 		}
+		root.set("touches", touches);
 
 		//Context tracking
 		this.pointer = new ist.Pointer({stack: [root]});

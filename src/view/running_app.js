@@ -42,14 +42,17 @@
 			this.$inspecting_hover_object = cjs(false);
 			this.$breakpoints = cjs({});
 
+
 			if(!this.option("root")) {
 				var root = ist.load();
 				if(!root) {
 					root = ist.get_default_root();
 					ist.saveAndSetCurrent(root);
 				}
+				this.env = new ist.Environment({root: root});
 				this.option("root", root);
 			}
+			//root.set("touches", window.touches);
 
 			if (this.option("show_edit_button")) {
 				this.button_color = "#990000";
