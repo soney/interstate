@@ -653,7 +653,11 @@
 			$('body').on("mouseup", function(ev) {
 		        if (element_initial_state) {
 		        	if (obj === 'rectangle' || obj === 'image') {
-		        		that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);
+		        		var new_cells = that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);
+
+		        		if (new_cells) {
+		        			cells = new_cells;
+		        		}
 		       		}
 
 		       		else if (obj === 'ellipse') {
@@ -665,13 +669,18 @@
 		       		}
 
 		          element_initial_state = null;
+		          cells = false;
 		        }
 			});		
 
 			$('body').on("mousemove", function(ev) {	
 		        if(element_initial_state) {
 		        	if (obj === 'rectangle' || obj === 'image') {
-		        		that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);
+		        		var new_cells = that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);
+
+		        		if (new_cells) {
+		        			cells = new_cells;
+		        		}
 		       		}
 
 		       		else if (obj === 'ellipse') {
@@ -690,39 +699,42 @@
 
 			var radius_x = element_initial_state.origRadiusX;
 			var radius_y = element_initial_state.origRadiusY;
-			var new_radius_x = Math.max((ev.clientX - element_initial_state.origClickX + radius_x), 15);
-			var new_radius_y = Math.max((ev.clientY - element_initial_state.origClickY + radius_y), 15);
+
+			var new_radius_x = Math.max((ev.clientX - element_initial_state.origClickX + radius_x), 15) + '';
+			var new_radius_y = Math.max((ev.clientY - element_initial_state.origClickY + radius_y), 15) + '';
+
 			var cx = dom_element.cx.baseVal.value;
 			var cy = dom_element.cy.baseVal.value;
-			var rect_x = cx + new_radius_x;
-			var rect_y = cy + new_radius_y;
+
+			var rect_x = cx + parseInt(new_radius_x) + '';
+			var rect_y = cy + parseInt(new_radius_y) + '';
 
 			if(cells) {
 				//...set cell code
+				console.log(cells);
 				var change_cell_commands = {
-					rx: ist.ChangeCellCommand({
+					rx: new ist.ChangeCellCommand({
 						cell: cells.rx,
 						str: new_radius_x
 					}),
-					ry: ist.ChangeCellCommand({
+					ry: new ist.ChangeCellCommand({
 						cell: cells.ry,
 						str: new_radius_y
 					}),
-					x: ist.ChangeCellCommand({
+					x: new ist.ChangeCellCommand({
 						cell: cells.x,
 						str: rect_x
 					}),
-					y: ist.ChangeCellCommand({
+					y: new ist.ChangeCellCommand({
 						cell: cells.y,
 						str: rect_y
 					})
 				};
+				console.log(change_cell_commands);
 				var combined_command = new ist.CombinedCommand({
 				 	commands: _.values(change_cell_commands)
 				});
 				
-				var combined_command_red = new ist.CombinedCommand
-
 				this._command_stack._do(combined_command);
 				return false;
 			} else {
@@ -730,37 +742,98 @@
 					ry_info = this._save_state_single_field(element, 'ry', new_radius_y),
 					x_info = this._save_state_single_field(rect_element, 'x', rect_x), // cx - (rect_width/2)
 					y_info = this._save_state_single_field(rect_element, 'y', rect_y); // cy - (rect_height/2)
+
 				var cells = {
 					rx: rx_info.cell,
 					ry: ry_info.cell,
 					x: x_info.cell,
 					y: y_info.cell,
 				};
-				
+
+				var commands = {
+					rx: rx_info.command,
+					ry: ry_info.command,
+					x: x_info.command,
+					y: y_info.command
+				};
 				var combined_command = new ist.CombinedCommand({
-				 	commands: _.pluck(_.values(change_cell_commands), "command")
+				 	commands: _.values(commands)
 				});
 
+				console.log(combined_command);
 				this._command_stack._do(combined_command);
 				return cells;
 			}
 		},
 
-		_resize_mouse_move_rectangle: function(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element) {
+		_resize_mouse_move_rectangle: function(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells) {
 			var rect_width = rect_dom_element.width.baseVal.value;
 			var rect_height = rect_dom_element.height.baseVal.value;
+
 			var width = element_initial_state.origWidth;
 			var height = element_initial_state.origHeight;
+
 			// Remove magic number
 			var new_width = Math.max((ev.clientX - element_initial_state.origClickX + width), 20);
 			var new_height = Math.max((ev.clientY - element_initial_state.origClickY + height), 20);
-			var new_red_x = (dom_element['x'].baseVal.value + new_width - rect_width) ;
-			var new_red_y = (dom_element['y'].baseVal.value + new_height - rect_height) ;
 
-			this._save_state_single_field(element, 'width', new_width);
-			this._save_state_single_field(element, 'height', new_height);
-			this._save_state_single_field(rect_element, 'x', new_red_x);
-			this._save_state_single_field(rect_element, 'y', new_red_y);
+			var new_red_x = (dom_element['x'].baseVal.value + new_width - rect_width) + '';
+			var new_red_y = (dom_element['y'].baseVal.value + new_height - rect_height) + '';
+
+			if(cells) {
+				//...set cell code
+
+				var change_cell_commands = {
+					rx: new ist.ChangeCellCommand({
+						cell: cells.rx,
+						str: (new_width + '')
+					}),
+					ry: new ist.ChangeCellCommand({
+						cell: cells.ry,
+						str: (new_height + '')
+					}),
+					x: new ist.ChangeCellCommand({
+						cell: cells.x,
+						str: new_red_x
+					}),
+					y: new ist.ChangeCellCommand({
+						cell: cells.y,
+						str: new_red_y
+					})
+				};
+
+				var combined_command = new ist.CombinedCommand({
+				 	commands: _.values(change_cell_commands)
+				});
+				
+				this._command_stack._do(combined_command);
+				return false;
+			} else {
+				var rx_info = this._save_state_single_field(element, 'width', new_width),
+					ry_info = this._save_state_single_field(element, 'height', new_height),
+					x_info = this._save_state_single_field(rect_element, 'x', new_red_x), // cx - (rect_width/2)
+					y_info = this._save_state_single_field(rect_element, 'y', new_red_y); // cy - (rect_height/2)
+
+				var cells = {
+					rx: rx_info.cell,
+					ry: ry_info.cell,
+					x: x_info.cell,
+					y: y_info.cell,
+				};
+
+				var commands = {
+					rx: rx_info.command,
+					ry: ry_info.command,
+					x: x_info.command,
+					y: y_info.command
+				};
+				var combined_command = new ist.CombinedCommand({
+				 	commands: _.values(commands)
+				});
+
+				this._command_stack._do(combined_command);
+				return cells;
+			}
 
 		},
 
