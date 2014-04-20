@@ -7,6 +7,7 @@
 		_ = ist._;
 
 
+/*
 	var tp = {}
 	var touches = {
 		points: cjs([]),
@@ -103,6 +104,7 @@
 		window.removeEventListener("touchend", touchend_listener);
 	};
 	addTouchListeners();
+	*/
 
 	ist.Environment = function (options) {
 		// Undo stack
@@ -114,7 +116,7 @@
 		} else {
 			root = ist.get_default_root(!options || options.builtins);
 		}
-		root.set("touches", touches);
+		//root.set("touches", touches);
 
 		//Context tracking
 		this.pointer = new ist.Pointer({stack: [root]});

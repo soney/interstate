@@ -49,7 +49,6 @@
 					root = ist.get_default_root();
 					ist.saveAndSetCurrent(root);
 				}
-				this.env = new ist.Environment({root: root});
 				this.option("root", root);
 			}
 			//root.set("touches", window.touches);
