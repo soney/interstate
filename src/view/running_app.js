@@ -730,7 +730,6 @@
 						str: rect_y
 					})
 				};
-				console.log(change_cell_commands);
 				var combined_command = new ist.CombinedCommand({
 				 	commands: _.values(change_cell_commands)
 				});
@@ -760,7 +759,6 @@
 				 	commands: _.values(commands)
 				});
 
-				console.log(combined_command);
 				this._command_stack._do(combined_command);
 				return cells;
 			}
