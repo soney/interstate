@@ -665,7 +665,7 @@
 
 			this.children.destroy(true);
 			delete this.children;
-			if(this.instance.destroy) {
+			if(this.instances.destroy) {
 				this.instances.destroy(true);
 				delete this.instances;
 			}
