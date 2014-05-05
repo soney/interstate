@@ -125,25 +125,17 @@
 	};
 
 	ist.ContextualDict = function (options) {
-		//this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
+		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
 		this.get_dom_obj_and_src = cjs.memoize(this._get_dom_obj_and_src, {context: this});
-		//this.prop_val = cjs.memoize(this._prop_val, {context: this});
-		//this.prop = cjs.memoize(this._prop, {context: this});
+		this.prop_val = cjs.memoize(this._prop_val, {context: this});
+		this.prop = cjs.memoize(this._prop, {context: this});
 		this.children = cjs.memoize(this._children, {context: this});
-		//this.instances = cjs.memoize(this._instances, {context: this});
-		//this.is_template = cjs.memoize(this._is_template, {context: this});
+		this.instances = cjs.memoize(this._instances, {context: this});
+		this.is_template = cjs.memoize(this._is_template, {context: this});
 		this.get_dom_children = cjs.memoize(this._get_dom_children, {context: this});
-		//this.get_all_protos = this._get_all_protos;
+		this.get_all_protos = this._get_all_protos;
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
-		/*
-		if(this.sid() == 885) {
-			debugger;
-		}
-		if(this.sid() == 1439) {
-			debugger;
-		}
-		*/
 	};
 
 	(function (My) {
@@ -153,6 +145,14 @@
 			My.superclass.initialize.apply(this, arguments);
 			this._attachment_instances = { };
 			this._manifestation_objects = new RedMap({ });
+			if(ist.__garbage_collect) {
+				this._live_cobj_child_updater = cjs.liven(function() {
+					//this.update_current_contextual_objects();
+				}, {
+					context: this,
+					pause_while_running: true
+				});
+			}
 		};
 
 		proto.has_copies = function() {
@@ -160,7 +160,7 @@
 			return dict.has_copies();
 		};
 
-		proto.get_all_protos = function() {
+		proto._get_all_protos = function() {
 			return ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
 		};
 
@@ -407,7 +407,7 @@
 			}
 			return info;
 		};
-		proto.prop = function (name, ignore_inherited) {
+		proto._prop = function (name, ignore_inherited) {
 			var info = this.prop_info(name, ignore_inherited);
 
 			if (info) {
@@ -419,7 +419,7 @@
 			}
 		};
 
-		proto.prop_val = function (name, ignore_inherited) {
+		proto._prop_val = function (name, ignore_inherited) {
 			var value = this.prop(name, ignore_inherited);
 			if (value instanceof ist.ContextualObject) {
 				return value.val();
@@ -468,7 +468,7 @@
 			return false;
 		};
 
-		proto.is_template = function () {
+		proto._is_template = function () {
 			if(this.is_instance()) {
 				return false;
 			} else {
@@ -541,7 +541,7 @@
 
 			return manifestation_pointers;
 		};
-		proto.instances = function () {
+		proto._instances = function () {
 			var object = this.get_object();
 			var instance_pointers = this.instance_pointers();
 			var manifestation_contextual_objects = _.map(instance_pointers, function(instance_pointer) {
@@ -634,8 +634,58 @@
 			this.get_attachment_instance("box2d_fixture");
 		};
 
+		proto._get_valid_cobj_children = function() {
+			var rv,
+				my_pointer = this.get_pointer();
+
+			if(this.is_instance()) {
+				rv = [];
+			} else {
+				var copies_obj = this.copies_obj();
+				rv = [{pointer: my_pointer.push(copies_obj), obj: copies_obj}];
+			}
+
+			var protos_objs = this.get_all_protos();
+			//ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
+			rv.push.apply(rv, _.chain(protos_objs)
+								.map(function(o) {
+									var proto_obj = o.direct_protos();
+									if(proto_obj instanceof ist.StatefulProp || proto_obj instanceof ist.Dict || proto_obj instanceof ist.Cell) {
+										return {obj: proto_obj, pointer: my_pointer.push(proto_obj)};
+									}
+								})
+								.compact()
+								.value());
+
+			var child_infos = this.raw_children();
+			_.each(child_infos, function(child_info) {
+				var value = child_info.value;
+				if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
+					var ptr = my_pointer.push(value);
+					rv.push({obj: value, pointer: ptr});
+
+					if(value instanceof ist.Dict) {
+						var cobj = ist.find_or_put_contextual_obj(value, ptr);
+						if(cobj.is_template()) {
+							var instances = cobj.instances();
+							rv.push.apply(rv, _.map(instances, function(i) {
+								return {obj: i.get_object(), pointer: i.get_pointer()};
+							}));
+						}
+					}
+				}
+			}, this);
+
+			return rv;
+		};
+
 		proto.destroy = function () {
 			if(this.constructor === My) { this.emit_begin_destroy(); }
+
+			if(this._live_cobj_child_updater) {
+				this._live_cobj_child_updater.destroy(true);
+			}
+
 			//The attachment instances might be listening for property changes for destroy them first
 			_.each(this._attachment_instances, function(attachment_instance) {
 				attachment_instance.destroy(true);

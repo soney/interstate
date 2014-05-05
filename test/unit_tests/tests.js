@@ -107,7 +107,8 @@
 		var the_div = $("<div />").appendTo(document.body);
 		//clear_snapshots(function() {
 			//take_snapshot([], function() {
-				var env = new ist.Environment({builtins: true});
+				var env = new ist.Environment({builtins: false});
+				/*
 				env	.cd("screen")
 						.set("my_circle", "<stateful>")
 						.cd("my_circle")
@@ -122,6 +123,7 @@
 							.set("fill", "init", "'red'")
 							.set("fill", "hover", "'blue'")
 				;
+				/**/
 				var root = env.get_root();
 				the_div.dom_output({
 					root: root,

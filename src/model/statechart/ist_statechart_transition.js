@@ -212,7 +212,7 @@
 
 			cjs.signal();
 			able.destroy_this_listenable(this);
-			ist.unregister_uid(this.id());
+			//ist.unregister_uid(this.id());
 		};
 
 		proto.fire = function (event) {

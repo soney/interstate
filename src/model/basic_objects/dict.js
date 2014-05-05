@@ -127,10 +127,6 @@
                 getter: function (me) { return me.get(); },
                 setter: function (me, val) { me.set(val, true); },
 				destroy: function(me) {
-					if(this.sid() === 159) {
-						debugger;
-					}
-
 					var val = me.get();
 					if(val && val.destroy) {
 						val.destroy();

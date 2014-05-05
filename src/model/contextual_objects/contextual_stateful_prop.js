@@ -35,6 +35,14 @@
 			if(active_value_info.is_fallback) {
 				this.$active_value.invalidate();
 			}
+			if(ist.__garbage_collect) {
+				this._live_cobj_child_updater = cjs.liven(function() {
+					//this.update_current_contextual_objects();
+				}, {
+					context: this,
+					pause_while_running: true
+				});
+			}
 		};
 
 		proto.get_parent = function () {
@@ -336,6 +344,15 @@
 			return this.$active_value.get();
 		};
 
+		proto._get_valid_cobj_children = function() {
+			var my_pointer = this.get_pointer(),
+				rv = _.map(this.get_values(), function(val) {
+					var value = val.value;
+					return {obj: value, pointer: my_pointer.push(value)};
+				});
+			return rv;
+		};
+
 		proto._getter = function () {
 			var last_last_value = this._last_value;
 
@@ -431,6 +448,7 @@
 
 		proto.destroy = function () {
 			if(this.constructor === My) { this.emit_begin_destroy(); }
+			if(this._live_cobj_child_updater) { this._live_cobj_child_updater.destroy(true); }
 			this.$value.offChange(this.$value.get, this.$value);
 			this.$active_value.destroy(true);
 			delete this.$active_value;

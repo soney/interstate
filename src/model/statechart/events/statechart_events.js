@@ -137,7 +137,7 @@
 		var proto = My.prototype;
 		proto.on_create = function (options) {
 			this._id = uid();
-			ist.register_uid(this._id, this);
+			//ist.register_uid(this._id, this);
 
 			this.options = options;
 

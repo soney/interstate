@@ -21,16 +21,6 @@
 		this.children = cjs.map({
 			hash: function (info) {
 				return info.hash;
-			/*
-				var child = info.child,
-					special_contexts = info.special_contexts,
-					hash = ist.pointer_hash(child), i;
-
-				for (i = special_contexts.length - 1; i >= 0; i--) {
-					hash += special_contexts[i].hash();
-				}
-				return hash;
-				*/
 			},
 			equals: function (info1, info2) {
 				if (info1.child === info2.child) {
@@ -54,10 +44,6 @@
 		var proto = my.prototype;
 		proto.initialize = function() {
 			if(ist.__garbage_collect) {
-				/*if(this.id === 474) {
-					debugger;
-				}
-				*/
 				if(this.contextual_object instanceof ist.ContextualDict || this.contextual_object instanceof ist.ContextualStatefulProp) {
 					this._live_updater = cjs.liven(function() {
 						this.update_current_contextual_objects();
@@ -144,57 +130,8 @@
 		};
 
 		proto.get_valid_child_pointers = function() {
-			var cobj = this.get_contextual_object(),
-				my_pointer = this.pointer, rv;
-			if(cobj instanceof ist.ContextualDict) {
-				if(cobj.is_instance()) {
-					rv = [];
-				} else {
-					var copies_obj = cobj.copies_obj();
-					rv = [{pointer: my_pointer.push(copies_obj), obj: copies_obj}];
-				}
-
-				var protos_objs = cobj.get_all_protos();
-				//ist.Dict.get_proto_vals(cobj.get_object(), cobj.get_pointer());
-				rv.push.apply(rv, _.chain(protos_objs)
-									.map(function(o) {
-										var proto_obj = o.direct_protos();
-										if(proto_obj instanceof ist.StatefulProp || proto_obj instanceof ist.Dict || proto_obj instanceof ist.Cell) {
-											return {obj: proto_obj, pointer: my_pointer.push(proto_obj)};
-										}
-									})
-									.compact()
-									.value());
-
-				var child_infos = cobj.raw_children();
-				_.each(child_infos, function(child_info) {
-					var value = child_info.value;
-					if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
-						var ptr = my_pointer.push(value);
-						rv.push({obj: value, pointer: ptr});
-
-						if(value instanceof ist.Dict) {
-							var cobj = ist.find_or_put_contextual_obj(value, ptr);
-							if(cobj.is_template()) {
-								var instances = cobj.instances();
-								rv.push.apply(rv, _.map(instances, function(i) {
-									return {obj: i.get_object(), pointer: i.get_pointer()};
-								}));
-							}
-						}
-					}
-				});
-
-				return rv;
-			} else if(cobj instanceof ist.ContextualStatefulProp) {
-				rv = _.map(cobj.get_values(), function(val) {
-					var value = val.value;
-					return {obj: value, pointer: my_pointer.push(value)};
-				});
-				return rv;
-			} else {
-				return [];
-			}
+			var cobj = this.get_contextual_object();
+			return cobj._get_valid_cobj_children();
 		};
 		proto.update_current_contextual_objects = function(recursive) {
 			cjs.wait();
@@ -325,11 +262,6 @@
 			return rv;
 		};
 		proto.destroy = function() {
-		/*
-			if(this.id === 474) {
-				debugger;
-			}
-			*/
 			if(this._live_updater) { this._live_updater.destroy(); }
 
 			this.children.forEach(function(child) {
