@@ -6,12 +6,11 @@
     var cjs = ist.cjs,
         _ = ist._;
 	ist.CommandStack = function () {
-        var stack = [];
-        var index = -1; // Points at the next thing to undo
+        var stack = [],
+			index = -1, // Points at the next thing to undo
+			transient_stack = [];
 
-		this._do = function(command) {
-			command._do();
-
+		var _add_to_stack = function(command) {
 			var discarded_commands = stack.splice(index + 1, stack.length - index);
 
 			_.forEach(discarded_commands, function (discarded_command) {
@@ -28,6 +27,22 @@
 			this.$undo_description.invalidate();
 			this.$redo_description.invalidate();
 			cjs.signal();
+		};
+
+		this.complete_transient = function() {
+			var combined_command = new ist.CombinedCommand({commands: transient_stack});
+			_add_to_stack(combined_command);
+			transient_stack = [];
+		};
+
+		this._do = function(command, transient) {
+			command._do();
+
+			if(transient) {
+				transient_stack.push(command);
+			} else {
+				_add_to_stack(command);
+			}
 		};
 
 		this._undo = function() {
@@ -55,6 +70,7 @@
 				cjs.signal();
 			}
 		};
+
 
 		this.can_undo = function() {
 			return index >= 0;
