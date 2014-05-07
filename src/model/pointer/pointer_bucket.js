@@ -530,7 +530,7 @@
 			pointer = new ist.Pointer({stack: [obj]});
 		}
 
-		var hash = pointer.hash(),
+		var hash = pointer.hash() + obj.hash(),
 			hashed_vals = cobj_hashes[hash],
 			pointer_root, hvi, i, len, ptr_i, sc_i, hash_i, new_cobj, node, opts;
 
@@ -651,5 +651,27 @@
 		}
 		return rv;
 		*/
+	};
+
+	ist.remove_cobj_cached_item = function(cobj) {
+		var pointer = cobj.get_pointer(),
+			obj = cobj.get_object(),
+			hash = pointer.hash() + obj.hash(),
+			hashes = cobj_hashes[hash],
+			len, i;
+
+		if(hashes) {
+			len = hashes.length;
+			for(i = 0; i<len; i++) {
+				if(cobj === hashes[i]) {
+					if(len === 1) {
+						delete cobj_hashes[hash];
+					} else {
+						hashes.splice(i, 1);
+					}
+					break;
+				}
+			}
+		}
 	};
 }(interstate));

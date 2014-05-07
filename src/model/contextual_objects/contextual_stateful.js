@@ -16,10 +16,10 @@
 		var proto = My.prototype;
 
 		proto.initialize = function() {
-			My.superclass.initialize.apply(this, arguments);
 			this.statecharts_per_proto = new RedMap({
 				hash: "hash"
 			});
+			My.superclass.initialize.apply(this, arguments);
 		};
 
 		proto.get_own_statechart = function () {

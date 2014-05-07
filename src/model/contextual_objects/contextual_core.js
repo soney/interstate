@@ -151,9 +151,16 @@
 			this._destroyed = true;
 
 			ist.remove_cobj_cached_item(this);
+			/*
 			if(avoid_destroy_call !== true) {
 				ist.destroy_contextual_obj(this);
 			}
+			*/
+			this._cobj_children.forEach(function(child) {
+				child.destroy(true);
+			});
+			this._cobj_children.destroy(true);
+			delete this._cobj_children;
 
 			this.$value.destroy(true);
 			delete this.object;
@@ -188,7 +195,7 @@
 			_.each(children, function(cobj, index) {
 				var key = keys[index],
 					//cchild = child.get_contextual_object(),
-					obj = key.child,
+					obj = key.obj,
 					special_context = key.special_context,
 					ptr = my_ptr.push(obj, special_context),
 					hash = ptr.hash(),
@@ -242,7 +249,7 @@
 				var child = to_destroy_info.value,
 					key = to_destroy_info.key;
 				child.destroy(true, true);
-				this.remove_child(key.child, key.special_contexts, key.hash);
+				this._cobj_children.remove(key);
 			}, this);
 
 			this.updateAttachments();
@@ -273,18 +280,34 @@
 		};
 
 		proto.get_or_put_cobj_child = function (obj, special_contexts, hash) {
-			var child_tree = this._cobj_children.getOrPut({
-				obj: obj,
-				special_contexts: special_contexts,
-				hash: hash
-			}, function () {
-				var tree = new ist.PointerTree({
-					pointer: this.pointer.push(child, special_contexts),
-					defer_initialization: true
-				});
-				return tree;
-			}, this);
-			return child_tree;
+			var must_initialize = false,
+				cobj = this._cobj_children.getOrPut({
+					obj: obj,
+					special_contexts: special_contexts,
+					hash: hash
+				}, function () {
+					var cobj = ist.create_contextual_object(obj, this.pointer.push(obj, special_contexts), {
+						defer_initialization: true
+					});
+					must_initialize = true;
+
+					return cobj;
+				}, this);
+
+			if(must_initialize) {
+				cobj.initialize();
+			}
+
+			return cobj;
+		};
+		proto.remove_cobj_child = function(obj, special_contexts, hash) {
+			//var children = _.clone(this._cobj_children.values()),
+			var info = { obj: obj, special_contexts: special_contexts, hash: hash },
+				value = this._cobj_children.get(info);
+			if(value) {
+				this._cobj_children.remove(info);
+				value.destroy(true);
+			}
 		};
 
 		proto.updateAttachments = function(){};

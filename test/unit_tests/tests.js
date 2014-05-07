@@ -107,8 +107,7 @@
 		var the_div = $("<div />").appendTo(document.body);
 		//clear_snapshots(function() {
 			//take_snapshot([], function() {
-				var env = new ist.Environment({builtins: false});
-				/*
+				var env = new ist.Environment({builtins: true});
 				env	.cd("screen")
 						.set("my_circle", "<stateful>")
 						.cd("my_circle")
@@ -209,7 +208,7 @@
 	});
 
 	asyncTest("Pointer Bucket Collection", function() {
-		expect(7);
+		expect(4);
 		//clear_snapshots(function() {
 			//take_snapshot([], function(response) {
 				ist.__garbage_collect = false;
@@ -225,6 +224,7 @@
 				equal(cb_dict.get_object(), b_dict);
 				root.unset("a");
 				equal(croot.prop("a"), undefined);
+				/*
 				var expired_cobjs = ist.get_expired_contextual_objects(root);
 				equal(expired_cobjs.length, 1);
 				equal(expired_cobjs[0], ca_dict);
@@ -233,6 +233,7 @@
 				equal(expired_cobjs.length, 0);
 
 				a_dict.destroy();
+				*/
 				croot.destroy();
 				root.destroy();
 				a_dict = b_dict = croot = root = null;

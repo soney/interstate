@@ -447,6 +447,8 @@
 		};
 
 		proto.destroy = function () {
+			if(this.sid() === 797) debugger;
+
 			if(this.constructor === My) { this.emit_begin_destroy(); }
 			if(this._live_cobj_child_updater) { this._live_cobj_child_updater.destroy(true); }
 			this.$value.offChange(this.$value.get, this.$value);
