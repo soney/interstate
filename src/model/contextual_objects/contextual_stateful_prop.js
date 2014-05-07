@@ -354,10 +354,11 @@
 		};
 
 		proto._getter = function () {
-			var last_last_value = this._last_value;
+			var last_last_value = this._last_value,
+				active_value_info = this.active_value();
 
-			var active_value_info = this.active_value();
 			if(!active_value_info) { return; }
+
 			var using_val = active_value_info.value,
 				using_state = active_value_info.state,
 				using_as = active_value_info.using_as,
@@ -390,13 +391,9 @@
 				}
 			}
 
-/*
-			if(this.sid() === 427) {
-				if(this.$value.get() === 200) {
-				}
-				console.log(this.$value.get());
+			if(this.sid() === 797) {
+				debugger;
 			}
-			*/
 
 			var stateful_prop = this.get_object();
 
@@ -447,8 +444,6 @@
 		};
 
 		proto.destroy = function () {
-			if(this.sid() === 797) debugger;
-
 			if(this.constructor === My) { this.emit_begin_destroy(); }
 			if(this._live_cobj_child_updater) { this._live_cobj_child_updater.destroy(true); }
 			this.$value.offChange(this.$value.get, this.$value);
