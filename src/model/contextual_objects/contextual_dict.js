@@ -147,7 +147,7 @@
 			this._manifestation_objects = new RedMap({ });
 			if(ist.__garbage_collect) {
 				this._live_cobj_child_updater = cjs.liven(function() {
-					//this.update_current_contextual_objects();
+					this.update_cobj_children();
 				}, {
 					context: this,
 					pause_while_running: true
@@ -439,9 +439,9 @@
 
 			var manifestations = this.copies_obj();
 			if (manifestations instanceof ist.Cell) {
-				var manifestations_pointer = pointer.push(manifestations);
-				var manifestations_contextual_object = ist.find_or_put_contextual_obj(manifestations, manifestations_pointer);
-				var manifestations_value = manifestations_contextual_object.val();
+				var manifestations_pointer = pointer.push(manifestations),
+					manifestations_contextual_object = ist.find_or_put_contextual_obj(manifestations, manifestations_pointer),
+					manifestations_value = manifestations_contextual_object.val();
 				manifestations_value = cjs.get(manifestations_value);
 				return manifestations_value;
 			} else {
@@ -450,14 +450,14 @@
 		};
 
 		proto.is_instance = function() {
-			var pointer = this.get_pointer();
-			var object = this.get_object();
-			var obj_index = pointer.lastIndexOf(object);
-			var i;
+			var pointer = this.get_pointer(),
+				object = this.get_object(),
+				obj_index = pointer.lastIndexOf(object),
+				i, special_contexts, special_context;
 
 			if (obj_index >= 0) {
-				var special_contexts = pointer.special_contexts(obj_index);
-				var special_context;
+				special_contexts = pointer.special_contexts(obj_index);
+
 				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
 					special_context = special_contexts[i];
 					if (special_context instanceof ist.CopyContext) {

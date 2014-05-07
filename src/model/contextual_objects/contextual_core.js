@@ -23,7 +23,7 @@
 				return info.hash;
 			},
 			equals: function (info1, info2) {
-				if (info1.child === info2.child) {
+				if (info1.obj === info2.obj) {
 					var sc1 = info1.special_contexts,
 						sc2 = info2.special_contexts;
 
@@ -164,6 +164,130 @@
 			able.destroy_this_listenable(this);
 		};
 		proto._get_valid_cobj_children = function() { return []; };
+
+		proto.update_cobj_children = function(recursive) {
+			cjs.wait();
+			var children = _.clone(this._cobj_children.values()),
+				keys = _.clone(this._cobj_children.keys()),
+				my_ptr = this.get_pointer(),
+
+				valid_children = this._get_valid_cobj_children(),
+				valid_children_map = {},
+				
+				to_destroy = [];
+
+			_.each(valid_children, function(vc) {
+				var hash = vc.pointer.hash();
+				if(_.has(valid_children_map, hash)) {
+					valid_children_map[hash].push(vc);
+				} else {
+					valid_children_map[hash] = [vc];
+				}
+			});
+
+			_.each(children, function(cobj, index) {
+				var key = keys[index],
+					//cchild = child.get_contextual_object(),
+					obj = key.child,
+					special_context = key.special_context,
+					ptr = my_ptr.push(obj, special_context),
+					hash = ptr.hash(),
+					found = false;
+
+				if(_.has(valid_children_map, hash)) {
+					var vcm = valid_children_map[hash], len = vcm.length, vc;
+					for(var i = 0; i<len; i++) {
+						vc = vcm[i];
+						if(vc.obj === obj && vc.pointer.eq(ptr)) {
+							found = true;
+							break;
+						}
+					}
+				}
+
+				if(!found) {
+					to_destroy.push({key: key, value: cobj});
+				}
+			}, this);
+
+			_.each(valid_children, function(valid_child) {
+				var obj = valid_child.obj,
+					ptr = valid_child.pointer,
+					len_minus_1 = ptr.length()-1,
+					hash = ptr.itemHash(len_minus_1),
+					special_contexts = ptr.special_contexts(len_minus_1),
+					also_initialize = false,
+					cobj = this._cobj_children.getOrPut({
+						obj: obj,
+						special_contexts: special_contexts,
+						hash: hash
+					}, function() {
+						var cobj = ist.create_contextual_object(obj, ptr, {
+							//defer_initialization: true
+						});
+						also_initialize = true;
+						return cobj;
+					});
+
+				if(also_initialize) {
+					cobj.initialize();
+				}
+
+				if(recursive) {
+					cobj.update_cobj_children(recursive);
+				}
+			}, this);
+
+			_.each(to_destroy, function(to_destroy_info) {
+				var child = to_destroy_info.value,
+					key = to_destroy_info.key;
+				child.destroy(true, true);
+				this.remove_child(key.child, key.special_contexts, key.hash);
+			}, this);
+
+			this.updateAttachments();
+			/*
+			var valid_off_center_objects = cobj.is_template() ? [] : cobj.get_all_protos(),
+				current_off_center_objects = _.clone(this.off_center_objects.keys());
+			_.each(current_off_center_objects, function(coce) {
+				var index = valid_off_center_objects.indexOf(coce);
+				if(index >= 0) {
+					valid_off_center_objects.splice(index, 1);
+				} else {
+					var off_center_cobj = this.off_center_objects.get(coce);
+					off_center_cobj.destroy(true);
+					//this.off_center_objects.remove(coce);
+					//debugger;
+					//console.log("Remove", coce);
+				}
+			}, this);
+			_.each(valid_off_center_objects, function(voce) {
+				var off_center_cobj = ist.create_contextual_object(voce, my_ptr, {defer_initialization: true});
+				this.off_center_objects.put(voce, off_center_cobj);
+				off_center_cobj.initialize();
+				//console.log("Add", voce);
+			}, this);
+			/**/
+
+			cjs.signal();
+		};
+
+		proto.get_or_put_cobj_child = function (obj, special_contexts, hash) {
+			var child_tree = this._cobj_children.getOrPut({
+				obj: obj,
+				special_contexts: special_contexts,
+				hash: hash
+			}, function () {
+				var tree = new ist.PointerTree({
+					pointer: this.pointer.push(child, special_contexts),
+					defer_initialization: true
+				});
+				return tree;
+			}, this);
+			return child_tree;
+		};
+
+		proto.updateAttachments = function(){};
 
 	}(ist.ContextualObject));
 

@@ -5,6 +5,7 @@
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
+		/*
 
 	var id = 0;
 	ist.PointerTree = function (options) {
@@ -46,7 +47,7 @@
 			if(ist.__garbage_collect) {
 				if(this.contextual_object instanceof ist.ContextualDict || this.contextual_object instanceof ist.ContextualStatefulProp) {
 					this._live_updater = cjs.liven(function() {
-						this.update_current_contextual_objects();
+						//this.update_current_contextual_objects();
 					}, {
 						context: this,
 						pause_while_running: true
@@ -194,9 +195,10 @@
 			}, this);
 
 			_.each(to_destroy, function(to_destroy_info) {
-				var child_tree = to_destroy_info.value;
-				var key = to_destroy_info.key;
-				var child = child_tree.get_contextual_object();
+				var child_tree = to_destroy_info.value,
+					key = to_destroy_info.key,
+					child = child_tree.get_contextual_object();
+
 				child.destroy(true, true);
 				this.remove_child(key.child, key.special_contexts, key.hash);
 			}, this);
@@ -204,39 +206,9 @@
 			if(cobj instanceof ist.ContextualDict) {
 				cobj.update_attachments();
 				//console.log("run");
-				/*
-				var valid_off_center_objects = cobj.is_template() ? [] : cobj.get_all_protos(),
-					current_off_center_objects = _.clone(this.off_center_objects.keys());
-				_.each(current_off_center_objects, function(coce) {
-					var index = valid_off_center_objects.indexOf(coce);
-					if(index >= 0) {
-						valid_off_center_objects.splice(index, 1);
-					} else {
-						var off_center_cobj = this.off_center_objects.get(coce);
-						off_center_cobj.destroy(true);
-						//this.off_center_objects.remove(coce);
-						//debugger;
-						//console.log("Remove", coce);
-					}
-				}, this);
-				_.each(valid_off_center_objects, function(voce) {
-					var off_center_cobj = ist.create_contextual_object(voce, my_ptr, {defer_initialization: true});
-					this.off_center_objects.put(voce, off_center_cobj);
-					off_center_cobj.initialize();
-					//console.log("Add", voce);
-				}, this);
-				/**/
 			}
 
 			cjs.signal();
-		};
-			
-		proto.create_current_contextual_objects = function () {
-			var child_pointers = this.get_valid_child_pointers();
-			_.each(child_pointers, function(child_pointer) {
-				var child_tree = this.getOrPut(child_pointer.obj, child_pointer.pointer.special_contexts());
-				child_tree.create_current_contextual_objects();
-			}, this);
 		};
 		proto.get_expired_children = function() {
 			var children = _.clone(this.children.values());
@@ -312,10 +284,6 @@
 		proto.get_contextual_root = function () {
 			return this.contextual_root;
 		};
-		proto.create_current_contextual_objects = function () {
-			this.tree.create_current_contextual_objects();
-		};
-
 		proto.printValidChildPointers = function() {
 			this.tree.printValidChildPointers();
 		};
@@ -490,7 +458,6 @@
 						to_destroy.push.apply(to_destroy, get_to_destroy(instance));
 					});
 				} else {
-				/*
 					var ptr = root.get_pointer(),
 						obj = root.get_object();
 					if(ptr.points_at() === obj) {
@@ -501,7 +468,7 @@
 							to_destroy.push(cobj);
 						});
 					}
-					*/
+					
 				}
 				var children = root.children();
 				_.each(children, function(child_info) {
@@ -517,68 +484,7 @@
 		return to_destroy;
 	};
 
-	var cobj_hashes = {};
 	window.ch = cobj_hashes;
-	ist.find_or_put_contextual_obj = function (obj, pointer, options) {
-		var pointer_root;
-
-		if (pointer) {
-			pointer_root = pointer.root();
-		} else {
-			pointer = new ist.Pointer({stack: [obj]});
-			pointer_root = obj;
-		}
-
-		var hashed_vals,
-			hash = pointer.hash() + obj.hash();
-		if((hashed_vals = cobj_hashes[hash])) {
-			var hvi;
-			for(var i = 0, len = hashed_vals.length; i<len; i++) {
-				hvi = hashed_vals[i];
-				if(hvi.get_object() === obj && pointer.eq(hvi.get_pointer())) {
-					return hvi;
-				}
-			}
-		} else {
-			hashed_vals = cobj_hashes[hash] = [];
-		}
-
-		var must_initialize = false,
-			pointer_bucket = ist.pointer_buckets.getOrPut(pointer_root, function () {
-				must_initialize = true;
-				return new ist.PointerBucket({
-					root: pointer_root
-				});
-			});
-		if(must_initialize) {
-			pointer_bucket.initialize();
-		}
-
-		var tree = pointer_bucket.find_or_put(obj, pointer, options, true),
-			rv = tree.get_contextual_object((pointer.points_at() === obj) ? false : obj);
-
-		hashed_vals.push(rv);
-		if(!rv._initialized) {
-			rv.initialize(options);
-			if(pointer.points_at() === obj) {
-				tree.initialize();
-			}
-		}
-		return rv;
-		/*
-		for(var i = 0, len = hashed_vals.length; i<len; i++) {
-			hvi = hashed_vals[i];
-			if(hvi.get_object() === obj && pointer.eq(hvi.get_pointer())) {
-				return hvi;
-			}
-		}
-		if(pointer.hash() == 292) {
-			debugger;
-		}
-		hashed_vals.push(rv);
-		return rv;
-		*/
-	};
 	var get_expired_pointer_trees = function(root) {
 		var bucket_roots = ist.pointer_buckets.keys();
 		var invalid_bucket_roots = _.without(bucket_roots, root);
@@ -610,9 +516,140 @@
 		var expired_trees = get_expired_pointer_trees(root);
 		return _.map(expired_trees, function(t) { return t.get_contextual_object(); });
 	};
+	*/
 
-	ist.create_current_contextual_objects = function(root) {
-		var root_bucket = ist.pointer_buckets.get(root);
-		root_bucket.create_current_contextual_objects();
+	ist.pointer_buckets = cjs.map({
+		hash: function(x) { return x.hash(); }
+	});
+
+	var cobj_hashes = {},
+		cobj_roots = {};
+
+	ist.find_or_put_contextual_obj = function (obj, pointer, options) {
+		if(!pointer) {
+			pointer = new ist.Pointer({stack: [obj]});
+		}
+
+		var hash = pointer.hash(),
+			hashed_vals = cobj_hashes[hash],
+			pointer_root, hvi, i, len, ptr_i, sc_i, hash_i, new_cobj, node, opts;
+
+		if(hashed_vals) {
+			i = 0; len = hashed_vals.length;
+			while(i < len) {
+				hvi = hashed_vals[i];
+				if(hvi.get_object() === obj && pointer.eq(hvi.get_pointer())) {
+					return hvi;
+				}
+				i++;
+			}
+		} else {
+			hashed_vals = cobj_hashes[hash] = [];
+		}
+
+/*
+		i = 0;
+		len = cobj_roots.length;
+		while(i < len) {
+			hvi = cobj_roots[i];
+			if(hvi.get_object() === pointer_root) {
+				
+			}
+			i++;
+		}
+		*/
+
+		pointer_root = pointer.root();
+		hash_i = pointer_root.id();
+		node = cobj_roots[hash_i];
+
+		if(!node) {
+			opts = {
+				object: pointer_root,
+				pointer: pointer.slice(0, 1),
+				defer_initialization: true
+			}
+
+			if(pointer_root instanceof ist.StatefulObj) {
+				node = cobj_roots[hash_i] = new ist.ContextualStatefulObj(opts);
+			} else if(pointer_root instanceof ist.Dict) {
+				node = cobj_roots[hash_i] = new ist.ContextualDict(opts);
+			} else {
+				throw new Error("Root pointer should be a dictionary");
+			}
+
+			node.initialize();
+		}
+
+		i = 1;
+		len = pointer.length();
+		
+		//debugger;
+		//node = ist.find_or_put_contextual_obj(pointer_root);
+
+		while (i < len) {
+			ptr_i = pointer.points_at(i);
+			sc_i = pointer.special_contexts(i);
+			hash_i = pointer.itemHash(i);
+			node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i);
+			i++;
+		}
+
+		return node;
+		/*
+
+		//var rv;
+		//if(!node.has_contextual_object()) {
+			//return node;
+			//rv = node.get_contextual_object();
+		//} else {
+		if(obj === pointer.points_at()) {
+			if(!node.has_contextual_object()) {
+				new_cobj = ist.create_contextual_object(obj, pointer, {defer_initialization: true});
+				node.set_contextual_object(new_cobj);
+			}
+		} else {
+			if(!node.has_contextual_object(obj)) {
+				new_cobj = ist.create_contextual_object(obj, pointer, {defer_initialization: true});
+				node.set_contextual_object(new_cobj, obj);
+			}
+		}
+
+		if(new_cobj && !avoid_initialization) {
+			new_cobj.initialize(options);
+			node.initialize();
+		}
+		//}
+		return node;
+//
+			//
+			//return rv;
+		//};
+		//console.log(hash);
+		/*
+
+		var must_initialize = false,
+			pointer_bucket = ist.pointer_buckets.getOrPut(pointer_root, function () {
+				must_initialize = true;
+				return new ist.PointerBucket({
+					root: pointer_root
+				});
+			});
+		if(must_initialize) {
+			pointer_bucket.initialize();
+		}
+
+		var tree = pointer_bucket.find_or_put(obj, pointer, options, true),
+			rv = tree.get_contextual_object((pointer.points_at() === obj) ? false : obj);
+
+		hashed_vals.push(rv);
+		if(!rv._initialized) {
+			rv.initialize(options);
+			if(pointer.points_at() === obj) {
+				tree.initialize();
+			}
+		}
+		return rv;
+		*/
 	};
 }(interstate));

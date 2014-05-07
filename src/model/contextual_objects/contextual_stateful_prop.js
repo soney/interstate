@@ -37,7 +37,7 @@
 			}
 			if(ist.__garbage_collect) {
 				this._live_cobj_child_updater = cjs.liven(function() {
-					//this.update_current_contextual_objects();
+					this.update_cobj_children();
 				}, {
 					context: this,
 					pause_while_running: true

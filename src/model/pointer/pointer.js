@@ -142,7 +142,9 @@
 		};
 
 		proto.eq = function (other) {
-			if(this.hash() !== other.hash()) {
+			if(this === other) {
+				return true;
+			} else if(this.hash() !== other.hash()) {
 				return false;
 			} else  {
 				var my_stack = this._stack,
@@ -166,7 +168,7 @@
 						if (my_len !== other_special_contexts.length) {
 							return false;
 						}
-						for (j = 0; j < my_len; j += 1) {
+						for (j = 0; j < my_len; j++) {
 							if (!my_special_contexts[j].eq(other_special_contexts[j])) {
 								return false;
 							}
