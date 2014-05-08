@@ -26,12 +26,13 @@
 			cjs.wait();
 			this.$undo_description.invalidate();
 			this.$redo_description.invalidate();
-			cjs.signal();
+			cjs.signal();			
+
 		};
 
 		this.complete_transient = function() {
 			var combined_command = new ist.CombinedCommand({commands: transient_stack});
-			_add_to_stack(combined_command);
+			_add_to_stack.call(this, combined_command);
 			transient_stack = [];
 		};
 
@@ -41,7 +42,7 @@
 			if(transient) {
 				transient_stack.push(command);
 			} else {
-				_add_to_stack(command);
+				_add_to_stack.call(this, command);
 			}
 		};
 

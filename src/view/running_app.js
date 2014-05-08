@@ -175,8 +175,8 @@
 												}, this))
 												.on("mousedown.open_editor touchstart.open_editor", _.bind(this.open_editor, this));
 
-				this.undo_redo_buttons = $("<div />").append("<img src='src/view/editor/style/images/undo.png' width='23px' style='margin:3px'>")
-												.append("<img src='src/view/editor/style/images/redo.png' width='23px' style='margin:3px'>")
+				this.undo_redo_buttons = $("<div />").append("<img class='undo' src='src/view/editor/style/images/undo.png' width='23px' style='margin:3px'>")
+												.append("<img class='redo' src='src/view/editor/style/images/redo.png' width='23px' style='margin:3px'>")
 												.css(this.undo_redo_css)
 												.on("mousedown.undo_redo touchstart.undo_redo", _.bind(this.undo_redo, this));
 				
@@ -229,7 +229,8 @@
 													this.editing_button.css(this.editing_button_open_css);
 													this.palette.css(this.palette_css);
 													this.inspect.css(this.inspect_css);
-													this.undo_redo_buttons.css(this.shown_button_css);													
+													this.undo_redo_buttons.css(this.shown_button_css);
+													this.code_view = false;													
 												}, this)
 												.on('design->code', function() {
 													$("body").off("click.doSetProp");
@@ -239,7 +240,8 @@
 													this.editing_button.css(this.editing_button_css);																									
 													this.palette.css(this.palette_css_show);
 													this.inspect.css(this.inspect_css_show);																																																													
-													this.undo_redo_buttons.css(this.shown_button_css);		
+													this.undo_redo_buttons.css(this.shown_button_css);	
+													this.code_view = true;	
 												}, this);
 
 				var append_interval = window.setInterval(_.bind(function (element, edit_button, running_button, editing_button, palette, inspect, undo_redo_buttons) {
@@ -275,8 +277,14 @@
 			this._add_change_listeners();
 		},
 
-		undo_redo: function() {
-			this.client_socket.post_command("undo");
+		undo_redo: function(event) {
+			console.log(event.target.className);
+			if (event.target.className === 'undo') {
+				this._command_stack._undo();
+			}
+			else if (event.target.className === 'redo') {
+				this._command_stack._redo();
+			}
 		},
 
 		create_new_object: function(object) {
@@ -415,7 +423,8 @@
 
 				var rect_context = ist.find_or_put_contextual_obj(stateful_obj, new ist.Pointer({stack:[sketch,screen,stateful_obj_small]}));														
 				var dom_element_small = rect_context.get_dom_obj();
-				
+				dom_element_small.style.display ="none";
+				dom_element_small.id = new_prop_name_small;
 				this._add_resize_listener(stateful_obj_small, dom_element_small, stateful_obj, dom_element, object);											
 			}
 
@@ -629,7 +638,6 @@
 	      	var that = this;	   
 	      	var element_initial_state = null;
 	      	var cells = false;
-
 			$(rect_dom_element).on("mousedown", function(ev) {
 				if (obj === 'rectangle' || obj === 'image') {
 					element_initial_state = {
@@ -651,7 +659,7 @@
 			});
 
 			$('body').on("mouseup", function(ev) {
-		        if (element_initial_state) {
+		        if (element_initial_state && that.code_view) {
 		        	if (obj === 'rectangle' || obj === 'image') {
 		        		var new_cells = that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);
 
@@ -674,7 +682,7 @@
 			});		
 
 			$('body').on("mousemove", function(ev) {	
-		        if(element_initial_state) {
+		        if(element_initial_state && that.code_view) {
 		        	if (obj === 'rectangle' || obj === 'image') {
 		        		var new_cells = that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);
 
@@ -711,7 +719,6 @@
 
 			if(cells) {
 				//...set cell code
-				console.log(cells);
 				var change_cell_commands = {
 					rx: new ist.ChangeCellCommand({
 						cell: cells.rx,
@@ -734,7 +741,7 @@
 				 	commands: _.values(change_cell_commands)
 				});
 				
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 				return false;
 			} else {
 				var rx_info = this._save_state_single_field(element, 'rx', new_radius_x),
@@ -759,7 +766,7 @@
 				 	commands: _.values(commands)
 				});
 
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 				return cells;
 			}
 		},
@@ -804,7 +811,7 @@
 				 	commands: _.values(change_cell_commands)
 				});
 				
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 				return false;
 			} else {
 				var rx_info = this._save_state_single_field(element, 'width', new_width),
@@ -829,7 +836,7 @@
 				 	commands: _.values(commands)
 				});
 
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 				return cells;
 			}
 
@@ -854,7 +861,7 @@
 					commands: _.pluck([x_info_red, y_info_red], "command")
 				});
 
-				this._command_stack._do(combined_command_red);
+				this._command_stack._do(combined_command_red, true);
 			}
 
 			if(cells) {
@@ -874,7 +881,7 @@
 				 	commands: _.values(change_cell_commands)
 				});
 
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 
 				return false;
 			} else {
@@ -890,7 +897,7 @@
 				 	commands: _.pluck([x_info, y_info], "command")
 				});
 
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 				return cells;
 			}						
 
@@ -905,11 +912,41 @@
 	      	var nameX, nameY = "";
 	      	var that = this;
 	      	var cells = false;
+			var sketch = this.option("root");	      	
+	      	var screen = sketch._get_direct_prop('screen');
+			var names;
+
 	      	if (rect_dom_element) {
 	      		var red_square_size = rect_dom_element.width.baseVal.value;      				      		      		
 	      	}
 			$(dom_element).on("mousedown", function(ev) {
-				touchedElement = this;
+				console.log("inspect element");
+				if (that.code_view) {					
+					touchedElement = this;
+		      		names = screen._get_direct_prop_names();
+		      		console.log(element);
+					var command = new ist.MovePropCommand({
+						parent: screen,
+						name: element.get_name(),
+						to: names.length - 1
+					});	
+					that._command_stack._do(command);		      		
+					for (var i = 0; i < names.length; i++) {
+						if (names[i].indexOf("resize") > -1) {
+							$('#'+names[i]).hide();
+						}
+					}
+					var parent = $(dom_element).parent()[0];
+					parent.removeChild(dom_element);
+					parent.insertBefore(dom_element, parent.lastChild.nextSibling);
+
+					if(rect_dom_element) {
+						parent.removeChild(rect_dom_element);					
+						parent.insertBefore(rect_dom_element, parent.lastChild.nextSibling);
+						rect_dom_element.style.display = "block";					
+					}
+				}
+
 				if(!dragData) {
 					if (obj === 'rectangle' || obj === 'text' || obj === 'image') {
 						nameX = 'x';
@@ -941,19 +978,20 @@
 			});
 
 			$(dom_element).on("mouseup", function(ev) {
-		        if(dragData) {
+		        if(dragData && that.code_view) {
 		          var new_cells = that._mouse_move(ev, nameX, nameY, dragData, dragDataRed, element, rect_element, cells);
 		          if (new_cells) {
 		          	cells = new_cells;
 		          }
 
 		          dragData = null;
-				  dragDataRed = null;		          
+				  dragDataRed = null;
+				  that._command_stack.complete_transient();		          
 		        }
 			});			
 
 			$('body').on("mousemove", function(ev) {	
-		        if(dragData) {			
+		        if(dragData && that.code_view) {			
 				  var new_cells = that._mouse_move(ev, nameX, nameY, dragData,dragDataRed,element,rect_element, cells);
 		          if (new_cells) {
 		          	cells = new_cells;
