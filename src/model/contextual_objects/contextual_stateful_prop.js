@@ -18,6 +18,7 @@
 		var proto = My.prototype;
 
 		proto.initialize = function() {
+			//if(this.sid() === 793) { debugger; }
 			My.superclass.initialize.apply(this, arguments);
 			this.transition_times_run = {};
 			this._last_value = NO_VAL;
@@ -389,10 +390,6 @@
 					}
 					//invalidate_value = invalidate_active_value = null;
 				}
-			}
-
-			if(this.sid() === 797) {
-				debugger;
 			}
 
 			var stateful_prop = this.get_object();

@@ -19,6 +19,9 @@
 			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var self = this;
 				var listener = function (event) {
+					if(!self) {
+						return;
+					}
 					//event.preventDefault();
 					//event.stopPropagation();
 
@@ -68,6 +71,7 @@
 				var diff = _.diff(this.targets, targets, function(a, b) {
 					return a.dom_obj === b.dom_obj && a.type === b.type;
 				});
+
 				_.each(diff.removed, function(x) { this.remove_listener(x.from_item); }, this);
 				_.each(diff.added, function(x) { this.add_listener(x.item); }, this);
 
@@ -119,10 +123,12 @@
 			this.live_fn.destroy(true);
 			delete this.live_fn;
 			this.remove_listeners();
+			var self = this;
 			this.get_target_listener.each(function(target_listener) {
 				target_listener.get().destroy();
 			});
 			this.get_target_listener.destroy(true);
+
 			delete this.get_target_listener;
 			delete this.targets;
 			delete this.specified_targets;

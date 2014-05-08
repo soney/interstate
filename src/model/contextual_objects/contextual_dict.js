@@ -636,9 +636,10 @@
 
 		proto._get_valid_cobj_children = function() {
 			var rv,
-				my_pointer = this.get_pointer();
+				my_pointer = this.get_pointer(),
+				is_instance = this.is_instance();
 
-			if(this.is_instance()) {
+			if(is_instance) {
 				rv = [];
 			} else {
 				var copies_obj = this.copies_obj();
@@ -659,15 +660,18 @@
 
 			var child_infos = this.raw_children();
 			_.each(child_infos, function(child_info) {
-				var value = child_info.value;
+				var value = child_info.value,
+					ptr, cobj, instances;
+
 				if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
-					var ptr = my_pointer.push(value);
+					ptr = my_pointer.push(value);
 					rv.push({obj: value, pointer: ptr});
 
 					if(value instanceof ist.Dict) {
-						var cobj = ist.find_or_put_contextual_obj(value, ptr);
+						cobj = ist.find_or_put_contextual_obj(value, ptr);
+
 						if(cobj.is_template()) {
-							var instances = cobj.instances();
+							instances = cobj.instances();
 							rv.push.apply(rv, _.map(instances, function(i) {
 								return {obj: i.get_object(), pointer: i.get_pointer()};
 							}));

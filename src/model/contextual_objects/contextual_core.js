@@ -61,15 +61,17 @@
 		proto.is_template = function() { return false; };
 		proto.instances = function() { return false; };
 		proto.get_name = function() {
-			var pointer = this.get_pointer();
-			var my_index = pointer.indexOf(this.get_object());
+			var pointer = this.get_pointer(),
+				my_index = pointer.indexOf(this.get_object()),
+				parent_obj, parent_pointer, name;
+
 			if(my_index === 0) {
 				return ist.root_name;
 			} else {
-				var parent_obj = pointer.points_at(my_index-1);
-				var parent_pointer = pointer.slice(0, my_index-1);
+				parent_obj = pointer.points_at(my_index-1);
+				parent_pointer = pointer.slice(0, my_index-1);
 				if(parent_obj instanceof ist.Dict) {
-					var name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer().pop());
+					name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer().pop());
 					return name;
 				}
 			}
@@ -230,7 +232,7 @@
 						hash: hash
 					}, function() {
 						var cobj = ist.create_contextual_object(obj, ptr, {
-							//defer_initialization: true
+							defer_initialization: true
 						});
 						also_initialize = true;
 						return cobj;

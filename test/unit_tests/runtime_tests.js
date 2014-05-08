@@ -361,7 +361,7 @@
 				test: function(env, runtime) {
 					ist.emit("my_fire");
 					//debugger;
-					ist.update_current_contextual_objects(env.get_root());
+					//ist.update_current_contextual_objects(env.get_root());
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(cobj.prop_val("x"), 2);
 					ist.emit("my_fire");
