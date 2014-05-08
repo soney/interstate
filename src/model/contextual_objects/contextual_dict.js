@@ -637,7 +637,8 @@
 		proto._get_valid_cobj_children = function() {
 			var rv,
 				my_pointer = this.get_pointer(),
-				is_instance = this.is_instance();
+				is_instance = this.is_instance(),
+				is_template = this.is_template();
 
 			if(is_instance) {
 				rv = [];
@@ -646,39 +647,41 @@
 				rv = [{pointer: my_pointer.push(copies_obj), obj: copies_obj}];
 			}
 
-			var protos_objs = this.get_all_protos();
-			//ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
-			rv.push.apply(rv, _.chain(protos_objs)
-								.map(function(o) {
-									var proto_obj = o.direct_protos();
-									if(proto_obj instanceof ist.StatefulProp || proto_obj instanceof ist.Dict || proto_obj instanceof ist.Cell) {
-										return {obj: proto_obj, pointer: my_pointer.push(proto_obj)};
-									}
-								})
-								.compact()
-								.value());
+			if(!is_template) {
+				var protos_objs = this.get_all_protos();
+				//ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
+				rv.push.apply(rv, _.chain(protos_objs)
+									.map(function(o) {
+										var proto_obj = o.direct_protos();
+										if(proto_obj instanceof ist.StatefulProp || proto_obj instanceof ist.Dict || proto_obj instanceof ist.Cell) {
+											return {obj: proto_obj, pointer: my_pointer.push(proto_obj)};
+										}
+									})
+									.compact()
+									.value());
 
-			var child_infos = this.raw_children();
-			_.each(child_infos, function(child_info) {
-				var value = child_info.value,
-					ptr, cobj, instances;
+				var child_infos = this.raw_children();
+				_.each(child_infos, function(child_info) {
+					var value = child_info.value,
+						ptr, cobj, instances;
 
-				if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
-					ptr = my_pointer.push(value);
-					rv.push({obj: value, pointer: ptr});
+					if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
+						ptr = my_pointer.push(value);
+						rv.push({obj: value, pointer: ptr});
 
-					if(value instanceof ist.Dict) {
-						cobj = ist.find_or_put_contextual_obj(value, ptr);
+						if(value instanceof ist.Dict) {
+							cobj = ist.find_or_put_contextual_obj(value, ptr);
 
-						if(cobj.is_template()) {
-							instances = cobj.instances();
-							rv.push.apply(rv, _.map(instances, function(i) {
-								return {obj: i.get_object(), pointer: i.get_pointer()};
-							}));
+							if(cobj.is_template()) {
+								instances = cobj.instances();
+								rv.push.apply(rv, _.map(instances, function(i) {
+									return {obj: i.get_object(), pointer: i.get_pointer()};
+								}));
+							}
 						}
 					}
-				}
-			}, this);
+				}, this);
+			}
 
 			return rv;
 		};
@@ -762,14 +765,19 @@
 						} else {
 							var group_attachment_instance = this.get_attachment_instance("group");
 							if(group_attachment_instance) {
-								return _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
-									var robj = raphael_attachment.get_robj();
-									if(robj) {
-										return [robj[0], raphael_attachment];
-									} else {
-										return false;
-									}
-								}));
+								var robjs_and_srcs = _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
+										var robj = raphael_attachment.get_robj();
+										if(robj) {
+											return [robj[0], raphael_attachment];
+										} else {
+											return false;
+										}
+									})),
+									rv = [
+										_.pluck(robjs_and_srcs, 0),
+										_.pluck(robjs_and_srcs, 1)
+									];
+								return rv;;
 							}
 						}
 					}

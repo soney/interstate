@@ -10,6 +10,7 @@
 		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "dom_event";
+		debugger;
 	};
 
 	(function (My) {
@@ -18,10 +19,8 @@
 		proto.on_create = function (specified_type, specified_targets) {
 			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var self = this;
+				var id = this._id;
 				var listener = function (event) {
-					if(!self) {
-						return;
-					}
 					//event.preventDefault();
 					//event.stopPropagation();
 
@@ -172,34 +171,35 @@
 			if (!_.isArray(targs)) {
 				targs = [targs];
 			}
-			return _.chain(targs)
-					.map(function(targ) {
-						if(targ instanceof ist.Query) {
-							return targ.value();
-						} else {
-							return targ;
-						}
-					})
-					.flatten(true)
-					.map(function (target_cobj) {
-						if (_.isElement(target_cobj) || target_cobj === window) {
-							return {dom_obj: target_cobj, cobj: target_cobj};
-						} else if (target_cobj instanceof ist.ContextualDict) {
-							if (target_cobj.is_template()) {
-								return _.chain(target_cobj.instances())
-										.map(ist.get_instance_targs)
-										.flatten(true)
-										.value();
+			var rv = _	.chain(targs)
+						.map(function(targ) {
+							if(targ instanceof ist.Query) {
+								return targ.value();
 							} else {
-								return ist.get_instance_targs(target_cobj);
+								return targ;
 							}
-						} else {
-							return false;
-						}
-					})
-					.flatten(true)
-					.compact()
-					.value();
+						})
+						.flatten(true)
+						.map(function (target_cobj) {
+							if (_.isElement(target_cobj) || target_cobj === window) {
+								return {dom_obj: target_cobj, cobj: target_cobj};
+							} else if (target_cobj instanceof ist.ContextualDict) {
+								if (target_cobj.is_template()) {
+									return _.chain(target_cobj.instances())
+											.map(ist.get_instance_targs)
+											.flatten(true)
+											.value();
+								} else {
+									return ist.get_instance_targs(target_cobj);
+								}
+							} else {
+								return false;
+							}
+						})
+						.flatten(true)
+						.compact()
+						.value();
+			return rv;
 		};
 
 	}(ist.DOMEvent));
