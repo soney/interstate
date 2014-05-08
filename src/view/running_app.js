@@ -430,7 +430,7 @@
 
 
 			
-			this._add_event_listeners(stateful_obj_small, dom_element_small, stateful_obj, dom_element, object);		
+			this._add_event_listeners(stateful_obj_small, dom_element_small, stateful_obj, circle_context, dom_element, object);		
 
 		},
 		show_drag_over: function() {
@@ -905,7 +905,7 @@
 
 		},
 
-		_add_event_listeners: function(rect_element, rect_dom_element, element, dom_element, obj) {
+		_add_event_listeners: function(rect_element, rect_dom_element, element, cobj, dom_element, obj) {
 	      	var touchedElement,dragData,dragDataRed=null;
 	      	var objectX, objectY = 0;
 	      	var redObjectX, redObjectY = 0;	      	
@@ -924,10 +924,9 @@
 				if (that.code_view) {					
 					touchedElement = this;
 		      		names = screen._get_direct_prop_names();
-		      		console.log(element);
 					var command = new ist.MovePropCommand({
 						parent: screen,
-						name: element.get_name(),
+						name: cobj.get_name(),
 						to: names.length - 1
 					});	
 					that._command_stack._do(command);		      		
