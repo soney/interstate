@@ -10,7 +10,6 @@
 		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "dom_event";
-		debugger;
 	};
 
 	(function (My) {
