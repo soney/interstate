@@ -538,8 +538,8 @@
 									.set("cx", "(start)", "80*copy_num")
 									.set("cy", "(start)", "80*copy_num")
 									.up()
-								.set("circ2", "<stateful>")
-								.cd("circ2")
+								.set("rect1", "<stateful>")
+								.cd("rect1")
 									.set("(prototypes)", "(start)", "svg.rectangle")
 									.set("fill", "(start)", "group_fill")
 									.set("x", "(start)", "100*copy_num")
@@ -565,7 +565,6 @@
 					ev.initMouseEvent("click");
 
 					circles[0].dispatchEvent(ev);
-					rects[1].dispatchEvent(ev);
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
@@ -583,8 +582,7 @@
 					var ev = document.createEvent("MouseEvent");
 					ev.initMouseEvent("click");
 
-					circles[1].dispatchEvent(ev);
-					rects[0].dispatchEvent(ev);
+					rects[1].dispatchEvent(ev);
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);

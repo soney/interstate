@@ -800,7 +800,6 @@
 				children = [];
 			if (this.is_template()) {
 				var instances = this.instances();
-				debugger;
 				var cs_and_dom_objs = _.chain(instances)
 										.map(function(instance) {
 											return instance.get_dom_obj_and_src();
