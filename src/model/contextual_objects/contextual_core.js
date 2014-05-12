@@ -253,6 +253,7 @@
 				child.destroy(true, true);
 				this._cobj_children.remove(key);
 			}, this);
+			//console.log(this.get_pointer().toString());
 
 			this.updateAttachments();
 			/*

@@ -220,7 +220,18 @@
 		/* jshint +W093 */
 
 		proto.toString = function () {
-			return "pointer (" + _.map(this._stack, function (x) { return x.id ? uid.strip_prefix(x.id()) : x.toString(); }).join(", ") + ")";
+			return "pointer (" + _.map(this._stack, function (x, i) {
+				var id = x.id ? uid.strip_prefix(x.id()) : x.toString(),
+					sc = this._special_contexts[i];
+				if(sc) {
+					_.each(sc, function(c) {
+						if(c instanceof ist.CopyContext) {
+							id += "[" + c.get_copy_num() + "]";
+						}
+					});
+				}
+				return id;
+			}, this).join(", ") + ")";
 		};
 
 		proto.getContextualObjects = function() {
