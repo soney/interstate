@@ -148,6 +148,7 @@
 			}
         };
         proto.destroy = function () {
+			if(this.sid() === 7) debugger;
 			this.emit_begin_destroy();
             this._tree.destroy(true);
 			delete this._tree;

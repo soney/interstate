@@ -913,6 +913,9 @@ var constraint_solver = {
 			// We only care to nullify if the current node is actually valid
 			if (curr_node._valid) {
 				curr_node._valid = false; // Mark it as invalid...
+				if(curr_node._id === 40730) {
+					debugger;
+				}
 				invalid = true;
 
 				// The user can also optionally check if the node should be nullified. This is useful if a large number of nodes
@@ -1145,9 +1148,6 @@ Constraint = function (value, options) {
 	} else {
 		this._valid = false;
 		this._cached_value = undefined;
-	}
-	if(this._id == 14753) {
-		//debugger;
 	}
 };
 
@@ -3327,7 +3327,7 @@ MapConstraint = function (options) {
 	 *     map.remove("x");
 	 *     map.keys(); // ['y']
 	 */
-	proto.remove = function (key) {
+	proto.remove = function (key, silent) {
 		// Find out if there's an actual key set
 		var ki = _find_key.call(this, key, false, false),
 			key_index = ki.i,
@@ -3365,16 +3365,18 @@ MapConstraint = function (options) {
 				}
 			}
 
-			_remove_index.call(this, ordered_index); // remove ordered_index (splices the ordered array)
+			_remove_index.call(this, ordered_index, silent); // remove ordered_index (splices the ordered array)
 			for (i = ordered_index; i < this._ordered_values.length; i += 1) {
 				_set_index(this._ordered_values[i], i); // and update the index for every item
 			}
 
 			// And now all of these constraint variables are invalid.
-			this.$size.invalidate();
-			this.$keys.invalidate();
-			this.$values.invalidate();
-			this.$entries.invalidate();
+			if(!silent) {
+				this.$size.invalidate();
+				this.$keys.invalidate();
+				this.$values.invalidate();
+				this.$entries.invalidate();
+			}
 
 			// OK, now you can run any nullified listeners
 			cjs.signal();

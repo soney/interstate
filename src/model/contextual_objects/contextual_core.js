@@ -224,12 +224,7 @@
 					hash = ptr.itemHash(len_minus_1),
 					special_contexts = ptr.special_contexts(len_minus_1),
 					also_initialize = false,
-					key = {
-						obj: obj,
-						special_contexts: special_contexts,
-						hash: hash
-					},
-					cobj = this.get_or_put_cobj_key(key);
+					cobj = this.get_or_put_cobj_child(obj, special_contexts, hash);
 
 				if(recursive) {
 					cobj.update_cobj_children(recursive);
@@ -273,10 +268,15 @@
 			cjs.signal();
 		};
 
-		proto.get_or_put_cobj_key = function(key) {
+		proto.get_or_put_cobj_child = function (obj, special_contexts, hash) {
 			var must_initialize = false,
+				key = {
+					obj: obj,
+					special_contexts: special_contexts,
+					hash: hash
+				},
 				cobj = this._cobj_children.getOrPut(key, function() {
-					var cobj = ist.create_contextual_object(key.obj, this.pointer.push(key.obj, key.special_contexts), {
+					var cobj = ist.create_contextual_object(obj, this.pointer.push(obj, special_contexts), {
 						defer_initialization: true
 					});
 					must_initialize = true;
@@ -287,18 +287,11 @@
 			if(must_initialize) {
 				cobj.initialize();
 				cobj.on("begin_destroy", function() {
-					this._cobj_children.remove(key);
+					this._cobj_children.remove(key, true); //silent
 				}, this);
 			}
 
 			return cobj;
-		};
-		proto.get_or_put_cobj_child = function (obj, special_contexts, hash) {
-			return this.get_or_put_cobj_key({
-				obj: obj,
-				special_contexts: special_contexts,
-				hash: hash
-			});
 		};
 		proto.remove_cobj_child = function(obj, special_contexts, hash) {
 			//var children = _.clone(this._cobj_children.values()),

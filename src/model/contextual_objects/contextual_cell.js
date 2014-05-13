@@ -10,6 +10,7 @@
 		ist.ContextualCell.superclass.constructor.apply(this, arguments);
 		this._errors = new cjs.Constraint([]);
 		this._type = "cell";
+		if(this.sid() === 2028) debugger;
 	};
 
 	(function (My) {
@@ -37,7 +38,7 @@
 			};
 		};
 		proto.destroy = function () {
-			if(this.sid() === 1971) { debugger; }
+			if(this.sid() === 2028) { debugger; }
 			if(this.constructor === My) { this.emit_begin_destroy(); }
 
 			this.value_constraint.destroy(true);
