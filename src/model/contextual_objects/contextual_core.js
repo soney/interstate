@@ -146,9 +146,7 @@
 		};
 
 		proto.destroy = function (silent, avoid_destroy_call) {
-			if(this.object) {
-				this.object.off("begin_destroy", this.destroy, this);
-			}
+			if(this.object) { this.object.off("begin_destroy", this.destroy, this); }
 			if(this.constructor === My) { this.emit_begin_destroy(); }
 			this._destroyed = true;
 
@@ -226,24 +224,12 @@
 					hash = ptr.itemHash(len_minus_1),
 					special_contexts = ptr.special_contexts(len_minus_1),
 					also_initialize = false,
-					cobj = this._cobj_children.getOrPut({
+					key = {
 						obj: obj,
 						special_contexts: special_contexts,
 						hash: hash
-					}, function() {
-						var cobj = ist.create_contextual_object(obj, ptr, {
-							defer_initialization: true
-						});
-						also_initialize = true;
-						return cobj;
-					});
-
-				if(also_initialize) {
-					cobj.initialize();
-					cobj.on("begin_destroy", function() {
-						this._cobj_children.remove(cobj);
-					}, this);
-				}
+					},
+					cobj = this.get_or_put_cobj_key(key);
 
 				if(recursive) {
 					cobj.update_cobj_children(recursive);
@@ -253,7 +239,9 @@
 			_.each(to_destroy, function(to_destroy_info) {
 				var child = to_destroy_info.value,
 					key = to_destroy_info.key;
+				//if(!child._destroyed) {
 				child.destroy(true, true);
+				//}
 				this._cobj_children.remove(key);
 			}, this);
 			//console.log(this.get_pointer().toString());
@@ -285,14 +273,10 @@
 			cjs.signal();
 		};
 
-		proto.get_or_put_cobj_child = function (obj, special_contexts, hash) {
+		proto.get_or_put_cobj_key = function(key) {
 			var must_initialize = false,
-				cobj = this._cobj_children.getOrPut({
-					obj: obj,
-					special_contexts: special_contexts,
-					hash: hash
-				}, function () {
-					var cobj = ist.create_contextual_object(obj, this.pointer.push(obj, special_contexts), {
+				cobj = this._cobj_children.getOrPut(key, function() {
+					var cobj = ist.create_contextual_object(key.obj, this.pointer.push(key.obj, key.special_contexts), {
 						defer_initialization: true
 					});
 					must_initialize = true;
@@ -302,9 +286,19 @@
 
 			if(must_initialize) {
 				cobj.initialize();
+				cobj.on("begin_destroy", function() {
+					this._cobj_children.remove(key);
+				}, this);
 			}
 
 			return cobj;
+		};
+		proto.get_or_put_cobj_child = function (obj, special_contexts, hash) {
+			return this.get_or_put_cobj_key({
+				obj: obj,
+				special_contexts: special_contexts,
+				hash: hash
+			});
 		};
 		proto.remove_cobj_child = function(obj, special_contexts, hash) {
 			//var children = _.clone(this._cobj_children.values()),

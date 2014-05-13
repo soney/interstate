@@ -37,7 +37,7 @@
 			};
 		};
 		proto.destroy = function () {
-			if(this.sid() === 1873) {debugger; }
+			if(this.sid() === 1971) { debugger; }
 			if(this.constructor === My) { this.emit_begin_destroy(); }
 
 			this.value_constraint.destroy(true);

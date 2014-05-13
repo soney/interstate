@@ -124,7 +124,11 @@
 		proto.hash = function () { return this._hash; };
 		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
     
+		proto.emit_begin_destroy = function() {
+			this._emit("begin_destroy");
+		};
         proto.destroy = function () {
+			this.emit_begin_destroy();
 			ist.unset_instance_builtins(this, My);
 			ist.unregister_uid(this.id());
 			able.destroy_this_listenable(this);
