@@ -240,6 +240,9 @@
 
 				if(also_initialize) {
 					cobj.initialize();
+					cobj.on("begin_destroy", function() {
+						this._cobj_children.remove(cobj);
+					}, this);
 				}
 
 				if(recursive) {
