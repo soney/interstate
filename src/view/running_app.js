@@ -190,6 +190,9 @@
 												.css(this.hidden_button_css);
 				this.inspect = $("<ul />")		.append("<li><p class='first'><img src='src/view/editor/style/images/circle_info.png' width='15px'/> Inspect</p></li>")
 												.css(this.palette_css)
+												.on('click', function() {
+													console.log("inspect element in code view clicked");
+												});
 				this.palette = $("<ul />")		.append("<li><p class='rectangle'><img src='src/view/editor/style/images/square.png' width='15px'/> Rectangle</p></li>")
 												.append("<li><p class='ellipse'><img src='src/view/editor/style/images/circle.png' width='15px'> Ellipse</p></li>")
 												.append("<li><p class='text'><img src='src/view/editor/style/images/font.png' width='15px'> Text</p></li>")												
@@ -287,6 +290,7 @@
 			}
 		},
 
+		// handles creation of new object including adding event listeners and resize handle
 		create_new_object: function(object) {
 			var stateful_obj = new ist.StatefulObj(undefined, true),
 			protos_stateful_prop = new ist.StatefulProp({can_inherit: false,
@@ -430,7 +434,7 @@
 
 
 			
-			this._add_event_listeners(stateful_obj_small, dom_element_small, stateful_obj, circle_context, dom_element, object);		
+			this._add_event_listeners(stateful_obj_small, dom_element_small, stateful_obj, circle_context, rect_context, dom_element, object);		
 
 		},
 		show_drag_over: function() {
@@ -594,23 +598,9 @@
 			}
 		},
 
-
-		// fields and values are arrays, must have the same length
-		_save_state_multiple_fields: function(element, fields, values) {
-			if (fields.length != values.length) {
-				//@TODO, make error handling better
-				console.log("ERROR, SHOULD NOT HAVE REACHED HERE");
-			}
-			for (var i = 0; i < fields.length; i++) {
-				_save_state_single_field(element, fields[i], values[i]);
-			}
-
-		},
-
-		/*
-		field is a string
-		value need not be a string
-		*/
+		// field is a string
+		// value need not be a string
+		// saves a single state 
 		_save_state_single_field: function(element, field, value) {
 			var field_stateful_prop = new ist.StatefulProp({statechart_parent: element});
 			var string_value = value + '';
@@ -842,12 +832,6 @@
 
 		},
 
-/*		_resize_mouse_move: function(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element) {
-			ev = ev || event;
-
-			this._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);			
-
-		}, */
 		_mouse_move : function(ev, nameX, nameY, dragData, dragDataRed, element, rect_element, cells) {
 			ev = ev || event;	
 			var new_position_x = ev.clientX - dragData.x;
@@ -900,12 +884,9 @@
 				this._command_stack._do(combined_command, true);
 				return cells;
 			}						
-
-
-
 		},
 
-		_add_event_listeners: function(rect_element, rect_dom_element, element, cobj, dom_element, obj) {
+		_add_event_listeners: function(rect_element, rect_dom_element, element, cobj, cobj_rect, dom_element, obj) {
 	      	var touchedElement,dragData,dragDataRed=null;
 	      	var objectX, objectY = 0;
 	      	var redObjectX, redObjectY = 0;	      	
@@ -935,13 +916,14 @@
 							$('#'+names[i]).hide();
 						}
 					}
-					var parent = $(dom_element).parent()[0];
-					parent.removeChild(dom_element);
-					parent.insertBefore(dom_element, parent.lastChild.nextSibling);
 
-					if(rect_dom_element) {
-						parent.removeChild(rect_dom_element);					
-						parent.insertBefore(rect_dom_element, parent.lastChild.nextSibling);
+					if(rect_dom_element && cobj_rect) {
+						var command_rect = new ist.MovePropCommand({
+							parent: screen,
+							name: cobj_rect.get_name(),
+							to: names.length - 1
+						});	
+						that._command_stack._do(command_rect);	
 						rect_dom_element.style.display = "block";					
 					}
 				}
