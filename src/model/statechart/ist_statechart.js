@@ -749,7 +749,7 @@
 				if(from instanceof ist.StartState) {
 					from.setTo(from);
 				} else {
-					transition.remove().destroy();
+					transition.remove().destroy(silent);
 				}
 			});
 			_.forEach(this.get_outgoing_transitions(), function (transition) {

@@ -692,10 +692,7 @@
 
 		proto.destroy = function () {
 			if(this.constructor === My) { this.emit_begin_destroy(); }
-
-			if(this._live_cobj_child_updater) {
-				this._live_cobj_child_updater.destroy(true);
-			}
+			if(this._live_cobj_child_updater) { this._live_cobj_child_updater.destroy(true); }
 
 			//The attachment instances might be listening for property changes for destroy them first
 			_.each(this._attachment_instances, function(attachment_instance) {

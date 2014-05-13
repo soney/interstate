@@ -67,7 +67,6 @@ exports.runtime = c(
 				"model/basic_objects/query.js",
 				"model/pointer/pointer.js",
 				"model/pointer/special_contexts.js",
-				"model/pointer/pointer_bucket.js",
 				"model/contextual_objects/contextual_core.js",
 				"model/contextual_objects/contextual_dict.js",
 				"model/contextual_objects/contextual_cell.js",

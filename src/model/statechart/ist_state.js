@@ -445,7 +445,7 @@
 			this.off_transition(event.str, event.activation_listener, event.deactivation_listener, event.context);
 		};
 		proto.onBasisDestroy = function (event) {
-			this.destroy();
+			this.destroy(true);
 		};
 
 		proto.destroy = function (silent) {

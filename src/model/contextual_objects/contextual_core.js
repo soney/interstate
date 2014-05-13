@@ -347,4 +347,91 @@
 
 		return rv;
 	};
+
+	var cobj_hashes = {},
+		cobj_roots = {};
+
+	ist.find_or_put_contextual_obj = function (obj, pointer, options) {
+		if(!pointer) {
+			pointer = new ist.Pointer({stack: [obj]});
+		}
+
+		var hash = pointer.hash() + obj.hash(),
+			hashed_vals = cobj_hashes[hash],
+			pointer_root, hvi, i, len, ptr_i, sc_i, hash_i, new_cobj, node, opts;
+
+		if(hashed_vals) {
+			i = 0; len = hashed_vals.length;
+			while(i < len) {
+				hvi = hashed_vals[i];
+				if(hvi.get_object() === obj && pointer.eq(hvi.get_pointer())) {
+					return hvi;
+				}
+				i++;
+			}
+		} else {
+			hashed_vals = cobj_hashes[hash] = [];
+		}
+
+		pointer_root = pointer.root();
+		hash_i = pointer_root.id();
+		node = cobj_roots[hash_i];
+
+		if(!node) {
+			opts = {
+				object: pointer_root,
+				pointer: pointer.slice(0, 1),
+				defer_initialization: true
+			}
+
+			if(pointer_root instanceof ist.StatefulObj) {
+				node = cobj_roots[hash_i] = new ist.ContextualStatefulObj(opts);
+			} else if(pointer_root instanceof ist.Dict) {
+				node = cobj_roots[hash_i] = new ist.ContextualDict(opts);
+			} else {
+				throw new Error("Root pointer should be a dictionary");
+			}
+
+			node.initialize();
+		}
+
+		i = 1;
+		len = pointer.length();
+		
+		while (i < len) {
+			ptr_i = pointer.points_at(i);
+			sc_i = pointer.special_contexts(i);
+			hash_i = pointer.itemHash(i);
+			node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i);
+			i++;
+		}
+
+		return node;
+	};
+
+	ist.remove_cobj_cached_item = function(cobj) {
+		var pointer = cobj.get_pointer(),
+			obj = cobj.get_object(),
+			hash = pointer.hash() + obj.hash(),
+			hashes = cobj_hashes[hash],
+			len, i;
+
+		if(pointer.length() === 1) {
+			delete cobj_roots[obj.id()];
+		}
+
+		if(hashes) {
+			len = hashes.length;
+			for(i = 0; i<len; i++) {
+				if(cobj === hashes[i]) {
+					if(len === 1) {
+						delete cobj_hashes[hash];
+					} else {
+						hashes.splice(i, 1);
+					}
+					break;
+				}
+			}
+		}
+	};
 }(interstate));
