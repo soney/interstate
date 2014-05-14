@@ -19,25 +19,6 @@
 		this._type = "none";
 
 		this._cobj_children = {};
-		/*
-		this._cobj_children = cjs.map({
-			hash: function (info) {
-				return info.hash;
-			},
-			equals: function (info1, info2) {
-				if (info1.obj === info2.obj) {
-					var sc1 = info1.special_contexts,
-						sc2 = info2.special_contexts;
-
-					return ist.check_special_context_equality(sc1, sc2);
-				} else {
-					return false;
-				}
-			},
-			keys: options && options.pointer_keys || [],
-			values: options && options.pointer_values || []
-		});
-		*/
 
 		able.make_this_listenable(this);
 
@@ -154,23 +135,12 @@
 			this._destroyed = true;
 
 			ist.remove_cobj_cached_item(this);
-			/*
-			if(avoid_destroy_call !== true) {
-				ist.destroy_contextual_obj(this);
-			}
-			*/
-			_.each(this._cobj_children, function(vals, key) {
+			_.each(this._cobj_children, function(infos, key) {
 				_.each(infos, function(info) {
-					info.child.destroy(true);
+					info.cobj.destroy(true);
 				});
 				delete this._cobj_children[key];
-			});
-			/*
-			this._cobj_children.forEach(function(child) {
-				child.destroy(true);
-			});
-			this._cobj_children.destroy(true);
-			*/
+			}, this);
 			delete this._cobj_children;
 
 			this.$value.destroy(true);
@@ -183,16 +153,14 @@
 		};
 		proto._get_valid_cobj_children = function() { return []; };
 
-		var YES = 2,
-			MAYBE = 1,
-			NO = 0;
 
 		proto.update_cobj_children = function(recursive) {
 			cjs.wait();
 			var valid_children = this._get_valid_cobj_children(),
 				to_destroy = {};
+
 			_.each(_.keys(this._cobj_children), function(key) {
-				to_destroy[key] = YES;
+				to_destroy[key] = true;
 			});
 
 			_.each(valid_children, function(valid_child) {
@@ -202,15 +170,18 @@
 					hash = ptr.itemHash(len_minus_1),
 					special_contexts = ptr.special_contexts(len_minus_1),
 					found = false,
-					hash_children;
-
+					hash_children,
+					td, cobj;
 
 				if(_.has(this._cobj_children, hash)) {
-					if(to_destroy[hash] === YES) {
+					var hash_children = this._cobj_children[hash], i = 0, len = hash_children.length, child_info;
+
+					if(to_destroy[hash] === true) {
+						td = to_destroy[hash] = [];
 					} else {
-						to_destroy[hash] = MAYBE;
+						td = to_destroy[hash];
 					}
-					hash_children = this._cobj_children[hash], i = 0, len = hash_children.length, child_info;
+
 					for(; i<len; i++) {
 						child_info = hash_children[i];
 						if (child_info.obj === obj) {
@@ -219,165 +190,127 @@
 
 							if(ist.check_special_context_equality(sc1, sc2)) {
 								found = true;
+								cobj = child_info.cobj;
+								if(len === 1) {
+									to_destroy[hash] = false;
+								} else {
+									td[i] = false;
+								}
 								break;
 							}
 						}
 					}
 				} else {
-					to_destroy[hash] = NO;
-					hash_children = this._cobj_children[hash] = [{
-						obj: obj,
-						special_contexts: special_contexts
-					}];
+					to_destroy[hash] = false;
+					hash_children = this._cobj_children[hash] = [];
 				}
 
 				if(!found) {
+					cobj = ist.create_contextual_object(obj, ptr, {
+						defer_initialization: true
+					});
+					hash_children.push({
+						obj: obj,
+						special_contexts: special_contexts,
+						cobj: cobj
+					});
+					cobj.initialize();
+					cobj.on("begin_destroy", function() {
+						this.remove_cobj_child(obj, special_contexts, hash);
+					}, this);
 				}
 
-
-
-					/*
-					
-					,
-					also_initialize = false,
-					cobj = this.get_or_put_cobj_child(obj, special_contexts, hash);
-
-/*&
-				var key = keys[index],
-					//cchild = child.get_contextual_object(),
-					obj = key.obj,
-					special_context = key.special_context,
-					ptr = my_ptr.push(obj, special_context),
-					hash = ptr.hash(),
-					found = false;
-				/*
-				if(_.has(valid_children_map, hash)) {
-					valid_children_map[hash].push(vc);
-				} else {
-					valid_children_map[hash] = [vc];
+				if(recursive) {
+					cobj.update_cobj_children(recursive);
 				}
-				*/
 			}, this);
+			_.each(to_destroy, function(td, key) {
+				var hash_children = this._cobj_children[key];
+				if(td === true) {
+					_.each(hash_children, function(d) {
+						var cobj = d.cobj;
+						cobj.destroy(true);
+					}, this);
+					delete this._cobj_children[key];
+				} else if(td !== false) {
+					var i = 0, len = hash_children.length, child_info, cobj;
 
-			_.each(valid_children_map, function(infos, key) {
-				var current_children = [];
-			});
+					for(; i<len; i++) {
+						if(td[i] !== false) {
+							child_info = hash_children[i];
+							cobj = child_info.cobj;
 
-			_.each(children, function(cobj, index) {
-				var key = keys[index],
-					//cchild = child.get_contextual_object(),
-					obj = key.obj,
-					special_contexts = key.special_context,
-					ptr = my_ptr.push(obj, special_context),
-					hash = ptr.hash(),
-					found = false,
-					cobj;
-
-				if(_.has(valid_children_map, hash)) {
-					var vcm = valid_children_map[hash], len = vcm.length, vc;
-					for(var i = 0; i<len; i++) {
-						vc = vcm[i];
-						if(vc.obj === obj && vc.pointer.eq(ptr)) {
-							found = true;
-							cobj = vc.cobj;
-							break;
+							cobj.destroy(true);
+							hash_children.splice(i, 1);
+							if(len === 1) {
+								delete this._cobj_children[key];
+							}
 						}
 					}
 				}
-
-				if(!found) {
-					cobj = this.get_or_put_cobj_child(obj, special_contexts, hash);
-				}
-
-				if(recursive) {
-					cobj.update_cobj_children(recursive);
-				}
 			}, this);
-
-			_.each(valid_children, function(valid_child) {
-				var obj = valid_child.obj,
-					ptr = valid_child.pointer,
-					len_minus_1 = ptr.length()-1,
-					hash = ptr.itemHash(len_minus_1),
-					special_contexts = ptr.special_contexts(len_minus_1),
-					also_initialize = false,
-					cobj = this.get_or_put_cobj_child(obj, special_contexts, hash);
-
-				if(recursive) {
-					cobj.update_cobj_children(recursive);
-				}
-			}, this);
-
-			_.each(to_destroy, function(to_destroy_info) {
-				var child = to_destroy_info.value,
-					key = to_destroy_info.key;
-				//if(!child._destroyed) {
-				child.destroy(true, true);
-				//}
-				this._cobj_children.remove(key);
-			}, this);
-			//console.log(this.get_pointer().toString());
 
 			this.updateAttachments();
-			/*
-			var valid_off_center_objects = cobj.is_template() ? [] : cobj.get_all_protos(),
-				current_off_center_objects = _.clone(this.off_center_objects.keys());
-			_.each(current_off_center_objects, function(coce) {
-				var index = valid_off_center_objects.indexOf(coce);
-				if(index >= 0) {
-					valid_off_center_objects.splice(index, 1);
-				} else {
-					var off_center_cobj = this.off_center_objects.get(coce);
-					off_center_cobj.destroy(true);
-					//this.off_center_objects.remove(coce);
-					//debugger;
-					//console.log("Remove", coce);
-				}
-			}, this);
-			_.each(valid_off_center_objects, function(voce) {
-				var off_center_cobj = ist.create_contextual_object(voce, my_ptr, {defer_initialization: true});
-				this.off_center_objects.put(voce, off_center_cobj);
-				off_center_cobj.initialize();
-				//console.log("Add", voce);
-			}, this);
-			/**/
 
 			cjs.signal();
 		};
 
 		proto.get_or_put_cobj_child = function (obj, special_contexts, hash) {
-			var must_initialize = false,
-				key = {
-					obj: obj,
-					special_contexts: special_contexts,
-					hash: hash
-				},
-				cobj = this._cobj_children.getOrPut(key, function() {
-					var cobj = ist.create_contextual_object(obj, this.pointer.push(obj, special_contexts), {
-						defer_initialization: true
-					});
-					must_initialize = true;
+			var hash_children,
+				cobj;
+			if(_.has(this._cobj_children, hash)) {
+				hash_children = this._cobj_children[hash];
+				var i = 0, len = hash_children.length, child_info;
+				for(; i<len; i++) {
+					child_info = hash_children[i];
+					if (child_info.obj === obj) {
+						var sc1 = child_info.special_contexts,
+							sc2 = special_contexts;
 
-					return cobj;
-				}, this);
-
-			if(must_initialize) {
-				cobj.initialize();
-				cobj.on("begin_destroy", function() {
-					this._cobj_children.remove(key, true); //silent
-				}, this);
+						if(ist.check_special_context_equality(sc1, sc2)) {
+							return child_info.cobj;
+						}
+					}
+				}
+			} else {
+				hash_children = this._cobj_children[hash] = [];
 			}
 
+			cobj = ist.create_contextual_object(obj, this.pointer.push(obj, special_contexts), {
+				defer_initialization: true
+			});
+
+			hash_children.push({
+				obj: obj,
+				special_contexts: special_contexts,
+				cobj: cobj
+			});
+			cobj.initialize();
+			cobj.on("begin_destroy", function() {
+				this.remove_cobj_child(obj, special_contexts, hash);
+			}, this);
 			return cobj;
 		};
+
 		proto.remove_cobj_child = function(obj, special_contexts, hash) {
-			//var children = _.clone(this._cobj_children.values()),
-			var info = { obj: obj, special_contexts: special_contexts, hash: hash },
-				value = this._cobj_children.get(info);
-			if(value) {
-				this._cobj_children.remove(info);
-				value.destroy(true);
+			var hash_children;
+			if(_.has(this._cobj_children, hash)) {
+				hash_children = this._cobj_children[hash];
+				var i = 0, len = hash_children.length, child_info;
+				for(; i<len; i++) {
+					child_info = hash_children[i];
+					if (child_info.obj === obj) {
+						var sc1 = child_info.special_contexts,
+							sc2 = special_contexts;
+
+						if(ist.check_special_context_equality(sc1, sc2)) {
+							hash_children.splice(i, 1);
+							return;
+						}
+					}
+				}
 			}
+			
 		};
 
 		proto.updateAttachments = function(){};
