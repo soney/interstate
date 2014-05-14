@@ -18,6 +18,8 @@
 		this._destroyed = false;
 		this._type = "none";
 
+		this._cobj_children = {};
+		/*
 		this._cobj_children = cjs.map({
 			hash: function (info) {
 				return info.hash;
@@ -35,6 +37,7 @@
 			keys: options && options.pointer_keys || [],
 			values: options && options.pointer_values || []
 		});
+		*/
 
 		able.make_this_listenable(this);
 
@@ -156,10 +159,18 @@
 				ist.destroy_contextual_obj(this);
 			}
 			*/
+			_.each(this._cobj_children, function(vals, key) {
+				_.each(infos, function(info) {
+					info.child.destroy(true);
+				});
+				delete this._cobj_children[key];
+			});
+			/*
 			this._cobj_children.forEach(function(child) {
 				child.destroy(true);
 			});
 			this._cobj_children.destroy(true);
+			*/
 			delete this._cobj_children;
 
 			this.$value.destroy(true);
@@ -172,27 +183,66 @@
 		};
 		proto._get_valid_cobj_children = function() { return []; };
 
+		var YES = 2,
+			MAYBE = 1,
+			NO = 0;
+
 		proto.update_cobj_children = function(recursive) {
 			cjs.wait();
-			var children = _.clone(this._cobj_children.values()),
-				keys = _.clone(this._cobj_children.keys()),
-				my_ptr = this.get_pointer(),
-
-				valid_children = this._get_valid_cobj_children(),
-				valid_children_map = {},
-				
-				to_destroy = [];
-
-			_.each(valid_children, function(vc) {
-				var hash = vc.pointer.hash();
-				if(_.has(valid_children_map, hash)) {
-					valid_children_map[hash].push(vc);
-				} else {
-					valid_children_map[hash] = [vc];
-				}
+			var valid_children = this._get_valid_cobj_children(),
+				to_destroy = {};
+			_.each(_.keys(this._cobj_children), function(key) {
+				to_destroy[key] = YES;
 			});
 
-			_.each(children, function(cobj, index) {
+			_.each(valid_children, function(valid_child) {
+				var obj = valid_child.obj,
+					ptr = valid_child.pointer,
+					len_minus_1 = ptr.length()-1,
+					hash = ptr.itemHash(len_minus_1),
+					special_contexts = ptr.special_contexts(len_minus_1),
+					found = false,
+					hash_children;
+
+
+				if(_.has(this._cobj_children, hash)) {
+					if(to_destroy[hash] === YES) {
+					} else {
+						to_destroy[hash] = MAYBE;
+					}
+					hash_children = this._cobj_children[hash], i = 0, len = hash_children.length, child_info;
+					for(; i<len; i++) {
+						child_info = hash_children[i];
+						if (child_info.obj === obj) {
+							var sc1 = child_info.special_contexts,
+								sc2 = special_contexts;
+
+							if(ist.check_special_context_equality(sc1, sc2)) {
+								found = true;
+								break;
+							}
+						}
+					}
+				} else {
+					to_destroy[hash] = NO;
+					hash_children = this._cobj_children[hash] = [{
+						obj: obj,
+						special_contexts: special_contexts
+					}];
+				}
+
+				if(!found) {
+				}
+
+
+
+					/*
+					
+					,
+					also_initialize = false,
+					cobj = this.get_or_put_cobj_child(obj, special_contexts, hash);
+
+/*&
 				var key = keys[index],
 					//cchild = child.get_contextual_object(),
 					obj = key.obj,
@@ -200,6 +250,28 @@
 					ptr = my_ptr.push(obj, special_context),
 					hash = ptr.hash(),
 					found = false;
+				/*
+				if(_.has(valid_children_map, hash)) {
+					valid_children_map[hash].push(vc);
+				} else {
+					valid_children_map[hash] = [vc];
+				}
+				*/
+			}, this);
+
+			_.each(valid_children_map, function(infos, key) {
+				var current_children = [];
+			});
+
+			_.each(children, function(cobj, index) {
+				var key = keys[index],
+					//cchild = child.get_contextual_object(),
+					obj = key.obj,
+					special_contexts = key.special_context,
+					ptr = my_ptr.push(obj, special_context),
+					hash = ptr.hash(),
+					found = false,
+					cobj;
 
 				if(_.has(valid_children_map, hash)) {
 					var vcm = valid_children_map[hash], len = vcm.length, vc;
@@ -207,13 +279,18 @@
 						vc = vcm[i];
 						if(vc.obj === obj && vc.pointer.eq(ptr)) {
 							found = true;
+							cobj = vc.cobj;
 							break;
 						}
 					}
 				}
 
 				if(!found) {
-					to_destroy.push({key: key, value: cobj});
+					cobj = this.get_or_put_cobj_child(obj, special_contexts, hash);
+				}
+
+				if(recursive) {
+					cobj.update_cobj_children(recursive);
 				}
 			}, this);
 
