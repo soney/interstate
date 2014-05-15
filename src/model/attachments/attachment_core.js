@@ -97,11 +97,13 @@
 	};
 	ist.register_attachment = function(attachment_name, attachment_specs) {
 		var attachment_suffix = "_attachment";
+		var id = 0;
 		var InstanceType = function(options) {
 			InstanceType.superclass.constructor.apply(this, arguments);
 
 			this.type = attachment_name;
 			//this.on_ready();
+			this.id = id++;
 		};
 		(function(My) {
 			_.proto_extend(My, ist.AttachmentInstance);
@@ -159,14 +161,15 @@
 				});
 			};
 			proto.destroy = function(silent) {
-				if(attachment_specs.destroy) {
-					attachment_specs.destroy.call(this, silent);
-				}
 				_.each(attachment_specs.parameters, function(parameter_spec, parameter_name) {
-					this._listeners[parameter_name].destroy();
+					this._listeners[parameter_name].destroy(true);
 				}, this);
 				delete this._listeners;
 				My.superclass.destroy.apply(this, arguments);
+
+				if(attachment_specs.destroy) {
+					attachment_specs.destroy.call(this, silent);
+				}
 			};
 			_.each(attachment_specs.proto_props, function(proto_prop, proto_prop_name) {
 				proto[proto_prop_name] = proto_prop;

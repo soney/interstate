@@ -18,19 +18,22 @@
 		proto.on_create = function (events) {
 			this.events = events;
 			_.each(this.events, function (event) {
+				event.parent = this;
 				event.on_fire(_.bind(function () {
 					this.fire.apply(this, arguments);
 				}, this));
 			}, this);
-			My.superclass.destroy.apply(this, arguments);
+			My.superclass.on_create.apply(this, arguments);
 		};
 
 		proto.destroy = function () {
+			if(this._id === 79) debugger;
 			var args = arguments;
 			_.each(this.events, function (event) {
 				event.destroy.apply(event, args);
 			});
 			delete this.events;
+			My.superclass.destroy.apply(this, arguments);
 		};
 
 		proto.enable = function () {

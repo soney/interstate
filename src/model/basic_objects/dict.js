@@ -313,7 +313,6 @@
 		};
     
         proto.destroy = function () {
-			if(this.sid() === 10) debugger;
 			if(this.constructor === My) { this.emit_begin_destroy(); }
 			ist.unset_instance_builtins(this, My);
 			ist.unregister_uid(this.id());

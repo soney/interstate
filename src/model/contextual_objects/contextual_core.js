@@ -25,6 +25,8 @@
 		if (_.has(options, "object")) { this.object = options.object; }
 		if (_.has(options, "pointer")) { this.pointer = options.pointer; }
 
+		ist.add_cobj_cached_item(this);
+
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
 		}
@@ -359,6 +361,11 @@
 	var cobj_hashes = {},
 		cobj_roots = {};
 
+	if(ist.__debug) {
+		ist.cobj_hashes = cobj_hashes;
+		ist.cobj_roots = cobj_roots;
+	}
+
 	ist.find_or_put_contextual_obj = function (obj, pointer, options) {
 		if(!pointer) {
 			pointer = new ist.Pointer({stack: [obj]});
@@ -415,6 +422,19 @@
 		}
 
 		return node;
+	};
+
+	ist.add_cobj_cached_item = function(cobj) {
+		var pointer = cobj.get_pointer(),
+			obj = cobj.get_object(),
+			hash = pointer.hash() + obj.hash(),
+			hashed_vals = cobj_hashes[hash];
+
+		if(hashed_vals) {
+			hashed_vals.push(cobj);
+		} else {
+			hashed_vals = cobj_hashes[hash] = [cobj];
+		}
 	};
 
 	ist.remove_cobj_cached_item = function(cobj) {
