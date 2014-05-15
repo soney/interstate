@@ -158,9 +158,9 @@
 					listener.resume();
 				});
 			};
-			proto.destroy = function() {
+			proto.destroy = function(silent) {
 				if(attachment_specs.destroy) {
-					attachment_specs.destroy.call(this);
+					attachment_specs.destroy.call(this, silent);
 				}
 				_.each(attachment_specs.parameters, function(parameter_spec, parameter_name) {
 					this._listeners[parameter_name].destroy();

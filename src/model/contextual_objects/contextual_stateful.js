@@ -73,7 +73,10 @@
 		};
 
 		proto.destroy = function () {
-			if(this.constructor === My) { this.emit_begin_destroy(); }
+			if(this.constructor === My) {
+				if(this._live_cobj_child_updater) { this._live_cobj_child_updater.destroy(true); }
+				this.emit_begin_destroy();
+			}
 			this.statecharts_per_proto.forEach(function(statechart) {
 				statechart.destroy(true);
 			});

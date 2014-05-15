@@ -37,7 +37,10 @@
 			};
 		};
 		proto.destroy = function () {
-			if(this.constructor === My) { this.emit_begin_destroy(); }
+			if(this.constructor === My) {
+				this.emit_begin_destroy();
+				this._destroy_all_cobj_children();
+			}
 
 			this.value_constraint.destroy(true);
 			delete this.value_constraint;

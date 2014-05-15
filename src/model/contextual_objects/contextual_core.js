@@ -131,17 +131,14 @@
 
 		proto.destroy = function (silent, avoid_destroy_call) {
 			if(this.object) { this.object.off("begin_destroy", this.destroy, this); }
-			if(this.constructor === My) { this.emit_begin_destroy(); }
+
+			if(this.constructor === My) {
+				this._destroy_all_cobj_children();
+				this.emit_begin_destroy();
+			}
 			this._destroyed = true;
 
 			ist.remove_cobj_cached_item(this);
-			_.each(this._cobj_children, function(infos, key) {
-				_.each(infos, function(info) {
-					info.cobj.destroy(true);
-				});
-				delete this._cobj_children[key];
-			}, this);
-			delete this._cobj_children;
 
 			this.$value.destroy(true);
 			delete this.object;
@@ -151,6 +148,17 @@
 			this._emit("destroyed");
 			able.destroy_this_listenable(this);
 		};
+
+		proto._destroy_all_cobj_children = function() {
+			_.each(this._cobj_children, function(infos, key) {
+				_.each(infos, function(info) {
+					info.cobj.destroy(true);
+				});
+				delete this._cobj_children[key];
+			}, this);
+			delete this._live_cobj_child_updater;
+		};
+
 		proto._get_valid_cobj_children = function() { return []; };
 
 

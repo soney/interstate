@@ -133,7 +133,6 @@
 		this.instances = cjs.memoize(this._instances, {context: this});
 		this.is_template = cjs.memoize(this._is_template, {context: this});
 		this.get_dom_children = cjs.memoize(this._get_dom_children, {context: this});
-		this.get_all_protos = this._get_all_protos;
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
 	};
@@ -150,7 +149,8 @@
 					this.update_cobj_children();
 				}, {
 					context: this,
-					pause_while_running: true
+					pause_while_running: true,
+					on_destroy: _.bind(this._destroy_all_cobj_children, this)
 				});
 			}
 		};
@@ -691,8 +691,10 @@
 		};
 
 		proto.destroy = function () {
-			if(this.constructor === My) { this.emit_begin_destroy(); }
-			if(this._live_cobj_child_updater) { this._live_cobj_child_updater.destroy(true); }
+			if(this.constructor === My) {
+				if(this._live_cobj_child_updater) { this._live_cobj_child_updater.destroy(true); }
+				this.emit_begin_destroy();
+			}
 
 			//The attachment instances might be listening for property changes for destroy them first
 			_.each(this._attachment_instances, function(attachment_instance) {
@@ -708,31 +710,44 @@
 			// Sometimes I switch get_all_protos to a non-memoized form so check
 			if(this.get_all_protos.destroy) {
 				this.get_all_protos.destroy(true);
-				delete this.get_all_protos;
+				delete this.get_all_protos.options.context;
+				delete this.get_all_protos.options.args_map;
 			}
-			this.get_dom_obj_and_src.destroy(true);
-			delete this.get_dom_obj_and_src;
+			if(this.get_dom_obj_and_src.destroy) {
+				this.get_dom_obj_and_src.destroy(true);
+				delete this.get_dom_obj_and_src.options.context;
+				delete this.get_dom_obj_and_src.options.args_map;
+			}
 			if(this.prop_val.destroy) {
 				this.prop_val.destroy(true);
-				delete this.prop_val;
+				delete this.prop_val.options.context;
+				delete this.prop_val.options.args_map;
 			}
 			if(this.prop.destroy) {
 				this.prop.destroy(true);
-				delete this.prop;
+				delete this.prop.options.context;
+				delete this.prop.options.args_map;
 			}
-
-			this.children.destroy(true);
-			delete this.children;
+			if(this.children.destroy) {
+				this.children.destroy(true);
+				delete this.children.options.context;
+				delete this.children.options.args_map;
+			}
 			if(this.instances.destroy) {
 				this.instances.destroy(true);
-				delete this.instances;
+				delete this.instances.options.context;
+				delete this.instances.options.args_map;
 			}
 			if(this.is_template.destroy) {
 				this.is_template.destroy(true);
-				delete this.is_template;
+				delete this.is_template.options.context;
+				delete this.is_template.options.args_map;
 			}
-			this.get_dom_children.destroy(true);
-			delete this.get_dom_children;
+			if(this.get_dom_children.destroy) {
+				this.get_dom_children.destroy(true);
+				delete this.get_dom_children.options.context;
+				delete this.get_dom_children.options.args_map;
+			}
 		};
 
 		proto._getter = function () {

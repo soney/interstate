@@ -115,7 +115,7 @@
 			}
 
 			$(window)	.on("keydown.open_editor", _.bind(this.on_key_down, this))
-						.on("beforeunload onunload unload pagehide", _.bind(this._save, this));
+						.on("beforeunload.do_save onunload.do_save unload.do_save pagehide.do_save", _.bind(this._save, this));
 
 			if(this.option("immediately_create_server_socket")) {
 				this.server_socket = this._create_server_socket();
@@ -173,10 +173,18 @@
 
 		_destroy: function () {
 			this._super();
+			$(window).off(".do_save");
 			this._remove_highlight_listeners();
 
 			this.$highlighting_objects.destroy(true);
+			delete this.$highlighting_objects
 			this.$inspecting_hover_object.destroy(true);
+			delete this.$inspecting_hover_object;
+
+			this.$dirty_program.destroy(true);
+			delete this.$dirty_program;
+			this.$breakpoints.destroy(true);
+			delete this.$breakpoints;
 
 			this._remove_change_listeners();
 			this.element.removeClass("ist_runtime");
