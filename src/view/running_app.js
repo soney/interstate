@@ -178,8 +178,8 @@
 												}, this))
 												.on("mousedown.open_editor touchstart.open_editor", _.bind(this.open_editor, this));
 
-				this.undo_redo_buttons = $("<div />").append("<img src='src/view/editor/style/images/undo.png' width='23px' style='margin:3px'>")
-												.append("<img src='src/view/editor/style/images/redo.png' width='23px' style='margin:3px'>")
+				this.undo_redo_buttons = $("<div />").append("<img class='undo' src='src/view/editor/style/images/undo.png' width='23px' style='margin:3px'>")
+												.append("<img class='redo' src='src/view/editor/style/images/redo.png' width='23px' style='margin:3px'>")
 												.css(this.undo_redo_css)
 												.on("mousedown.undo_redo touchstart.undo_redo", _.bind(this.undo_redo, this));
 				
@@ -193,7 +193,13 @@
 												.css(this.hidden_button_css);
 				this.inspect = $("<ul />")		.append("<li><p class='first'><img src='src/view/editor/style/images/circle_info.png' width='15px'/> Inspect</p></li>")
 												.css(this.palette_css)
+<<<<<<< HEAD
 												.on("click", _.bind(this.begin_inspect, this));
+=======
+												.on('click', function() {
+													console.log("inspect element in code view clicked");
+												});
+>>>>>>> d4431e8598ff023ec47359b614bb449539e091a7
 				this.palette = $("<ul />")		.append("<li><p class='rectangle'><img src='src/view/editor/style/images/square.png' width='15px'/> Rectangle</p></li>")
 												.append("<li><p class='ellipse'><img src='src/view/editor/style/images/circle.png' width='15px'> Ellipse</p></li>")
 												.append("<li><p class='text'><img src='src/view/editor/style/images/font.png' width='15px'> Text</p></li>")												
@@ -233,7 +239,8 @@
 													this.editing_button.css(this.editing_button_open_css);
 													this.palette.css(this.palette_css);
 													this.inspect.css(this.inspect_css);
-													this.undo_redo_buttons.css(this.shown_button_css);													
+													this.undo_redo_buttons.css(this.shown_button_css);
+													this.code_view = false;													
 												}, this)
 												.on('design->code', function() {
 													$("body").off("click.doSetProp");
@@ -243,7 +250,8 @@
 													this.editing_button.css(this.editing_button_css);																									
 													this.palette.css(this.palette_css_show);
 													this.inspect.css(this.inspect_css_show);																																																													
-													this.undo_redo_buttons.css(this.shown_button_css);		
+													this.undo_redo_buttons.css(this.shown_button_css);	
+													this.code_view = true;	
 												}, this);
 
 				var append_interval = window.setInterval(_.bind(function (element, edit_button, running_button, editing_button, palette, inspect, undo_redo_buttons) {
@@ -280,10 +288,17 @@
 			this._add_highlight_listeners();
 		},
 
-		undo_redo: function() {
-			this.client_socket.post_command("undo");
+		undo_redo: function(event) {
+			console.log(event.target.className);
+			if (event.target.className === 'undo') {
+				this._command_stack._undo();
+			}
+			else if (event.target.className === 'redo') {
+				this._command_stack._redo();
+			}
 		},
 
+		// handles creation of new object including adding event listeners and resize handle
 		create_new_object: function(object) {
 			var stateful_obj = new ist.StatefulObj(undefined, true),
 			protos_stateful_prop = new ist.StatefulProp({can_inherit: false,
@@ -420,13 +435,14 @@
 
 				var rect_context = ist.find_or_put_contextual_obj(stateful_obj, new ist.Pointer({stack:[sketch,screen,stateful_obj_small]}));														
 				var dom_element_small = rect_context.get_dom_obj();
-				
+				dom_element_small.style.display ="none";
+				dom_element_small.id = new_prop_name_small;
 				this._add_resize_listener(stateful_obj_small, dom_element_small, stateful_obj, dom_element, object);											
 			}
 
 
 			
-			this._add_event_listeners(stateful_obj_small, dom_element_small, stateful_obj, dom_element, object);		
+			this._add_event_listeners(stateful_obj_small, dom_element_small, stateful_obj, circle_context, rect_context, dom_element, object);		
 
 		},
 		show_drag_over: function() {
@@ -682,23 +698,9 @@
 			}
 		},
 
-
-		// fields and values are arrays, must have the same length
-		_save_state_multiple_fields: function(element, fields, values) {
-			if (fields.length != values.length) {
-				//@TODO, make error handling better
-				console.log("ERROR, SHOULD NOT HAVE REACHED HERE");
-			}
-			for (var i = 0; i < fields.length; i++) {
-				_save_state_single_field(element, fields[i], values[i]);
-			}
-
-		},
-
-		/*
-		field is a string
-		value need not be a string
-		*/
+		// field is a string
+		// value need not be a string
+		// saves a single state 
 		_save_state_single_field: function(element, field, value) {
 			var field_stateful_prop = new ist.StatefulProp({statechart_parent: element});
 			var string_value = value + '';
@@ -726,7 +728,6 @@
 	      	var that = this;	   
 	      	var element_initial_state = null;
 	      	var cells = false;
-
 			$(rect_dom_element).on("mousedown", function(ev) {
 				if (obj === 'rectangle' || obj === 'image') {
 					element_initial_state = {
@@ -748,9 +749,13 @@
 			});
 
 			$('body').on("mouseup", function(ev) {
-		        if (element_initial_state) {
+		        if (element_initial_state && that.code_view) {
 		        	if (obj === 'rectangle' || obj === 'image') {
-		        		that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);
+		        		var new_cells = that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);
+
+		        		if (new_cells) {
+		        			cells = new_cells;
+		        		}
 		       		}
 
 		       		else if (obj === 'ellipse') {
@@ -762,13 +767,18 @@
 		       		}
 
 		          element_initial_state = null;
+		          cells = false;
 		        }
 			});		
 
 			$('body').on("mousemove", function(ev) {	
-		        if(element_initial_state) {
+		        if(element_initial_state && that.code_view) {
 		        	if (obj === 'rectangle' || obj === 'image') {
-		        		that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);
+		        		var new_cells = that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);
+
+		        		if (new_cells) {
+		        			cells = new_cells;
+		        		}
 		       		}
 
 		       		else if (obj === 'ellipse') {
@@ -787,29 +797,32 @@
 
 			var radius_x = element_initial_state.origRadiusX;
 			var radius_y = element_initial_state.origRadiusY;
-			var new_radius_x = Math.max((ev.clientX - element_initial_state.origClickX + radius_x), 15);
-			var new_radius_y = Math.max((ev.clientY - element_initial_state.origClickY + radius_y), 15);
+
+			var new_radius_x = Math.max((ev.clientX - element_initial_state.origClickX + radius_x), 15) + '';
+			var new_radius_y = Math.max((ev.clientY - element_initial_state.origClickY + radius_y), 15) + '';
+
 			var cx = dom_element.cx.baseVal.value;
 			var cy = dom_element.cy.baseVal.value;
-			var rect_x = cx + new_radius_x;
-			var rect_y = cy + new_radius_y;
+
+			var rect_x = cx + parseInt(new_radius_x) + '';
+			var rect_y = cy + parseInt(new_radius_y) + '';
 
 			if(cells) {
 				//...set cell code
 				var change_cell_commands = {
-					rx: ist.ChangeCellCommand({
+					rx: new ist.ChangeCellCommand({
 						cell: cells.rx,
 						str: new_radius_x
 					}),
-					ry: ist.ChangeCellCommand({
+					ry: new ist.ChangeCellCommand({
 						cell: cells.ry,
 						str: new_radius_y
 					}),
-					x: ist.ChangeCellCommand({
+					x: new ist.ChangeCellCommand({
 						cell: cells.x,
 						str: rect_x
 					}),
-					y: ist.ChangeCellCommand({
+					y: new ist.ChangeCellCommand({
 						cell: cells.y,
 						str: rect_y
 					})
@@ -818,55 +831,107 @@
 				 	commands: _.values(change_cell_commands)
 				});
 				
-				var combined_command_red = new ist.CombinedCommand
-
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 				return false;
 			} else {
 				var rx_info = this._save_state_single_field(element, 'rx', new_radius_x),
 					ry_info = this._save_state_single_field(element, 'ry', new_radius_y),
 					x_info = this._save_state_single_field(rect_element, 'x', rect_x), // cx - (rect_width/2)
 					y_info = this._save_state_single_field(rect_element, 'y', rect_y); // cy - (rect_height/2)
+
 				var cells = {
 					rx: rx_info.cell,
 					ry: ry_info.cell,
 					x: x_info.cell,
 					y: y_info.cell,
 				};
-				
+
+				var commands = {
+					rx: rx_info.command,
+					ry: ry_info.command,
+					x: x_info.command,
+					y: y_info.command
+				};
 				var combined_command = new ist.CombinedCommand({
-				 	commands: _.pluck(_.values(change_cell_commands), "command")
+				 	commands: _.values(commands)
 				});
 
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 				return cells;
 			}
 		},
 
-		_resize_mouse_move_rectangle: function(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element) {
+		_resize_mouse_move_rectangle: function(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells) {
 			var rect_width = rect_dom_element.width.baseVal.value;
 			var rect_height = rect_dom_element.height.baseVal.value;
+
 			var width = element_initial_state.origWidth;
 			var height = element_initial_state.origHeight;
+
 			// Remove magic number
 			var new_width = Math.max((ev.clientX - element_initial_state.origClickX + width), 20);
 			var new_height = Math.max((ev.clientY - element_initial_state.origClickY + height), 20);
-			var new_red_x = (dom_element['x'].baseVal.value + new_width - rect_width) ;
-			var new_red_y = (dom_element['y'].baseVal.value + new_height - rect_height) ;
 
-			this._save_state_single_field(element, 'width', new_width);
-			this._save_state_single_field(element, 'height', new_height);
-			this._save_state_single_field(rect_element, 'x', new_red_x);
-			this._save_state_single_field(rect_element, 'y', new_red_y);
+			var new_red_x = (dom_element['x'].baseVal.value + new_width - rect_width) + '';
+			var new_red_y = (dom_element['y'].baseVal.value + new_height - rect_height) + '';
+
+			if(cells) {
+				//...set cell code
+
+				var change_cell_commands = {
+					rx: new ist.ChangeCellCommand({
+						cell: cells.rx,
+						str: (new_width + '')
+					}),
+					ry: new ist.ChangeCellCommand({
+						cell: cells.ry,
+						str: (new_height + '')
+					}),
+					x: new ist.ChangeCellCommand({
+						cell: cells.x,
+						str: new_red_x
+					}),
+					y: new ist.ChangeCellCommand({
+						cell: cells.y,
+						str: new_red_y
+					})
+				};
+
+				var combined_command = new ist.CombinedCommand({
+				 	commands: _.values(change_cell_commands)
+				});
+				
+				this._command_stack._do(combined_command, true);
+				return false;
+			} else {
+				var rx_info = this._save_state_single_field(element, 'width', new_width),
+					ry_info = this._save_state_single_field(element, 'height', new_height),
+					x_info = this._save_state_single_field(rect_element, 'x', new_red_x), // cx - (rect_width/2)
+					y_info = this._save_state_single_field(rect_element, 'y', new_red_y); // cy - (rect_height/2)
+
+				var cells = {
+					rx: rx_info.cell,
+					ry: ry_info.cell,
+					x: x_info.cell,
+					y: y_info.cell,
+				};
+
+				var commands = {
+					rx: rx_info.command,
+					ry: ry_info.command,
+					x: x_info.command,
+					y: y_info.command
+				};
+				var combined_command = new ist.CombinedCommand({
+				 	commands: _.values(commands)
+				});
+
+				this._command_stack._do(combined_command, true);
+				return cells;
+			}
 
 		},
 
-/*		_resize_mouse_move: function(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element) {
-			ev = ev || event;
-
-			this._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);			
-
-		}, */
 		_mouse_move : function(ev, nameX, nameY, dragData, dragDataRed, element, rect_element, cells) {
 			ev = ev || event;	
 			var new_position_x = ev.clientX - dragData.x;
@@ -880,7 +945,7 @@
 					commands: _.pluck([x_info_red, y_info_red], "command")
 				});
 
-				this._command_stack._do(combined_command_red);
+				this._command_stack._do(combined_command_red, true);
 			}
 
 			if(cells) {
@@ -900,7 +965,7 @@
 				 	commands: _.values(change_cell_commands)
 				});
 
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 
 				return false;
 			} else {
@@ -916,26 +981,53 @@
 				 	commands: _.pluck([x_info, y_info], "command")
 				});
 
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 				return cells;
 			}						
-
-
-
 		},
 
-		_add_event_listeners: function(rect_element, rect_dom_element, element, dom_element, obj) {
+		_add_event_listeners: function(rect_element, rect_dom_element, element, cobj, cobj_rect, dom_element, obj) {
 	      	var touchedElement,dragData,dragDataRed=null;
 	      	var objectX, objectY = 0;
 	      	var redObjectX, redObjectY = 0;	      	
 	      	var nameX, nameY = "";
 	      	var that = this;
 	      	var cells = false;
+			var sketch = this.option("root");	      	
+	      	var screen = sketch._get_direct_prop('screen');
+			var names;
+
 	      	if (rect_dom_element) {
 	      		var red_square_size = rect_dom_element.width.baseVal.value;      				      		      		
 	      	}
 			$(dom_element).on("mousedown", function(ev) {
-				touchedElement = this;
+				console.log("inspect element");
+				if (that.code_view) {					
+					touchedElement = this;
+		      		names = screen._get_direct_prop_names();
+					var command = new ist.MovePropCommand({
+						parent: screen,
+						name: cobj.get_name(),
+						to: names.length - 1
+					});	
+					that._command_stack._do(command);		      		
+					for (var i = 0; i < names.length; i++) {
+						if (names[i].indexOf("resize") > -1) {
+							$('#'+names[i]).hide();
+						}
+					}
+
+					if(rect_dom_element && cobj_rect) {
+						var command_rect = new ist.MovePropCommand({
+							parent: screen,
+							name: cobj_rect.get_name(),
+							to: names.length - 1
+						});	
+						that._command_stack._do(command_rect);	
+						rect_dom_element.style.display = "block";					
+					}
+				}
+
 				if(!dragData) {
 					if (obj === 'rectangle' || obj === 'text' || obj === 'image') {
 						nameX = 'x';
@@ -967,19 +1059,20 @@
 			});
 
 			$(dom_element).on("mouseup", function(ev) {
-		        if(dragData) {
+		        if(dragData && that.code_view) {
 		          var new_cells = that._mouse_move(ev, nameX, nameY, dragData, dragDataRed, element, rect_element, cells);
 		          if (new_cells) {
 		          	cells = new_cells;
 		          }
 
 		          dragData = null;
-				  dragDataRed = null;		          
+				  dragDataRed = null;
+				  that._command_stack.complete_transient();		          
 		        }
 			});			
 
 			$('body').on("mousemove", function(ev) {	
-		        if(dragData) {			
+		        if(dragData && that.code_view) {			
 				  var new_cells = that._mouse_move(ev, nameX, nameY, dragData,dragDataRed,element,rect_element, cells);
 		          if (new_cells) {
 		          	cells = new_cells;
