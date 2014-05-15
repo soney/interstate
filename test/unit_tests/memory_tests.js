@@ -61,7 +61,6 @@
 	});
 
 	module("Debugger");
-	/*
 	test("Debugger Connection", function() {
 		if(connected) {
 			ok(true, "Connected to debugger");

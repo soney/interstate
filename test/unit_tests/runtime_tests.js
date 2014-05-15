@@ -1,6 +1,5 @@
 (function(ist) {
 	var tests = [
-	/*
 		{
 			name: "Dynamic Events",
 			expect: 2,
@@ -176,10 +175,9 @@
 				}
 			}]
 		},
-		*/
 		{
 			name: "Incrementing Properties",
-			expect: 0,
+			expect: 3,
 			steps: [{
 				setup: function(env) {
 					env	.set("obj", "<stateful>")
@@ -193,18 +191,18 @@
 							;
 				},
 				test: function(env, runtime) {
-					//var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
-					//equal(cobj.prop_val("x"), 1);
-					//ist.emit("my_fire");
-					//equal(cobj.prop_val("x"), 2);
-					//ist.emit("my_fire");
-					//equal(cobj.prop_val("x"), 3);
+					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+					equal(cobj.prop_val("x"), 1);
+					ist.emit("my_fire");
+					equal(cobj.prop_val("x"), 2);
+					ist.emit("my_fire");
+					equal(cobj.prop_val("x"), 3);
 				}
 			}]
 		},
 		{
 			name: "Start Property Value",
-			expect: 1,
+			expect: 6,
 			steps: [{
 				setup: function(env) {
 					env	.set("screen", "<stateful>")
@@ -214,7 +212,6 @@
 							.cd("obj")
 								.set("(prototypes)", "(start)", "svg.rectangle")
 								.set("fill", "(start)", "'#00ff00'")
-								/*
 								.add_state("state1")
 								.add_state("state2")
 								.start_at("state1")
@@ -222,17 +219,16 @@
 								.set("x", "state1", "3")
 								.set("x", "state2", "6")
 								.set("y", "(start)", "33")
-								*/
 								;
 				},
 				test: function(env, runtime) {
 					ist.emit('my_event')
 					var rect = $("rect", runtime);
 					equal(rect.attr("fill"), "#00ff00");
-					//equal(rect.attr("x"), "6");
-					//equal(rect.attr("y"), "33");
+					equal(rect.attr("x"), "6");
+					equal(rect.attr("y"), "33");
 				}
-			}/*, {
+			}, {
 				setup: function(env) {
 					env.reset();
 				},
@@ -242,8 +238,8 @@
 					equal(rect.attr("x"), "3");
 					equal(rect.attr("y"), "33");
 				}
-			}*/]
-		}/*,
+			}]
+		},
 		{
 			name: "Property and State Transitions",
 			expect: 6,

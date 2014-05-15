@@ -1,6 +1,5 @@
 (function(ist) {
 	var cjs = ist.cjs;
-	/*
 
 	test("Map diff", function() {
 		var md;
