@@ -632,7 +632,7 @@
 				return undefined;
 			}
 		};
-		proto.update_attachments = function() {
+		proto.updateAttachments = function() {
 			this.get_attachment_instance("dom");
 			this.get_attachment_instance("shape");
 			this.get_attachment_instance("box2d_fixture");

@@ -2,6 +2,7 @@
 	var step_delay = 10;
 
 	QUnit.config.autostart = false;
+	QUnit.config.reorder = false;
 	var command_id = 0;
 	var callbacks = {};
 	var do_command = function(command_name, parameters, callback) {
@@ -60,6 +61,7 @@
 	});
 
 	module("Debugger");
+	/*
 	test("Debugger Connection", function() {
 		if(connected) {
 			ok(true, "Connected to debugger");
@@ -67,6 +69,7 @@
 			ok(true, "Could not connect to debugger");
 		}
 	});
+	/**/
 
 	root.dt = function(name, test) {
 		asyncTest(test.name, function() {
