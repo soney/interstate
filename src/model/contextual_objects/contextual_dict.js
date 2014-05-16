@@ -133,6 +133,7 @@
 		this.instances = cjs.memoize(this._instances, {context: this});
 		this.is_template = cjs.memoize(this._is_template, {context: this});
 		this.get_dom_children = cjs.memoize(this._get_dom_children, {context: this});
+		this.has = cjs.memoize(this._has, {context: this});
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
 	};
@@ -334,7 +335,7 @@
 			var contextual_object = ist.find_or_put_contextual_obj(popped_pointer.points_at(), popped_pointer);
 			return contextual_object;
 		};
-		proto.has = function (name, ignore_inherited) {
+		proto._has = function (name, ignore_inherited) {
 			if(this.is_template()) {
 				return false;
 			}
@@ -746,6 +747,11 @@
 				this.get_dom_children.destroy(true);
 				delete this.get_dom_children.options.context;
 				delete this.get_dom_children.options.args_map;
+			}
+			if(this.has.destroy) {
+				this.has.destroy(true);
+				delete this.has.options.context;
+				delete this.has.options.args_map;
 			}
 		};
 
