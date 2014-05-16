@@ -224,6 +224,9 @@
 				croot.destroy();
 				root.destroy();
 				a_dict = b_dict = croot = root = null;
+				if(interstate.__debug && interstate._.keys(interstate.cobj_hashes).length>0) {
+					debugger;
+				}
 
 				take_snapshot(["interstate.", "ist."], function(response) {
 					ok(!response.illegal_strs, "Make sure nothing was allocated");

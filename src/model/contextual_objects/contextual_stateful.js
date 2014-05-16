@@ -73,13 +73,12 @@
 		};
 
 		proto.destroy = function () {
-			if(this.constructor === My) {
-				if(this._live_cobj_child_updater) { this._live_cobj_child_updater.destroy(true); }
-				this.emit_begin_destroy();
-			}
+			if(this.constructor === My) { this.begin_destroy(true); }
+
 			this.statecharts_per_proto.forEach(function(statechart) {
 				statechart.destroy(true);
 			});
+
 			this.statecharts_per_proto.destroy(true);
 			delete this.statecharts_per_proto;
 			My.superclass.destroy.apply(this, arguments);

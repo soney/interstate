@@ -196,7 +196,6 @@
 			return new_event;
 		};
 		proto.destroy = function () {
-			if(this._id === 79) debugger;
 			this.destroyed = true;
 			this._emit("destroy");
 			delete this.listeners;

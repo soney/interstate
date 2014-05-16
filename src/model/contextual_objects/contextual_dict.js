@@ -149,8 +149,7 @@
 					this.update_cobj_children();
 				}, {
 					context: this,
-					pause_while_running: true,
-					on_destroy: _.bind(this._destroy_all_cobj_children, this)
+					pause_while_running: true
 				});
 			}
 		};
@@ -691,10 +690,7 @@
 		};
 
 		proto.destroy = function () {
-			if(this.constructor === My) {
-				if(this._live_cobj_child_updater) { this._live_cobj_child_updater.destroy(true); }
-				this.emit_begin_destroy();
-			}
+			if(this.constructor === My) { this.begin_destroy(true); }
 
 			//The attachment instances might be listening for property changes for destroy them first
 			cjs.wait();

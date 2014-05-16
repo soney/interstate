@@ -27,7 +27,6 @@
 		};
 
 		proto.destroy = function () {
-			if(this._id === 79) debugger;
 			var args = arguments;
 			_.each(this.events, function (event) {
 				event.destroy.apply(event, args);

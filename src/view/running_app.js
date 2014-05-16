@@ -173,6 +173,7 @@
 
 		_destroy: function () {
 			this._super();
+			this.close_editor();
 			$(window).off(".do_save");
 			this._remove_highlight_listeners();
 
@@ -509,7 +510,6 @@
 							this.edit_button.addClass("active").css(this.edit_active_css);
 						}
 					}
-					$(window).on("beforeunload.close_editor", _.bind(this.close_editor, this));
 					this.element.trigger("editor_open");
 				};
 

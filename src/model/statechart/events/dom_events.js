@@ -118,7 +118,6 @@
 			}
 		};
 		proto.destroy = function () {
-			if(this._id === 78) { debugger; }
 			this.live_fn.destroy(true);
 			delete this.live_fn;
 			this.remove_listeners();

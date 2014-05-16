@@ -878,6 +878,11 @@
 			delete this._command_stack;
 
 			croot.destroy();
+			/*
+			if(_.keys(interstate.cobj_hashes).length>0) {
+				debugger;
+			}
+			*/
 			root.destroy();
 			delete this.pointer;
 		};

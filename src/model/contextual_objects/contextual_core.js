@@ -131,13 +131,22 @@
 			this._emit("begin_destroy", this);
 		};
 
-		proto.destroy = function (silent, avoid_destroy_call) {
-			if(this.object) { this.object.off("begin_destroy", this.destroy, this); }
-
-			if(this.constructor === My) {
-				this._destroy_all_cobj_children();
-				this.emit_begin_destroy();
+		proto.begin_destroy = function(silent) {
+			if(this.object) {
+				this.object.off("begin_destroy", this.destroy, this);
 			}
+
+			if(this._live_cobj_child_updater) {
+				this._live_cobj_child_updater.destroy(true);
+			}
+
+			this._destroy_all_cobj_children(silent);
+			this.emit_begin_destroy();
+		};
+
+		proto.destroy = function () {
+			if(this.constructor === My) { this.begin_destroy(true); }
+
 			this._destroyed = true;
 
 			ist.remove_cobj_cached_item(this);
@@ -151,10 +160,11 @@
 			able.destroy_this_listenable(this);
 		};
 
-		proto._destroy_all_cobj_children = function() {
+		proto._destroy_all_cobj_children = function(silent) {
 			_.each(this._cobj_children, function(infos, key) {
-				_.each(infos, function(info) {
-					info.cobj.destroy(true);
+				var cobjs = _.pluck(infos, "cobj");
+				_.each(cobjs, function(cobj) {
+					cobj.destroy(silent);
 				});
 				delete this._cobj_children[key];
 			}, this);
@@ -252,7 +262,9 @@
 
 							cobj.destroy(true);
 							hash_children.splice(i, 1);
-							if(len === 1) {
+							i--;
+							len--;
+							if(len === 0) {
 								delete this._cobj_children[key];
 							}
 						}
@@ -315,7 +327,11 @@
 
 						if(ist.check_special_context_equality(sc1, sc2)) {
 							hash_children.splice(i, 1);
-							return;
+							i--;
+							len--;
+							if(len === 0) {
+								delete this._cobj_children[hash];
+							}
 						}
 					}
 				}
@@ -384,8 +400,6 @@
 				}
 				i++;
 			}
-		} else {
-			hashed_vals = cobj_hashes[hash] = [];
 		}
 
 		pointer_root = pointer.root();
