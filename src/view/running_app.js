@@ -1219,9 +1219,15 @@
 			}
 		},
 		open_editor: function (event, cobj) {
-			this.editing_button.css(this.shown_button_css);
-			this.running_button.css(this.shown_button_css);
-			this.undo_redo_buttons.css(this.shown_button_css);
+			if(this.editing_button) {
+				this.editing_button.css(this.shown_button_css);
+			}
+			if(this.running_button) {
+				this.running_button.css(this.shown_button_css);
+			}
+			if(this.undo_redo_buttons) {
+				this.undo_redo_buttons.css(this.shown_button_css);
+			}
 			if(event) {
 				event.preventDefault();
 				event.stopPropagation();
