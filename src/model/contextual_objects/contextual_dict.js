@@ -116,6 +116,7 @@
 			return value;
 		}
 	};
+
 	ist.get_dom_obj = function(cdict) {
 		if(cdict.get_dom_obj) {
 			return cdict.get_dom_obj();

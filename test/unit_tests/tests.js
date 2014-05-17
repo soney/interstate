@@ -107,7 +107,9 @@
 		//clear_snapshots(function() {
 			//take_snapshot([], function() {
 				var env = new ist.Environment({builtins: true});
-				env	.cd("screen")
+				env	.set("screen", "<stateful>")
+					.cd("screen")
+						.set("(prototypes)", "(start)", "svg.paper")
 						.set("my_circle", "<stateful>")
 						.cd("my_circle")
 							.add_state("init")
