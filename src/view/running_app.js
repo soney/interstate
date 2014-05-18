@@ -67,16 +67,16 @@
 					float: "right",
 					"text-decoration": "none",
 					"font-variant": "small-caps",
-					"padding-top": "0px",
+					//"padding-top": "0px",
 					position: "fixed",
 					top: (display === "tablet" || display === "phone") ? "15px" : "0px",
-					right: "70px",
+					right: "0px",
 					color: this.button_color,
 					"background-color": "",
 					"font-size": "1.2em",
 					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
 					cursor: "pointer",
-					"border-bottom": "5px solid " + this.button_color
+					padding: "5px"
 				};
 				this.running_button_css = {
 					float: "right",
@@ -182,6 +182,7 @@
 												.append("<img class='redo' src='src/view/editor/style/images/redo.png' width='23px' style='margin:3px'>")
 												.css(this.undo_redo_css)
 												.on("mousedown.undo_redo touchstart.undo_redo", _.bind(this.undo_redo, this));
+												/*
 				
 				this.running_button = $("<ul />").text("Code View")
 												.css(this.running_button_css)
@@ -193,9 +194,9 @@
 												.css(this.hidden_button_css);
 				this.inspect = $("<ul />")		.append("<li><p class='first'><img src='src/view/editor/style/images/circle_info.png' width='15px'/> Inspect</p></li>")
 												.css(this.palette_css)
-												.on('click', function() {
-													console.log("inspect element in code view clicked");
-												});
+												.on('click', _.bind(function() {
+													this.begin_inspect();
+												}, this));
 				this.palette = $("<ul />")		.append("<li><p class='rectangle'><img src='src/view/editor/style/images/square.png' width='15px'/> Rectangle</p></li>")
 												.append("<li><p class='ellipse'><img src='src/view/editor/style/images/circle.png' width='15px'> Ellipse</p></li>")
 												.append("<li><p class='text'><img src='src/view/editor/style/images/font.png' width='15px'> Text</p></li>")												
@@ -248,12 +249,19 @@
 													this.inspect.css(this.inspect_css_show);																																																													
 													this.undo_redo_buttons.css(this.shown_button_css);	
 													this.code_view = true;	
-												}, this);
+												}, this)
+												.startsAt("code");
 
-				var append_interval = window.setInterval(_.bind(function (element, edit_button, running_button, editing_button, palette, inspect, undo_redo_buttons) {
+				*/
+				var append_interval = window.setInterval(_.bind(function() {
+					this.element.append(this.edit_button);
+					//element.parentNode.appendChild(this.edit_button[0]);
+				}, this));
+				/*
+				_.bind(function (element, edit_button, running_button, editing_button, palette, inspect, undo_redo_buttons) {
 					if (element.parentNode) {
 						element.parentNode.appendChild(edit_button);
-						element.parentNode.appendChild(undo_redo_buttons);
+						//element.parentNode.appendChild(undo_redo_buttons);
 						element.parentNode.appendChild(running_button);
 						element.parentNode.appendChild(inspect);												
 						element.parentNode.appendChild(editing_button);
@@ -261,6 +269,7 @@
 						window.clearInterval(append_interval);
 					}
 				}, window, this.element[0], this.edit_button[0], this.running_button[0], this.editing_button[0], this.palette[0], this.inspect[0], this.undo_redo_buttons[0]), 100);
+				*/
 
 
 			}
@@ -285,7 +294,6 @@
 		},
 
 		undo_redo: function(event) {
-			console.log(event.target.className);
 			if (event.target.className === 'undo') {
 				this._command_stack._undo();
 			}
@@ -1006,7 +1014,6 @@
 	      		var red_square_size = rect_dom_element.width.baseVal.value;      				      		      		
 	      	}
 			$(dom_element).on("mousedown", function(ev) {
-				console.log("inspect element");
 				if (that.code_view) {					
 					touchedElement = this;
 		      		names = screen._get_direct_prop_names();
@@ -1325,7 +1332,6 @@
 				this._on_mover = _.bind(function(mo_event) {
 					var target = this._inspecting_target = mo_event.target;
 					this.$inspecting_hover_object.set(target);
-					//console.log(target);
 				}, this);
 				this._on_mout = _.bind(function(mo_event) {
 					if(mo_event.target === this._inspecting_target) {
@@ -1369,7 +1375,6 @@
 			}
 		},
 		inspect_cobj: function(cobj) {
-
 			if (this.editor_window) {
 				this.server_socket.post({
 					type: "inspect",
