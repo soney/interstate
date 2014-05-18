@@ -1146,9 +1146,6 @@ Constraint = function (value, options) {
 		this._valid = false;
 		this._cached_value = undefined;
 	}
-	if(this._id == 14753) {
-		//debugger;
-	}
 };
 
 (function(My) {
@@ -3327,7 +3324,7 @@ MapConstraint = function (options) {
 	 *     map.remove("x");
 	 *     map.keys(); // ['y']
 	 */
-	proto.remove = function (key) {
+	proto.remove = function (key, silent) {
 		// Find out if there's an actual key set
 		var ki = _find_key.call(this, key, false, false),
 			key_index = ki.i,
@@ -3365,16 +3362,18 @@ MapConstraint = function (options) {
 				}
 			}
 
-			_remove_index.call(this, ordered_index); // remove ordered_index (splices the ordered array)
+			_remove_index.call(this, ordered_index, silent); // remove ordered_index (splices the ordered array)
 			for (i = ordered_index; i < this._ordered_values.length; i += 1) {
 				_set_index(this._ordered_values[i], i); // and update the index for every item
 			}
 
 			// And now all of these constraint variables are invalid.
-			this.$size.invalidate();
-			this.$keys.invalidate();
-			this.$values.invalidate();
-			this.$entries.invalidate();
+			if(!silent) {
+				this.$size.invalidate();
+				this.$keys.invalidate();
+				this.$values.invalidate();
+				this.$entries.invalidate();
+			}
 
 			// OK, now you can run any nullified listeners
 			cjs.signal();
@@ -4116,7 +4115,7 @@ extend(cjs, {
 		}, options);
 
 		// Map from args to value
-		var args_map = new MapConstraint({
+		options.args_map = new MapConstraint({
 			hash: options.hash,
 			equals: options.equals,
 			literal_values: options.literal_values
@@ -4125,7 +4124,7 @@ extend(cjs, {
 		// When getting a value either create a constraint or return the existing value
 		var rv = function () {
 			var args = slice.call(arguments),
-				constraint = args_map.getOrPut(args, function() {
+				constraint = options.args_map.getOrPut(args, function() {
 					return new Constraint(function () {
 						return getter_fn.apply(options.context, args);
 					});
@@ -4135,16 +4134,17 @@ extend(cjs, {
 
 		// Clean up memory after self
 		rv.destroy = function (silent) {
-			args_map.forEach(function (constraint) {
+			options.args_map.forEach(function (constraint) {
 				constraint.destroy(silent);
 			});
-			args_map.destroy(silent);
+			options.args_map.destroy(silent);
 		};
 
 		// Run through every argument and call fn on it
 		rv.each = function (fn) {
-			args_map.forEach(fn);
+			options.args_map.forEach(fn);
 		};
+		rv.options = options;
 		return rv;
 	}
 });

@@ -50,7 +50,6 @@
 		equal(md.unset.length, 1);
 		equal(md.key_change.length, 0);
 		equal(md.value_change.length, 2);
-		/**/
 	});
 	asyncTest("Remote Constraints", function() {
 		expect(3);
@@ -119,7 +118,6 @@
 							.add_transition("init", "hover", "on('mouseover', this)")
 							.add_transition("hover", "init", "on('mouseout', this)")
 							.set("(prototypes)", "init", "svg.circle");
-							env.print();
 							env.set("fill")
 							.set("fill", "init", "'red'")
 							.set("fill", "hover", "'blue'")
@@ -209,7 +207,7 @@
 	});
 
 	asyncTest("Pointer Bucket Collection", function() {
-		expect(7);
+		expect(4);
 		//clear_snapshots(function() {
 			//take_snapshot([], function(response) {
 				ist.__garbage_collect = false;
@@ -225,17 +223,12 @@
 				equal(cb_dict.get_object(), b_dict);
 				root.unset("a");
 				equal(croot.prop("a"), undefined);
-				var expired_cobjs = ist.get_expired_contextual_objects(root);
-				equal(expired_cobjs.length, 1);
-				equal(expired_cobjs[0], ca_dict);
-				ca_dict.destroy();
-				expired_cobjs = ist.get_expired_contextual_objects(root);
-				equal(expired_cobjs.length, 0);
-
-				a_dict.destroy();
 				croot.destroy();
 				root.destroy();
 				a_dict = b_dict = croot = root = null;
+				if(interstate.__debug && interstate._.keys(interstate.cobj_hashes).length>0) {
+					debugger;
+				}
 
 				take_snapshot(["interstate.", "ist."], function(response) {
 					ok(!response.illegal_strs, "Make sure nothing was allocated");

@@ -167,7 +167,6 @@
 				}, this);
 			};
 
-
 			if(this.option("use_socket")) {
 				interstate.async_js("/socket.io/socket.io.js", _.bind(function() {
 					var socket_info = this.option("use_socket");

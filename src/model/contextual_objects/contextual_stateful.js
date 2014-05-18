@@ -16,10 +16,10 @@
 		var proto = My.prototype;
 
 		proto.initialize = function() {
-			My.superclass.initialize.apply(this, arguments);
 			this.statecharts_per_proto = new RedMap({
 				hash: "hash"
 			});
+			My.superclass.initialize.apply(this, arguments);
 		};
 
 		proto.get_own_statechart = function () {
@@ -73,10 +73,12 @@
 		};
 
 		proto.destroy = function () {
-			if(this.constructor === My) { this.emit_begin_destroy(); }
+			if(this.constructor === My) { this.begin_destroy(true); }
+
 			this.statecharts_per_proto.forEach(function(statechart) {
 				statechart.destroy(true);
 			});
+
 			this.statecharts_per_proto.destroy(true);
 			delete this.statecharts_per_proto;
 			My.superclass.destroy.apply(this, arguments);

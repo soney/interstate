@@ -52,6 +52,7 @@
 			this.$inspecting_hover_object = cjs(false);
 			this.$breakpoints = cjs({});
 
+
 			if(!this.option("root")) {
 				var root = ist.load();
 				if(!root) {
@@ -60,7 +61,6 @@
 				}
 				this.option("root", root);
 			}
-			this.highlights = [];
 			if (this.option("show_edit_button")) {
 				this.button_color = "#990000";
 				this.edit_button_css = {
@@ -193,13 +193,7 @@
 												.css(this.hidden_button_css);
 				this.inspect = $("<ul />")		.append("<li><p class='first'><img src='src/view/editor/style/images/circle_info.png' width='15px'/> Inspect</p></li>")
 												.css(this.palette_css)
-<<<<<<< HEAD
 												.on("click", _.bind(this.begin_inspect, this));
-=======
-												.on('click', function() {
-													console.log("inspect element in code view clicked");
-												});
->>>>>>> d4431e8598ff023ec47359b614bb449539e091a7
 				this.palette = $("<ul />")		.append("<li><p class='rectangle'><img src='src/view/editor/style/images/square.png' width='15px'/> Rectangle</p></li>")
 												.append("<li><p class='ellipse'><img src='src/view/editor/style/images/circle.png' width='15px'> Ellipse</p></li>")
 												.append("<li><p class='text'><img src='src/view/editor/style/images/font.png' width='15px'> Text</p></li>")												
@@ -278,7 +272,7 @@
 			}
 
 			$(window)	.on("keydown.open_editor", _.bind(this.on_key_down, this))
-						.on("beforeunload onunload unload pagehide", _.bind(this._save, this));
+						.on("beforeunload.do_save onunload.do_save unload.do_save pagehide.do_save", _.bind(this._save, this));
 
 			if(this.option("immediately_create_server_socket")) {
 				this.server_socket = this._create_server_socket();
@@ -519,10 +513,19 @@
 
 		_destroy: function () {
 			this._super();
+			this.close_editor();
+			$(window).off(".do_save");
 			this._remove_highlight_listeners();
 
 			this.$highlighting_objects.destroy(true);
+			delete this.$highlighting_objects
 			this.$inspecting_hover_object.destroy(true);
+			delete this.$inspecting_hover_object;
+
+			this.$dirty_program.destroy(true);
+			delete this.$dirty_program;
+			this.$breakpoints.destroy(true);
+			delete this.$breakpoints;
 
 			this._remove_change_listeners();
 			this.element.removeClass("ist_runtime");
@@ -1214,9 +1217,15 @@
 			}
 		},
 		open_editor: function (event, cobj) {
-			this.editing_button.css(this.shown_button_css);
-			this.running_button.css(this.shown_button_css);
-			this.undo_redo_buttons.css(this.shown_button_css);
+			if(this.editing_button) {
+				this.editing_button.css(this.shown_button_css);
+			}
+			if(this.running_button) {
+				this.running_button.css(this.shown_button_css);
+			}
+			if(this.undo_redo_buttons) {
+				this.undo_redo_buttons.css(this.shown_button_css);
+			}
 			if(event) {
 				event.preventDefault();
 				event.stopPropagation();
@@ -1233,7 +1242,6 @@
 							this.edit_button.addClass("active").css(this.edit_active_css);
 						}
 					}
-					$(window).on("beforeunload.close_editor", _.bind(this.close_editor, this));
 					this.element.trigger("editor_open");
 				};
 

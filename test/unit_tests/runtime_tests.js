@@ -361,7 +361,7 @@
 				test: function(env, runtime) {
 					ist.emit("my_fire");
 					//debugger;
-					ist.update_current_contextual_objects(env.get_root());
+					//ist.update_current_contextual_objects(env.get_root());
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(cobj.prop_val("x"), 2);
 					ist.emit("my_fire");
@@ -463,7 +463,7 @@
 		{
 			name: "Copies",
 			expect: 1,
-			create_builtins: true,
+			create_builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	
@@ -538,8 +538,8 @@
 									.set("cx", "(start)", "80*copy_num")
 									.set("cy", "(start)", "80*copy_num")
 									.up()
-								.set("circ2", "<stateful>")
-								.cd("circ2")
+								.set("rect1", "<stateful>")
+								.cd("rect1")
 									.set("(prototypes)", "(start)", "svg.rectangle")
 									.set("fill", "(start)", "group_fill")
 									.set("x", "(start)", "100*copy_num")
@@ -565,7 +565,6 @@
 					ev.initMouseEvent("click");
 
 					circles[0].dispatchEvent(ev);
-					rects[1].dispatchEvent(ev);
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
@@ -583,8 +582,7 @@
 					var ev = document.createEvent("MouseEvent");
 					ev.initMouseEvent("click");
 
-					circles[1].dispatchEvent(ev);
-					rects[0].dispatchEvent(ev);
+					rects[1].dispatchEvent(ev);
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);

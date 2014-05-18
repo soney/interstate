@@ -459,11 +459,13 @@
 						children = contextual_object.children();
 						_.each(children, function (child) {
 							if(show===true || show === child.name || show === child.value) {
-								var cdc = get_dom_children(child.value);
-								if(cdc) {
-									desired_children_srcs.push.apply(desired_children_srcs, cdc.srcs);
-									desired_children.push.apply(desired_children, cdc.children);
-								}
+								//if(!child.value._destroyed) {
+									var cdc = get_dom_children(child.value);
+									if(cdc) {
+										desired_children_srcs.push.apply(desired_children_srcs, cdc.srcs);
+										desired_children.push.apply(desired_children, cdc.children);
+									}
+								//}
 							}
 						}, this);
 					}

@@ -87,7 +87,7 @@
 			return op_func.call(window, arg);
 		} else if (type === "Identifier") {
 			var key = node.name;
-			if (key === "sketch") {
+			if (key === ist.root_name) {
 				return ist.find_or_put_contextual_obj(options.pcontext.root(), options.pcontext.slice(0, 1));
 			} else if (key === "container") {
 				found_this = false;

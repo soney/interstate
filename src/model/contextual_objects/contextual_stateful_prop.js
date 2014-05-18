@@ -18,6 +18,7 @@
 		var proto = My.prototype;
 
 		proto.initialize = function() {
+			//if(this.sid() === 793) { debugger; }
 			My.superclass.initialize.apply(this, arguments);
 			this.transition_times_run = {};
 			this._last_value = NO_VAL;
@@ -34,6 +35,14 @@
 			// any transitions run
 			if(active_value_info.is_fallback) {
 				this.$active_value.invalidate();
+			}
+			if(ist.__garbage_collect) {
+				this._live_cobj_child_updater = cjs.liven(function() {
+					this.update_cobj_children();
+				}, {
+					context: this,
+					pause_while_running: true
+				});
 			}
 		};
 
@@ -336,11 +345,21 @@
 			return this.$active_value.get();
 		};
 
-		proto._getter = function () {
-			var last_last_value = this._last_value;
+		proto._get_valid_cobj_children = function() {
+			var my_pointer = this.get_pointer(),
+				rv = _.map(this.get_values(), function(val) {
+					var value = val.value;
+					return {obj: value, pointer: my_pointer.push(value)};
+				});
+			return rv;
+		};
 
-			var active_value_info = this.active_value();
+		proto._getter = function () {
+			var last_last_value = this._last_value,
+				active_value_info = this.active_value();
+
 			if(!active_value_info) { return; }
+
 			var using_val = active_value_info.value,
 				using_state = active_value_info.state,
 				using_as = active_value_info.using_as,
@@ -372,14 +391,6 @@
 					//invalidate_value = invalidate_active_value = null;
 				}
 			}
-
-/*
-			if(this.sid() === 427) {
-				if(this.$value.get() === 200) {
-				}
-				console.log(this.$value.get());
-			}
-			*/
 
 			var stateful_prop = this.get_object();
 
@@ -430,7 +441,8 @@
 		};
 
 		proto.destroy = function () {
-			if(this.constructor === My) { this.emit_begin_destroy(); }
+			if(this.constructor === My) { this.begin_destroy(true); }
+
 			this.$value.offChange(this.$value.get, this.$value);
 			this.$active_value.destroy(true);
 			delete this.$active_value;

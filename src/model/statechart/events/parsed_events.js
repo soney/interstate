@@ -7,6 +7,7 @@
 		_ = ist._;
 
 	var get_event = function (tree, options, live_event_creator) {
+		//debugger;
 		var event_constraint = ist.get_parsed_$(tree, options);
 		var got_event, actions, first_event;
 		if(event_constraint instanceof ist.MultiExpression) {

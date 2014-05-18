@@ -18,6 +18,7 @@
 		proto.on_create = function (specified_type, specified_targets) {
 			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var self = this;
+				var id = this._id;
 				var listener = function (event) {
 					//event.preventDefault();
 					//event.stopPropagation();
@@ -68,6 +69,7 @@
 				var diff = _.diff(this.targets, targets, function(a, b) {
 					return a.dom_obj === b.dom_obj && a.type === b.type;
 				});
+
 				_.each(diff.removed, function(x) { this.remove_listener(x.from_item); }, this);
 				_.each(diff.added, function(x) { this.add_listener(x.item); }, this);
 
@@ -119,10 +121,12 @@
 			this.live_fn.destroy(true);
 			delete this.live_fn;
 			this.remove_listeners();
+			var self = this;
 			this.get_target_listener.each(function(target_listener) {
 				target_listener.get().destroy();
 			});
 			this.get_target_listener.destroy(true);
+
 			delete this.get_target_listener;
 			delete this.targets;
 			delete this.specified_targets;
@@ -166,34 +170,35 @@
 			if (!_.isArray(targs)) {
 				targs = [targs];
 			}
-			return _.chain(targs)
-					.map(function(targ) {
-						if(targ instanceof ist.Query) {
-							return targ.value();
-						} else {
-							return targ;
-						}
-					})
-					.flatten(true)
-					.map(function (target_cobj) {
-						if (_.isElement(target_cobj) || target_cobj === window) {
-							return {dom_obj: target_cobj, cobj: target_cobj};
-						} else if (target_cobj instanceof ist.ContextualDict) {
-							if (target_cobj.is_template()) {
-								return _.chain(target_cobj.instances())
-										.map(ist.get_instance_targs)
-										.flatten(true)
-										.value();
+			var rv = _	.chain(targs)
+						.map(function(targ) {
+							if(targ instanceof ist.Query) {
+								return targ.value();
 							} else {
-								return ist.get_instance_targs(target_cobj);
+								return targ;
 							}
-						} else {
-							return false;
-						}
-					})
-					.flatten(true)
-					.compact()
-					.value();
+						})
+						.flatten(true)
+						.map(function (target_cobj) {
+							if (_.isElement(target_cobj) || target_cobj === window) {
+								return {dom_obj: target_cobj, cobj: target_cobj};
+							} else if (target_cobj instanceof ist.ContextualDict) {
+								if (target_cobj.is_template()) {
+									return _.chain(target_cobj.instances())
+											.map(ist.get_instance_targs)
+											.flatten(true)
+											.value();
+								} else {
+									return ist.get_instance_targs(target_cobj);
+								}
+							} else {
+								return false;
+							}
+						})
+						.flatten(true)
+						.compact()
+						.value();
+			return rv;
 		};
 
 	}(ist.DOMEvent));

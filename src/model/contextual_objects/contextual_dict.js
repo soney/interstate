@@ -134,17 +134,9 @@
 		this.instances = cjs.memoize(this._instances, {context: this});
 		this.is_template = cjs.memoize(this._is_template, {context: this});
 		this.get_dom_children = cjs.memoize(this._get_dom_children, {context: this});
-		//this.get_all_protos = this._get_all_protos;
+		this.has = cjs.memoize(this._has, {context: this});
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
-		/*
-		if(this.sid() == 885) {
-			debugger;
-		}
-		if(this.sid() == 1439) {
-			debugger;
-		}
-		*/
 	};
 
 	(function (My) {
@@ -154,6 +146,14 @@
 			My.superclass.initialize.apply(this, arguments);
 			this._attachment_instances = { };
 			this._manifestation_objects = new RedMap({ });
+			if(ist.__garbage_collect) {
+				this._live_cobj_child_updater = cjs.liven(function() {
+					this.update_cobj_children();
+				}, {
+					context: this,
+					pause_while_running: true
+				});
+			}
 		};
 
 		proto.has_copies = function() {
@@ -336,7 +336,11 @@
 			var contextual_object = ist.find_or_put_contextual_obj(popped_pointer.points_at(), popped_pointer);
 			return contextual_object;
 		};
-		proto.has = function (name, ignore_inherited) {
+		proto._has = function (name, ignore_inherited) {
+			if(this.is_template()) {
+				return false;
+			}
+
 			var dict = this.get_object();
 			var i;
 			if (dict._has_direct_prop(name) || dict._has_builtin_prop(name)) {
@@ -440,9 +444,9 @@
 
 			var manifestations = this.copies_obj();
 			if (manifestations instanceof ist.Cell) {
-				var manifestations_pointer = pointer.push(manifestations);
-				var manifestations_contextual_object = ist.find_or_put_contextual_obj(manifestations, manifestations_pointer);
-				var manifestations_value = manifestations_contextual_object.val();
+				var manifestations_pointer = pointer.push(manifestations),
+					manifestations_contextual_object = ist.find_or_put_contextual_obj(manifestations, manifestations_pointer),
+					manifestations_value = manifestations_contextual_object.val();
 				manifestations_value = cjs.get(manifestations_value);
 				return manifestations_value;
 			} else {
@@ -451,14 +455,14 @@
 		};
 
 		proto.is_instance = function() {
-			var pointer = this.get_pointer();
-			var object = this.get_object();
-			var obj_index = pointer.lastIndexOf(object);
-			var i;
+			var pointer = this.get_pointer(),
+				object = this.get_object(),
+				obj_index = pointer.lastIndexOf(object),
+				i, special_contexts, special_context;
 
 			if (obj_index >= 0) {
-				var special_contexts = pointer.special_contexts(obj_index);
-				var special_context;
+				special_contexts = pointer.special_contexts(obj_index);
+
 				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
 					special_context = special_contexts[i];
 					if (special_context instanceof ist.CopyContext) {
@@ -629,18 +633,74 @@
 				return undefined;
 			}
 		};
-		proto.update_attachments = function() {
+		proto.updateAttachments = function() {
 			this.get_attachment_instance("dom");
 			this.get_attachment_instance("shape");
 			this.get_attachment_instance("box2d_fixture");
 		};
 
+		proto._get_valid_cobj_children = function() {
+			var rv,
+				my_pointer = this.get_pointer(),
+				is_instance = this.is_instance(),
+				is_template = this.is_template();
+
+			if(is_instance) {
+				rv = [];
+			} else {
+				var copies_obj = this.copies_obj();
+				rv = [{pointer: my_pointer.push(copies_obj), obj: copies_obj}];
+			}
+
+			if(!is_template) {
+				var protos_objs = this.get_all_protos();
+				//ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
+				rv.push.apply(rv, _.chain(protos_objs)
+									.map(function(o) {
+										var proto_obj = o.direct_protos();
+										if(proto_obj instanceof ist.StatefulProp || proto_obj instanceof ist.Dict || proto_obj instanceof ist.Cell) {
+											return {obj: proto_obj, pointer: my_pointer.push(proto_obj)};
+										}
+									})
+									.compact()
+									.value());
+
+				var child_infos = this.raw_children();
+				_.each(child_infos, function(child_info) {
+					var value = child_info.value,
+						ptr, cobj, instances;
+
+					if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
+						ptr = my_pointer.push(value);
+						rv.push({obj: value, pointer: ptr});
+
+						if(value instanceof ist.Dict) {
+							cobj = ist.find_or_put_contextual_obj(value, ptr);
+
+							if(cobj.is_template()) {
+								instances = cobj.instances();
+								rv.push.apply(rv, _.map(instances, function(i) {
+									return {obj: i.get_object(), pointer: i.get_pointer()};
+								}));
+							}
+						}
+					}
+				}, this);
+			}
+
+			return rv;
+		};
+
 		proto.destroy = function () {
-			if(this.constructor === My) { this.emit_begin_destroy(); }
+			if(this.constructor === My) { this.begin_destroy(true); }
+
 			//The attachment instances might be listening for property changes for destroy them first
-			_.each(this._attachment_instances, function(attachment_instance) {
+			cjs.wait();
+			_.each(this._attachment_instances, function(attachment_instance, type) {
 				attachment_instance.destroy(true);
-			});
+				delete this._attachment_instances[type];
+			}, this);
+			cjs.signal();
 			delete this._attachment_instances;
 
 			this._manifestation_objects.destroy(true);
@@ -651,22 +711,49 @@
 			// Sometimes I switch get_all_protos to a non-memoized form so check
 			if(this.get_all_protos.destroy) {
 				this.get_all_protos.destroy(true);
+				delete this.get_all_protos.options.context;
+				delete this.get_all_protos.options.args_map;
 			}
-			delete this.get_all_protos;
-			this.get_dom_obj_and_src.destroy(true);
-			delete this.get_dom_obj_and_src;
-			this.prop_val.destroy(true);
-			delete this.prop_val;
-			this.prop.destroy(true);
-			delete this.prop;
-			this.children.destroy(true);
-			delete this.children;
-			this.instances.destroy(true);
-			delete this.instances;
-			this.is_template.destroy(true);
-			delete this.is_template;
-			this.get_dom_children.destroy(true);
-			delete this.get_dom_children;
+			if(this.get_dom_obj_and_src.destroy) {
+				this.get_dom_obj_and_src.destroy(true);
+				delete this.get_dom_obj_and_src.options.context;
+				delete this.get_dom_obj_and_src.options.args_map;
+			}
+			if(this.prop_val.destroy) {
+				this.prop_val.destroy(true);
+				delete this.prop_val.options.context;
+				delete this.prop_val.options.args_map;
+			}
+			if(this.prop.destroy) {
+				this.prop.destroy(true);
+				delete this.prop.options.context;
+				delete this.prop.options.args_map;
+			}
+			if(this.children.destroy) {
+				this.children.destroy(true);
+				delete this.children.options.context;
+				delete this.children.options.args_map;
+			}
+			if(this.instances.destroy) {
+				this.instances.destroy(true);
+				delete this.instances.options.context;
+				delete this.instances.options.args_map;
+			}
+			if(this.is_template.destroy) {
+				this.is_template.destroy(true);
+				delete this.is_template.options.context;
+				delete this.is_template.options.args_map;
+			}
+			if(this.get_dom_children.destroy) {
+				this.get_dom_children.destroy(true);
+				delete this.get_dom_children.options.context;
+				delete this.get_dom_children.options.args_map;
+			}
+			if(this.has.destroy) {
+				this.has.destroy(true);
+				delete this.has.options.context;
+				delete this.has.options.args_map;
+			}
 		};
 
 		proto._getter = function () {
@@ -700,14 +787,19 @@
 						} else {
 							var group_attachment_instance = this.get_attachment_instance("group");
 							if(group_attachment_instance) {
-								return _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
-									var robj = raphael_attachment.get_robj();
-									if(robj) {
-										return [robj[0], raphael_attachment];
-									} else {
-										return false;
-									}
-								}));
+								var robjs_and_srcs = _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
+										var robj = raphael_attachment.get_robj();
+										if(robj) {
+											return [robj[0], raphael_attachment];
+										} else {
+											return false;
+										}
+									})),
+									rv = [
+										_.pluck(robjs_and_srcs, 0),
+										_.pluck(robjs_and_srcs, 1)
+									];
+								return rv;;
 							}
 						}
 					}

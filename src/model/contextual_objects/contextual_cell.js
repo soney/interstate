@@ -10,6 +10,7 @@
 		ist.ContextualCell.superclass.constructor.apply(this, arguments);
 		this._errors = new cjs.Constraint([]);
 		this._type = "cell";
+		if(this.sid() === 835) debugger;
 	};
 
 	(function (My) {
@@ -37,7 +38,7 @@
 			};
 		};
 		proto.destroy = function () {
-			if(this.constructor === My) { this.emit_begin_destroy(); }
+			if(this.constructor === My) { this.begin_destroy(true); }
 
 			this.value_constraint.destroy(true);
 			delete this.value_constraint;
@@ -48,11 +49,11 @@
 			if(ist.__debug) {
 				value = cjs.get(this.value_constraint.get());
 			} else {
-				//try {
+				try {
 					value = cjs.get(this.value_constraint.get());
-				//} catch (e) {
-					//console.error(e);
-				//}
+				} catch (e) {
+					console.error(e);
+				}
 			}
 			return value;
 		};
