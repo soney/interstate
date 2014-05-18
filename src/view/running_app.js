@@ -178,11 +178,11 @@
 												}, this))
 												.on("mousedown.open_editor touchstart.open_editor", _.bind(this.open_editor, this));
 
+												/*
 				this.undo_redo_buttons = $("<div />").append("<img class='undo' src='src/view/editor/style/images/undo.png' width='23px' style='margin:3px'>")
 												.append("<img class='redo' src='src/view/editor/style/images/redo.png' width='23px' style='margin:3px'>")
 												.css(this.undo_redo_css)
 												.on("mousedown.undo_redo touchstart.undo_redo", _.bind(this.undo_redo, this));
-												/*
 				
 				this.running_button = $("<ul />").text("Code View")
 												.css(this.running_button_css)

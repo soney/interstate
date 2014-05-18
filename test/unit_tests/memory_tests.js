@@ -110,16 +110,12 @@
 			};
 
 			expect(test.expect + 1);
-			clear_snapshots(function() {
-				take_snapshot([], function() {
-					root_setup();
-					run_tests(function() {
-						destroy();
-						take_snapshot(["ist.", "interstate.", "$.(anonymous function).(anonymous function)"], function(response) {
-							ok(!response.illegal_strs, "Make sure nothing was allocated");
-							start();
-						});
-					});
+			root_setup();
+			run_tests(function() {
+				destroy();
+				take_snapshot(["ist.", "interstate."], function(response) {
+					ok(!response.illegal_strs, "Make sure nothing was allocated");
+					start();
 				});
 			});
 		});

@@ -734,6 +734,7 @@
 		/**/
 	];
 
+	module("Runtime");
 	tests.forEach(function(test) {
 		dt(test.name, test);
 	});

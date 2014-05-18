@@ -55,6 +55,9 @@
 			this.comm_mechanism.off(this.message_signature, this.$on_message);
 			this.value.offChange(this.$onChange);
 			this.value.destroy(true);
+			delete this.$onChange;
+			delete this.$onMessage;
+			delete this.comm_mechanism;
 		};
 		proto.set_communication_mechanism = function(comm_mechanism) {
 			if(this.comm_mechanism) {
@@ -109,6 +112,8 @@
 			});
 			this.$value.destroy(true);
 			this.comm_mechanism.off(this.message_signature, this.$on_message);
+			delete this.$onMessage;
+			delete this.comm_mechanism;
 		};
 
 		proto.set_communication_mechanism = function(comm_mechanism) {

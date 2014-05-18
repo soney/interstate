@@ -65,6 +65,9 @@
 				equal(constraint_client.get(), 1);
 				x.set(2);
 				equal(constraint_client.get(), 2);
+				comm_wrapper1.destroy();
+				comm_wrapper2.destroy();
+				x.destroy();
 				window.setTimeout(function() {
 					take_snapshot(["interstate.", "ist."], function(response) {
 						ok(true, "Make sure nothing was allocated");
@@ -153,9 +156,11 @@
 					command_stack: env._command_stack
 				});
 
-				pss.set_communication_mechanism(new ist.SameWindowCommWrapper());
+				var comm_wrapper1 = new ist.SameWindowCommWrapper();
+				pss.set_communication_mechanism(comm_wrapper1);
+				var comm_wrapper2 = new ist.SameWindowCommWrapper();
 				var psc = new ist.ProgramStateClient({
-					comm_mechanism: new ist.SameWindowCommWrapper()
+					comm_mechanism: comm_wrapper2
 				});
 				psc.on_loaded();
 
@@ -182,50 +187,50 @@
 								throw new Error();
 							}
 						}
+
+						psc.destroy();
+						pss.destroy();
+						comm_wrapper1.destroy();
+						comm_wrapper2.destroy();
+						env.destroy();
+						root_client = psc = pss = comm_wrapper1 = comm_wrapper2 = env = null;
+
+						take_snapshot(["interstate.", "ist."], function(response) {
+							ok(!response.illegal_strs, "Make sure nothing was allocated");
+							start();
+						});
 					});
-
-					croot = null;
 				});
 
-				root_client = null;
-
-				psc.destroy();
-				psc = null;
-
-				pss.destroy();
-				pss = null;
-
-				env.destroy();
-				env = null;
-
-				take_snapshot(["interstate.", "ist."], function(response) {
-					ok(!response.illegal_strs, "Make sure nothing was allocated");
-					start();
-				});
 			//});
 		//});
 	});
 
 	asyncTest("Pointer Bucket Collection", function() {
-		expect(4);
+		expect(5);
 		//clear_snapshots(function() {
 			//take_snapshot([], function(response) {
 				ist.__garbage_collect = false;
 				var root = new ist.Dict();
 				var a_dict = new ist.Dict();
 				var b_dict = new ist.Dict();
+				var c_dict = new ist.Dict();
 				var croot = ist.find_or_put_contextual_obj(root);
 				root.set("a", a_dict);
 				root.set("b", b_dict);
+				root.set("c", c_dict);
 				var ca_dict = croot.prop("a");
 				var cb_dict = croot.prop("b");
+				var cc_dict = croot.prop("c");
 				equal(ca_dict.get_object(), a_dict);
 				equal(cb_dict.get_object(), b_dict);
+				equal(cc_dict.get_object(), c_dict);
 				root.unset("a");
 				equal(croot.prop("a"), undefined);
 				croot.destroy();
 				root.destroy();
-				a_dict = b_dict = croot = root = null;
+				a_dict.destroy();
+				a_dict = b_dict = croot = c_dict = root = null;
 				if(interstate.__debug && interstate._.keys(interstate.cobj_hashes).length>0) {
 					debugger;
 				}
@@ -329,7 +334,7 @@
 													dict = null;
 													context = null;
 													window.setTimeout(function() {
-														take_snapshot(["interstate.", "ist.", "$.(anonymous function).(anonymous function)"], function(response) {
+														take_snapshot(["interstate.", "ist."], function(response) {
 															ok(!response.illegal_strs, "Make sure nothing was allocated");
 															start();
 														});
@@ -344,111 +349,7 @@
 			//});
 		//});
 	});
-	asyncTest("Basic Editor", function() {
-		expect(1);
-		//clear_snapshots(function() {
-			//take_snapshot([], function() {
-				var env = new ist.Environment({builtins: true});
-				//env	.set("height", "10")
-					//.set("obj", "<stateful>");
-				var root = env.get_root();
-
-				var runtime_div = $("<div />").appendTo(document.body);
-				var editor_div = $("<div />").appendTo(document.body);
-				runtime_div	.dom_output({
-								root: root,
-								open_separate_client_window: false,
-								edit_on_open: true,
-								show_edit_button: false
-							});
-				editor_div	.editor({
-								debug_env: true,
-								server_window: window
-							});
-
-				var cleanup_button = $("<a />")	.attr("href", "javascript:void(0)")
-												.text("Clean up")
-												.appendTo(document.body)
-												.on("click.clean", function() {
-													cleanup_button.off("click.clean")
-																	.remove();
-													cleanup_button = null;
-
-													env.destroy();
-													env = root = null;
-													editor_div.editor("destroy").remove();
-													runtime_div.dom_output("destroy").remove();
-													window.setTimeout(function() {
-														take_snapshot(["interstate.", "ist.", "$.(anonymous function).(anonymous function)"], function(response) {
-															ok(!response.illegal_strs, "Make sure nothing was allocated");
-															editor_div.remove();
-															runtime_div.remove();
-															editor_div = runtime_div = null;
-															start();
-														});
-													}, 0);
-												});
-				window.setTimeout(function() {
-					if(cleanup_button) {
-						cleanup_button.click();
-					}
-				}, 2000);
-			//});
-		//});
-	});
-
-	asyncTest("Loading Files", function() {
-		expect(1);
-		//clear_snapshots(function() {
-			//take_snapshot([], function() {
-				var env = new ist.Environment({create_builtins: true});
-				env	.set("height", "10")
-					.set("obj", "<stateful>");
-				var root = env.get_root();
-
-				var runtime_div = $("<div />").appendTo(document.body);
-				var editor_div = $("<div />").appendTo(document.body);
-				runtime_div	.dom_output({
-								root: root,
-								open_separate_client_window: false,
-								edit_on_open: true,
-								show_edit_button: false
-							});
-				editor_div	.editor({
-								debug_env: true,
-								server_window: window
-							});
-
-				var cleanup_button = $("<a />")	.attr("href", "javascript:void(0)")
-												.text("Clean up")
-												.appendTo(document.body)
-												.on("click.clean", function() {
-													cleanup_button.off("click.clean")
-																	.remove();
-													cleanup_button = null;
-
-													env.destroy();
-													env = root = null;
-													editor_div.editor("destroy").remove();
-													runtime_div.dom_output("destroy").remove();
-													window.setTimeout(function() {
-														take_snapshot(["interstate.", "ist.", "$.(anonymous function).(anonymous function)"], function(response) {
-															ok(!response.illegal_strs, "Make sure nothing was allocated");
-															editor_div.remove();
-															runtime_div.remove();
-															editor_div = runtime_div = null;
-															start();
-														});
-													}, 0);
-												});
-				window.setTimeout(function() {
-					if(cleanup_button) {
-						cleanup_button.click();
-					}
-				}, 2000);
-			//});
-		//});
-	});
+	/*
 
 	/**/
 }(interstate));

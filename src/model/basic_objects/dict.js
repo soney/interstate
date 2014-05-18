@@ -48,7 +48,7 @@
         this._id = options.uid || uid();
         this._hash = uid.strip_prefix(this._id);
         this.options = options;
-        ist.register_uid(this._id, this);
+        ist.register_uid(this.id(), this);
 		if(this.constructor === ist.Dict && defer_initialization !== true) {
             this.do_initialize(options);
         }
@@ -125,7 +125,13 @@
                 env_visible: false,
                 env_name: "copies",
                 getter: function (me) { return me.get(); },
-                setter: function (me, val) { me.set(val, true); },
+                setter: function (me, val) {
+					var old_val = me.get();
+					if(old_val && old_val.destroy) {
+						old_val.destroy(true);
+					}
+					me.set(val, true);
+				},
 				destroy: function(me) {
 					var val = me.get();
 					if(val && val.destroy) {

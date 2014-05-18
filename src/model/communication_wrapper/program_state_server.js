@@ -352,6 +352,8 @@
 
 			this.$programs.destroy();
 			this.$components.destroy();
+			delete this.$programs._options;
+			delete this.$components._options;
 			delete this.wrapper_servers;
 			delete this.root;
 			delete this.contextual_root;
