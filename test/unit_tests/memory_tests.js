@@ -2,7 +2,10 @@
 	var step_delay = 10;
 
 	QUnit.config.autostart = false;
-	QUnit.config.reorder = false;
+	QUnit.config.reorder = true;
+	QUnit.config.hidepassed = true;
+	QUnit.config.notrycatch = true;
+
 	var command_id = 0;
 	var callbacks = {};
 	var do_command = function(command_name, parameters, callback) {
