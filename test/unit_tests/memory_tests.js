@@ -74,7 +74,7 @@
 	/**/
 
 	root.dt = function(name, test) {
-		asyncTest(test.name, function() {
+		asyncTest(name, function() {
 			var env, root, runtime_div;
 			var delay = test.delay || step_delay;
 

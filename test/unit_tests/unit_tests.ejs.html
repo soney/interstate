@@ -9,12 +9,14 @@
 	<%- ist_include(ist_inc.editor, true) %>
 </head>
 <body>
+	<div id="perf_results" style="font-size: 1.2em; font-family: HelveticaNeue-Light;"><strong>Benchmarks:</strong> </div>
 	<div id="qunit"></div>
 	<div id="qunit-fixture"></div>
 	<script src="resources/qunit.js"></script>
 	<script src="memory_tests.js"></script>
 	<script src="tests.js"></script>
 	<script src="runtime_tests.js"></script>
-	<!--<script src="editor_tests.js"></script>-->
+	<script src="editor_tests.js"></script>
+	<script src="performance_tests.js"></script>
 </body>
 </html>
