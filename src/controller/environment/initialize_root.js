@@ -275,5 +275,17 @@
 			root_dict.set("find", ist.find_fn);
 			root_dict.set("emit", ist.emit);
 		}
+
+		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "device") >= 0)) {
+			var devices = new ist.Dict({has_protos: false});
+			root_dict.set("device", devices);
+
+			var mouse = new ist.Dict({has_protos: false});
+			devices	.set("mouse", ist.createMouseObject())
+					.set("keyboard", ist.createKeyboardObject())
+					.set("touchscreen", ist.createTouchscreenObject())
+					.set("accelorometer", ist.createAccelorometerObject())
+					.set("gyroscope", ist.createGyroscopeObject());
+		}
 	};
 }(interstate));

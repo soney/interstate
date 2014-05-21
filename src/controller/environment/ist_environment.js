@@ -6,8 +6,6 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-
-
 	ist.Environment = function (options) {
 		// Undo stack
 		this._command_stack = new ist.CommandStack();
@@ -18,7 +16,6 @@
 		} else {
 			root = ist.get_default_root(!options || options.builtins);
 		}
-		//root.set("touches", touches);
 
 		//Context tracking
 		this.pointer = new ist.Pointer({stack: [root]});

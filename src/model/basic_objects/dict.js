@@ -98,11 +98,28 @@
     
             "direct_props": {
                 "default": function () {
+					var keys = this.options.keys,
+						values = _.map(this.options.values, function(v) {
+									return {
+										value: v,
+										owner: this
+									};
+								}, this),
+						value = {};
+
+					_.each(this.options.value, function(v, k) {
+						value[k] = {
+							value: v,
+							owner: this
+						};
+					}, this);
+
                     var rv = cjs.map({
-                        keys: this.options.keys,
-                        values: this.options.values,
-                        value: this.options.value
+                        keys: keys,
+                        values: values,
+                        value: value
                     });
+
                     return rv;
                 },
                 getter_name: "direct_props",

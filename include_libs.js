@@ -59,6 +59,7 @@ exports.runtime = c(
 				"model/utils/parsed_value.js",
 				"model/utils/parsed_fn.js",
 				"model/utils/map_diff.js",
+				"controller/environment/devices.js",
 				"model/basic_objects/cell.js",
 				"model/basic_objects/dict.js",
 				"model/basic_objects/stateful_obj.js",
@@ -107,7 +108,6 @@ exports.runtime = c(
 				"controller/environment/command_stack.js",
 				"controller/environment/initialize_root.js",
 				"controller/environment/ist_environment.js",
-				"controller/environment/devices.js",
 				"view/running_app.js",
 			])
 );
