@@ -48,7 +48,7 @@
 			this._cancel = _.bind(this._cancel_edit, this);
 		},
 		_destroy: function () {
-			if(this.$textarea_binding) { this.$textarea_binding.destroy(); };
+			if(this.$textarea_binding) { this.$textarea_binding.destroy(); }
 			this.option("helper", false);
 			this._super();
 		},
@@ -68,7 +68,7 @@
 				var editor = value,
 					old_editor = this.option("helper");
 
-				if(this.$textarea_binding) { this.$textarea_binding.destroy(); };
+				if(this.$textarea_binding) { this.$textarea_binding.destroy(); }
 
 				if(old_editor) {
 					old_editor.setValue("");

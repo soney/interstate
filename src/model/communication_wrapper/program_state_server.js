@@ -109,7 +109,7 @@
 					type: "get_ptr_response",
 					cobj_id: cobj_id,
 					cobjs: _.map(pointer.getContextualObjects(), function(x) {
-						return x.summarize()
+						return x.summarize();
 					})
 				});
 			}

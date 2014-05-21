@@ -351,8 +351,8 @@
 			if(!name) {
 				var names = ist.ls(),
 					original_name = "sketch_"+names.length,
-					i = 0,
-					name = original_name;
+					i = 0;
+				name = original_name;
 
 				while(names.indexOf(name)>=0) {
 					name = original_name + "_" + i;
@@ -403,19 +403,18 @@
 		}
 		try {
 			var root = ist.destringify(str);
+
+			if(!type) { // program
+				ist.loaded_program_name.set(name);	
+				ist.setDefaultProgramName(name);
+			}
+
+			return root;
 		} catch(e) {
 			console.error("Error loading " + name + ":");
 			console.error(e);
 			return false;
 		}
-		//console.log("load ", name);
-
-		if(!type) { // program
-			ist.loaded_program_name.set(name);	
-			ist.setDefaultProgramName(name);
-		}
-
-		return root;
 	};
 	ist.ls = function (type) {
 		var len = window.localStorage.length;

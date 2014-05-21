@@ -107,7 +107,7 @@
 			var get_pinned_height_pct = _.bind(function() {
 				if(this.$pinned_columns.length() === 0) {
 					if(this.$dragging_client.get()) {
-						return .3;
+						return 0.3;
 					} else {
 						return 0;
 					}
@@ -340,12 +340,12 @@
 
 		_disable_editor: function() {
 			$("table#cell_group", this.element).addClass("disabled");
-			this.editor.setReadOnly(true)
+			this.editor.setReadOnly(true);
 		},
 
 		_enable_editor: function() {
 			$("table#cell_group", this.element).removeClass("disabled");
-			this.editor.setReadOnly(false)
+			this.editor.setReadOnly(false);
 		},
 
 		on_unload: function() {
@@ -824,7 +824,7 @@
 				map.rename(info.from, info.to);
 			});
 			_.each(map_diff.set, function(info) {
-				map.put(info.key, info.value)
+				map.put(info.key, info.value);
 			});
 			_.each(map_diff.unset, function(info) {
 				map.remove(info.key);
@@ -844,7 +844,7 @@
 		};
 
 		return map;
-	}
+	};
 	function to_func(value) {
 		return function () { return value; };
 	}
@@ -860,16 +860,17 @@
 	}
 
 	function downloadWithName(data, name) {
-		var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+		var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1,
+			link;
 
 		if(is_chrome) {
-			var link = document.createElement("a");
+			link = document.createElement("a");
 			link.download = name;
 			link.href = "data:," + data;
 			eventFire(link, "click");
 		} else {
 			//window.open("data:text/plain;charset=utf-8," + data);
-			var link = document.createElement("a");
+			link = document.createElement("a");
 			link.download = name;
 			link.href = "data:," + data;
 			eventFire(link, "click");

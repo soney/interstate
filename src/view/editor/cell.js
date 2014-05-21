@@ -114,7 +114,7 @@
 			this.$pure = cjs(!this.option("prop"));
 			this.$visible = this.$pure.or(this.$left.neq(undefined));
 			
-			this.do_edit = this.edit_state.addTransition("idle", "editing"),
+			this.do_edit = this.edit_state.addTransition("idle", "editing");
 
 			this._add_content_bindings();
 			this._add_tooltip();
@@ -148,15 +148,16 @@
 		},
 
 		_emit_new_value: function(value) {
+			var event;
 			if(this.option("prop") && value === "") {
-				var event = new $.Event("command");
+				event = new $.Event("command");
 				event.command_type = "unset_stateful_prop_for_state";
 				event.prop = this.option("prop");
 				event.state = this.option("state");
 
 				this.element.trigger(event);
 			} else {
-				var event = new $.Event("command");
+				event = new $.Event("command");
 				event.command_type = "set_str";
 				event.str = value;
 				event.client = cjs.get(this.option("client"));
@@ -272,7 +273,7 @@
 					var str = this.$str.get() || "";
 
 					if(str.length > this.option("char_limit")) {
-						str = str.slice(0, this.option("char_limit")-3)+"..."
+						str = str.slice(0, this.option("char_limit")-3)+"...";
 					}
 
 					this.element.removeClass("error")

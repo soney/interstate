@@ -194,7 +194,10 @@
 					td, cobj;
 
 				if(_.has(this._cobj_children, hash)) {
-					var hash_children = this._cobj_children[hash], i = 0, len = hash_children.length, child_info;
+					hash_children = this._cobj_children[hash];
+					var i = 0,
+						len = hash_children.length,
+						child_info;
 
 					if(to_destroy[hash] === true) {
 						td = to_destroy[hash] = [];
@@ -411,7 +414,7 @@
 				object: pointer_root,
 				pointer: pointer.slice(0, 1),
 				defer_initialization: true
-			}
+			};
 
 			if(pointer_root instanceof ist.StatefulObj) {
 				node = cobj_roots[hash_i] = new ist.ContextualStatefulObj(opts);

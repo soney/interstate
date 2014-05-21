@@ -220,8 +220,8 @@
 			var input = new ist.Dict();
 			dom.set("input", input);
 			input._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
-			input.set("tag", new ist.Cell({str: "'input'"}))
-				.set("textContent", new ist.Cell({str: "''"}))
+			input	.set("tag", new ist.Cell({str: "'input'"}))
+					.set("textContent", new ist.Cell({str: "''"}));
 
 			_.each(["strong", "span", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5",
 					"h6", "table", "tbody", "tr", "td", "th", "p", "pre", "br", "a",

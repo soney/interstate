@@ -32,14 +32,12 @@
 
 				_.each(event.changedTouches, function(ct) {
 					var identifier = ct.identifier,
-						touch, touch_start_obj, touch_end_obj;
-						touch_start_obj = {},
-						touch = {},
-						touch_end_obj = false;
+						touch, touch_start_obj;
 
 					if(touches.hasOwnProperty(identifier)) {
-						var index = touch_infos.identifier.indexOf(identifier),
-							touch = touches[identifier];
+						var index = touch_infos.identifier.indexOf(identifier);
+
+						touch = touches[identifier];
 
 						if(index >= 0) {
 							_.each(touch_props, function(prop_name) {
@@ -199,6 +197,6 @@
 			destroy = function(silent) {
 				removeAccelorometerListeners();
 			};
-	}:
+	};
 	
 }(interstate));

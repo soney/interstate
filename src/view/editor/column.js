@@ -320,7 +320,7 @@
 						prev: this.$prev_copy_client,
 						next: this.$next_copy_client,
 						editor: this.option("editor")
-					}
+					};
 				}, this),
 				statechart_view: this.statechart_view,
 				is_curr_col: this.$is_curr_col,

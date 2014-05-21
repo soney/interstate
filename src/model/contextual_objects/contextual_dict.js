@@ -580,12 +580,12 @@
 		};
 
 		proto.get_attachment_instance_and_src = function (type) {
-			var info;
+			var info, attachment_instance;
 			if(!this.is_template()) {
 				var dict = this.get_object(),
 					direct_attachments = dict.direct_attachments(),
 					len = direct_attachments.length,
-					attachment, i, j, attachment_instance;
+					attachment, i, j;
 
 				for (i = 0; i < len; i += 1) {
 					attachment = direct_attachments[i];
@@ -761,18 +761,18 @@
 		};
 		proto._get_dom_obj_and_src = function () {
 			var dom_attachment = this.get_attachment_instance("dom"),
-				show = this.prop_val("show");
-				show = show===undefined ? true : !!show;
+				show = this.has("show") ? this.prop_val("show") : true,
+				dom_obj, robj;
 			if(show) {
 				if (dom_attachment) {
-					var dom_obj = dom_attachment.get_dom_obj();
+					dom_obj = dom_attachment.get_dom_obj();
 					if (dom_obj) {
 						return [dom_obj, dom_attachment];
 					}
 				} else {
 					var paper_attachment = this.get_attachment_instance("paper");
 					if(paper_attachment) {
-						var dom_obj = paper_attachment.get_dom_obj();
+						dom_obj = paper_attachment.get_dom_obj();
 
 						if(dom_obj) {
 							return [dom_obj, paper_attachment];
@@ -780,7 +780,7 @@
 					} else {
 						var raphael_attachment = this.get_attachment_instance("shape");
 						if(raphael_attachment) {
-							var robj = raphael_attachment.get_robj();
+							robj = raphael_attachment.get_robj();
 							if(robj) {
 								return [robj[0], raphael_attachment];
 							}
@@ -799,7 +799,7 @@
 										_.pluck(robjs_and_srcs, 0),
 										_.pluck(robjs_and_srcs, 1)
 									];
-								return rv;;
+								return rv;
 							}
 						}
 					}

@@ -11,7 +11,6 @@
         options = options || {};
         this._id = options.uid || uid();
         this._hash = uid.strip_prefix(this.id());
-		if(this.sid() === 788) debugger;
         ist.register_uid(this.id(), this);
         if (defer_initialization !== true) {
             this.do_initialize(options);

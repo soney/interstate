@@ -15,8 +15,8 @@ var interstate = (function (root) {
 		root_name: "sketch"
 	};
 
-	ist.cjs.__debug = ist.__debug,
-	ist.__debug_statecharts = ist.__debug
+	ist.cjs.__debug = ist.__debug;
+	ist.__debug_statecharts = ist.__debug;
 
 	able.make_this_listenable(ist);
 	able.make_proto_listenable(ist);

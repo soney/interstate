@@ -149,7 +149,7 @@
 				};
 				this.code_view_css = {
 					right: "25px"
-				}
+				};
 				this.inspect_css_show = {
 					display: "none"
 				};
@@ -293,6 +293,7 @@
 			this._add_highlight_listeners();
 		},
 
+/*
 		undo_redo: function(event) {
 			if (event.target.className === 'undo') {
 				this._command_stack._undo();
@@ -373,7 +374,7 @@
 							parent: stateful_obj_small,
 							name: "fill",
 							value: "red"
-			})			
+			});
 			var combined_command = new ist.CombinedCommand({
 				commands: [propCommandX, propCommandY]
 			});
@@ -395,32 +396,32 @@
 				});
 				sketch._set_direct_prop("screen", screen);
 
-				statechart = screen.get_own_statechart(),
-				start_state = statechart.get_start_state(),
+				statechart = screen.get_own_statechart();
+				start_state = statechart.get_start_state();
 				protos_cell = new ist.Cell({str: "svg.paper", ignore_inherited_in_first_dict: true});
 
 				protos_stateful_prop.set(start_state, protos_cell);
 			}			
 			var parent = this.option("root");
-            var prop_names = screen._get_direct_prop_names();
-            var prefix = "obj";
-            var prefix_small = "resize"
-            var len = 0;
-            if (parent instanceof ist.Dict) {
-            	if (object === "rectangle") {
-            		prefix = "rect";
-            	}
-            	else if (object === "ellipse") {
-            		prefix = "ellipse";
-            	}
-            	else if (object === "text") {
-            		prefix = "text";
-            	}
-            	else if (object === "image") {
-            		prefix = "image";
-            	}
-            }
-            var new_prop_name = prefix + "_" +  prop_names.length;
+			var prop_names = screen._get_direct_prop_names();
+			var prefix = "obj";
+			var prefix_small = "resize"
+			var len = 0;
+			if (parent instanceof ist.Dict) {
+				if (object === "rectangle") {
+					prefix = "rect";
+				}
+				else if (object === "ellipse") {
+					prefix = "ellipse";
+				}
+				else if (object === "text") {
+					prefix = "text";
+				}
+				else if (object === "image") {
+					prefix = "image";
+				}
+			}
+			var new_prop_name = prefix + "_" +  prop_names.length;
 
 			var propCommand = new ist.SetPropCommand({parent: screen, value: stateful_obj, name: new_prop_name});
 			this._command_stack._do(propCommand);
@@ -449,31 +450,7 @@
 			this._add_event_listeners(stateful_obj_small, dom_element_small, stateful_obj, circle_context, rect_context, dom_element, object);		
 
 		},
-		show_drag_over: function() {
-			$(document.body).addClass("drop_target");
-			if(!this.hasOwnProperty("overlay")) {
-				this.overlay = $("<div />")	.addClass("overlay")
-											.css({
-												"background-color": "#555",
-												"opacity": "0.8",
-												"position": "fixed",
-												"left": "0px",
-												"top": "0px",
-												"width": "100%",
-												"height": "100%",
-												"pointer-events": "none",
-												"border": "10px dashed #DDD",
-												"box-sizing": "border-box"
-											})
-											.appendTo(document.body);
-			}
-		},
-
-		hide_drag_over: function() {
-			$(document.body).removeClass("drop_target");
-			this.overlay.remove();
-			delete this.overlay;
-		},
+		*/
 
 		_setOption: function(key, value) {
 			if(key === "root") {
@@ -528,7 +505,7 @@
 			this._remove_highlight_listeners();
 
 			this.$highlighting_objects.destroy(true);
-			delete this.$highlighting_objects
+			delete this.$highlighting_objects;
 			this.$inspecting_hover_object.destroy(true);
 			delete this.$inspecting_hover_object;
 
@@ -644,32 +621,6 @@
 			var root_contextual_object = ist.find_or_put_contextual_obj(root_dict);
 
 			if(!ist.__empty_files) {
-			/*
-				if(!this._raphael_fn) {
-					this._raphael_fn = cjs.liven(function () {
-						var paper_attachment = root_contextual_object.get_attachment_instance("paper");
-						var dom_element = paper_attachment.get_dom_obj();
-
-						if(display === "phone") {
-							$("svg", dom_element).css("background-color", "black");
-						} else if(display === "tablet") {
-							$("svg", dom_element).css("background-color", "black");
-						} else {
-							$("svg", dom_element).css("background-color", "white");
-						}
-
-						if (this.element.children().is(dom_element)) {
-							this.element.children().not(dom_element).remove();
-						} else {
-							this.element.children().remove();
-							this.element.append(dom_element);
-						}
-					}, {
-						context: this,
-						pause_while_running: true
-					});
-				}
-				*/
 				this._dom_tree_fn = cjs.liven(function () {
 					var dom_attachment = root_contextual_object.get_attachment_instance("dom");
 					var dom_element = dom_attachment.get_dom_obj();
@@ -683,16 +634,6 @@
 					context: this,
 					pause_while_running: true
 				});
-			}
-			if(!this._update_fn) {
-			/*
-				ist.update_current_contextual_objects(root_dict, true);
-				this._update_fn = cjs.liven(function() {
-					ist.update_current_contextual_objects(root_dict);
-				}, {
-					pause_while_running: true
-				});
-				*/
 			}
 		},
 		
@@ -710,6 +651,7 @@
 				delete this._update_fn;
 			}
 		},
+		/*
 
 		// field is a string
 		// value need not be a string
@@ -723,7 +665,7 @@
 			start_state = statechart.get_start_state();
 
 			field_stateful_prop.set(start_state, field_cell);
-			//element.set_prop(field, field_stateful_prop);				  
+			//element.set_prop(field, field_stateful_prop);
 
 			var command = new ist.SetPropCommand({
 				parent: element,
@@ -738,14 +680,14 @@
 		},
 
 		_add_resize_listener: function(rect_element, rect_dom_element, element, dom_element, obj) {
-	      	var that = this;	   
-	      	var element_initial_state = null;
-	      	var cells = false;
+			var that = this;
+			var element_initial_state = null;
+			var cells = false;
 			$(rect_dom_element).on("mousedown", function(ev) {
 				if (obj === 'rectangle' || obj === 'image') {
 					element_initial_state = {
 						origHeight: dom_element.height.baseVal.value,
-			    		origWidth: dom_element.width.baseVal.value
+						origWidth: dom_element.width.baseVal.value
 					};
 				}
 
@@ -755,52 +697,52 @@
 						origRadiusX: dom_element.rx.baseVal.value
 					}
 				}
-		         
-		         ev=ev||event;
-				 element_initial_state['origClickX'] = ev.clientX;
-			     element_initial_state['origClickY'] = ev.clientY;
+
+				ev=ev||event;
+				element_initial_state['origClickX'] = ev.clientX;
+				element_initial_state['origClickY'] = ev.clientY;
 			});
 
 			$('body').on("mouseup", function(ev) {
-		        if (element_initial_state && that.code_view) {
-		        	if (obj === 'rectangle' || obj === 'image') {
-		        		var new_cells = that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);
+				if (element_initial_state && that.code_view) {
+					if (obj === 'rectangle' || obj === 'image') {
+						var new_cells = that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);
 
-		        		if (new_cells) {
-		        			cells = new_cells;
-		        		}
-		       		}
+						if (new_cells) {
+							cells = new_cells;
+						}
+					}
 
-		       		else if (obj === 'ellipse') {
-		       			var new_cells = that._resize_mouse_move_ellipse(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);	
+					else if (obj === 'ellipse') {
+						var new_cells = that._resize_mouse_move_ellipse(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);	
 
-		       			if(new_cells) {
-		       				cells = new_cells;
-		       			}
-		       		}
+						if(new_cells) {
+							cells = new_cells;
+						}
+					}
 
-		          element_initial_state = null;
-		          cells = false;
-		        }
+					element_initial_state = null;
+					cells = false;
+				}
 			});		
 
 			$('body').on("mousemove", function(ev) {	
-		        if(element_initial_state && that.code_view) {
-		        	if (obj === 'rectangle' || obj === 'image') {
-		        		var new_cells = that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);
+				if(element_initial_state && that.code_view) {
+					if (obj === 'rectangle' || obj === 'image') {
+						var new_cells = that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);
 
-		        		if (new_cells) {
-		        			cells = new_cells;
-		        		}
-		       		}
+						if (new_cells) {
+							cells = new_cells;
+						}
+					}
 
-		       		else if (obj === 'ellipse') {
-		       			var new_cells = that._resize_mouse_move_ellipse(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);	
-		       			if(new_cells) {
-		       				cells = new_cells;
-		       			}
-		       		}
-		        }
+					else if (obj === 'ellipse') {
+						var new_cells = that._resize_mouse_move_ellipse(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);	
+						if(new_cells) {
+							cells = new_cells;
+						}
+					}
+				}
 			});					
 		},
 
@@ -841,7 +783,7 @@
 					})
 				};
 				var combined_command = new ist.CombinedCommand({
-				 	commands: _.values(change_cell_commands)
+					commands: _.values(change_cell_commands)
 				});
 				
 				this._command_stack._do(combined_command, true);
@@ -866,7 +808,7 @@
 					y: y_info.command
 				};
 				var combined_command = new ist.CombinedCommand({
-				 	commands: _.values(commands)
+					commands: _.values(commands)
 				});
 
 				this._command_stack._do(combined_command, true);
@@ -911,7 +853,7 @@
 				};
 
 				var combined_command = new ist.CombinedCommand({
-				 	commands: _.values(change_cell_commands)
+					commands: _.values(change_cell_commands)
 				});
 				
 				this._command_stack._do(combined_command, true);
@@ -936,7 +878,7 @@
 					y: y_info.command
 				};
 				var combined_command = new ist.CombinedCommand({
-				 	commands: _.values(commands)
+					commands: _.values(commands)
 				});
 
 				this._command_stack._do(combined_command, true);
@@ -975,7 +917,7 @@
 				};
 
 				var combined_command = new ist.CombinedCommand({
-				 	commands: _.values(change_cell_commands)
+					commands: _.values(change_cell_commands)
 				});
 
 				this._command_stack._do(combined_command, true);
@@ -991,7 +933,7 @@
 				};
 				
 				var combined_command = new ist.CombinedCommand({
-				 	commands: _.pluck([x_info, y_info], "command")
+					commands: _.pluck([x_info, y_info], "command")
 				});
 
 				this._command_stack._do(combined_command, true);
@@ -1000,29 +942,29 @@
 		},
 
 		_add_event_listeners: function(rect_element, rect_dom_element, element, cobj, cobj_rect, dom_element, obj) {
-	      	var touchedElement,dragData,dragDataRed=null;
-	      	var objectX, objectY = 0;
-	      	var redObjectX, redObjectY = 0;	      	
-	      	var nameX, nameY = "";
-	      	var that = this;
-	      	var cells = false;
-			var sketch = this.option("root");	      	
-	      	var screen = sketch._get_direct_prop('screen');
+			var touchedElement,dragData,dragDataRed=null;
+			var objectX, objectY = 0;
+			var redObjectX, redObjectY = 0;
+			var nameX, nameY = "";
+			var that = this;
+			var cells = false;
+			var sketch = this.option("root");
+			var screen = sketch._get_direct_prop('screen');
 			var names;
 
-	      	if (rect_dom_element) {
-	      		var red_square_size = rect_dom_element.width.baseVal.value;      				      		      		
-	      	}
+			if (rect_dom_element) {
+				var red_square_size = rect_dom_element.width.baseVal.value;
+			}
 			$(dom_element).on("mousedown", function(ev) {
 				if (that.code_view) {					
 					touchedElement = this;
-		      		names = screen._get_direct_prop_names();
+					names = screen._get_direct_prop_names();
 					var command = new ist.MovePropCommand({
 						parent: screen,
 						name: cobj.get_name(),
 						to: names.length - 1
 					});	
-					that._command_stack._do(command);		      		
+					that._command_stack._do(command);
 					for (var i = 0; i < names.length; i++) {
 						if (names[i].indexOf("resize") > -1) {
 							$('#'+names[i]).hide();
@@ -1048,7 +990,7 @@
 
 					else if (obj === 'ellipse' || obj === 'circle') {
 						nameX = 'cx';
-						nameY = 'cy';		          
+						nameY = 'cy';
 					}
 					if (obj !== 'text') {
 						dragData={
@@ -1067,31 +1009,32 @@
 							y: ev.clientY - touchedElement[nameY].baseVal.getItem(0).value
 						}						
 					}
-		        };
+				}
 			});
 
 			$(dom_element).on("mouseup", function(ev) {
-		        if(dragData && that.code_view) {
-		          var new_cells = that._mouse_move(ev, nameX, nameY, dragData, dragDataRed, element, rect_element, cells);
-		          if (new_cells) {
-		          	cells = new_cells;
-		          }
+				if(dragData && that.code_view) {
+					var new_cells = that._mouse_move(ev, nameX, nameY, dragData, dragDataRed, element, rect_element, cells);
+					if (new_cells) {
+						cells = new_cells;
+					}
 
-		          dragData = null;
-				  dragDataRed = null;
-				  that._command_stack.complete_transient();		          
-		        }
-			});			
+					dragData = null;
+					dragDataRed = null;
+					that._command_stack.complete_transient();
+				}
+			});
 
 			$('body').on("mousemove", function(ev) {	
-		        if(dragData && that.code_view) {			
-				  var new_cells = that._mouse_move(ev, nameX, nameY, dragData,dragDataRed,element,rect_element, cells);
-		          if (new_cells) {
-		          	cells = new_cells;
-		          }				  
-		        }
+				if(dragData && that.code_view) {			
+					var new_cells = that._mouse_move(ev, nameX, nameY, dragData,dragDataRed,element,rect_element, cells);
+					if (new_cells) {
+						cells = new_cells;
+					}
+				}
 			});							
 		},
+		*/
 
 		_create_server_socket: function() {
 			var root = this.option("root");
