@@ -107,6 +107,7 @@ exports.runtime = c(
 				"controller/environment/command_stack.js",
 				"controller/environment/initialize_root.js",
 				"controller/environment/ist_environment.js",
+				"controller/environment/devices.js",
 				"view/running_app.js",
 			])
 );
