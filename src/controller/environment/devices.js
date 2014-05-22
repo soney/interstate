@@ -198,7 +198,7 @@
 									val = ct[prop_name];
 
 								touch[prop_name].set(val);
-								arr_constraint.set(i, val);
+								arr_constraint.item(i, val);
 							});
 						} else {
 							console.error("Could not find touch");
@@ -242,7 +242,7 @@
 								var arr_constraint = touch_infos[prop_name],
 									val = ct[prop_name];
 
-								arr_constraint.set(i, val);
+								arr_constraint.item(i, val);
 								touch[prop_name].set(val);
 							});
 						}
@@ -267,7 +267,7 @@
 								var arr_constraint = touch_infos[prop_name],
 									val = ct[prop_name];
 
-								arr_constraint.set(i, val);
+								arr_constraint.item(i, val);
 							});
 						}
 					} else {
@@ -432,8 +432,8 @@
 			return ist.createGyroscopeObject();
 		});
 
-	// gyroscope
-	ist.getWidthHeight = function() {
+	// device
+	ist.createDevices = function() {
 		var width = cjs(window.innerWidth),
 			height = cjs(window.innerHeight),
 			resize_listener = function(event) {
@@ -455,20 +455,40 @@
 				height.destroy(silent);
 				cjs.signal();
 			},
-			device_gyroscope = new ist.Dict({has_protos: false, value: {
-					alpha: alpha,
-					beta: beta,
-					gamma: gamma,
-					heading: heading,
-					accuracy: accuracy
+			mouse = ist.createMouseObject(),
+			keyboard = ist.createKeyboardObject(),
+			touchscreen = ist.createTouchscreenObject(),
+			accelorometer = ist.createAccelorometerObject(),
+			gyroscope = ist.createGyroscopeObject(),
+			device = new ist.Dict({has_protos: false, value: {
+					mouse: mouse,
+					keyboard: keyboard,
+					touchscreen: touchscreen,
+					accelorometer: accelorometer,
+					gyroscope: gyroscope,
+					width: width,
+					height: height
 				}
 			});
-		device_gyroscope.destroy = function() {
+
+		device.destroy = function(silent) {
 			ist.Dict.prototype.destroy.apply(this, arguments);
 			destroy();
 		};
+
+		device.__is_device__ = true;
 		addListeners();
-		return device_gyroscope;
+		return device;
 	};
+	ist.register_serializable_type("ist_device",
+		function (x) {
+			return x.__is_device__;
+		},
+		function () {
+			return {};
+		},
+		function (obj) {
+			return ist.createDevices();
+		});
 	
 }(interstate));

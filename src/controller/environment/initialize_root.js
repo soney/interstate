@@ -277,14 +277,8 @@
 		}
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "device") >= 0)) {
-			var devices = new ist.Dict({has_protos: false});
-			root_dict.set("device", devices);
-
-			devices	.set("mouse", ist.createMouseObject())
-					.set("keyboard", ist.createKeyboardObject())
-					.set("touchscreen", ist.createTouchscreenObject())
-					.set("accelorometer", ist.createAccelorometerObject())
-					.set("gyroscope", ist.createGyroscopeObject());
+			var device = ist.createDevices();
+			root_dict.set("device", device);
 		}
 	};
 }(interstate));

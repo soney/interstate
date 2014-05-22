@@ -52,7 +52,6 @@
 			this.$inspecting_hover_object = cjs(false);
 			this.$breakpoints = cjs({});
 
-
 			if(!this.option("root")) {
 				var root = ist.load();
 				if(!root) {
@@ -76,7 +75,8 @@
 					"font-size": "1.2em",
 					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
 					cursor: "pointer",
-					padding: "5px"
+					padding: "5px",
+					"border-bottom": ""
 				};
 				this.running_button_css = {
 					float: "right",
