@@ -192,17 +192,17 @@
 
 						touch = touches[identifier];
 
-						if(index >= 0) {
-							_.each(touch_props, function(prop_name) {
-								var arr_constraint = touch_infos[prop_name],
-									val = ct[prop_name];
+						_.each(touch_props, function(prop_name) {
+							var arr_constraint = touch_infos[prop_name],
+								val = ct[prop_name];
 
-								touch[prop_name].set(val);
-								arr_constraint.item(i, val);
-							});
-						} else {
-							console.error("Could not find touch");
-						}
+							touch[prop_name].set(val);
+							if(index >= 0) {
+								arr_constraint.item(index, val);
+							} else {
+								arr_constraint.push(val);
+							}
+						});
 					} else {
 						touch_start_obj = {};
 						touch = {};
@@ -242,9 +242,11 @@
 								var arr_constraint = touch_infos[prop_name],
 									val = ct[prop_name];
 
-								arr_constraint.item(i, val);
+								arr_constraint.item(index, val);
 								touch[prop_name].set(val);
 							});
+						} else {
+							console.error("Could not find touch");
 						}
 					} else {
 						console.error("Could not find changed touch");
@@ -260,15 +262,18 @@
 				_.each(event.changedTouches, function(ct) {
 					var identifier = ct.identifier;
 
-					if(touch_starts.hasOwnProperty(identifier)) {
-						var index = touch_infos.identifier.indexOf(identifier);
+					if(touches.hasOwnProperty(identifier)) {
+						var index = touch_infos.identifier.indexOf(identifier),
+							touch = touches[identifier];
+
 						if(index >= 0) {
 							_.each(touch_props, function(prop_name) {
-								var arr_constraint = touch_infos[prop_name],
-									val = ct[prop_name];
+								var arr_constraint = touch_infos[prop_name];
 
-								arr_constraint.item(i, val);
+								arr_constraint.splice(index, 1);
 							});
+						} else {
+							console.error("Could not find touch");
 						}
 					} else {
 						console.error("Could not find ended touch");
@@ -297,7 +302,7 @@
 				cjs.signal();
 			},
 			touch_count = cjs(function() {
-				return touch_infos.identifiers.length();
+				return touch_infos.identifier.length();
 			}),
 			device_touchscreen = new ist.Dict({has_protos: false, value: {
 					finger_count: touch_count
