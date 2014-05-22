@@ -108,29 +108,6 @@
             return [];
         };
     
-	/*
-        proto.get_value = function (pcontext) {
-			if(this._is_static.get()) {
-				console.log("STATIC!");
-				return this._static_value.get();
-			} else {
-				var tree = this._tree.get();
-				if(tree instanceof ist.Error) {
-					return undefined;
-				} else {
-					var parsed_$ = ist.get_parsed_val(tree, {
-						context: pcontext,
-						ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext)
-					});
-					if(parsed_$ instanceof ist.MultiExpression) {
-						return parsed_$.last();
-					} else {
-						return parsed_$;
-					}
-				}
-			}
-        };
-		*/
 		proto.get_syntax_errors = function() {
             var tree = this._tree.get();
 			return tree instanceof ist.Error ? [tree.message()] : [];

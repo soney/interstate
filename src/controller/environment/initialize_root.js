@@ -280,7 +280,6 @@
 			var devices = new ist.Dict({has_protos: false});
 			root_dict.set("device", devices);
 
-			var mouse = new ist.Dict({has_protos: false});
 			devices	.set("mouse", ist.createMouseObject())
 					.set("keyboard", ist.createKeyboardObject())
 					.set("touchscreen", ist.createTouchscreenObject())

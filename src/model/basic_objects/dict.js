@@ -386,11 +386,4 @@
                 return rv;
             });
     }(ist.Dict));
-	/*
-    
-    ist.define("dict", function (options) {
-        var dict = new ist.Dict(options);
-        return dict;
-    });
-	*/
 }(interstate));
