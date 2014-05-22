@@ -431,5 +431,44 @@
 		function (obj) {
 			return ist.createGyroscopeObject();
 		});
+
+	// gyroscope
+	ist.getWidthHeight = function() {
+		var width = cjs(window.innerWidth),
+			height = cjs(window.innerHeight),
+			resize_listener = function(event) {
+				cjs.wait();
+				width.set(window.innerWidth);
+				height.set(window.innerHeight);
+				cjs.signal();
+			},
+			addListeners = function() {
+				window.addEventListener("resize", resize_listener);
+			},
+			removeListeners = function() {
+				window.removeEventListener("resize", resize_listener);
+			},
+			destroy = function(silent) {
+				cjs.wait();
+				removeListeners();
+				width.destroy(silent);
+				height.destroy(silent);
+				cjs.signal();
+			},
+			device_gyroscope = new ist.Dict({has_protos: false, value: {
+					alpha: alpha,
+					beta: beta,
+					gamma: gamma,
+					heading: heading,
+					accuracy: accuracy
+				}
+			});
+		device_gyroscope.destroy = function() {
+			ist.Dict.prototype.destroy.apply(this, arguments);
+			destroy();
+		};
+		addListeners();
+		return device_gyroscope;
+	};
 	
 }(interstate));
