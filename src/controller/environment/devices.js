@@ -6,6 +6,10 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	function getTime() {
+		return (new Date()).getTime();
+	}
+
 	// mouse
 	ist.createMouseObject = function() {
 		var clientX = cjs(0),
@@ -171,15 +175,9 @@
 							"pageX", "pageY",
 							"radiusX", "radiusY",
 							"rotationAngle"],
-			touch_infos = {};
+			touch_ids = cjs([]);
 
-		_.each(touch_props, function(prop_name) {
-			touch_infos[prop_name] = cjs([]);
-		});
-
-		var touch_starts = {},
-			touch_ends = {},
-			touches = {},
+		var touches = cjs({}),
 			touch_start_listener = function(event) {
 				cjs.wait();
 
@@ -187,39 +185,34 @@
 					var identifier = ct.identifier,
 						touch, touch_start_obj;
 
-					if(touches.hasOwnProperty(identifier)) {
-						var index = touch_infos.identifier.indexOf(identifier);
+					if(touches.has(identifier)) {
+						touch = touches.get(identifier);
 
-						touch = touches[identifier];
 
 						_.each(touch_props, function(prop_name) {
-							var arr_constraint = touch_infos[prop_name],
-								val = ct[prop_name];
+							var val = ct[prop_name];
 
 							touch[prop_name].set(val);
-							if(index >= 0) {
-								arr_constraint.item(index, val);
-							} else {
-								arr_constraint.push(val);
-							}
 						});
 					} else {
 						touch_start_obj = {};
-						touch = {};
+						touch = cjs({});
 
 						_.each(touch_props, function(prop_name) {
-							var arr_constraint = touch_infos[prop_name],
-								val = ct[prop_name];
+							var val = ct[prop_name];
 
-							arr_constraint.push(val);
-
-							touch[prop_name] = cjs(val);
+							touch.put(prop_name, val);
 							touch_start_obj[prop_name] = val;
 						});
 
-						touches[identifier] = touch;
-						touch_starts[identifier] = touch_start_obj;
-						touch_ends[identifier] = false;
+						touch.start = touch_start_obj;
+						touch.end = false;
+						touch.startTime = getTime();
+						touch.endTime = false;
+
+						touches.put(identifier, touch);
+
+						touch_ids.push(identifier);
 					}
 				});
 
@@ -233,17 +226,13 @@
 					var identifier = ct.identifier,
 						touch_start_obj = {};
 
-					if(touches.hasOwnProperty(identifier)) {
-						var index = touch_infos.identifier.indexOf(identifier),
-							touch = touches[identifier];
+					if(touches.has(identifier)) {
+						var touch = touches.get(identifier);
 
 						if(index >= 0) {
 							_.each(touch_props, function(prop_name) {
-								var arr_constraint = touch_infos[prop_name],
-									val = ct[prop_name];
-
-								arr_constraint.item(index, val);
-								touch[prop_name].set(val);
+								var val = ct[prop_name];
+								touch.put(prop_name, val);
 							});
 						} else {
 							console.error("Could not find touch");
@@ -262,16 +251,23 @@
 				_.each(event.changedTouches, function(ct) {
 					var identifier = ct.identifier;
 
-					if(touches.hasOwnProperty(identifier)) {
-						var index = touch_infos.identifier.indexOf(identifier),
-							touch = touches[identifier];
+					if(touches.has(identifier)) {
+						var index = touch_ids.indexOf(identifier),
+							touch = touches.get(identifier),
+							touch_end_obj = {};
 
 						if(index >= 0) {
 							_.each(touch_props, function(prop_name) {
-								var arr_constraint = touch_infos[prop_name];
+								var val = ct[prop_name];
 
-								arr_constraint.splice(index, 1);
+								touch_end_obj[prop_name] = val;
 							});
+
+							touch_ids.splice(index, 1);
+
+							touch.end = touch_end_obj;
+							touch.endTime = getTime();
+							touch.duration = touch.endTime - touch.startTime;
 						} else {
 							console.error("Could not find touch");
 						}
@@ -304,14 +300,35 @@
 			touch_count = cjs(function() {
 				return touch_infos.identifier.length();
 			}),
+			getTouch = function(touch_number) {
+				var touch_identifier = touch_infos.identifier.item(touch_number);
+				if(_.isNumber(touch_identifier)) {
+					return getTouchByID(touch_identifier);
+				} else {
+					return false;
+				}
+			},
+			getTouchByID = function(touch_id) {
+				var touch = touches.get(touch_id);
+				if(touch) {
+					console.log(touch);
+					return touch;
+				} else {
+					return false;
+				}
+			},
 			device_touchscreen = new ist.Dict({has_protos: false, value: {
-					finger_count: touch_count
+					finger_count: touch_count,
+					getTouch: getTouch,
+					getTouchByID: getTouchByID
 				}
 			});
+
 		device_touchscreen.destroy = function() {
 			ist.Dict.prototype.destroy.apply(this, arguments);
 			destroy();
 		};
+
 		device_touchscreen.__is_touchscreen_device__ = true;
 		addTouchListeners();
 		return device_touchscreen;
@@ -441,17 +458,23 @@
 	ist.createDevices = function() {
 		var width = cjs(window.innerWidth),
 			height = cjs(window.innerHeight),
+			orientation = cjs(window.orientation),
 			resize_listener = function(event) {
 				cjs.wait();
 				width.set(window.innerWidth);
 				height.set(window.innerHeight);
 				cjs.signal();
 			},
+			orientation_listener = function(event) {
+				orientation.set(window.orientation);
+			},
 			addListeners = function() {
 				window.addEventListener("resize", resize_listener);
+				window.addEventListener("orientationchange", orientation_listener);
 			},
 			removeListeners = function() {
 				window.removeEventListener("resize", resize_listener);
+				window.removeEventListener("orientationchange", orientation_listener);
 			},
 			destroy = function(silent) {
 				cjs.wait();

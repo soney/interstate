@@ -42,6 +42,7 @@
 		proto.get_pointer_obj = function () {
 			return this.pointer.points_at();
 		};
+
 		proto.get_current_statechart = function () {
 			var statechart;
 			var SOandC = ist.find_stateful_obj_and_context(this.pointer);
@@ -52,6 +53,7 @@
 			}
 			return statechart;
 		};
+
 		proto.find_state = function (name) {
 			var i, inherited_statecharts, isc;
 			if (name instanceof ist.State || name instanceof ist.StatechartTransition) {
@@ -114,13 +116,15 @@
 		};
 
 		proto.cd = function (prop_name) {
-			var dict = this.pointer.points_at();
-			var pv = dict._get_direct_prop(prop_name);
+			var dict = this.pointer.points_at(),
+				pv = dict._get_direct_prop(prop_name);
+
 			if (pv) {
 				this.pointer = this.pointer.push(pv);
 			}
 			return this.default_return_value();
 		};
+
 		proto.top = function () {
 			this.pointer = this.pointer.slice(0, 1);
 			return this.default_return_value();
@@ -130,8 +134,9 @@
 			return this.default_return_value();
 		};
 		proto.reset = function () {
-			var parent_obj = this.get_pointer_obj();
-			var cobj = ist.find_or_put_contextual_obj(parent_obj, this.pointer);
+			var parent_obj = this.get_pointer_obj(),
+				cobj = ist.find_or_put_contextual_obj(parent_obj, this.pointer);
+
 			if(cobj instanceof ist.ContextualStatefulObj) {
 				cobj.reset();
 			} else {
@@ -141,11 +146,10 @@
 		};
 
 		proto.set = function (prop_name, arg1, arg2, arg3) {
-			var builtin_name, i, index, getter_name, val, value;
-			var commands = [],
-				builtin_info = false;
-
-			var parent_obj = this.get_pointer_obj();
+			var builtin_name, i, index, getter_name, val, value,
+				commands = [],
+				builtin_info = false,
+				parent_obj = this.get_pointer_obj();
 
 			if (prop_name[0] === "(" && prop_name[prop_name.length - 1] === ")") {
 				builtin_name = prop_name.slice(1, prop_name.length - 1);
@@ -726,15 +730,24 @@
 			return this.default_return_value();
 		};
 		proto.start_at = function(state_name) {
-			var statechart = this.get_current_statechart();
-			var command;
-			var start_state = statechart.get_start_state();
-			var to_state = this.find_state(state_name);
-			var outgoing_transition = start_state.get_outgoing_transition();
+			var statechart,
+				start_state, outgoing_transition, command,
+				to_state = this.find_state(state_name);
+
+			if(state_name.indexOf(".") < 0) {
+				statechart = this.get_current_statechart();
+			} else {
+				statechart = this.find_state(state_name.slice(0, state_name.lastIndexOf(".")));
+			}
+
+			start_state = statechart.get_start_state();
+			outgoing_transition = start_state.get_outgoing_transition();
+
 			command = new ist.SetTransitionToCommand({
 				transition: outgoing_transition,
 				statechart: to_state
 			});
+
 			this._do(command);
 			return this.default_return_value();
 		};
