@@ -203,9 +203,7 @@
 		};
 		proto.id = function () { return this._id; };
 		proto.hash = function () { return this._hash; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		proto.basis = function () { return this._basis; };
 		proto.parent = function () { return this._parent; };
 		proto.context = function () { return this._context; };

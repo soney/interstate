@@ -77,14 +77,14 @@
 			}
 		};
 		proto.notify = function () {
-			ist.event_queue.wait();
+			//ist.event_queue.wait();
 			this.fire({
 				type: "timeout",
 				delay: this.delay,
 				current_time: (new Date()).getTime(),
 				created_at: this.created_at
 			});
-			ist.event_queue.signal();
+			//ist.event_queue.signal();
 		};
 		proto.destroy = function () {
 			if(this._transition) {

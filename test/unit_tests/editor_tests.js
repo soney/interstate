@@ -1,5 +1,6 @@
 (function(ist) {
 	module("Editor");
+
 	asyncTest("Basic Statechart View", function() {
 		expect(1);
 		var master = new ist.Statechart();

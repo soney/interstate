@@ -1,4 +1,6 @@
 (function(ist) {
+	module("Runtime");
+
 	var tests = [
 		{
 			name: "Dynamic Events",
@@ -359,8 +361,6 @@
 				},
 				test: function(env, runtime) {
 					ist.emit("my_fire");
-					//debugger;
-					//ist.update_current_contextual_objects(env.get_root());
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(cobj.prop_val("x"), 2);
 					ist.emit("my_fire");
@@ -729,36 +729,9 @@
 					equal(cobj.prop_val("x"), 2);
 				}
 			}]
-		},
-		{
-			name: "Sub-States",
-			expect: 1,
-			create_builtins: false,
-			steps: [{
-				setup: function(env) {
-					env	.set("obj", "<stateful>")
-						.cd("obj")
-							.add_state("state")
-							.add_state("state.inner_state")
-							.add_state("state.inner_state.inner_inner_state")
-							.start_at("state")
-							.start_at("state.inner_state")
-							.start_at("state.inner_state.inner_inner_state")
-							.set("x", "state", "1")
-							.set("x", "state.inner_state", "2")
-							.set("x", "state.inner_state.inner_inner_state", "3")
-						;
-				},
-				test: function(env, runtime) {
-					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
-					equal(cobj.prop_val("x"), 3);
-				}
-			}]
 		}
 		/**/
 	];
-
-	module("Runtime");
 	tests.forEach(function(test) {
 		dt(test.name, test);
 	});

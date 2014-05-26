@@ -92,11 +92,11 @@
 		proto.leave_listener = function() {
 		};
 		proto.notify = function (contact) {
-			ist.event_queue.wait();
+			//ist.event_queue.wait();
 			this.fire({
 				type: "collision"
 			});
-			ist.event_queue.signal();
+			//ist.event_queue.signal();
 		};
 		proto.destroy = function () {
 			if(this._transition) {

@@ -380,10 +380,8 @@
 	var cobj_hashes = {},
 		cobj_roots = {};
 
-	if(ist.__debug) {
-		ist.cobj_hashes = cobj_hashes;
-		ist.cobj_roots = cobj_roots;
-	}
+	ist.cobj_hashes = cobj_hashes;
+	ist.cobj_roots = cobj_roots;
 
 	ist.find_or_put_contextual_obj = function (obj, pointer, options) {
 		if(!pointer) {

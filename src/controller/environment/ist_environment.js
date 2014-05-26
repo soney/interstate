@@ -657,12 +657,17 @@
 			return command;
 		};
 		proto.make_concurrent = function (state_name, concurrent) {
-			concurrent = concurrent !== false;
-			var state = this.find_state(state_name);
-			var command = new ist.MakeConcurrentCommand({
-				statechart: state,
-				concurrent: concurrent
-			});
+			if(arguments.length === 1) {
+				concurrent = state_name;
+				state_name = false;
+			}
+
+			var state = state_name ? this.find_state(state_name) : this.get_current_statechart(),
+				command = new ist.MakeConcurrentCommand({
+					statechart: state,
+					concurrent: concurrent !== false
+				});
+
 			this._do(command);
 			return this.default_return_value();
 		};

@@ -1,6 +1,8 @@
 (function(ist) {
 	var cjs = ist.cjs;
 
+	module("Utilities");
+
 	test("Map diff", function() {
 		var md;
 		md = ist.get_map_diff(['a'], ['a'], [1], [1]);
@@ -243,7 +245,6 @@
 			//});
 		//});
 	});
-	/*
 
 	/**/
 }(interstate));

@@ -46,12 +46,12 @@ var UNDEF = {};
 			this._last_val = val;
 
 			if (val && (last_val !== val)) {
-				ist.event_queue.wait();
+				//ist.event_queue.wait();
 				this.fire({
 					value: val,
 					timestamp: (new Date()).getTime()
 				});
-				ist.event_queue.signal();
+				//ist.event_queue.signal();
 			}
 		};
 		proto.destroy = function () {

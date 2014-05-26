@@ -15,10 +15,10 @@
 
 		var semaphore = 0;
 		this.wait = function () {
-			semaphore -= 1;
+			semaphore--;
 		};
 		this.signal = function () {
-			semaphore += 1;
+			semaphore++;
 			if (semaphore >= 0) {
 				this.run_event_queue();
 			}
@@ -109,17 +109,12 @@
 		proto._initialize = function () {
 			this.listeners = [];
 		};
-		proto.fire_and_signal = function () {
-			this.fire.apply(this, arguments);
-			ist.event_queue.signal();
-		};
 		proto.on_create = function () {};
 		proto.on_ready = function() {};
 		proto.fire = function () {
+			ist.event_queue.push(this, arguments);
 			if (ist.event_queue.is_ready()) {
-				this._fire.apply(this, arguments);
-			} else {
-				ist.event_queue.push(this, arguments);
+				ist.event_queue.run_event_queue();
 			}
 		};
 		proto.on_fire = proto.add_listener = function (callback, context) {

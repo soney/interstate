@@ -187,9 +187,9 @@
 		proto.create_shadow = function (parent_statechart, context) {
 			var shadow = new My();
 			this.on_fire(function () {
-				ist.event_queue.wait();
+				//ist.event_queue.wait();
 				shadow.fire();
-				ist.event_queue.signal();
+				//ist.event_queue.signal();
 			});
 			return shadow;
 		};

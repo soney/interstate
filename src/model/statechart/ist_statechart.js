@@ -328,7 +328,6 @@
 		};
 
 		proto.set_active_substate = function (state, transition, event) {
-			//if(uid.strip_prefix(this.id()) == 53) { debugger; }
 			if(transition) {
 				ist.event_queue.once("end_event_queue_round_0", function () {
 					this._emit("pre_transition_fire", {
@@ -735,9 +734,6 @@
 			return this;
 		};
 		proto.destroy = function (silent) {
-			//if(this.sid() == 785) {
-				//debugger;
-			//}
 			this._emit("destroy", {
 				type: "destroy",
 				target: this

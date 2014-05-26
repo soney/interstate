@@ -150,56 +150,64 @@
 			trials: trials
 		}];
 
-		tests.forEach(function(test_info) {
-			var i = 0,
-				startTime,
-				ens,
-				time;
+		if(QUnit.config.benchmarks) {
+			tests.forEach(function(test_info) {
+				var i = 0,
+					startTime,
+					ens,
+					time;
 
-			if($.isArray(test_info.N)) {
-				ens = test_info.N;
-			} else {
-				ens = [test_info.N];
-			}
-
-			ens.forEach(function(n) {
-				var trials = [];
-				while(i < test_info.trials) {
-					trials.push(i+1);
-					i++;
+				if($.isArray(test_info.N)) {
+					ens = test_info.N;
+				} else {
+					ens = [test_info.N];
 				}
-				trials.forEach(function(trial_number) {
-					var trial_name = test_info.name + " (N=" + n + ", trial "+ trial_number + ")";
 
-					dt(trial_name, {
-						name: trial_name,
-						expect: 1,
-						steps: [{
-							setup: function(env) {
-								test_info.do_setup(env, n);
-								startTime = getTime();
-								console.profile(trial_name);
-								test_info.do_test(env, n);
-								console.profileEnd(trial_name);
-								time = getTime() - startTime;
-								$("#perf_results").append(
-									$("<span />")	.text(time+"ms")
-													.css({
-														"padding-left": "3px",
-														"padding-right": "3px"
-													})
-								);
-							},
+				ens.forEach(function(n) {
+					var trials = [];
+					while(i < test_info.trials) {
+						trials.push(i+1);
+						i++;
+					}
+					trials.forEach(function(trial_number) {
+						var trial_name = test_info.name + " (N=" + n + ", trial "+ trial_number + ")";
 
-							test: function(env, output) {
-								ok(test_info.verify(env, n, output));
-								test_info.do_cleanup(env, n);
-							}
-						}]
+						dt(trial_name, {
+							name: trial_name,
+							expect: 1,
+							steps: [{
+								setup: function(env) {
+									test_info.do_setup(env, n);
+									startTime = getTime();
+									if(QUnit.config.profile_benchmarks) {
+										console.profile(trial_name);
+									}
+									test_info.do_test(env, n);
+									if(QUnit.config.profile_benchmarks) {
+										console.profileEnd(trial_name);
+									}
+									time = getTime() - startTime;
+									$("#perf_results").append(
+										$("<span />")	.text(time+"ms")
+														.css({
+															"padding-left": "3px",
+															"padding-right": "3px"
+														})
+									);
+								},
+
+								test: function(env, output) {
+									ok(test_info.verify(env, n, output));
+									test_info.do_cleanup(env, n);
+								}
+							}]
+						});
 					});
 				});
 			});
-		});
+		} else {
+			$("#perf_results").remove()
+		}
 
 	/**/
 }(interstate));
