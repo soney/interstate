@@ -15,10 +15,10 @@
 	<script type="text/javascript" src="resources/qunit.js"></script>
 	<script type="text/javascript">
 		QUnit.config.autostart = false;
-		QUnit.config.reorder = false;
+		QUnit.config.reorder = true;
 		QUnit.config.hidepassed = false;
 
-		QUnit.config.notrycatch = false;
+		QUnit.config.notrycatch = true;
 
 		QUnit.config.benchmarks = true;
 		QUnit.config.profile_benchmarks = true;
@@ -33,6 +33,7 @@
 		*/
 
 		interstate.__debug = QUnit.config.notrycatch;
+		interstate.cjs.__debug = interstate.__debug;
 	</script>
 	<script type="text/javascript" src="memory_tests.js"></script>
 	<script type="text/javascript" src="utils_tests.js"></script>

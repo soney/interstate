@@ -19,7 +19,7 @@
 			this.events = events;
 			_.each(this.events, function (event) {
 				event.parent = this;
-				event.on_fire(_.bind(function () {
+				event.on_fire_request(_.bind(function () {
 					this.fire.apply(this, arguments);
 				}, this));
 			}, this);

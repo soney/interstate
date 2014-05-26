@@ -212,13 +212,17 @@
 		};
 		proto.preventDefault = function() {
 			this.on_fire_request(function(event) {
-				event.preventDefault();
+				if(event.preventDefault) {
+					event.preventDefault();
+				}
 			});
 			return this;
 		};
 		proto.stopPropagation = function() {
 			this.on_fire_request(function(event) {
-				event.stopPropagation();
+				if(event.stopPropagation) {
+					event.stopPropagation();
+				}
 			});
 			return this;
 		};

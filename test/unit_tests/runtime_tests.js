@@ -1,7 +1,16 @@
 (function(ist) {
 	module("Runtime");
 
-	var tests = [
+	function simulateClick(type, elem) {
+		var evt = document.createEvent("MouseEvents");
+			evt.initMouseEvent(type, true, true, window,
+			0, 0, 0, 0, 0, false, false, false, false, 0, null);
+		elem.dispatchEvent(evt);
+	}
+
+
+	var _ = ist._,
+		tests = [
 		{
 			name: "Dynamic Events",
 			expect: 2,
@@ -727,6 +736,83 @@
 				test: function(env, runtime) {
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(cobj.prop_val("x"), 2);
+				}
+			}]
+		},
+		{
+			name: "StopPropagation on Events",
+			expect: 10,
+			create_builtins: true,
+			steps: [{
+				setup: function(env) {
+					env	.set("obj", "<stateful>")
+						.cd("obj")
+							.set("(prototypes)", "(start)", "dom.h1")
+							.add_state("state1")
+							.add_state("state2")
+							.add_transition("state1", "state2", "on('mousedown', this).stopPropagation()")
+							.add_transition("state2", "state1", "on('mousedown', this)")
+							.set("x", "state1", "1")
+							.set("x", "state2", "2")
+							.start_at("state1")
+						;
+				},
+				test: function(env, runtime, make_async) {
+					var window_md_count = 0,
+						window_md_listener = function() {
+							window_md_count++;
+						},
+						cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
+						h1 = $("h1", runtime),
+						callback = make_async();
+
+					window.addEventListener("mousedown", window_md_listener);
+
+					equal(cobj.prop_val("x"), 1);
+					equal(window_md_count, 0);
+
+					//var ev = document.createEvent("MouseEvent");
+					//ev.initMouseEvent("mousedown");
+					//h1[0].dispatchEvent(ev);
+					simulateClick("mousedown", h1[0]);
+
+					_.delay(function() {
+						equal(cobj.prop_val("x"), 2);
+						equal(window_md_count, 0);
+
+						//ev = document.createEvent("MouseEvent");
+						//ev.initMouseEvent("mousedown");
+						//h1[0].dispatchEvent(ev);
+						simulateClick("mousedown", h1[0]);
+
+						_.delay(function() {
+							equal(cobj.prop_val("x"), 1);
+							equal(window_md_count, 1);
+
+							//ev = document.createEvent("MouseEvent");
+							//ev.initMouseEvent("mousedown");
+							//h1[0].dispatchEvent(ev);
+							simulateClick("mousedown", h1[0]);
+
+							_.delay(function() {
+								equal(cobj.prop_val("x"), 2);
+								equal(window_md_count, 1);
+
+								//ev = document.createEvent("MouseEvent");
+								//ev.initMouseEvent("mousedown");
+								//h1[0].dispatchEvent(ev);
+								simulateClick("mousedown", h1[0]);
+
+								_.delay(function() {
+									equal(cobj.prop_val("x"), 1);
+									equal(window_md_count, 2);
+									window.removeEventListener("mousedown", window_md_listener);
+									callback();
+								}, 10);
+							}, 10);
+						}, 10);
+					}, 10);
+
 				}
 			}]
 		}

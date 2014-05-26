@@ -23,11 +23,10 @@
 					ist.event_queue.wait();
 				
 					var new_event = _.extend({}, event, {
-						ist_target: specified_target/*,
+						ist_target: specified_target,
 						preventDefault: event.preventDefault ? _.bind(event.preventDefault, event) : function(){},
 						stopPropagation: event.stopPropagation ? _.bind(event.stopPropagation, event) : function(){},
 						stopImmediatePropagation: event.stopImmediatePropagation ? _.bind(event.stopImmediatePropagation, event) : function(){}
-						*/
 					});
 
 					self.fire(new_event);
