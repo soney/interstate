@@ -485,10 +485,8 @@
 		}
 	};
 
-		//destroy_if_constraint(x, silent);
-		//set_destroy(x, func);
 	var get_val = ist.get_parsed_val = function (node, options) {
-		var op_func, left_arg, right_arg, arg, callee, op_context, args, rv;
+		var op_func, left_arg, right_arg, arg, callee, op_context, args, rv, object, property;
 		if (!node) {
 			return undefined;
 		}
@@ -514,11 +512,21 @@
 				destroy_if_constraint(arg, silent);
 			});
 		} else if (type === "CallExpression") {
-			callee = get_val(node.callee, options);
-			op_context = window;
-			if (node.callee.type === "MemberExpression") {
-				op_context = get_val(node.callee.object, options);
+			var node_callee = node.callee;
+			if (node_callee.type === "MemberExpression") {
+				object = op_context = get_val(node_callee.object, options);
+				property = node_callee.computed ? get_val(node_callee.property, options) : node_callee.property.name;
+
+				callee = get_member_val(object, property, options);
+				set_destroy(callee, function(silent) {
+					destroy_if_constraint(object, silent);
+					destroy_if_constraint(property, silent);
+				});
+			} else {
+				callee = get_val(node_callee, options);
+				op_context = window;
 			}
+
 			args = _.map(node["arguments"], function (arg) {
 				return get_val(arg, options);
 			});
@@ -526,7 +534,6 @@
 
 			set_destroy(rv, function(silent) {
 				destroy_if_constraint(callee, silent);
-				destroy_if_constraint(op_context, silent);
 				_.each(args, function(arg) {
 					destroy_if_constraint(arg, silent);
 				});
@@ -536,8 +543,9 @@
 		} else if (type === "ThisExpression") {
 			rv = get_this_val(options);
 		} else if (type === "MemberExpression") {
-			var object = get_val(node.object, options);
-			var property = node.computed ? get_val(node.property, options) : node.property.name;
+			object = get_val(node.object, options);
+			property = node.computed ? get_val(node.property, options) : node.property.name;
+
 			rv = get_member_val(object, property, options);
 			set_destroy(rv, function(silent) {
 				destroy_if_constraint(object, silent);

@@ -73,6 +73,7 @@
 		};
 
 		proto.destroy = function () {
+			cjs.wait();
 			if(this.constructor === My) { this.begin_destroy(true); }
 
 			this.statecharts_per_proto.forEach(function(statechart) {
@@ -82,6 +83,7 @@
 			this.statecharts_per_proto.destroy(true);
 			delete this.statecharts_per_proto;
 			My.superclass.destroy.apply(this, arguments);
+			cjs.signal();
 		};
 	}(ist.ContextualStatefulObj));
 }(interstate));

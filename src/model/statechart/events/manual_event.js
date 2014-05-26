@@ -7,7 +7,7 @@
 		_ = ist._;
 
 	ist.ManualEvent = function () {
-		ist.ManualEvent.apply(this, arguments);
+		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "manual_event";
 	};

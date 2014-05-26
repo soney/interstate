@@ -692,15 +692,14 @@
 		};
 
 		proto.destroy = function () {
+			cjs.wait();
 			if(this.constructor === My) { this.begin_destroy(true); }
 
 			//The attachment instances might be listening for property changes for destroy them first
-			cjs.wait();
 			_.each(this._attachment_instances, function(attachment_instance, type) {
 				attachment_instance.destroy(true);
 				delete this._attachment_instances[type];
 			}, this);
-			cjs.signal();
 			delete this._attachment_instances;
 
 			this._manifestation_objects.destroy(true);
@@ -754,6 +753,7 @@
 				delete this.has.options.context;
 				delete this.has.options.args_map;
 			}
+			cjs.signal();
 		};
 
 		proto._getter = function () {

@@ -104,9 +104,7 @@
 			return this;
 		};
 		proto.id = proto.hash = function () { return this._id; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		proto.from = function () { return this._from_state.get(); };
 		proto.to = function () { return this._to_state.get(); };
 		proto.setFrom = function (state) {
