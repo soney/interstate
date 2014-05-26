@@ -107,25 +107,45 @@
 			return this._id;
 		};
 		proto._initialize = function () {
-			this.listeners = [];
+			this.actual_firetime_listeners = [];
+			this.requested_firetime_listeners = [];
 		};
 		proto.on_create = function () {};
 		proto.on_ready = function() {};
 		proto.fire = function () {
-			ist.event_queue.push(this, arguments);
+			var args = _.toArray(arguments);
+
+			ist.event_queue.push(this, args);
+			_.forEach(this.requested_firetime_listeners, function (listener) {
+				listener.callback.apply(listener.context || this, listener.args.concat(args));
+			}, this);
+			
 			if (ist.event_queue.is_ready()) {
 				ist.event_queue.run_event_queue();
 			}
 		};
+		proto.on_fire_request = function(callback, context) {
+			var args = _.rest(arguments, 2);
+			this.requested_firetime_listeners.push({callback: callback, context: context, args: args});
+		};
+		proto.off_fire_request = function (callback, context) {
+			for(var i = 0; i<this.requested_firetime_listeners.length; i++) {
+				var listener = this.requested_firetime_listeners[i];
+				if(listener.callback === callback && (!context || listener.context === context)) {
+					this.requested_firetime_listeners.splice(i, 1);
+					i--;
+				}
+			}
+		};
 		proto.on_fire = proto.add_listener = function (callback, context) {
 			var args = _.rest(arguments, 2);
-			this.listeners.push({callback: callback, context: context, args: args});
+			this.actual_firetime_listeners.push({callback: callback, context: context, args: args});
 		};
 		proto.off_fire = proto.remove_listener = function (callback, context) {
-			for(var i = 0; i<this.listeners.length; i++) {
-				var listener = this.listeners[i];
+			for(var i = 0; i<this.actual_firetime_listeners.length; i++) {
+				var listener = this.actual_firetime_listeners[i];
 				if(listener.callback === callback && (!context || listener.context === context)) {
-					this.listeners.splice(i, 1);
+					this.actual_firetime_listeners.splice(i, 1);
 					i--;
 				}
 			}
@@ -134,7 +154,7 @@
 		proto.get_transition = function () { return this._transition; };
 		proto._fire = function () {
 			var args = _.toArray(arguments);
-			_.forEach(this.listeners, function (listener) {
+			_.forEach(this.actual_firetime_listeners, function (listener) {
 				listener.callback.apply(listener.context || this, listener.args.concat(args));
 			}, this);
 		};
@@ -190,10 +210,23 @@
 			}, this);
 			return new_event;
 		};
+		proto.preventDefault = function() {
+			this.on_fire_request(function(event) {
+				event.preventDefault();
+			});
+			return this;
+		};
+		proto.stopPropagation = function() {
+			this.on_fire_request(function(event) {
+				event.stopPropagation();
+			});
+			return this;
+		};
 		proto.destroy = function () {
 			this.destroyed = true;
 			this._emit("destroy");
-			delete this.listeners;
+			delete this.actual_firetime_listeners;
+			delete this.requested_firetime_listeners;
 			delete this._transition;
 			delete this._enabled;
 			able.destroy_this_listenable(this);
