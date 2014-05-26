@@ -73,7 +73,7 @@
 				ok(true, "Make sure nothing was allocated");
 				start();
 			});
-		}, 350);
+		}, 50);
 	});
 	
 	asyncTest("State Allocation", function() {
@@ -96,7 +96,7 @@
 				ok(true, "Make sure nothing was allocated");
 				start();
 			});
-		}, 350);
+		}, 50);
 	});
 	asyncTest("Environment Collection", function() {
 		expect(1);
@@ -132,7 +132,7 @@
 				ok(!response.illegal_strs, "Make sure nothing was allocated");
 				start();
 			});
-		}, 1000);
+		}, 500);
 	});
 	asyncTest("Communication Wrapper", function() {
 		expect(3);
