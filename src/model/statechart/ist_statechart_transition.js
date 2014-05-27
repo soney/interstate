@@ -115,6 +115,11 @@
 			this._from_state.set(state);
 			var do_set_from = function() {
 				state._add_direct_outgoing_transition(this);
+				if(state.is_active()) {
+					this.enable();
+				} else {
+					this.disable();
+				}
 			};
 			if(state.is_initialized()) {
 				do_set_from.call(this);
@@ -247,20 +252,24 @@
 		};
 
 		proto.enable = function () {
-			this._enabled = true;
-			var event = this.event();
-			event.enable();
-			if(ist.__debug_statecharts) {
-				this.$enabled.set(true);
+			if(!this._enabled) {
+				this._enabled = true;
+				var event = this.event();
+				event.enable();
+				if(ist.__debug_statecharts) {
+					this.$enabled.set(true);
+				}
 			}
 		};
 
 		proto.disable = function () {
-			this._enabled = false;
-			var event = this.event();
-			event.disable();
-			if(ist.__debug_statecharts) {
-				this.$enabled.set(false);
+			if(this._enabled) {
+				this._enabled = false;
+				var event = this.event();
+				event.disable();
+				if(ist.__debug_statecharts) {
+					this.$enabled.set(false);
+				}
 			}
 		};
 
