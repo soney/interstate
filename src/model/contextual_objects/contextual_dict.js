@@ -600,6 +600,7 @@
 
 				if (!info) {
 					var proto_objects = this.get_all_protos();
+					if(!proto_objects) debugger;
 					var plen = proto_objects.length;
 					var proto_obj;
 

@@ -6,150 +6,148 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	var any_state = ist.any_state = {};
-	var state_descriptor_regex = /\s*(([\w\.]+((\s*,\s*[\w\.]+)*))|\*)(\s*(>(\d+)?-|-(\d+)?>|<(\d+)?-|-(\d+)?<|<-(\d+)?->|>-(\d+)?-<)\s*(([\w\.]+(\s*,\s*[\w\.]+)*)|\*))?\s*/;
-	var get_state_description = function (str) {
-		return str === "*" ? any_state : _.map(str.split(","), function (str) { return str.trim(); });
-	};
-	var get_state_listener_info = function (str_descriptor) {
-		var matches = str_descriptor.match(state_descriptor_regex);
-		if (matches) {
-			var from_states = get_state_description(matches[1]);
-			var transition = matches[6];
-			if (transition) {
-				var to_states = get_state_description(matches[13]);
+	var any_state = ist.any_state = {},
+		state_descriptor_regex = /\s*(([\w\.]+((\s*,\s*[\w\.]+)*))|\*)(\s*(>(\d+)?-|-(\d+)?>|<(\d+)?-|-(\d+)?<|<-(\d+)?->|>-(\d+)?-<)\s*(([\w\.]+(\s*,\s*[\w\.]+)*)|\*))?\s*/,
+		get_state_description = function (str) {
+			return str === "*" ? any_state : _.map(str.split(","), function (str) { return str.trim(); });
+		},
+		get_state_listener_info = function (str_descriptor) {
+			var matches = str_descriptor.match(state_descriptor_regex);
+			if (matches) {
+				var from_states = get_state_description(matches[1]);
+				var transition = matches[6];
+				if (transition) {
+					var to_states = get_state_description(matches[13]);
 
-				if (transition.indexOf("<") >= 0 && transition.indexOf(">") < 0) {
-					transition = transition.split("").reverse().join("");
-					var tmp = from_states;
-					from_states = to_states;
-					to_states = tmp;
-				}
+					if (transition.indexOf("<") >= 0 && transition.indexOf(">") < 0) {
+						transition = transition.split("").reverse().join("");
+						var tmp = from_states;
+						from_states = to_states;
+						to_states = tmp;
+					}
 
-				var transition_no = matches[7] || matches[8] || matches[9] || matches[10] || matches[11] || matches[12] || false;
-				if (_.isString(transition_no)) {
-					transition_no = parseInt(transition_no, 10);
+					var transition_no = matches[7] || matches[8] || matches[9] || matches[10] || matches[11] || matches[12] || false;
+					if (_.isString(transition_no)) {
+						transition_no = parseInt(transition_no, 10);
+					}
+					var is_bidirectional = ((transition[0] === ">") && (transition[transition.length - 1] === "<")) ||
+											((transition[0] === "<") && (transition[transition.length - 1] === ">"));
+					return {
+						type: "transition",
+						from: from_states,
+						to: to_states,
+						pre: transition[0] === ">",
+						bidirectional: is_bidirectional,
+						transition_no: transition_no
+					};
+				} else {
+					return {
+						type: "state",
+						states: from_states
+					};
 				}
-				var is_bidirectional = ((transition[0] === ">") && (transition[transition.length - 1] === "<")) ||
-										((transition[0] === "<") && (transition[transition.length - 1] === ">"));
-				return {
-					type: "transition",
-					from: from_states,
-					to: to_states,
-					pre: transition[0] === ">",
-					bidirectional: is_bidirectional,
-					transition_no: transition_no
-				};
 			} else {
-				return {
-					type: "state",
-					states: from_states
-				};
+				throw new Error(str_descriptor + " does not match format");
 			}
-		} else {
-			throw new Error(str_descriptor + " does not match format");
-		}
-	};
-
-	var matches_name = function (statechart, states, state) {
-		var i, len;
-		if (states === any_state) {
-			return true;
-		} else {
-			var state_name = state.get_name(statechart);
-			len = states.length;
-			for (i = 0; i < len; i += 1) {
-				var s = states[i];
-				if (s === state || s === state_name) {
-					return true;
-				}
-			}
-			return false;
-		}
-	};
-
-	var add_transition_listener = function (str, statechart, activation_listener, deactivation_listener, context) {
-		context = context || this;
-
-		var listener_info;
-		if (_.isString(str)) {
-			listener_info = get_state_listener_info(str);
-		} else {
-			listener_info = str;
-		}
-
-		var type = listener_info.type;
-		var event_type, listener;
-		if (type === "state") {
-			event_type = "pre_transition_fire";
-			var activated = false;
-			listener = function (event) {
-				var listener_args = arguments,
-					mname = matches_name(statechart, listener_info.states, event.state);
-				if (activated === false && mname) {
-					activated = true;
-
-					ist.event_queue.once("end_event_queue_round_6", function () {
-						activation_listener.apply(context, listener_args);
-					}, this);
-				} else if (activated === true && !mname) {
-					activated = false;
-
-					ist.event_queue.once("end_event_queue_round_2", function () {
-						deactivation_listener.apply(context, listener_args);
-					}, this);
-				}
-			};
-		} else if (type === "transition") {
-			event_type = listener_info.pre ? "pre_transition_fire" : "post_transition_fire";
-			listener = function (event) {
-				var transition = event.transition,
-					from = transition.from(),
-					to = transition.to();
-
-				var desired_transition = false;
-				if (_.isNumber(listener_info.transition_no)) {
-					var transitions_between = from.get_transitions_to(to);
-					desired_transition = transitions_between[listener_info.transition_no];
-				}
-
-
-				if (!desired_transition || transition === desired_transition) {
-					if ((matches_name(statechart, listener_info.from, from) &&
-							matches_name(statechart, listener_info.to, to)) ||
-								(listener_info.bidirectional &&
-										matches_name(statechart, listener_info.to, from) &&
-										matches_name(statechart, listener_info.from, to))) {
-
-						var listener_args = arguments;
-						activation_listener.apply(context, listener_args);
-
-						if (listener_info.pre) {
-							ist.event_queue.once("end_event_queue_round_1", function () {
-								deactivation_listener.apply(context, listener_args);
-							});
-						} else {
-							ist.event_queue.once("end_event_queue_round_5", function () {
-								deactivation_listener.apply(context, listener_args);
-							});
-						}
+		},
+		matches_name = function (statechart, states, state) {
+			var i, len;
+			if (states === any_state) {
+				return true;
+			} else {
+				var state_name = state.get_name(statechart);
+				len = states.length;
+				for (i = 0; i < len; i += 1) {
+					var s = states[i];
+					if (s === state || s === state_name) {
+						return true;
 					}
 				}
-			};
-		} else {
-			throw new Error("Unexpected type " + type);
-		}
+				return false;
+			}
+		},
+		add_transition_listener = function (str, statechart, activation_listener, deactivation_listener, context) {
+			context = context || this;
 
-		statechart.on(event_type, listener);
-		return {
-			str: str,
-			statechart: statechart,
-			activation_listener: activation_listener,
-			deactivation_listener: deactivation_listener,
-			context: context,
-			destroy: function () { statechart.off(event_type, listener); }
+			var listener_info;
+			if (_.isString(str)) {
+				listener_info = get_state_listener_info(str);
+			} else {
+				listener_info = str;
+			}
+
+			var type = listener_info.type;
+			var event_type, listener;
+			if (type === "state") {
+				event_type = "pre_transition_fire";
+				var activated = false;
+				listener = function (event) {
+					var listener_args = arguments,
+						mname = matches_name(statechart, listener_info.states, event.state);
+					if (activated === false && mname) {
+						activated = true;
+
+						ist.event_queue.once("end_event_queue_round_6", function () {
+							activation_listener.apply(context, listener_args);
+						}, this);
+					} else if (activated === true && !mname) {
+						activated = false;
+
+						ist.event_queue.once("end_event_queue_round_2", function () {
+							deactivation_listener.apply(context, listener_args);
+						}, this);
+					}
+				};
+			} else if (type === "transition") {
+				event_type = listener_info.pre ? "pre_transition_fire" : "post_transition_fire";
+				listener = function (event) {
+					var transition = event.transition,
+						from = transition.from(),
+						to = transition.to();
+
+					var desired_transition = false;
+					if (_.isNumber(listener_info.transition_no)) {
+						var transitions_between = from.get_transitions_to(to);
+						desired_transition = transitions_between[listener_info.transition_no];
+					}
+
+
+					if (!desired_transition || transition === desired_transition) {
+						if ((matches_name(statechart, listener_info.from, from) &&
+								matches_name(statechart, listener_info.to, to)) ||
+									(listener_info.bidirectional &&
+											matches_name(statechart, listener_info.to, from) &&
+											matches_name(statechart, listener_info.from, to))) {
+
+							var listener_args = arguments;
+							activation_listener.apply(context, listener_args);
+
+							if (listener_info.pre) {
+								ist.event_queue.once("end_event_queue_round_1", function () {
+									deactivation_listener.apply(context, listener_args);
+								});
+							} else {
+								ist.event_queue.once("end_event_queue_round_5", function () {
+									deactivation_listener.apply(context, listener_args);
+								});
+							}
+						}
+					}
+				};
+			} else {
+				throw new Error("Unexpected type " + type);
+			}
+
+			statechart.on(event_type, listener);
+			return {
+				str: str,
+				statechart: statechart,
+				activation_listener: activation_listener,
+				deactivation_listener: deactivation_listener,
+				context: context,
+				destroy: function () { statechart.off(event_type, listener); }
+			};
 		};
-	};
 
 	ist.Statechart = function (options) {
 		options = options || {};
@@ -159,6 +157,8 @@
 	(function (My) {
 		_.proto_extend(My, ist.State);
 		var proto = My.prototype;
+
+		My.START_STATE_NAME = "(start)";
 
 		proto.increment_start_state_times_run = function(self) {
 			var outgoing_transition = self._start_state.get_outgoing_transition();
@@ -218,7 +218,7 @@
 					}
 				} else {
 					if(!this.is_puppet()) {
-						my_starting_state.enable_outgoing_transitions();
+						//my_starting_state.enable_outgoing_transitions();
 						my_starting_state.set_active(true);
 						my_starting_state.run();
 					}
@@ -271,7 +271,7 @@
 					//start_state.set_active(true);
 					starting_state.set_active(true);
 					starting_state.run();
-					starting_state.enable_outgoing_transitions();
+					//starting_state.enable_outgoing_transitions();
 				}
 			}
 			return this;
@@ -285,7 +285,7 @@
 				});
 
 				if (include_start) {
-					rv["(start)"] = this.get_start_state();
+					rv[My.START_STATE_NAME] = this.get_start_state();
 				}
 
 				return rv;
@@ -301,7 +301,7 @@
 			}
 			if (this.$local_state && this.$local_state.get() === this.get_start_state()) {
 				this.$local_state.set(state);
-				this.$local_state.enable_outgoing_transitions();
+				//this.$local_state.enable_outgoing_transitions();
 			}
 			this._start_state = state;
 			cjs.signal();
@@ -329,26 +329,32 @@
 
 		proto.set_active_substate = function (state, transition, event) {
 			if(transition) {
-				ist.event_queue.once("end_event_queue_round_0", function () {
-					this._emit("pre_transition_fire", {
-						type: "pre_transition_fire",
-						transition: transition,
-						target: this,
-						event: event,
-						state: state
-					});
-					transition.set_active(true);
-				}, this);
-				ist.event_queue.once("end_event_queue_round_2", function () {
-					if(!this.is_concurrent()) {
-						transition.increment_times_run();
-					}
-				}, this);
+			/*
+				if(is_my_transition) {
+					ist.event_queue.once("end_event_queue_round_0", function () {
+							this._emit("pre_transition_fire", {
+								type: "pre_transition_fire",
+								transition: transition,
+								target: this,
+								event: event,
+								state: state
+							});
+							transition.set_active(true);
+					}, this);
+
+					ist.event_queue.once("end_event_queue_round_2", function () {
+						if(!this.is_concurrent()) {
+							transition.increment_times_run();
+						}
+					}, this);
+				}
+				*/
+
 				ist.event_queue.once("end_event_queue_round_3", function () {
 					if(this.is_concurrent()) {
 						_.each(this.get_substates(true), function(substate) {
 							substate.set_active(true);
-							substate.enable_outgoing_transitions();
+							//substate.enable_outgoing_transitions();
 							substate.run();
 							if(substate instanceof ist.Statechart) {
 								var starts_at = substate.get_active_substate();
@@ -376,22 +382,27 @@
 						cjs.signal();
 					}
 				}, this);
-				ist.event_queue.once("end_event_queue_round_4", function () {
-					transition.set_active(false);
-					this._emit("post_transition_fire", {
-						type: "post_transition_fire",
-						transition: transition,
-						target: this,
-						event: event,
-						state: state
-					});
-				}, this);
+
+/*
+				if(is_my_transition) {
+					ist.event_queue.once("end_event_queue_round_4", function () {
+						transition.set_active(false);
+						this._emit("post_transition_fire", {
+							type: "post_transition_fire",
+							transition: transition,
+							target: this,
+							event: event,
+							state: state
+						});
+					}, this);
+				}
+				*/
 			} else {
 				//cjs.wait();
 				if(this.is_concurrent()) {
 					_.each(this.get_substates(true), function(substate) {
 						substate.set_active(true);
-						substate.enable_outgoing_transitions();
+						//substate.enable_outgoing_transitions();
 						substate.run();
 						if(substate instanceof ist.Statechart) {
 							var starts_at = substate.get_active_substate();
@@ -441,11 +452,17 @@
 						substate.set_active(true);
 					});
 				} else {
+					var local_state = this.$local_state.get();
+					//local_state.enable_outgoing_transitions();
+					local_state.run();
+					local_state.set_active(true);
+				/*
 					var start_state = this.get_start_state();
 					this.$local_state.set(start_state);
 					start_state.enable_outgoing_transitions();
 					start_state.run();
 					start_state.set_active(true);
+					*/
 				}
 				this._emit("run", {
 					target: this,
@@ -482,7 +499,7 @@
 					var local_state = this.$local_state.get();
 					if(local_state) {
 						local_state.set_active(false);
-						local_state.disable_outgoing_transitions();
+						//local_state.disable_outgoing_transitions();
 					}
 					this.$local_state.set(this._start_state);
 					_.forEach(this.get_substates(true), function (substate) {
@@ -510,7 +527,7 @@
 			return this;
 		};
 		proto.get_name_for_substate = function (substate) {
-			return substate === this.get_start_state() ? "(start)" : this.$substates.keyForValue(substate);
+			return substate === this.get_start_state() ? My.START_STATE_NAME : this.$substates.keyForValue(substate);
 		};
 		proto.get_active_direct_substates = function () {
 			if (this.is_concurrent()) {
@@ -528,14 +545,14 @@
 				.value();
 		};
 		proto.get_substate_with_name = function (name) {
-			if (name === "(start)") {
+			if (name === My.START_STATE_NAME) {
 				return this.get_start_state();
 			} else {
 				return this.$substates.get(name);
 			}
 		};
 		proto.has_substate_with_name = function (name) {
-			if (name === "(start)") {
+			if (name === My.START_STATE_NAME) {
 				return true;
 			} else {
 				return this.$substates.has(name);
@@ -680,14 +697,10 @@
 			});
 		};
 		proto.add_state = function (state_name, state, index) {
-	//		if (state_name === "(start)") {
-	//			this.set_start_state(state);
-	//		} else {
 			if (this.find_state(state_name)) {
 				throw new Error("State with name '" + state_name + "' already exists.");
 			}
 			this.find_state(state_name, true, state, index);
-	//		}
 			return this;
 		};
 		proto.remove_state = function (state_name, also_destroy) {

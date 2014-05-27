@@ -66,11 +66,12 @@
 					return a.dom_obj === b.dom_obj && a.type === b.type;
 				});
 
+				//if(this.is_enabled()) {
 				_.each(diff.removed, function(x) { this.remove_listener(x.from_item); }, this);
 				_.each(diff.added, function(x) { this.add_listener(x.item); }, this);
+				//}
 
 				this.targets = targets;
-				//this.add_listeners();
 			}, {
 				context: this,
 				run_on_create: false
@@ -78,9 +79,11 @@
 			//this.live_fn.run(false);
 			//console.log(this.is_enabled());
 			//debugger;
-			//if(this.is_enabled()) {
+			if(this.is_enabled()) {
 				this.live_fn.run(false);
-			//}
+			} else {
+				this.live_fn.pause();
+			}
 		};
 		proto.clone = function () {
 			return new My(this.type, this.targets);

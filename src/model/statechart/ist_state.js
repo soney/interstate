@@ -249,8 +249,10 @@
 
 		proto.on_outgoing_transition_fire = function (transition, event) {
 			var i;
+
 			if (this.is_running() && _.indexOf(this.get_outgoing_transitions(), transition) >= 0) {
 				transition._last_run_event.set(event);
+				
 				var my_lineage = this.get_lineage();
 				/*
 				for (i = 0; i < my_lineage.length - 1; i += 1) {
@@ -266,33 +268,60 @@
 
 				var min_len = Math.min(to_len, my_lineage.length);
 
+				//console.log("from ", _.map(my_lineage, function(x) { return x.get_name(); }));
+				//console.log("to   ", _.map(to_lineage, function(x) { return x.get_name(); }));
+
 				for (i = 0; i < min_len; i += 1) {
 					if (to_lineage[i] !== my_lineage[i]) {
-						i -= 1; //back up...
+						i--; //back up...
 						break;
 					}
 				}
 				if (i === to_len) { //if it is a self-transition. Just handle it on the lowest level possible
 					i -= 2;
 				}
+
 				//cjs.wait();
-				var active_substate, parent;
+				var active_substate, parent, min_common_i = i;
 				while (i < to_len - 1) {
 					parent = to_lineage[i];
 					active_substate = to_lineage[i + 1];
-					if (!active_substate.is_running()) {
-						active_substate.run();
-					}
 					parent.set_active_substate(active_substate, transition, event);
-					i += 1;
+					i++;
 				}
+
 				if(active_substate instanceof ist.Statechart) {
 					var start_state = active_substate.get_start_state();
-					if(!start_state.is_running()) {
-						start_state.run();
-					}
-					active_substate.set_active_substate(start_state);
+					active_substate.set_active_substate(start_state, transition, event);
 				}
+
+
+				ist.event_queue.once("end_event_queue_round_0", function () {
+					this._emit("pre_transition_fire", {
+						type: "pre_transition_fire",
+						transition: transition,
+						//target: this,
+						event: event,
+						state: to
+					});
+					transition.set_active(true);
+				}, this);
+
+				ist.event_queue.once("end_event_queue_round_2", function () {
+					transition.increment_times_run();
+				}, this);
+
+				ist.event_queue.once("end_event_queue_round_4", function () {
+					transition.set_active(false);
+					this._emit("post_transition_fire", {
+						type: "post_transition_fire",
+						transition: transition,
+						//target: this,
+						event: event,
+						state: to
+					});
+				}, this);
+
 				//cjs.signal();
 				return true;
 			}
@@ -333,6 +362,7 @@
 			}
 		};
 		proto.enable_outgoing_transitions = function () {
+			//if(this.sid() === 820) { debugger; }
 			var outgoing_transitions = this.get_outgoing_transitions();
 			_.each(outgoing_transitions, function (x) { x.enable(); });
 		};

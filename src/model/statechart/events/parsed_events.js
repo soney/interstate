@@ -140,23 +140,34 @@
 					context: this,
 					run_on_create: false
 				});
+				/*
 				//cjs.signal();
 				_.delay(_.bind(function () {
 					//Delay it because parsed events can run up the dictionary tree and create all sorts of contextual objects that they shouldn't
 					//Delay it because if an event relies on an object's inherited property while the object is still being created, we're all fucked
 					this.on_ready();
 				}, this));
+				*/
+					//console.log(this);
+				if(this.is_enabled()) {
+					this._live_event_creator.run(false);
+				} else {
+					this._live_event_creator.pause();
+				}
 			}
 		};
+		/*
 		proto.on_ready = function() {
-				if(this._live_event_creator && this.is_enabled()) {
+			if(this._live_event_creator && this.is_enabled()) {
 				this._live_event_creator.run(false);
 			}
 		};
+		*/
 		proto.get_errors = function() {
 			return this.$errors.get();
 		};
 		proto.id = function () { return this._id; };
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		proto.child_fired = function (actions, parent, context, event) {
 			this.fire.apply(this, _.rest(arguments, 3));
 			

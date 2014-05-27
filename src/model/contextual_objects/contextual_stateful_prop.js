@@ -231,11 +231,6 @@
 				return a.root_sv_index - b.root_sv_index;
 			});
 
-/*
-			if(uid.strip_prefix(this.id()) == 55) {
-				console.log(rv);
-			}
-			*/
 			return rv;
 		};
 
@@ -385,7 +380,9 @@
 					} else if(ist.event_queue.end_queue_round === 6) {
 						ist.event_queue.once("end_event_queue_round_7", invalidate_value);
 					} else {
-						_.defer(invalidate_active_value);
+						//console.log("WILL INVALIDATE");
+						//_.defer(invalidate_active_value);
+						invalidate_active_value();
 					}
 					//invalidate_value = invalidate_active_value = null;
 				}

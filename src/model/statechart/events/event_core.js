@@ -60,15 +60,13 @@
 				}
 				this.end_queue_round = false;
 				this.running_event_queue = false;
-			} else {
-				if (this.deferred_req !== true) {
-					this.deferred_req = true;
-					var self = this;
-					_.defer(function () {
-						self.deferred_req = false;
-						self.run_event_queue();
-					});
+
+				if(this.deferred_req) {
+					this.deferred_req = false;
+					this.run_event_queue();
 				}
+			} else {
+				this.deferred_req = true;
 			}
 		};
 

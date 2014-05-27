@@ -23,8 +23,8 @@
 							.add_state("INIT")
 							.start_at("INIT")
 							.add_state("active")
-							.add_transition("INIT", "active", "on(my_event)")
 							.set("my_event", "(start)", "'ev1'")
+							.add_transition("INIT", "active", "on(my_event)")
 							.set("my_state")
 							.set("my_state", "INIT", "'INIT'")
 							.set("my_state", "active", "'active'")
@@ -55,8 +55,8 @@
 							.add_state("INIT")
 							.start_at("INIT")
 							.add_state("active")
-							.add_transition("INIT", "active", "on(my_event)")
 							.set("(prototypes)", "(start)", "proto_obj")
+							.add_transition("INIT", "active", "on(my_event)")
 							.set("my_state")
 							.set("my_state", "INIT", "'INIT'")
 							.set("my_state", "active", "'active'")
@@ -253,6 +253,7 @@
 		{
 			name: "Property and State Transitions",
 			expect: 6,
+			create_builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("screen", "<stateful>")
@@ -512,7 +513,6 @@
 							;
 				},
 				test: function(env, runtime) {
-					//env.print();
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(cobj.prop_val("prop_0"), "b0");
 				}
@@ -771,36 +771,24 @@
 					equal(cobj.prop_val("x"), 1);
 					equal(window_md_count, 0);
 
-					//var ev = document.createEvent("MouseEvent");
-					//ev.initMouseEvent("mousedown");
-					//h1[0].dispatchEvent(ev);
 					simulateClick("mousedown", h1[0]);
 
 					_.delay(function() {
 						equal(cobj.prop_val("x"), 2);
 						equal(window_md_count, 0);
 
-						//ev = document.createEvent("MouseEvent");
-						//ev.initMouseEvent("mousedown");
-						//h1[0].dispatchEvent(ev);
 						simulateClick("mousedown", h1[0]);
 
 						_.delay(function() {
 							equal(cobj.prop_val("x"), 1);
 							equal(window_md_count, 1);
 
-							//ev = document.createEvent("MouseEvent");
-							//ev.initMouseEvent("mousedown");
-							//h1[0].dispatchEvent(ev);
 							simulateClick("mousedown", h1[0]);
 
 							_.delay(function() {
 								equal(cobj.prop_val("x"), 2);
 								equal(window_md_count, 1);
 
-								//ev = document.createEvent("MouseEvent");
-								//ev.initMouseEvent("mousedown");
-								//h1[0].dispatchEvent(ev);
 								simulateClick("mousedown", h1[0]);
 
 								_.delay(function() {
