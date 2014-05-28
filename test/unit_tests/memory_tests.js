@@ -1,6 +1,6 @@
 (function(root, ist) {
 	var default_delay_between_steps = false,
-		default_delay_before_test = 5,
+		default_delay_before_test = false,
 		command_id = 0,
 		callbacks = {},
 		_ = ist._,

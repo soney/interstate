@@ -522,6 +522,7 @@
 			name: "Copies & Groups",
 			expect: 12,
 			create_builtins: true,
+			delay_before_test: 5,
 			steps: [{
 				setup: function(env, runtime) {
 					env	

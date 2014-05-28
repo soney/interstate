@@ -31,11 +31,11 @@ var UNDEF = {};
 				from.on("active", this.enter_listener, this);
 				from.on("inactive", this.leave_listener, this);
 
-				_.defer(function (self) {
-					if (from.is_active()) {
-						self.enter_listener();
-					}
-				}, this);
+				//_.defer(function (self) {
+				if (from.is_active()) {
+					this.enter_listener();
+				}
+				//}, this);
 			}
 		};
 
