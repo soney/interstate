@@ -676,7 +676,7 @@
 				statechart_puppet_id = state.puppet_master_id || state.id();
 				var from_puppet_id = from_state.puppet_master_id || from_state.id(),
 					to_puppet_id = to_state.puppet_master_id || to_state.id();
-				event = new ist.ParsedEvent({str: "(event)", inert: true});
+				event = new ist.ParsedEvent({str: "false", inert: true});
 				command = new ist.AddTransitionCommand({
 					in_effect: true,
 					from: { id: to_func(from_puppet_id) },
