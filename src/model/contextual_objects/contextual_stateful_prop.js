@@ -43,6 +43,7 @@
 					pause_while_running: true
 				});
 			}
+			if(this.constructor === My) { this.flag_as_initialized(); }
 		};
 
 		proto.get_parent = function () {

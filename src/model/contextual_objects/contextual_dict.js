@@ -154,6 +154,7 @@
 					pause_while_running: true
 				});
 			}
+			if(this.constructor === My) { this.flag_as_initialized();  }
 		};
 
 		proto.has_copies = function() {
@@ -600,7 +601,6 @@
 
 				if (!info) {
 					var proto_objects = this.get_all_protos();
-					if(!proto_objects) debugger;
 					var plen = proto_objects.length;
 					var proto_obj;
 

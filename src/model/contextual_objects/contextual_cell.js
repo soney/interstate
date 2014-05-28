@@ -35,6 +35,7 @@
 				}
 				old_destroy.apply(this, arguments);
 			};
+			if(this.constructor === My) { this.flag_as_initialized();  }
 		};
 		proto.destroy = function () {
 			if(this.constructor === My) { this.begin_destroy(true); }

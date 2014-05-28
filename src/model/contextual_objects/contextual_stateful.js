@@ -20,6 +20,7 @@
 				hash: "hash"
 			});
 			My.superclass.initialize.apply(this, arguments);
+			if(this.constructor === My) { this.flag_as_initialized(); }
 		};
 
 		proto.get_own_statechart = function () {

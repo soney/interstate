@@ -42,7 +42,14 @@
 				equals: (options && options.equals) || undefined
 			});
 			this.object.on("begin_destroy", this.destroy, this);
+			if(this.constructor === My) { this.flag_as_initialized();  }
+		};
+		proto.flag_as_initialized = function() {
 			this._initialized = true;
+			this._emit("initialized", this);
+		};
+		proto.is_initialized = function() {
+			return this._initialized;
 		};
 		proto.is_template = function() { return false; };
 		proto.instances = function() { return false; };
