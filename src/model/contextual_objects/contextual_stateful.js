@@ -86,5 +86,22 @@
 			My.superclass.destroy.apply(this, arguments);
 			cjs.signal();
 		};
+
+		proto.pause  = function(recursive) {
+			My.superclass.pause.apply(this, arguments);
+
+			var statecharts = this.get_statecharts();
+			_.each(statecharts, function(statechart) {
+				statechart.pause();
+			});
+		};
+		proto.resume = function(recursive) {
+			My.superclass.resume.apply(this, arguments);
+
+			var statecharts = this.get_statecharts();
+			_.each(statecharts, function(statechart) {
+				statechart.resume();
+			});
+		};
 	}(ist.ContextualStatefulObj));
 }(interstate));

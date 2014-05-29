@@ -25,10 +25,6 @@
         proto.do_initialize = function (options) {
             ist.install_instance_builtins(this, options, My);
             this.get_direct_values().setHash("hash");
-            //this.used_start_transition = options.used_start_transition === true;
-            //this._can_inherit = options.can_inherit !== false;
-            //this._ignore_inherited_in_contexts = _.isArray(options.ignore_inherited_in_contexts) ? options.ignore_inherited_in_contexts : [];
-            //this._check_on_nullify = options.check_on_nullify === true;
         };
     
         My.builtins = {
@@ -103,8 +99,8 @@
         proto.unset = proto._unset_direct_value_for_state = function (state) {
             var dvs = this.get_direct_values();
             state = state_basis(state);
-            var val = dvs.get(state);
 			/*
+            var val = dvs.get(state);
             if (val) {
                 val.destroy();
             }
@@ -185,12 +181,4 @@
                 return rv;
             });
     }(ist.StatefulProp));
-	/*
-    
-    ist.define("stateful_prop", function (options) {
-        var prop = new ist.StatefulProp(options);
-        return prop;
-    });
-
-*/
 }(interstate));

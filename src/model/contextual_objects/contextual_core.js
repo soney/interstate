@@ -349,6 +349,9 @@
 			
 		};
 
+		proto.pause  = function(recursive) {};
+		proto.resume = function(recursive) {};
+
 		proto.updateAttachments = function(){};
 
 	}(ist.ContextualObject));

@@ -448,5 +448,17 @@
 		proto.get_runtime_errors = function () {
 			return this.$runtime_errors.get();
 		};
+		proto.pause  = function(recursive) {
+			My.superclass.pause.apply(this, arguments);
+			
+			if(recursive) {
+			}
+		};
+		proto.resume = function(recursive) {
+			My.superclass.resume.apply(this, arguments);
+
+			if(recursive) {
+			}
+		};
 	}(ist.ContextualStatefulProp));
 }(interstate));

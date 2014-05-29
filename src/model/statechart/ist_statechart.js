@@ -1044,10 +1044,4 @@
 				return rv;
 			});
 	}(ist.Statechart));
-	/*
-
-	ist.define("statechart", function (options) {
-		return new ist.Statechart(options);
-	});
-	*/
 }(interstate));

@@ -362,7 +362,6 @@
 			}
 		};
 		proto.enable_outgoing_transitions = function () {
-			//if(this.sid() === 820) { debugger; }
 			var outgoing_transitions = this.get_outgoing_transitions();
 			_.each(outgoing_transitions, function (x) { x.enable(); });
 		};
@@ -493,6 +492,25 @@
 			delete this._context;
 			able.destroy_this_listenable(this);
 			ist.unregister_uid(this.id());
+		};
+
+		proto.pause = function() {
+			if(this.is_active()) {
+				this.disable_immediate_outgoing_transitions();
+
+				_.each(this.get_substates(true), function(substate) {
+					substate.pause();
+				});
+			}
+		};
+		proto.resume = function() {
+			if(this.is_active()) {
+				this.enable_outgoing_transitions();
+
+				_.each(this.get_substates(true), function(substate) {
+					substate.resume();
+				});
+			}
 		};
 	}(ist.State));
 }(interstate));

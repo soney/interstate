@@ -804,7 +804,53 @@
 
 				}
 			}]
-		}
+		},
+		{
+			name: "Breakpoints",
+			expect: 1,
+			create_builtins: false,
+			steps: [{
+				setup: function(env) {
+					env	.set("obj", "<stateful>")
+						.cd("obj")
+							.add_state("state1")
+							.add_state("state2")
+							.start_at("state1")
+							.add_transition("state1", "state2", "on('fwd')")
+							.add_transition("state1", "state2", "on('bak')")
+							.set("x", "state1", "1")
+							.set("x", "state2", "2")
+						;
+				},
+				test: function(env, runtime) {
+					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+					/*
+					equal(cobj.prop_val("x"), 1);
+					ist.emit("fwd");
+					equal(cobj.prop_val("x"), 2);
+					ist.emit("bak");
+					equal(cobj.prop_val("x"), 1);
+					*/
+					cobj.pause();
+					ist.emit("fwd");
+					equal(cobj.prop_val("x"), 1);
+					/*
+					cobj.resume();
+					equal(cobj.prop_val("x"), 1);
+					ist.emit("fwd");
+					equal(cobj.prop_val("x"), 2);
+					cobj.pause();
+					equal(cobj.prop_val("x"), 2);
+					ist.emit("bak");
+					equal(cobj.prop_val("x"), 2);
+					cobj.resume();
+					equal(cobj.prop_val("x"), 2);
+					ist.emit("bak");
+					equal(cobj.prop_val("x"), 1);
+					*/
+				}
+			}]
+		},
 		/**/
 	];
 	tests.forEach(function(test) {

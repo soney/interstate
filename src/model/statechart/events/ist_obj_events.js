@@ -116,7 +116,7 @@
 			});
 			//if(this.is_enabled()) {
 				//console.log("enable");
-				this.live_fn.run(false);
+			this.live_fn.run(false);
 			//}
 			/*
 			if (!_.isArray(targets)) {

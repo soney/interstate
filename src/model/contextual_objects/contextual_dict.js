@@ -837,5 +837,18 @@
 			}
 			return false;
 		};
+
+		proto.pause  = function(recursive) {
+			My.superclass.pause.apply(this, arguments);
+			
+			if(recursive) {
+			}
+		};
+		proto.resume = function(recursive) {
+			My.superclass.resume.apply(this, arguments);
+			
+			if(recursive) {
+			}
+		};
 	}(ist.ContextualDict));
 }(interstate));

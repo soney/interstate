@@ -253,7 +253,6 @@
 
 		proto.enable = function () {
 			if(!this._enabled) {
-				//console.log("ENABLE", this.sid());
 				this._enabled = true;
 				var event = this.event();
 				event.enable();
@@ -265,7 +264,6 @@
 
 		proto.disable = function () {
 			if(this._enabled) {
-				//console.log("DISABLE", this.sid());
 				this._enabled = false;
 				var event = this.event();
 				event.disable();
