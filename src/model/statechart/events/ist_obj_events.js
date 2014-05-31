@@ -114,10 +114,12 @@
 				context: this,
 				run_on_create: false
 			});
-			//if(this.is_enabled()) {
-				//console.log("enable");
-			this.live_fn.run(false);
-			//}
+
+			if(this.is_enabled()) {
+				this.live_fn.run(false);
+			} else {
+				this.live_fn.pause();
+			}
 			/*
 			if (!_.isArray(targets)) {
 				targets = [targets];
@@ -182,6 +184,7 @@
 
 		proto.remove_listeners = function () {
 			_.each(this.targets, this.remove_listener, this);
+			this.targets = [];
 		};
 
 		proto.create_shadow = function (parent_statechart, context) {
@@ -202,20 +205,23 @@
 		};
 
 		proto.enable = function () {
-			My.superclass.enable.apply(this, arguments);
 			if(!this.is_enabled()) {
-				this.add_listeners();
+				//this.add_listeners();
 				if(this.live_fn.resume()) {
 					this.live_fn.run();
 				}
 			}
+
+			My.superclass.enable.apply(this, arguments);
 		};
 		proto.disable = function () {
-			My.superclass.disable.apply(this, arguments);
 			if(this.is_enabled()) {
 				this.live_fn.pause();
+				this.live_fn.invalidate();
 				this.remove_listeners();
 			}
+
+			My.superclass.disable.apply(this, arguments);
 		};
 	}(ist.IstObjEvent));
 }(interstate));
