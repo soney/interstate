@@ -7,11 +7,11 @@
         _ = ist._;
 	
 	ist.find_fn = function(find_root) {
-		/*
 		if (arguments.length === 0) {
-			find_root = new ist.ContextualObject({pointer: root_pointer});
+			var pcontext = this;
+			find_root = ist.find_or_put_contextual_obj(pcontext.root());
+			console.log(find_root);
 		}
-		*/
 		return new ist.Query({value: find_root});
 	};
 	ist.register_serializable_type("ist_find_fn_func",
@@ -105,7 +105,7 @@
                 var prop_cobj = cobj.prop(name);
                 return prop_cobj;
             },
-            "parent": function (cobj) {
+            "container": function (cobj) {
                 var pointer = cobj.get_pointer();
                 var new_ptr = pointer.pop();
                 var new_ptr_obj = new_ptr.points_at();
@@ -117,6 +117,7 @@
     
         _.each(map_funcs, function (func, name) {
             proto[name] = function () {
+				console.log(this);
                 var args = _.toArray(arguments);
                 return this.map(function () {
                     return func.apply(this, (_.toArray(arguments)).concat(args));
@@ -189,11 +190,12 @@
         };
     
         proto.op = function (op_func, context) {
-            var value = op_func.call(context || window, this.value());
-            var new_query = new ist.Query({
-                value: value,
-                parent_query: this
-            });
+            var value = op_func.call(context || window, this.value()),
+				new_query = new My({
+					value: value,
+					parent_query: this
+				});
+			console.log(value);
             return new_query;
         };
     
@@ -203,6 +205,13 @@
         proto.parent_query = function () {
             return this.options.parent_query;
         };
+
+		proto.flattenObjects = function() {
+		};
+
+		proto.inheritsFrom = function(obj) {
+			
+		};
     }(ist.Query));
 
 }(interstate));

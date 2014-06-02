@@ -126,6 +126,7 @@
 	};
 
 	ist.ContextualDict = function (options) {
+		this.inherits_from = cjs.memoize(this._inherits_from, {context: this});
 		this.get_all_protos = cjs.memoize(this._get_all_protos, {context: this});
 		this.get_dom_obj_and_src = cjs.memoize(this._get_dom_obj_and_src, {context: this});
 		this.prop_val = cjs.memoize(this._prop_val, {context: this});
@@ -483,6 +484,11 @@
 			}
 		};
 
+		proto._inherits_from = function(obj) {
+			var protos = this.get_all_protos();
+			return _.contains(protos, obj);
+		};
+
 		proto.is_instance = function () {
 			var pointer = this.get_pointer();
 			var object = this.get_object();
@@ -713,6 +719,11 @@
 				this.get_all_protos.destroy(true);
 				delete this.get_all_protos.options.context;
 				delete this.get_all_protos.options.args_map;
+			}
+			if(this.inherits_from.destroy) {
+				this.inherits_from.destroy(true);
+				delete this.inherits_from.options.context;
+				delete this.inherits_from.options.args_map;
 			}
 			if(this.get_dom_obj_and_src.destroy) {
 				this.get_dom_obj_and_src.destroy(true);

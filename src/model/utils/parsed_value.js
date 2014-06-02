@@ -152,15 +152,19 @@
 			args = _.rest(arguments, 3);
 		if (options.get_constraint) {
 			var constraint = cjs(function () {
-				var op_got = cjs.get(op, options.auto_add_dependency);
-				var args_got = _.map(args, function(arg) {
+				var op_got = cjs.get(op, options.auto_add_dependency),
+					args_got = _.map(args, function(arg) {
 													return cjs.get(arg, options.auto_add_dependency);
-												});
-				//window.dbg = false;
-				var calling_context_got = cjs.get(calling_context, options.auto_add_dependency);
+												}),
+					calling_context_got = cjs.get(calling_context, options.auto_add_dependency),
+					rv;
 
-				if (_.isFunction(op_got)) {
-					var rv = op_got.apply(calling_context_got, args_got);
+				if(op_got === ist.find_fn) {
+					// Give it the context of root
+					rv = op_got.apply(pcontext, args_got);
+					return rv;
+				} else if (_.isFunction(op_got)) {
+					rv = op_got.apply(calling_context_got, args_got);
 					return rv;
 				} else if (op_got instanceof ist.ParsedFunction) {
 					return op_got._apply(calling_context_got, pcontext, args_got, options);
@@ -244,7 +248,9 @@
 
 	var get_identifier_val = function (key, options) {
 		var context = options.context,
-			ignore_inherited_in_contexts = options.ignore_inherited_in_contexts || [];
+			ignore_inherited_in_contexts = options.ignore_inherited_in_contexts || [],
+			non_relative = (key[0] === '$');
+
 		if (key === ist.root_name) {
 			return ist.find_or_put_contextual_obj(context.root(), context.slice(0, 1));
 		} else if (key === "window") {
