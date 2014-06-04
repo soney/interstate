@@ -10,7 +10,6 @@
 		if (arguments.length === 0) {
 			var pcontext = this;
 			find_root = ist.find_or_put_contextual_obj(pcontext.root());
-			console.log(find_root);
 		}
 		return new ist.Query({value: find_root});
 	};
@@ -35,14 +34,10 @@
         }
         this.options.value = _	.chain(this.options.value)
 								.map(function (cobj) {
-									if(cobj) {
-										if (cobj.is_template()) {
-											return cobj.instances();
-										} else {
-											return cobj;
-										}
+									if (cobj instanceof ist.Dict && cobj.is_template()) {
+										return cobj.instances();
 									} else {
-										return false;
+										return cobj;
 									}
 								})
 								.flatten(true)
@@ -195,7 +190,6 @@
 					value: value,
 					parent_query: this
 				});
-			console.log(value);
             return new_query;
         };
     
@@ -206,11 +200,30 @@
             return this.options.parent_query;
         };
 
-		proto.flattenObjects = function() {
-		};
+		var is_cDict = function(cobj) {
+				return cobj instanceof ist.ContextualDict;
+			},
+			flatten_containment_hierarchy = function(parents, not_root_call) {
+				var rv = not_root_call ? parents : _.filter(parents, is_cDict); // also clones when calling filter
 
-		proto.inheritsFrom = function(obj) {
-			
+				_.each(rv, function(cobj) {
+					var children = cobj.children();
+					_.each(children, function(child_info) {
+						var child = child_info.value;
+						if(is_cDict(child)) {
+							rv.push.apply(rv, flatten_containment_hierarchy([child], true));
+						}
+					});
+				});
+				return rv;
+			};
+
+		proto.inheritsFrom = function(cobj) {
+			var obj = cobj.get_object(),
+				flat_objs = flatten_containment_hierarchy(this.value());
+			return _.filter(flat_objs, function(cobj) {
+				return cobj.inherits_from(obj);
+			});
 		};
     }(ist.Query));
 
