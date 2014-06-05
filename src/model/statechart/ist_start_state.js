@@ -148,6 +148,7 @@
 				}
 			} else if(this.is_running()) {
 				this._running = false;
+				this.disable_outgoing_transitions();
 				this._emit("stop", {
 					type: "stop",
 					target: this

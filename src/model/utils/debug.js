@@ -104,9 +104,9 @@
 			} else if (_.isElement(val)) {
 				return "(dom)";
 			} else if (val instanceof ist.StatefulObj) {
-				return cobj.get_pointer().hash() + " (stateful:" + ((cobj && cobj instanceof ist.ContextualObject) ? (uid.strip_prefix(cobj.id())+":") : "") + uid.strip_prefix(val.id()) + ")";
+				return "(stateful:" + ((cobj && cobj instanceof ist.ContextualObject) ? (uid.strip_prefix(cobj.id())+":") : "") + uid.strip_prefix(val.id()) + ")";
 			} else if (val instanceof ist.Dict) {
-				return "(dict:" + uid.strip_prefix(val.id()) + ")";
+				return "(dict:" + ((cobj && cobj instanceof ist.ContextualObject) ? (uid.strip_prefix(cobj.id())+":") : "") + uid.strip_prefix(val.id()) + ")";
 			} else if (val instanceof ist.Cell) {
 				return "(cell:" + uid.strip_prefix(val.id()) + ")";
 			} else if (val instanceof ist.StatefulProp) {
@@ -292,12 +292,14 @@
 		var root = current_pointer.points_at(0);
 		var root_str;
 		if (current_pointer.points_at() === root) {
-			root_str = ">sketch";
+			root_str = ">" + ist.root_name;
 		} else {
-			root_str = "sketch";
+			root_str = ist.root_name;
 		}
-		logging_mechanism.log(pad(root_str, PROP_NAME_WIDTH)  + value_to_value_str(root));
 		var contextual_root = ist.find_or_put_contextual_obj(root);
+
+		logging_mechanism.log(pad(root_str, PROP_NAME_WIDTH)  + value_to_value_str(root, contextual_root));
+
 		tablify(contextual_root);
 
 		return "ok...";

@@ -104,9 +104,7 @@
 			return this;
 		};
 		proto.id = proto.hash = function () { return this._id; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		proto.from = function () { return this._from_state.get(); };
 		proto.to = function () { return this._to_state.get(); };
 		proto.setFrom = function (state) {
@@ -117,6 +115,11 @@
 			this._from_state.set(state);
 			var do_set_from = function() {
 				state._add_direct_outgoing_transition(this);
+				if(state.is_active()) {
+					this.enable();
+				} else {
+					this.disable();
+				}
 			};
 			if(state.is_initialized()) {
 				do_set_from.call(this);
@@ -249,20 +252,24 @@
 		};
 
 		proto.enable = function () {
-			this._enabled = true;
-			var event = this.event();
-			event.enable();
-			if(ist.__debug_statecharts) {
-				this.$enabled.set(true);
+			if(!this._enabled) {
+				this._enabled = true;
+				var event = this.event();
+				event.enable();
+				if(ist.__debug_statecharts) {
+					this.$enabled.set(true);
+				}
 			}
 		};
 
 		proto.disable = function () {
-			this._enabled = false;
-			var event = this.event();
-			event.disable();
-			if(ist.__debug_statecharts) {
-				this.$enabled.set(false);
+			if(this._enabled) {
+				this._enabled = false;
+				var event = this.event();
+				event.disable();
+				if(ist.__debug_statecharts) {
+					this.$enabled.set(false);
+				}
 			}
 		};
 

@@ -107,7 +107,7 @@
 			var get_pinned_height_pct = _.bind(function() {
 				if(this.$pinned_columns.length() === 0) {
 					if(this.$dragging_client.get()) {
-						return .3;
+						return 0.3;
 					} else {
 						return 0;
 					}
@@ -159,7 +159,11 @@
 					//window.open("data:text/plain;charset=utf-8," + data.value);
 				}, this)
 				.on("stringified_obj", function(data) {
-					window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
+					downloadWithName("COMPONENT:"+data.value, data.name+".istc");
+					//window.open("data:text/plain;charset=utf-8,COMPONENT:" + data.value);
+				}, this)
+				.on("inspect", function(data) {
+					$("#obj_nav", this.element).navigator("open_cobj", data);
 				}, this);
 				/*
 				.on("message", function (data) {
@@ -190,7 +194,6 @@
 				}, this)
 				*/
 			};
-
 
 			if(this.option("use_socket")) {
 				interstate.async_js("/socket.io/socket.io.js", _.bind(function() {
@@ -365,12 +368,12 @@
 
 		_disable_editor: function() {
 			$("table#cell_group", this.element).addClass("disabled");
-			this.editor.setReadOnly(true)
+			this.editor.setReadOnly(true);
 		},
 
 		_enable_editor: function() {
 			$("table#cell_group", this.element).removeClass("disabled");
-			this.editor.setReadOnly(false)
+			this.editor.setReadOnly(false);
 		},
 
 		on_unload: function() {
@@ -460,7 +463,29 @@
 						.on("done_editing_cell", _.bind(function(event) {
 							this.editor.setValue("");
 							this._disable_editor();
-						}, this));
+						}, this))
+						.on("add_highlight", _.bind(function(event) {
+							var client = event.client,
+								type = client.type ? client.type() : false;
+							if(type === "stateful" || type === "dict") {
+								this.client_socket.post({
+									type: "add_highlight",
+									cobj_id: client.cobj_id
+								});
+							}
+						}, this))
+						.on("remove_highlight", _.bind(function(event) {
+							var client = event.client,
+								type = client.type ? client.type() : false;
+							if(type === "stateful" || type === "dict") {
+								if(this.client_socket) { // this might happen after everything was destroyed
+									this.client_socket.post({
+										type: "remove_highlight",
+										cobj_id: client.cobj_id
+									});
+								}
+							}
+						}, this)) ;
 		},
 
 		_removeEventListeners: function() {
@@ -679,7 +704,7 @@
 				statechart_puppet_id = state.puppet_master_id || state.id();
 				var from_puppet_id = from_state.puppet_master_id || from_state.id(),
 					to_puppet_id = to_state.puppet_master_id || to_state.id();
-				event = new ist.ParsedEvent({str: "(event)", inert: true});
+				event = new ist.ParsedEvent({str: "false", inert: true});
 				command = new ist.AddTransitionCommand({
 					in_effect: true,
 					from: { id: to_func(from_puppet_id) },
@@ -827,7 +852,7 @@
 				map.rename(info.from, info.to);
 			});
 			_.each(map_diff.set, function(info) {
-				map.put(info.key, info.value)
+				map.put(info.key, info.value);
 			});
 			_.each(map_diff.unset, function(info) {
 				map.remove(info.key);
@@ -847,7 +872,7 @@
 		};
 
 		return map;
-	}
+	};
 	function to_func(value) {
 		return function () { return value; };
 	}
@@ -863,16 +888,17 @@
 	}
 
 	function downloadWithName(data, name) {
-		var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+		var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1,
+			link;
 
 		if(is_chrome) {
-			var link = document.createElement("a");
+			link = document.createElement("a");
 			link.download = name;
 			link.href = "data:," + data;
 			eventFire(link, "click");
 		} else {
 			//window.open("data:text/plain;charset=utf-8," + data);
-			var link = document.createElement("a");
+			link = document.createElement("a");
 			link.download = name;
 			link.href = "data:," + data;
 			eventFire(link, "click");

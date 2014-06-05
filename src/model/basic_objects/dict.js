@@ -48,8 +48,8 @@
         this._id = options.uid || uid();
         this._hash = uid.strip_prefix(this._id);
         this.options = options;
-        ist.register_uid(this._id, this);
-        if (defer_initialization !== true) {
+        ist.register_uid(this.id(), this);
+		if(this.constructor === ist.Dict && defer_initialization !== true) {
             this.do_initialize(options);
         }
     };
@@ -98,16 +98,33 @@
     
             "direct_props": {
                 "default": function () {
+					var keys = this.options.keys,
+						values = _.map(this.options.values, function(v) {
+									return {
+										value: v,
+										owner: this
+									};
+								}, this),
+						value = {};
+
+					_.each(this.options.value, function(v, k) {
+						value[k] = {
+							value: v,
+							owner: this
+						};
+					}, this);
+
                     var rv = cjs.map({
-                        keys: this.options.keys,
-                        values: this.options.values,
-                        value: this.options.value
+                        keys: keys,
+                        values: values,
+                        value: value
                     });
+
                     return rv;
                 },
                 getter_name: "direct_props",
 				destroy: function(me) {
-					me.forEach(function(prop_val) {
+					me.forEach(function(prop_val, name) {
 						if(prop_val.value.destroy) {
 							prop_val.value.destroy(true);
 						}
@@ -125,7 +142,13 @@
                 env_visible: false,
                 env_name: "copies",
                 getter: function (me) { return me.get(); },
-                setter: function (me, val) { me.set(val, true); },
+                setter: function (me, val) {
+					var old_val = me.get();
+					if(old_val && old_val.destroy) {
+						old_val.destroy(true);
+					}
+					me.set(val, true);
+				},
 				destroy: function(me) {
 					var val = me.get();
 					if(val && val.destroy) {
@@ -299,9 +322,7 @@
     
         proto.id = function () { return this._id; };
 		proto.hash = function () { return this._hash; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 
 		proto.clone = function() {
 			return ist.deserialize(ist.serialize(this, false));
@@ -319,6 +340,7 @@
 			ist.unset_instance_builtins(this, My);
 			ist.unregister_uid(this.id());
 			able.destroy_this_listenable(this);
+			this._destroyed = true;
         };
     
         proto.toString = function () {
@@ -364,11 +386,4 @@
                 return rv;
             });
     }(ist.Dict));
-	/*
-    
-    ist.define("dict", function (options) {
-        var dict = new ist.Dict(options);
-        return dict;
-    });
-	*/
 }(interstate));

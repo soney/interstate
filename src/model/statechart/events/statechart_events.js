@@ -20,9 +20,9 @@
 			this.spec = spec;
 			this.get_activation_listener = cjs.memoize(function (specified_target) {
 				var listener = function (event) {
-					ist.event_queue.wait();
+					//ist.event_queue.wait();
 					this.fire(event);
-					ist.event_queue.signal();
+					//ist.event_queue.signal();
 				};
 				return listener;
 			});
@@ -149,9 +149,9 @@
 			// will figure out when our transition is set
 		};
 		proto.on_spec = function() {
-			ist.event_queue.wait();
+			//ist.event_queue.wait();
 			this.fire.apply(this, arguments);
-			ist.event_queue.signal();
+			//ist.event_queue.signal();
 		};
 
 		proto.set_transition = function (transition) {

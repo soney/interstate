@@ -23,7 +23,7 @@
 					"{{#if pinned && !is_root}}" +
 						"<span title='Previous' data-cjs-on-click='prev_col' class='prev_btn glyphicon glyphicon-chevron-left'/>" +
 					"{{/if}}" +
-					"<h2 data-cjs-on-click='headerClicked'>" +
+					"<h2 data-cjs-on-mouseover='headerMOver' data-cjs-on-mouseout='headerMOut' data-cjs-on-click='headerClicked'>" +
 						"{{ci}}{{name}}" +
 						"{{#if is_template}}" +
 							"[{{curr_copy_index}}]" +
@@ -63,15 +63,15 @@
 					"<tr class='switch_copy'>" +
 						"<td></td>" +
 						"{{#if show_prev_value}}" +
-							"<td data-cjs-on-click='selectPrevClient'>" +
+							"<td class='prev_copy' data-cjs-on-mouseover='prevMOver' data-cjs-on-mouseout='prevMOut' data-cjs-on-click='selectPrevClient'>" +
 								"<span class='glyphicon glyphicon-chevron-left'></span>" +
 							"</td>" +
 						"{{/if}}" +
-						"<td>" +
+						"<td class='curr_copy' data-cjs-on-mouseover='currMOver' data-cjs-on-mouseout='currMOut'>" +
 							"copy {{curr_copy_index+1}} of {{num_instances}}" +
 						"</td>" +
 						"{{#if show_next_value}}" +
-							"<td data-cjs-on-click='selectNextClient'>" +
+							"<td class='next_copy' data-cjs-on-mouseover='nextMOver' data-cjs-on-mouseout='nextMOut' data-cjs-on-click='selectNextClient'>" +
 								"<span class='glyphicon glyphicon-chevron-right'></span>" +
 							"</td>" +
 						"{{/if}}" +
@@ -320,7 +320,7 @@
 						prev: this.$prev_copy_client,
 						next: this.$next_copy_client,
 						editor: this.option("editor")
-					}
+					};
 				}, this),
 				statechart_view: this.statechart_view,
 				is_curr_col: this.$is_curr_col,
@@ -346,7 +346,55 @@
 				}, this),
 				num_instances: this.$num_instances,
 				pinned: this.option("pinned"),
-				is_root: this.is_root 
+				is_root: this.is_root,
+				headerMOver: _.bind(function() {
+					var copy_client = this.$curr_copy_client.get(),
+						event = new $.Event("add_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				headerMOut: _.bind(function() {
+					var copy_client = this.$curr_copy_client.get(),
+						event = new $.Event("remove_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				prevMOver: _.bind(function() {
+					var copy_client = this.$prev_copy_client.get(),
+						event = new $.Event("add_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				prevMOut: _.bind(function() {
+					var copy_client = this.$prev_copy_client.get(),
+						event = new $.Event("remove_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				nextMOver: _.bind(function() {
+					var copy_client = this.$next_copy_client.get(),
+						event = new $.Event("add_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				nextMOut: _.bind(function() {
+					var copy_client = this.$next_copy_client.get(),
+						event = new $.Event("remove_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				currMOver: _.bind(function() {
+					var copy_client = this.$curr_copy_client.get(),
+						event = new $.Event("add_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this),
+				currMOut: _.bind(function() {
+					var copy_client = this.$curr_copy_client.get(),
+						event = new $.Event("remove_highlight");
+					event.client = copy_client;
+					this.element.trigger(event);
+				}, this)
 			}, this.element);
 			this._select_just_added_name = cjs.liven(function() {
 				var children = this.$children.get();

@@ -129,8 +129,8 @@
 			rect.set("stroke_opacity", new ist.Cell({str: "1.0"}));
 			rect.set("stroke_width", new ist.Cell({str: "1"}));
 			rect.set("transform", new ist.Cell({str: "''"}));
-			rect.set("width", new ist.Cell({str: "140"}));
-			rect.set("height", new ist.Cell({str: "90"}));
+			rect.set("width", new ist.Cell({str: "150"}));
+			rect.set("height", new ist.Cell({str: "100"}));
 			rect.set("animated_properties", new ist.Cell({str: "false"}));
 			rect.set("animation_duration", new ist.Cell({str: "300"}));
 			rect.set("animation_easing", new ist.Cell({str: "'linear'"}));
@@ -197,11 +197,6 @@
 			var group = new ist.Dict({has_protos: false, direct_attachments: [new ist.GroupAttachment()]});
 			svg.set("group", group);
 			group.set("showChildren", new ist.Cell({str: "true"}));
-
-			var screen = new ist.StatefulObj(undefined, true);
-			screen.do_initialize({
-				direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: screen })
-			});
 		}
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "dom") >= 0)) {
@@ -225,8 +220,8 @@
 			var input = new ist.Dict();
 			dom.set("input", input);
 			input._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
-			input.set("tag", new ist.Cell({str: "'input'"}))
-				.set("textContent", new ist.Cell({str: "''"}))
+			input	.set("tag", new ist.Cell({str: "'input'"}))
+					.set("textContent", new ist.Cell({str: "''"}));
 
 			_.each(["strong", "span", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5",
 					"h6", "table", "tbody", "tr", "td", "th", "p", "pre", "br", "a",
@@ -279,6 +274,11 @@
 			root_dict.set("on", ist.on_event);
 			root_dict.set("find", ist.find_fn);
 			root_dict.set("emit", ist.emit);
+		}
+
+		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "device") >= 0)) {
+			var device = ist.createDevices();
+			root_dict.set("device", device);
 		}
 	};
 }(interstate));

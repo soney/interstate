@@ -470,15 +470,16 @@
 		},
 
 		on_menu_action: function(action_name) {
+			var event;
 			if(action_name === 'delete') {
-				var event = new $.Event("remove_storage");
+				event = new $.Event("remove_storage");
 				event.name = cjs.get(this.$name);
 				event.storage_type = this.option("storage_type");
 				this.element.trigger(event);
 			} else if(action_name === 'rename') {
 				this.begin_rename();
 			} else if(action_name === 'export') {
-				var event = new $.Event("download_program");
+				event = new $.Event("download_program");
 				event.name = cjs.get(this.$name);
 				event.storage_type = this.option("storage_type");
 				this.element.trigger(event);

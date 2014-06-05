@@ -242,6 +242,9 @@
 			this.remove_item = $("<div />")	.addClass("menu_item")
 											.text("Delete")
 											.on("click.menu_item", _.bind(this.on_remove_item_pressed, this));
+			this.togglebreakpoint = $("<div />").addClass("menu_item")
+												.text("Add breakpoint")
+												.on("click.menu_item", _.bind(this.on_toggle_breakpoint, this));
 			var from = this.option("from"),
 				to = this.option("to");
 			var min_x = Math.min(from.x, to.x);
@@ -266,7 +269,7 @@
 			if(transition.from() instanceof ist.StartState) {
 				this.edit_dropdown.append(this.change_to);
 			} else {
-				this.edit_dropdown.append(this.edit_event, this.change_from, this.change_to, this.remove_item);
+				this.edit_dropdown.append(this.edit_event, this.change_from, this.change_to, this.remove_item, this.togglebreakpoint);
 			}
 			$(window).on("mousedown.close_menu", _.bind(this.on_window_click_while_expanded, this));
 			$(window).on("keydown.close_menu", _.bind(this.on_window_keydown_while_expanded, this));
@@ -313,6 +316,23 @@
 			this._emit("remove_transition", {
 				transition: this.option("transition")
 			});
+		};
+		proto.on_toggle_breakpoint = function() {
+			this.remove_edit_dropdown();
+			var my_transition = this.option("transition");
+			this._has_breakpoint = true;
+
+			if(this.togglebreakpoint.text() === "Add breakpoint") {
+				this.togglebreakpoint.text("Remove breakpoint");
+				this._emit("toggle_breakpoint", {
+					transition: my_transition
+				});
+			} else {
+				this.togglebreakpoint.text("Add breakpoint");
+				this._emit("toggle_breakpoint", {
+					transition: my_transition
+				});
+			}
 		};
 
 		proto.on_window_click_while_expanded = function(event) {
@@ -373,6 +393,7 @@
 				this.change_from.off("click.menu_item").remove();
 				this.change_to.off("click.menu_item").remove();
 				this.remove_item.off("click.menu_item").remove();
+				this.togglebreakpoint.off("click.menu_item").remove();
 				this.edit_dropdown.remove();
 				delete this.edit_dropdown;
 			}

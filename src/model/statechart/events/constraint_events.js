@@ -31,11 +31,11 @@ var UNDEF = {};
 				from.on("active", this.enter_listener, this);
 				from.on("inactive", this.leave_listener, this);
 
-				_.defer(function (self) {
-					if (from.is_active()) {
-						self.enter_listener();
-					}
-				}, this);
+				//_.defer(function (self) {
+				if (from.is_active()) {
+					this.enter_listener();
+				}
+				//}, this);
 			}
 		};
 
@@ -46,12 +46,12 @@ var UNDEF = {};
 			this._last_val = val;
 
 			if (val && (last_val !== val)) {
-				ist.event_queue.wait();
+				//ist.event_queue.wait();
 				this.fire({
 					value: val,
 					timestamp: (new Date()).getTime()
 				});
-				ist.event_queue.signal();
+				//ist.event_queue.signal();
 			}
 		};
 		proto.destroy = function () {

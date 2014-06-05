@@ -197,6 +197,9 @@
 			this.toggle_concurrency_item = $("<div />")	.addClass("menu_item")
 														.html("Concurrent " + checkbox_mark)
 														.on("click.menu_item", _.bind(this.on_toggle_concurrency_item_pressed, this));
+			this.toggle_breakpoint_item = $("<div />")	.addClass("menu_item")
+														.text("Add breakpoint")
+														.on("click.menu_item", _.bind(this.on_toggle_breakpoint_item_pressed, this));
 			var lwe = this.option("lwe"),
 				rws = this.option("rws");
 			var PADDING = 1;
@@ -208,7 +211,7 @@
 			var paper = this.option("paper");
 			var parentElement = paper.canvas.parentNode;
 
-			this.edit_dropdown = $("<div />")	.append(this.add_transition, this.add_substate_item, this.toggle_concurrency_item, this.rename_item, this.remove_item)
+			this.edit_dropdown = $("<div />")	.append(this.add_transition, this.add_substate_item, this.toggle_concurrency_item, this.toggle_breakpoint_item, this.rename_item, this.remove_item)
 												.addClass("dropdown")
 												.css({
 													position: "absolute",
@@ -292,6 +295,25 @@
 				concurrent: !my_state.is_concurrent()
 			});
 		};
+		proto.on_toggle_breakpoint_item_pressed = function() {
+			var my_state = this.option("state");
+			this.remove_edit_dropdown();
+			this._has_breakpoint = true;
+			this._emit("toggle_breakpoint", {
+				state: my_state
+			});
+			if(this.togglebreakpoint.text() === "Add breakpoint") {
+				this.togglebreakpoint.text("Remove breakpoint");
+				this._emit("toggle_breakpoint", {
+					transition: my_transition
+				});
+			} else {
+				this.togglebreakpoint.text("Add breakpoint");
+				this._emit("toggle_breakpoint", {
+					transition: my_transition
+				});
+			}
+		};
 		proto.on_window_click_while_expanded = function(event) {
 			if(!$(event.target).parents().is(this.edit_dropdown)) {
 				this.remove_edit_dropdown();
@@ -327,6 +349,7 @@
 				this.remove_item.off("click.menu_item").remove();
 				this.add_substate_item.off("click.menu_item").remove();
 				this.toggle_concurrency_item.off("click.menu_item").remove();
+				this.toggle_breakpoint_item.off("click.menu_item").remove();
 				this.edit_dropdown.remove();
 				delete this.edit_dropdown;
 			}

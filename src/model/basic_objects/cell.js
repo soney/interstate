@@ -10,8 +10,8 @@
 		able.make_this_listenable(this);
         options = options || {};
         this._id = options.uid || uid();
-        this._hash = uid.strip_prefix(this._id);
-        ist.register_uid(this._id, this);
+        this._hash = uid.strip_prefix(this.id());
+        ist.register_uid(this.id(), this);
         if (defer_initialization !== true) {
             this.do_initialize(options);
         }
@@ -64,6 +64,23 @@
             }, {
 				context: this
 			});
+			this._is_static = cjs(function () {
+				var tree = this._tree.get();
+				return tree.body.length === 0 ||
+					(tree.body.length === 1 &&
+						tree.body[0].type === 'ExpressionStatement' &&
+						tree.body[0].expression.type === 'Literal');
+			}, {
+				context: this
+			});
+			this._static_value = cjs(function() {
+				var tree = this._tree.get();
+				if(tree.body.length > 0) {
+					return tree.body[0].expression.value;
+				}
+			}, {
+				context: this
+			});
         };
 		proto.substantiate = function() {
 			this.set_substantiated(true);
@@ -91,49 +108,41 @@
             return [];
         };
     
-        proto.get_value = function (pcontext) {
-            var tree = this._tree.get();
-			if(tree instanceof ist.Error) {
-				return undefined;
-			} else {
-				var parsed_$ = ist.get_parsed_val(tree, {
-					context: pcontext,
-					ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext)
-				});
-				if(parsed_$ instanceof ist.MultiExpression) {
-					return parsed_$.last();
-				} else {
-					return parsed_$;
-				}
-			}
-        };
 		proto.get_syntax_errors = function() {
             var tree = this._tree.get();
 			return tree instanceof ist.Error ? [tree.message()] : [];
 		};
         proto.constraint_in_context = function (pcontext) {
-			return ist.get_parsed_$(this._tree.get(), {
-						context: pcontext,
-						ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext),
-						get_constraint: true
-					});
+			if(this._is_static.get()) {
+				return this._static_value.get();
+			} else {
+				var tree = this._tree.get();
+				return ist.get_parsed_$(tree, {
+							context: pcontext,
+							ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext),
+							get_constraint: true
+						});
+			}
         };
         proto.destroy = function () {
 			this.emit_begin_destroy();
-            this._tree.destroy();
+            this._tree.destroy(true);
 			delete this._tree;
+			this._static_value.destroy(true);
+			delete this._static_value;
+			this._is_static.destroy(true);
+			delete this._is_static;
 
 			ist.unset_instance_builtins(this, My);
 			ist.unregister_uid(this.id());
 			this._emit("destroyed");
 			able.destroy_this_listenable(this);
+			this._destroyed = true;
         };
     
         proto.id = function () { return this._id; };
 		proto.hash = function () { return this._hash; };
-		if(ist.__debug) {
-			proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		}
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
     
         proto.summarize = function () {
             return this.id();

@@ -7,11 +7,10 @@
         _ = ist._;
 	
 	ist.find_fn = function(find_root) {
-		/*
 		if (arguments.length === 0) {
-			find_root = new ist.ContextualObject({pointer: root_pointer});
+			var pcontext = this;
+			find_root = ist.find_or_put_contextual_obj(pcontext.root());
 		}
-		*/
 		return new ist.Query({value: find_root});
 	};
 	ist.register_serializable_type("ist_find_fn_func",
@@ -34,25 +33,11 @@
             this.options.value = [this.options.value];
         }
         this.options.value = _	.chain(this.options.value)
-								.map(function (pointer_object) {
-									if(pointer_object) {
-										var pointer = pointer_object.get_pointer();
-										var points_at = pointer.points_at();
-										var cobj;
-										if (points_at instanceof ist.Dict) {
-											cobj = ist.find_or_put_contextual_obj(points_at, pointer);
-											if (cobj.is_template()) {
-												return cobj.instances();
-											} else {
-												return cobj;
-											}
-										} else {
-											cobj = ist.find_or_put_contextual_obj(points_at, pointer);
-											//new ist.ContextualObject({pointer: pointer});
-											return cobj;
-										}
+								.map(function (cobj) {
+									if (cobj instanceof ist.ContextualDict && cobj.is_template()) {
+										return cobj.instances();
 									} else {
-										return false;
+										return cobj;
 									}
 								})
 								.flatten(true)
@@ -115,7 +100,7 @@
                 var prop_cobj = cobj.prop(name);
                 return prop_cobj;
             },
-            "parent": function (cobj) {
+            "container": function (cobj) {
                 var pointer = cobj.get_pointer();
                 var new_ptr = pointer.pop();
                 var new_ptr_obj = new_ptr.points_at();
@@ -127,6 +112,7 @@
     
         _.each(map_funcs, function (func, name) {
             proto[name] = function () {
+				console.log(this);
                 var args = _.toArray(arguments);
                 return this.map(function () {
                     return func.apply(this, (_.toArray(arguments)).concat(args));
@@ -199,11 +185,11 @@
         };
     
         proto.op = function (op_func, context) {
-            var value = op_func.call(context || window, this.value());
-            var new_query = new ist.Query({
-                value: value,
-                parent_query: this
-            });
+            var value = op_func.call(context || window, this.value()),
+				new_query = new My({
+					value: value,
+					parent_query: this
+				});
             return new_query;
         };
     
@@ -213,6 +199,32 @@
         proto.parent_query = function () {
             return this.options.parent_query;
         };
+
+		var is_cDict = function(cobj) {
+				return cobj instanceof ist.ContextualDict;
+			},
+			flatten_containment_hierarchy = function(parents, not_root_call) {
+				var rv = not_root_call ? parents : _.filter(parents, is_cDict); // also clones when calling filter
+
+				_.each(rv, function(cobj) {
+					var children = cobj.children();
+					_.each(children, function(child_info) {
+						var child = child_info.value;
+						if(is_cDict(child)) {
+							rv.push.apply(rv, flatten_containment_hierarchy([child], true));
+						}
+					});
+				});
+				return rv;
+			};
+
+		proto.inheritsFrom = function(cobj) {
+			var obj = cobj.get_object(),
+				flat_objs = flatten_containment_hierarchy(this.value());
+			return _.filter(flat_objs, function(cobj) {
+				return cobj.inherits_from(obj);
+			});
+		};
     }(ist.Query));
 
 }(interstate));

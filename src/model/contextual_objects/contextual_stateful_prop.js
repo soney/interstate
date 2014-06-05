@@ -35,6 +35,15 @@
 			if(active_value_info.is_fallback) {
 				this.$active_value.invalidate();
 			}
+			if(ist.__garbage_collect) {
+				this._live_cobj_child_updater = cjs.liven(function() {
+					this.update_cobj_children();
+				}, {
+					context: this,
+					pause_while_running: true
+				});
+			}
+			if(this.constructor === My) { this.flag_as_initialized(); }
 		};
 
 		proto.get_parent = function () {
@@ -223,11 +232,6 @@
 				return a.root_sv_index - b.root_sv_index;
 			});
 
-/*
-			if(uid.strip_prefix(this.id()) == 55) {
-				console.log(rv);
-			}
-			*/
 			return rv;
 		};
 
@@ -336,10 +340,21 @@
 			return this.$active_value.get();
 		};
 
-		proto._getter = function () {
-			var last_last_value = this._last_value;
+		proto._get_valid_cobj_children = function() {
+			var my_pointer = this.get_pointer(),
+				rv = _.map(this.get_values(), function(val) {
+					var value = val.value;
+					return {obj: value, pointer: my_pointer.push(value)};
+				});
+			return rv;
+		};
 
-			var active_value_info = this.active_value();
+		proto._getter = function () {
+			var last_last_value = this._last_value,
+				active_value_info = this.active_value();
+
+			if(!active_value_info) { return; }
+
 			var using_val = active_value_info.value,
 				using_state = active_value_info.state,
 				using_as = active_value_info.using_as,
@@ -366,27 +381,25 @@
 					} else if(ist.event_queue.end_queue_round === 6) {
 						ist.event_queue.once("end_event_queue_round_7", invalidate_value);
 					} else {
-						_.defer(invalidate_active_value);
+						//console.log("WILL INVALIDATE");
+						//_.defer(invalidate_active_value);
+						invalidate_active_value();
 					}
-					invalidate_value = invalidate_active_value = null;
+					//invalidate_value = invalidate_active_value = null;
 				}
 			}
-
-/*
-			if(this.sid() === 427) {
-				if(this.$value.get() === 200) {
-				}
-				console.log(this.$value.get());
-			}
-			*/
 
 			var stateful_prop = this.get_object();
 
 			if(using_val) {
-				var pointer = this.get_pointer();
-				//var event = cjs.get(using_state._last_run_event);
+				var pointer = this.get_pointer(),
+					eventized_pointer;
+				if(using_state instanceof ist.StartState) {
+					eventized_pointer = pointer.push(using_val);
+				} else {
+					eventized_pointer = pointer.push(using_val, new ist.StateContext(using_state));
+				}
 
-				var eventized_pointer = pointer.push(using_val, new ist.StateContext(using_state));
 				var cobj = ist.find_or_put_contextual_obj(using_val, eventized_pointer);
 				
 				//console.log(cobj, cobj.val());
@@ -425,7 +438,8 @@
 		};
 
 		proto.destroy = function () {
-			if(this.constructor === My) { this.emit_begin_destroy(); }
+			if(this.constructor === My) { this.begin_destroy(true); }
+
 			this.$value.offChange(this.$value.get, this.$value);
 			this.$active_value.destroy(true);
 			delete this.$active_value;
@@ -433,6 +447,18 @@
 		};
 		proto.get_runtime_errors = function () {
 			return this.$runtime_errors.get();
+		};
+		proto.pause  = function(recursive) {
+			My.superclass.pause.apply(this, arguments);
+			
+			if(recursive) {
+			}
+		};
+		proto.resume = function(recursive) {
+			My.superclass.resume.apply(this, arguments);
+
+			if(recursive) {
+			}
 		};
 	}(ist.ContextualStatefulProp));
 }(interstate));

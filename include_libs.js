@@ -31,7 +31,6 @@ exports.vendor = c(
 				"jquery-ui-1.10.4.custom/js/jquery-2.1.0.js",
 				"jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.js",
 				"raphael/raphael.js",
-				"snap/snap.svg.js",
 				"esprima/esprima.js",
 				"qrcode.min.js",
 				"ace/ace.js",
@@ -60,6 +59,7 @@ exports.runtime = c(
 				"model/utils/parsed_value.js",
 				"model/utils/parsed_fn.js",
 				"model/utils/map_diff.js",
+				"controller/environment/devices.js",
 				"model/basic_objects/cell.js",
 				"model/basic_objects/dict.js",
 				"model/basic_objects/stateful_obj.js",
@@ -67,7 +67,6 @@ exports.runtime = c(
 				"model/basic_objects/query.js",
 				"model/pointer/pointer.js",
 				"model/pointer/special_contexts.js",
-				"model/pointer/pointer_bucket.js",
 				"model/contextual_objects/contextual_core.js",
 				"model/contextual_objects/contextual_dict.js",
 				"model/contextual_objects/contextual_cell.js",
@@ -151,7 +150,7 @@ exports.include_templates = function(strs, exclude_css) {
 		if(ends_with(str, ".js")) {
 			return "<script type = 'text/javascript' src = '"+str+"'></script>";
 		} else if(ends_with(str, ".css") && exclude_css !== true) {
-			return "<link rel = 'stylesheet' href = '"+str+"' media='screen' />";
+			return "<link rel = 'stylesheet' href = '"+str+"' />";
 		} else {
 			return "";
 		}

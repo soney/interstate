@@ -37,6 +37,7 @@
         };
         ist.install_proto_builtins(proto, My.builtins);
         proto.destroy = function () {
+			if(this.constructor === My) { this.emit_begin_destroy(); }
 			ist.unset_instance_builtins(this, My);
             My.superclass.destroy.apply(this, arguments);
         };
@@ -67,12 +68,4 @@
                 return rv;
             });
     }(ist.StatefulObj));
-	/*
-    
-    ist.define("stateful_obj", function (options, defer_init) {
-        var dict = new ist.StatefulObj(options, defer_init);
-        return dict;
-    });
-
-*/
 }(interstate));

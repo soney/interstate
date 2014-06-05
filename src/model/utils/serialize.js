@@ -80,10 +80,10 @@
 			return cjs.isArrayConstraint(x);
 		},
 		function () {
-			var args = _.toArray(arguments);
-			var serialized_value = _.map(this.toArray(), function (x) {
-				return ist.serialize.apply(ist, ([x]).concat(args));
-			});
+			var args = _.toArray(arguments),
+				serialized_value = _.map(this.toArray(), function (x) {
+					return ist.serialize.apply(ist, ([x]).concat(args));
+				});
 
 			return {
 				value: serialized_value
@@ -103,13 +103,13 @@
 			return cjs.isMapConstraint(x);
 		},
 		function () {
-			var args = _.toArray(arguments);
-			var serialized_keys = _.map(this.keys(), function (x) {
-				return ist.serialize.apply(ist, ([x]).concat(args));
-			});
-			var serialized_values = _.map(this.values(), function (x) {
-				return ist.serialize.apply(ist, ([x]).concat(args));
-			});
+			var args = _.toArray(arguments),
+				serialized_keys = _.map(this.keys(), function (x) {
+					return ist.serialize.apply(ist, ([x]).concat(args));
+				}),
+				serialized_values = _.map(this.values(), function (x) {
+					return ist.serialize.apply(ist, ([x]).concat(args));
+				});
 
 			return {
 				keys: serialized_keys,
@@ -129,20 +129,19 @@
 		});
 
 
-	var serializing = false;
-	var serialized_objs;
-	var serialized_obj_values;
-
-	var find_serialized_obj_id = function (obj) {
-		return _.indexOf(serialized_objs, obj);
-	};
+	var serializing = false,
+		serialized_objs,
+		serialized_obj_values,
+		find_serialized_obj_id = function (obj) {
+			return _.indexOf(serialized_objs, obj);
+		};
 
 	function do_serialize(obj) {
 		var rest_args = _.rest(arguments),
 			i;
 		for (i = 0; i < serialization_funcs.length; i += 1) {
-			var serialization_info = serialization_funcs[i];
-			var type = serialization_info.type;
+			var serialization_info = serialization_funcs[i],
+				type = serialization_info.type;
 			if (serialization_info.instance_check(obj)) {
 				return _.extend({ type: serialization_info.name }, serialization_info.serialize.apply(obj, rest_args));
 			}
@@ -175,8 +174,8 @@
 	};
 
 	ist.serialize = function (obj) {
-		var serialize_args = _.rest(arguments);
-		var is_init_serial_call = false;
+		var serialize_args = _.rest(arguments),
+			is_init_serial_call = false;
 		if (!serializing) {
 			serializing = true;
 			is_init_serial_call = true;
@@ -191,12 +190,12 @@
 				return ist.serialize.apply(ist, ([o]).concat(serialize_args));
 			});
 		} else if (is_init_serial_call) {
-			var serialized_obj = create_or_get_serialized_obj.apply(this, arguments);
+			var serialized_obj = create_or_get_serialized_obj.apply(this, arguments),
+				rv = {
+					serialized_objs: serialized_obj_values,
+					root: serialized_obj
+				};
 			serializing = false;
-			var rv = {
-				serialized_objs: serialized_obj_values,
-				root: serialized_obj
-			};
 			serialized_objs = undefined;
 			serialized_obj_values = undefined;
 			return rv;
@@ -219,14 +218,14 @@
 
 	// === DESERIALIZE ===
 
-	var deserialized_objs;
-	var deserialized_obj_vals;
-	var deserializing = false;
+	var deserialized_objs,
+		deserialized_obj_vals,
+		deserializing = false;
 		
 	var do_deserialize = function (serialized_obj) {
-		var rest_args = _.rest(arguments);
-		var serialized_obj_type = serialized_obj.type;
-		var i;
+		var rest_args = _.rest(arguments),
+			serialized_obj_type = serialized_obj.type,
+			i;
 
 		for (i = 0; i < serialization_funcs.length; i += 1) {
 			var serialization_info = serialization_funcs[i];
@@ -246,8 +245,9 @@
 	var get_deserialized_obj = function (serialized_obj) {
 		var rest_args = _.rest(arguments);
 		if (serialized_obj.type === POINTER_TYPE) {
-			var id = serialized_obj.id;
-			var val = deserialized_obj_vals[id];
+			var id = serialized_obj.id,
+				val = deserialized_obj_vals[id];
+
 			if (val === undefined) {
 				val = deserialized_obj_vals[id] = do_deserialize.apply(this, ([deserialized_objs[id]]).concat(rest_args));
 				if (val.initialize) {
@@ -262,8 +262,9 @@
 	};
 
 	ist.deserialize = function (serialized_obj) {
-		var rest_args = _.rest(arguments);
-		var rv;
+		var rest_args = _.rest(arguments),
+			rv;
+
 		if (deserializing === false) {
 			deserializing = true;
 
@@ -351,8 +352,8 @@
 			if(!name) {
 				var names = ist.ls(),
 					original_name = "sketch_"+names.length,
-					i = 0,
-					name = original_name;
+					i = 0;
+				name = original_name;
 
 				while(names.indexOf(name)>=0) {
 					name = original_name + "_" + i;
@@ -403,19 +404,18 @@
 		}
 		try {
 			var root = ist.destringify(str);
+
+			if(!type) { // program
+				ist.loaded_program_name.set(name);	
+				ist.setDefaultProgramName(name);
+			}
+
+			return root;
 		} catch(e) {
 			console.error("Error loading " + name + ":");
 			console.error(e);
 			return false;
 		}
-		//console.log("load ", name);
-
-		if(!type) { // program
-			ist.loaded_program_name.set(name);	
-			ist.setDefaultProgramName(name);
-		}
-
-		return root;
 	};
 	ist.ls = function (type) {
 		var len = window.localStorage.length;

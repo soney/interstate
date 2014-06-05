@@ -145,20 +145,26 @@
 		"typeof":	function (a) { return typeof a; }
 	};
 
+	var destroy_constraint_fn = cjs.Constraint.prototype.destroy;
+
 	var get_op_val = function (options, calling_context, op) {
 		var pcontext = options.context,
 			args = _.rest(arguments, 3);
 		if (options.get_constraint) {
-			return cjs(function () {
-				var op_got = cjs.get(op, options.auto_add_dependency);
-				var args_got = _.map(args, function(arg) {
+			var constraint = cjs(function () {
+				var op_got = cjs.get(op, options.auto_add_dependency),
+					args_got = _.map(args, function(arg) {
 													return cjs.get(arg, options.auto_add_dependency);
-												});
-				//window.dbg = false;
-				var calling_context_got = cjs.get(calling_context, options.auto_add_dependency);
+												}),
+					calling_context_got = cjs.get(calling_context, options.auto_add_dependency),
+					rv;
 
-				if (_.isFunction(op_got)) {
-					var rv = op_got.apply(calling_context_got, args_got);
+				if(op_got === ist.find_fn) {
+					// Give it the context of root
+					rv = op_got.apply(pcontext, args_got);
+					return rv;
+				} else if (_.isFunction(op_got)) {
+					rv = op_got.apply(calling_context_got, args_got);
 					return rv;
 				} else if (op_got instanceof ist.ParsedFunction) {
 					return op_got._apply(calling_context_got, pcontext, args_got, options);
@@ -167,6 +173,10 @@
 					//return undefined;
 				}
 			});
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			if (_.isFunction(op)) {
 				return op.apply(calling_context, args);
@@ -190,7 +200,7 @@
 			} else {
 				console.error("Unknown op " + op);
 			}
-			return cjs(function () {
+			var constraint = cjs(function () {
 				switch (op_id) {
 				case AND_OP:
 					return cjs.get(left, options.auto_add_dependency) && cjs.get(right, options.auto_add_dependency);
@@ -198,6 +208,10 @@
 					return cjs.get(left, options.auto_add_dependency) || cjs.get(right, options.auto_add_dependency);
 				}
 			});
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			if (op === "&&") {
 				return left && right;
@@ -211,7 +225,7 @@
 
 	var get_conditional_val = function (test, consequent, alternate, options) { // test ? consequent : alternate
 		if (options.get_constraint) {
-			return cjs(function () {
+			var constraint = cjs(function () {
 				var test_got = cjs.get(test, options.auto_add_dependency);
 				if (test_got) {
 					return cjs.get(consequent, options.auto_add_dependency);
@@ -219,6 +233,10 @@
 					return cjs.get(alternate, options.auto_add_dependency);
 				}
 			});
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			if (test) {
 				return consequent;
@@ -230,8 +248,10 @@
 
 	var get_identifier_val = function (key, options) {
 		var context = options.context,
-			ignore_inherited_in_contexts = options.ignore_inherited_in_contexts || [];
-		if (key === "sketch") {
+			ignore_inherited_in_contexts = options.ignore_inherited_in_contexts || [],
+			non_relative = (key[0] === '$');
+
+		if (key === ist.root_name) {
 			return ist.find_or_put_contextual_obj(context.root(), context.slice(0, 1));
 		} else if (key === "window") {
 			return window;
@@ -298,7 +318,12 @@
 		};
 
 		if (options.get_constraint) {
-			return cjs(getter);
+			var constraint = cjs(getter);
+			constraint.destroy = function() {
+				context = false;
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			return getter();
 		}
@@ -323,7 +348,11 @@
 			//return undefined;
 		};
 		if (options.get_constraint) {
-			return cjs(getter);
+			var constraint = cjs(getter);
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			return getter();
 		}
@@ -333,8 +362,8 @@
 		var getter = function (object, property) {
 			var rv, instances;
 			if (!object) {
-				throw new Error("No parent object for property '" + prop + "'");
-				//return undefined;
+				//throw new Error("No parent object for property '" + prop + "'");
+				return undefined;
 			}
 
 			if (object instanceof ist.ContextualObject) {
@@ -389,11 +418,15 @@
 		};
 
 		if (options.get_constraint) {
-			return cjs(function () {
+			var constraint = cjs(function () {
 				var object = cjs.get(obj, options.auto_add_dependency),
 					property = cjs.get(prop, options.auto_add_dependency);
 				return getter(object, property);
 			});
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			return getter(obj, prop);
 		}
@@ -401,11 +434,15 @@
 
 	var get_array_val = function (elements, options) {
 		if (options.get_constraint) {
-			return cjs(function () {
+			var constraint = cjs(function () {
 				return _.map(elements, function (element) {
 					return cjs.get(element, options.auto_add_dependency);
 				});
 			});
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			return elements;
 		}
@@ -415,7 +452,7 @@
 		var pcontext = options.context;
 		var args = _.rest(arguments, 3);
 		if (options.get_constraint) {
-			return cjs(function () {
+			var constraint = cjs(function () {
 				var op_got = cjs.get(op, options.auto_add_dependency);
 				//if(op_got === red.on_event) {
 					//debugger;
@@ -437,6 +474,10 @@
 					//return undefined;
 				}
 			});
+			constraint.destroy = function() {
+				destroy_constraint_fn.apply(this, arguments);
+			};
+			return constraint;
 		} else {
 			if (_.isFunction(op)) {
 				var rv = ist.construct.call(calling_context, op, args);
@@ -450,10 +491,8 @@
 		}
 	};
 
-		//destroy_if_constraint(x, silent);
-		//set_destroy(x, func);
 	var get_val = ist.get_parsed_val = function (node, options) {
-		var op_func, left_arg, right_arg, arg, callee, op_context, args, rv;
+		var op_func, left_arg, right_arg, arg, callee, op_context, args, rv, object, property;
 		if (!node) {
 			return undefined;
 		}
@@ -479,19 +518,28 @@
 				destroy_if_constraint(arg, silent);
 			});
 		} else if (type === "CallExpression") {
-			callee = get_val(node.callee, options);
-			op_context = window;
-			if (node.callee.type === "MemberExpression") {
-				op_context = get_val(node.callee.object, options);
+			var node_callee = node.callee;
+			if (node_callee.type === "MemberExpression") {
+				object = op_context = get_val(node_callee.object, options);
+				property = node_callee.computed ? get_val(node_callee.property, options) : node_callee.property.name;
+
+				callee = get_member_val(object, property, options);
+				set_destroy(callee, function(silent) {
+					destroy_if_constraint(object, silent);
+					destroy_if_constraint(property, silent);
+				});
+			} else {
+				callee = get_val(node_callee, options);
+				op_context = window;
 			}
+
 			args = _.map(node["arguments"], function (arg) {
 				return get_val(arg, options);
 			});
 			rv = get_op_val.apply(this, ([options, op_context, callee]).concat(args));
 
 			set_destroy(rv, function(silent) {
-				destroy_if_constraint(callee);
-				destroy_if_constraint(op_context);
+				destroy_if_constraint(callee, silent);
 				_.each(args, function(arg) {
 					destroy_if_constraint(arg, silent);
 				});
@@ -501,12 +549,13 @@
 		} else if (type === "ThisExpression") {
 			rv = get_this_val(options);
 		} else if (type === "MemberExpression") {
-			var object = get_val(node.object, options);
-			var property = node.computed ? get_val(node.property, options) : node.property.name;
+			object = get_val(node.object, options);
+			property = node.computed ? get_val(node.property, options) : node.property.name;
+
 			rv = get_member_val(object, property, options);
 			set_destroy(rv, function(silent) {
-				destroy_if_constraint(object);
-				destroy_if_constraint(property);
+				destroy_if_constraint(object, silent);
+				destroy_if_constraint(property, silent);
 			});
 		} else if (type === "ArrayExpression") {
 			var elements = _.map(node.elements, function (element) {
@@ -514,7 +563,7 @@
 			});
 			rv = get_array_val(elements, options);
 			set_destroy(rv, function(silent) {
-				_.each(element, function(elem) {
+				_.each(elements, function(elem) {
 					destroy_if_constraint(elem, silent);
 				});
 			});

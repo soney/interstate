@@ -17,7 +17,7 @@
 	});
 
 	var prop_template = cjs.createTemplate(
-		"<td class='name'>" +
+		"<td data-cjs-on-mouseover='propMOver' data-cjs-on-mouseout='propMOut' class='name'>" +
 			"{{#fsm name_edit_state}}" +
 				"{{#state idle}}" +
 					"<span>{{ prop_name }}</span>" +
@@ -366,15 +366,18 @@
 				}, this),
 				getPropCellOptions: _.bind(function(key) {
 					var value = this.$prop_values.itemConstraint(key),
+						$active = true,
 						left = function() { return layout_manager.get_x(key); },
 						width = function() { return value.get() ? layout_manager.get_width(key) : 7; };
 
-					// top fifty bad lines of code I've ever written: `value: value ? value.value : value`
+					// One of the worst lines of code I've ever written was here: `value: value ? value.value : value`
 					return {prop: this.option("client"),
 							state: key,
 							client: value,
 							left: left,
-							width: width };
+							width: width,
+							active_value: this.$active_value
+							};
 				}, this),
 				show_prev_value: this.$show_prev_value,
 				show_next_value: this.$show_next_value,
@@ -382,7 +385,21 @@
 				value: this.option("client"),
 				type: this.$type,
 				propValues: this.$prop_values,
-				show_menu: this.$show_menu
+				show_menu: this.$show_menu,
+				propMOver: _.bind(function() {
+					var client = this.option("client"),
+						event = new $.Event("add_highlight");
+					event.client = client;
+
+					this.element.trigger(event);
+				}, this),
+				propMOut: _.bind(function() {
+					var client = this.option("client"),
+						event = new $.Event("remove_highlight");
+					event.client = client;
+
+					this.element.trigger(event);
+				}, this)
 			}, this.element);
 		},
 

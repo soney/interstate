@@ -93,7 +93,7 @@
 				this.$type = client.type();
 				this.$value = ist.indirectClient(client, "val");
 			} else {
-				this.$type = false
+				this.$type = false;
 				this.$value = client;
 			}
 
@@ -175,7 +175,7 @@
 					var str = summarize_plain_val(cjs.get(this.$value));
 
 					if(str.length > this.option("char_limit")) {
-						str = str.slice(0, this.option("char_limit")-3)+"..."
+						str = str.slice(0, this.option("char_limit")-3)+"...";
 					}
 
 					this.element.attr("title", str)

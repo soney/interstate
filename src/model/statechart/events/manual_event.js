@@ -7,7 +7,7 @@
 		_ = ist._;
 
 	ist.ManualEvent = function () {
-		ist.ManualEvent.apply(this, arguments);
+		ist.Event.apply(this, arguments);
 		this._initialize();
 		this._type = "manual_event";
 	};
@@ -18,9 +18,9 @@
 		proto.create_shadow = function (parent_statechart, context) {
 			var shadow = new My();
 			this.on_fire(function () {
-				ist.event_queue.wait();
+				//ist.event_queue.wait();
 				shadow.fire();
-				ist.event_queue.signal();
+				//ist.event_queue.signal();
 			});
 			return shadow;
 		};

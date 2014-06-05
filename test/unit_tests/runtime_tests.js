@@ -1,5 +1,16 @@
 (function(ist) {
-	var tests = [
+	module("Runtime");
+
+	function simulateClick(type, elem) {
+		var evt = document.createEvent("MouseEvents");
+			evt.initMouseEvent(type, true, true, window,
+			0, 0, 0, 0, 0, false, false, false, false, 0, null);
+		elem.dispatchEvent(evt);
+	}
+
+
+	var _ = ist._,
+		tests = [
 		{
 			name: "Dynamic Events",
 			expect: 2,
@@ -12,8 +23,8 @@
 							.add_state("INIT")
 							.start_at("INIT")
 							.add_state("active")
-							.add_transition("INIT", "active", "on(my_event)")
 							.set("my_event", "(start)", "'ev1'")
+							.add_transition("INIT", "active", "on(my_event)")
 							.set("my_state")
 							.set("my_state", "INIT", "'INIT'")
 							.set("my_state", "active", "'active'")
@@ -44,8 +55,8 @@
 							.add_state("INIT")
 							.start_at("INIT")
 							.add_state("active")
-							.add_transition("INIT", "active", "on(my_event)")
 							.set("(prototypes)", "(start)", "proto_obj")
+							.add_transition("INIT", "active", "on(my_event)")
 							.set("my_state")
 							.set("my_state", "INIT", "'INIT'")
 							.set("my_state", "active", "'active'")
@@ -55,8 +66,7 @@
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(cobj.prop_val("my_state"), "INIT");
 
-					env		.up()
-						.cd("proto_obj")
+					env .cd("proto_obj")
 							.set("my_event", "(start)", "'ev2'");
 
 					ist.emit("ev2");
@@ -220,7 +230,6 @@
 								.set("x", "state2", "6")
 								.set("y", "(start)", "33")
 								;
-
 				},
 				test: function(env, runtime) {
 					ist.emit('my_event')
@@ -244,6 +253,7 @@
 		{
 			name: "Property and State Transitions",
 			expect: 6,
+			create_builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("screen", "<stateful>")
@@ -361,8 +371,6 @@
 				},
 				test: function(env, runtime) {
 					ist.emit("my_fire");
-					//debugger;
-					ist.update_current_contextual_objects(env.get_root());
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(cobj.prop_val("x"), 2);
 					ist.emit("my_fire");
@@ -464,7 +472,7 @@
 		{
 			name: "Copies",
 			expect: 1,
-			create_builtins: true,
+			create_builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	
@@ -505,7 +513,6 @@
 							;
 				},
 				test: function(env, runtime) {
-					//env.print();
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(cobj.prop_val("prop_0"), "b0");
 				}
@@ -515,6 +522,7 @@
 			name: "Copies & Groups",
 			expect: 12,
 			create_builtins: true,
+			delay_before_test: 5,
 			steps: [{
 				setup: function(env, runtime) {
 					env	
@@ -539,8 +547,8 @@
 									.set("cx", "(start)", "80*copy_num")
 									.set("cy", "(start)", "80*copy_num")
 									.up()
-								.set("circ2", "<stateful>")
-								.cd("circ2")
+								.set("rect1", "<stateful>")
+								.cd("rect1")
 									.set("(prototypes)", "(start)", "svg.rectangle")
 									.set("fill", "(start)", "group_fill")
 									.set("x", "(start)", "100*copy_num")
@@ -566,15 +574,14 @@
 					ev.initMouseEvent("click");
 
 					circles[0].dispatchEvent(ev);
-					rects[1].dispatchEvent(ev);
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
 					var rects = $("rect", runtime);
 					equal(circles.eq(0).attr("fill"), "#00ff00");
-					equal(circles.eq(1).attr("fill"), "#00ff00");
+					equal(circles.eq(1).attr("fill"), "#0000ff");
 					equal(rects.eq(0).attr("fill"), "#00ff00");
-					equal(rects.eq(1).attr("fill"), "#00ff00");
+					equal(rects.eq(1).attr("fill"), "#0000ff");
 				}
 			}, {
 				setup: function(env, runtime) {
@@ -584,16 +591,15 @@
 					var ev = document.createEvent("MouseEvent");
 					ev.initMouseEvent("click");
 
-					circles[1].dispatchEvent(ev);
-					rects[0].dispatchEvent(ev);
+					rects[1].dispatchEvent(ev);
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
 					var rects = $("rect", runtime);
-					equal(circles.eq(0).attr("fill"), "#ff0000");
-					equal(circles.eq(1).attr("fill"), "#0000ff");
-					equal(rects.eq(0).attr("fill"), "#ff0000");
-					equal(rects.eq(1).attr("fill"), "#0000ff");
+					equal(circles.eq(0).attr("fill"), "#00ff00");
+					equal(circles.eq(1).attr("fill"), "#00ff00");
+					equal(rects.eq(0).attr("fill"), "#00ff00");
+					equal(rects.eq(1).attr("fill"), "#00ff00");
 				}
 			}]
 		},
@@ -733,10 +739,176 @@
 					equal(cobj.prop_val("x"), 2);
 				}
 			}]
-		}
-		/**/
-	];
+		},
+		{
+			name: "StopPropagation on Events",
+			expect: 10,
+			create_builtins: true,
+			steps: [{
+				setup: function(env) {
+					env	.set("obj", "<stateful>")
+						.cd("obj")
+							.set("(prototypes)", "(start)", "dom.h1")
+							.add_state("state1")
+							.add_state("state2")
+							.add_transition("state1", "state2", "on('mousedown', this).stopPropagation()")
+							.add_transition("state2", "state1", "on('mousedown', this)")
+							.set("x", "state1", "1")
+							.set("x", "state2", "2")
+							.start_at("state1")
+						;
+				},
+				test: function(env, runtime, make_async) {
+					var window_md_count = 0,
+						window_md_listener = function() {
+							window_md_count++;
+						},
+						cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
+						h1 = $("h1", runtime),
+						callback = make_async();
 
+					window.addEventListener("mousedown", window_md_listener);
+
+					equal(cobj.prop_val("x"), 1);
+					equal(window_md_count, 0);
+
+					simulateClick("mousedown", h1[0]);
+
+					_.delay(function() {
+						equal(cobj.prop_val("x"), 2);
+						equal(window_md_count, 0);
+
+						simulateClick("mousedown", h1[0]);
+
+						_.delay(function() {
+							equal(cobj.prop_val("x"), 1);
+							equal(window_md_count, 1);
+
+							simulateClick("mousedown", h1[0]);
+
+							_.delay(function() {
+								equal(cobj.prop_val("x"), 2);
+								equal(window_md_count, 1);
+
+								simulateClick("mousedown", h1[0]);
+
+								_.delay(function() {
+									equal(cobj.prop_val("x"), 1);
+									equal(window_md_count, 2);
+									window.removeEventListener("mousedown", window_md_listener);
+									callback();
+								}, 10);
+							}, 10);
+						}, 10);
+					}, 10);
+
+				}
+			}]
+		},
+		{
+			name: "Breakpoints",
+			expect: 10,
+			create_builtins: false,
+			steps: [{
+				setup: function(env) {
+					env	.set("obj", "<stateful>")
+						.cd("obj")
+							.add_state("state1")
+							.add_state("state2")
+							.start_at("state1")
+							.add_transition("state1", "state2", "on('fwd')")
+							.add_transition("state2", "state1", "on('bak')")
+							.set("x", "state1", "1")
+							.set("x", "state2", "2")
+						;
+				},
+				test: function(env, runtime) {
+					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+					equal(cobj.prop_val("x"), 1);
+					ist.emit("fwd");
+					equal(cobj.prop_val("x"), 2);
+					ist.emit("bak");
+					equal(cobj.prop_val("x"), 1);
+					cobj.pause();
+					ist.emit("fwd");
+					equal(cobj.prop_val("x"), 1);
+					cobj.resume();
+					equal(cobj.prop_val("x"), 1);
+					ist.emit("fwd");
+					equal(cobj.prop_val("x"), 2);
+					cobj.pause();
+					equal(cobj.prop_val("x"), 2);
+					ist.emit("bak");
+					equal(cobj.prop_val("x"), 2);
+					cobj.resume();
+					equal(cobj.prop_val("x"), 2);
+					ist.emit("bak");
+					equal(cobj.prop_val("x"), 1);
+				}
+			}]
+		},
+		{
+			name: "Query Inherits From",
+			expect: 7,
+			create_builtins: ["functions"],
+			steps: [{
+				setup: function(env) {
+					env	.set("A", "<stateful>")
+						.set("B", "<stateful>")
+						.cd("B")
+							.set("(prototypes)", "(start)", "A")
+							.up()
+						.set("C", "<stateful>")
+						.set("query", "find().inheritsFrom(A)")
+						;
+				},
+				test: function(env, runtime) {
+					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
+						A = cobj.prop_val("A"),
+						B = cobj.prop_val("B"),
+						C = cobj.prop_val("C");
+
+					deepEqual(cobj.prop_val("query"), [B]);
+
+					env	.cd("B")
+						.set("(prototypes)", "(start)", "")
+						.top();
+
+					deepEqual(cobj.prop_val("query"), []);
+
+					env	.cd("C")
+						.set("(prototypes)", "(start)", "B")
+						.top();
+
+					deepEqual(cobj.prop_val("query"), []);
+
+					env	.cd("B")
+						.set("(prototypes)", "(start)", "[A]")
+						.top();
+
+					deepEqual(cobj.prop_val("query"), [B, C]);
+
+					env	.cd("C")
+						.set("(prototypes)", "(start)", "[B, A]")
+						.top();
+
+					deepEqual(cobj.prop_val("query"), [B, C]);
+
+					env	.cd("B")
+						.set("(prototypes)", "(start)", "[]")
+						.top();
+
+					deepEqual(cobj.prop_val("query"), [C]);
+
+					env	.cd("C")
+						.set("(prototypes)", "(start)", "B")
+						.top();
+
+					deepEqual(cobj.prop_val("query"), []);
+				}
+			}]
+		},
+	];
 	tests.forEach(function(test) {
 		dt(test.name, test);
 	});

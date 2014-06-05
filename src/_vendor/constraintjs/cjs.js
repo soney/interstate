@@ -1,4 +1,4 @@
-//     ConstraintJS (CJS) 0.9.5-beta
+//     ConstraintJS (CJS) 0.9.6-beta
 //     ConstraintJS may be freely distributed under the MIT License
 //     http://cjs.from.so/
 
@@ -27,6 +27,7 @@ var slice         = ArrayProto.slice,
 // are declared here.
 var nativeSome    = ArrayProto.some,
 	nativeIndexOf = ArrayProto.indexOf,
+	nativeLastIndexOf = ArrayProto.lastIndexOf,
 	nativeEvery   = ArrayProto.every,
 	nativeForEach = ArrayProto.forEach,
 	nativeKeys    = Object.keys,
@@ -333,25 +334,39 @@ var extend = function (obj) {
 	
 // Return the first item in arr where test is true
 var indexWhere = function (arr, test, start_index) {
-	var i, len = arr.length;
-	for (i = start_index || 0; i < len; i++) {
-		if (test(arr[i], i)) { return i; }
-	}
-	return -1;
-};
+		var i, len = arr.length;
+		for (i = start_index || 0; i < len; i++) {
+			if (test(arr[i], i)) { return i; }
+		}
+		return -1;
+	},
+	lastIndexWhere = function(arr, test) {
+		var i, len = arr.length;
+		for (i = len-1; i >= 0; i--) {
+			if (test(arr[i], i)) { return i; }
+		}
+		return -1;
+	};
 
 // The default equality check function
 var eqeqeq = function (a, b) { return a === b; };
 
 // Return the first item in arr equal to item (where equality is defined in equality_check)
 var indexOf = function (arr, item, start_index, equality_check) {
-	if(!equality_check && !start_index && nativeIndexOf && arr.indexOf === nativeIndexOf) {
-		return arr.indexOf(item);
-	} else {
-		equality_check = equality_check || eqeqeq;
-		return indexWhere(arr, function (x) { return equality_check(item, x); }, start_index);
-	}
-};
+		if(!equality_check && !start_index && nativeIndexOf && arr.indexOf === nativeIndexOf) {
+			return arr.indexOf(item);
+		} else {
+			equality_check = equality_check || eqeqeq;
+			return indexWhere(arr, function (x) { return equality_check(item, x); }, start_index);
+		}
+	}, lastIndexOf = function(arr, item, equality_check) {
+		if(nativeLastIndexOf && arr.lastIndexOf === nativeLastIndexOf) {
+			return arr.lastIndexOf(item);
+		} else {
+			equality_check = equality_check || eqeqeq;
+			return lastIndexWhere(arr, function (x) { return equality_check(item, x); });
+		}
+	};
 	
 // Remove an item in an array
 var remove = function (arr, obj) {
@@ -776,31 +791,98 @@ var constraint_solver = {
 			}
 		}
 
-		// If the node's cached value is invalid...
-		if (!node._valid) {
-			// Push node onto the stack to make it clear that it's being fetched
-			stack[stack_len] = node;
-			// Mark it as valid
-			node._valid = true;
-
+		// This node is waiting for an asyncronous value
+		if(node._paused_info) {
+			// So return its temporary value until then
+			return node._paused_info.temporaryValue;
+		} else if (!node._valid) {
+			// If the node's cached value is invalid...
 			// Set the timestamp before fetching in case a constraint depends on itself
 			node._tstamp++;
+
+			// Push node onto the stack to make it clear that it's being fetched
+			stack[stack_len] = node;
+
+			// Mark it as valid
+			node._valid = true;
 
 			if (node._options.cache_value !== false) {
 				// Check if dynamic value. If it is, then call it. If not, just fetch it
 				// set this to the node's cached value, which will be returned
 				node._cached_value = node._options.literal ? node._value :
-											(isFunction(node._value) ? node._value.call(node._options.context || node) :
+											(isFunction(node._value) ? node._value.call(node._options.context || node, node) :
 																		cjs.get(node._value));
+
+				// The node paused as if this was going to be an asyncronous value but it ended up being syncronous.
+				// Use that to set the value
+				if(node._sync_value) {
+					node._cached_value = node._sync_value.value;
+					delete node._sync_value;
+				} else if(constraint_solver._paused_node && constraint_solver._paused_node.node === node) {
+					// The node said it would have an asyncronous value and it did
+					// Save the paused information to the node and remove it from the constraint solver
+					node._paused_info = constraint_solver._paused_node;
+					delete constraint_solver._paused_node;
+					//Restore the stack to avoid adding a self-dependency
+					stack.length = stack_len;
+					// And return the temporary value
+					return node._paused_info.temporaryValue;
+				}
 			} else if(isFunction(node._value)) {
 				// if it's just a non-cached function call, just call the function
 				node._value.call(node._options.context);
 			}
+
 			// Pop the item off the stack
 			stack.length = stack_len;
 		}
 
 		return node._cached_value;
+	},
+
+	// Called when a constraint's getter is paused
+	pauseNodeGetter: function(temporaryValue) {
+		constraint_solver._paused_node = {
+			temporaryValue: temporaryValue,
+			node: this
+		};
+	},
+	// Called when a constraint's getter is resumed
+	resumeNodeGetter: function(value) {
+		var node = this, old_stack;
+
+		// Hey! The node said its value would be asyncronous but it ended up being syncronous
+		// We know because, it paused and then resumed before the constraint solver's paused node information could even
+		// be removed.
+		if(constraint_solver._paused_node && constraint_solver._paused_node.node === node) {
+			delete constraint_solver._paused_node;
+			node._sync_value = { value: value };
+		} else {
+			// Nullify every dependent node and update this node's cached value
+			old_stack = constraint_solver.stack;
+
+			delete node._paused_info;
+			node._tstamp++;
+			node._valid = true;
+
+			constraint_solver.stack = [node];
+
+			if (node._options.cache_value !== false) {
+				// Check if dynamic value. If it is, then call it. If not, just fetch it
+				// set this to the node's cached value, which will be returned
+				node._cached_value = node._options.literal ? value :
+											(isFunction(value) ? value.call(node._options.context || node, node) :
+																		cjs.get(value));
+			} else if(isFunction(node._value)) {
+				// if it's just a non-cached function call, just call the function
+				value.call(node._options.context);
+			}
+
+			constraint_solver.nullify.apply(constraint_solver, map(node._outEdges, function(edge) {
+				return edge.to;
+			}));
+			constraint_solver.stack = old_stack;
+		}
 	},
 	
 	// Utility function to mark a listener as being in the call stack. `this` refers to the constraint node here
@@ -808,14 +890,14 @@ var constraint_solver = {
 		nl.in_call_stack++;
 		nl.node._num_listeners_in_call_stack++;
 	},
-	nullify: function(node) {
+	nullify: function() {
 		// Unfortunately, running nullification listeners can, in some cases cause nullify to be indirectly called by itself
 		// (as in while running `nullify`). The variable is_root will prevent another call to `run_nullification_listeners` at
 		// the bottom of this function
 		var i, outgoingEdges, toNodeID, invalid, curr_node, equals, old_value, new_value, changeListeners,
-			to_nullify = [node],
-			to_nullify_len = 1,
-			is_root = !this._is_nullifying;
+			to_nullify = slice.call(arguments),
+			to_nullify_len = to_nullify.length,
+			is_root = !this._is_nullifying,curr_node_id;
 
 		if (is_root) {
 			// This variable is used to track `is_root` for any potential future calls
@@ -857,6 +939,7 @@ var constraint_solver = {
 
 					// Then, get every outgoing edge and add it to the nullify queue
 					outgoingEdges = curr_node._outEdges;
+					curr_node_id = curr_node._id;
 					for (toNodeID in outgoingEdges) {
 						if (has(outgoingEdges, toNodeID)) {
 							var outgoingEdge = outgoingEdges[toNodeID];
@@ -866,7 +949,7 @@ var constraint_solver = {
 							// any more and remove it
 							if (outgoingEdge.tstamp < dependentNode._tstamp) {
 								delete curr_node._outEdges[toNodeID];
-								delete dependentNode._inEdges[node._id];
+								delete dependentNode._inEdges[curr_node_id];
 							} else {
 								// But if the dependency still is being used, then add it to the nullification
 								// queue
@@ -1250,6 +1333,32 @@ Constraint = function (value, options) {
 		}
 		this.remove(silent);
 		this._changeListeners = [];
+		return this;
+	};
+
+	/**
+	 * Signal that this constraint's value will be computed later. For instance, for asyncronous values.
+	 *
+	 * @method pauseGetter
+	 * @param {*} temporaryValue - The temporary value to use for this node until it is resumed
+	 * @return {cjs.Constraint} - `this`
+	 * @see resumeGetter
+	 */
+	proto.pauseGetter  = function () {
+		constraint_solver.pauseNodeGetter.apply(this, arguments);
+		return this;
+	};
+	/**
+	 * Signal that this Constraint, which has been paused with `pauseGetter` now has a value.
+	 *
+	 * @method resumeGetter
+	 * @param {*} value - This node's value
+	 * @return {cjs.Constraint} - `this`
+	 * @see pauseGetter
+	 *
+	 */
+	proto.resumeGetter = function () {
+		constraint_solver.resumeNodeGetter.apply(this, arguments);
 		return this;
 	};
 
@@ -1962,7 +2071,7 @@ extend(cjs, {
 	 * @property {string} cjs.version
 	 * @see cjs.toString
 	 */
-	version: "0.9.5-beta", // This template will be filled in by the builder
+	version: "0.9.6-beta", // This template will be filled in by the builder
 
 	/**
 	 * Print out the name and version of ConstraintJS
@@ -3215,7 +3324,7 @@ MapConstraint = function (options) {
 	 *     map.remove("x");
 	 *     map.keys(); // ['y']
 	 */
-	proto.remove = function (key) {
+	proto.remove = function (key, silent) {
 		// Find out if there's an actual key set
 		var ki = _find_key.call(this, key, false, false),
 			key_index = ki.i,
@@ -3253,16 +3362,18 @@ MapConstraint = function (options) {
 				}
 			}
 
-			_remove_index.call(this, ordered_index); // remove ordered_index (splices the ordered array)
+			_remove_index.call(this, ordered_index, silent); // remove ordered_index (splices the ordered array)
 			for (i = ordered_index; i < this._ordered_values.length; i += 1) {
 				_set_index(this._ordered_values[i], i); // and update the index for every item
 			}
 
 			// And now all of these constraint variables are invalid.
-			this.$size.invalidate();
-			this.$keys.invalidate();
-			this.$values.invalidate();
-			this.$entries.invalidate();
+			if(!silent) {
+				this.$size.invalidate();
+				this.$keys.invalidate();
+				this.$values.invalidate();
+				this.$entries.invalidate();
+			}
 
 			// OK, now you can run any nullified listeners
 			cjs.signal();
@@ -3880,6 +3991,10 @@ extend(cjs, {
 				var paused = false;
 				var do_get;
 
+				var invalidate = function() {
+					node.invalidate();
+				};
+
 				// Destroy the node and make sure no memory is allocated
 				var destroy = function (silent) {
 					if(options.on_destroy) {
@@ -3930,6 +4045,7 @@ extend(cjs, {
 						do_get(arg0);
 						return this;
 					},
+					invalidate: invalidate,
 					_constraint: node // for debugging purposes
 				};
 				return rv;
@@ -4004,7 +4120,7 @@ extend(cjs, {
 		}, options);
 
 		// Map from args to value
-		var args_map = new MapConstraint({
+		options.args_map = new MapConstraint({
 			hash: options.hash,
 			equals: options.equals,
 			literal_values: options.literal_values
@@ -4012,8 +4128,8 @@ extend(cjs, {
 
 		// When getting a value either create a constraint or return the existing value
 		var rv = function () {
-			var args = toArray(arguments),
-				constraint = args_map.getOrPut(args, function() {
+			var args = slice.call(arguments),
+				constraint = options.args_map.getOrPut(args, function() {
 					return new Constraint(function () {
 						return getter_fn.apply(options.context, args);
 					});
@@ -4023,16 +4139,17 @@ extend(cjs, {
 
 		// Clean up memory after self
 		rv.destroy = function (silent) {
-			args_map.forEach(function (constraint) {
+			options.args_map.forEach(function (constraint) {
 				constraint.destroy(silent);
 			});
-			args_map.destroy(silent);
+			options.args_map.destroy(silent);
 		};
 
 		// Run through every argument and call fn on it
 		rv.each = function (fn) {
-			args_map.forEach(fn);
+			options.args_map.forEach(fn);
 		};
+		rv.options = options;
 		return rv;
 	}
 });
@@ -6053,14 +6170,18 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 					bindings.push((context[value] = getInputValueConstraint(element)));
 				} else if((on_regex_match = name.match(on_regex))) {
 					var event_name = on_regex_match[2];
-					aEL(element, event_name, context[value]);
+					aEL(element, event_name, bind(context[value], cjs.get(last(lineage).this_exp)));
 				} else {
 					var constraint = get_constraint(value, context, lineage);
 					if(is_constraint(constraint)) {
 						if(attr.name === "class") {
-							bindings.push(class_binding(element, constraint));
+							var class_constraint = cjs(function() {
+								var cval = constraint.get();
+								return cval.split(" ");
+							});
+							bindings.push(constraint, class_constraint, class_binding(element, class_constraint));
 						} else {
-							bindings.push(attr_binding(element, name, constraint));
+							bindings.push(constraint, attr_binding(element, name, constraint));
 						}
 					} else {
 						element.setAttribute(attr.name, constraint);
@@ -6160,6 +6281,9 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 									x.is_obj = IS_OBJ;
 								});
 							} else {
+								if(is_constraint(arr_val)) {
+									arr_val = arr_val.get();
+								}
 								// IS_OBJ provides a way to ensure the user didn't happen to pass in a similarly formatted array
 								arr_val = map(arr_val, function(v, k) { return { key: k, value: v, is_obj: IS_OBJ }; });
 							}
@@ -6170,6 +6294,7 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 						var diff = get_array_diff(old_arr_val, arr_val, map_aware_array_eq),
 							rv = [],
 							added_nodes = [], removed_nodes = [];
+						old_arr_val = arr_val;
 						each(diff.index_changed, function(ic_info) {
 							var lastLineageItem = lastLineages[ic_info.from];
 							if(lastLineageItem && lastLineageItem.at && lastLineageItem.at.index) {
@@ -6218,9 +6343,6 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 							lastLineages.splice(to_index, 0, lastLineageItem);
 						});
 
-
-						old_arr_val = arr_val;
-
 						onremove_each(removed_nodes);
 						destroy_each(removed_nodes);
 						onadd_each(added_nodes);
@@ -6253,7 +6375,7 @@ var child_is_dynamic_html		= function(child)	{ return child.type === UNARY_HB_TY
 					},
 					getNodes: function() {
 						var len = template.sub_conditions.length,
-							cond = !!get_node_value(template.condition, context, lineage),
+							cond = !!cjs.get(get_node_value(template.condition, context, lineage)),
 							i, children = false, memo_index, rv;
 
 						if(template.reverse) {
@@ -6790,12 +6912,13 @@ extend(cjs, {
 	 * @param {string} str - The string to parse
 	 * @param {object} context - The context in which to look for variables
 	 * @return {cjs.Cosntraint} - Whether the template was successfully resumed
-	 * @example
-	 * var a = cjs(1);
-	 * var x = cjs.createParsedConstraint("a+b", {a: a, b: cjs(2)})
-	 * x.get(); // 3
-	 * a.set(2);
-	 * x.get(); // 4
+	 * @example Creating a parsed constraint `x`
+	 *
+	 *     var a = cjs(1);
+	 *     var x = cjs.createParsedConstraint("a+b", {a: a, b: cjs(2)})
+	 *     x.get(); // 3
+	 *     a.set(2);
+	 *     x.get(); // 4
 	 */
 	createParsedConstraint: function(str, context) {
 		var node = jsep(str);
@@ -6823,9 +6946,22 @@ var COMPOUND = 'Compound',
 	UNARY_EXP = 'UnaryExpression',
 	BINARY_EXP = 'BinaryExpression',
 	LOGICAL_EXP = 'LogicalExpression',
-    CONDITIONAL_EXP = 'ConditionalExpression',
+	CONDITIONAL_EXP = 'ConditionalExpression',
+	ARRAY_EXP = 'Array',
 	PARENT_EXP = 'ParentExpression',
 	CURR_LEVEL_EXP = 'CurrLevelExpression',
+
+	PERIOD_CODE = 46, // '.'
+	COMMA_CODE  = 44, // ','
+	SQUOTE_CODE = 39, // single quote
+	DQUOTE_CODE = 34, // double quotes
+	OPAREN_CODE = 40, // (
+	CPAREN_CODE = 41, // )
+	OBRACK_CODE = 91, // [
+	CBRACK_CODE = 93, // ]
+	QUMARK_CODE = 63, // ?
+	SEMCOL_CODE = 59, // ;
+	COLON_CODE  = 58, // :
 
 	throwError = function(message, index) {
 		var error = new Error(message + ' at character ' + index);
@@ -6833,14 +6969,14 @@ var COMPOUND = 'Compound',
 		error.dedscription = message;
 		throw error;
 	},
-	
-jsep = (function() {
+
+	jsep = (function() {
 
 	// Operations
 	// ----------
 	
 	// Set `t` to `true` to save space (when minified, not gzipped)
-		var t = true,
+	var t = true,
 	// Use a quickly-accessible map to store all of the unary operators
 	// Values are set to `true` (it really doesn't matter)
 		unary_ops = {'-': t, '!': t, '~': t, '+': t},
@@ -6930,20 +7066,22 @@ jsep = (function() {
 						ch = exprICode(++index);
 					}
 				},
-
+				
+				// The main parsing function. Much of this code is dedicated to ternary expressions
 				gobbleExpression = function() {
 					var test = gobbleBinaryExpression(),
 						consequent, alternate;
-
+					
 					gobbleSpaces();
-					if(exprI(index) === '?') {
+					// Ternary expression: test ? consequent : alternate
+					if(exprICode(index) === QUMARK_CODE) {
 						index++;
 						consequent = gobbleExpression();
 						if(!consequent) {
 							throwError('Expected expression', index);
 						}
 						gobbleSpaces();
-						if(exprI(index) === ':') {
+						if(exprICode(index) === COLON_CODE) {
 							index++;
 							alternate = gobbleExpression();
 							if(!alternate) {
@@ -7027,8 +7165,7 @@ jsep = (function() {
 						if(!node) {
 							throwError("Expected expression after " + biop, index);
 						}
-						stack.push(biop_info);
-						stack.push(node);
+						stack.push(biop_info, node);
 					}
 
 					i = stack.length - 1;
@@ -7048,13 +7185,13 @@ jsep = (function() {
 					gobbleSpaces();
 					ch = exprICode(index);
 
-					if(ch === 46 && expr.charCodeAt(index+1) === 47) {
+					if(ch === PERIOD_CODE && expr.charCodeAt(index+1) === 47) {
 							index += 2;
 							return {
 									type: CURR_LEVEL_EXP,
 									argument: gobbleToken()
 							};
-					} else if(ch === 46 && expr.charCodeAt(index+1) === 46 && expr.charCodeAt(index+2) === 47) {
+					} else if(ch === PERIOD_CODE && expr.charCodeAt(index+1) === PERIOD_CODE && expr.charCodeAt(index+2) === 47) {
 							index += 3;
 							return {
 									type: PARENT_EXP,
@@ -7062,18 +7199,15 @@ jsep = (function() {
 							};
 					}
 
-					if(isDecimalDigit(ch) || ch === 46) {
+					if(isDecimalDigit(ch) || ch === PERIOD_CODE) {
 						// Char code 46 is a dot `.` which can start off a numeric literal
 						return gobbleNumericLiteral();
-					} else if(ch === 39 || ch === 34) {
+					} else if(ch === SQUOTE_CODE || ch === DQUOTE_CODE) {
 						// Single or double quotes
 						return gobbleStringLiteral();
-					} else if(isIdentifierStart(ch)) {
+					} else if(isIdentifierStart(ch) || ch === OPAREN_CODE) { // open parenthesis
 						// `foo`, `bar.baz`
 						return gobbleVariable();
-					} else if(ch === 40) {
-						// Open parentheses
-						return gobbleGroup();
 					} else {
 						to_check = expr.substr(index, max_unop_len);
 						tc_len = to_check.length;
@@ -7096,12 +7230,12 @@ jsep = (function() {
 				// Parse simple numeric literals: `12`, `3.4`, `.5`. Do this by using a string to
 				// keep track of everything in the numeric literal and then calling `parseFloat` on that string
 				gobbleNumericLiteral = function() {
-					var number = '';
+					var number = '', ch;
 					while(isDecimalDigit(exprICode(index))) {
 						number += exprI(index++);
 					}
 
-					if(exprI(index) === '.') { // can start with a decimal marker
+					if(exprICode(index) === PERIOD_CODE) { // can start with a decimal marker
 						number += exprI(index++);
 
 						while(isDecimalDigit(exprICode(index))) {
@@ -7109,9 +7243,11 @@ jsep = (function() {
 						}
 					}
 					
-					if(exprI(index) === 'e' || exprI(index) === 'E') { // exponent marker
+					ch = exprI(index);
+					if(ch === 'e' || ch === 'E') { // exponent marker
 						number += exprI(index++);
-						if(exprI(index) === '+' || exprI(index) === '-') { // exponent sign
+						ch = exprI(index);
+						if(ch === '+' || ch === '-') { // exponent sign
 							number += exprI(index++);
 						}
 						while(isDecimalDigit(exprICode(index))) { //exponent itself
@@ -7212,18 +7348,20 @@ jsep = (function() {
 					}
 				},
 
-				// Gobbles a list of arguments within the context of a function call. This function
-				// also assumes that the `(` has already been gobbled.
-				// e.g. `foo(bar, baz)` or `my_func()`
-				gobbleArguments = function() {
+				// Gobbles a list of arguments within the context of a function call
+				// or array literal. This function also assumes that the opening character
+				// `(` or `[` has already been gobbled, and gobbles expressions and commas
+				// until the terminator character `)` or `]` is encountered.
+				// e.g. `foo(bar, baz)`, `my_func()`, or `[bar, baz]`
+				gobbleArguments = function(termination) {
 					var ch_i, args = [], node;
 					while(index < length) {
 						gobbleSpaces();
-						ch_i = exprI(index);
-						if(ch_i === ')') { // done parsing
+						ch_i = exprICode(index);
+						if(ch_i === termination) { // done parsing
 							index++;
 							break;
-						} else if (ch_i === ',') { // between expressions
+						} else if (ch_i === COMMA_CODE) { // between expressions
 							index++;
 						} else {
 							node = gobbleExpression();
@@ -7241,13 +7379,19 @@ jsep = (function() {
 				// It also gobbles function calls:
 				// e.g. `Math.acos(obj.angle)`
 				gobbleVariable = function() {
-					var ch_i, node, old_index;
-					node = gobbleIdentifier();
+					var ch_i, node;
+					ch_i = exprICode(index);
+						
+					if(ch_i === OPAREN_CODE) {
+						node = gobbleGroup();
+					} else {
+						node = gobbleIdentifier();
+					}
 					gobbleSpaces();
-					ch_i = exprI(index);
-					while(ch_i === '.' || ch_i === '[' || ch_i === '(') {
-						if(ch_i === '.') {
-							index++;
+					ch_i = exprICode(index);
+					while(ch_i === PERIOD_CODE || ch_i === OBRACK_CODE || ch_i === OPAREN_CODE) {
+						index++;
+						if(ch_i === PERIOD_CODE) {
 							gobbleSpaces();
 							node = {
 								type: MEMBER_EXP,
@@ -7255,9 +7399,7 @@ jsep = (function() {
 								object: node,
 								property: gobbleIdentifier()
 							};
-						} else if(ch_i === '[') {
-							old_index = index;
-							index++;
+						} else if(ch_i === OBRACK_CODE) {
 							node = {
 								type: MEMBER_EXP,
 								computed: true,
@@ -7265,23 +7407,21 @@ jsep = (function() {
 								property: gobbleExpression()
 							};
 							gobbleSpaces();
-							ch_i = exprI(index);
-							if(ch_i !== ']') {
+							ch_i = exprICode(index);
+							if(ch_i !== CBRACK_CODE) {
 								throwError('Unclosed [', index);
 							}
 							index++;
-							gobbleSpaces();
-						} else if(ch_i === '(') {
+						} else if(ch_i === OPAREN_CODE) {
 							// A function call is being made; gobble all the arguments
-							index++;
 							node = {
 								type: CALL_EXP,
-								'arguments': gobbleArguments(),
+								'arguments': gobbleArguments(CPAREN_CODE),
 								callee: node
 							};
 						}
 						gobbleSpaces();
-						ch_i = exprI(index);
+						ch_i = exprICode(index);
 					}
 					return node;
 				},
@@ -7295,22 +7435,36 @@ jsep = (function() {
 					index++;
 					var node = gobbleExpression();
 					gobbleSpaces();
-					if(exprI(index) === ')') {
+					if(exprICode(index) === CPAREN_CODE) {
 						index++;
 						return node;
 					} else {
 						throwError('Unclosed (', index);
 					}
 				},
+
+				// Responsible for parsing Array literals `[1, 2, 3]`
+				// This function assumes that it needs to gobble the opening bracket
+				// and then tries to gobble the expressions as arguments.
+				gobbleArray = function() {
+					index++;
+					return {
+						type: ARRAY_EXP,
+						body: gobbleArguments(CBRACK_CODE)
+					};
+				},
+
 				nodes = [], ch_i, node;
 				
 			while(index < length) {
-				ch_i = exprI(index);
+				ch_i = exprICode(index);
 
 				// Expressions can be separated by semicolons, commas, or just inferred without any
 				// separators
-				if(ch_i === ';' || ch_i ===',') {
+				if(ch_i === SEMCOL_CODE || ch_i === COMMA_CODE) {
 					index++; // ignore separators
+				} else if (ch_i === OBRACK_CODE && (node = gobbleArray())) {
+					nodes.push(node);
 				} else {
 					// Try to gobble each expression individually
 					if((node = gobbleExpression())) {
@@ -7335,6 +7489,7 @@ jsep = (function() {
 		};
 	return jsep;
 }());
+
 return cjs;
 }(this));
 

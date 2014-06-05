@@ -48,6 +48,9 @@
 			this.element.addClass("ist_runtime");
 			this._command_stack = new ist.CommandStack();
 			this.$dirty_program = cjs(false);
+			this.$highlighting_objects = cjs([]);
+			this.$inspecting_hover_object = cjs(false);
+			this.$breakpoints = cjs({});
 
 			if(!this.option("root")) {
 				var root = ist.load();
@@ -57,23 +60,23 @@
 				}
 				this.option("root", root);
 			}
-			this.highlights = [];
 			if (this.option("show_edit_button")) {
 				this.button_color = "#990000";
 				this.edit_button_css = {
 					float: "right",
 					"text-decoration": "none",
 					"font-variant": "small-caps",
-					"padding-top": "0px",
+					//"padding-top": "0px",
 					position: "fixed",
-					top: display === "tablet" ? "15px" : "0px",
-					right: "70px",
+					top: (display === "tablet" || display === "phone") ? "15px" : "0px",
+					right: "0px",
 					color: this.button_color,
 					"background-color": "",
 					"font-size": "1.2em",
 					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
 					cursor: "pointer",
-					"border-bottom": "5px solid " + this.button_color
+					padding: "5px",
+					"border-bottom": ""
 				};
 				this.running_button_css = {
 					float: "right",
@@ -146,7 +149,7 @@
 				};
 				this.code_view_css = {
 					right: "25px"
-				}
+				};
 				this.inspect_css_show = {
 					display: "none"
 				};
@@ -175,8 +178,9 @@
 												}, this))
 												.on("mousedown.open_editor touchstart.open_editor", _.bind(this.open_editor, this));
 
-				this.undo_redo_buttons = $("<div />").append("<img src='src/view/editor/style/images/undo.png' width='23px' style='margin:3px'>")
-												.append("<img src='src/view/editor/style/images/redo.png' width='23px' style='margin:3px'>")
+												/*
+				this.undo_redo_buttons = $("<div />").append("<img class='undo' src='src/view/editor/style/images/undo.png' width='23px' style='margin:3px'>")
+												.append("<img class='redo' src='src/view/editor/style/images/redo.png' width='23px' style='margin:3px'>")
 												.css(this.undo_redo_css)
 												.on("mousedown.undo_redo touchstart.undo_redo", _.bind(this.undo_redo, this));
 				
@@ -190,7 +194,9 @@
 												.css(this.hidden_button_css);
 				this.inspect = $("<ul />")		.append("<li><p class='first'><img src='src/view/editor/style/images/circle_info.png' width='15px'/> Inspect</p></li>")
 												.css(this.palette_css)
-												.on("click", _.bind())
+												.on('click', _.bind(function() {
+													this.begin_inspect();
+												}, this));
 				this.palette = $("<ul />")		.append("<li><p class='rectangle'><img src='src/view/editor/style/images/square.png' width='15px'/> Rectangle</p></li>")
 												.append("<li><p class='ellipse'><img src='src/view/editor/style/images/circle.png' width='15px'> Ellipse</p></li>")
 												.append("<li><p class='text'><img src='src/view/editor/style/images/font.png' width='15px'> Text</p></li>")												
@@ -230,7 +236,8 @@
 													this.editing_button.css(this.editing_button_open_css);
 													this.palette.css(this.palette_css);
 													this.inspect.css(this.inspect_css);
-													this.undo_redo_buttons.css(this.shown_button_css);													
+													this.undo_redo_buttons.css(this.shown_button_css);
+													this.code_view = false;													
 												}, this)
 												.on('design->code', function() {
 													$("body").off("click.doSetProp");
@@ -240,13 +247,21 @@
 													this.editing_button.css(this.editing_button_css);																									
 													this.palette.css(this.palette_css_show);
 													this.inspect.css(this.inspect_css_show);																																																													
-													this.undo_redo_buttons.css(this.shown_button_css);		
-												}, this);
+													this.undo_redo_buttons.css(this.shown_button_css);	
+													this.code_view = true;	
+												}, this)
+												.startsAt("code");
 
-				var append_interval = window.setInterval(_.bind(function (element, edit_button, running_button, editing_button, palette, inspect, undo_redo_buttons) {
+				*/
+				var append_interval = window.setInterval(_.bind(function() {
+					this.element.append(this.edit_button);
+					//element.parentNode.appendChild(this.edit_button[0]);
+				}, this));
+				/*
+				_.bind(function (element, edit_button, running_button, editing_button, palette, inspect, undo_redo_buttons) {
 					if (element.parentNode) {
 						element.parentNode.appendChild(edit_button);
-						element.parentNode.appendChild(undo_redo_buttons);
+						//element.parentNode.appendChild(undo_redo_buttons);
 						element.parentNode.appendChild(running_button);
 						element.parentNode.appendChild(inspect);												
 						element.parentNode.appendChild(editing_button);
@@ -254,6 +269,7 @@
 						window.clearInterval(append_interval);
 					}
 				}, window, this.element[0], this.edit_button[0], this.running_button[0], this.editing_button[0], this.palette[0], this.inspect[0], this.undo_redo_buttons[0]), 100);
+				*/
 
 
 			}
@@ -267,19 +283,27 @@
 			}
 
 			$(window)	.on("keydown.open_editor", _.bind(this.on_key_down, this))
-						.on("beforeunload onunload unload pagehide", _.bind(this._save, this));
+						.on("beforeunload.do_save onunload.do_save unload.do_save pagehide.do_save", _.bind(this._save, this));
 
 			if(this.option("immediately_create_server_socket")) {
 				this.server_socket = this._create_server_socket();
 			}
 
 			this._add_change_listeners();
+			this._add_highlight_listeners();
 		},
 
-		undo_redo: function() {
-			this.client_socket.post_command("undo");
+/*
+		undo_redo: function(event) {
+			if (event.target.className === 'undo') {
+				this._command_stack._undo();
+			}
+			else if (event.target.className === 'redo') {
+				this._command_stack._redo();
+			}
 		},
 
+		// handles creation of new object including adding event listeners and resize handle
 		create_new_object: function(object) {
 			var stateful_obj = new ist.StatefulObj(undefined, true),
 			protos_stateful_prop = new ist.StatefulProp({can_inherit: false,
@@ -350,7 +374,7 @@
 							parent: stateful_obj_small,
 							name: "fill",
 							value: "red"
-			})			
+			});
 			var combined_command = new ist.CombinedCommand({
 				commands: [propCommandX, propCommandY]
 			});
@@ -372,32 +396,32 @@
 				});
 				sketch._set_direct_prop("screen", screen);
 
-				statechart = screen.get_own_statechart(),
-				start_state = statechart.get_start_state(),
+				statechart = screen.get_own_statechart();
+				start_state = statechart.get_start_state();
 				protos_cell = new ist.Cell({str: "svg.paper", ignore_inherited_in_first_dict: true});
 
 				protos_stateful_prop.set(start_state, protos_cell);
 			}			
 			var parent = this.option("root");
-            var prop_names = screen._get_direct_prop_names();
-            var prefix = "obj";
-            var prefix_small = "resize"
-            var len = 0;
-            if (parent instanceof ist.Dict) {
-            	if (object === "rectangle") {
-            		prefix = "rect";
-            	}
-            	else if (object === "ellipse") {
-            		prefix = "ellipse";
-            	}
-            	else if (object === "text") {
-            		prefix = "text";
-            	}
-            	else if (object === "image") {
-            		prefix = "image";
-            	}
-            }
-            var new_prop_name = prefix + "_" +  prop_names.length;
+			var prop_names = screen._get_direct_prop_names();
+			var prefix = "obj";
+			var prefix_small = "resize"
+			var len = 0;
+			if (parent instanceof ist.Dict) {
+				if (object === "rectangle") {
+					prefix = "rect";
+				}
+				else if (object === "ellipse") {
+					prefix = "ellipse";
+				}
+				else if (object === "text") {
+					prefix = "text";
+				}
+				else if (object === "image") {
+					prefix = "image";
+				}
+			}
+			var new_prop_name = prefix + "_" +  prop_names.length;
 
 			var propCommand = new ist.SetPropCommand({parent: screen, value: stateful_obj, name: new_prop_name});
 			this._command_stack._do(propCommand);
@@ -416,40 +440,17 @@
 
 				var rect_context = ist.find_or_put_contextual_obj(stateful_obj, new ist.Pointer({stack:[sketch,screen,stateful_obj_small]}));														
 				var dom_element_small = rect_context.get_dom_obj();
-				
+				dom_element_small.style.display ="none";
+				dom_element_small.id = new_prop_name_small;
 				this._add_resize_listener(stateful_obj_small, dom_element_small, stateful_obj, dom_element, object);											
 			}
 
 
 			
-			this._add_event_listeners(stateful_obj_small, dom_element_small, stateful_obj, dom_element, object);		
+			this._add_event_listeners(stateful_obj_small, dom_element_small, stateful_obj, circle_context, rect_context, dom_element, object);		
 
 		},
-		show_drag_over: function() {
-			$(document.body).addClass("drop_target");
-			if(!this.hasOwnProperty("overlay")) {
-				this.overlay = $("<div />")	.addClass("overlay")
-											.css({
-												"background-color": "#555",
-												"opacity": "0.8",
-												"position": "fixed",
-												"left": "0px",
-												"top": "0px",
-												"width": "100%",
-												"height": "100%",
-												"pointer-events": "none",
-												"border": "10px dashed #DDD",
-												"box-sizing": "border-box"
-											})
-											.appendTo(document.body);
-			}
-		},
-
-		hide_drag_over: function() {
-			$(document.body).removeClass("drop_target");
-			this.overlay.remove();
-			delete this.overlay;
-		},
+		*/
 
 		_setOption: function(key, value) {
 			if(key === "root") {
@@ -486,13 +487,32 @@
 		},
 
 		on_key_down: function(event) {
-			if(event.keyCode === 69 && event.altKey && event.metaKey) {
-				this.open_editor();
+			if(event.altKey && event.metaKey) {
+				if(event.keyCode === 69) { // e
+					this.open_editor();
+				} else if(event.keyCode === 84) { // i
+					this.begin_inspect();
+					event.preventDefault();
+					event.stopPropagation();
+				}
 			}
 		},
 
 		_destroy: function () {
 			this._super();
+			this.close_editor();
+			$(window).off(".do_save");
+			this._remove_highlight_listeners();
+
+			this.$highlighting_objects.destroy(true);
+			delete this.$highlighting_objects;
+			this.$inspecting_hover_object.destroy(true);
+			delete this.$inspecting_hover_object;
+
+			this.$dirty_program.destroy(true);
+			delete this.$dirty_program;
+			this.$breakpoints.destroy(true);
+			delete this.$breakpoints;
 
 			this._remove_change_listeners();
 			this.element.removeClass("ist_runtime");
@@ -513,38 +533,94 @@
 			delete this.options;
 		},
 
+		_add_highlight_listeners: function () {
+			var old_highlighting_elements = [],
+				svg_followers = [];
+			this._highlight_fn = cjs.liven(function() {
+				var highlighting_objects = this.$highlighting_objects.toArray(),
+					highlighting_elements = _	.chain(highlighting_objects)
+												.map(function(cobj) {
+													if(cobj.is_template()) {
+														return cobj.instances();
+													} else {
+														return cobj;
+													}
+												})
+												.flatten()
+												.map(function(obj) {
+													if(!obj._destroyed) {
+														return obj.get_dom_obj();
+													}
+												})
+												//.compact()
+												.flatten()
+												.value()
+												.concat(this.$inspecting_hover_object.get());
+				highlighting_elements = _.compact(highlighting_elements);
+				var diff = _.diff(old_highlighting_elements, highlighting_elements);
+
+				_.each(diff.added, function(info) {
+					var dom_node = info.item;
+					$(dom_node).addClass("highlight");
+					if(dom_node instanceof SVGElement) {
+						var bounding_rect = dom_node.getBoundingClientRect(),
+							tagName = dom_node.tagName,
+							follower = $("<div />").appendTo(document.body)
+													.addClass("highlight svg_follow")
+													.css({
+														left: bounding_rect.left+"px",
+														top: bounding_rect.top+"px",
+														width: bounding_rect.width+"px",
+														height: bounding_rect.height+"px",
+														borderRadius: tagName.toUpperCase() === "CIRCLE" ? bounding_rect.width/2+"px" : "0px"
+													});
+						svg_followers.push({
+							following: dom_node,
+							follower: follower
+						});
+					}
+				});
+				_.each(diff.removed, function(info) {
+					var dom_node = info.from_item;
+					$(dom_node).removeClass("highlight");
+					if(dom_node instanceof SVGElement) {
+						_.each(svg_followers, function(info, index) {
+							if(info.following === dom_node) {
+								info.follower.remove();
+								svg_followers.splice(index, 1);
+							}
+						});
+					}
+				});
+
+				old_highlighting_elements = highlighting_elements;
+			}, {
+				context: this,
+				on_destroy: function() {
+					_.each(old_highlighting_elements, function(dom_node) {
+						$(dom_node).removeClass("highlight");
+						if(dom_node instanceof SVGElement) {
+							_.each(svg_followers, function(info, index) {
+								if(info.following === dom_node) {
+									info.follower.remove();
+									svg_followers.splice(index, 1);
+								}
+							});
+						}
+					});
+				}
+			});
+		},
+
+		_remove_highlight_listeners: function () {
+			this._highlight_fn.destroy();
+		},
+
 		_add_change_listeners: function () {
 			var root_dict = this.option("root");
 			var root_contextual_object = ist.find_or_put_contextual_obj(root_dict);
 
-
 			if(!ist.__empty_files) {
-			/*
-				if(!this._raphael_fn) {
-					this._raphael_fn = cjs.liven(function () {
-						var paper_attachment = root_contextual_object.get_attachment_instance("paper");
-						var dom_element = paper_attachment.get_dom_obj();
-
-						if(display === "phone") {
-							$("svg", dom_element).css("background-color", "black");
-						} else if(display === "tablet") {
-							$("svg", dom_element).css("background-color", "black");
-						} else {
-							$("svg", dom_element).css("background-color", "white");
-						}
-
-						if (this.element.children().is(dom_element)) {
-							this.element.children().not(dom_element).remove();
-						} else {
-							this.element.children().remove();
-							this.element.append(dom_element);
-						}
-					}, {
-						context: this,
-						pause_while_running: true
-					});
-				}
-				*/
 				this._dom_tree_fn = cjs.liven(function () {
 					var dom_attachment = root_contextual_object.get_attachment_instance("dom");
 					var dom_element = dom_attachment.get_dom_obj();
@@ -558,16 +634,6 @@
 					context: this,
 					pause_while_running: true
 				});
-			}
-			if(!this._update_fn) {
-			/*
-				ist.update_current_contextual_objects(root_dict, true);
-				this._update_fn = cjs.liven(function() {
-					ist.update_current_contextual_objects(root_dict);
-				}, {
-					pause_while_running: true
-				});
-				*/
 			}
 		},
 		
@@ -585,24 +651,11 @@
 				delete this._update_fn;
 			}
 		},
-
-
-		// fields and values are arrays, must have the same length
-		_save_state_multiple_fields: function(element, fields, values) {
-			if (fields.length != values.length) {
-				//@TODO, make error handling better
-				console.log("ERROR, SHOULD NOT HAVE REACHED HERE");
-			}
-			for (var i = 0; i < fields.length; i++) {
-				_save_state_single_field(element, fields[i], values[i]);
-			}
-
-		},
-
 		/*
-		field is a string
-		value need not be a string
-		*/
+
+		// field is a string
+		// value need not be a string
+		// saves a single state 
 		_save_state_single_field: function(element, field, value) {
 			var field_stateful_prop = new ist.StatefulProp({statechart_parent: element});
 			var string_value = value + '';
@@ -612,7 +665,7 @@
 			start_state = statechart.get_start_state();
 
 			field_stateful_prop.set(start_state, field_cell);
-			//element.set_prop(field, field_stateful_prop);				  
+			//element.set_prop(field, field_stateful_prop);
 
 			var command = new ist.SetPropCommand({
 				parent: element,
@@ -627,15 +680,14 @@
 		},
 
 		_add_resize_listener: function(rect_element, rect_dom_element, element, dom_element, obj) {
-	      	var that = this;	   
-	      	var element_initial_state = null;
-	      	var cells = false;
-
+			var that = this;
+			var element_initial_state = null;
+			var cells = false;
 			$(rect_dom_element).on("mousedown", function(ev) {
 				if (obj === 'rectangle' || obj === 'image') {
 					element_initial_state = {
 						origHeight: dom_element.height.baseVal.value,
-			    		origWidth: dom_element.width.baseVal.value
+						origWidth: dom_element.width.baseVal.value
 					};
 				}
 
@@ -645,43 +697,52 @@
 						origRadiusX: dom_element.rx.baseVal.value
 					}
 				}
-		         
-		         ev=ev||event;
-				 element_initial_state['origClickX'] = ev.clientX;
-			     element_initial_state['origClickY'] = ev.clientY;
+
+				ev=ev||event;
+				element_initial_state['origClickX'] = ev.clientX;
+				element_initial_state['origClickY'] = ev.clientY;
 			});
 
 			$('body').on("mouseup", function(ev) {
-		        if (element_initial_state) {
-		        	if (obj === 'rectangle' || obj === 'image') {
-		        		that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);
-		       		}
+				if (element_initial_state && that.code_view) {
+					if (obj === 'rectangle' || obj === 'image') {
+						var new_cells = that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);
 
-		       		else if (obj === 'ellipse') {
-		       			var new_cells = that._resize_mouse_move_ellipse(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);	
+						if (new_cells) {
+							cells = new_cells;
+						}
+					}
 
-		       			if(new_cells) {
-		       				cells = new_cells;
-		       			}
-		       		}
+					else if (obj === 'ellipse') {
+						var new_cells = that._resize_mouse_move_ellipse(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);	
 
-		          element_initial_state = null;
-		        }
+						if(new_cells) {
+							cells = new_cells;
+						}
+					}
+
+					element_initial_state = null;
+					cells = false;
+				}
 			});		
 
 			$('body').on("mousemove", function(ev) {	
-		        if(element_initial_state) {
-		        	if (obj === 'rectangle' || obj === 'image') {
-		        		that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);
-		       		}
+				if(element_initial_state && that.code_view) {
+					if (obj === 'rectangle' || obj === 'image') {
+						var new_cells = that._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);
 
-		       		else if (obj === 'ellipse') {
-		       			var new_cells = that._resize_mouse_move_ellipse(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);	
-		       			if(new_cells) {
-		       				cells = new_cells;
-		       			}
-		       		}
-		        }
+						if (new_cells) {
+							cells = new_cells;
+						}
+					}
+
+					else if (obj === 'ellipse') {
+						var new_cells = that._resize_mouse_move_ellipse(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells);	
+						if(new_cells) {
+							cells = new_cells;
+						}
+					}
+				}
 			});					
 		},
 
@@ -691,86 +752,141 @@
 
 			var radius_x = element_initial_state.origRadiusX;
 			var radius_y = element_initial_state.origRadiusY;
-			var new_radius_x = Math.max((ev.clientX - element_initial_state.origClickX + radius_x), 15);
-			var new_radius_y = Math.max((ev.clientY - element_initial_state.origClickY + radius_y), 15);
+
+			var new_radius_x = Math.max((ev.clientX - element_initial_state.origClickX + radius_x), 15) + '';
+			var new_radius_y = Math.max((ev.clientY - element_initial_state.origClickY + radius_y), 15) + '';
+
 			var cx = dom_element.cx.baseVal.value;
 			var cy = dom_element.cy.baseVal.value;
-			var rect_x = cx + new_radius_x;
-			var rect_y = cy + new_radius_y;
+
+			var rect_x = cx + parseInt(new_radius_x) + '';
+			var rect_y = cy + parseInt(new_radius_y) + '';
 
 			if(cells) {
 				//...set cell code
 				var change_cell_commands = {
-					rx: ist.ChangeCellCommand({
+					rx: new ist.ChangeCellCommand({
 						cell: cells.rx,
 						str: new_radius_x
 					}),
-					ry: ist.ChangeCellCommand({
+					ry: new ist.ChangeCellCommand({
 						cell: cells.ry,
 						str: new_radius_y
 					}),
-					x: ist.ChangeCellCommand({
+					x: new ist.ChangeCellCommand({
 						cell: cells.x,
 						str: rect_x
 					}),
-					y: ist.ChangeCellCommand({
+					y: new ist.ChangeCellCommand({
 						cell: cells.y,
 						str: rect_y
 					})
 				};
 				var combined_command = new ist.CombinedCommand({
-				 	commands: _.values(change_cell_commands)
+					commands: _.values(change_cell_commands)
 				});
 				
-				var combined_command_red = new ist.CombinedCommand
-
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 				return false;
 			} else {
 				var rx_info = this._save_state_single_field(element, 'rx', new_radius_x),
 					ry_info = this._save_state_single_field(element, 'ry', new_radius_y),
 					x_info = this._save_state_single_field(rect_element, 'x', rect_x), // cx - (rect_width/2)
 					y_info = this._save_state_single_field(rect_element, 'y', rect_y); // cy - (rect_height/2)
+
 				var cells = {
 					rx: rx_info.cell,
 					ry: ry_info.cell,
 					x: x_info.cell,
 					y: y_info.cell,
 				};
-				
+
+				var commands = {
+					rx: rx_info.command,
+					ry: ry_info.command,
+					x: x_info.command,
+					y: y_info.command
+				};
 				var combined_command = new ist.CombinedCommand({
-				 	commands: _.pluck(_.values(change_cell_commands), "command")
+					commands: _.values(commands)
 				});
 
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 				return cells;
 			}
 		},
 
-		_resize_mouse_move_rectangle: function(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element) {
+		_resize_mouse_move_rectangle: function(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element, cells) {
 			var rect_width = rect_dom_element.width.baseVal.value;
 			var rect_height = rect_dom_element.height.baseVal.value;
+
 			var width = element_initial_state.origWidth;
 			var height = element_initial_state.origHeight;
+
 			// Remove magic number
 			var new_width = Math.max((ev.clientX - element_initial_state.origClickX + width), 20);
 			var new_height = Math.max((ev.clientY - element_initial_state.origClickY + height), 20);
-			var new_red_x = (dom_element['x'].baseVal.value + new_width - rect_width) ;
-			var new_red_y = (dom_element['y'].baseVal.value + new_height - rect_height) ;
 
-			this._save_state_single_field(element, 'width', new_width);
-			this._save_state_single_field(element, 'height', new_height);
-			this._save_state_single_field(rect_element, 'x', new_red_x);
-			this._save_state_single_field(rect_element, 'y', new_red_y);
+			var new_red_x = (dom_element['x'].baseVal.value + new_width - rect_width) + '';
+			var new_red_y = (dom_element['y'].baseVal.value + new_height - rect_height) + '';
+
+			if(cells) {
+				//...set cell code
+
+				var change_cell_commands = {
+					rx: new ist.ChangeCellCommand({
+						cell: cells.rx,
+						str: (new_width + '')
+					}),
+					ry: new ist.ChangeCellCommand({
+						cell: cells.ry,
+						str: (new_height + '')
+					}),
+					x: new ist.ChangeCellCommand({
+						cell: cells.x,
+						str: new_red_x
+					}),
+					y: new ist.ChangeCellCommand({
+						cell: cells.y,
+						str: new_red_y
+					})
+				};
+
+				var combined_command = new ist.CombinedCommand({
+					commands: _.values(change_cell_commands)
+				});
+				
+				this._command_stack._do(combined_command, true);
+				return false;
+			} else {
+				var rx_info = this._save_state_single_field(element, 'width', new_width),
+					ry_info = this._save_state_single_field(element, 'height', new_height),
+					x_info = this._save_state_single_field(rect_element, 'x', new_red_x), // cx - (rect_width/2)
+					y_info = this._save_state_single_field(rect_element, 'y', new_red_y); // cy - (rect_height/2)
+
+				var cells = {
+					rx: rx_info.cell,
+					ry: ry_info.cell,
+					x: x_info.cell,
+					y: y_info.cell,
+				};
+
+				var commands = {
+					rx: rx_info.command,
+					ry: ry_info.command,
+					x: x_info.command,
+					y: y_info.command
+				};
+				var combined_command = new ist.CombinedCommand({
+					commands: _.values(commands)
+				});
+
+				this._command_stack._do(combined_command, true);
+				return cells;
+			}
 
 		},
 
-/*		_resize_mouse_move: function(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element) {
-			ev = ev || event;
-
-			this._resize_mouse_move_rectangle(ev, element_initial_state, element, rect_element, dom_element, rect_dom_element);			
-
-		}, */
 		_mouse_move : function(ev, nameX, nameY, dragData, dragDataRed, element, rect_element, cells) {
 			ev = ev || event;	
 			var new_position_x = ev.clientX - dragData.x;
@@ -784,7 +900,7 @@
 					commands: _.pluck([x_info_red, y_info_red], "command")
 				});
 
-				this._command_stack._do(combined_command_red);
+				this._command_stack._do(combined_command_red, true);
 			}
 
 			if(cells) {
@@ -801,10 +917,10 @@
 				};
 
 				var combined_command = new ist.CombinedCommand({
-				 	commands: _.values(change_cell_commands)
+					commands: _.values(change_cell_commands)
 				});
 
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 
 				return false;
 			} else {
@@ -817,29 +933,55 @@
 				};
 				
 				var combined_command = new ist.CombinedCommand({
-				 	commands: _.pluck([x_info, y_info], "command")
+					commands: _.pluck([x_info, y_info], "command")
 				});
 
-				this._command_stack._do(combined_command);
+				this._command_stack._do(combined_command, true);
 				return cells;
 			}						
-
-
-
 		},
 
-		_add_event_listeners: function(rect_element, rect_dom_element, element, dom_element, obj) {
-	      	var touchedElement,dragData,dragDataRed=null;
-	      	var objectX, objectY = 0;
-	      	var redObjectX, redObjectY = 0;	      	
-	      	var nameX, nameY = "";
-	      	var that = this;
-	      	var cells = false;
-	      	if (rect_dom_element) {
-	      		var red_square_size = rect_dom_element.width.baseVal.value;      				      		      		
-	      	}
+		_add_event_listeners: function(rect_element, rect_dom_element, element, cobj, cobj_rect, dom_element, obj) {
+			var touchedElement,dragData,dragDataRed=null;
+			var objectX, objectY = 0;
+			var redObjectX, redObjectY = 0;
+			var nameX, nameY = "";
+			var that = this;
+			var cells = false;
+			var sketch = this.option("root");
+			var screen = sketch._get_direct_prop('screen');
+			var names;
+
+			if (rect_dom_element) {
+				var red_square_size = rect_dom_element.width.baseVal.value;
+			}
 			$(dom_element).on("mousedown", function(ev) {
-				touchedElement = this;
+				if (that.code_view) {					
+					touchedElement = this;
+					names = screen._get_direct_prop_names();
+					var command = new ist.MovePropCommand({
+						parent: screen,
+						name: cobj.get_name(),
+						to: names.length - 1
+					});	
+					that._command_stack._do(command);
+					for (var i = 0; i < names.length; i++) {
+						if (names[i].indexOf("resize") > -1) {
+							$('#'+names[i]).hide();
+						}
+					}
+
+					if(rect_dom_element && cobj_rect) {
+						var command_rect = new ist.MovePropCommand({
+							parent: screen,
+							name: cobj_rect.get_name(),
+							to: names.length - 1
+						});	
+						that._command_stack._do(command_rect);	
+						rect_dom_element.style.display = "block";					
+					}
+				}
+
 				if(!dragData) {
 					if (obj === 'rectangle' || obj === 'text' || obj === 'image') {
 						nameX = 'x';
@@ -848,7 +990,7 @@
 
 					else if (obj === 'ellipse' || obj === 'circle') {
 						nameX = 'cx';
-						nameY = 'cy';		          
+						nameY = 'cy';
 					}
 					if (obj !== 'text') {
 						dragData={
@@ -867,30 +1009,32 @@
 							y: ev.clientY - touchedElement[nameY].baseVal.getItem(0).value
 						}						
 					}
-		        };
+				}
 			});
 
 			$(dom_element).on("mouseup", function(ev) {
-		        if(dragData) {
-		          var new_cells = that._mouse_move(ev, nameX, nameY, dragData, dragDataRed, element, rect_element, cells);
-		          if (new_cells) {
-		          	cells = new_cells;
-		          }
+				if(dragData && that.code_view) {
+					var new_cells = that._mouse_move(ev, nameX, nameY, dragData, dragDataRed, element, rect_element, cells);
+					if (new_cells) {
+						cells = new_cells;
+					}
 
-		          dragData = null;
-				  dragDataRed = null;		          
-		        }
-			});			
+					dragData = null;
+					dragDataRed = null;
+					that._command_stack.complete_transient();
+				}
+			});
 
 			$('body').on("mousemove", function(ev) {	
-		        if(dragData) {			
-				  var new_cells = that._mouse_move(ev, nameX, nameY, dragData,dragDataRed,element,rect_element, cells);
-		          if (new_cells) {
-		          	cells = new_cells;
-		          }				  
-		        }
+				if(dragData && that.code_view) {			
+					var new_cells = that._mouse_move(ev, nameX, nameY, dragData,dragDataRed,element,rect_element, cells);
+					if (new_cells) {
+						cells = new_cells;
+					}
+				}
 			});							
 		},
+		*/
 
 		_create_server_socket: function() {
 			var root = this.option("root");
@@ -977,6 +1121,21 @@
 
 				this._save();
 				ist.rename(from_name, to_name, storage_type);
+			}, this).on("add_highlight", function(event) {
+				var cobj_id = event.cobj_id,
+					cobj = ist.find_uid(cobj_id);
+				if(cobj) {
+					this.$highlighting_objects.push(cobj);
+				}
+			}, this).on("remove_highlight", function(event) {
+				var cobj_id = event.cobj_id,
+					cobj = ist.find_uid(cobj_id);
+				if(cobj) {
+					var index = this.$highlighting_objects.indexOf(cobj);
+					if(index >= 0) {
+						this.$highlighting_objects.splice(index, 1);
+					}
+				}
 			}, this)
 			;
 			return server_socket;
@@ -1009,10 +1168,16 @@
 				}
 			}
 		},
-		open_editor: function (event) {																																																														
-			this.editing_button.css(this.shown_button_css);
-			this.running_button.css(this.shown_button_css);
-			this.undo_redo_buttons.css(this.shown_button_css);
+		open_editor: function (event, cobj) {
+			if(this.editing_button) {
+				this.editing_button.css(this.shown_button_css);
+			}
+			if(this.running_button) {
+				this.running_button.css(this.shown_button_css);
+			}
+			if(this.undo_redo_buttons) {
+				this.undo_redo_buttons.css(this.shown_button_css);
+			}
 			if(event) {
 				event.preventDefault();
 				event.stopPropagation();
@@ -1021,7 +1186,7 @@
 				this.editor_window.focus();
 			} else {
 				var on_comm_mechanism_load = function(communication_mechanism) {
-					this.server_socket = this.server_socket || this._create_server_socket();
+					this.server_socket = this.server_socket || this._create_server_socket(cobj);
 					this.server_socket.set_communication_mechanism(communication_mechanism);
 
 					if (this.server_socket.is_connected()) { // It connected immediately
@@ -1029,7 +1194,6 @@
 							this.edit_button.addClass("active").css(this.edit_active_css);
 						}
 					}
-					$(window).on("beforeunload.close_editor", _.bind(this.close_editor, this));
 					this.element.trigger("editor_open");
 				};
 
@@ -1095,10 +1259,75 @@
 		},
 
 		cleanup_closed_editor: function () {
+			this.$highlighting_objects.setValue([]);
 			if(this.edit_button) {
 				this.edit_button.removeClass("active").css(this.edit_button_css);
 			}
 			delete this.editor_window;
 		},
+		begin_inspect: function () {
+			if(this._inspecting) {
+				this.cancel_inspect();
+			} else {
+				this._inspecting = true;
+				this._inspecting_target = false;
+
+				this._on_mover = _.bind(function(mo_event) {
+					var target = this._inspecting_target = mo_event.target;
+					this.$inspecting_hover_object.set(target);
+				}, this);
+				this._on_mout = _.bind(function(mo_event) {
+					if(mo_event.target === this._inspecting_target) {
+						this.$inspecting_hover_object.set(false);
+						this._inspecting_target = false;
+					}
+				}, this);
+				this._on_click = _.bind(function(c_event) {
+					var target = c_event.target,
+						cobj = target.__ist_contextual_object__;
+					this.inspect_cobj(cobj);
+				}, this);
+
+				$(this.element).get(0).addEventListener("mouseover", this._on_mover, true);
+				$(this.element).get(0).addEventListener("mouseout", this._on_mout, true);
+				$(this.element).get(0).addEventListener("click", this._on_click, true);
+				$(window).on("keydown.inspector", _.bind(function(kd_event) {
+					if(kd_event.keyCode === 27) { // esc
+						this.cancel_inspect();
+					} else if(kd_event.keyCode === 13) { // enter
+						if(this._inspecting_target) {
+							var cobj = this._inspecting_target.__ist_contextual_object__;
+
+							this.inspect_cobj(cobj);
+						}
+					}
+				}, this));
+			}
+
+		},
+		cancel_inspect: function() {
+			if(this._inspecting) {
+				this._inspecting = false;
+				this._inspecting_target = false;
+				this.$inspecting_hover_object.set(false);
+
+				$(this.element).get(0).removeEventListener("mouseover", this._on_mover, true);
+				$(this.element).get(0).removeEventListener("mouseout", this._on_mout, true);
+				$(this.element).get(0).removeEventListener("click", this._on_click, true);
+				$(window).off("keydown.inspector");
+			}
+		},
+		inspect_cobj: function(cobj) {
+			if (this.editor_window) {
+				this.server_socket.post({
+					type: "inspect",
+					cobj_id: cobj.id()
+				});
+				this.editor_window.focus();
+			} else {
+				this.open_editor();
+			}
+			this.cancel_inspect();
+		}
 	});
 }(interstate, jQuery));

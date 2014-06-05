@@ -56,11 +56,11 @@
 				from.on("active", this.enter_listener, this);
 				from.on("inactive", this.leave_listener, this);
 
-				_.defer(function (self) {
-					if (from.is_active()) {
-						self.enter_listener();
-					}
-				}, this);
+				//_.defer(function (self) {
+				if (from.is_active()) {
+					this.enter_listener();
+				}
+				//}, this);
 			}
 		};
 		proto.enter_listener = function() {
@@ -77,14 +77,14 @@
 			}
 		};
 		proto.notify = function () {
-			ist.event_queue.wait();
+			//ist.event_queue.wait();
 			this.fire({
 				type: "timeout",
 				delay: this.delay,
 				current_time: (new Date()).getTime(),
 				created_at: this.created_at
 			});
-			ist.event_queue.signal();
+			//ist.event_queue.signal();
 		};
 		proto.destroy = function () {
 			if(this._transition) {

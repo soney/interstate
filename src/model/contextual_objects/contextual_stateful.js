@@ -16,10 +16,11 @@
 		var proto = My.prototype;
 
 		proto.initialize = function() {
-			My.superclass.initialize.apply(this, arguments);
 			this.statecharts_per_proto = new RedMap({
 				hash: "hash"
 			});
+			My.superclass.initialize.apply(this, arguments);
+			if(this.constructor === My) { this.flag_as_initialized(); }
 		};
 
 		proto.get_own_statechart = function () {
@@ -73,13 +74,34 @@
 		};
 
 		proto.destroy = function () {
-			if(this.constructor === My) { this.emit_begin_destroy(); }
+			cjs.wait();
+			if(this.constructor === My) { this.begin_destroy(true); }
+
 			this.statecharts_per_proto.forEach(function(statechart) {
 				statechart.destroy(true);
 			});
+
 			this.statecharts_per_proto.destroy(true);
 			delete this.statecharts_per_proto;
 			My.superclass.destroy.apply(this, arguments);
+			cjs.signal();
+		};
+
+		proto.pause  = function(recursive) {
+			My.superclass.pause.apply(this, arguments);
+
+			var statecharts = this.get_statecharts();
+			_.each(statecharts, function(statechart) {
+				statechart.pause();
+			});
+		};
+		proto.resume = function(recursive) {
+			My.superclass.resume.apply(this, arguments);
+
+			var statecharts = this.get_statecharts();
+			_.each(statecharts, function(statechart) {
+				statechart.resume();
+			});
 		};
 	}(ist.ContextualStatefulObj));
 }(interstate));

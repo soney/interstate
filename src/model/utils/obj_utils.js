@@ -44,7 +44,7 @@
 		_.each(builtins, function (builtin, name) {
 			var setter_name = builtin.setter_name || "set_" + name;
 			if (_.isFunction(builtin.start_with)) {
-				obj._builtins[name] = builtin.start_with();
+				obj._builtins[name] = builtin.start_with.call(obj);
 			}
 			if (builtin.settable === false) {
 				if (!_.isFunction(builtin.start_with)) {
@@ -69,7 +69,7 @@
 
 		_.each(builtins, function (builtin, name) {
 			if (_.isFunction(builtin.destroy)) {
-				builtin.destroy(obj._builtins[name]);
+				builtin.destroy.call(obj, obj._builtins[name]);
 			}
 			delete obj._builtins[name];
 		});
