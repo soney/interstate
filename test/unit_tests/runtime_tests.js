@@ -868,43 +868,43 @@
 						B = cobj.prop_val("B"),
 						C = cobj.prop_val("C");
 
-					deepEqual(cobj.prop_val("query"), [B]);
+					deepEqual(cobj.prop_val("query").value(), [B]);
 
 					env	.cd("B")
 						.set("(prototypes)", "(start)", "")
 						.top();
 
-					deepEqual(cobj.prop_val("query"), []);
+					deepEqual(cobj.prop_val("query").value(), []);
 
 					env	.cd("C")
 						.set("(prototypes)", "(start)", "B")
 						.top();
 
-					deepEqual(cobj.prop_val("query"), []);
+					deepEqual(cobj.prop_val("query").value(), []);
 
 					env	.cd("B")
 						.set("(prototypes)", "(start)", "[A]")
 						.top();
 
-					deepEqual(cobj.prop_val("query"), [B, C]);
+					deepEqual(cobj.prop_val("query").value(), [B, C]);
 
 					env	.cd("C")
 						.set("(prototypes)", "(start)", "[B, A]")
 						.top();
 
-					deepEqual(cobj.prop_val("query"), [B, C]);
+					deepEqual(cobj.prop_val("query").value(), [B, C]);
 
 					env	.cd("B")
 						.set("(prototypes)", "(start)", "[]")
 						.top();
 
-					deepEqual(cobj.prop_val("query"), [C]);
+					deepEqual(cobj.prop_val("query").value(), [C]);
 
 					env	.cd("C")
 						.set("(prototypes)", "(start)", "B")
 						.top();
 
-					deepEqual(cobj.prop_val("query"), []);
+					deepEqual(cobj.prop_val("query").value(), []);
 				}
 			}]
 		},

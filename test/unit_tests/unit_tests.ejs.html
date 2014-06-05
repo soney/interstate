@@ -14,12 +14,11 @@
 	<div id="qunit-fixture"></div>
 	<script type="text/javascript" src="resources/qunit.js"></script>
 	<script type="text/javascript">
+		QUnit.config.notrycatch = false;
+
 		QUnit.config.autostart = false;
 		QUnit.config.reorder = true;
 		QUnit.config.hidepassed = false;
-
-		QUnit.config.notrycatch = false;
-
 		QUnit.config.benchmarks = true;
 		QUnit.config.profile_benchmarks = true;
 		/*

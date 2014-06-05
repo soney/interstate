@@ -112,7 +112,6 @@
     
         _.each(map_funcs, function (func, name) {
             proto[name] = function () {
-				console.log(this);
                 var args = _.toArray(arguments);
                 return this.map(function () {
                     return func.apply(this, (_.toArray(arguments)).concat(args));
@@ -219,11 +218,15 @@
 			};
 
 		proto.inheritsFrom = function(cobj) {
-			var obj = cobj.get_object(),
-				flat_objs = flatten_containment_hierarchy(this.value());
-			return _.filter(flat_objs, function(cobj) {
-				return cobj.inherits_from(obj);
-			});
+			var flat_objs = flatten_containment_hierarchy(this.value()),
+				value = _.filter(flat_objs, function(x) {
+					return x.inherits_from(cobj);
+				}),
+				new_query = new My({
+					value: value,
+					parent_query: this
+				});
+            return new_query;
 		};
     }(ist.Query));
 

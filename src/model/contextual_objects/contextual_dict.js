@@ -24,14 +24,21 @@
 			return a === b;
 		}
 	};
-	var each_proto_val = function (x) {
-		if (x && x instanceof ist.ContextualDict) {
-			return x.get_object();
-		} else {
-			return false;
-		}
-	};
-	ist.Dict.get_proto_vals = function (dict, ptr) {
+	var get_cobj_object = function (x) {
+			if (x && x instanceof ist.ContextualDict) {
+				return x.get_object();
+			} else {
+				return false;
+			}
+		},
+		is_cobj = function (x) {
+			if (x && x instanceof ist.ContextualDict) {
+				return x;
+			} else {
+				return false;
+			}
+		};
+	ist.Dict.get_proto_vals = function (dict, ptr, get_cobjs) {
 		var rv = new RedSet({
 			value: [dict],
 			hash: "hash"
@@ -41,6 +48,9 @@
 		var i = 0;
 		while (i < rv.len()) {
 			dict = rv.item(i);
+			if(get_cobjs && dict instanceof ist.ContextualDict) {
+				dict = dict.get_object();
+			}
 			var proto_obj = dict.direct_protos();
 			var proto_val;
 			if (cjs.isArrayConstraint(proto_obj)) {
@@ -55,7 +65,7 @@
 				proto_val = [];
 			}
 			proto_val = _	.chain(_.isArray(proto_val) ? proto_val : [proto_val])
-							.map(each_proto_val)
+							.map(get_cobjs ? is_cobj : get_cobj_object)
 							.compact()
 							.value();
 			rv.add_at.apply(rv, ([i + 1].concat(proto_val)));
@@ -484,9 +494,10 @@
 			}
 		};
 
-		proto._inherits_from = function(obj) {
-			var protos = this.get_all_protos();
-			return _.contains(protos, obj);
+		proto._inherits_from = function(cobj) {
+			var proto_cobjs = ist.Dict.get_proto_vals(this.get_object(), this.get_pointer(), true),
+				rv = _.contains(proto_cobjs, cobj);
+			return rv;
 		};
 
 		proto.is_instance = function () {
