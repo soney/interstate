@@ -891,6 +891,8 @@
 		var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1,
 			link;
 
+/*
+		console.log(name);
 		if(is_chrome) {
 			link = document.createElement("a");
 			link.download = name;
@@ -903,5 +905,12 @@
 			link.href = "data:," + data;
 			eventFire(link, "click");
 		}
+		*/
+		link = $("<a />").attr({
+				href: "data:text/plain;charset=utf-8," + data,
+				alt: name,
+				download: name
+			});
+		eventFire(link[0], "click");
 	}
 }(interstate, jQuery));
