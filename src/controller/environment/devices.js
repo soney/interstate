@@ -188,30 +188,29 @@
 					if(touches.has(identifier)) {
 						touch = touches.get(identifier);
 
-
-						_.each(touch_props, function(prop_name) {
-							var val = ct[prop_name];
-
-							touch[prop_name].set(val);
-						});
-					} else {
-						touch_start_obj = {};
-						touch = cjs({});
-
 						_.each(touch_props, function(prop_name) {
 							var val = ct[prop_name];
 
 							touch.put(prop_name, val);
-							touch_start_obj[prop_name] = val;
 						});
-
-						touch.start = touch_start_obj;
-						touch.end = false;
-						touch.startTime = getTime();
-						touch.endTime = false;
-
+					} else {
+						touch_start_obj = {};
+						touch = cjs({});
 						touches.put(identifier, touch);
 
+						_.each(touch_props, function(prop_name) {
+							var val = ct[prop_name];
+							touch.put(prop_name, val);
+							touch_start_obj[prop_name] = val;
+						});
+						touch	.put('start', touch_start_obj)
+								.put('end', false)
+								.put('startTime', getTime())
+								.put('endTime', false)
+								.put('duration', false);
+
+					}
+					if(touch_ids.indexOf(identifier) < 0) {
 						touch_ids.push(identifier);
 					}
 				});
@@ -223,20 +222,15 @@
 				cjs.wait();
 
 				_.each(event.changedTouches, function(ct) {
-					var identifier = ct.identifier,
-						touch_start_obj = {};
+					var identifier = ct.identifier;
 
 					if(touches.has(identifier)) {
 						var touch = touches.get(identifier);
 
-						if(index >= 0) {
-							_.each(touch_props, function(prop_name) {
-								var val = ct[prop_name];
-								touch.put(prop_name, val);
-							});
-						} else {
-							console.error("Could not find touch");
-						}
+						_.each(touch_props, function(prop_name) {
+							var val = ct[prop_name];
+							touch.put(prop_name, val);
+						});
 					} else {
 						console.error("Could not find changed touch");
 					}
@@ -265,9 +259,9 @@
 
 							touch_ids.splice(index, 1);
 
-							touch.end = touch_end_obj;
-							touch.endTime = getTime();
-							touch.duration = touch.endTime - touch.startTime;
+							touch	.put('end', touch_end_obj)
+									.put('endTime', getTime())
+									.put('duration', touch.get('endTime')-touch.get('startTime'));
 						} else {
 							console.error("Could not find touch");
 						}
@@ -298,10 +292,10 @@
 				cjs.signal();
 			},
 			touch_count = cjs(function() {
-				return touch_infos.identifier.length();
+				return touch_ids.length();
 			}),
 			getTouch = function(touch_number) {
-				var touch_identifier = touch_infos.identifier.item(touch_number);
+				var touch_identifier = touch_ids.item(touch_number);
 				if(_.isNumber(touch_identifier)) {
 					return getTouchByID(touch_identifier);
 				} else {
@@ -311,7 +305,6 @@
 			getTouchByID = function(touch_id) {
 				var touch = touches.get(touch_id);
 				if(touch) {
-					console.log(touch);
 					return touch;
 				} else {
 					return false;
