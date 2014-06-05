@@ -847,6 +847,67 @@
 				}
 			}]
 		},
+		{
+			name: "Query Inherits From",
+			expect: 7,
+			create_builtins: ["functions"],
+			steps: [{
+				setup: function(env) {
+					env	.set("A", "<stateful>")
+						.set("B", "<stateful>")
+						.cd("B")
+							.set("(prototypes)", "(start)", "A")
+							.up()
+						.set("C", "<stateful>")
+						.set("query", "find().inheritsFrom(A)")
+						;
+				},
+				test: function(env, runtime) {
+					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
+						A = cobj.prop_val("A"),
+						B = cobj.prop_val("B"),
+						C = cobj.prop_val("C");
+
+					deepEqual(cobj.prop_val("query"), [B]);
+
+					env	.cd("B")
+						.set("(prototypes)", "(start)", "")
+						.top();
+
+					deepEqual(cobj.prop_val("query"), []);
+
+					env	.cd("C")
+						.set("(prototypes)", "(start)", "B")
+						.top();
+
+					deepEqual(cobj.prop_val("query"), []);
+
+					env	.cd("B")
+						.set("(prototypes)", "(start)", "[A]")
+						.top();
+
+					deepEqual(cobj.prop_val("query"), [B, C]);
+
+					env	.cd("C")
+						.set("(prototypes)", "(start)", "[B, A]")
+						.top();
+
+					deepEqual(cobj.prop_val("query"), [B, C]);
+
+					env	.cd("B")
+						.set("(prototypes)", "(start)", "[]")
+						.top();
+
+					deepEqual(cobj.prop_val("query"), [C]);
+
+					env	.cd("C")
+						.set("(prototypes)", "(start)", "B")
+						.top();
+
+					deepEqual(cobj.prop_val("query"), []);
+				}
+			}]
+		},
 	];
 	tests.forEach(function(test) {
 		dt(test.name, test);

@@ -34,7 +34,7 @@
         }
         this.options.value = _	.chain(this.options.value)
 								.map(function (cobj) {
-									if (cobj instanceof ist.Dict && cobj.is_template()) {
+									if (cobj instanceof ist.ContextualDict && cobj.is_template()) {
 										return cobj.instances();
 									} else {
 										return cobj;
