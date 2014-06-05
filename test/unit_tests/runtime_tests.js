@@ -849,7 +849,7 @@
 		},
 		{
 			name: "Query Inherits From",
-			expect: 7,
+			expect: 16,
 			create_builtins: ["functions"],
 			steps: [{
 				setup: function(env) {
@@ -860,51 +860,73 @@
 							.up()
 						.set("C", "<stateful>")
 						.set("query", "find().inheritsFrom(A)")
+						.set("query2", "find().inheritsFrom(B)")
 						;
 				},
 				test: function(env, runtime) {
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
 						A = cobj.prop_val("A"),
 						B = cobj.prop_val("B"),
-						C = cobj.prop_val("C");
+						C = cobj.prop_val("C"),
+						getQ1Val = function() {
+							return cobj.prop_val("query").value();
+						},
+						getQ2Val = function() {
+							return cobj.prop_val("query2").value();
+						};
 
-					deepEqual(cobj.prop_val("query").value(), [B]);
+
+					deepEqual(getQ1Val(), [B]);
+					deepEqual(getQ2Val(), []);
 
 					env	.cd("B")
 						.set("(prototypes)", "(start)", "")
 						.top();
 
-					deepEqual(cobj.prop_val("query").value(), []);
+					deepEqual(getQ1Val(), []);
+					deepEqual(getQ2Val(), []);
 
 					env	.cd("C")
 						.set("(prototypes)", "(start)", "B")
 						.top();
 
-					deepEqual(cobj.prop_val("query").value(), []);
+					deepEqual(getQ1Val(), []);
+					deepEqual(getQ2Val(), [C]);
 
 					env	.cd("B")
 						.set("(prototypes)", "(start)", "[A]")
 						.top();
 
-					deepEqual(cobj.prop_val("query").value(), [B, C]);
+					deepEqual(getQ1Val(), [B, C]);
+					deepEqual(getQ2Val(), [C]);
 
 					env	.cd("C")
 						.set("(prototypes)", "(start)", "[B, A]")
 						.top();
 
-					deepEqual(cobj.prop_val("query").value(), [B, C]);
+					deepEqual(getQ1Val(), [B, C]);
+					deepEqual(getQ2Val(), [C]);
 
 					env	.cd("B")
 						.set("(prototypes)", "(start)", "[]")
 						.top();
 
-					deepEqual(cobj.prop_val("query").value(), [C]);
+					deepEqual(getQ1Val(), [C]);
+					deepEqual(getQ2Val(), [C]);
 
 					env	.cd("C")
 						.set("(prototypes)", "(start)", "B")
 						.top();
 
-					deepEqual(cobj.prop_val("query").value(), []);
+					deepEqual(getQ1Val(), []);
+					deepEqual(getQ2Val(), [C]);
+
+					env	.cd("C")
+						.set("(prototypes)", "(start)", "")
+						.top();
+
+					deepEqual(getQ1Val(), []);
+					deepEqual(getQ2Val(), []);
 				}
 			}]
 		},
