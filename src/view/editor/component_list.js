@@ -118,6 +118,11 @@
 
 			this._super();
 		},
+		_addClassBindings: function() {
+			this.element.addClass("component_list");
+		},
+		_removeClassBindings: function() {
+		},
 		_addContentBindings: function() {
 			this.element.on('confirm_value', _.bind(function(event) {
 							var event_type;
