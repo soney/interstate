@@ -849,7 +849,7 @@
 		},
 		{
 			name: "Query Inherits From",
-			expect: 24,
+			expect: 32,
 			create_builtins: ["functions"],
 			steps: [{
 				setup: function(env) {
@@ -862,9 +862,14 @@
 							.set("(prototypes)", "(start)", "A")
 							.up()
 						.set("C", "<stateful>")
+						.set("D", "<stateful>")
+						.cd("D")
+							.set("(prototypes)", "(start)", "B.obj")
+							.up()
 						.set("query", "find().inheritsFrom(A)")
 						.set("query2", "find().inheritsFrom(B)")
-						.set("query3", "find().inheritsFrom(B.obj)")
+						.set("query3", "find().inheritsFrom(A.obj)")
+						.set("query4", "find().inheritsFrom(B.obj)")
 						;
 				},
 				test: function(env, runtime) {
@@ -872,14 +877,17 @@
 						A = cobj.prop_val("A"),
 						B = cobj.prop_val("B"),
 						C = cobj.prop_val("C"),
+						D = cobj.prop_val("D"),
 						getQ1Val = function() { return cobj.prop_val("query").value(); },
 						getQ2Val = function() { return cobj.prop_val("query2").value(); },
-						getQ3Val = function() { var x = cobj.prop_val("query3"); return x ? x.value() : []; };
+						getQ3Val = function() { return cobj.prop_val("query3").value(); },
+						getQ4Val = function() { var x = cobj.prop_val("query4"); return x ? x.value() : []; };
 
 
 					deepEqual(getQ1Val(), [B]);
 					deepEqual(getQ2Val(), []);
 					equal(getQ3Val().length, 0);
+					equal(getQ4Val().length, 1);
 
 					env	.cd("B")
 						.set("(prototypes)", "(start)", "")
@@ -888,6 +896,7 @@
 					deepEqual(getQ1Val(), []);
 					deepEqual(getQ2Val(), []);
 					equal(getQ3Val().length, 0);
+					equal(getQ4Val().length, 0);
 
 					env	.cd("C")
 						.set("(prototypes)", "(start)", "B")
@@ -895,7 +904,8 @@
 
 					deepEqual(getQ1Val(), []);
 					deepEqual(getQ2Val(), [C]);
-					equal(getQ3Val().length, 1);
+					equal(getQ3Val().length, 0);
+					equal(getQ4Val().length, 0);
 
 					env	.cd("B")
 						.set("(prototypes)", "(start)", "[A]")
@@ -903,7 +913,8 @@
 
 					deepEqual(getQ1Val(), [B, C]);
 					deepEqual(getQ2Val(), [C]);
-					equal(getQ3Val().length, 1);
+					equal(getQ3Val().length, 0);
+					equal(getQ4Val().length, 1);
 
 					env	.cd("C")
 						.set("(prototypes)", "(start)", "[B, A]")
@@ -911,7 +922,8 @@
 
 					deepEqual(getQ1Val(), [B, C]);
 					deepEqual(getQ2Val(), [C]);
-					equal(getQ3Val().length, 1);
+					equal(getQ3Val().length, 0);
+					equal(getQ4Val().length, 1);
 
 					env	.cd("B")
 						.set("(prototypes)", "(start)", "[]")
@@ -919,7 +931,8 @@
 
 					deepEqual(getQ1Val(), [C]);
 					deepEqual(getQ2Val(), [C]);
-					equal(getQ3Val().length, 1);
+					equal(getQ3Val().length, 0);
+					equal(getQ4Val().length, 0);
 
 					env	.cd("C")
 						.set("(prototypes)", "(start)", "B")
@@ -927,7 +940,8 @@
 
 					deepEqual(getQ1Val(), []);
 					deepEqual(getQ2Val(), [C]);
-					equal(getQ3Val().length, 1);
+					equal(getQ3Val().length, 0);
+					equal(getQ4Val().length, 0);
 
 					env	.cd("C")
 						.set("(prototypes)", "(start)", "")
@@ -936,6 +950,7 @@
 					deepEqual(getQ1Val(), []);
 					deepEqual(getQ2Val(), []);
 					equal(getQ3Val().length, 0);
+					equal(getQ4Val().length, 0);
 				}
 			}]
 		},
