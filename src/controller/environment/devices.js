@@ -175,6 +175,10 @@
 							"pageX", "pageY",
 							"radiusX", "radiusY",
 							"rotationAngle"],
+			alias_props = {
+				x: "pageX",
+				y: "pageY"
+			},
 			touch_ids = cjs([]);
 
 		var touches = cjs({}),
@@ -202,6 +206,11 @@
 							var val = ct[prop_name];
 							touch.put(prop_name, val);
 							touch_start_obj[prop_name] = val;
+						});
+						_.each(alias_props, function(real_prop_name, alias_prop_name) {
+							var val = ct[real_prop_name];
+							touch.put(alias_prop_name, val);
+							touch_start_obj[alias_prop_name] = val;
 						});
 						touch	.put('start', touch_start_obj)
 								.put('end', false)
@@ -231,6 +240,10 @@
 							var val = ct[prop_name];
 							touch.put(prop_name, val);
 						});
+						_.each(alias_props, function(real_prop_name, alias_prop_name) {
+							var val = ct[real_prop_name];
+							touch.put(alias_prop_name, val);
+						});
 					} else {
 						console.error("Could not find changed touch");
 					}
@@ -255,6 +268,10 @@
 								var val = ct[prop_name];
 
 								touch_end_obj[prop_name] = val;
+							});
+							_.each(alias_props, function(real_prop_name, alias_prop_name) {
+								var val = ct[real_prop_name];
+								touch_end_obj[alias_prop_name] = val;
 							});
 
 							touch_ids.splice(index, 1);

@@ -104,7 +104,8 @@
 				var pointer = this.get_pointer();
 
 				var stateful_obj = parent.get_object();
-				var stateful_obj_context = pointer.slice(0, pointer.lastIndexOf(stateful_obj) + 1);
+				var stateful_obj_context = parent.get_pointer();
+				//pointer.slice(0, pointer.lastIndexOf(stateful_obj) + 1);
 
 				var my_names = [];
 				i = pointer.lastIndexOf(stateful_obj);
@@ -123,20 +124,21 @@
 
 				var stateful_obj_context_len = stateful_obj_context.length();
 				var my_names_len = my_names.length;
-				var protos_and_me = ([stateful_obj]).concat(ist.Dict.get_proto_vals(stateful_obj, stateful_obj_context));
+				var protos_and_me = ([parent]).concat(parent.get_all_protos());//ist.Dict.get_proto_vals(parent));//stateful_obj, stateful_obj_context));
 
 				var inherits_from = _	.chain(protos_and_me)
-										.map(function (x) {
+										.map(function (cdict, proto_num) {
 											var i;
 											var obj;
-											var cdict = ist.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len));
+											//var cdict = ist.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len));
 											for (i = 0; i < my_names_len; i += 1) {
 												name = my_names[i];
-												if(!name) {
-													return false; // bandaid for removed properties
-												}
-												if (cdict.has(name)) {
-													var info = cdict.prop_info(name);
+												//if(!name) {
+													//return false; // bandaid for removed properties
+												//}
+
+												if (cdict.has(name, true)) { // ignore inherited
+													var info = cdict.prop_info(name, true); // ignore inherited
 													obj = info.value;
 													if (i < my_names_len - 1) {
 														if (!(obj instanceof ist.Dict)) {
@@ -150,7 +152,7 @@
 												}
 											}
 											return obj;
-										})
+										}, this)
 										.compact()
 										.uniq()
 										.value();
@@ -161,8 +163,7 @@
 				var dv_entries_map_fn = function (x) {
 					return {
 						key: x.key,
-						value: x.value,
-						inherited: i > 0
+						value: x.value
 					};
 				};
 				for (i = 0; i < inherits_from_len; i += 1) {
@@ -175,8 +176,7 @@
 					} else if (ifrom instanceof ist.Cell) {
 						entries.push({
 							key: undefined,
-							value: ifrom,
-							inherited: true
+							value: ifrom
 						});
 					}
 				}
@@ -187,9 +187,9 @@
 
 				var sc_parent = stateful_prop.get_statechart_parent();
 				if (sc_parent === "parent") {
-					sc_parent = parent.get_object();
+					sc_parent = parent;//parent.get_object();
 				}
-				statecharts = [parent.get_statechart_for_proto(sc_parent)];
+				statecharts = [parent.get_statechart_for_proto(parent)];
 			}
 			var statecharts_len = statecharts.length;
 			var rv = _.map(entries, function (entry) {
@@ -213,6 +213,7 @@
 								}
 							}
 							break;
+						} else {
 						}
 					}
 				} else {
@@ -223,7 +224,7 @@
 					value: entry.value,
 					root_sv_index: i
 				};
-			});
+			}, this);
 			rv = _.compact(rv);
 
 			var root_indicies = {};

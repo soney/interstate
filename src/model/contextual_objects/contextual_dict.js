@@ -31,62 +31,64 @@
 				return false;
 			}
 		},
-		is_cobj = function (x) {
-			if (x && x instanceof ist.ContextualDict) {
-				return x;
-			} else {
-				return false;
-			}
+		is_cdict = function (x) {
+			return x && x instanceof ist.ContextualDict;
 		};
-	ist.Dict.get_proto_vals = function (dict, ptr, get_cobjs) {
+	ist.Dict.get_proto_vals = function (cobj, non_recursive) {
 		var rv = new RedSet({
-			value: [dict],
-			hash: "hash"
-		});
+				value: [cobj],
+				hash: "hash",
+				equals: ist.check_contextual_object_equality
+			}),
+			i = 0,
+			dict, proto_val, proto_cobj, rv_arr;
 
-		var pointer = ptr;
-		var i = 0;
 		while (i < rv.len()) {
-			dict = rv.item(i);
-			if(get_cobjs && dict instanceof ist.ContextualDict) {
-				dict = dict.get_object();
-			}
-			var proto_obj = dict.direct_protos();
-			var proto_val;
-			if (cjs.isArrayConstraint(proto_obj)) {
-				proto_val = proto_obj.toArray();
-			} else if (proto_obj) {
-				var proto_contextual_obj = ist.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {
-					check_on_nullify: true,
-					equals: proto_eq
-				});
-				proto_val = proto_contextual_obj.val();
+			cobj = rv.item(i);
+			if(cobj instanceof ist.ContextualDict) {
+				proto_cobj = cobj.proto_cobj();
 			} else {
-				proto_val = [];
+				proto_cobj = [];
 			}
-			proto_val = _	.chain(_.isArray(proto_val) ? proto_val : [proto_val])
-							.map(get_cobjs ? is_cobj : get_cobj_object)
-							.compact()
-							.value();
+
+			if(proto_cobj instanceof ist.ContextualObject) {
+				proto_val = proto_cobj.val();
+			} else {
+				proto_val = proto_cobj;
+			}
+
+			if(!_.isArray(proto_val)) {
+				proto_val = [proto_val];
+			}
+
+			proto_val = _.filter(proto_val, is_cdict);
+
 			rv.add_at.apply(rv, ([i + 1].concat(proto_val)));
-			i += 1;
+			i++;
+
+			if(non_recursive) { break; }
 		}
-		var rv_arr = rv.toArray();
+		rv_arr = rv.toArray();
 
 		return rv_arr.slice(1); // don't include the original dict
 	};
 
 	ist.Dict.get_prop_name = function (dict, value, pcontext) {
-		var direct_props = dict.direct_props();
-		var i;
+		var direct_props = dict.direct_props(),
+			rv = direct_props.keyForValue({value: value}),
+			cobj, i, protos, protoi, len;
 
-		var rv = direct_props.keyForValue({value: value});
 		if (_.isUndefined(rv) && pcontext) {
-			var protos = ist.Dict.get_proto_vals(dict, pcontext);
-			for (i = 0; i < protos.length; i += 1) {
-				var protoi = protos[i];
+			cobj = ist.find_or_put_contextual_obj(dict, pcontext);
+			protos = cobj.get_all_protos();
+			for (i = 0, len = protos.length; i < len; i++) {
+				protoi = protos[i];
+				rv = protoi.get_direct_prop_name(value);
+				/*
 				direct_props = protoi.direct_props();
 				rv = direct_props.keyForValue({value: value});
+				*/
+
 				if (!_.isUndefined(rv)) {
 					break;
 				}
@@ -116,11 +118,11 @@
 		}
 	};
 
-	var get_contextual_object = function (value, pointer) {
+	var get_contextual_object = function (value, pointer, options) {
 		var value_ptr = pointer.push(value);
 
 		if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
-			var contextual_object = ist.find_or_put_contextual_obj(value, value_ptr);
+			var contextual_object = ist.find_or_put_contextual_obj(value, value_ptr, options);
 			return contextual_object;
 		} else {
 			return value;
@@ -168,62 +170,80 @@
 			if(this.constructor === My) { this.flag_as_initialized();  }
 		};
 
+		proto.proto_cobj = function() {
+			var obj = this.get_object(),
+				proto_obj = obj.direct_protos(),
+				pointer, proto_cobj;
+			
+			if(cjs.isArrayConstraint(proto_obj)) {
+				return proto_obj.toArray();
+			} else if(proto_obj) {
+				pointer = this.get_pointer();
+				return ist.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {
+					check_on_nullify: true,
+					equals: proto_eq
+				});
+			} else {
+				return [];
+			}
+		};
+
 		proto.has_copies = function() {
 			var dict = this.object;
 			return dict.has_copies();
 		};
 
-		proto._get_all_protos = function() {
-			return ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
+		proto._get_all_protos = function(avoid_recursion) {
+			return ist.Dict.get_proto_vals(this, avoid_recursion);
 		};
 
 		proto.raw_children = function (exclude_builtins) {
-			var dict = this.object;
-			var pointer = this.pointer;
-			var i;
+			var dict = this.get_object(),
+				pointer = this.get_pointer(),
+				my_ptr_index = pointer.lastIndexOf(dict),
+				special_context_names = [],
+				builtin_names = exclude_builtins === true ? [] : dict._get_builtin_prop_names(),
+				direct_names = this.get_direct_prop_names(),
+				owners = {},
+				proto_objects = this.get_all_protos(),
+				inherited_names = [],
+				i;
 
-			var builtin_names = exclude_builtins === true ? [] : dict._get_builtin_prop_names();
-			var direct_names = dict._get_direct_prop_names();
-
-			var owners = {};
 			_.each(builtin_names, function (name) {
-				owners[name] = dict;
-			}, this);
-			_.each(direct_names, function (name) {
-				owners[name] = dict;
+				owners[name] = this;
 			}, this);
 
-			var my_ptr_index = pointer.lastIndexOf(dict);
-			var special_context_names = [];
+			_.each(direct_names, function (name) {
+				owners[name] = this;
+			}, this);
+
 			if (exclude_builtins !== true && my_ptr_index >= 0) {
-				var special_contexts = pointer.special_contexts(my_ptr_index);
-				var len = special_contexts.length;
-				var sc, co;
-				var each_co = function (v, k) {
-					if (!owners.hasOwnProperty(k)) {
-						owners[k] = sc;
-						special_context_names.push(k);
-					}
-				};
-				for (i = 0; i < len; i += 1) {
+				var special_contexts = pointer.special_contexts(my_ptr_index),
+					len = special_contexts.length,
+					sc, co,
+					each_co = function (v, k) {
+						if (!owners.hasOwnProperty(k)) {
+							owners[k] = sc;
+							special_context_names.push(k);
+						}
+					};
+
+				for (i = 0; i < len; i++) {
 					sc = special_contexts[i];
 					co = sc.get_context_obj();
 					_.each(co, each_co);
 				}
 			}
 
-			var proto_objects = this.get_all_protos();
-
-			var inherited_names = [];
 			_.each(proto_objects, function (p) {
-				var p_direct_names = p._get_direct_prop_names();
+				var p_direct_names = p.get_direct_prop_names();
 				_.each(p_direct_names, function (name) {
 					if (!owners.hasOwnProperty(name)) {
 						owners[name] = p;
 						inherited_names.push(name);
 					}
 				});
-			});
+			}, this);
 
 
 			var rv = [];
@@ -233,31 +253,41 @@
 				["direct", direct_names],
 				["inherited", inherited_names]
 			], function (info) {
-				var type = info[0];
-				var names = info[1];
-				var getter_fn;
+				var type = info[0],
+					names = info[1],
+					is_inherited = type==="inherited",
+					is_builtin = type==="builtin" || type==="special_context",
+					getter_fn, infos;
 
-				var infos;
 				if (type === "builtin") {
 					infos = _.map(names, function (name) {
-						return dict._get_builtin_prop_info(name);
-					});
+						return this.get_builtin_prop_info(name);
+					}, this);
 				} else if (type === "direct" || type === "inherited") {
 					infos = _.map(names, function (name) {
-						var owner = type === "direct" ? dict : owners[name];
-						return owner._get_direct_prop_info(name);
-					});
+						var owner = type === "direct" ? this : owners[name],
+							info = owner.get_direct_prop_info(name);
+
+						info.inherited_from = (type === "direct") ? false : owner;
+						return info;
+					}, this);
 				} else if (type === "special_context") {
 					infos = _.map(names, function (name) {
-						var sc = owners[name];
-						var co = sc.get_context_obj();
+						var sc = owners[name],
+							co = sc.get_context_obj();
 						return co[name];
-					});
+					}, this);
 				}
 
 				var contextual_objects = _.map(infos, function (info, i) {
 					var name = names[i];
-					return {name: name, value: info.value, inherited: type === "inherited", builtin: (type === "builtin" || type === "special_context") };
+					return {
+						name: name,
+						value: info.value,
+						inherited_from: info.inherited_from || false,
+						inherited: is_inherited,
+						builtin: is_builtin
+					};
 				}, this);
 				rv.push.apply(rv, contextual_objects);
 			}, this);
@@ -315,8 +345,12 @@
 				
 				var contextual_objects = special_context_contextual_objects.concat(builtin_contextual_objects),
 					children = _.map(contextual_objects, function(raw_child) {
+						var opts = {};
+						if(raw_child.inherits_from) {
+							opts.inherits_from = raw_child.inherits_from;
+						}
 						return _.extend({}, raw_child, {
-							value: get_contextual_object(raw_child.value, pointer)
+							value: get_contextual_object(raw_child.value, pointer, opts)
 						});
 					});
 
@@ -336,8 +370,12 @@
 				var raw_children = this.raw_children(exclude_builtins);
 				var pointer = this.pointer;
 				var children = _.map(raw_children, function(raw_child) {
+					var opts = {};
+					if(raw_child.inherited_from) {
+						opts.inherited_from = raw_child.inherited_from;
+					}
 					return _.extend({}, raw_child, {
-						value: get_contextual_object(raw_child.value, pointer)
+						value: get_contextual_object(raw_child.value, pointer, opts)
 					});
 				});
 				return children;
@@ -359,7 +397,7 @@
 				return true;
 			} else if (ignore_inherited !== true) {
 				var proto_objects = this.get_all_protos();
-				if (_.any(proto_objects, function (d) { return d._has_direct_prop(name); })) {
+				if (_.any(proto_objects, function (d) { return d.has_direct_prop(name); })) {
 					return true;
 				}
 
@@ -376,13 +414,9 @@
 							return true;
 						}
 					}
-					return false;
-				} else {
-					return false;
 				}
-			} else {
-				return false;
 			}
+			return false;
 		};
 		proto.prop_info = function (name, ignore_inherited) {
 			var dict = this.get_object(),
@@ -415,8 +449,9 @@
 					var d;
 					for (i = 0; i < len; i += 1) {
 						d = proto_objects[i];
-						if (d._has_direct_prop(name)) {
-							info = d._get_direct_prop_info(name);
+						if (d.has_direct_prop(name)) {
+							info = d.get_direct_prop_info(name);
+							info.inherited_from = d;
 							break;
 						}
 					}
@@ -429,7 +464,11 @@
 
 			if (info) {
 				var pointer = this.get_pointer();
-				var value = get_contextual_object(info.value, pointer);
+				var opts = {};
+				if(opts.inherited_from) {
+					opts.inherited_from = raw_child.inherited_from;
+				}
+				var value = get_contextual_object(info.value, pointer, opts);
 				return value;
 			} else {
 				return undefined;
@@ -449,6 +488,38 @@
 			var object = this.get_object();
 			var copies = object.get_copies();
 			return copies;
+		};
+
+		proto.get_direct_prop_name = function(value) {
+			var obj = this.get_object(),
+				direct_props = obj.direct_props(),
+				rv = direct_props.keyForValue({value: value});
+			return rv;
+		};
+
+		proto.get_direct_prop_names = function() {
+			var object = this.get_object();
+			return object._get_direct_prop_names();
+		};
+
+		proto.get_builtin_prop_info = function(name) {
+			var object = this.get_object();
+			return object._get_builtin_prop_info(name);
+		};
+
+		proto.has_direct_prop = function(name) {
+			var object = this.get_object();
+			return object._has_direct_prop(name);
+		};
+
+		proto.get_direct_prop_info = function(name) {
+			var object = this.get_object();
+			return object._get_direct_prop_info(name);
+		};
+
+		proto.get_direct_attachments = function() {
+			var object = this.get_object();
+			return object.direct_attachments();
 		};
 
 		proto.get_manifestations_value = function () {
@@ -495,7 +566,7 @@
 		};
 
 		proto._inherits_from = function(cobj) {
-			var proto_cobjs = ist.Dict.get_proto_vals(this.get_object(), this.get_pointer(), true),
+			var proto_cobjs = this.get_all_protos(),
 				rv = _.contains(proto_cobjs, cobj);
 			return rv;
 		};
@@ -624,7 +695,7 @@
 					outer_loop:
 					for (i = 0; i < plen; i += 1) {
 						proto_obj = proto_objects[i];
-						direct_attachments = proto_obj.direct_attachments();
+						direct_attachments = proto_obj.get_direct_attachments();
 						len = direct_attachments.length;
 						for (j = 0; j < len; j += 1) {
 							attachment = direct_attachments[j];
@@ -672,12 +743,13 @@
 
 			if(!is_template) {
 				var protos_objs = this.get_all_protos();
-				//ist.Dict.get_proto_vals(this.get_object(), this.get_pointer());
 				rv.push.apply(rv, _.chain(protos_objs)
-									.map(function(o) {
-										var proto_obj = o.direct_protos();
-										if(proto_obj instanceof ist.StatefulProp || proto_obj instanceof ist.Dict || proto_obj instanceof ist.Cell) {
-											return {obj: proto_obj, pointer: my_pointer.push(proto_obj)};
+									.map(function(cobj) {
+										if(cobj instanceof ist.ContextualDict) {
+											var proto_cobj = cobj.proto_cobj();
+											if(proto_cobj instanceof ist.ContextualObject) {
+												return {obj: proto_cobj.get_object(), pointer: proto_cobj.get_pointer()};
+											}
 										}
 									})
 									.compact()
@@ -693,7 +765,9 @@
 						rv.push({obj: value, pointer: ptr});
 
 						if(value instanceof ist.Dict) {
-							cobj = ist.find_or_put_contextual_obj(value, ptr);
+							cobj = ist.find_or_put_contextual_obj(value, ptr, {
+								inherited_from: child_info.inherited_from
+							});
 
 							if(cobj.is_template()) {
 								instances = cobj.instances();

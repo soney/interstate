@@ -99,7 +99,7 @@
 		}, 50);
 	});
 	asyncTest("Environment Collection", function() {
-		expect(1);
+		expect(2);
 		var the_div = $("<div />").appendTo(document.body);
 		var env = new ist.Environment({builtins: true});
 		env	.set("screen", "<stateful>")
@@ -124,6 +124,7 @@
 		});
 
 		window.setTimeout(function() {
+			equal($("circle", the_div).size(), 1);
 			the_div.dom_output("destroy");
 			env.destroy();
 			env = null;

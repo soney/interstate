@@ -22,8 +22,9 @@
 
 		able.make_this_listenable(this);
 
-		if (_.has(options, "object")) { this.object = options.object; }
-		if (_.has(options, "pointer")) { this.pointer = options.pointer; }
+		this.object = options.object;
+		this.pointer = options.pointer;
+		this.inherited_from = options.inherited_from || false;
 
 		ist.add_cobj_cached_item(this);
 
@@ -50,6 +51,9 @@
 		};
 		proto.is_initialized = function() {
 			return this._initialized;
+		};
+		proto.is_inherited = function() {
+			return this.inherited_from;
 		};
 		proto.is_template = function() { return false; };
 		proto.instances = function() { return false; };
@@ -161,6 +165,7 @@
 			this.$value.destroy(true);
 			delete this.object;
 			delete this.pointer;
+			delete this.inherited_from;
 			delete this.$value;
 			ist.unregister_uid(this.id());
 			this._emit("destroyed");
@@ -287,7 +292,7 @@
 			cjs.signal();
 		};
 
-		proto.get_or_put_cobj_child = function (obj, special_contexts, hash) {
+		proto.get_or_put_cobj_child = function (obj, special_contexts, hash, options) {
 			var hash_children,
 				cobj;
 			if(_.has(this._cobj_children, hash)) {
@@ -308,9 +313,9 @@
 				hash_children = this._cobj_children[hash] = [];
 			}
 
-			cobj = ist.create_contextual_object(obj, this.pointer.push(obj, special_contexts), {
+			cobj = ist.create_contextual_object(obj, this.pointer.push(obj, special_contexts), _.extend({
 				defer_initialization: true
-			});
+			}, options));
 
 			hash_children.push({
 				obj: obj,
@@ -442,7 +447,7 @@
 			ptr_i = pointer.points_at(i);
 			sc_i = pointer.special_contexts(i);
 			hash_i = pointer.itemHash(i);
-			node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i);
+			node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i, i === len-1 ? options : false);
 			i++;
 		}
 

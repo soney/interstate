@@ -66,7 +66,8 @@
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(cobj.prop_val("my_state"), "INIT");
 
-					env .cd("proto_obj")
+					env .top()
+						.cd("proto_obj")
 							.set("my_event", "(start)", "'ev2'");
 
 					ist.emit("ev2");
