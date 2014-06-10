@@ -84,10 +84,6 @@
 			for (i = 0, len = protos.length; i < len; i++) {
 				protoi = protos[i];
 				rv = protoi.get_direct_prop_name(value);
-				/*
-				direct_props = protoi.direct_props();
-				rv = direct_props.keyForValue({value: value});
-				*/
 
 				if (!_.isUndefined(rv)) {
 					break;
@@ -263,12 +259,20 @@
 					infos = _.map(names, function (name) {
 						return this.get_builtin_prop_info(name);
 					}, this);
-				} else if (type === "direct" || type === "inherited") {
+				} else if (type === "direct") {
 					infos = _.map(names, function (name) {
-						var owner = type === "direct" ? this : owners[name],
-							info = owner.get_direct_prop_info(name);
-
-						info.inherited_from = (type === "direct") ? false : owner;
+						return this.prop_info(name, true);
+					}, this);
+				} else if (type === "inherited") {
+					infos = _.map(names, function (name) {
+						var owner = owners[name],
+							value = owner.prop(name),
+							value_obj = value instanceof ist.ContextualObject ? value.get_object() : value,
+							info = {
+								value: value_obj,
+								owner: owner,
+								inherited_from: value
+							};
 						return info;
 					}, this);
 				} else if (type === "special_context") {
@@ -762,7 +766,13 @@
 
 					if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
 						ptr = my_pointer.push(value);
-						rv.push({obj: value, pointer: ptr});
+						rv.push({
+							obj: value,
+							pointer: ptr,
+							options: {
+								inherited_from: child_info.inherited_from
+							}
+						});
 
 						if(value instanceof ist.Dict) {
 							cobj = ist.find_or_put_contextual_obj(value, ptr, {

@@ -95,20 +95,17 @@
 			return substates; // includes transitions
 		};
 
-		proto.get_values = function () {
+		proto.get_raw_values = function (avoid_inherited) {
 			var parent = this.get_parent();
 			var stateful_prop = this.get_object();
 			var statecharts, entries, name, i, values;
 
-			if (stateful_prop.get_can_inherit()) {
+			if (stateful_prop.get_can_inherit() && avoid_inherited !== true) {
 				var pointer = this.get_pointer();
 
-				var stateful_obj = parent.get_object();
-				var stateful_obj_context = parent.get_pointer();
-				//pointer.slice(0, pointer.lastIndexOf(stateful_obj) + 1);
 
 				var my_names = [];
-				i = pointer.lastIndexOf(stateful_obj);
+				i = pointer.lastIndexOf(parent.get_object());
 				var len = pointer.length();
 				var item_im1 = pointer.points_at(i),
 					item_i;
@@ -122,43 +119,29 @@
 					i += 1;
 				}
 
-				var stateful_obj_context_len = stateful_obj_context.length();
 				var my_names_len = my_names.length;
-				var protos_and_me = ([parent]).concat(parent.get_all_protos());//ist.Dict.get_proto_vals(parent));//stateful_obj, stateful_obj_context));
+				var protos_and_me = ([parent]).concat(parent.get_all_protos());
 
 				var inherits_from = _	.chain(protos_and_me)
 										.map(function (cdict, proto_num) {
 											var i;
-											var obj;
-											//var cdict = ist.find_or_put_contextual_obj(x, pointer.slice(0, stateful_obj_context_len));
 											for (i = 0; i < my_names_len; i += 1) {
 												name = my_names[i];
-												//if(!name) {
-													//return false; // bandaid for removed properties
-												//}
 
-												if (cdict.has(name, true)) { // ignore inherited
-													var info = cdict.prop_info(name, true); // ignore inherited
-													obj = info.value;
-													if (i < my_names_len - 1) {
-														if (!(obj instanceof ist.Dict)) {
-															return false;
-														} else {
-															cdict = ist.find_or_put_contextual_obj(obj, pointer.slice(0, stateful_obj_context_len + i + 1));
-														}
-													}
+												if (cdict instanceof ist.ContextualDict && cdict.has(name, true)) { // ignore inherited
+													cdict = cdict.prop(name);
 												} else {
 													return false;
 												}
 											}
-											return obj;
+											return cdict;
 										}, this)
 										.compact()
 										.uniq()
 										.value();
 
 				entries = [];
-				var ifrom;
+				var cifrom, ifrom;
 				var inherits_from_len = inherits_from.length;
 				var dv_entries_map_fn = function (x) {
 					return {
@@ -167,32 +150,50 @@
 					};
 				};
 				for (i = 0; i < inherits_from_len; i += 1) {
-					ifrom = inherits_from[i];
-					if (ifrom instanceof ist.StatefulProp) {
-						var dvs = ifrom.get_direct_values();
-						var dv_entries = dvs.entries();
-						dv_entries = _.map(dv_entries, dv_entries_map_fn);
-						entries.push.apply(entries, dv_entries);
-					} else if (ifrom instanceof ist.Cell) {
-						entries.push({
-							key: undefined,
-							value: ifrom
-						});
+					cifrom = inherits_from[i];
+					if(cifrom instanceof ist.ContextualObject) {
+						ifrom = cifrom.get_object();
+						if (cifrom instanceof ist.ContextualStatefulProp) {
+							var values = cifrom.get_raw_values(true);
+
+							_.each(values, function(entry) {
+								entry.inherits_from = cifrom;
+							});
+
+							entries.push.apply(entries, values);
+						} else if (cifrom instanceof ist.ContextualCell) {
+							entries.push({
+								key: undefined,
+								value: ifrom,
+								inherits_from: cifrom
+							});
+						}
 					}
 				}
-				statecharts = parent.get_statecharts();
 			} else {
 				values = stateful_prop.get_direct_values();
 				entries = values.entries();
 
+				_.each(entries, function(entry) {
+					entry.inherits_from = cifrom;
+				});
+
 				var sc_parent = stateful_prop.get_statechart_parent();
 				if (sc_parent === "parent") {
-					sc_parent = parent;//parent.get_object();
+					sc_parent = parent;
 				}
-				statecharts = [parent.get_statechart_for_proto(parent)];
 			}
-			var statecharts_len = statecharts.length;
-			var rv = _.map(entries, function (entry) {
+			return entries;
+		};
+
+		proto.get_values = function() {
+			var raw_values = this.get_raw_values(),
+				parent = this.get_parent(),
+				stateful_prop = this.get_object(),
+				statecharts = stateful_prop.get_can_inherit() ? parent.get_statecharts() : [parent.get_statechart_for_proto(parent)],
+				statecharts_len = statecharts.length;
+
+			var rv = _.map(raw_values, function (entry) {
 				var key = entry.key;
 				var state, i;
 				if (key) {
@@ -213,7 +214,6 @@
 								}
 							}
 							break;
-						} else {
 						}
 					}
 				} else {
@@ -382,8 +382,6 @@
 					} else if(ist.event_queue.end_queue_round === 6) {
 						ist.event_queue.once("end_event_queue_round_7", invalidate_value);
 					} else {
-						//console.log("WILL INVALIDATE");
-						//_.defer(invalidate_active_value);
 						invalidate_active_value();
 					}
 					//invalidate_value = invalidate_active_value = null;
@@ -425,11 +423,6 @@
 						this._has_runtime_errors = true;
 					}
 				}
-				/*
-				if(uid.strip_prefix(this.id()) == 55) {
-					console.log(rv);
-				}
-				*/
 
 				this._last_rv = rv;
 				return rv;

@@ -109,7 +109,6 @@
 		proto.get_pointer = function () { return this.pointer; };
 		proto.get_object = function () { return this.object; };
 		proto.is_destroyed = function() { return this._destroyed; };
-		proto.is_inherited = function () { return this.inherited; };
 		proto._getter = function () { return this.get_object(); };
 		proto.type = function () { return this._type; };
 		proto.val = function () { return this.$value.get(); };
@@ -198,6 +197,7 @@
 			_.each(valid_children, function(valid_child) {
 				var obj = valid_child.obj,
 					ptr = valid_child.pointer,
+					options = valid_child.options,
 					len_minus_1 = ptr.length()-1,
 					hash = ptr.itemHash(len_minus_1),
 					special_contexts = ptr.special_contexts(len_minus_1),
@@ -241,9 +241,9 @@
 				}
 
 				if(!found) {
-					cobj = ist.create_contextual_object(obj, ptr, {
-						defer_initialization: true
-					});
+					cobj = ist.create_contextual_object(obj, ptr, _.extend({
+							defer_initialization: true
+						}, options));
 					hash_children.push({
 						obj: obj,
 						special_contexts: special_contexts,
