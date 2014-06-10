@@ -52,7 +52,7 @@
 				try {
 					value = cjs.get(this.value_constraint.get());
 				} catch (e) {
-					console.error(e);
+					//console.error(e);
 				}
 			}
 			return value;

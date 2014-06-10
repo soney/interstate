@@ -132,7 +132,7 @@
 					equal(circles.eq(1).attr("fill"), "#0000ff");
 				}
 			}, {
-				setup: function(env) {
+				setup: function(env, runtime) {
 					env.move("circ1", 1);
 				},
 				test: function(env, runtime) {
@@ -893,6 +893,8 @@
 					ok(Cx === C);
 					ok(Cy === B);
 					ok(Cz === A);
+
+					Ax = Ay = Az = Bx = By = Bz = Cx = Cy = Cz = A = B = C = null;
 				}
 			}]
 		},
