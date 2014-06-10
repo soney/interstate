@@ -24,11 +24,10 @@
 		};
 
 		proto.get_own_statechart = function () {
-			return this.get_statechart_for_proto(this);
+			return this.get_statechart_for_proto(this.get_object());
 		};
 
-		proto.get_statechart_for_proto = function (proto_cobj) {
-			var proto = proto_cobj.get_object();
+		proto.get_statechart_for_proto = function (proto) {
 			cjs.wait();
 			var must_initialize = false;
 			var sc = this.statecharts_per_proto.get_or_put(proto, function () {
@@ -56,7 +55,7 @@
 			var proto_statecharts = _	.chain(contextual_protos)
 										.map(function (x) {
 											if (x instanceof ist.ContextualStatefulObj) {
-												return this.get_statechart_for_proto(x);
+												return this.get_statechart_for_proto(x.get_object());
 											} else {
 												return false;
 											}

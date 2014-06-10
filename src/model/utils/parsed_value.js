@@ -246,20 +246,47 @@
 		}
 	};
 
+	var IDENTIFIER = {
+		COBJ_ROOT: ist.root_name,
+		JS_ROOT: "window",
+		CONTAINER: "container",
+		PROTO_THIS: "$this",
+		ROOT_THIS: "$$this"
+	};
+
 	var get_identifier_val = function (key, options) {
 		var context = options.context,
 			ignore_inherited_in_contexts = options.ignore_inherited_in_contexts || [],
-			non_relative = (key[0] === '$');
+			cobj;
 
-		if (key === ist.root_name) {
+		if (key === IDENTIFIER.COBJ_ROOT) {
 			return ist.find_or_put_contextual_obj(context.root(), context.slice(0, 1));
-		} else if (key === "window") {
+		} else if (key === IDENTIFIER.JS_ROOT) {
 			return window;
+		} else if(key === IDENTIFIER.PROTO_THIS || key === IDENTIFIER.ROOT_THIS) {
+			cobj = options.inherited_from_cobj;
+
+			if(cobj) {
+				if (key === IDENTIFIER.PROTO_THIS) {
+					context = cobj.get_pointer();
+				} else if (key === IDENTIFIER.ROOT_THIS) {
+					do {
+						context = cobj;
+					} while(cobj = cobj.is_inherited());
+					
+					context = context.get_pointer();
+				}
+				return get_this_val(_.extend({}, options, {
+					context: context
+				}));
+			} else {
+				return get_this_val(options);
+			}
 		}
 
 		var getter = function () {
 			var i, curr_context, context_item, rv;
-			if (key === "container") {
+			if (key === IDENTIFIER.CONTAINER) {
 				var found_this = false;
 				curr_context = context;
 				context_item = curr_context.points_at();

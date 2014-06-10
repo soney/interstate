@@ -47,13 +47,14 @@
 		};
 
 		proto.get_parent = function () {
-			var context = this.get_pointer();
-			var popped_item, last;
+			var context = this.get_pointer(),
+				contextual_object,
+				popped_item, last;
 
 			while (!context.is_empty()) {
 				last = context.points_at();
 				if (last instanceof ist.StatefulObj) {
-					var contextual_object = ist.find_or_put_contextual_obj(last, context);
+					contextual_object = ist.find_or_put_contextual_obj(last, context);
 					return contextual_object;
 				}
 				popped_item = last;
@@ -120,7 +121,7 @@
 				}
 
 				var my_names_len = my_names.length;
-				var protos_and_me = ([parent]).concat(parent.get_all_protos());
+				var protos_and_me = ([parent]).concat(parent.get_all_protos(true));
 
 				var inherits_from = _	.chain(protos_and_me)
 										.map(function (cdict, proto_num) {
@@ -128,7 +129,7 @@
 											for (i = 0; i < my_names_len; i += 1) {
 												name = my_names[i];
 
-												if (cdict instanceof ist.ContextualDict && cdict.has(name, true)) { // ignore inherited
+												if (cdict instanceof ist.ContextualDict && cdict.has(name)) { // ignore inherited
 													cdict = cdict.prop(name);
 												} else {
 													return false;
@@ -154,10 +155,11 @@
 					if(cifrom instanceof ist.ContextualObject) {
 						ifrom = cifrom.get_object();
 						if (cifrom instanceof ist.ContextualStatefulProp) {
-							var values = cifrom.get_raw_values(true);
+							var values = cifrom.get_raw_values(cifrom === this ? true : false);
+							//var values = cifrom.get_raw_values(true);
 
 							_.each(values, function(entry) {
-								entry.inherits_from = cifrom;
+								entry.inherited_from = cifrom;
 							});
 
 							entries.push.apply(entries, values);
@@ -165,7 +167,7 @@
 							entries.push({
 								key: undefined,
 								value: ifrom,
-								inherits_from: cifrom
+								inherited_from: cifrom
 							});
 						}
 					}
@@ -175,7 +177,7 @@
 				entries = values.entries();
 
 				_.each(entries, function(entry) {
-					entry.inherits_from = cifrom;
+					entry.inherited_from = cifrom;
 				});
 
 				var sc_parent = stateful_prop.get_statechart_parent();
@@ -190,7 +192,7 @@
 			var raw_values = this.get_raw_values(),
 				parent = this.get_parent(),
 				stateful_prop = this.get_object(),
-				statecharts = stateful_prop.get_can_inherit() ? parent.get_statecharts() : [parent.get_statechart_for_proto(parent)],
+				statecharts = stateful_prop.get_can_inherit() ? parent.get_statecharts() : [parent.get_statechart_for_proto(parent.get_object())],
 				statecharts_len = statecharts.length;
 
 			var rv = _.map(raw_values, function (entry) {
@@ -222,6 +224,7 @@
 				return {
 					state: state,
 					value: entry.value,
+					inherited_from: entry.inherited_from,
 					root_sv_index: i
 				};
 			}, this);
@@ -255,7 +258,7 @@
 			var info, i, tr, state, val, is_start_state;
 			var is_fallback = false;
 
-			var using_val = NO_VAL, using_state, fallback_value = NO_VAL, fallback_state;
+			var using_val = NO_VAL, using_state, using_info, fallback_value = NO_VAL, fallback_state;
 			var using_as;
 			for (i = 0; i < len; i += 1) {
 				info = values[i];
@@ -264,6 +267,7 @@
 
 				if(state instanceof ist.StartState) { // Should actually use the transition and not the state
 					if (state.is_active() && (using_val === NO_VAL || using_state.order(state) < 0)) {
+						using_info = info;
 						using_val = val;
 						using_state = state;
 						using_as = USING_AS_STATE;
@@ -275,6 +279,7 @@
 							if (tr > this.get_transition_times_run(ot)) {
 								this.set_transition_times_run(ot, tr);
 
+								using_info = info;
 								using_val = val;
 								using_state = state;
 								using_as = USING_AS_TRANSITION;
@@ -283,6 +288,7 @@
 					}
 				} else if (state instanceof ist.State) {
 					if (state.is_active() && (using_val === NO_VAL || using_state.order(state) < 0)) {
+						using_info = info;
 						using_val = val;
 						using_state = state;
 						using_as = USING_AS_STATE;
@@ -294,6 +300,7 @@
 						this.set_transition_times_run(state, tr);
 
 						if (!(using_state instanceof ist.StatechartTransition)) {
+							using_info = info;
 							using_val = val;
 							using_state = state;
 							using_as = USING_AS_TRANSITION;
@@ -303,17 +310,19 @@
 			}
 			if (using_val === NO_VAL) {
 				if (this._last_value === NO_VAL) {
-					using_val = using_state = using_as = undefined;
+					using_info = using_val = using_state = using_as = undefined;
 				} else {
 					is_fallback = true;
 					using_state = this._from_state;
 					using_val = undefined;
+					using_info = undefined;
 					for(i = 0; i<len; i++) {
 						info = values[i];
 						state = info.state;
 						val = info.value;
 						if(state === using_state) {
 							using_val = val;
+							using_info = info;
 							break;
 						}
 					}
@@ -324,6 +333,7 @@
 					}
 				}
 			} else {
+				this._last_info = using_info;
 				this._last_value = using_val;
 				this._from_state = using_state;
 				this._using_as = using_as;
@@ -332,6 +342,7 @@
 			return {
 				value: using_val,
 				state: using_state,
+				info: using_info,
 				using_as: using_as,
 				is_fallback: is_fallback
 			};
@@ -356,9 +367,11 @@
 
 			if(!active_value_info) { return; }
 
-			var using_val = active_value_info.value,
+			var	using_info = active_value_info.info,
+				using_val = active_value_info.value,
 				using_state = active_value_info.state,
 				using_as = active_value_info.using_as,
+				using_inherited_from = active_value_info.inherited_from,
 				is_fallback = active_value_info.is_fallback;
 			var rv;
 
@@ -399,7 +412,9 @@
 					eventized_pointer = pointer.push(using_val, new ist.StateContext(using_state));
 				}
 
-				var cobj = ist.find_or_put_contextual_obj(using_val, eventized_pointer);
+				var cobj = ist.find_or_put_contextual_obj(using_val, eventized_pointer, {
+					inherited_from: using_info.inherited_from
+				});
 				
 				//console.log(cobj, cobj.val());
 		

@@ -14,7 +14,7 @@
 		{
 			name: "Dynamic Events",
 			expect: 2,
-			create_builtins: false,
+			builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("on", ist.on_event)
@@ -42,7 +42,7 @@
 		{
 			name: "Dynamic Events with Inherited Properties",
 			expect: 2,
-			create_builtins: false,
+			builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("on", ist.on_event)
@@ -253,7 +253,6 @@
 		{
 			name: "Property and State Transitions",
 			expect: 6,
-			create_builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("screen", "<stateful>")
@@ -355,7 +354,7 @@
 		{
 			name: "Auto Create Contextual Objects",
 			expect: 2,
-			create_builtins: false,
+			builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("on", ist.on_event)
@@ -381,7 +380,7 @@
 		{
 			name: "Transition Prop Values",
 			expect: 4,
-			create_builtins: true,
+			builtins: true,
 			steps: [{
 				setup: function(env) {
 					env	
@@ -432,7 +431,7 @@
 		{
 			name: "KEEP",
 			expect: 7,
-			create_builtins: true,
+			builtins: true,
 			steps: [{
 				setup: function(env) {
 					env	.set("on", ist.on_event)
@@ -472,7 +471,6 @@
 		{
 			name: "Copies",
 			expect: 1,
-			create_builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	
@@ -497,7 +495,7 @@
 		{
 			name: "Inherited Start Property Values",
 			expect: 1,
-			create_builtins: false,
+			builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("a", "<stateful>")
@@ -521,7 +519,7 @@
 		{
 			name: "Copies & Groups",
 			expect: 12,
-			create_builtins: true,
+			builtins: true,
 			delay_before_test: 5,
 			steps: [{
 				setup: function(env, runtime) {
@@ -562,8 +560,8 @@
 
 					equal(circles.eq(0).attr("fill"), "#ff0000");
 					equal(circles.eq(1).attr("fill"), "#0000ff");
-					equal(rects.eq(0).attr("fill"), "#ff0000");
-					equal(rects.eq(1).attr("fill"), "#0000ff");
+					equal(  rects.eq(0).attr("fill"), "#ff0000");
+					equal(  rects.eq(1).attr("fill"), "#0000ff");
 				}
 			}, {
 				setup: function(env, runtime) {
@@ -606,7 +604,7 @@
 		{
 			name: "Bouncing Ball",
 			expect: 0,
-			create_builtins: true,
+			builtins: true,
 			delay: 1000,
 			steps: [{
 				setup: function(env) {
@@ -653,7 +651,7 @@
 		{
 			name: "Calling a Parsed FN",
 			expect: 2,
-			create_builtins: false,
+			builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("fn_a", "function(a, b, c) { var sum = a+b+c; for(var i = 0; i<arguments.length; i++) { sum += arguments[i]; } return sum + d; }")
@@ -671,7 +669,7 @@
 		{
 			name: "Immediate Constraint Event Transitions",
 			expect: 1,
-			create_builtins: false,
+			builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("obj", "<stateful>")
@@ -693,7 +691,7 @@
 		{
 			name: "Immediate Constraint Event Transitions",
 			expect: 1,
-			create_builtins: false,
+			builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("obj", "<stateful>")
@@ -715,7 +713,7 @@
 		{
 			name: "StopPropagation on Events",
 			expect: 10,
-			create_builtins: true,
+			builtins: true,
 			steps: [{
 				setup: function(env) {
 					env	.set("obj", "<stateful>")
@@ -780,7 +778,7 @@
 		{
 			name: "Breakpoints",
 			expect: 10,
-			create_builtins: false,
+			builtins: ["functions"],
 			steps: [{
 				setup: function(env) {
 					env	.set("obj", "<stateful>")
@@ -822,7 +820,7 @@
 		{
 			name: "CObj Inherits From",
 			expect: 1,
-			create_builtins: false,
+			builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("obj", "<stateful>")
@@ -844,6 +842,57 @@
 					var cobjx = cobj.prop("x"),
 						cobj2x = cobj2.prop("x");
 					ok(cobj2x.is_inherited() === cobjx);
+				}
+			}]
+		},
+		{
+			name: "this, $this, $$this",
+			expect: 9,
+			builtins: false,
+			steps: [{
+				setup: function(env) {
+					env	.set("A", "<stateful>")
+						.cd("A")
+							.set("x", "(start)", "this")
+							.set("y", "(start)", "$this")
+							.set("z", "(start)", "$$this")
+							.up()
+						.set("B", "<stateful>")
+						.cd("B")
+							.set("(prototypes)", "(start)", "A")
+							.up()
+						.set("C", "<stateful>")
+						.cd("C")
+							.set("(prototypes)", "(start)", "B")
+							.up()
+						;
+				},
+				test: function(env, runtime) {
+					env.cd("A");
+					var A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
+						Ax = A.prop_val("x"),
+						Ay = A.prop_val("y")
+						Az = A.prop_val("z");
+					env.up().cd("B");
+					var B = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
+						Bx = B.prop_val("x"),
+						By = B.prop_val("y"),
+						Bz = B.prop_val("z");
+					env.up().cd("C");
+					var C = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
+						Cx = C.prop_val("x"),
+						Cy = C.prop_val("y"),
+						Cz = C.prop_val("z");
+
+					ok(Ax === A);
+					ok(Ay === A);
+					ok(Az === A);
+					ok(Bx === B);
+					ok(By === A);
+					ok(Bz === A);
+					ok(Cx === C);
+					ok(Cy === B);
+					ok(Cz === A);
 				}
 			}]
 		},

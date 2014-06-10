@@ -201,7 +201,7 @@
 				builtin_names = exclude_builtins === true ? [] : dict._get_builtin_prop_names(),
 				direct_names = this.get_direct_prop_names(),
 				owners = {},
-				proto_objects = this.get_all_protos(),
+				proto_objects = this.get_all_protos(true),
 				inherited_names = [],
 				i;
 
@@ -232,6 +232,15 @@
 			}
 
 			_.each(proto_objects, function (p) {
+				var p_children = p.raw_children();
+				_.each(p_children, function(child_info) {
+					var name = child_info.name;
+					if (!owners.hasOwnProperty(name)) {
+						owners[name] = p;
+						inherited_names.push(name);
+					}
+				});
+			/*
 				var p_direct_names = p.get_direct_prop_names();
 				_.each(p_direct_names, function (name) {
 					if (!owners.hasOwnProperty(name)) {
@@ -239,6 +248,7 @@
 						inherited_names.push(name);
 					}
 				});
+				*/
 			}, this);
 
 
@@ -362,6 +372,7 @@
 				return children;
 			}
 		};
+
 		proto._children = function (exclude_builtins) {
 			if(this.is_template()) {
 				// This is a bit of a hack; when "copies" changes from "" to "5", then my
@@ -766,6 +777,9 @@
 
 					if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
 						ptr = my_pointer.push(value);
+						//if(ptr.hash() === 97) { 
+							//debugger;
+						//}
 						rv.push({
 							obj: value,
 							pointer: ptr,

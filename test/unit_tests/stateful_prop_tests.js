@@ -2,12 +2,11 @@
 	module("Stateful Props");
 
 	var _ = ist._;
-	// 8  Check breakpoint functionality
 	var tests = [
 		{
 			name: "Sub-States override superstates",
 			expect: 1,
-			create_builtins: false,
+			builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("obj", "<stateful>")
@@ -32,7 +31,7 @@
 		{
 			name: "Adding start state values after the fact override previous values",
 			expect: 1,
-			create_builtins: false,
+			builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("obj", "<stateful>")
@@ -52,7 +51,7 @@
 		{
 			name: "Start state value does not override concurrent values",
 			expect: 2,
-			create_builtins: false,
+			builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("obj", "<stateful>")
@@ -80,7 +79,7 @@
 		{
 			name: "Prioritize own state machine over inherited state machines",
 			expect: 1,
-			create_builtins: false,
+			builtins: false,
 			steps: [{
 				setup: function(env) {
 					env	.set("obj", "<stateful>")
@@ -107,7 +106,7 @@
 		{
 			name: "Simultaneous events across multiple objects",
 			expect: 3,
-			create_builtins: false,
+			builtins: ["functions"],
 			steps: [{
 				setup: function(env) {
 					env	.set("obj1", "<stateful>")
@@ -153,7 +152,7 @@
 		{
 			name: "Transition timing: continuous in start,states / one-time in transitions",
 			expect: 17,
-			create_builtins: false,
+			builtins: ["functions"],
 			steps: [{
 				setup: function(env) {
 					env.set("dynamic_obj", "<stateful>")

@@ -68,7 +68,7 @@
 				delay_between_steps = default_delay_between_steps || test.delay_between_steps || test.delay,
 				delay_before_test = default_delay_before_test || test.delay_before_test || test.delay,
 				root_setup = function() {
-					env = new ist.Environment({create_builtins: test.create_builtins !== false});
+					env = new ist.Environment({builtins: test.builtins});
 					root = env.get_root();
 					runtime_div = $("<div />")	.appendTo(document.body)
 												.dom_output({

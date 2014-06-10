@@ -112,7 +112,7 @@
             var tree = this._tree.get();
 			return tree instanceof ist.Error ? [tree.message()] : [];
 		};
-        proto.constraint_in_context = function (pcontext) {
+        proto.constraint_in_context = function (pcontext, inherited_from_cobj) {
 			if(this._is_static.get()) {
 				return this._static_value.get();
 			} else {
@@ -120,7 +120,8 @@
 				return ist.get_parsed_$(tree, {
 							context: pcontext,
 							ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext),
-							get_constraint: true
+							get_constraint: true,
+							inherited_from_cobj: inherited_from_cobj
 						});
 			}
         };

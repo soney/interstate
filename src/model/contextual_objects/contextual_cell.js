@@ -23,7 +23,7 @@
 					constraint.destroy(true);
 				}
 
-				return (constraint = this.object.constraint_in_context(this.get_pointer()));
+				return (constraint = this.object.constraint_in_context(this.get_pointer(), this.is_inherited()));
 			}, {
 				context: this,
 			});
