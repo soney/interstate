@@ -465,8 +465,9 @@
 					for (i = 0; i < len; i += 1) {
 						d = proto_objects[i];
 						if (d.has_direct_prop(name)) {
-							info = d.get_direct_prop_info(name);
-							info.inherited_from = d;
+							info = _.extend({
+										inherited_from: d
+									}, d.get_direct_prop_info(name));
 							break;
 						}
 					}
@@ -480,8 +481,8 @@
 			if (info) {
 				var pointer = this.get_pointer();
 				var opts = {};
-				if(opts.inherited_from) {
-					opts.inherited_from = raw_child.inherited_from;
+				if(info.inherited_from) {
+					opts.inherited_from = info.inherited_from;
 				}
 				var value = get_contextual_object(info.value, pointer, opts);
 				return value;
