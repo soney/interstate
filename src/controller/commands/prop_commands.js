@@ -272,7 +272,6 @@
     ist.RenamePropCommand = function (options) {
         ist.RenamePropCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
-        console.log(this._options.parent, this._options.from, this._options.to);
         if (!this._options.parent || !this._options.from || !this._options.to) {
             throw new Error("Must select a parent object");
         }

@@ -402,7 +402,7 @@
 		if(!str) {
 			return false;
 		}
-		try {
+		//try {
 			var root = ist.destringify(str);
 
 			if(!type) { // program
@@ -411,11 +411,11 @@
 			}
 
 			return root;
-		} catch(e) {
-			console.error("Error loading " + name + ":");
-			console.error(e);
-			return false;
-		}
+		//} catch(e) {
+			//console.error("Error loading " + name + ":");
+			//console.error(e);
+			//return false;
+		//}
 	};
 	ist.ls = function (type) {
 		var len = window.localStorage.length;

@@ -12,6 +12,39 @@
 	var _ = ist._,
 		tests = [
 		{
+			name: "Very Basics",
+			expect: 3,
+			builtins: false,
+			steps: [{
+				setup: function(env) {
+					env	.set("A", "<stateful>")
+						.cd("A")
+							.set("x", "(start)", "1")
+							.up()
+						.set("B", "<stateful>")
+						.cd("B")
+							.set("(prototypes)", "(start)", "A")
+							.set("x", "(start)", "3")
+							.up()
+						.cd("A")
+							.set("y", "(start)", "2")
+							.up()
+							;
+				},
+				test: function(env, runtime) {
+					env.cd("A");
+					var A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+					env.up().cd("B");
+					var B = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+
+					equal(A.prop_val("x"), 1);
+					equal(A.prop_val("y"), 2);
+					equal(B.prop_val("x"), 3);
+					env.print();
+				}
+			}]
+		},
+		{
 			name: "Dynamic Events",
 			expect: 2,
 			builtins: false,

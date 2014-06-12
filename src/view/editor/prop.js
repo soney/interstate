@@ -100,10 +100,10 @@
 			this.name_edit_state = cjs	.fsm("idle", "editing")
 										.startsAt("idle")
 										.addTransition('editing', 'idle', function(dt) {
-											elem.on('confirm_value', dt);
+											elem.on('confirm_value.prop', dt);
 										})
 										.addTransition('editing', 'idle', function(dt) {
-											elem.on('cancel_value', dt);
+											elem.on('cancel_value.prop', dt);
 										})
 										.on('editing->idle', function(event) {
 											if(event.type === 'confirm_value') {
@@ -132,6 +132,8 @@
 		},
 		_destroy: function() {
 			var client = this.option("client");
+
+			this.element.off(".prop").off(".inherit .ondragstart .menu_item");
 			this._remove_tooltip();
 			this._remove_content_bindings();
 			this._remove_class_bindings();
@@ -229,29 +231,31 @@
 			this.menu_state.on("hidden", on_hidden, this);
 		},
 		_destroy_menu: function() {
-			$("ul.menu > li", this.element).off('.menu_item');
-			$(window).off('.menu_item');
+			$(window).add("ul.menu > li", this.element).off('.menu_item').remove();
 			this.menu_state.destroy();
 			this.$show_menu.destroy();
 		},
 		on_menu_action: function(action_name) {
-			if(action_name === 'delete') {
-				var event = new $.Event("command");
-				event.command_type = "unset";
-				event.name = this.$prop_name.get();
-				event.client = this.option("obj");
+			// Give the menu a bit of time to transition back to hidden
+			_.defer(_.bind(function() {
+				if(action_name === 'delete') {
+					var event = new $.Event("command");
+					event.command_type = "unset";
+					event.name = this.$prop_name.get();
+					event.client = this.option("obj");
 
-				this.element.trigger(event);
-			} else if(action_name === 'rename') {
-				this.begin_rename();
-			} else if(action_name === 'change_type') {
-				var client = this.option("client"),
-					client_type = client.type(),
-					obj = this.option("obj"),
-					obj_type = obj.type(),
-					new_type = (client_type === 'cell' || client_type === 'stateful_prop') ? 'stateful' : (obj_type === 'stateful' ? 'stateful_prop' : 'cell');
-				this._change_type(new_type);
-			}
+					this.element.trigger(event);
+				} else if(action_name === 'rename') {
+					this.begin_rename();
+				} else if(action_name === 'change_type') {
+					var client = this.option("client"),
+						client_type = client.type(),
+						obj = this.option("obj"),
+						obj_type = obj.type(),
+						new_type = (client_type === 'cell' || client_type === 'stateful_prop') ? 'stateful' : (obj_type === 'stateful' ? 'stateful_prop' : 'cell');
+					this._change_type(new_type);
+				}
+			}, this));
 		},
 
 		begin_rename: function() {
@@ -355,7 +359,6 @@
 					return { is_primary: false, client: this.prev_value, itemClass:'prev'};
 				}, this),
 				getValueSummaryOptions: _.bind(function() {
-					//console.log(this.option("client"));
 					return { is_primary: true, client: this.option("client"), itemClass:'primary' };
 				}, this),
 				getNextValueSummaryOptions: _.bind(function() {

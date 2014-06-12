@@ -232,7 +232,7 @@
 			}
 
 			_.each(proto_objects, function (p) {
-				var p_children = p.raw_children();
+				var p_children = p.raw_children(true);
 				_.each(p_children, function(child_info) {
 					var name = child_info.name;
 					if (!owners.hasOwnProperty(name)) {

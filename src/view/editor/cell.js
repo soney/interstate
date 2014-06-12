@@ -63,10 +63,10 @@
 			this.client_state = cjs.fsm('unset', 'initialedit', 'set')
 									.addTransition('unset', 'initialedit', cjs.on('click', this.element))
 									.addTransition('initialedit', 'set', function(dt) {
-										elem.on('confirm_value', dt);
+										elem.on('confirm_value.cell', dt);
 									})
 									.addTransition('initialedit', 'unset', function(dt) {
-										elem.on('cancel_value', dt);
+										elem.on('cancel_value.cell', dt);
 									})
 									.on('initialedit->set', function(event) {
 										this._set_value_for_state(event.value);
@@ -123,6 +123,8 @@
 		},
 		_destroy: function() {
 			var client = this.option("client");
+
+			this.element.off("confirm_value.cell cancel_value.cell");
 
 			this._remove_position_bindings();
 			this._remove_class_bindings();
