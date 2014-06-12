@@ -540,12 +540,15 @@
 				var highlighting_objects = this.$highlighting_objects.toArray(),
 					highlighting_elements = _	.chain(highlighting_objects)
 												.map(function(cobj) {
-													if(cobj.is_template()) {
+													if(cobj.is_destroyed()) {
+														return false;
+													} else if(cobj.is_template()) {
 														return cobj.instances();
 													} else {
 														return cobj;
 													}
 												})
+												.compact()
 												.flatten()
 												.map(function(obj) {
 													if(!obj._destroyed) {
