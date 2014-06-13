@@ -195,6 +195,11 @@
 				statecharts = stateful_prop.get_can_inherit() ? parent.get_statecharts() : [parent.get_statechart_for_proto(parent.get_object())],
 				statecharts_len = statecharts.length;
 
+			if(this.sid() === 59) {
+				console.log(raw_values);
+				debugger;
+			}
+
 			var rv = _.map(raw_values, function (entry) {
 				var key = entry.key;
 				var state, i;
@@ -339,6 +344,7 @@
 				this._using_as = using_as;
 			}
 
+
 			return {
 				value: using_val,
 				state: using_state,
@@ -440,6 +446,7 @@
 				}
 
 				this._last_rv = rv;
+
 				return rv;
 			} else {
 				return undefined;
