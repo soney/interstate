@@ -90,10 +90,10 @@
 										return !!client.get();
 									}, this)))
 									.addTransition('editing', 'idle', function(dt) {
-										elem.on('confirm_value', dt);
+										elem.on('confirm_value.cell', dt);
 									})
 									.addTransition('editing', 'idle', function(dt) {
-										elem.on('cancel_value', dt);
+										elem.on('cancel_value.cell', dt);
 									})
 									.on('editing->idle', function(event) {
 										if(event.type === 'confirm_value') {
@@ -124,7 +124,8 @@
 		_destroy: function() {
 			var client = this.option("client");
 
-			this.element.off("confirm_value.cell cancel_value.cell");
+			this.element.off("confirm_value.cell cancel_value.cell")
+				.children().remove();
 
 			this._remove_position_bindings();
 			this._remove_class_bindings();

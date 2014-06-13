@@ -28,8 +28,8 @@ var cjs_path = cp(vendor_src, "constraintjs");
 exports.vendor = c(
 	cp(vendor_src, [
 				"underscore/underscore.js",
-				"jquery-ui-1.10.4.custom/js/jquery-2.1.0.js",
-				"jquery-ui-1.10.4.custom/js/jquery-ui-1.11.1.custom.js",
+				"jquery-ui-1.10.4.custom/js/jquery-2.1.1.js",
+				"jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.js",
 				"raphael/raphael.js",
 				"esprima/esprima.js",
 				"qrcode.min.js",
