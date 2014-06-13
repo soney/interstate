@@ -65,6 +65,7 @@
 						;
 				},
 				test: function(env, runtime) {
+					ist.__log_errors = false;
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
 						A = cobj.prop_val("A"),
 						B = cobj.prop_val("B"),
@@ -143,6 +144,7 @@
 					deepEqual(getQ2Val(), []);
 					equal(getQ3Val().length, 0);
 					equal(getQ4Val().length, 0);
+					ist.__log_errors = true;
 				}
 			}]
 		},

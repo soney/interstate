@@ -40,7 +40,6 @@
 					equal(A.prop_val("x"), 1);
 					equal(A.prop_val("y"), 2);
 					equal(B.prop_val("x"), 3);
-					env.print();
 				}
 			}]
 		},
@@ -641,6 +640,7 @@
 			delay: 1000,
 			steps: [{
 				setup: function(env) {
+					ist.__log_errors = false;
 					env	
 						.set("screen", "<stateful>")
 						.cd("screen")
@@ -676,6 +676,7 @@
 								.set("x", "(start)", "0")
 								.set("y", "(start)", "0")
 								.up()
+					ist.__log_errors = true;
 				},
 				test: function(env, runtime) {
 				}

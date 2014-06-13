@@ -9,7 +9,8 @@ var interstate = (function (root) {
 		esprima: esprima,
 		version: "<%= version %>",
 		build_time: "<%= build_time %>",
-		__debug: true,
+		__log_errors: true,
+		__debug: false,
 		__empty_files: false,
 		__garbage_collect: true,
 		root_name: "sketch"

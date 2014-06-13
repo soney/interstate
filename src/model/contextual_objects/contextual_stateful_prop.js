@@ -138,8 +138,11 @@
 											return cdict;
 										}, this)
 										.compact()
-										.uniq()
 										.value();
+
+				inherits_from = _.uniq([this].concat(inherits_from)); // when setting an already-set property, odd situations can come up
+												// where 'this' wasn't included
+
 
 				entries = [];
 				var cifrom, ifrom;
@@ -195,10 +198,6 @@
 				statecharts = stateful_prop.get_can_inherit() ? parent.get_statecharts() : [parent.get_statechart_for_proto(parent.get_object())],
 				statecharts_len = statecharts.length;
 
-			if(this.sid() === 59) {
-				console.log(raw_values);
-				debugger;
-			}
 
 			var rv = _.map(raw_values, function (entry) {
 				var key = entry.key;

@@ -190,13 +190,17 @@
 									try {
 										robj.animate(anim_options, duration, easing);
 									} catch(e) {
-										console.error(e);
+										if(ist.__log_errors) {
+											console.error(e);
+										}
 									}
 								} else {
 									try {
 										robj.attr(raph_name, cjs.get(prop_val));
 									} catch(e) {
-										console.error(e);
+										if(ist.__log_errors) {
+											console.error(e);
+										}
 									}
 								}
 							}
