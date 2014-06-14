@@ -32,15 +32,25 @@
 					return new interstate.Environment({root: getRoot()});
 				}
 				window.env = getEnvironment();
+				/*
+				env.cd("B");
+				env.print();
+				env.top();
 				env
 				//env.set("A")
 					//.set("B")
-					.cd("B")
+					//.cd("B")
 						//.set("(prototypes)", "(start)", "A")
-						.top()
-					.cd("A")
+						//.top()
+					.cd("A");
+				env
 						.set("x")
-						.set("x", "(start)", "1")
+						//.set("x", "(start)", "1")
+						//.unset("x", "(start)")
+						.set("x", "(start)", "$this")
+						.top()
+						.cd("B")
+				env.print();
 				/*
 				env.set("a", "<stateful>")
 					.cd("a")

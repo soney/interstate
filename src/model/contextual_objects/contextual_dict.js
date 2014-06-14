@@ -35,7 +35,8 @@
 			return x && x instanceof ist.ContextualDict;
 		};
 	ist.Dict.get_proto_vals = function (cobj, non_recursive) {
-		var rv = new RedSet({
+		var originalCobj = cobj,
+			rv = new RedSet({
 				value: [cobj],
 				hash: "hash",
 				equals: ist.check_contextual_object_equality
@@ -70,6 +71,11 @@
 		}
 		rv_arr = rv.toArray();
 
+		//if(originalCobj.sid() === 25) {
+			//console.log(rv_arr.slice(1));
+		//}
+
+		
 		return rv_arr.slice(1); // don't include the original dict
 	};
 
@@ -194,6 +200,7 @@
 		};
 
 		proto.raw_children = function (exclude_builtins) {
+			//console.log("-begin raw children-");
 			var dict = this.get_object(),
 				pointer = this.get_pointer(),
 				my_ptr_index = pointer.lastIndexOf(dict),
@@ -204,6 +211,11 @@
 				proto_objects = this.get_all_protos(true),
 				inherited_names = [],
 				i;
+
+			//if(this.sid() === 25) {
+				//console.log(proto_objects);
+			//}
+			//console.log("-end raw children-");
 
 			_.each(builtin_names, function (name) {
 				owners[name] = this;

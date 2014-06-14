@@ -175,6 +175,8 @@
 						}
 					}
 				}
+			} else if(this.is_inherited()) {
+				return [];
 			} else {
 				values = stateful_prop.get_direct_values();
 				entries = values.entries();
@@ -197,7 +199,6 @@
 				stateful_prop = this.get_object(),
 				statecharts = stateful_prop.get_can_inherit() ? parent.get_statecharts() : [parent.get_statechart_for_proto(parent.get_object())],
 				statecharts_len = statecharts.length;
-
 
 			var rv = _.map(raw_values, function (entry) {
 				var key = entry.key;
@@ -359,9 +360,16 @@
 
 		proto._get_valid_cobj_children = function() {
 			var my_pointer = this.get_pointer(),
-				rv = _.map(this.get_values(), function(val) {
-					var value = val.value;
-					return {obj: value, pointer: my_pointer.push(value)};
+				rv = _.map(this.get_values(), function(info) {
+					var value = info.value,
+						opts = {
+							inherited_from: info.inherited_from
+						};
+					return {
+						obj: value,
+						pointer: my_pointer.push(value),
+						options: opts
+					};
 				});
 			return rv;
 		};
