@@ -808,19 +808,6 @@
 								inherited_from: child_info.inherited_from
 							}
 						});
-
-						if(value instanceof ist.Dict) {
-							cobj = ist.find_or_put_contextual_obj(value, ptr, {
-								inherited_from: child_info.inherited_from
-							});
-
-							if(cobj.is_template()) {
-								instances = cobj.instances();
-								rv.push.apply(rv, _.map(instances, function(i) {
-									return {obj: i.get_object(), pointer: i.get_pointer()};
-								}));
-							}
-						}
 					}
 				}, this);
 			}

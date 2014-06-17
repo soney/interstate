@@ -46,7 +46,7 @@
 		};
 		proto._getter = function () {
 			var value;
-			if(ist.__debug) {
+			if(true || ist.__debug) {
 				value = cjs.get(this.value_constraint.get());
 			} else {
 				try {

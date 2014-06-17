@@ -502,7 +502,7 @@
 		},
 		{
 			name: "Copies",
-			expect: 1,
+			expect: 2,
 			steps: [{
 				setup: function(env) {
 					env	
@@ -519,6 +519,12 @@
 				},
 				test: function(env, runtime) {
 					var circles = $("circle", runtime);
+					equal(circles.size(), 3);
+					runtime.dom_output("option", "root", false);
+					env._cycle_stringify_destringify();
+					runtime.dom_output("option", "root", env.get_root());
+
+					circles = $("circle", runtime);
 					equal(circles.size(), 3);
 					//env.print();
 				}
@@ -976,7 +982,7 @@
 		},
 		{
 			name: "Object initialization bug",
-			expect: 1,
+			expect: 3,
 			builtins: false,
 			steps: [{
 				setup: function(env) {
@@ -998,23 +1004,19 @@
 				test: function(env, runtime) {
 					runtime.dom_output("option", "root", false);
 					env._cycle_stringify_destringify();
-					window.dbg = true;
 					runtime.dom_output("option", "root", env.get_root());
-					env.print();
 					env.cd("x")
 					var x = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
-					/*
 					env.top();
 					env.cd("obj");
 					var obj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
 						y = obj.prop_val("y"),
 						z = obj.prop_val("z");
-						*/
 
 
 					equal(x.prop_val("prop1"), 1);
-					//equal(y.prop_val("prop1"), 1);
-					//equal(z.prop_val("prop1"), 1);
+					equal(y.prop_val("prop1"), 1);
+					equal(z.prop_val("prop1"), 1);
 
 				}
 			}]

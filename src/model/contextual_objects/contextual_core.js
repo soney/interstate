@@ -28,6 +28,13 @@
 
 		ist.add_cobj_cached_item(this);
 
+		this.$value = new cjs.Constraint(this._getter, {
+			context: this,
+			check_on_nullify: options && (options.check_on_nullify === true),
+			equals: (options && options.equals) || undefined
+		});
+		this.object.on("begin_destroy", this.destroy, this);
+
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
 		}
@@ -37,12 +44,6 @@
 		var proto = My.prototype;
 		able.make_proto_listenable(proto);
 		proto.initialize = function(options) {
-			this.$value = new cjs.Constraint(this._getter, {
-				context: this,
-				check_on_nullify: options && (options.check_on_nullify === true),
-				equals: (options && options.equals) || undefined
-			});
-			this.object.on("begin_destroy", this.destroy, this);
 			if(this.constructor === My) { this.flag_as_initialized();  }
 		};
 		proto.flag_as_initialized = function() {
@@ -155,6 +156,7 @@
 		};
 
 		proto.destroy = function () {
+			if(this.sid() === 833) debugger;
 			if(this.constructor === My) { this.begin_destroy(true); }
 
 			this._destroyed = true;
@@ -188,7 +190,8 @@
 		proto.update_cobj_children = function(recursive) {
 			cjs.wait();
 			var valid_children = this._get_valid_cobj_children(),
-				to_destroy = {};
+				to_destroy = {},
+				to_initialize = [];
 
 			_.each(_.keys(this._cobj_children), function(key) {
 				to_destroy[key] = true;
@@ -249,16 +252,85 @@
 						special_contexts: special_contexts,
 						cobj: cobj
 					});
-					cobj.initialize();
 					cobj.on("begin_destroy", function() {
 						this.remove_cobj_child(obj, special_contexts, hash);
 					}, this);
-				}
-
-				if(recursive) {
+					to_initialize.push(cobj);
+				} else {
 					cobj.update_cobj_children(recursive);
 				}
 			}, this);
+
+			_.each(to_initialize, function(cobj) {
+				cobj.initialize();
+				if(cobj instanceof ist.ContextualDict && cobj.is_template()) {
+					var instances = cobj.instances();
+
+					_.each(instances, function(instance) {
+						var ptr = instance.get_pointer(),
+							obj = instance.get_object(),
+							len_minus_1 = ptr.length() - 1,
+							special_contexts = ptr.special_contexts(len_minus_1),
+							hash = ptr.itemHash(len_minus_1);
+
+						if(_.has(this._cobj_children, hash)) {
+							hash_children = this._cobj_children[hash];
+							var i = 0,
+								len = hash_children.length,
+								child_info;
+
+							if(to_destroy[hash] === true) {
+								td = to_destroy[hash] = [];
+							} else {
+								td = to_destroy[hash];
+							}
+
+							for(; i<len; i++) {
+								child_info = hash_children[i];
+								if (child_info.obj === obj) {
+									var sc1 = child_info.special_contexts,
+										sc2 = special_contexts;
+
+									if(ist.check_special_context_equality(sc1, sc2)) {
+										found = true;
+										if(len === 1) {
+											to_destroy[hash] = false;
+										} else {
+											td[i] = false;
+										}
+										break;
+									}
+								}
+							}
+						} else {
+							to_destroy[hash] = false;
+							hash_children = this._cobj_children[hash] = [];
+						}
+					}, this);
+					/*
+					rv.push.apply(rv, _.map(instances, function(i) {
+						return {obj: i.get_object(), pointer: i.get_pointer()};
+					}));
+					*/
+				}
+				/*
+
+
+						if(value instanceof ist.Dict) {
+							cobj = ist.find_or_put_contextual_obj(value, ptr, {
+								inherited_from: child_info.inherited_from
+							});
+
+							if(cobj.is_template()) {
+								instances = cobj.instances();
+								rv.push.apply(rv, _.map(instances, function(i) {
+									return {obj: i.get_object(), pointer: i.get_pointer()};
+								}));
+							}
+						}
+						*/
+			}, this);
+
 			_.each(to_destroy, function(td, key) {
 				var hash_children = this._cobj_children[key];
 				if(td === true) {
@@ -292,7 +364,10 @@
 			cjs.signal();
 		};
 
-		proto.get_or_put_cobj_child = function (obj, special_contexts, hash, options) {
+		proto.get_or_put_cobj_child = function (obj, special_contexts, hash, options, avoid_initialization) {
+			if(window.dbg) {
+				debugger;
+			}
 			var hash_children,
 				cobj;
 			if(_.has(this._cobj_children, hash)) {
@@ -322,7 +397,9 @@
 				special_contexts: special_contexts,
 				cobj: cobj
 			});
-			cobj.initialize();
+			if(!avoid_initialization) {
+				cobj.initialize();
+			}
 			cobj.on("begin_destroy", function() {
 				this.remove_cobj_child(obj, special_contexts, hash);
 			}, this);
