@@ -868,6 +868,7 @@
 						;
 				},
 				test: function(env, runtime) {
+					env._cycle_stringify_destringify();
 					env.cd("obj");
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					env.up().cd("obj2");
@@ -881,7 +882,7 @@
 		},
 		{
 			name: "this, $this, $$this",
-			expect: 9,
+			expect: 18,
 			builtins: false,
 			steps: [{
 				setup: function(env) {
@@ -902,33 +903,119 @@
 						;
 				},
 				test: function(env, runtime) {
-					env.cd("A");
-					var A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
-						Ax = A.prop_val("x"),
-						Ay = A.prop_val("y")
-						Az = A.prop_val("z");
-					env.up().cd("B");
-					var B = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
-						Bx = B.prop_val("x"),
-						By = B.prop_val("y"),
-						Bz = B.prop_val("z");
-					env.up().cd("C");
-					var C = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
-						Cx = C.prop_val("x"),
-						Cy = C.prop_val("y"),
-						Cz = C.prop_val("z");
+					var do_tests = function() {
+						env.top().cd("A");
+						var A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
+							Ax = A.prop_val("x"),
+							Ay = A.prop_val("y")
+							Az = A.prop_val("z");
 
-					ok(Ax === A);
-					ok(Ay === A);
-					ok(Az === A);
-					ok(Bx === B);
-					ok(By === A);
-					ok(Bz === A);
-					ok(Cx === C);
-					ok(Cy === B);
-					ok(Cz === A);
+						env.up().cd("B");
+						var B = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
+							Bx = B.prop_val("x"),
+							By = B.prop_val("y"),
+							Bz = B.prop_val("z");
+
+						env.up().cd("C");
+						var C = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
+							Cx = C.prop_val("x"),
+							Cy = C.prop_val("y"),
+							Cz = C.prop_val("z");
+
+						ok(Ax === A);
+						ok(Ay === A);
+						ok(Az === A);
+						ok(Bx === B);
+						ok(By === A);
+						ok(Bz === A);
+						ok(Cx === C);
+						ok(Cy === B);
+						ok(Cz === A);
+					}
+
+					do_tests();
+					env._cycle_stringify_destringify();
+					do_tests();
+					
 
 					Ax = Ay = Az = Bx = By = Bz = Cx = Cy = Cz = A = B = C = null;
+				}
+			}]
+		},
+		{
+			name: "H1 and serialization",
+			expect: 5,
+			builtins: true,
+			steps: [{
+				setup: function(env) {
+					env.set("message", "<stateful>")
+						.cd("message")
+							.set("(prototypes)", "(start)", "dom.h1")
+							.set("textContent", "(start)", "'hello'")
+							.set("(copies)", "2");
+				},
+				test: function(env, runtime) {
+					runtime.dom_output("option", "root", false);
+					env._cycle_stringify_destringify();
+					runtime.dom_output("option", "root", env.get_root());
+					var h1s = $("h1", runtime);
+					equal(h1s.size(), 2);
+					equal(h1s.text(), "hellohello");
+
+					runtime.dom_output("option", "root", false);
+					h1s = $("h1", runtime);
+					equal(h1s.size(), 0);
+					env._cycle_stringify_destringify();
+					runtime.dom_output("option", "root", env.get_root());
+
+					h1s = $("h1", runtime);
+					equal(h1s.size(), 2);
+					equal(h1s.text(), "hellohello");
+				}
+			}]
+		},
+		{
+			name: "Object initialization bug",
+			expect: 1,
+			builtins: false,
+			steps: [{
+				setup: function(env) {
+					env	.set("x", "<stateful>")
+						.set("obj", "<dict>")
+						.cd("obj")
+							.set("y", "<stateful>")
+							.cd("y")
+								.set("prop1", "(start)", "1")
+								.up()
+							.set("z", "<stateful>")
+							.cd("z")
+								.set("(prototypes)", "(start)", "obj.y")
+								.up()
+							.up()
+						.cd("x")
+							.set("(prototypes)", "(start)", "obj.z");
+				},
+				test: function(env, runtime) {
+					runtime.dom_output("option", "root", false);
+					env._cycle_stringify_destringify();
+					window.dbg = true;
+					runtime.dom_output("option", "root", env.get_root());
+					env.print();
+					env.cd("x")
+					var x = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+					/*
+					env.top();
+					env.cd("obj");
+					var obj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
+						y = obj.prop_val("y"),
+						z = obj.prop_val("z");
+						*/
+
+
+					equal(x.prop_val("prop1"), 1);
+					//equal(y.prop_val("prop1"), 1);
+					//equal(z.prop_val("prop1"), 1);
+
 				}
 			}]
 		},

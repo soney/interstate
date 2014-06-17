@@ -178,7 +178,7 @@
 
 			if (_.isString(value)) {
 				if (value === "<dict>") {
-					value = new ist.Dict({has_protos: false});
+					value = new ist.Dict({});
 					var direct_protos = new ist.Cell({ ignore_inherited_in_first_dict: true/*str: "[]", ignore_inherited_in_contexts: [value]*/});
 					value._set_direct_protos(direct_protos);
 				} else if (value === "<stateful>") {
@@ -371,6 +371,7 @@
 				});
 			}
 			this._do(command);
+			
 			return this.default_return_value();
 		};
 		proto._get_unset_prop_command = function (prop_name) {
@@ -480,7 +481,7 @@
 					if (arg0[0] === "(" && arg0[arg0.length - 1] === ")") {
 						builtin_name = arg0.slice(1, arg0.length - 1);
 
-						if (arg0 === "(protos)") {
+						if (arg0 === "(prototypes)") {
 							ignore_inherited_in_contexts = [dict];
 						}
 
@@ -786,9 +787,9 @@
 			return ist.print(this.pointer, logging_mechanism);
 		};
 		proto.destroy = function () {
-			var ptr = this.pointer;
-			var root = ptr.root();
-			var croot = ist.find_or_put_contextual_obj(root);
+			var ptr = this.pointer,
+				root = ptr.root(),
+				croot = ist.find_or_put_contextual_obj(root);
 
 
 			this._command_stack.destroy();
@@ -802,6 +803,17 @@
 			*/
 			root.destroy();
 			delete this.pointer;
+		};
+		proto._cycle_stringify_destringify = function() {
+			var root = this.get_root(),
+				stringified_root = ist.stringify(root);
+
+			root.destroy();
+			this._command_stack.clear();
+
+			var new_root = ist.destringify(stringified_root);
+
+			this.pointer = new ist.Pointer({stack: [new_root]});
 		};
 	}(ist.Environment));
 }(interstate));

@@ -505,6 +505,14 @@
 
 		proto._prop_val = function (name, ignore_inherited) {
 			var value = this.prop(name, ignore_inherited);
+			/*
+			if(this.sid() === 26) {
+				if(name === "dom") {
+					debugger;
+					console.log(value, value.val());
+				}
+			}
+			*/
 			if (value instanceof ist.ContextualObject) {
 				return value.val();
 			} else {

@@ -209,7 +209,11 @@
 				this._remove_change_listeners();
 				var old_root = this.option("root");
 				if(old_root) {
-					old_root.destroy();
+					var old_root_contextual_object = ist.find_or_put_contextual_obj(old_root);
+					if(old_root_contextual_object) {
+						old_root_contextual_object.destroy();
+					}
+					//old_root.destroy();
 				}
 			}
 			this._super(key, value);
@@ -218,7 +222,9 @@
 				if(this.server_socket) {
 					this.server_socket.set_root(this.option("root"));
 				}
-				this._add_change_listeners();
+				if(value) {
+					this._add_change_listeners();
+				}
 				this.$dirty_program.set(false);
 			}
 		},
@@ -387,7 +393,10 @@
 					}
 				}, {
 					context: this,
-					pause_while_running: true
+					pause_while_running: true,
+					on_destroy: function() {
+						this.element.children().remove();
+					}
 				});
 			}
 		},
