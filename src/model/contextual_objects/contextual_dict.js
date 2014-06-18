@@ -150,6 +150,8 @@
 		this.is_template = cjs.memoize(this._is_template, {context: this});
 		this.get_dom_children = cjs.memoize(this._get_dom_children, {context: this});
 		this.has = cjs.memoize(this._has, {context: this});
+		this._attachment_instances = { };
+		this._manifestation_objects = new RedMap({ });
 		ist.ContextualDict.superclass.constructor.apply(this, arguments);
 		this._type = "dict";
 	};
@@ -159,8 +161,6 @@
 		var proto = My.prototype;
 		proto.initialize = function() {
 			My.superclass.initialize.apply(this, arguments);
-			this._attachment_instances = { };
-			this._manifestation_objects = new RedMap({ });
 			if(ist.__garbage_collect) {
 				this._live_cobj_child_updater = cjs.liven(function() {
 					this.update_cobj_children();

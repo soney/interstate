@@ -9,6 +9,14 @@
 	var NO_VAL = {};
 
 	ist.ContextualStatefulProp = function (options) {
+		this.transition_times_run = {};
+		this._last_value = NO_VAL;
+
+		this.$active_value = new cjs.Constraint(this.active_value_getter, { context: this });
+
+		this._has_runtime_errors = false;
+		this.$runtime_errors = new cjs.Constraint([]);
+
 		ist.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
 		this._type = "stateful_prop";
 	};
@@ -19,14 +27,6 @@
 
 		proto.initialize = function() {
 			My.superclass.initialize.apply(this, arguments);
-			this.transition_times_run = {};
-			this._last_value = NO_VAL;
-
-			this.$active_value = new cjs.Constraint(this.active_value_getter, { context: this });
-
-			this._has_runtime_errors = false;
-			this.$runtime_errors = new cjs.Constraint([]);
-
 			var active_value_info = this.active_value();
 			this.$value.onChange(this.$value.get, this.$value);
 			// If we went back to set my value to the start transition's value,

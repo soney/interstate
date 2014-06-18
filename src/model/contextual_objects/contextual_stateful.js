@@ -7,6 +7,9 @@
 		_ = ist._;
 
 	ist.ContextualStatefulObj = function (options) {
+		this.statecharts_per_proto = new RedMap({
+			hash: "hash"
+		});
 		ist.ContextualStatefulObj.superclass.constructor.apply(this, arguments);
 		this._type = "stateful";
 	};
@@ -16,9 +19,6 @@
 		var proto = My.prototype;
 
 		proto.initialize = function() {
-			this.statecharts_per_proto = new RedMap({
-				hash: "hash"
-			});
 			My.superclass.initialize.apply(this, arguments);
 			if(this.constructor === My) { this.flag_as_initialized(); }
 		};
