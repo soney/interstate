@@ -156,7 +156,6 @@
 		};
 
 		proto.destroy = function () {
-			if(this.sid() === 833) debugger;
 			if(this.constructor === My) { this.begin_destroy(true); }
 
 			this._destroyed = true;
@@ -191,74 +190,114 @@
 			cjs.wait();
 			var valid_children = this._get_valid_cobj_children(),
 				to_destroy = {},
-				to_initialize = [];
+				to_initialize = [],
+				is_curr_child = _.bind(function(hash, obj, ptr, special_contexts) {
+					var found = false,
+						hash_children,
+						td, cobj;
+					if(_.has(this._cobj_children, hash)) {
+						hash_children = this._cobj_children[hash];
+						var i = 0,
+							len = hash_children.length,
+							child_info;
+
+
+						for(; i<len; i++) {
+							child_info = hash_children[i];
+							if (child_info.obj === obj) {
+								var sc1 = child_info.special_contexts,
+									sc2 = special_contexts;
+
+								if(ist.check_special_context_equality(sc1, sc2)) {
+									return {
+										child_info: child_info,
+										child_hash_index: i,
+										hash_children: hash_children
+									};
+								}
+							}
+						}
+					}
+					return false;
+				}, this),
+				remove_from_destroy_list = _.bind(function(obj, ptr, options) {
+					var len_minus_1 = ptr.length() - 1,
+						hash =  ptr.itemHash(len_minus_1),
+						special_contexts = ptr.special_contexts(len_minus_1),
+						found = is_curr_child(hash, obj, ptr, special_contexts),
+						hash_children, cobj, td, item_index;
+
+/*
+					if(to_destroy[hash] === true) {
+						td = to_destroy[hash] = [];
+					} else if(_.has(to_destroy, hash)) {
+						td = to_destroy[hash];
+					} else {
+						td = to_destroy[hash] = [];
+					}
+					*/
+
+					if(found.child_info) {
+						hash_children = found.hash_children;
+						cobj = found.child_info.cobj;
+						item_index = found.child_hash_index;
+
+						if(to_destroy[hash] === true) {
+							if(hash_children.length === 1) {
+								to_destroy[hash] = false;
+							} else {
+								to_destroy[hash][item_index] = false;
+							}
+						} else if(to_destroy[hash]) { // an array
+							to_destroy[hash][item_index] = false;
+						}
+
+/*
+						if(hash_children.length === 1) {
+							to_destroy[hash] = false;
+						} else {
+							td[item_index] = false;
+						}
+						*/
+
+						if(cobj instanceof ist.ContextualDict && cobj.is_template()) {
+							var instances = cobj.instances();
+
+							_.each(instances, function(instance) {
+								remove_from_destroy_list(instance.get_object(), instance.get_pointer());
+								if(recursive) {
+									instance.update_cobj_children(recursive);
+								}
+							}, this);
+						}
+
+						if(recursive) {
+							cobj.update_cobj_children(recursive);
+						}
+					} else {
+						hash_children = this._cobj_children[hash] = [];
+						cobj = ist.create_contextual_object(obj, ptr, _.extend({
+								defer_initialization: true
+							}, options));
+						hash_children.push({
+							obj: obj,
+							special_contexts: special_contexts,
+							cobj: cobj
+						});
+						cobj.on("begin_destroy", function() {
+							this.remove_cobj_child(obj, special_contexts, hash);
+						}, this);
+						to_initialize.push(cobj);
+					}
+				}, this);
 
 			_.each(_.keys(this._cobj_children), function(key) {
 				to_destroy[key] = true;
 			});
 
+
 			_.each(valid_children, function(valid_child) {
-				var obj = valid_child.obj,
-					ptr = valid_child.pointer,
-					options = valid_child.options,
-					len_minus_1 = ptr.length()-1,
-					hash = ptr.itemHash(len_minus_1),
-					special_contexts = ptr.special_contexts(len_minus_1),
-					found = false,
-					hash_children,
-					td, cobj;
-
-				if(_.has(this._cobj_children, hash)) {
-					hash_children = this._cobj_children[hash];
-					var i = 0,
-						len = hash_children.length,
-						child_info;
-
-					if(to_destroy[hash] === true) {
-						td = to_destroy[hash] = [];
-					} else {
-						td = to_destroy[hash];
-					}
-
-					for(; i<len; i++) {
-						child_info = hash_children[i];
-						if (child_info.obj === obj) {
-							var sc1 = child_info.special_contexts,
-								sc2 = special_contexts;
-
-							if(ist.check_special_context_equality(sc1, sc2)) {
-								found = true;
-								cobj = child_info.cobj;
-								if(len === 1) {
-									to_destroy[hash] = false;
-								} else {
-									td[i] = false;
-								}
-								break;
-							}
-						}
-					}
-				} else {
-					to_destroy[hash] = false;
-					hash_children = this._cobj_children[hash] = [];
-				}
-
-				if(!found) {
-					cobj = ist.create_contextual_object(obj, ptr, _.extend({
-							defer_initialization: true
-						}, options));
-					hash_children.push({
-						obj: obj,
-						special_contexts: special_contexts,
-						cobj: cobj
-					});
-					cobj.on("begin_destroy", function() {
-						this.remove_cobj_child(obj, special_contexts, hash);
-					}, this);
-					to_initialize.push(cobj);
-				} else {
-					cobj.update_cobj_children(recursive);
-				}
+				remove_from_destroy_list(valid_child.obj, valid_child.pointer, valid_child.options);
 			}, this);
 
 			_.each(to_initialize, function(cobj) {
@@ -267,45 +306,7 @@
 					var instances = cobj.instances();
 
 					_.each(instances, function(instance) {
-						var ptr = instance.get_pointer(),
-							obj = instance.get_object(),
-							len_minus_1 = ptr.length() - 1,
-							special_contexts = ptr.special_contexts(len_minus_1),
-							hash = ptr.itemHash(len_minus_1);
-
-						if(_.has(this._cobj_children, hash)) {
-							hash_children = this._cobj_children[hash];
-							var i = 0,
-								len = hash_children.length,
-								child_info;
-
-							if(to_destroy[hash] === true) {
-								td = to_destroy[hash] = [];
-							} else {
-								td = to_destroy[hash];
-							}
-
-							for(; i<len; i++) {
-								child_info = hash_children[i];
-								if (child_info.obj === obj) {
-									var sc1 = child_info.special_contexts,
-										sc2 = special_contexts;
-
-									if(ist.check_special_context_equality(sc1, sc2)) {
-										found = true;
-										if(len === 1) {
-											to_destroy[hash] = false;
-										} else {
-											td[i] = false;
-										}
-										break;
-									}
-								}
-							}
-						} else {
-							to_destroy[hash] = false;
-							hash_children = this._cobj_children[hash] = [];
-						}
+						remove_from_destroy_list(instance.get_object(), instance.get_pointer());
 					}, this);
 					/*
 					rv.push.apply(rv, _.map(instances, function(i) {
@@ -365,9 +366,6 @@
 		};
 
 		proto.get_or_put_cobj_child = function (obj, special_contexts, hash, options, avoid_initialization) {
-			if(window.dbg) {
-				debugger;
-			}
 			var hash_children,
 				cobj;
 			if(_.has(this._cobj_children, hash)) {

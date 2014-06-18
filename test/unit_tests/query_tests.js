@@ -12,7 +12,7 @@
 	var _ = ist._,
 		tests = [
 		{
-			name: "Queries",
+			name: "Multi-copy queries",
 			expect: 3,
 			create_builtins: false,
 			steps: [{
