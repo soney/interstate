@@ -206,8 +206,8 @@
 			var node = new ist.Dict({direct_attachments: [new ist.DomAttachment()]});
 			dom.set("node", node);
 			node.set("tag", new ist.Cell({str: "'div'"}));
-			node.set("attr", new ist.StatefulObj());
-			node.set("style", new ist.StatefulObj());
+			node.set("attr", new ist.Dict());
+			node.set("style", new ist.Dict());
 			node.set("textContent", new ist.Cell({str: "'no text'"}));
 			node.set("show", new ist.Cell({str: "true"}));
 			node.set("showChildren", new ist.Cell({str: "true"}));

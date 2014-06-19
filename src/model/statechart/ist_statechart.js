@@ -152,6 +152,57 @@
 	ist.Statechart = function (options) {
 		options = options || {};
 		this._transition_listeners = {};
+
+		this._start_state = options.start_state || new ist.StartState({
+			parent: this,
+			to: options.start_at,
+			context: options.context
+		});
+		this.$substates = options.substates || cjs.map();
+		this.$substates.setValueHash("hash");
+		this.$concurrent = cjs(options.concurrent === true);
+		this._parent = options.parent;
+		this.$incoming_transitions = options.incoming_transitions || cjs.array();
+		this.$outgoing_transitions = options.outgoing_transitions || cjs.array();
+
+		var my_starting_state;
+		if (this._running && this._basis) {
+			var basis_start_state = this._basis.get_start_state();
+			var basis_start_state_to = basis_start_state.getTo();
+			
+			if (basis_start_state_to === basis_start_state) {
+				my_starting_state = this._start_state;
+			} else {
+				//if(!this.is_puppet()) {
+					//this.increment_start_state_times_run(this);
+					//_.defer(this.increment_start_state_times_run, this);
+				//}
+				my_starting_state = ist.find_equivalent_state(basis_start_state_to, this);
+			}
+		} else {
+			my_starting_state = this._start_state;
+		}
+
+		this.$local_state = new cjs.Constraint(my_starting_state);
+		if(this.is_active()) {
+			if(options.concurrent === true) {
+				if(!this.is_puppet()) {
+					_.each(this.get_substates(), function(substate) {
+						substate.disable_immediate_outgoing_transitions();
+						substate.disable_immediate_incoming_transitions();
+						substate.set_active(true);
+						substate.run();
+					});
+				}
+			} else {
+				if(!this.is_puppet()) {
+					//my_starting_state.enable_outgoing_transitions();
+					my_starting_state.set_active(true);
+					my_starting_state.run();
+				}
+			}
+		}
+
 		ist.Statechart.superclass.constructor.apply(this, arguments);
 	};
 	(function (My) {
@@ -167,73 +218,12 @@
 			}
 		};
 
-		proto.do_initialize = function (options) {
-			this._start_state = options.start_state || new ist.StartState({
-				parent: this,
-				to: options.start_at,
-				context: options.context
+		proto.initialize = function () {
+			My.superclass.initialize.apply(this, arguments);
+			_.each(this.get_substates(true), function(substate) {
+				substate.initialize();
 			});
-			this.$substates = options.substates || cjs.map();
-			this.$substates.setValueHash("hash");
-			this.$concurrent = cjs(options.concurrent === true);
-			this._parent = options.parent;
-			this.$incoming_transitions = options.incoming_transitions || cjs.array();
-			this.$outgoing_transitions = options.outgoing_transitions || cjs.array();
-
-			this._running = options.running === true;
-			if(ist.__debug_statecharts) {
-				this.$running = cjs(this._running);
-			}
-
-			My.superclass.do_initialize.apply(this, arguments);
-
-			var my_starting_state;
-			if (this._running && this._basis) {
-				var basis_start_state = this._basis.get_start_state();
-				var basis_start_state_to = basis_start_state.getTo();
-				
-				if (basis_start_state_to === basis_start_state) {
-					my_starting_state = this._start_state;
-				} else {
-					//if(!this.is_puppet()) {
-						//this.increment_start_state_times_run(this);
-						//_.defer(this.increment_start_state_times_run, this);
-					//}
-					my_starting_state = ist.find_equivalent_state(basis_start_state_to, this);
-				}
-			} else {
-				my_starting_state = this._start_state;
-			}
-
-			this.$local_state = new cjs.Constraint(my_starting_state);
-			if(this.is_active()) {
-				if(options.concurrent === true) {
-					if(!this.is_puppet()) {
-						_.each(this.get_substates(), function(substate) {
-							substate.disable_immediate_outgoing_transitions();
-							substate.disable_immediate_incoming_transitions();
-							substate.set_active(true);
-							substate.run();
-						});
-					}
-				} else {
-					if(!this.is_puppet()) {
-						//my_starting_state.enable_outgoing_transitions();
-						my_starting_state.set_active(true);
-						my_starting_state.run();
-					}
-				}
-			}
-
-			ist.register_uid(this._id, this);
-			this._initialized.set(true);
-			this._emit("initialized");
 		};
-		if(ist.__debug_statecharts) {
-			proto.get_$running = function() {
-				return this.$running.get();
-			};
-		}
 
 		proto.is_concurrent = function () { return this.$concurrent.get(); };
 		proto.make_concurrent = function (is_concurrent) {
@@ -293,6 +283,56 @@
 				return [];
 			}
 		};
+		proto.run = function() {
+			cjs.wait();
+			var was_running = this.is_running();
+			My.superclass.run.apply(this, arguments);
+			if(!was_running) {
+				if(this.is_concurrent()) {
+					_.each(this.get_substates(), function(substate) {
+						substate.run();
+						substate.set_active(true);
+					});
+				} else {
+					var local_state = this.$local_state.get();
+					//local_state.enable_outgoing_transitions();
+					local_state.run();
+					local_state.set_active(true);
+				/*
+					var start_state = this.get_start_state();
+					this.$local_state.set(start_state);
+					start_state.enable_outgoing_transitions();
+					start_state.run();
+					start_state.set_active(true);
+					*/
+				}
+			}
+			cjs.signal();
+		};
+		proto.stop = function() {
+			cjs.wait();
+			var was_running = this.is_running();
+			My.superclass.stop.apply(this, arguments);
+			if(was_running) {
+				if(this.is_concurrent()) {
+					_.forEach(this.get_substates(true), function (substate) {
+						substate.set_active(false);
+						substate.stop();
+					});
+				} else {
+					var local_state = this.$local_state.get();
+					if(local_state) {
+						local_state.set_active(false);
+						//local_state.disable_outgoing_transitions();
+					}
+					this.$local_state.set(this._start_state);
+					_.forEach(this.get_substates(true), function (substate) {
+						substate.stop();
+					});
+				}
+			}
+			cjs.signal();
+		};
 		proto.get_start_state = function () { return this._start_state; };
 		proto.set_start_state = function (state) {
 			cjs.wait();
@@ -321,7 +361,6 @@
 			}
 		};
 		proto.get_active_substate = function () { return this.$local_state.get(); };
-		proto.is_running = function () { return this._running; };
 
 		proto.get_state_index = function (state_name) {
 			return this.$substates.indexOf(state_name);
@@ -428,103 +467,6 @@
 				}
 				//cjs.signal();
 			}
-		};
-		proto.run = function () {
-			if(this.is_puppet()) {
-				this._running = true;
-				this._emit("run", {
-					target: this,
-					type: "run"
-				});
-				if(ist.__debug_statecharts) {
-					this.$running.set(true);
-				}
-				return;
-			} else if (!this.is_running()) {
-				ist.event_queue.wait();
-				this.enable_outgoing_transitions();
-
-				this._running = true;
-
-				if(this.is_concurrent()) {
-					_.each(this.get_substates(), function(substate) {
-						substate.run();
-						substate.set_active(true);
-					});
-				} else {
-					var local_state = this.$local_state.get();
-					//local_state.enable_outgoing_transitions();
-					local_state.run();
-					local_state.set_active(true);
-				/*
-					var start_state = this.get_start_state();
-					this.$local_state.set(start_state);
-					start_state.enable_outgoing_transitions();
-					start_state.run();
-					start_state.set_active(true);
-					*/
-				}
-				this._emit("run", {
-					target: this,
-					type: "run"
-				});
-				if(ist.__debug_statecharts) {
-					this.$running.set(true);
-				}
-				ist.event_queue.signal();
-			}
-			return this;
-		};
-		proto.stop = function () {
-			if(this.is_puppet()) {
-				this._running = false;
-				this._emit("stop", {
-					type: "stop",
-					target: this
-				});
-				if(ist.__debug_statecharts) {
-					this.$running.set(false);
-				}
-				return;
-			} else {
-				ist.event_queue.wait();
-				this._running = false;
-				this.disable_outgoing_transitions();
-				if(this.is_concurrent()) {
-					_.forEach(this.get_substates(true), function (substate) {
-						substate.set_active(false);
-						substate.stop();
-					});
-				} else {
-					var local_state = this.$local_state.get();
-					if(local_state) {
-						local_state.set_active(false);
-						//local_state.disable_outgoing_transitions();
-					}
-					this.$local_state.set(this._start_state);
-					_.forEach(this.get_substates(true), function (substate) {
-						substate.stop();
-					});
-				}
-				this._emit("stop", {
-					type: "stop",
-					target: this
-				});
-				if(ist.__debug_statecharts) {
-					this.$running.set(false);
-				}
-				ist.event_queue.signal();
-			}
-			return this;
-		};
-		proto.reset = function () {
-			if (this.is_running()) {
-				ist.event_queue.wait();
-				this.stop();
-				this.run();
-				ist.event_queue.signal();
-			}
-			return this;
 		};
 		proto.get_name_for_substate = function (substate) {
 			return substate === this.get_start_state() ? My.START_STATE_NAME : this.$substates.keyForValue(substate);
@@ -1026,20 +968,17 @@
 						return rv;
 					}
 				}
-				rv = new My({id: obj.id}, true);
-				rv.initialize = function () {
-					var options = {
-						substates: ist.deserialize.apply(ist, ([obj.substates]).concat(rest_args)),
-						concurrent: obj.concurrent,
-						start_state: ist.deserialize.apply(ist, ([obj.start_state]).concat(rest_args)),
-						outgoing_transitions: ist.deserialize.apply(ist,
-															([obj.outgoing_transitions]).concat(rest_args)),
-						incoming_transitions: ist.deserialize.apply(ist,
-															([obj.incoming_transitions]).concat(rest_args)),
-						parent: ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args))
-					};
-					this.do_initialize(options);
-				};
+				rv = new My({
+					id: obj.id,
+					substates: ist.deserialize.apply(ist, ([obj.substates]).concat(rest_args)),
+					concurrent: obj.concurrent,
+					start_state: ist.deserialize.apply(ist, ([obj.start_state]).concat(rest_args)),
+					outgoing_transitions: ist.deserialize.apply(ist,
+														([obj.outgoing_transitions]).concat(rest_args)),
+					incoming_transitions: ist.deserialize.apply(ist,
+														([obj.incoming_transitions]).concat(rest_args)),
+					parent: ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args))
+				}, true);
 
 				return rv;
 			});

@@ -8,55 +8,72 @@
 
 	ist.StartState = function (options) {
 		options = options || {};
-		this.outgoingTransition = false;
-		this._transition_to_self = cjs(undefined);
-		ist.StartState.superclass.constructor.apply(this, arguments);
-		this._running = options.running === true;
+
+		//this.outgoingTransition = false;
 		if(ist.__debug_statecharts) {
 			this.$running = cjs(this._running);
 		}
+
+		//var basis = this.basis();
+
+		this.outgoingTransition = options.outgoing_transition;
+		//this._transition_to_self = cjs(this.outgoingTransition && (this.outgoingTransition.to() === this));
+
+		//if(options.outgoing_transition) {
+		//}
+		//var to;
+
+		//if(!basis && !this.is_puppet()) {
+		/*
+			// If we have a basis, then whatever function shadowed us will create our outgoing transition too
+			if (options.to) {
+				to = options.to;
+				this._transition_to_self.set(false);
+			} else {
+				to = this;
+				this._transition_to_self.set(true);
+			}
+
+			debugger;
+			*/
+			//this.outgoingTransition = options.outgoing_transition;
+			/*
+			|| new ist.StatechartTransition({
+				from: this,
+				to: to,
+				event: new ist.StatechartEvent({
+					target: "me",
+					spec: "run"
+				})
+			});
+
+			to._add_direct_incoming_transition(this.outgoingTransition);
+			*/
+		//} else if(this.is_puppet()) {
+			//this.outgoingTransition = options.outgoing_transition;
+			//this._transition_to_self.set(this.outgoingTransition.to() === this);
+		//}
+
+		ist.StartState.superclass.constructor.apply(this, arguments);
 	};
 	(function (My) {
 		_.proto_extend(My, ist.State);
 		var proto = My.prototype;
-		proto.do_initialize = function (options) {
-			My.superclass.do_initialize.apply(this, arguments);
-			var basis = this.basis();
-			var to;
-			if(!basis && !this.is_puppet()) {
-				// If we have a basis, then whatever function shadowed us will create our outgoing transition too
-				if (options.to) {
-					to = options.to;
-					this._transition_to_self.set(false);
-				} else {
-					to = this;
-					this._transition_to_self.set(true);
-				}
-
-				this.outgoingTransition = options.outgoing_transition || new ist.StatechartTransition({
+		proto.initialize = function () {
+			if(!this.outgoingTransition) {
+				this.outgoingTransition = new ist.StatechartTransition({
 					from: this,
-					to: to,
+					to: this,
 					event: new ist.StatechartEvent({
 						target: "me",
 						spec: "run"
 					})
 				});
-
-				to._add_direct_incoming_transition(this.outgoingTransition);
-			} else if(this.is_puppet()) {
-				this.outgoingTransition = options.outgoing_transition;
-				this._transition_to_self.set(this.outgoingTransition.to() === this);
+				//throw new Error("Outgoing transition not set");
 			}
 
-			ist.register_uid(this._id, this);
-			this._initialized.set(true);
-			this._emit("initialized");
+			My.superclass.initialize.apply(this, arguments);
 		};
-		if(ist.__debug_statecharts) {
-			proto.get_$running = function() {
-				return this.$running.get();
-			};
-		}
 		proto.setTo = function (toNode) {
 			var transition = this.outgoingTransition;
 			var parent = this.parent();
@@ -82,29 +99,37 @@
 			}
 		};
 		proto.get_incoming_transitions = function () {
+
+			if(this.outgoingTransition && (this.outgoingTransition.to() === this)) {
+				return [this.outgoingTransition];
+			} else {
+				return [];
+			}
+			/*
 			if (this._transition_to_self.get() && this.outgoingTransition) {
 				return [this.outgoingTransition];
 			} else {
 				return [];
 			}
+			*/
 		};
 		proto._add_direct_incoming_transition = function (transition) {
 			if (transition !== this.outgoingTransition) {
 				throw new Error("Should never have a transition other than outgoing transition");
 			}
-			this._transition_to_self.set(true);
+			//this._transition_to_self.set(true);
 		};
 		proto._remove_direct_incoming_transition = function (transition) {
 			if (transition !== this.outgoingTransition) {
 				throw new Error("Should never have a transition other than outgoing transition");
 			}
-			this._transition_to_self.set(false);
+			//this._transition_to_self.set(false);
 		};
 		proto._add_direct_outgoing_transition = function (transition) {
 			if (this.outgoingTransition) { // I already have an outgoing transition
 				throw new Error("Should never have a transition other than outgoing transition");
 			}
-			this._transition_to_self.set(transition.to() === this);
+			//this._transition_to_self.set(transition.to() === this);
 			this.outgoingTransition = transition;
 		};
 		proto._remove_direct_outgoing_transition = function (transition) {
@@ -113,6 +138,7 @@
 		proto.is_running = function () {
 			return this._running;
 		};
+		/*
 		proto.run = function () {
 			if(this.is_puppet()) {
 				this._running = true;
@@ -159,6 +185,7 @@
 			}
 			return this;
 		};
+		*/
 		proto.destroy = function (silent) {
 			this._emit("destroy", {
 				type: "destroy",
@@ -170,8 +197,8 @@
 				this.outgoingTransition.destroy(silent);
 				delete this.outgoingTransition;
 			}
-			this._transition_to_self.destroy(silent);
-			delete this._transition_to_self;
+			//this._transition_to_self.destroy(silent);
+			//delete this._transition_to_self;
 			My.superclass.destroy.apply(this, arguments);
 			cjs.signal();
 		};
@@ -192,6 +219,9 @@
 		};
 		proto.get_outgoing_transition = function () {
 			return this.outgoingTransition;
+		};
+		proto.set_outgoing_transition = function (transition) {
+			this.outgoingTransition = transition;
 		};
 
 		proto.create_shadow = function (options, defer_initialization) {
@@ -226,14 +256,20 @@
 						return rv;
 					}
 				}
-				rv = new My({id: obj.id}, true);
-				rv.initialize = function () {
+				rv = new My({
+					id: obj.id,
+					outgoing_transition: ist.deserialize.apply(ist, ([obj.outgoing_transition]).concat(rest_args)),
+					parent: ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args))
+				});
+				//rv.initialize = function () {
+				/*
 					var options = {
 						outgoing_transition: ist.deserialize.apply(ist, ([obj.outgoing_transition]).concat(rest_args)),
 						parent: ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args))
 					};
 					this.do_initialize(options);
-				};
+					*/
+				//};
 
 				return rv;
 			});

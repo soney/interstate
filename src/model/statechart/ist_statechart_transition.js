@@ -35,22 +35,24 @@
 		if(ist.__debug_statecharts) {
 			this.$enabled = cjs(this._enabled);
 		}
+
+		this._puppet = options.puppet === true;
+		this.$active = cjs(false);
+		this.is_start_transition = options.from instanceof ist.StartState;
+		this._times_run = options.times_run || (this.is_start_transition ? 1 : 0);
+		this.$times_run = cjs(this._times_run);
+		this._from_state = new cjs.Constraint(options.from);
+		this._to_state = new cjs.Constraint(options.to);
+		this._context = options.context;
+		this.set_basis(options.basis);
+		this.set_event(options.event);
+
+		ist.register_uid(this._id, this);
 	};
 	(function (My) {
 		var proto = My.prototype;
 		able.make_proto_listenable(proto);
 		proto.do_initialize = function (options) {
-			this._puppet = options.puppet === true;
-			this.$active = cjs(false);
-			this.is_start_transition = options.from instanceof ist.StartState;
-			this._times_run = options.times_run || (this.is_start_transition ? 1 : 0);
-			this.$times_run = cjs(this._times_run);
-			this._from_state = new cjs.Constraint(options.from);
-			this._to_state = new cjs.Constraint(options.to);
-			this._context = options.context;
-			this.set_basis(options.basis);
-			this.set_event(options.event);
-			ist.register_uid(this._id, this);
 			this._initialized.set(true);
 			this._emit("initialized");
 		};

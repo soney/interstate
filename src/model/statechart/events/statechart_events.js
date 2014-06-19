@@ -42,27 +42,32 @@
 				if (!_.isArray(targs)) {
 					targs = [targs];
 				}
-				this.processed_targets = _.chain(targs)
-					.map(function (target_pointer) {
-						var statecharts;
-						if (target_pointer instanceof ist.ContextualStatefulObj) {
-							if (target_pointer.is_template()) {
-								var instances = target_pointer.instances();
-								statecharts = _.map(instances, function (instance) {
-									var scs = instance.get_statecharts();
-									return scs;
-								});
-								return _.flatten(statecharts, true);
-							} else {
-								statecharts = target_pointer.get_statecharts();
-								return statecharts;
+
+				if(_.isString(this.spec)) {
+					this.processed_targets = _.chain(targs)
+						.map(function (target_pointer) {
+							var statecharts;
+							if (target_pointer instanceof ist.ContextualStatefulObj) {
+								if (target_pointer.is_template()) {
+									var instances = target_pointer.instances();
+									statecharts = _.map(instances, function (instance) {
+										var scs = instance.get_statecharts();
+										return scs;
+									});
+									return _.flatten(statecharts, true);
+								} else {
+									statecharts = target_pointer.get_statecharts();
+									return statecharts;
+								}
 							}
-						}
-						return false;
-					})
-					.flatten(true)
-					.compact()
-					.value();
+							return false;
+						})
+						.flatten(true)
+						.compact()
+						.value();
+				} else {
+					this.processed_targets = [];
+				}
 				if (this.is_enabled()) {
 					this.add_listeners();
 				}

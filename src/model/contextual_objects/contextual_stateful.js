@@ -32,19 +32,19 @@
 			var must_initialize = false;
 			var sc = this.statecharts_per_proto.get_or_put(proto, function () {
 				var super_sc = proto.get_own_statechart();
-				var shadow_sc = super_sc.create_shadow({}, true);
-				must_initialize = super_sc;
-				return shadow_sc;
-			}, this);
-			if(must_initialize) {
-				var super_sc = must_initialize;
-				sc.do_initialize({
+				var shadow_sc = super_sc.create_shadow({
 					context: this.get_pointer(),
 					running: true,
 					basis: super_sc,
 					concurrent: super_sc.is_concurrent(),
 					set_basis_as_root: true
-				});
+				}, true);
+				must_initialize = super_sc;
+				return shadow_sc;
+			}, this);
+			if(must_initialize) {
+				var super_sc = must_initialize;
+				sc.initialize();
 			}
 			cjs.signal();
 			return sc;

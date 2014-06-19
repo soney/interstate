@@ -45,40 +45,119 @@
 	};
 
 	ist.State = function (options, defer_initialization) {
-		this._initialized = cjs(false);
 		options = options || {};
+
 		able.make_this_listenable(this);
+
+		this._initialized = false;
+		this.$initialized = cjs(false);
 		this._id = options.id || uid();
 		this._hash = uid.strip_prefix(this._id);
 		this._last_run_event = cjs(false);
 
-		if (defer_initialization !== true) {
-			this.do_initialize(options);
+		this._puppet = options.puppet === true;
+		this._parent = options.parent;
+		this._context = options.context;
+
+		this.$active = cjs(options.active === true || (!this._parent && !this._puppet));
+
+		this._running = options.running === true;
+		if(ist.__debug_statecharts) {
+			this.$running = cjs(this._running);
 		}
+
+		this.set_basis(options.basis, options.set_basis_as_root);
+
+		if(!this._parent && defer_initialization !== true) {
+			this.initialize();
+		}
+
+		ist.register_uid(this._id, this);
 	};
 
 	(function (my) {
 		var proto = my.prototype;
 		able.make_proto_listenable(proto);
 
-		proto.do_initialize = function (options) {
-			this._puppet = options.puppet === true;
-			this._parent = options.parent;
-			this.$active = cjs(options.active === true || (!this._parent && !this._puppet));
-			this._context = options.context;
-			this.set_basis(options.basis, options.set_basis_as_root);
-		};
+		if(ist.__debug_statecharts) {
+			proto.get_$running = function() {
+				return this.$running.get();
+			};
+		}
 
-		proto.on_ready = function() {
-			console.log("ready");
+		proto.initialize = function () {
+			this._initialized = true;
+			this.$initialized.set(true);
+			this._emit("initialized");
 		};
 
 		proto.is_initialized = function () {
-			return this._initialized.get();
+			return this.$initialized.get();
 		};
 
 		proto.is_puppet = function () {
 			return this._puppet;
+		};
+
+		proto.is_running = function () { return this._running; };
+
+		proto.run = function () {
+			if(this.is_puppet()) {
+				this._running = true;
+				this._emit("run", {
+					target: this,
+					type: "run"
+				});
+				if(ist.__debug_statecharts) {
+					this.$running.set(true);
+				}
+			} else if (!this.is_running()) {
+				ist.event_queue.wait();
+				this.enable_outgoing_transitions();
+
+				this._running = true;
+				this._emit("run", {
+					target: this,
+					type: "run"
+				});
+				if(ist.__debug_statecharts) {
+					this.$running.set(true);
+				}
+				ist.event_queue.signal();
+			}
+		};
+		proto.stop = function () {
+			if(this.is_puppet()) {
+				this._running = false;
+				this._emit("stop", {
+					type: "stop",
+					target: this
+				});
+				if(ist.__debug_statecharts) {
+					this.$running.set(false);
+				}
+			} else {
+				ist.event_queue.wait();
+				this._running = false;
+				this.disable_outgoing_transitions();
+				this._emit("stop", {
+					type: "stop",
+					target: this
+				});
+				if(ist.__debug_statecharts) {
+					this.$running.set(false);
+				}
+				ist.event_queue.signal();
+			}
+		};
+		proto.reset = function () {
+			if (this.is_running()) {
+				ist.event_queue.wait();
+				this.stop();
+				this.run();
+				ist.event_queue.signal();
+			}
+			return this;
 		};
 
 		proto.set_basis = function (basis, as_root) {
@@ -481,7 +560,7 @@
 				this.$active.destroy(silent);
 				delete this.$active;
 			}
-			this._initialized.destroy(silent);
+			this.$initialized.destroy(silent);
 			this._last_run_event.destroy(silent);
 			delete this._last_run_event;
 			if (this._basis) {

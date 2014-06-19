@@ -263,6 +263,7 @@
 			var info, i, tr, state, val, is_start_state;
 			var is_fallback = false;
 
+
 			var using_val = NO_VAL, using_state, using_info, fallback_value = NO_VAL, fallback_state;
 			var using_as;
 			for (i = 0; i < len; i += 1) {
@@ -277,6 +278,7 @@
 						using_state = state;
 						using_as = USING_AS_STATE;
 					} else {
+						if(this.sid() === 74) { debugger; }
 						var ot = state.get_outgoing_transition();
 						if(ot) { // sometimes called before initialization
 							tr = ot.get_times_run();
@@ -343,7 +345,6 @@
 				this._from_state = using_state;
 				this._using_as = using_as;
 			}
-
 
 			return {
 				value: using_val,
