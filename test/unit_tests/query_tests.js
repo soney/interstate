@@ -14,20 +14,20 @@
 		{
 			name: "Multi-copy queries",
 			expect: 3,
-			create_builtins: false,
+			create_builtins: ["functions"],
 			steps: [{
 				setup: function(env) {
-					env	.set("find", ist.find_fn)
-						.set("on", ist.on_event)
-						.set("obj", "<stateful>")
+					env	.set("obj", "<stateful>")
 						.cd("obj")
 							.add_state("state1")
 							.add_state("state2")
 							.add_transition("state1", "state2", "on('ev'+my_copy)")
 							.start_at("state1")
 							.set_copies("5")
-							.up()
-						.set("query1", "find(obj).in_state('state1')");
+							.up();
+						window.dbg = true;
+						env.set("query1", "find(obj).in_state('state1')");
+						window.dbg = false;
 				},
 				test: function(env, runtime) {
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);

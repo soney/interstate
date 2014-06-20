@@ -23,8 +23,10 @@
 	};
 
 	ist.StatechartTransition = function (options, defer_initialization) {
-		this._initialized = cjs(false);
 		options = options || {};
+		if(options.avoid_constructor) { return; }
+
+		this._initialized = cjs(false);
 		able.make_this_listenable(this);
 		this._id = options.id || uid();
 		if (defer_initialization !== true) {
@@ -334,15 +336,16 @@
 			function (obj, deserialize_options) {
 				var rest_args = _.rest(arguments),
 					rv = new My({
-						id: obj.id,
-						from: false,
-						to: false,
-						event: ist.deserialize.apply(ist, ([obj.event]).concat(rest_args))
-					}, true);
+						avoid_constructor: true
+					});
 				rv.initialize = function() {
-					rv.setFrom(ist.deserialize.apply(ist, ([obj.from]).concat(rest_args)));
-					rv.setTo(ist.deserialize.apply(ist, ([obj.to]).concat(rest_args)));
-					proto.initialize.apply(this, arguments);
+					delete this.initialize;
+					My.call(this, {
+						id: obj.id,
+						from: ist.deserialize.apply(ist, ([obj.from]).concat(rest_args)),
+						to: ist.deserialize.apply(ist, ([obj.to]).concat(rest_args)),
+						event: ist.deserialize.apply(ist, ([obj.event]).concat(rest_args))
+					});
 				};
 				return rv;
 			});

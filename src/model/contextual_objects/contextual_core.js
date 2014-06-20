@@ -156,6 +156,7 @@
 		};
 
 		proto.destroy = function () {
+			if(this.sid() === 898) debugger;
 			if(this.constructor === My) { this.begin_destroy(true); }
 
 			this._destroyed = true;
@@ -227,15 +228,6 @@
 						found = is_curr_child(hash, obj, ptr, special_contexts),
 						hash_children, cobj, td, item_index;
 
-/*
-					if(to_destroy[hash] === true) {
-						td = to_destroy[hash] = [];
-					} else if(_.has(to_destroy, hash)) {
-						td = to_destroy[hash];
-					} else {
-						td = to_destroy[hash] = [];
-					}
-					*/
 
 					if(found.child_info) {
 						hash_children = found.hash_children;
@@ -246,19 +238,12 @@
 							if(hash_children.length === 1) {
 								to_destroy[hash] = false;
 							} else {
+								to_destroy[hash] = [];
 								to_destroy[hash][item_index] = false;
 							}
 						} else if(to_destroy[hash]) { // an array
 							to_destroy[hash][item_index] = false;
 						}
-
-/*
-						if(hash_children.length === 1) {
-							to_destroy[hash] = false;
-						} else {
-							td[item_index] = false;
-						}
-						*/
 
 						if(cobj instanceof ist.ContextualDict && cobj.is_template()) {
 							var instances = cobj.instances();
@@ -290,6 +275,7 @@
 						to_initialize.push(cobj);
 					}
 				}, this);
+
 
 			_.each(_.keys(this._cobj_children), function(key) {
 				to_destroy[key] = true;

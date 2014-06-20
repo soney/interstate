@@ -54,7 +54,7 @@
 		},
 		{
 			name: "Referencing Fields in State Machines",
-			expect: 1,
+			expect: 2,
 			builtins: ["functions"],
 			steps: [{
 				setup: function(env) {
@@ -75,20 +75,15 @@
 					var A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
 						x = A.prop_val("x");
 					equal(x, 'click');
-					env.print();
-					/*
 
 					env._cycle_stringify_destringify();
 					//runtime.dom_output("option", "root", env.get_root());
-
-					env.print();
 
 					env.top().cd("A")
 					A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					x = A.prop_val("x");
 
 					equal(x, 'click');
-					*/
 				}
 			}]
 		},

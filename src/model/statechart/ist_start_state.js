@@ -9,6 +9,8 @@
 	ist.StartState = function (options) {
 		options = options || {};
 
+		if(options.avoid_constructor) { return; }
+
 		this.outgoingTransition = options.outgoing_transition;
 		ist.StartState.superclass.constructor.apply(this, arguments);
 
@@ -256,20 +258,20 @@
 					}
 				}
 				rv = new My({
-					id: obj.id,
-					outgoing_transition: false,
-					parent: false
+					avoid_constructor: true
 				});
 				rv.initialize = function () {
+					delete this.initialize;
 				/*
 					var options = {
 					};
 					this.do_initialize(options);
 					*/
-					this.set_outgoing_transition(ist.deserialize.apply(ist, ([obj.outgoing_transition]).concat(rest_args)));
-					this.set_parent(ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args)));
-
-					proto.initialize.apply(this, arguments);
+					My.call(this, {
+						id: obj.id,
+						outgoing_transition: ist.deserialize.apply(ist, ([obj.outgoing_transition]).concat(rest_args)),
+						parent: ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args))
+					});
 				};
 
 				return rv;

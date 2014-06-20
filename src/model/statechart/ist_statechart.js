@@ -151,6 +151,7 @@
 
 	ist.Statechart = function (options, defer_initialization) {
 		options = options || {};
+		if(options.avoid_constructor) { return; }
 
 		ist.Statechart.superclass.constructor.apply(this, arguments);
 
@@ -1020,24 +1021,21 @@
 					}
 				}
 				rv = new My({
-					id: obj.id,
-					concurrent: obj.concurrent,
-					substates: false,
-					start_state: false,
-					outgoing_transitions: [],
-					incoming_transitions: [],
-					parent: false
-				}, true);
+					avoid_constructor: true
+				});
 				rv.initialize = function () {
-					this.set_substates(ist.deserialize.apply(ist, ([obj.substates]).concat(rest_args)));
-					this.set_start_state(ist.deserialize.apply(ist, ([obj.start_state]).concat(rest_args)));
-					this.set_outgoing_transitions(ist.deserialize.apply(ist,
-														([obj.outgoing_transitions]).concat(rest_args)));
-					this.set_incoming_transitions(ist.deserialize.apply(ist,
-														([obj.incoming_transitions]).concat(rest_args)));
-					this.set_parent(ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args)));
-
-					proto.initialize.apply(this, arguments);
+					delete this.initialize;
+					My.call(this, {
+						id: obj.id,
+						concurrent: obj.concurrent,
+						substates: ist.deserialize.apply(ist, ([obj.substates]).concat(rest_args)),
+						start_state: ist.deserialize.apply(ist, ([obj.start_state]).concat(rest_args)),
+						outgoing_transitions: ist.deserialize.apply(ist,
+															([obj.outgoing_transitions]).concat(rest_args)),
+						incoming_transitions: ist.deserialize.apply(ist,
+															([obj.incoming_transitions]).concat(rest_args)),
+						parent: ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args))
+					});
 				};
 
 				return rv;
