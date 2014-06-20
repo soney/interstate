@@ -44,7 +44,7 @@
 		return search_item;
 	};
 
-	ist.State = function (options, defer_initialization) {
+	ist.State = function (options) {
 		options = options || {};
 
 		able.make_this_listenable(this);
@@ -66,10 +66,13 @@
 			this.$running = cjs(this._running);
 		}
 
-		this.set_basis(options.basis, options.set_basis_as_root);
-
-		if(!this._parent && defer_initialization !== true) {
-			this.initialize();
+		//this.set_basis(options.basis, options.set_basis_as_root);
+		//if (this._basis) {
+			//this.remove_basis_listeners();
+		//}
+		this._basis = options.basis;
+		if (this._basis) {
+			this.add_basis_listeners();
 		}
 
 		ist.register_uid(this._id, this);
@@ -92,7 +95,7 @@
 		};
 
 		proto.is_initialized = function () {
-			return this.$initialized.get();
+			return this.$initialized && this.$initialized.get();
 		};
 
 		proto.is_puppet = function () {
@@ -160,6 +163,7 @@
 			return this;
 		};
 
+/*
 		proto.set_basis = function (basis, as_root) {
 			if (this._basis) {
 				this.remove_basis_listeners();
@@ -212,6 +216,7 @@
 			}
 			return this;
 		};
+		*/
 
 		proto.do_shadow_transitions = function( create_transition_shadow ) {
 			var basis = this.basis();
@@ -223,12 +228,6 @@
 				var to = transition.to();
 				from._add_direct_outgoing_transition(transition);
 				to._add_direct_incoming_transition(transition);
-
-				if(from.is_active()) {
-					transition.enable();
-				} else {
-					transition.disable();
-				}
 			}, this);
 
 			var substates = this.get_substates(true);

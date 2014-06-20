@@ -9,7 +9,7 @@
 
 	ist.CollisionEvent = function (targa, targb) {
 		ist.Event.apply(this, arguments);
-		this._initialize();
+		//this._initialize();
 		this._type = "collision";
 	};
 

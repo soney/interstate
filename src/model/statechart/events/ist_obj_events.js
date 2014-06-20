@@ -51,7 +51,7 @@
 
 	ist.IstObjEvent = function() {
 		ist.Event.apply(this, arguments);
-		this._initialize();
+		//this._initialize();
 		this._type = "ist_obj_event";
 	};
 

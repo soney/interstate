@@ -149,21 +149,70 @@
 			};
 		};
 
-	ist.Statechart = function (options) {
+	ist.Statechart = function (options, defer_initialization) {
 		options = options || {};
+
+		ist.Statechart.superclass.constructor.apply(this, arguments);
+
 		this._transition_listeners = {};
 
-		this._start_state = options.start_state || new ist.StartState({
-			parent: this,
-			to: options.start_at,
-			context: options.context
-		});
 		this.$substates = options.substates || cjs.map();
 		this.$substates.setValueHash("hash");
 		this.$concurrent = cjs(options.concurrent === true);
 		this._parent = options.parent;
 		this.$incoming_transitions = options.incoming_transitions || cjs.array();
 		this.$outgoing_transitions = options.outgoing_transitions || cjs.array();
+
+		this._start_state = options.start_state;
+		if (this._basis) {
+			var basis_start_state = this._basis.get_start_state(),
+				basis_start_state_to = basis_start_state.getTo(),
+				is_running = this.is_running(),
+				my_context = this.context(),
+				is_concurrent = this.is_concurrent();
+
+			_.each(this._basis.get_substates(true), function (substate, name) {
+				var shadow = substate.create_shadow({
+					context: my_context,
+					parent: this,
+					running: is_running && (basis_start_state_to === substate || is_concurrent),
+					active: is_running && (basis_start_state_to === substate || is_concurrent),
+					set_basis_as_root: false
+				});
+				if (shadow instanceof ist.StartState) {
+					this.set_start_state(shadow);
+				} else {
+					this.add_substate(name, shadow);
+				}
+			}, this);
+			_.each(this._basis._transition_listeners, function (listeners, name) {
+				_.each(listeners, function (info) {
+					this.on_transition(info.str, info.activation_listener, info.deactivation_listener, info.context);
+				}, this);
+			}, this);
+
+			if (options.set_basis_as_root === true) { // When all of the substates have been copied
+				var parent_statechart = this;
+
+				var create_transition_shadow = _.memoize(function (transition) {
+					var from = ist.find_equivalent_state(transition.from(), parent_statechart);
+					var to = ist.find_equivalent_state(transition.to(), parent_statechart);
+					return transition.create_shadow(from, to, parent_statechart, my_context);
+				}, function (transition, from) {
+					return transition.id();
+				});
+
+				this.do_shadow_transitions(create_transition_shadow);
+			}
+		}
+		
+		if(!this._start_state) {
+			this._start_state = new ist.StartState({
+				parent: this,
+				to: options.start_at,
+				context: options.context
+			});
+		}
 
 		var my_starting_state;
 		if (this._running && this._basis) {
@@ -203,7 +252,9 @@
 			}
 		}
 
-		ist.Statechart.superclass.constructor.apply(this, arguments);
+		if((!this._parent && defer_initialization !== true) || (this._parent && this._parent.is_initialized())) {
+			this.initialize();
+		}
 	};
 	(function (My) {
 		_.proto_extend(My, ist.State);
@@ -970,15 +1021,24 @@
 				}
 				rv = new My({
 					id: obj.id,
-					substates: ist.deserialize.apply(ist, ([obj.substates]).concat(rest_args)),
 					concurrent: obj.concurrent,
-					start_state: ist.deserialize.apply(ist, ([obj.start_state]).concat(rest_args)),
-					outgoing_transitions: ist.deserialize.apply(ist,
-														([obj.outgoing_transitions]).concat(rest_args)),
-					incoming_transitions: ist.deserialize.apply(ist,
-														([obj.incoming_transitions]).concat(rest_args)),
-					parent: ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args))
+					substates: false,
+					start_state: false,
+					outgoing_transitions: [],
+					incoming_transitions: [],
+					parent: false
 				}, true);
+				rv.initialize = function () {
+					this.set_substates(ist.deserialize.apply(ist, ([obj.substates]).concat(rest_args)));
+					this.set_start_state(ist.deserialize.apply(ist, ([obj.start_state]).concat(rest_args)));
+					this.set_outgoing_transitions(ist.deserialize.apply(ist,
+														([obj.outgoing_transitions]).concat(rest_args)));
+					this.set_incoming_transitions(ist.deserialize.apply(ist,
+														([obj.incoming_transitions]).concat(rest_args)));
+					this.set_parent(ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args)));
+
+					proto.initialize.apply(this, arguments);
+				};
 
 				return rv;
 			});

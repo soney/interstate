@@ -8,7 +8,7 @@
 
 	ist.TimeEvent = function () {
 		ist.Event.apply(this, arguments);
-		this._initialize();
+		//this._initialize();
 		this._type = "time";
 	};
 
@@ -36,7 +36,7 @@
 
 	ist.TimeoutEvent = function () {
 		ist.Event.apply(this, arguments);
-		this._initialize();
+		//this._initialize();
 		this._type = "timeout";
 		this.timeout = undefined;
 	};

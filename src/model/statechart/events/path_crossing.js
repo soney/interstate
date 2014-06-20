@@ -8,7 +8,7 @@
 
 	ist.CrossEvent = function () {
 		ist.Event.apply(this, arguments);
-		this._initialize();
+		//this._initialize();
 		this._type = "cross";
 	};
 

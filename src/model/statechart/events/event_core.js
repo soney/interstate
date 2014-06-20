@@ -91,11 +91,14 @@
 	var id = 0;
 	ist.Event = function () {
 		able.make_this_listenable(this);
-		this._initialize();
+		//this._initialize();
+		this.actual_firetime_listeners = [];
+		this.requested_firetime_listeners = [];
 		this._transition = undefined;
 		this._enabled = false;
 		this._id = id++;
 		this.on_create.apply(this, arguments);
+		this._initialized = false;
 	};
 
 	(function (my) {
@@ -104,9 +107,20 @@
 		proto.id = function() {
 			return this._id;
 		};
-		proto._initialize = function () {
-			this.actual_firetime_listeners = [];
-			this.requested_firetime_listeners = [];
+		proto.initialize = function () {
+			this._initialized = true;
+			/*
+			if(this.is_active()) {
+				this.enable_outgoing_transitions();
+			}
+				/*
+
+				if(from.is_active()) {
+					transition.enable();
+				} else {
+					transition.disable();
+				}
+				*/
 		};
 		proto.on_create = function () {};
 		proto.on_ready = function() {};

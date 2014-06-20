@@ -809,7 +809,6 @@ var constraint_solver = {
 			// Mark it as valid
 			node._valid = true;
 
-
 			if (node._options.cache_value !== false) {
 				// Check if dynamic value. If it is, then call it. If not, just fetch it
 				// set this to the node's cached value, which will be returned
@@ -1107,6 +1106,7 @@ var constraint_solver = {
 		}
 	}
 };
+window.constraint_solver  = constraint_solver ;
 
 // Constraint Variables
 // --------------------

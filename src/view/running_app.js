@@ -369,12 +369,17 @@
 							});
 						}
 					});
-				}
+				},
+				run_on_start: false
 			});
+
+			this._highlight_fn.run();
 		},
 
 		_remove_highlight_listeners: function () {
-			this._highlight_fn.destroy();
+			if(this._highlight_fn) {
+				this._highlight_fn.destroy();
+			}
 		},
 
 		_add_change_listeners: function () {

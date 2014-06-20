@@ -9,14 +9,15 @@
 	ist.StartState = function (options) {
 		options = options || {};
 
+		this.outgoingTransition = options.outgoing_transition;
+		ist.StartState.superclass.constructor.apply(this, arguments);
+
 		//this.outgoingTransition = false;
-		if(ist.__debug_statecharts) {
-			this.$running = cjs(this._running);
-		}
+		//if(ist.__debug_statecharts) {
+			//this.$running = cjs(this._running);
+		//}
 
 		//var basis = this.basis();
-
-		this.outgoingTransition = options.outgoing_transition;
 		//this._transition_to_self = cjs(this.outgoingTransition && (this.outgoingTransition.to() === this));
 
 		//if(options.outgoing_transition) {
@@ -53,8 +54,6 @@
 			//this.outgoingTransition = options.outgoing_transition;
 			//this._transition_to_self.set(this.outgoingTransition.to() === this);
 		//}
-
-		ist.StartState.superclass.constructor.apply(this, arguments);
 	};
 	(function (My) {
 		_.proto_extend(My, ist.State);
@@ -258,18 +257,20 @@
 				}
 				rv = new My({
 					id: obj.id,
-					outgoing_transition: ist.deserialize.apply(ist, ([obj.outgoing_transition]).concat(rest_args)),
-					parent: ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args))
+					outgoing_transition: false,
+					parent: false
 				});
-				//rv.initialize = function () {
+				rv.initialize = function () {
 				/*
 					var options = {
-						outgoing_transition: ist.deserialize.apply(ist, ([obj.outgoing_transition]).concat(rest_args)),
-						parent: ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args))
 					};
 					this.do_initialize(options);
 					*/
-				//};
+					this.set_outgoing_transition(ist.deserialize.apply(ist, ([obj.outgoing_transition]).concat(rest_args)));
+					this.set_parent(ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args)));
+
+					proto.initialize.apply(this, arguments);
+				};
 
 				return rv;
 			});

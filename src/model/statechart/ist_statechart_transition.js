@@ -28,7 +28,7 @@
 		able.make_this_listenable(this);
 		this._id = options.id || uid();
 		if (defer_initialization !== true) {
-			this.do_initialize(options);
+			this.initialize(options);
 		}
 		this._last_run_event = cjs(false);
 		this._enabled = false;
@@ -52,7 +52,10 @@
 	(function (My) {
 		var proto = My.prototype;
 		able.make_proto_listenable(proto);
-		proto.do_initialize = function (options) {
+		proto.initialize = function (options) {
+			if (this._event) {
+				this._event.initialize();
+			}
 			this._initialized.set(true);
 			this._emit("initialized");
 		};
@@ -329,15 +332,17 @@
 				return rv;
 			},
 			function (obj, deserialize_options) {
-				var rv = new My({id: obj.id}, true);
-				var rest_args = _.rest(arguments);
-				rv.initialize = function () {
-					var options = {
-						from: ist.deserialize.apply(ist, ([obj.from]).concat(rest_args)),
-						to: ist.deserialize.apply(ist, ([obj.to]).concat(rest_args)),
+				var rest_args = _.rest(arguments),
+					rv = new My({
+						id: obj.id,
+						from: false,
+						to: false,
 						event: ist.deserialize.apply(ist, ([obj.event]).concat(rest_args))
-					};
-					this.do_initialize(options);
+					}, true);
+				rv.initialize = function() {
+					rv.setFrom(ist.deserialize.apply(ist, ([obj.from]).concat(rest_args)));
+					rv.setTo(ist.deserialize.apply(ist, ([obj.to]).concat(rest_args)));
+					proto.initialize.apply(this, arguments);
 				};
 				return rv;
 			});

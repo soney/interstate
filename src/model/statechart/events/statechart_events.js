@@ -8,7 +8,7 @@
 
 	ist.TransitionEvent = function () {
 		ist.Event.apply(this, arguments);
-		this._initialize();
+		//this._initialize();
 		this._type = "statechart_event";
 	};
 
@@ -133,7 +133,7 @@
 
 	ist.StatechartEvent = function () {
 		ist.Event.apply(this, arguments);
-		this._initialize();
+		//this._initialize();
 		this._type = "statechart_event";
 	};
 

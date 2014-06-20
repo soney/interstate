@@ -35,7 +35,7 @@
 
 	ist.ParsedEvent = function () {
 		ist.Event.apply(this, arguments);
-		this._initialize();
+		//this._initialize();
 		this._type = "parsed_event";
 		this._has_errors = false;
 	};
