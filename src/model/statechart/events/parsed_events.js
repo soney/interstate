@@ -9,16 +9,17 @@
 	var get_event = function (tree, options, live_event_creator) {
 		//debugger;
 		var event_constraint = ist.get_parsed_$(tree, options);
-		var got_event, actions, first_event;
+		var got_event, actions;
 		if(event_constraint instanceof ist.MultiExpression) {
 			actions = event_constraint.rest();
 			event_constraint = event_constraint.first();
-			got_event = cjs.get(event_constraint);
 		} else {
-			first_event = event_constraint;
-			got_event = cjs.get(event_constraint);
 			actions = [];
 		}
+		//console.log("A");
+		//debugger;
+		got_event = cjs.get(event_constraint);
+		//console.log("B");
 		//var got_value = cjs.get(event_constraint, false);
 		//console.log(got_value);
 		if (got_event instanceof ist.Event) {
@@ -48,14 +49,26 @@
 				this._old_event.set_transition(this.get_transition());
 			}
 		};
+		proto.initialize = function (options) {
+			My.superclass.initialize.apply(this, arguments);
+
+			if(this._live_event_creator) {
+				if(this.is_enabled()) {
+					this._live_event_creator.run(false);
+				} else {
+					this._live_event_creator.pause();
+				}
+			}
+		};
 
 		proto.on_create = function (options) {
+			My.superclass.on_create.apply(this, arguments);
 			this.$errors = new cjs.Constraint([]);
 			this._id = uid();
 			ist.register_uid(this._id, this);
-
 			this.options = options;
 			this._str = cjs.isConstraint(options.str) ? options.str : cjs(options.str);
+
 			if (options.inert !== true) {
 				var SOandC = ist.find_stateful_obj_and_context(options.context);
 
@@ -75,7 +88,6 @@
 				}, {
 					context: this
 				});
-
 				this._old_event = null;
 				//cjs.wait(); // ensure our live event creator isn't immediately run
 				this._live_event_creator = cjs.liven(function () {
@@ -128,6 +140,7 @@
 					}
 
 					if (event) {
+
 						event.set_transition(this.get_transition());
 						event.on_fire(this.child_fired, this, event_info.actions, parent, context);
 						if (this.is_enabled()) {
@@ -149,11 +162,6 @@
 				}, this));
 				*/
 					//console.log(this);
-				if(this.is_enabled()) {
-					this._live_event_creator.run(false);
-				} else {
-					this._live_event_creator.pause();
-				}
 			}
 		};
 		/*
@@ -166,8 +174,6 @@
 		proto.get_errors = function() {
 			return this.$errors.get();
 		};
-		proto.id = function () { return this._id; };
-		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		proto.child_fired = function (actions, parent, context, event) {
 			this.fire.apply(this, _.rest(arguments, 3));
 			
@@ -212,8 +218,14 @@
 				to: str
 			});
 		};
-		proto.create_shadow = function (parent_statechart, context) {
-			var rv = new My({str: this.get_str(), context: context, inert_shadows: this.options.inert_shadows, inert: this.options.inert_shadows});
+		proto.create_shadow = function (parent_statechart, context, enabled) {
+			var rv = new My({
+				str: this.get_str(),
+				context: context,
+				inert_shadows: this.options.inert_shadows,
+				inert: this.options.inert_shadows,
+				enabled: enabled
+			});
 			this.on("setString", function (e) {
 				rv.set_str(e.to);
 			});

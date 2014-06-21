@@ -76,6 +76,7 @@
 		}
 
 		ist.register_uid(this._id, this);
+		//if(this.sid() === 2141) debugger;
 	};
 
 	(function (my) {
@@ -218,7 +219,7 @@
 		};
 		*/
 
-		proto.do_shadow_transitions = function( create_transition_shadow ) {
+		proto.do_shadow_transitions = function(create_transition_shadow) {
 			var basis = this.basis();
 			var outgoing_transitions = basis.get_outgoing_transitions();
 			var shadow_outgoing = _.map(outgoing_transitions, create_transition_shadow);

@@ -24,15 +24,13 @@
 							.add_transition("state1", "state2", "on('ev'+my_copy)")
 							.start_at("state1")
 							.set_copies("5")
-							.up();
-						window.dbg = true;
-						env.set("query1", "find(obj).in_state('state1')");
-						window.dbg = false;
+							.up()
+						.set("query1", "find(obj).in_state('state1')");
 				},
 				test: function(env, runtime) {
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(cobj.prop_val("query1").size(), 5);
-					ist.emit('ev1');
+					ist.emit('ev0');
 					equal(cobj.prop_val("query1").size(), 4);
 					ist.emit('ev3');
 					equal(cobj.prop_val("query1").size(), 3);

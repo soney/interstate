@@ -122,7 +122,11 @@
 				}
 				*/
 		};
-		proto.on_create = function () {};
+		proto.id = function () { return this._id; };
+		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
+		proto.on_create = function (options) {
+			this._enabled = options && options.enabled;
+		};
 		proto.on_ready = function() {};
 		proto.fire = function () {
 			var args = _.toArray(arguments);

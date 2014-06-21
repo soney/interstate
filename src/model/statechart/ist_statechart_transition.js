@@ -29,11 +29,8 @@
 		this._initialized = cjs(false);
 		able.make_this_listenable(this);
 		this._id = options.id || uid();
-		if (defer_initialization !== true) {
-			this.initialize(options);
-		}
 		this._last_run_event = cjs(false);
-		this._enabled = false;
+		this._enabled = options.enabled === true;
 		if(ist.__debug_statecharts) {
 			this.$enabled = cjs(this._enabled);
 		}
@@ -50,6 +47,10 @@
 		this.set_event(options.event);
 
 		ist.register_uid(this._id, this);
+
+		if (defer_initialization !== true) {
+			this.initialize(options);
+		}
 	};
 	(function (My) {
 		var proto = My.prototype;
@@ -232,10 +233,16 @@
 				this._emit("fire", {type: "fire", target: this});
 			}
 		};
-		proto.create_shadow = function (from_state, to_state, parent_statechart, context) {
+		proto.create_shadow = function (from_state, to_state, parent_statechart, context, defer_initialization) {
 			var my_event = this.event(),
-				shadow_event = my_event.create_shadow(parent_statechart, context);
-			var shadow_transition = new ist.StatechartTransition({from: from_state, to: to_state, event: shadow_event, basis: this, context: context});
+				shadow_event = my_event.create_shadow(parent_statechart, context, from_state.is_running());
+			var shadow_transition = new ist.StatechartTransition({
+					from: from_state,
+					to: to_state,
+					event: shadow_event,
+					basis: this,
+					context: context
+				}, defer_initialization);
 			return shadow_transition;
 		};
 		proto.stringify = function () {
@@ -259,6 +266,7 @@
 		};
 
 		proto.enable = function () {
+			if(this.sid() === 825) { debugger; }
 			if(!this._enabled) {
 				this._enabled = true;
 				var event = this.event();

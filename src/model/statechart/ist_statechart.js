@@ -179,7 +179,7 @@
 					running: is_running && (basis_start_state_to === substate || is_concurrent),
 					active: is_running && (basis_start_state_to === substate || is_concurrent),
 					set_basis_as_root: false
-				});
+				}, defer_initialization);
 				if (shadow instanceof ist.StartState) {
 					this.set_start_state(shadow);
 				} else {
@@ -198,7 +198,7 @@
 				var create_transition_shadow = _.memoize(function (transition) {
 					var from = ist.find_equivalent_state(transition.from(), parent_statechart);
 					var to = ist.find_equivalent_state(transition.to(), parent_statechart);
-					return transition.create_shadow(from, to, parent_statechart, my_context);
+					return transition.create_shadow(from, to, parent_statechart, my_context, true);
 				}, function (transition, from) {
 					return transition.id();
 				});
@@ -275,6 +275,11 @@
 			_.each(this.get_substates(true), function(substate) {
 				substate.initialize();
 			});
+			if (this._basis) { // shadow
+				_.each(this.get_outgoing_transitions(), function(transition) {
+					transition.initialize();
+				});
+			}
 		};
 
 		proto.is_concurrent = function () { return this.$concurrent.get(); };
