@@ -224,7 +224,7 @@
 		
 	var do_deserialize = function (serialized_obj) {
 		var rest_args = _.rest(arguments),
-			serialized_obj_type = serialized_obj.type,
+			serialized_obj_type = (serialized_obj && _.has(serialized_obj, "type")) ? serialized_obj.type : false,
 			i;
 
 		for (i = 0; i < serialization_funcs.length; i += 1) {
@@ -268,13 +268,19 @@
 		if (deserializing === false) {
 			deserializing = true;
 
-			try {
+			if(ist.__debug) {
 				deserialized_objs = serialized_obj.serialized_objs;
 				deserialized_obj_vals = [];
 				rv = ist.deserialize.apply(ist, ([serialized_obj.root]).concat(rest_args));
-			} finally {
-				deserialized_objs = deserialized_obj_vals = undefined;
-				deserializing = false;
+			} else {
+				try {
+					deserialized_objs = serialized_obj.serialized_objs;
+					deserialized_obj_vals = [];
+					rv = ist.deserialize.apply(ist, ([serialized_obj.root]).concat(rest_args));
+				} finally {
+					deserialized_objs = deserialized_obj_vals = undefined;
+					deserializing = false;
+				}
 			}
 
 			return rv;
@@ -402,7 +408,8 @@
 		if(!str) {
 			return false;
 		}
-		//try {
+
+		if(ist.__debug) {
 			var root = ist.destringify(str);
 
 			if(!type) { // program
@@ -411,11 +418,22 @@
 			}
 
 			return root;
-		//} catch(e) {
-			//console.error("Error loading " + name + ":");
-			//console.error(e);
-			//return false;
-		//}
+		} else {
+			try {
+				var root = ist.destringify(str);
+
+				if(!type) { // program
+					ist.loaded_program_name.set(name);	
+					ist.setDefaultProgramName(name);
+				}
+
+				return root;
+			} catch(e) {
+				console.error("Error loading " + name + ":");
+				console.error(e);
+				return false;
+			}
+		}
 	};
 	ist.ls = function (type) {
 		var len = window.localStorage.length;

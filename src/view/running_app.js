@@ -519,12 +519,16 @@
 				obj,
 				name = filename.replace(/\.\w*$/, "");
 
-			try {
+			if(ist.__debug) {
 				obj = ist.destringify(result);
-			} catch(e) {
-				console.error("Error loading " + filename);
-				console.error(e);
-				return;
+			} else {
+				try {
+					obj = ist.destringify(result);
+				} catch(e) {
+					console.error("Error loading " + filename);
+					console.error(e);
+					return;
+				}
 			}
 
 			if(is_component) {
