@@ -49,10 +49,11 @@
 
 		able.make_this_listenable(this);
 
-		if(options.avoid_constructor) { return; }
-
 		this._initialized = false;
 		this.$initialized = cjs(false);
+
+		if(options.avoid_constructor) { return; }
+
 		this._id = options.id || uid();
 		this._hash = uid.strip_prefix(this._id);
 		this._last_run_event = cjs(false);

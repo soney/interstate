@@ -48,7 +48,7 @@
 	ist.SameWindowCommWrapper = function(client_id, message_delay) {
 		able.make_this_listenable(this);
 		this.client_id = client_id;
-		this.message_delay = false;//message_delay;
+		this.message_delay = message_delay;
 		same_window_comm_wrappers.push(this);
 	};
 

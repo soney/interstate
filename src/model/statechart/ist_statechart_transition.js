@@ -24,10 +24,11 @@
 
 	ist.StatechartTransition = function (options, defer_initialization) {
 		options = options || {};
-		if(options.avoid_constructor) { return; }
-
 		this._initialized = cjs(false);
 		able.make_this_listenable(this);
+
+		if(options.avoid_constructor) { return; }
+
 		this._id = options.id || uid();
 		this._last_run_event = cjs(false);
 		this._enabled = options.enabled === true;
