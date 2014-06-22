@@ -25,7 +25,9 @@
 			} else {
 				var type = wrapper_client.type();
 				if (type === "statechart") {
-					statechart = statecharts[id] = new ist.Statechart(null, true);
+					statechart = statecharts[id] = new ist.Statechart({
+						avoid_constructor: true
+					});
 					statechart.puppet_master_id = id;
 					var substates = _.Deferred();
 					var substates_value;
@@ -156,7 +158,7 @@
 						if(statechart.destroyed) { return; }
 						_.when(substate_promises).done(function () {
 							if(destroyed) { return; }
-							statechart.do_initialize({
+							ist.Statechart.call(statechart, {
 								substates: substates_value,
 								concurrent: is_concurrent_value,
 								outgoing_transitions: outgoing_transitions_value,
@@ -171,7 +173,9 @@
 						});
 					});
 				} else {
-					statechart = statecharts[id] = new ist.StartState(null, true);
+					statechart = statecharts[id] = new ist.StartState({
+							avoid_constructor: true
+						});
 					statechart.puppet_master_id = id;
 
 					var outgoing_transition = _.Deferred();
@@ -220,13 +224,13 @@
 					promises = [outgoing_transition.promise(), is_active.promise(), is_running.promise()];
 					_.when(promises).done(function () {
 						if(statechart.destroyed) { return; }
-						statechart.do_initialize({
-							outgoing_transition: outgoing_transition_value,
-							parent: statechart_parent,
-							active: is_active_value,
-							puppet: true,
-							running: is_running_value
-						});
+						ist.StartState.call(statechart, {
+								outgoing_transition: outgoing_transition_value,
+								parent: statechart_parent,
+								active: is_active_value,
+								puppet: true,
+								running: is_running_value
+							});
 						wrapper_client.on(listeners);
 					});
 				}
@@ -263,7 +267,9 @@
 			if (transitions.hasOwnProperty(id)) {
 				transition = transitions[id];
 			} else {
-				transition = transitions[id] = new ist.StatechartTransition(null, true);
+				transition = transitions[id] = new ist.StatechartTransition({
+							avoid_constructor: true
+						});
 				transition.puppet_master_id = id;
 
 				var from = _.Deferred();
@@ -311,12 +317,12 @@
 				var promises = [from.promise(), to.promise(), event.promise()];
 				_.when(promises).done(function () {
 					if(destroyed) { return; }
-					transition.do_initialize({
-						from: from_value,
-						to: to_value,
-						event: event_value,
-						puppet: true
-					});
+					ist.StatechartTransition.call(transition, {
+							from: from_value,
+							to: to_value,
+							event: event_value,
+							puppet: true
+						});
 					wrapper_client.on(listeners);
 				});
 			}

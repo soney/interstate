@@ -49,6 +49,8 @@
 
 		able.make_this_listenable(this);
 
+		if(options.avoid_constructor) { return; }
+
 		this._initialized = false;
 		this.$initialized = cjs(false);
 		this._id = options.id || uid();

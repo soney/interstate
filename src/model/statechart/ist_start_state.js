@@ -9,10 +9,11 @@
 	ist.StartState = function (options) {
 		options = options || {};
 
+		ist.StartState.superclass.constructor.apply(this, arguments);
+
 		if(options.avoid_constructor) { return; }
 
 		this.outgoingTransition = options.outgoing_transition;
-		ist.StartState.superclass.constructor.apply(this, arguments);
 
 		//this.outgoingTransition = false;
 		//if(ist.__debug_statecharts) {

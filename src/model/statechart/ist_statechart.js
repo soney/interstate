@@ -151,9 +151,10 @@
 
 	ist.Statechart = function (options, defer_initialization) {
 		options = options || {};
-		if(options.avoid_constructor) { return; }
 
 		ist.Statechart.superclass.constructor.apply(this, arguments);
+
+		if(options.avoid_constructor) { return; }
 
 		this._transition_listeners = {};
 
