@@ -254,6 +254,8 @@
 			}
 		}
 
+		this._constructed = true;
+
 		if((!this._parent && defer_initialization !== true) || (this._parent && this._parent.is_initialized())) {
 			this.initialize();
 		}
@@ -272,7 +274,6 @@
 		};
 
 		proto.initialize = function () {
-			My.superclass.initialize.apply(this, arguments);
 			_.each(this.get_substates(true), function(substate) {
 				substate.initialize();
 			});
@@ -281,6 +282,7 @@
 					transition.initialize();
 				});
 			}
+			My.superclass.initialize.apply(this, arguments);
 		};
 
 		proto.is_concurrent = function () { return this.$concurrent.get(); };

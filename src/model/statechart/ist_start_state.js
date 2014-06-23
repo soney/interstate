@@ -15,6 +15,8 @@
 
 		this.outgoingTransition = options.outgoing_transition;
 
+		this._constructed = true;
+
 		//this.outgoingTransition = false;
 		//if(ist.__debug_statecharts) {
 			//this.$running = cjs(this._running);

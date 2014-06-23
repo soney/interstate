@@ -272,6 +272,8 @@
 				deserialized_objs = serialized_obj.serialized_objs;
 				deserialized_obj_vals = [];
 				rv = ist.deserialize.apply(ist, ([serialized_obj.root]).concat(rest_args));
+				deserialized_objs = deserialized_obj_vals = undefined;
+				deserializing = false;
 			} else {
 				try {
 					deserialized_objs = serialized_obj.serialized_objs;

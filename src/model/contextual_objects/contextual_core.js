@@ -156,7 +156,6 @@
 		};
 
 		proto.destroy = function () {
-			if(this.sid() === 898) debugger;
 			if(this.constructor === My) { this.begin_destroy(true); }
 
 			this._destroyed = true;

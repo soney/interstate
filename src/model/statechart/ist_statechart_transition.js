@@ -24,12 +24,19 @@
 
 	ist.StatechartTransition = function (options, defer_initialization) {
 		options = options || {};
-		this._initialized = cjs(false);
-		able.make_this_listenable(this);
+
+		if(!this._started_construction) {
+			this._started_construction = true;
+
+			this._initialized = cjs(false);
+			able.make_this_listenable(this);
+
+			this._id = options.id || uid();
+			ist.register_uid(this._id, this);
+		}
 
 		if(options.avoid_constructor) { return; }
 
-		this._id = options.id || uid();
 		this._last_run_event = cjs(false);
 		this._enabled = options.enabled === true;
 		if(ist.__debug_statecharts) {
@@ -46,8 +53,6 @@
 		this._context = options.context;
 		this.set_basis(options.basis);
 		this.set_event(options.event);
-
-		ist.register_uid(this._id, this);
 
 		if (defer_initialization !== true) {
 			this.initialize(options);
@@ -267,7 +272,6 @@
 		};
 
 		proto.enable = function () {
-			if(this.sid() === 825) { debugger; }
 			if(!this._enabled) {
 				this._enabled = true;
 				var event = this.event();

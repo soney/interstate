@@ -38,10 +38,10 @@
 						_.each(substate_wrappers, function (substate_wrapper, name) {
 							var substate = ist.create_remote_statechart(substate_wrapper, statechart);
 							substates_value.put(name, substate);
-							if (!substate.is_initialized()) {
+							if (!substate.is_constructed()) {
 								var substate_promise = _.Deferred();
 								substate_promises.push(substate_promise.promise());
-								substate.on("initialized", function () {
+								substate.once("_constructed", function () {
 									substate_promise.resolve();
 								});
 							}
@@ -53,6 +53,13 @@
 					var start_state_value;
 					wrapper_client.async_get('get_start_state', function (substate_wrapper) {
 						start_state_value = ist.create_remote_statechart(substate_wrapper, statechart);
+						if(!start_state_value.is_constructed()) {
+							var start_state_promise = _.Deferred();
+							substate_promises.push(start_state_promise.promise());
+							start_state_value.once("_constructed", function () {
+								start_state_promise.resolve();
+							});
+						}
 						start_state.resolve();
 					});
 
@@ -156,6 +163,7 @@
 					};
 					_.when(promises).done(function () {
 						if(statechart.destroyed) { return; }
+
 						_.when(substate_promises).done(function () {
 							if(destroyed) { return; }
 							ist.Statechart.call(statechart, {
@@ -170,6 +178,9 @@
 								running: is_running_value
 							});
 							wrapper_client.on(listeners);
+							if(statechart_parent) {
+								statechart._emit("_constructed");
+							}
 						});
 					});
 				} else {
@@ -203,7 +214,7 @@
 						if(outgoing_transition_value.is_initialized()) {
 							outgoing_transition.resolve();
 						} else {
-							outgoing_transition_value.once("initialized", function() {
+							outgoing_transition_value.once("_constructed", function() {
 								outgoing_transition.resolve();
 							});
 						}
@@ -231,6 +242,7 @@
 								puppet: true,
 								running: is_running_value
 							});
+						statechart._emit("_constructed");
 						wrapper_client.on(listeners);
 					});
 				}
@@ -323,6 +335,7 @@
 							event: event_value,
 							puppet: true
 						});
+					transition._emit("_constructed");
 					wrapper_client.on(listeners);
 				});
 			}

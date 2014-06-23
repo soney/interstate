@@ -149,7 +149,9 @@ var able = (function (root) {
 			emit_fn_name = "_emit";
 
 		able.make_this_listenable = function (instance) {
-			instance[listener_prop_name] = {};
+			if(!instance[listener_prop_name]) {
+				instance[listener_prop_name] = {};
+			}
 			/*
 			instance.forward = function () {
 				var args = toArray(arguments);

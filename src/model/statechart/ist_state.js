@@ -45,17 +45,24 @@
 	};
 
 	ist.State = function (options) {
+		this._constructed = false;
 		options = options || {};
 
-		able.make_this_listenable(this);
+		if(!this._started_construction) {
+			this._started_construction = true;
 
-		this._initialized = false;
-		this.$initialized = cjs(false);
+			able.make_this_listenable(this);
+
+			this._initialized = false;
+			this.$initialized = cjs(false);
+
+			this._id = options.id || uid();
+			this._hash = uid.strip_prefix(this._id);
+			ist.register_uid(this._id, this);
+		}
 
 		if(options.avoid_constructor) { return; }
 
-		this._id = options.id || uid();
-		this._hash = uid.strip_prefix(this._id);
 		this._last_run_event = cjs(false);
 
 		this._puppet = options.puppet === true;
@@ -78,7 +85,6 @@
 			this.add_basis_listeners();
 		}
 
-		ist.register_uid(this._id, this);
 		//if(this.sid() === 2141) debugger;
 	};
 
@@ -92,14 +98,19 @@
 			};
 		}
 
+		proto.is_constructed = function () {
+			return this._constructed;
+		};
+
 		proto.initialize = function () {
 			this._initialized = true;
 			this.$initialized.set(true);
 			this._emit("initialized");
 		};
 
+
 		proto.is_initialized = function () {
-			return this.$initialized && this.$initialized.get();
+			return this.$initialized.get();
 		};
 
 		proto.is_puppet = function () {
