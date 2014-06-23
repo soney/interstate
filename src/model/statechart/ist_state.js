@@ -108,7 +108,6 @@
 			this._emit("initialized");
 		};
 
-
 		proto.is_initialized = function () {
 			return this.$initialized.get();
 		};

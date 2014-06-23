@@ -48,17 +48,12 @@ var callback_map = function(arr, func, callback) {
 	});
 };
 
-app.configure(function() {
 	express.static.mime.define({'application/font-woff': ['woff']});
 	express.static.mime.define({'font/truetype': ['ttf']});
 	express.static.mime.define({'font/opentype': ['otf']});
 	express.static.mime.define({'application/vnd.ms-fontobject': ['eot']});
 
-	app.use(app.router);
-	app.use(sass.middleware({
-		src: __dirname
-	}));
-	app.use(express.static(__dirname));
+	//app.use(app.router);
 	app.set('view engine', 'ejs');
 
 	app.get("/e/:uid", function(req, res, next) {
@@ -112,7 +107,10 @@ app.configure(function() {
 			}
 		});
 	});
-});
+	app.use(sass.middleware({
+		src: __dirname
+	}));
+	app.use(express.static(__dirname));
 
 var server = http.createServer(app);
 server.listen(8000);
