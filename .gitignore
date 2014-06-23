@@ -1,0 +1,11 @@
+*.swp
+.DS_Store
+.build
+.sass-cache/
+node_modules
+src/view/editor/style/editor_style.css
+src/view/editor/style/runtime_style.css
+dist/gallery/upload.php
+dist/gallery/index.php
+dist/user_study/index.php
+dist/user_study/upload.php
