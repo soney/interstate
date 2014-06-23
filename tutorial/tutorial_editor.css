@@ -1,0 +1,108 @@
+html, body, #tutorial {
+	min-height: 100%;
+}
+
+.instructions {
+	background-color: rgba(0, 0, 0, 0.7);
+	color: #CCC;
+	bottom: 0px;
+	position: fixed;
+	width: 100%;
+	padding: 0px;
+	font-size: 1.1em;
+	font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+	font-weight: 200;
+	box-sizing: border-box;
+}
+
+.instructions .next {
+	right: 0px;
+	border-left: 1px solid #666;
+}
+
+.instructions .prev {
+	left: 0px;
+	border-right: 1px solid #666;
+}
+
+.instructions .content {
+	width: 100%;
+	padding: 0px;
+}
+.instructions .content div {
+	max-height: 200px;
+	overflow-y: auto;
+	padding: 5px;
+	box-sizing: border-box;
+}
+
+.instructions .next, .instructions  .prev {
+	width: 100px;
+	height: 100%;
+	text-align: center;
+	vertical-align: middle;
+	text-decoration: none;
+	background-color: #444;
+	color: #999;
+	cursor: pointer;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.instructions .next:hover, .instructions .prev:hover {
+	color: white;
+	text-decoration: underline;
+	background-color: #999933;
+}
+
+.instructions p {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-left: 5px;
+	padding-right: 5px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.instructions  .content em {
+	text-decoration: underline;
+	font-style: normal;
+}
+.instructions .content code, .instructions .content var {
+	font-family: "Courner New", "Courier";
+	font-style: normal;
+	font-weight: normal;
+}
+kbd {
+	/*font-family: "Courner New", "Courier";*/
+	font-style: normal;
+	font-weight: normal;
+	border: 1px solid #BBB;
+	border-radius: 3px;
+	background-color: #444;
+	padding: 2px;
+	font-size: 0.8em;
+}
+kbd:before {
+	content: "<";
+}
+kbd:after {
+	content: ">";
+}
+
+.directive {
+	color: #FFF;
+	padding-top: 10px;
+}
+
+.note {
+	padding-top: 10px;
+	font-size: 0.8em;
+	color: #CCC;
+}
+
+#editor > #obj_nav > table.curr_col {
+	margin-bottom: 200px;
+}

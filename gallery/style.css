@@ -1,0 +1,42 @@
+body {
+	background-color: #333;
+	color: white;
+	font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+	font-weight: 200;
+}
+a {
+	color: #4169E1;
+	text-decoration: none;
+}
+span.name {
+	font-size: 2em;
+	display: block;
+}
+span.date, span.time {
+	font-size: 0.8em;
+	display: block;
+}
+#example {
+	display: inline-block;
+	width: 300px;
+	height: 80px;
+	padding: 10px;
+	text-align: center;
+	border: 1px solid #999;
+	background-color: #444;
+	border-radius: 5px;
+	margin: 20px;
+	color: #BBB;
+	box-shadow: 0px 0px 5px #000;
+	-webkit-transition: all 0.2s ease-in-out;
+	-moz-transition: all 0.2s ease-in-out;
+	-o-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+}
+
+#example:hover {
+	color: #FFF;
+	background-color: #555;
+	border: 1px solid #FFF;
+	box-shadow: 0px 0px 15px #000;
+}

@@ -1,9 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
-		<title>InterState</title>
+		<style type="text/css">
+			#examples, #version_info {
+				font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+				font-weight: 300;
+				font-size: 0.8em;
+				position: absolute;
+				z-index: 10;
+				height: 3em;
+				bottom: 0px;
+			}
+			#version_info {
+				right: 5px;
+			}
+			#version_no {
+				font-weight: bold;
+			}
+			#build_time {
+				margin-right: 5px;
+			}
+			#examples a {
+				text-decoration: none;
+			}
+			#examples a:hover {
+				text-decoration: underline;
+			}
+			#examples a.active {
+				font-weight: bold;
+			}
+		</style>
+		<link rel="stylesheet" href="editor/style/runtime_style.css" />
+		<link rel="shortcut icon" href="../images/interstate_logo_128.png">
 	</head>
 	<body>
-		(tutorial under construction)
+		<div class="content"></div>
 	</body>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
+	<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.2/raphael-min.js"></script>
+	<script src="vendor/Box2dWeb-2.1a.3/Box2dWeb-2.1.a.3.js"></script>
+	<script src="vendor/esprima.js"></script>
+	<script src="vendor/ace/ace.js"></script>
+	
+	<script src="interstate.min.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			$("div.content").dom_output({
+				external_editor: false
+			});
+		});
+	</script>
 </html>
