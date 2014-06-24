@@ -103,6 +103,11 @@
 		};
 
 		proto.initialize = function () {
+			if (this._basis) { // shadow
+				_.each(this.get_outgoing_transitions(), function(transition) {
+					transition.initialize();
+				});
+			}
 			this._initialized = true;
 			this.$initialized.set(true);
 			this._emit("initialized");

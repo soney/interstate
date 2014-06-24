@@ -156,7 +156,7 @@ var get_file_string = function(path, callback) {
 };
 
 var io = require('socket.io').listen(server);
-io.set("log level", 0);
+//io.set("log level", 1);
 
 io.sockets.on('connection', function (socket) {
 	socket.on('comm_wrapper', function(client_id, is_server) {

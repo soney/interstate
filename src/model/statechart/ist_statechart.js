@@ -277,11 +277,11 @@
 			_.each(this.get_substates(true), function(substate) {
 				substate.initialize();
 			});
-			if (this._basis) { // shadow
-				_.each(this.get_outgoing_transitions(), function(transition) {
-					transition.initialize();
-				});
-			}
+			//if (this._basis) { // shadow
+				//_.each(this.get_outgoing_transitions(), function(transition) {
+					//transition.initialize();
+				//});
+			//}
 			My.superclass.initialize.apply(this, arguments);
 		};
 
