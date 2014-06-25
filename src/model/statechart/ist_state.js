@@ -48,6 +48,7 @@
 		this._constructed = false;
 		options = options || {};
 
+
 		if(!this._started_construction) {
 			this._started_construction = true;
 
@@ -58,9 +59,14 @@
 
 			this._id = options.id || uid();
 			this._hash = uid.strip_prefix(this._id);
+
+			this._running = options.running === true;
+			this.$running = cjs(this._running);
+
 			ist.register_uid(this._id, this);
 		}
 
+		if(this.sid() === 907) debugger;
 		if(options.avoid_constructor) { return; }
 
 		this._last_run_event = cjs(false);
@@ -70,11 +76,6 @@
 		this._context = options.context;
 
 		this.$active = cjs(options.active === true || (!this._parent && !this._puppet));
-
-		this._running = options.running === true;
-		if(ist.__debug_statecharts) {
-			this.$running = cjs(this._running);
-		}
 
 		//this.set_basis(options.basis, options.set_basis_as_root);
 		//if (this._basis) {
@@ -130,9 +131,9 @@
 					target: this,
 					type: "run"
 				});
-				if(ist.__debug_statecharts) {
+				//if(ist.__debug_statecharts) {
 					this.$running.set(true);
-				}
+				//}
 			} else if (!this.is_running()) {
 				ist.event_queue.wait();
 				this.enable_outgoing_transitions();
@@ -142,9 +143,9 @@
 					target: this,
 					type: "run"
 				});
-				if(ist.__debug_statecharts) {
+				//if(ist.__debug_statecharts) {
 					this.$running.set(true);
-				}
+				//}
 				ist.event_queue.signal();
 			}
 		};
@@ -155,9 +156,9 @@
 					type: "stop",
 					target: this
 				});
-				if(ist.__debug_statecharts) {
+				//if(ist.__debug_statecharts) {
 					this.$running.set(false);
-				}
+				//}
 			} else {
 				ist.event_queue.wait();
 				this._running = false;
@@ -166,9 +167,9 @@
 					type: "stop",
 					target: this
 				});
-				if(ist.__debug_statecharts) {
+				//if(ist.__debug_statecharts) {
 					this.$running.set(false);
-				}
+				//}
 				ist.event_queue.signal();
 			}
 		};
@@ -577,6 +578,10 @@
 			if(this.$active) {
 				this.$active.destroy(silent);
 				delete this.$active;
+			}
+			if(this.$running) {
+				this.$running.destroy(silent);
+				delete this.$running;
 			}
 			this.$initialized.destroy(silent);
 			this._last_run_event.destroy(silent);
