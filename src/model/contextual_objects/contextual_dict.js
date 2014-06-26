@@ -414,6 +414,10 @@
 			return contextual_object;
 		};
 		proto._has = function (name, ignore_inherited) {
+			//if(this.sid() === 806) {
+				//console.log(name, this.is_template());
+				//if(name === "r") debugger;
+			//}
 			if(this.is_template()) {
 				return false;
 			}
@@ -496,7 +500,16 @@
 				if(info.inherited_from) {
 					opts.inherited_from = info.inherited_from;
 				}
+
+/*
+				if(this.sid() === 11) {
+					if(name === "x") {
+						debugger;
+					}
+				}
+				*/
 				var value = get_contextual_object(info.value, pointer, opts);
+
 				return value;
 			} else {
 				return undefined;
@@ -563,11 +576,16 @@
 
 			var manifestations = this.copies_obj();
 			if (manifestations instanceof ist.Cell) {
+				var constraint = manifestations.value_in_context(pointer);
+				return cjs.get(constraint);
+				//return constraint.get();
+			/*
 				var manifestations_pointer = pointer.push(manifestations),
 					manifestations_contextual_object = ist.find_or_put_contextual_obj(manifestations, manifestations_pointer),
 					manifestations_value = manifestations_contextual_object.val();
 				manifestations_value = cjs.get(manifestations_value);
 				return manifestations_value;
+				*/
 			} else {
 				return cjs.get(manifestations);
 			}
@@ -767,15 +785,15 @@
 		proto._get_valid_cobj_children = function() {
 			var rv,
 				my_pointer = this.get_pointer(),
-				is_instance = this.is_instance(),
+				//is_instance = this.is_instance(),
 				is_template = this.is_template();
 
-			if(is_instance) {
+			//if(is_instance) {
 				rv = [];
-			} else {
-				var copies_obj = this.copies_obj();
-				rv = [{pointer: my_pointer.push(copies_obj), obj: copies_obj}];
-			}
+			//} else {
+				//var copies_obj = this.copies_obj();
+				//rv = [{pointer: my_pointer.push(copies_obj), obj: copies_obj}];
+			//}
 
 			if(!is_template) {
 				var protos_objs = this.get_all_protos();

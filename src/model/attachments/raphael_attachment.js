@@ -166,6 +166,7 @@
 				var parameters = {};
 				_.each(infos, function(euc_name, raph_name) {
 					parameters[euc_name] = function(contextual_object) {
+						if(euc_name === "r" && contextual_object.sid() === 806) debugger;
 						if(contextual_object.has(euc_name)) {
 							var prop_val = contextual_object.prop_val(euc_name);
 							var robj = this.get_robj();

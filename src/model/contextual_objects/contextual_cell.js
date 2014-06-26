@@ -17,13 +17,15 @@
 		var proto = My.prototype;
 		proto.initialize = function(options) {
 			My.superclass.initialize.apply(this, arguments);
-			var constraint = false;
+			var constraint = false,
+				pointer = this.get_pointer(),
+				is_inherited = this.is_inherited();
 			this.value_constraint = cjs(function() {
 				if(constraint && constraint.destroy) {
 					constraint.destroy(true);
 				}
-
-				return (constraint = this.object.constraint_in_context(this.get_pointer(), this.is_inherited()));
+				constraint = this.object.constraint_in_context(pointer, is_inherited);
+				return constraint;
 			}, {
 				context: this,
 			});

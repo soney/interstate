@@ -66,7 +66,7 @@
 			ist.register_uid(this._id, this);
 		}
 
-		if(this.sid() === 907) debugger;
+		//if(this.sid() === 907) debugger;
 		if(options.avoid_constructor) { return; }
 
 		this._last_run_event = cjs(false);

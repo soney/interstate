@@ -81,6 +81,7 @@
 						.top();
 			},
 			do_cleanup: function(env, n) {
+				//env.print();
 				env	.unset("obj");
 				for(var i = 0; i<n; i++) {
 					env.unset("proto_"+i);
@@ -99,7 +100,7 @@
 				}
 				return false;
 			},
-			N: 240,
+			N: 2,//40,
 			trials: trials
 		}, {
 			name: "Prototypes chain",

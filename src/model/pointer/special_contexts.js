@@ -111,7 +111,7 @@
 			return this.copy_num;
 		};
 		proto.hash = function () {
-			return this.copy_num;
+			return this.copy_num+1;
 		};
 	}(ist.CopyContext));
 }(interstate));

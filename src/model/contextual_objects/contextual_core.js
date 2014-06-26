@@ -18,7 +18,16 @@
 		this._destroyed = false;
 		this._type = "none";
 
-		this._cobj_children = {};
+		//if(this.sid() === 31) debugger;
+		//if(this.sid() >= 250) debugger;
+		this._cobj_children = cjs.map({
+			hash: function(x) { return x.hash(); },
+			equals: function(a, b) {
+				//if(a.hash() === b.hash() && !a.eq(b)) debugger;
+				return a.eq(b);
+			}
+			//ist.check_pointer_equality
+		});
 
 		able.make_this_listenable(this);
 
@@ -26,7 +35,6 @@
 		this.pointer = options.pointer;
 		this.inherited_from = options.inherited_from || false;
 
-		ist.add_cobj_cached_item(this);
 
 		this.$value = new cjs.Constraint(this._getter, {
 			context: this,
@@ -35,9 +43,18 @@
 		});
 		this.object.on("begin_destroy", this.destroy, this);
 
+		ist.add_cobj_cached_item(this);
+
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
 		}
+
+		//if(this.sid() === 20 ) debugger;
+		//if(this.sid() === 18 ) debugger;
+		//if(this.sid() === 725) debugger;
+		//if(this.sid() === 722) debugger;
+		//if(this.sid() === 716) debugger;
+		//if(this.sid() === 715) debugger;
 	};
 
 	(function (My) {
@@ -156,6 +173,11 @@
 		};
 
 		proto.destroy = function () {
+			//if(this.sid() === 18 ) debugger;
+			//if(this.sid() === 725) debugger;
+			//if(this.sid() === 722) debugger;
+			//if(this.sid() === 716) debugger;
+			//if(this.sid() === 715) debugger;
 			if(this.constructor === My) { this.begin_destroy(true); }
 
 			this._destroyed = true;
@@ -173,13 +195,18 @@
 		};
 
 		proto._destroy_all_cobj_children = function(silent) {
-			_.each(this._cobj_children, function(infos, key) {
+			this._cobj_children.forEach(function(cobj, key) {
+				cobj.destroy(silent);
+				/*
 				var cobjs = _.pluck(infos, "cobj");
 				_.each(cobjs, function(cobj) {
 					cobj.destroy(silent);
 				});
-				delete this._cobj_children[key];
+				*/
+				//this._cobj_children.remove(key);
+				//delete this._cobj_children[key];
 			}, this);
+			this._cobj_children.clear();
 			delete this._live_cobj_child_updater;
 		};
 
@@ -187,45 +214,86 @@
 
 
 		proto.update_cobj_children = function(recursive) {
+		/*
+			console.log(this);
+			if(this.sid() === 11 ) {
+				console.log("-BEGIN-");
+			}
+			*/
 			cjs.wait();
 			var valid_children = this._get_valid_cobj_children(),
 				to_destroy = {},
 				to_initialize = [],
-				is_curr_child = _.bind(function(hash, obj, ptr, special_contexts) {
-					var found = false,
-						hash_children,
-						td, cobj;
-					if(_.has(this._cobj_children, hash)) {
-						hash_children = this._cobj_children[hash];
-						var i = 0,
-							len = hash_children.length,
-							child_info;
-
-
-						for(; i<len; i++) {
-							child_info = hash_children[i];
-							if (child_info.obj === obj) {
-								var sc1 = child_info.special_contexts,
-									sc2 = special_contexts;
-
-								if(ist.check_special_context_equality(sc1, sc2)) {
-									return {
-										child_info: child_info,
-										child_hash_index: i,
-										hash_children: hash_children
-									};
-								}
-							}
-						}
-					}
-					return false;
-				}, this),
 				remove_from_destroy_list = _.bind(function(obj, ptr, options) {
-					var len_minus_1 = ptr.length() - 1,
-						hash =  ptr.itemHash(len_minus_1),
-						special_contexts = ptr.special_contexts(len_minus_1),
-						found = is_curr_child(hash, obj, ptr, special_contexts),
-						hash_children, cobj, td, item_index;
+					var cobj = this._cobj_children.get(ptr);
+
+					if(cobj) {
+						to_destroy[cobj.id()] = false;
+
+						if(cobj instanceof ist.ContextualDict && cobj.is_template()) {
+							var instances = cobj.instances();
+
+							_.each(instances, function(instance) {
+								remove_from_destroy_list(instance.get_object(), instance.get_pointer());
+							}, this);
+						}
+					} else {
+						cobj = ist.create_contextual_object(obj, ptr, _.extend({
+								defer_initialization: true
+							}, options));
+						this._cobj_children.put(ptr, cobj);
+						cobj.on("begin_destroy", function() {
+							//console.log(cobj.sid(), ptr);
+							this.remove_cobj_child(ptr);
+						}, this);
+						to_initialize.push(cobj);
+					}
+				}, this);
+
+			this._cobj_children.forEach(function(cobj, ptr) {
+				to_destroy[cobj.id()] = cobj;
+			});
+
+			_.each(valid_children, function(valid_child) {
+				remove_from_destroy_list(valid_child.obj, valid_child.pointer, valid_child.options);
+			}, this);
+			/*
+			if(this.sid() === 11 ) {
+				console.log("valid children ", valid_children);
+				console.log("current children ", this._cobj_children.values());
+				console.log("to destroy: ", to_destroy);
+				console.log("to initialize: ", to_initialize);
+				debugger;
+			}
+			*/
+
+			_.each(to_initialize, function(cobj) {
+				cobj.initialize();
+				if(cobj instanceof ist.ContextualDict && cobj.is_template()) {
+					var instances = cobj.instances();
+
+					_.each(instances, function(instance) {
+						remove_from_destroy_list(instance.get_object(), instance.get_pointer());
+					}, this);
+				}
+			}, this);
+
+			_.each(to_destroy, function(cobj) {
+				if(cobj) {
+					cobj.destroy(true);
+				}
+			}, this);
+
+			this.updateAttachments();
+			//if(this.sid() === 806) {
+				//console.log(this.is_template(), valid_children);
+			cjs.signal();
+			/*
+			if(this.sid() === 11 ) {
+				console.log("--END--");
+			}
+			*/
+			/*
 
 
 					if(found.child_info) {
@@ -276,7 +344,8 @@
 				}, this);
 
 
-			_.each(_.keys(this._cobj_children), function(key) {
+			
+			_.each(this._cobj_children.keys(), function(key) {
 				to_destroy[key] = true;
 			});
 
@@ -293,13 +362,7 @@
 					_.each(instances, function(instance) {
 						remove_from_destroy_list(instance.get_object(), instance.get_pointer());
 					}, this);
-					/*
-					rv.push.apply(rv, _.map(instances, function(i) {
-						return {obj: i.get_object(), pointer: i.get_pointer()};
-					}));
-					*/
 				}
-				/*
 
 
 						if(value instanceof ist.Dict) {
@@ -314,17 +377,16 @@
 								}));
 							}
 						}
-						*/
 			}, this);
 
 			_.each(to_destroy, function(td, key) {
-				var hash_children = this._cobj_children[key];
+				var hash_children = this._cobj_children.get(key);
 				if(td === true) {
 					_.each(hash_children, function(d) {
 						var cobj = d.cobj;
 						cobj.destroy(true);
 					}, this);
-					delete this._cobj_children[key];
+					this._cobj_children.remove(key);
 				} else if(td !== false) {
 					var i = 0, len = hash_children.length, child_info, cobj;
 
@@ -347,49 +409,55 @@
 
 			this.updateAttachments();
 
-			cjs.signal();
+*/
 		};
 
 		proto.get_or_put_cobj_child = function (obj, special_contexts, hash, options, avoid_initialization) {
-			var hash_children,
-				cobj;
-			if(_.has(this._cobj_children, hash)) {
-				hash_children = this._cobj_children[hash];
-				var i = 0, len = hash_children.length, child_info;
-				for(; i<len; i++) {
-					child_info = hash_children[i];
-					if (child_info.obj === obj) {
-						var sc1 = child_info.special_contexts,
-							sc2 = special_contexts;
+			//if(this.sid() === 11) debugger;
+			var ptr = this.pointer.push(obj, special_contexts),
+				must_initialize = false,
+				cobj = this._cobj_children.getOrPut(ptr, function() {
+					var rv = ist.create_contextual_object(obj, ptr, _.extend({
+						defer_initialization: true
+					}, options));
+					must_initialize = true
+					return rv;
+				});
 
-						if(ist.check_special_context_equality(sc1, sc2)) {
-							return child_info.cobj;
-						}
-					}
-				}
-			} else {
-				hash_children = this._cobj_children[hash] = [];
-			}
-
-			cobj = ist.create_contextual_object(obj, this.pointer.push(obj, special_contexts), _.extend({
-				defer_initialization: true
-			}, options));
-
-			hash_children.push({
-				obj: obj,
-				special_contexts: special_contexts,
-				cobj: cobj
-			});
-			if(!avoid_initialization) {
+			if(must_initialize) {
 				cobj.initialize();
+
+				cobj.on("begin_destroy", function() {
+					//console.log(cobj.sid(), ptr);
+					this.remove_cobj_child(ptr);
+				}, this);
 			}
-			cobj.on("begin_destroy", function() {
-				this.remove_cobj_child(obj, special_contexts, hash);
-			}, this);
+
 			return cobj;
 		};
 
-		proto.remove_cobj_child = function(obj, special_contexts, hash) {
+		proto.remove_cobj_child = function(ptr, silent) {
+			//if(ptr.hash() === 25) {
+				//console.log(ptr);
+				//console.log(this._cobj_children.keys());
+				//debugger;
+			//}
+			
+			//if(ptr.hash() === 18) {
+				//debugger;
+			//}
+			//console.log(this._cobj_children.entries());
+			this._cobj_children.remove(ptr, silent);
+			//if(ptr.hash() === 25) {
+				//console.log(this._cobj_children.keys());
+			//}
+			//console.log(this._cobj_children.entries());
+			/*
+			if(this._cobj_children.has(ptr)) {
+				
+			}
+			
+		//obj, special_contexts, hash) {
 			var hash_children;
 			if(_.has(this._cobj_children, hash)) {
 				hash_children = this._cobj_children[hash];
@@ -405,12 +473,14 @@
 							i--;
 							len--;
 							if(len === 0) {
+								this._cobj_children.remove
 								delete this._cobj_children[hash];
 							}
 						}
 					}
 				}
 			}
+			*/
 			
 		};
 
@@ -419,6 +489,9 @@
 
 		proto.updateAttachments = function(){};
 
+		proto.toString = function() {
+			return My + " " + this.id();
+		};
 	}(ist.ContextualObject));
 
 
@@ -452,67 +525,112 @@
 		return rv;
 	};
 
-	var cobj_hashes = {},
+	var cobj_hashes = cjs.map({
+		equals: function(a, b) {
+			return a.eq(b);
+		},
+		hash: function(ptr){  
+			return ptr.hash();
+		}
+	}),
 		cobj_roots = {};
 
-	ist.cobj_hashes = cobj_hashes;
-	ist.cobj_roots = cobj_roots;
 
 	ist.find_or_put_contextual_obj = function (obj, pointer, options) {
 		if(!pointer) {
 			pointer = new ist.Pointer({stack: [obj]});
 		}
 
-		var hash = pointer.hash() + obj.hash(),
-			hashed_vals = cobj_hashes[hash],
-			pointer_root, hvi, i, len, ptr_i, sc_i, hash_i, new_cobj, node, opts;
+		//var must_initialize = [];
+		//var rv = cobj_hashes.getOrPut(pointer, function() {
+			if(cobj_hashes.has(pointer)) {
+				return cobj_hashes.get(pointer);
+			}
+			var pointer_root, hvi, i, len, ptr_i, sc_i, hash_i, new_cobj, node, opts;
 
-		if(hashed_vals) {
-			i = 0; len = hashed_vals.length;
-			while(i < len) {
-				hvi = hashed_vals[i];
-				if(hvi.get_object() === obj && pointer.eq(hvi.get_pointer())) {
-					return hvi;
+
+	/*
+			if(hashed_val) {
+				return hashed_val;
+			}
+			var hash = pointer.hash() + obj.hash(),
+				hashed_vals = cobj_hashes[hash],
+				pointer_root, hvi, i, len, ptr_i, sc_i, hash_i, new_cobj, node, opts;
+
+			if(hashed_vals) {
+				i = 0; len = hashed_vals.length;
+				while(i < len) {
+					hvi = hashed_vals[i];
+					if(hvi.get_object() === obj && pointer.eq(hvi.get_pointer())) {
+						return hvi;
+					}
+					i++;
 				}
+			}
+			*/
+
+			pointer_root = pointer.root();
+			hash_i = pointer_root.id();
+			node = cobj_roots[hash_i];
+
+			if(!node) {
+				opts = {
+					object: pointer_root,
+					pointer: pointer.slice(0, 1),
+					defer_initialization: true
+				};
+
+				if(pointer_root instanceof ist.StatefulObj) {
+					node = cobj_roots[hash_i] = new ist.ContextualStatefulObj(opts);
+				} else if(pointer_root instanceof ist.Dict) {
+					node = cobj_roots[hash_i] = new ist.ContextualDict(opts);
+				} else {
+					throw new Error("Root pointer should be a dictionary");
+				}
+				//must_initialize.push(node);
+				node.initialize();
+			}
+
+			i = 1;
+			len = pointer.length();
+			
+			while (i < len) {
+				ptr_i = pointer.points_at(i);
+				sc_i = pointer.special_contexts(i);
+				hash_i = pointer.itemHash(i);
+				node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i, i === len-1 ? options : false);//, false);
+				//if(!node.is_initialized()) {
+					//must_initialize.push(node);
+				//}
 				i++;
 			}
-		}
 
-		pointer_root = pointer.root();
-		hash_i = pointer_root.id();
-		node = cobj_roots[hash_i];
+			return node;
+		//});
+		//_.each(must_initialize, function(cobj) { cobj.initialize(); });
 
-		if(!node) {
-			opts = {
-				object: pointer_root,
-				pointer: pointer.slice(0, 1),
-				defer_initialization: true
-			};
-
-			if(pointer_root instanceof ist.StatefulObj) {
-				node = cobj_roots[hash_i] = new ist.ContextualStatefulObj(opts);
-			} else if(pointer_root instanceof ist.Dict) {
-				node = cobj_roots[hash_i] = new ist.ContextualDict(opts);
-			} else {
-				throw new Error("Root pointer should be a dictionary");
-			}
-
-			node.initialize();
-		}
-
-		i = 1;
-		len = pointer.length();
-		
-		while (i < len) {
-			ptr_i = pointer.points_at(i);
-			sc_i = pointer.special_contexts(i);
-			hash_i = pointer.itemHash(i);
-			node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i, i === len-1 ? options : false);
-			i++;
-		}
-
-		return node;
+		//return rv;
 	};
+	ist.add_cobj_cached_item = function(cobj) {
+		var pointer = cobj.get_pointer(),
+			obj = cobj.get_object();
+		cobj_hashes.put(pointer, cobj);
+	};
+
+	ist.remove_cobj_cached_item = function(cobj) {
+		var pointer = cobj.get_pointer(),
+			obj = cobj.get_object();
+
+		cobj_hashes.remove(pointer);
+	};
+	/*
+
+	var cobj_hashes = {},
+		cobj_roots = {};
+
+	ist.cobj_hashes = cobj_hashes;
+	ist.cobj_roots = cobj_roots;
+
 
 	ist.add_cobj_cached_item = function(cobj) {
 		var pointer = cobj.get_pointer(),
@@ -552,4 +670,5 @@
 			}
 		}
 	};
+	*/
 }(interstate));

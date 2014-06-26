@@ -64,6 +64,7 @@
             }, {
 				context: this
 			});
+
 			this._is_static = cjs(function () {
 				var tree = this._tree.get();
 				return tree.body.length === 0 ||
@@ -74,6 +75,7 @@
 				context: this
 			});
 			this._static_value = cjs(function() {
+					//debugger;
 				var tree = this._tree.get();
 				if(tree.body.length > 0) {
 					return tree.body[0].expression.value;
@@ -114,6 +116,13 @@
 		};
         proto.constraint_in_context = function (pcontext, inherited_from_cobj) {
 			if(this._is_static.get()) {
+			/*
+				if(this._tree._id === 431) {
+					debugger;
+					console.log(this._static_value);
+				}
+				*/
+				//console.log(this.sid(), this._static_value.get());
 				return this._static_value.get();
 			} else {
 				var tree = this._tree.get();
@@ -121,6 +130,19 @@
 							context: pcontext,
 							ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext),
 							get_constraint: true,
+							inherited_from_cobj: inherited_from_cobj
+						});
+			}
+        };
+        proto.value_in_context = function (pcontext, inherited_from_cobj) {
+			if(this._is_static.get()) {
+				return this._static_value.get();
+			} else {
+				var tree = this._tree.get();
+				return ist.get_parsed_$(tree, {
+							context: pcontext,
+							ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext),
+							get_constraint: false,
 							inherited_from_cobj: inherited_from_cobj
 						});
 			}

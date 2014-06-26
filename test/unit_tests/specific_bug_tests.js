@@ -48,7 +48,6 @@
 					equal(x.prop_val("prop1"), 1);
 					equal(y.prop_val("prop1"), 1);
 					equal(z.prop_val("prop1"), 1);
-
 				}
 			}]
 		},
@@ -84,6 +83,65 @@
 					x = A.prop_val("x");
 
 					equal(x, 'click');
+				}
+			}]
+		},
+		{
+			name: "Throwing Errors when removing copies",
+			expect: 1,
+			builtins: false,
+			steps: [{
+				setup: function(env) {
+					env.set("A", "<stateful>")
+						.cd("A")
+							.set("x")
+							.top()
+					;
+				},
+				test: function(env, runtime) {
+					var old_debug_value = ist.__debug;
+					ist.__debug = ist.cjs.__debug = true;
+					env.top().cd("A")
+					var caught_error = false;
+					//try {
+						env.set("(copies)", "1");
+						//env.print();
+						env.set("(copies)", "");
+					//} catch(e) {
+						//caught_error = true;
+						//console.error(e);
+					//}
+					ok(!caught_error);
+					ist.__debug = ist.cjs.__debug = old_debug_value;
+				}
+			}]
+		},
+		{
+			name: "Object updating bug",
+			expect: 2,
+			builtins: false,
+			steps: [{
+				setup: function(env) {
+					env	.set("A", "<stateful>")
+						.cd("A")
+							.add_state("init")
+							.start_at("init")
+							.set("x", "init", "1")
+							.top()
+				},
+				test: function(env, runtime) {
+					env.cd("A");
+					var A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+
+					equal(A.prop_val("x"), 1);
+					//env.print();
+					//console.log("BEGIN SET");
+					env.set("x", "init", "2")
+					//console.log("END SET");
+					//console.log(x.get());
+					//console.log(y.get());
+					//console.log(z.get());
+					equal(A.prop_val("x"), 2);
 				}
 			}]
 		},

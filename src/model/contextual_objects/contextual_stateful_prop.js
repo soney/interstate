@@ -19,6 +19,7 @@
 
 		ist.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
 		this._type = "stateful_prop";
+		//if(this.sid() === 18) debugger;
 	};
 
 	(function (My) {
@@ -35,6 +36,7 @@
 			if(active_value_info.is_fallback) {
 				this.$active_value.invalidate();
 			}
+			/*
 			if(ist.__garbage_collect) {
 				this._live_cobj_child_updater = cjs.liven(function() {
 					this.update_cobj_children();
@@ -43,6 +45,7 @@
 					pause_while_running: true
 				});
 			}
+			*/
 			if(this.constructor === My) { this.flag_as_initialized(); }
 		};
 
@@ -50,7 +53,7 @@
 			var context = this.get_pointer(),
 				contextual_object,
 				popped_item, last;
-
+				
 			while (!context.is_empty()) {
 				last = context.points_at();
 				if (last instanceof ist.StatefulObj) {
@@ -278,7 +281,6 @@
 						using_state = state;
 						using_as = USING_AS_STATE;
 					} else {
-						if(this.sid() === 74) { debugger; }
 						var ot = state.get_outgoing_transition();
 						if(ot) { // sometimes called before initialization
 							tr = ot.get_times_run();
@@ -359,6 +361,7 @@
 			return this.$active_value.get();
 		};
 
+/*
 		proto._get_valid_cobj_children = function() {
 			var my_pointer = this.get_pointer(),
 				rv = _.map(this.get_values(), function(info) {
@@ -374,10 +377,15 @@
 				});
 			return rv;
 		};
+		*/
 
 		proto._getter = function () {
 			var last_last_value = this._last_value,
 				active_value_info = this.active_value();
+
+			//if(this.sid() === 27) {
+				//console.log(active_value_info);
+			//}
 
 			if(!active_value_info) { return; }
 
@@ -426,6 +434,7 @@
 					eventized_pointer = pointer.push(using_val, new ist.StateContext(using_state));
 				}
 
+				
 				var cobj = ist.find_or_put_contextual_obj(using_val, eventized_pointer, {
 					inherited_from: using_info.inherited_from
 				});
@@ -433,12 +442,12 @@
 				//console.log(cobj, cobj.val());
 		
 				if(ist.__debug) {
-					//rv = using_val.get_value(eventized_pointer);
+					//rv = using_val.value_in_context(eventized_pointer);
 					rv = cobj.val();
 				} else {
 					try {
+						//rv = using_val.value_in_context(eventized_pointer);
 						rv = cobj.val();
-						//rv = using_val.get_value(eventized_pointer);
 						if(rv instanceof ist.Error) {
 							rv = undefined;
 						}
@@ -455,6 +464,11 @@
 
 				this._last_rv = rv;
 
+				//if(this.sid() === 772) {
+					//console.log(rv);
+					//debugger;
+				//}
+
 				return rv;
 			} else {
 				return undefined;
@@ -462,6 +476,7 @@
 		};
 
 		proto.destroy = function () {
+			//if(this.sid() === 18) debugger;
 			if(this.constructor === My) { this.begin_destroy(true); }
 
 			this.$value.offChange(this.$value.get, this.$value);

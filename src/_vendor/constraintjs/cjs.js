@@ -1106,7 +1106,6 @@ var constraint_solver = {
 		}
 	}
 };
-window.constraint_solver  = constraint_solver ;
 
 // Constraint Variables
 // --------------------
@@ -3152,9 +3151,6 @@ MapConstraint = function (options) {
 				}
 
 				info = unsubstantiated_info; // re-use the same object to keep dependencies
-
-				info.value.set(value); // but update its value and index
-				info.index.set(index);
 			} else {
 				// Nothing in unsubstantiated; just create it from scratch
 				info = {
@@ -3184,6 +3180,11 @@ MapConstraint = function (options) {
 
 			//  insert into values
 			this._ordered_values.splice(index, 0, info);
+
+			if (unsubstantiated_index >= 0) {
+				info.value.set(value); // but update its value and index
+				info.index.set(index);
+			}
 
 			// Push the index of every item that I spliced before up
 			for (i = index + 1; i < this._ordered_values.length; i += 1) {
