@@ -136,6 +136,7 @@
 				test: function(env, runtime) {
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(cobj.prop_val("a"), 10);
+					console.log(cobj.prop_val("x"));
 					ok(cobj.prop_val("x") >= 2);
 					equal(cobj.prop_val("y"), 3);
 					equal(cobj.prop_val("z"), 4);
