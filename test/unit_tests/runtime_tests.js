@@ -18,6 +18,7 @@
 			steps: [{
 				setup: function(env) {
 					env	.set("A", "<stateful>")
+				/*
 						.cd("A")
 							//.set("x", "(start)", "1")
 							.up()
@@ -35,8 +36,8 @@
 							*/
 				},
 				test: function(env, runtime) {
-					env.top().cd("A");
-					var A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+					//env.top().cd("A");
+					//var A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 				/*
 					env.up().cd("B");
 					var B = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);

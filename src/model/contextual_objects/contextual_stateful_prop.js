@@ -19,6 +19,7 @@
 
 		ist.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
 		this._type = "stateful_prop";
+				if(this.sid() === 25) debugger;
 		//if(this.sid() === 18) debugger;
 	};
 
@@ -27,6 +28,7 @@
 		var proto = My.prototype;
 
 		proto.initialize = function() {
+				if(this.sid() === 25) debugger;
 			My.superclass.initialize.apply(this, arguments);
 			var active_value_info = this.active_value();
 			this.$value.onChange(this.$value.get, this.$value);
@@ -260,6 +262,7 @@
 
 		
 		proto.active_value_getter = function () {
+			debugger;
 			var stateful_prop = this.get_object();
 			var values = this.get_values();
 			var len = values.length;
@@ -441,6 +444,7 @@
 				
 				//console.log(cobj, cobj.val());
 		
+				if(this.sid() === 25) debugger;
 				if(ist.__debug) {
 					//rv = using_val.value_in_context(eventized_pointer);
 					rv = cobj.val();

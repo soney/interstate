@@ -17,6 +17,7 @@
 		this._initialized = false;
 		this._destroyed = false;
 		this._type = "none";
+		if(this.sid() === 31 ) debugger;
 
 		//if(this.sid() === 31) debugger;
 		//if(this.sid() >= 250) debugger;
@@ -43,13 +44,12 @@
 		});
 		this.object.on("begin_destroy", this.destroy, this);
 
-		ist.add_cobj_cached_item(this);
+		//ist.add_cobj_cached_item(this);
 
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
 		}
 
-		//if(this.sid() === 20 ) debugger;
 		//if(this.sid() === 18 ) debugger;
 		//if(this.sid() === 725) debugger;
 		//if(this.sid() === 722) debugger;
@@ -541,11 +541,12 @@
 			pointer = new ist.Pointer({stack: [obj]});
 		}
 
-		//var must_initialize = [];
-		//var rv = cobj_hashes.getOrPut(pointer, function() {
-			if(cobj_hashes.has(pointer)) {
-				return cobj_hashes.get(pointer);
-			}
+		//var must_initialize = false;
+		var must_initialize = [];
+		var rv = cobj_hashes.getOrPut(pointer, function() {
+			//if(cobj_hashes.has(pointer)) {
+				//return cobj_hashes.get(pointer);
+			//}
 			var pointer_root, hvi, i, len, ptr_i, sc_i, hash_i, new_cobj, node, opts;
 
 
@@ -598,24 +599,29 @@
 				ptr_i = pointer.points_at(i);
 				sc_i = pointer.special_contexts(i);
 				hash_i = pointer.itemHash(i);
-				node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i, i === len-1 ? options : false);//, false);
-				//if(!node.is_initialized()) {
-					//must_initialize.push(node);
-				//}
+				node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i, i === len-1 ? options : false, i === len-1 ? true : false);//, false);
+				if(!node.is_initialized()) {
+					must_initialize.push(node);
+				}
 				i++;
 			}
 
-			return node;
-		//});
-		//_.each(must_initialize, function(cobj) { cobj.initialize(); });
+			//must_initialize = true;
 
-		//return rv;
+			return node;
+		});
+		//if(must_initialize) { rv.initialize(); }
+		_.each(must_initialize, function(cobj) { cobj.initialize(); });
+
+		return rv;
 	};
+	/*
 	ist.add_cobj_cached_item = function(cobj) {
 		var pointer = cobj.get_pointer(),
 			obj = cobj.get_object();
 		cobj_hashes.put(pointer, cobj);
 	};
+	*/
 
 	ist.remove_cobj_cached_item = function(cobj) {
 		var pointer = cobj.get_pointer(),
