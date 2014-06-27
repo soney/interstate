@@ -109,27 +109,13 @@
         ist.InheritPropCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
-        if (!this._options.parent || !this._options.name) {
+        if (!this._options.cobj || !this._options.name) {
             throw new Error("Must select a parent object");
         }
     
     
-        this._parent = this._options.parent;
+        this._cobj = this._options.cobj;
 		this._prop_name = this._options.name;
-		/*
-		this._value = this._options.value;
-		if(this._parent instanceof ist.ContextualStatefulObj) {
-			var own_statechart = this._parent.get_own_statechart();
-			var start_state = own_statechart.get_start_state();
-			if(this._value instanceof ist.Cell) {
-				this._prop_value = new ist.StatefulProp();
-				this._prop_value.set(start_state, new ist.Cell({str: this._value.get_str()}));
-			} else if(this._value instanceof ist.StatefulProp) {
-				this._prop_value = this._value.clone();
-			}
-		}
-		console.log(this._value, this._prop_value);
-		*/
     };
     
     (function (My) {
@@ -137,13 +123,16 @@
         var proto = My.prototype;
     
         proto._execute = function () {
-			var parent_obj = this._parent.get_object();
-			if(!this._prop_value && this._parent instanceof ist.ContextualStatefulObj) {
-				var value = this._parent.prop(this._prop_name);
-				var vobj = value.get_object();
+			var ptr = this._cobj.get_pointer(),
+				parent_ptr = ptr.pop(),
+				parent_cobj = ist.find_or_put_contextual_obj(parent_ptr.points_at(), parent_ptr),
+				parent_obj = parent_cobj.get_object();
+			
+			if(!this._prop_value && parent_cobj instanceof ist.ContextualStatefulObj) {
+				var vobj = this._cobj.get_object();
 
 				if(vobj instanceof ist.Cell) {
-					var own_statechart = this._parent.get_own_statechart();
+					var own_statechart = parent_cobj.get_own_statechart();
 					var start_state = own_statechart.get_start_state();
 
 					this._prop_value = new ist.StatefulProp();
@@ -188,16 +177,18 @@
             function () {
                 var arg_array = _.toArray(arguments);
                 return {
-                    parent_uid: this._parent.id(),
-                    //value_uid: this._value.id(),
+					cobj_uid: this._cobj.id(),
                     name: this._prop_name
+                    //parent_uid: this._parent.id(),
+                    //value_uid: this._value.id(),
                 };
             },
             function (obj) {
                 return new My({
-                    parent: ist.find_uid(obj.parent_uid),
-                    //value: ist.find_uid(obj.value_uid),
+                    cobj: ist.find_uid(obj.cobj_uid),
                     name: obj.name
+                    //parent: ist.find_uid(obj.parent_uid),
+                    //value: ist.find_uid(obj.value_uid),
                 });
             });
     }(ist.InheritPropCommand));
@@ -237,7 +228,7 @@
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
-                if (this._prop_value) {
+                if (this._prop_value && this._prop_value.destroy) {
                     this._prop_value.destroy(true);
                 }
             }

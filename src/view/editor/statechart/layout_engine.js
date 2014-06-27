@@ -78,11 +78,21 @@
 					}
 				}
 			};
-			var curr_node = {statechart: FAKE_ROOT_STATECHART, children: _.map(this.option("statecharts"), function (sc) {
-				var node = {statechart: sc, children: []};
-				expand_node(node, true);
-				return node;
-			}, this)};
+			var curr_node = {
+				statechart: FAKE_ROOT_STATECHART,
+				children: _	.chain(this.option("statecharts"))
+							.map(function (sc) {
+								if(sc.destroyed) {
+									return false;
+								} else {
+									var node = {statechart: sc, children: []};
+									expand_node(node, true);
+									return node;
+								}
+							}, this)
+							.compact()
+							.value()
+				};
 			return curr_node;
 		};
 

@@ -551,7 +551,8 @@
 
 				command = new ist.InheritPropCommand({
 					in_effect: true,
-					parent: { id: to_func(client.cobj_id) },
+					//parent: { id: to_func(client.cobj_id) },
+					cobj: { id: to_func(client.cobj_id) },
 					name: prop_name
 					//value: { id: to_func(value.cobj_id) }
 				});
