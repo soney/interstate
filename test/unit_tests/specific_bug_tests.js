@@ -102,14 +102,54 @@
 					ist.__debug = ist.cjs.__debug = true;
 					env.top().cd("A")
 					var caught_error = false;
-					//try {
+					try {
 						env.set("(copies)", "1");
-						//env.print();
 						env.set("(copies)", "");
-					//} catch(e) {
-						//caught_error = true;
-						//console.error(e);
-					//}
+						env.set("(copies)", "1");
+						env.set("(copies)", "");
+						env.set("(copies)", "5");
+					} catch(e) {
+						caught_error = true;
+						console.error(e);
+					}
+					ok(!caught_error);
+					ist.__debug = ist.cjs.__debug = old_debug_value;
+				}
+			}]
+		},
+		{
+			name: "Throwing Errors when removing copies for SVG objects",
+			expect: 6,
+			steps: [{
+				setup: function(env) {
+					env.set("screen", "<stateful>")
+						.cd("screen")
+							.set("(prototypes)", "(start)", "svg.paper")
+							.set("rect", "<stateful>")
+							.cd("rect")
+								.set("(prototypes)", "(start)", "[svg.rectangle]")
+					;
+				},
+				test: function(env, runtime) {
+					var old_debug_value = ist.__debug;
+					ist.__debug = ist.cjs.__debug = true;
+					env.top().cd("screen").cd("rect");
+					var caught_error = false;
+					try {
+						env.set("(copies)", "2");
+						equal($("rect", runtime).size(), 2);
+						env.set("(copies)", "");
+						equal($("rect", runtime).size(), 1);
+						env.set("(copies)", "2");
+						equal($("rect", runtime).size(), 2);
+						env.set("(copies)", "");
+						equal($("rect", runtime).size(), 1);
+						env.set("(copies)", "5");
+						equal($("rect", runtime).size(), 5);
+					} catch(e) {
+						caught_error = true;
+						console.error(e);
+					}
 					ok(!caught_error);
 					ist.__debug = ist.cjs.__debug = old_debug_value;
 				}

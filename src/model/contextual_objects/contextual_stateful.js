@@ -52,6 +52,10 @@
 		};
 
 		proto.get_statecharts = function () {
+			if(this.is_template()) {
+				return [];
+			}
+
 			var contextual_protos = this.get_all_protos();
 			var proto_statecharts = _	.chain(contextual_protos)
 										.map(function (x) {
