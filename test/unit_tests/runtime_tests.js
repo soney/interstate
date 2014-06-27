@@ -18,37 +18,28 @@
 			steps: [{
 				setup: function(env) {
 					env	.set("A", "<stateful>")
-				/*
 						.cd("A")
-							//.set("x", "(start)", "1")
+							.set("x", "(start)", "1")
 							.up()
 						.set("B", "<stateful>")
 						.cd("B")
-							.print();
-							env.set("(prototypes)", "(start)", "A")
-							//.set("x", "(start)", "3")
+							.set("(prototypes)", "(start)", "A")
+							.set("x", "(start)", "3")
 							.up()
-				/*
 						.cd("A")
 							.set("y", "(start)", "2")
 							.up()
 							;
-							*/
 				},
 				test: function(env, runtime) {
-					//env.top().cd("A");
-					//var A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
-				/*
+					env.top().cd("A");
+					var A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					env.up().cd("B");
 					var B = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 
-					*/
-					//equal(A.prop_val("x"), 1);
-					//equal(A.prop_val("y"), 2);
-					//equal(B.prop_val("x"), 3);
-				ok(true);
-				ok(true);
-				ok(true);
+					equal(A.prop_val("x"), 1);
+					equal(A.prop_val("y"), 2);
+					equal(B.prop_val("x"), 3);
 				}
 			}]
 		},
@@ -137,7 +128,6 @@
 				test: function(env, runtime) {
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(cobj.prop_val("a"), 10);
-					console.log(cobj.prop_val("x"));
 					ok(cobj.prop_val("x") >= 2);
 					equal(cobj.prop_val("y"), 3);
 					equal(cobj.prop_val("z"), 4);

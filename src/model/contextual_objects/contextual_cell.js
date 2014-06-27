@@ -16,6 +16,7 @@
 		_.proto_extend(My, ist.ContextualObject);
 		var proto = My.prototype;
 		proto.initialize = function(options) {
+			if(this.constructor === My) { this.flag_as_initialized();  }
 			My.superclass.initialize.apply(this, arguments);
 			var constraint = false,
 				pointer = this.get_pointer(),
@@ -37,10 +38,10 @@
 				}
 				old_destroy.apply(this, arguments);
 			};
-			if(this.constructor === My) { this.flag_as_initialized();  }
+			if(this.constructor === My) { this.shout_initialization();  }
 		};
-		proto.destroy = function () {
-			if(this.constructor === My) { this.begin_destroy(true); }
+		proto.destroy = function (avoid_begin_destroy) {
+			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
 			this.value_constraint.destroy(true);
 			delete this.value_constraint;

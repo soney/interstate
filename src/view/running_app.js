@@ -211,7 +211,7 @@
 				if(old_root) {
 					var old_root_contextual_object = ist.find_or_put_contextual_obj(old_root);
 					if(old_root_contextual_object) {
-						old_root_contextual_object.destroy();
+						//old_root_contextual_object.destroy();
 					}
 					//old_root.destroy();
 				}

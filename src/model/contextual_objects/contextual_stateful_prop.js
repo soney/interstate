@@ -19,8 +19,6 @@
 
 		ist.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
 		this._type = "stateful_prop";
-				if(this.sid() === 25) debugger;
-		//if(this.sid() === 18) debugger;
 	};
 
 	(function (My) {
@@ -28,7 +26,7 @@
 		var proto = My.prototype;
 
 		proto.initialize = function() {
-				if(this.sid() === 25) debugger;
+			if(this.constructor === My) { this.flag_as_initialized(); }
 			My.superclass.initialize.apply(this, arguments);
 			var active_value_info = this.active_value();
 			this.$value.onChange(this.$value.get, this.$value);
@@ -38,17 +36,7 @@
 			if(active_value_info.is_fallback) {
 				this.$active_value.invalidate();
 			}
-			/*
-			if(ist.__garbage_collect) {
-				this._live_cobj_child_updater = cjs.liven(function() {
-					this.update_cobj_children();
-				}, {
-					context: this,
-					pause_while_running: true
-				});
-			}
-			*/
-			if(this.constructor === My) { this.flag_as_initialized(); }
+			if(this.constructor === My) { this.shout_initialization(); }
 		};
 
 		proto.get_parent = function () {
@@ -262,7 +250,6 @@
 
 		
 		proto.active_value_getter = function () {
-			debugger;
 			var stateful_prop = this.get_object();
 			var values = this.get_values();
 			var len = values.length;
@@ -364,31 +351,10 @@
 			return this.$active_value.get();
 		};
 
-/*
-		proto._get_valid_cobj_children = function() {
-			var my_pointer = this.get_pointer(),
-				rv = _.map(this.get_values(), function(info) {
-					var value = info.value,
-						opts = {
-							inherited_from: info.inherited_from
-						};
-					return {
-						obj: value,
-						pointer: my_pointer.push(value),
-						options: opts
-					};
-				});
-			return rv;
-		};
-		*/
 
 		proto._getter = function () {
 			var last_last_value = this._last_value,
 				active_value_info = this.active_value();
-
-			//if(this.sid() === 27) {
-				//console.log(active_value_info);
-			//}
 
 			if(!active_value_info) { return; }
 
@@ -442,15 +408,11 @@
 					inherited_from: using_info.inherited_from
 				});
 				
-				//console.log(cobj, cobj.val());
 		
-				if(this.sid() === 25) debugger;
 				if(ist.__debug) {
-					//rv = using_val.value_in_context(eventized_pointer);
 					rv = cobj.val();
 				} else {
 					try {
-						//rv = using_val.value_in_context(eventized_pointer);
 						rv = cobj.val();
 						if(rv instanceof ist.Error) {
 							rv = undefined;
@@ -468,22 +430,21 @@
 
 				this._last_rv = rv;
 
-				//if(this.sid() === 772) {
-					//console.log(rv);
-					//debugger;
-				//}
-
 				return rv;
 			} else {
 				return undefined;
 			}
 		};
 
-		proto.destroy = function () {
-			//if(this.sid() === 18) debugger;
-			if(this.constructor === My) { this.begin_destroy(true); }
-
+		proto.begin_destroy = function() {
 			this.$value.offChange(this.$value.get, this.$value);
+
+			My.superclass.begin_destroy.apply(this, arguments);
+		};
+
+		proto.destroy = function (avoid_begin_destroy) {
+			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
+
 			this.$active_value.destroy(true);
 			delete this.$active_value;
 			My.superclass.destroy.apply(this, arguments);

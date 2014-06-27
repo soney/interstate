@@ -71,11 +71,6 @@
 		}
 		rv_arr = rv.toArray();
 
-		//if(originalCobj.sid() === 25) {
-			//console.log(rv_arr.slice(1));
-		//}
-
-		
 		return rv_arr.slice(1); // don't include the original dict
 	};
 
@@ -160,6 +155,7 @@
 		_.proto_extend(My, ist.ContextualObject);
 		var proto = My.prototype;
 		proto.initialize = function() {
+			if(this.constructor === My) { this.flag_as_initialized();  }
 			My.superclass.initialize.apply(this, arguments);
 			if(ist.__garbage_collect) {
 				this._live_cobj_child_updater = cjs.liven(function() {
@@ -169,7 +165,7 @@
 					pause_while_running: true
 				});
 			}
-			if(this.constructor === My) { this.flag_as_initialized();  }
+			if(this.constructor === My) { this.shout_initialization();  }
 		};
 
 		proto.proto_cobj = function() {
@@ -252,15 +248,6 @@
 						inherited_names.push(name);
 					}
 				});
-			/*
-				var p_direct_names = p.get_direct_prop_names();
-				_.each(p_direct_names, function (name) {
-					if (!owners.hasOwnProperty(name)) {
-						owners[name] = p;
-						inherited_names.push(name);
-					}
-				});
-				*/
 			}, this);
 
 
@@ -414,10 +401,6 @@
 			return contextual_object;
 		};
 		proto._has = function (name, ignore_inherited) {
-			//if(this.sid() === 806) {
-				//console.log(name, this.is_template());
-				//if(name === "r") debugger;
-			//}
 			if(this.is_template()) {
 				return false;
 			}
@@ -501,13 +484,6 @@
 					opts.inherited_from = info.inherited_from;
 				}
 
-/*
-				if(this.sid() === 11) {
-					if(name === "x") {
-						debugger;
-					}
-				}
-				*/
 				var value = get_contextual_object(info.value, pointer, opts);
 
 				return value;
@@ -518,14 +494,7 @@
 
 		proto._prop_val = function (name, ignore_inherited) {
 			var value = this.prop(name, ignore_inherited);
-			/*
-			if(this.sid() === 26) {
-				if(name === "dom") {
-					debugger;
-					console.log(value, value.val());
-				}
-			}
-			*/
+
 			if (value instanceof ist.ContextualObject) {
 				return value.val();
 			} else {
@@ -783,17 +752,9 @@
 		};
 
 		proto._get_valid_cobj_children = function() {
-			var rv,
+			var rv = [],
 				my_pointer = this.get_pointer(),
-				//is_instance = this.is_instance(),
 				is_template = this.is_template();
-
-			//if(is_instance) {
-				rv = [];
-			//} else {
-				//var copies_obj = this.copies_obj();
-				//rv = [{pointer: my_pointer.push(copies_obj), obj: copies_obj}];
-			//}
 
 			if(!is_template) {
 				var protos_objs = this.get_all_protos();
@@ -816,9 +777,6 @@
 
 					if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
 						ptr = my_pointer.push(value);
-						//if(ptr.hash() === 97) { 
-							//debugger;
-						//}
 						rv.push({
 							obj: value,
 							pointer: ptr,
@@ -833,16 +791,25 @@
 			return rv;
 		};
 
-		proto.destroy = function () {
-			cjs.wait();
-			if(this.constructor === My) { this.begin_destroy(true); }
-
+		proto.begin_destroy = function() {
 			//The attachment instances might be listening for property changes for destroy them first
 			_.each(this._attachment_instances, function(attachment_instance, type) {
 				attachment_instance.destroy(true);
 				delete this._attachment_instances[type];
 			}, this);
 			delete this._attachment_instances;
+
+			if(this._live_cobj_child_updater) {
+				this._live_cobj_child_updater.destroy(true);
+				delete this._live_cobj_child_updater;
+			}
+
+
+			My.superclass.begin_destroy.apply(this, arguments);
+		};
+
+		proto.destroy = function (avoid_begin_destroy) {
+			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
 			this._manifestation_objects.destroy(true);
 			delete this._manifestation_objects;
@@ -900,7 +867,6 @@
 				delete this.has.options.context;
 				delete this.has.options.args_map;
 			}
-			cjs.signal();
 		};
 
 		proto._getter = function () {

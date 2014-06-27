@@ -44,7 +44,6 @@
 						y = obj.prop_val("y"),
 						z = obj.prop_val("z");
 
-
 					equal(x.prop_val("prop1"), 1);
 					equal(y.prop_val("prop1"), 1);
 					equal(z.prop_val("prop1"), 1);

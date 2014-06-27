@@ -795,7 +795,9 @@
 			this._command_stack.destroy();
 			delete this._command_stack;
 
+			window.dbg = true;
 			croot.destroy();
+			window.dbg = false;
 			/*
 			if(_.keys(interstate.cobj_hashes).length>0) {
 				debugger;

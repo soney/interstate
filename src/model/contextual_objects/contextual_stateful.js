@@ -19,8 +19,9 @@
 		var proto = My.prototype;
 
 		proto.initialize = function() {
-			My.superclass.initialize.apply(this, arguments);
 			if(this.constructor === My) { this.flag_as_initialized(); }
+			My.superclass.initialize.apply(this, arguments);
+			if(this.constructor === My) { this.shout_initialization(); }
 		};
 
 		proto.get_own_statechart = function () {
@@ -73,16 +74,21 @@
 			}, this);
 		};
 
-		proto.destroy = function () {
-			cjs.wait();
-			if(this.constructor === My) { this.begin_destroy(true); }
-
+		proto.begin_destroy = function() {
 			this.statecharts_per_proto.forEach(function(statechart) {
 				statechart.destroy(true);
 			});
 
 			this.statecharts_per_proto.destroy(true);
 			delete this.statecharts_per_proto;
+
+			My.superclass.begin_destroy.apply(this, arguments);
+		};
+
+		proto.destroy = function (avoid_begin_destroy) {
+			cjs.wait();
+			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
+
 			My.superclass.destroy.apply(this, arguments);
 			cjs.signal();
 		};

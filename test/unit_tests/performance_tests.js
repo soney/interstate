@@ -100,7 +100,7 @@
 				}
 				return false;
 			},
-			N: 2,//40,
+			N: 240,
 			trials: trials
 		}, {
 			name: "Prototypes chain",
