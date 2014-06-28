@@ -138,7 +138,7 @@
 					this._prop_value = new ist.StatefulProp();
 					this._prop_value.set(start_state, vobj.clone());
 				} else if(vobj instanceof ist.StatefulProp) {
-					this._prop_value = vobj.clone(value);
+					this._prop_value = vobj.clone(this._cobj);
 				} else if(vobj instanceof ist.Dict) {
 					this._prop_value = vobj.clone();
 				} else {

@@ -21,6 +21,12 @@
 		proto.initialize = function() {
 			if(this.constructor === My) { this.flag_as_initialized(); }
 			My.superclass.initialize.apply(this, arguments);
+			this._live_statechart_child_updater = cjs.liven(function() {
+				this.update_statecharts();
+			}, {
+				context: this,
+				pause_while_running: true
+			});
 			if(this.constructor === My) { this.shout_initialization(); }
 		};
 
@@ -51,6 +57,30 @@
 			return sc;
 		};
 
+		proto.update_statecharts = function() {
+			var valid_statecharts = this.get_valid_statecharts(),
+				current_statecharts = this.statecharts_per_proto.values(),
+				to_destroy = {};
+
+			this.statecharts_per_proto.forEach(function(sc, proto_obj) {
+				to_destroy[sc.id()] = {key: proto_obj, sc: sc};
+			});
+			_.each(valid_statecharts, function(sc) {
+				to_destroy[sc.id()] = false;
+			});
+			var to_destroy_arr = _.compact(_.values(to_destroy));
+			_.each(to_destroy_arr, function(info) {
+				var sc = info.sc,
+					key = info.key;
+				this.statecharts_per_proto.remove(key);
+				sc.destroy(true);
+			}, this);
+		};
+
+		proto.get_valid_statecharts = function() {
+			return this.get_statecharts();
+		};
+
 		proto.get_statecharts = function () {
 			if(this.is_template()) {
 				return [];
@@ -79,6 +109,11 @@
 		};
 
 		proto.begin_destroy = function() {
+			if(this._live_statechart_child_updater) {
+				this._live_statechart_child_updater.destroy(true);
+				delete this._live_statechart_child_updater;
+			}
+
 			this.statecharts_per_proto.forEach(function(statechart) {
 				statechart.destroy(true);
 			});

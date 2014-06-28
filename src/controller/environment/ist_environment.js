@@ -396,9 +396,8 @@
 			var parent_obj = this.get_pointer_obj();
 			var ptr = this.pointer;
 			var obj = ptr.points_at();
-			//console.log(obj, ptr);
-			var cobj = ist.find_or_put_contextual_obj(obj, ptr),
-				cobj = cobj.prop_val(prop_name);
+			var cobj = ist.find_or_put_contextual_obj(obj, ptr);
+			cobj = cobj.prop(prop_name);
 			var command = new ist.InheritPropCommand({
 				cobj: cobj,
 				//parent: cobj,
