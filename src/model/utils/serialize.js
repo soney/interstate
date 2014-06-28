@@ -250,7 +250,7 @@
 
 			if (val === undefined) {
 				val = deserialized_obj_vals[id] = do_deserialize.apply(this, ([deserialized_objs[id]]).concat(rest_args));
-				if (val.initialize) {
+				if (_.has(val, "initialize")) { // has own property
 					val.initialize();
 					delete val.initialize;
 				}

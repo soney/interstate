@@ -35,7 +35,6 @@
     };
     
     ist.Dict = function (options, defer_initialization) {
-		able.make_this_listenable(this);
         options = _.extend({
             value: {},
             keys: [],
@@ -43,23 +42,20 @@
             has_protos: true,
 			has_copies: true
         }, options);
+
+        ist.Dict.superclass.constructor.call(this, options, defer_initialization);
     
         this.type = "ist_dict";
-        this._id = options.uid || uid();
-        this._hash = uid.strip_prefix(this._id);
-        this.options = options;
-        ist.register_uid(this.id(), this);
-		if(this.constructor === ist.Dict && defer_initialization !== true) {
-            this.do_initialize(options);
-        }
     };
     
     (function (My) {
-        var proto = My.prototype;
+		_.proto_extend(My, ist.BasicObject);
 
-		able.make_proto_listenable(proto);
+        var proto = My.prototype;
     
-        proto.do_initialize = function (options) {
+        proto.initialize = function (options) {
+            My.superclass.initialize.apply(this, arguments);
+
             ist.install_instance_builtins(this, options, My);
             var direct_props = this.direct_props();
             direct_props.setValueEqualityCheck(function (info1, info2) {
@@ -319,10 +315,6 @@
                 return [direct_attachments];
             }
         };
-    
-        proto.id = function () { return this._id; };
-		proto.hash = function () { return this._hash; };
-		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 
 		proto.clone = function() {
 			return ist.deserialize(ist.serialize(this, false));
@@ -331,16 +323,11 @@
         //
         // === BYE BYE ===
         //
-		proto.emit_begin_destroy = function() {
-			this._emit("begin_destroy");
-		};
     
         proto.destroy = function () {
-			if(this.constructor === My) { this.emit_begin_destroy(); }
+			if(this.constructor === My) { this.begin_destroy(); }
 			ist.unset_instance_builtins(this, My);
-			ist.unregister_uid(this.id());
-			able.destroy_this_listenable(this);
-			this._destroyed = true;
+			My.superclass.destroy.apply(this, arguments);
         };
     
         proto.toString = function () {
@@ -374,13 +361,15 @@
                     serialized_options[name] = obj[name];
                 });
 
-                var rv = new My({uid: obj.uid, has_protos: obj.has_protos, has_copies: obj.has_copies}, true);
+                var rv = new My({uid: obj.uid, has_protos: obj.has_protos, has_copies: obj.has_copies}, true),
+					old_initialize = proto.initialize;
                 rv.initialize = function () {
+					delete this.initialize;
                     var options = {};
                     _.each(serialized_options, function (serialized_option, name) {
                         options[name] = ist.deserialize.apply(ist, ([serialized_option]).concat(rest_args));
                     });
-                    this.do_initialize(options);
+					old_initialize.call(this, options);
                 };
 
                 return rv;

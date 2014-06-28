@@ -60,6 +60,7 @@ exports.runtime = c(
 				"model/utils/parsed_fn.js",
 				"model/utils/map_diff.js",
 				"controller/environment/devices.js",
+				"model/basic_objects/basic_core.js",
 				"model/basic_objects/cell.js",
 				"model/basic_objects/dict.js",
 				"model/basic_objects/stateful_obj.js",

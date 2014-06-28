@@ -7,18 +7,11 @@
         _ = ist._;
     
     ist.Cell = function (options, defer_initialization) {
-		able.make_this_listenable(this);
-        options = options || {};
-        this._id = options.uid || uid();
-        this._hash = uid.strip_prefix(this.id());
-        ist.register_uid(this.id(), this);
-        if (defer_initialization !== true) {
-            this.do_initialize(options);
-        }
+		ist.Cell.superclass.constructor.apply(this, arguments);
     };
     (function (My) {
+		_.proto_extend(My, ist.BasicObject);
         var proto = My.prototype;
-		able.make_proto_listenable(proto);
 
         My.builtins = {
             "str": {
@@ -56,7 +49,9 @@
             }
         };
         ist.install_proto_builtins(proto, My.builtins);
-        proto.do_initialize = function (options) {
+
+        proto.initialize = function (options) {
+			My.superclass.initialize.apply(this, arguments);
             ist.install_instance_builtins(this, options, My);
             this._tree = cjs(function () {
                 var str = this.get_str();
@@ -75,7 +70,6 @@
 				context: this
 			});
 			this._static_value = cjs(function() {
-					//debugger;
 				var tree = this._tree.get();
 				if(tree.body.length > 0) {
 					return tree.body[0].expression.value;
@@ -92,9 +86,6 @@
 			return new ist.Cell({
 				str: this.get_str()
 			});
-		};
-		proto.emit_begin_destroy = function() {
-			this._emit("begin_destroy");
 		};
     
         proto.get_ignore_inherited_in_contexts = function (pcontext) {
@@ -116,13 +107,6 @@
 		};
         proto.constraint_in_context = function (pcontext, inherited_from_cobj) {
 			if(this._is_static.get()) {
-			/*
-				if(this._tree._id === 431) {
-					debugger;
-					console.log(this._static_value);
-				}
-				*/
-				//console.log(this.sid(), this._static_value.get());
 				return this._static_value.get();
 			} else {
 				var tree = this._tree.get();
@@ -148,7 +132,10 @@
 			}
         };
         proto.destroy = function () {
-			this.emit_begin_destroy();
+			if(this.constructor === My) { this.begin_destroy(); }
+
+			ist.unset_instance_builtins(this, My);
+
             this._tree.destroy(true);
 			delete this._tree;
 			this._static_value.destroy(true);
@@ -156,19 +143,7 @@
 			this._is_static.destroy(true);
 			delete this._is_static;
 
-			ist.unset_instance_builtins(this, My);
-			ist.unregister_uid(this.id());
-			this._emit("destroyed");
-			able.destroy_this_listenable(this);
-			this._destroyed = true;
-        };
-    
-        proto.id = function () { return this._id; };
-		proto.hash = function () { return this._hash; };
-		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-    
-        proto.summarize = function () {
-            return this.id();
+			My.superclass.destroy.apply(this, arguments);
         };
     
         ist.register_serializable_type("cell",
@@ -199,12 +174,14 @@
                 });
 
                 var rv = new My({uid: obj.uid}, true);
+				var old_initialize = proto.initialize;
                 rv.initialize = function () {
+					delete this.initialize;
                     var options = { };
                     _.each(serialized_options, function (serialized_option, name) {
                         options[name] = ist.deserialize.apply(ist, ([serialized_option]).concat(rest_args));
                     });
-                    this.do_initialize(options);
+					old_initialize.call(this, options);
                 };
 
                 return rv;

@@ -7,21 +7,15 @@
         _ = ist._;
     
     ist.StatefulObj = function (options, defer_initialization) {
-        options = options || {};
         ist.StatefulObj.superclass.constructor.apply(this, arguments);
-    
         this.type = "ist_stateful_obj";
-    
-        if (defer_initialization !== true) {
-            this.do_initialize(options);
-        }
     };
     (function (My) {
         _.proto_extend(My, ist.Dict);
         var proto = My.prototype;
     
-        proto.do_initialize = function (options) {
-            My.superclass.do_initialize.apply(this, arguments);
+        proto.initialize = function (options) {
+            My.superclass.initialize.apply(this, arguments);
             ist.install_instance_builtins(this, options, My);
         };
     
@@ -36,10 +30,11 @@
             }
         };
         ist.install_proto_builtins(proto, My.builtins);
+
         proto.destroy = function () {
-			if(this.constructor === My) { this.emit_begin_destroy(); }
-			ist.unset_instance_builtins(this, My);
+			if(this.constructor === My) { this.begin_destroy(); }
             My.superclass.destroy.apply(this, arguments);
+			ist.unset_instance_builtins(this, My);
         };
 
         ist.register_serializable_type("stateful_obj",
@@ -56,13 +51,14 @@
                     serialized_options[name] = obj[name];
                 });
 
-                var rv = new My({uid: obj.uid}, true);
+                var rv = new My({uid: obj.uid}, true),
+					old_initialize = proto.initialize;
                 rv.initialize = function () {
                     var options = {};
                     _.each(serialized_options, function (serialized_option, name) {
                         options[name] = ist.deserialize.apply(ist, ([serialized_option]).concat(rest_args));
                     });
-                    this.do_initialize(options);
+					old_initialize.call(this, options);
                 };
 
                 return rv;

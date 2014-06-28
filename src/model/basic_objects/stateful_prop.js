@@ -7,22 +7,14 @@
         _ = ist._;
     
     ist.StatefulProp = function (options, defer_initialization) {
-		able.make_this_listenable(this);
-        options = options || {};
-    
-        this._id = options.uid || uid();
-        this._hash = uid.strip_prefix(this._id);
-        ist.register_uid(this._id, this);
-    
-        if (defer_initialization !== true) {
-            this.do_initialize(options);
-        }
+		ist.StatefulProp.superclass.constructor.apply(this, arguments);
     };
     (function (My) {
+		_.proto_extend(My, ist.BasicObject);
         var proto = My.prototype;
-		able.make_proto_listenable(proto);
     
-        proto.do_initialize = function (options) {
+        proto.initialize = function (options) {
+			My.superclass.initialize.apply(this, arguments);
             ist.install_instance_builtins(this, options, My);
             this.get_direct_values().setHash("hash");
         };
@@ -99,12 +91,6 @@
         proto.unset = proto._unset_direct_value_for_state = function (state) {
             var dvs = this.get_direct_values();
             state = state_basis(state);
-			/*
-            var val = dvs.get(state);
-            if (val) {
-                val.destroy();
-            }
-			*/
             dvs.remove(state);
         };
         proto._direct_value_for_state = function (state) {
@@ -116,19 +102,12 @@
             return this.get_direct_values().has(state);
         };
         
-        proto.id = function () { return this._id; };
-		proto.hash = function () { return this._hash; };
-		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-    
-		proto.emit_begin_destroy = function() {
-			this._emit("begin_destroy");
-		};
         proto.destroy = function () {
-			this.emit_begin_destroy();
+			if(this.constructor === My) { this.begin_destroy(); }
+
 			ist.unset_instance_builtins(this, My);
-			ist.unregister_uid(this.id());
-			able.destroy_this_listenable(this);
-			this._destroyed = true;
+
+			My.superclass.destroy.apply(this, arguments);
         };
     
         ist.register_serializable_type("stateful_prop",
@@ -165,7 +144,9 @@
                 });
     
                 var rest_args = _.rest(arguments, 2);
+				var old_initialize = proto.initialize;
                 rv.initialize = function () {
+					delete this.initialize;
                     options = _.extend({
                         //direct_values: ist.deserialize.apply(ist, ([obj.direct_values]).concat(rest_args))
                     //	can_inherit: ist.deserialize.apply(ist, ([obj.can_inherit, options]).concat(rest_args))
@@ -175,7 +156,7 @@
                     _.each(serialized_options, function (serialized_option, name) {
                         options[name] = ist.deserialize.apply(ist, ([serialized_option, options]).concat(rest_args));
                     });
-                    this.do_initialize(options);
+					old_initialize.call(this, options);
 					options = null;
                 };
                 return rv;

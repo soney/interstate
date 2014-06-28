@@ -183,7 +183,7 @@
 					value._set_direct_protos(direct_protos);
 				} else if (value === "<stateful>") {
 					value = new ist.StatefulObj(undefined, true);
-					value.do_initialize({
+					value.initialize({
 						direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: value })
 					});
 					/*
