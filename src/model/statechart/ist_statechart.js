@@ -1031,12 +1031,18 @@
 				rv = new My({
 					avoid_constructor: true
 				});
-				rv.initialize = function () {
+				var initialization_func = function () {
 					delete this.initialize;
+					var substates = ist.deserialize.apply(ist, ([obj.substates]).concat(rest_args));
+					substates.forEach(function(state) {
+						state.do_initialize_substate();
+						delete state.do_initialize_substate;
+					});
 					My.call(this, {
 						id: obj.id,
 						concurrent: obj.concurrent,
-						substates: ist.deserialize.apply(ist, ([obj.substates]).concat(rest_args)),
+						substates: substates,
+						//ist.deserialize.apply(ist, ([obj.substates]).concat(rest_args)),
 						start_state: ist.deserialize.apply(ist, ([obj.start_state]).concat(rest_args)),
 						outgoing_transitions: ist.deserialize.apply(ist,
 															([obj.outgoing_transitions]).concat(rest_args)),
@@ -1045,6 +1051,13 @@
 						parent: ist.deserialize.apply(ist, ([obj.parent]).concat(rest_args))
 					});
 				};
+
+				if(obj.parent) {
+					rv.do_initialize_substate = initialization_func;
+				} else {
+					// it's the root
+					rv.initialize = initialization_func;
+				}
 
 				return rv;
 			});

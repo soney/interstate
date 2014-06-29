@@ -42,6 +42,7 @@
 								})
 								.flatten(true)
 								.value();
+		this.type = options.type || "root";
     };
 
     (function (My) {
@@ -166,7 +167,8 @@
     
             var new_query = new ist.Query({
                 value: new_value_set.toArray(),
-                parent_query: this
+                parent_query: this,
+				type: "add"
             });
             return new_query;
         };
@@ -178,7 +180,8 @@
             my_value_set.remove.apply(my_value_set, items);
             var new_query = new ist.Query({
                 value: my_value_set.toArray(),
-                parent_query: this
+                parent_query: this,
+				type: "not"
             });
             return new_query;
         };
@@ -187,7 +190,8 @@
             var value = op_func.call(context || window, this.value()),
 				new_query = new My({
 					value: value,
-					parent_query: this
+					parent_query: this,
+					type: "op"
 				});
             return new_query;
         };
@@ -210,7 +214,11 @@
 					_.each(children, function(child_info) {
 						var child = child_info.value;
 						if(is_cDict(child)) {
-							rv.push.apply(rv, flatten_containment_hierarchy([child], true));
+							if(child.is_template()) {
+								rv.push.apply(rv, flatten_containment_hierarchy(child.instances(), true));
+							} else {
+								rv.push.apply(rv, flatten_containment_hierarchy([child], true));
+							}
 						}
 					});
 				});
@@ -218,14 +226,14 @@
 			};
 
 		proto.inheritsFrom = function(cobj) {
-			debugger;
 			var flat_objs = flatten_containment_hierarchy(this.value()),
 				value = _.filter(flat_objs, function(x) {
 					return x.inherits_from(cobj);
 				}),
 				new_query = new My({
 					value: value,
-					parent_query: this
+					parent_query: this,
+					type: "inheritsFrom"
 				});
             return new_query;
 		};

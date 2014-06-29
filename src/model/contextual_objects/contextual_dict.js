@@ -192,6 +192,9 @@
 		};
 
 		proto._get_all_protos = function(avoid_recursion) {
+			if(this.is_template()) {
+				return [];
+			}
 			return ist.Dict.get_proto_vals(this, avoid_recursion);
 		};
 

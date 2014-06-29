@@ -507,7 +507,7 @@
 
 				if(prop_type === "stateful") {
 					value = new ist.StatefulObj(undefined, true);
-					value.do_initialize({
+					value.initialize({
 						direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: value })
 					});
 				} else if(prop_type === "stateful_prop") {
@@ -677,7 +677,7 @@
 				client = event.client;
 				if(to_type === "stateful") {
 					value = new ist.StatefulObj(undefined, true);
-					value.do_initialize({
+					value.initialize({
 						direct_protos: new ist.StatefulProp({ can_inherit: false, statechart_parent: value })
 					});
 				} else if(to_type === "stateful_prop") {
