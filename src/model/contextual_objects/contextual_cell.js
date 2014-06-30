@@ -47,9 +47,9 @@
 			delete this.value_constraint;
 			My.superclass.destroy.apply(this, arguments);
 		};
-		proto._getter = function () {
+		proto._getter = function (node, is_preemptive) {
 			var value;
-			if(ist.__debug) {
+			if(ist.__debug && !is_preemptive) {
 				value = cjs.get(this.value_constraint.get());
 			} else {
 				try {

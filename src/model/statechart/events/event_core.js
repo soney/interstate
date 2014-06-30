@@ -99,6 +99,7 @@
 		this._id = id++;
 		this.on_create.apply(this, arguments);
 		this._initialized = false;
+		//if(this._id === 342) debugger;
 	};
 
 	(function (my) {

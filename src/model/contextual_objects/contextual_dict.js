@@ -162,6 +162,7 @@
 					this.update_cobj_children();
 				}, {
 					context: this,
+					priority: 2,
 					pause_while_running: true
 				});
 			}

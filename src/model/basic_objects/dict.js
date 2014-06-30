@@ -156,6 +156,7 @@
         };
     
         ist.install_proto_builtins(proto, My.builtins);
+
         
         //
         // === DIRECT PROTOS ===
@@ -175,11 +176,11 @@
         //
     
         proto.set = proto.set_prop = proto._set_direct_prop = function (name, value, options) {
-            var index;
-            var info = _.extend({
-                value: value,
-                owner: this
-            }, options);
+            var index,
+				info = _.extend({
+					value: value,
+					owner: this
+				}, options);
             this.direct_props().put(name, info, info.index);
             return this;
         };

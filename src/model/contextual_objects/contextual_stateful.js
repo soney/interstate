@@ -25,6 +25,7 @@
 				this.update_statecharts();
 			}, {
 				context: this,
+				priority: 1,
 				pause_while_running: true
 			});
 			if(this.constructor === My) { this.shout_initialization(); }
@@ -68,6 +69,7 @@
 			_.each(valid_statecharts, function(sc) {
 				to_destroy[sc.id()] = false;
 			});
+
 			var to_destroy_arr = _.compact(_.values(to_destroy));
 			_.each(to_destroy_arr, function(info) {
 				var sc = info.sc,

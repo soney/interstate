@@ -352,7 +352,7 @@
 		};
 
 
-		proto._getter = function () {
+		proto._getter = function (node, is_preemptive) {
 			var last_last_value = this._last_value,
 				active_value_info = this.active_value();
 
@@ -409,7 +409,7 @@
 				});
 				
 		
-				if(ist.__debug) {
+				if(!is_preemptive && ist.__debug) {
 					rv = cobj.val();
 				} else {
 					try {

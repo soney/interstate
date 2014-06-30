@@ -32,6 +32,9 @@
 					return new interstate.Environment({root: getRoot()});
 				}
 				window.env = getEnvironment();
+				env.print()
+				env.cd("my_radio")
+					.set("(prototypes)", "(start)", "check");
 				/*
 				interstate.load("components");
 				env.cd("B");
