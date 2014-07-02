@@ -196,14 +196,60 @@
 					var old_debug_value = ist.__debug;
 					ist.__debug = ist.cjs.__debug = true;
 					var caught_error = false;
-					//try {
+					try {
 						env.unset("A");
-					//} catch(e) {
-						//caught_error = true;
-						//console.error(e);
-					//}
+					} catch(e) {
+						caught_error = true;
+						console.error(e);
+					}
 					ok(!caught_error);
 					ist.__debug = ist.cjs.__debug = old_debug_value;
+				}
+			}]
+		},
+		{
+			name: "Switching prototype order",
+			expect: 4,
+			builtins: false,
+			steps: [{
+				setup: function(env) {
+					env	.set("protoA", "<stateful>")
+						.cd("protoA")
+							.add_state("a1")
+							.add_state("a2")
+							.start_at("a1")
+							.add_transition("a1", "a2", "true")
+							.up()
+						.set("protoB", "<stateful>")
+						.cd("protoB")
+							.add_state("b1")
+							.start_at("b1")
+							.up()
+						.set("obj", "<stateful>")
+							.cd("obj")
+							.set("(prototypes)", "(start)", "[protoA, protoB]")
+							.set("prop", "a1", "'a1'")
+							.set("prop", "a2", "'a2'")
+							.set("prop", "b1", "'b1'")
+							.up();
+				},
+				test: function(env, runtime) {
+					env.cd("obj");
+					var obj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+
+					equal(obj.prop_val("prop"), "a2");
+
+					env.set("(prototypes)", "(start)", "[protoB, protoA]");
+
+					equal(obj.prop_val("prop"), "b1");
+
+					env.set("(prototypes)", "(start)", "[protoA, protoB]");
+
+					equal(obj.prop_val("prop"), "a2");
+
+					env.set("(prototypes)", "(start)", "[protoB, protoA]");
+
+					equal(obj.prop_val("prop"), "b1");
 				}
 			}]
 		},

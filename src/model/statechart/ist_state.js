@@ -432,13 +432,18 @@
 			// return -1 if other_state is "<" me (as in should be further left)
 			// return 0 if other_state is "==" me (same thing)
 
-			var my_lineage = this.get_lineage();
-			var other_lineage = other_state.get_lineage();
+			var my_lineage = this.get_lineage(),
+				other_lineage = other_state.get_lineage(),
+				mli = my_lineage[0],
+				oli = other_lineage[0];
 
-			var mli = my_lineage[0];
-			var oli = other_lineage[0];
-			var len = Math.min(my_lineage.length, other_lineage.length);
-			var index_me, index_o;
+			if(mli !== oli) { // different root
+				return 0;
+			}
+
+			var len = Math.min(my_lineage.length, other_lineage.length),
+				index_me, index_o;
+
 			for (i = 1; i < len; i += 1) {
 				index_me = mli.get_substate_index(my_lineage[i]);
 				index_o = oli.get_substate_index(other_lineage[i]);

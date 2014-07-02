@@ -284,8 +284,10 @@
 		proto.toString = function() {
 			return My + " " + this.id();
 		};
+		proto.print = function (logging_mechanism) {
+			return ist.print(this.pointer, logging_mechanism);
+		};
 	}(ist.ContextualObject));
-
 
 	ist.check_contextual_object_equality =  ist.check_contextual_object_equality_eqeqeq = function (itema, itemb) {
 		if (itema instanceof ist.ContextualObject && itemb instanceof ist.ContextualObject) {

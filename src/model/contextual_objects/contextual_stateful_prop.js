@@ -250,15 +250,15 @@
 
 		
 		proto.active_value_getter = function () {
-			var stateful_prop = this.get_object();
-			var values = this.get_values();
-			var len = values.length;
-			var info, i, tr, state, val, is_start_state;
-			var is_fallback = false;
+			var stateful_prop = this.get_object(),
+				values = this.get_values(),
+				len = values.length,
+				is_fallback = false,
+				using_val = NO_VAL,
+				fallback_value = NO_VAL,
+				using_state, using_info, fallback_state,
+				info, i, tr, state, val, is_start_state, using_as;
 
-
-			var using_val = NO_VAL, using_state, using_info, fallback_value = NO_VAL, fallback_state;
-			var using_as;
 			for (i = 0; i < len; i += 1) {
 				info = values[i];
 				state = info.state;
