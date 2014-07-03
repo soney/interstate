@@ -179,7 +179,7 @@
 			if (_.isString(value)) {
 				if (value === "<dict>") {
 					value = new ist.Dict({});
-					var direct_protos = new ist.Cell({ ignore_inherited_in_first_dict: true/*str: "[]", ignore_inherited_in_contexts: [value]*/});
+					var direct_protos = new ist.Cell({ ignore_inherited_in_first_dict: true});
 					value._set_direct_protos(direct_protos);
 				} else if (value === "<stateful>") {
 					value = new ist.StatefulObj(undefined, true);
@@ -475,16 +475,12 @@
 					cell = arg0;
 				}
 			} else {
-				var prop, ignore_inherited_in_contexts = [];
+				var prop;
 				dict = this.get_pointer_obj();
 
 				if (_.isString(arg0)) {
 					if (arg0[0] === "(" && arg0[arg0.length - 1] === ")") {
 						builtin_name = arg0.slice(1, arg0.length - 1);
-
-						if (arg0 === "(prototypes)") {
-							ignore_inherited_in_contexts = [dict];
-						}
 
 						builtins = dict.get_builtins();
 						for (i in builtins) {
