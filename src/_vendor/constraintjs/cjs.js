@@ -787,6 +787,9 @@ var constraint_solver = {
 				if (node._options.auto_add_outgoing_dependencies !== false &&
 						demanding_var._options.auto_add_incoming_dependencies !== false &&
 						auto_add_outgoing !== false) {
+					if(demanding_var._id === 13467) {
+						debugger;
+					}
 					// and add it if it should
 					node._outEdges[demanding_var._id] =
 						demanding_var._inEdges[node._id] = {from: node, to: demanding_var, tstamp: tstamp};
@@ -936,6 +939,11 @@ var constraint_solver = {
 				curr_node._valid = false; // Mark it as invalid...
 				invalid = true;
 
+				if(curr_node._id === 13467) {
+					debugger;
+				}
+
+
 				// The user can also optionally check if the node should be nullified. This is useful if a large number of nodes
 				// depend on this node, and the potential cost of nullifying/re-evaluating them is higher than the cost of
 				// re-evaluating this node
@@ -968,6 +976,10 @@ var constraint_solver = {
 							// If the edge's timestamp is out of date, then this dependency isn't used
 							// any more and remove it
 							if (outgoingEdge.tstamp < dependentNode._tstamp) {
+								if(dependentNode._id === 13467) {
+									debugger;
+								}
+
 								delete curr_node._outEdges[toNodeID];
 								delete dependentNode._inEdges[curr_node_id];
 							} else {

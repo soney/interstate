@@ -52,6 +52,7 @@
 		proto._getter = function (node, is_preemptive) {
 			var value;
 			if(ist.__debug && !is_preemptive) {
+				if(this.sid() === 181) debugger;
 				value = cjs.get(this.value_constraint.get());
 			} else {
 				try {

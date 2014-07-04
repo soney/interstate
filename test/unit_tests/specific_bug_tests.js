@@ -253,6 +253,63 @@
 				}
 			}]
 		},
+		{
+			name: "Indirect prototypes",
+			expect: 2,
+			builtins: ["functions"],
+			steps: [{
+				setup: function(env) {
+					env
+						.set("item", "<stateful>")
+						.set("C", "<stateful>")
+						.set("B", "<stateful>")
+						.set("A", "<stateful>")
+						.cd("A")
+							.set("item", "<stateful>")
+							.cd("item")
+								.set("a_val", "(start)", "'a'")
+							/*
+								.add_state("a1")
+								.start_at("a1")
+								.add_transition("a1", "a1", "on(a_val, this)")
+								*/
+								.up()
+							.up()
+						.cd("B")
+							.set("item", "<stateful>")
+							.cd("item")
+								.set("b_val", "(start)", "'b'")
+							/*
+								.add_state("b1")
+								.start_at("b1")
+								.add_transition("b1", "b1", "on(b_val, this)")
+								*/
+								.up()
+							.up()
+						.cd("C")
+							.set("(prototypes)", "(start)", "A")
+							.up()
+						.cd("item")
+							.set("(prototypes)", "(start)", "C.item")
+							.up()
+						.top()
+				},
+				test: function(env, runtime) {
+					runtime.dom_output("option", "root", false);
+					env._cycle_stringify_destringify();
+					runtime.dom_output("option", "root", env.get_root());
+
+					env.top().cd("item");
+					var item = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+					equal(item.prop_val("a_val"), "a");
+					env.print();
+					env.top().cd("C")
+						.set("(prototypes)", "(start)", "B");
+					env.print();
+					equal(item.prop_val("b_val"), "b");
+				}
+			}]
+		},
 	];
 	tests.forEach(function(test) {
 		dt(test.name, test);
