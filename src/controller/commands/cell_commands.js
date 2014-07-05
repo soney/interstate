@@ -26,13 +26,11 @@
         var proto = My.prototype;
     
         proto._execute = function () {
-			cjs.wait();
             this._from_str = this._cell.get_str();
             this._cell.set_str(this._to_str);
 			if(!this._cell.is_substantiated()) {
 				this._cell.substantiate();
 			}
-			cjs.signal();
         };
     
         proto._unexecute = function () {

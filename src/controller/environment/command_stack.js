@@ -37,6 +37,7 @@
 		};
 
 		this._do = function(command, transient) {
+			cjs.wait();
 			command._do();
 
 			if(transient) {
@@ -44,15 +45,16 @@
 			} else {
 				_add_to_stack.call(this, command);
 			}
+			cjs.signal();
 		};
 
 		this._undo = function() {
 			if (this.can_undo()) {
+				cjs.wait();
 				var last_command = stack[index];
 				last_command._undo();
 				index -= 1;
 
-				cjs.wait();
 				this.$undo_description.invalidate();
 				this.$redo_description.invalidate();
 				cjs.signal();
@@ -61,11 +63,11 @@
 
 		this._redo = function() {
 			if (this.can_redo()) {
+				cjs.wait();
 				var last_command = stack[index + 1];
 				last_command._do();
 				index += 1;
 
-				cjs.wait();
 				this.$undo_description.invalidate();
 				this.$redo_description.invalidate();
 				cjs.signal();
