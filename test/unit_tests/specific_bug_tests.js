@@ -302,10 +302,8 @@
 					env.top().cd("item");
 					var item = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(item.prop_val("a_val"), "a");
-					env.print();
 					env.top().cd("C")
 						.set("(prototypes)", "(start)", "B");
-					env.print();
 					equal(item.prop_val("b_val"), "b");
 				}
 			}]

@@ -170,9 +170,6 @@
 		};
 
 		proto.proto_cobj = function() {
-			if(this.is_destroyed()) {
-				debugger;
-			}
 			var obj = this.get_object(),
 				proto_obj = obj.direct_protos(),
 				pointer, proto_cobj;
