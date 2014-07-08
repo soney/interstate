@@ -33,10 +33,13 @@
 				}
 				window.env = getEnvironment();
 				env.print()
-				/*
-				window.dbg = true;
 				env.cd("my_radio")
-					.set("(prototypes)", "(start)", "check");
+					.inherit("item")
+					.unset("item")
+					.inherit("item");
+				env.print();
+				window.dbg = true;
+					env.unset("item")
 				/*
 				interstate.load("components");
 				env.cd("B");

@@ -149,6 +149,8 @@
 				for (i = 0; i < inherits_from_len; i += 1) {
 					cifrom = inherits_from[i];
 					if(cifrom instanceof ist.ContextualObject) {
+						//if(cifrom.is_destroyed()) { continue; } // TODO: fix this
+
 						ifrom = cifrom.get_object();
 						if (cifrom instanceof ist.ContextualStatefulProp) {
 							var values = cifrom.get_raw_values(cifrom === this ? true : false);

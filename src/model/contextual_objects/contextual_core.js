@@ -39,6 +39,9 @@
 		this._do_destroy_no_args = function() { this.destroy(); };
 		this.object.on("begin_destroy", this._do_destroy_no_args, this);
 
+		//if(this.sid() === 2440) { debugger; }
+		//if(this.sid() === 2770) { debugger; }
+
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
 		}
@@ -167,6 +170,10 @@
 
 		proto.destroy = function (avoid_begin_destroy) {
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
+
+			//if(this.sid() === 2440) { debugger; }
+			//if(this.sid() === 2770) { debugger; }
+
 
 			var to_destroy = this._cobj_children.values();
 			_.each(to_destroy, function(cobj) {
@@ -381,6 +388,10 @@
 		var pointer = cobj.get_pointer(),
 			obj = cobj.get_object();
 
+		cobj_hashes.remove(pointer); // TODO: fix
+		cobj_hashes.remove(pointer);
+		cobj_hashes.remove(pointer);
+		cobj_hashes.remove(pointer);
 		cobj_hashes.remove(pointer);
 
 		if(pointer.length() === 1) {

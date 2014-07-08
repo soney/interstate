@@ -37,12 +37,13 @@
 	ist.Dict.get_proto_vals = function (cobj, non_recursive) {
 		var originalCobj = cobj,
 			rv = new RedSet({
-				value: [cobj],
+				value: [originalCobj],
 				hash: "hash",
 				equals: ist.check_contextual_object_equality
 			}),
 			i = 0,
 			dict, proto_val, proto_cobj, rv_arr;
+		
 
 		while (i < rv.len()) {
 			cobj = rv.item(i);
@@ -482,13 +483,19 @@
 			var info = this.prop_info(name, ignore_inherited);
 
 			if (info) {
+
 				var pointer = this.get_pointer();
+
+				//if(window.dbg && pointer.hash() === 35) { debugger; }
+
 				var opts = {};
 				if(info.inherited_from) {
 					opts.inherited_from = info.inherited_from;
 				}
 
 				var value = get_contextual_object(info.value, pointer, opts);
+
+				//if(value.is_destroyed && value.is_destroyed()) { debugger; }
 
 				return value;
 			} else {
