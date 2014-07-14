@@ -271,7 +271,9 @@
 				});
 
 			if(must_initialize) {
-				cobj.initialize();
+				if(avoid_initialization !== true) {
+					cobj.initialize();
+				}
 
 				cobj.on("begin_destroy", this.remove_cobj_child, this, ptr);
 			}
@@ -342,44 +344,67 @@
 			pointer = new ist.Pointer({stack: [obj]});
 		}
 
-		var rv = cobj_hashes.getOrPut(pointer, function() {
-			var pointer_root, hvi, i, len, ptr_i, sc_i, hash_i, new_cobj, node, opts;
+		var must_initialize = false,
+			rv = cobj_hashes.getOrPut(pointer, function() {
+			var len = pointer.length(),
+				pointer_root, hvi, i, ptr_i, sc_i, hash_i, new_cobj, node, opts;
 
 			pointer_root = pointer.root();
 			hash_i = pointer_root.id();
 			node = cobj_roots[hash_i];
 
+			must_initialize = true;
+
 			if(!node) {
+				if(len === 1) {
+					node = cobj_roots[hash_i] = ist.create_contextual_object(obj, pointer, _.extend({
+						defer_initialization: true
+					}, options));
+				} else {
+					node = ist.find_or_put_contextual_obj(pointer_root, pointer.slice(0,1));
+				}
+			/*
 				opts = {
 					object: pointer_root,
 					pointer: pointer.slice(0, 1),
 					defer_initialization: true
 				};
+				*/
+				/*
 
 				if(pointer_root instanceof ist.StatefulObj) {
-					node = cobj_roots[hash_i] = new ist.ContextualStatefulObj(opts);
+					node =  = new ist.ContextualStatefulObj(opts);
 				} else if(pointer_root instanceof ist.Dict) {
 					node = cobj_roots[hash_i] = new ist.ContextualDict(opts);
 				} else {
 					throw new Error("Root pointer should be a dictionary");
 				}
 				//must_initialize.push(node);
-				node.initialize();
+				if(len > 1) {
+					node.initialize();
+				}
+				*/
 			}
 
 			i = 1;
-			len = pointer.length();
 			
 			while (i < len) {
 				ptr_i = pointer.points_at(i);
 				sc_i = pointer.special_contexts(i);
 				hash_i = pointer.itemHash(i);
-				node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i, i === len-1 ? options : false);
+				//debugger;
+				node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i, i === len-1 ? options : false, i === len-1 ? true : false);
 				i++;
 			}
 
+			//if(node.sid() === 2440) { debugger; }
+
 			return node;
 		});
+
+		if(must_initialize) {
+			rv.initialize();
+		}
 
 		return rv;
 	};
@@ -389,10 +414,10 @@
 			obj = cobj.get_object();
 
 		cobj_hashes.remove(pointer); // TODO: fix
-		cobj_hashes.remove(pointer);
-		cobj_hashes.remove(pointer);
-		cobj_hashes.remove(pointer);
-		cobj_hashes.remove(pointer);
+		//cobj_hashes.remove(pointer);
+		//cobj_hashes.remove(pointer);
+		//cobj_hashes.remove(pointer);
+		//cobj_hashes.remove(pointer);
 
 		if(pointer.length() === 1) {
 			delete cobj_roots[obj.id()];
