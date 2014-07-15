@@ -787,9 +787,6 @@ var constraint_solver = {
 				if (node._options.auto_add_outgoing_dependencies !== false &&
 						demanding_var._options.auto_add_incoming_dependencies !== false &&
 						auto_add_outgoing !== false) {
-					if(demanding_var._id === 13467) {
-						debugger;
-					}
 					// and add it if it should
 					node._outEdges[demanding_var._id] =
 						demanding_var._inEdges[node._id] = {from: node, to: demanding_var, tstamp: tstamp};
@@ -939,11 +936,6 @@ var constraint_solver = {
 				curr_node._valid = false; // Mark it as invalid...
 				invalid = true;
 
-				if(curr_node._id === 13467) {
-					debugger;
-				}
-
-
 				// The user can also optionally check if the node should be nullified. This is useful if a large number of nodes
 				// depend on this node, and the potential cost of nullifying/re-evaluating them is higher than the cost of
 				// re-evaluating this node
@@ -976,10 +968,6 @@ var constraint_solver = {
 							// If the edge's timestamp is out of date, then this dependency isn't used
 							// any more and remove it
 							if (outgoingEdge.tstamp < dependentNode._tstamp) {
-								if(dependentNode._id === 13467) {
-									debugger;
-								}
-
 								delete curr_node._outEdges[toNodeID];
 								delete dependentNode._inEdges[curr_node_id];
 							} else {
@@ -4046,7 +4034,7 @@ extend(cjs, {
 					context: options.context,
 					cache_value: false,
 					auto_add_outgoing_dependencies: false,
-					run_on_add_listener: !!options.run_on_create
+					run_on_add_listener: false
 				});
 
 				// check if running
@@ -4079,7 +4067,14 @@ extend(cjs, {
 				var resume = function () {
 					if(paused === true) {
 						paused = false;
-						node.onChange(do_get);
+						node.onChangeWithPriority(options.priority, do_get);
+						if(options.run_on_create !== false) {
+							if (constraint_solver.semaphore >= 0) {
+								node.get(false);
+							} else {
+								each(node._changeListeners, constraint_solver.add_in_call_stack, constraint_solver);
+							}
+						}
 						return true; // successfully resumed
 					}
 					return false;
@@ -4110,6 +4105,15 @@ extend(cjs, {
 					invalidate: invalidate,
 					_constraint: node // for debugging purposes
 				};
+
+				if(options.run_on_create !== false) {
+					if (constraint_solver.semaphore >= 0) {
+						node.get(false);
+					} else {
+						each(node._changeListeners, constraint_solver.add_in_call_stack, constraint_solver);
+					}
+				}
+
 				return rv;
 			}
 });
