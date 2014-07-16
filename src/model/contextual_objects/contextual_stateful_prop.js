@@ -114,7 +114,8 @@
 				}
 
 				var my_names_len = my_names.length;
-				var protos_and_me = ([parent]).concat(parent.get_all_protos(true));
+				//var protos_and_me = ([parent]).concat(parent.get_all_protos(true));
+				var protos_and_me = parent.get_all_protos(true);
 
 				var inherits_from = _	.chain(protos_and_me)
 										.map(function (cdict, proto_num) {

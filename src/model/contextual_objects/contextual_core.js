@@ -353,7 +353,7 @@
 			hash_i = pointer_root.id();
 			node = cobj_roots[hash_i];
 
-			must_initialize = true;
+			//must_initialize = true;
 
 			if(!node) {
 				if(len === 1) {
@@ -393,7 +393,7 @@
 				sc_i = pointer.special_contexts(i);
 				hash_i = pointer.itemHash(i);
 				//debugger;
-				node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i, i === len-1 ? options : false, i === len-1 ? true : false);
+				node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i, i === len-1 ? options : false);//, i === len-1 ? true : false);
 				i++;
 			}
 
