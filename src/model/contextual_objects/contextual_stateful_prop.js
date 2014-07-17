@@ -147,7 +147,7 @@
 							value: x.value
 						};
 					},
-					set_inherited_from_to_cifrom = function(enry) {
+					set_inherited_from_to_cifrom = function(entry) {
 						entry.inherited_from = cifrom;
 					};
 				for (i = 0; i < inherits_from_len; i += 1) {
