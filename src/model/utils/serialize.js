@@ -406,13 +406,14 @@
 			type = "";
 		}
 
-		var str = ist.loadString(name, type);
+		var str = ist.loadString(name, type),
+			root;
 		if(!str) {
 			return false;
 		}
 
 		if(ist.__debug) {
-			var root = ist.destringify(str);
+			root = ist.destringify(str);
 
 			if(!type) { // program
 				ist.loaded_program_name.set(name);	
@@ -422,7 +423,7 @@
 			return root;
 		} else {
 			try {
-				var root = ist.destringify(str);
+				root = ist.destringify(str);
 
 				if(!type) { // program
 					ist.loaded_program_name.set(name);	

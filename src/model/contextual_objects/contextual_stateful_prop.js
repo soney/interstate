@@ -142,11 +142,14 @@
 				var cifrom, ifrom;
 				var inherits_from_len = inherits_from.length;
 				var dv_entries_map_fn = function (x) {
-					return {
-						key: x.key,
-						value: x.value
+						return {
+							key: x.key,
+							value: x.value
+						};
+					},
+					set_inherited_from_to_cifrom = function(enry) {
+						entry.inherited_from = cifrom;
 					};
-				};
 				for (i = 0; i < inherits_from_len; i += 1) {
 					cifrom = inherits_from[i];
 					if(cifrom instanceof ist.ContextualObject) {
@@ -154,12 +157,10 @@
 
 						ifrom = cifrom.get_object();
 						if (cifrom instanceof ist.ContextualStatefulProp) {
-							var values = cifrom.get_raw_values(cifrom === this ? true : false);
+							values = cifrom.get_raw_values(cifrom === this ? true : false);
 							//var values = cifrom.get_raw_values(true);
 
-							_.each(values, function(entry) {
-								entry.inherited_from = cifrom;
-							});
+							_.each(values, set_inherited_from_to_cifrom);
 
 							entries.push.apply(entries, values);
 						} else if (cifrom instanceof ist.ContextualCell) {

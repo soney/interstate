@@ -272,7 +272,8 @@
 				} else if (key === IDENTIFIER.ROOT_THIS) {
 					do {
 						context = cobj;
-					} while(cobj = cobj.is_inherited());
+						cobj = cobj.is_inherited();
+					} while(cobj);
 					
 					context = context.get_pointer();
 				}

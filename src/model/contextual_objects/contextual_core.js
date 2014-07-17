@@ -266,7 +266,7 @@
 					var rv = ist.create_contextual_object(obj, ptr, _.extend({
 						defer_initialization: true
 					}, options));
-					must_initialize = true
+					must_initialize = true;
 					return rv;
 				});
 

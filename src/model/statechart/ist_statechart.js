@@ -166,10 +166,13 @@
 		this.$outgoing_transitions = options.outgoing_transitions || cjs.array();
 
 		this._start_state = options.start_state;
+		var basis_start_state, basis_start_state_to;
 		if (this._basis) {
-			var basis_start_state = this._basis.get_start_state(),
-				basis_start_state_to = basis_start_state.getTo(),
-				is_running = this.is_running(),
+
+			basis_start_state = this._basis.get_start_state();
+			basis_start_state_to = basis_start_state.getTo();
+
+			var is_running = this.is_running(),
 				my_context = this.context(),
 				is_concurrent = this.is_concurrent();
 
@@ -218,8 +221,8 @@
 
 		var my_starting_state;
 		if (this._running && this._basis) {
-			var basis_start_state = this._basis.get_start_state();
-			var basis_start_state_to = basis_start_state.getTo();
+			basis_start_state = this._basis.get_start_state();
+			basis_start_state_to = basis_start_state.getTo();
 			
 			if (basis_start_state_to === basis_start_state) {
 				my_starting_state = this._start_state;
