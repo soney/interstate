@@ -294,11 +294,13 @@
 				window.addEventListener("touchstart", touch_start_listener);
 				window.addEventListener("touchmove", touch_move_listener);
 				window.addEventListener("touchend", touch_end_listener);
+				window.addEventListener("touchcancel", touch_end_listener);
 			},
 			removeTouchListeners = function() {
 				window.removeEventListener("touchstart", touch_start_listener);
 				window.removeEventListener("touchmove", touch_move_listener);
 				window.removeEventListener("touchend", touch_end_listener);
+				window.removeEventListener("touchcancel", touch_end_listener);
 			},
 			destroy = function(silent) {
 				cjs.wait();
