@@ -470,6 +470,8 @@
 	ist.createDevices = function() {
 		var width = cjs(window.innerWidth),
 			height = cjs(window.innerHeight),
+			timestamp = cjs(getTime()),
+			intervalID = false,
 			orientation = cjs(window.orientation),
 			resize_listener = function(event) {
 				cjs.wait();
@@ -480,19 +482,25 @@
 			orientation_listener = function(event) {
 				orientation.set(window.orientation);
 			},
+			interval_listener = function() {
+				timestamp.set(getTime());
+			},
 			addListeners = function() {
 				window.addEventListener("resize", resize_listener);
 				window.addEventListener("orientationchange", orientation_listener);
+				intervalID = window.setInterval(interval_listener);
 			},
 			removeListeners = function() {
 				window.removeEventListener("resize", resize_listener);
 				window.removeEventListener("orientationchange", orientation_listener);
+				window.clearInterval(intervalID);
 			},
 			destroy = function(silent) {
 				cjs.wait();
 				removeListeners();
 				width.destroy(silent);
 				height.destroy(silent);
+				timestamp.destroy(silent);
 				cjs.signal();
 			},
 			mouse = ist.createMouseObject(),
@@ -507,7 +515,8 @@
 					accelorometer: accelorometer,
 					gyroscope: gyroscope,
 					width: width,
-					height: height
+					height: height,
+					timestamp: timestamp
 				}
 			});
 

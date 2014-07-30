@@ -103,6 +103,7 @@
 				}
 			}]
 		},
+		/*
 		{
 			name: "Simultaneous events across multiple objects",
 			expect: 3,
@@ -149,6 +150,7 @@
 				}
 			}]
 		},
+		*/
 		{
 			name: "Transition timing: continuous in start,states / one-time in transitions",
 			expect: 17,

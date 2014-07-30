@@ -20,7 +20,7 @@
 				var self = this;
 				var id = this._id;
 				var listener = function (event) {
-					ist.event_queue.wait();
+					//ist.event_queue.wait();
 				
 					var new_event = _.extend({}, event, {
 						ist_target: specified_target,
@@ -31,9 +31,9 @@
 
 					self.fire(new_event);
 
-					_.defer(function () {
-						ist.event_queue.signal();
-					});
+					//_.defer(function () {
+						//ist.event_queue.signal();
+					//});
 				};
 				listener.destroy = function() {
 					self = null;
@@ -120,7 +120,9 @@
 			if(_.isString(target_info.type)) {
 				_.each(target_info.type.split(","), function(type) {
 					//if(_.has(dom_obj, 'addEventListener')) {
+						//dom_obj.addEventListener(type, ist.event_queue.wait, true); // Bubble
 						dom_obj.addEventListener(type, this.get_target_listener(cobj), false); // Bubble
+						//dom_obj.addEventListener(type, ist.event_queue.signal, false); // Bubble
 					//}
 				}, this);
 			}
@@ -134,7 +136,9 @@
 			if(_.isString(target_info.type)) {
 				_.each(target_info.type.split(","), function(type) {
 					//if(_.has(dom_obj, 'removeEventListener')) {
+						//dom_obj.removeEventListener(type, ist.event_queue.wait, true); // Bubble
 						dom_obj.removeEventListener(type, this.get_target_listener(cobj), false); // Bubble
+						//dom_obj.removeEventListener(type, ist.event_queue.signal, false); // Bubble
 					//}
 				}, this);
 			}

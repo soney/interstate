@@ -45,7 +45,6 @@
 		};
 	}(ist.ProvisionalContext));
 
-/*
 	var ec_counter = 1;
 	ist.EventContext = function (event) {
 		ist.EventContext.superclass.constructor.apply(this, arguments);
@@ -62,7 +61,6 @@
 			return this.event;
 		};
 	}(ist.EventContext));
-	*/
 
 	ist.StateContext = function (state) {
 		ist.StateContext.superclass.constructor.apply(this, arguments);

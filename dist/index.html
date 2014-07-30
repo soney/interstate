@@ -48,9 +48,38 @@
 	<script src="interstate.min.js"></script>
 	<script type="text/javascript">
 		$(function() {
-			$("div.content").dom_output({
-				external_editor: false
-			});
+			var openFile = getUrlParameter('open');
+			if(openFile) {
+				$.ajax({
+					url: openFile
+				}).done(function(file_str) {
+					try {
+						var root = interstate.destringify(file_str);
+						$("div.content").dom_output({
+							root: root
+						});
+					} catch(e) {
+						console.error(e);
+						$("div.content").dom_output();
+					}
+				}).fail(function() {
+					console.error("Could not find " + openFile);
+					$("div.content").dom_output();
+				});
+			} else {
+				$("div.content").dom_output();
+			}
 		});
+
+		function getUrlParameter(sParam) {
+			var sPageURL = window.location.search.substring(1);
+			var sURLVariables = sPageURL.split('&');
+			for (var i = 0; i < sURLVariables.length; i++) {
+				var sParameterName = sURLVariables[i].split('=');
+				if (sParameterName[0] == sParam) {
+					return sParameterName[1];
+				}
+			}
+		}
 	</script>
 </html>
