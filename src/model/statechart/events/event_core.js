@@ -8,7 +8,7 @@
 
 	var EventQueue = function () {
 		able.make_this_listenable(this);
-
+		
 		this.end_queue_round = false;
 		this.queue = [];
 		this.running_event_queue = false;
@@ -89,8 +89,10 @@
 	ist.event_queue = new EventQueue();
 
 	var id = 0;
-	ist.Event = function () {
+	ist.Event = function (options) {
 		able.make_this_listenable(this);
+
+		this.child_events = [];
 		//this._initialize();
 		this.actual_firetime_listeners = [];
 		this.requested_firetime_listeners = [];
@@ -105,6 +107,12 @@
 	(function (my) {
 		var proto = my.prototype;
 		able.make_proto_listenable(proto);
+		proto.set_parent = function(parent) {
+			this._parent = parent;
+		};
+		proto.set_guard = function(guard) {
+			this._guard = guard;
+		};
 		proto.id = function() {
 			return this._id;
 		};
@@ -123,8 +131,7 @@
 				}
 				*/
 		};
-		proto.id = function () { return this._id; };
-		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
+		proto.sid = proto.id = function () { return this._id; };
 		proto.on_create = function (options) {
 			this._enabled = options && options.enabled;
 		};
@@ -169,19 +176,26 @@
 		};
 		proto.set_transition = function (transition) { this._transition = transition; };
 		proto.get_transition = function () { return this._transition; };
+		proto.get_guard = function() {
+			return this._guard;
+		};
 		proto._fire = function () {
 			var args = _.toArray(arguments);
 			_.forEach(this.actual_firetime_listeners, function (listener) {
 				listener.callback.apply(listener.context || this, listener.args.concat(args));
 			}, this);
+			_.forEach(this.child_events, function(child_event) {
+				var guard = child_event.get_guard();
+				if(guard.apply(child_event, args)) {
+					child_event.fire.apply(child_event, args);
+				}
+			}, this);
 		};
 		proto.guard = proto.when = function (func) {
 			var new_event = new ist.Event();
-			this.on_fire(function () {
-				if (func.apply(this, arguments)) {
-					new_event.fire.apply(new_event, arguments);
-				}
-			});
+			new_event.set_parent(this);
+			new_event.set_guard(func);
+			this.child_events.push(new_event);
 			return new_event;
 		};
 		proto.when_eq = function (prop, val) {
@@ -251,6 +265,10 @@
 			delete this._transition;
 			delete this._enabled;
 			able.destroy_this_listenable(this);
+			if(this._parent) { this._parent.destroy(); }
+			delete this.child_events;
+			delete this._parent;
+			delete this._guard;
 		};
 		proto.create_shadow = function () { return new ist.Event(); };
 		proto.stringify = function () {
@@ -261,9 +279,11 @@
 		};
 		proto.enable = function () {
 			this._enabled = true;
+			if(this._parent) { this._parent.enable(); }
 		};
 		proto.disable = function () {
 			this._enabled = false;
+			if(this._parent) { this._parent.disable(); }
 		};
 		proto.is_enabled = function () {
 			return this._enabled;

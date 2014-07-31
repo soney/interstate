@@ -268,22 +268,18 @@
 							.set("item", "<stateful>")
 							.cd("item")
 								.set("a_val", "(start)", "'a'")
-							/*
 								.add_state("a1")
 								.start_at("a1")
 								.add_transition("a1", "a1", "on(a_val, this)")
-								*/
 								.up()
 							.up()
 						.cd("B")
 							.set("item", "<stateful>")
 							.cd("item")
 								.set("b_val", "(start)", "'b'")
-							/*
 								.add_state("b1")
 								.start_at("b1")
 								.add_transition("b1", "b1", "on(b_val, this)")
-								*/
 								.up()
 							.up()
 						.cd("C")
@@ -305,6 +301,42 @@
 					env.top().cd("C")
 						.set("(prototypes)", "(start)", "B");
 					equal(item.prop_val("b_val"), "b");
+				}
+			}]
+		},
+		{
+			name: "Immediately set display properties",
+			expect: 1,
+			builtins: false,
+			steps: [{
+				setup: function(env) {
+					env	.set("paper", "<stateful>")
+						.cd("paper")
+							//.set("(prototypes)", "(start)", "svg.paper")
+							.set("r", "<stateful>")
+							.cd("r")
+								.add_state("init")
+								.start_at("init")
+								//.set("(prototypes)", "(start)", "svg.rectangle")
+								.set("x", "(start)", "10")
+								.set("x", "init", "x")
+								.up()
+							.set("s", "<stateful>")
+							.cd("s")
+								.set("prop1", "(start)", "r.x")
+								.top();
+				},
+				test: function(env, runtime) {
+					runtime.dom_output("option", "root", false);
+					env._cycle_stringify_destringify();
+					runtime.dom_output("option", "root", env.get_root());
+
+					env.top()
+						.cd("paper")
+						.cd("r");
+
+					var rect = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+					equal(rect.prop_val("x"), 10);
 				}
 			}]
 		},

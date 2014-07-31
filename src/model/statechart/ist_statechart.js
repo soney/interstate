@@ -259,6 +259,7 @@
 
 		this._constructed = true;
 
+
 		if((!this._parent && defer_initialization !== true) || (this._parent && this._parent.is_initialized())) {
 			this.initialize();
 		}
@@ -662,6 +663,7 @@
 			if (this.get_active_substate() === state) {
 				this.set_active_substate(this.get_start_state().getTo());
 			}
+			state.set_parent(false);
 			this.$substates.remove(name);
 
 			cjs.signal();

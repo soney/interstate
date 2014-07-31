@@ -313,7 +313,7 @@
 				if (context_item instanceof ist.Dict) {
 					var contextual_obj = ist.find_or_put_contextual_obj(context_item, curr_context);
 					if (contextual_obj.has(key, _.indexOf(ignore_inherited_in_contexts, context_item)>=0)) {
-						rv = contextual_obj.prop_val(key);
+						rv = contextual_obj._prop_val(key);
 						return rv;
 					}
 				} else if (context_item instanceof ist.ProvisionalContext) {

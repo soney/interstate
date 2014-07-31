@@ -103,7 +103,6 @@
 				}
 			}]
 		},
-		/*
 		{
 			name: "Simultaneous events across multiple objects",
 			expect: 3,
@@ -138,19 +137,17 @@
 					var obj2 = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(obj2.prop_val("x"), 1);
 					//click!
-					var ev = document.createEvent("MouseEvent");
-					ev.initMouseEvent("click");
+					var evt = document.createEvent("MouseEvents"); 
+					evt.initMouseEvent("click", true, true, document.body, 
+						0, 0, 0, 0, 0, false, false, false, false, 0, null); 
+					document.body.dispatchEvent(evt);
 
-					window.dispatchEvent(ev);
-					_.defer(function() {
-						equal(obj2.prop_val("x"), 3);
-						equal(obj2.prop_val("y"), 2);
-						callback();
-					}, 10);
+					equal(obj2.prop_val("x"), 3);
+					equal(obj2.prop_val("y"), 2);
+					callback();
 				}
 			}]
 		},
-		*/
 		{
 			name: "Transition timing: continuous in start,states / one-time in transitions",
 			expect: 17,

@@ -16,6 +16,22 @@
 		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.on_create = function (specified_type, specified_targets) {
+			this.get_wait_listener = cjs.memoize(function (specified_target) {
+				var self = this;
+				return function() {
+					ist.event_queue.wait();
+				};
+			}, {
+				context: this
+			});
+			this.get_signal_listener = cjs.memoize(function (specified_target) {
+				var self = this;
+				return function() {
+					ist.event_queue.signal();
+				};
+			}, {
+				context: this
+			});
 			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var self = this;
 				var id = this._id;
@@ -120,9 +136,9 @@
 			if(_.isString(target_info.type)) {
 				_.each(target_info.type.split(","), function(type) {
 					//if(_.has(dom_obj, 'addEventListener')) {
-						//dom_obj.addEventListener(type, ist.event_queue.wait, true); // Bubble
-						dom_obj.addEventListener(type, this.get_target_listener(cobj), false); // Bubble
-						//dom_obj.addEventListener(type, ist.event_queue.signal, false); // Bubble
+						dom_obj.addEventListener(type, this.get_wait_listener(cobj), true); // Capture
+						dom_obj.addEventListener(type, this.get_target_listener(cobj), true); // Capture
+						dom_obj.addEventListener(type, this.get_signal_listener(cobj), false); // Bubble
 					//}
 				}, this);
 			}
@@ -136,9 +152,9 @@
 			if(_.isString(target_info.type)) {
 				_.each(target_info.type.split(","), function(type) {
 					//if(_.has(dom_obj, 'removeEventListener')) {
-						//dom_obj.removeEventListener(type, ist.event_queue.wait, true); // Bubble
-						dom_obj.removeEventListener(type, this.get_target_listener(cobj), false); // Bubble
-						//dom_obj.removeEventListener(type, ist.event_queue.signal, false); // Bubble
+						dom_obj.removeEventListener(type, this.get_wait_listener(cobj), true); // Capture
+						dom_obj.removeEventListener(type, this.get_target_listener(cobj), true); // Capture
+						dom_obj.removeEventListener(type, this.get_signal_listener(cobj), false); // Bubble
 					//}
 				}, this);
 			}
