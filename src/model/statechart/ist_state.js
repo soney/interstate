@@ -39,7 +39,7 @@
 			search_item = search_item.get_substate_with_name(name);
 		}
 
-		if (search_item.basis() !== to_state) { throw new Error("Could not find correct equivalent item"); }
+		//if (search_item.basis() !== to_state) { throw new Error("Could not find correct equivalent item"); }
 
 		return search_item;
 	};

@@ -1009,6 +1009,7 @@
 			},
 			function (include_id) {
 				var arg_array = _.toArray(arguments);
+				//if(!this._constructed) { return false; }
 				var rv = {
 					substates: ist.serialize.apply(ist, ([this.$substates]).concat(arg_array)),
 					concurrent: this.is_concurrent(),
@@ -1059,6 +1060,16 @@
 
 				if(obj.parent) {
 					rv.do_initialize_substate = initialization_func;
+
+					ist.once("done_deserializing", function() {
+						if(!rv._constructed) {
+							// If we're done deserializing but haven't initialized the state yet...
+							// then initialize it
+							rv.do_initialize_substate();
+							//rv.set_parent(false); //and note that it must not have a parent
+							delete rv.do_initialize_substate;
+						}
+					});
 				} else {
 					// it's the root
 					rv.initialize = initialization_func;

@@ -19,7 +19,7 @@
 				return t;
 			}
 		}
-		throw new Error("Could not find equivalent transition");
+		//throw new Error("Could not find equivalent transition");
 	};
 
 	ist.StatechartTransition = function (options, defer_initialization) {
