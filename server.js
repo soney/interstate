@@ -57,7 +57,7 @@ var callback_map = function(arr, func, callback) {
 	app.set('view engine', 'ejs');
 
 	app.get("/e/:uid", function(req, res, next) {
-		res.redirect("src/view/editor/editor.ejs.html?comm=socket&client_id="+req.params.uid);
+		res.redirect("../src/view/editor/editor.ejs.html?comm=socket&client_id="+req.params.uid);
 	});
 	app.get("/auto_open_editor", function(req, res, next) {
 		child_process.exec('open -a /Applications/Google\\ Chrome\\ Canary.app http://'+addresses[0]+':8000/e/'+req.param('client_id'), function callback(error, stdout, stderr){

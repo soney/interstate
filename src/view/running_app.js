@@ -17,6 +17,10 @@
 		display = "desktop";
 	}
 
+	function is_touch_device() {
+		return !!('ontouchstart' in window);
+	}
+
 /*	var run_edit_template = cjs.createTemplate(
 		"{{#fsm run_state}}" +
 			"{{#state edit}}" +
@@ -36,12 +40,13 @@
 			editor_name: uid.get_prefix() + "ist_editor",
 			open_separate_client_window: true,
 			external_editor: display === "phone" || display === "tablet",
-			auto_open_external_editor: false,
+			auto_open_external_editor: true,
 			editor_window_options: function () {
 				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
 			},
 			client_id: uid.get_prefix(),
-			immediately_create_server_socket: false
+			immediately_create_server_socket: false,
+			touchscreen_layer: is_touch_device()
 		},
 
 		_create: function () {
@@ -181,8 +186,11 @@
 				var append_interval = window.setInterval(_.bind(function() {
 					this.element.append(this.edit_button);
 				}, this));
+			}
 
-
+			if(this.option("touchscreen_layer")) {
+				this.element.touchscreen_layer({
+				});
 			}
 
 			if (this.option("edit_on_open")) {
@@ -257,6 +265,9 @@
 		},
 
 		_destroy: function () {
+			if(this.option("touchscreen_layer")) {
+				this.element.touchscreen_layer("destroy");
+			}
 			this._super();
 			this.close_editor();
 			$(window).off(".do_save");

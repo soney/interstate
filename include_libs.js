@@ -90,11 +90,13 @@ exports.runtime = c(
 				"model/statechart/events/parsed_events.js",
 				"model/statechart/events/combination_event.js",
 				"model/statechart/events/path_crossing.js",
+				"model/statechart/events/path_crossing.js",
 				"model/attachments/attachment_core.js",
 				"model/attachments/dom_attachment.js",
 				"model/attachments/raphael_attachment.js",
 				//"model/attachments/three_attachment.js",
 				"model/attachments/box2d_attachment.js",
+				"model/touch/touch_cluster.js",
 				"model/communication_wrapper/remote_constraint.js",
 				"model/communication_wrapper/comm_mechanisms.js",
 				"model/communication_wrapper/wrapper_server.js",
@@ -110,6 +112,8 @@ exports.runtime = c(
 				"controller/environment/command_stack.js",
 				"controller/environment/ist_environment.js",
 				"view/running_app.js",
+				"view/touchscreen/touchscreen_layer.js",
+				"view/touchscreen/touch_cluster_view.js",
 			])
 );
 
