@@ -36,6 +36,12 @@
 					"</div>" +
 				"{{/if}}" +
 			"</div>" + // btn group
+			"<div type='button' class='btn btn btn-default' data-cjs-on-click='define_path'>" +
+				"Define Path" +
+			"</div>" +
+			"<div type='button' class='btn btn btn-default' data-cjs-on-click='define_touch_cluster'>" +
+				"Define Touch Cluster" +
+			"</div>" +
 			"<table id='cell_group' class='input-group navbar-left'>" +
 				"<tr>" +
 					"<td>" +
