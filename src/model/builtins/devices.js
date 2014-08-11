@@ -344,13 +344,15 @@
 				"}"}))
 
 				.set("isSatisfied", new ist.Cell({str: "touchCluster_call(this, 'isSatisfied')"}))
-				.set("radius", new ist.Cell({str: "touchCluster_call(this, 'getRadius')"}))
 				.set("x", new ist.Cell({str: "touchCluster_call(this, 'getX')"}))
 				.set("y", new ist.Cell({str: "touchCluster_call(this, 'getY')"}))
 				.set("startX", new ist.Cell({str: "touchCluster_call(this, 'getStartX')"}))
 				.set("startY", new ist.Cell({str: "touchCluster_call(this, 'getStartY')"}))
 				.set("endX", new ist.Cell({str: "touchCluster_call(this, 'getEndX')"}))
 				.set("endY", new ist.Cell({str: "touchCluster_call(this, 'getEndY')"}))
+				.set("radius", new ist.Cell({str: "touchCluster_call(this, 'getRadius')"}))
+				.set("startRadius", new ist.Cell({str: "touchCluster_call(this, 'getStartRadius')"}))
+				.set("endRadius", new ist.Cell({str: "touchCluster_call(this, 'getEndRadius')"}))
 				.set("rotation", new ist.Cell({str: "touchCluster_call(this, 'getRotation')"}))
 				.set("scale", new ist.Cell({str: "touchCluster_call(this, 'getScale')"}))
 

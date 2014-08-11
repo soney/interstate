@@ -91,7 +91,7 @@
 				if(downInside) {
 					downInsideOK = _.every(downInside, function(path) { 
 						var pathString = path.toString();
-						if(Snap.path.isPointInside(pathString, touch.pageX, touch.pageY)) {
+						if(Raphael.isPointInsidePath(pathString, touch.pageX, touch.pageY)) {
 							return true;
 						} else {
 							return false;
@@ -102,7 +102,7 @@
 				if(downOutside) {
 					downOutsideOK = _.every(downOutside, function(path) { 
 						var pathString = path.toString();
-						if(!Snap.path.isPointInside(pathString, touch.pageX, touch.pageY)) {
+						if(!Raphael.isPointInsidePath(pathString, touch.pageX, touch.pageY)) {
 							return true;
 						} else {
 							return false;
@@ -374,7 +374,7 @@
 			if(touchLocations.length > 0) {
 				var maxDistance = false;
 				_.each(touchLocations, function(touchLocation) {
-					var dSq = distanceSquared(startCenter.x, startCenter.y, touchLocation.x, touchLocation.y);
+					var dSq = distanceSquared(startCenter.x, startCenter.y, touchLocation.startX, touchLocation.startY);
 					if(!maxDistance || dSq < maxDistance) {
 						maxDistance = dSq;
 					}
@@ -383,7 +383,7 @@
 
 				return r;
 			} else {
-				return -1;
+				return false;
 			}
 		}, {context: this});
 
@@ -403,7 +403,7 @@
 
 				return r;
 			} else {
-				return -1;
+				return false;
 			}
 		}, {context: this});
 		this.$endRadius = cjs(false);
