@@ -46,15 +46,16 @@
 							var cx = path.prop_val("cx"),
 								cy = path.prop_val("cy"),
 								r = path.prop_val("r");
-							path = "M"+(cx-r)+','+cy+'A'+r+','+r+',0,1,1,0,0.0001Z';
-						} else if(shape_attachment.shape_type === "ellispe") {
+
+							path = "M"+(cx-r)+','+cy+'a'+r+','+r+',0,1,1,0,0.0001Z';
+						} else if(shape_attachment.shape_type === "ellipse") {
 							var cx = path.prop_val("cx"),
 								cy = path.prop_val("cy"),
 								rx = path.prop_val("rx"),
 								ry = path.prop_val("ry");
 
-							path = "M"+(cx-r)+','+cy+'A'+rx+','+ry+',0,1,1,0,0.0001Z';
-						} else if(shape_attachment.shape_type === "rectangle") {
+							path = "M"+(cx-rx)+','+cy+'a'+rx+','+ry+',0,1,1,0,0.0001Z';
+						} else if(shape_attachment.shape_type === "rect") {
 							var x = path.prop_val("x"),
 								y = path.prop_val("y"),
 								width = path.prop_val("width"),
@@ -884,7 +885,6 @@
 
 	var touches, latest_touches, last_time,
 		crossingPaths = [],
-		pathCallbacks = [],
 		set_touches = function(to_touches, type) {
 			var time = (new Date()).getTime(),
 				i = 0, len = crossingPaths.length,

@@ -148,7 +148,7 @@
 			ready: function() {
 				this.shape_type = this.options.shape_type;
 				if(this.shape_type === "rectangle") {
-					this.shape_type = "rect";
+					this.shape_type = "rectangle";
 				}
 				this.constructor_params = this.options.constructor_params;
 				this.$robj = cjs(false);
