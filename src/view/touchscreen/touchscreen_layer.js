@@ -42,19 +42,53 @@
 			var tc = new ist.TouchCluster({
 								numFingers: 1
 							});
+			var crossPath = new ist.Path()
+						.startIF(tc.isSatisfiedConstraint())
+							.circle(tc.getStartXConstraint(), tc.getStartYConstraint(), 50)
+						.endIF();
 
 			this.touch_clusters = [];
+			this.path_views = [];
 			this.addTouchCluster(tc);
+			this.addPath(crossPath);
 		},
 		_destroy: function () {
 			this._super();
 			$(window).off('resize.touchscreen_layer');
 
 			this.clearTouchClusters();
+			this.clearPaths();
 
 			this.paper.clear();
 			this.raphaelDiv.remove();
 			this.canvasDiv.remove();
+		},
+		addPath: function(toAdd) {
+			var pathView = $(this.element).svg_path({
+				path: toAdd,
+				ctx: this.ctx,
+				paper: this.paper,
+				pathAttributes: {
+					fill: "red"
+				}
+			});
+			this.path_views.push(pathView);
+		},
+		removePath: function(path) {
+			for(var i = 0; i<this.path_views.length; i++) {
+				var pView = this.path_views[i];
+				if(pView.option("path") === path) {
+					pView.svg_path("destroy");
+					this.path_views.splice(i, 1);
+					i--;
+				}
+			}
+		},
+		clearPaths: function() {
+			for(var i = 0; i<this.path_views.length; i++) {
+				var pView = this.path_views[i];
+				pView.svg_path("destroy");
+			}
 		},
 		addTouchCluster: function(cluster) {
 			var touchClusterView = $(this.element).touch_cluster({

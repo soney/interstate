@@ -23,6 +23,7 @@
 		},
 		_destroy: function () {
 			this._super();
+			this._removeFromPaper();
 		},
 		_addToPaper: function() {
 			var paper = this.option("paper"),
@@ -123,6 +124,12 @@
 					rotationPath.remove();
 				}
 			});
+		},
+
+		_removeFromPaper: function() {
+			if(this.draw_fn) {
+				this.draw_fn.destroy();
+			}
 		}
 	});
 }(interstate, jQuery));
