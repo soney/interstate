@@ -446,12 +446,16 @@
 			}, this).on("disconnected", function () {
 				this.cleanup_closed_editor();
 			}, this).on("command", function (command) {
-				if (command === "undo") {
-					this._command_stack._undo();
-					this.$dirty_program.set(true);
-				} else if (command === "redo") {
-					this._command_stack._redo();
-					this.$dirty_program.set(true);
+				if(_.isString(command)) {
+					if (command === "undo") {
+						this._command_stack._undo();
+						this.$dirty_program.set(true);
+					} else if (command === "redo") {
+						this._command_stack._redo();
+						this.$dirty_program.set(true);
+					} else if (command === "begin_define_path") {
+						console.log("begin define path");
+					}
 				} else {
 					this._command_stack._do(command);
 					this.$dirty_program.set(true);
@@ -568,7 +572,7 @@
 			}
 			if(event) {
 				event.preventDefault();
-				event.stopPropagation();
+				//event.stopPropagation();
 			}
 			if (this.editor_window) {
 				this.editor_window.focus();

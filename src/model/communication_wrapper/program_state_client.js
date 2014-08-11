@@ -6,6 +6,8 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	ist.programStateCommands = ["undo", "redo", "reset", "export", "upload", "store", "begin_define_path"];
+
 	ist.ProgramStateClient = function (options) {
 		able.make_this_listenable(this);
 		this.comm_mechanism = options.comm_mechanism;
@@ -217,7 +219,7 @@
 
 		proto.post_command = function (command, callback) {
 			var stringified_command;
-			if ((["undo", "redo", "reset", "export", "upload", "store"]).indexOf(command) >= 0) {
+			if (ist.programStateCommands.indexOf(command) >= 0) {
 				stringified_command = command;
 			} else {
 				stringified_command = ist.stringify(command);

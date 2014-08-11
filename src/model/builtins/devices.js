@@ -329,10 +329,43 @@
 					return false;
 				}
 			},
+			touchCluster = new ist.Dict({has_protos: false, direct_attachments: [new ist.TouchClusterAttachment({
+																						})]
+																					})
+				.set("touchCluster_call", new ist.Cell({str: "function(p, prop_name) {" +
+					"var tc_attachment = interstate.get_attachment(p, 'touch_cluster');" +
+					"var tc = tc_attachment.touchCluster;" +
+					"return tc[prop_name]();" +
+				"}"}))
+				.set("touchCluster_fn", new ist.Cell({str: "function(p, prop_name) {" +
+					"var tc_attachment = interstate.get_attachment(p, 'touch_cluster');" +
+					"var tc = tc_attachment.touchCluster;" +
+					"return tc[prop_name].bind(tc);" +
+				"}"}))
+
+				.set("isSatisfied", new ist.Cell({str: "touchCluster_call(this, 'isSatisfied')"}))
+				.set("radius", new ist.Cell({str: "touchCluster_call(this, 'getRadius')"}))
+				.set("x", new ist.Cell({str: "touchCluster_call(this, 'getX')"}))
+				.set("y", new ist.Cell({str: "touchCluster_call(this, 'getY')"}))
+				.set("startX", new ist.Cell({str: "touchCluster_call(this, 'getStartX')"}))
+				.set("startY", new ist.Cell({str: "touchCluster_call(this, 'getStartY')"}))
+				.set("endX", new ist.Cell({str: "touchCluster_call(this, 'getEndX')"}))
+				.set("endY", new ist.Cell({str: "touchCluster_call(this, 'getEndY')"}))
+				.set("rotation", new ist.Cell({str: "touchCluster_call(this, 'getRotation')"}))
+				.set("scale", new ist.Cell({str: "touchCluster_call(this, 'getScale')"}))
+
+				.set("claimTouches", new ist.Cell({str: "touchCluster_fn(this, 'claimTouches')"}))
+				.set("disclaimTouches", new ist.Cell({str: "touchCluster_fn(this, 'disclaimTouches')"}))
+				.set("downInside", new ist.Cell({str: "false"}))
+				.set("downOutside", new ist.Cell({str: "false"}))
+				.set("numFingers", new ist.Cell({str: "1"}))
+				.set("maxRadius", new ist.Cell({str: "false"}))
+				.set("maxTouchInterval", new ist.Cell({str: "500"})),
 			device_touchscreen = new ist.Dict({has_protos: false, value: {
 					finger_count: touch_count,
 					getTouch: getTouch,
-					getTouchByID: getTouchByID
+					getTouchByID: getTouchByID,
+					touchCluster: touchCluster
 				}
 			});
 

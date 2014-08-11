@@ -6,8 +6,6 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	var touches = cjs({});
-
 	/*
 	 * downInside
 	 * downOutside
@@ -524,6 +522,14 @@
 		proto.getScaleConstraint = function() { return this.$scale; }
 		proto.getEndScale = function() { return this.$endScale.get(); }
 		proto.getEndScaleConstraint = function() { return this.$endScale; }
+
+		proto.setOption = function(a, b) {
+			if(arguments.length === 1) {
+				_.extend(this.options, a);
+			} else if(arguments.length > 1) {
+				this.options[a] = b;
+			}
+		};
 
 		proto.usesTouch = function(touch) {
 			var identifier = touch.identifier;

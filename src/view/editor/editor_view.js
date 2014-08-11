@@ -283,7 +283,12 @@
 		_redo: function() {
 			this.client_socket.post_command("redo");
 		},
-
+		_define_path: function() {
+			console.log("define path");
+		},
+		_define_touch_cluster: function() {
+			console.log("define touch cluster");
+		},
 		_addContentBindings: function() {
 			editor_template({
 				loading_state: this.loading_state,
@@ -306,6 +311,8 @@
 				}, this),
 				undo: _.bind(this._undo, this),
 				redo: _.bind(this._redo, this),
+				define_path: _.bind(this._define_path, this),
+				define_touch_cluster: _.bind(this._define_touch_cluster, this),
 				show_components: this.$show_components,
 				toggle_show_widgets: _.bind(function() {
 					this.$show_components.set(!this.$show_components.get());

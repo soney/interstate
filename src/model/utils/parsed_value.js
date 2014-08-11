@@ -53,7 +53,7 @@
 		};
 	}(ist.MultiExpression));
 
-	ist.on_event = function (event_type, arg1, arg2) {
+	ist.on_event = function (event_type, arg1, arg2, arg3, arg4) {
 		if (event_type === "timeout") {
 			//console.log(arg1);
 			var timeout_event = new ist.TimeoutEvent(arg1);
@@ -65,9 +65,11 @@
 			var frame_event = new ist.FrameEvent();
 			return frame_event;
 		} else if(event_type === "cross") {
-			var target = arg1,
-				min_velocity = arg2,
-				cross_event = new ist.CrossEvent(target, min_velocity);
+			var touchCluster = arg1,
+				target = arg2,
+				min_velocity = arg3,
+				max_velocity = arg4,
+				cross_event = new ist.CrossEvent(touchCluster, target, min_velocity, max_velocity);
 
 			return cross_event;
 		} else if(event_type === "collision") {

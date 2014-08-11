@@ -91,6 +91,7 @@ exports.runtime = c(
 				"model/statechart/events/combination_event.js",
 				"model/statechart/events/path_crossing.js",
 				"model/attachments/attachment_core.js",
+				"model/attachments/touchcluster_attachment.js",
 				"model/attachments/dom_attachment.js",
 				"model/attachments/raphael_attachment.js",
 				//"model/attachments/three_attachment.js",

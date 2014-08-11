@@ -39,18 +39,8 @@
 			$(window).on('resize.touchscreen_layer', onWindowResize);
 			onWindowResize();
 
-			var tc = new ist.TouchCluster({
-								numFingers: 1
-							});
-			var crossPath = new ist.Path()
-						.startIF(tc.isSatisfiedConstraint())
-							.circle(tc.getStartXConstraint(), tc.getStartYConstraint(), 50)
-						.endIF();
-
 			this.touch_clusters = [];
 			this.path_views = [];
-			this.addTouchCluster(tc);
-			this.addPath(crossPath);
 		},
 		_destroy: function () {
 			this._super();

@@ -77,14 +77,7 @@
 			this.do_destroy();
 		};
     }(ist.Attachment));
-	/*
-    
-    ist.define("attachment", function (options) {
-        var attachment = new ist.Attachment(options);
-        return attachment;
-    });
 
-*/
 	ist.register_attachments = function(object_types) {
 		var attachment_suffix = "_attachment";
 		_.each(object_types, function(attachment_specs, attachment_name) {
