@@ -9,6 +9,7 @@
 
 	$.widget("interstate.touchscreen_layer", {
 		options: {
+			highlightTouches: true
 		},
 		_create: function () {
 			this._super();
@@ -41,6 +42,13 @@
 
 			this.touch_clusters = [];
 			this.path_views = [];
+
+			if(this.option("highlightTouches")) {
+				this.element.screen_touches({
+					ctx: this.ctx,
+					paper: this.paper
+				});
+			}
 			/*
 			
 			var tc = new ist.TouchCluster({
@@ -52,6 +60,10 @@
 		_destroy: function () {
 			this._super();
 			$(window).off('resize.touchscreen_layer');
+
+			if(this.option("highlightTouches")) {
+				this.element.screen_touches("destroy");
+			}
 
 			this.clearTouchClusters();
 			this.clearPaths();

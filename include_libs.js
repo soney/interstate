@@ -115,6 +115,7 @@ exports.runtime = c(
 				"controller/environment/ist_environment.js",
 				"view/running_app.js",
 				"view/touchscreen/touchscreen_layer.js",
+				"view/touchscreen/simple_touch_view.js",
 				"view/touchscreen/touch_cluster_view.js",
 				"view/touchscreen/svg_path_view.js",
 			])
