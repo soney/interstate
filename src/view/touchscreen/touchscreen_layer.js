@@ -41,6 +41,13 @@
 
 			this.touch_clusters = [];
 			this.path_views = [];
+			/*
+			
+			var tc = new ist.TouchCluster({
+				numFingers: 2
+			});
+			this.addTouchCluster(tc);
+			*/
 		},
 		_destroy: function () {
 			this._super();

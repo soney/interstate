@@ -42,7 +42,8 @@ exports.runtime = c(
 	cp(vendor_src, [
 				"set.js",
 				"map.js",
-				"uid.js"
+				"uid.js",
+				"touch_replay.js"
 	]),
 	cp(cjs_path, ["cjs.js"]),
 	cp(vendor_src, [

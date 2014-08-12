@@ -221,7 +221,7 @@
 						i;
 
 					for(i = 0; i<usingFingersLength; i++) {
-						if(usableFingers.indexOf(usingFingers[j]) < 0) {
+						if(usableFingers.indexOf(usingFingers[i]) < 0) {
 							touchCluster.postUnsatisfied();
 							break;
 						}
