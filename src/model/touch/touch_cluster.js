@@ -126,7 +126,8 @@
 				downAt: currTime,
 				movedAt: currTime,
 				pressed: true,
-				claimedBy: cjs([])
+				claimedBy: [],
+				usedBy: []
 			}));
 		});
 
@@ -482,6 +483,14 @@
 			this.$endScale.set(this.$scale.get());
 		};
 		proto.postUnsatisfied = function() {
+			this.$usingFingers.forEach(function(touchID) {
+				var touch = touches.get(touchID),
+					usedBy = touch.get('usedBy'),
+					index = usedBy.indexOf(this);
+				if(index >= 0) {
+					usedBy.splice(index, 1);
+				}
+			}, this);
 			this.$satisfied.set(false);
 			this.$usableFingers.setValue([]);
 			this.$usingFingers.setValue([]);
@@ -490,6 +499,11 @@
 		proto.postSatisfied = function(usingFingers) {
 			this.$satisfied.set(true);
 			this.$usingFingers.setValue(usingFingers);
+			_.each(usingFingers, function(touchID) {
+				var touch = touches.get(touchID),
+					usedBy = touch.get('usedBy');
+				usedBy.push(this);
+			}, this);
 		};
 
 		proto.getX = function() { return this.$xConstraint.get(); };
@@ -570,9 +584,11 @@
 				var touch = touches.get(usableFingers[i]),
 					claimedBy = touch.get('claimedBy');
 
-				if(claimedBy.length() > 0 && claimedBy.indexOf(this) < 0) {
-					touches.splice(i, 1);
+				if(claimedBy.length > 0 && claimedBy.indexOf(this) < 0) {
+					this.$usableFingers.splice(i, 1);
+					usableFingers.splice(i, 1);
 					i--;
+					len--;
 				}
 			}
 		};
@@ -614,22 +630,41 @@
 			return this.$usingTouchInfo.get();
 		};
 
-		proto.claimFingers = function() {
+		proto.claimTouches = function() {
 			this.$usingFingers.forEach(function(touchID) {
 				var touch = touches.get(touchID),
-					claimedBy = touch.get('claimedBy');
+					claimedBy = touch.get('claimedBy'),
+					usedBy = touch.get('usedBy');
 
 				claimedBy.push(this);
-			});
+
+				var toRemove = [];
+				usedBy.forEach(function(tc, i) {
+					if(tc !== this) {
+						toRemove[i] = tc;
+					}
+				}, this);
+
+				toRemove.reverse();
+				toRemove.forEach(function(tc, index) {
+					if(tc) {
+						tc.preUnsatisfied();
+						tc.postUnsatisfied();
+						usedBy.splice(index, 1);
+					}
+				});
+			}, this);
 		};
 
-		proto.disclaimFingers = function() {
+		proto.disclaimTouches = function() {
 			this.$usingFingers.forEach(function(touchID) {
 				var touch = touches.get(touchID),
-					claimedBy = touch.get('claimedBy');
-				var index = claimedBy.indexOf(this);
-				claimedBy.splice(index, 1);
-			});
+					claimedBy = touch.get('claimedBy'),
+					index = claimedBy.indexOf(this);
+				if(index >= 0) {
+					claimedBy.splice(index, 1);
+				}
+			}, this);
 		};
 	}(ist.TouchCluster));
 }(interstate));

@@ -14,20 +14,26 @@
 		_create: function () {
 			this._super();
 
-			this.raphaelDiv = $("<div />").prependTo(document.body).css({
-				"pointer-events": "none",
-				"position": "absolute"
-			});
 			this.canvasDiv = $("<canvas />").prependTo(document.body).css({
 				"pointer_events": "none",
 				"position": "absolute"
 			});
 
-			this.paper = Raphael(this.raphaelDiv[0]);
+			this.paper = Snap(0,0);
+			this.raphaelDiv = $(this.paper.node);
 			this.ctx = this.canvasDiv[0].getContext("2d");
+			this.raphaelDiv.prependTo(document.body).css({
+				"pointer-events": "none",
+				"position": "absolute",
+				"z-index": 10
+			});
 
 			var onWindowResize = _.bind(function() {
-				this.paper.setSize(window.innerWidth, window.innerHeight);
+				//this.paper.setSize(window.innerWidth, window.innerHeight);
+				this.paper.attr({
+					width: window.innerWidth,
+					height: window.innerHeight
+				});
 				this.canvasDiv.css({
 					width: window.innerWidth+'px',
 					height: window.innerHeight+'px'
@@ -51,10 +57,25 @@
 			}
 			/*
 			
-			var tc = new ist.TouchCluster({
-				numFingers: 2
+			var tc1 = new ist.TouchCluster({
+					numFingers: 1
+				}),
+				tc2 = new ist.TouchCluster({
+					numFingers: 1
+				});
+			cjs.liven(function(){ 
+				if(tc1.isSatisfied()) {
+					//_.defer(function() {
+						tc1.claimTouches();
+					//});
+				} else {
+					//_.defer(function() {
+						tc1.disclaimTouches();
+					//});
+				}
 			});
-			this.addTouchCluster(tc);
+			//this.addTouchCluster(tc1);
+			this.addTouchCluster(tc2);
 			*/
 		},
 		_destroy: function () {

@@ -46,7 +46,7 @@
 			},
 			client_id: uid.get_prefix(),
 			immediately_create_server_socket: false,
-			touchscreen_layer: is_touch_device()
+			touchscreen_layer: true || is_touch_device()
 		},
 
 		_create: function () {

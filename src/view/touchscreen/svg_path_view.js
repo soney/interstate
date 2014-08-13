@@ -12,7 +12,10 @@
 			cluster: false,
 			ctx: false,
 			paper: false,
-			pathAttributes: {}
+			pathAttributes: {
+				fill: "none",
+				stroke: "black"
+			}
 		},
 		_create: function () {
 			this._super();

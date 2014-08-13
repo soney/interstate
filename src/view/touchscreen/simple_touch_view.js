@@ -1,6 +1,6 @@
 /*jslint nomen: true, vars: true, white: true */
 /*jshint scripturl: true */
-/*global interstate,esprima,able,uid,console,window,jQuery,Raphael */
+/*global interstate,esprima,able,uid,console,window,jQuery,easea */
 
 (function (ist, $) {
 	"use strict";
@@ -36,7 +36,20 @@
 				strokes = this.option("strokes");
 
 			$(window).on('touchstart.simple_touch_view', _.bind(function(jq_event) {
-					var event = jq_event.originalEvent;
+					var event = jq_event.originalEvent,
+						touchPathStr = false;
+
+					if(event.touchPath) {
+						touchPathStr = _.map(event.touchPath, function(info) {
+							var type = info.type,
+								touch = info.touch,
+								x = touch.pageX,
+								y = touch.pageY;
+
+							return (type === "touchstart" ? 'M' : 'L') + x +',' + y;
+						}).join("");
+					}
+
 					_.each(event.changedTouches, function(touch) {
 						var id = touch.identifier,
 							x = touch.pageX,
@@ -44,48 +57,48 @@
 							fill = "#" + fills[id%fills.length],
 							stroke = "#" + strokes[id%strokes.length];
 
-						var touchDisplay = touchDisplays[id] = paper.circle(x, y, 0).attr({
+						var touchDisplay = touchDisplays[id] = paper.circle(x, y, 5).attr({
 							opacity: 0.2,
 							fill: fill,
 							stroke: stroke,
-							"stroke-width": this.option("strokeWidth"),
-							"stroke-linejoin": "round"
+							"stroke-width": this.option("strokeWidth")
 						});
 						touchDisplay.animate({
 								r: this.option("radius"),
 								opacity: 1
 							},
 							this.option("touchStartAnimationDuration"),
-							"easeInOut");
+							mina.easeinout);
 						touchShadows[id] = {
+							pathKnown: !!touchPathStr,
 							path: paper.path("M"+x+","+y).attr({
 								"stroke-width": 8,
-								stroke: fill
+								stroke: fill,
+								"stroke-linejoin": "round",
+								"stroke-linecap": "round",
+								fill: "none"
+							}),
+							animPath: paper.path(touchPathStr || "M0,0").attr({
+								opacity: 0.2,
+								stroke: fill,
+								"stroke-width": 2,
+								"stroke-linejoin": "round",
+								"stroke-linecap": "round",
+								fill: "none"
 							}),
 							startCircle: paper.circle(x, y, 0).attr({
 									fill: fill,
-									stroke: stroke,
+									stroke: fill,
+									"fill-opacity": 0.1,
 									"stroke-width": this.option("strokeWidth"),
 									opacity: 0
 								}).animate({
 									r: this.option("radius"),
 									opacity: 1
 								}, this.option("touchStartAnimationDuration"),
-								"easeInOut")
+								mina.easeinout)
 						};
-							/*
-
-						ctx.save();
-						ctx.beginPath();
-						ctx.fillStyle = touchDisplay.attr("fill");
-						ctx.strokeStyle = touchDisplay.attr("stroke");
-						ctx.lineWidth = 3;
-						ctx.arc(x,y,radius,0,2*Math.PI);
-						ctx.closePath();
-						ctx.fill();
-						ctx.stroke();
-						ctx.restore();
-						*/
+						//touchDisplay.toFront();
 					}, this);
 				}, this)).on('touchmove.simple_touch_view', _.bind(function(jq_event) {
 					var event = jq_event.originalEvent;
@@ -100,20 +113,10 @@
 							cy: y
 						});
 
-						var pathDisplay = touchShadows[id].path;
-						pathDisplay.attr("path", pathDisplay.attr("path") + "L"+x+","+y);
-						/*
+						var touchShadow = touchShadows[id],
+							pathDisplay = touchShadow.path;
 
-						ctx.save();
-						ctx.beginPath();
-						ctx.moveTo(oldX, oldY);
-						ctx.lineTo(x, y);
-						ctx.globalAlpha = 0.3;
-						ctx.lineWidth = 8;
-						ctx.strokeStyle = touchDisplay.attr("fill");
-						ctx.stroke();
-						ctx.restore();
-						*/
+						pathDisplay.attr("path", pathDisplay.attr("path") + "L"+x+","+y);
 					}, this);
 				}, this)).on('touchend.simple_touch_view touchcancel.simple_touch_view', _.bind(function(jq_event) {
 					var event = jq_event.originalEvent;
@@ -122,84 +125,70 @@
 							x = touch.pageX,
 							y = touch.pageY,
 							touchDisplay = touchDisplays[id],
-							r = touchDisplay.attr("r");
+							r = touchDisplay.attr("r"),
+							touchShadow = touchShadows[id],
+							pathDisplay = touchShadow.path,
+							animPath = touchShadow.animPath,
+							length = pathDisplay.getTotalLength(),
+							startCircle = touchShadow.startCircle;
 
-						touchDisplay.attr({
-							cx: x,
-							cy: y
-						});
-						touchDisplay.animate({
-								r: 0,
-								opacity: 0
-							},
-							this.option("touchEndAnimationDuration"), 
-							"easeInOut", function() {
-								touchDisplay.remove();
-							});
-						var shadows = touchShadows[id];
-						var path = shadows.path,
-							animPath = paper.path(path.attr("path")).attr({
-								"stroke-width": path.attr("stroke-width"),
-								stroke: path.attr("stroke")
-							}),
-							length = path.getTotalLength(),
-							node = path[0],
-							counter = 0,
-							animation,
-							startCircle = shadows.startCircle;
+						pathDisplay.attr("path", pathDisplay.attr("path") + "L"+x+","+y);
+						if(!touchShadow.pathKnown) {
+							animPath.attr("path", pathDisplay.attr("path"));
+						}
 
-						var animation_duration = length/3,
+						var animation_duration = Math.min(Math.max(200, length/3), 900),
 							startTime = (new Date()).getTime(),
 							endTime = startTime + animation_duration,
-							easingFormula = Raphael.easing_formulas.easeInOut;
+							easingFormula = mina.easeinout,
+							pct;
 
-						var endCircle = shadows.endCircle = paper.circle(x, y, r).attr({
-									fill: touchDisplay.attr("stroke"),
-									stroke: "none"
-								}).animate({
-									r: r/3,
-								}, animation_duration,
-								"easeInOut");
+						animPath.attr({
+							"stroke-width": pathDisplay.attr("stroke-width"),
+							opacity: 1.0
+						}).animate({
+							opacity: 0.2
+						});
 
-						var pct;
+						touchDisplay.attr({
+								cx: x,
+								cy: y
+							})
+							.animate({
+								r: 2*touchDisplay.attr("r")/3,
+								opacity: 0
+							}, animation_duration, mina.easeinout, function() {
+								touchDisplay.remove();
+							});
+
+						startCircle.animate({
+							r: 1.1*startCircle.attr("r"),
+							opacity: 0
+						}, animation_duration, mina.easeinout, function() {
+							startCircle.remove();
+						});
+
+						pathDisplay.attr({
+								opacity: 0.5
+							})
+							.animate({
+								opacity: 0
+							}, animation_duration, mina.easeinout, function() {
+								animPath.remove();
+								pathDisplay.remove();
+							});
 
 						var updateStartCirclePosition = function() {
 							var currTime = (new Date()).getTime();
 
 							if(currTime <= endTime) {
 								var pct = ((currTime - startTime) / animation_duration),
-									pos = path.getPointAtLength(pct*length);
-								animPath.attr("path", path.getSubpath(length*pct, length));
-								startCircle.attr({
-									cx: pos.x,
-									cy: pos.y
-								});
+									pos = pathDisplay.getPointAtLength(pct*length);
+								animPath.attr("path", pathDisplay.getSubpath(length*pct, length));
 								requestAnimationFrame(updateStartCirclePosition);
 							}
-						}
-
-						startCircle.animate({
-							fill: endCircle.attr("fill"),
-							stroke: endCircle.attr("stroke"),
-							r: r/2,
-						}, animation_duration, "easeInOut")
-						.attr({
-							"stroke-width": 0
-						});
-						path.animate({
-							opacity: 0
-						}, animation_duration, "easeInOut", function() {
-							animPath.remove();
-							path.remove();
-							endCircle.remove();
-							startCircle.animate({
-								r: 0
-							}, 500, "bounce", function() {
-								startCircle.remove();
-							});
-						});
+						};
 						requestAnimationFrame(updateStartCirclePosition);
-						//animation = setInterval(updateStartCirclePosition, );
 						updateStartCirclePosition();
 						delete touchShadows[id];
 						delete touchDisplays[id];

@@ -30,9 +30,18 @@
 				cluster = this.option("cluster"),
 				startCenterRadius = this.option("startCenterRadius"),
 				centerRadius = this.option("centerRadius"),
-				startCenterCircle = paper.circle(-3*startCenterRadius, -3*startCenterRadius, startCenterRadius),
-				centerCircle = paper.circle(-3*centerRadius, -3*centerRadius, centerRadius),
-				rotationPath = paper.path("M0,0"),
+				startCenterCircle = paper.circle(-3*startCenterRadius, -3*startCenterRadius, startCenterRadius).attr({
+					fill: "none",
+					stroke: "black"
+				}),
+				centerCircle = paper.circle(-3*centerRadius, -3*centerRadius, centerRadius).attr({
+					fill: "none",
+					stroke: "black"
+				}),
+				rotationPath = paper.path("M0,0").attr({
+					fill: "none",
+					stroke: "black"
+				}),
 				fingerRadius = this.option("fingerRadius"),
 				fingerStartRadius = this.option("fingerStartRadius");
 
@@ -82,7 +91,10 @@
 								cy: touch.y
 							});
 						} else {
-							touchDisplay = touchDisplays[id] = paper.circle(touch.x, touch.y, fingerRadius);
+							touchDisplay = touchDisplays[id] = paper.circle(touch.x, touch.y, fingerRadius).attr({
+								fill: "none",
+								stroke: "black"
+							});
 						}
 
 						if(!touchStartDisplay) {
