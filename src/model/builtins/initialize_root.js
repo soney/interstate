@@ -52,6 +52,7 @@
 			circle.set("animated_properties", new ist.Cell({str: "false"}));
 			circle.set("animation_duration", new ist.Cell({str: "300"}));
 			circle.set("animation_easing", new ist.Cell({str: "'linear'"}));
+			circle.set("debugDraw", new ist.Cell({str: "false"}));
 			circle.set("shape", new ist.Cell({str: "'circle'"}));
 
 
@@ -81,6 +82,7 @@
 			ellipse.set("animated_properties", new ist.Cell({str: "false"}));
 			ellipse.set("animation_duration", new ist.Cell({str: "300"}));
 			ellipse.set("animation_easing", new ist.Cell({str: "'linear'"}));
+			ellipse.set("debugDraw", new ist.Cell({str: "false"}));
 			ellipse.set("shape", new ist.Cell({str: "'ellipse'"}));
 			
 			var image = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
@@ -134,6 +136,7 @@
 			rect.set("animated_properties", new ist.Cell({str: "false"}));
 			rect.set("animation_duration", new ist.Cell({str: "300"}));
 			rect.set("animation_easing", new ist.Cell({str: "'linear'"}));
+			rect.set("debugDraw", new ist.Cell({str: "false"}));
 			rect.set("shape", new ist.Cell({str: "'rectangle'"}));
 			
 			var text = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
@@ -191,7 +194,9 @@
 			path.set("transform", new ist.Cell({str: "''"}));
 			path.set("animated_properties", new ist.Cell({str: "false"}));
 			path.set("animation_duration", new ist.Cell({str: "300"}));
+			path.set("debugDraw", new ist.Cell({str: "false"}));
 			path.set("animation_easing", new ist.Cell({str: "'linear'"}));
+
 			path.set("shape", new ist.Cell({str: "'path'"}));
 
 			var group = new ist.Dict({has_protos: false, direct_attachments: [new ist.GroupAttachment()]});

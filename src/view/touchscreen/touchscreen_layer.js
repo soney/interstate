@@ -14,6 +14,8 @@
 		_create: function () {
 			this._super();
 
+			this.element.addClass("hasTouchscreenLayer");
+
 			this.canvasDiv = $("<canvas />").prependTo(document.body).css({
 				"pointer_events": "none",
 				"position": "absolute"
@@ -81,6 +83,7 @@
 			*/
 		},
 		_destroy: function () {
+			this.element.removeClass("hasTouchscreenLayer");
 			this._super();
 			$(window).off('resize.touchscreen_layer');
 
@@ -96,20 +99,22 @@
 			this.canvasDiv.remove();
 		},
 		addPath: function(toAdd) {
-			var pathView = $(this.element).svg_path({
-				path: toAdd,
-				ctx: this.ctx,
-				paper: this.paper,
-				pathAttributes: {
-					fill: "red"
-				}
-			});
-			this.path_views.push(pathView);
+			if(this.path_views.indexOf(toAdd) < 0) {
+				var pathView = $(this.element).svg_path({
+					path: toAdd,
+					ctx: this.ctx,
+					paper: this.paper,
+					pathAttributes: {
+						"stroke-dasharray": "5, 5, 1, 5"
+					}
+				});
+				this.path_views.push(pathView);
+			}
 		},
 		removePath: function(path) {
 			for(var i = 0; i<this.path_views.length; i++) {
 				var pView = this.path_views[i];
-				if(pView.option("path") === path) {
+				if(pView.svg_path("option", "path") === path) {
 					pView.svg_path("destroy");
 					this.path_views.splice(i, 1);
 					i--;
@@ -123,17 +128,19 @@
 			}
 		},
 		addTouchCluster: function(cluster) {
-			var touchClusterView = $(this.element).touch_cluster({
-				cluster: cluster,
-				ctx: this.ctx,
-				paper: this.paper
-			});
-			this.touch_clusters.push(touchClusterView);
+			if(this.touch_clusters.indexOf(cluster) < 0) {
+				var touchClusterView = $(this.element).touch_cluster({
+					cluster: cluster,
+					ctx: this.ctx,
+					paper: this.paper
+				});
+				this.touch_clusters.push(touchClusterView);
+			}
 		},
 		removeTouchCluster: function(cluster) {
 			for(var i = 0; i<this.touch_clusters.length; i++) {
 				var tcView = this.touch_clusters[i];
-				if(tcView.option("cluster") === cluster) {
+				if(tcView.touchCluster("option", "cluster") === cluster) {
 					tcView.touch_cluster("destroy");
 					this.touch_clusters.splice(i, 1);
 					i--;

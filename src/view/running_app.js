@@ -57,6 +57,11 @@
 			this.$inspecting_hover_object = cjs(false);
 			this.$breakpoints = cjs({});
 
+
+			if(this.option("touchscreen_layer")) {
+				this.element.touchscreen_layer({
+				});
+			}
 			if(!this.option("root")) {
 				var root = ist.load();
 				if(!root) {
@@ -186,11 +191,6 @@
 				var append_interval = window.setInterval(_.bind(function() {
 					this.element.append(this.edit_button);
 				}, this));
-			}
-
-			if(this.option("touchscreen_layer")) {
-				this.element.touchscreen_layer({
-				});
 			}
 
 			if (this.option("edit_on_open")) {

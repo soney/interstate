@@ -168,6 +168,9 @@
 				this.constructor_params = this.options.constructor_params;
 				this.$robj = cjs(false);
 				this.$children = cjs(this.child_getter, {context: this});
+
+				this.ist_runtime = $(".ist_runtime");
+				this.touchscreen_layer = this.ist_runtime.is(".hasTouchscreenLayer");
 			},
 			destroy: function(silent) {
 				this.remove();
@@ -177,7 +180,20 @@
 				delete this.$robj;
 				delete this.$children;
 			},
-			parameters: (function(infos) {
+			parameters: _.extend({
+				debugDraw: function(contextual_object) {
+					var debugDraw = contextual_object.prop_val("debugDraw");
+					if(debugDraw) {
+						if(this.touchscreen_layer) {
+							this.ist_runtime.touchscreen_layer("addPath", contextual_object);
+						}
+					} else {
+						if(this.touchscreen_layer) {
+							this.ist_runtime.touchscreen_layer("removePath", contextual_object);
+						}
+					}
+				}
+			}, (function(infos) {
 				var parameters = {};
 				_.each(infos, function(euc_name, raph_name) {
 					parameters[euc_name] = function(contextual_object) {
@@ -262,7 +278,7 @@
 				width: "width",
 				x: "x",
 				y: "y"
-			})),
+			}))),
 			proto_props: {
 				create_robj: function(paper) {
 					var robj = this.get_robj();

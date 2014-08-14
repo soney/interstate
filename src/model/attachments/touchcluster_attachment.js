@@ -43,6 +43,8 @@
 	ist.TouchClusterAttachment = ist.register_attachment("touch_cluster", {
 			ready: function() {
 				this.touchCluster = new ist.TouchCluster({ });
+				this.ist_runtime = $(".ist_runtime");
+				this.touchscreen_layer = this.ist_runtime.is(".hasTouchscreenLayer");
 			},
 			destroy: function(silent) {
 				this.touchCluster.destroy(silent);
@@ -63,6 +65,18 @@
 						maxTouchInterval: maxTouchInterval
 					});
 				},
+				debugDraw: function(contextual_object) {
+					var debugDraw = contextual_object.prop_val("debugDraw");
+					if(debugDraw) {
+						if(this.touchscreen_layer) {
+							this.ist_runtime.touchscreen_layer("addTouchCluster", this.touchCluster);
+						}
+					} else {
+						if(this.touchscreen_layer) {
+							this.ist_runtime.touchscreen_layer("removeTouchCluster", this.touchCluster);
+						}
+					}
+				}
 			}
 		});
 }(interstate, jQuery));
