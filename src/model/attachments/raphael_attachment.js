@@ -64,7 +64,8 @@
 	ist.PaperAttachment = ist.register_attachment("paper", {
 			ready: function() {
 				this.dom_obj = window.document.createElement("span");
-				this.paper = new Raphael(this.dom_obj, 0, 0);
+				this.paper = Snap(0,0);
+				this.dom_obj.appendChild(this.paper.node);
 			},
 			destroy: function(silent) {
 				this.paper.clear();
@@ -76,7 +77,11 @@
 				width_height: function(contextual_object) {
 					var width = contextual_object.prop_val("width"),
 						height = contextual_object.prop_val("height");
-					this.paper.setSize(width, height);
+					//this.paper.setSize(width, height);
+					this.paper.attr({
+						width: width,
+						height: height
+					});
 				},
 				fill: function(contextual_object) {
 					var fill = contextual_object.prop_val("fill"),
@@ -86,22 +91,32 @@
 				screen: {
 					type: "list",
 					add: function(shape_attachment_instance, to_index) {
-						var shape = shape_attachment_instance.create_robj(this.paper);
-						var itemi, len;
-						var index = 0;
-						var item;
-						this.paper.forEach(function(elem) {
+						var shape = shape_attachment_instance.create_robj(this.paper),
+							items = this.paper.selectAll(":not(desc):not(defs)"),
+							itemi = items[to_index],
+							len = items.length;
+							/*
+							itemi, len,
+							index = 0,
+							item;
+						items.forEach
+						//rect,circle,path,ellipse,image,text")[index];
+						/*
+						.forEach(function(elem) {
 							if(index === to_index) {
 								itemi = elem;
 							}
 							len = index;
 							index++;
 						});
+						*/
 						if(itemi !== shape) {
 							if(to_index >= len) {
-								shape.toBack();
+								//https://github.com/adobe-webplatform/Snap.svg/issues/121
+								//shape.toBack();
+								shape.appendTo(this.paper);
 							} else {
-								shape.insertBefore(itemi);
+								shape.before(itemi);
 							}
 						}
 					},
@@ -255,7 +270,8 @@
 						return robj;
 					} else {
 						robj = paper[this.shape_type].apply(paper, this.constructor_params);
-						robj[0].__ist_contextual_object__ = this.get_contextual_object();
+						//robj[0].__ist_contextual_object__ = this.get_contextual_object();
+						robj.node.__ist_contextual_object__ = this.get_contextual_object();
 						this.$robj.set(robj);
 						return robj;
 					}

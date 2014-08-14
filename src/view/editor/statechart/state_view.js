@@ -210,6 +210,7 @@
 
 			var paper = this.option("paper");
 			var parentElement = paper.canvas.parentNode;
+			//var parentElement = paper.node.parentNode;
 
 			this.edit_dropdown = $("<div />")	.append(this.add_transition, this.add_substate_item, this.toggle_concurrency_item, this.toggle_breakpoint_item, this.rename_item, this.remove_item)
 												.addClass("dropdown")
@@ -268,6 +269,7 @@
 			
 			$(window).on("mousemove.update_display_arrow", function(event) {
 				var offset = $(paper.canvas).offset();
+				//var offset = $(paper.node).offset();
 				arrow_disp.option("to", { x: event.clientX - offset.left, y: event.clientY - offset.top });
 			});
 		};

@@ -91,7 +91,7 @@
 				if(downInside) {
 					downInsideOK = _.every(downInside, function(path) { 
 						var pathString = path.toString();
-						if(Raphael.isPointInsidePath(pathString, touch.pageX, touch.pageY)) {
+						if(Snap.path.isPointInside(pathString, touch.pageX, touch.pageY)) {
 							return true;
 						} else {
 							return false;
@@ -102,7 +102,7 @@
 				if(downOutside) {
 					downOutsideOK = _.every(downOutside, function(path) { 
 						var pathString = path.toString();
-						if(!Raphael.isPointInsidePath(pathString, touch.pageX, touch.pageY)) {
+						if(!Snap.path.isPointInside(pathString, touch.pageX, touch.pageY)) {
 							return true;
 						} else {
 							return false;

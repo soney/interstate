@@ -29,17 +29,19 @@
 			});
 
 			var onWindowResize = _.bind(function() {
+				var width = Math.max(document.body.scrollWidth, window.innerWidth),
+					height = Math.max(document.body.scrollHeight, window.innerHeight);
 				//this.paper.setSize(window.innerWidth, window.innerHeight);
 				this.paper.attr({
-					width: window.innerWidth,
-					height: window.innerHeight
+					width: width,
+					height: height
 				});
 				this.canvasDiv.css({
-					width: window.innerWidth+'px',
-					height: window.innerHeight+'px'
+					width: width+'px',
+					height: height+'px'
 				}).attr({
-					width: window.innerWidth,
-					height: window.innerHeight
+					width: width,
+					height: height
 				});
 			}, this);
 

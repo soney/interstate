@@ -57,7 +57,7 @@
 							fill = "#" + fills[id%fills.length],
 							stroke = "#" + strokes[id%strokes.length];
 
-						var touchDisplay = touchDisplays[id] = paper.circle(x, y, 5).attr({
+						var touchDisplay = touchDisplays[id] = paper.circle(x, y, 5*this.option("radius")/4).attr({
 							opacity: 0.2,
 							fill: fill,
 							stroke: stroke,
