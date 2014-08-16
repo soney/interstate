@@ -342,7 +342,9 @@
 			return touchLocations;
 		}, {context: this});
 
-		this.$startCenter = cjs(function() {
+		this.$startCenter = cjs.constraint({x: false, y: false});
+		/*
+		function() {
 			var touchLocations = this.$usingTouchInfo.get();
 
 			if(touchLocations.length > 0) {
@@ -353,6 +355,7 @@
 				return { x: false, y: false };
 			}
 		}, {context: this});
+		*/
 
 		this.$center = cjs(function() {
 			var touchLocations = this.$usingTouchInfo.get();
@@ -483,6 +486,7 @@
 			this.$endScale.set(this.$scale.get());
 		};
 		proto.postUnsatisfied = function() {
+			cjs.wait();
 			this.$usingFingers.forEach(function(touchID) {
 				var touch = touches.get(touchID),
 					usedBy = touch.get('usedBy'),
@@ -494,9 +498,13 @@
 			this.$satisfied.set(false);
 			this.$usableFingers.setValue([]);
 			this.$usingFingers.setValue([]);
+			this.$startCenter.set({ x: false, y: false });
+			cjs.signal();
 		};
 
 		proto.postSatisfied = function(usingFingers) {
+			cjs.wait();
+
 			this.$satisfied.set(true);
 			this.$usingFingers.setValue(usingFingers);
 			_.each(usingFingers, function(touchID) {
@@ -504,6 +512,17 @@
 					usedBy = touch.get('usedBy');
 				usedBy.push(this);
 			}, this);
+
+			var touchLocations = this.$usingTouchInfo.get();
+			if(touchLocations.length > 0) {
+				var averageX = average(_.pluck(touchLocations, 'startX')),
+					averageY = average(_.pluck(touchLocations, 'startY'));
+				this.$startCenter.set({ x: averageX, y: averageY });
+			} else {
+				this.$startCenter.set({ x: false, y: false });
+			}
+
+			cjs.signal();
 		};
 
 		proto.getX = function() { return this.$xConstraint.get(); };

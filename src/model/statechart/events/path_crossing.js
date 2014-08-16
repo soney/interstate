@@ -25,16 +25,11 @@
 			this._crossing_path_listener_id = false;
 
 			this.live_fn = cjs.liven(function () {
-				this.remove_listener();
-
 				var min_velocity = cjs.get(this.min_velocity),
 					max_velocity = cjs.get(this.max_velocity);
 
 				if(!_.isNumber(min_velocity)) { min_velocity = false; }
 				if(!_.isNumber(max_velocity)) { max_velocity = false; }
-
-				this._min_velocity = min_velocity;
-				this._max_velocity = max_velocity;
 
 				var path = cjs.get(this.path);
 				if(path instanceof ist.ContextualDict) {
@@ -67,7 +62,6 @@
 						}
 					}
 				}
-				this._curr_path = path;
 
 				var touchCluster = cjs.get(this.touchCluster);
 				if(touchCluster instanceof ist.ContextualDict) {
@@ -77,9 +71,16 @@
 					}
 				}
 
-				this._touch_cluster = touchCluster;
+				if(this._min_velocity !== min_velocity || this._max_velocity !== max_velocity || this._curr_path !== path || this._touch_cluster !== touchCluster) {
+					this.remove_listener();
 
-				this.add_listener();
+					this._min_velocity = min_velocity;
+					this._max_velocity = max_velocity;
+					this._curr_path = path;
+					this._touch_cluster = touchCluster;
+
+					this.add_listener();
+				}
 			}, {
 				context: this,
 				run_on_create: false

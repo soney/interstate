@@ -14,8 +14,10 @@
 			radius: 20,
 			touchStartAnimationDuration: 100,
 			touchEndAnimationDuration: 200,
-			fills: ["EF3B35", "F26B36", "7FC246", "149DD8", "6D287C"],
-			strokes: ["87211E", "9C4523", "466B27", "0D688F", "36143D"],
+			//fills: ["EF3B35", "F26B36", "7FC246", "149DD8", "6D287C"],
+			//strokes: ["87211E", "9C4523", "466B27", "0D688F", "36143D"],
+			fills: ["CCCCCC"],
+			strokes: ["999999"],
 			strokeWidth: "3px"
 		},
 		_create: function () {
@@ -141,6 +143,8 @@
 							startTime = (new Date()).getTime(),
 							endTime = startTime + animation_duration,
 							easingFormula = mina.easeinout,
+							nearStart = pathDisplay.getPointAtLength(Math.min(5, 0.01*length)),
+							nearEnd = pathDisplay.getPointAtLength(Math.max(length-5, 0.99*length)),
 							pct;
 
 						animPath.attr({
@@ -156,6 +160,8 @@
 							})
 							.animate({
 								r: 2*touchDisplay.attr("r")/3,
+								cx: nearEnd.x,
+								cy: nearEnd.y,
 								opacity: 0
 							}, animation_duration, mina.easeinout, function() {
 								touchDisplay.remove();
@@ -163,7 +169,9 @@
 
 						startCircle.animate({
 							r: 1.1*startCircle.attr("r"),
-							opacity: 0
+							opacity: 0,
+							cx: nearStart.x,
+							cy: nearStart.y,
 						}, animation_duration, mina.easeinout, function() {
 							startCircle.remove();
 						});
@@ -174,7 +182,6 @@
 							.animate({
 								opacity: 0
 							}, animation_duration, mina.easeinout, function() {
-								animPath.remove();
 								pathDisplay.remove();
 							});
 
@@ -186,6 +193,8 @@
 									pos = pathDisplay.getPointAtLength(pct*length);
 								animPath.attr("path", pathDisplay.getSubpath(length*pct, length));
 								requestAnimationFrame(updateStartCirclePosition);
+							} else {
+								animPath.remove();
 							}
 						};
 						requestAnimationFrame(updateStartCirclePosition);

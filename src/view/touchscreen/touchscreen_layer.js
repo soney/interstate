@@ -59,8 +59,8 @@
 					paper: this.paper
 				});
 			}
-			/*
 			
+			/*
 			var tc1 = new ist.TouchCluster({
 					numFingers: 1
 				}),
