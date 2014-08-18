@@ -760,6 +760,7 @@
 			this.get_attachment_instance("dom");
 			this.get_attachment_instance("shape");
 			this.get_attachment_instance("box2d_fixture");
+			this.get_attachment_instance("touch_cluster");
 		};
 
 		proto._get_valid_cobj_children = function() {

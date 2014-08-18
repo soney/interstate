@@ -14,28 +14,29 @@
 			radius: 20,
 			touchStartAnimationDuration: 100,
 			touchEndAnimationDuration: 200,
-			//fills: ["EF3B35", "F26B36", "7FC246", "149DD8", "6D287C"],
-			//strokes: ["87211E", "9C4523", "466B27", "0D688F", "36143D"],
-			fills: ["CCCCCC"],
-			strokes: ["999999"],
-			strokeWidth: "3px"
+			defaultFill: ["#CCCCCC"],
+			defaultStroke: ["#999999"],
+			strokeWidth: "3px",
+			clusterStrokeWidth: 6
 		},
 		_create: function () {
+			this.touchColors = {};
 			this._super();
 			this._addToPaper();
+			this.element.addClass("simpleScreenTouches");
 		},
 		_destroy: function () {
 			this._super();
 			this._removeFromPaper();
+			this.element.removeClass("simpleScreenTouches");
 		},
 		_addToPaper: function() {
 			var paper = this.option("paper"),
-				touchDisplays = {},
-				touchShadows = {},
+				touchDisplays = this.touchDisplays = {},
 				ctx = this.option("ctx"),
 				radius = this.option("radius"),
-				fills = this.option("fills"),
-				strokes = this.option("strokes");
+				defaultFill = this.option("defaultFill"),
+				defaultStroke = this.option("defaultStroke");
 
 			$(window).on('touchstart.simple_touch_view', _.bind(function(jq_event) {
 					var event = jq_event.originalEvent,
@@ -56,22 +57,22 @@
 						var id = touch.identifier,
 							x = touch.pageX,
 							y = touch.pageY,
-							fill = "#" + fills[id%fills.length],
-							stroke = "#" + strokes[id%strokes.length];
+							fill = defaultFill,
+							stroke = defaultStroke;
 
-						var touchDisplay = touchDisplays[id] = paper.circle(x, y, 5*this.option("radius")/4).attr({
-							opacity: 0.2,
-							fill: fill,
-							stroke: stroke,
-							"stroke-width": this.option("strokeWidth")
-						});
-						touchDisplay.animate({
-								r: this.option("radius"),
-								opacity: 1
-							},
-							this.option("touchStartAnimationDuration"),
-							mina.easeinout);
-						touchShadows[id] = {
+						touchDisplays[id] = {
+							circle: paper.circle(x, y, 5*this.option("radius")/4).attr({
+									opacity: 0.2,
+									fill: fill,
+									stroke: stroke,
+									"stroke-width": this.option("strokeWidth")
+								}).animate({
+									r: this.option("radius"),
+									opacity: 1
+								},
+								this.option("touchStartAnimationDuration"),
+								mina.easeinout),
+							clusterStrokes: [],
 							pathKnown: !!touchPathStr,
 							path: paper.path("M"+x+","+y).attr({
 								"stroke-width": 8,
@@ -100,7 +101,7 @@
 								}, this.option("touchStartAnimationDuration"),
 								mina.easeinout)
 						};
-						//touchDisplay.toFront();
+						this._updateColor(id);
 					}, this);
 				}, this)).on('touchmove.simple_touch_view', _.bind(function(jq_event) {
 					var event = jq_event.originalEvent;
@@ -108,17 +109,24 @@
 						var id = touch.identifier,
 							x = touch.pageX,
 							y = touch.pageY,
-							touchDisplay = touchDisplays[id];
+							touchDisplay = touchDisplays[id],
+							pathDisplay = touchDisplay.path,
+							clusterStrokes = touchDisplay.clusterStrokes;
 
-						touchDisplay.attr({
+						touchDisplay.circle.attr({
 							cx: x,
 							cy: y
 						});
+						pathDisplay.attr({
+							path: pathDisplay.attr("path") + "L" + x + "," + y
+						});
 
-						var touchShadow = touchShadows[id],
-							pathDisplay = touchShadow.path;
-
-						pathDisplay.attr("path", pathDisplay.attr("path") + "L"+x+","+y);
+						_.each(clusterStrokes, function(clusterStroke) {
+							clusterStroke.attr({
+								cx: x,
+								cy: y
+							});
+						});
 					}, this);
 				}, this)).on('touchend.simple_touch_view touchcancel.simple_touch_view', _.bind(function(jq_event) {
 					var event = jq_event.originalEvent;
@@ -127,15 +135,18 @@
 							x = touch.pageX,
 							y = touch.pageY,
 							touchDisplay = touchDisplays[id],
-							r = touchDisplay.attr("r"),
-							touchShadow = touchShadows[id],
-							pathDisplay = touchShadow.path,
-							animPath = touchShadow.animPath,
+							circle = touchDisplay.circle,
+							pathDisplay = touchDisplay.path,
+							animPath = touchDisplay.animPath,
 							length = pathDisplay.getTotalLength(),
-							startCircle = touchShadow.startCircle;
+							startCircle = touchDisplay.startCircle,
+							clusterStrokes = touchDisplay.clusterStrokes,
+							r = circle.attr("r");
+
+						touchDisplay.animatingRemoval = true;
 
 						pathDisplay.attr("path", pathDisplay.attr("path") + "L"+x+","+y);
-						if(!touchShadow.pathKnown) {
+						if(!touchDisplay.pathKnown) {
 							animPath.attr("path", pathDisplay.attr("path"));
 						}
 
@@ -154,18 +165,32 @@
 							opacity: 0.2
 						});
 
-						touchDisplay.attr({
+						circle.attr({
 								cx: x,
 								cy: y
 							})
 							.animate({
-								r: 2*touchDisplay.attr("r")/3,
+								r: 2*r/3,
 								cx: nearEnd.x,
 								cy: nearEnd.y,
 								opacity: 0
 							}, animation_duration, mina.easeinout, function() {
-								touchDisplay.remove();
+								circle.remove();
 							});
+
+						_.each(clusterStrokes, function(clusterStroke) {
+							clusterStroke.attr({
+								cx: x,
+								cy: y
+							}).animate({
+								r: 2*clusterStroke.attr("r")/3,
+								cx: nearEnd.x,
+								cy: nearEnd.y,
+								opacity: 0
+							}, animation_duration, mina.easeinout, function() {
+								clusterStroke.remove();
+							});
+						});
 
 						startCircle.animate({
 							r: 1.1*startCircle.attr("r"),
@@ -199,7 +224,6 @@
 						};
 						requestAnimationFrame(updateStartCirclePosition);
 						updateStartCirclePosition();
-						delete touchShadows[id];
 						delete touchDisplays[id];
 					}, this);
 				}, this));
@@ -207,6 +231,155 @@
 
 		_removeFromPaper: function() {
 			$(window).off('.simple_touch_view');
+		},
+		_updateColor: function(id) {
+			var colors = this.touchColors[id],
+				display = this.touchDisplays[id];
+
+			if(display && !display.animatingRemoval) {
+				var circle = display.circle,
+					path = display.path,
+					animPath = display.animPath,
+					startCircle = display.startCircle,
+					clusterStrokes = display.clusterStrokes,
+					paper = this.option("paper"),
+					pathStrokeColors = _.map(clusterStrokes, function(cs) {
+						return cs.attr("stroke");
+					}),
+					strokes = _.pluck(colors, "stroke");
+
+				if (colors && colors.length > 0) {
+					if(colors.length === 1) {
+						var fillColor = colors[0].fill,
+							strokeColor = colors[0].stroke,
+							claimed = colors[0].claimed;
+
+						if(claimed) {
+							circle.attr({
+								fill: fillColor,
+								stroke: strokeColor
+							});
+							path.attr({
+								stroke: fillColor
+							});
+							animPath.attr({
+								stroke: fillColor
+							});
+							startCircle.attr({
+								stroke: fillColor,
+								fill: fillColor
+							});
+						}
+					}
+
+					var clusterStrokeWidth = this.option("clusterStrokeWidth"),
+						was_found_indicator = {};
+
+					_.each(colors, function(info, index) {
+						var radius = parseInt(circle.attr("r")) + clusterStrokeWidth*(clusterStrokes.length+0);
+
+						if(info.circle) {
+							info.circle.animate({
+									r: radius
+								},
+								this.option("touchStartAnimationDuration"),
+								mina.easeinout);
+						} else {
+							var clusterStroke = info.circle = paper.circle(circle.attr("cx"), circle.attr("cy"), 5*radius/4).attr({
+								fill: "none",
+								stroke: strokeColor,
+								"stroke-width": clusterStrokeWidth,
+								opacity: 0.2
+							}).animate({
+								r: radius,
+								opacity: 1
+							},
+							this.option("touchStartAnimationDuration"),
+							mina.easeinout);
+							clusterStrokes.push(clusterStroke);
+						}
+						info.circle.was_found = was_found_indicator;
+					}, this);
+
+					var to_remove = [];
+					_.each(clusterStrokes, function(clusterStroke, index) {
+						if(clusterStroke.was_found === was_found_indicator) {
+							delete clusterStroke.was_found;
+						} else {
+							clusterStroke.remove();
+							to_remove.unshift(index);
+						}
+					});
+
+					_.each(to_remove, function(i) {
+						clusterStrokes.splice(i, 1);
+					}, this);
+				} else {
+					var defaultFill = this.option("defaultFill"),
+						defaultStroke = this.option("defaultStroke");
+
+					circle.attr({
+						fill: defaultFill,
+						stroke: defaultStroke
+					});
+					path.attr({
+						stroke: defaultFill
+					});
+					animPath.attr({
+						stroke: defaultFill
+					});
+					startCircle.attr({
+						stroke: defaultFill,
+						fill: defaultFill
+					});
+				}
+			}
+		},
+		setTouchColor: function(id, cluster, fillColor, strokeColor, claimed) {
+			var colors = this.touchColors[id],
+				info;
+
+			_.each(colors, function(i) {
+				if(i.cluster === cluster) {
+					info = i;
+				}
+			}, this);
+
+			if(!info) {
+				info = {
+					cluster: cluster,
+					fill: fillColor,
+					stroke: strokeColor,
+					claimed: claimed,
+					circle: false
+				};
+
+				if(colors) {
+					colors.push(info);
+				} else {
+					colors = this.touchColors[id] = [info];
+				}
+			}
+
+			_.defer(_.bind(this._updateColor, this, id));
+		},
+		unsetTouchColor: function(id, cluster, claims) {
+			var colors = this.touchColors[id],
+				toRemoveIndicies = [];
+			_.each(colors, function(info, index) {
+				if(info.cluster === cluster) {
+					if(info.circle) {
+						info.circle.remove();
+						delete info.circle;
+					}
+					toRemoveIndicies.unshift(index);
+				}
+			}, this);
+			_.each(toRemoveIndicies, function(index) {
+				colors.splice(index, 1);
+			}, this);
+
+			_.defer(_.bind(this._updateColor, this, id));
 		}
 	});
 }(interstate, jQuery));

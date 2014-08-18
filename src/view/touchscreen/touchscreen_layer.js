@@ -9,7 +9,9 @@
 
 	$.widget("interstate.touchscreen_layer", {
 		options: {
-			highlightTouches: true
+			highlightTouches: true,
+			clusterFills: ["#EF3B35", "#F26B36", "#7FC246", "#149DD8", "#6D287C"],
+			clusterStrokes: ["#87211E", "#9C4523", "#466B27", "#0D688F", "#36143D"],
 		},
 		_create: function () {
 			this._super();
@@ -59,28 +61,14 @@
 					paper: this.paper
 				});
 			}
-			
-			/*
 			var tc1 = new ist.TouchCluster({
 					numFingers: 1
 				}),
 				tc2 = new ist.TouchCluster({
 					numFingers: 1
 				});
-			cjs.liven(function(){ 
-				if(tc1.isSatisfied()) {
-					//_.defer(function() {
-						tc1.claimTouches();
-					//});
-				} else {
-					//_.defer(function() {
-						tc1.disclaimTouches();
-					//});
-				}
-			});
-			//this.addTouchCluster(tc1);
+			this.addTouchCluster(tc1);
 			this.addTouchCluster(tc2);
-			*/
 		},
 		_destroy: function () {
 			this.element.removeClass("hasTouchscreenLayer");
@@ -129,10 +117,17 @@
 		},
 		addTouchCluster: function(cluster) {
 			if(this.touch_clusters.indexOf(cluster) < 0) {
+				var fills = this.option("clusterFills"),
+					strokes = this.option("clusterStrokes"),
+					fill = fills[this.touch_clusters.length%fills.length],
+					stroke = strokes[this.touch_clusters.length%strokes.length];
+
 				var touchClusterView = $(this.element).touch_cluster({
 					cluster: cluster,
 					ctx: this.ctx,
-					paper: this.paper
+					paper: this.paper,
+					fill: fill,
+					stroke: stroke
 				});
 				this.touch_clusters.push(touchClusterView);
 			}
@@ -140,7 +135,7 @@
 		removeTouchCluster: function(cluster) {
 			for(var i = 0; i<this.touch_clusters.length; i++) {
 				var tcView = this.touch_clusters[i];
-				if(tcView.touchCluster("option", "cluster") === cluster) {
+				if(tcView.touch_cluster("option", "cluster") === cluster) {
 					tcView.touch_cluster("destroy");
 					this.touch_clusters.splice(i, 1);
 					i--;

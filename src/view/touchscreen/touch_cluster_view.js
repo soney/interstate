@@ -15,15 +15,55 @@
 			fingerRadius: 50,
 			fingerStartRadius: 3,
 			startCenterRadius: 5,
-			centerRadius: 10
+			centerRadius: 10,
+			fill: "#F00",
+			stroke: "#00F"
 		},
 		_create: function () {
 			this._super();
 			this._addToPaper();
+			this._addSimpleTouchListeners();
 		},
 		_destroy: function () {
 			this._super();
 			this._removeFromPaper();
+			this._removeSimpleTouchListeners();
+		},
+		_addSimpleTouchListeners: function() {
+			var cluster = this.option("cluster"),
+				was_using_ids = [];
+
+			console.log(cluster.id());
+
+			this.satisfied_fn = cjs.liven(function() {
+				var simpleTouchLayer = this.element.data("interstate.screen_touches");
+				if(this.element.is(".simpleScreenTouches")) {
+					var satisfied = cluster.isSatisfied(),
+						claimsTouches = cluster.claimsTouches();
+					if(satisfied) {
+						var fingers = cluster.getUsingFingers();
+						_.each(was_using_ids, function(id) {
+							if(_.indexOf(fingers, id) < 0) {
+								this.element.screen_touches("unsetTouchColor", cluster, id, claimsTouches);
+							}
+						});
+						_.each(fingers, function(fingerID) {
+							this.element.screen_touches("setTouchColor", fingerID, cluster, this.option("fill"), this.option("stroke"), claimsTouches);
+						}, this);
+						was_using_ids = fingers;
+					} else {
+						_.each(was_using_ids, function(fingerID) {
+							this.element.screen_touches("unsetTouchColor", fingerID, cluster, claimsTouches);
+						}, this);
+						was_using_ids = false;
+					}
+				}
+			}, {
+				context: this
+			});
+		},
+		_removeSimpleTouchListeners: function() {
+			this.satisfied_fn.destroy();
 		},
 		_addToPaper: function() {
 			var paper = this.option("paper"),
@@ -80,6 +120,7 @@
 							rotationPath.attr("path", "M"+center.x+","+center.y+"l"+ccdx+","+ccdy);
 						}
 					}
+					/*
 					_.each(touches, function(touch) {
 						var id = touch.id,
 							touchDisplay = touchDisplays[id],
@@ -101,6 +142,7 @@
 							touchStartDisplay = touchStartDisplays[id] = paper.circle(touch.startX, touch.startY, fingerStartRadius);
 						}
 					});
+					*/
 				} else {
 					paper_path.attr("path", "M0,0");
 					rotationPath.attr("path", "M0,0");

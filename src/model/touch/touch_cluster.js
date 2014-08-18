@@ -315,7 +315,8 @@
 		});
 	}
 
-	var twoPI = 2*Math.PI;
+	var twoPI = 2*Math.PI,
+		tc_id = 0;
 
 	ist.TouchCluster = function (options) {
 		this.options = _.extend({
@@ -327,6 +328,8 @@
 			maxRadius: false,
 			maxTouchInterval: 500
 		}, options);
+
+		this._id = tc_id++;
 
 		this.$usableFingers = cjs([]);
 		this.$usingFingers = cjs([]);
@@ -459,6 +462,8 @@
 			}
 		}, this));
 		this.$endScale = cjs(false);
+
+		this.$claimed = cjs(false);
 
 		this.$xConstraint = this.$center.prop('x');
 		this.$yConstraint = this.$center.prop('y');
@@ -650,6 +655,8 @@
 		};
 
 		proto.claimTouches = function() {
+			cjs.wait();
+			this.$claimed.set(true);
 			this.$usingFingers.forEach(function(touchID) {
 				var touch = touches.get(touchID),
 					claimedBy = touch.get('claimedBy'),
@@ -673,9 +680,12 @@
 					}
 				});
 			}, this);
+			cjs.signal();
 		};
 
 		proto.disclaimTouches = function() {
+			cjs.wait();
+			this.$claimed.set(false);
 			this.$usingFingers.forEach(function(touchID) {
 				var touch = touches.get(touchID),
 					claimedBy = touch.get('claimedBy'),
@@ -684,6 +694,12 @@
 					claimedBy.splice(index, 1);
 				}
 			}, this);
+			cjs.signal();
 		};
+
+		proto.claimsTouches = function() {
+			return this.$claimed.get();
+		};
+		proto.id = proto.sid = function() { return this._id; };
 	}(ist.TouchCluster));
 }(interstate));

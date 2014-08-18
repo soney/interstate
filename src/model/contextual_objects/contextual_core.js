@@ -6,7 +6,6 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-
 	ist.ContextualObject = function (options) {
 		var id = uid();
 
