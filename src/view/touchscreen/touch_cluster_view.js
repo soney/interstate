@@ -19,7 +19,9 @@
 			defaultClusterAttributes: {
 				fill: "#F00",
 				stroke: "#00F"
-			}
+			},
+			fills: ["#EF3B35", "#F26B36", "#7FC246", "#149DD8", "#6D287C"],
+			strokes: ["#87211E", "#9C4523", "#466B27", "#0D688F", "#36143D"],
 		},
 		_create: function () {
 			this._super();
@@ -31,6 +33,11 @@
 		},
 		_getSatisfiedListener: function(cluster) {
 			var was_using_ids = [],
+				fills = this.option("fills"),
+				strokes = this.option("strokes"),
+				fillIndex = cluster.id()%fills.length,
+				fill = fills[fillIndex],
+				stroke = strokes[fillIndex],
 				satisfied_fn = cjs.liven(function() {
 					var simpleTouchLayer = this.element.data("interstate.screen_touches");
 					if(this.element.is(".simpleScreenTouches")) {
@@ -44,7 +51,7 @@
 								}
 							});
 							_.each(fingers, function(fingerID) {
-								this.element.screen_touches("setTouchColor", fingerID, cluster, this.option("fill"), this.option("stroke"), claimsTouches);
+								this.element.screen_touches("setTouchColor", fingerID, cluster, fill, stroke, claimsTouches);
 							}, this);
 							was_using_ids = fingers;
 						} else {

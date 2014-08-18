@@ -249,71 +249,77 @@
 					strokes = _.pluck(colors, "stroke");
 
 				if (colors && colors.length > 0) {
-					if(colors.length === 1) {
-						var fillColor = colors[0].fill,
-							strokeColor = colors[0].stroke,
-							claimed = colors[0].claimed;
+					var claimedIndex = find(colors, function(color) {
+						return color.claimed;
+					});
+					if(claimedIndex >= 0) {
+						var fillColor = colors[claimedIndex].fill,
+							strokeColor = colors[claimedIndex].stroke;
+						console.log(fillColor, strokeColor);
 
-						if(claimed) {
-							circle.attr({
-								fill: fillColor,
-								stroke: strokeColor
-							});
-							path.attr({
-								stroke: fillColor
-							});
-							animPath.attr({
-								stroke: fillColor
-							});
-							startCircle.attr({
-								stroke: fillColor,
-								fill: fillColor
-							});
-						}
-					}
+						circle.attr({
+							fill: fillColor,
+							stroke: strokeColor
+						});
+						path.attr({
+							stroke: fillColor
+						});
+						animPath.attr({
+							stroke: fillColor
+						});
+						startCircle.attr({
+							stroke: fillColor,
+							fill: fillColor
+						});
 
-					var clusterStrokeWidth = this.option("clusterStrokeWidth"),
-						was_found_indicator = {};
+						_.each(clusterStrokes, function(clusterStroke, index) {
+							clusterStroke.remove();
+						});
+						clusterStrokes.splice(0, clusterStrokes.length);
+					} else {
+						var clusterStrokeWidth = this.option("clusterStrokeWidth"),
+							was_found_indicator = {};
 
-					_.each(colors, function(info, index) {
-						var radius = parseInt(circle.attr("r")) + clusterStrokeWidth*(clusterStrokes.length+0);
+						_.each(colors, function(info, index) {
+							var radius = parseInt(circle.attr("r")) + clusterStrokeWidth*(index+0);
 
-						if(info.circle) {
-							info.circle.animate({
-									r: radius
+							if(info.circle) {
+								info.circle.animate({
+										r: radius
+									},
+									this.option("touchStartAnimationDuration"),
+									mina.easeinout);
+							} else {
+								var clusterStroke = info.circle = paper.circle(circle.attr("cx"), circle.attr("cy"), 5*radius/4).attr({
+									fill: "none",
+									stroke: info.fill,
+									"stroke-width": clusterStrokeWidth,
+									opacity: 0.2
+								}).animate({
+									r: radius,
+									opacity: 1
 								},
 								this.option("touchStartAnimationDuration"),
 								mina.easeinout);
-						} else {
-							var clusterStroke = info.circle = paper.circle(circle.attr("cx"), circle.attr("cy"), 5*radius/4).attr({
-								fill: "none",
-								stroke: strokeColor,
-								"stroke-width": clusterStrokeWidth,
-								opacity: 0.2
-							}).animate({
-								r: radius,
-								opacity: 1
-							},
-							this.option("touchStartAnimationDuration"),
-							mina.easeinout);
-							clusterStrokes.push(clusterStroke);
-						}
-						info.circle.was_found = was_found_indicator;
-					}, this);
+								clusterStrokes.push(clusterStroke);
+							}
+							info.circle.was_found = was_found_indicator;
+						}, this);
 
-					var to_remove = [];
-					_.each(clusterStrokes, function(clusterStroke, index) {
-						if(clusterStroke.was_found === was_found_indicator) {
-							delete clusterStroke.was_found;
-						} else {
-							clusterStroke.remove();
-							to_remove.unshift(index);
-						}
-					});
+						var to_remove = [];
+						_.each(clusterStrokes, function(clusterStroke, index) {
+							if(clusterStroke.was_found === was_found_indicator) {
+								delete clusterStroke.was_found;
+							} else {
+								clusterStroke.remove();
+								to_remove.unshift(index);
+							}
+						});
 
-					_.each(to_remove, function(i) {
-						clusterStrokes.splice(i, 1);
-					}, this);
+						_.each(to_remove, function(i) {
+							clusterStrokes.splice(i, 1);
+						}, this);
+					}
 				} else {
 					var defaultFill = this.option("defaultFill"),
 						defaultStroke = this.option("defaultStroke");
@@ -345,7 +351,13 @@
 				}
 			}, this);
 
-			if(!info) {
+			if(info) {
+				_.extend(info, {
+					fill: fillColor,
+					stroke: strokeColor,
+					claimed: claimed
+				});
+			} else {
 				info = {
 					cluster: cluster,
 					fill: fillColor,
@@ -382,4 +394,11 @@
 			_.defer(_.bind(this._updateColor, this, id));
 		}
 	});
+
+	function find(collection, filter) {
+		for (var i = 0; i < collection.length; i++) {
+			if(filter(collection[i], i, collection)) return i;
+		}
+		return -1;
+	}
 }(interstate, jQuery));

@@ -10,8 +10,6 @@
 	$.widget("interstate.touchscreen_layer", {
 		options: {
 			highlightTouches: true,
-			clusterFills: ["#EF3B35", "#F26B36", "#7FC246", "#149DD8", "#6D287C"],
-			clusterStrokes: ["#87211E", "#9C4523", "#466B27", "#0D688F", "#36143D"],
 		},
 		_create: function () {
 			this._super();
@@ -80,6 +78,19 @@
 				});
 			this.addTouchCluster(tc1);
 			this.addTouchCluster(tc2);
+
+			cjs.liven(function() {
+				if(tc2.isSatisfied()) {
+					_.delay(function() {
+						tc2.claimTouches();
+					}, 1000);
+					//tc2.claimTouches();
+				} else {
+					tc2.disclaimTouches();
+				}
+			}, {
+				context: this
+			});
 			/**/
 		},
 		_destroy: function () {
