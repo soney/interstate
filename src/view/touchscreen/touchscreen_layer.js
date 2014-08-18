@@ -52,15 +52,26 @@
 			$(window).on('resize.touchscreen_layer', onWindowResize);
 			onWindowResize();
 
-			this.touch_clusters = [];
-			this.path_views = [];
-
 			if(this.option("highlightTouches")) {
 				this.element.screen_touches({
 					ctx: this.ctx,
 					paper: this.paper
 				});
 			}
+
+			this.element.svg_path({
+				ctx: this.ctx,
+				paper: this.paper,
+				pathAttributes: {
+					"stroke-dasharray": "5, 5, 1, 5"
+				}
+			});
+
+			this.element.touch_cluster({
+				ctx: this.ctx,
+				paper: this.paper
+			});
+
 			var tc1 = new ist.TouchCluster({
 					numFingers: 1
 				}),
@@ -69,6 +80,7 @@
 				});
 			this.addTouchCluster(tc1);
 			this.addTouchCluster(tc2);
+			/**/
 		},
 		_destroy: function () {
 			this.element.removeClass("hasTouchscreenLayer");
@@ -79,74 +91,24 @@
 				this.element.screen_touches("destroy");
 			}
 
-			this.clearTouchClusters();
-			this.clearPaths();
+			this.element.svg_path("destroy");
+			this.element.touch_cluster("destroy");
 
 			this.paper.clear();
 			this.raphaelDiv.remove();
 			this.canvasDiv.remove();
 		},
 		addPath: function(toAdd) {
-			if(this.path_views.indexOf(toAdd) < 0) {
-				var pathView = $(this.element).svg_path({
-					path: toAdd,
-					ctx: this.ctx,
-					paper: this.paper,
-					pathAttributes: {
-						"stroke-dasharray": "5, 5, 1, 5"
-					}
-				});
-				this.path_views.push(pathView);
-			}
+			this.element.svg_path("addPathToPaper", toAdd);
 		},
 		removePath: function(path) {
-			for(var i = 0; i<this.path_views.length; i++) {
-				var pView = this.path_views[i];
-				if(pView.svg_path("option", "path") === path) {
-					pView.svg_path("destroy");
-					this.path_views.splice(i, 1);
-					i--;
-				}
-			}
-		},
-		clearPaths: function() {
-			for(var i = 0; i<this.path_views.length; i++) {
-				var pView = this.path_views[i];
-				pView.svg_path("destroy");
-			}
+			this.element.svg_path("removePathFromPaper", path);
 		},
 		addTouchCluster: function(cluster) {
-			if(this.touch_clusters.indexOf(cluster) < 0) {
-				var fills = this.option("clusterFills"),
-					strokes = this.option("clusterStrokes"),
-					fill = fills[this.touch_clusters.length%fills.length],
-					stroke = strokes[this.touch_clusters.length%strokes.length];
-
-				var touchClusterView = $(this.element).touch_cluster({
-					cluster: cluster,
-					ctx: this.ctx,
-					paper: this.paper,
-					fill: fill,
-					stroke: stroke
-				});
-				this.touch_clusters.push(touchClusterView);
-			}
+			this.element.touch_cluster("addClusterToPaper", cluster);
 		},
 		removeTouchCluster: function(cluster) {
-			for(var i = 0; i<this.touch_clusters.length; i++) {
-				var tcView = this.touch_clusters[i];
-				if(tcView.touch_cluster("option", "cluster") === cluster) {
-					tcView.touch_cluster("destroy");
-					this.touch_clusters.splice(i, 1);
-					i--;
-				}
-			}
-		},
-		clearTouchClusters: function() {
-			for(var i = 0; i<this.touch_clusters.length; i++) {
-				var tcView = this.touch_clusters[i];
-				tcView.touch_cluster("destroy");
-			}
+			this.element.touch_cluster("removeClusterFromPaper", cluster);
 		}
 	});
 }(interstate, jQuery));
