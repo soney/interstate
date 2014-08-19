@@ -854,6 +854,9 @@
 				to_state = this.find_state(arg1);
 				if (!to_state) { throw new Error("No state '" + arg1 + "'"); }
 				var event = arg2;
+				if(_.isString(event)) {
+					event = new ist.ParsedEvent({str: event, inert: true});
+				}
 				transition = new ist.StatechartTransition({from: from_state, to: to_state, event: event});
 				this._last_transition  = transition;
 

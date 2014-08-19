@@ -255,7 +255,6 @@
 					if(claimedIndex >= 0) {
 						var fillColor = colors[claimedIndex].fill,
 							strokeColor = colors[claimedIndex].stroke;
-						console.log(fillColor, strokeColor);
 
 						circle.attr({
 							fill: fillColor,

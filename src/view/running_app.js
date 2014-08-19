@@ -42,7 +42,13 @@
 			external_editor: display === "phone" || display === "tablet",
 			auto_open_external_editor: true,
 			editor_window_options: function () {
-				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
+				var dimensions = ist.getStoredEditorDimensions() || {
+										x: window.screenX,
+										y: window.screenY + window.outerHeight,
+										width: window.innerWidth,
+										height: 2*window.innerHeight/3
+									};
+				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + dimensions.width + ", height=" + dimensions.height + ", left=" + dimensions.x + ", top=" + dimensions.y;
 			},
 			client_id: uid.get_prefix(),
 			immediately_create_server_socket: false,
@@ -650,7 +656,19 @@
 			}
 		},
 
+		_store_editor_dimensions: function() {
+			if(this.editor_window) {
+				var width = this.editor_window.innerWidth,
+					height = this.editor_window.innerHeight,
+					x = this.editor_window.screenX,
+					y = this.editor_window.screenY;
+
+				ist.storeEditorDimensions(x, y, width, height);
+			}
+		},
+
 		cleanup_closed_editor: function () {
+			this._store_editor_dimensions();
 			this.$highlighting_objects.setValue([]);
 			if(this.edit_button) {
 				this.edit_button.removeClass("active").css(this.edit_button_css);

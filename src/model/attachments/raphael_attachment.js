@@ -125,10 +125,14 @@
 					},
 					move: function(item, from_index, to_index) {
 						var shape = item.get_robj();
-						var index = 0;
+						//var index = 0;
 						if (from_index < to_index) { //If it's less than the index we're inserting at...
 							to_index += 1; //Increase the index by 1, to make up for the fact that we're removing me at the beginning
 						}
+						var items = this.paper.selectAll(":not(desc):not(defs)"),
+							itemi = items[to_index],
+							len = items.length;
+							/*
 						var itemi, len;
 						this.paper.forEach(function(elem) {
 							if(index === to_index) {
@@ -137,8 +141,10 @@
 							len = index;
 							index++;
 						});
+						*/
 						if(to_index >= len) {
-							shape.toBack();
+							//shape.toBack();
+							shape.appendTo(this.paper);
 						} else {
 							shape.insertBefore(itemi);
 						}

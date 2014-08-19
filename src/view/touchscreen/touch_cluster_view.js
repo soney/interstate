@@ -71,6 +71,11 @@
 		},
 		_getDrawListener: function(cluster, clusterAttributes) {
 			var attributes = _.extend({}, this.option("defaultClusterAttributes"), clusterAttributes),
+				fills = this.option("fills"),
+				strokes = this.option("strokes"),
+				fillIndex = cluster.id()%fills.length,
+				fill = fills[fillIndex],
+				stroke = strokes[fillIndex],
 				paper = this.option("paper"),
 				startCenterRadius = this.option("startCenterRadius"),
 				centerRadius = this.option("centerRadius"),
@@ -78,15 +83,18 @@
 				fingerStartRadius = this.option("fingerStartRadius"),
 				startCenterCircle = paper.circle(-3*startCenterRadius, -3*startCenterRadius, startCenterRadius).attr({
 					fill: "none",
-					stroke: "black"
+					stroke: stroke,
+					"stroke-width": 2
 				}),
 				centerCircle = paper.circle(-3*centerRadius, -3*centerRadius, centerRadius).attr({
 					fill: "none",
-					stroke: "black"
+					stroke: stroke,
+					"stroke-width": 2
 				}),
 				rotationPath = paper.path("M0,0").attr({
 					fill: "none",
-					stroke: "black"
+					stroke: stroke,
+					"stroke-width": 2
 				}),
 				paper_path = paper.path(""),
 				touchStartDisplays = {},

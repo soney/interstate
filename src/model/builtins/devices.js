@@ -329,9 +329,14 @@
 					return false;
 				}
 			},
-			touchCluster = new ist.Dict({has_protos: false, direct_attachments: [new ist.TouchClusterAttachment({
+			touchCluster = new ist.StatefulObj({has_protos: false, direct_attachments: [new ist.TouchClusterAttachment({
 																						})]
 																					})
+				.add_state("inactive")
+				.add_state("active")
+				.starts_at("inactive")
+				.add_transition("inactive", "active", "this.isSatisfied;emit('start', this)")
+				.add_transition("active", "inactive", "!this.isSatisfied;emit('end', this)")
 				.set("touchCluster_call", new ist.Cell({str: "function(p, prop_name) {" +
 					"var tc_attachment = interstate.get_attachment(p, 'touch_cluster');" +
 					"var tc = tc_attachment.touchCluster;" +
@@ -452,11 +457,11 @@
 			accuracy = cjs(0),
 			motion_listener = function(event) {
 				cjs.wait();
-				alpha.set(event.alpha);
-				beta.set(event.beta);
-				gamma.set(event.gamma);
-				heading.set(event.heading);
-				accuracy.set(event.accuracy);
+				alpha.set(event.alpha || null);
+				beta.set(event.beta || null);
+				gamma.set(event.gamma || null);
+				heading.set(event.heading || null);
+				accuracy.set(event.accuracy || null);
 				cjs.signal();
 			},
 			addGyroscopeListeners = function() {

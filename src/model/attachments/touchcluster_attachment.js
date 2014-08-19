@@ -5,8 +5,8 @@
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
-	
-	function convertObjectToPath(obj) {
+
+	ist.convertObjectToPath = function(obj) {
 		var path = obj;
 		if(obj instanceof ist.ContextualDict) {
 			var shape_attachment = obj.get_attachment_instance("shape");
@@ -36,9 +36,14 @@
 					path = false;
 				}
 			}
+		} else if(obj instanceof ist.Path) {
+			path = obj.toString();
+		} else if(_.isString(obj)) {
+			path = obj;
 		}
+
 		return path;
-	}
+	};
 
 	ist.TouchClusterAttachment = ist.register_attachment("touch_cluster", {
 			ready: function() {
@@ -51,8 +56,8 @@
 			},
 			parameters: {
 				options: function(contextual_object) {
-					var downInside = convertObjectToPath(contextual_object.prop_val("downInside")),
-						downOutside = convertObjectToPath(contextual_object.prop_val("downOutside")),
+					var downInside = ist.convertObjectToPath(contextual_object.prop_val("downInside")),
+						downOutside = ist.convertObjectToPath(contextual_object.prop_val("downOutside")),
 						numFingers = contextual_object.prop_val("numFingers"),
 						maxRadius = contextual_object.prop_val("maxRadius"),
 						maxTouchInterval = contextual_object.prop_val("maxTouchInterval");

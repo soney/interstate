@@ -15,6 +15,7 @@
 		this.command_stack = options.command_stack;
 		this.connected = false;
 		this.wrapper_servers = {};
+		this.constraint_servers = {};
 
 		this.full_programs = ist.getSavedProgramMap();
 		this.program_components = ist.getSavedProgramMap("component");
@@ -45,6 +46,7 @@
 			this.comm_mechanism	.on("ready", this.on_ready, this)
 								.on("loaded", this.on_loaded, this)
 								.on("message", this.on_message, this)
+								.on("get_constraint_server", this.on_get_constraint_server, this)
 								.on("disconnect", this.on_disconnect, this)
 								.on("command", this.on_command, this)
 								.on("wrapper_client", this.on_wrapper_client, this)
@@ -70,6 +72,7 @@
 				this.comm_mechanism	.off("ready", this.on_ready, this)
 									.off("loaded", this.on_loaded, this)
 									.off("message", this.on_message, this)
+									.off("get_constraint_server", this.on_get_constraint_server, this)
 									.off("disconnect", this.on_disconnect, this)
 									.off("command", this.on_command, this)
 									.off("wrapper_client", this.on_wrapper_client, this)
@@ -131,7 +134,7 @@
 			}
 			this.comm_mechanism = comm_mechanism;
 			this.add_message_listeners();
-			_.each(this.info_servers, function(info_server) {
+			_.each(_.values(this.info_servers).concat(_.values(this.constraint_servers)), function(info_server) {
 				info_server.set_communication_mechanism(comm_mechanism);
 			});
 		};
@@ -161,6 +164,26 @@
 		proto.on_ready = function() {
 			this.connected = true;
 			this.send_info();
+		};
+
+		proto.on_get_constraint_server = function(info) { 
+			var client_id = info.client_id,
+				constraint_id = info.constraint_id,
+				constraintServer;
+			if(this.constraint_servers.hasOwnProperty(constraint_id)) {
+				constraintServer = this.constraint_servers[constraint_id];
+			} else {
+				var constraint = ist.findConstraint(constraint_id);
+
+				constraintServer = this.constraint_servers[constraint_id] = new ist.RemoteConstraintServer(constraint);
+				constraintServer.set_communication_mechanism(this.comm_mechanism);
+			}
+
+			this.post({
+				type: "constraint_server_id_response",
+				client_id: client_id,
+				server_id: constraintServer.id()
+			});
 		};
 
 		proto.on_loaded = function() {

@@ -481,6 +481,9 @@
 	(function(My) {
 		var proto = My.prototype;
 
+		proto.destroy = function(silent) {
+		};
+
 		proto.isSatisfied = function() { return this.$satisfied.get(); };
 		proto.isSatisfiedConstraint = function() { return this.$satisfied; };
 

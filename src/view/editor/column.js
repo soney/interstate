@@ -139,7 +139,7 @@
 			
 			this.$adding_field = cjs(false);
 			if(this.option("pinned")) {
-				this.$selected_prop = cjs(false);
+				this.$selected_prop = cjs.constraint(false);
 			} else {
 				this.$selected_prop = this.option("columns").itemConstraint(this.option("column_index")+1);
 			}

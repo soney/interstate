@@ -17,7 +17,7 @@
 			this.element.addClass("hasTouchscreenLayer");
 
 			this.canvasDiv = $("<canvas />").prependTo(document.body).css({
-				"pointer_events": "none",
+				"pointer-events": "none",
 				"position": "absolute"
 			});
 
@@ -69,6 +69,7 @@
 				ctx: this.ctx,
 				paper: this.paper
 			});
+			/*
 
 			var tc1 = new ist.TouchCluster({
 					numFingers: 1

@@ -31,6 +31,14 @@
         };
         ist.install_proto_builtins(proto, My.builtins);
 
+		_.each(["add_state", "add_transition", "starts_at"], function(fn_name) {
+			proto[fn_name] = function() {
+				var statechart = this.get_own_statechart();
+				statechart[fn_name].apply(statechart, arguments);
+				return this;
+			};
+		});
+
         proto.destroy = function () {
 			if(this.constructor === My) { this.begin_destroy(); }
             My.superclass.destroy.apply(this, arguments);

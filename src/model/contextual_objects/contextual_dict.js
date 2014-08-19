@@ -907,7 +907,7 @@
 						if(raphael_attachment) {
 							robj = raphael_attachment.get_robj();
 							if(robj) {
-								return [robj[0], raphael_attachment];
+								return [robj.node, raphael_attachment];
 							}
 						} else {
 							var group_attachment_instance = this.get_attachment_instance("group");
@@ -915,7 +915,7 @@
 								var robjs_and_srcs = _.compact(_.map(group_attachment_instance.get_children(), function(raphael_attachment) {
 										var robj = raphael_attachment.get_robj();
 										if(robj) {
-											return [robj[0], raphael_attachment];
+											return [robj.node, raphael_attachment];
 										} else {
 											return false;
 										}

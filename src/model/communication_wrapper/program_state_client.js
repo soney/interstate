@@ -12,6 +12,7 @@
 		able.make_this_listenable(this);
 		this.comm_mechanism = options.comm_mechanism;
 		this.wrapper_clients = {};
+		this.constraint_clients = {};
 		this.clients = {};
 		this.response_listeners = {};
 		this.pending_responses = {};
@@ -150,6 +151,16 @@
 			}
 			if (this.response_listeners.hasOwnProperty(id)) {
 				this.response_listeners[id] = DEREGISTERED; // don't want it added to pending when we get a response
+			}
+		};
+
+		proto.get_constraint_client = function(id) {
+			if(this.constraint_clients.hasOwnProperty(id)) {
+				return this.constraint_clients[id];
+			} else {
+				var rv = this.constraint_clients[id] = new ist.RemoteConstraintClient(false, id);
+				rv.set_communication_mechanism(this.comm_mechanism);
+				return rv;
 			}
 		};
 
