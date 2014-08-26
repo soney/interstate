@@ -27,12 +27,21 @@
         proto.get_contextual_object = function () {
             return this.contextual_object;
         };
-		proto.get_creator = function() {
+		proto.get_creator = function () {
 			return this.creator;
 		};
         proto.hash = function () {
             return this._context.hash();
         };
+		proto.getOutputFieldNames = function() {
+			return [];
+		};
+		proto.getOutputValue = function(fieldName) {
+			return false;
+		};
+		proto.getSummaryView = function() {
+			return false;
+		};
     }(ist.AttachmentInstance));
     
     ist.Attachment = function (options) {

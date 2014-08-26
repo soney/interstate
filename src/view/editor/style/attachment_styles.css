@@ -1,0 +1,12 @@
+.attachmentView .dom_attachment_view {
+  border: 1px solid #d2d2d2;
+  background-color: #FAFAFA;
+  font-size: 0.6em;
+  font-family: Helvetica Neue;
+  padding: 2px;
+  margin: 3px;
+  border-radius: 2px; }
+  .attachmentView .dom_attachment_view .tag {
+    color: #890482; }
+  .attachmentView .dom_attachment_view .ellipses {
+    color: #AAA; }

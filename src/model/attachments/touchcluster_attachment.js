@@ -82,6 +82,14 @@
 						}
 					}
 				}
+			},
+			proto_props: {
+				tc_id: function() {
+					return this.touchCluster.id();
+				},
+				claimsTouches: function() {
+					return this.touchCluster.claimsTouches();
+				}
 			}
 		});
 }(interstate, jQuery));

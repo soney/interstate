@@ -118,18 +118,6 @@
 		};
 		proto.initialize = function () {
 			this._initialized = true;
-			/*
-			if(this.is_active()) {
-				this.enable_outgoing_transitions();
-			}
-				/*
-
-				if(from.is_active()) {
-					transition.enable();
-				} else {
-					transition.disable();
-				}
-				*/
 		};
 		proto.sid = proto.id = function () { return this._id; };
 		proto.on_create = function (options) {
@@ -258,6 +246,7 @@
 			return this;
 		};
 		proto.destroy = function () {
+			if(this._id ===  24) debugger;
 			this.destroyed = true;
 			this._emit("destroy");
 			delete this.actual_firetime_listeners;

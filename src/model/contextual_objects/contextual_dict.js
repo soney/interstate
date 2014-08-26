@@ -117,10 +117,9 @@
 	};
 
 	var get_contextual_object = function (value, pointer, options) {
-		var value_ptr = pointer.push(value);
-
-		if (value instanceof ist.Dict || value instanceof ist.Cell || value instanceof ist.StatefulProp) {
-			var contextual_object = ist.find_or_put_contextual_obj(value, value_ptr, options);
+		if (value instanceof ist.BasicObject) {
+			var value_ptr = pointer.push(value),
+				contextual_object = ist.find_or_put_contextual_obj(value, value_ptr, options);
 			return contextual_object;
 		} else {
 			return value;
@@ -177,6 +176,8 @@
 			
 			if(cjs.isArrayConstraint(proto_obj)) {
 				return proto_obj.toArray();
+			} else if(cjs.isConstraint(proto_obj)) {
+				return proto_obj.get();
 			} else if(proto_obj) {
 				pointer = this.get_pointer();
 				return ist.find_or_put_contextual_obj(proto_obj, pointer.push(proto_obj), {
@@ -680,6 +681,44 @@
 			return manifestation_contextual_objects;
 		};
 
+		proto.get_attachment_types = function() {
+			var types = [], info;
+			if(!this.is_template()) {
+				var dict = this.get_object(),
+					direct_attachments = dict.direct_attachments(),
+					len = direct_attachments.length,
+					attachment, i, j;
+
+				for (i = 0; i < len; i += 1) {
+					attachment = direct_attachments[i];
+					types.push(attachment.get_type());
+				}
+
+				var proto_objects = this.get_all_protos();
+				var plen = proto_objects.length;
+				var proto_obj;
+
+				outer_loop:
+				for (i = 0; i < plen; i += 1) {
+					proto_obj = proto_objects[i];
+					direct_attachments = proto_obj.get_direct_attachments();
+					len = direct_attachments.length;
+					for (j = 0; j < len; j += 1) {
+						attachment = direct_attachments[j];
+						types.push(attachment.get_type());
+					}
+				}
+				types = _.uniq(types);
+			}
+
+			return types;
+		};
+
+		proto.has_attachment_instance = function(type) {
+			var attachment = this.gt_attachment_instance_and_srt(type);
+			return !!atttachment;
+		};
+
 		proto.get_attachment_instance = function (type) {
 			var info = this.get_attachment_instance_and_src(type);
 			if(info) {
@@ -757,10 +796,9 @@
 			}
 		};
 		proto.updateAttachments = function() {
-			this.get_attachment_instance("dom");
-			this.get_attachment_instance("shape");
-			this.get_attachment_instance("box2d_fixture");
-			this.get_attachment_instance("touch_cluster");
+			_.each(this.get_attachment_types(), function(type) {
+				this.get_attachment_instance(type);
+			}, this);
 		};
 
 		proto._get_valid_cobj_children = function() {
@@ -821,6 +859,7 @@
 		};
 
 		proto.destroy = function (avoid_begin_destroy) {
+			if(this.sid() === 532) debugger;
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
 			this._manifestation_objects.destroy(true);
@@ -884,11 +923,19 @@
 		proto._getter = function () {
 			return this;
 		};
+		proto._attachment_call = function(attachment_name, fn_name) {
+			var attachment = this.get_attachment_instance(attachment_name);
+			if(attachment) {
+				var args = _.rest(arguments, 2);
+				return attachment[fn_name].apply(attachment, args);
+			}
+			return false;
+		}
 		proto._get_dom_obj_and_src = function () {
-			var dom_attachment = this.get_attachment_instance("dom"),
-				show = this.has("show") ? this.prop_val("show") : true,
+			var show = this.has("show") ? this.prop_val("show") : true,
 				dom_obj, robj;
 			if(show) {
+				var dom_attachment = this.get_attachment_instance("dom");
 				if (dom_attachment) {
 					dom_obj = dom_attachment.get_dom_obj();
 					if (dom_obj) {

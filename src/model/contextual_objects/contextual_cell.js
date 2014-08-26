@@ -62,6 +62,11 @@
 					}
 				}
 			}
+
+			if(value instanceof ist.BasicObject) {
+				value = ist.find_or_put_contextual_obj(value, this.get_pointer().push(value));
+			}
+
 			return value;
 		};
 		proto.get_str = function () {

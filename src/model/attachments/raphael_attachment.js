@@ -11,6 +11,10 @@
 	var get_children = function(child_nodes) {
 		var children = [];
 		_.each(child_nodes, function(child) {
+			if(child instanceof ist.ContextualCell || child instanceof ist.ContextualStatefulProp) {
+				child = child.val();
+			}
+
 			if(child instanceof ist.ContextualDict) {
 				if(child.is_template()) {
 					var copies = child.instances();

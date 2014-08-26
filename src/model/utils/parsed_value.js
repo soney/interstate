@@ -21,6 +21,8 @@
 			}
 		};
 
+	var assignmentExpression = {};
+
 	ist.construct = function(constructor, args) {
 		if(constructor === Date) { // Functions check to see if date object
 			var rv = eval("new constructor(" + args.join(",") + ")");
@@ -155,21 +157,47 @@
 		if (options.get_constraint) {
 			var constraint = cjs(function () {
 				var op_got = cjs.get(op, options.auto_add_dependency),
+					args_got, rv;
+				if(_.isFunction(op_got) || op_got instanceof ist.ParsedFunction) {
+					var calling_context_got = cjs.get(calling_context, options.auto_add_dependency);
+
 					args_got = _.map(args, function(arg) {
 													return cjs.get(arg, options.auto_add_dependency);
-												}),
-					calling_context_got = cjs.get(calling_context, options.auto_add_dependency),
-					rv;
+												});
 
-				if(op_got === ist.find_fn) {
-					// Give it the context of root
-					rv = op_got.apply(pcontext, args_got);
-					return rv;
-				} else if (_.isFunction(op_got)) {
-					rv = op_got.apply(calling_context_got, args_got);
-					return rv;
-				} else if (op_got instanceof ist.ParsedFunction) {
-					return op_got._apply(calling_context_got, pcontext, args_got, options);
+					if(op_got === ist.find_fn) {
+						// Give it the context of root
+						rv = op_got.apply(pcontext, args_got);
+						return rv;
+					} else if (_.isFunction(op_got)) {
+						rv = op_got.apply(calling_context_got, args_got);
+						return rv;
+					} else if (op_got instanceof ist.ParsedFunction) {
+						return op_got._apply(calling_context_got, pcontext, args_got, options);
+					}
+				} else if( op_got instanceof ist.ContextualDict) {
+					var proto = op_got;
+					args_got = {
+						"arguments": []
+					};
+					_.each(args, function(arg, index) {
+						var value;
+						if(arg.type === assignmentExpression) {
+							value = arg.value;
+
+							var name = arg.identifier;
+							args_got[name] = value;
+						} else {
+							value = arg;
+						}
+						args_got.arguments[index] = value;
+					});
+					var constructor_fn = op_got instanceof ist.ContextualStatefulObj ? ist.StatefulObj : ist.Dict;
+
+					return new constructor_fn({
+						value: args_got,
+						direct_protos: op
+					});
 				} else {
 					throw new Error("Calling a non-function");
 					//return undefined;
@@ -656,6 +684,15 @@
 					}
 				}));
 			}
+		} else if (type === "AssignmentExpression") {
+			var identifier = node.left.name,
+				value = get_val(node.right, options);
+
+			rv = {
+				type: assignmentExpression,
+				identifier: identifier,
+				value: value
+			};
 		} else {
 			console.log(type, node);
 		}

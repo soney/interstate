@@ -134,10 +134,6 @@
 				var super_obj = env.get_pointer_obj;
 				var cobj = interstate.find_or_put_contextual_obj(super_obj, env.pointer);
 
-				interstate.cjs.liven(function() {
-					console.log(cobj.children());
-				});
-			
 
 				//env.print_on_return = true;
 				env.set("(copies)", "1")

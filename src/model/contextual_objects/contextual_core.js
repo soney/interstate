@@ -170,10 +170,6 @@
 		proto.destroy = function (avoid_begin_destroy) {
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
-			//if(this.sid() === 2440) { debugger; }
-			//if(this.sid() === 2770) { debugger; }
-
-
 			var to_destroy = this._cobj_children.values();
 			_.each(to_destroy, function(cobj) {
 				cobj.destroy(true); // avoid begin destroy call
@@ -244,6 +240,7 @@
 					}, this);
 				}
 			}, this);
+			/*
 
 			var to_destroy_list = _.compact(_.values(to_destroy));
 
@@ -253,6 +250,7 @@
 			_.each(to_destroy_list, function(cobj) {
 				cobj.destroy(true);
 			});
+			*/
 
 			this.updateAttachments();
 			cjs.signal();

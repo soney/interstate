@@ -7,6 +7,11 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	ist.touchClusterColors = {
+		fills: ["#EF3B35", "#F26B36", "#7FC246", "#149DD8", "#6D287C"],
+		strokes: ["#87211E", "#9C4523", "#466B27", "#0D688F", "#36143D"]
+	};
+
 	$.widget("interstate.touch_cluster", {
 		options: {
 			ctx: false,
@@ -20,8 +25,8 @@
 				fill: "#F00",
 				stroke: "#00F"
 			},
-			fills: ["#EF3B35", "#F26B36", "#7FC246", "#149DD8", "#6D287C"],
-			strokes: ["#87211E", "#9C4523", "#466B27", "#0D688F", "#36143D"],
+			fills: ist.touchClusterColors.fills,
+			strokes: ist.touchClusterColors.strokes,
 		},
 		_create: function () {
 			this._super();

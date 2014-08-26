@@ -22,9 +22,20 @@
 		//console.log("B");
 		//var got_value = cjs.get(event_constraint, false);
 		//console.log(got_value);
+		if(got_event instanceof ist.BasicObject) {
+			got_event = ist.find_or_put_contextual_obj(got_event, options.context.push(got_event));
+		}
+
 		if (got_event instanceof ist.Event) {
 			//event_constraint.destroy(true);
 			return {event: got_event, actions: actions};
+		} else if(got_event instanceof ist.ContextualObject) {
+			var event_attachment = got_event.get_attachment_instance("event_attachment");
+			if(event_attachment) {
+				return {event: event_attachment.getEvent(), actions: actions}
+			} else {
+				return {event: false, actions: actions}
+			}
 		} else {
 			if(cjs.isConstraint(event_constraint)) {
 				cjs.removeDependency(event_constraint, live_event_creator._constraint);
@@ -91,10 +102,6 @@
 				this._old_event = null;
 				//cjs.wait(); // ensure our live event creator isn't immediately run
 				this._live_event_creator = cjs.liven(function () {
-					if (this._old_event) {
-						this._old_event.off_fire(this.child_fired, this);
-						this._old_event.destroy(true); //destroy silently (without nullifying)
-					}
 
 					var tree, event_info = false, event = false;
 					cjs.wait();
@@ -140,12 +147,16 @@
 					}
 
 					if (event) {
-
 						event.set_transition(this.get_transition());
 						event.on_fire(this.child_fired, this, event_info.actions, parent, context);
 						if (this.is_enabled()) {
 							event.enable();
 						}
+					}
+
+					if (this._old_event && this._old_event !== event) {
+						this._old_event.off_fire(this.child_fired, this);
+						this._old_event.destroy(true); //destroy silently (without nullifying)
 					}
 
 					this._old_event = event;
