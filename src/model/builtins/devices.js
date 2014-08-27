@@ -12,6 +12,42 @@
 
 	// mouse
 	ist.createMouseObject = function() {
+		
+		var mouse_event = new ist.StatefulObj({});
+		mouse_event._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "event"}));
+		mouse_event
+				.set("target", new ist.Cell({str: "arguments[0]"}))
+				.set("type", new ist.Cell({str: "arguments[1]"}))
+				.set("arguments", new ist.Cell({str: "[window, 'click']"}))
+				.add_state("idle")
+				.starts_at("idle")
+				.add_transition("idle", "idle", "on(type, target);this.fire()");
+		/*
+				.add_state("ready")
+				.add_state("pendingApproval")
+				.starts_at("ready")
+				.add_transition("ready", "pendingApproval", "on('gesture_requested', this);requested.fire()")
+				.add_transition("pendingApproval", "ready", "on('gesture_cancelled', this);cancelled.fire()")
+				.add_transition("pendingApproval", "ready", "on('gesture_confirmed', this);confirmed.fire();this.fire()")
+				.add_transition("pendingApproval", "ready", "on('gesture_blocked', this);blocked.fire()");
+			gesture.set("priority", new ist.Cell({str: "0"}))
+				.set("activationDelay", new ist.Cell({str: "5"}))
+				.set("touchGesture_fn", new ist.Cell({str: "function(p, prop_name) {" +
+					"var tg_attachment = interstate.get_attachment(p, 'touch_gesture');" +
+					"var tg = tg_attachment.touchGesture;" +
+					"return tg[prop_name].bind(tg);" +
+				"}"}))
+				.set("requestFire", new ist.Cell({str: "touchGesture_fn(this, 'requestFire')"}))
+				.set("requested", new ist.Cell({str: "event()"}))
+				.set("cancelled", new ist.Cell({str: "event()"}))
+				.set("blocked", new ist.Cell({str: "event()"}))
+				.set("confirmed", new ist.Cell({str: "event()"}));
+		var pending = new ist.StatefulProp({statechart_parent: gesture});
+			pending	.set(gesture.find_state("ready"), new ist.Cell({str: "false"}))
+					.set(gesture.find_state("pendingApproval"), new ist.Cell({str: "true"}))
+			gesture.set("pending", pending);
+
+*/
 		var clientX = cjs(0),
 			clientY = cjs(0),
 			pageX = cjs(0),
@@ -55,7 +91,14 @@
 					pageX: pageX,
 					pageY: pageY,
 					screenX: screenX,
-					screenY: screenY
+					screenY: screenY,
+					mouseEvent: mouse_event,
+					click: new ist.Cell({str: "mouseEvent(window, type='click')"}),
+					down: new ist.Cell({str: "mouseEvent(window,type='mousedown')"}),
+					up: new ist.Cell({str: "mouseEvent(window,type='mouseup')"}),
+					move: new ist.Cell({str: "mouseEvent(window,type='mousemove')"}),
+					over: new ist.Cell({str: "mouseEvent(window,type='mouseover')"}),
+					out: new ist.Cell({str: "mouseEvent(window,type='mouseout')"}),
 				}
 			});
 		device_mouse.destroy = function() {

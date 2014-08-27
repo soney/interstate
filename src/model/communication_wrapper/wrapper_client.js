@@ -177,9 +177,13 @@
 				var id = rv._id;
 				var old_destroy = rv.destroy;
 				rv.destroy = function() {
-					self.destroy_$(rv, args);
-					old_destroy.apply(rv, arguments);
-					self = rv = constraint = null;
+					try {
+						self.destroy_$(rv, args);
+						old_destroy.apply(rv, arguments);
+						self = rv = constraint = null;
+					} catch(e) {
+						console.error(e);
+					}
 				};
 				var semaphore = 0;
 				rv.signal_interest = function() { semaphore++; };

@@ -509,8 +509,10 @@
 
 			if (value instanceof ist.ContextualObject) {
 				return value.val();
+			} else if(cjs.isConstraint(value)) {
+				return value.get();
 			} else {
-				return cjs.get(value);
+				return value;
 			}
 		};
 

@@ -246,7 +246,6 @@
 			return this;
 		};
 		proto.destroy = function () {
-			if(this._id ===  24) debugger;
 			this.destroyed = true;
 			this._emit("destroy");
 			delete this.actual_firetime_listeners;

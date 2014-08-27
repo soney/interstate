@@ -44,6 +44,7 @@
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
 		}
+		if(this.sid() === 516) window.x = this
 	};
 
 	(function (My) {

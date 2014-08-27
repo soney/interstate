@@ -176,9 +176,9 @@
 						return op_got._apply(calling_context_got, pcontext, args_got, options);
 					}
 				} else if( op_got instanceof ist.ContextualDict) {
-					var proto = op_got;
+					var proto = op_got,
+						arg_arr = [];
 					args_got = {
-						"arguments": []
 					};
 					_.each(args, function(arg, index) {
 						var value;
@@ -190,14 +190,17 @@
 						} else {
 							value = arg;
 						}
-						args_got.arguments[index] = value;
+						arg_arr[index] = value;
 					});
+
+					args_got["arguments"] = cjs(arg_arr);
 					var constructor_fn = op_got instanceof ist.ContextualStatefulObj ? ist.StatefulObj : ist.Dict;
 
-					return new constructor_fn({
+					rv = new constructor_fn({
 						value: args_got,
 						direct_protos: op
 					});
+					return rv;
 				} else {
 					throw new Error("Calling a non-function");
 					//return undefined;
@@ -359,7 +362,12 @@
 						var sc = special_contexts[i];
 						var context_obj = sc.get_context_obj();
 						if (context_obj.hasOwnProperty(key)) {
-							return cjs.get(context_obj[key].value);
+							var value = context_obj[key].value;
+							if(cjs.isConstraint(value)) {
+								return value.get();
+							} else {
+								return value;
+							}
 						}
 					}
 				}
@@ -423,8 +431,6 @@
 				//throw new Error("No parent object for property '" + prop + "'");
 				return undefined;
 			}
-
-
 			if (object instanceof ist.ContextualObject) {
 				if (property === "container") {
 					var found_this = false;
@@ -464,7 +470,12 @@
 				return rv;
 			} else if(cjs.isArrayConstraint(object)) {
 				if(_.isNumber(property)) {
-					return object.item(property);
+					var item = object.item(property);
+					if(cjs.isConstraint(item)) {
+						return item.get();
+					} else {
+						return item;
+					}
 				} else {
 					if(property === "length") {
 						return object.length();
@@ -479,8 +490,13 @@
 
 		if (options.get_constraint) {
 			var constraint = cjs(function () {
-				var object = cjs.get(obj, options.auto_add_dependency),
-					property = cjs.get(prop, options.auto_add_dependency);
+				var object;
+				if(cjs.isConstraint(obj)) {
+					object = obj.get(options.auto_add_dependency);
+				} else {
+					object = obj;
+				}
+				var property = cjs.get(prop, options.auto_add_dependency);
 				return getter(object, property);
 			});
 			constraint.destroy = function() {

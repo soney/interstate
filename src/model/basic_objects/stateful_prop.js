@@ -70,6 +70,7 @@
 			}
             state = state_basis(state);
             this.get_direct_values().put(state, value);
+			return this;
         };
 		proto.clone = function(cprop) {
 			var infos = cprop.get_values();

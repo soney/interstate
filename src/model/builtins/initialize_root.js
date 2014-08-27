@@ -284,15 +284,44 @@
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "device") >= 0)) {
 			var device = ist.createDevices();
 			root_dict.set("device", device);
+			root_dict.set("mouse", new ist.Cell({str: "device.mouse"}));
 		}
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "event") >= 0)) {
 			var event = new ist.Dict({has_protos: false, direct_attachments: [new ist.EventAttachment()]});
 			event.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}));
 			root_dict.set("event", event);
 
-			var gesture = new ist.StatefulObj({has_protos: false, direct_attachments: [new ist.TouchGestureAttachment({
+			var gesture = new ist.StatefulObj({direct_attachments: [new ist.TouchGestureAttachment({
 																						})]
 																					})
+				.add_state("ready")
+				.add_state("pendingApproval")
+				.starts_at("ready")
+				.add_transition("ready", "pendingApproval", "on('gesture_requested', this);requested.fire()")
+				.add_transition("pendingApproval", "ready", "on('gesture_cancelled', this);cancelled.fire()")
+				.add_transition("pendingApproval", "ready", "on('gesture_confirmed', this);confirmed.fire();this.fire()")
+				.add_transition("pendingApproval", "ready", "on('gesture_blocked', this);blocked.fire()");
+			gesture._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "event"}));
+			gesture.set("priority", new ist.Cell({str: "0"}))
+				.set("activationDelay", new ist.Cell({str: "5"}))
+				.set("touchGesture_fn", new ist.Cell({str: "function(p, prop_name) {" +
+					"var tg_attachment = interstate.get_attachment(p, 'touch_gesture');" +
+					"var tg = tg_attachment.touchGesture;" +
+					"return tg[prop_name].bind(tg);" +
+				"}"}))
+				.set("requestFire", new ist.Cell({str: "touchGesture_fn(this, 'requestFire')"}))
+				.set("requested", new ist.Cell({str: "event()"}))
+				.set("cancelled", new ist.Cell({str: "event()"}))
+				.set("blocked", new ist.Cell({str: "event()"}))
+				.set("confirmed", new ist.Cell({str: "event()"}));
+			var pending = new ist.StatefulProp({statechart_parent: gesture});
+			pending	.set(gesture.find_state("ready"), new ist.Cell({str: "false"}))
+					.set(gesture.find_state("pendingApproval"), new ist.Cell({str: "true"}))
+			gesture.set("pending", pending);
+				/*
+				.set("markFailed", new ist.Cell({str: "touchGesture_fn(this, 'markFailed')"}))
+				.set("markBegan", new ist.Cell({str: "touchGesture_fn(this, 'markBegan')"}))
+																					/*
 				.add_state("possible")
 				.add_state("failed")
 				.add_state("blocked")
