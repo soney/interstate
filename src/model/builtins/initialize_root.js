@@ -287,8 +287,23 @@
 			root_dict.set("mouse", new ist.Cell({str: "device.mouse"}));
 		}
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "event") >= 0)) {
+			var fireable = new ist.Dict({has_protos: false, direct_attachments: [new ist.FireableAttachment()]});
+			fireable.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}));
+			root_dict.set("fireable", fireable);
+
 			var event = new ist.Dict({has_protos: false, direct_attachments: [new ist.EventAttachment()]});
-			event.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}));
+			event	.set("(prototypes)", new ist.Cell({str: "fireable"}))
+					.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}))
+					.set("priority", new ist.Cell({str: "false"}))
+					.set("fireDelay", new ist.Cell({str: "false"}))
+
+					.set("requested", new ist.Cell({str: "fireable()"}))
+					.set("cancelled", new ist.Cell({str: "fireable()"}))
+					.set("blocked", new ist.Cell({str: "fireable()"}))
+					.set("confirmed", new ist.Cell({str: "fireable()"}));
+			root_dict.set("event", event);
+			/*
+			event.set("priority", new ist.Cell({str: "false"}))
 			root_dict.set("event", event);
 
 			var gesture = new ist.StatefulObj({direct_attachments: [new ist.TouchGestureAttachment({
@@ -364,7 +379,6 @@
 					"return tg[prop_name]();" +
 				"}"}))
 				*/
-			root_dict.set("gesture", gesture);
 		}
 	};
 }(interstate));

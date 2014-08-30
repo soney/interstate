@@ -77,6 +77,7 @@ var callback_map = function(arr, func, callback) {
 		} else {
 			filename = text_before(relative_url, ".ejs.html");
 		}
+		filename = "" + filename;
 
 		get_file_string(filename, function(str) {
 			if(!str) {
@@ -121,6 +122,7 @@ process.on('SIGINT', function () {
 
 var filter_regex = /\.(js|html|css|swp)$/; // include swp files because they are added and removed when files get edited...for some reason,
 											// edits aren't otherwise detected
+/*
 
 var render_files = function(res, files) {
 	concat_files(files, function(str) {
@@ -148,9 +150,10 @@ var concat_files = function(file_list, callback) {
 	};
 	get_curr();
 };
+*/
 
 var get_file_string = function(path, callback) {
-	fs.readFile(path, 'ascii', function(err, data) {
+	fs.readFile(path, {encoding: 'ascii'}, function(err, data) {
 		callback(data);
 	});
 };

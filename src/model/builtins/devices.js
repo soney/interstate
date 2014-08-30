@@ -14,7 +14,7 @@
 	ist.createMouseObject = function() {
 		
 		var mouse_event = new ist.StatefulObj({});
-		mouse_event._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "event"}));
+		mouse_event._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "fireable"}));
 		mouse_event
 				.set("target", new ist.Cell({str: "arguments[0]"}))
 				.set("type", new ist.Cell({str: "arguments[1]"}))
@@ -372,9 +372,10 @@
 					return false;
 				}
 			},
-			touchCluster = new ist.StatefulObj({has_protos: false, direct_attachments: [new ist.TouchClusterAttachment({
+			touchCluster = new ist.Dict({has_protos: false, direct_attachments: [new ist.TouchClusterAttachment({
 																						})]
 																					})
+																					/*
 				.add_state("inactive")
 				.add_state("active")
 				.starts_at("inactive")
@@ -391,6 +392,9 @@
 					"return tc[prop_name].bind(tc);" +
 				"}"}))
 
+*/
+				.set("satisfied", new ist.Cell({str: "fireable()"}))
+				.set("dissatisfied", new ist.Cell({str: "fireable()"}))
 				.set("isSatisfied", new ist.Cell({str: "touchCluster_call(this, 'isSatisfied')"}))
 				.set("x", new ist.Cell({str: "touchCluster_call(this, 'getX')"}))
 				.set("y", new ist.Cell({str: "touchCluster_call(this, 'getY')"}))
