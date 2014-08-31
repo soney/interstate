@@ -241,7 +241,6 @@
 					}, this);
 				}
 			}, this);
-			/*
 
 			var to_destroy_list = _.compact(_.values(to_destroy));
 
@@ -251,9 +250,9 @@
 			_.each(to_destroy_list, function(cobj) {
 				cobj.destroy(true);
 			});
-			*/
 
 			this.updateAttachments();
+			
 			cjs.signal();
 		};
 

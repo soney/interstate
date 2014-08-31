@@ -14,7 +14,7 @@
 		},
 		pendingQueue = {
 			queue: [],
-			priority: false,
+			priority: 0,
 			contains: function(gesture) {
 				var i = 0, queue = this.queue, len = queue.length, item;
 				for(; i<len; i++) {
@@ -221,7 +221,7 @@
 				} else {
 					this.queue.splice(0, this.queue.length);
 				}
-				this.priority = false;
+				this.priority = 0;
 			}
 		};
 
@@ -229,7 +229,7 @@
 
 	ist.QueueableEvent = function (options) {
 		this.options = _.extend({
-			priority: 0,
+			priority: false,
 			activationDelay: 5
 		}, options);
 
@@ -255,8 +255,8 @@
 		proto.requestFire = function(event, callback) {
 			var builtin_event = false;
 			if(event && event instanceof ist.ContextualStatefulObj) {
-				var event_attachment = event.get_attachment_instance("event_attachment");
-				if(event_attachment) {
+				var fireable_attachment = event.get_attachment_instance("fireable_attachment");
+				if(fireable_attachment) {
 					builtin_event = true;
 					var eventObject = event_attachment.getEvent(),
 						newEvent = eventObject.when(function() { return false; });
@@ -350,7 +350,7 @@
 		*/
 			
 		proto.getPriority = function() {
-			return this.options.priority;
+			return this.options.priority || 0;
 		};
 		/*
 		proto.getName = function() {

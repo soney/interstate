@@ -14,14 +14,13 @@
 	ist.createMouseObject = function() {
 		
 		var mouse_event = new ist.StatefulObj({});
-		mouse_event._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "fireable"}));
-		mouse_event
-				.set("target", new ist.Cell({str: "arguments[0]"}))
-				.set("type", new ist.Cell({str: "arguments[1]"}))
-				.set("arguments", new ist.Cell({str: "[window, 'click']"}))
-				.add_state("idle")
-				.starts_at("idle")
-				.add_transition("idle", "idle", "on(type, target);this.fire()");
+		mouse_event._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "event"}));
+		mouse_event .set("target", new ist.Cell({str: "arguments[0]"}))
+					.set("type", new ist.Cell({str: "arguments[1]"}))
+					.set("arguments", new ist.Cell({str: "[window, 'click']"}))
+					.add_state("idle")
+					.starts_at("idle")
+					.add_transition("idle", "idle", "on(type, target);this.fire()");
 		/*
 				.add_state("ready")
 				.add_state("pendingApproval")

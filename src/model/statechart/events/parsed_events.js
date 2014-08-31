@@ -30,9 +30,9 @@
 			//event_constraint.destroy(true);
 			return {event: got_event, actions: actions};
 		} else if(got_event instanceof ist.ContextualObject) {
-			var event_attachment = got_event.get_attachment_instance("event_attachment");
-			if(event_attachment) {
-				return {event: event_attachment.getEvent(), actions: actions}
+			var fireable_attachment = got_event.get_attachment_instance("fireable_attachment");
+			if(fireable_attachment) {
+				return {event: fireable_attachment.getEvent(), actions: actions}
 			} else {
 				return {event: false, actions: actions}
 			}
