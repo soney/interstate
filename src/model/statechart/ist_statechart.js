@@ -150,9 +150,9 @@
 		};
 
 	ist.Statechart = function (options, defer_initialization) {
-		options = options || {};
-
 		ist.Statechart.superclass.constructor.apply(this, arguments);
+
+		options = options || {};
 
 		if(options.avoid_constructor) { return; }
 
@@ -168,12 +168,11 @@
 		this._start_state = options.start_state;
 		var basis_start_state, basis_start_state_to;
 		if (this._basis) {
-
 			basis_start_state = this._basis.get_start_state();
 			basis_start_state_to = basis_start_state.getTo();
 
 			var is_running = this.is_running(),
-				my_context = this.context(),
+				my_context = this.original_context(),
 				is_concurrent = this.is_concurrent();
 
 			_.each(this._basis.get_substates(true), function (substate, name) {
@@ -857,7 +856,12 @@
 				if(_.isString(event)) {
 					event = new ist.ParsedEvent({str: event, inert: true});
 				}
-				transition = new ist.StatechartTransition({from: from_state, to: to_state, event: event});
+				transition = new ist.StatechartTransition({
+					from: from_state,
+					to: to_state,
+					event: event,
+					context: this.original_context()
+				});
 				this._last_transition  = transition;
 
 				from_state._add_direct_outgoing_transition(transition);

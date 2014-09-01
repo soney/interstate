@@ -23,6 +23,7 @@
 		proto.eq = function (other_context) {
 			return this === other_context;
 		};
+		proto.requires_different_cobj = false;
 	}(ist.SpecialContext));
 
 	ist.ProvisionalContext = function (values) {
@@ -111,5 +112,6 @@
 		proto.hash = function () {
 			return this.copy_num+1;
 		};
+		proto.requires_different_cobj = true;
 	}(ist.CopyContext));
 }(interstate));

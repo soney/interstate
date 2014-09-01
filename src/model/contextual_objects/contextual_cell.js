@@ -77,5 +77,9 @@
 			var cell = this.get_object();
 			return cell.get_syntax_errors();
 		};
+		proto._get_valid_cobj_children = function() {
+			var value = this.value();
+			return [];
+		};
 	}(ist.ContextualCell));
 }(interstate));

@@ -38,13 +38,9 @@
 		this._do_destroy_no_args = function() { this.destroy(); };
 		this.object.on("begin_destroy", this._do_destroy_no_args, this);
 
-		//if(this.sid() === 2440) { debugger; }
-		//if(this.sid() === 2770) { debugger; }
-
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
 		}
-		if(this.sid() === 516) window.x = this
 	};
 
 	(function (My) {
@@ -193,7 +189,6 @@
 		};
 
 		proto._get_valid_cobj_children = function() { return []; };
-
 
 		proto.update_cobj_children = function(recursive) {
 			cjs.wait();

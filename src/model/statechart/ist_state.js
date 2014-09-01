@@ -48,7 +48,6 @@
 		this._constructed = false;
 		options = options || {};
 
-
 		if(!this._started_construction) {
 			this._started_construction = true;
 
@@ -73,7 +72,9 @@
 
 		this._puppet = options.puppet === true;
 		this._parent = options.parent;
-		this._context = options.context;
+		if(options.context) {
+			this.do_set_context(options.context);
+		}
 
 		this.$active = cjs(options.active === true || (!this._parent && !this._puppet));
 
@@ -278,6 +279,17 @@
 				return substate.flatten_substates(include_start);
 			})).concat([this]);
 		};
+
+		proto.get_all_transitions = function() {
+			var flat_substates = this.flatten_substates(false),
+				transitions = _	.chain(flat_substates)
+								.map(function(substate) {
+									return substate.get_incoming_transitions();
+								})
+								.flatten(true)
+								.value();
+			return transitions;
+		};
 		proto.is_active = function (to_active) { return this.$active && this.$active.get(); };
 		proto.get_name = function (relative_to) {
 			var parent = this.parent();
@@ -305,8 +317,24 @@
 		proto.basis = function () { return this._basis; };
 		proto.parent = function () { return this._parent; };
 		proto.context = function () { return this._context; };
+		proto.original_context = function() { return this._original_context; };
 		proto.set_parent = function (parent) { this._parent = parent; return this; };
-		proto.set_context = function (context) { this._context = context; return this; };
+		proto.set_context = function (context) {
+			this.do_set_context(context);
+			_.each(this.get_substates(true), function(substate) {
+				substate.set_context(context);
+			});
+			var outgoing_transitions = this.get_outgoing_transitions();
+			_.each(this.get_outgoing_transitions(),
+				function (x) {
+					x.enable();
+				});
+			return this;
+		};
+		proto.do_set_context = function(context) {
+			this._context = context.push_special_context(new ist.StateContext(this));
+			this._original_context = context;
+		};
 
 		proto.is_based_on = function (state) {
 			return this.basis() === state;

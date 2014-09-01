@@ -35,6 +35,7 @@
 		options: {
 			root: undefined,
 			show_edit_button: true,
+			autosave: false,
 			edit_on_open: false,
 			editor_url: "editor.html",
 			editor_name: uid.get_prefix() + "ist_editor",
@@ -205,7 +206,9 @@
 
 			$(window)	.on("keydown.open_editor", _.bind(this.on_key_down, this))
 						.on("beforeunload.do_save onunload.do_save unload.do_save pagehide.do_save", _.bind(function() {
-							this._save();
+							if(this.option("autosave")) {
+								this._save();
+							}
 							this.element.dom_output("destroy");
 						}, this));
 

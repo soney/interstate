@@ -23,18 +23,20 @@
 		//var got_value = cjs.get(event_constraint, false);
 		//console.log(got_value);
 		if(got_event instanceof ist.BasicObject) {
-			got_event = ist.find_or_put_contextual_obj(got_event, options.context.push(got_event));
 		}
 
 		if (got_event instanceof ist.Event) {
 			//event_constraint.destroy(true);
 			return {event: got_event, actions: actions};
-		} else if(got_event instanceof ist.ContextualObject) {
-			var fireable_attachment = got_event.get_attachment_instance("fireable_attachment");
+		} else if(got_event instanceof ist.BasicObject) {
+			var obj = got_event,
+				cobj = ist.find_or_put_contextual_obj(obj, options.context.push(obj)),
+				fireable_attachment = cobj.get_attachment_instance("fireable_attachment");
+
 			if(fireable_attachment) {
-				return {event: fireable_attachment.getEvent(), actions: actions}
+				return {obj: obj, event: fireable_attachment.getEvent(), actions: actions}
 			} else {
-				return {event: false, actions: actions}
+				return {obj: obj, event: false, actions: actions}
 			}
 		} else {
 			if(cjs.isConstraint(event_constraint)) {
@@ -87,10 +89,10 @@
 				var parent;
 
 				if (SOandC) {
-					context = SOandC.context;
+					//context = SOandC.context;
 					parent = SOandC.stateful_obj;
 				} else {
-					context = options.context;
+					//context = options.context;
 					parent = options.context.points_at();
 				}
 
@@ -102,8 +104,9 @@
 				this._old_event = null;
 				//cjs.wait(); // ensure our live event creator isn't immediately run
 				this._live_event_creator = cjs.liven(function () {
-
-					var tree, event_info = false, event = false;
+					var tree, event_info = false, event = false,
+						transition = this.get_transition();
+					context = transition.context();
 					cjs.wait();
 					if(ist.__debug) {
 						tree = this._tree.get();
@@ -116,6 +119,7 @@
 								context: context,
 								only_parse_first: true
 							}, this._live_event_creator);
+							this._obj = event_info.obj;
 							event = event_info.event;
 						}
 						cjs.signal();
@@ -131,6 +135,7 @@
 									context: context,
 									only_parse_first: true
 								}, this._live_event_creator);
+								this._obj = event_info.obj;
 								event = event_info.event;
 								if(this._has_errors) {
 									this.$errors.set([]);
@@ -282,6 +287,9 @@
 					inert: obj.inert
 				});
 			});
+		proto.get_obj = function() {
+			return this._obj;
+		};
 		proto.enable = function () {
 			My.superclass.enable.apply(this, arguments);
 			if (this._old_event) {
