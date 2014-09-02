@@ -21,32 +21,7 @@
 					.add_state("idle")
 					.starts_at("idle")
 					.add_transition("idle", "idle", "on(type, target);this.fire()");
-		/*
-				.add_state("ready")
-				.add_state("pendingApproval")
-				.starts_at("ready")
-				.add_transition("ready", "pendingApproval", "on('gesture_requested', this);requested.fire()")
-				.add_transition("pendingApproval", "ready", "on('gesture_cancelled', this);cancelled.fire()")
-				.add_transition("pendingApproval", "ready", "on('gesture_confirmed', this);confirmed.fire();this.fire()")
-				.add_transition("pendingApproval", "ready", "on('gesture_blocked', this);blocked.fire()");
-			gesture.set("priority", new ist.Cell({str: "0"}))
-				.set("activationDelay", new ist.Cell({str: "5"}))
-				.set("touchGesture_fn", new ist.Cell({str: "function(p, prop_name) {" +
-					"var tg_attachment = interstate.get_attachment(p, 'touch_gesture');" +
-					"var tg = tg_attachment.touchGesture;" +
-					"return tg[prop_name].bind(tg);" +
-				"}"}))
-				.set("requestFire", new ist.Cell({str: "touchGesture_fn(this, 'requestFire')"}))
-				.set("requested", new ist.Cell({str: "event()"}))
-				.set("cancelled", new ist.Cell({str: "event()"}))
-				.set("blocked", new ist.Cell({str: "event()"}))
-				.set("confirmed", new ist.Cell({str: "event()"}));
-		var pending = new ist.StatefulProp({statechart_parent: gesture});
-			pending	.set(gesture.find_state("ready"), new ist.Cell({str: "false"}))
-					.set(gesture.find_state("pendingApproval"), new ist.Cell({str: "true"}))
-			gesture.set("pending", pending);
 
-*/
 		var clientX = cjs(0),
 			clientY = cjs(0),
 			pageX = cjs(0),
@@ -380,6 +355,7 @@
 				.starts_at("inactive")
 				.add_transition("inactive", "active", "this.isSatisfied;emit('start', this)")
 				.add_transition("active", "inactive", "!this.isSatisfied;emit('end', this)")
+*/
 				.set("touchCluster_call", new ist.Cell({str: "function(p, prop_name) {" +
 					"var tc_attachment = interstate.get_attachment(p, 'touch_cluster');" +
 					"var tc = tc_attachment.touchCluster;" +
@@ -391,7 +367,6 @@
 					"return tc[prop_name].bind(tc);" +
 				"}"}))
 
-*/
 				.set("satisfied", new ist.Cell({str: "fireable()"}))
 				.set("dissatisfied", new ist.Cell({str: "fireable()"}))
 				.set("isSatisfied", new ist.Cell({str: "touchCluster_call(this, 'isSatisfied')"}))

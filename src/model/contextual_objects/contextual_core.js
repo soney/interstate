@@ -48,6 +48,15 @@
 		able.make_proto_listenable(proto);
 		proto.initialize = function(options) {
 			if(this.constructor === My) { this.flag_as_initialized();  }
+			if(ist.__garbage_collect) {
+				this._live_cobj_child_updater = cjs.liven(function() {
+					this.update_cobj_children();
+				}, {
+					context: this,
+					priority: 2,
+					pause_while_running: true
+				});
+			}
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
 		proto.flag_as_initialized = function() {
@@ -236,6 +245,7 @@
 					}, this);
 				}
 			}, this);
+			/*
 
 			var to_destroy_list = _.compact(_.values(to_destroy));
 
@@ -245,6 +255,7 @@
 			_.each(to_destroy_list, function(cobj) {
 				cobj.destroy(true);
 			});
+			*/
 
 			this.updateAttachments();
 			

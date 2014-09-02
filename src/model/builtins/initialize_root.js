@@ -293,6 +293,7 @@
 
 			var event = new ist.Dict({has_protos: false, direct_attachments: [new ist.EventAttachment()]});
 			event	.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}))
+					//.set("cancelFire", new ist.Cell({str: "interstate.cancelFire.bind(this)"}))
 					.set("priority", new ist.Cell({str: "false"}))
 					.set("fireDelay", new ist.Cell({str: "false"}))
 					.set("requested", new ist.Cell({str: "fireable()"}))

@@ -152,6 +152,8 @@
 		};
 		proto._get_valid_cobj_children = function() {
 			var dict_children = My.superclass._get_valid_cobj_children.apply(this, arguments),
+				sc_children = [];
+				/*
 				statecharts = this.get_statecharts(),
 				sc_children = _	.chain(statecharts)
 								.map(function(statechart) {
@@ -163,7 +165,6 @@
 															var obj = event.get_obj();
 															if(obj) {
 																var ptr = transition.context().push(obj);
-																console.log(ptr);
 																return {
 																	obj: obj,
 																	pointer: ptr
@@ -177,6 +178,7 @@
 								}, this)
 								.flatten(true)
 								.value();
+								*/
 
 			return dict_children.concat(sc_children);
 		};

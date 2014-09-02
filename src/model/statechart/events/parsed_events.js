@@ -30,7 +30,7 @@
 			return {event: got_event, actions: actions};
 		} else if(got_event instanceof ist.BasicObject) {
 			var obj = got_event,
-				cobj = ist.find_or_put_contextual_obj(obj, options.context.push(obj)),
+				cobj = ist.find_or_put_contextual_obj(obj, options.transition_context.push(obj)),
 				fireable_attachment = cobj.get_attachment_instance("fireable_attachment");
 
 			if(fireable_attachment) {
@@ -85,7 +85,6 @@
 			if (options.inert !== true) {
 				var SOandC = ist.find_stateful_obj_and_context(options.context);
 
-				var context;
 				var parent;
 
 				if (SOandC) {
@@ -105,8 +104,9 @@
 				//cjs.wait(); // ensure our live event creator isn't immediately run
 				this._live_event_creator = cjs.liven(function () {
 					var tree, event_info = false, event = false,
-						transition = this.get_transition();
-					context = transition.context();
+						transition = this.get_transition(),
+						context = transition.original_context(),
+						transition_context = transition.context();
 					cjs.wait();
 					if(ist.__debug) {
 						tree = this._tree.get();
@@ -117,6 +117,7 @@
 							event_info = get_event(tree, {
 								parent: parent,
 								context: context,
+								transition_context: transition_context,
 								only_parse_first: true
 							}, this._live_event_creator);
 							this._obj = event_info.obj;
@@ -133,6 +134,7 @@
 								event_info = get_event(tree, {
 									parent: parent,
 									context: context,
+									transition_context: transition_context,
 									only_parse_first: true
 								}, this._live_event_creator);
 								this._obj = event_info.obj;
