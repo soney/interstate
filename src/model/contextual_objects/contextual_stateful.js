@@ -152,15 +152,13 @@
 		};
 		proto._get_valid_cobj_children = function() {
 			var dict_children = My.superclass._get_valid_cobj_children.apply(this, arguments),
-				sc_children = [];
-				/*
 				statecharts = this.get_statecharts(),
 				sc_children = _	.chain(statecharts)
 								.map(function(statechart) {
-									var transitions = statechart.get_all_transitions,
+									var transitions = statechart.get_all_transitions(),
 										infos = _	.chain(transitions)
 													.map(function(transition) {
-														var event = transition.get_event();
+														var event = transition.event();
 														if(event instanceof ist.ParsedEvent) {
 															var obj = event.get_obj();
 															if(obj) {
@@ -178,7 +176,7 @@
 								}, this)
 								.flatten(true)
 								.value();
-								*/
+
 
 			return dict_children.concat(sc_children);
 		};

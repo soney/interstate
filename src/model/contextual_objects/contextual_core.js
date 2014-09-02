@@ -26,6 +26,7 @@
 		able.make_this_listenable(this);
 
 		this.object = options.object;
+		this.inert = options.object;
 		this.pointer = options.pointer;
 		this.inherited_from = options.inherited_from || false;
 
@@ -48,15 +49,6 @@
 		able.make_proto_listenable(proto);
 		proto.initialize = function(options) {
 			if(this.constructor === My) { this.flag_as_initialized();  }
-			if(ist.__garbage_collect) {
-				this._live_cobj_child_updater = cjs.liven(function() {
-					this.update_cobj_children();
-				}, {
-					context: this,
-					priority: 2,
-					pause_while_running: true
-				});
-			}
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
 		proto.flag_as_initialized = function() {
@@ -266,12 +258,22 @@
 			var ptr = this.pointer.push(obj, special_contexts),
 				must_initialize = false,
 				cobj = this._cobj_children.getOrPut(ptr, function() {
-					var rv = ist.create_contextual_object(obj, ptr, _.extend({
-						defer_initialization: true
-					}, options));
+					var inert = special_contexts &&
+								special_contexts.length > 0 &&
+								_.every(special_contexts, function(sc) { return !sc.requires_different_cobj; }),
+						rv = ist.create_contextual_object(obj, ptr, _.extend({
+							defer_initialization: true,
+							inert: inert
+						}, options));
+
 					must_initialize = true;
 					return rv;
 				});
+
+
+			if(special_contexts.length > 0) {
+				debugger;
+			}
 
 			if(must_initialize) {
 				if(avoid_initialization !== true) {

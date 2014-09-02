@@ -9,34 +9,31 @@
 	var get_event = function (tree, options, live_event_creator) {
 		//debugger;
 		var event_constraint = ist.get_parsed_$(tree, options);
-		var got_event, actions;
+		var got_event, actions, obj;
 		if(event_constraint instanceof ist.MultiExpression) {
 			actions = event_constraint.rest();
 			event_constraint = event_constraint.first();
 		} else {
 			actions = [];
 		}
-		//console.log("A");
-		//debugger;
 		got_event = cjs.get(event_constraint);
-		//console.log("B");
-		//var got_value = cjs.get(event_constraint, false);
-		//console.log(got_value);
 		if(got_event instanceof ist.BasicObject) {
+			obj = got_event;
+
+			got_event = ist.find_or_put_contextual_obj(obj, options.transition_context.push(obj));
 		}
 
 		if (got_event instanceof ist.Event) {
 			//event_constraint.destroy(true);
 			return {event: got_event, actions: actions};
-		} else if(got_event instanceof ist.BasicObject) {
-			var obj = got_event,
-				cobj = ist.find_or_put_contextual_obj(obj, options.transition_context.push(obj)),
-				fireable_attachment = cobj.get_attachment_instance("fireable_attachment");
+		} else if(got_event instanceof ist.ContextualObject) {
+			var cobj = got_event,
+				fireable_attachment = cobj.get_attachment_instance("fireable_attachment"); 
 
 			if(fireable_attachment) {
-				return {obj: obj, event: fireable_attachment.getEvent(), actions: actions}
+				return {obj: obj, cobj: cobj, event: fireable_attachment.getEvent(), actions: actions}
 			} else {
-				return {obj: obj, event: false, actions: actions}
+				return {obj: obj, cobj: cobj, event: false, actions: actions}
 			}
 		} else {
 			if(cjs.isConstraint(event_constraint)) {
@@ -120,15 +117,12 @@
 								transition_context: transition_context,
 								only_parse_first: true
 							}, this._live_event_creator);
-							this._obj = event_info.obj;
-							event = event_info.event;
 						}
 						cjs.signal();
 					} else {
 						try {
 							tree = this._tree.get();
 							if(tree instanceof ist.Error) {
-								//console.log("no event");
 								event = null;
 							} else {
 								event_info = get_event(tree, {
@@ -137,8 +131,7 @@
 									transition_context: transition_context,
 									only_parse_first: true
 								}, this._live_event_creator);
-								this._obj = event_info.obj;
-								event = event_info.event;
+
 								if(this._has_errors) {
 									this.$errors.set([]);
 									this._has_errors = false;
@@ -151,6 +144,11 @@
 						} finally {
 							cjs.signal();
 						}
+					}
+
+					if(event_info) {
+						this._obj = event_info.obj;
+						event = event_info.event;
 					}
 
 					if (event) {
