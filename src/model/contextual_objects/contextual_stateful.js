@@ -21,13 +21,15 @@
 		proto.initialize = function() {
 			if(this.constructor === My) { this.flag_as_initialized(); }
 			My.superclass.initialize.apply(this, arguments);
-			this._live_statechart_child_updater = cjs.liven(function() {
-				this.update_statecharts();
-			}, {
-				context: this,
-				priority: 1,
-				pause_while_running: true
-			});
+			if(!this.inert) {
+				this._live_statechart_child_updater = cjs.liven(function() {
+					this.update_statecharts();
+				}, {
+					context: this,
+					priority: 1,
+					pause_while_running: true
+				});
+			}
 			if(this.constructor === My) { this.shout_initialization(); }
 		};
 

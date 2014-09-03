@@ -155,20 +155,18 @@
 		_.proto_extend(My, ist.ContextualObject);
 		var proto = My.prototype;
 		proto.initialize = function() {
-			if(this.inert) {
-				console.log(this.get_pointer());
-			}
-
 			if(this.constructor === My) { this.flag_as_initialized();  }
 			My.superclass.initialize.apply(this, arguments);
 			if(ist.__garbage_collect) {
-				this._live_cobj_child_updater = cjs.liven(function() {
-					this.update_cobj_children();
-				}, {
-					context: this,
-					priority: 2,
-					pause_while_running: true
-				});
+				if(!this.inert) {
+					this._live_cobj_child_updater = cjs.liven(function() {
+						this.update_cobj_children();
+					}, {
+						context: this,
+						priority: 2,
+						pause_while_running: true
+					});
+				}
 			}
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
@@ -411,6 +409,7 @@
 			return contextual_object;
 		};
 		proto._has = function (name, ignore_inherited) {
+			if(this.inert) { debugger; }
 			if(this.is_template()) {
 				return false;
 			}

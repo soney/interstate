@@ -328,7 +328,7 @@
 				while (!curr_context.is_empty()) {
 					if (context_item instanceof ist.Dict) {
 						if (found_this) {
-							rv = ist.find_or_put_contextual_obj(context_item, curr_context);
+							rv = curr_context.getContextualObject();
 							return rv;
 						} else {
 							found_this = true;
@@ -344,7 +344,7 @@
 				
 			while (!curr_context.is_empty()) {
 				if (context_item instanceof ist.Dict) {
-					var contextual_obj = ist.find_or_put_contextual_obj(context_item, curr_context);
+					var contextual_obj = curr_context.getContextualObject();
 					if (contextual_obj.has(key, _.indexOf(ignore_inherited_in_contexts, context_item)>=0)) {
 						rv = contextual_obj._prop_val(key);
 						return rv;
