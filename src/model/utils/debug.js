@@ -35,7 +35,7 @@
 			include_start;
 
 		
-		if (last_arg && !(last_arg instanceof ist.Statechart)) {
+		if (last_arg && !(last_arg instanceof ist.ContextualState)) {
 			include_start = last_arg;
 			statecharts = _.first(arguments, arguments.length - 1);
 		} else {
@@ -56,21 +56,21 @@
 				logging_mechanism.log("(not initialized)");
 				return;
 			}
-			var flattened_statechart = _.without(statechart.flatten_substates(include_start), statechart);
+			var flattened_statechart = _.without(statechart.flattenSubstates(include_start), statechart);
 
 			var flattened_state_and_transitions = _.flatten(_.map(flattened_statechart, function (statechart) {
-				return ([statechart]).concat(statechart.get_outgoing_transitions());
+				return ([statechart]).concat(statechart.getOutgoingTransitions());
 			}), true);
 
 			_.each(flattened_state_and_transitions, function (state) {
 				var state_name;
 
-				if (state instanceof ist.State) {
-					state_name = pad(state.get_name(), STATE_NAME_WIDTH - 2);
-				} else if (state instanceof ist.StatechartTransition) { //transition
+				if (state instanceof ist.ContextualState) {
+					state_name = pad(state.getName(), STATE_NAME_WIDTH - 2);
+				} else if (state instanceof ist.ContextualTransition) { //transition
 					var from = state.from(),
 						to = state.to();
-					state_name = pad(from.get_name() + "->" + to.get_name(), TRANSITION_NAME_WIDTH - 2);
+					state_name = pad(from.getName() + "->" + to.getName(), TRANSITION_NAME_WIDTH - 2);
 					state_name = state_name + pad(state.stringify(), TRANSITION_VALUE_WIDTH);
 				}
 
@@ -90,7 +90,7 @@
 	function print(current_pointer, logging_mechanism) {
 		logging_mechanism = logging_mechanism || console;
 		var value_to_value_str = function (val, cobj) {
-			var points_at, special_contexts, str, special_contexts_str;
+			var points_at, copy, str, special_contexts_str;
 			if (_.isUndefined(val)) {
 				return "(undefined)";
 			} else if (_.isNull(val)) {
@@ -118,30 +118,17 @@
 			} else if (val instanceof ist.Query) {
 				return value_to_value_str(val.value());
 			} else if (val instanceof ist.Pointer) {
-				points_at = val.points_at();
-				special_contexts = val.special_contexts();
+				points_at = val.pointsAt();
 				str = value_to_value_str(points_at);
-				special_contexts_str = _.map(special_contexts, function (sc) { return sc.id().toString(); }).join(",");
-
-				if (special_contexts.length > 0) {
-					str = str + " " + special_contexts_str;
-				}
 
 				return str;
 			} else if (val instanceof ist.ContextualObject) {
-				var ptr = val.get_pointer();
-				points_at = ptr.points_at();
-				special_contexts = ptr.special_contexts();
+				var ptr = val.get_pointer(),
+					copy = ptr.copy();
+				points_at = ptr.pointsAt();
 				str = value_to_value_str(points_at, val);
-				special_contexts_str = _.map(special_contexts, function (sc) { return sc.id().toString(); }).join(",");
-
-				if (special_contexts.length > 0) {
-					str = str + " " + special_contexts_str;
-				}
 
 				return str;
-			} else if (val instanceof ist.CopyContext) {
-				return val.id();
 			} else if (_.isArray(val)) {
 				return ("[" + _.map(val, function (v) { return value_to_value_str(v); }).join(", ") + "]");
 			} else if (cjs.isArrayConstraint(val)) {
@@ -203,7 +190,7 @@
 					var is_inherited = child_info.inherited;
 					_.each(c_arr, function (child) {
 						var prop_pointer = child instanceof ist.ContextualObject ? child.get_pointer() : false;
-						var prop_points_at = prop_pointer ? prop_pointer.points_at() : child;
+						var prop_points_at = prop_pointer ? prop_pointer.pointsAt() : child;
 						var is_expanded = prop_points_at && current_pointer.has(prop_points_at);
 						var is_pointed_at = prop_pointer && current_pointer.eq(prop_pointer);
 						var prop_text = prop_name;
@@ -259,11 +246,11 @@
 					var state_name;
 					if (state) {
 						if (state instanceof ist.State) {
-							state_name = pad(state.get_name(), STATE_NAME_WIDTH - 2);
+							state_name = pad(state.getName(), STATE_NAME_WIDTH - 2);
 						} else if (state instanceof ist.StatechartTransition) { //transition
 							var from = state.from(),
 								to = state.to();
-							state_name = pad(from.get_name() + "->" + to.get_name(), STATE_NAME_WIDTH - 2);
+							state_name = pad(from.getName() + "->" + to.getName(), STATE_NAME_WIDTH - 2);
 						}
 
 						if (value_spec.active) {
@@ -289,9 +276,9 @@
 			}
 		};
 
-		var root = current_pointer.points_at(0);
+		var root = current_pointer.pointsAt(0);
 		var root_str;
-		if (current_pointer.points_at() === root) {
+		if (current_pointer.pointsAt() === root) {
 			root_str = ">" + ist.root_name;
 		} else {
 			root_str = ist.root_name;

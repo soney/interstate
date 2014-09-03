@@ -6,8 +6,8 @@
     var cjs = ist.cjs,
         _ = ist._;
 
-    ist.BasicTransition = function (options, defer_initialization) {
-		ist.BasicState.superclass.constructor.apply(this, arguments);
+    ist.Transition = function (options, defer_initialization) {
+		ist.Transition.superclass.constructor.apply(this, arguments);
 		this.type = options.type;
     };
     (function (My) {
@@ -49,6 +49,9 @@
 					me.destroy(true);
 				},
 				setter_name: "do_set_to"
+            },
+            "root": {
+                serialize: false,
             }
         };
         ist.install_proto_builtins(proto, My.builtins);
@@ -85,5 +88,5 @@
 				cjs.signal();
 			}
 		};
-    }(ist.BasicTransition));
+    }(ist.Transition));
 }(interstate));

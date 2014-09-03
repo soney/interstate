@@ -196,33 +196,6 @@
 				__value__: "contextual_obj",
 				object_summary: object_summary
 			};
-		} else if (value instanceof ist.StartState) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "state",
-				object_summary: {
-					type: 'start_state',
-					id: value.id()
-				}
-			};
-		} else if (value instanceof ist.Statechart) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "state",
-				object_summary: {
-					type: 'statechart',
-					id: value.id()
-				}
-			};
-		} else if (value instanceof ist.StatechartTransition) {
-			rv = {
-				__type__: "summarized_obj",
-				__value__: "transition",
-				object_summary: {
-					type: 'transition',
-					id: value.id()
-				}
-			};
 		} else if (value instanceof ist.Event) {
 			rv = {
 				__type__: "summarized_obj",

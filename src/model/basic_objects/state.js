@@ -8,8 +8,14 @@
 
 	var START_STATE_NAME = "(start)";
     
-    ist.BasicState = function (options, defer_initialization) {
-		ist.BasicState.superclass.constructor.apply(this, arguments);
+    ist.State = function (options, defer_initialization) {
+        options = _.extend({
+            value: {},
+            keys: [],
+            values: []
+        }, options);
+
+		ist.State.superclass.constructor.call(this, options, defer_initialization);
     };
     (function (My) {
 		_.proto_extend(My, ist.BasicObject);
@@ -17,11 +23,19 @@
 
         My.builtins = {
             is_start: {
-                "default": function () { return false; }
+                "default": function () { return false; },
+				gettter_name: "isStart"
+            },
+            "parent": {
+                serialize: false,
+            },
+            "root": {
+                serialize: false,
             },
             "concurrent": {
                 start_with: function () { return cjs(false); },
                 getter: function (me) { return me.get(); },
+				getter_name: "isConcurrent",
                 setter: function (me, is_concurrent) {
                     me.set(concurrent);
                 },
@@ -31,41 +45,51 @@
             },
             "incoming_transitions": {
                 "default": function () { return cjs.array(); },
+				getter_name: "_raw_incoming_transitions",
 				destroy: function(me) {
 					me.destroy(true);
 				}
             },
             "outgoing_transitions": {
                 "default": function () { return cjs.array(); },
+				getter_name: "_raw_outgoing_transitions",
 				destroy: function(me) {
 					me.destroy(true);
 				}
             },
             "substates": {
                 "default": function () {
-					var keys = this.options.keys,
-						values = _.map(this.options.values, function(v) {
-									return {
-										value: v,
-										owner: this
-									};
-								}, this),
-						value = {};
+					if(this.get_is_start()) {
+						return false;
+					} else {
+						var keys = this.options.keys,
+							values = _.map(this.options.values, function(v) {
+										return {
+											value: v,
+											owner: this
+										};
+									}, this),
+							value = {};
 
-					_.each(this.options.value, function(v, k) {
-						value[k] = {
-							value: v,
-							owner: this
-						};
-					}, this);
+						_.each(this.options.value, function(v, k) {
+							value[k] = {
+								value: v,
+								owner: this
+							};
+						}, this);
 
-                    var rv = cjs.map({
-                        keys: keys,
-                        values: values,
-                        value: value
-                    });
+						if(!value[START_STATE_NAME]) {
+							value[START_STATE_NAME] = new My({is_start: true, parent: this});
+						}
 
-                    return rv;
+						var rv = cjs.map({
+							keys: keys,
+							values: values,
+							value: value
+						});
+
+						return rv;
+					}
                 },
 				destroy: function(me) {
 					me.forEach(function(prop_val, name) {
@@ -89,7 +113,7 @@
 			My.superclass.destroy.apply(this, arguments);
         };
 		proto.addSubstate = function(name) {
-			var state = new ist.BasicState(),
+			var state = new My({parent: this}),
 				substates = this.get_substates();
 		};
 		proto.removeSubstate = function(name) {
@@ -106,7 +130,11 @@
 		};
 		proto.getSubstates = function() {
 			var substates = this.get_substates();
-			return substatess.entries();
+			if(substates) {
+				return substates.entries();
+			} else {
+				return [];
+			}
 		};
 		proto.getSubstate = function(name) {
 			var keys = name.split("."),
@@ -123,21 +151,21 @@
 			return currState;
 		};
 		proto._removeOutgoingTransition = function(transition) {
-			var outgoing_transitions = this.get_outgoing_transitions(),
+			var outgoing_transitions = this._raw_outgoing_transitions(),
 				transition_index = outgoing_transitions.indexOf(transition);
 			if(transition_index >= 0) { outgoing_transitions.splice(transition_index, 1); }
 		};
 		proto._removeIncomingTransition = function(transition) {
-			var incoming_transitions = this.get_incoming_transitions(),
+			var incoming_transitions = this._raw_incoming_transitions(),
 				transition_index = incoming_transitions.indexOf(transition);
 			if(transition_index >= 0) { incoming_transitions.splice(transition_index, 1); }
 		};
 		proto._addOutgoingTransition = function(transition) {
-			var outgoing_transitions = this.get_outgoing_transitions();
+			var outgoing_transitions = this._raw_outgoing_transitions();
 			outgoing_transitions.push(transition);
 		};
 		proto._addIncomingTransition = function(transition) {
-			var incoming_transitions = this.get_incoming_transitions();
+			var incoming_transitions = this._raw_incoming_transitions();
 			incoming_transitions.push(transition);
 		};
 		proto.addTransition = function(from_state_name, to_state_name, transition_info) {
@@ -148,7 +176,7 @@
 						from: from_state,
 						to: to_state,
 					}, transition_info),
-					transition = new ist.BasicTransition(options);
+					transition = new ist.Transition(options);
 
 				cjs.wait();
 				from_state._addOutgoingTransition(transition);
@@ -156,5 +184,13 @@
 				cjs.signal();
 			}
 		};
-    }(ist.BasicState));
+		proto.getIncomingTransitions = function() {
+			var incoming_transitions = this._raw_incoming_transitions();
+			return incoming_transitions.toArray();
+		};
+		proto.getOutgoingTransitions = function() { 
+			var outgoing_transitions = this._raw_outgoing_transitions();
+			return outgoing_transitions.toArray();
+		};
+    }(ist.State));
 }(interstate));

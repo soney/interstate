@@ -47,8 +47,8 @@
 				contextual_object,
 				popped_item, last;
 				
-			while (!context.is_empty()) {
-				last = context.points_at();
+			while (!context.isEmpty()) {
+				last = context.pointsAt();
 				if (last instanceof ist.StatefulObj) {
 					contextual_object = ist.find_or_put_contextual_obj(last, context);
 					return contextual_object;
@@ -104,12 +104,12 @@
 				var my_names = [];
 				i = pointer.lastIndexOf(parent.get_object());
 				var len = pointer.length();
-				var item_im1 = pointer.points_at(i),
+				var item_im1 = pointer.pointsAt(i),
 					item_i;
 
 				i += 1;
 				while (i < len) {
-					item_i = pointer.points_at(i);
+					item_i = pointer.pointsAt(i);
 					name = ist.Dict.get_prop_name(item_im1, item_i, pointer.slice(0, i));
 					my_names.push(name);
 					item_im1 = item_i;
@@ -197,7 +197,7 @@
 			var raw_values = this.get_raw_values(),
 				parent = this.get_parent(),
 				stateful_prop = this.get_object(),
-				statecharts = stateful_prop.get_can_inherit() ? parent.get_statecharts() : [parent.get_statechart_for_proto(parent.get_object())],
+				statecharts = stateful_prop.get_can_inherit() ? parent.get_statecharts() : [parent.getContextualStatechart(parent.get_object())],
 				statecharts_len = statecharts.length;
 
 			var rv = _.map(raw_values, function (entry) {

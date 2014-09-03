@@ -627,7 +627,7 @@
                 var pcontext = state.context();
                 var js_context;
                 if (pcontext) {
-                    js_context = ist.find_or_put_contextual_obj(pcontext.points_at(), pcontext);
+                    js_context = ist.find_or_put_contextual_obj(pcontext.pointsAt(), pcontext);
                 }
                 func._call(js_context, pcontext, event);
             };

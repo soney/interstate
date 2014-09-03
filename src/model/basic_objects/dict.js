@@ -14,12 +14,12 @@
     };
     ist.inherited_root = function (pcontext) {
         var child, parent;
-        child = pcontext.points_at();
+        child = pcontext.pointsAt();
         var inh = false,
             child_src,
             i;
         for (i = pcontext.length() - 2; i >= 0; i -= 1) {
-            parent = pcontext.points_at(i);
+            parent = pcontext.pointsAt(i);
             child_src = parent.src_for_prop(child, pcontext.slice(0, i + 1));
             if (child_src === parent) {
                 if (inh) {

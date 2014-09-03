@@ -33,6 +33,9 @@
         proto.hash = function () {
             return this._context.hash();
         };
+		proto.getOutputFields = function() {
+			return {};
+		};
 		proto.getOutputFieldNames = function() {
 			return [];
 		};

@@ -6,124 +6,39 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	ist.find_equivalent_state = function (to_state, in_tree) {
-		var in_tree_basis = in_tree.basis();
-		var in_tree_basis_lineage = in_tree_basis.get_lineage();
-		var to_state_lineage = to_state.get_lineage();
+	ist.ContextualState = function (options) {
+		ist.ContextualState.superclass.constructor.apply(this, arguments);
+		this._type = "statechart";
 
-		var in_tree_basis_lineage_len = in_tree_basis_lineage.length;
-		var to_state_lineage_len = to_state_lineage.length;
+
+		this._running = options.running === true;
+		this.$running = cjs(this._running);
+
+		var object = this.get_object(),
+			pointer = this.get_pointer(),
+			obj_parent = object.parent(),
+			obj_root = object.root();
 		
-		var in_tree_basis_index = in_tree_basis_lineage_len - 1;
-		var to_state_index;
-		var i;
+		this._parent = obj_parent ? pointer.replace(obj_parent).getContextualObject() : false;
+		this._root = obj_root ? pointer.replace(obj_root).getContextualObject() : false;
 
-		outer_loop:
-		while (in_tree_basis_index >= 0) {
-			for (i = to_state_lineage_len - 1; i >= 0; i -= 1) {
-				if (to_state_lineage[i] === in_tree_basis_lineage[in_tree_basis_index]) {
-					to_state_index = i;
-					break outer_loop;
-				}
-			}
-			in_tree_basis_index -= 1;
-		}
-		var search_item = in_tree;
-		var parentage_level = in_tree_basis_lineage_len - 1 - in_tree_basis_index;
-		_.times(parentage_level, function () {
-			search_item = search_item.parent();
-		});
+		this.$active = cjs(options.active === true || !this._parent);
 
-		for (i = to_state_index + 1; i < to_state_lineage_len; i += 1) {
-			var name = to_state_lineage[i - 1].get_name_for_substate(to_state_lineage[i]);
-			search_item = search_item.get_substate_with_name(name);
-		}
-
-		//if (search_item.basis() !== to_state) { throw new Error("Could not find correct equivalent item"); }
-
-		return search_item;
+		this.is_start = false;
 	};
 
-	ist.State = function (options) {
-		this._constructed = false;
-		options = options || {};
-
-		if(!this._started_construction) {
-			this._started_construction = true;
-
-			able.make_this_listenable(this);
-
-			this._initialized = false;
-			this.$initialized = cjs(false);
-
-			this._id = options.id || uid();
-			this._hash = uid.strip_prefix(this._id);
-
-			this._running = options.running === true;
-			this.$running = cjs(this._running);
-
-			ist.register_uid(this._id, this);
-		}
-
-		//if(this.sid() === 907) debugger;
-		if(options.avoid_constructor) { return; }
-
-		this._last_run_event = cjs(false);
-
-		this._puppet = options.puppet === true;
-		this._parent = options.parent;
-		if(options.context) {
-			this.do_set_context(options.context);
-		}
-
-		this.$active = cjs(options.active === true || (!this._parent && !this._puppet));
-
-		//this.set_basis(options.basis, options.set_basis_as_root);
-		//if (this._basis) {
-			//this.remove_basis_listeners();
-		//}
-		this._basis = options.basis;
-		if (this._basis) {
-			this.add_basis_listeners();
-		}
-
-		//if(this.sid() === 2141) debugger;
-	};
-
-	(function (my) {
-		var proto = my.prototype;
-		able.make_proto_listenable(proto);
-
-		if(ist.__debug_statecharts) {
-			proto.get_$running = function() {
-				return this.$running.get();
-			};
-		}
-
-		proto.is_constructed = function () {
-			return this._constructed;
+	(function (My) {
+		_.proto_extend(My, ist.ContextualObject);
+		var proto = My.prototype;
+		proto.initialize = function(options) {
+			if(this.constructor === My) { this.flag_as_initialized();  }
+			My.superclass.initialize.apply(this, arguments);
+			if(this.constructor === My) { this.shout_initialization();  }
 		};
-
-		proto.initialize = function () {
-			if (this._basis) { // shadow
-				_.each(this.get_outgoing_transitions(), function(transition) {
-					transition.initialize();
-				});
-			}
-			this._initialized = true;
-			this.$initialized.set(true);
-			this._emit("initialized");
+		proto.destroy = function (avoid_begin_destroy) {
+			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
+			My.superclass.destroy.apply(this, arguments);
 		};
-
-		proto.is_initialized = function () {
-			return this.$initialized.get();
-		};
-
-		proto.is_puppet = function () {
-			return this._puppet;
-		};
-
-		proto.is_running = function () { return this._running; };
 
 		proto.run = function () {
 			if(this.is_puppet()) {
@@ -132,9 +47,7 @@
 					target: this,
 					type: "run"
 				});
-				//if(ist.__debug_statecharts) {
-					this.$running.set(true);
-				//}
+				this.$running.set(true);
 			} else if (!this.is_running()) {
 				ist.event_queue.wait();
 				this.enable_outgoing_transitions();
@@ -144,12 +57,11 @@
 					target: this,
 					type: "run"
 				});
-				//if(ist.__debug_statecharts) {
-					this.$running.set(true);
-				//}
+				this.$running.set(true);
 				ist.event_queue.signal();
 			}
 		};
+
 		proto.stop = function () {
 			if(this.is_puppet()) {
 				this._running = false;
@@ -157,9 +69,7 @@
 					type: "stop",
 					target: this
 				});
-				//if(ist.__debug_statecharts) {
-					this.$running.set(false);
-				//}
+				this.$running.set(false);
 			} else {
 				ist.event_queue.wait();
 				this._running = false;
@@ -168,9 +78,7 @@
 					type: "stop",
 					target: this
 				});
-				//if(ist.__debug_statecharts) {
-					this.$running.set(false);
-				//}
+				this.$running.set(false);
 				ist.event_queue.signal();
 			}
 		};
@@ -274,30 +182,51 @@
 				});
 			}
 		};
-		proto.flatten_substates = function (include_start) {
-			return _.flatten(_.map(this.get_substates(include_start), function (substate) {
-				return substate.flatten_substates(include_start);
+		proto.flattenSubstates = function (include_start) {
+			return _.flatten(_.map(this.getSubstates(include_start), function (substate) {
+				return substate.flattenSubstates(include_start);
 			})).concat([this]);
 		};
 
-		proto.get_all_transitions = function() {
-			var flat_substates = this.flatten_substates(false),
+		proto.getAllTransitions = function() {
+			var flat_substates = this.flattenSubstates(false),
 				transitions = _	.chain(flat_substates)
 								.map(function(substate) {
-									return substate.get_incoming_transitions();
+									return substate.getIncomingTransitions();
 								})
 								.flatten(true)
 								.value();
 			return transitions;
 		};
+		proto.getIncomingTransitions = function() {
+			var object = this.get_object(),
+				ptr = this.get_pointer(),
+				transitions = object.getIncomingTransitions(),
+				contextual_transitions = _.map(transitions, function(transition) {
+					var ptr = pointer.replace(transition);
+					return ptr.getContextualObject();
+				});
+			return contextual_transitions;
+		};
+		proto.getOutgoingTransitions = function() {
+			var object = this.get_object(),
+				ptr = this.get_pointer(),
+				transitions = object.getOutgoingTransitions(),
+				contextual_transitions = _.map(transitions, function(transition) {
+					var ptr = pointer.replace(transition);
+					return ptr.getContextualObject();
+				});
+			return contextual_transitions;
+		};
 		proto.is_active = function (to_active) { return this.$active && this.$active.get(); };
-		proto.get_name = function (relative_to) {
+		proto.getName = function (relative_to) {
 			var parent = this.parent();
 			if (!relative_to) {
 				relative_to = this.root();
 			} else if (relative_to === 'parent') {
 				relative_to = parent;
 			}
+			console.log("GN", parent);
 
 			var my_name = parent ? parent.get_name_for_substate(this) : "";
 			if (parent === relative_to) {
@@ -331,10 +260,6 @@
 				});
 			return this;
 		};
-		proto.do_set_context = function(context) {
-			this._context = context.push_special_context(new ist.StateContext(this));
-			this._original_context = context;
-		};
 
 		proto.is_based_on = function (state) {
 			return this.basis() === state;
@@ -365,12 +290,7 @@
 		};
 
 		proto.root = function () {
-			var parent = this.parent();
-			if (parent) {
-				return parent.root();
-			} else {
-				return this;
-			}
+			return this._root;
 		};
 
 		proto.on_outgoing_transition_fire = function (transition, event) {
@@ -517,6 +437,19 @@
 				return false;
 			}
 		};
+		proto.getSubstates = function(include_start) {
+			var object = this.get_object(),
+				pointer = this.get_pointer(),
+				substates = object.getSubstates(),
+				contextualSubstates = _.map(substates, function(substate_info) {
+					var substate = substate_info.value,
+						ptr = pointer.replace(substate);
+
+					return ptr.getContextualObject();
+				});
+
+			return contextualSubstates;
+		};
 
 		proto.summarize = function () {
 			var context = this.context();
@@ -530,7 +463,7 @@
 				context: summarized_context
 			};
 		};
-		my.desummarize = function (obj) {
+		My.desummarize = function (obj) {
 			if (obj.context) {
 				var state_basis = ist.find_uid(obj.basis_id);
 				var context = ist.Pointer.desummarize(obj.context);
@@ -542,43 +475,6 @@
 			} else {
 				return ist.find_uid(obj.basis_id);
 			}
-		};
-		proto.add_basis_listeners = function() {
-			this._basis.on("add_transition", this.onBasisAddTransition, this);
-			this._basis.on("add_substate", this.onBasisAddSubstate, this);
-			this._basis.on("remove_substate", this.onBasisRemoveSubstate, this);
-			this._basis.on("rename_substate", this.onBasisRenameSubstate, this);
-			this._basis.on("move_substate", this.onBasisMoveSubstate, this);
-			this._basis.on("make_concurrent", this.onBasisMakeConcurrent, this);
-			this._basis.on("on_transition", this.onBasisOnTransition, this);
-			this._basis.on("off_transition", this.onBasisOffTransition, this);
-			this._basis.on("destroy", this.onBasisDestroy, this);
-		};
-		proto.remove_basis_listeners = function() {
-			this._basis.off("add_transition", this.onBasisAddTransition, this);
-			this._basis.off("add_substate", this.onBasisAddSubstate, this);
-			this._basis.off("remove_substate", this.onBasisRemoveSubstate, this);
-			this._basis.off("rename_substate", this.onBasisRenameSubstate, this);
-			this._basis.off("move_substate", this.onBasisMoveSubstate, this);
-			this._basis.off("make_concurrent", this.onBasisMakeConcurrent, this);
-			this._basis.off("on_transition", this.onBasisOnTransition, this);
-			this._basis.off("off_transition", this.onBasisOffTransition, this);
-			this._basis.off("destroy", this.onBasisDestroy, this);
-		};
-		proto.onBasisAddTransition = function (event) {
-			var transition = event.transition;
-			var new_from = ist.find_equivalent_state(event.from_state, this);
-			var new_to = ist.find_equivalent_state(event.to_state, this);
-			var transition_shadow = transition.create_shadow(new_from, new_to, this, this.context());
-			new_from._add_direct_outgoing_transition(transition_shadow);
-			new_to._add_direct_incoming_transition(transition_shadow);
-			this.add_transition(transition_shadow);
-		};
-		proto.onBasisAddSubstate = function (event) {
-			var state_name = event.state_name,
-				state = event.state,
-				index = event.index;
-			this.add_substate(state_name, state.create_shadow({parent: this, context: this.context()}), index);
 		};
 		proto.onBasisRemoveSubstate = function (event) {
 			this.remove_substate(event.name, undefined, false);
@@ -647,5 +543,5 @@
 				});
 			}
 		};
-	}(ist.State));
+	}(ist.ContextualState));
 }(interstate));

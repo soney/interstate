@@ -34,30 +34,51 @@
 		};
 
 		proto.get_own_statechart = function () {
-			return this.get_statechart_for_proto(this.get_object());
+			return this.getContextualStatechart(this.get_object());
 		};
 
-		proto.get_statechart_for_proto = function (proto) {
-			cjs.wait();
-			var must_initialize = false;
-			var sc = this.statecharts_per_proto.get_or_put(proto, function () {
-				var super_sc = proto.get_own_statechart();
-				var shadow_sc = super_sc.create_shadow({
-					context: this.get_pointer(),
-					running: true,
-					basis: super_sc,
-					concurrent: super_sc.is_concurrent(),
-					set_basis_as_root: true
-				}, true);
-				must_initialize = super_sc;
-				return shadow_sc;
-			}, this);
-			if(must_initialize) {
-				var super_sc = must_initialize;
-				sc.initialize();
+		proto.get_statechart_parent = function () {
+			var context = this.get_pointer(),
+				contextual_object,
+				popped_item, last;
+				
+			while (!context.is_empty()) {
+				last = context.pointsAt();
+				if (last instanceof ist.StatefulObj) {
+					contextual_object = ist.find_or_put_contextual_obj(last, context);
+					return contextual_object;
+				}
+				popped_item = last;
+				context = context.pop();
 			}
-			cjs.signal();
-			return sc;
+			return undefined;
+		};
+
+		proto.getContextualStatechart = function (proto) {
+			var statechart = proto.get_own_statechart(),
+				pointer = this.get_pointer();
+			if(statechart === "parent") {
+				var obj = this.get_object();
+				if(obj === proto) {
+					var context = this.get_pointer(),
+						popped_item, last;
+						
+					while (!context.is_empty()) {
+						last = context.pointsAt();
+						if (last instanceof ist.StatefulObj) {
+							contextual_object = context.getContextualObject();
+							return contextual_object;
+						}
+						popped_item = last;
+						context = context.pop();
+					}
+				}
+			} else if(statechart instanceof ist.State) {
+				var sc_ptr = pointer.push(statechart);
+				return sc_ptr.getContextualObject();
+			}
+
+			return false;
 		};
 
 		proto.update_statecharts = function() {
@@ -157,7 +178,7 @@
 				statecharts = this.get_statecharts(),
 				sc_children = _	.chain(statecharts)
 								.map(function(statechart) {
-									var transitions = statechart.get_all_transitions(),
+									var transitions = statechart.getAllTransitions(),
 										infos = _	.chain(transitions)
 													.map(function(transition) {
 														var event = transition.event();

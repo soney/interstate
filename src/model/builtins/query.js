@@ -104,7 +104,7 @@
             "container": function (cobj) {
                 var pointer = cobj.get_pointer();
                 var new_ptr = pointer.pop();
-                var new_ptr_obj = new_ptr.points_at();
+                var new_ptr_obj = new_ptr.pointsAt();
     
                 var rv = ist.find_or_put_contextual_obj(new_ptr_obj, new_ptr);
                 return rv;

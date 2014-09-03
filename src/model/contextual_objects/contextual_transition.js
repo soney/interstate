@@ -6,64 +6,41 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	ist.find_equivalent_transition = function (to_transition, in_tree) {
-		var from = to_transition.from();
-		var to = to_transition.to();
-		var in_tree_from = ist.find_equivalent_state(from, in_tree);
-		var in_tree_from_outgoing = in_tree_from.get_outgoing_transitions();
-		var len = in_tree_from_outgoing.length;
-		var i;
-		for (i = 0; i < len; i += 1) {
-			var t = in_tree_from_outgoing[i];
-			if (t.basis() === to_transition) {
-				return t;
-			}
-		}
-		//throw new Error("Could not find equivalent transition");
-	};
-
-	ist.StatechartTransition = function (options, defer_initialization) {
-		options = options || {};
-
-		if(!this._started_construction) {
-			this._started_construction = true;
-
-			this._initialized = cjs(false);
-			able.make_this_listenable(this);
-
-			this._id = options.id || uid();
-			this._hash = uid.strip_prefix(this._id);
-			ist.register_uid(this._id, this);
-		}
+	ist.ContextualTransition = function (options) {
+		ist.ContextualTransition.superclass.constructor.apply(this, arguments);
 
 		if(options.avoid_constructor) { return; }
 
-		this._last_run_event = cjs(false);
-		this._enabled = options.enabled === true;
-		if(ist.__debug_statecharts) {
-			this.$enabled = cjs(this._enabled);
-		}
+		this.$event = cjs(false);
+		this.$enabled = cjs(false);
+		this.$times_run = cjs(0);
+		this.$from = new cjs.Constraint(options.from);
+		this.$to = new cjs.Constraint(options.to);
 
-		this._puppet = options.puppet === true;
-		this.$active = cjs(false);
+
 		this.is_start_transition = options.from instanceof ist.StartState;
 		this._times_run = options.times_run || (this.is_start_transition ? 1 : 0);
 		this.$times_run = cjs(this._times_run);
 		this._from_state = new cjs.Constraint(options.from);
 		this._to_state = new cjs.Constraint(options.to);
-		if(options.context) {
-			this.set_context(options.context);
-		}
-		this.set_basis(options.basis);
 		this.set_event(options.event);
 
-		if (defer_initialization !== true) {
-			this.initialize(options);
-		}
+		this._type = "transition";
 	};
+
 	(function (My) {
+		_.proto_extend(My, ist.ContextualObject);
 		var proto = My.prototype;
-		able.make_proto_listenable(proto);
+		proto.initialize = function(options) {
+			if(this.constructor === My) { this.flag_as_initialized();  }
+			My.superclass.initialize.apply(this, arguments);
+			if(this.constructor === My) { this.shout_initialization();  }
+		};
+		proto.destroy = function (avoid_begin_destroy) {
+			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
+			My.superclass.destroy.apply(this, arguments);
+		};
+
 		proto.initialize = function (options) {
 			if (this._event) {
 				this._event.initialize();
@@ -106,11 +83,6 @@
 			this._original_context = context;
 			return this;
 		};
-		proto.set_active = function (to_active) {
-			to_active = to_active === true;
-			this.$active.set(to_active);
-		};
-		proto.is_active = function (to_active) { return this.$active.get(); };
 		proto.basis = function () { return this._basis; };
 		proto.set_basis = function (basis) {
 			if (this._basis) {
@@ -204,10 +176,6 @@
 			this.destroyed = true;
 			this._emit("destroy", {type: "destroy", target: this});
 			cjs.wait();
-			if(this.$active) {
-				this.$active.destroy(silent);
-			}
-
 			this._from_state.destroy(silent);
 			delete this._from_state;
 
@@ -226,9 +194,6 @@
 			this._last_run_event.destroy(silent);
 			delete this._last_run_event;
 
-			this.$active.destroy(silent);
-			delete this.$active;
-			
 			this.$times_run.destroy(silent);
 			delete this.$times_run;
 
@@ -305,74 +270,8 @@
 			}
 		};
 
-		proto.is_enabled = function () {
-			return this._enabled;
+		proto.is_enabled = function() {
+			return this.$enabled.get();
 		};
-
-		if(ist.__debug_statecharts) {
-			proto.get_$enabled = function() {
-				return this.$enabled.get();
-			};
-		}
-
-		proto.summarize = function () {
-			var context = this.context();
-			var summarized_context;
-			if (context) {
-				summarized_context = context.summarize();
-			}
-			var my_basis = this.basis() || this;
-			return {
-				basis_id: my_basis.id(),
-				context: summarized_context
-			};
-		};
-		My.desummarize = function (obj) {
-			if (obj.context) {
-				var state_basis = ist.find_uid(obj.basis_id);
-				var context = ist.Pointer.desummarize(obj.context);
-				var dict = context.pointsAt();
-				var contextual_statechart = dict.get_statechart_for_context(context);
-
-				var state = ist.find_equivalent_transition(state_basis, contextual_statechart);
-				return state;
-			} else {
-				return ist.find_uid(obj.basis_id);
-			}
-		};
-
-
-		ist.register_serializable_type("statechart_transition",
-			function (x) {
-				return x instanceof My;
-			},
-			function (include_id) {
-				var args = _.toArray(arguments);
-				var rv = {
-					from: ist.serialize.apply(ist, ([this.from()]).concat(args)),
-					to: ist.serialize.apply(ist, ([this.to()]).concat(args)),
-					event: ist.serialize.apply(ist, ([this.event()]).concat(args))
-				};
-				if (include_id) {
-					rv.id = this.id();
-				}
-				return rv;
-			},
-			function (obj, deserialize_options) {
-				var rest_args = _.rest(arguments),
-					rv = new My({
-						avoid_constructor: true
-					});
-				rv.initialize = function() {
-					delete this.initialize;
-					My.call(this, {
-						id: obj.id,
-						from: ist.deserialize.apply(ist, ([obj.from]).concat(rest_args)),
-						to: ist.deserialize.apply(ist, ([obj.to]).concat(rest_args)),
-						event: ist.deserialize.apply(ist, ([obj.event]).concat(rest_args))
-					});
-				};
-				return rv;
-			});
-	}(ist.StatechartTransition));
+	}(ist.ContextualTransition));
 }(interstate));

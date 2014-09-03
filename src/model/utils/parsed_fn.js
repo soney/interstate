@@ -92,7 +92,7 @@
 			} else if (key === "container") {
 				found_this = false;
 				curr_context = options.pcontext;
-				context_item = curr_context.points_at();
+				context_item = curr_context.pointsAt();
 
 				while (!curr_context.is_empty()) {
 					if (context_item instanceof ist.Dict) {
@@ -104,7 +104,7 @@
 						}
 					}
 					curr_context = curr_context.pop();
-					context_item = curr_context.points_at();
+					context_item = curr_context.pointsAt();
 				}
 			} else if (_.has(options.var_map, key)) {
 				return cjs.get(options.var_map[key], options.auto_add_dependency);
@@ -168,7 +168,7 @@
 				if (object instanceof ist.ContextualObject && prop === "parent") {
 					found_this = false;
 					curr_context = object.get_pointer();
-					context_item = curr_context.points_at();
+					context_item = curr_context.pointsAt();
 
 					while (!curr_context.is_empty()) {
 						if (context_item instanceof ist.Dict) {
@@ -180,7 +180,7 @@
 							}
 						}
 						curr_context = curr_context.pop();
-						context_item = curr_context.points_at();
+						context_item = curr_context.pointsAt();
 					}
 				}
 			}

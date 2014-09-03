@@ -35,7 +35,7 @@
 		options: {
 			root: undefined,
 			show_edit_button: true,
-			autosave: true,
+			autosave: false,
 			edit_on_open: false,
 			editor_url: "editor.html",
 			editor_name: uid.get_prefix() + "ist_editor",
@@ -72,7 +72,7 @@
 			if(!this.option("root")) {
 				var root = ist.load();
 				if(!root) {
-					root = ist.get_default_root();
+					root = ist.get_default_root(false);
 					ist.saveAndSetCurrent(root);
 				}
 				this.option("root", root);

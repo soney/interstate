@@ -40,7 +40,7 @@
 			return this.pointer.root();
 		};
 		proto.get_pointer_obj = function () {
-			return this.pointer.points_at();
+			return this.pointer.pointsAt();
 		};
 
 		proto.get_current_statechart = function () {
@@ -116,7 +116,7 @@
 		};
 
 		proto.cd = function (prop_name) {
-			var dict = this.pointer.points_at(),
+			var dict = this.pointer.pointsAt(),
 				pv = dict._get_direct_prop(prop_name);
 
 			if (pv) {
@@ -395,7 +395,7 @@
 		proto.inherit = function(prop_name) {
 			var parent_obj = this.get_pointer_obj();
 			var ptr = this.pointer;
-			var obj = ptr.points_at();
+			var obj = ptr.pointsAt();
 			var cobj = ist.find_or_put_contextual_obj(obj, ptr);
 			cobj = cobj.prop(prop_name);
 			var command = new ist.InheritPropCommand({

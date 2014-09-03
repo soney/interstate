@@ -308,14 +308,7 @@
 				return rv;
 			} else {
 				var listen_to;
-				if (object instanceof ist.State) {
-					listen_to = ["add_transition", "add_substate", "remove_substate",
-										"rename_substate", "move_substate", "make_concurrent",
-										/*"on_transition", "off_transition",*/ "destroy",
-										"active", "inactive", "run", "stop"];
-				} else if (object instanceof ist.StatechartTransition) {
-					listen_to = ["setTo", "setFrom", "remove", "destroy", "fire", "enable", "disable"];
-				} else if (object instanceof ist.ParsedEvent) {
+				if (object instanceof ist.ParsedEvent) {
 					listen_to = ["setString"];
 				} else {
 					listen_to = ['destroy', 'begin_destroy'];

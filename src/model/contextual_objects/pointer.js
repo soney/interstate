@@ -9,7 +9,7 @@
 	ist.find_stateful_obj_and_context = function (context) {
 		var popped_item, last;
 		while (!context.is_empty()) {
-			last = context.points_at();
+			last = context.pointsAt();
 			if (last instanceof ist.StatefulObj) {
 				return {
 					stateful_obj: last,
@@ -23,12 +23,13 @@
 	};
 
 	ist.Pointer = function (options) {
+		this._copies = (options && options.copies) || [];
 		this._stack = (options && options.stack) || [];
 		this._hashes = (options && options.hashes) || [];
 	};
 	(function (my) {
 		var proto = my.prototype;
-		proto.points_at = function (index) {
+		proto.pointsAt = function (index) {
 			if (!_.isNumber(index)) {
 				index = this._stack.length - 1;
 			} else if (index < 0) {
@@ -36,34 +37,91 @@
 			}
 			return this._stack[index];
 		};
+		proto.copy = function (index) {
+			if (!_.isNumber(index)) {
+				index = this._copies.length - 1;
+			} else if (index < 0) {
+				index += this._copies.length;
+			}
+
+			return this._copies[index];
+		};
+
 		proto.length = function () { return this._stack.length; };
 		proto.slice = function () {
+			var args = _.toArray(arguments);
 			return new ist.Pointer({
-				stack: this._stack.slice.apply(this._stack, arguments),
-				hashes: this._hashes.slice.apply(this._hashes, arguments)
+				stack: this._stack.slice.apply(this._stack, args),
+				copies: this._copies.slice.apply(this._copies, args),
+				hashes: this._hashes.slice.apply(this._hashes, args)
 			});
 		};
 		proto.splice = function () {
 			var stack_copy = _.clone(this._stack),
+				copies_copy = _.clone(this._copies),
 				hashes_copy = _.clone(this._hashes);
 
 			stack_copy.splice.apply(stack_copy, arguments);
+			copies_copy.splice.apply(copies_copy, arguments);
 			hahes_copy.splice.apply(hashes_copy, arguments);
+
 			return new ist.Pointer({
 				stack: stack_copy,
+				copies: copies_copy,
 				hashees: hashes_copy
 			});
 		};
-		proto.push = function () {
+		proto.push = function (obj, copies) {
 			return new ist.Pointer({
-				stack: this._stack.concat(arguments),
+				stack: this._stack.concat(obj),
+				copies: this._copies.concat(copies),
 				hashes: _.clone(this.hashes)
 			});
 		};
+		proto.pushCopy = function(copies) {
+			var len_minus_1 = this._stack.length-1,
+				copies_clone = _.clone(this._copies);
+
+			copies_clone[len_minus_1] = copies;
+
+			return new ist.Pointer({
+				stack: this._stack,
+				copies: copies_clone,
+				hashes: this._hashes.slice(0, len_minus_1)
+			});
+		};
+
+		proto.replace = function (item) {
+			var len_minus_1 = this._stack.length-1,
+				stack_clone = _.clone(this._stack);
+
+			stack_clone[len_minus_1] = item;
+
+			return new ist.Pointer({
+				stack: stack_clone,
+				copies: this._copies,
+				hashes: this._hashes.slice(0, len_minus_1)
+			});
+		};
+
+		proto.popCopy = function() {
+			var len_minus_1 = this._stack.length-1,
+				copies_clone = _.clone(this._copies);
+
+			copies_clone[len_minus_1] = undefined;
+
+			return new ist.Pointer({
+				stack: this._stack,
+				copies: copies_clone,
+				hashes: this._hashes.slice(0, len_minus_1)
+			});
+		};
+
 		proto.pop = function () {
 			var len_minus_1 = this._stack.length-1;
 			return new ist.Pointer({
 				stack: this._stack.slice(0, len_minus_1),
+				copies: this._copies.slice(0, len_minus_1),
 				hashes: this._hashes.slice(0, len_minus_1)
 			});
 		};
@@ -80,7 +138,7 @@
 			return this._stack[0];
 		};
 
-		proto.is_empty = function () {
+		proto.isEmpty = function () {
 			return this._stack.length === 0;
 		};
 
@@ -109,7 +167,7 @@
 		};
 
 		var num_to_hash = 2;
-		proto.compute_hash = function () {
+		proto._compute_hash = function () {
 			var hash = 0,
 				i = this._stack.length - 1,
 				mini = Math.max(0, i - num_to_hash);
@@ -121,22 +179,22 @@
 			return hash;
 		};
 
-		proto.compute_item_hash = function(i) {
+		proto._compute_item_hash = function(i) {
 			var hash = 1, j = 0, lenj;
 			if(this._stack[i].hash) {
 				hash += this._stack[i].hash();
+			}
+
+			if(this._copies[i]) {
+				hash += this._copies[i].index + 1;
 			}
 
 			return hash;
 		};
 
 		/* jshint -W093 */
-		proto.hash = function() {
-			return this.computed_hash || (this.computed_hash = this.compute_hash());
-		};
-		proto.itemHash = function(i) {
-			return this._hashes[i] || (this._hashes[i] = this.compute_item_hash(i));
-		};
+		proto.hash = function() { return this.computed_hash || (this.computed_hash = this._compute_hash()); };
+		proto.itemHash = function(i) { return this._hashes[i] || (this._hashes[i] = this._compute_item_hash(i)); };
 		/* jshint +W093 */
 
 		proto.toString = function () {
@@ -146,7 +204,7 @@
 			}, this).join(", ") + ")";
 		};
 		proto.getContextualObject = function() {
-			return ist.find_or_put_contextual_obj(this.points_at(), this);
+			return ist.find_or_put_contextual_obj(this.pointsAt(), this);
 		};
 
 		proto.getContextualObjects = function() {
@@ -173,6 +231,7 @@
 			return rv;
 		};
 	}(ist.Pointer));
+	/*
 
 	ist.is_pointer = function (obj) {
 		return obj instanceof ist.Cell || obj instanceof ist.StatefulProp;
@@ -194,4 +253,5 @@
 			return item.toString();
 		}
 	};
+	*/
 }(interstate));

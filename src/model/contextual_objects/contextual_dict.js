@@ -204,7 +204,6 @@
 		};
 
 		proto.raw_children = function (exclude_builtins) {
-			//console.log("-begin raw children-");
 			var dict = this.get_object(),
 				pointer = this.get_pointer(),
 				my_ptr_index = pointer.lastIndexOf(dict),
@@ -216,11 +215,6 @@
 				inherited_names = [],
 				i;
 
-			//if(this.sid() === 25) {
-				//console.log(proto_objects);
-			//}
-			//console.log("-end raw children-");
-
 			_.each(builtin_names, function (name) {
 				owners[name] = this;
 			}, this);
@@ -229,7 +223,9 @@
 				owners[name] = this;
 			}, this);
 
+
 			if (exclude_builtins !== true && my_ptr_index >= 0) {
+			/*
 				var special_contexts = pointer.special_contexts(my_ptr_index),
 					len = special_contexts.length,
 					sc, co,
@@ -245,6 +241,7 @@
 					co = sc.get_context_obj();
 					_.each(co, each_co);
 				}
+				*/
 			}
 
 			_.each(proto_objects, function (p) {
@@ -338,22 +335,6 @@
 						return {name: name, value: info.value, inherited: false, builtin: true };
 					}, this);
 
-				if (my_ptr_index >= 0) {
-					var special_contexts = pointer.special_contexts(my_ptr_index),
-						len = special_contexts.length,
-						sc, co, i,
-						each_co = function (v, k) {
-							owners[k] = sc;
-							special_context_names.push(k);
-						};
-
-					for (i = 0; i < len; i += 1) {
-						sc = special_contexts[i];
-						co = sc.get_context_obj();
-						_.each(co, each_co);
-					}
-				}
-
 				var special_context_infos = _.map(special_context_names, function (name) {
 							var sc = owners[name];
 							var co = sc.get_context_obj();
@@ -405,7 +386,7 @@
 		};
 		proto.parent = function() {
 			var popped_pointer = this.pointer.pop();
-			var contextual_object = ist.find_or_put_contextual_obj(popped_pointer.points_at(), popped_pointer);
+			var contextual_object = ist.find_or_put_contextual_obj(popped_pointer.pointsAt(), popped_pointer);
 			return contextual_object;
 		};
 		proto._has = function (name, ignore_inherited) {
@@ -422,21 +403,6 @@
 				if (_.any(proto_objects, function (d) { return d.has_direct_prop(name); })) {
 					return true;
 				}
-
-				var pointer = this.get_pointer();
-				var my_ptr_index = pointer.lastIndexOf(dict);
-				if (my_ptr_index >= 0) {
-					var special_contexts = pointer.special_contexts(my_ptr_index);
-					var len = special_contexts.length;
-					var sc, co;
-					for (i = 0; i < len; i += 1) {
-						sc = special_contexts[i];
-						co = sc.get_context_obj();
-						if (co.hasOwnProperty(name)) {
-							return true;
-						}
-					}
-				}
 			}
 			return false;
 		};
@@ -451,20 +417,6 @@
 				info = dict._get_direct_prop_info(name);
 			} else {
 				var pointer = this.get_pointer();
-				var my_ptr_index = pointer.lastIndexOf(dict);
-				if (my_ptr_index >= 0) {
-					var special_contexts = pointer.special_contexts(my_ptr_index);
-					len = special_contexts.length;
-					var sc, co;
-					for (i = 0; i < len; i += 1) {
-						sc = special_contexts[i];
-						co = sc.get_context_obj();
-						if (co.hasOwnProperty(name)) {
-							info = co[name];
-							break;
-						}
-					}
-				}
 				if (!info && ignore_inherited !== true) {
 					var proto_objects = this.get_all_protos();
 					len = proto_objects.length;
@@ -580,16 +532,12 @@
 			var pointer = this.get_pointer(),
 				object = this.get_object(),
 				obj_index = pointer.lastIndexOf(object),
-				i, special_contexts, special_context;
+				i, copy;
 
 			if (obj_index >= 0) {
-				special_contexts = pointer.special_contexts(obj_index);
-
-				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
-					special_context = special_contexts[i];
-					if (special_context instanceof ist.CopyContext) {
-						return true;
-					}
+				copy = pointer.copy(obj_index);
+				if(copy) {
+					return true;
 				}
 			}
 			return false;
@@ -611,51 +559,42 @@
 		};
 
 		proto.is_instance = function () {
-			var pointer = this.get_pointer();
-			var object = this.get_object();
-			var obj_index = pointer.lastIndexOf(object);
-			var i;
+			var pointer = this.get_pointer(),
+				object = this.get_object(),
+				obj_index = pointer.lastIndexOf(object);
 
 			if (obj_index >= 0) {
-				var special_contexts = pointer.special_contexts(obj_index);
-				var special_context;
-				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
-					special_context = special_contexts[i];
-					if (special_context instanceof ist.CopyContext) {
-						return true;
-					}
+				var copy = pointer.copy(obj_index);
+				if(copy) {
+					return true;
 				}
 			}
 			return false;
 		};
 
 		proto.get_template_info = function () {
-			var pointer = this.get_pointer();
-			var object = this.get_object();
-			var obj_index = pointer.lastIndexOf(object);
-			var i;
+			var pointer = this.get_pointer(),
+				object = this.get_object(),
+				obj_index = pointer.lastIndexOf(object);
 
 			if (obj_index >= 0) {
-				var ptr = pointer.slice(0, obj_index);
-				ptr = ptr.push(object);
+				var objPointer = pointer.slice(0, obj_index),
+					copy = objPointer.copy(),
+					cObj = objPointer.getContextualObject();
 
-				var special_contexts = pointer.special_contexts(obj_index);
-				var special_context;
-				for (i = special_contexts.length - 1; i >= 0; i -= 1) {
-					special_context = special_contexts[i];
-					if (special_context instanceof ist.CopyContext) {
-						return {cobj: ist.find_or_put_contextual_obj(object, ptr), index: special_context.get_copy_num()};
-					}
-				}
+				return {
+					cobj: cObj,
+					index: copy.index
+				};
 			}
 			return false;
 		};
 
 		proto.instance_pointers = function() {
 			var manifestations_value = this.get_manifestations_value();
-			var i;
 			if (_.isNumber(manifestations_value)) {
-				var len = manifestations_value;
+				var len = manifestations_value,
+					i;
 				manifestations_value = [];
 
 				for (i = 0; i < len; i += 1) {

@@ -323,7 +323,7 @@
 			if (key === IDENTIFIER.CONTAINER) {
 				var found_this = false;
 				curr_context = context;
-				context_item = curr_context.points_at();
+				context_item = curr_context.pointsAt();
 
 				while (!curr_context.is_empty()) {
 					if (context_item instanceof ist.Dict) {
@@ -335,12 +335,12 @@
 						}
 					}
 					curr_context = curr_context.pop();
-					context_item = curr_context.points_at();
+					context_item = curr_context.pointsAt();
 				}
 			}
 
 			curr_context = context;
-			context_item = curr_context.points_at();
+			context_item = curr_context.pointsAt();
 				
 			while (!curr_context.is_empty()) {
 				if (context_item instanceof ist.Dict) {
@@ -373,7 +373,7 @@
 				}
 					
 				curr_context = curr_context.pop();
-				context_item = curr_context.points_at();
+				context_item = curr_context.pointsAt();
 			}
 			if (window.hasOwnProperty(key)) {
 				return window[key];
@@ -399,7 +399,7 @@
 		var context = options.context;
 		var getter = function () {
 			var curr_context = context;
-			var context_item = curr_context.points_at();
+			var context_item = curr_context.pointsAt();
 
 			while (!curr_context.is_empty()) {
 				if (context_item instanceof ist.Dict) {
@@ -407,7 +407,7 @@
 					return contextual_obj;
 				}
 				curr_context = curr_context.pop();
-				context_item = curr_context.points_at();
+				context_item = curr_context.pointsAt();
 			}
 
 			throw new Error("Could not find this");
@@ -435,7 +435,7 @@
 				if (property === "container") {
 					var found_this = false;
 					var curr_context = object.get_pointer();
-					var context_item = curr_context.points_at();
+					var context_item = curr_context.pointsAt();
 
 					while (!curr_context.is_empty()) {
 						if (context_item instanceof ist.Dict) {
@@ -447,7 +447,7 @@
 							}
 						}
 						curr_context = curr_context.pop();
-						context_item = curr_context.points_at();
+						context_item = curr_context.pointsAt();
 					}
 				} else if (object.is_template && object.is_template()) {
 					if( _.isNumber(property)) {

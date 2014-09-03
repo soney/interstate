@@ -92,7 +92,7 @@
             var i;
             if (this.get_ignore_inherited_in_first_dict()) {
                 for (i = pcontext.length() - 1; i >= 0; i -= 1) {
-                    var item = pcontext.points_at(i);
+                    var item = pcontext.pointsAt(i);
                     if (item instanceof ist.Dict) {
                         return [item];
                     }

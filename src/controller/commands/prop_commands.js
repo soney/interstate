@@ -125,7 +125,7 @@
         proto._execute = function () {
 			var ptr = this._cobj.get_pointer(),
 				parent_ptr = ptr.pop(),
-				parent_cobj = ist.find_or_put_contextual_obj(parent_ptr.points_at(), parent_ptr),
+				parent_cobj = ist.find_or_put_contextual_obj(parent_ptr.pointsAt(), parent_ptr),
 				parent_obj = parent_cobj.get_object();
 			
 			if(!this._prop_value && parent_cobj instanceof ist.ContextualStatefulObj) {

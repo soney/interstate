@@ -21,7 +21,9 @@
     
         My.builtins = {
             "direct_statechart": {
-                "default": function () { return new ist.Statechart(); },
+                "default": function () {
+					return new ist.State();
+				},
                 getter_name: "get_own_statechart",
                 settable: false,
 				destroy: function(me) {
@@ -42,6 +44,17 @@
 				}
 			};
 		});
+
+		proto.get_statechart = function() {
+			var statechart = this.get_own_statechart();
+			if(statechart === "parent") {
+				return "parent";
+			} else if(statechart instanceof ist.State) {
+				return statechart;
+			} else {
+				return false;
+			}
+		};
 
         proto.destroy = function () {
 			if(this.constructor === My) { this.begin_destroy(); }

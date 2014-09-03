@@ -89,7 +89,7 @@
 					parent = SOandC.stateful_obj;
 				} else {
 					//context = options.context;
-					parent = options.context.points_at();
+					parent = options.context.pointsAt();
 				}
 
 				this._tree = cjs(function () {
@@ -266,27 +266,10 @@
 			ist.unregister_uid(this.id());
 			My.superclass.destroy.apply(this, arguments);
 		};
-		proto.clone = function () {
-		};
 		proto.stringify = function () {
 			return this._str.get();
 		};
-		ist.register_serializable_type("parsed_event",
-			function (x) {
-				return x instanceof My;
-			},
-			function () {
-				return {
-					str: this.get_str(),
-					inert: this.options.inert
-				};
-			},
-			function (obj) {
-				return new My({
-					str: obj.str,
-					inert: obj.inert
-				});
-			});
+
 		proto.get_obj = function() {
 			return this._obj;
 		};

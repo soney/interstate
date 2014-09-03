@@ -30,7 +30,6 @@
 		this.pointer = options.pointer;
 		this.inherited_from = options.inherited_from || false;
 
-
 		this.$value = new cjs.Constraint(this._getter, {
 			context: this,
 			check_on_nullify: options && (options.check_on_nullify === true),
@@ -73,7 +72,7 @@
 			if(my_index === 0) {
 				return ist.root_name;
 			} else {
-				parent_obj = pointer.points_at(my_index-1);
+				parent_obj = pointer.pointsAt(my_index-1);
 				parent_pointer = pointer.slice(0, my_index-1);
 				if(parent_obj instanceof ist.Dict) {
 					name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer().pop());
@@ -87,22 +86,12 @@
 			if(my_index === 0) {
 				return "(" + ist.root_name + ")";
 			} else {
-				var parent_obj = pointer.points_at(my_index-1);
-				var parent_pointer = pointer.slice(0, my_index-1);
+				var parent_obj = pointer.pointsAt(my_index-1),
+					parent_pointer = pointer.slice(0, my_index-1);
 				if(parent_obj instanceof ist.Dict) {
-					var sp_contexts = pointer.special_contexts();
-					var extra_txt = "";
-					if(sp_contexts.length > 0) {
-						var sp_context;
-						for(var i = 0; i<sp_contexts.length; i++) {
-							sp_context = sp_contexts[i];
-							if(sp_context instanceof ist.CopyContext) {
-								extra_txt = "[" + sp_context.copy_num + "]";
-								break;
-							}
-						}
-					}
-					var name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer().pop());
+					var copy = pointer.copy(),
+						extra_txt = copy ? "[" + copy.index + "]" : "",
+						name = ist.Dict.get_prop_name(parent_obj, this.get_object(), this.get_pointer().pop());
 
 					return "("+name+extra_txt+")";
 				} else {
@@ -254,16 +243,12 @@
 			cjs.signal();
 		};
 
-		proto.get_or_put_cobj_child = function (obj, special_contexts, hash, options, avoid_initialization) {
-			var ptr = this.pointer.push(obj, special_contexts),
+		proto.get_or_put_cobj_child = function (obj, hash, options, avoid_initialization) {
+			var ptr = this.pointer.push(obj),
 				must_initialize = false,
 				cobj = this._cobj_children.getOrPut(ptr, function() {
-					var inert = special_contexts &&
-								special_contexts.length > 0 &&
-								_.every(special_contexts, function(sc) { return !sc.requires_different_cobj; }),
-						rv = ist.create_contextual_object(obj, ptr, _.extend({
-							defer_initialization: true,
-							inert: inert
+					var rv = ist.create_contextual_object(obj, ptr, _.extend({
+							defer_initialization: true
 						}, options));
 
 					must_initialize = true;
@@ -321,8 +306,12 @@
 			rv = new ist.ContextualStatefulObj(options);
 		} else if (object instanceof ist.Dict) {
 			rv = new ist.ContextualDict(options);
+		} else if (object instanceof ist.State) {
+			rv = new ist.ContextualState(options);
+		} else if (object instanceof ist.Transition) {
+			rv = new ist.ContextualTransition(options);
 		} else {
-			rv = new ist.ContextualObject(options);
+			throw new Error("Object is not contextual");
 		}
 
 		return rv;
@@ -347,7 +336,7 @@
 		var must_initialize = false,
 			rv = cobj_hashes.getOrPut(pointer, function() {
 			var len = pointer.length(),
-				pointer_root, hvi, i, ptr_i, sc_i, hash_i, new_cobj, node, opts;
+				pointer_root, hvi, i, ptr_i, hash_i, new_cobj, node, opts;
 
 			pointer_root = pointer.root();
 			hash_i = pointer_root.id();
@@ -363,41 +352,16 @@
 				} else {
 					node = ist.find_or_put_contextual_obj(pointer_root, pointer.slice(0,1));
 				}
-			/*
-				opts = {
-					object: pointer_root,
-					pointer: pointer.slice(0, 1),
-					defer_initialization: true
-				};
-				*/
-				/*
-
-				if(pointer_root instanceof ist.StatefulObj) {
-					node =  = new ist.ContextualStatefulObj(opts);
-				} else if(pointer_root instanceof ist.Dict) {
-					node = cobj_roots[hash_i] = new ist.ContextualDict(opts);
-				} else {
-					throw new Error("Root pointer should be a dictionary");
-				}
-				//must_initialize.push(node);
-				if(len > 1) {
-					node.initialize();
-				}
-				*/
 			}
 
 			i = 1;
 			
 			while (i < len) {
-				ptr_i = pointer.points_at(i);
-				sc_i = pointer.special_contexts(i);
+				ptr_i = pointer.pointsAt(i);
 				hash_i = pointer.itemHash(i);
-				//debugger;
-				node = node.get_or_put_cobj_child(ptr_i, sc_i, hash_i, i === len-1 ? options : false);//, i === len-1 ? true : false);
+				node = node.get_or_put_cobj_child(ptr_i, hash_i, i === len-1 ? options : false);//, i === len-1 ? true : false);
 				i++;
 			}
-
-			//if(node.sid() === 2440) { debugger; }
 
 			return node;
 		});
@@ -414,10 +378,6 @@
 			obj = cobj.get_object();
 
 		cobj_hashes.remove(pointer); // TODO: fix
-		//cobj_hashes.remove(pointer);
-		//cobj_hashes.remove(pointer);
-		//cobj_hashes.remove(pointer);
-		//cobj_hashes.remove(pointer);
 
 		if(pointer.length() === 1) {
 			delete cobj_roots[obj.id()];
