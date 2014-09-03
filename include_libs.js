@@ -69,6 +69,8 @@ exports.runtime = c(
 				"model/basic_objects/dict.js",
 				"model/basic_objects/stateful_obj.js",
 				"model/basic_objects/stateful_prop.js",
+				"model/basic_objects/basic_statechart.js",
+				"model/basic_objects/basic_transition.js",
 				"model/pointer/pointer.js",
 				"model/pointer/special_contexts.js",
 				"model/contextual_objects/contextual_core.js",

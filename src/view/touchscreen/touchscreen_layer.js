@@ -21,7 +21,7 @@
 				"position": "absolute"
 			});
 
-			this.paper = Snap(0,0);
+			this.paper = new Snap(0,0);
 			this.raphaelDiv = $(this.paper.node);
 			this.ctx = this.canvasDiv[0].getContext("2d");
 			this.raphaelDiv.prependTo(document.body).css({

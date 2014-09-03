@@ -18,9 +18,9 @@
 		this.$runtime_errors = new cjs.Constraint([]);
 
 		ist.ContextualStatefulProp.superclass.constructor.apply(this, arguments);
-		if(_.any(this.pointer._special_contexts, function(sc_array) { return _.any(sc_array, function(a) { return a instanceof ist.StateContext; });})) {
-			debugger;
-		}
+		//if(_.any(this.pointer._special_contexts, function(sc_array) { return _.any(sc_array, function(a) { return a instanceof ist.StateContext; });})) {
+			//debugger;
+		//}
 		this._type = "stateful_prop";
 	};
 

@@ -66,7 +66,6 @@
 		if(constraints.hasOwnProperty(id)) {
 			return constraints[id];
 		} else {
-			debugger;
 			return false;
 		}
 	};

@@ -170,7 +170,7 @@
 		proto.startELIF = function(cond) {
 			this._stack.pop();
 
-			var popped_tree_node = _.last(this._stack)
+			var popped_tree_node = _.last(this._stack),
 				if_stmt = _.last(popped_tree_node),
 				elif_tree = [];
 
@@ -187,7 +187,7 @@
 		proto.startELSE = function() {
 			this._stack.pop();
 
-			var popped_tree_node = _.last(this._stack)
+			var popped_tree_node = _.last(this._stack),
 				if_stmt = _.last(popped_tree_node),
 				else_tree = [];
 

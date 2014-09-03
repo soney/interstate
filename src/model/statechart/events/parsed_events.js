@@ -31,9 +31,9 @@
 				fireable_attachment = cobj.get_attachment_instance("fireable_attachment"); 
 
 			if(fireable_attachment) {
-				return {obj: obj, cobj: cobj, event: fireable_attachment.getEvent(), actions: actions}
+				return {obj: obj, cobj: cobj, event: fireable_attachment.getEvent(), actions: actions};
 			} else {
-				return {obj: obj, cobj: cobj, event: false, actions: actions}
+				return {obj: obj, cobj: cobj, event: false, actions: actions};
 			}
 		} else {
 			if(cjs.isConstraint(event_constraint)) {

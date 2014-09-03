@@ -138,7 +138,7 @@
 		// Recompute active touches
 		event.preventDefault();
 		event.stopPropagation();
-	};
+	}
 
 	function _onTouchMove(event) {
 		var currTime = getTime();
@@ -149,7 +149,7 @@
 			touchMap.put('x', touch.clientX)
 					.put('y', touch.clientY)
 					.put('movedAt', currTime);
-		}, this);
+		});
 
 		cjs.signal();
 
@@ -157,7 +157,7 @@
 	
 		event.preventDefault();
 		event.stopPropagation();
-	};
+	}
 
 	function _onTouchEnd(event) {
 		var currTime = getTime();
@@ -194,7 +194,7 @@
 		// Recompute active touches
 		event.preventDefault();
 		event.stopPropagation();
-	};
+	}
 
 	window.addEventListener("touchstart",  _onTouchStart);
 	window.addEventListener("touchmove",   _onTouchMove);
@@ -210,17 +210,13 @@
 				usingFingers = touchCluster.getUsingFingers(),
 				usableFingersLength = usableFingers.length,
 				usingFingersLength = usingFingers.length,
-				numFingers = touchCluster.options.numFingers;
+				numFingers = touchCluster.options.numFingers,
+				i, j, k;
 
 			if(satisfied && removedTouches) { // see if should still be satified
 				if(usableFingers.length < numFingers) {
 					touchCluster.postUnsatisfied();
 				} else {
-					var usingFingers = touchCluster.getUsingFingers(),
-						usableFingers = touchCluster.getUsableFingers(),
-						usingFingersLength = usingFingers.length,
-						i;
-
 					for(i = 0; i<usingFingersLength; i++) {
 						if(usableFingers.indexOf(usingFingers[i]) < 0) {
 							touchCluster.postUnsatisfied();
@@ -238,19 +234,19 @@
 						} else {
 							var usableFingersDistances = {},
 								identifieri, identifierj,
-								i, j, k, smallestDistances = [], largestSmallDistance = false;
+								smallestDistances = [], largestSmallDistance = false, distance, inserted, distance_info;
 
 							for(i = 0; i<usableFingersLength; i++) {
 								identifieri = usableFingers[i];
 								for(j = i+1; j<usableFingersLength; j++) {
 									identifierj = usableFingers[j];
-									var distance = distanceMatrix[identifieri, identifierj];
+									distance = distanceMatrix[identifieri][identifierj];
 									if(smallestDistances.length < numFingers || distance < largestSmallDistance) {
-										var inserted = false,
-											distance_info = {
-												identifiers: [identifieri, identifierj],
-												distance: distance
-											};
+										inserted = false;
+										distance_info = {
+											identifiers: [identifieri, identifierj],
+											distance: distance
+										};
 
 										for(k = 0; k < smallestDistances.length; k++) {
 											if(distance < smallestDistances[k].distance) {
@@ -285,16 +281,15 @@
 
 						if(touchCluster.options.maxRadius) {
 							radiusOK = true;
-							var touches = [];
-							_.each(closestTouchObject, function(isTrue, identifier) {
-								var touch = touches.get(identifier);
-								touches.push(touch.toObject());
-							});
-							var center = {
+							var touches = _.map(closestTouchArr, function(identifier) {
+									return touches.get(identifier);
+								}),
+								center = {
 									x: average(_.pluck(touches, 'x')),
 									y: average(_.pluck(touches, 'y'))
-								};
-							var maxRadiusSquared = Math.pow(touchCluster.options.maxRadius, 2);
+								},
+								maxRadiusSquared = Math.pow(touchCluster.options.maxRadius, 2);
+
 							if(_.every(touches, function(touch) {
 									return distanceSquared(touch.x, touch.y, center.x, center.y) <= maxRadiusSquared;
 								})) {
@@ -433,7 +428,7 @@
 					});
 				var averageDiff = average(angleDiffs);
 				while(averageDiff >= Math.PI) {
-					averageDiff -= twoPI
+					averageDiff -= twoPI;
 				}
 				return averageDiff;
 			} else {
@@ -450,10 +445,10 @@
 					center = this.$center.get();
 
 				var startDistance = average(_.map(touchLocations, function(point) {
-						return Math.sqrt(Math.pow(point.startX - startCenter.x, 2) + Math.pow(point.startY - startCenter.y, 2))
+						return Math.sqrt(Math.pow(point.startX - startCenter.x, 2) + Math.pow(point.startY - startCenter.y, 2));
 					})),
 					currentDistance = average(_.map(touchLocations, function(point) {
-						return Math.sqrt(Math.pow(point.x - center.x, 2) + Math.pow(point.y - center.y, 2))
+						return Math.sqrt(Math.pow(point.x - center.x, 2) + Math.pow(point.y - center.y, 2));
 					}));
 
 				return currentDistance / startDistance;
@@ -554,15 +549,15 @@
 		proto.getEndRadius = function() { return this.$endRadius.get(); };
 		proto.getEndRadiusConstraint = function() { return this.$endRadius; };
 
-		proto.getRotation = function() { return this.$rotation.get(); }
-		proto.getRotationConstraint = function() { return this.$rotation; }
-		proto.getEndRotation = function() { return this.$endRotation.get(); }
-		proto.getEndRotationConstraint = function() { return this.$endRotation; }
+		proto.getRotation = function() { return this.$rotation.get(); };
+		proto.getRotationConstraint = function() { return this.$rotation; };
+		proto.getEndRotation = function() { return this.$endRotation.get(); };
+		proto.getEndRotationConstraint = function() { return this.$endRotation; };
 
-		proto.getScale = function() { return this.$scale.get(); }
-		proto.getScaleConstraint = function() { return this.$scale; }
-		proto.getEndScale = function() { return this.$endScale.get(); }
-		proto.getEndScaleConstraint = function() { return this.$endScale; }
+		proto.getScale = function() { return this.$scale.get(); };
+		proto.getScaleConstraint = function() { return this.$scale; };
+		proto.getEndScale = function() { return this.$endScale.get(); };
+		proto.getEndScaleConstraint = function() { return this.$endScale; };
 
 		proto.setOption = function(a, b) {
 			if(arguments.length === 1) {

@@ -144,6 +144,10 @@ module.exports = function(grunt) {
 			dev: {
 				files: my_src_files.concat(['test/unit_tests/*.js']),
 				tasks: ['jshint', 'qunit']
+			},
+			jshint: {
+				files: my_src_files,
+				tasks: ['jshint']
 			}
 		}
 	});

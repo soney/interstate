@@ -68,7 +68,7 @@
 	ist.PaperAttachment = ist.register_attachment("paper", {
 			ready: function() {
 				this.dom_obj = window.document.createElement("span");
-				this.paper = Snap(0,0);
+				this.paper = new Snap(0,0);
 				this.dom_obj.appendChild(this.paper.node);
 			},
 			destroy: function(silent) {

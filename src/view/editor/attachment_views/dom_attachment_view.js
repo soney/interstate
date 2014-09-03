@@ -24,8 +24,8 @@
 		},
 		_create: function() {
 			var client = this.option("client");
-			this.$tag = client.get_$("prop_val", "tag")
-			this.$textContent = client.get_$("prop_val", "textContent")
+			this.$tag = client.get_$("prop_val", "tag");
+			this.$textContent = client.get_$("prop_val", "textContent");
 			this._addContentBindings();
 		},
 		_destroy: function() {

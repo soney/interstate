@@ -194,9 +194,9 @@
 					});
 
 					args_got["arguments"] = cjs(arg_arr);
-					var constructor_fn = op_got instanceof ist.ContextualStatefulObj ? ist.StatefulObj : ist.Dict;
+					var Constructor_fn = op_got instanceof ist.ContextualStatefulObj ? ist.StatefulObj : ist.Dict;
 
-					rv = new constructor_fn({
+					rv = new Constructor_fn({
 						value: args_got,
 						direct_protos: op
 					});

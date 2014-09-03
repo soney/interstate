@@ -53,7 +53,7 @@
 
 			var old_shape_type = false,
 				old_shape_value,
-				paper = Snap(0,0);
+				paper = new Snap(0,0);
 
 			this.element.append(paper.node);
 
@@ -63,7 +63,8 @@
 						attrs = {},
 						shape_value = old_shape_value,
 						paper_width,
-						paper_height;
+						paper_height,
+						bbox;
 
 					_.each(["fill", "fill_opacity", "stroke", "stroke_opacity", "stroke_width", "opacity", "stroke_dasharray"], function(name) {
 						var val = attr_constraints[name];
@@ -143,7 +144,7 @@
 						shape_value.attr(attrs);
 
 						if(shape_type === "text") {
-							var bbox = shape_value.getBBox();
+							bbox = shape_value.getBBox();
 
 							shape_value.attr({
 								x: 0,
@@ -153,7 +154,7 @@
 							paper_width = bbox.width;
 							paper_height = bbox.height;
 						} else if(shape_type === "path") {
-							var bbox = shape_value.getBBox();
+							bbox = shape_value.getBBox();
 
 							paper_width = bbox.width;
 							paper_height = bbox.height;
@@ -187,7 +188,7 @@
 					}
 				}, {
 					context: this
-				})
+				});
 			}, this), 100);
 
 		},

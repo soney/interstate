@@ -71,10 +71,10 @@
 						if(type === "touchstart") {
 							changedTouches.forEach(function(touch) {
 								target = document.elementFromPoint(touch.pageX, touch.pageY) || root;
-								var touch = document.createTouch ? document.createTouch(root, target, touch.identifier, touch.pageX, touch.pageY,
+								var new_touch = document.createTouch ? document.createTouch(root, target, touch.identifier, touch.pageX, touch.pageY,
 																	  touch.screenX, touch.screenY, touch.clientX, touch.clientY)
 																	  : touch;
-								touches[touch.identifier] = touch;
+								touches[touch.identifier] = new_touch;
 								touch_targets[touch.identifier] = target;
 							});
 						} else {
@@ -180,7 +180,7 @@
 					callback(xmlhttp.status);
 				}
 			}
-		}
+		};
 
 		xmlhttp.open("GET", fname, true);
 		xmlhttp.send();

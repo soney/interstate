@@ -523,7 +523,7 @@
 		if(str) {
 			try {
 				var dimensions = JSON.parse(str);
-				return dimensions
+				return dimensions;
 			} catch(e) {
 				window.localStorage.removeItem(editorDimensionsKey);
 			}

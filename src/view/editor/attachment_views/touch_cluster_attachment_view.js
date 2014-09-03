@@ -32,7 +32,7 @@
 			this.$tc_id = client.get_$("_attachment_call", "touch_cluster", "tc_id");
 			this.$claims_touches = client.get_$("_attachment_call", "touch_cluster", "claimsTouches");
 
-			var paper = Snap(0,0);
+			var paper = new Snap(0,0);
 
 			this.element.append(paper.node);
 			var circles = [];
@@ -86,8 +86,7 @@
 				}
 			}, {
 				context: this
-			})
-
+			});
 		},
 		_removeSnapBindings: function() {
 		},

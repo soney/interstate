@@ -213,7 +213,7 @@
 					var i = 0, queue = this.queue, len = queue.length, item;
 					for(; i<len; i++) {
 						item = queue[i];
-						fn.call(fnContext, item)
+						fn.call(fnContext, item);
 						queue.splice(i, 1);
 						i--;
 						len--;
@@ -249,7 +249,8 @@
 			return this._state;
 		};
 		proto.setState = function(state_val) {
-			return this._state = state_val;
+			this._state = state_val;
+			return this;
 		};
 
 		proto.requestFire = function(event, callback) {

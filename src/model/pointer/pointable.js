@@ -36,6 +36,7 @@
 				object = this.get_object(),
 				summarized_pointer = pointer.summarize(),
 				summarized_object = object.id();
+
 			return {
 				id: this.id(),
 				pointer: summarized_pointer,
@@ -48,11 +49,6 @@
 		proto.desummarize = function (obj) {
 			var pointer = ist.Pointer.desummarize(obj.pointer);
 			return pointer.getContextualObject();
-			/*
-			,
-				object = ist.find_uid(obj.object_uid);
-			return pointer.getist.find_or_put_contextual_obj(object, pointer);
-			*/
 		};
 
 		proto.destroy = function (avoid_begin_destroy) {
@@ -63,14 +59,9 @@
 
 			this._cobj_children.clear();
 
-			this.$value.destroy(true);
 			delete this.object;
 			delete this.pointer;
-			delete this.inherited_from;
-			delete this.$value;
 			ist.unregister_uid(this.id());
-			this._emit("destroyed");
-			able.destroy_this_listenable(this);
 		};
 
 		proto._get_valid_cobj_children = function() { return []; };
@@ -297,11 +288,7 @@
 		var pointer = cobj.get_pointer(),
 			obj = cobj.get_object();
 
-		cobj_hashes.remove(pointer); // TODO: fix
-		//cobj_hashes.remove(pointer);
-		//cobj_hashes.remove(pointer);
-		//cobj_hashes.remove(pointer);
-		//cobj_hashes.remove(pointer);
+		cobj_hashes.remove(pointer);
 
 		if(pointer.length() === 1) {
 			delete cobj_roots[obj.id()];

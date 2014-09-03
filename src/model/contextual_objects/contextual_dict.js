@@ -409,7 +409,6 @@
 			return contextual_object;
 		};
 		proto._has = function (name, ignore_inherited) {
-			if(this.inert) { debugger; }
 			if(this.is_template()) {
 				return false;
 			}
@@ -864,7 +863,6 @@
 		};
 
 		proto.destroy = function (avoid_begin_destroy) {
-			if(this.sid() === 532) debugger;
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
 			this._manifestation_objects.destroy(true);
@@ -935,7 +933,7 @@
 				return attachment[fn_name].apply(attachment, args);
 			}
 			return false;
-		}
+		};
 		proto._get_dom_obj_and_src = function () {
 			var show = this.has("show") ? this.prop_val("show") : true,
 				dom_obj, robj;

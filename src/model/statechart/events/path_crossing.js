@@ -26,7 +26,8 @@
 
 			this.live_fn = cjs.liven(function () {
 				var min_velocity = cjs.get(this.min_velocity),
-					max_velocity = cjs.get(this.max_velocity);
+					max_velocity = cjs.get(this.max_velocity),
+					cx, cy;
 
 				if(!_.isNumber(min_velocity)) { min_velocity = false; }
 				if(!_.isNumber(max_velocity)) { max_velocity = false; }
@@ -38,15 +39,16 @@
 						if(shape_attachment.shape_type === "path") {
 							path = path.prop_val("path");
 						} else if(shape_attachment.shape_type === "circle") {
-							var cx = path.prop_val("cx"),
-								cy = path.prop_val("cy"),
-								r = path.prop_val("r");
+							cx = path.prop_val("cx");
+							cy = path.prop_val("cy");
+							var r = path.prop_val("r");
 
 							path = "M"+(cx-r)+','+cy+'a'+r+','+r+',0,1,1,0,0.0001Z';
 						} else if(shape_attachment.shape_type === "ellipse") {
-							var cx = path.prop_val("cx"),
-								cy = path.prop_val("cy"),
-								rx = path.prop_val("rx"),
+							cx = path.prop_val("cx");
+							cy = path.prop_val("cy");
+
+							var rx = path.prop_val("rx"),
 								ry = path.prop_val("ry");
 
 							path = "M"+(cx-rx)+','+cy+'a'+rx+','+ry+',0,1,1,0,0.0001Z';
