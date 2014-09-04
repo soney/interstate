@@ -56,7 +56,7 @@
 
 		proto.find_state = function (name) {
 			var i, inherited_statecharts, isc;
-			if (name instanceof ist.State || name instanceof ist.StatechartTransition) {
+			if (name instanceof ist.State || name instanceof ist.Transition) {
 				return name.basis() || name;
 			} else {
 				var SOandC = ist.find_stateful_obj_and_context(this.pointer);
@@ -85,22 +85,23 @@
 
 					return transition.basis() || transition;
 				} else {
-					var state = statechart.find_state(name);
+					var state = statechart.getSubstate(name);
 
 					if (!state) {
-						var contextual_object = ist.find_or_put_contextual_obj(SOandC.stateful_obj, SOandC.context);
-						var statecharts = contextual_object.get_statecharts();
+						var contextual_object = SOandC.context.getContextualObject(),
+							statecharts = contextual_object.get_statecharts();
+
 						inherited_statecharts = statecharts.slice(1);
 						for (i = 0; i < inherited_statecharts.length; i += 1) {
 							isc = inherited_statecharts[i];
-							state = isc.find_state(name);
+							state = isc.getSubstate(name);
 							if (state) {
 								break;
 							}
 						}
 					}
 
-					return state.basis() || state;
+					return state;
 				}
 			}
 		};

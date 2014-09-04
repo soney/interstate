@@ -33,7 +33,16 @@
 				}
 				window.env = getEnvironment();
 
-				env.set("x", "<stateful>");
+				env.set("x", "<stateful>")
+					.cd("x")
+						.add_state("init")
+						.add_state("other")
+						.start_at("init")
+				;
+
+				env.print_on_return = true;
+				env.print();
+
 				/*
 				env.print()
 				env.cd("my_radio")

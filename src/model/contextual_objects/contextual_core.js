@@ -125,9 +125,8 @@
 		};
 
 		proto.desummarize = function (obj) {
-			var pointer = ist.Pointer.desummarize(obj.pointer),
-				object = ist.find_uid(obj.object_uid);
-			return ist.find_or_put_contextual_obj(object, pointer);
+			var pointer = ist.Pointer.desummarize(obj.pointer);
+			return pointer.getContextualObject();
 		};
 
 		proto.toString = function () {
@@ -282,6 +281,7 @@
 			return ist.print(this.pointer, logging_mechanism);
 		};
 	}(ist.ContextualObject));
+	/*
 
 	ist.check_contextual_object_equality =  ist.check_contextual_object_equality_eqeqeq = function (itema, itemb) {
 		if (itema instanceof ist.ContextualObject && itemb instanceof ist.ContextualObject) {
@@ -290,6 +290,7 @@
 			return itema === itemb;
 		}
 	};
+	*/
 
 	ist.create_contextual_object = function (object, pointer, options) {
 		options = _.extend({
@@ -326,7 +327,6 @@
 			}
 		}),
 		cobj_roots = {};
-
 
 	ist.find_or_put_contextual_obj = function (obj, pointer, options) {
 		if(!pointer) {

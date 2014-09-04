@@ -33,10 +33,10 @@
     
         proto._execute = function () {
             if (_.has(this, "_state")) {
-                this._statechart.add_state(this._state_name, this._state, this._index);
+                this._statechart.addSubstate(this._state_name, this._state, this._index);
             } else {
-                this._statechart.add_state(this._state_name, "statechart", this._index);
-                this._state = this._statechart.find_state(this._state_name);
+                this._statechart.addSubstate(this._state_name, "statechart", this._index);
+                this._state = this._statechart.getSubstate(this._state_name);
             }
 
 			if(this._make_start) {

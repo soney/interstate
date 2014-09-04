@@ -20,7 +20,7 @@
 			obj_root = object.root();
 		
 		this._parent = obj_parent ? pointer.replace(obj_parent).getContextualObject() : false;
-		this._root = obj_root ? pointer.replace(obj_root).getContextualObject() : false;
+		this._root = obj_root ? (obj_root === object ? this : pointer.replace(obj_root).getContextualObject()) : false;
 
 		this.$active = cjs(options.active === true || !this._parent);
 
@@ -226,19 +226,24 @@
 			} else if (relative_to === 'parent') {
 				relative_to = parent;
 			}
-			console.log("GN", parent);
 
-			var my_name = parent ? parent.get_name_for_substate(this) : "";
+			var my_name = parent ? parent.getNameForSubstate(this) : "";
 			if (parent === relative_to) {
 				return my_name;
 			} else {
-				var parent_name = parent ? parent.get_name(relative_to) : "";
+				var parent_name = parent ? parent.getName(relative_to) : "";
 				if (parent_name === "") {
 					return my_name;
 				} else {
 					return parent_name + "." + my_name;
 				}
 			}
+		};
+		proto.getNameForSubstate = function(substate) {
+			var substate_obj = substate.get_object(),
+				obj = this.get_object();
+
+			return obj.getNameForSubstate(substate_obj);
 		};
 		proto.id = function () { return this._id; };
 		proto.hash = function () { return this._hash; };

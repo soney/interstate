@@ -8,7 +8,7 @@
 
 	ist.find_stateful_obj_and_context = function (context) {
 		var popped_item, last;
-		while (!context.is_empty()) {
+		while (!context.isEmpty()) {
 			last = context.pointsAt();
 			if (last instanceof ist.StatefulObj) {
 				return {

@@ -28,9 +28,12 @@
             },
             "parent": {
                 serialize: false,
+				getter_name: "parent"
             },
             "root": {
+				"default": function() { return this; },
                 serialize: false,
+				getter_name: "root"
             },
             "concurrent": {
                 start_with: function () { return cjs(false); },
@@ -85,7 +88,8 @@
 						var rv = cjs.map({
 							keys: keys,
 							values: values,
-							value: value
+							value: value,
+							valuehash: function(x) { return x.hash(); }
 						});
 
 						return rv;
@@ -115,6 +119,8 @@
 		proto.addSubstate = function(name) {
 			var state = new My({parent: this}),
 				substates = this.get_substates();
+
+			substates.put(name, state);
 		};
 		proto.removeSubstate = function(name) {
 			var substates = this.get_substates();
@@ -175,6 +181,7 @@
 				var options = _.extend({
 						from: from_state,
 						to: to_state,
+						root: this.root()
 					}, transition_info),
 					transition = new ist.Transition(options);
 
@@ -191,6 +198,10 @@
 		proto.getOutgoingTransitions = function() { 
 			var outgoing_transitions = this._raw_outgoing_transitions();
 			return outgoing_transitions.toArray();
+		};
+		proto.getNameForSubstate = function(substate) {
+			var substates = this.get_substates();
+			return substates.keyForValue(substate);
 		};
     }(ist.State));
 }(interstate));
