@@ -744,11 +744,15 @@
 				statechart = this.find_state(state_name.slice(0, state_name.lastIndexOf(".")));
 			}
 
-			start_state = statechart.get_start_state();
-			outgoing_transition = start_state.get_outgoing_transition();
+			start_state = statechart.getStartState();
+
+			var outgoingTransitions = start_state.getOutgoingTransitions();
+			if(outgoingTransitions.length !== 1) throw new Error();
+			var outgoingTransition = outgoingTransitions[0];
+			if(outgoingTransition.from() !== start_state) throw new Error();
 
 			command = new ist.SetTransitionToCommand({
-				transition: outgoing_transition,
+				transition: outgoingTransition,
 				statechart: to_state
 			});
 

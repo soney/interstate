@@ -24,7 +24,7 @@
         My.builtins = {
             is_start: {
                 "default": function () { return false; },
-				gettter_name: "isStart"
+				getter_name: "isStart"
             },
             "parent": {
                 serialize: false,
@@ -47,14 +47,18 @@
 				}
             },
             "incoming_transitions": {
-                "default": function () { return cjs.array(); },
+                "default": function () {
+					return cjs.array();
+				},
 				getter_name: "_raw_incoming_transitions",
 				destroy: function(me) {
 					me.destroy(true);
 				}
             },
             "outgoing_transitions": {
-                "default": function () { return cjs.array(); },
+                "default": function () {
+					return cjs.array();
+				},
 				getter_name: "_raw_outgoing_transitions",
 				destroy: function(me) {
 					me.destroy(true);
@@ -62,7 +66,7 @@
             },
             "substates": {
                 "default": function () {
-					if(this.get_is_start()) {
+					if(this.isStart()) {
 						return false;
 					} else {
 						var keys = this.options.keys,
@@ -82,7 +86,18 @@
 						}, this);
 
 						if(!value[START_STATE_NAME]) {
-							value[START_STATE_NAME] = new My({is_start: true, parent: this});
+							var transition = new ist.Transition({type: "start"}),
+								start_state = new My({
+									is_start: true,
+									parent: this,
+									incoming_transitions: cjs([transition]),
+									outgoing_transitions: cjs([transition])
+								});
+
+							transition.do_set_from(start_state);
+							transition.do_set_to(start_state);
+
+							value[START_STATE_NAME] = start_state;
 						}
 
 						var rv = cjs.map({
@@ -143,6 +158,8 @@
 			}
 		};
 		proto.getSubstate = function(name) {
+			if(name instanceof My) { return name; }
+
 			var keys = name.split("."),
 				currState = this,
 				substates,
@@ -155,6 +172,9 @@
 				if(!currState) { return false; }
 			}
 			return currState;
+		};
+		proto.getStartState = function() {
+			return this.getSubstate(START_STATE_NAME);
 		};
 		proto._removeOutgoingTransition = function(transition) {
 			var outgoing_transitions = this._raw_outgoing_transitions(),
@@ -177,7 +197,7 @@
 		proto.addTransition = function(from_state_name, to_state_name, transition_info) {
 			var from_state = this.getSubstate(from_state_name),
 				to_state = this.getSubstate(to_state_name);
-			if(from_state && to_state) {
+			if(from_state && to_state && !from_state.isStart()) {
 				var options = _.extend({
 						from: from_state,
 						to: to_state,
@@ -189,6 +209,7 @@
 				from_state._addOutgoingTransition(transition);
 				to_state._addIncomingTransition(transition);
 				cjs.signal();
+				return transition;
 			}
 		};
 		proto.getIncomingTransitions = function() {
@@ -202,6 +223,10 @@
 		proto.getNameForSubstate = function(substate) {
 			var substates = this.get_substates();
 			return substates.keyForValue(substate);
+		};
+		proto.clearOutgoingTransitions = function() {
+			var outgoing_transitions = this._raw_outgoing_transitions();
+			outgoing_transitions.splice(0, outgoing_transitions.length());
 		};
     }(ist.State));
 }(interstate));

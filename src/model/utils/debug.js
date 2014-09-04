@@ -43,11 +43,7 @@
 			statecharts = _.toArray(arguments);
 		}
 		stringified_statecharts = _.map(statecharts, function (sc) {
-			var id_printed = uid.strip_prefix(sc.id());
-			var basis = sc.basis();
-			if (basis) {
-				id_printed +=  ":" + uid.strip_prefix(sc.basis().id());
-			}
+			var id_printed = sc.sid() + ":" + sc.get_object().sid();
 			return id_printed;
 		}).join(" ");
 		logging_mechanism.group("  Statechart " + stringified_statecharts);
@@ -67,20 +63,20 @@
 
 				if (state instanceof ist.ContextualState) {
 					state_name = pad(state.getName(), STATE_NAME_WIDTH - 2);
+
+					if (state.isActive()) {
+						state_name = "* " + state_name;
+					} else {
+						state_name = "  " + state_name;
+					}
 				} else if (state instanceof ist.ContextualTransition) { //transition
 					var from = state.from(),
 						to = state.to();
 					state_name = pad(from.getName() + "->" + to.getName(), TRANSITION_NAME_WIDTH - 2);
-					state_name = state_name + pad(state.stringify(), TRANSITION_VALUE_WIDTH);
+					state_name = "  " + state_name + pad(state.stringify(), TRANSITION_VALUE_WIDTH);
 				}
 
-				if (state.is_active()) {
-					state_name = "* " + state_name;
-				} else {
-					state_name = "  " + state_name;
-				}
-
-				state_name = pad(uid.strip_prefix(state.id()) + (state.basis() ? ":" + uid.strip_prefix(state.basis().id()) : ""), STATE_ID_WIDTH) + state_name;
+				state_name = pad(state.sid()+":"+state.get_object().sid(), STATE_ID_WIDTH) + state_name;
 				logging_mechanism.log(state_name);
 			});
 		});

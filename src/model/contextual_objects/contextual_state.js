@@ -23,8 +23,6 @@
 		this._root = obj_root ? (obj_root === object ? this : pointer.replace(obj_root).getContextualObject()) : false;
 
 		this.$active = cjs(options.active === true || !this._parent);
-
-		this.is_start = false;
 	};
 
 	(function (My) {
@@ -200,7 +198,7 @@
 		};
 		proto.getIncomingTransitions = function() {
 			var object = this.get_object(),
-				ptr = this.get_pointer(),
+				pointer = this.get_pointer(),
 				transitions = object.getIncomingTransitions(),
 				contextual_transitions = _.map(transitions, function(transition) {
 					var ptr = pointer.replace(transition);
@@ -210,7 +208,7 @@
 		};
 		proto.getOutgoingTransitions = function() {
 			var object = this.get_object(),
-				ptr = this.get_pointer(),
+				pointer = this.get_pointer(),
 				transitions = object.getOutgoingTransitions(),
 				contextual_transitions = _.map(transitions, function(transition) {
 					var ptr = pointer.replace(transition);
@@ -218,7 +216,9 @@
 				});
 			return contextual_transitions;
 		};
-		proto.is_active = function (to_active) { return this.$active && this.$active.get(); };
+		proto.isActive = function() {
+			return this.$active && this.$active.get();
+		};
 		proto.getName = function (relative_to) {
 			var parent = this.parent();
 			if (!relative_to) {
@@ -245,30 +245,9 @@
 
 			return obj.getNameForSubstate(substate_obj);
 		};
-		proto.id = function () { return this._id; };
-		proto.hash = function () { return this._hash; };
-		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		proto.basis = function () { return this._basis; };
 		proto.parent = function () { return this._parent; };
 		proto.context = function () { return this._context; };
 		proto.original_context = function() { return this._original_context; };
-		proto.set_parent = function (parent) { this._parent = parent; return this; };
-		proto.set_context = function (context) {
-			this.do_set_context(context);
-			_.each(this.get_substates(true), function(substate) {
-				substate.set_context(context);
-			});
-			var outgoing_transitions = this.get_outgoing_transitions();
-			_.each(this.get_outgoing_transitions(),
-				function (x) {
-					x.enable();
-				});
-			return this;
-		};
-
-		proto.is_based_on = function (state) {
-			return this.basis() === state;
-		};
 
 		proto.is_child_of = function (node) {
 			var curr_parent = this.parent();

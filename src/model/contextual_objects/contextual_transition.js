@@ -13,17 +13,13 @@
 
 		this.$event = cjs(false);
 		this.$enabled = cjs(false);
-		this.$times_run = cjs(0);
-		this.$from = new cjs.Constraint(options.from);
-		this.$to = new cjs.Constraint(options.to);
 
 
-		this.is_start_transition = options.from instanceof ist.StartState;
-		this._times_run = options.times_run || (this.is_start_transition ? 1 : 0);
+		var transition_obj = this.get_object(),
+			from = transition_obj.from();
+
+		this._times_run = from.isStart() ? 1 : 0;
 		this.$times_run = cjs(this._times_run);
-		this._from_state = new cjs.Constraint(options.from);
-		this._to_state = new cjs.Constraint(options.to);
-		this.set_event(options.event);
 
 		this._type = "transition";
 	};
@@ -34,31 +30,14 @@
 		proto.initialize = function(options) {
 			if(this.constructor === My) { this.flag_as_initialized();  }
 			My.superclass.initialize.apply(this, arguments);
+			if (this._event) {
+				this._event.initialize();
+			}
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
 		proto.destroy = function (avoid_begin_destroy) {
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 			My.superclass.destroy.apply(this, arguments);
-		};
-
-		proto.initialize = function (options) {
-			if (this._event) {
-				this._event.initialize();
-			}
-			this._initialized.set(true);
-			this._emit("initialized");
-		};
-		proto.updateTo = function(event) {
-			var state = event.state;
-			var old_to = this.to();
-			var new_to = ist.find_equivalent_state(state, old_to);
-			this.setTo(new_to);
-		};
-		proto.updateFrom = function(event) {
-			var state = event.state;
-			var old_from = this.from();
-			var new_from = ist.find_equivalent_state(state, old_from);
-			this.setFrom(new_from);
 		};
 		proto.is_puppet = function () {
 			return this._puppet;
@@ -100,68 +79,19 @@
 			}
 			return this;
 		};
-		proto.id =  function () { return this._id; };
-		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
-		proto.hash = function () { return this._hash; };
-		proto.from = function () { return this._from_state.get(); };
-		proto.to = function () { return this._to_state.get(); };
-		proto.setFrom = function (state) {
-			var from = this.from();
-			if (from) {
-				from._remove_direct_outgoing_transition(this);
-			}
-			this._from_state.set(state);
-			var do_set_from = function() {
-				state._add_direct_outgoing_transition(this);
-				if(state.is_active()) {
-					this.enable();
-				} else {
-					this.disable();
-				}
-			};
-			if(state.is_initialized()) {
-				do_set_from.call(this);
-			} else {
-				state.once("initialized", do_set_from, this);
-			}
-			this._emit("setFrom", {type: "setFrom", target: this, state: state});
-			return this;
+		proto.from = function () {
+			var object = this.get_object(),
+				pointer = this.get_pointer(),
+				from = object.from(),
+				from_pointer = pointer.replace(from);
+			return from_pointer.getContextualObject();
 		};
-		proto.setTo = function (state) {
-			var to = this.to();
-			if (to) {
-				to._remove_direct_incoming_transition(this);
-			}
-			this._to_state.set(state);
-			var do_set_to = function() {
-				state._add_direct_incoming_transition(this);
-				if(this.is_start_transition) {
-					var from = this.from();
-					if(from.is_active() && from.is_running()) {
-						ist.event_queue.wait();
-						this.fire({});
-						ist.event_queue.signal();
-					}
-				}
-			};
-			if(state.is_initialized()) {
-				do_set_to.call(this);
-			} else {
-				state.once("initialized", do_set_to, this);
-			}
-			this._emit("setTo", {type: "setTo", target: this, state: state});
-			return this;
-		};
-		proto.set_event = function (event) {
-			if (this._event) {
-				this._event.off_fire(this.fire, this);
-				this._event.destroy();
-			}
-			this._event = event;
-			if (this._event) {
-				this._event.set_transition(this);
-				this._event.on_fire(this.fire, this);
-			}
+		proto.to = function () {
+			var object = this.get_object(),
+				pointer = this.get_pointer(),
+				to = object.to(),
+				to_pointer = pointer.replace(to);
+			return to_pointer.getContextualObject();
 		};
 		proto.order = function(order_to) {
 			if(order_to instanceof ist.State) {
