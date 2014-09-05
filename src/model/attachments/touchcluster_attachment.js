@@ -84,12 +84,14 @@
 					}
 				},
 				satisfied: function(contextual_object) {
+				/*
 					var satisfied = this.touchCluster.isSatisfied();
 					if(satisfied) {
 						var satisfied_event = contextual_object.prop_val("satisfied");
 					} else {
 						var dissatisfied_event = contextual_object.prop_val("dissatisfied");
 					}
+					*/
 				}
 			},
 			proto_props: {

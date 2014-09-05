@@ -44,6 +44,8 @@
         }, options);
 
         ist.Dict.superclass.constructor.call(this, options, defer_initialization);
+
+		if(this.sid() === 827) debugger;
     
         this.type = "ist_dict";
     };
@@ -55,8 +57,8 @@
     
         proto.initialize = function (options) {
             My.superclass.initialize.apply(this, arguments);
-
             ist.install_instance_builtins(this, options, My);
+
             var direct_props = this.direct_props();
             direct_props.setValueEqualityCheck(function (info1, info2) {
                 return info1.value === info2.value;
@@ -326,6 +328,7 @@
         //
     
         proto.destroy = function () {
+			if(this.sid() === 827) debugger;
 			if(this.constructor === My) { this.begin_destroy(); }
 			ist.unset_instance_builtins(this, My);
 			My.superclass.destroy.apply(this, arguments);

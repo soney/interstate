@@ -52,7 +52,10 @@
             },
             "root": {
                 serialize: false,
-            }
+            },
+			"event": {
+				"default": function() { return false; }
+			}
         };
         ist.install_proto_builtins(proto, My.builtins);
 
@@ -61,6 +64,9 @@
             ist.install_instance_builtins(this, options, My);
         };
         proto.destroy = function () {
+			if(this.constructor === My) { this.begin_destroy(); }
+			ist.unset_instance_builtins(this, My);
+
 			My.superclass.destroy.apply(this, arguments);
         };
 
@@ -74,6 +80,7 @@
 				old_state._removeOutgoingTransition(this);
 				this.do_set_from(state);
 				state._addOutgoingTransition(this);
+				this._emit("setFrom", {type: "setFrom", target: state});
 				cjs.signal();
 			}
 		};
@@ -85,6 +92,7 @@
 				old_state._removeIncomingTransition(this);
 				this.do_set_to(state);
 				state._addIncomingTransition(this);
+				this._emit("setTo", {type: "setTo", target: state});
 				cjs.signal();
 			}
 		};

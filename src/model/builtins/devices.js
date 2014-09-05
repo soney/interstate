@@ -18,9 +18,9 @@
 		mouse_event .set("target", new ist.Cell({str: "arguments[0]"}))
 					.set("type", new ist.Cell({str: "arguments[1]"}))
 					.set("arguments", new ist.Cell({str: "[window, 'click']"}))
-					.add_state("idle")
-					.starts_at("idle")
-					.add_transition("idle", "idle", "on(type, target);this.fire()");
+					.addSubstate("idle")
+					.startsAt("idle")
+					.addTransition("idle", "idle", "on(type, target);this.fire()");
 
 		var clientX = cjs(0),
 			clientY = cjs(0),

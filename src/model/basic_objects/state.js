@@ -61,6 +61,9 @@
 				},
 				getter_name: "_raw_outgoing_transitions",
 				destroy: function(me) {
+					me.forEach(function(t) {
+						t.destroy(true);
+					});
 					me.destroy(true);
 				}
             },
@@ -86,10 +89,11 @@
 						}, this);
 
 						if(!value[START_STATE_NAME]) {
-							var transition = new ist.Transition({type: "start"}),
+							var transition = new ist.Transition({type: "start", root: this.root()}),
 								start_state = new My({
 									is_start: true,
 									parent: this,
+									root: this.root(),
 									incoming_transitions: cjs([transition]),
 									outgoing_transitions: cjs([transition])
 								});
@@ -111,15 +115,16 @@
 					}
                 },
 				destroy: function(me) {
-					me.forEach(function(prop_val, name) {
-						if(prop_val.value.destroy) {
-							prop_val.value.destroy(true);
-						}
-						delete prop_val.owner;
-						delete prop_val.value;
-					});
-					me.destroy(true);
-				}
+					if(me) {
+						me.forEach(function(prop_val, name) {
+							if(prop_val.destroy) {
+								prop_val.destroy(true);
+							}
+						});
+						me.destroy(true);
+					}
+				},
+				getter_name: "_get_substates"
             },
         };
         ist.install_proto_builtins(proto, My.builtins);
@@ -129,28 +134,31 @@
             ist.install_instance_builtins(this, options, My);
         };
         proto.destroy = function () {
+			if(this.constructor === My) { this.begin_destroy(); }
+			ist.unset_instance_builtins(this, My);
+
 			My.superclass.destroy.apply(this, arguments);
         };
 		proto.addSubstate = function(name) {
-			var state = new My({parent: this}),
-				substates = this.get_substates();
+			var state = new My({parent: this, root: this.root()}),
+				substates = this._get_substates();
 
 			substates.put(name, state);
 		};
 		proto.removeSubstate = function(name) {
-			var substates = this.get_substates();
-			substates.unset(name);
+			var substates = this._get_substates();
+			substates.remove(name);
 		};
 		proto.renameSubstate = function(name, new_name) {
-			var substates = this.get_substates();
+			var substates = this._get_substates();
 			substates.rename(name, new_name);
 		};
 		proto.moveSubstate = function(name, index) {
-			var substates = this.get_substates();
+			var substates = this._get_substates();
 			substates.move(name, new_name);
 		};
 		proto.getSubstates = function() {
-			var substates = this.get_substates();
+			var substates = this._get_substates();
 			if(substates) {
 				return substates.entries();
 			} else {
@@ -159,6 +167,7 @@
 		};
 		proto.getSubstate = function(name) {
 			if(name instanceof My) { return name; }
+			else if(this.isStart()) { return false; }
 
 			var keys = name.split("."),
 				currState = this,
@@ -166,8 +175,8 @@
 				i, len = keys.length;
 
 			for(i=0; i<len; i++) {
-				substates = currState.get_substates();
-				currState = substates.get(name);
+				substates = currState._get_substates();
+				currState = substates ? substates.get(name) : false;
 
 				if(!currState) { return false; }
 			}
@@ -195,21 +204,36 @@
 			incoming_transitions.push(transition);
 		};
 		proto.addTransition = function(from_state_name, to_state_name, transition_info) {
-			var from_state = this.getSubstate(from_state_name),
-				to_state = this.getSubstate(to_state_name);
-			if(from_state && to_state && !from_state.isStart()) {
-				var options = _.extend({
-						from: from_state,
-						to: to_state,
-						root: this.root()
-					}, transition_info),
-					transition = new ist.Transition(options);
+			if(from_state_name instanceof ist.Transition) {
+				//TODO: fill in
+			} else {
+				var from_state = this.getSubstate(from_state_name),
+					to_state = this.getSubstate(to_state_name);
+				if(from_state && to_state && !from_state.isStart()) {
+					if(_.isString(transition_info)) {
+						transition_info = {
+							str: transition_info
+						};
+					} else if(transition_info instanceof ist.Event) {
+						transition_info = {
+							type: "event",
+							event: transition_info
+						};
+					}
 
-				cjs.wait();
-				from_state._addOutgoingTransition(transition);
-				to_state._addIncomingTransition(transition);
-				cjs.signal();
-				return transition;
+					var options = _.extend({
+							from: from_state,
+							to: to_state,
+							root: this.root()
+						}, transition_info),
+						transition = new ist.Transition(options);
+
+					cjs.wait();
+					from_state._addOutgoingTransition(transition);
+					to_state._addIncomingTransition(transition);
+					cjs.signal();
+					return transition;
+				}
 			}
 		};
 		proto.getIncomingTransitions = function() {
@@ -221,12 +245,29 @@
 			return outgoing_transitions.toArray();
 		};
 		proto.getNameForSubstate = function(substate) {
-			var substates = this.get_substates();
+			var substates = this._get_substates();
 			return substates.keyForValue(substate);
 		};
 		proto.clearOutgoingTransitions = function() {
 			var outgoing_transitions = this._raw_outgoing_transitions();
 			outgoing_transitions.splice(0, outgoing_transitions.length());
+		};
+		proto.getStateIndex = function(stateName) {
+			var substates = this._get_substates();
+
+			return substates.indexOf(stateName);
+		};
+		proto.isRoot = function() {
+			return !this.parent();
+		};
+		proto.startsAt = function(stateName) {
+			var state = this.getSubstate(stateName),
+				startState = this.getStartState();
+			if(state && startState) {
+				_.each(startState.getOutgoingTransitions(), function(transition) {
+					transition.setTo(state);
+				});
+			}
 		};
     }(ist.State));
 }(interstate));

@@ -640,16 +640,12 @@
 			var statechart = this.get_current_statechart();
 			var parent = this.get_pointer_obj();
 
-			var from_state = statechart.find_state(from_state_name);
-			var to_state = statechart.find_state(to_state_name);
-
-			if (_.isString(event)) {
-				event = new ist.ParsedEvent({str: event, inert: true});
-			}
+			var from_state = statechart.getSubstate(from_state_name),
+				to_state = statechart.getSubstate(to_state_name);
 
 			var command = new ist.AddTransitionCommand({
 				statechart: statechart,
-				event: event,
+				string: event,
 				from: from_state,
 				to: to_state
 			});

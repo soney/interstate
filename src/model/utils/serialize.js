@@ -314,7 +314,7 @@
 
 
 	var type_maps = {};
-	ist.loaded_program_name = cjs();
+	ist.loaded_program_name = false;
 
 	ist.getSavedProgramMap = function(type) {
 		if(!_.isString(type)) {
@@ -358,7 +358,7 @@
 
 	ist.save = function (root, name, type) {
 		if (!_.isString(name)) {
-			name = ist.loaded_program_name.get();
+			name = ist.loaded_program_name;
 			if(!name) {
 				var names = ist.ls(),
 					original_name = "sketch_"+names.length,
@@ -390,7 +390,7 @@
 	};
 	ist.saveAndSetCurrent = function(root, name, type) {
 		name = ist.save(root, name, type);
-		ist.loaded_program_name.set(name);	
+		ist.loaded_program_name = name;
 		return name;
 	};
 	ist.loadString = function(name, type) {
@@ -418,7 +418,7 @@
 			root = ist.destringify(str);
 
 			if(!type) { // program
-				ist.loaded_program_name.set(name);	
+				ist.loaded_program_name = name;	
 				ist.setDefaultProgramName(name);
 			}
 
@@ -428,7 +428,7 @@
 				root = ist.destringify(str);
 
 				if(!type) { // program
-					ist.loaded_program_name.set(name);	
+					ist.loaded_program_name = name;	
 					ist.setDefaultProgramName(name);
 				}
 
@@ -474,7 +474,7 @@
 	ist.rename = function(from_name, to_name, type) {
 		var old_storage_name = storage_prefix + from_name + type_prefix + type,
 			new_storage_name = storage_prefix + to_name   + type_prefix + type,
-			change_current = ist.loaded_program_name.get() === from_name;
+			change_current = ist.loaded_program_name === from_name;
 
 		if(localStorage.getItem(new_storage_name)) {
 			return false;
@@ -482,7 +482,7 @@
 			localStorage.setItem(new_storage_name, localStorage.getItem(old_storage_name));
 			localStorage.removeItem(old_storage_name);
 			if(change_current) {
-				ist.loaded_program_name.set(to_name);
+				ist.loaded_program_name = to_name;
 				ist.setDefaultProgramName(to_name);
 			}
 			_.each(type_maps[type], function(type_map) {

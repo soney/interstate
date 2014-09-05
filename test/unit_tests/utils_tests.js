@@ -78,15 +78,9 @@
 	
 	asyncTest("State Allocation", function() {
 		expect(1);
-		var sc = new ist.Statechart();
-		sc.add_state("state_1");
-		sc.add_state("state_2");
-		sc.add_state("state_2.X");
-		sc.add_state("state_2.Y");
-		sc.starts_at("state_1");
-		sc.add_transition("state_1", "state_2", new ist.TimeoutEvent(100));
-		sc.add_transition("state_2", "state_1", new ist.TimeoutEvent(100));
-		sc.run();
+		var sc = new ist.State();
+		sc.addSubstate("state_1");
+		sc.addSubstate("state_2");
 		//sc.print();
 		window.setTimeout(function() {
 			//sc.print();
@@ -117,6 +111,7 @@
 					.set("fill", "init", "'red'")
 					.set("fill", "hover", "'blue'")
 		;
+		//env.print();
 		var root = env.get_root();
 		the_div.dom_output({
 			root: root,

@@ -119,8 +119,8 @@
 
 				return str;
 			} else if (val instanceof ist.ContextualObject) {
-				var ptr = val.get_pointer(),
-					copy = ptr.copy();
+				var ptr = val.get_pointer();
+				copy = ptr.copy();
 				points_at = ptr.pointsAt();
 				str = value_to_value_str(points_at, val);
 
@@ -160,7 +160,7 @@
 		var tablify = function (contextual_object) {
 			if (contextual_object instanceof ist.ContextualDict) {
 				if (contextual_object instanceof ist.ContextualStatefulObj) {
-					var statecharts = contextual_object.get_statecharts();
+					var statecharts = contextual_object.getStatecharts();
 					print_statechart.apply(this, (statecharts).concat(logging_mechanism));
 				}
 				var children = contextual_object.children();
@@ -241,9 +241,9 @@
 					var state = value_spec.state;
 					var state_name;
 					if (state) {
-						if (state instanceof ist.State) {
+						if (state instanceof ist.ContextualState) {
 							state_name = pad(state.getName(), STATE_NAME_WIDTH - 2);
-						} else if (state instanceof ist.StatechartTransition) { //transition
+						} else if (state instanceof ist.ContextualTransition) { //transition
 							var from = state.from(),
 								to = state.to();
 							state_name = pad(from.getName() + "->" + to.getName(), STATE_NAME_WIDTH - 2);
@@ -261,7 +261,7 @@
 							state_name = " " + state_name;
 						}
 
-						state_name = pad(uid.strip_prefix(state.id()), STATE_ID_WIDTH) + state_name;
+						state_name = pad(state.sid(), STATE_ID_WIDTH) + state_name;
 					} else {
 						state_name = pad("", STATE_ID_WIDTH + STATE_NAME_WIDTH);
 					}

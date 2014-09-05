@@ -26,7 +26,6 @@
 		able.make_this_listenable(this);
 
 		this.object = options.object;
-		this.inert = options.inert;
 		this.pointer = options.pointer;
 		this.inherited_from = options.inherited_from || false;
 
@@ -318,19 +317,23 @@
 		return rv;
 	};
 
-	var cobj_hashes = cjs.map({
-			equals: function(a, b) {
-				return a.eq(b);
-			},
-			hash: function(ptr){  
-				return ptr.hash();
-			}
-		}),
+	var cobj_hashes = false,
 		cobj_roots = {};
 
 	ist.find_or_put_contextual_obj = function (obj, pointer, options) {
 		if(!pointer) {
 			pointer = new ist.Pointer({stack: [obj]});
+		}
+
+		if(cobj_hashes === false) {
+			cobj_hashes = cjs.map({
+				equals: function(a, b) {
+					return a.eq(b);
+				},
+				hash: function(ptr){  
+					return ptr.hash();
+				}
+			});
 		}
 
 		var must_initialize = false,
@@ -347,7 +350,7 @@
 			if(!node) {
 				if(len === 1) {
 					node = cobj_roots[hash_i] = ist.create_contextual_object(obj, pointer, _.extend({
-						defer_initialization: true
+						//defer_initialization: true
 					}, options));
 				} else {
 					node = ist.find_or_put_contextual_obj(pointer_root, pointer.slice(0,1));
@@ -381,8 +384,8 @@
 
 		if(pointer.length() === 1) {
 			delete cobj_roots[obj.id()];
-			cobj_hashes.clear();
 			cobj_hashes.destroy();
+			cobj_hashes = false;
 		}
 	};
 }(interstate));

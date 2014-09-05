@@ -33,11 +33,11 @@
 			if(this.constructor === My) { this.shout_initialization(); }
 		};
 
-		proto.get_own_statechart = function () {
-			return this.getContextualStatechart(this.get_object());
+		proto.getOwnStatechart = function () {
+			return this.getStatechartForProto(this.get_object());
 		};
 
-		proto.get_statechart_parent = function () {
+		proto.getStatechartParent = function () {
 			var context = this.get_pointer(),
 				contextual_object,
 				popped_item, last;
@@ -54,7 +54,7 @@
 			return undefined;
 		};
 
-		proto.getContextualStatechart = function (proto) {
+		proto.getStatechartForProto = function (proto) {
 			var statechart = proto.get_own_statechart(),
 				pointer = this.get_pointer();
 			if(statechart === "parent") {
@@ -74,8 +74,7 @@
 					}
 				}
 			} else if(statechart instanceof ist.State) {
-				var sc_ptr = pointer.push(statechart);
-				return sc_ptr.getContextualObject();
+				return this.getStateContextualObject(statechart);
 			}
 
 			return false;
@@ -103,10 +102,10 @@
 		};
 
 		proto.get_valid_statecharts = function() {
-			return this.get_statecharts();
+			return this.getStatecharts();
 		};
 
-		proto.get_statecharts = function () {
+		proto.getStatecharts = function () {
 			if(this.is_template()) {
 				return [];
 			}
@@ -115,7 +114,7 @@
 			var proto_statecharts = _	.chain(contextual_protos)
 										.map(function (x) {
 											if (x instanceof ist.ContextualStatefulObj) {
-												return this.get_statechart_for_proto(x.get_object());
+												return this.getStatechartForProto(x.get_object());
 											} else {
 												return false;
 											}
@@ -123,11 +122,11 @@
 										.compact()
 										.value();
 
-			return ([this.get_own_statechart()]).concat(proto_statecharts);
+			return ([this.getOwnStatechart()]).concat(proto_statecharts);
 		};
 
 		proto.reset = function () {
-			var statecharts = this.get_statecharts();
+			var statecharts = this.getStatecharts();
 			_.each(statecharts, function(statechart) {
 				statechart.reset();
 			}, this);
@@ -160,7 +159,7 @@
 		proto.pause  = function(recursive) {
 			My.superclass.pause.apply(this, arguments);
 
-			var statecharts = this.get_statecharts();
+			var statecharts = this.getStatecharts();
 			_.each(statecharts, function(statechart) {
 				statechart.pause();
 			});
@@ -168,14 +167,19 @@
 		proto.resume = function(recursive) {
 			My.superclass.resume.apply(this, arguments);
 
-			var statecharts = this.get_statecharts();
+			var statecharts = this.getStatecharts();
 			_.each(statecharts, function(statechart) {
 				statechart.resume();
 			});
 		};
+		proto.getStateContextualObject = function(state) {
+			var pointer = this.get_pointer(),
+				state_pointer = pointer.push(state);
+			return state_pointer.getContextualObject();
+		};
 		proto._get_valid_cobj_children = function() {
 			var dict_children = My.superclass._get_valid_cobj_children.apply(this, arguments),
-				statecharts = this.get_statecharts(),
+				statecharts = this.getStatecharts(),
 				sc_children = _	.chain(statecharts)
 								.map(function(statechart) {
 									var transitions = statechart.getAllTransitions(),

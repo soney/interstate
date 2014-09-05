@@ -39,11 +39,11 @@
 		return children;
 	},
 	get_cobj_children = function(contextual_object) {
-		var children, cobj_children, values;
-		var show = contextual_object.prop_val("showChildren");
+		var show = contextual_object.prop_val("showChildren"),
+			children, cobj_children, values;
 
 		if(_.isArray(show)) { // put in order
-			cobj_children = contextual_object.children();
+			cobj_children = contextual_object.children(true);
 			children = [];
 			_.each(show, function(show_child) {
 				var child_index = _.index_where(cobj_children, function(child) {
@@ -56,7 +56,7 @@
 				}
 			});
 		} else if(show !== false) {
-			cobj_children = contextual_object.children();
+			cobj_children = contextual_object.children(true);
 			children = get_children(_.pluck(cobj_children, "value"));
 		} else {
 			children = [];
@@ -183,7 +183,11 @@
 				this.touchscreen_layer = this.ist_runtime.is(".hasTouchscreenLayer");
 			},
 			destroy: function(silent) {
-				this.remove();
+				var robj = this.get_robj();
+				if(robj) {
+					robj.remove();
+					delete robj.node.__ist_contextual_object__;
+				}
 				this.$robj.destroy(silent);
 				this.$children.destroy(silent);
 				delete this.constructor_params;
@@ -309,26 +313,27 @@
 					var robj = this.get_robj();
 					if(robj) {
 						robj.remove();
+						delete robj.node.__ist_contextual_object__;
 						this.$robj.set(false);
 					}
 				},
 				child_getter: function() {
-					var contextual_object = this.get_contextual_object();
-					var children, cobj_children, values;
-					var to_show = contextual_object.prop_val("show");
+					var contextual_object = this.get_contextual_object(),
+						to_show = contextual_object.prop_val("show"),
+						children, cobj_children, values;
 
 					if(_.isArray(to_show) || _.isString(to_show)) {
 						if(_.isString(to_show)) {
 							to_show = [to_show];
 						}
-						cobj_children = _.filter(contextual_object.children(), function(child_info) {
+						cobj_children = _.filter(contextual_object.children(true), function(child_info) {
 							return _.contains(to_show, child_info.name);
 						});
 						values = _.pluck(cobj_children, "value");
 						values.reverse();
 						children = get_children(values);
 					} else if(to_show) {
-						cobj_children = contextual_object.children();
+						cobj_children = contextual_object.children(true);
 						values = _.pluck(cobj_children, "value");
 						values.reverse();
 						children = get_children(values);

@@ -133,7 +133,6 @@
         };
         proto.destroy = function () {
 			if(this.constructor === My) { this.begin_destroy(); }
-
 			ist.unset_instance_builtins(this, My);
 
             this._tree.destroy(true);

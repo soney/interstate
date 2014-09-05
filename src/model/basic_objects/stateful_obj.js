@@ -33,15 +33,18 @@
         };
         ist.install_proto_builtins(proto, My.builtins);
 
-		_.each(["add_state", "add_transition", "starts_at", "find_state"], function(fn_name) {
+		_.each(["addSubstate", "addTransition", "startsAt", "find"], function(fn_name) {
 			proto[fn_name] = function() {
 				var statechart = this.get_own_statechart(), rv;
 				rv = statechart[fn_name].apply(statechart, arguments);
-				if(fn_name === "find_state") {
-					return rv;
-				} else {
-					return this;
-				}
+				return this;
+			};
+		});
+		_.each(["getSubstate"], function(fn_name) {
+			proto[fn_name] = function() {
+				var statechart = this.get_own_statechart(), rv;
+				rv = statechart[fn_name].apply(statechart, arguments);
+				return rv;
 			};
 		});
 

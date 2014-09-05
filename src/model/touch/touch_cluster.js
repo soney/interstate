@@ -23,8 +23,28 @@
 		}, getTime = function() {
 			return (new Date()).getTime();
 		};
-	var touches = cjs({}),
-		touchClusters = [];
+
+	var touches, touchClusters = [];
+
+	function addListeners() {
+		touches = cjs({});
+
+		window.addEventListener("touchstart",  _onTouchStart);
+		window.addEventListener("touchmove",   _onTouchMove);
+		window.addEventListener("touchend",    _onTouchEnd);
+		window.addEventListener("touchcancel", _onTouchEnd);
+	}
+
+	function removeListeners() {
+		touches.destroy(true);
+		touches = false;
+
+		window.removeEventListener("touchstart",  _onTouchStart);
+		window.removeEventListener("touchmove",   _onTouchMove);
+		window.removeEventListener("touchend",    _onTouchEnd);
+		window.removeEventListener("touchcancel", _onTouchEnd);
+	}
+
 
 	function computeTouchDistances() {
 		var touchObject = touches.toObject(),
@@ -195,12 +215,6 @@
 		event.preventDefault();
 		event.stopPropagation();
 	}
-
-	window.addEventListener("touchstart",  _onTouchStart);
-	window.addEventListener("touchmove",   _onTouchMove);
-	window.addEventListener("touchend",    _onTouchEnd);
-	window.addEventListener("touchcancel", _onTouchEnd);
-
 	function updateTouchDistributions(addedTouches, removedTouches, movedTouches) {
 		var distanceMatrix = computeTouchDistances();
 
@@ -341,19 +355,6 @@
 		}, {context: this});
 
 		this.$startCenter = cjs.constraint({x: false, y: false});
-		/*
-		function() {
-			var touchLocations = this.$usingTouchInfo.get();
-
-			if(touchLocations.length > 0) {
-				var averageX = average(_.pluck(touchLocations, 'startX')),
-					averageY = average(_.pluck(touchLocations, 'startY'));
-				return { x: averageX, y: averageY };
-			} else {
-				return { x: false, y: false };
-			}
-		}, {context: this});
-		*/
 
 		this.$center = cjs(function() {
 			var touchLocations = this.$usingTouchInfo.get();
@@ -468,15 +469,45 @@
 		this.$endYConstraint = this.$endCenter.prop('y');
 
 		touchClusters.push(this);
-
-		this.drawing_fns = [];
-		//updateTouchDistributions();
+		if(touchClusters.length === 1) { addListeners(); }
 	};
 
 	(function(My) {
 		var proto = My.prototype;
 
 		proto.destroy = function(silent) {
+			var index = touchClusters.indexOf(this);
+			if(index >= 0) {
+				touchClusters.splice(index, 1);
+				if(touchClusters.length === 0) { removeListeners(); }
+			}
+
+			this.$usableFingers.destroy(true);
+			this.$usingFingers.destroy(true);
+			this.$satisfied.destroy(true);
+			this.$usingTouchInfo.destroy(true);
+
+			this.$startCenter.destroy(true);
+			this.$center.destroy(true);
+			this.$endCenter.destroy(true);
+
+			this.$scale.destroy(true);
+			this.$endScale.destroy(true);
+
+			this.$endRotation.destroy(true);
+
+			this.$startRadius.destroy(true);
+			this.$radius.destroy(true);
+			this.$endRadius.destroy(true);
+
+			this.$radius.destroy(true);
+
+			this.$claimed.destroy(true);
+			this.$xConstraint.destroy(true);
+			this.$startXConstraint.destroy(true);
+			this.$startYConstraint.destroy(true);
+			this.$endXConstraint.destroy(true);
+			this.$endYConstraint.destroy(true);
 		};
 
 		proto.isSatisfied = function() { return this.$satisfied.get(); };
@@ -635,17 +666,6 @@
 
 		proto.setUsingTouches = function(arr) {
 			this.$usingTouches.set(arr);
-		};
-		proto.removeFromPaper = function(paper) {
-			for(var i = 0; i<this.drawing_fns.length; i++) {
-				var drawing_fn = this.drawing_fns[i];
-				if(drawing_fn.paper === paper) {
-					drawing_fn.live_draw.destroy();
-					drawing_fn.paper_path.remove();
-					this.drawing_fns.splice(i, 1);
-					i--;
-				}
-			}
 		};
 
 		proto.getTouches = function() {

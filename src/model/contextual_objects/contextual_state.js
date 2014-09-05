@@ -11,18 +11,29 @@
 		this._type = "statechart";
 
 
-		this._running = options.running === true;
-		this.$running = cjs(this._running);
-
 		var object = this.get_object(),
-			pointer = this.get_pointer(),
-			obj_parent = object.parent(),
-			obj_root = object.root();
-		
-		this._parent = obj_parent ? pointer.replace(obj_parent).getContextualObject() : false;
-		this._root = obj_root ? (obj_root === object ? this : pointer.replace(obj_root).getContextualObject()) : false;
+			running, active;
 
-		this.$active = cjs(options.active === true || !this._parent);
+		if(object.isRoot()) {
+			this._parent = false;
+			this._root = this;
+			this._running = true;
+			this._active = true;
+		} else {
+			var pointer = this.get_pointer(),
+				obj_parent = object.parent(),
+				obj_root = object.root();
+
+			this._parent = pointer.replace(obj_parent).getContextualObject();
+			this._root = obj_root ? (obj_root === object ? this : pointer.replace(obj_root).getContextualObject()) : false;
+			this._running = false;
+			this._active = false;
+		}
+		this.$running = cjs(this._running);
+		this.$active = cjs(this._active);
+		this.$event = cjs(false);
+		this._localState = false;
+		//this._localState = this.getStartState();
 	};
 
 	(function (My) {
@@ -31,24 +42,73 @@
 		proto.initialize = function(options) {
 			if(this.constructor === My) { this.flag_as_initialized();  }
 			My.superclass.initialize.apply(this, arguments);
+
+			if(!this.isStartState) {
+				if(!this.isConcurrent()) {
+					this._localState = this.getStartState();
+				}
+			}
+			if(this.isRoot()) {
+				if(this.isConcurrent()) {
+					
+				} else {
+					if(this.isRunning()) {
+						this._localState.run();
+					}
+					if(this.isActive()) {
+						this._localState.activate();
+					}
+					//this._localState.run();
+					//this._localState.activate();
+				}
+			}
+
+			/*
+			if(this.isRunning() && !this.isStart()) {
+			}
+			if(this.isStart()) {
+				if(this.isRunning()) {
+					console.log("Start");
+				}
+
+				if(this.isActive()) {
+					console.log("Start");
+				}
+			} else {
+				var startState = this.getStartState();
+
+				if(this.isRunning()) {
+					startState.run();
+				}
+
+				if(this.isActive()) {
+					this.enableOutgoingTransitions();
+					startState.activate();
+				}
+			}
+			*/
+
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
 		proto.destroy = function (avoid_begin_destroy) {
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 			My.superclass.destroy.apply(this, arguments);
 		};
+		proto.setEvent = function(event) {
+			this.$event.set(event);	
+		};
+		proto.isStart = function() {
+			var object = this.get_object();
+			return object.isStart();
+		};
 
 		proto.run = function () {
-			if(this.is_puppet()) {
-				this._running = true;
-				this._emit("run", {
-					target: this,
-					type: "run"
-				});
-				this.$running.set(true);
-			} else if (!this.is_running()) {
+			if (!this.isRunning()) {
 				ist.event_queue.wait();
-				this.enable_outgoing_transitions();
+
+				if(this.isActive()) {
+					this.enableOutgoingTransitions();
+				}
 
 				this._running = true;
 				this._emit("run", {
@@ -61,17 +121,14 @@
 		};
 
 		proto.stop = function () {
-			if(this.is_puppet()) {
-				this._running = false;
-				this._emit("stop", {
-					type: "stop",
-					target: this
-				});
-				this.$running.set(false);
-			} else {
+			if(this.isRunning()) {
 				ist.event_queue.wait();
 				this._running = false;
-				this.disable_outgoing_transitions();
+
+				if(this.isActive()) {
+					this.disableOutgoingTransitions();
+				}
+
 				this._emit("stop", {
 					type: "stop",
 					target: this
@@ -81,13 +138,16 @@
 			}
 		};
 		proto.reset = function () {
-			if (this.is_running()) {
+			if (this.isRunning()) {
 				ist.event_queue.wait();
 				this.stop();
 				this.run();
 				ist.event_queue.signal();
 			}
 			return this;
+		};
+		proto.isRunning = function() {
+			return this._running;
 		};
 
 /*
@@ -145,37 +205,38 @@
 		};
 		*/
 
-		proto.do_shadow_transitions = function(create_transition_shadow) {
-			var basis = this.basis();
-			var outgoing_transitions = basis.get_outgoing_transitions();
-			var shadow_outgoing = _.map(outgoing_transitions, create_transition_shadow);
+		proto.activate = function() {
+			if(!this.isActive()) {
+				this._active = true;
+				this.$active.set(true);
 
-			_.each(shadow_outgoing, function (transition) {
-				var from = transition.from();
-				var to = transition.to();
-				from._add_direct_outgoing_transition(transition);
-				to._add_direct_incoming_transition(transition);
-			}, this);
-
-			var substates = this.get_substates(true);
-			_.each(substates, function(substate) {
-				substate.do_shadow_transitions(create_transition_shadow);
-			}, this);
-		};
-
-		proto.set_active = function (to_active) {
-			if(this.$active) {
-				this.$active.set(to_active === true);
-				if(!to_active) {
-					_.each(this.get_substates(true), function(substate) {
-						substate.set_active(false);
-						substate.disable_outgoing_transitions();
-						substate.stop();
+				if(this.isStart()) {
+					//this.enableOutgoingTransitions();
+				} else if(this.isConcurrent()) {
+					_.each(this.getSubstates(true), function(substate) {
+						substate.activate();
 					}, this);
+				} else {
+					var startState = this.getStartState();
+					startState.activate();
 				}
-				var event_type = to_active ? "active" : "inactive";
-				this._emit(event_type, {
-					type: event_type,
+				this._emit("active", {
+					type: "active",
+					target: this
+				});
+			}
+		};
+		proto.deactivate = function() {
+			if(this.isActive()) {
+				this._active = false;
+				this.$active.set(false);
+
+				_.each(this.getSubstates(true), function(substate) {
+					substate.deactivate();
+				}, this);
+
+				this._emit("inactive", {
+					type: "inactive",
 					target: this
 				});
 			}
@@ -246,8 +307,12 @@
 			return obj.getNameForSubstate(substate_obj);
 		};
 		proto.parent = function () { return this._parent; };
-		proto.context = function () { return this._context; };
-		proto.original_context = function() { return this._original_context; };
+		proto.root = function () { return this._root; };
+		proto.isConcurrent = function() {
+			var object = this.get_object();
+			return object.isConcurrent();
+		};
+		/*
 
 		proto.is_child_of = function (node) {
 			var curr_parent = this.parent();
@@ -259,47 +324,33 @@
 			}
 			return false;
 		};
+		*/
 
-		proto.get_lineage = function (until_state) {
-			var curr_node = this;
-			var parentage = [];
-			var i = 0;
+		proto.getLineage = function (until_state) {
+			var curr_node = this,
+				parentage = [],
+				i = 0;
+
 			do {
 				parentage[i] = curr_node;
 				i += 1;
 				if (curr_node === until_state) { break; }
 				curr_node = curr_node.parent();
 			} while (curr_node);
+
 			return parentage.reverse();
 		};
 
-		proto.root = function () {
-			return this._root;
-		};
 
-		proto.on_outgoing_transition_fire = function (transition, event) {
-			var i;
-
-			if (this.is_running() && _.indexOf(this.get_outgoing_transitions(), transition) >= 0) {
-				transition._last_run_event.set(event);
-				
-				var my_lineage = this.get_lineage();
-				/*
-				for (i = 0; i < my_lineage.length - 1; i += 1) {
-					if (!my_lineage[i].is(my_lineage[i + 1])) {
-						return false;
-					}
-				}
-				*/
-
-				var to = transition.to();
-				var to_lineage = to.get_lineage();
-				var to_len = to_lineage.length;
-
-				var min_len = Math.min(to_len, my_lineage.length);
-
-				//console.log("from ", _.map(my_lineage, function(x) { return x.get_name(); }));
-				//console.log("to   ", _.map(to_lineage, function(x) { return x.get_name(); }));
+		proto._onOutgoingTransitionFire = function (transition, event) {
+			if(this.isActive() && this.isRunning() && _.indexOf(this.getOutgoingTransitions(), transition)>=0) {
+				//transition._setEvent(event);
+				var my_lineage = this.getLineage(),
+					to = transition.to(),
+					to_lineage = to.getLineage(),
+					to_len = to_lineage.length,
+					min_len = Math.min(to_len, my_lineage.length),
+					i;
 
 				for (i = 0; i < min_len; i += 1) {
 					if (to_lineage[i] !== my_lineage[i]) {
@@ -311,18 +362,19 @@
 					i -= 2;
 				}
 
+
 				//cjs.wait();
 				var active_substate, parent, min_common_i = i;
 				while (i < to_len - 1) {
 					parent = to_lineage[i];
 					active_substate = to_lineage[i + 1];
-					parent.set_active_substate(active_substate, transition, event);
+					parent.setActiveSubstate(active_substate, transition, event);
 					i++;
 				}
 
-				if(active_substate instanceof ist.Statechart) {
-					var start_state = active_substate.get_start_state();
-					active_substate.set_active_substate(start_state, transition, event);
+				if(!active_substate.isStart()) {
+					var start_state = active_substate.getStartState();
+					active_substate.setActiveSubstate(start_state, transition, event);
 				}
 
 
@@ -334,15 +386,15 @@
 						event: event,
 						state: to
 					});
-					transition.set_active(true);
+					transition.activate();
 				}, this);
 
 				ist.event_queue.once("end_event_queue_round_2", function () {
-					transition.increment_times_run();
+					transition.incrementTimesRun();
 				}, this);
 
 				ist.event_queue.once("end_event_queue_round_4", function () {
-					transition.set_active(false);
+					transition.deactivate();
 					this._emit("post_transition_fire", {
 						type: "post_transition_fire",
 						transition: transition,
@@ -356,6 +408,47 @@
 				return true;
 			}
 			return false;
+		};
+
+		proto.getActiveSubstate = function() {
+			return this._localState;
+		};
+
+		proto.setActiveSubstate = function(state, transition, event) {
+			var doActivate = function() {
+				var isRunning = this.isRunning();
+				if(this.isConcurrent()) {
+					_.each(this.getSubstates(true), function(substate) {
+						substate.activate();
+						if(isRunning) {
+							substate.run();
+						}
+					});
+				} else {
+					var local_state = this.getActiveSubstate();
+
+					cjs.wait();
+					if(local_state !== state) {
+						if (local_state) {
+							local_state.stop();
+							local_state.deactivate();
+						}
+						local_state = state;
+						this._localState = state;
+						local_state.setEvent(event);
+					}
+					if (local_state) {
+						local_state.activate();
+						local_state.run();
+					}
+					cjs.signal();
+				}
+			};
+			if(transition) {
+				ist.event_queue.once("end_event_queue_round_3", doActivate, this);
+			} else {
+				doActivate.call(this);
+			}
 		};
 
 		proto.order = function (other_state) {
@@ -396,43 +489,66 @@
 				return 0;
 			}
 		};
-		proto.enable_outgoing_transitions = function () {
-			var outgoing_transitions = this.get_outgoing_transitions();
+		proto.enableOutgoingTransitions = function () {
+			var outgoing_transitions = this.getOutgoingTransitions();
 			_.each(outgoing_transitions, function (x) { x.enable(); });
 		};
-		proto.disable_outgoing_transitions = function () {
-			this.disable_immediate_outgoing_transitions();
-			var substates = this.get_substates();
-			_.each(substates, function (x) { x.disable_outgoing_transitions(); });
+		proto.disableOutgoingTransitions = function () {
+			this._disableImmediateOutgoingTransitions();
+			var substates = this.getSubstates();
+			_.each(substates, function (x) { x._disableImmediateOutgoingTransitions(); });
 		};
-		proto.disable_immediate_outgoing_transitions = function() {
-			var transitions = this.get_outgoing_transitions();
+		proto._disableImmediateOutgoingTransitions = function() {
+			var transitions = this.getOutgoingTransitions();
 			_.each(transitions, function (x) { x.disable(); });
 		};
-		proto.disable_immediate_incoming_transitions = function() {
-			var transitions = this.get_incoming_transitions();
+		proto._disableImmediateIncomingTransitions = function() {
+			var transitions = this.getIncomingTransitions();
 			_.each(transitions, function (x) { x.disable(); });
 		};
-		proto.parent_is_concurrent = function() {
+		proto.parentIsConcurrent = function() {
 			var parent = this.parent();
-			if(parent) {
-				return parent.is_concurrent();
-			} else {
-				return false;
-			}
+			return parent && parent.isConcurrent();
 		};
 		proto.getSubstates = function(include_start) {
 			var object = this.get_object(),
 				pointer = this.get_pointer(),
 				substates = object.getSubstates(),
-				contextualSubstates = _.map(substates, function(substate_info) {
-					var substate = substate_info.value,
-						ptr = pointer.replace(substate);
+				rv = {};
 
-					return ptr.getContextualObject();
-				});
+			_.each(substates, function(substate_info) {
+				var substate = substate_info.value,
+					name = substate_info.key,
+					ptr = pointer.replace(substate);
+				rv[name] = ptr.getContextualObject();
+			});
 
-			return contextualSubstates;
+			return rv;
+		};
+		proto.getSubstate = function(name) {
+			var object = this.get_object(),
+				substate = object.getSubstate(name);
+			if(substate) {
+				var pointer = this.get_pointer(),
+					substate_pointer = pointer.replace(substate);
+				return substate_pointer.getContextualObject();
+			} else {
+				return false;
+			}
+		};
+		proto.getStartState = function() {
+			var object = this.get_object(),
+				substate = object.getStartState();
+			if(substate) {
+				var pointer = this.get_pointer(),
+					substate_pointer = pointer.replace(substate);
+				return substate_pointer.getContextualObject();
+			} else {
+				return false;
+			}
+		};
+		proto.isRoot = function() {
+			return this.get_object().isRoot();
 		};
 
 		proto.summarize = function () {
@@ -460,53 +576,14 @@
 				return ist.find_uid(obj.basis_id);
 			}
 		};
-		proto.onBasisRemoveSubstate = function (event) {
-			this.remove_substate(event.name, undefined, false);
-		};
-		proto.onBasisRenameSubstate = function (event) {
-			var from_name = event.from,
-				to_name = event.to;
-			this.rename_substate(from_name, to_name);
-		};
-		proto.onBasisMoveSubstate = function (event) {
-			var state_name = event.state_name,
-				index = event.index;
-			this.move_state(state_name, index);
-		};
-		proto.onBasisMakeConcurrent = function (event) {
-			this.make_concurrent(event.concurrent);
-		};
-		proto.onBasisOnTransition = function (event) {
-			this.on_transition(event.str, event.activation_listener, event.deactivation_listener, event.context);
-		};
-		proto.onBasisOffTransition = function (event) {
-			this.off_transition(event.str, event.activation_listener, event.deactivation_listener, event.context);
-		};
-		proto.onBasisDestroy = function (event) {
-			this.destroy(true);
-		};
 
-		proto.destroy = function (silent) {
-			this.destroyed = true;
-			if(this.$active) {
-				this.$active.destroy(silent);
-				delete this.$active;
-			}
-			if(this.$running) {
-				this.$running.destroy(silent);
-				delete this.$running;
-			}
-			this.$initialized.destroy(silent);
-			this._last_run_event.destroy(silent);
-			delete this._last_run_event;
-			if (this._basis) {
-				this.remove_basis_listeners();
-				delete this._basis;
-			}
-			delete this._parent;
-			delete this._context;
-			able.destroy_this_listenable(this);
-			ist.unregister_uid(this.id());
+		proto.destroy = function (avoid_begin_destroy) {
+			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
+			My.superclass.destroy.apply(this, arguments);
+			this.$running.destroy(true);
+			this.$active.destroy(true);
+			this.$event.destroy(true);
+			this._localState = false;
 		};
 
 		proto.pause = function() {
@@ -526,6 +603,12 @@
 					substate.resume();
 				});
 			}
+		};
+		proto.has = function(key) {
+			return key === "event";
+		};
+		proto.print = function() {
+			ist.print_statechart(this);
 		};
 	}(ist.ContextualState));
 }(interstate));

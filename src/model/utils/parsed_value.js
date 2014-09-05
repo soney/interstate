@@ -325,7 +325,7 @@
 				curr_context = context;
 				context_item = curr_context.pointsAt();
 
-				while (!curr_context.is_empty()) {
+				while (!curr_context.isEmpty()) {
 					if (context_item instanceof ist.Dict) {
 						if (found_this) {
 							rv = curr_context.getContextualObject();
@@ -342,20 +342,21 @@
 			curr_context = context;
 			context_item = curr_context.pointsAt();
 				
-			while (!curr_context.is_empty()) {
+			while (!curr_context.isEmpty()) {
 				if (context_item instanceof ist.Dict) {
 					var contextual_obj = curr_context.getContextualObject();
 					if (contextual_obj.has(key, _.indexOf(ignore_inherited_in_contexts, context_item)>=0)) {
 						rv = contextual_obj._prop_val(key);
 						return rv;
 					}
-				} else if (context_item instanceof ist.ProvisionalContext) {
-					if(context_item.has(key)) {
-						return context_item.get(key);
+				} else if (context_item instanceof ist.State || context_item instanceof ist.Transition) {
+					if(key === "event") {
+						var contextual_obj = curr_context.getContextualObject();
+						return contextual_object.getEvent();
 					}
 				}
 
-				if(curr_context.has_special_contexts()) {
+				if(curr_context.copy()) {
 					var special_contexts = curr_context.special_contexts();
 					var len = special_contexts.length;
 					for (i = 0; i < len; i += 1) {
@@ -401,7 +402,7 @@
 			var curr_context = context;
 			var context_item = curr_context.pointsAt();
 
-			while (!curr_context.is_empty()) {
+			while (!curr_context.isEmpty()) {
 				if (context_item instanceof ist.Dict) {
 					var contextual_obj = ist.find_or_put_contextual_obj(context_item, curr_context);
 					return contextual_obj;
@@ -437,7 +438,7 @@
 					var curr_context = object.get_pointer();
 					var context_item = curr_context.pointsAt();
 
-					while (!curr_context.is_empty()) {
+					while (!curr_context.isEmpty()) {
 						if (context_item instanceof ist.Dict) {
 							if (found_this) {
 								rv = ist.find_or_put_contextual_obj(context_item, curr_context);

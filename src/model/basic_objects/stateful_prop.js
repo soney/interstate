@@ -46,18 +46,6 @@
     
         ist.install_proto_builtins(proto, My.builtins);
     
-        //
-        // === PARENTAGE ===
-        //
-    
-        var state_basis = function (state) {
-            var basis = state.basis();
-            if (_.isUndefined(basis)) {
-                basis = state;
-            }
-            return basis;
-        };
-    
     
         //
         // === DIRECT VALUES ===
@@ -68,7 +56,6 @@
 					value.set_ignore_inherited_in_first_dict(true);
 				}
 			}
-            state = state_basis(state);
             this.get_direct_values().put(state, value);
 			return this;
         };
@@ -77,7 +64,7 @@
 			var keys = [];
 			var vals = [];
 			_.each(infos, function(info) {
-				keys.push(info.state.basis());
+				keys.push(info.state);
 				vals.push(info.value.clone());
 			});
 			var direct_values = cjs.map({
@@ -91,23 +78,18 @@
 		};
         proto.unset = proto._unset_direct_value_for_state = function (state) {
             var dvs = this.get_direct_values();
-            state = state_basis(state);
             dvs.remove(state);
         };
         proto._direct_value_for_state = function (state) {
-            state = state_basis(state);
             return this.get_direct_values().get(state);
         };
         proto._has_direct_value_for_state = function (state) {
-            state = state_basis(state);
             return this.get_direct_values().has(state);
         };
         
         proto.destroy = function () {
 			if(this.constructor === My) { this.begin_destroy(); }
-
 			ist.unset_instance_builtins(this, My);
-
 			My.superclass.destroy.apply(this, arguments);
         };
     

@@ -3,12 +3,23 @@
 	var _ = ist._;
 
 	test("Inactive transitions are deactivated", function() {
-		var statechart = new ist.Statechart(),
+		var statechart = new ist.State(),
 			active_state_names;
+		statechart.addSubstate("state1");
+		statechart.addSubstate("state1");
+		statechart.addSubstate("state2");
 
-		statechart	.add_state("state1")
-					.starts_at("state1")
-					.add_state("state2")
+		var fwd = new ist.ManualEvent(),
+			bak = new ist.ManualEvent();
+
+		statechart.addTransition("state1", "state2", fwd);
+		statechart.addTransition("state2", "state1", bak);
+
+		var contextualStatechart = new ist.Pointer({stack: [statechart]}).getContextualObject();
+
+		contextualStatechart.print();
+
+		/*
 
 		var state1 = statechart.find_state("state1"),
 			state2 = statechart.find_state("state2"),
@@ -77,6 +88,7 @@
 		ok(!backward_transition.is_enabled());
 
 		statechart.destroy();
+		*/
 	});
 
 	test("Transitions amongst substates", function() {

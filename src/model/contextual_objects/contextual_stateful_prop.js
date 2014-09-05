@@ -100,7 +100,6 @@
 			if (stateful_prop.get_can_inherit() && avoid_inherited !== true) {
 				var pointer = this.get_pointer();
 
-
 				var my_names = [];
 				i = pointer.lastIndexOf(parent.get_object());
 				var len = pointer.length();
@@ -197,37 +196,25 @@
 			var raw_values = this.get_raw_values(),
 				parent = this.get_parent(),
 				stateful_prop = this.get_object(),
-				statecharts = stateful_prop.get_can_inherit() ? parent.get_statecharts() : [parent.getContextualStatechart(parent.get_object())],
+				statecharts = stateful_prop.get_can_inherit() ? parent.getStatecharts() : [parent.getOwnStatechart()],
 				statecharts_len = statecharts.length;
 
 			var rv = _.map(raw_values, function (entry) {
 				var key = entry.key;
-				var state, i;
+				var contextual_state, i;
 				if (key) {
 					for (i = 0; i < statecharts_len; i += 1) {
 						var statechart = statecharts[i];
-						if (key.root() === statechart.basis()) {
-							if (key instanceof ist.State) {
-								try {
-									state = ist.find_equivalent_state(key, statechart);
-								} catch(e) {
-									continue;
-								}
-							} else if (key instanceof ist.StatechartTransition) {
-								try {
-									state = ist.find_equivalent_transition(key, statechart);
-								} catch(e) {
-									continue;
-								}
-							}
+						if (key.root() === statechart.get_object()) {
+							contextual_state = parent.getStateContextualObject(key);
 							break;
 						}
 					}
 				} else {
-					state = undefined;
+					contextual_state = undefined;
 				}
 				return {
-					state: state,
+					state: contextual_state,
 					value: entry.value,
 					inherited_from: entry.inherited_from,
 					root_sv_index: i
@@ -271,16 +258,16 @@
 				state = info.state;
 				val = info.value;
 
-				if(state instanceof ist.StartState) { // Should actually use the transition and not the state
-					if (state.is_active() && (using_val === NO_VAL || using_state.order(state) < 0)) {
+				if(state && state.isStart()) { // Should actually use the transition and not the state
+					if (state.isActive() && (using_val === NO_VAL || using_state.order(state) < 0)) {
 						using_info = info;
 						using_val = val;
 						using_state = state;
 						using_as = USING_AS_STATE;
 					} else {
-						var ot = state.get_outgoing_transition();
+						var ot = state.getOutgoingTransitions();
 						if(ot) { // sometimes called before initialization
-							tr = ot.get_times_run();
+							tr = ot.timesRun();
 
 							if (tr > this.get_transition_times_run(ot)) {
 								this.set_transition_times_run(ot, tr);
@@ -292,15 +279,15 @@
 							}
 						}
 					}
-				} else if (state instanceof ist.State) {
-					if (state.is_active() && (using_val === NO_VAL || using_state.order(state) < 0)) {
+				} else if (state instanceof ist.ContextualState) {
+					if (state.isActive() && (using_val === NO_VAL || using_state.order(state) < 0)) {
 						using_info = info;
 						using_val = val;
 						using_state = state;
 						using_as = USING_AS_STATE;
 					}
-				} else if (state instanceof ist.StatechartTransition) {
-					tr = state.get_times_run();
+				} else if (state instanceof ist.ContextualTransition) {
+					tr = state.timesRun();
 
 					if (tr > this.get_transition_times_run(state)) {
 						this.set_transition_times_run(state, tr);
@@ -399,22 +386,10 @@
 				}
 			}
 
-			var stateful_prop = this.get_object();
-
 			if(using_val) {
 				var pointer = this.get_pointer(),
-					eventized_pointer;
-				if(using_state instanceof ist.StartState) {
-					eventized_pointer = pointer.push(using_val);
-				} else {
-					eventized_pointer = pointer.push(using_val, new ist.StateContext(using_state));
-				}
-
-				
-				var cobj = ist.find_or_put_contextual_obj(using_val, eventized_pointer, {
-					inherited_from: using_info.inherited_from
-				});
-				
+					value_pointer = pointer.push(using_state.get_object()).push(using_val),
+					cobj = value_pointer.getContextualObject();
 		
 				if(!is_preemptive && ist.__debug) {
 					rv = cobj.val();

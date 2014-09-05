@@ -158,15 +158,13 @@
 			if(this.constructor === My) { this.flag_as_initialized();  }
 			My.superclass.initialize.apply(this, arguments);
 			if(ist.__garbage_collect) {
-				if(!this.inert) {
-					this._live_cobj_child_updater = cjs.liven(function() {
-						this.update_cobj_children();
-					}, {
-						context: this,
-						priority: 2,
-						pause_while_running: true
-					});
-				}
+				this._live_cobj_child_updater = cjs.liven(function() {
+					this.update_cobj_children();
+				}, {
+					context: this,
+					priority: 2,
+					pause_while_running: true
+				});
 			}
 			if(this.constructor === My) { this.shout_initialization();  }
 		};

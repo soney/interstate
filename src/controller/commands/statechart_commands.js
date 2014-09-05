@@ -105,24 +105,24 @@
         var proto = My.prototype;
     
         proto._execute = function () {
-            this._index = this._statechart.get_state_index(this._state_name);
-            this._state = this._statechart.find_state(this._state_name);
+            this._index = this._statechart.getStateIndex(this._state_name);
+            this._state = this._statechart.getSubstate(this._state_name);
             var transitions = new RedSet({
                 hash: "hash"
             });
-            var incoming_transitions = this._state.get_incoming_transitions(),
-                outgoing_transitions = this._state.get_outgoing_transitions();
+            var incoming_transitions = this._state.getIncomingTransitions(),
+                outgoing_transitions = this._state.getIncomingTransitions();
             transitions.add.apply(transitions, incoming_transitions);
             transitions.add.apply(transitions, outgoing_transitions);
             this._transitions = transitions.toArray();
-            this._statechart.remove_state(this._state_name, false); //don't destroy
+            this._statechart.removeSubstate(this._state_name, false); //don't destroy
         };
     
         proto._unexecute = function () {
             this._statechart.add_state(this._state_name, this._state, this._index);
             var self = this;
             _.forEach(this._transitions, function (transition) {
-                self._statechart.add_transition(transition);
+                self._statechart.addTransition(transition);
             });
         };
     
@@ -325,16 +325,6 @@
         this._from_state = this._options.from;
         this._to_state = this._options.to;
         this._event = this._options.event;
-    
-        if (this._statechart.basis && this._statechart.basis()) {
-            this._statechart = this._statechart.basis();
-        }
-        if (this._from_state.basis && this._from_state.basis()) {
-            this._from_state = this._from_state.basis();
-        }
-        if (this._to_state.basis && this._to_state.basis()) {
-            this._to_state = this._to_state.basis();
-        }
     };
     
     (function (My) {
@@ -343,10 +333,10 @@
     
         proto._execute = function () {
             if (_.has(this, "_transition")) {
-                this._statechart.add_transition(this._transition);
+                this._statechart.addTransition(this._transition);
             } else {
-                this._statechart.add_transition(this._from_state, this._to_state, this._event);
-                this._transition = this._statechart._last_transition;
+                this._transition = this._statechart.addTransition(this._from_state, this._to_state, this._event);
+                //this._transition = this._statechart._last_transition;
             }
         };
     
