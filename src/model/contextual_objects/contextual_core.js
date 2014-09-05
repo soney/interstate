@@ -345,12 +345,12 @@
 			hash_i = pointer_root.id();
 			node = cobj_roots[hash_i];
 
-			//must_initialize = true;
 
 			if(!node) {
 				if(len === 1) {
+					must_initialize = true;
 					node = cobj_roots[hash_i] = ist.create_contextual_object(obj, pointer, _.extend({
-						//defer_initialization: true
+						defer_initialization: true
 					}, options));
 				} else {
 					node = ist.find_or_put_contextual_obj(pointer_root, pointer.slice(0,1));

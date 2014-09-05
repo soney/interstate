@@ -7,6 +7,7 @@
         _ = ist._;
 
 	var START_STATE_NAME = "(start)";
+	ist.START_SATATE_NAME = START_STATE_NAME;
     
     ist.State = function (options, defer_initialization) {
         options = _.extend({

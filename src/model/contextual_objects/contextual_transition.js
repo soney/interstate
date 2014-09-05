@@ -48,14 +48,19 @@
 			if(this.constructor === My) { this.flag_as_initialized();  }
 			My.superclass.initialize.apply(this, arguments);
 
-			if(this.transitionType() === "start") {
-				var transition = this.get_object();
+			var transitionType = this.transitionType(),
+				transition = this.get_object();
+
+			if(transitionType === "start") {
 				this.onTransitionToChanged();
 				transition.on("setTo", this.onTransitionToChanged, this);
-			}
-
-			if (this._event) {
-				this._event.initialize();
+			} else if(transitionType === "event") {
+				var event = transition.getEvent();
+				event.on_fire(function() {
+					this.fire.apply(this, arguments);
+				}, this);
+			} else if(transitionType === "parsed") {
+				var str = transition.getStr();
 			}
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
@@ -112,14 +117,14 @@
 
 		proto.enable = function () {
 			if(!this.isEnabled()) {
+				debugger;
+				console.log(this.sid());
 				this._enabled = true;
 				this.$enabled.set(true);
+
 				var type = this.type();
 				if(type === "start") {
-					var to = this.to();
-					if(!to.isStart()) {
-						console.log(to);
-					}
+					this.onTransitionToChanged();
 				}
 				/*
 
@@ -133,11 +138,13 @@
 			if(this.isEnabled()) {
 				this._enabled = false;
 				this.$enabled.set(false);
+				/*
 
 				var event = this.event();
 				event.disable();
 				if(ist.__debug_statecharts) {
 				}
+				*/
 			}
 		};
 

@@ -196,7 +196,7 @@
 			var raw_values = this.get_raw_values(),
 				parent = this.get_parent(),
 				stateful_prop = this.get_object(),
-				statecharts = stateful_prop.get_can_inherit() ? parent.getStatecharts() : [parent.getOwnStatechart()],
+				statecharts = stateful_prop.get_can_inherit() ? parent.getContextualStatecharts() : [parent.getOwnContextualStatechart()],
 				statecharts_len = statecharts.length;
 
 			var rv = _.map(raw_values, function (entry) {

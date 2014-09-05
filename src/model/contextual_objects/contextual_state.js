@@ -10,10 +10,12 @@
 		ist.ContextualState.superclass.constructor.apply(this, arguments);
 		this._type = "statechart";
 
-
 		var object = this.get_object(),
 			running, active;
 
+		this.sub_children = new RedMap({
+			hash: "hash"
+		});
 		if(object.isRoot()) {
 			this._parent = false;
 			this._root = this;
@@ -43,7 +45,7 @@
 			if(this.constructor === My) { this.flag_as_initialized();  }
 			My.superclass.initialize.apply(this, arguments);
 
-			if(!this.isStartState) {
+			if(!this.isStart()) {
 				if(!this.isConcurrent()) {
 					this._localState = this.getStartState();
 				}
@@ -62,6 +64,15 @@
 					//this._localState.activate();
 				}
 			}
+			/*
+
+			this._live_subchild_updater = cjs.liven(function() {
+				this._update_sub_children();
+			}, {
+				context: this,
+				priority: 1,
+				pause_while_running: true
+			});
 
 			/*
 			if(this.isRunning() && !this.isStart()) {
@@ -93,6 +104,7 @@
 		proto.destroy = function (avoid_begin_destroy) {
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 			My.superclass.destroy.apply(this, arguments);
+			this.otugoing_transitions.destroy(true);
 		};
 		proto.setEvent = function(event) {
 			this.$event.set(event);	
@@ -148,6 +160,61 @@
 		};
 		proto.isRunning = function() {
 			return this._running;
+		};
+		/*
+		proto._update_sub_children = function() {
+			var object = this.get_object(),
+				outgoingTransitions = object.getOutgoingTransitions(),
+				substates = _.pluck(object.getSubstates(), "value"),
+				current_values = this.sub_children.values(),
+				sub_children = outgoingTransitions.concat(substates),
+				to_destroy = {};
+
+			this.sub_children.forEach(function(sc, name) {
+				to_destroy[sc.id()] = {key: name, sc: sc};
+			});
+
+			_.each(sub_children, function(sc) {
+				to_destroy[sc.id()] = false;
+			});
+
+			console.log(outgoingTransitions, substates);
+			
+			var to_destroy_arr = _.compact(_.values(to_destroy));
+			_.each(to_destroy_arr, function(info) {
+				var sc = info.sc,
+					key = info.key;
+				this.statecharts_per_proto.remove(key);
+				sc.destroy(true);
+			}, this);
+
+			var pointer = this.get_pointer();
+			_.each(sub_children, function(sc) {
+				var sc_pointer = pointer.replace(sc);
+
+				console.log(sc_pointer);
+
+			});
+
+		/*
+			var valid_statecharts = this.get_valid_statecharts(),
+				current_statecharts = this.statecharts_per_proto.values(),
+				to_destroy = {};
+
+			this.statecharts_per_proto.forEach(function(sc, proto_obj) {
+				to_destroy[sc.id()] = {key: proto_obj, sc: sc};
+			});
+			_.each(valid_statecharts, function(sc) {
+				to_destroy[sc.id()] = false;
+			});
+
+			var to_destroy_arr = _.compact(_.values(to_destroy));
+			_.each(to_destroy_arr, function(info) {
+				var sc = info.sc,
+					key = info.key;
+				this.statecharts_per_proto.remove(key);
+				sc.destroy(true);
+			}, this);
 		};
 
 /*
@@ -210,16 +277,27 @@
 				this._active = true;
 				this.$active.set(true);
 
+/*
 				if(this.isStart()) {
 					//this.enableOutgoingTransitions();
-				} else if(this.isConcurrent()) {
+				} else
+				*/
+				if(this.isConcurrent()) {
 					_.each(this.getSubstates(true), function(substate) {
 						substate.activate();
 					}, this);
 				} else {
 					var startState = this.getStartState();
-					startState.activate();
+					if(startState) {
+						startState.activate();
+					}
 				}
+
+				if(this.isRunning()) {
+					this.enableOutgoingTransitions();
+				}
+
+
 				this._emit("active", {
 					type: "active",
 					target: this
@@ -410,8 +488,25 @@
 			return false;
 		};
 
-		proto.getActiveSubstate = function() {
-			return this._localState;
+		//proto.getActiveSubstate = function() {
+			//return this._localState;
+		//};
+		proto.getActiveDirectSubstates = function () {
+			if (this.isConcurrent()) {
+				return this.getSubstates();
+			} else if (this._localState) {
+				return [this._localState];
+			} else {
+				return [];
+			}
+		};
+		proto.getActiveSubstates = function () {
+			return _.chain(this.getActiveDirectSubstates())
+					.map(function (substate) {
+						return ([substate]).concat(substate.getActiveSubstates());
+					})
+					.flatten(true)
+					.value();
 		};
 
 		proto.setActiveSubstate = function(state, transition, event) {
@@ -425,7 +520,7 @@
 						}
 					});
 				} else {
-					var local_state = this.getActiveSubstate();
+					var local_state = this._localState;
 
 					cjs.wait();
 					if(local_state !== state) {
@@ -520,6 +615,11 @@
 				var substate = substate_info.value,
 					name = substate_info.key,
 					ptr = pointer.replace(substate);
+
+				if(name === ist.START_SATATE_NAME && !include_start) {
+					return;
+				}
+
 				rv[name] = ptr.getContextualObject();
 			});
 
@@ -549,32 +649,6 @@
 		};
 		proto.isRoot = function() {
 			return this.get_object().isRoot();
-		};
-
-		proto.summarize = function () {
-			var context = this.context();
-			var summarized_context;
-			if (context) {
-				summarized_context = context.summarize();
-			}
-			var my_basis = this.basis() || this;
-			return {
-				basis_id: my_basis.id(),
-				context: summarized_context
-			};
-		};
-		My.desummarize = function (obj) {
-			if (obj.context) {
-				var state_basis = ist.find_uid(obj.basis_id);
-				var context = ist.Pointer.desummarize(obj.context);
-				var dict = context.pointsAt();
-				var contextual_statechart = dict.get_statechart_for_context(context);
-
-				var state = ist.find_equivalent_state(state_basis, contextual_statechart);
-				return state;
-			} else {
-				return ist.find_uid(obj.basis_id);
-			}
 		};
 
 		proto.destroy = function (avoid_begin_destroy) {
@@ -608,7 +682,7 @@
 			return key === "event";
 		};
 		proto.print = function() {
-			ist.print_statechart(this);
+			ist.print_statechart.apply(ist, ([this]).concat(_.toArray(arguments)));
 		};
 	}(ist.ContextualState));
 }(interstate));

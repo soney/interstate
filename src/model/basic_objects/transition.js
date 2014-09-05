@@ -23,7 +23,8 @@
                 },
 				destroy: function(me) {
 					me.destroy(true);
-				}
+				},
+				getter_name: "getStr"
             },
 			"type": {
 				"default": function() { return "parsed"; }
@@ -54,7 +55,8 @@
                 serialize: false,
             },
 			"event": {
-				"default": function() { return false; }
+				"default": function() { return false; },
+				getter_name: "getEvent"
 			}
         };
         ist.install_proto_builtins(proto, My.builtins);
@@ -62,10 +64,18 @@
         proto.initialize = function (options) {
 			My.superclass.initialize.apply(this, arguments);
             ist.install_instance_builtins(this, options, My);
+            this._tree = cjs(function () {
+                var str = this.get_str();
+                return ist.parse(str);
+            }, {
+				context: this
+			});
         };
         proto.destroy = function () {
 			if(this.constructor === My) { this.begin_destroy(); }
 			ist.unset_instance_builtins(this, My);
+
+			this._tree.destroy();
 
 			My.superclass.destroy.apply(this, arguments);
         };

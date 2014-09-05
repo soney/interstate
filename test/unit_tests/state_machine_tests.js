@@ -6,8 +6,8 @@
 		var statechart = new ist.State(),
 			active_state_names;
 		statechart.addSubstate("state1");
-		statechart.addSubstate("state1");
 		statechart.addSubstate("state2");
+		statechart.startsAt("state1");
 
 		var fwd = new ist.ManualEvent(),
 			bak = new ist.ManualEvent();
@@ -17,34 +17,36 @@
 
 		var contextualStatechart = new ist.Pointer({stack: [statechart]}).getContextualObject();
 
-		contextualStatechart.print();
+
+		active_state_names = _.map(contextualStatechart.getActiveSubstates(), function(x) { return x.getName(); });
+		console.log(active_state_names);
+		deepEqual(active_state_names, ["state1", "state1.(start)"]);
+
+		var state1 = contextualStatechart.getSubstate("state1"),
+			state2 = contextualStatechart.getSubstate("state2"),
+			forward_transition = state1.getOutgoingTransitions()[0],
+			backward_transition = state1.getIncomingTransitions()[0];
+
+		contextualStatechart.print(true);
 
 		/*
 
-		var state1 = statechart.find_state("state1"),
-			state2 = statechart.find_state("state2"),
-
-			fwd = new ist.ManualEvent(),
-			bak = new ist.ManualEvent();
-
-		statechart.add_transition("state1", "state2", fwd);
-		var forward_transition = statechart._last_transition;
-
-		statechart.add_transition("state2", "state1", bak);
-		var backward_transition = statechart._last_transition;
-
-		active_state_names = _.map(statechart.get_active_states(), function(x) { return x.get_name(); });
-		deepEqual(active_state_names, ["state1", "state1.(start)"]);
-
-		ok(forward_transition.is_enabled());
-		ok(!backward_transition.is_enabled());
-
+		ok(forward_transition.isEnabled());
+		console.log(backward_transition.isEnabled());
+		ok(!backward_transition.isEnabled());
 		fwd.fire();
+
+		contextualStatechart.print(true);
+		active_state_names = _.map(contextualStatechart.getActiveSubstates(), function(x) { return x.getName(); });
+		console.log(active_state_names);
+		deepEqual(active_state_names, ["state2", "state2.(start)"]);
+
+		ok(!forward_transition.isEnabled());
+		ok(backward_transition.isEnabled());
+		/*
 		active_state_names = _.map(statechart.get_active_states(), function(x) { return x.get_name(); });
 		deepEqual(active_state_names, ["state2", "state2.(start)"]);
 
-		ok(!forward_transition.is_enabled());
-		ok(backward_transition.is_enabled());
 
 		bak.fire();
 
@@ -91,6 +93,7 @@
 		*/
 	});
 
+/*
 	test("Transitions amongst substates", function() {
 		var statechart = new ist.Statechart(),
 			active_state_names;
