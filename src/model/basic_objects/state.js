@@ -145,6 +145,7 @@
 				substates = this._get_substates();
 
 			substates.put(name, state);
+			return state;
 		};
 		proto.removeSubstate = function(name) {
 			var substates = this._get_substates();
@@ -177,7 +178,7 @@
 
 			for(i=0; i<len; i++) {
 				substates = currState._get_substates();
-				currState = substates ? substates.get(name) : false;
+				currState = substates ? substates.get(keys[i]) : false;
 
 				if(!currState) { return false; }
 			}
@@ -260,6 +261,20 @@
 		};
 		proto.isRoot = function() {
 			return !this.parent();
+		};
+		proto.getLineage = function (until_state) {
+			var curr_node = this,
+				parentage = [],
+				i = 0;
+
+			do {
+				parentage[i] = curr_node;
+				i += 1;
+				if (curr_node === until_state) { break; }
+				curr_node = curr_node.parent();
+			} while (curr_node);
+
+			return parentage.reverse();
 		};
 		proto.startsAt = function(stateName) {
 			var state = this.getSubstate(stateName),

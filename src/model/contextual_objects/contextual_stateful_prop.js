@@ -265,7 +265,9 @@
 						using_state = state;
 						using_as = USING_AS_STATE;
 					} else {
-						var ot = state.getOutgoingTransitions();
+						var ots = state.getOutgoingTransitions(),
+							ot = ots[0];
+
 						if(ot) { // sometimes called before initialization
 							tr = ot.timesRun();
 

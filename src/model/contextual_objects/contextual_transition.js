@@ -11,7 +11,16 @@
 
 		if(options.avoid_constructor) { return; }
 
-		var transition = this.get_object();
+		var transition = this.get_object(),
+			from = transition.from(),
+			lineage = from.getLineage(),
+			ptr = this.get_pointer();
+
+		_.each(lineage, function() {
+			ptr = ptr.pop();
+		});
+
+		this._root = ptr.getContextualObject();
 
 		this.$active = cjs(false);
 		this.$event = cjs(false);
@@ -49,23 +58,35 @@
 			My.superclass.initialize.apply(this, arguments);
 
 			var transitionType = this.transitionType(),
-				transition = this.get_object();
+				transition = this.get_object(),
+				from = this.from();
+
+			if(from.isActive() && from.isRunning()) {
+				this.enable();
+			}
 
 			if(transitionType === "start") {
-				this.onTransitionToChanged();
 				transition.on("setTo", this.onTransitionToChanged, this);
 			} else if(transitionType === "event") {
 				var event = transition.getEvent();
-				event.on_fire(function() {
-					this.fire.apply(this, arguments);
-				}, this);
+				event.on_fire(this.fire, this);
 			} else if(transitionType === "parsed") {
 				var str = transition.getStr();
 			}
+
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
 		proto.destroy = function (avoid_begin_destroy) {
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
+			var transitionType = this.transitionType(),
+				transition = this.get_object();
+			if(transitionType === "start") {
+				transition.off("setTo", this.onTransitionToChanged, this);
+			} else if(transitionType === "event") {
+				var event = transition.getEvent();
+				event.off_fire(this.fire, this);
+			} else if(transitionType === "parsed") {
+			}
 			My.superclass.destroy.apply(this, arguments);
 		};
 		proto.transitionType = function() {
@@ -82,14 +103,21 @@
 			var object = this.get_object(),
 				pointer = this.get_pointer(),
 				from = object.from(),
-				from_pointer = pointer.replace(from);
+				from_pointer = pointer.pop();
 			return from_pointer.getContextualObject();
 		};
 		proto.to = function () {
 			var object = this.get_object(),
-				pointer = this.get_pointer(),
 				to = object.to(),
-				to_pointer = pointer.replace(to);
+				to_lineage = to.getLineage(),
+				root = this.root(),
+				root_pointer = root.get_pointer(),
+				to_pointer = root_pointer;
+
+			_.each(_.rest(to_lineage), function(state) {
+				to_pointer = to_pointer.push(state);
+			});
+
 			return to_pointer.getContextualObject();
 		};
 		proto.order = function(order_to) {
@@ -112,18 +140,16 @@
 			return stringified_event.toString();
 		};
 		proto.root = function () {
-			return this.from().root();
+			return this._root;
 		};
 
 		proto.enable = function () {
 			if(!this.isEnabled()) {
-				debugger;
-				console.log(this.sid());
 				this._enabled = true;
 				this.$enabled.set(true);
 
-				var type = this.type();
-				if(type === "start") {
+				var transitionType = this.transitionType();
+				if(transitionType === "start") {
 					this.onTransitionToChanged();
 				}
 				/*

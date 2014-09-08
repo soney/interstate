@@ -65,7 +65,6 @@
 			ist.register_uid(this._id, this);
 		}
 
-		//if(this.sid() === 907) debugger;
 		if(options.avoid_constructor) { return; }
 
 		this._last_run_event = cjs(false);
@@ -87,7 +86,6 @@
 			this.add_basis_listeners();
 		}
 
-		//if(this.sid() === 2141) debugger;
 	};
 
 	(function (my) {

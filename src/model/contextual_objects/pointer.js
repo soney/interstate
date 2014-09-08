@@ -72,6 +72,7 @@
 			});
 		};
 		proto.push = function (obj, copies) {
+			//if(obj === this.pointsAt()) debugger;
 			return new ist.Pointer({
 				stack: this._stack.concat(obj),
 				copies: this._copies.concat(copies),

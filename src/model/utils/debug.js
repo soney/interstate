@@ -160,7 +160,7 @@
 		var tablify = function (contextual_object) {
 			if (contextual_object instanceof ist.ContextualDict) {
 				if (contextual_object instanceof ist.ContextualStatefulObj) {
-					var statecharts = contextual_object.getStatecharts();
+					var statecharts = contextual_object.getContextualStatecharts();
 					print_statechart.apply(this, (statecharts).concat(logging_mechanism));
 				}
 				var children = contextual_object.children();

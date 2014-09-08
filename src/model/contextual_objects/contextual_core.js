@@ -49,6 +49,21 @@
 			if(this.constructor === My) { this.flag_as_initialized();  }
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
+		proto._add_cobj_child_updater = function() {
+			this._live_cobj_child_updater = cjs.liven(function() {
+				this.update_cobj_children();
+			}, {
+				context: this,
+				priority: 2,
+				pause_while_running: true
+			});
+		};
+		proto._remove_cobj_child_updater = function() {
+			if(this._live_cobj_child_updater) {
+				this._live_cobj_child_updater.destroy(true);
+				delete this._live_cobj_child_updater;
+			}
+		};
 		proto.flag_as_initialized = function() {
 			this._initialized = true;
 		};
@@ -224,7 +239,6 @@
 					}, this);
 				}
 			}, this);
-			/*
 
 			var to_destroy_list = _.compact(_.values(to_destroy));
 
@@ -234,7 +248,6 @@
 			_.each(to_destroy_list, function(cobj) {
 				cobj.destroy(true);
 			});
-			*/
 
 			this.updateAttachments();
 			

@@ -111,7 +111,6 @@
 					.set("fill", "init", "'red'")
 					.set("fill", "hover", "'blue'")
 		;
-		//env.print();
 		var root = env.get_root();
 		the_div.dom_output({
 			root: root,

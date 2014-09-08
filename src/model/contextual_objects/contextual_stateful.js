@@ -166,9 +166,16 @@
 				statechart.resume();
 			});
 		};
-		proto.getStateContextualObject = function(state) {
+		proto.getStatePointer = function(state) {
 			var pointer = this.get_pointer(),
-				state_pointer = pointer.push(state);
+				state_pointer = pointer;
+			_.each(state.getLineage(), function(s) {
+				state_pointer = state_pointer.push(s);
+			});
+			return state_pointer;
+		};
+		proto.getStateContextualObject = function(state) {
+			var state_pointer = this.getStatePointer(state);
 			return state_pointer.getContextualObject();
 		};
 		proto._get_valid_cobj_children = function() {

@@ -26,11 +26,19 @@
 				obj_parent = object.parent(),
 				obj_root = object.root();
 
-			this._parent = pointer.replace(obj_parent).getContextualObject();
-			this._root = obj_root ? (obj_root === object ? this : pointer.replace(obj_root).getContextualObject()) : false;
+			this._parent = pointer.pop().getContextualObject();
+
+			var lineage = object.getLineage(),
+				ptr = pointer;
+			_.each(_.rest(lineage), function() {
+				ptr = ptr.pop();
+			});
+
+			this._root = ptr.getContextualObject();
 			this._running = false;
 			this._active = false;
 		}
+
 		this.$running = cjs(this._running);
 		this.$active = cjs(this._active);
 		this.$event = cjs(false);
@@ -64,6 +72,7 @@
 					//this._localState.activate();
 				}
 			}
+			this._add_cobj_child_updater();
 			/*
 
 			this._live_subchild_updater = cjs.liven(function() {
@@ -101,6 +110,11 @@
 
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
+		proto.begin_destroy = function() {
+			this._remove_cobj_child_updater();
+
+			My.superclass.begin_destroy.apply(this, arguments);
+		};
 		proto.destroy = function (avoid_begin_destroy) {
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 			My.superclass.destroy.apply(this, arguments);
@@ -118,16 +132,17 @@
 			if (!this.isRunning()) {
 				ist.event_queue.wait();
 
+				this._running = true;
+				this.$running.set(true);
+
 				if(this.isActive()) {
 					this.enableOutgoingTransitions();
 				}
 
-				this._running = true;
 				this._emit("run", {
 					target: this,
 					type: "run"
 				});
-				this.$running.set(true);
 				ist.event_queue.signal();
 			}
 		};
@@ -274,29 +289,26 @@
 
 		proto.activate = function() {
 			if(!this.isActive()) {
+				var isRunning = this.isRunning();
 				this._active = true;
 				this.$active.set(true);
 
-/*
-				if(this.isStart()) {
-					//this.enableOutgoingTransitions();
-				} else
-				*/
 				if(this.isConcurrent()) {
 					_.each(this.getSubstates(true), function(substate) {
 						substate.activate();
+						if(isRunning) { substate.run(); }
 					}, this);
 				} else {
 					var startState = this.getStartState();
 					if(startState) {
 						startState.activate();
+						if(isRunning) { startState.run(); }
 					}
 				}
 
-				if(this.isRunning()) {
+				if(isRunning) {
 					this.enableOutgoingTransitions();
 				}
-
 
 				this._emit("active", {
 					type: "active",
@@ -312,6 +324,10 @@
 				_.each(this.getSubstates(true), function(substate) {
 					substate.deactivate();
 				}, this);
+				
+				//console.log(this.sid());
+				//console.log(_.map(this.getOutgoingTransitions(), function(x) { return x.sid(); }));
+				this.disableOutgoingTransitions();
 
 				this._emit("inactive", {
 					type: "inactive",
@@ -337,11 +353,20 @@
 		};
 		proto.getIncomingTransitions = function() {
 			var object = this.get_object(),
+				root = this.root(),
+				root_pointer = root.get_pointer(),
 				pointer = this.get_pointer(),
 				transitions = object.getIncomingTransitions(),
 				contextual_transitions = _.map(transitions, function(transition) {
-					var ptr = pointer.replace(transition);
-					return ptr.getContextualObject();
+					var from = transition.from(),
+						from_lineage = from.getLineage(),
+						from_ptr = root_pointer;
+
+					_.each(_.rest(from_lineage), function(state) {
+						from_ptr = from_ptr.push(state);
+					});
+					from_ptr = from_ptr.push(transition);
+					return from_ptr.getContextualObject();
 				});
 			return contextual_transitions;
 		};
@@ -350,7 +375,7 @@
 				pointer = this.get_pointer(),
 				transitions = object.getOutgoingTransitions(),
 				contextual_transitions = _.map(transitions, function(transition) {
-					var ptr = pointer.replace(transition);
+					var ptr = pointer.push(transition);
 					return ptr.getContextualObject();
 				});
 			return contextual_transitions;
@@ -419,6 +444,19 @@
 			return parentage.reverse();
 		};
 
+		proto._get_valid_cobj_children = function() {
+			var object = this.get_object(),
+				outgoingTransitions = object.getOutgoingTransitions(),
+				pointer = this.get_pointer(),
+				substates = _.pluck(object.getSubstates(), "value"),
+				rv = _.map(substates.concat(outgoingTransitions), function(x) {
+					return {
+						obj: x,
+						pointer: pointer.push(x)
+					};
+				});
+			return rv;
+		};
 
 		proto._onOutgoingTransitionFire = function (transition, event) {
 			if(this.isActive() && this.isRunning() && _.indexOf(this.getOutgoingTransitions(), transition)>=0) {
@@ -534,7 +572,7 @@
 					}
 					if (local_state) {
 						local_state.activate();
-						local_state.run();
+						if(isRunning) { local_state.run(); }
 					}
 					cjs.signal();
 				}
@@ -614,7 +652,7 @@
 			_.each(substates, function(substate_info) {
 				var substate = substate_info.value,
 					name = substate_info.key,
-					ptr = pointer.replace(substate);
+					ptr = pointer.push(substate);
 
 				if(name === ist.START_SATATE_NAME && !include_start) {
 					return;
@@ -630,7 +668,7 @@
 				substate = object.getSubstate(name);
 			if(substate) {
 				var pointer = this.get_pointer(),
-					substate_pointer = pointer.replace(substate);
+					substate_pointer = pointer.push(substate);
 				return substate_pointer.getContextualObject();
 			} else {
 				return false;
@@ -641,7 +679,7 @@
 				substate = object.getStartState();
 			if(substate) {
 				var pointer = this.get_pointer(),
-					substate_pointer = pointer.replace(substate);
+					substate_pointer = pointer.push(substate);
 				return substate_pointer.getContextualObject();
 			} else {
 				return false;

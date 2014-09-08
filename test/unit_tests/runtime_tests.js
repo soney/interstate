@@ -24,14 +24,17 @@
 						.set("B", "<stateful>")
 						.cd("B")
 							.set("(prototypes)", "(start)", "A")
+							/*
 							.set("x", "(start)", "3")
 							.up()
 						.cd("A")
 							.set("y", "(start)", "2")
 							.up()
 							;
+							*/
 				},
 				test: function(env, runtime) {
+				/*
 					env.top().cd("A");
 					var A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					env.up().cd("B");
@@ -40,9 +43,11 @@
 					equal(A.prop_val("x"), 1);
 					equal(A.prop_val("y"), 2);
 					equal(B.prop_val("x"), 3);
+					*/
 				}
 			}]
 		},
+		/*
 		{
 			name: "Dynamic Events",
 			expect: 2,
@@ -984,6 +989,7 @@
 				}
 			}]
 		}
+		/**/
 	];
 	tests.forEach(function(test) {
 		dt(test.name, test);

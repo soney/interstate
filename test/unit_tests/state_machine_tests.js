@@ -10,135 +10,115 @@
 		statechart.startsAt("state1");
 
 		var fwd = new ist.ManualEvent(),
-			bak = new ist.ManualEvent();
-
-		statechart.addTransition("state1", "state2", fwd);
-		statechart.addTransition("state2", "state1", bak);
+			bak = new ist.ManualEvent(),
+			fwd_t = statechart.addTransition("state1", "state2", fwd),
+			bak_t = statechart.addTransition("state2", "state1", bak),
+			s1 = statechart.getSubstate("state1"),
+			s2 = statechart.getSubstate("state2");
 
 		var contextualStatechart = new ist.Pointer({stack: [statechart]}).getContextualObject();
 
 
 		active_state_names = _.map(contextualStatechart.getActiveSubstates(), function(x) { return x.getName(); });
-		console.log(active_state_names);
 		deepEqual(active_state_names, ["state1", "state1.(start)"]);
 
 		var state1 = contextualStatechart.getSubstate("state1"),
 			state2 = contextualStatechart.getSubstate("state2"),
 			forward_transition = state1.getOutgoingTransitions()[0],
-			backward_transition = state1.getIncomingTransitions()[0];
+			backward_transition = state1.getIncomingTransitions()[1];
 
-		contextualStatechart.print(true);
-
-		/*
 
 		ok(forward_transition.isEnabled());
-		console.log(backward_transition.isEnabled());
 		ok(!backward_transition.isEnabled());
+
 		fwd.fire();
 
-		contextualStatechart.print(true);
 		active_state_names = _.map(contextualStatechart.getActiveSubstates(), function(x) { return x.getName(); });
-		console.log(active_state_names);
 		deepEqual(active_state_names, ["state2", "state2.(start)"]);
 
 		ok(!forward_transition.isEnabled());
 		ok(backward_transition.isEnabled());
-		/*
-		active_state_names = _.map(statechart.get_active_states(), function(x) { return x.get_name(); });
-		deepEqual(active_state_names, ["state2", "state2.(start)"]);
-
 
 		bak.fire();
 
-		active_state_names = _.map(statechart.get_active_states(), function(x) { return x.get_name(); });
+		active_state_names = _.map(contextualStatechart.getActiveSubstates(), function(x) { return x.getName(); });
 		deepEqual(active_state_names, ["state1", "state1.(start)"]);
 
-		ok(forward_transition.is_enabled());
-		ok(!backward_transition.is_enabled());
+		ok(forward_transition.isEnabled());
+		ok(!backward_transition.isEnabled());
 
 
-		forward_transition.setFrom(state2);
-		forward_transition.setTo(state1);
+		fwd_t.setFrom(s2);
+		fwd_t.setTo(s1);
 
-		backward_transition.setFrom(state1);
-		backward_transition.setTo(state2);
+		bak_t.setFrom(s1);
+		bak_t.setTo(s2);
 
-		var tmp = forward_transition;
-		forward_transition = backward_transition;
-		backward_transition = tmp;
 
-		tmp = fwd;
-		fwd = bak;
-		bak = tmp;
-		
-		ok(forward_transition.is_enabled());
-		ok(!backward_transition.is_enabled());
+		var tmp = fwd_t;
+		fwd_t = bak_t;
+		bak_t = tmp;
+
+		tmp = bak;
+		bak = fwd;
+		fwd = tmp;
+
+		forward_transition = state1.getOutgoingTransitions()[0];
+		backward_transition = state1.getIncomingTransitions()[1];
+
+		ok(forward_transition.isEnabled());
+		ok(!backward_transition.isEnabled());
 
 		fwd.fire();
-		active_state_names = _.map(statechart.get_active_states(), function(x) { return x.get_name(); });
+
+		active_state_names = _.map(contextualStatechart.getActiveSubstates(), function(x) { return x.getName(); });
 		deepEqual(active_state_names, ["state2", "state2.(start)"]);
 
-		ok(!forward_transition.is_enabled());
-		ok(backward_transition.is_enabled());
+		ok(!forward_transition.isEnabled());
+		ok(backward_transition.isEnabled());
 
 		bak.fire();
 
-		active_state_names = _.map(statechart.get_active_states(), function(x) { return x.get_name(); });
+		active_state_names = _.map(contextualStatechart.getActiveSubstates(), function(x) { return x.getName(); });
 		deepEqual(active_state_names, ["state1", "state1.(start)"]);
 
-		ok(forward_transition.is_enabled());
-		ok(!backward_transition.is_enabled());
-
+		ok(forward_transition.isEnabled());
+		ok(!backward_transition.isEnabled());
 		statechart.destroy();
-		*/
+		/**/
 	});
 
-/*
 	test("Transitions amongst substates", function() {
-		var statechart = new ist.Statechart(),
+		var statechart = new ist.State(),
 			active_state_names;
 
-		statechart	.add_state("state1")
-					.starts_at("state1")
-					.add_state("state2")
-					.add_state("state1.sub1.substate1")
+		var state1 = statechart.addSubstate("state1"),
+			state2 = statechart.addSubstate("state2"),
+			state1_sub1 = state1.addSubstate("sub1"),
+			state2_sub2 = state2.addSubstate("sub2"),
+			state1_sub1_substate1 = state1_sub1.addSubstate("substate1"),
+			state1_sub1_substate2 = state1_sub1.addSubstate("substate2"),
+			state2_sub2_substate1 = state2_sub2.addSubstate("substate1"),
+			state2_sub2_substate2 = state2_sub2.addSubstate("substate2");
+		statechart.startsAt("state1");
+		state1.startsAt("sub1");
+		state2.startsAt("sub2");
+		state1_sub1.startsAt("substate1");
+		state2_sub2.startsAt("substate1");
 
-					.add_state("state2.sub1.substate1")
-					.add_state("state2.sub1.substate2")
-
-					.add_state("state2.sub2.substate1")
-					.add_state("state2.sub2.substate2")
-
-		var state1 = statechart.find_state("state1"),
-			state1_sub1 = state1.find_state("sub1"),
-			state1_sub1_substate1 = state1_sub1.find_state("substate1"),
-
-			state2 = statechart.find_state("state2"),
-			state2_sub1 = state2.find_state("sub1"),
-			state2_sub1_substate1 = state2_sub1.find_state("substate1"),
-			state2_sub1_substate2 = state2_sub1.find_state("substate2"),
-			state2_sub2 = state2.find_state("sub2"),
-			state2_sub2_substate1 = state2_sub2.find_state("substate1"),
-			state2_sub2_substate2 = state2_sub2.find_state("substate2");
-
-		state1.starts_at("sub1");
-		state1_sub1.starts_at("substate1");
-
-		state2.starts_at("sub1");
-		state2_sub1.starts_at("substate1");
-		state2_sub2.starts_at("substate1");
-
-
-		deepEqual(_.map(statechart.get_active_states(), function(x) { return x.get_name(); }),
+		var contextualStatechart = new ist.Pointer({stack: [statechart]}).getContextualObject();
+		var active_state_names = _.map(contextualStatechart.getActiveSubstates(), function(x) { return x.getName(); });
+		deepEqual(active_state_names,
 			["state1", "state1.sub1", "state1.sub1.substate1", "state1.sub1.substate1.(start)"]);
 
 
 		var state1_state2_sub2 = new ist.ManualEvent();
-
-		statechart.add_transition("state1", "state2.sub2", state1_state2_sub2);
-
+		statechart.addTransition("state1", "state2.sub2", state1_state2_sub2);
 		state1_state2_sub2.fire();
-		deepEqual(_.map(statechart.get_active_states(), function(x) { return x.get_name(); }),
+
+
+		var active_state_names = _.map(contextualStatechart.getActiveSubstates(), function(x) { return x.getName(); });
+		deepEqual(active_state_names,
 			["state2", "state2.sub2", "state2.sub2.substate1", "state2.sub2.substate1.(start)"]);
 
 		statechart.destroy();

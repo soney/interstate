@@ -158,13 +158,7 @@
 			if(this.constructor === My) { this.flag_as_initialized();  }
 			My.superclass.initialize.apply(this, arguments);
 			if(ist.__garbage_collect) {
-				this._live_cobj_child_updater = cjs.liven(function() {
-					this.update_cobj_children();
-				}, {
-					context: this,
-					priority: 2,
-					pause_while_running: true
-				});
+				this._add_cobj_child_updater();
 			}
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
@@ -790,11 +784,7 @@
 			}, this);
 			delete this._attachment_instances;
 
-			if(this._live_cobj_child_updater) {
-				this._live_cobj_child_updater.destroy(true);
-				delete this._live_cobj_child_updater;
-			}
-
+			this._remove_cobj_child_updater();
 
 			My.superclass.begin_destroy.apply(this, arguments);
 		};
