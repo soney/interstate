@@ -202,7 +202,8 @@
 			this.$builtins = this.$column_info.itemConstraint("builtin_children");
 
 			if(client.type() === "stateful") {
-				this.$statecharts = ist.indirectClient(this.$curr_copy_client, "get_statecharts");
+			/*
+				this.$statecharts = ist.indirectClient(this.$curr_copy_client, "getContextualStatecharts");
 
 				var statecharts = [], wrappers = [], wrapper_infos = [];
 
@@ -260,6 +261,7 @@
 						});
 					}
 				});
+				*/
 			}
 
 			this._add_content_bindings();

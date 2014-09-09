@@ -374,6 +374,7 @@
         this._stateful_prop = this._options.stateful_prop;
         this._state = this._options.state;
 		this._value = this._options.value;
+		if(this._state instanceof ist.ContextualObject) debugger;
     };
     (function (My) {
         _.proto_extend(My, ist.Command);

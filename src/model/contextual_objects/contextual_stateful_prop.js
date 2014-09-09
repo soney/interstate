@@ -189,7 +189,6 @@
 					sc_parent = parent;
 				}
 			}
-			if(this.sid() === 1980) debugger;
 			
 			return entries;
 		};

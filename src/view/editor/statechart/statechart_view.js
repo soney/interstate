@@ -60,6 +60,7 @@
 				padding_top: this.option("padding_top").call(this),
 				add_state_width: this.option("add_state_width")
 			});
+			/*
 			this.statechart_view = new ist.RootStatechartView(statecharts, this.layout_manager, this.paper, this.options);
 			this.statechart_view.on("add_state", this.add_state, this);
 			this.statechart_view.on("remove_state", this.remove_state, this);
@@ -71,6 +72,7 @@
 			this.statechart_view.on("set_str", this.set_transition_str, this);
 			this.statechart_view.on("make_concurrent", this.make_concurrent, this);
 			this.statechart_view.on("reset", this.reset, this);
+			*/
 		},
 		_destroy: function () {
 			this._super();

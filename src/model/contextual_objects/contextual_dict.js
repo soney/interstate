@@ -38,8 +38,8 @@
 		var originalCobj = cobj,
 			rv = new RedSet({
 				value: [originalCobj],
-				hash: "hash",
-				equals: ist.check_contextual_object_equality
+				hash: "hash"
+				//equals: ist.check_contextual_object_equality
 			}),
 			i = 0,
 			dict, proto_val, proto_cobj, rv_arr;
@@ -337,8 +337,6 @@
 					copy = pointer.copy(),
 					special_context_names;
 
-				if(pointer.copy())
-
 				var special_context_infos = _.map(special_context_names, function (name) {
 							var sc = owners[name];
 							var co = sc.get_context_obj();
@@ -347,7 +345,7 @@
 					special_context_contextual_objects = _.map(special_context_infos, function (info, i) {
 						var name = special_context_names[i];
 						return {name: name, value: info.value, inherited: false, builtin: true };
-					}, this);
+					}, this) || [];
 				
 				var contextual_objects = special_context_contextual_objects.concat(builtin_contextual_objects),
 					children = _.map(contextual_objects, function(raw_child) {

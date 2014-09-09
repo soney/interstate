@@ -89,7 +89,7 @@
 
 					if (!state) {
 						var contextual_object = SOandC.context.getContextualObject(),
-							statecharts = contextual_object.getContextualStatecharts();
+							statecharts = contextual_object.getStatecharts();
 
 						inherited_statecharts = statecharts.slice(1);
 						for (i = 0; i < inherited_statecharts.length; i += 1) {
