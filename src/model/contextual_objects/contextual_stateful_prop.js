@@ -60,17 +60,18 @@
 		};
 
 		proto.get_states = function () {
-			var parent = this.get_parent();
-			var stateful_prop = this.get_object();
-			var statecharts;
+			var parent = this.get_parent(),
+				stateful_prop = this.get_object();
+				statecharts;
+
 			if (stateful_prop.get_can_inherit()) {
-				statecharts = parent.get_statecharts();
+				statecharts = parent.getContextualStatecharts();
 			} else {
 				var sc_parent = stateful_prop.get_statechart_parent();
 				if (sc_parent === "parent") {
 					sc_parent = parent.get_object();
 				}
-				statecharts = [parent.get_statechart_for_proto(sc_parent)];
+				statecharts = [parent.getContextualStatechartForProto(sc_parent)];
 			}
 			var substates = _.chain(statecharts)
 				.map(function (sc) {
