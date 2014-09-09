@@ -60,17 +60,17 @@
             "in_state": function (cobj, index, arr, state_name) {
                 var statecharts, i, j;
                 if (cobj instanceof ist.ContextualStatefulObj) {
-                    statecharts = cobj.get_statecharts();
+                    statecharts = cobj.getContextualStatecharts();
                 } else {
                     statecharts = [];
                 }
     
                 for (i = 0; i < statecharts.length; i += 1) {
                     var statechart = statecharts[i];
-                    var active_substates = statechart.get_active_states();
+                    var active_substates = statechart.getActiveSubstates();
                     for (j = 0; j < active_substates.length; j += 1) {
                         var active_substate = active_substates[j];
-                        if (active_substate.get_name() === state_name) {
+                        if (active_substate.getName() === state_name) {
                             return true;
                         }
                     }

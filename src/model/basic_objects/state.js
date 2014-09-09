@@ -33,7 +33,7 @@
             },
             "root": {
 				"default": function() { return this; },
-                serialize: false,
+                //serialize: false,
 				getter_name: "root"
             },
             "concurrent": {

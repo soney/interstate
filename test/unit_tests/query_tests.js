@@ -21,9 +21,9 @@
 						.cd("obj")
 							.add_state("state1")
 							.add_state("state2")
+							.set_copies("5")
 							.add_transition("state1", "state2", "on('ev'+my_copy)")
 							.start_at("state1")
-							.set_copies("5")
 							.up()
 						.set("query1", "find(obj).in_state('state1')");
 				},

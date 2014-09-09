@@ -150,20 +150,20 @@
 			cjs.signal();
 		};
 
-		proto.pause  = function(recursive) {
+		proto.pause = function(recursive) {
 			My.superclass.pause.apply(this, arguments);
 
-			var statecharts = this.getStatecharts();
+			var statecharts = this.getContextualStatecharts();
 			_.each(statecharts, function(statechart) {
-				statechart.pause();
+				statechart.stop();
 			});
 		};
 		proto.resume = function(recursive) {
 			My.superclass.resume.apply(this, arguments);
 
-			var statecharts = this.getStatecharts();
+			var statecharts = this.getContextualStatecharts();
 			_.each(statecharts, function(statechart) {
-				statechart.resume();
+				statechart.run();
 			});
 		};
 		proto.getStatePointer = function(state) {

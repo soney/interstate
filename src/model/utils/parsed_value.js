@@ -726,8 +726,10 @@
 					return new ist.MultiExpression(_.map(constraint.expressions, function(x) {
 						return x.get();
 					}));
-				} else {
+				} else if (constraint instanceof cjs.Constraint) {
 					return constraint.get();
+				} else {
+					return constraint;
 				}
 			}, {
 				context: this,

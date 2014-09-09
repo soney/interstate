@@ -127,6 +127,10 @@
 
 				if(this.isActive()) {
 					this.disableOutgoingTransitions();
+
+					_.each(this.getActiveSubstates(), function(substate) {
+						substate.stop();
+					});
 				}
 
 				this._emit("stop", {
@@ -395,7 +399,7 @@
 		proto.getActiveDirectSubstates = function () {
 			if (this.isConcurrent()) {
 				return this.getSubstates();
-			} else if (this._localState) {
+			} else if (this._localState && this._localState.isActive()) {
 				return [this._localState];
 			} else {
 				return [];
@@ -484,6 +488,11 @@
 			} else { // We are exactly the same
 				return 0;
 			}
+		};
+		proto.getStateIndex = function(substate) {
+			var name = this.getNameForSubstate(substate),
+				state = this.get_object();
+			return state.getStateIndex(name);
 		};
 		proto.enableOutgoingTransitions = function () {
 			var outgoing_transitions = this.getOutgoingTransitions();

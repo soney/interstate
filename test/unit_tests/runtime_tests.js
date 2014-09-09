@@ -525,13 +525,11 @@
 					var circles = $("circle", runtime);
 					equal(circles.size(), 3);
 					runtime.dom_output("option", "root", false);
-					env.print();
 					env._cycle_stringify_destringify();
 					runtime.dom_output("option", "root", env.get_root());
 
 					circles = $("circle", runtime);
 					equal(circles.size(), 3);
-					env.print();
 				}
 			}]
 		},
@@ -543,7 +541,6 @@
 				setup: function(env) {
 					env	.set("a", "<stateful>")
 						.cd("a")
-							.set_copies("2")/*
 							.set("prop_0")
 							.set("prop_0", "(start)", "'a0'")
 							.up()
@@ -554,7 +551,6 @@
 							.set("prop_0", "(start)", "'b0'")
 							;
 							/**/
-							env.print();
 				},
 				test: function(env, runtime) {
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
@@ -758,7 +754,6 @@
 				}
 			}]
 		},
-		/*
 		{
 			name: "StopPropagation on Events",
 			expect: 10,

@@ -189,6 +189,8 @@
 					sc_parent = parent;
 				}
 			}
+			if(this.sid() === 1980) debugger;
+			
 			return entries;
 		};
 
@@ -252,8 +254,6 @@
 				fallback_value = NO_VAL,
 				using_state, using_info, fallback_state,
 				info, i, tr, state, val, is_start_state, using_as;
-
-			if(this.sid() === 1980) debugger;
 
 			for (i = 0; i < len; i += 1) {
 				info = values[i];
@@ -361,8 +361,8 @@
 				using_state = active_value_info.state,
 				using_as = active_value_info.using_as,
 				using_inherited_from = active_value_info.inherited_from,
-				is_fallback = active_value_info.is_fallback;
-			var rv;
+				is_fallback = active_value_info.is_fallback,
+				rv;
 
 			if(using_as === USING_AS_TRANSITION) {
 				if(is_fallback) {
@@ -394,7 +394,9 @@
 				using_state.addManualChild(using_val);
 				var state_pointer = using_state.get_pointer(),
 					value_pointer = state_pointer.push(using_val),
-					cobj = value_pointer.getContextualObject();
+					cobj = value_pointer.getContextualObject({
+						inherited_from: using_info.inherited_from
+					});
 		
 				if(!is_preemptive && ist.__debug) {
 					rv = cobj.val();

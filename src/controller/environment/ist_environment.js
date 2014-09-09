@@ -89,7 +89,7 @@
 
 					if (!state) {
 						var contextual_object = SOandC.context.getContextualObject(),
-							statecharts = contextual_object.get_statecharts();
+							statecharts = contextual_object.getContextualStatecharts();
 
 						inherited_statecharts = statecharts.slice(1);
 						for (i = 0; i < inherited_statecharts.length; i += 1) {
@@ -568,6 +568,10 @@
 
 		proto._get_add_state_command = function (state_name, index) {
 			var statechart = this.get_current_statechart();
+			var state_names = state_name.split(".");
+			_.each(state_names, function(name) {
+				statechart = statechart.getSubstate(name) || statechart.addSubstate(name);
+			});
 
 			if (_.isNumber(index)) { index += 1; } // Because of the pre_init state
 

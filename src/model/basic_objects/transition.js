@@ -53,7 +53,7 @@
 				setter_name: "do_set_to"
             },
             "root": {
-                serialize: false,
+                //serialize: false,
 				getter_name: "root"
             },
 			"event": {

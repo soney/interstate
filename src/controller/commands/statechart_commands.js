@@ -281,11 +281,11 @@
         var proto = My.prototype;
     
         proto._execute = function () {
-            this._statechart.make_concurrent(this._concurrent);
+            this._statechart.set_concurrent(this._concurrent);
         };
     
         proto._unexecute = function () {
-            this._statechart.make_concurrent(!this._concurrent);
+            this._statechart.set_concurrent(!this._concurrent);
         };
     
         proto._do_destroy = function (in_effect) {
