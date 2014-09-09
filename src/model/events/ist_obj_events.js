@@ -7,7 +7,7 @@
 		_ = ist._;
 		
 	var listener_map = new RedMap({
-		equals: ist.check_contextual_object_equality,
+		//equals: ist.check_contextual_object_equality,
 		hash: function(obj) {
 			if(obj.hash) {
 				return obj.hash();

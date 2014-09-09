@@ -23,9 +23,10 @@
 	};
 
 	ist.Pointer = function (options) {
-		this._copies = (options && options.copies) || [];
 		this._stack = (options && options.stack) || [];
+		this._copies = (options && options.copies) || new Array(this._stack.length);
 		this._hashes = (options && options.hashes) || [];
+		if(this._stack.length !== this._copies.length) debugger;
 	};
 	(function (my) {
 		var proto = my.prototype;
@@ -91,6 +92,7 @@
 				hashes: this._hashes.slice(0, len_minus_1)
 			});
 		};
+		/*
 
 		proto.replace = function (item) {
 			var len_minus_1 = this._stack.length-1,
@@ -104,6 +106,7 @@
 				hashes: this._hashes.slice(0, len_minus_1)
 			});
 		};
+		*/
 
 		proto.popCopy = function() {
 			var len_minus_1 = this._stack.length-1,
@@ -151,15 +154,21 @@
 			} else  {
 				var my_stack = this._stack,
 					other_stack = other._stack,
+					my_copies = this._copies,
+					other_copies = other._copies,
 					my_stack_len = my_stack.length,
-					other_stack_len = other_stack.length;
+					other_stack_len = other_stack.length,
+					i, j;
 
 				if (my_stack_len !== other_stack_len) {
 					return false;
 				}
-				var i, j;
 				for (i = my_stack_len - 1; i >= 0; i -= 1) {
-					if (my_stack[i] !== other_stack[i]) {
+					if (my_stack[i] === other_stack[i]) {
+						if(my_copies[i] !== other_copies[i]) {
+							return false;
+						}
+					} else {
 						return false;
 					}
 				}
@@ -187,7 +196,7 @@
 			}
 
 			if(this._copies[i]) {
-				hash += this._copies[i].index + 1;
+				hash += this._copies[i].copy_num + 1;
 			}
 
 			return hash;
@@ -204,8 +213,8 @@
 				return id;
 			}, this).join(", ") + ")";
 		};
-		proto.getContextualObject = function() {
-			return ist.find_or_put_contextual_obj(this.pointsAt(), this);
+		proto.getContextualObject = function(options) {
+			return ist.find_or_put_contextual_obj(this.pointsAt(), this, options);
 		};
 
 		proto.getContextualObjects = function() {

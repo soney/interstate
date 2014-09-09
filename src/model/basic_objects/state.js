@@ -28,7 +28,7 @@
 				getter_name: "isStart"
             },
             "parent": {
-                serialize: false,
+                //serialize: false,
 				getter_name: "parent"
             },
             "root": {
@@ -41,7 +41,7 @@
                 getter: function (me) { return me.get(); },
 				getter_name: "isConcurrent",
                 setter: function (me, is_concurrent) {
-                    me.set(concurrent);
+                    me.set(is_concurrent);
                 },
 				destroy: function(me) {
 					me.destroy(true);
@@ -90,7 +90,7 @@
 						}, this);
 
 						if(!value[START_STATE_NAME]) {
-							var transition = new ist.Transition({type: "start", root: this.root()}),
+							var transition = new ist.Transition({eventType: "start", root: this.root()}),
 								start_state = new My({
 									is_start: true,
 									parent: this,
@@ -218,7 +218,7 @@
 						};
 					} else if(transition_info instanceof ist.Event) {
 						transition_info = {
-							type: "event",
+							eventType: "event",
 							event: transition_info
 						};
 					}
@@ -285,5 +285,64 @@
 				});
 			}
 		};
+		proto.findTransitions = function (from_name, to_name, index) {
+			var from = this.getSubstate(from_name),
+				to = this.getSubstate(to_name);
+
+			if (!from || !to) {
+				return undefined;
+			}
+
+			var transitions = _.filter(from.getOutgoingTransitions(), function(transition) {
+					return transition.to() === to;
+				});
+
+			if (_.isNumber(index)) {
+				return transitions[index];
+			} else {
+				return transitions;
+			}
+		};
+
+        ist.register_serializable_type("state",
+            function (x) {
+                return x instanceof My;
+            },
+            function (include_uid) {
+                var rv = { };
+                if (include_uid) { rv.uid = this.id(); }
+
+                _.each(My.builtins, function (builtin, name) {
+                    if (builtin.serialize !== false) {
+                        var getter_name = builtin.getter_name || "get_" + name;
+                        rv[name] = ist.serialize(this[getter_name]());
+                    }
+                }, this);
+
+                return rv;
+            },
+            function (obj) {
+                var rest_args = _.rest(arguments);
+                
+                var serialized_options = {};
+                _.each(My.builtins, function (builtin, name) {
+                    if (builtin.serialize !== false) {
+                        serialized_options[name] = obj[name];
+                    }
+                });
+
+                var rv = new My({uid: obj.uid}, true);
+				var old_initialize = proto.initialize;
+                rv.initialize = function () {
+					delete this.initialize;
+                    var options = { };
+                    _.each(serialized_options, function (serialized_option, name) {
+                        options[name] = ist.deserialize.apply(ist, ([serialized_option]).concat(rest_args));
+                    });
+					old_initialize.call(this, options);
+                };
+
+                return rv;
+            });
     }(ist.State));
 }(interstate));

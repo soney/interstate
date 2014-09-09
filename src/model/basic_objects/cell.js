@@ -155,7 +155,7 @@
 
                 _.each(My.builtins, function (builtin, name) {
                     if (builtin.serialize !== false) {
-                        var getter_name = builtin.getter_name || "get_" + name;
+						var getter_name = builtin._get_getter_name();
                         rv[name] = ist.serialize(this[getter_name]());
                     }
                 }, this);

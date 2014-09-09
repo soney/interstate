@@ -24,17 +24,14 @@
 						.set("B", "<stateful>")
 						.cd("B")
 							.set("(prototypes)", "(start)", "A")
-							/*
 							.set("x", "(start)", "3")
 							.up()
 						.cd("A")
 							.set("y", "(start)", "2")
 							.up()
 							;
-							*/
 				},
 				test: function(env, runtime) {
-				/*
 					env.top().cd("A");
 					var A = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					env.up().cd("B");
@@ -43,11 +40,9 @@
 					equal(A.prop_val("x"), 1);
 					equal(A.prop_val("y"), 2);
 					equal(B.prop_val("x"), 3);
-					*/
 				}
 			}]
 		},
-		/*
 		{
 			name: "Dynamic Events",
 			expect: 2,
@@ -530,12 +525,13 @@
 					var circles = $("circle", runtime);
 					equal(circles.size(), 3);
 					runtime.dom_output("option", "root", false);
+					env.print();
 					env._cycle_stringify_destringify();
 					runtime.dom_output("option", "root", env.get_root());
 
 					circles = $("circle", runtime);
 					equal(circles.size(), 3);
-					//env.print();
+					env.print();
 				}
 			}]
 		},
@@ -547,6 +543,7 @@
 				setup: function(env) {
 					env	.set("a", "<stateful>")
 						.cd("a")
+							.set_copies("2")/*
 							.set("prop_0")
 							.set("prop_0", "(start)", "'a0'")
 							.up()
@@ -556,6 +553,8 @@
 							.inherit("prop_0")
 							.set("prop_0", "(start)", "'b0'")
 							;
+							/**/
+							env.print();
 				},
 				test: function(env, runtime) {
 					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
@@ -759,6 +758,7 @@
 				}
 			}]
 		},
+		/*
 		{
 			name: "StopPropagation on Events",
 			expect: 10,

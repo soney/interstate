@@ -57,7 +57,7 @@
 		proto.find_state = function (name) {
 			var i, inherited_statecharts, isc;
 			if (name instanceof ist.State || name instanceof ist.Transition) {
-				return name.basis() || name;
+				return name;
 			} else {
 				var SOandC = ist.find_stateful_obj_and_context(this.pointer);
 				var owner = SOandC.stateful_obj;
@@ -69,21 +69,21 @@
 						to_name = states[2].trim(),
 						index = parseInt(states[1], 10) || 0;
 
-					var transition = statechart.find_transitions(from_name, to_name, index);
+					var transition = statechart.findTransitions(from_name, to_name, index);
 
 					if (!transition) {
 						var pointer = this.get_pointer_obj();
 						inherited_statecharts = pointer.get_inherited_statecharts(this.pointer);
 						for (i = 0; i < inherited_statecharts.length; i += 1) {
 							isc = inherited_statecharts[i];
-							transition = isc.find_transitions(from_name, to_name, index);
+							transition = isc.findTransitions(from_name, to_name, index);
 							if (transition) {
 								break;
 							}
 						}
 					}
 
-					return transition.basis() || transition;
+					return transition;
 				} else {
 					var state = statechart.getSubstate(name);
 
@@ -324,7 +324,7 @@
 				} else {
 					if (parent_obj._has_direct_prop(prop_name)) {
 						val = parent_obj._get_direct_prop(prop_name);
-						if (val instanceof ist.Cell && _.isString(arg1)) {
+						if (val instanceof ist.Cell && _.isString(value)) {
 							commands.push(new ist.ChangeCellCommand({
 								cell: val,
 								str: value
@@ -645,7 +645,7 @@
 
 			var command = new ist.AddTransitionCommand({
 				statechart: statechart,
-				string: event,
+				event: event,
 				from: from_state,
 				to: to_state
 			});

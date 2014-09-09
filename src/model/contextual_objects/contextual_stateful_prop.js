@@ -253,12 +253,14 @@
 				using_state, using_info, fallback_state,
 				info, i, tr, state, val, is_start_state, using_as;
 
+			if(this.sid() === 1980) debugger;
+
 			for (i = 0; i < len; i += 1) {
 				info = values[i];
 				state = info.state;
 				val = info.value;
 
-				if(state && state.isStart()) { // Should actually use the transition and not the state
+				if(state && state instanceof ist.ContextualState && state.isStart()) { // Should actually use the transition and not the state
 					if (state.isActive() && (using_val === NO_VAL || using_state.order(state) < 0)) {
 						using_info = info;
 						using_val = val;
@@ -294,7 +296,7 @@
 					if (tr > this.get_transition_times_run(state)) {
 						this.set_transition_times_run(state, tr);
 
-						if (!(using_state instanceof ist.StatechartTransition)) {
+						if (!(using_state instanceof ist.ContextualTransition)) {
 							using_info = info;
 							using_val = val;
 							using_state = state;
@@ -321,9 +323,9 @@
 							break;
 						}
 					}
-					if(using_state instanceof ist.State) {
+					if(using_state instanceof ist.ContextualState) {
 						using_as = USING_AS_STATE;
-					} else if(using_state instanceof ist.StatechartTransition) {
+					} else if(using_state instanceof ist.ContextualTransition) {
 						using_as = USING_AS_TRANSITION;
 					}
 				}
@@ -389,8 +391,9 @@
 			}
 
 			if(using_val) {
-				var pointer = this.get_pointer(),
-					value_pointer = pointer.push(using_state.get_object()).push(using_val),
+				using_state.addManualChild(using_val);
+				var state_pointer = using_state.get_pointer(),
+					value_pointer = state_pointer.push(using_val),
 					cobj = value_pointer.getContextualObject();
 		
 				if(!is_preemptive && ist.__debug) {

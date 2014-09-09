@@ -37,6 +37,8 @@
 		this._do_destroy_no_args = function() { this.destroy(); };
 		this.object.on("begin_destroy", this._do_destroy_no_args, this);
 
+		this._manual_children = {};
+
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
 		}
@@ -48,6 +50,39 @@
 		proto.initialize = function(options) {
 			if(this.constructor === My) { this.flag_as_initialized();  }
 			if(this.constructor === My) { this.shout_initialization();  }
+		};
+		proto.addManualChild = function(child) {
+			var hash = child.hash(),
+				hashChildren = this._manual_children[hash];
+
+			if(hashChildren) {
+				if(hashChildren.indexOf(child) < 0) {
+					hashChildren.push(child);
+				}
+			} else {
+				hashChildren = this._manual_children[hash] = [child];
+			}
+		};
+		proto.removeManualChild = function(child) {
+			var hash = child.hash(),
+				hashChildren = this._manual_children[hash],
+				index;
+
+			if(hashChildren) {
+				index = hashChildren.indexOf(child);
+				if(index >= 0) {
+					hashChildren.splice(index, 1);
+					if(hashChildren.length === 0) {
+						delete this._manual_children[hash];
+					}
+				}
+			}
+		};
+		proto.getManualChildren = function(child) {
+			return _.flatten(_.values(this._manual_children), true);
+		};
+		proto._clearManualChildren = function() {
+			this._manual_children = {};
 		};
 		proto._add_cobj_child_updater = function() {
 			this._live_cobj_child_updater = cjs.liven(function() {
@@ -149,6 +184,7 @@
 
 		proto.emit_begin_destroy = function() {
 			this._emit("begin_destroy", this);
+			this._clearManualChildren();
 		};
 
 		proto.begin_destroy = function(silent) {
@@ -254,8 +290,8 @@
 			cjs.signal();
 		};
 
-		proto.get_or_put_cobj_child = function (obj, hash, options, avoid_initialization) {
-			var ptr = this.pointer.push(obj),
+		proto.get_or_put_cobj_child = function (obj, copy, hash, options, avoid_initialization) {
+			var ptr = this.pointer.push(obj, copy),
 				must_initialize = false,
 				cobj = this._cobj_children.getOrPut(ptr, function() {
 					var rv = ist.create_contextual_object(obj, ptr, _.extend({
@@ -352,7 +388,7 @@
 		var must_initialize = false,
 			rv = cobj_hashes.getOrPut(pointer, function() {
 			var len = pointer.length(),
-				pointer_root, hvi, i, ptr_i, hash_i, new_cobj, node, opts;
+				pointer_root, hvi, i, ptr_i, copies_i, hash_i, new_cobj, node, opts;
 
 			pointer_root = pointer.root();
 			hash_i = pointer_root.id();
@@ -375,7 +411,8 @@
 			while (i < len) {
 				ptr_i = pointer.pointsAt(i);
 				hash_i = pointer.itemHash(i);
-				node = node.get_or_put_cobj_child(ptr_i, hash_i, i === len-1 ? options : false);//, i === len-1 ? true : false);
+				copies_i = pointer.copy(i);
+				node = node.get_or_put_cobj_child(ptr_i, copies_i, hash_i, i === len-1 ? options : false);//, i === len-1 ? true : false);
 				i++;
 			}
 

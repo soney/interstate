@@ -26,8 +26,9 @@
 				},
 				getter_name: "getStr"
             },
-			"type": {
-				"default": function() { return "parsed"; }
+			"eventType": {
+				"default": function() { return "parsed"; },
+				"getter_name": "eventType"
 			},
             "from": {
                 start_with: function () { return cjs(false); },
@@ -53,6 +54,7 @@
             },
             "root": {
                 serialize: false,
+				getter_name: "root"
             },
 			"event": {
 				"default": function() { return false; },
@@ -65,12 +67,15 @@
 			My.superclass.initialize.apply(this, arguments);
             ist.install_instance_builtins(this, options, My);
             this._tree = cjs(function () {
-                var str = this.get_str();
+                var str = this.getStr();
                 return ist.parse(str);
             }, {
 				context: this
 			});
         };
+		proto.getTree = function() {
+			return this._tree.get();
+		};
         proto.destroy = function () {
 			if(this.constructor === My) { this.begin_destroy(); }
 			ist.unset_instance_builtins(this, My);
@@ -106,5 +111,50 @@
 				cjs.signal();
 			}
 		};
+		proto.getLineage = function() {
+			var from_lineage = this.from().getLineage();
+			return from_lineage.concat(this);
+		};
+
+        ist.register_serializable_type("transition",
+            function (x) {
+                return x instanceof My;
+            },
+            function (include_uid) {
+                var rv = { };
+                if (include_uid) { rv.uid = this.id(); }
+
+                _.each(My.builtins, function (builtin, name) {
+                    if (builtin.serialize !== false) {
+                        var getter_name = builtin.getter_name || "get_" + name;
+                        rv[name] = ist.serialize(this[getter_name]());
+                    }
+                }, this);
+
+                return rv;
+            },
+            function (obj) {
+                var rest_args = _.rest(arguments);
+                
+                var serialized_options = {};
+                _.each(My.builtins, function (builtin, name) {
+                    if (builtin.serialize !== false) {
+                        serialized_options[name] = obj[name];
+                    }
+                });
+
+                var rv = new My({uid: obj.uid}, true);
+				var old_initialize = proto.initialize;
+                rv.initialize = function () {
+					delete this.initialize;
+                    var options = { };
+                    _.each(serialized_options, function (serialized_option, name) {
+                        options[name] = ist.deserialize.apply(ist, ([serialized_option]).concat(rest_args));
+                    });
+					old_initialize.call(this, options);
+                };
+
+                return rv;
+            });
     }(ist.Transition));
 }(interstate));

@@ -120,7 +120,7 @@
 		};
 
 		proto.reset = function () {
-			var statecharts = this.getStatecharts();
+			var statecharts = this.getContextualStatecharts();
 			_.each(statecharts, function(statechart) {
 				statechart.reset();
 			}, this);

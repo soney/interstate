@@ -85,10 +85,12 @@
 			var events = [];
 
 			if (targets) {
+			/*
 				var statechart_spec = event_type;
 				var statechart_event = new ist.TransitionEvent(targets, statechart_spec);
 				events.push(statechart_event);
 
+*/
 				if (arguments.length <= 1) { // Ex: on('mouseup') <-> on('mouseup', window)
 					targets = window;
 				}
@@ -356,23 +358,11 @@
 					}
 				}
 
-				if(curr_context.copy()) {
-					var special_contexts = curr_context.special_contexts();
-					var len = special_contexts.length;
-					for (i = 0; i < len; i += 1) {
-						var sc = special_contexts[i];
-						var context_obj = sc.get_context_obj();
-						if (context_obj.hasOwnProperty(key)) {
-							var value = context_obj[key].value;
-							if(cjs.isConstraint(value)) {
-								return value.get();
-							} else {
-								return value;
-							}
-						}
-					}
+				var copy = curr_context.copy();
+				if(copy && copy.hasOwnProperty(key)) {
+					return copy[key];
 				}
-					
+				
 				curr_context = curr_context.pop();
 				context_item = curr_context.pointsAt();
 			}
@@ -722,6 +712,37 @@
 			auto_add_dependency: true
 		}, options));
 		return parsed_value;
+	};
+
+	ist.get_indirect_parsed_$ = function(node_constraint, options) {
+		var constraint = false,
+			value_constraint = cjs(function() {
+				var node = node_constraint.get();
+				if(constraint && constraint.destroy) {
+					constraint.destroy(true);
+				}
+				constraint = ist.get_parsed_$(node, options);
+				if(constraint instanceof ist.MultiExpression) {
+					return new ist.MultiExpression(_.map(constraint.expressions, function(x) {
+						return x.get();
+					}));
+				} else {
+					return constraint.get();
+				}
+			}, {
+				context: this,
+			}),
+			old_destroy = value_constraint.destroy;
+
+		value_constraint.destroy = function() {
+			if(constraint && constraint.destroy) {
+				constraint.destroy(true);
+				constraint = false;
+			}
+			old_destroy.apply(this, arguments);
+		};
+
+		return value_constraint;
 	};
 
 	var func_regex = new RegExp("^\\s*function\\s*\\((\\s*[a-zA-Z$][\\w\\$]*\\s*,)*\\s*([a-zA-Z$][\\w\\$]*\\s*)?\\)\\s*{.*}\\s*$");

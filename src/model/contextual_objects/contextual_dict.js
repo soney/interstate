@@ -205,7 +205,7 @@
 				owners = {},
 				proto_objects = this.get_all_protos(true),
 				inherited_names = [],
-				i;
+				i, copy = pointer.copy();
 
 			_.each(builtin_names, function (name) {
 				owners[name] = this;
@@ -217,6 +217,12 @@
 
 
 			if (exclude_builtins !== true && my_ptr_index >= 0) {
+				if(copy) {
+					_.each(copy, function(v, k) {
+						owners[k] = copy;
+						special_context_names.push(k);
+					}, this);
+				}
 			/*
 				var special_contexts = pointer.special_contexts(my_ptr_index),
 					len = special_contexts.length,
@@ -283,9 +289,12 @@
 					}, this);
 				} else if (type === "special_context") {
 					infos = _.map(names, function (name) {
-						var sc = owners[name],
-							co = sc.get_context_obj();
-						return co[name];
+						var sc = owners[name];
+							//co = sc.get_context_obj();
+						return {
+							value: sc[name],
+							owner: sc
+						}
 					}, this);
 				}
 
@@ -317,7 +326,6 @@
 					pointer = this.pointer,
 					my_ptr_index = pointer.lastIndexOf(dict),
 					builtin_names = dict._get_builtin_prop_names(),
-					special_context_names = [],
 					owners = {},
 					builtin_infos = _.map(builtin_names, function (name) {
 						return dict._get_builtin_prop_info(name);
@@ -325,7 +333,11 @@
 					builtin_contextual_objects = _.map(builtin_infos, function (info, i) {
 						var name = builtin_names[i];
 						return {name: name, value: info.value, inherited: false, builtin: true };
-					}, this);
+					}, this),
+					copy = pointer.copy(),
+					special_context_names;
+
+				if(pointer.copy())
 
 				var special_context_infos = _.map(special_context_names, function (name) {
 							var sc = owners[name];
@@ -362,23 +374,24 @@
 				// Adding the is_template() check ensures that they will be nullified
 				return [];
 			} else {
-				var raw_children = this.raw_children(exclude_builtins);
-				var pointer = this.pointer;
-				var children = _.map(raw_children, function(raw_child) {
-					var opts = {};
-					if(raw_child.inherited_from) {
-						opts.inherited_from = raw_child.inherited_from;
-					}
-					return _.extend({}, raw_child, {
-						value: get_contextual_object(raw_child.value, pointer, opts)
+				var raw_children = this.raw_children(exclude_builtins),
+					pointer = this.pointer,
+					children = _.map(raw_children, function(raw_child) {
+						var opts = {};
+						if(raw_child.inherited_from) {
+							opts.inherited_from = raw_child.inherited_from;
+						}
+						return _.extend({}, raw_child, {
+							value: get_contextual_object(raw_child.value, pointer, opts)
+						});
 					});
-				});
+
 				return children;
 			}
 		};
 		proto.parent = function() {
-			var popped_pointer = this.pointer.pop();
-			var contextual_object = ist.find_or_put_contextual_obj(popped_pointer.pointsAt(), popped_pointer);
+			var popped_pointer = this.pointer.pop(),
+				contextual_object = ist.find_or_put_contextual_obj(popped_pointer.pointsAt(), popped_pointer);
 			return contextual_object;
 		};
 		proto._has = function (name, ignore_inherited) {
@@ -585,8 +598,7 @@
 		proto.instance_pointers = function() {
 			var manifestations_value = this.get_manifestations_value();
 			if (_.isNumber(manifestations_value)) {
-				var len = manifestations_value,
-					i;
+				var len = manifestations_value, i;
 				manifestations_value = [];
 
 				for (i = 0; i < len; i += 1) {
@@ -597,9 +609,12 @@
 			var pointer = this.get_pointer();
 			var manifestation_pointers = _.map(manifestations_value, function (basis, index) {
 					var manifestation_obj = this._manifestation_objects.get_or_put(basis, function () {
-						return new ist.CopyContext(this, basis, index);
-					}, this);
-					var manifestation_pointer = pointer.push_special_context(manifestation_obj);
+							return {
+								my_copy: basis,
+								copy_num: index
+							};
+						}, this),
+						manifestation_pointer = pointer.pushCopy(manifestation_obj);
 					return manifestation_pointer;
 				}, this);
 

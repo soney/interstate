@@ -51,12 +51,12 @@
 								if (target_pointer.is_template()) {
 									var instances = target_pointer.instances();
 									statecharts = _.map(instances, function (instance) {
-										var scs = instance.get_statecharts();
+										var scs = instance.getContextualStatecharts();
 										return scs;
 									});
 									return _.flatten(statecharts, true);
 								} else {
-									statecharts = target_pointer.get_statecharts();
+									statecharts = target_pointer.getContextualStatecharts();
 									return statecharts;
 								}
 							}
