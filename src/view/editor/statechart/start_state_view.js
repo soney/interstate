@@ -12,7 +12,7 @@
 		able.make_this_optionable(this, {
 			state: null,
 			paper: null,
-			c: {x: 0, y: 0},
+			layout: false,
 			radius: 6,
 			fill_color: "black",
 			padding_top: 0,
@@ -35,7 +35,7 @@
 
 		proto.initialize = function() {
 			var paper = this.option("paper");
-			var center = this.option("c");
+			var layout = this.option("layout");
 			var state = this.option("state");
 			var active = state.get_$("isActive");
 			this.active_fn = cjs.liven(function () {
@@ -79,6 +79,8 @@
 				});
 			}
 
+
+/*
 			this.vline = paper	.path("M" + center.x + "," + center.y + "V" + this.option("paper_height"))
 								.attr({
 									stroke: this.option("vline_color"),
@@ -91,6 +93,7 @@
 				stroke: "none"
 			});
 			$(this.circle[0]).on("contextmenu.cm");
+			*/
 		};
 
 		proto.toFront = function() {
@@ -105,14 +108,16 @@
 
 		proto._on_options_set = function (values) {
 			var paper = this.option("paper");
-			var center = this.option("c");
+			var layout = this.option("layout");
 			var paper_height = this.option("paper_height");
 			if(this.circle) {
+			/*
 				this.circle.attr({
 					cx: center.x,
 					cy: center.y + this.option("padding_top"),
 					r: this.option("radius")
 				});
+				*/
 			}
 			if(this.vline) {
 				this.vline	.attr({

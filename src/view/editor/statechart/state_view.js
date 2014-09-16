@@ -12,11 +12,14 @@
 		able.make_this_optionable(this, {
 			state: null,
 			paper: null,
+			/*
 			lws: {x: 0, y: 0},
 			lwe: {x: 0, y: 0},
 			rws: {x: 0, y: 0},
 			rwe: {x: 0, y: 0},
 			c: {x: 0, y: 0},
+			*/
+			layout: false,
 			default_stroke: "black",
 			default_fill: "white",
 			active_fill: "green",
@@ -104,7 +107,7 @@
 							"stroke": "default_stroke",
 							"fill": "default_fill"
 						});
-			var center = this.option("c");
+			var layout = this.option("layout");
 			this.parent_is_concurrent = state.get_$("parentIsConcurrent");
 			this.is_concurrent = state.get_$("isConcurrent");
 
@@ -113,8 +116,8 @@
 			this.label.option({
 				"font-size": this.option("font_size"),
 				"font-family": this.option("font_family"),
-				x: center.x,
-				y: center.y,
+				x: layout.x,
+				y: layout.y,
 				text: this.get_name()
 			});
 			this.label.on("change", this.forward_event, this);
@@ -162,16 +165,16 @@
 					});
 				}
 				var paper_height = this.option("paper_height");
-				var center = this.option("c");
+				var layout = this.option("layout");
 				var name = this.name.get();
 				this.label.option({
-					x: center.x,
-					y: center.y,
+					x: layout.x,
+					y: layout.y,
 					text: name
 				});
 				this.update_menu_position();
 				this.vline.attr({
-					path: "M" + center.x + "," + center.y + "V" + paper_height
+					path: "M" + layout.x + "," + layout.y + "V" + paper_height
 				});
 			}
 		};
@@ -378,6 +381,8 @@
 		};
 
 		proto.get_path_str = function () {
+			var layout = this.option("layout");
+			/*
 			var pts = [this.option("lws"), this.option("lwe"), this.option("rws"), this.option("rwe")];
 			var padding_top = this.option("padding_top");
 			var x0 = pts[0].x;
@@ -385,6 +390,11 @@
 			var path_str = "M" + x0 + "," + padding_top + "L" + _.map(pts, function (pt) {
 				return pt.x + "," + pt.y;
 			}).join("L") + "V"+padding_top+"Z";
+			*/
+			var shape = layout.shape,
+				path_str = _.map(shape, function(cmd_arr) {
+					return cmd_arr[0] + _.rest(cmd_arr).join(",")
+				}).join("");
 			return path_str;
 		};
 		proto.remove = function () {

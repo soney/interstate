@@ -107,11 +107,9 @@
 
 				if (layout_info) {
 					if (state_wrapper.type() === "statechart") {
-						return layout_info.center.x;
+						return layout_info.columnX;
 					} else if (state_wrapper.type() === "transition") {
 						return layout_info.from.x;
-					} else if(state_wrapper.type() === "start_state") {
-						return layout_info.center.x;
 					}
 				}
 			} else {
@@ -372,7 +370,8 @@
 			});
 
 			var columnWidths = [],
-				TRANSITION_WIDTH = this.option("transition_width");
+				TRANSITION_WIDTH = this.option("transition_width"),
+				TRANSITION_HEIGHT = this.option("transition_height");
 			_.each(state_wings, function(stateWing) {
 				var sc_summary = stateWing.sc_summary,
 					depth = stateWing.rowNum,
@@ -396,6 +395,7 @@
 				stateWing.centerColumnWidth = centerColumnWidth;
 
 				if(stateWing.isAtomic) {
+					console.log("A");
 					_.each(stateWing.columnTransitions.outgoing.used.concat(stateWing.columnTransitions.outgoing.notUsed),
 						function(transition) {
 							var rowNum = transition.rowNum;
@@ -411,7 +411,8 @@
 							var collapseUnusedTransitions = this.option("collapseUnusedTransitions"),
 								indentIncomingTransitions = this.option("indentIncomingTransitions"),
 								indentations = [],
-								overallHighestTransitionRow = false;
+								overallHighestTransitionRow = false,
+								orderedTransitions;
 
 							_.each(columnTransitions.outgoing.used, function(transition_info) {
 								var rowNum = transition_info.rowNum;
@@ -539,9 +540,9 @@
 					locationInfo, centerColumnIndex, i, ccx;
 
 				if(stateWing.isAtomic) {
-					var centerColumnIndex = stateWing.centerColumn,
-						i = 0,
-						ccx = 0;
+					centerColumnIndex = stateWing.centerColumn,
+					i = 0,
+					ccx = 0;
 					for(;i<centerColumnIndex; i++) {
 						ccx += columnWidths[i];
 					}
@@ -569,20 +570,24 @@
 						displayType: My.HRANGE_DISPLAY_TYPE
 					};
 				} else {
-					var centerColumnIndex = stateWing.centerColumn,
-						i = 0,
-						ccx = 0;
+					var leftColumnIndex = stateWing.leftmostColumn,
+						rightColumnIndex = stateWing.rightmostColumn,
+						lcx, rcx;
+
+					centerColumnIndex = stateWing.centerColumn;
+
+					lcx = 0;
+					for(;i<leftColumnIndex; i++) {
+						lcx += columnWidths[i];
+					}
+					ccx = lcx;
 					for(;i<centerColumnIndex; i++) {
 						ccx += columnWidths[i];
 					}
-
-					locationInfo = {
-						columnX: ccx,
-						columnWidth: stateWing.centerColumnWidth,
-						x: ccx,
-						y: (stateWing.rowNum + 0.5) * ROW_HEIGHT,
-						displayType: My.STATE_DISPLAY_TYPE
-					};
+					rcx = ccx;
+					for(; i<rightColumnIndex; i++) {
+						rcx += columnWidths[i];
+					}
 
 					var leftWingPoints = [],
 						rightWingPoints = [],
@@ -642,466 +647,65 @@
 					if(lastRightIndentation < numRows) {
 						rightWingPoints.push([0.0, (numRows - lastRightIndentation - 1)]);
 					}
+					var pts = [["M", rcx, (stateWing.rowNum + 0.5) * ROW_HEIGHT]];
+					_.each(rightWingPoints, function(pt) {
+						pts.push(["l", TRANSITION_WIDTH*pt[0], -TRANSITION_HEIGHT*pt[1]]);
+					});
+					pts.push(["h", (columnWidths[rightColumnIndex]+rcx-lcx)]);
+					_.each(rightWingPoints, function(pt) {
+						pts.push(["l", TRANSITION_WIDTH*pt[0], TRANSITION_HEIGHT*pt[1]]);
+					});
+					pts.push(["Z"]);
+
+					locationInfo = {
+						shape: pts,
+						columnX: ccx,
+						columnWidth: stateWing.centerColumnWidth,
+						x: ccx,
+						y: (stateWing.rowNum + 0.5) * ROW_HEIGHT,
+						displayType: My.STATE_DISPLAY_TYPE
+					};
 				}
+
 
 				location_info_map[sc_summary.id] = locationInfo;
 			}, this);
-					_.each(stateWing.columnTransitions.outgoing.used.concat(stateWing.columnTransitions.outgoing.notUsed),
-						function(transitionWing) {
-							var transitionLocationInfo = {
-									from: {
-										x:locationInfo.x,
-										y: locationInfo.y,
-									},
-									to: {
-										x: locationInfo.x+20,
-										y: locationInfo.y
-									},
-									columnX: locationInfo.columnX,
-									columnWidth: locationInfo.columnWidth,
-									displayType: My.TRANSITION_DISPLAY_TYPE
-								},
-								transition_info = transitionWing.transition_summary;
-
-							location_info_map[transition_info.id] = transitionLocationInfo;
-						});
-
-			var rootWing = state_wings[FAKE_ROOT_STATECHART.id];
-
-			return {width: rootWing.width, height: rootWing.height, locations: location_info_map};
 			/*
 
-			var collect_transitions = function(node) {
-				
-			};
-			collect_transitions(sc_tree);
-			/*
+			_.each(state_wings, function(stateWing) {
+				var sc_summary = stateWing.sc_summary,
+					locationInfo = location_info_map[sc_summary.id],
+					transitions;
 
-			var push_node_columns = function (node, depth) {
-				var sc = node.sc_summary,
-					children = node.children,
-					children_split_index = children.length,//; Math.ceil(children.length / 2);
-					col_len = columns.length,
-					li, ri;
-				if (sc.isStart) {
-					columns.push({ sc_summary: sc, lr: "c", depth: depth + 1});
-					col_indicies[sc.id] = {c: col_len};
-					li = ri = col_len;
+				if(stateWing.isAtomic) {
+					transitions = stateWing.columnTransitions.outgoing;
 				} else {
-					li = col_len;
-					columns.push({ sc_summary: sc, lr: "l", depth: depth});
-
-					_.each(children.slice(0, children_split_index), function (childnode) {
-						push_node_columns(childnode, depth + 1);
-					});
-
-					var ci = columns.length;
-					columns.push({ sc_summary: sc, lr: "c", depth: depth});
-
-					_.each(children.slice(children_split_index), function (childnode) {
-						push_node_columns(childnode, depth + 1);
-					});
-
-					ri = columns.length;
-					columns.push({ sc_summary: sc, lr: "r", depth: depth});
-
-					col_indicies[sc.id] = {l: li, r: ri };
+					transitions = stateWing.leftColumnTransitions.outgoing.concat(stateWing.rightColumnTransitions.outgoing);
 				}
 
-				var row;
-				if (rows[depth]) {
-					row = rows[depth];
-				} else {
-					rows[depth] = row = [];
-				}
-				for (i = li; i <= ri; i += 1) {
-					row[i] = sc;
-				}
-			};
-			push_node_columns(sc_tree, 0);
-			*/
-			/*
-
-
-			var transition_from_to = [];
-			var collect_transition_from_to = function (node) {
-				var sc = node.sc_summary,
-					indicies = col_indicies[sc.id],
-					li, ri,
-					outgoingTransitions;
-
-				if(sc.isStart || sc === FAKE_ROOT_STATECHART ) {
-					li = ri = indicies.c;
-				} else {
-					li = indicies.l;
-					ri = indicies.r;
-				}
-
-				if(node.parent && node.parent.sc_summary.isConcurrent && !ist.__debug_statecharts) {
-					outgoingTransitions = [];
-				} else {
-					outgoingTransitions = _.clone(sc.outgoingTransitions);
-				}
-
-				var transitionsUsedByProperties = [],
-					transitionsNotUsedByProperties = [];
-
-				_.each(outgoingTransitions, function(transition) {
-					if(transition.usedByAnyProperties) {
-						transitionsUsedByProperties.push(transition);
-					} else {
-						transitionsNotUsedByProperties.push(transition);
-					}
-				});
-
-				_.each(transitionsUsedByProperties.concat(transitionsNotUsedByProperties), function(transition_info) {
-					var from = transition_info.from,
-						to = transition_info.to;
-
-					if(from === to) {
-						if(!sc.isStart) { // Don't include a self-transition in a start state.
-							transition_from_to.push({min_x: ri, max_x: ri, type: "self", transition_info: transition_info});
-						}
-					} else {
-						var isUsed = transition_info.usedByAnyProperties,
-							from_indicies = col_indicies[from.cobj_id],
-							to_indicies = col_indicies[to.cobj_id],
-							from_l = _.has(from_indicies, "l") ? from_indicies.l : from_indicies.c,
-							to_l = _.has(to_indicies, "l") ? to_indicies.l : to_indicies.c,
-							min_x, max_x, type;
-
-						if(from_l < to_l) {
-							min_x = ri;
-							max_x = _.has(to_indicies, "l") ? to_indicies.l : to_indicies.c;
-							type = "right";
-							
-						} else {
-							min_x = _.has(to_indicies, "r") ? to_indicies.r : to_indicies.c;
-							max_x = li;
-							type = "left";
-						}
-
-						transition_from_to.push({ min_x: min_x, max_x: max_x, type: type, transition_info: transition_info });
-					}
-				});
-				_.each(node.children, collect_transition_from_to);
-			};
-			collect_transition_from_to(sc_tree);
-
-			//row 0 is the bottom
-			_.each(transition_from_to, function (info, index) {
-				var from = info.min_x,
-					to = info.max_x,
-					curr_row = false,
-					transition_info = info.transition_info,
-					transition_from = transition_info.from,
-					transition_to = transition_info.to,
-					row, cell, row_index, is_splice_attempt;
-
-				outer: for (i = 0; i < rows.length; i += 1) {
-					row = rows[i];
-					cell = row[from];
-					is_splice_attempt = cell && cell.type === "state" && (cell.state === transition_from || cell.state === transition_to);
-					inner: for (j = from; j <= to; j++) {
-						cell = row[j];
-						if (cell) {
-							if(is_splice_attempt && cell.type === "state" && (cell.state === transition_from || cell.state === transition_to)) {
-								continue inner;
-							} else {
-								is_splice_attempt = false;
-								continue outer;
-							}
-						}
-					}
-
-					curr_row = rows[i];
-					row_index = i;
-					break;
-				}
-				if (!curr_row) {
-					curr_row = [];
-					row_index = rows.length;
-					rows.push(curr_row);
-				}
-
-				if(is_splice_attempt) {
-					var to_insert, to_minus_from = to-from;
-
-					_.each(transition_from_to, function(info_2, index_2) {
-						if(index_2 !== index) {
-							if(info_2.max_x >= to) {
-								info_2.max_x+=to_minus_from;
-							}
-							if(info_2.min_x > from) {
-								info_2.min_x+=to_minus_from;
-							}
-						}
-					})
-
-					for (i = 0; i < rows.length; i += 1) {
-						row = rows[i];
-						if(row === curr_row) {
-							to_insert = fillArray(transition_info, to_minus_from);
-						} else {
-							to_insert = fillArray(row[from], to_minus_from);
-						}
-						row.splice.apply(row, ([from+1, 0]).concat(to_insert));
-					}
-					var col_insert = {
-							transition_summary: transition_info, lr: "c"
+				_.each(transitions, function(transition) {
+					var transitionLocationInfo = {
+							from: {
+								x:locationInfo.x,
+								y: locationInfo.y,
+							},
+							to: {
+								x: locationInfo.x+20,
+								y: locationInfo.y
+							},
+							columnX: locationInfo.columnX,
+							columnWidth: locationInfo.columnWidth,
+							displayType: My.TRANSITION_DISPLAY_TYPE
 						},
-						col_inserts = fillArray(col_insert, to_minus_from);
-					columns.splice.apply(columns, ([from+1, 0]).concat(col_inserts));
-				} else {
-					for (i = from; i <= to; i += 1) {
-						curr_row[i] = transition_info;
-					}
-				}
-			});
+						transition_info = transitionWing.transition_summary;
 
-			transition_from_to = false;
+					location_info_map[transition_info.id] = transitionLocationInfo;
+				});
+			}, this);
 			*/
+			var rootLayout = location_info_map[FAKE_ROOT_STATECHART.id];
 
-/*
-
-			// FOR DEBUGGING
-			var curr_element, curr_element_start_col;
-			for (i = rows.length - 1; i >= 0; i -= 1) {
-				row = rows[i];
-				var row_arr = [];
-				for (j = 0; j <= row.length; j += 1) {
-					if (row[j] !== curr_element) {
-						if (curr_element) {
-							var col_length = j - curr_element_start_col;
-							var cl_2 = Math.floor(col_length / 2);
-							var id = "-" + uid.strip_prefix(curr_element.id);
-							while (id.length < 4) {
-								id += "-";
-							}
-							for (var k = curr_element_start_col; k<j; k += 1) {
-								if (k === curr_element_start_col + cl_2) {
-									row_arr[k] = id;
-								} else {
-									row_arr[k] = "----";
-								}
-							}
-							row_arr[curr_element_start_col] = "|" + row_arr[curr_element_start_col].slice(1);
-							row_arr[j-1] = row_arr[j-1].slice(0, 3) + "|";
-						}
-						curr_element_start_col = j;
-						curr_element = row[j];
-					}
-					if (!curr_element) {
-						row_arr[j] = "    ";
-					}
-				}
-				var row_str = row_arr.join("");
-				console.log(row_str);
-				curr_element = false;
-			}
-			/**/
-
-/*
-			// So far, we have poles for each state's left transitions, the state itself, and its right transitions.
-			// Now, we have to figure out how far to spread each state's left poles
-
-
-			var y = PADDING_TOP;
-			var column_widths = [];
-			var num_rows = rows.length;
-
-			var H = TRANSITION_HEIGHT + 2 * TRANSITION_MARGIN;
-
-			var dy = H / 2;
-			var dx =  dy / TAN_THETA;
-
-			var x = dx;
-			var width;
-
-			var is_from, is_to, row, location_info, cell, wing_start_x, wing_start_y, column_values;
-			//var return_empty_obj = function () { return {}; };
-			for (i = 0; i < columns.length; i += 1) {
-				var column = columns[i],
-					state_info = column.sc_summary,
-					lr = column.lr,
-					state = state_info.state,
-					sid;
-
-				if(state) {
-					sid = uid.strip_prefix(state.cobj_id);
-				}
-
-				if(lr === "l") { //left transition pole
-					column_values = _.pluck(rows, i);
-					x += STATE_PADDING_X / 2;
-					y = PADDING_TOP + H * (num_rows - column_values.length + 1) + (H / 2);
-
-					var found_relevant_transition = false;
-					//console.log(column_values);
-					for (row = column_values.length - 1; row >= column.depth; row --) {
-						cell = column_values[row];
-						if(!cell) continue;
-
-						//if (found_relevant_transition) {x += dx; y += dy; }
-						if (cell === state_info) {
-							//if (!found_relevant_transition) {
-								wing_start_x = x - dx * STATE_LINE_PADDING_FACTOR;
-								wing_start_y = y - dy * STATE_LINE_PADDING_FACTOR;
-							//}
-							//break;
-						} else if (cell.from) { // is transition
-							is_from = cell.from === state;
-							is_to = cell.to === state;
-							if (is_from || is_to) {
-								//var to_continue = false;
-								//if (!found_relevant_transition) {
-									//found_relevant_transition = true;
-									wing_start_x = x - dx * STATE_LINE_PADDING_FACTOR;
-									wing_start_y = y - dy * STATE_LINE_PADDING_FACTOR;
-									//to_continue = true;
-								//}
-								if(location_info_map[cell.id]) {
-									location_info = location_info_map[cell.id];
-								} else {
-									location_info = location_info_map[cell.id] = {};
-								}
-								//location_info = location_info_map.get_or_put(cell, return_empty_obj);
-
-								if (is_from && is_to) {
-									location_info.from = location_info.to = {x: x, y: y};
-								} else if (is_from) {
-									location_info.from = {x: x, y: y};
-								} else { // includes start state
-									location_info.to = {x: x, y: y};
-								}
-							}
-						}
-						//if (found_relevant_transition) {x += 2 * dx; }
-						y += H;
-					}
-
-					location_info = {};
-					location_info.left_wing_start = { x: wing_start_x, y: wing_start_y };
-					location_info.left_wing_end = { x: x, y: y };
-					location_info_map[state_info.id] = location_info;
-				} else if (lr === "r") {
-					var found_state;
-					column_values = _.pluck(rows, i);
-					y = PADDING_TOP + H * (num_rows - column.depth) + H / 2;
-					wing_start_x = x;
-					wing_start_y = y;
-					var wing_end_x = x + dx * STATE_LINE_PADDING_FACTOR,
-						wing_end_y = y - dy * STATE_LINE_PADDING_FACTOR;
-
-					var last_relevant_transition_index = -1;
-					for (row = column_values.length - 1; row >= column.depth; row -= 1) {
-						cell = column_values[row];
-						if (cell && cell.from && (cell.from === state || cell.to === state)) {
-							last_relevant_transition_index  = row;
-							break;
-						}
-					}
-					for (row = column.depth; row < column_values.length; row++) {
-						cell = column_values[row];
-						if(!cell) continue;
-
-						if (cell === state_info) {
-							//console.log(lr, cell.id);
-							wing_start_x = x;
-							wing_start_y = y;
-						} else if (cell.from) { // is transition
-							is_from = cell.from === state;
-							is_to = cell.to === state;
-							if (is_from || is_to) {
-								wing_end_x = x + dx * STATE_LINE_PADDING_FACTOR;
-								wing_end_y = y - dy * STATE_LINE_PADDING_FACTOR;
-
-								if(location_info_map[cell.id]) {
-									location_info = location_info_map[cell.id];
-								} else {
-									location_info = location_info_map[cell.id] = {};
-								}
-
-								if (is_from && is_to) {
-									location_info.from = location_info.to = {x: x, y: y};
-								} else if (is_from) {
-									location_info.from = {x: x, y: y};
-								} else { // includes start state
-									location_info.to = {x: x, y: y};
-								}
-							}
-						}
-						if (row <= last_relevant_transition_index) { x += 2 * dx; }
-						y -= H;
-					}
-					location_info = location_info_map[state_info.id];
-					location_info.right_wing_start = { x: wing_start_x, y: wing_start_y };
-					location_info.right_wing_end = { x: wing_end_x, y: wing_end_y };
-
-					x += STATE_PADDING_X / 2;
-					if (statecharts_with_add_state_button === state_info) {
-						x += ADD_STATE_WIDTH / 2;
-						location_info.add_state_button_x = x;
-						x += ADD_STATE_WIDTH / 2;
-						location_info.right_wing_end.x += ADD_STATE_WIDTH;
-						location_info.right_wing_start.x += ADD_STATE_WIDTH;
-					}
-				} else if (state_info === FAKE_ROOT_STATECHART) {
-					x += STATE_PADDING_X;
-				} else if (state_info.isRoot) {
-					//x += STATE_PADDING_X/2;
-					y = PADDING_TOP + H * (num_rows - column.depth) + H / 2;
-					location_info = location_info_map[state_info.id];
-					location_info.center = { x: x, y: y };
-					//x += STATE_PADDING_X/2;
-				} else if (state_info.isStart) {
-					width = state_info.usedByAnyProperties ? USED_START_STATE_WIDTH : UNUSED_START_STATE_WIDTH;
-					x += width / 2;
-					y = PADDING_TOP + H * (num_rows - column.depth) + H / 2;
-					location_info_map[state_info.id] = { center: { x: x, y: y } };
-
-					column_values = _.pluck(rows, i);
-
-					for (row = column_values.length - 1; row >= column.depth; row -= 1) {
-						cell = column_values[row];
-						if(!cell) continue;
-						if (cell.from === state || cell.to === state) {
-							is_from = cell.from === state;
-							is_to = cell.to === state;
-
-							if(location_info_map[cell.id]) {
-								location_info = location_info_map[cell.id];
-							} else {
-								location_info = location_info_map[cell.id] = {};
-							}
-
-							//location_info = location_info_map.get_or_put(cell, return_empty_obj);
-							if (is_from && is_to) {
-								location_info.from = location_info.to = {x: x, y: y};
-							} else if (is_from) {
-								location_info.from = {x: x, y: y};
-							} else { // includes start state
-								location_info.to = {x: x, y: y};
-							}
-						}
-					}
-
-					x += width / 2;
-				} else {
-					width = state_info.usedByAnyProperties ? USED_STATE_NAME_WIDTH: UNUSED_STATE_NAME_WIDTH;
-
-					x += width / 2;
-					y = PADDING_TOP + H * (num_rows - column.depth) + H / 2;
-					location_info = location_info_map[state_info.id];
-					location_info.center = { x: x, y: y };
-					x += width / 2;
-				}
-			}
-
-			var width = x,
-				height = PADDING_TOP + (num_rows - 1) * H;
-
-*/
+			return {width: rootLayout.width, height: rootLayout.height, locations: location_info_map};
 		};
 	}(ist.RootStatechartLayoutEngine));
 

@@ -324,7 +324,7 @@
 									"Z"
 						});
 					}
-
+						*/
 					_	.chain(flat_state_machine)
 						.rest() // use rest to remove top level state machine
 						.each(function(state_info, index_j) {
@@ -347,7 +347,6 @@
 								}
 							}, this);
 						}, this);
-						*/
 				}, this);
 			}
 		/*
@@ -467,18 +466,18 @@
 		var proto = My.prototype;
 		able.make_proto_listenable(proto);
 		able.make_proto_optionable(proto);
-		proto.get_hrange = function(statechart, text, layout_info) {
+		proto.get_hrange = function(statechart, text, layout) {
 			var id = statechart.id, hrange = this.hranges[id];
 			if(hrange) {
 				hrange.option({
-					from_x: layout_info.left_wing_start.x,
-					to_x: layout_info.right_wing_end.x
+					from_x: layout.x,
+					to_x: layout.x + layout.width,
 				});
 				return hrange;
 			} else {
 				hrange = this.hranges[id] = new ist.HorizontalRangeDisplay({
-					from_x: layout_info.left_wing_start.x,
-					to_x: layout_info.right_wing_end.x,
+					from_x: layout.x,
+					to_x: layout.x + layout.width,
 					paper: this.paper,
 					text: text,
 					line_color: "#AAA",
@@ -509,15 +508,11 @@
 			if (object_view) {
 				if (state_info.isStart) {
 					object_view.option({
-						c: layout.center
+						layout: layout
 					});
 				} else {
 					object_view.option({
-						lws: layout.left_wing_start,
-						lwe: layout.left_wing_end,
-						rws: layout.right_wing_start,
-						rwe: layout.right_wing_end,
-						c: layout.center
+						layout: layout
 					});
 				}
 			} else {
@@ -525,7 +520,7 @@
 					object_view = new ist.StartStateView({
 						state: state_info.state,
 						paper: this.paper,
-						c: layout.center,
+						layout: layout,
 						fill_color: this.option("start_state_color"),
 						parent: this
 					});
@@ -533,11 +528,7 @@
 					object_view = new ist.StateView({
 						state: state_info.state,
 						paper: this.paper,
-						lws: layout.left_wing_start,
-						lwe: layout.left_wing_end,
-						rws: layout.right_wing_start,
-						rwe: layout.right_wing_end,
-						c: layout.center,
+						layout: layout,
 						font_family: this.option("state_font_family"),
 						font_size: this.option("state_font_size"),
 						default_stroke: this.option("state_stroke"),
