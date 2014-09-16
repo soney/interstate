@@ -33,16 +33,28 @@
 				}
 				window.env = getEnvironment();
 
-				env.set("x", "<stateful>")
+				env.set("on", interstate.on_event)
+					.set("x", "<stateful>")
 					.cd("x")
 						.add_state("init")
 						.add_state("other")
-						.remove_state("other")
+						.add_transition("init", "other", "on('timeout', 2000)")
+						.add_transition("init", "other", "on('timeout', 2000)")
+						//.remove_state("other")
 						.start_at("init")
+						//.set("y")
+						//.set("y", "(start)", "0")
+						//.set("y", "init", "1")
+						.set("y", "init->other", "2")
+						//.set("y", "init-1>other", "3")
 				;
 
 				env.print_on_return = true;
 				env.print();
+
+				setTimeout(function() {
+						$("tr").click();
+					}, 500);
 
 				/*
 				env.print()

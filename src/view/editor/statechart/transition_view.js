@@ -95,7 +95,7 @@
 			padding_top: 0,
 			paper_height: 9999,
 			vline_color: "#CCC",
-			vline_dasharray: ". ",
+			vline_dasharray: "1,2",
 		}, options);
 		var paper = this.option("paper");
 
@@ -109,11 +109,13 @@
 		});
 		var transition = this.option("transition");
 
-		var event = transition.event();
+		//var event = transition.event();
 		var str = "";
+		/*
 		if (event instanceof ist.ParsedEvent) {
 			str = event.get_str();
 		}
+		*/
 		var c = center(this.option("from"), this.option("to"));
 		this.label = new ist.EditableText(paper, {x: c.x, y: c.y + 8, text: str, fill: this.option("text_background"), color: this.option("text_foreground")});
 		this.label.option({
@@ -143,7 +145,7 @@
 						color: this.option("error_foreground")
 					});
 					var err_text = errors[0];
-					$(this.label.text[0])	.attr("title", err_text)
+					$(this.label.text.node)	.attr("title", err_text)
 											.tooltip("option", {
 												content: err_text
 											});
@@ -152,7 +154,7 @@
 						fill: this.option("text_background"),
 						color: this.option("text_foreground")
 					});
-					$(this.label.text[0])	.attr("title", "")
+					$(this.label.text.node)	.attr("title", "")
 											.tooltip("option", {
 												tooltipClass: "error",
 												content: ""
@@ -171,12 +173,12 @@
 							.attr({
 								stroke: this.option("vline_color"),
 								"stroke-dasharray": this.option("vline_dasharray")
-							})
-							.toBack();
-		this.$clickable = $([this.label.text[0], this.label.label_background[0], this.arrow.line_path[0], this.arrow.circle[0], this.arrow.arrow_path[0]]);
+							});
+		this.vline.appendTo(paper);
+		this.$clickable = $([this.label.text.node, this.label.label_background.node].concat(this.arrow.getDOMNodes()));
 		this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
 
-		$(this.label.text[0]).tooltip({
+		$(this.label.text.node).tooltip({
 			tooltipClass: "error"
 		});
 	};
@@ -189,7 +191,7 @@
 			this.arrow.option(values);
 			var transition = this.option("transition");
 			var paper_height = this.option("paper_height");
-			var event = transition.event();
+			//var event = transition.event();
 			var from = this.option("from");
 			var c = center(from, this.option("to"));
 			this.label.option({
@@ -200,8 +202,9 @@
 		};
 
 		proto.toFront = function() {
+			var paper = this.option("paper");
 			this.arrow.toFront();
-			this.vline.toFront();
+			this.vline.prependTo(paper);
 			this.label.toFront();
 		};
 
@@ -229,8 +232,8 @@
 
 			var paper = this.option("paper");
 			var transition = this.option("transition");
-			var parentElement = paper.canvas.parentNode;
-			//var parentElement = paper.node.parentNode;
+			//var parentElement = paper.canvas.parentNode;
+			var parentElement = paper.node.parentNode;
 			this.edit_event = $("<div />").addClass("menu_item")
 											.text("Change event")
 											.on("click.menu_item", _.bind(this.on_edit_event_pressed, this));
@@ -267,11 +270,11 @@
 													width: width + "px"
 												});
 			var items;
-			if(transition.from() instanceof ist.StartState) {
-				this.edit_dropdown.append(this.change_to);
-			} else {
-				this.edit_dropdown.append(this.edit_event, this.change_from, this.change_to, this.remove_item, this.togglebreakpoint);
-			}
+			//if(transition.from() instanceof ist.StartState) {
+				//this.edit_dropdown.append(this.change_to);
+			//} else {
+				//this.edit_dropdown.append(this.edit_event, this.change_from, this.change_to, this.remove_item, this.togglebreakpoint);
+			//}
 			$(window).on("mousedown.close_menu", _.bind(this.on_window_click_while_expanded, this));
 			$(window).on("keydown.close_menu", _.bind(this.on_window_keydown_while_expanded, this));
 		};
@@ -468,9 +471,10 @@
 		});
 
 		if(highlight_enabled) {
+			var transition = this.option("transition");
+			var enabled = transition.get_$("isEnabled");
 			this.enabled_fn = cjs.liven(function () {
-				var transition = this.option("transition");
-				if (transition && transition.is_initialized() && transition.get_$enabled()) {
+				if (enabled.get()) {
 					if (this.line_path) {
 						this.line_path.attr("stroke-dasharray", this.option("enabled_dasharray"));
 					}
@@ -488,6 +492,10 @@
 		var proto = My.prototype;
 		able.make_proto_listenable(proto);
 		able.make_proto_optionable(proto);
+
+		proto.getDOMNodes = function() {
+			return $([this.line_path.node, this.arrow_path.node, this.circle.node]);
+		};
 
 		proto.get_paths = function () {
 			var from = this.option("from"),
@@ -512,9 +520,10 @@
 			});
 		};
 		proto.toFront = function() {
-			this.line_path.toFront();
-			this.circle.toFront();
-			this.arrow_path.toFront();
+			var paper = this.option("paper");
+			this.line_path.prependTo(paper);
+			this.circle.prependTo(paper);
+			this.arrow_path.prependTo(paper);
 		};
 		var anim_time = 400;
 		proto.flash = function () {

@@ -578,7 +578,7 @@
 				command = new ist.SetStatefulPropValueCommand({
 					in_effect: true,
 					stateful_prop: { id: to_func(client.obj_id) },
-					state: { id: to_func(state.cobj_id) },
+					state: { id: to_func(state.obj_id) },
 					value: value
 				});
 				command_str = this.client_socket.post_command(command, function() {
@@ -594,7 +594,7 @@
 				command = new ist.UnsetStatefulPropValueCommand({
 					in_effect: true,
 					stateful_prop: { id: to_func(client.obj_id) },
-					state: { id: to_func(state.cobj_id) }
+					state: { id: to_func(state.obj_id) }
 				});
 				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
@@ -615,49 +615,51 @@
 				});
 			} else if(type === "add_state") {
 				state = event.state;
-				statechart_puppet_id = state.puppet_master_id || state.id(); 
-				var substates = state.get_substates();
+				state.async_get("getSubstates", function(substates) {
+					var substates_size = _.size(substates);
+					var state_name, make_start;
 
-				var substates_size = _.size(substates);
-				var state_name, make_start;
-
-				if(substates_size === 0) {
-					state_name = "init";
-					make_start = true;
-				} else {
-					var orig_state_name = "state_" + substates_size;
-					state_name = orig_state_name;
-					var i = 1;
-					while(_.has(substates, state_name)) {
-						state_name = orig_state_name + "_" + i;
+					if(substates_size === 0) {
+						state_name = "init";
+						make_start = true;
+					} else {
+						var orig_state_name = "state_" + substates_size;
+						state_name = orig_state_name;
+						var i = 1;
+						while(_.has(substates, state_name)) {
+							state_name = orig_state_name + "_" + i;
+						}
+						make_start = false;
 					}
-					make_start = false;
-				}
 
-				command = new ist.AddStateCommand({
-					in_effect: true,
-					statechart: { id: to_func(statechart_puppet_id) },
-					name: state_name,
-					make_start: make_start
-				});
 
-				command_str = this.client_socket.post_command(command, function() {
-					command.destroy();
-					command = null;
-				});
+					command = new ist.AddStateCommand({
+						in_effect: true,
+						statechart: { id: to_func(state.obj_id) },
+						name: state_name,
+						make_start: make_start
+					});
+
+					command_str = this.client_socket.post_command(command, function() {
+						command.destroy();
+						command = null;
+					});
+				}, this);
 			} else if(type === "remove_state") {
 				state = event.state;
-				name = state.get_name("parent");
-				parent_puppet_id = state.parent().puppet_master_id || state.parent().id();
-				command = new ist.RemoveStateCommand({
-					in_effect: true,
-					statechart: { id: to_func(parent_puppet_id) },
-					name: name
-				});
-				command_str = this.client_socket.post_command(command, function() {
-					command.destroy();
-					command = null;
-				});
+				state.async_get("getName", function(name) {
+					state.async_get("parent", function(parent) {
+						command = new ist.RemoveStateCommand({
+							in_effect: true,
+							statechart: { id: to_func(parent.obj_id) },
+							name: name
+						});
+						command_str = this.client_socket.post_command(command, function() {
+							command.destroy();
+							command = null;
+						});
+					}, this);
+				}, this);
 			} else if(type === "remove_transition") {
 				transition = event.transition;
 				var statechart = transition.root();

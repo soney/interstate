@@ -567,9 +567,9 @@
 		};
 
 		proto._get_add_state_command = function (state_name, index) {
-			var statechart = this.get_current_statechart();
-			var state_names = state_name.split(".");
-			_.each(state_names, function(name) {
+			var statechart = this.get_current_statechart(),
+				state_names = state_name.split(".");
+			_.each(state_names.slice(0, state_names.length-1), function(name) {
 				statechart = statechart.getSubstate(name) || statechart.addSubstate(name);
 			});
 

@@ -119,6 +119,13 @@
 			return ([this.getOwnStatechart()]).concat(proto_statecharts);
 		};
 
+		proto.usesState = function(state) {
+			return _.any(this.children(), function(child_info) {
+				var child = child_info.value;
+				return child instanceof ist.ContextualStatefulProp && child.usesState(state);
+			});
+		};
+
 		proto.reset = function () {
 			var statecharts = this.getContextualStatecharts();
 			_.each(statecharts, function(statechart) {

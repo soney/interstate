@@ -36,6 +36,7 @@
 		able.make_this_optionable(this, {
 			x: 0,
 			y: 0,
+			y_offset: 4,
 			text: "",
 			width: 100,
 			"text-anchor": "middle",
@@ -48,13 +49,13 @@
 			color: "#000000",
 			default_color: "#AAAAAA",
 			fill: "white",
-			"fill-opacity": 0.7,
+			"fill-opacity": 0.9,
 			textbox_background: "white",
 			textbox_color: "black",
 			edit_on_click: true
 		}, options);
 
-		this.text = paper.text(this.option("x"), this.option("y"), this.get_text())
+		this.text = paper.text(this.option("x"), this.option("y") + this.option("y_offset"), this.get_text())
 			.attr({
 				font: this.option("font"),
 				"font-family": this.option("font-family"),
@@ -75,7 +76,7 @@
 			"fill-opacity": this.option("fill-opacity"),
 			stroke: "none"
 		});
-		this.$text = $(this.text[0]).tooltip();
+		this.$text = $(this.text.node).tooltip();
 		this.$text.on("click.onclick", _.bind(this.onClick, this));
 
 		this.paper = paper;
@@ -105,8 +106,9 @@
 			return this.text;
 		};
 		proto.toFront = function() {
-			this.label_background.toFront();
-			this.text.toFront();
+			var paper = this.paper;
+			this.label_background.appendTo(paper);
+			this.text.appendTo(paper);
 		};
 
 		proto.show_default = function () {
@@ -145,10 +147,12 @@
 					"color": this.option("textbox_color"),
 					"fill": this.option("textbox_background")
 				});
-			this.paper.canvas.parentNode.insertBefore(this.textbox, this.paper.canvas);
+			this.paper.node.parentNode.insertBefore(this.textbox, this.paper.canvas);
 			this.textbox.value = this.option("text");
 
-			this.text.hide();
+			this.text.attr({
+				visibility: "hidden"
+			});
 			this.textbox.focus();
 			this.textbox.select();
 			$(this.textbox)	.on("keydown.onkeydown", _.bind(this.onKeydown, this))
@@ -203,7 +207,9 @@
 			this.showText();
 		};
 		proto.showText = function () {
-			this.text.show();
+			this.text.attr({
+				visibility: ""
+			});
 			$(this.textbox)	.off("keydown.onkeydown")
 							.off("blur.onblur")
 							.remove();
@@ -220,7 +226,7 @@
 			} else {
 				this.text.attr({
 					x: this.option("x"),
-					y: this.option("y"),
+					y: this.option("y") + this.option("y_offset"),
 					width: this.option("width"),
 					font: this.option("font"),
 					"font-family": this.option("font-family"),
@@ -238,13 +244,21 @@
 			this.text.remove();
 		};
 		proto.hide = function() {
-			this.label_background.hide();
-			this.text.hide();
+			this.label_background.attr({
+				visibility: "hidden"
+			});
+			this.text.attr({
+				visibility: "hidden"
+			});
 			return this;
 		};
 		proto.show = function() {
-			this.label_background.show();
-			this.text.show();
+			this.label_background.attr({
+				visibility: ""
+			});
+			this.text.attr({
+				visibility: ""
+			});
 			return this;
 		};
 		proto.focus = function() {

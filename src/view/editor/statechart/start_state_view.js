@@ -18,7 +18,7 @@
 			padding_top: 0,
 			paper_height: 9999,
 			vline_color: "#CCC",
-			vline_dasharray: ". ",
+			vline_dasharray: "1,2",
 			active_fill: ist.__debug_statecharts ? "red" : "black",
 			running_stroke: "#99E",
 			stroke: "none",
@@ -26,12 +26,7 @@
 			stroke_width: 0
 		}, options);
 
-		var state = this.option("state");
-		if (state.is_initialized()) {
-			this.initialize();
-		} else {
-			state.once("initialized", this.initialize, this);
-		}
+		this.initialize();
 	};
 
 	(function (My) {
@@ -42,8 +37,9 @@
 			var paper = this.option("paper");
 			var center = this.option("c");
 			var state = this.option("state");
+			var active = state.get_$("isActive");
 			this.active_fn = cjs.liven(function () {
-				if (state.is_initialized() && state.is_active()) {
+				if (active.get()) {
 					if (this.circle) {
 						this.circle.attr({
 							fill: this.option("active_fill")
@@ -60,9 +56,10 @@
 				context: this
 			});
 			if(highlight_running) {
+				var running = state.get_$("isRunning");
 				this.running_fn = cjs.liven(function () {
-					var state = this.option("state");
-					if (state.is_initialized() && state.get_$running()) {
+					//var state = this.option("state");
+					if (running.get()) {
 						if (this.circle) {
 							this.circle.attr({
 								"stroke": this.option("running_stroke"),
@@ -87,20 +84,22 @@
 									stroke: this.option("vline_color"),
 									"stroke-dasharray": this.option("vline_dasharray")
 								});
+			this.vline.prependTo(paper);
 			this.circle = paper.circle(center.x, center.y + this.option("padding_top"), this.option("radius"));
 			this.circle.attr({
-				fill: state.is_active() ? this.option("active_fill") : this.option("fill_color"),
+				fill: this.option("fill_color"),
 				stroke: "none"
 			});
 			$(this.circle[0]).on("contextmenu.cm");
 		};
 
 		proto.toFront = function() {
+			var paper = this.option("paper");
 			if(this.vline) {
-				this.vline.toFront();
+				this.vline.appendTo(paper);
 			}
 			if(this.circle) {
-				this.circle.toFront();
+				this.circle.appendTo(paper);
 			}
 		};
 
@@ -118,8 +117,8 @@
 			if(this.vline) {
 				this.vline	.attr({
 								path: "M" + center.x + "," + center.y + "V" + paper_height
-							})
-							.toBack();
+							});
+				this.vline.appendTo(paper);
 			}
 		};
 

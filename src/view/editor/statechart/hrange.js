@@ -42,12 +42,13 @@
 		this.text_background.attr({
 			stroke: "none",
 			fill: this.option("background"),
-			"fill-opacity": 0.5
+			"fill-opacity": 0.8
 		});
 		this.text_foreground.attr({
 			fill: this.option("color"),
 			"font-family": this.option("font_family"),
-			"font-size": this.option("font_size")
+			"font-size": this.option("font_size"),
+			"text-anchor": "middle"
 		});
 		this.update();
 
@@ -88,7 +89,7 @@
 			});
 			this.text_foreground.attr({
 				x: (from_x + to_x)/2,
-				y: y+height/2
+				y: y+2*height/3
 			});
 			var bbox = this.text_foreground.getBBox();
 			this.text_background.attr({

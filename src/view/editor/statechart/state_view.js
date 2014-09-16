@@ -30,19 +30,20 @@
 			padding_top: 0,
 			paper_height: 9999,
 			vline_color: "#CCC",
-			vline_dasharray: ". ",
+			vline_dasharray: "1,2",
 			stroke_width: 1,
 			running_width: 3
 		}, options);
 
+		var state = this.option("state");
+		this.active = state.get_$("isActive");
 		this.active_fn = cjs.liven(function () {
-			var state = this.option("state");
-			if (state.is_initialized() && state.is_active()) {
+			if (this.active.get()) {
 				if (this.path) {
 					this.path.animate({
 						"fill": this.option("active_fill"),
 						"stroke": this.option("active_stroke")
-					}, 300, "ease-out");
+					}, 300, mina.easeout);
 					this.label.option("color", this.option("active_text_foreground"), 300);
 				}
 			} else {
@@ -50,7 +51,7 @@
 					this.path.animate({
 						"fill": this.option("default_fill"),
 						"stroke": this.option("default_stroke")
-					}, 300, "ease-out");
+					}, 300, mina.easeout);
 					this.label.option("color", this.option("text_foreground"), 300);
 				}
 			}
@@ -58,9 +59,10 @@
 			context: this
 		});
 		if(highlight_running) {
+			var running = state.get_$("isActive");
 			this.running_fn = cjs.liven(function () {
 				var state = this.option("state");
-				if (state.is_initialized() && state.get_$running()) {
+				if (running.get()) {
 					if (this.path) {
 						this.path.attr("stroke-width", this.option("running_width"));
 					}
@@ -77,21 +79,18 @@
 		var state = this.option("state");
 		var paper = this.option("paper");
 
-		this.path = paper	.path("M0,0")
-							.toBack();
+		this.path = paper	.path("M0,0");
+		this.path.appendTo(paper);
 		this.vline = paper	.path("M0,0")
 							.attr({
 								stroke: this.option("vline_color"),
 								"stroke-dasharray": this.option("vline_dasharray")
-							})
-							.toBack();
+							});
+		this.vline.prependTo(paper);
+		this.name = state.get_$("getName");
 		this.label = new ist.EditableText(paper, {x: -100, y: -100, text: "", fill: this.option("text_background"), color: this.option("text_foreground")});
 
-		if (state.is_initialized()) {
-			this.initialize();
-		} else {
-			state.once("initialized", this.initialize, this);
-		}
+		this.initialize();
 	};
 
 	(function (My) {
@@ -102,10 +101,12 @@
 			var state = this.option("state");
 			this.path .attr({
 							"path": this.get_path_str(),
-							"stroke": this.option(state.is_active() ? "active_stroke" : "default_stroke"),
-							"fill": this.option(state.is_active() ? "active_fill" : "default_fill")
+							"stroke": "default_stroke",
+							"fill": "default_fill"
 						});
 			var center = this.option("c");
+			this.parent_is_concurrent = state.get_$("parentIsConcurrent");
+			this.is_concurrent = state.get_$("isConcurrent");
 
 			this.label	.on("cancel", this.on_cancel_rename, this)
 						.on("change", this.on_confirm_rename, this);
@@ -117,9 +118,9 @@
 				text: this.get_name()
 			});
 			this.label.on("change", this.forward_event, this);
-			this.$clickable = $([this.path[0], this.label.text[0]]);
+			this.$clickable = $([this.path.node, this.label.text.node]);
 			this.$clickable.on("contextmenu.show", _.bind(this.show_menu, this));
-			if(state.parent_is_concurrent()) {
+			if(this.parent_is_concurrent.get()) {
 				this.path.attr({
 					"stroke-dasharray": "- "
 				});
@@ -131,15 +132,17 @@
 		};
 
 		proto.toFront = function() {
-			this.path.toFront();
-			this.vline.toFront();
+			var paper = this.option("paper");
+			this.path.appendTo(paper);
+			this.vline.appendTo(paper);
 			this.label.toFront();
 		};
 
 		proto.get_name = function() {
-			var state = this.option("state");
-			var name = state.get_name("parent");
-			return name;
+			return this.name.get();
+			//var state = this.option("state");
+			//var name = state.get_name("parent");
+			//return name;
 		};
 
 		proto._on_options_set = function (values) {
@@ -149,7 +152,7 @@
 				this.path.attr({
 					"path": path_str
 				});
-				if(state.parent_is_concurrent()) {
+				if(this.parent_is_concurrent.get()) {
 					this.path.attr({
 						"stroke-dasharray": "- "
 					});
@@ -160,7 +163,7 @@
 				}
 				var paper_height = this.option("paper_height");
 				var center = this.option("c");
-				var name = state.get_name("parent");
+				var name = this.name.get();
 				this.label.option({
 					x: center.x,
 					y: center.y,
@@ -192,7 +195,7 @@
 													.text("Add substate")
 													.on("click.menu_item", _.bind(this.on_add_substate_item_pressed, this));
 
-			var is_concurrent = this.option("state").is_concurrent();
+			var is_concurrent = this.is_concurrent.get();
 			var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
 			this.toggle_concurrency_item = $("<div />")	.addClass("menu_item")
 														.html("Concurrent " + checkbox_mark)
@@ -209,8 +212,8 @@
 			var y = lwe.y - HEIGHT/2;
 
 			var paper = this.option("paper");
-			var parentElement = paper.canvas.parentNode;
-			//var parentElement = paper.node.parentNode;
+			//var parentElement = paper.canvas.parentNode;
+			var parentElement = paper.node.parentNode;
 
 			this.edit_dropdown = $("<div />")	.append(this.add_transition, this.add_substate_item, this.toggle_concurrency_item, this.toggle_breakpoint_item, this.rename_item, this.remove_item)
 												.addClass("dropdown")
@@ -453,7 +456,7 @@
 			}
 			var state = this.option("state");
 			this.path.attr({
-				fill: this.option(state.is_active() ? "active_fill" : "default_fill"),
+				fill: this.option(this.active.get() ? "active_fill" : "default_fill"),
 				cursor: ""
 			});
 		};

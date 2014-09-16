@@ -32,7 +32,6 @@
 			active_state_stroke: "#007000",
 			active_state_text_color: "#007000",
 			start_state_color: "#000",
-			start_state_radius: 6,
 			add_state_width: 50,
 
 			statecharts: [],
@@ -40,7 +39,7 @@
 			hrange_y: 5,
 			hrange_height: 14,
 
-			client: false,
+			//client: false,
 
 			padding_top: function() {
 				return this.option("hrange_y") + this.option("hrange_height");
@@ -48,20 +47,58 @@
 		},
 
 		_create: function () {
-			this.element.addClass("statechart");
-			this.paper = new Raphael(this.element[0], 0, 0);
-			//this.paper = Snap(0,0);
-			//$(this.paper.node).appendTo(this.element);
 			var statecharts = this.option("statecharts");
+			this.$stateMachineSummary = cjs(_.bind(function() {
+				var statecharts = this.option("statecharts"),
+					statecharts_val = statecharts.get();
+				if(statecharts_val) {
+					return _.chain(statecharts_val)
+							.map(function(sc) {
+								var constraint = sc.get_$("summarizeStatechart");
+								if(constraint) {
+									return constraint.get();
+								} else {
+									return false;
+								}
+							})
+							.compact()
+							.value();
+				} else {
+					return false;
+				}
+			}, this));
+
+			this.paper = new Snap(0,0);
+			this.paperNode = $(this.paper.node).prependTo(this.element);
+
 			this.layout_manager = new ist.RootStatechartLayoutEngine({
-				statecharts: statecharts,
-				statecharts_with_add_state_button: [statecharts[0]],
-				start_state_radius: this.option("start_state_radius"),
+				stateMachineSummary: this.$stateMachineSummary,
 				padding_top: this.option("padding_top").call(this),
 				add_state_width: this.option("add_state_width")
 			});
 			/*
-			this.statechart_view = new ist.RootStatechartView(statecharts, this.layout_manager, this.paper, this.options);
+			console.log(statecharts);
+
+			return;
+			this.element.addClass("statechart");
+			this.paper = new Raphael(this.element[0], 0, 0);
+			//this.paper = Snap(0,0);
+			//$(this.paper.node).appendTo(this.element);
+			*/
+
+			this.statechart_view = new ist.RootStatechartView(statecharts, this.layout_manager, this.paper, this.$stateMachineSummary, this.options);
+			this._addClassBindings();
+			this._addCommandBindings();
+		},
+
+		_addClassBindings: function() {
+			this.element.addClass("statechart");
+		},
+		_removeClassBindings: function() {
+			this.element.removeClass("statechart");
+		},
+
+		_addCommandBindings: function() {
 			this.statechart_view.on("add_state", this.add_state, this);
 			this.statechart_view.on("remove_state", this.remove_state, this);
 			this.statechart_view.on("remove_transition", this.remove_transition, this);
@@ -72,10 +109,9 @@
 			this.statechart_view.on("set_str", this.set_transition_str, this);
 			this.statechart_view.on("make_concurrent", this.make_concurrent, this);
 			this.statechart_view.on("reset", this.reset, this);
-			*/
 		},
-		_destroy: function () {
-			this._super();
+
+		_removeCommandBindings: function() {
 			this.statechart_view.off("add_state", this.add_state, this);
 			this.statechart_view.off("remove_state", this.remove_state, this);
 			this.statechart_view.off("remove_transition", this.remove_transition, this);
@@ -86,13 +122,19 @@
 			this.statechart_view.off("set_str", this.set_transition_str, this);
 			this.statechart_view.off("make_concurrent", this.make_concurrent, this);
 			this.statechart_view.off("reset", this.reset, this);
+		},
+
+		_destroy: function () {
+			this._removeClassBindings();
+			this._removeCommandBindings();
 			this.statechart_view.destroy();
+			this._super();
+			this.paper.remove();
 
 			delete this.statechart_view;
 
 			this.paper.remove();
 
-			this.element.removeClass("statechart");
 			delete this.options.statecharts;
 			delete this.options;
 
@@ -100,16 +142,13 @@
 			delete this.layout_manager;
 		},
 
+
 		get_layout_manager: function() {
 			return this.layout_manager;
 		},
 
 		_setOption: function(key, value) {
 			this._super(key, value);
-			if(key === "statecharts") {
-				this.layout_manager.option("statecharts_with_add_state_button", [value[0]]);
-				this.layout_manager.invalidate();
-			}
 		},
 		add_state: function(e) {
 			var event = new $.Event("command");
@@ -199,21 +238,34 @@
 	});
 
 
-	ist.RootStatechartView = function (statecharts, layout_engine, paper, options) {
+	ist.RootStatechartView = function (statecharts, layout_engine, paper, $stateMachineSummary, options) {
 		able.make_this_listenable(this);
 		able.make_this_optionable(this, {}, options);
 
 		this.statecharts = statecharts;
 		this.layout_engine = layout_engine;
+		this.object_views = {};
+		this.hranges = {};
+		/*
 		this.object_views = new RedMap({
 			hash: "hash"
 		});
 		this.hranges = new RedMap({
 			hash: "hash"
 		});
+		*/
 		this.paper = paper;
-		this.add_state_shape = this.paper.path("M0,0").hide();
-		this.add_state_button = this.paper.text(0,0,"+").hide();
+		this.add_state_shape = this.paper.path("M0,0");
+		this.add_state_button = this.paper.text(0,0,"+");
+
+		this.add_state_button	.attr({
+									"font-size": "42px",
+									fill: this.option("state_stroke"),
+									opacity: 0.5,
+									cursor: "pointer",
+									"text-anchor": "middle"
+								})
+								.click(_.bind(this.on_add_state_click, this));
 		this.add_state_shape	.attr({
 									fill: this.option("state_fill"),
 									stroke: this.option("state_stroke"),
@@ -222,29 +274,94 @@
 								})
 								.click(_.bind(this.on_add_state_click, this));
 
-		this.add_state_button	.attr({
-									"font-size": "42px",
-									fill: this.option("state_stroke"),
-									opacity: 0.5,
-									cursor: "pointer"
-								})
-								.click(_.bind(this.on_add_state_click, this));
-
 		var curr_items = [];
+		this.$stateMachineSummary = $stateMachineSummary;
+
+		function flattenStateTree(tree) {
+			var rv = [tree];
+			return rv.concat.apply(rv, _.map(tree.substates, function(substate) {
+				return flattenStateTree(substate);
+			}));
+		}
+
 		this.live_layout = cjs.liven(function () {
+			var stateMachineSummary = this.$stateMachineSummary.get();
+			if(stateMachineSummary) {
+				var layout_info = this.layout_engine.get_layout(),
+					width = layout_info.width,
+					height = layout_info.height,
+					locations = layout_info.locations;
+				//this.paper.setSize(width, height);
+				this.paper.attr({
+					width: width,
+					height: height
+				});
+				_.each(stateMachineSummary, function(topLevelStateMachine, index) {
+					var id = topLevelStateMachine.id,
+						layout = locations[topLevelStateMachine.id],
+						is_own = index === 0,
+						hrange = this.get_hrange(topLevelStateMachine, is_own ? "own" : "inherited", layout), // will update hrange
+						flat_state_machine = flattenStateTree(topLevelStateMachine);
+				/*
+
+					if (layout.add_state_button_x) {
+						this.add_state_button.attr({
+							x: layout.add_state_button_x,
+							y: height / 2 + 21
+						});
+						var shorten_height = this.layout_engine.option("state_name_height");
+						var dx = layout.right_wing_end.x - layout.right_wing_start.x;
+						var padding_top = this.option("padding_top");
+						var x = layout.add_state_button_x;
+						var width = this.option("add_state_width");
+						this.add_state_shape.attr({
+							path: "M"+(x-width/2)+","+padding_top +
+									"H" + (x + width/2) +
+									"V" + (layout.right_wing_end.y-shorten_height) +
+									"L" + (layout.right_wing_start.x) + "," + (layout.right_wing_start.y - shorten_height) +
+									"H" + (x - width/2 + dx) + 
+									"L" + (x - width/2) + "," + (layout.right_wing_end.y - shorten_height) +
+									"Z"
+						});
+					}
+
+					_	.chain(flat_state_machine)
+						.rest() // use rest to remove top level state machine
+						.each(function(state_info, index_j) {
+							var state = state_info.state,
+								id = state_info.id,
+								layout = locations[id],
+								state_view = this.get_state_view(state_info, layout); // will update shape
+							state_view.toFront();
+						}, this)
+						.each(function(state_info) {
+							var outgoing_transitions = state_info.outgoingTransitions;
+							_.each(outgoing_transitions, function(transition_info) {
+								var id = transition_info.id,
+									transition = transition_info.transition,
+									layout = locations[id];
+
+								if(layout) {
+									var transition_view = this.get_transition_view(transition_info, layout);
+									transition_view.toFront();
+								}
+							}, this);
+						}, this);
+						*/
+				}, this);
+			}
+		/*
 			var layout_info = this.layout_engine.get_layout();
 			var width = layout_info.width,
 				height = layout_info.height,
 				layout = layout_info.locations;
-			this.paper.setSize(width, height);
-			/*
+			//this.paper.setSize(width, height);
 			this.paper.attr({
 				width: width,
 				height: height
 			});
-			*/
 			var new_items = [];
-			layout.each(function (layout_info, state) {
+			_.each(layout, function(layout_info, state_id) {
 				var view;
 				if (state instanceof ist.State) {
 					if (_.indexOf(this.statecharts, state) >= 0) {
@@ -339,6 +456,7 @@
 				}
 			});
 			curr_items = new_items;
+			*/
 		}, {
 			context: this
 		});
@@ -350,8 +468,15 @@
 		able.make_proto_listenable(proto);
 		able.make_proto_optionable(proto);
 		proto.get_hrange = function(statechart, text, layout_info) {
-			return this.hranges.get_or_put(statechart, function () {
-				return new ist.HorizontalRangeDisplay({
+			var id = statechart.id, hrange = this.hranges[id];
+			if(hrange) {
+				hrange.option({
+					from_x: layout_info.left_wing_start.x,
+					to_x: layout_info.right_wing_end.x
+				});
+				return hrange;
+			} else {
+				hrange = this.hranges[id] = new ist.HorizontalRangeDisplay({
 					from_x: layout_info.left_wing_start.x,
 					to_x: layout_info.right_wing_end.x,
 					paper: this.paper,
@@ -363,14 +488,79 @@
 					height: this.option("hrange_height"),
 					state: statechart
 				});
-			}, this);
+
+				hrange.on("add_state", this.forward_event, this);
+				hrange.on("make_concurrent", this.forward_event, this);
+				hrange.on("reset", this.forward_event, this);
+
+				return hrange;
+			}
 		};
 		proto.on_add_state_click = function() {
+			var statecharts = this.option("statecharts"),
+				statecharts_val = statecharts.get();
 			this._emit("add_state", {
-				parent: this.statecharts[0]
+				parent: statecharts_val[0]
 			});
 		};
-		proto.get_view = function (obj, layout_info) {
+		proto.get_state_view = function (state_info, layout) {
+			var id = state_info.id,
+				object_view = this.object_views[id];
+			if (object_view) {
+				if (state_info.isStart) {
+					object_view.option({
+						c: layout.center
+					});
+				} else {
+					object_view.option({
+						lws: layout.left_wing_start,
+						lwe: layout.left_wing_end,
+						rws: layout.right_wing_start,
+						rwe: layout.right_wing_end,
+						c: layout.center
+					});
+				}
+			} else {
+				if(state_info.isStart) {
+					object_view = new ist.StartStateView({
+						state: state_info.state,
+						paper: this.paper,
+						c: layout.center,
+						fill_color: this.option("start_state_color"),
+						parent: this
+					});
+				} else {
+					object_view = new ist.StateView({
+						state: state_info.state,
+						paper: this.paper,
+						lws: layout.left_wing_start,
+						lwe: layout.left_wing_end,
+						rws: layout.right_wing_start,
+						rwe: layout.right_wing_end,
+						c: layout.center,
+						font_family: this.option("state_font_family"),
+						font_size: this.option("state_font_size"),
+						default_stroke: this.option("state_stroke"),
+						default_fill: this.option("state_fill"),
+						active_stroke: this.option("active_state_stroke"),
+						active_fill: this.option("active_state_fill"),
+						text_foreground: this.option("state_text_color"),
+						active_text_fireground: this.option("active_state_text_color"),
+						text_background: this.option("state_text_background_color"),
+						padding_top: this.option("padding_top"),
+						parent: this
+					});
+					object_view.on("remove_state", this.forward_event, this);
+					object_view.on("add_transition", this.forward_event, this);
+					object_view.on("add_state", this.forward_event, this);
+					object_view.on("make_concurrent", this.forward_event, this);
+					object_view.on("rename", this.forward_event, this);
+					object_view.on("awaiting_state_selection", this.on_awaiting_state_selection, this);
+				}
+				this.object_views[id] = object_view;
+			}
+			return object_view;
+			/*
 			return this.object_views.get_or_put(obj, function () {
 				var rv;
 				if (obj instanceof ist.StatechartTransition) {
@@ -439,6 +629,48 @@
 				}
 				return rv;
 			}, this);
+			*/
+		};
+		proto.get_transition_view = function (transition_info, layout) {
+			var id = transition_info.id,
+				object_view = this.object_views[id],
+				transition = transition_info.transition;
+			if (object_view) {
+				object_view.option({
+					from: layout.from,
+					to: layout.to
+				});
+				return object_view;
+			} else {
+				object_view = new ist.TransitionView({
+					paper: this.paper,
+					transition: transition,
+					from: layout.from,
+					to: layout.to,
+					active_color: this.option("active_transition_color"),
+					color: this.option("transition_arrow_color"),
+					text_background: this.option("transition_text_background_color"),
+					text_foreground: this.option("transition_text_color"),
+					font_family: this.option("transition_font_family"),
+					font_size: this.option("transition_font_size"),
+					parent: this
+				});
+				object_view.on("change", function (event) {
+					var value = event.value;
+					if (value === "") {
+						this._emit("remove_transition", {transition: transition});
+					} else {
+						this._emit("change_transition_event", {transition: transition, str: value});
+					}
+				}, this);
+				object_view.on("remove_transition", this.forward_event, this);
+				object_view.on("awaiting_state_selection", this.on_awaiting_state_selection, this);
+				object_view.on("set_to", this.forward_event, this);
+				object_view.on("set_from", this.forward_event, this);
+				object_view.on("set_str", this.forward_event, this);
+				this.object_views[id] = object_view;
+			}
+			return object_view;
 		};
 
 		proto.pause = function () {
@@ -517,15 +749,13 @@
 			this.live_layout.destroy();
 			delete this.live_layout;
 			delete this.layout_engine;
-			this.object_views.each(function(object_view) {
+			_.each(this.object_views, function(object_view) {
 				object_view.destroy();
 			});
-			this.object_views.destroy();
 			delete this.object_views;
-			this.hranges.each(function(hrange) {
+			_.each(this.hranges, function(hrange) {
 				hrange.destroy();
 			});
-			this.hranges.destroy();
 			delete this.hranges;
 
 			able.destroy_this_listenable(this);
@@ -538,31 +768,4 @@
 		};
 
 	}(ist.RootStatechartView));
-	/*
-	
-	Snap.plugin(function (Snap, Element) {
-		var elProto = Element.prototype;
-		// displays the element
-		elProto.show = function() {
-			this.attr('display', '');
-			return this;
-		};
-
-		// hides the element
-		elProto.hide = function() {
-			this.attr('display', 'none');
-			return this;
-		};
-
-		elProto.toFront = function () {
-			this.prependTo(this.paper);
-			return this;
-		};
-
-		elProto.toBack = function () {
-			this.appendTo(this.paper);
-			return this;
-		};
-	});
-	*/
 }(interstate, jQuery));

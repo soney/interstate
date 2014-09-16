@@ -21,6 +21,8 @@
 		});
 
 		this._root = ptr.getContextualObject();
+		ptr = ptr.pop();
+		this._statefulObj = ptr.getContextualObject();
 
 		this.$active = cjs(false);
 		this.$event = cjs(false);
@@ -230,8 +232,9 @@
 			}
 		};
 		proto.stringify = function () {
-			var event = this.event();
-			var stringified_event = event ? event.stringify() : "";
+			var event = this.event(),
+				stringified_event = event ? event.stringify() : "";
+
 			return stringified_event.toString();
 		};
 		proto.root = function () {
@@ -278,6 +281,20 @@
 				}
 				*/
 			}
+		};
+		proto.usedByAnyProperties = function() {
+			return this._statefulObj.usesState(this);
+		};
+
+		proto.summarizeTransition = function() {
+			return {
+				type: "transition",
+				from: this.from(),
+				to: this.to(),
+				id: this.id(),
+				usedByAnyProperties: this.usedByAnyProperties(),
+				transition: this
+			};
 		};
 
 		proto.isEnabled = function() {

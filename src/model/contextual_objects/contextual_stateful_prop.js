@@ -61,7 +61,7 @@
 
 		proto.get_states = function () {
 			var parent = this.get_parent(),
-				stateful_prop = this.get_object();
+				stateful_prop = this.get_object(),
 				statecharts;
 
 			if (stateful_prop.get_can_inherit()) {
@@ -75,15 +75,18 @@
 			}
 			var substates = _.chain(statecharts)
 				.map(function (sc) {
-					var flat_substates = sc.flatten_substates(true);
+					var flat_substates = sc.flattenSubstates(true);
 					var substates = flat_substates.splice(0, flat_substates.length-1);
 					return substates;
 				})
 				.flatten(true)
 				.map(function (state) {
-					var incoming_transitions = state.get_incoming_transitions();
+					var incoming_transitions = state.getIncomingTransitions();
 					incoming_transitions = _.filter(incoming_transitions, function(trans) {
-						return trans.from() instanceof ist.Statechart;
+						var from = trans.from();
+						//console.log(from);
+						return !from.isStart();
+						//from instanceof ist.ContextualStatechart;
 					});
 					return ([state]).concat(incoming_transitions);
 				})
@@ -92,6 +95,11 @@
 
 			return substates; // includes transitions
 		};
+		proto.usesState = function(contextualState) {
+			var state_object = contextualState.get_object(),
+				raw_values = this.get_raw_values();
+			return _.any(raw_values, function(info) { return info.key === state_object; });
+		}
 
 		proto.get_raw_values = function (avoid_inherited) {
 			var parent = this.get_parent();

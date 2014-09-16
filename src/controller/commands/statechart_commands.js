@@ -40,12 +40,12 @@
             }
 
 			if(this._make_start) {
-				this._statechart.starts_at(this._state);
+				this._statechart.startsAt(this._state);
 			}
         };
     
         proto._unexecute = function () {
-            this._statechart.remove_state(this._state_name, false); //don't destroy
+            this._statechart.removeSubstate(this._state_name, false); //don't destroy
         };
     
         proto._do_destroy = function (in_effect) {

@@ -202,17 +202,24 @@
 			this.$builtins = this.$column_info.itemConstraint("builtin_children");
 
 			if(client.type() === "stateful") {
-			/*
 				this.$statecharts = ist.indirectClient(this.$curr_copy_client, "getContextualStatecharts");
 
-				var statecharts = [], wrappers = [], wrapper_infos = [];
+				//var statecharts = [], wrappers = [], wrapper_infos = [];
 
 				this.statechart_view = $("<div />")	.statechart({
-														statecharts: statecharts,
+														statecharts: this.$statecharts,
 														client: this.$curr_copy_client
 													});
 
 				this.layout_manager = this.statechart_view.statechart("get_layout_manager");
+
+			/*
+				cjs.liven(function() {
+					var statecharts = this.$statecharts.get();
+					console.log(statecharts);
+				}, {
+					context: this
+				});
 
 				this.sc_live_fn = cjs.liven(function() {
 					var old_wrapper_infos = wrapper_infos;
@@ -277,7 +284,7 @@
 
 			if(this.$statecharts) {
 				this.statechart_view.statechart("destroy");
-				this.sc_live_fn.destroy();
+				//this.sc_live_fn.destroy();
 				this.$statecharts.destroy();
 			}
 

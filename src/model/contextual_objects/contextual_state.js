@@ -11,6 +11,8 @@
 		this._type = "statechart";
 
 		var object = this.get_object(),
+			pointer = this.get_pointer(),
+			ptr = pointer,
 			running, active;
 
 		this.sub_children = new RedMap({
@@ -21,6 +23,9 @@
 			this._root = this;
 			this._running = true;
 			this._active = true;
+
+			ptr = ptr.pop();
+			this._statefulObj = ptr.getContextualObject();
 		} else {
 			var pointer = this.get_pointer(),
 				obj_parent = object.parent(),
@@ -35,6 +40,10 @@
 			});
 
 			this._root = ptr.getContextualObject();
+
+			ptr = ptr.pop();
+			this._statefulObj = ptr.getContextualObject();
+
 			this._running = false;
 			this._active = false;
 		}
@@ -165,21 +174,6 @@
 					substate.activate();
 					if(isRunning) { substate.run(); }
 				});
-				/*
-
-				if(this.isConcurrent()) {
-					_.each(this.getSubstates(true), function(substate) {
-						substate.activate();
-						if(isRunning) { substate.run(); }
-					}, this);
-				} else {
-					var startState = this.getStartState();
-					if(startState) {
-						startState.activate();
-						if(isRunning) { startState.run(); }
-					}
-				}
-				*/
 
 				if(isRunning) {
 					this.enableOutgoingTransitions();
@@ -200,8 +194,6 @@
 					substate.deactivate();
 				}, this);
 				
-				//console.log(this.sid());
-				//console.log(_.map(this.getOutgoingTransitions(), function(x) { return x.sid(); }));
 				this.disableOutgoingTransitions();
 
 				this._emit("inactive", {
@@ -226,6 +218,7 @@
 								.value();
 			return transitions;
 		};
+
 		proto.getIncomingTransitions = function() {
 			var object = this.get_object(),
 				root = this.root(),
@@ -449,6 +442,38 @@
 			} else {
 				doActivate.call(this);
 			}
+		};
+
+		proto.summarizeStatechart = function() {
+			var substates = this.getSubstates(true),
+				substate_map = {},
+				outgoingTransitions = _.map(this.getOutgoingTransitions(), function(t) {
+					return t.summarizeTransition();
+				}),
+				incomingTransitions= _.map(this.getIncomingTransitions(), function(t) {
+					return t.summarizeTransition();
+				});
+
+			_.each(substates, function(value, key) {
+				substate_map[key] = value.summarizeStatechart();
+			});
+
+			return {
+				state: this,
+				type: "state",
+				id: this.id(),
+				isStart: this.isStart(),
+				isRoot: this.isRoot(),
+				substates: substate_map,
+				isConcurrent: this.isConcurrent(),
+				outgoingTransitions: outgoingTransitions,
+				incomingTransitions: incomingTransitions,
+				usedByAnyProperties: this.usedByAnyProperties()
+			};
+		};
+
+		proto.usedByAnyProperties = function() {
+			return this._statefulObj.usesState(this);
 		};
 
 		proto.order = function (other_state) {
