@@ -79,21 +79,18 @@
 				});
 			}
 
-
-/*
-			this.vline = paper	.path("M" + center.x + "," + center.y + "V" + this.option("paper_height"))
+			this.vline = paper	.path("M" + layout.x + "," + layout.y + "V" + this.option("paper_height"))
 								.attr({
 									stroke: this.option("vline_color"),
 									"stroke-dasharray": this.option("vline_dasharray")
 								});
 			this.vline.prependTo(paper);
-			this.circle = paper.circle(center.x, center.y + this.option("padding_top"), this.option("radius"));
+			this.circle = paper.circle(layout.x, layout.y + this.option("padding_top"), this.option("radius"));
 			this.circle.attr({
 				fill: this.option("fill_color"),
 				stroke: "none"
 			});
 			$(this.circle[0]).on("contextmenu.cm");
-			*/
 		};
 
 		proto.toFront = function() {
@@ -111,17 +108,15 @@
 			var layout = this.option("layout");
 			var paper_height = this.option("paper_height");
 			if(this.circle) {
-			/*
 				this.circle.attr({
-					cx: center.x,
-					cy: center.y + this.option("padding_top"),
+					cx: layout.x,
+					cy: layout.y + this.option("padding_top"),
 					r: this.option("radius")
 				});
-				*/
 			}
 			if(this.vline) {
 				this.vline	.attr({
-								path: "M" + center.x + "," + center.y + "V" + paper_height
+								path: "M" + layout.x + "," + layout.y + "V" + paper_height
 							});
 				this.vline.appendTo(paper);
 			}

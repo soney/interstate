@@ -18,6 +18,13 @@
 		INDENT_AFTER = 1,
 		INDENT_BEFORE = 2,
 		INDENT_BOTH = 3;
+
+	function padStr(str, len, pad_str) {
+		while(str.length < len) {
+			str = pad_str + str;
+		}
+		return str;
+	}
 	
 
 	ist.RootStatechartLayoutEngine = function (options) {
@@ -138,6 +145,7 @@
 
 		proto._compute_layout = function () {
 			var stateMachineSummary = this.$stateMachineSummary.get();
+
 			if(!stateMachineSummary || stateMachineSummary.length === 0) {
 				return {width: 0, height: 0, locations: {}};
 			}
@@ -160,14 +168,14 @@
 				START_STATE_RADIUS = this.option("start_state_radius"),
 				PADDING_TOP = this.option("padding_top"),
 				statecharts_with_add_state_button = stateMachineSummary[0],
-				ROW_HEIGHT = this.option("transition_height");
+				ROW_HEIGHT = this.option("transition_height"),
 
-			var sc_tree = this.get_statechart_tree(stateMachineSummary),
+				sc_tree = this.get_statechart_tree(stateMachineSummary),
 				state_wings = {},
 				rows = [],
 				col = 0;
 
-			var push_node_columns = function (node, depth) {
+			function push_node_columns(node, depth) {
 				var sc_summary = node.sc_summary,
 					id = sc_summary.id,
 					isStart = !!sc_summary.isStart,
@@ -224,8 +232,40 @@
 				} else {
 					rows[depth] = [info];
 				}
-			};
+			}
+
 			push_node_columns(sc_tree, 0);
+
+			_.each(rows.reverse(), function(row, index) {
+				var row_strs = [];
+				for(var i = 0; i<col; i++) {
+					row_strs[i] = "   ";
+				}
+				_.each(row, function(state_wing_info) {
+					var leftmostColumn = state_wing_info.leftmostColumn,
+						rightmostColumn = state_wing_info.rightmostColumn,
+						centerColumn = state_wing_info.centerColumn, str;
+
+					if(leftmostColumn >= 0) {
+						for(var i = leftmostColumn; i<=rightmostColumn; i++) {
+							if(i === centerColumn) {
+								str = padStr(uid.strip_prefix(state_wing_info.sc_summary.id), 3, "-");
+							} else if(i === leftmostColumn) {
+								str = "|--";
+							} else if(i === rightmostColumn) {
+								str = "--|";
+							} else {
+								str = "---";
+							}
+							row_strs[i] = str;
+						}
+					} else {
+						row_strs[centerColumn] = padStr(uid.strip_prefix(state_wing_info.sc_summary.id), 3, " ");
+					}
+				});
+				var row_str = row_strs.join("");
+				console.log(padStr(index+":", 4, " "), row_str);
+			});
 
 			_.each(state_wings, function(fromStateWing) {
 				var sc_summary = fromStateWing.sc_summary,
@@ -281,7 +321,6 @@
 						} else {
 							toStateWing.rightColumnTransitions.incoming.push(transition_info);
 							toColumn = toStateWing.rightmostColumn;
-							debugger;
 						}
 					}
 
@@ -395,7 +434,6 @@
 				stateWing.centerColumnWidth = centerColumnWidth;
 
 				if(stateWing.isAtomic) {
-					console.log("A");
 					_.each(stateWing.columnTransitions.outgoing.used.concat(stateWing.columnTransitions.outgoing.notUsed),
 						function(transition) {
 							var rowNum = transition.rowNum;
@@ -533,6 +571,83 @@
 				width: totalWidth
 			});
 
+			console.log(overallNumRows);
+
+			_.each(rows, function(row) {
+				var row_str_array = [];
+				_.each(row, function(state_wing_info) {
+					if(state_wing_info.type === "state") {
+						var ts, cs;
+						if(state_wing_info.isAtomic) {
+							ts = [state_wing_info.columnTransitions];
+							cs = [state_wing_info.centerColumn];
+						} else {
+							ts = [state_wing_info.leftColumnTransitions, state_wing_info.rightColumnTransitions];
+							cs = [state_wing_info.leftmostColumn, state_wing_info.rightmostColumn];
+						}
+						_.each(ts,
+							function(columnTransitions, index) {
+								var colIndex = cs[index];
+								var row_strs = [];
+								for(var i = 0; i< state_wing_info.numRows; i++) {
+									row_strs[i] = ["|", "|", "|"]
+								}
+
+								var transitionArr = columnTransitions.incoming.concat(
+										columnTransitions.outgoing.used,
+										columnTransitions.outgoing.notUsed
+									);
+								_.each(transitionArr, function(transition) {
+									var arrow_str0, arrow_str1;
+
+
+									if(transition.fromStateWing === state_wing_info && transition.toStateWing === state_wing_info) {
+										arrow_str0 = "<";
+										arrow_str1 = ">";
+									} else if(transition.fromStateWing === state_wing_info) {
+										arrow_str0 = "-";
+										arrow_str1 = "->";
+									} else {
+										arrow_str0 = "<-";
+										arrow_str1 = "-";
+									}
+									var rowNum = transition.rowNum - state_wing_info.rowNum,
+										indentation = columnTransitions.indentations ? columnTransitions.indentations[rowNum]:false || NO_INDENT,
+										transitionID = uid.strip_prefix(transition.transition_summary.id),
+										arrow_str = " " + arrow_str0 + transitionID + arrow_str1,
+										transition_rep;
+									
+									if(indentation === NO_INDENT) {
+										transition_rep = ["|", arrow_str, "|"];
+									} else if(indentation === INDENT_AFTER) {
+										transition_rep = ["|", arrow_str, "\\"];
+									} else if(indentation === INDENT_BEFORE) {
+										transition_rep = ["\\", arrow_str, " |"];
+									} else if(indentation === INDENT_BOTH) {
+										transition_rep = ["\\", arrow_str, "  \\"];
+									}
+
+									row_strs[rowNum] = transition_rep;
+								});
+								row_str_array.push(row_strs);
+							});
+							
+						/*
+						var leftmostColumn = state_wing_info.leftmostColumn,
+							rightmostColumn = state_wing_info.rightmostColumn,
+							centerColumn = state_wing_info.centerColumn, str;
+
+						if(leftmostColumn >= 0) {
+							cons
+						} else {
+							
+						}
+						*/
+					}
+				});
+			});
+
+
 			var location_info_map = {};
 
 			_.each(state_wings, function(stateWing) {
@@ -555,6 +670,7 @@
 						displayType: My.STARTSTATE_DISPLAY_TYPE
 					};
 				} else if(sc_summary === FAKE_ROOT_STATECHART) {
+					console.log("Number of rows: ", stateWing.numRows);
 					locationInfo = {
 						x: 0,
 						y: 0,
@@ -667,9 +783,10 @@
 					};
 				}
 
-
 				location_info_map[sc_summary.id] = locationInfo;
 			}, this);
+			console.log(state_wings);
+			console.log(location_info_map);
 			/*
 
 			_.each(state_wings, function(stateWing) {
