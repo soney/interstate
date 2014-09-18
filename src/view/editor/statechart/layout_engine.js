@@ -19,11 +19,19 @@
 		INDENT_BEFORE = 2,
 		INDENT_BOTH = 3;
 
-	function padStr(str, len, pad_str) {
-		while(str.length < len) {
-			str = pad_str + str;
+	function padStr(str, len, pad_str, padFromEnd) {
+		if(str.length > len) {
+			return str.slice(0, len);
+		} else {
+			while(str.length < len) {
+				if(padFromEnd) {
+					str = str + pad_str;
+				} else {
+					str = pad_str + str;
+				}
+			}
+			return str;
 		}
-		return str;
 	}
 	
 
@@ -46,8 +54,8 @@
 			transition_width: function() { return this.option("transition_height") / this.option("tan_theta"); },
 			state_line_padding_factor: 1/2,
 			padding_top: 0,
-			collapseUnusedTransitions: true,
-			indentIncomingTransitions: false,
+			collapseUnusedTransitions: false,
+			indentIncomingTransitions: true,
 			stateMachineSummary: false 
 		}, options);
 
@@ -215,14 +223,16 @@
 								used: [],
 								notUsed: []
 							},
-							incoming: []
+							incoming: [],
+							ordered: []
 						},
 						rightColumnTransitions: {
 							outgoing: {
 								used: [],
 								notUsed: []
 							},
-							incoming: []
+							incoming: [],
+							ordered: []
 						}
 					});
 				}
@@ -236,7 +246,7 @@
 
 			push_node_columns(sc_tree, 0);
 
-			_.each(rows.reverse(), function(row, index) {
+			_.each(reverseArr(rows), function(row, index) {
 				var row_strs = [];
 				for(var i = 0; i<col; i++) {
 					row_strs[i] = "   ";
@@ -372,7 +382,8 @@
 				var sc_summary = fromStateWing.sc_summary,
 					depth = fromStateWing.rowNum,
 					row,
-					transitions_infos;
+					transitions_infos,
+					highestTransitionRow = depth;
 
 				if(fromStateWing.isAtomic) {
 					transitions_infos = fromStateWing.columnTransitions.outgoing.used.concat(fromStateWing.columnTransitions.outgoing.notUsed);
@@ -389,11 +400,15 @@
 
 					while(row_num < rows.length) {
 						row = rows[row_num];
+						if(row_num === 3) {
+							console.log(row);
+						}
 						if(rowHasRoomforTransition(row, transition_info)) {
 							row.push(transition_info);
 							_.extend(transition_info, {
 								rowNum: row_num
 							});
+							if(row_num > highestTransitionRow) { highestTransitionRow = row_num; }
 							return;
 						}
 						row_num++;
@@ -403,9 +418,11 @@
 					_.extend(transition_info, {
 						rowNum: row_num
 					});
+					if(row_num > highestTransitionRow) { highestTransitionRow = row_num; }
 					row = [transition_info];
 					rows[row_num] = row;
 				});
+				fromStateWing.numOwnRows = highestTransitionRow-depth + 1;
 			});
 
 			var columnWidths = [],
@@ -437,9 +454,9 @@
 					_.each(stateWing.columnTransitions.outgoing.used.concat(stateWing.columnTransitions.outgoing.notUsed),
 						function(transition) {
 							var rowNum = transition.rowNum;
+							stateWing.numOwnRows = 1;
 							stateWing.rowNum = rowNum;
 						});
-					stateWing.ownHeight = stateWing.height = 1;
 				} else {
 					_.each([stateWing.leftColumnTransitions, stateWing.rightColumnTransitions],
 						function(columnTransitions, i) {
@@ -517,36 +534,31 @@
 									}
 								});
 
-							columnTransitions.indentations = indentations;
-							columnTransitions.numRows = indentations.length;
-							columnTransitions.width = width;
-							columnTransitions.numRows = overallHighestTransitionRow || 0;
+							_.extend(columnTransitions, {
+								indentations: indentations,
+								width: width
+							});
 
 							columnWidths[columnIndex] = width;
 						}, this
 					);
-					stateWing.numOwnRows = Math.max(stateWing.leftColumnTransitions.indentations.length,
-													stateWing.rightColumnTransitions.indentations.length);
 				}
 			}, this);
 
 			function computeNumRows(sc_summary) {
-				var stateWings = state_wings[sc_summary.id],
-					sc_row_num = stateWings.rowNum;
-				if(sc_summary.substates.length === 0) {
-					stateWings.numRows = stateWings.numOwnRows;
-				} else {
-					var maxNumRows = 0;
-					_.each(sc_summary.substates, function(child) {
-						var numChildRows = computeNumRows(child),
-							childWings = state_wings[child.id],
-							totalNumRows = (childWings.rowNum - sc_row_num) + numChildRows;
-						if(totalNumRows > maxNumRows) {
-							maxNumRows = totalNumRows;
-						}
-					});
-					stateWings.numRows = maxNumRows;
-				}
+				var stateWings = state_wings[sc_summary.id];
+
+				var maxNumRows = stateWings.numOwnRows;
+				_.each(sc_summary.substates, function(child) {
+					var numChildRows = computeNumRows(child),
+						childWings = state_wings[child.id],
+						totalNumRows = (childWings.rowNum - stateWings.rowNum) + numChildRows;
+					if(totalNumRows > maxNumRows) {
+						maxNumRows = totalNumRows;
+					}
+				});
+				stateWings.numRows = maxNumRows;
+
 				return stateWings.numRows;
 			}
 			_.each(stateMachineSummary, computeNumRows);
@@ -557,9 +569,7 @@
 				var stateWings = state_wings[sc_summary.id],
 					numRows = stateWings.numRows;
 
-				if(numRows > overallNumRows) {
-					overallNumRows = numRows;
-				}
+				if(numRows+1 > overallNumRows) { overallNumRows = numRows+1; }
 			});
 
 			_.each(columnWidths, function(cwidth) {
@@ -571,9 +581,20 @@
 				width: totalWidth
 			});
 
-			console.log(overallNumRows);
+			var table_str_arr = [],
+				CHARS_PER_COL = 7,
+				empty_str = "";
 
-			_.each(rows, function(row) {
+			while(empty_str.length < CHARS_PER_COL) { empty_str += " "; }
+
+			for(var i = 0; i<overallNumRows; i++) {
+				table_str_arr[i] = [];
+				for(var j = 0; j<col; j++) {
+					table_str_arr[i][j] = [empty_str, empty_str, empty_str]
+				}
+			}
+
+			_.each(rows, function(row, index) {
 				var row_str_array = [];
 				_.each(row, function(state_wing_info) {
 					if(state_wing_info.type === "state") {
@@ -584,14 +605,40 @@
 						} else {
 							ts = [state_wing_info.leftColumnTransitions, state_wing_info.rightColumnTransitions];
 							cs = [state_wing_info.leftmostColumn, state_wing_info.rightmostColumn];
+
+							var leftmostColumn = state_wing_info.leftmostColumn,
+								rightmostColumn = state_wing_info.rightmostColumn,
+								centerColumn = state_wing_info.centerColumn, str;
+
+							var rowNum = state_wing_info.rowNum;
+
+							var strs;
+							for(var i = leftmostColumn; i<=rightmostColumn; i++) {
+								if(i === centerColumn) {
+									strs = [padStr("", CHARS_PER_COL, "-"),
+											padStr(uid.strip_prefix(state_wing_info.sc_summary.id)+"", CHARS_PER_COL, " "),
+											padStr("",CHARS_PER_COL, "-")];
+								} else if(i === leftmostColumn) {
+									strs = [padStr("+", CHARS_PER_COL, "-", true),
+											padStr("|", CHARS_PER_COL, " ", true),
+											padStr("+", CHARS_PER_COL, "-", true)];
+								} else if(i === rightmostColumn) {
+									strs = [padStr("+", CHARS_PER_COL, "-", false),
+											padStr("|", CHARS_PER_COL, " ", false),
+											padStr("+", CHARS_PER_COL, "-", false)];
+								} else {
+									strs = [padStr("", CHARS_PER_COL, "-"),
+											"",
+											padStr("",CHARS_PER_COL, "-")];
+								}
+								table_str_arr[rowNum][i] = strs;
+							}
 						}
 						_.each(ts,
 							function(columnTransitions, index) {
+								var outSlash = index === 0 ? "\\" : "/";
 								var colIndex = cs[index];
 								var row_strs = [];
-								for(var i = 0; i< state_wing_info.numRows; i++) {
-									row_strs[i] = ["|", "|", "|"]
-								}
 
 								var transitionArr = columnTransitions.incoming.concat(
 										columnTransitions.outgoing.used,
@@ -599,7 +646,6 @@
 									);
 								_.each(transitionArr, function(transition) {
 									var arrow_str0, arrow_str1;
-
 
 									if(transition.fromStateWing === state_wing_info && transition.toStateWing === state_wing_info) {
 										arrow_str0 = "<";
@@ -611,41 +657,45 @@
 										arrow_str0 = "<-";
 										arrow_str1 = "-";
 									}
-									var rowNum = transition.rowNum - state_wing_info.rowNum,
-										indentation = columnTransitions.indentations ? columnTransitions.indentations[rowNum]:false || NO_INDENT,
+									var rowNum = transition.rowNum,
+										indentation = columnTransitions.indentations ? columnTransitions.indentations[rowNum-state_wing_info.rowNum] : false || NO_INDENT,
 										transitionID = uid.strip_prefix(transition.transition_summary.id),
 										arrow_str = " " + arrow_str0 + transitionID + arrow_str1,
 										transition_rep;
 									
-									if(indentation === NO_INDENT) {
-										transition_rep = ["|", arrow_str, "|"];
-									} else if(indentation === INDENT_AFTER) {
-										transition_rep = ["|", arrow_str, "\\"];
-									} else if(indentation === INDENT_BEFORE) {
-										transition_rep = ["\\", arrow_str, " |"];
-									} else if(indentation === INDENT_BOTH) {
-										transition_rep = ["\\", arrow_str, "  \\"];
+									if(state_wing_info.isAtomic) {
+										transition_rep = [" ", "0" + arrow_str, 
+											padStr(uid.strip_prefix(state_wing_info.sc_summary.id)+"", CHARS_PER_COL, " ", true)];
+									} else {
+										if(indentation === INDENT_AFTER) {
+											transition_rep = [outSlash, arrow_str, " |"];
+										} else if(indentation === INDENT_BEFORE) {
+											transition_rep = ["|", arrow_str, outSlash];
+										} else if(indentation === INDENT_BOTH) {
+											transition_rep = [outSlash, arrow_str, outSlash];
+										} else {
+											transition_rep = ["|", arrow_str, "|"];
+										}
 									}
-
-									row_strs[rowNum] = transition_rep;
+									table_str_arr[rowNum][colIndex] = transition_rep;
 								});
-								row_str_array.push(row_strs);
 							});
-							
-						/*
-						var leftmostColumn = state_wing_info.leftmostColumn,
-							rightmostColumn = state_wing_info.rightmostColumn,
-							centerColumn = state_wing_info.centerColumn, str;
-
-						if(leftmostColumn >= 0) {
-							cons
-						} else {
-							
-						}
-						*/
 					}
 				});
 			});
+
+			for(var i = table_str_arr.length-1; i>=0; i--) {
+				var row_arr = table_str_arr[i],
+					lines = [];
+				for(var j = 0; j<3; j++) {
+					lines[j] = _.map(_.pluck(row_arr, j), function(str) {
+						return padStr(str, CHARS_PER_COL, " ", true);
+					})
+				}
+				for(var j = 0; j<lines.length; j++) {
+					console.log(lines[j].join(""));
+				}
+			}
 
 
 			var location_info_map = {};
@@ -716,8 +766,8 @@
 						leftIndentation, rightIndentation, points;
 
 					while(i < numRows) {
-						leftIndentation = leftColumnTransitions.indentations[i];
-						rightIndentation = rightColumnTransitions.indentations[i];
+						leftIndentation = leftColumnTransitions.indentations[i-state_wing_info.rowNum];
+						rightIndentation = rightColumnTransitions.indentations[i-state_wing_info.rowNum];
 
 						if(leftIndentation) {
 							if(lastLeftIndentation < i-1) {
@@ -832,4 +882,11 @@
 		return arr;
 	}
 
+function reverseArr(input) {
+    var ret = new Array;
+    for(var i = input.length-1; i >= 0; i--) {
+        ret.push(input[i]);
+    }
+    return ret;
+}
 }(interstate));
