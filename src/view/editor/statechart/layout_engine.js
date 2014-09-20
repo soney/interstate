@@ -54,8 +54,8 @@
 			transition_width: function() { return this.option("transition_height") / this.option("tan_theta"); },
 			state_line_padding_factor: 1/2,
 			padding_top: 0,
-			collapseUnusedTransitions: false,
-			indentIncomingTransitions: true,
+			collapseUnusedTransitions: true,
+			indentIncomingTransitions: false,
 			stateMachineSummary: false 
 		}, options);
 
@@ -363,7 +363,6 @@
 								return false;
 							}
 						}
-						return false;
 					} else if(cell.type === "transition") {
 						leftWing = cell.leftmostColumn;
 						rightWing = cell.rightmostColumn;
@@ -400,9 +399,7 @@
 
 					while(row_num < rows.length) {
 						row = rows[row_num];
-						if(row_num === 3) {
-							console.log(row);
-						}
+						//if(uid.strip_prefix(transition_info.transition_summary.id) === 15) debugger;
 						if(rowHasRoomforTransition(row, transition_info)) {
 							row.push(transition_info);
 							_.extend(transition_info, {
@@ -712,11 +709,13 @@
 						ccx += columnWidths[i];
 					}
 
+					console.log(numRows);
+
 					locationInfo = {
 						columnX: ccx + stateWing.centerColumnWidth/2,
 						columnWidth: stateWing.centerColumnWidth,
 						x: ccx + stateWing.centerColumnWidth/2,
-						y: (stateWing.rowNum + 0.5) * ROW_HEIGHT,
+						y: ((overallNumRows-stateWing.rowNum) - 0.5) * ROW_HEIGHT,
 						displayType: My.STARTSTATE_DISPLAY_TYPE
 					};
 				} else if(sc_summary === FAKE_ROOT_STATECHART) {
@@ -739,6 +738,7 @@
 					var leftColumnIndex = stateWing.leftmostColumn,
 						rightColumnIndex = stateWing.rightmostColumn,
 						lcx, rcx;
+					i = 0;
 
 					centerColumnIndex = stateWing.centerColumn;
 
@@ -766,8 +766,8 @@
 						leftIndentation, rightIndentation, points;
 
 					while(i < numRows) {
-						leftIndentation = leftColumnTransitions.indentations[i-state_wing_info.rowNum];
-						rightIndentation = rightColumnTransitions.indentations[i-state_wing_info.rowNum];
+						leftIndentation = leftColumnTransitions.indentations[i-stateWing.rowNum];
+						rightIndentation = rightColumnTransitions.indentations[i-stateWing.rowNum];
 
 						if(leftIndentation) {
 							if(lastLeftIndentation < i-1) {
@@ -835,6 +835,7 @@
 
 				location_info_map[sc_summary.id] = locationInfo;
 			}, this);
+			console.log(columnWidths);
 			console.log(state_wings);
 			console.log(location_info_map);
 			/*
