@@ -749,25 +749,27 @@
 			} else if(type === "rename_state") {
 				state = event.state;
 				var new_name = event.new_name;
-				var old_name = state.get_name("parent");
-				parent_puppet_id = state.parent().puppet_master_id || state.parent().id();
-				command = new ist.RenameStateCommand({
-					in_effect: true,
-					statechart: { id: to_func(parent_puppet_id) },
-					from: old_name,
-					to: new_name
-				});
-				command_str = this.client_socket.post_command(command, function() {
-					command.destroy();
-					command = null;
-				});
+				state.async_get("getName", function(old_name) {
+					state.async_get("parent", function(parent) {
+						command = new ist.RenameStateCommand({
+							in_effect: true,
+							statechart: { id: to_func(parent.obj_id) },
+							from: old_name,
+							to: new_name
+						});
+						command_str = this.client_socket.post_command(command, function() {
+							command.destroy();
+							command = null;
+						});
+					}, this);
+				}, this);
 			} else if (type === 'set_transition_str') {
 				transition = event.transition;
 				var str = event.str;
-				var transition_id = transition.puppet_master_id || transition.id();
+				//var transition_id = transition.puppet_master_id || transition.id();
 				command = new ist.SetTransitionEventCommand({
 					in_effect: true,
-					transition: { id: to_func(transition_id) },
+					transition: { id: to_func(transition.obj_id) },
 					event: str
 				});
 				command_str = this.client_socket.post_command(command, function() {

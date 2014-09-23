@@ -230,11 +230,11 @@
         var proto = My.prototype;
     
         proto._execute = function () {
-            this._statechart.rename_state(this._from_state_name, this._to_state_name);
+            this._statechart.renameSubstate(this._from_state_name, this._to_state_name);
         };
     
         proto._unexecute = function () {
-            this._statechart.rename_state(this._to_state_name, this._from_state_name);
+            this._statechart.renameSubstate(this._to_state_name, this._from_state_name);
         };
     
         proto._do_destroy = function (in_effect) {
@@ -456,14 +456,12 @@
         var proto = My.prototype;
     
         proto._execute = function () {
-            var event = this._transition.event();
-            this._from_str = event.get_str();
-            event.set_str(this._event_str);
+            this._from_str = this._transition.getStr();
+			this._transition.setStr(this._event_str);
         };
     
         proto._unexecute = function () {
-            var event = this._transition.event();
-            event.set_str(this._from_str);
+			this._transition.setStr(this._from_str);
         };
     
         proto._do_destroy = function (in_effect) {
@@ -499,12 +497,6 @@
     
         this._transition = this._options.transition;
         this._statechart = this._options.statechart;
-        if (this._transition.basis && this._transition.basis()) {
-            this._transition = this._transition.basis();
-        }
-        if (this._statechart.basis && this._statechart.basis()) {
-            this._statechart = this._statechart.basis();
-        }
     };
     
     (function (My) {

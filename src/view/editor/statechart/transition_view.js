@@ -110,24 +110,44 @@
 		var transition = this.option("transition");
 
 		//var event = transition.event();
-		var str = "";
+		var eventType = transition.get_$("eventType"),
+			str = transition.get_$("getStr");
+
+		transition.async_get("eventType", function(type) {
+			if(type === "parsed") {
+				this.label = new ist.EditableText(paper, {x: c.x, y: c.y, text: "", fill: this.option("text_background"), color: this.option("text_foreground")});
+				this.label.option({
+					"font-size": this.option("font_size"),
+					"font-family": this.option("font_family")
+				});
+				this.label	.on("cancel", this.on_cancel_rename, this)
+							.on("change", this.on_confirm_rename, this)
+							.on("change", this.forward_event, this);
+				cjs.liven(function(){
+					var eventType_value = eventType.get();
+					var str_value = str.get();
+					this.label.option("text", str_value);
+				}, { context: this});
+
+				this.vline = paper	.path("M0,0")
+									.attr({
+										fill: "none",
+										stroke: this.option("vline_color"),
+										"stroke-dasharray": this.option("vline_dasharray")
+									});
+				this.vline.appendTo(paper);
+			}
+		}, this);
 		/*
 		if (event instanceof ist.ParsedEvent) {
 			str = event.get_str();
 		}
 		*/
 		var c = center(this.option("from"), this.option("to"));
-		this.label = new ist.EditableText(paper, {x: c.x, y: c.y + 8, text: str, fill: this.option("text_background"), color: this.option("text_foreground")});
-		this.label.option({
-			"font-size": this.option("font_size"),
-			"font-family": this.option("font_family")
-		});
-		this.label	.on("cancel", this.on_cancel_rename, this)
-					.on("change", this.on_confirm_rename, this)
-					.on("change", this.forward_event, this);
 		
 		transition.on("fire", this.flash, this);
 		var from = this.option("from");
+		/*
 
 		if (event instanceof ist.ParsedEvent) {
 			event.on("setString", function (e) {
@@ -168,19 +188,13 @@
 		} else {
 			str = "";
 		}
-		this.label.option("text", str);
-		this.vline = paper	.path("M0,0")
-							.attr({
-								stroke: this.option("vline_color"),
-								"stroke-dasharray": this.option("vline_dasharray")
-							});
-		this.vline.appendTo(paper);
-		this.$clickable = $([this.label.text.node, this.label.label_background.node].concat(this.arrow.getDOMNodes()));
-		this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
+		*/
+		//this.$clickable = $([this.label.text.node, this.label.label_background.node].concat(this.arrow.getDOMNodes()));
+		//this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
 
-		$(this.label.text.node).tooltip({
-			tooltipClass: "error"
-		});
+		//$(this.label.text.node).tooltip({
+			//tooltipClass: "error"
+		//});
 	};
 
 	(function (My) {
@@ -194,19 +208,32 @@
 			//var event = transition.event();
 			var from = this.option("from");
 			var c = center(from, this.option("to"));
-			this.label.option({
-				x: c.x,
-				y: c.y + 8
-			});
+			if(this.label) {
+				this.label.option({
+					x: c.x,
+					y: c.y
+				});
+			}
+
+			if(this.vline) {
+				this.vline	.attr({
+								path: "M" + from.x + "," + from.y + "V" + paper_height
+							});
+			}
 			this.update_menu_position();
 		};
 
 		proto.toFront = function() {
 			var paper = this.option("paper");
 			this.arrow.toFront();
-			this.vline.prependTo(paper);
-			this.label.toFront();
+			if(this.vline) {
+				this.vline.appendTo(paper);
+			}
+			if(this.label) {
+				this.label.toFront();
+			}
 		};
+			/*
 
 		proto.get_str = function() {
 			var transition = this.option("transition");
@@ -219,6 +246,7 @@
 			}
 			return str;
 		};
+			*/
 
 		proto.flash = function () {
 			this.arrow.flash();
@@ -415,12 +443,14 @@
 
 		proto.destroy = function () {
 			this.arrow.destroy();
-			this.$clickable.off("contextmenu.cm");
-			delete this.$clickable;
-			this.label	.off("cancel", this.on_cancel_rename, this)
-						.off("change", this.on_confirm_rename, this);
-			this.label.destroy();
-			delete this.label;
+			//this.$clickable.off("contextmenu.cm");
+			//delete this.$clickable;
+			if(this.label) {
+				this.label	.off("cancel", this.on_cancel_rename, this)
+							.off("change", this.on_confirm_rename, this);
+				this.label.destroy();
+				delete this.label;
+			}
 
 			var transition = this.option("transition");
 			if(!transition.destroyed) {
@@ -457,7 +487,8 @@
 		var paths = this.get_paths();
 		this.line_path = paper.path(paths.line.path);
 		this.line_path.attr({
-			stroke: this.option("color")
+			stroke: this.option("color"),
+			fill: "none"
 		});
 		this.arrow_path = paper.path(paths.arrow.path);
 		this.arrow_path.attr({
@@ -521,9 +552,9 @@
 		};
 		proto.toFront = function() {
 			var paper = this.option("paper");
-			this.line_path.prependTo(paper);
-			this.circle.prependTo(paper);
-			this.arrow_path.prependTo(paper);
+			this.line_path.appendTo(paper);
+			this.circle.appendTo(paper);
+			this.arrow_path.appendTo(paper);
 		};
 		var anim_time = 400;
 		proto.flash = function () {
@@ -541,39 +572,34 @@
 			this.circle.animate({
 				fill: this_option_color,
 				r: this.option("radius")
-			}, anim_time);
+			}, anim_time, mina.easeinout);
 
 			var the_flash = paper.path(line_elem.getSubpath(0, 0));
 			the_flash.attr({
 				stroke: this_option_active_color,
 				"stroke-width": 3,
-				guide: line_elem,
-				along: [0, 0]
+				fill: "none",
+				//guide: line_elem,
+				//along: [0, 0]
 			});
 
-			var flash_1_to_0_anim = Raphael.animation({
-												path: line_elem.getSubpath(4 * len / 4.1, len)
-											}, anim_time/2, "ease-out", function() {
-												the_flash.remove();
-											});
-			var reset_arrow_color_anim = Raphael.animation({
-												fill: this_option_color
-											}, anim_time/2, "ease_out");
-
-			var flash_0_to_1_anim = Raphael.animation({
-												path: line_elem.getSubpath(0, len)
-											}, anim_time/2, "ease-in", function() {
-												if(paper.height === null) { // we were deleted
-													return;
-												} else if(arrow[0] === null) {
-													the_flash.remove();
-													return;
-												}
-												arrow.attr({"fill": this_option_active_color});
-												the_flash.animate(flash_1_to_0_anim);
-												arrow.animate(reset_arrow_color_anim);
-											});
-			the_flash.animate(flash_0_to_1_anim);
+			the_flash.animate({
+				path: line_elem.getSubpath(0, len)
+			}, anim_time/2, mina.easein, function() {
+				if(paper.height === null) { // we were deleted
+					return;
+				} else if(arrow[0] === null) {
+					the_flash.remove();
+					return;
+				}
+				arrow.attr({"fill": this_option_active_color});
+				arrow.animate({
+					fill: this_option_color
+				}, anim_time/2, mina.easeout);
+				the_flash.animate({
+					path: line_elem.getSubpath(4 * len / 4.1, len)
+				}, anim_time/2, mina.easeout);
+			});
 		};
 		proto.remove = function () {
 			this.circle.remove();

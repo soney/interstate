@@ -22,7 +22,7 @@
 
 		this._root = ptr.getContextualObject();
 		ptr = ptr.pop();
-		this._statefulObj = ptr.getContextualObject();
+		this._statefulObj = ptr.length() > 0 ? ptr.getContextualObject() : false;
 
 		this.$active = cjs(false);
 		this.$event = cjs(false);
@@ -41,6 +41,10 @@
 		};
 		proto.deactivate = function() {
 			this.$active.set(false);
+		};
+		proto.getStr = function() {
+			var object = this.get_object();
+			return object.getStr();
 		};
 		proto.onTransitionToChanged = function() {
 			if(this.eventType() === "start") {
@@ -103,6 +107,7 @@
 				}
 
 				if(event instanceof ist.Event) {
+					event.set_transition(this);
 					can_destroy_event = true;
 				} else if(event instanceof ist.ContextualObject) {
 					var cobj = event,
@@ -304,4 +309,68 @@
 			return key === "event";
 		};
 	}(ist.ContextualTransition));
+
+	ist.on_event = function (event_type, arg1, arg2, arg3, arg4) {
+		if (event_type === "timeout") {
+			var timeout_event = new ist.TimeoutEvent(arg1);
+			return timeout_event;
+		} else if(event_type === "time") {
+			var time_event = new ist.TimeEvent(arg1);
+			return time_event;
+		} else if(event_type === "frame") {
+			var frame_event = new ist.FrameEvent();
+			return frame_event;
+		} else if(event_type === "cross") {
+			var touchCluster = arg1,
+				target = arg2,
+				min_velocity = arg3,
+				max_velocity = arg4,
+				cross_event = new ist.CrossEvent(touchCluster, target, min_velocity, max_velocity);
+
+			return cross_event;
+		} else if(event_type === "collision") {
+			var	targs_a = arg1,
+				targs_b = arg2,
+				collision_event = new ist.CollisionEvent(targs_a, targs_b);
+
+			return collision_event;
+		} else {
+			var targets = _.rest(arguments);
+			var events = [];
+
+			if (targets) {
+			/*
+				var statechart_spec = event_type;
+				var statechart_event = new ist.TransitionEvent(targets, statechart_spec);
+				events.push(statechart_event);
+
+*/
+				if (arguments.length <= 1) { // Ex: on('mouseup') <-> on('mouseup', window)
+					targets = window;
+				}
+				var ist_event_type = event_type;
+				var ist_event = new ist.IstObjEvent(ist_event_type, targets);
+				events.push(ist_event);
+			}
+			if (arguments.length <= 1) { // Ex: on('mouseup') <-> on('mouseup', window)
+				targets = window;
+			}
+			var dom_event = new ist.DOMEvent(event_type, targets);
+			events.push(dom_event);
+
+			return new ist.CombinationEvent(events);
+		}
+	};
+
+	ist.register_serializable_type("ist_on_event_func",
+		function (x) {
+			return x === ist.on_event;
+		},
+		function () {
+			return {};
+		},
+		function (obj) {
+			return ist.on_event;
+		});
+
 }(interstate));

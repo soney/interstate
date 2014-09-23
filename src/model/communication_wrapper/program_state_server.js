@@ -308,8 +308,8 @@
 				return rv;
 			} else {
 				var listen_to;
-				if (object instanceof ist.ParsedEvent) {
-					listen_to = ["setString"];
+				if (object instanceof ist.ContextualTransition) {
+					listen_to = ['destroy', 'begin_destroy', 'fire'];
 				} else {
 					listen_to = ['destroy', 'begin_destroy'];
 				}

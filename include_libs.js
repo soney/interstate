@@ -30,7 +30,7 @@ exports.vendor = c(
 				"underscore/underscore.js",
 				"jquery-ui-1.10.4.custom/js/jquery-2.1.1.js",
 				"jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.js",
-				"raphael/raphael.js",
+				//"raphael/raphael.js",
 				"snap/snap.svg.js",
 				"esprima/esprima.js",
 				"qrcode.min.js",

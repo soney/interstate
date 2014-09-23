@@ -151,9 +151,19 @@
 			var substates = this._get_substates();
 			substates.remove(name);
 		};
-		proto.renameSubstate = function(name, new_name) {
-			var substates = this._get_substates();
-			substates.rename(name, new_name);
+		proto.renameSubstate = function(from_name, to_name) {
+			var substates = this._get_substates(),
+				keyIndex = substates.indexOf(from_name);
+
+			if (keyIndex >= 0) {
+				var prop_val = substates.get(from_name);
+				cjs.wait();
+				substates.remove(from_name)
+							.put(to_name, prop_val, keyIndex);
+				cjs.signal();
+			} else {
+				throw new Error("No such property " + from_name);
+			}
 		};
 		proto.moveSubstate = function(name, index) {
 			var substates = this._get_substates();

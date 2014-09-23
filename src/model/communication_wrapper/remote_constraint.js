@@ -196,6 +196,7 @@
 				__value__: "contextual_obj",
 				object_summary: object_summary
 			};
+			/*
 		} else if (value instanceof ist.Event) {
 			rv = {
 				__type__: "summarized_obj",
@@ -206,6 +207,7 @@
 					event_type: value.type()
 				}
 			};
+			*/
 		} else if (value instanceof ist.Cell) {
 			rv = {
 				__type__: "summarized_obj",

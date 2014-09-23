@@ -15,8 +15,8 @@
 		};
 
 	var NO_INDENT = 0,
-		INDENT_AFTER = 1,
-		INDENT_BEFORE = 2,
+		INDENT_ABOVE = 1,
+		INDENT_BELOW = 2,
 		INDENT_BOTH = 3;
 
 	function padStr(str, len, pad_str, padFromEnd) {
@@ -37,11 +37,11 @@
 
 	ist.RootStatechartLayoutEngine = function (options) {
 		able.make_this_optionable(this, {
-			theta_degrees: 45,
+			theta_degrees: 40,
 			transition_height: 18,
 			transition_margin: 1,
 			used_state_name_width: 90,
-			unused_state_name_width: 20,
+			unused_state_name_width: 30,
 			state_name_height: function() { return this.option("transition_height"); },
 			state_padding_y: function() { return this.option("transition_margin"); },
 			state_padding_x: 8,
@@ -53,8 +53,11 @@
 			tan_theta: function() { return Math.tan(this.option("theta_radians")); },
 			transition_width: function() { return this.option("transition_height") / this.option("tan_theta"); },
 			state_line_padding_factor: 1/2,
-			padding_top: 0,
-			collapseUnusedTransitions: true,
+			padding_top: 10,
+			padding_bottom: 5,
+			padding_left: 2,
+			padding_right: 2,
+			collapseUnusedTransitions: false,
 			indentIncomingTransitions: false,
 			stateMachineSummary: false 
 		}, options);
@@ -175,6 +178,9 @@
 				STATE_LINE_PADDING_FACTOR = this.option("state_line_padding_factor"),
 				START_STATE_RADIUS = this.option("start_state_radius"),
 				PADDING_TOP = this.option("padding_top"),
+				PADDING_BOTTOM = this.option("padding_bottom"),
+				PADDING_LEFT = this.option("padding_left"),
+				PADDING_RIGHT = this.option("padding_right"),
 				statecharts_with_add_state_button = stateMachineSummary[0],
 				ROW_HEIGHT = this.option("transition_height"),
 
@@ -246,6 +252,7 @@
 
 			push_node_columns(sc_tree, 0);
 
+/*
 			_.each(reverseArr(rows), function(row, index) {
 				var row_strs = [];
 				for(var i = 0; i<col; i++) {
@@ -276,6 +283,7 @@
 				var row_str = row_strs.join("");
 				console.log(padStr(index+":", 4, " "), row_str);
 			});
+			*/
 
 			_.each(state_wings, function(fromStateWing) {
 				var sc_summary = fromStateWing.sc_summary,
@@ -290,21 +298,31 @@
 						toStateWing = state_wings[toStateID],
 						toCenterColumn = toStateWing.centerColumnn,
 						columnTransitions, transitionTypeArr,
+						fromColumnInfo, toColumnInfo,
+						fromSide, toSide,
 						fromColumn, toColumn, toCenterColumn = toStateWing.centerColumn;
 
 					if(atomic) {
 						columnTransitions = fromStateWing.columnTransitions.outgoing;
 						fromColumn = fromStateWing.centerColumn;
+						fromColumnInfo = fromStateWing.columnTransitions;
+						fromSide = "center";
 					} else {
 						if(toCenterColumn === fromCenterColumn) {
 							columnTransitions = fromStateWing.rightColumnTransitions.outgoing;
 							fromColumn = fromStateWing.rightmostColumn;
+							fromColumnInfo = fromStateWing.rightColumnTransitions;
+							fromSide = "right";
 						} else if(fromCenterColumn > toCenterColumn) {
 							columnTransitions = fromStateWing.leftColumnTransitions.outgoing;
 							fromColumn = fromStateWing.leftmostColumn;
+							fromColumnInfo = fromStateWing.leftColumnTransitions;
+							fromSide = "left";
 						} else {
 							columnTransitions = fromStateWing.rightColumnTransitions.outgoing;
 							fromColumn = fromStateWing.rightmostColumn;
+							fromColumnInfo = fromStateWing.rightColumnTransitions;
+							fromSide = "right";
 						}
 					}
 
@@ -324,21 +342,31 @@
 					if(toStateWing.isAtomic) {
 						toStateWing.columnTransitions.incoming.push(transition_info);
 						toColumn = toCenterColumn;
+						toColumnInfo = toStateWing.columnTransitions;
+						toSide = "center";
 					} else {
 						if(toCenterColumn>fromCenterColumn) {
 							toStateWing.leftColumnTransitions.incoming.push(transition_info);
 							toColumn = toStateWing.leftmostColumn;
+							toColumnInfo = toStateWing.leftColumnTransitions;
+							toSide = "left";
 						} else {
 							toStateWing.rightColumnTransitions.incoming.push(transition_info);
 							toColumn = toStateWing.rightmostColumn;
+							toColumnInfo = toStateWing.rightColumnTransitions;
+							toSide = "right";
 						}
 					}
 
 					_.extend(transition_info, {
 						fromColumn: fromColumn,
+						fromColumnInfo: fromColumnInfo,
 						toColumn: toColumn,
+						toColumnInfo: toColumnInfo,
 						leftmostColumn: Math.min(fromColumn, toColumn),
-						rightmostColumn: Math.max(fromColumn, toColumn)
+						rightmostColumn: Math.max(fromColumn, toColumn),
+						fromSide: fromSide,
+						toSide: toSide
 					});
 				});
 			});
@@ -355,8 +383,8 @@
 								return false;
 							}
 						} else {
-							leftWing = cell.leftWingColumn;
-							rightWing = cell.rightWingColumn;
+							leftWing = cell.leftmostColumn;
+							rightWing = cell.rightmostColumn;
 
 							if((leftWing > minCol && leftWing < maxCol) || (rightWing > minCol && rightWing < maxCol) ||
 								(leftWing > minCol && rightWing < maxCol) || (rightWing > minCol && leftWing < maxCol)) {
@@ -382,6 +410,7 @@
 					depth = fromStateWing.rowNum,
 					row,
 					transitions_infos,
+					incoming_transition_infos,
 					highestTransitionRow = depth;
 
 				if(fromStateWing.isAtomic) {
@@ -399,7 +428,7 @@
 
 					while(row_num < rows.length) {
 						row = rows[row_num];
-						//if(uid.strip_prefix(transition_info.transition_summary.id) === 15) debugger;
+
 						if(rowHasRoomforTransition(row, transition_info)) {
 							row.push(transition_info);
 							_.extend(transition_info, {
@@ -422,9 +451,31 @@
 				fromStateWing.numOwnRows = highestTransitionRow-depth + 1;
 			});
 
+			_.each(state_wings, function(fromStateWing) {
+				var sc_summary = fromStateWing.sc_summary,
+					depth = fromStateWing.rowNum,
+					incoming_transition_infos,
+					highestTransitionRow = depth + fromStateWing.numOwnRows-1;
+
+				if(fromStateWing.isAtomic) {
+					incoming_transition_infos = fromStateWing.columnTransitions.incoming;
+				} else {
+					incoming_transition_infos = fromStateWing.leftColumnTransitions.incoming.concat(
+															fromStateWing.rightColumnTransitions.incoming
+														);
+				}
+
+				_.each(incoming_transition_infos, function(transition_info) {
+					var row_num = transition_info.rowNum;
+					if(row_num > highestTransitionRow) { highestTransitionRow = row_num; }
+				});
+				fromStateWing.numOwnRows = highestTransitionRow-depth + 1;
+			});
+
 			var columnWidths = [],
 				TRANSITION_WIDTH = this.option("transition_width"),
 				TRANSITION_HEIGHT = this.option("transition_height");
+
 			_.each(state_wings, function(stateWing) {
 				var sc_summary = stateWing.sc_summary,
 					depth = stateWing.rowNum,
@@ -437,7 +488,11 @@
 						centerColumnWidth = this.option("unused_start_state_width");
 					}
 				} else {
-					if(sc_summary.usedByAnyProperties) {
+					if(sc_summary === FAKE_ROOT_STATECHART) {
+						centerColumnWidth = 0;
+					} else if(sc_summary.isRoot) {
+						centerColumnWidth = ADD_STATE_WIDTH;
+					} else if(sc_summary.usedByAnyProperties) {
 						centerColumnWidth = this.option("used_state_name_width");
 					} else {
 						centerColumnWidth = this.option("unused_state_name_width");
@@ -494,8 +549,8 @@
 									if(lowestTransitionRowNum === highestTransitionRowNum) {
 										indentations[lowestTransitionRowNum-depth] = INDENT_BOTH;
 									} else {
-										indentations[lowestTransitionRowNum-depth] = INDENT_BEFORE;
-										indentations[highestTransitionRowNum-depth] = INDENT_AFTER;
+										indentations[lowestTransitionRowNum-depth] = INDENT_BELOW;
+										indentations[highestTransitionRowNum-depth] = INDENT_ABOVE;
 									}
 								}
 							} else {
@@ -545,13 +600,20 @@
 			function computeNumRows(sc_summary) {
 				var stateWings = state_wings[sc_summary.id];
 
+				if(!stateWings) {
+					return 0;
+				}
+
 				var maxNumRows = stateWings.numOwnRows;
 				_.each(sc_summary.substates, function(child) {
 					var numChildRows = computeNumRows(child),
-						childWings = state_wings[child.id],
-						totalNumRows = (childWings.rowNum - stateWings.rowNum) + numChildRows;
-					if(totalNumRows > maxNumRows) {
-						maxNumRows = totalNumRows;
+						childWings = state_wings[child.id];
+
+					if(childWings) {
+						var totalNumRows = (childWings.rowNum - stateWings.rowNum) + numChildRows;
+						if(totalNumRows > maxNumRows) {
+							maxNumRows = totalNumRows;
+						}
 					}
 				});
 				stateWings.numRows = maxNumRows;
@@ -577,6 +639,7 @@
 				numRows: overallNumRows,
 				width: totalWidth
 			});
+			/*
 
 			var table_str_arr = [],
 				CHARS_PER_COL = 7,
@@ -664,9 +727,9 @@
 										transition_rep = [" ", "0" + arrow_str, 
 											padStr(uid.strip_prefix(state_wing_info.sc_summary.id)+"", CHARS_PER_COL, " ", true)];
 									} else {
-										if(indentation === INDENT_AFTER) {
-											transition_rep = [outSlash, arrow_str, " |"];
-										} else if(indentation === INDENT_BEFORE) {
+										if(indentation === INDENT_ABOVE) {
+											transition_rep = [outSlash, arrow_str, "|"];
+										} else if(indentation === INDENT_BELOW) {
 											transition_rep = ["|", arrow_str, outSlash];
 										} else if(indentation === INDENT_BOTH) {
 											transition_rep = [outSlash, arrow_str, outSlash];
@@ -693,13 +756,15 @@
 					console.log(lines[j].join(""));
 				}
 			}
+			/**/
 
 
 			var location_info_map = {};
 
 			_.each(state_wings, function(stateWing) {
 				var sc_summary = stateWing.sc_summary,
-					locationInfo, centerColumnIndex, i, ccx;
+					locationInfo, centerColumnIndex, i, ccx, lcx, rcx,
+					leftColumnIndex, rightColumnIndex;
 
 				if(stateWing.isAtomic) {
 					centerColumnIndex = stateWing.centerColumn,
@@ -709,35 +774,54 @@
 						ccx += columnWidths[i];
 					}
 
-					console.log(numRows);
-
 					locationInfo = {
-						columnX: ccx + stateWing.centerColumnWidth/2,
+						columnX: PADDING_LEFT + ccx + stateWing.centerColumnWidth/2,
 						columnWidth: stateWing.centerColumnWidth,
-						x: ccx + stateWing.centerColumnWidth/2,
-						y: ((overallNumRows-stateWing.rowNum) - 0.5) * ROW_HEIGHT,
+						x: PADDING_LEFT + ccx + stateWing.centerColumnWidth/2,
+						y: PADDING_TOP + ((overallNumRows-stateWing.rowNum) - 0.5) * ROW_HEIGHT,
 						displayType: My.STARTSTATE_DISPLAY_TYPE
 					};
 				} else if(sc_summary === FAKE_ROOT_STATECHART) {
-					console.log("Number of rows: ", stateWing.numRows);
 					locationInfo = {
 						x: 0,
 						y: 0,
-						width: stateWing.width,
-						height: stateWing.numRows * ROW_HEIGHT,
+						width: PADDING_LEFT + PADDING_RIGHT + stateWing.width,
+						height: PADDING_TOP + PADDING_BOTTOM + (stateWing.numRows-2) * ROW_HEIGHT,
 						displayType: My.INVISIBLE_DISPLAY_TYPE
 					};
 				} else if(sc_summary.isRoot) {
+					leftColumnIndex = stateWing.leftmostColumn;
+					rightColumnIndex = stateWing.rightmostColumn;
+					i = 0;
+
+					centerColumnIndex = stateWing.centerColumn;
+
+					lcx = 0;
+					for(;i<leftColumnIndex; i++) {
+						lcx += columnWidths[i];
+					}
+					ccx = lcx;
+					for(;i<centerColumnIndex; i++) {
+						ccx += columnWidths[i];
+					}
+					rcx = ccx;
+					for(; i<rightColumnIndex; i++) {
+						rcx += columnWidths[i];
+					}
 					locationInfo = {
-						x: 0,
-						y: 0,
-						width: stateWing.centerColumnWidth,
+						x: PADDING_LEFT + lcx,
+						y: PADDING_TOP/2,
+						width: rcx-lcx,
 						displayType: My.HRANGE_DISPLAY_TYPE
 					};
+					if(sc_summary === statecharts_with_add_state_button) {
+						_.extend(locationInfo, {
+							add_state_button_x: PADDING_LEFT + ccx
+						});
+					}
 				} else {
-					var leftColumnIndex = stateWing.leftmostColumn,
-						rightColumnIndex = stateWing.rightmostColumn,
-						lcx, rcx;
+					leftColumnIndex = stateWing.leftmostColumn;
+					rightColumnIndex = stateWing.rightmostColumn;
 					i = 0;
 
 					centerColumnIndex = stateWing.centerColumn;
@@ -761,84 +845,82 @@
 						leftColumnTransitions = stateWing.leftColumnTransitions,
 						rightColumnTransitions = stateWing.rightColumnTransitions,
 						i = 0,
-						lastLeftIndentation = 0,
-						lastRightIndentation = 0,
+						lastLeftIndentation = -1,
+						lastRightIndentation = -1,
 						leftIndentation, rightIndentation, points;
 
+					//console.log(rightColumnTransitions.indentations);
 					while(i < numRows) {
-						leftIndentation = leftColumnTransitions.indentations[i-stateWing.rowNum];
-						rightIndentation = rightColumnTransitions.indentations[i-stateWing.rowNum];
+						leftIndentation = leftColumnTransitions.indentations[i];
+						rightIndentation = rightColumnTransitions.indentations[i];
 
 						if(leftIndentation) {
 							if(lastLeftIndentation < i-1) {
-								leftWingPoints.push([0.0, (i - lastLeftIndentation - 1)]);
+								leftWingPoints.unshift([0.0, (i - lastLeftIndentation - 1)]);
 							}
 
-							if(leftIndentation === INDENT_AFTER) {
-								leftWingPoints.push([0.0, 0.5], [0.5, 0.5]);
-							} else if(leftIndentation === INDENT_BEFORE) {
-								leftWingPoints.push([0.5, 0.5], [0.0, 0.5]);
+							if(leftIndentation === INDENT_ABOVE) {
+								leftWingPoints.unshift([0.5, 0.5], [0.0, 0.5]);
+							} else if(leftIndentation === INDENT_BELOW) {
+								leftWingPoints.unshift([0.0, 0.5], [0.5, 0.5]);
 							} else if(leftIndentation === INDENT_BOTH) {
-								leftWingPoints.push([0.5, 0.5], [0.5, 0.5]);
+								leftWingPoints.unshift([1,1]);
 							}
 							lastLeftIndentation = i;
-
-							leftWingPoints.push(points);
 						}
 
+						//console.log(rightIndentation);
 						if(rightIndentation) {
 							if(lastRightIndentation < i-1) {
 								rightWingPoints.push([0.0, (i - lastRightIndentation - 1)]);
 							}
 
-							if(rightIndentation === INDENT_AFTER) {
+							if(rightIndentation === INDENT_ABOVE) {
 								rightWingPoints.push([0.0, 0.5], [0.5, 0.5]);
-							} else if(rightIndentation === INDENT_BEFORE) {
+							} else if(rightIndentation === INDENT_BELOW) {
 								rightWingPoints.push([0.5, 0.5], [0.0, 0.5]);
 							} else if(rightIndentation === INDENT_BOTH) {
-								rightWingPoints.push([0.5, 0.5], [0.5, 0.5]);
+								rightWingPoints.push([1,1]);
 							}
 							lastRightIndentation = i;
-
-							rightWingPoints.push(points);
 						}
 
 						i++;
 					}
 
-					if(lastLeftIndentation < numRows) {
-						leftWingPoints.push([0.0, (numRows - lastLeftIndentation - 1)]);
+					if(lastLeftIndentation < numRows-1) {
+						leftWingPoints.unshift([0, (numRows - lastLeftIndentation-1)]);
 					}
 
-					if(lastRightIndentation < numRows) {
-						rightWingPoints.push([0.0, (numRows - lastRightIndentation - 1)]);
+					if(lastRightIndentation < numRows-1) {
+						rightWingPoints.push([0, (numRows - lastRightIndentation-1)]);
 					}
-					var pts = [["M", rcx, (stateWing.rowNum + 0.5) * ROW_HEIGHT]];
+
+					var pts = [["M", PADDING_LEFT + rcx, PADDING_TOP + (overallNumRows-stateWing.rowNum) * ROW_HEIGHT]];
 					_.each(rightWingPoints, function(pt) {
 						pts.push(["l", TRANSITION_WIDTH*pt[0], -TRANSITION_HEIGHT*pt[1]]);
 					});
-					pts.push(["h", (columnWidths[rightColumnIndex]+rcx-lcx)]);
-					_.each(rightWingPoints, function(pt) {
+					pts.push(["H", PADDING_LEFT + lcx]);
+					_.each(leftWingPoints, function(pt) {
 						pts.push(["l", TRANSITION_WIDTH*pt[0], TRANSITION_HEIGHT*pt[1]]);
 					});
+					pts.push(["L", PADDING_LEFT + lcx+columnWidths[leftColumnIndex], PADDING_TOP + (overallNumRows-stateWing.rowNum) * ROW_HEIGHT]);
 					pts.push(["Z"]);
 
 					locationInfo = {
 						shape: pts,
-						columnX: ccx,
+						columnX: PADDING_LEFT + ccx + stateWing.centerColumnWidth/2,
 						columnWidth: stateWing.centerColumnWidth,
-						x: ccx,
-						y: (stateWing.rowNum + 0.5) * ROW_HEIGHT,
+						x: PADDING_LEFT + ccx + stateWing.centerColumnWidth/2,
+						y: PADDING_TOP + (overallNumRows-stateWing.rowNum-0.5) * ROW_HEIGHT,
 						displayType: My.STATE_DISPLAY_TYPE
 					};
 				}
 
 				location_info_map[sc_summary.id] = locationInfo;
 			}, this);
-			console.log(columnWidths);
-			console.log(state_wings);
-			console.log(location_info_map);
-			/*
+			//console.log(state_wings);
+			//console.log(location_info_map);
 
 			_.each(state_wings, function(stateWing) {
 				var sc_summary = stateWing.sc_summary,
@@ -846,20 +928,112 @@
 					transitions;
 
 				if(stateWing.isAtomic) {
-					transitions = stateWing.columnTransitions.outgoing;
+					transitions = stateWing.columnTransitions.outgoing.used.concat(stateWing.columnTransitions.outgoing.notUsed);
 				} else {
-					transitions = stateWing.leftColumnTransitions.outgoing.concat(stateWing.rightColumnTransitions.outgoing);
+					transitions = stateWing.leftColumnTransitions.outgoing.notUsed.concat(
+								stateWing.rightColumnTransitions.outgoing.notUsed,
+								stateWing.leftColumnTransitions.outgoing.used,
+								stateWing.rightColumnTransitions.outgoing.used
+							);
 				}
 
-				_.each(transitions, function(transition) {
+				function computeXOffset(rowNum, side, stateWing) {
+					var offset = 0,
+						numRowsUp = rowNum - stateWing.rowNum,
+						numRows = stateWing.numRows,
+						indentations, indentation, i;
+					if(side === "right") {
+						indentations = stateWing.rightColumnTransitions.indentations;
+						i = 0;
+						while(i <= numRowsUp) {
+							indentation = indentations[i];
+							if(indentation === INDENT_BOTH) {
+								if(i === numRowsUp) {
+									offset += TRANSITION_WIDTH/2;
+								} else {
+									offset += TRANSITION_WIDTH;
+								}
+							} else if(indentation === INDENT_BELOW) {
+								offset += TRANSITION_WIDTH/2;
+							} else if(indentation === INDENT_ABOVE) {
+								if(i !== numRowsUp) {
+									offset += TRANSITION_WIDTH/2;
+								}
+							}
+							i++;
+						}
+					} else {
+						indentations = stateWing.leftColumnTransitions.indentations;
+						i = stateWing.numRows;
+						while(i >= numRowsUp) {
+							indentation = indentations[i];
+							if(indentation === INDENT_BOTH) {
+								if(i === numRowsUp) {
+									offset += TRANSITION_WIDTH/2;
+								} else {
+									offset += TRANSITION_WIDTH;
+								}
+							} else if(indentation === INDENT_BELOW) {
+								if(i !== numRowsUp) {
+									offset += TRANSITION_WIDTH/2;
+								}
+							} else if(indentation === INDENT_ABOVE) {
+								offset += TRANSITION_WIDTH/2;
+							}
+							i--;
+						}
+					}
+					return offset;
+				}
+
+				_.each(transitions, function(transitionWing) {
+					var rowNum = transitionWing.rowNum,
+						y = (overallNumRows-transitionWing.rowNum-0.5) * ROW_HEIGHT,
+						fromStateWing = transitionWing.fromStateWing,
+						toStateWing = transitionWing.toStateWing,
+						fromColumn = transitionWing.fromColumn,
+						toColumn = transitionWing.toColumn,
+						fromX = 0, toX = 0, i = 0,
+						numRowsUp, indentations, indentation;
+
+					if(fromStateWing === toStateWing && fromStateWing.isAtomic) {
+						return;
+					}
+
+					while(i < fromColumn) {
+						fromX += columnWidths[i];
+						i++;
+					}
+					i=0;
+					while(i < toColumn) {
+						toX += columnWidths[i];
+						i++;
+					}
+
+					if(fromStateWing.isAtomic) {
+						var fromLocationInfo = location_info_map[fromStateWing.sc_summary.id];
+						fromX = fromLocationInfo.x;
+					} else {
+						fromX += computeXOffset(rowNum, transitionWing.fromSide, fromStateWing);
+						fromX += PADDING_LEFT;
+					}
+
+					if(toStateWing.isAtomic) {
+						var toLocationInfo = location_info_map[toStateWing.sc_summary.id];
+						toX = toLocationInfo.x;
+					} else {
+						toX += computeXOffset(rowNum, transitionWing.toSide, toStateWing);
+						toX += PADDING_LEFT;
+					}
+
 					var transitionLocationInfo = {
 							from: {
-								x:locationInfo.x,
-								y: locationInfo.y,
+								x: fromX,
+								y: PADDING_TOP + y
 							},
 							to: {
-								x: locationInfo.x+20,
-								y: locationInfo.y
+								x: toX,
+								y: PADDING_TOP + y
 							},
 							columnX: locationInfo.columnX,
 							columnWidth: locationInfo.columnWidth,
@@ -870,7 +1044,6 @@
 					location_info_map[transition_info.id] = transitionLocationInfo;
 				});
 			}, this);
-			*/
 			var rootLayout = location_info_map[FAKE_ROOT_STATECHART.id];
 
 			return {width: rootLayout.width, height: rootLayout.height, locations: location_info_map};

@@ -24,7 +24,8 @@
 				destroy: function(me) {
 					me.destroy(true);
 				},
-				getter_name: "getStr"
+				getter_name: "getStr",
+				setter_name: "setStr"
             },
 			"eventType": {
 				"default": function() { return "parsed"; },

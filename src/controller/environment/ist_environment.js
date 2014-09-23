@@ -568,7 +568,8 @@
 
 		proto._get_add_state_command = function (state_name, index) {
 			var statechart = this.get_current_statechart(),
-				state_names = state_name.split(".");
+				state_names = state_name.split("."),
+				set_name = _.last(state_names);
 			_.each(state_names.slice(0, state_names.length-1), function(name) {
 				statechart = statechart.getSubstate(name) || statechart.addSubstate(name);
 			});
@@ -576,7 +577,7 @@
 			if (_.isNumber(index)) { index += 1; } // Because of the pre_init state
 
 			var command = new ist.AddStateCommand({
-				name: state_name,
+				name: set_name,
 				statechart: statechart,
 				index: index
 			});

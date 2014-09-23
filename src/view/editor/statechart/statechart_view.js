@@ -302,37 +302,35 @@
 						is_own = index === 0,
 						hrange = this.get_hrange(topLevelStateMachine, is_own ? "own" : "inherited", layout), // will update hrange
 						flat_state_machine = flattenStateTree(topLevelStateMachine);
-				/*
 
 					if (layout.add_state_button_x) {
-						this.add_state_button.attr({
-							x: layout.add_state_button_x,
-							y: height / 2 + 21
-						});
 						var shorten_height = this.layout_engine.option("state_name_height");
-						var dx = layout.right_wing_end.x - layout.right_wing_start.x;
+						var dx = 0;//layout.right_wing_end.x - layout.right_wing_start.x;
 						var padding_top = this.option("padding_top");
 						var x = layout.add_state_button_x;
 						var width = this.option("add_state_width");
 						this.add_state_shape.attr({
-							path: "M"+(x-width/2)+","+padding_top +
-									"H" + (x + width/2) +
-									"V" + (layout.right_wing_end.y-shorten_height) +
-									"L" + (layout.right_wing_start.x) + "," + (layout.right_wing_start.y - shorten_height) +
-									"H" + (x - width/2 + dx) + 
-									"L" + (x - width/2) + "," + (layout.right_wing_end.y - shorten_height) +
+							path: "M"+(x)+","+padding_top +
+									"h" + width +
+									"V" + height +
+									"h" + (-width) + 
 									"Z"
 						});
+						this.add_state_button.attr({
+							x: layout.add_state_button_x + width/2,
+							y: height / 2 + 21
+						});
 					}
-						*/
 					_	.chain(flat_state_machine)
 						.rest() // use rest to remove top level state machine
 						.each(function(state_info, index_j) {
 							var state = state_info.state,
 								id = state_info.id,
-								layout = locations[id],
-								state_view = this.get_state_view(state_info, layout); // will update shape
-							state_view.toFront();
+								layout = locations[id];
+							if(layout) {
+								var state_view = this.get_state_view(state_info, layout); // will update shape
+								state_view.toFront();
+							}
 						}, this)
 						.each(function(state_info) {
 							var outgoing_transitions = state_info.outgoingTransitions;
@@ -537,7 +535,6 @@
 						active_fill: this.option("active_state_fill"),
 						text_foreground: this.option("state_text_color"),
 						active_text_fireground: this.option("active_state_text_color"),
-						text_background: this.option("state_text_background_color"),
 						padding_top: this.option("padding_top"),
 						parent: this
 					});

@@ -25,7 +25,7 @@
 			this._active = true;
 
 			ptr = ptr.pop();
-			this._statefulObj = ptr.getContextualObject();
+			this._statefulObj = ptr.length() > 0 ? ptr.getContextualObject() : false;
 		} else {
 			var pointer = this.get_pointer(),
 				obj_parent = object.parent(),
@@ -42,7 +42,7 @@
 			this._root = ptr.getContextualObject();
 
 			ptr = ptr.pop();
-			this._statefulObj = ptr.getContextualObject();
+			this._statefulObj = ptr.length() > 0 ? ptr.getContextualObject() : false;
 
 			this._running = false;
 			this._active = false;

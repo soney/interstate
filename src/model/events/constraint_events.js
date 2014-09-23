@@ -32,7 +32,7 @@ var UNDEF = {};
 				from.on("inactive", this.leave_listener, this);
 
 				//_.defer(function (self) {
-				if (from.is_active()) {
+				if (from.isActive()) {
 					this.enter_listener();
 				}
 				//}, this);

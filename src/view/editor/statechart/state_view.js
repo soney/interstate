@@ -12,13 +12,6 @@
 		able.make_this_optionable(this, {
 			state: null,
 			paper: null,
-			/*
-			lws: {x: 0, y: 0},
-			lwe: {x: 0, y: 0},
-			rws: {x: 0, y: 0},
-			rwe: {x: 0, y: 0},
-			c: {x: 0, y: 0},
-			*/
 			layout: false,
 			default_stroke: "black",
 			default_fill: "white",
@@ -27,7 +20,7 @@
 			active_stroke: "green",
 			selectable_fill: "#AAA",
 			text_foreground: "black",
-			text_background: "white",
+			text_background: "none",
 			font_family: "Source Sans Pro",
 			font_size: 12,
 			padding_top: 0,
@@ -90,7 +83,7 @@
 								"stroke-dasharray": this.option("vline_dasharray")
 							});
 		this.vline.prependTo(paper);
-		this.name = state.get_$("getName");
+		this.name = state.get_$("getName", "parent");
 		this.label = new ist.EditableText(paper, {x: -100, y: -100, text: "", fill: this.option("text_background"), color: this.option("text_foreground")});
 
 		this.initialize();
@@ -206,13 +199,11 @@
 			this.toggle_breakpoint_item = $("<div />")	.addClass("menu_item")
 														.text("Add breakpoint")
 														.on("click.menu_item", _.bind(this.on_toggle_breakpoint_item_pressed, this));
-			var lwe = this.option("lwe"),
-				rws = this.option("rws");
 			var PADDING = 1;
 			var HEIGHT = 10;
-			var width = rws.x-lwe.x - 2*PADDING;
-			var x = lwe.x + PADDING;
-			var y = lwe.y - HEIGHT/2;
+			var width = 20 - 2*PADDING;
+			var x = 0;//lwe.x + PADDING;
+			var y = 0;//lwe.y - HEIGHT/2;
 
 			var paper = this.option("paper");
 			//var parentElement = paper.canvas.parentNode;
