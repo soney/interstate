@@ -111,6 +111,7 @@
 
 		//var event = transition.event();
 		this.event_type = false;
+		var c = center(this.option("from"), this.option("to"));
 
 		transition.async_get("eventType", function(type) {
 			this.event_type = type;
@@ -147,7 +148,6 @@
 			str = event.get_str();
 		}
 		*/
-		var c = center(this.option("from"), this.option("to"));
 		
 		transition.on("fire", this.flash, this);
 		var from = this.option("from");

@@ -259,11 +259,6 @@
 						this._event.enable();
 					}
 				}
-				/*
-
-				var event = this.event();
-				event.enable();
-				*/
 			}
 		};
 

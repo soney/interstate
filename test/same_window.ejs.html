@@ -40,7 +40,7 @@
 						.add_state("B")
 						.add_state("C")
 						.add_state("D")
-						//.make_concurrent()
+						.add_transition("A", "C", "false")
 						//.add_transition("A", "B", "on('timeout', 2000)")
 						//.add_transition("B", "A", "on('timeout', 2000)")
 						//.add_transition("B", "A", "on('timeout', 2000)")
@@ -65,6 +65,7 @@
 
 				setTimeout(function() {
 						$("tr").click();
+						env.set_event("A->C", "on('timeout', 400)")
 					}, 500);
 
 				/*

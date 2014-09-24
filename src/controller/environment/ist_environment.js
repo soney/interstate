@@ -701,11 +701,12 @@
 		};
 
 		proto._get_set_event_command = function (transition_id, event) {
-			var statechart = this.get_current_statechart();
+			var statechart = this.get_current_statechart(),
+				transition = this.find_state(transition_id);
 
 			var command = new ist.SetTransitionEventCommand({
 				statechart: statechart,
-				id: transition_id,
+				transition: transition,
 				event: event
 			});
 			return command;

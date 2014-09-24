@@ -97,8 +97,8 @@
 			var state = this.option("state");
 			this.path .attr({
 							"path": this.get_path_str(),
-							"stroke": "default_stroke",
-							"fill": "default_fill"
+							"stroke": this.option("default_stroke"),
+							"fill": this.option("default_fill")
 						});
 			var layout = this.option("layout");
 			this.parent_is_concurrent = state.get_$("parentIsConcurrent");
@@ -419,6 +419,7 @@
 
 			this.active_fn.destroy();
 			delete this.active_fn;
+			this.active.destroy();
 			if(this.edit_dropdown) {
 				this.edit_dropdown.dropdown("destroy");
 			}
