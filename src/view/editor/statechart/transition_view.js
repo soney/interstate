@@ -111,12 +111,15 @@
 
 		//var event = transition.event();
 		this.event_type = false;
-		var c = center(this.option("from"), this.option("to"));
+		var from = this.option("from"),
+			to = this.option("to"),
+			c = center(from, to);
 
 		transition.async_get("eventType", function(type) {
 			this.event_type = type;
 			if(type === "parsed") {
 				this.label = new ist.EditableText(paper, {x: c.x, y: c.y, text: "", fill: this.option("text_background"), color: this.option("text_foreground")});
+				this.updateArrowLocation();
 				this.label.option({
 					"font-size": this.option("font_size"),
 					"font-family": this.option("font_family")
@@ -210,13 +213,10 @@
 			var transition = this.option("transition");
 			var paper_height = this.option("paper_height");
 			//var event = transition.event();
-			var from = this.option("from");
-			var c = center(from, this.option("to"));
+			var from = this.option("from"),
+				to = this.option("to");
 			if(this.label) {
-				this.label.option({
-					x: c.x,
-					y: c.y
-				});
+				this.updateArrowLocation();
 			}
 
 			if(this.vline) {
@@ -225,6 +225,16 @@
 							});
 			}
 			this.update_menu_position();
+		};
+		proto.updateArrowlocation = function() {
+			var from = this.option("from"),
+				to = this.option("to"),
+				c = center(from, to);
+
+			this.label.option({
+				x: from.x,
+				y: c.y
+			});
 		};
 
 		proto.toFront = function() {

@@ -65,7 +65,9 @@
 
 				setTimeout(function() {
 						$("tr").click();
-						env.set_event("A->C", "on('timeout', 400)")
+						setTimeout(function() {
+							env.set_event("A->C", "on('timeout', 400)")
+						}, 1000);
 					}, 500);
 
 				/*
