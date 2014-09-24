@@ -21,10 +21,6 @@
         }
         this._index = this._options.index;
 		this._make_start = this._options.make_start;
-    
-        if (this._statechart.basis && this._statechart.basis()) {
-            this._statechart = this._statechart.basis();
-        }
     };
     
     (function (My) {
@@ -95,9 +91,6 @@
     
         this._statechart = this._options.statechart;
         this._state_name = this._options.name;
-        if (this._statechart.basis && this._statechart.basis()) {
-            this._statechart = this._statechart.basis();
-        }
     };
     
     (function (My) {
@@ -219,10 +212,6 @@
         this._statechart = this._options.statechart;
         this._from_state_name = this._options.from;
         this._to_state_name = this._options.to;
-    
-        if (this._statechart.basis && this._statechart.basis()) {
-            this._statechart = this._statechart.basis();
-        }
     };
     
     (function (My) {
@@ -271,9 +260,6 @@
     
         this._statechart = this._options.statechart;
         this._concurrent = !!this._options.concurrent;
-        if (this._statechart.basis && this._statechart.basis()) {
-            this._statechart = this._statechart.basis();
-        }
     };
     
     (function (My) {
@@ -314,7 +300,7 @@
         ist.AddTransitionCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
-        if (!this._options.from || !this._options.to || !this._options.statechart) {
+        if (!this._options.from || !this._options.to) {
             throw new Error("Must specify statechart, from, and to");
         }
     
@@ -333,9 +319,9 @@
     
         proto._execute = function () {
             if (_.has(this, "_transition")) {
-                this._statechart.addTransition(this._transition);
+                this._from_state.addTransition(this._transition);
             } else {
-                this._transition = this._statechart.addTransition(this._from_state, this._to_state, this._event);
+                this._transition = this._from_state.addTransition(this._from_state, this._to_state, this._event);
                 //this._transition = this._statechart._last_transition;
             }
         };
@@ -358,7 +344,6 @@
             function () {
                 var arg_array = _.toArray(arguments);
                 return {
-                    statechart_id: this._statechart.id(),
                     from_id: this._from_state.id(),
                     to_id: this._to_state.id(),
                     event: ist.serialize.apply(ist, ([this._event]).concat(arg_array)),
@@ -381,18 +366,7 @@
         ist.RemoveTransitionCommand.superclass.constructor.apply(this, arguments);
         this._options = options || {};
     
-        if (!this._options.statechart) {
-            throw new Error("Must select a statechart");
-        }
-    
-        this._statechart = this._options.statechart;
         this._transition = this._options.transition || this._statechart.get_transition_by_id(this._options.id);
-        if (this._statechart.basis && this._statechart.basis()) {
-            this._statechart = this._statechart.basis();
-        }
-        if (this._transition.basis && this._transition.basis()) {
-            this._transition = this._transition.basis();
-        }
     };
     
     (function (My) {
@@ -405,15 +379,16 @@
         };
     
         proto._unexecute = function () {
-            this._transition.from()._add_direct_outgoing_transition(this._transition);
-            this._transition.to()._add_direct_incoming_transition(this._transition);
-            this._statechart.add_transition(this._transition);
+			var from = this._transition.from();
+			from.addTransition(this._transition);
         };
     
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
-                this._transition.destroy();
+				if(this._transition && this._transition.destroy) {
+					this._transition.destroy();
+				}
             }
         };
         ist.register_serializable_type("remove_transition_command",
@@ -423,13 +398,11 @@
             function () {
                 var arg_array = _.toArray(arguments);
                 return {
-                    statechart: this._statechart.id(),
                     transition: this._transition.id()
                 };
             },
             function (obj) {
                 return new My({
-                    statechart: ist.find_uid(obj.statechart),
                     transition: ist.find_uid(obj.transition)
                 });
             });
@@ -446,9 +419,6 @@
         this._event_str = this._options.event;
     
         this._transition = this._options.transition || this._options.statechart.get_transition_by_id(this.options.id);
-        if (this._transition.basis && this._transition.basis()) {
-            this._transition = this._transition.basis();
-        }
     };
     
     (function (My) {
@@ -545,12 +515,6 @@
     
         this._transition = this._options.transition;
         this._statechart = this._options.statechart;
-        if (this._transition.basis && this._transition.basis()) {
-            this._transition = this._transition.basis();
-        }
-        if (this._statechart.basis && this._statechart.basis()) {
-            this._statechart = this._statechart.basis();
-        }
     };
     
     (function (My) {

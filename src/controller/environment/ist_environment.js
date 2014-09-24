@@ -111,9 +111,11 @@
 		};
 		proto.undo = function () {
 			this._command_stack._undo();
+			return this.default_return_value();
 		};
 		proto.redo = function () {
 			this._command_stack._redo();
+			return this.default_return_value();
 		};
 
 		proto.cd = function (prop_name) {
@@ -649,7 +651,6 @@
 				to_state = statechart.getSubstate(to_state_name);
 
 			var command = new ist.AddTransitionCommand({
-				statechart: statechart,
 				event: event,
 				from: from_state,
 				to: to_state

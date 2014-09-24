@@ -296,12 +296,12 @@
 					width: width,
 					height: height
 				});
-				_.each(stateMachineSummary, function(topLevelStateMachine, index) {
-					var id = topLevelStateMachine.id,
-						layout = locations[topLevelStateMachine.id],
+				_.each(stateMachineSummary, function(topLevelStateMachine_info, index) {
+					var id = topLevelStateMachine_info.id,
+						layout = locations[topLevelStateMachine_info.id],
 						is_own = index === 0,
-						hrange = this.get_hrange(topLevelStateMachine, is_own ? "own" : "inherited", layout), // will update hrange
-						flat_state_machine = flattenStateTree(topLevelStateMachine);
+						hrange = this.get_hrange(topLevelStateMachine_info.state, is_own ? "own" : "inherited", layout), // will update hrange
+						flat_state_machine = flattenStateTree(topLevelStateMachine_info);
 
 					if (layout.add_state_button_x) {
 						var shorten_height = this.layout_engine.option("state_name_height");
@@ -688,7 +688,7 @@
 												"fill": "white",
 												"opacity": 0.7
 											});
-			select_obj_text.toFront();
+			select_obj_text.appendTo(this.paper);
 			var on_keydown = function(e) {
 				if(e.keyCode === 27) { //esc
 					on_cancel();
@@ -697,7 +697,17 @@
 			};
 			$(window).on("keydown.awaiting_state_selection", on_keydown);
 
-			var state_views = _.map(states, this.get_view, this);
+			var state_views = _	.chain(states)
+								.map(function(state) {
+									var state_view = this.object_views[state.cobj_id];
+									if(state_view) {
+										return state_view;
+									} else {
+										return false;
+									}
+								}, this)
+								.compact()
+								.value();
 
 			var unmake_selectable = this._awaiting_state_selection = _.bind(function() {
 				select_obj_text.remove();
@@ -711,13 +721,13 @@
 			}, this);
 
 			_.each(states, function(state, i) {
-				state_views[i].make_selectable(function() {
+				state_views[i].make_selectable(function(e) {
 					on_select(states[i]);
 					unmake_selectable();
 				});
 			});
-			var this_element = $(this.paper.canvas.parentNode);
-			//var this_element = $(this.paper.node.parentNode);
+			//var this_element = $(this.paper.canvas.parentNode);
+			var this_element = $(this.paper.node.parentNode);
 			$(window).on("mousedown.cancel_state_selection", function(event) {
 				if(this_element.has(event.target).length === 0) {
 					on_cancel();

@@ -491,7 +491,11 @@
 					if(sc_summary === FAKE_ROOT_STATECHART) {
 						centerColumnWidth = 0;
 					} else if(sc_summary.isRoot) {
-						centerColumnWidth = ADD_STATE_WIDTH;
+						if(sc_summary === statecharts_with_add_state_button) {
+							centerColumnWidth = ADD_STATE_WIDTH;
+						} else {
+							centerColumnWidth = 0;
+						}
 					} else if(sc_summary.usedByAnyProperties) {
 						centerColumnWidth = this.option("used_state_name_width");
 					} else {

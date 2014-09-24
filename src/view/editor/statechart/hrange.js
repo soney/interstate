@@ -52,7 +52,7 @@
 		});
 		this.update();
 
-		$(this.hline[0]).add(this.text_foreground[0]).on("contextmenu.showmenu", _.bind(function(event) {
+		$(this.hline.node).add(this.text_foreground.node).on("contextmenu.showmenu", _.bind(function(event) {
 			event.preventDefault();
 			event.stopPropagation();
 
@@ -66,7 +66,7 @@
 		able.make_proto_listenable(proto);
 
 		proto.destroy = function() {
-			$(this.hline[0]).add(this.text_foreground[0]).off("contextmenu.showmenu");
+			$(this.hline.node).add(this.text_foreground.node).off("contextmenu.showmenu");
 			this.remove_edit_dropdown();
 			able.destroy_this_optionable(this);
 			able.destroy_this_listenable(this);
@@ -103,6 +103,16 @@
 		proto._on_options_set = function () {
 			this.update();
 		};
+		proto.on_toggle_concurrency_item_pressed = function() {
+			var my_state = this.option("state");
+			this.remove_edit_dropdown();
+			my_state.async_get("isConcurrent", function(isConcurrent) {
+				this._emit("make_concurrent", {
+					state: my_state,
+					concurrent: !isConcurrent
+				});
+			}, this);
+		};
 		proto.show_menu = function() {
 			var my_state = this.option("state");
 			this.add_substate_item = $("<div />")	.addClass("menu_item")
@@ -114,17 +124,15 @@
 														});
 													}, this));
 
-			var is_concurrent = this.option("state").is_concurrent();
-			var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
 			this.toggle_concurrency_item = $("<div />")	.addClass("menu_item")
-														.html("Concurrent " + checkbox_mark)
-														.on("click", _.bind(function() {
-															this.remove_edit_dropdown();
-															this._emit("make_concurrent", {
-																state: my_state,
-																concurrent: !my_state.is_concurrent()
-															});
-														}, this));
+														.html("")
+														.on("click.menu_item", _.bind(this.on_toggle_concurrency_item_pressed, this));
+
+			my_state.async_get("isConcurrent", function(is_concurrent) {
+				var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
+				this.toggle_concurrency_item.html("Concurrent " + checkbox_mark)
+			}, this);
+
 			this.reset_item = $("<div />")	.addClass("menu_item")
 													.text("Reset")
 													.on("click", _.bind(function() {
@@ -139,7 +147,8 @@
 			var width = this.option("to_x") - x;
 
 			var paper = this.option("paper");
-			var parentElement = paper.canvas.parentNode;
+			//var parentElement = paper.canvas.parentNode;
+			var parentElement = paper.node.parentNode;
 
 			this.edit_dropdown = $("<div />")	.append(this.add_substate_item, this.toggle_concurrency_item, this.reset_item)
 												.addClass("dropdown")

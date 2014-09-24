@@ -216,11 +216,21 @@
 			incoming_transitions.push(transition);
 		};
 		proto.addTransition = function(from_state_name, to_state_name, transition_info) {
+			var from_state, to_state;
 			if(from_state_name instanceof ist.Transition) {
-				//TODO: fill in
+				var transition = from_state_name;
+				from_state = transition.from();
+				to_state = transition.to();
+
+				cjs.wait();
+				from_state._addOutgoingTransition(transition);
+				to_state._addIncomingTransition(transition);
+				cjs.signal();
+				return transition;
 			} else {
-				var from_state = this.getSubstate(from_state_name),
-					to_state = this.getSubstate(to_state_name);
+				from_state = this.getSubstate(from_state_name);
+				to_state = this.getSubstate(to_state_name);
+
 				if(from_state && to_state && !from_state.isStart()) {
 					if(_.isString(transition_info)) {
 						transition_info = {

@@ -647,7 +647,7 @@
 				}, this);
 			} else if(type === "remove_state") {
 				state = event.state;
-				state.async_get("getName", function(name) {
+				state.async_get("getName", "parent", function(name) {
 					state.async_get("parent", function(parent) {
 						command = new ist.RemoveStateCommand({
 							in_effect: true,
@@ -662,11 +662,9 @@
 				}, this);
 			} else if(type === "remove_transition") {
 				transition = event.transition;
-				var statechart = transition.root();
 				command = new ist.RemoveTransitionCommand({
 					in_effect: true,
-					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
-					statechart: { id: to_func(statechart.puppet_master_id || transition.id()) }
+					transition: { id: to_func(transition.obj_id) }
 				});
 				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
@@ -702,23 +700,16 @@
 			} else if(type === "add_transition") {
 				var from_state = event.from;
 				var to_state = event.to;
-				state = from_state.root();
-				statechart_puppet_id = state.puppet_master_id || state.id();
-				var from_puppet_id = from_state.puppet_master_id || from_state.id(),
-					to_puppet_id = to_state.puppet_master_id || to_state.id();
-				event = new ist.ParsedEvent({str: "false", inert: true});
+				event = "false";
 				command = new ist.AddTransitionCommand({
 					in_effect: true,
-					from: { id: to_func(from_puppet_id) },
-					to: { id: to_func(to_puppet_id) },
-					event: event,
-					statechart: { id: to_func(statechart_puppet_id) }
+					from: { id: to_func(from_state.obj_id) },
+					to: { id: to_func(to_state.obj_id) },
+					event: event
 				});
 				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
 					command = null;
-					event.destroy();
-					event = null;
 				});
 			} else if(type === "set_transition_to") {
 				transition = event.transition;
@@ -726,8 +717,8 @@
 				statechart_puppet_id = state.puppet_master_id || state.id();
 				command = new ist.SetTransitionToCommand({
 					in_effect: true,
-					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
-					statechart: { id: to_func(statechart_puppet_id) }
+					transition: { id: to_func(transition.obj_id) },
+					statechart: { id: to_func(state.obj_id) }
 				});
 				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
@@ -736,11 +727,10 @@
 			} else if(type === "set_transition_from") {
 				transition = event.transition;
 				state = event.from;
-				statechart_puppet_id = state.puppet_master_id || state.id();
 				command = new ist.SetTransitionFromCommand({
 					in_effect: true,
-					transition: { id: to_func(transition.puppet_master_id || transition.id()) },
-					statechart: { id: to_func(statechart_puppet_id) }
+					transition: { id: to_func(transition.obj_id) },
+					statechart: { id: to_func(state.obj_id) }
 				});
 				command_str = this.client_socket.post_command(command, function() {
 					command.destroy();
@@ -749,7 +739,7 @@
 			} else if(type === "rename_state") {
 				state = event.state;
 				var new_name = event.new_name;
-				state.async_get("getName", function(old_name) {
+				state.async_get("getName", "parent", function(old_name) {
 					state.async_get("parent", function(parent) {
 						command = new ist.RenameStateCommand({
 							in_effect: true,
@@ -800,10 +790,10 @@
 				});
 			} else if (type === 'make_concurrent') {
 				state = event.state;
-				var state_puppet_id = state.puppet_master_id || state.id();
+				//var state_puppet_id = state.puppet_master_id || state.id();
 				command = new ist.MakeConcurrentCommand({
 					in_effect: true,
-					statechart: { id: to_func(state_puppet_id) },
+					statechart: { id: to_func(state.obj_id) },
 					concurrent: event.concurrent
 				});
 				command_str = this.client_socket.post_command(command, function() {

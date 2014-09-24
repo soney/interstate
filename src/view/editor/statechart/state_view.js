@@ -173,6 +173,7 @@
 		};
 
 		proto.show_menu = function(event) {
+			var layout = this.option("layout");
 			if(event) {
 				event.preventDefault();
 				event.stopPropagation();
@@ -191,19 +192,24 @@
 													.text("Add substate")
 													.on("click.menu_item", _.bind(this.on_add_substate_item_pressed, this));
 
-			var is_concurrent = this.is_concurrent.get();
-			var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
 			this.toggle_concurrency_item = $("<div />")	.addClass("menu_item")
-														.html("Concurrent " + checkbox_mark)
+														.html("")
 														.on("click.menu_item", _.bind(this.on_toggle_concurrency_item_pressed, this));
+
+			var state = this.option("state");
+			state.async_get("isConcurrent", function(is_concurrent) {
+				var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
+				this.toggle_concurrency_item.html("Concurrent " + checkbox_mark)
+			}, this);
+
 			this.toggle_breakpoint_item = $("<div />")	.addClass("menu_item")
 														.text("Add breakpoint")
 														.on("click.menu_item", _.bind(this.on_toggle_breakpoint_item_pressed, this));
 			var PADDING = 1;
 			var HEIGHT = 10;
-			var width = 20 - 2*PADDING;
-			var x = 0;//lwe.x + PADDING;
-			var y = 0;//lwe.y - HEIGHT/2;
+			var width = 100;
+			var x = layout.columnX - width/2;
+			var y = layout.y+8;
 
 			var paper = this.option("paper");
 			//var parentElement = paper.canvas.parentNode;
@@ -233,42 +239,47 @@
 			event.stopPropagation();
 			this.remove_edit_dropdown();
 			var from_state = this.option("state");
+			from_state.async_get("root", function(root_sc) {
+				root_sc.async_get("flattenSubstates", function(flat_statecharts) {
+					var selectable_substates = flat_statecharts.splice(0, flat_statecharts.length-1); // the first element is the major statechart itself
+					this._emit("awaiting_state_selection", {
+						states: selectable_substates,
+						on_select: _.bind(function() {
+										this.add_transition_to_state.apply(this, arguments);
+										$(window).off("mousemove.update_display_arrow");
+										arrow_disp.remove();
+										arrow_disp.destroy();
+									}, this),
+						on_cancel: _.bind(function() {
+										$(window).off("mousemove.update_display_arrow");
+										arrow_disp.remove();
+										arrow_disp.destroy();
+									}, this)
+					});
+
+					var paper = this.option("paper"),
+						layout = this.option("layout");
+					var cx = layout.columnX;
+					var cy = layout.y;
+
+					var arrow_disp = new ist.ArrowView({
+						paper: paper,
+						from: { x: cx, y: cy },
+						to: {x: cx, y: cy}
+					});
+					$(arrow_disp.arrow_path.node).css("pointer-events", "none");
+					
+					$(window).on("mousemove.update_display_arrow", function(event) {
+						//var offset = $(paper.canvas).offset();
+						var offset = $(paper.node).offset();
+						arrow_disp.option("to", { x: event.clientX - offset.left, y: event.clientY - offset.top });
+					});
+				}, this);
+			}, this);
+			/*
 			var root = from_state.root();
 			var flat_statecharts = root.flatten_substates();
-			var selectable_substates = flat_statecharts.splice(0, flat_statecharts.length-1); // the first element is the major statechart itself
-			this._emit("awaiting_state_selection", {
-				states: selectable_substates,
-				on_select: _.bind(function() {
-								this.add_transition_to_state.apply(this, arguments);
-								$(window).off("mousemove.update_display_arrow");
-								arrow_disp.remove();
-								arrow_disp.destroy();
-							}, this),
-				on_cancel: _.bind(function() {
-								$(window).off("mousemove.update_display_arrow");
-								arrow_disp.remove();
-								arrow_disp.destroy();
-							}, this)
-			});
-
-			var paper = this.option("paper"),
-				lwe = this.option("lwe"),
-				rwe = this.option("rwe");
-			var cx = (lwe.x + rwe.x) / 2;
-			var cy = (this.option("padding_top") + lwe.y)/2;
-
-			var arrow_disp = new ist.ArrowView({
-				paper: paper,
-				from: { x: cx, y: cy },
-				to: {x: cx, y: cy}
-			});
-			$(arrow_disp.arrow_path[0]).css("pointer-events", "none");
-			
-			$(window).on("mousemove.update_display_arrow", function(event) {
-				var offset = $(paper.canvas).offset();
-				//var offset = $(paper.node).offset();
-				arrow_disp.option("to", { x: event.clientX - offset.left, y: event.clientY - offset.top });
-			});
+			*/
 		};
 		proto.on_add_substate_item_pressed = function() {
 			this.remove_edit_dropdown();
@@ -289,10 +300,12 @@
 		proto.on_toggle_concurrency_item_pressed = function() {
 			var my_state = this.option("state");
 			this.remove_edit_dropdown();
-			this._emit("make_concurrent", {
-				state: my_state,
-				concurrent: !my_state.is_concurrent()
-			});
+			my_state.async_get("isConcurrent", function(isConcurrent) {
+				this._emit("make_concurrent", {
+					state: my_state,
+					concurrent: !isConcurrent
+				});
+			}, this);
 		};
 		proto.on_toggle_breakpoint_item_pressed = function() {
 			var my_state = this.option("state");
@@ -427,9 +440,11 @@
 			});
 			if(this._selectable_callback) {
 				this.path.unclick(this._selectable_callback);
+				this.label.unclick(this._selectable_callback);
 			}
 			this._selectable_callback = callback;
 			this.path.click(this._selectable_callback);
+			this.label.text.click(this._selectable_callback);
 			var even = false;
 			var interval_time = 500;
 			this.change_color_interval = window.setInterval(_.bind(function() {
@@ -444,6 +459,9 @@
 				}
 				even = !even;
 			}, this), interval_time);
+			this.label.option({
+				edit_on_click: false
+			});
 		};
 		proto.unmake_selectable = function() {
 			if(this.change_color_interval) {
@@ -453,12 +471,16 @@
 			}
 			if(this._selectable_callback) {
 				this.path.unclick(this._selectable_callback);
+				this.label.text.unclick(this._selectable_callback);
 				delete this._selectable_callback;
 			}
 			var state = this.option("state");
 			this.path.attr({
 				fill: this.option(this.active.get() ? "active_fill" : "default_fill"),
 				cursor: ""
+			});
+			this.label.option({
+				edit_on_click: true
 			});
 		};
 	}(ist.StateView));

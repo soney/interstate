@@ -110,10 +110,10 @@
 		var transition = this.option("transition");
 
 		//var event = transition.event();
-		var eventType = transition.get_$("eventType"),
-			str = transition.get_$("getStr");
+		this.event_type = false;
 
 		transition.async_get("eventType", function(type) {
+			this.event_type = type;
 			if(type === "parsed") {
 				this.label = new ist.EditableText(paper, {x: c.x, y: c.y, text: "", fill: this.option("text_background"), color: this.option("text_foreground")});
 				this.label.option({
@@ -123,8 +123,9 @@
 				this.label	.on("cancel", this.on_cancel_rename, this)
 							.on("change", this.on_confirm_rename, this)
 							.on("change", this.forward_event, this);
-				cjs.liven(function(){
-					var eventType_value = eventType.get();
+
+				var str = transition.get_$("getStr");
+				this._live_str_fn = cjs.liven(function(){
 					var str_value = str.get();
 					this.label.option("text", str_value);
 				}, { context: this});
@@ -136,6 +137,9 @@
 										"stroke-dasharray": this.option("vline_dasharray")
 									});
 				this.vline.appendTo(paper);
+
+				this.$clickable = $([this.label.text.node, this.label.label_background.node].concat(this.arrow.getDOMNodes()));
+				this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
 			}
 		}, this);
 		/*
@@ -189,9 +193,9 @@
 			str = "";
 		}
 		*/
-		//this.$clickable = $([this.label.text.node, this.label.label_background.node].concat(this.arrow.getDOMNodes()));
-		//this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
 
+		this.$clickable = $(this.arrow.getDOMNodes());
+		this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
 		//$(this.label.text.node).tooltip({
 			//tooltipClass: "error"
 		//});
@@ -283,11 +287,10 @@
 			var max_x = Math.max(from.x, to.x);
 			var PADDING = 1;
 			var HEIGHT = 10;
-			var width = Math.max((max_x-min_x) - 2*PADDING, 100);
+			var width = 130;
 			var cx = (max_x + min_x)/2;
 			var x = cx - width/2;
 			var y = from.y;
-
 
 			this.edit_dropdown = $("<div />")	.addClass("transition dropdown")
 												.appendTo(parentElement)
@@ -298,11 +301,11 @@
 													width: width + "px"
 												});
 			var items;
-			//if(transition.from() instanceof ist.StartState) {
-				//this.edit_dropdown.append(this.change_to);
-			//} else {
-				//this.edit_dropdown.append(this.edit_event, this.change_from, this.change_to, this.remove_item, this.togglebreakpoint);
-			//}
+			if(this.eventType  === "start") {
+				this.edit_dropdown.append(this.change_to);
+			} else {
+				this.edit_dropdown.append(this.edit_event, this.change_from, this.change_to, this.remove_item, this.togglebreakpoint);
+			}
 			$(window).on("mousedown.close_menu", _.bind(this.on_window_click_while_expanded, this));
 			$(window).on("keydown.close_menu", _.bind(this.on_window_keydown_while_expanded, this));
 		};
@@ -319,13 +322,16 @@
 		};
 		proto.on_change_from_pressed = function() {
 			this.remove_edit_dropdown();
-			var root = this.option("transition").root();
-			var selectable_substates = root.flatten_substates(); // the first element is the major statechart itself
-			selectable_substates = selectable_substates.splice(0, selectable_substates.length-1);
-			this._emit("awaiting_state_selection", {
-				states: selectable_substates,
-				on_select: _.bind(this.emit_set_from, this)
-			});
+			var transition = this.option("transition");
+			transition.async_get("root", function(root_sc) {
+				root_sc.async_get("flattenSubstates", function(flat_statecharts) {
+					var selectable_substates = flat_statecharts.splice(0, flat_statecharts.length-1);
+					this._emit("awaiting_state_selection", {
+						states: selectable_substates,
+						on_select: _.bind(this.emit_set_from, this)
+					});
+				}, this);
+			}, this);
 		};
 		proto.emit_set_to = function(to_state) {
 			this._emit("set_to", {
@@ -335,13 +341,16 @@
 		};
 		proto.on_change_to_pressed = function() {
 			this.remove_edit_dropdown();
-			var root = this.option("transition").root();
-			var selectable_substates = root.flatten_substates(); // the first element is the major statechart itself
-			selectable_substates = selectable_substates.splice(0, selectable_substates.length-1);
-			this._emit("awaiting_state_selection", {
-				states: selectable_substates,
-				on_select: _.bind(this.emit_set_to, this)
-			});
+			var transition = this.option("transition");
+			transition.async_get("root", function(root_sc) {
+				root_sc.async_get("flattenSubstates", function(flat_statecharts) {
+					var selectable_substates = flat_statecharts.splice(0, flat_statecharts.length-1);
+					this._emit("awaiting_state_selection", {
+						states: selectable_substates,
+						on_select: _.bind(this.emit_set_to, this)
+					});
+				}, this);
+			}, this);
 		};
 		proto.on_remove_item_pressed = function() {
 			this.remove_edit_dropdown();
@@ -443,8 +452,8 @@
 
 		proto.destroy = function () {
 			this.arrow.destroy();
-			//this.$clickable.off("contextmenu.cm");
-			//delete this.$clickable;
+			this.$clickable.off("contextmenu.cm");
+			delete this.$clickable;
 			if(this.label) {
 				this.label	.off("cancel", this.on_cancel_rename, this)
 							.off("change", this.on_confirm_rename, this);

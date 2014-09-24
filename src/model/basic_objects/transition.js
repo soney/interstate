@@ -112,6 +112,12 @@
 				cjs.signal();
 			}
 		};
+		proto.remove = function() {
+			var from = this.from(),
+				to = this.to();
+			from._removeOutgoingTransition(this);
+			to._removeIncomingTransition(this);
+		};
 		proto.getLineage = function() {
 			var from_lineage = this.from().getLineage();
 			return from_lineage.concat(this);
