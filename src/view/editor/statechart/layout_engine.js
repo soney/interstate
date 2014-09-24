@@ -44,7 +44,7 @@
 			unused_state_name_width: 40,
 			state_name_height: function() { return this.option("transition_height"); },
 			state_padding_y: function() { return this.option("transition_margin"); },
-			state_padding_x: 8,
+			state_padding_x: 2,
 			add_state_width: 50,
 			used_start_state_width: function() { return this.option("used_state_name_width"); },
 			unused_start_state_width: function() { return this.option("unused_state_name_width"); },
@@ -55,8 +55,8 @@
 			state_line_padding_factor: 1/2,
 			padding_top: 10,
 			padding_bottom: 5,
-			padding_left: 2,
-			padding_right: 2,
+			padding_left: 0,
+			padding_right: 0,
 			collapseUnusedTransitions: false,
 			indentIncomingTransitions: false,
 			stateMachineSummary: false 
@@ -595,9 +595,8 @@
 								width: width
 							});
 
-							columnWidths[columnIndex] = width;
-						}, this
-					);
+							columnWidths[columnIndex] = Math.max(width, this.option("state_padding_x"));
+						}, this);
 				}
 			}, this);
 

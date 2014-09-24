@@ -360,6 +360,12 @@
 								object_view.remove();
 							}
 						});
+						_.each(this.hranges, function(object_view) {
+							var state = object_view.option("state");
+							if(!locations[state.cobj_id]) {
+								object_view.remove();
+							}
+						});
 				}, this);
 			}
 		/*
