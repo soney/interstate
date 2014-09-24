@@ -623,7 +623,7 @@
 						state_name = "init";
 						make_start = true;
 					} else {
-						var orig_state_name = "state_" + substates_size;
+						var orig_state_name = "state" + substates_size;
 						state_name = orig_state_name;
 						var i = 1;
 						while(_.has(substates, state_name)) {
@@ -843,7 +843,14 @@
 			var map_diff = ist.get_map_diff(old_keys, keys, old_vals, vals);
 
 			_.each(map_diff.key_change, function(info) {
-				map.rename(info.from, info.to);
+                var keyIndex = map.indexOf(info.from);
+                if (keyIndex >= 0) {
+                    var prop_val = map.get(info.from);
+                    cjs.wait();
+                    map	.remove(info.from)
+						.put(info.to, prop_val, keyIndex);
+                    cjs.signal();
+                }
 			});
 			_.each(map_diff.set, function(info) {
 				map.put(info.key, info.value);

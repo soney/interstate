@@ -140,11 +140,11 @@
 
 			My.superclass.destroy.apply(this, arguments);
         };
-		proto.addSubstate = function(name) {
+		proto.addSubstate = function(name, index) {
 			var state = new My({parent: this, root: this.root()}),
 				substates = this._get_substates();
 
-			substates.put(name, state);
+			substates.put(name, state, index);
 			return state;
 		};
 		proto.removeSubstate = function(name) {

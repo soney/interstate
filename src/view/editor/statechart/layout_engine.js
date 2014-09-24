@@ -41,7 +41,7 @@
 			transition_height: 18,
 			transition_margin: 1,
 			used_state_name_width: 90,
-			unused_state_name_width: 30,
+			unused_state_name_width: 40,
 			state_name_height: function() { return this.option("transition_height"); },
 			state_padding_y: function() { return this.option("transition_margin"); },
 			state_padding_x: 8,

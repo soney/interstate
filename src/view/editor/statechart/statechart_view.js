@@ -345,6 +345,21 @@
 								}
 							}, this);
 						}, this);
+
+						_.each(this.object_views, function(object_view) {
+							var state;
+							if(object_view instanceof ist.StateView) {
+								state = object_view.option("state");
+							} else if(object_view instanceof ist.StartStateView) {
+								state = object_view.option("state");
+							} else if(object_view instanceof ist.TransitionView) {
+								state = object_view.option("transition");
+							}
+
+							if(!locations[state.cobj_id]) {
+								object_view.remove();
+							}
+						});
 				}, this);
 			}
 		/*

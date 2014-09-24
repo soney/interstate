@@ -597,7 +597,7 @@
 			}, anim_time/2, mina.easein, function() {
 				if(paper.height === null) { // we were deleted
 					return;
-				} else if(arrow[0] === null) {
+				} else if(arrow.node === null) {
 					the_flash.remove();
 					return;
 				}
@@ -607,7 +607,9 @@
 				}, anim_time/2, mina.easeout);
 				the_flash.animate({
 					path: line_elem.getSubpath(4 * len / 4.1, len)
-				}, anim_time/2, mina.easeout);
+				}, anim_time/2, mina.easeout, function() {
+					the_flash.remove();
+				});
 			});
 		};
 		proto.remove = function () {

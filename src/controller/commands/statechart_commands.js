@@ -112,7 +112,7 @@
         };
     
         proto._unexecute = function () {
-            this._statechart.add_state(this._state_name, this._state, this._index);
+            this._statechart.addSubstate(this._state_name, this._state, this._index);
             var self = this;
             _.forEach(this._transitions, function (transition) {
                 self._statechart.addTransition(transition);
