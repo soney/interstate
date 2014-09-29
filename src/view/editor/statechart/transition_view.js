@@ -118,15 +118,15 @@
 		transition.async_get("eventType", function(type) {
 			this.event_type = type;
 			if(type === "parsed") {
-				this.label = new ist.EditableText(paper, {x: c.x, y: c.y, text: "", fill: this.option("text_background"), color: this.option("text_foreground")});
+				this.label = new ist.EditableText(paper, {x: c.x, y: c.y, text: "", fill: this.option("text_background"), color: this.option("text_foreground")})
+								.option({
+									"font-size": this.option("font_size"),
+									"font-family": this.option("font_family")
+								})
+								.on("cancel", this.on_cancel_rename, this)
+								.on("change", this.on_confirm_rename, this)
+								.on("change", this.forward_event, this);
 				this.updateArrowLocation();
-				this.label.option({
-					"font-size": this.option("font_size"),
-					"font-family": this.option("font_family")
-				});
-				this.label	.on("cancel", this.on_cancel_rename, this)
-							.on("change", this.on_confirm_rename, this)
-							.on("change", this.forward_event, this);
 
 				var str = transition.get_$("getStr");
 				this._live_str_fn = cjs.liven(function(){
@@ -226,14 +226,34 @@
 			}
 			this.update_menu_position();
 		};
-		proto.updateArrowlocation = function() {
+		proto.updateArrowLocation = function() {
 			var from = this.option("from"),
 				to = this.option("to"),
-				c = center(from, to);
+				c = center(from, to),
+				arrowLength = this.arrow.option("arrowLength"),
+				textAlign,
+				x,
+				maxWidth;
+
+			if(from.x < to.x) { // arrow pointing left
+				textAlign = "end";
+				x = to.x - arrowLength;
+				maxWidth = to.x - from.x + 50;
+			} else if(from.x > to.x) { // arrow pointing right
+				textAlign = "start";
+				x = to.x + arrowLength;
+				maxWidth = from.x - to.x + 50;
+			} else { // equal
+				textAlign = "end";
+				x = from.x;
+				maxWidth = 70;
+			}
 
 			this.label.option({
-				x: from.x,
-				y: c.y
+				x: x,
+				y: c.y,
+				"text-anchor": textAlign,
+				maxWidth: maxWidth
 			});
 		};
 

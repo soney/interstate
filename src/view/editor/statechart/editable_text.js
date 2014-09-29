@@ -52,7 +52,8 @@
 			"fill-opacity": 0.9,
 			textbox_background: "white",
 			textbox_color: "black",
-			edit_on_click: true
+			edit_on_click: true,
+			maxWidth: false
 		}, options);
 
 		this.text = paper.text(this.option("x"), this.option("y") + this.option("y_offset"), this.get_text())
@@ -69,6 +70,7 @@
 		} else {
 			this.text.attr("fill", this.option("color"));
 		}
+		this.check_vs_width();
 		var bbox = this.getBBox();
 		this.label_background = paper.rect(bbox.x, bbox.y, bbox.width, bbox.height).insertBefore(this.text);
 		this.label_background.attr({
@@ -85,6 +87,31 @@
 		var proto = my.prototype;
 		able.make_proto_listenable(proto);
 		able.make_proto_optionable(proto);
+
+		proto.check_vs_width = function() {
+			var maxWidth = this.option("maxWidth");
+			if(maxWidth) {
+				var originalText = this.option("text");
+				if(originalText) {
+					var originalTextLen = originalText.length,
+						bbox = this.text.getBBox(),
+						text = originalText,
+						numCharsToRemove = 0;
+					if(bbox.width >= maxWidth) {
+						numCharsToRemove = Math.round(originalTextLen * (bbox.width-maxWidth)/maxWidth);
+
+						do {
+							text = originalText.slice(0, Math.floor((originalText.length-numCharsToRemove-2)/2)) +
+										'...'+
+										originalText.slice(Math.ceil((originalText.length+numCharsToRemove-1)/2));
+							this.text.attr("text", text);
+							bbox = this.text.getBBox();
+							numCharsToRemove++;
+						} while(bbox.width >= maxWidth && numCharsToRemove < originalTextLen);
+					}
+				}
+			}
+		};
 
 		proto.destroy = function() {
 			this.$text.off("click.onclick");
@@ -236,6 +263,7 @@
 					fill: this.show_default() ? this.option("default_color") : this.option("color"),
 					text: this.option("text")
 				});
+				this.check_vs_width();
 				this.update_label_background();
 			}
 		};

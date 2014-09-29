@@ -69,6 +69,9 @@
             ist.install_instance_builtins(this, options, My);
             this._tree = cjs(function () {
                 var str = this.getStr();
+				if(window.x) {
+					console.log(str);
+				}
                 return ist.parse(str);
             }, {
 				context: this

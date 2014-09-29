@@ -38,7 +38,7 @@
 	ist.RootStatechartLayoutEngine = function (options) {
 		able.make_this_optionable(this, {
 			theta_degrees: 40,
-			transition_height: 18,
+			transition_height: 16,
 			transition_margin: 1,
 			used_state_name_width: 90,
 			unused_state_name_width: 40,
@@ -59,7 +59,8 @@
 			padding_right: 0,
 			collapseUnusedTransitions: false,
 			indentIncomingTransitions: false,
-			stateMachineSummary: false 
+			stateMachineSummary: false,
+			allowTransitionsOnStateRow: false
 		}, options);
 
 		this.$stateMachineSummary = this.option("stateMachineSummary");
@@ -425,6 +426,10 @@
 
 				_.each(transitions_infos, function(transition_info) {
 					var row_num = depth;
+					
+					if(!fromStateWing.isAtomic && !this.option("allowTransitionsOnStateRow")) {
+						row_num++;
+					}
 
 					while(row_num < rows.length) {
 						row = rows[row_num];
@@ -447,9 +452,9 @@
 					if(row_num > highestTransitionRow) { highestTransitionRow = row_num; }
 					row = [transition_info];
 					rows[row_num] = row;
-				});
+				}, this);
 				fromStateWing.numOwnRows = highestTransitionRow-depth + 1;
-			});
+			}, this);
 
 			_.each(state_wings, function(fromStateWing) {
 				var sc_summary = fromStateWing.sc_summary,
@@ -577,7 +582,9 @@
 								_.each(columnTransitions.incoming, function(transition_info) {
 									var rowNum = transition_info.rowNum;
 
-									indentations[rowNum-depth] = NO_INDENT;
+									if(!indentations[rowNum-depth]) { // don't overwrite previous indentation
+										indentations[rowNum-depth] = NO_INDENT;
+									}
 								});
 							}
 

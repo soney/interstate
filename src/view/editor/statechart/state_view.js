@@ -111,7 +111,8 @@
 				"font-family": this.option("font_family"),
 				x: layout.x,
 				y: layout.y,
-				text: this.get_name()
+				text: this.get_name(),
+				maxWidth: layout.columnWidth
 			});
 			this.label.on("change", this.forward_event, this);
 			this.$clickable = $([this.path.node, this.label.text.node]);
@@ -163,7 +164,8 @@
 				this.label.option({
 					x: layout.x,
 					y: layout.y,
-					text: name
+					text: name,
+					maxWidth: layout.columnWidth
 				});
 				this.update_menu_position();
 				this.vline.attr({

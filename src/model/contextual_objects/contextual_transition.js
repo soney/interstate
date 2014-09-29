@@ -97,6 +97,9 @@
 
 			this._live_event_updater = cjs.liven(function() {
 				event = event_constraint.get();
+				if(window.x) {
+					console.log(event);
+				}
 
 				if(event instanceof ist.BasicObject) {
 					event_object = event;
@@ -308,6 +311,7 @@
 	ist.on_event = function (event_type, arg1, arg2, arg3, arg4) {
 		if (event_type === "timeout") {
 			var timeout_event = new ist.TimeoutEvent(arg1);
+			console.log(timeout_event);
 			return timeout_event;
 		} else if(event_type === "time") {
 			var time_event = new ist.TimeEvent(arg1);
@@ -334,12 +338,11 @@
 			var events = [];
 
 			if (targets) {
-			/*
+				/*
 				var statechart_spec = event_type;
 				var statechart_event = new ist.TransitionEvent(targets, statechart_spec);
 				events.push(statechart_event);
-
-*/
+				*/
 				if (arguments.length <= 1) { // Ex: on('mouseup') <-> on('mouseup', window)
 					targets = window;
 				}

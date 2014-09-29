@@ -37,10 +37,7 @@
 					.set("x", "<stateful>")
 					.cd("x")
 						.add_state("A")
-						.add_state("B")
-						.add_state("C")
-						.add_state("D")
-						.add_transition("A", "C", "false")
+						.add_transition("A", "A", "false")
 						//.add_transition("A", "B", "on('timeout', 2000)")
 						//.add_transition("B", "A", "on('timeout', 2000)")
 						//.add_transition("B", "A", "on('timeout', 2000)")
@@ -63,10 +60,12 @@
 				//env.print_on_return = true;
 				//env.print();
 
+
 				setTimeout(function() {
 						$("tr").click();
+						window.x = true;
 						setTimeout(function() {
-							env.set_event("A->C", "on('timeout', 400)")
+							env.set_event("A->A", "on('timeout', 400)")
 						}, 1000);
 					}, 500);
 
