@@ -768,6 +768,7 @@ var constraint_solver = {
 			stack = constraint_solver.stack,
 			stack_len = stack.length,
 			demanding_var, dependency_edge, tstamp;
+		//if(node._id == 609) debugger;
 		
 		if (stack_len > 0) { // There's a constraint that's asking for my value
 			// Let's call it demanding_var
@@ -968,6 +969,7 @@ var constraint_solver = {
 							// If the edge's timestamp is out of date, then this dependency isn't used
 							// any more and remove it
 							if (outgoingEdge.tstamp < dependentNode._tstamp) {
+								//if(curr_node._id == 609) debugger;
 								delete curr_node._outEdges[toNodeID];
 								delete dependentNode._inEdges[curr_node_id];
 							} else {
@@ -998,6 +1000,7 @@ var constraint_solver = {
 	 * @method cjs.removeDependency
 	 */
 	removeDependency: function(fromNode, toNode) {
+		//if(fromNode._id == 609) debugger;
 		delete fromNode._outEdges[toNode._id];
 		delete toNode._inEdges[fromNode._id];
 	},
@@ -1068,6 +1071,7 @@ var constraint_solver = {
 		// Clear the incoming edges
 		for(key in inEdges) {
 			if(has(inEdges, key)) {
+				//if(inEdges[key].from._id == 609) debugger;
 				delete inEdges[key].from._outEdges[node_id];
 				delete inEdges[key];
 			}

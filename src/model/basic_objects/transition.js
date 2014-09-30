@@ -17,7 +17,9 @@
         My.builtins = {
             "str": {
                 start_with: function () { return cjs(""); },
-                getter: function (me) { return me.get(); },
+                getter: function (me) {
+					return me.get();
+				},
                 setter: function (me, str) {
                     me.set(str);
                 },
@@ -69,9 +71,6 @@
             ist.install_instance_builtins(this, options, My);
             this._tree = cjs(function () {
                 var str = this.getStr();
-				if(window.x) {
-					console.log(str);
-				}
                 return ist.parse(str);
             }, {
 				context: this

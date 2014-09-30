@@ -30,6 +30,8 @@
 
 		this._times_run = 0;
 		this.$times_run = cjs(this._times_run);
+		this._manual_event = new ist.Event();
+		this._manual_event.on_fire(this.fire, this);
 		this._type = "transition";
 	};
 
@@ -97,9 +99,6 @@
 
 			this._live_event_updater = cjs.liven(function() {
 				event = event_constraint.get();
-				if(window.x) {
-					console.log(event);
-				}
 
 				if(event instanceof ist.BasicObject) {
 					event_object = event;
@@ -107,6 +106,13 @@
 					event = ptr.getContextualObject();
 				} else {
 					event_object = false;
+				}
+
+				if(event instanceof ist.MultiExpression) {
+					actions = event.rest();
+					event = event.first();
+				} else {
+					actions = [];
 				}
 
 				if(event instanceof ist.Event) {
@@ -123,29 +129,29 @@
 					if(event_object) { can_destroy_event = true; }
 					else { can_destroy_event = false; }
 				} else {
+					if(event && !old_event) {
+						this._manual_event.fire(event);
+					}
+				/*
 					if(cjs.isConstraint(event_constraint)) {
 						cjs.removeDependency(event_constraint, this._live_event_updater._constraint);
 					}
+
 					event = new ist.ConstraintEvent(event_constraint, event);
 					can_destroy_old_event = true;
-				}
-
-				if(event instanceof ist.MultiExpression) {
-					actions = event.rest();
-					event = event.first();
-				} else {
-					actions = [];
+					*/
 				}
 
 				this._event = event;
 
-				event.on_fire(this.fire, this, actions, csobj, pointer);
-
-				if(this.isEnabled()) {
-					event.enable();
+				if(event instanceof ist.Event) {
+					event.on_fire(this.fire, this, actions, csobj, pointer);
+					if(this.isEnabled()) {
+						event.enable();
+					}
 				}
 
-				if (old_event && old_event !== event) {
+				if (old_event && old_event !== event && old_event.off_fire) {
 					old_event.off_fire(this.child_fired, this);
 
 					if(can_destroy_old_event) {
@@ -162,7 +168,7 @@
 				context: this,
 				on_destroy: function() {
 					event_constraint.destroy(true);
-					if(old_event) {
+					if(old_event && old_event.off_fire) {
 						old_event.off_fire(this.child_fired, this);
 						if(can_destroy_old_event) {
 							old_event.destroy(true);
@@ -177,6 +183,7 @@
 			}
 		};
 		proto.begin_destroy = function() {
+			//debugger;
 			this._remove_live_event_updater();
 
 			My.superclass.begin_destroy.apply(this, arguments);
@@ -192,6 +199,8 @@
 				event.off_fire(this.fire, this);
 			} else if(eventType === "parsed") {
 			}
+			this._manual_event.off_fire(this.fire, this);
+			this._manual_event.destroy();
 			My.superclass.destroy.apply(this, arguments);
 		};
 		proto.eventType = function() {
@@ -311,7 +320,6 @@
 	ist.on_event = function (event_type, arg1, arg2, arg3, arg4) {
 		if (event_type === "timeout") {
 			var timeout_event = new ist.TimeoutEvent(arg1);
-			console.log(timeout_event);
 			return timeout_event;
 		} else if(event_type === "time") {
 			var time_event = new ist.TimeEvent(arg1);
