@@ -4186,7 +4186,7 @@ extend(cjs, {
 			hash: memoize_default_hash,
 			equals: memoize_default_equals,
 			context: root,
-			literal_values: true
+			literal_values: true,
 		}, options);
 
 		// Map from args to value
@@ -4213,6 +4213,8 @@ extend(cjs, {
 				constraint.destroy(silent);
 			});
 			options.args_map.destroy(silent);
+			delete options.context;
+			delete options.args_map;
 		};
 
 		// Run through every argument and call fn on it

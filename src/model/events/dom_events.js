@@ -17,25 +17,17 @@
 		var proto = My.prototype;
 		proto.on_create = function (specified_type, specified_targets) {
 			this.get_wait_listener = cjs.memoize(function (specified_target) {
-				var self = this;
 				return function() {
 					ist.event_queue.wait();
 				};
-			}, {
-				context: this
 			});
 			this.get_signal_listener = cjs.memoize(function (specified_target) {
-				var self = this;
 				return function() {
 					ist.event_queue.signal();
 				};
-			}, {
-				context: this
 			});
 			this.get_target_listener = cjs.memoize(function (specified_target) {
-				var self = this;
-				var id = this._id;
-				var listener = function (event) {
+				var listener = _.bind(function (event) {
 					//ist.event_queue.wait();
 				
 					var new_event = _.extend({}, event, {
@@ -45,16 +37,12 @@
 						stopImmediatePropagation: event.stopImmediatePropagation ? _.bind(event.stopImmediatePropagation, event) : function(){}
 					});
 
-					self.fire(new_event);
+					this.fire(new_event);
 
 					//_.defer(function () {
 						//ist.event_queue.signal();
 					//});
-				};
-				listener.destroy = function() {
-					self = null;
-					delete listener.destroy;
-				};
+				}, this);
 				return listener;
 			}, {
 				context: this,
@@ -164,11 +152,15 @@
 			delete this.live_fn;
 			this.remove_listeners();
 			var self = this;
-			this.get_target_listener.each(function(target_listener) {
-				target_listener.get().destroy();
-			});
+			//this.get_target_listener.each(function(target_listener) {
+				//target_listener.get().destroy();
+			//});
 			this.get_target_listener.destroy(true);
+			this.get_wait_listener.destroy(true);
+			this.get_signal_listener.destroy(true);
 
+			delete this.get_wait_listener;
+			delete this.get_signal_listener;
 			delete this.get_target_listener;
 			delete this.targets;
 			delete this.specified_targets;

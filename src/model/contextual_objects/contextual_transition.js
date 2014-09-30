@@ -126,20 +126,11 @@
 						event = fireable_attachment.getEvent();
 					}
 
-					if(event_object) { can_destroy_event = true; }
-					else { can_destroy_event = false; }
+					can_destroy_event = event_object ? true : false;
 				} else {
 					if(event && !old_event) {
 						this._manual_event.fire(event);
 					}
-				/*
-					if(cjs.isConstraint(event_constraint)) {
-						cjs.removeDependency(event_constraint, this._live_event_updater._constraint);
-					}
-
-					event = new ist.ConstraintEvent(event_constraint, event);
-					can_destroy_old_event = true;
-					*/
 				}
 
 				this._event = event;
@@ -152,7 +143,7 @@
 				}
 
 				if (old_event && old_event !== event && old_event.off_fire) {
-					old_event.off_fire(this.child_fired, this);
+					old_event.off_fire(this.fire, this);
 
 					if(can_destroy_old_event) {
 						old_event.destroy(true); //destroy silently (without nullifying)
@@ -169,10 +160,10 @@
 				on_destroy: function() {
 					event_constraint.destroy(true);
 					if(old_event && old_event.off_fire) {
-						old_event.off_fire(this.child_fired, this);
-						if(can_destroy_old_event) {
-							old_event.destroy(true);
-						}
+						old_event.off_fire(this.fire, this);
+					}
+					if(can_destroy_old_event) {
+						old_event.destroy(true);
 					}
 				}
 			});
