@@ -581,7 +581,7 @@
 				obj_index = pointer.lastIndexOf(object);
 
 			if (obj_index >= 0) {
-				var objPointer = pointer.slice(0, obj_index),
+				var objPointer = pointer.slice(0, obj_index+1),
 					copy = objPointer.copy(),
 					cObj = objPointer.getContextualObject();
 

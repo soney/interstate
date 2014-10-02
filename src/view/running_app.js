@@ -64,7 +64,6 @@
 			this.$inspecting_hover_object = cjs(false);
 			this.$breakpoints = cjs({});
 
-
 			if(this.option("touchscreen_layer")) {
 				this.element.touchscreen_layer({
 				});
@@ -72,7 +71,7 @@
 			if(!this.option("root")) {
 				var root = ist.load();
 				if(!root) {
-					root = ist.get_default_root(false);
+					root = ist.get_default_root();
 					ist.saveAndSetCurrent(root);
 				}
 				this.option("root", root);

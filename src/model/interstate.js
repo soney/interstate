@@ -10,7 +10,7 @@ var interstate = (function (root) {
 		version: "<%= version %>",
 		build_time: "<%= build_time %>",
 		__log_errors: true,
-		__debug: true,
+		__debug: false,
 		__empty_files: false,
 		__garbage_collect: true,
 		root_name: "sketch"

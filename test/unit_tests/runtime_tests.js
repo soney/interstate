@@ -612,6 +612,7 @@
 
 					var ev = document.createEvent("MouseEvent");
 					ev.initMouseEvent("click");
+					window.x = true;
 
 					circles[0].dispatchEvent(ev);
 				},
@@ -707,28 +708,6 @@
 					equal(cobj.prop_val("x"), 15);
 					env.set("d", "2");
 					equal(cobj.prop_val("x"), 14);
-				}
-			}]
-		},
-		{
-			name: "Immediate Constraint Event Transitions",
-			expect: 1,
-			builtins: false,
-			steps: [{
-				setup: function(env) {
-					env	.set("obj", "<stateful>")
-						.cd("obj")
-							.add_state("state1")
-							.add_state("state2")
-							.add_transition("state1", "state2", "true")
-							.set("x", "state1", "1")
-							.set("x", "state2", "2")
-							.start_at("state1")
-						;
-				},
-				test: function(env, runtime) {
-					var cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
-					equal(cobj.prop_val("x"), 2);
 				}
 			}]
 		},

@@ -20,12 +20,12 @@
 				return function() {
 					ist.event_queue.wait();
 				};
-			});
+			}, { context: this });
 			this.get_signal_listener = cjs.memoize(function (specified_target) {
 				return function() {
 					ist.event_queue.signal();
 				};
-			});
+			}, { context: this });
 			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var listener = _.bind(function (event) {
 					//ist.event_queue.wait();

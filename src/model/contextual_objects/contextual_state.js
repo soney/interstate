@@ -353,7 +353,6 @@
 					active_substate.setActiveSubstate(start_state, transition, event);
 				}
 
-				if(this.sid() === 841) debugger;
 				ist.event_queue.once("end_event_queue_round_0", function () {
 					this._emit("pre_transition_fire", {
 						type: "pre_transition_fire",

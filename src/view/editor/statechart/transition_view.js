@@ -542,20 +542,22 @@
 
 		if(highlight_enabled) {
 			var transition = this.option("transition");
-			var enabled = transition.get_$("isEnabled");
-			this.enabled_fn = cjs.liven(function () {
-				if (enabled.get()) {
-					if (this.line_path) {
-						this.line_path.attr("stroke-dasharray", this.option("enabled_dasharray"));
+			if(transition) {
+				var enabled = transition.get_$("isEnabled");
+				this.enabled_fn = cjs.liven(function () {
+					if (enabled.get()) {
+						if (this.line_path) {
+							this.line_path.attr("stroke-dasharray", this.option("enabled_dasharray"));
+						}
+					} else {
+						if (this.line_path) {
+							this.line_path.attr("stroke-dasharray", this.option("disabled_dasharray"));
+						}
 					}
-				} else {
-					if (this.line_path) {
-						this.line_path.attr("stroke-dasharray", this.option("disabled_dasharray"));
-					}
-				}
-			}, {
-				context: this
-			});
+				}, {
+					context: this
+				});
+			}
 		}
 	};
 	(function (My) {

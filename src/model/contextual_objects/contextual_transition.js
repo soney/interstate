@@ -30,7 +30,7 @@
 
 		this._times_run = 0;
 		this.$times_run = cjs(this._times_run);
-		this._manual_event = new ist.Event();
+		this._manual_event = new ist.ManualEvent();
 		this._manual_event.on_fire(this.fire, this);
 		this._type = "transition";
 	};
@@ -80,6 +80,14 @@
 				event.on_fire(this.fire, this);
 			} else if(eventType === "parsed") {
 				this._add_live_event_updater();
+			}
+
+			if(this._live_event_updater) {
+				if(this.isEnabled()) {
+					this._live_event_updater.run(false);
+				} else {
+					this._live_event_updater.pause();
+				}
 			}
 
 			if(this.constructor === My) { this.shout_initialization();  }
@@ -157,6 +165,7 @@
 				can_destroy_old_event = can_destroy_event;
 			}, {
 				context: this,
+				run_on_create: false,
 				on_destroy: function() {
 					event_constraint.destroy(true);
 					if(old_event && old_event.off_fire) {
@@ -258,9 +267,12 @@
 				if(eventType === "start") {
 					this.onTransitionToChanged();
 				} else if(eventType === "parsed") {
-					if(this._event) {
+					if(this._event && this._event.enable) {
 						this._event.enable();
 					}
+				}
+				if(this._live_event_updater && this._live_event_updater.resume()) {
+					this._live_event_updater.run();
 				}
 			}
 		};
@@ -272,9 +284,12 @@
 
 				var eventType = this.eventType();
 				if(eventType === "parsed") {
-					if(this._event) {
+					if(this._event && this._event.disable) {
 						this._event.disable();
 					}
+				}
+				if(this._live_event_updater) {
+					this._live_event_updater.pause();
 				}
 				/*
 

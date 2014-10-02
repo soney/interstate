@@ -102,7 +102,6 @@
 		this.on_create.apply(this, arguments);
 		this._initialized = false;
 		this.initialize();
-		//if(this._id === 342) debugger;
 	};
 
 	(function (my) {

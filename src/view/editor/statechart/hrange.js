@@ -71,6 +71,13 @@
 			able.destroy_this_optionable(this);
 			able.destroy_this_listenable(this);
 		};
+		proto.remove = function() {
+			this.left_vline.remove();
+			this.right_vline.remove();
+			this.hline.remove();
+			this.text_background.remove();
+			this.text_foreground.remove();
+		};
 
 		proto.update = function() {
 			var from_x = this.option("from_x"),

@@ -13,6 +13,7 @@
 	// mouse
 	ist.createMouseObject = function() {
 		
+		/*
 		var mouse_event = new ist.StatefulObj({});
 		mouse_event._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "event"}));
 		mouse_event .set("target", new ist.Cell({str: "arguments[0]"}))
@@ -21,6 +22,7 @@
 					.addSubstate("idle")
 					.startsAt("idle")
 					.addTransition("idle", "idle", "on(type, target);this.fire()");
+					*/
 
 		var clientX = cjs(0),
 			clientY = cjs(0),
@@ -66,6 +68,7 @@
 					pageY: pageY,
 					screenX: screenX,
 					screenY: screenY,
+					/*
 					mouseEvent: mouse_event,
 					click: new ist.Cell({str: "mouseEvent(window, type='click')"}),
 					down: new ist.Cell({str: "mouseEvent(window,type='mousedown')"}),
@@ -73,6 +76,7 @@
 					move: new ist.Cell({str: "mouseEvent(window,type='mousemove')"}),
 					over: new ist.Cell({str: "mouseEvent(window,type='mouseover')"}),
 					out: new ist.Cell({str: "mouseEvent(window,type='mouseout')"}),
+					*/
 				}
 			});
 		device_mouse.destroy = function() {
