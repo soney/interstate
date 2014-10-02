@@ -1,0 +1,78 @@
+.container {
+	margin-top: 30px;
+}
+/* Space out content a bit */
+body {
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+/* Custom page header */
+.header {
+  border-bottom: 1px solid #e5e5e5;
+}
+/* Make the masthead heading the same height as the navigation */
+.header h1 {
+	padding-bottom: 19px;
+	margin-top: 0;
+	margin-bottom: 0;
+	line-height: 40px;
+	color: #900;
+	font-size: 45px;
+}
+/* Customize container */
+@media (min-width: 768px) {
+	.container {
+		max-width: 730px;
+	}
+}
+/* Responsive: Portrait tablets and up */
+@media screen and (min-width: 768px) {
+  /* Remove the padding we set earlier */
+	.header, .footer {
+		padding-right: 0;
+		padding-left: 0;
+	}
+}
+
+p.abstract {
+	text-align: justify;
+}
+
+a.headline_link {
+	background-color: #FAFAFA;
+	display: block;
+	color: #666;
+	border: 1px solid #AAA;
+	margin-top: 7px;
+	margin-bottom: 7px;
+	border-radius: 5px;
+	padding: 3px;
+	font-size: 1.1em;
+}
+
+a.headline_link:hover {
+	background-color: #EEE;
+	color: #333;
+}
+
+a.headline_link p {
+	font-size: 0.8em;
+	margin-bottom: 2px;
+}
+a.headline_link i {
+	font-size: 3.3em;
+}
+a.headline_link h3 {
+	margin: 0px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
+.footer a {
+	color: #999;
+}
+.comparisons {
+	font-size: 0.9em;
+	list-style: none;
+	padding-left: 5px;
+}

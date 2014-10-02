@@ -1,55 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<style type="text/css">
-			#examples, #version_info {
-				font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-				font-weight: 300;
-				font-size: 0.8em;
-				position: absolute;
-				z-index: 10;
-				height: 3em;
-				bottom: 0px;
-			}
-			#version_info {
-				right: 5px;
-			}
-			#version_no {
-				font-weight: bold;
-			}
-			#build_time {
-				margin-right: 5px;
-			}
-			#examples a {
-				text-decoration: none;
-			}
-			#examples a:hover {
-				text-decoration: underline;
-			}
-			#examples a.active {
-				font-weight: bold;
-			}
-		</style>
-		<link rel="stylesheet" href="editor/style/runtime_style.css" />
-		<link rel="shortcut icon" href="../images/interstate_logo_128.png">
+		<title>InterState</title>
+		<link rel="icon" type="image/png" href="images/interstate_logo.png">
 	</head>
 	<body>
-		<div class="content"></div>
+		<div class="container">
+			<div class="header row">
+				<div class="col-md-4">
+				</div>
+				<div class="col-md-8">
+					<h1>
+						<object height="50px" data="images/interstate_logo.svg" type="image/svg+xml" style="position: relative; top: 8px;">
+							<img height="50px" style="position:relative; top:-12px" src="images/interstate_logo.png" />
+						</object>
+						InterState
+					</h1>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-8 col-sm-push-4">
+					<p class="abstract"><em>InterState</em> is a programming language and environment that addresses the challenges of writing and reusing user interface code. InterState represents interactive behaviors clearly and concisely using a combination of novel forms of state machines and constraints. It also introduces new language features that allow programmers to easily modularize and reuse behaviors. InterState uses a new visual notation that allows programmers to better understand and navigate their code. InterState also includes a live editor that immediately updates the running application in response to changes in the editor and vice versa to help programmers understand the state of their program.</p>
+					<div class="embed-responsive embed-responsive-16by9">
+						<iframe src="http://www.youtube.com/embed/M--9jsuDZis" frameborder="0" allowfullscreen></iframe>
+					</div>
+				</div>
+				<div class="col-sm-4 col-sm-pull-8">
+					<a class="headline_link row" href="http://from.so/papers/InterState_UIST14.pdf" target="_blank">
+						<i class="fa fa-file-pdf-o col-xs-3"></i>
+						<div class="col-xs-9">
+							<h3 class="">
+								Paper
+							</h3>
+							<p>To appear in UIST 2014</p>
+						</div>
+					</a>
+					<!--<a class="headline_link row" href="build/tutorial/">
+						<i class="fa fa-info-circle col-xs-3"></i>
+						<div class="col-xs-9">
+							<h3 class="">
+								Tutorial
+							</h3>
+							<p>Step-by-step guide</p>
+						</div>
+					</a>-->
+					<a class="headline_link row" href="https://github.com/soney/interstate" target="_blank">
+						<i class="fa fa-github col-xs-3"></i>
+						<div class="col-xs-9">
+							<h3 class="">
+								Source
+							</h3>
+							<p>Available on GitHub</p>
+						</div>
+					</a>
+					<!--
+					<div class="illustrative_examples">
+						<h6>Example Programs</h6>
+						<div class="list-group">
+							<a class="list-group-item" href="breakout/">Breakout</a>
+							<a class="list-group-item" href="music">Music Player</a>
+							<a class="list-group-item" href="touch_map">Maps</a>
+						</div>
+					</div>
+					<div class="user_study_examples">
+						<h6>User Study Tasks</h6>
+						<div class="list-group">
+							<a class="list-group-item" href="drag_lock">
+								Drag Lock
+							</a>
+							<a class="list-group-item" href="image_carousel">
+								Image Carousel
+							</a>
+						</div>
+						<h6>User Study JavaScript Equivalents</h6>
+						<ul class='comparisons'>
+							<li><a href="http://jsbin.com/qeyeq/1/edit" target="_blank">Drag Lock</a></li>
+							<li><a href="http://jsbin.com/sacah/1/edit" target="_blank">Image Carousel</a></li>
+						</ul>
+					</div>
+						-->
+				</div>
+			</div>
+			<div class="footer row">
+				<div class="col-md-4">
+					Best viewed in <a href="https://www.google.com/intl/en_us/chrome/browser/" target="_blank">Chrome</a>
+				</div>
+				<div class="col-md-8">
+					Contact: <a href="http://from.so/">Stephen Oney</a>, <a target="_blank" href="http://www.cs.cmu.edu/~NatProg/">Natural Programming Project</a>
+				</div>
+			</div>
+		</div>
 	</body>
-	<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
-	<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
-	<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-	<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.2/raphael-min.js"></script>
-	<script src="vendor/Box2dWeb-2.1a.3/Box2dWeb-2.1.a.3.js"></script>
-	<script src="vendor/esprima.js"></script>
-	<script src="vendor/ace/ace.js"></script>
-	
-	<script src="interstate.min.js"></script>
-	<script type="text/javascript">
-		$(function() {
-			$("div.content").dom_output({
-				external_editor: false
-			});
-		});
-	</script>
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+	<link rel="stylesheet" href="interstate_www.css">
+	<link rel="stylesheet" href="font-awesome-4.1.0/css/font-awesome.min.css">
 </html>
