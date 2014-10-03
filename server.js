@@ -150,7 +150,7 @@ var concat_files = function(file_list, callback) {
 };
 
 var get_file_string = function(path, callback) {
-	fs.readFile(path, 'ascii', function(err, data) {
+	fs.readFile(path+"", {encoding: 'ascii'}, function(err, data) {
 		callback(data);
 	});
 };
