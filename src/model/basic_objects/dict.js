@@ -45,8 +45,6 @@
 
         ist.Dict.superclass.constructor.call(this, options, defer_initialization);
 
-		if(this.sid() === 827) debugger;
-    
         this.type = "ist_dict";
     };
     

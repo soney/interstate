@@ -71,7 +71,6 @@
 			this.timeout = _.delay(function(self) { self.notify(); }, this.delay, this);
 		};
 		proto.leave_listener = function() {
-			console.log("leave");
 			if (this.timeout) {
 				window.clearTimeout(this.timeout);
 				this.timeout = undefined;

@@ -96,6 +96,7 @@
 			paper_height: 9999,
 			vline_color: "#CCC",
 			vline_dasharray: "1,2",
+			from_state_view: null,
 		}, options);
 		var paper = this.option("paper");
 
@@ -132,7 +133,12 @@
 				this._live_str_fn = cjs.liven(function(){
 					var str_value = str.get();
 					this.label.option("text", str_value);
-				}, { context: this});
+				}, {
+					context: this,
+					on_destroy: function() {
+						str.destroy();
+					}
+				});
 
 				this.vline = paper	.path("M0,0")
 									.attr({
@@ -142,9 +148,47 @@
 									});
 				this.vline.appendTo(paper);
 
+				var runtime_errors = transition.get_$("get_runtime_errors");
+				this._live_errors_fn = cjs.liven(function() {
+					var errors = runtime_errors.get();
+					if(errors && errors.length > 0) {
+						this.label.option({
+							fill: this.option("error_background"),
+							color: this.option("error_foreground")
+						});
+						var err_text = errors[0];
+						$(this.label.text.node)	.attr("title", err_text)
+												.tooltip("option", {
+													content: err_text
+												});
+					} else {
+						this.label.option({
+							fill: this.option("text_background"),
+							color: this.option("text_foreground")
+						});
+						$(this.label.text.node)	.attr("title", "")
+												.tooltip("option", {
+													tooltipClass: "error",
+													content: ""
+												});
+					}
+				}, {
+					context: this,
+					on_destroy: function() {
+						runtime_errors.destroy();
+					}
+				});
+
 				this.$clickable = $([this.label.text.node, this.label.label_background.node].concat(this.arrow.getDOMNodes()));
-				this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
+			} else {
+				var from_state_view = this.option("from_state_view");
+				if(from_state_view && from_state_view instanceof ist.StartStateView) {
+					this.$clickable = $([from_state_view.circle.node].concat(this.arrow.getDOMNodes()));
+				} else {
+					this.$clickable = $(this.arrow.getDOMNodes());
+				}
 			}
+			this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
 		}, this);
 		/*
 		if (event instanceof ist.ParsedEvent) {
@@ -167,26 +211,7 @@
 			this.errors_fn = cjs.liven(function () {
 				var errors = event.get_errors();
 				if(errors && errors.length > 0) {
-					this.label.option({
-						fill: this.option("error_background"),
-						color: this.option("error_foreground")
-					});
-					var err_text = errors[0];
-					$(this.label.text.node)	.attr("title", err_text)
-											.tooltip("option", {
-												content: err_text
-											});
 				} else {
-					this.label.option({
-						fill: this.option("text_background"),
-						color: this.option("text_foreground")
-					});
-					$(this.label.text.node)	.attr("title", "")
-											.tooltip("option", {
-												tooltipClass: "error",
-												content: ""
-											});
-				}
 			}, {
 				context: this,
 				destroy: function() {
@@ -197,8 +222,6 @@
 		}
 		*/
 
-		this.$clickable = $(this.arrow.getDOMNodes());
-		this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
 		//$(this.label.text.node).tooltip({
 			//tooltipClass: "error"
 		//});
@@ -331,7 +354,7 @@
 													width: width + "px"
 												});
 			var items;
-			if(this.eventType  === "start") {
+			if(this.event_type  === "start") {
 				this.edit_dropdown.append(this.change_to);
 			} else {
 				this.edit_dropdown.append(this.edit_event, this.change_from, this.change_to, this.remove_item, this.togglebreakpoint);
@@ -472,8 +495,12 @@
 
 		proto.remove = function () {
 			this.arrow.remove();
-			this.vline.remove();
-			this.label.remove();
+			if(this.vline) {
+				this.vline.remove();
+			}
+			if(this.label) {
+				this.label.remove();
+			}
 			if(this.edit_dropdown) {
 				this.edit_dropdown.remove();
 				delete this.edit_dropdown;
@@ -489,6 +516,14 @@
 							.off("change", this.on_confirm_rename, this);
 				this.label.destroy();
 				delete this.label;
+			}
+
+			if(this._live_str_fn) {
+				this._live_str_fn.destroy(true);
+			}
+
+			if(this._live_errors_fn) {
+				this._live_errors_fn.destroy(true);
 			}
 
 			var transition = this.option("transition");

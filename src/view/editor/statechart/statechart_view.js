@@ -303,6 +303,20 @@
 						hrange = this.get_hrange(topLevelStateMachine_info.state, is_own ? "own" : "inherited", layout), // will update hrange
 						flat_state_machine = flattenStateTree(topLevelStateMachine_info);
 
+/*
+					if(!is_own) {
+						topLevelStateMachine_info.state.async_get("statefulObj", function(sobj_client) {
+							if(sobj_client) {
+								sobj_client.async_get("get_name", function(name) {
+									if(name) {
+										hrange.option("text", name);
+									}
+								});
+							}
+						});
+					}
+*/
+
 					if (layout.add_state_button_x) {
 						var shorten_height = this.layout_engine.option("state_name_height");
 						var dx = 0;//layout.right_wing_end.x - layout.right_wing_start.x;
@@ -333,14 +347,16 @@
 							}
 						}, this)
 						.each(function(state_info) {
-							var outgoing_transitions = state_info.outgoingTransitions;
+							var outgoing_transitions = state_info.outgoingTransitions,
+								from_state_layout = locations[state_info.id],
+								from_state_view = layout ? this.get_state_view(state_info, false) : false;
 							_.each(outgoing_transitions, function(transition_info) {
 								var id = transition_info.id,
 									transition = transition_info.transition,
 									layout = locations[id];
 
 								if(layout) {
-									var transition_view = this.get_transition_view(transition_info, layout);
+									var transition_view = this.get_transition_view(transition_info, layout, from_state_view);
 									transition_view.toFront();
 								}
 							}, this);
@@ -486,7 +502,7 @@
 		able.make_proto_listenable(proto);
 		able.make_proto_optionable(proto);
 		proto.get_hrange = function(statechart, text, layout) {
-			var id = statechart.id, hrange = this.hranges[id];
+			var id = statechart.id(), hrange = this.hranges[id];
 			if(hrange) {
 				hrange.option({
 					from_x: layout.x,
@@ -525,14 +541,16 @@
 			var id = state_info.id,
 				object_view = this.object_views[id];
 			if (object_view) {
-				if (state_info.isStart) {
-					object_view.option({
-						layout: layout
-					});
-				} else {
-					object_view.option({
-						layout: layout
-					});
+				if(layout) {
+					if (state_info.isStart) {
+						object_view.option({
+							layout: layout
+						});
+					} else {
+						object_view.option({
+							layout: layout
+						});
+					}
 				}
 			} else {
 				if(state_info.isStart) {
@@ -640,7 +658,7 @@
 			}, this);
 			*/
 		};
-		proto.get_transition_view = function (transition_info, layout) {
+		proto.get_transition_view = function (transition_info, layout, from_state_view) {
 			var id = transition_info.id,
 				object_view = this.object_views[id],
 				transition = transition_info.transition;
@@ -662,6 +680,7 @@
 					text_foreground: this.option("transition_text_color"),
 					font_family: this.option("transition_font_family"),
 					font_size: this.option("transition_font_size"),
+					from_state_view: from_state_view,
 					parent: this
 				});
 				object_view.on("change", function (event) {
@@ -712,7 +731,9 @@
 			select_obj_text.appendTo(this.paper);
 			var on_keydown = function(e) {
 				if(e.keyCode === 27) { //esc
-					on_cancel();
+					if(on_cancel) {
+						on_cancel();
+					}
 					unmake_selectable();
 				}
 			};

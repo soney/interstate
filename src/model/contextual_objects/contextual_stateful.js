@@ -87,7 +87,6 @@
 				}
 			} else if(statechart instanceof ist.State) {
 				return statechart;
-				return this.getStateContextualObject(statechart);
 			}
 
 			return false;

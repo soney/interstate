@@ -230,6 +230,7 @@
 		proto._get_valid_cobj_children = function() { return []; };
 
 		proto.update_cobj_children = function(recursive) {
+			console.log(this.sid());
 			cjs.wait();
 			var valid_children = this._get_valid_cobj_children(),
 				to_destroy = {},

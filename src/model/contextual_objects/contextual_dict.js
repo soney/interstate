@@ -94,6 +94,7 @@
 		}
 		return rv;
 	};
+	/*
 
 	ist.Dict.get_prop_info = function (dict, prop_name, pcontext) {
 		if (dict._has_builtin_prop(prop_name)) {
@@ -115,6 +116,7 @@
 			return undefined;
 		}
 	};
+	*/
 
 	var get_contextual_object = function (value, pointer, options) {
 		if (value instanceof ist.BasicObject) {
@@ -335,19 +337,44 @@
 						return {name: name, value: info.value, inherited: false, builtin: true };
 					}, this),
 					copy = pointer.copy(),
-					special_context_names;
+					special_context_names = [];
+					/*
+				i, copy = pointer.copy();
+
+			_.each(builtin_names, function (name) {
+				owners[name] = this;
+			}, this);
+
+			_.each(direct_names, function (name) {
+				owners[name] = this;
+			}, this);
+
+
+			if (exclude_builtins !== true && my_ptr_index >= 0) {
+				if(copy) {
+				}
+				*/
+				if(copy) {
+					_.each(copy, function(v, k) {
+						owners[k] = copy;
+						special_context_names.push(k);
+					}, this);
+				}
 
 				var special_context_infos = _.map(special_context_names, function (name) {
 							var sc = owners[name];
-							var co = sc.get_context_obj();
-							return co[name];
-						}),
+							return {name: name, value: sc[name], inherited: false, builtin: true };
+							//var co = sc.get_context_obj();
+							//return co[name];
+						}) || [];
+						/*
 					special_context_contextual_objects = _.map(special_context_infos, function (info, i) {
 						var name = special_context_names[i];
 						return {name: name, value: info.value, inherited: false, builtin: true };
 					}, this) || [];
+					*/
 				
-				var contextual_objects = special_context_contextual_objects.concat(builtin_contextual_objects),
+				var contextual_objects = special_context_infos.concat(builtin_contextual_objects),
 					children = _.map(contextual_objects, function(raw_child) {
 						var opts = {};
 						if(raw_child.inherits_from) {
@@ -418,6 +445,8 @@
 				info = dict._get_builtin_prop_info(name);
 			} else if (dict._has_direct_prop(name)) {
 				info = dict._get_direct_prop_info(name);
+			} else if(this._has_special_context_prop(name)) {
+				info = this._get_special_context_prop_info(name);
 			} else {
 				var pointer = this.get_pointer();
 				if (!info && ignore_inherited !== true) {
@@ -437,11 +466,28 @@
 			}
 			return info;
 		};
+		proto._has_special_context_prop = function(name) {
+			var pointer = this.get_pointer(),
+				copy = pointer.copy();
+			if(copy) {
+				return _.has(copy, name);
+			} else {
+				return false;
+			}
+		};
+		proto._get_special_context_prop_info = function(name) {
+			var pointer = this.get_pointer(),
+				copy = pointer.copy();
+			if(copy) {
+				return {name: name, value: copy[name], inherited: false, builtin: true };
+			} else {
+				return false;
+			}
+		};
 		proto._prop = function (name, ignore_inherited) {
 			var info = this.prop_info(name, ignore_inherited);
 
 			if (info) {
-
 				var pointer = this.get_pointer();
 
 				//if(window.dbg && pointer.hash() === 35) { debugger; }

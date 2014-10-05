@@ -84,16 +84,6 @@
 
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
-		proto.begin_destroy = function() {
-			this._remove_cobj_child_updater();
-
-			My.superclass.begin_destroy.apply(this, arguments);
-		};
-		proto.destroy = function (avoid_begin_destroy) {
-			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
-			My.superclass.destroy.apply(this, arguments);
-			this.otugoing_transitions.destroy(true);
-		};
 		proto.setEvent = function(event) {
 			this.$event.set(event);	
 		};
@@ -474,6 +464,9 @@
 		proto.usedByAnyProperties = function() {
 			return this._statefulObj.usesState(this);
 		};
+		proto.statefulObj = function() {
+			return this._statefulObj;
+		};
 
 		proto.order = function (other_state) {
 			var i;
@@ -583,6 +576,12 @@
 		};
 		proto.isRoot = function() {
 			return this.get_object().isRoot();
+		};
+
+		proto.begin_destroy = function() {
+			this._remove_cobj_child_updater();
+
+			My.superclass.begin_destroy.apply(this, arguments);
 		};
 
 		proto.destroy = function (avoid_begin_destroy) {

@@ -656,6 +656,9 @@
 				if(constraint && constraint.destroy) {
 					constraint.destroy(true);
 				}
+				if(node instanceof ist.Error) {
+					return node;
+				}
 				constraint = ist.get_parsed_$(node, options);
 				if(constraint instanceof ist.MultiExpression) {
 					return new ist.MultiExpression(_.map(constraint.expressions, function(x) {

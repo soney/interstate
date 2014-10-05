@@ -405,24 +405,39 @@
 					cobj = value_pointer.getContextualObject({
 						inherited_from: using_info.inherited_from
 					});
-		
-				if(!is_preemptive && ist.__debug) {
-					rv = cobj.val();
-				} else {
-					try {
-						rv = cobj.val();
-						if(rv instanceof ist.Error) {
-							rv = undefined;
-						}
-						if(this._has_runtime_errors) {
-							this._has_runtime_errors = false;
-							this.$runtime_errors.set([]);
-						}
-					} catch (e1) {
+
+				if(cobj instanceof ist.ContextualCell) {
+					var runtime_errors = cobj.get_runtime_errors();
+					if(runtime_errors) {
+						this.$runtime_errors.set(_.pluck(runtime_errors, "message"));
 						rv = undefined;
-						this.$runtime_errors.set([e1.message]);
-						this._has_runtime_errors = true;
+					} else {
+						this.$runtime_errors.set(false);
+						rv = cobj.val();
 					}
+				} else {
+					this.$runtime_errors.set(false);
+					rv = cobj;
+				/*
+					if(!is_preemptive && ist.__debug) {
+						rv = cobj.val();
+					} else {
+						try {
+							rv = cobj.val();
+							if(rv instanceof ist.Error) {
+								rv = undefined;
+							}
+							if(this._has_runtime_errors) {
+								this._has_runtime_errors = false;
+								this.$runtime_errors.set([]);
+							}
+						} catch (e1) {
+							rv = undefined;
+							this.$runtime_errors.set([e1.message]);
+							this._has_runtime_errors = true;
+						}
+					}
+					*/
 				}
 
 				this._last_rv = rv;

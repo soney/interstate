@@ -132,8 +132,8 @@
 				var vobj = this._cobj.get_object();
 
 				if(vobj instanceof ist.Cell) {
-					var own_statechart = parent_cobj.get_own_statechart();
-					var start_state = own_statechart.get_start_state();
+					var own_statechart = parent_cobj.getOwnStatechart();
+					var start_state = own_statechart.getStartState();
 
 					this._prop_value = new ist.StatefulProp();
 					this._prop_value.set(start_state, vobj.clone());

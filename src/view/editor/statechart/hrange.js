@@ -96,7 +96,8 @@
 			});
 			this.text_foreground.attr({
 				x: (from_x + to_x)/2,
-				y: y+2*height/3
+				y: y+2*height/3,
+				text: text
 			});
 			var bbox = this.text_foreground.getBBox();
 			this.text_background.attr({

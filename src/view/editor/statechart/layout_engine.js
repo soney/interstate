@@ -38,6 +38,7 @@
 	ist.RootStatechartLayoutEngine = function (options) {
 		able.make_this_optionable(this, {
 			theta_degrees: 40,
+			added_transition_width: 30,
 			transition_height: 16,
 			transition_margin: 1,
 			used_state_name_width: 90,
@@ -601,6 +602,10 @@
 								indentations: indentations,
 								width: width
 							});
+
+							if(width + 0.0001 >= TRANSITION_WIDTH) {
+								width += this.option("added_transition_width");
+							} // pad the widths of columns with transitions
 
 							columnWidths[columnIndex] = Math.max(width, this.option("state_padding_x"));
 						}, this);

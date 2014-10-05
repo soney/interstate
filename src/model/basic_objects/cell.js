@@ -62,6 +62,8 @@
 
 			this._is_static = cjs(function () {
 				var tree = this._tree.get();
+				if(tree instanceof ist.Error) { return true; }
+
 				return tree.body.length === 0 ||
 					(tree.body.length === 1 &&
 						tree.body[0].type === 'ExpressionStatement' &&
@@ -71,7 +73,9 @@
 			});
 			this._static_value = cjs(function() {
 				var tree = this._tree.get();
-				if(tree.body.length > 0) {
+				if(tree instanceof ist.Error) {
+					return undefined;
+				} else if(tree.body.length > 0) {
 					return tree.body[0].expression.value;
 				}
 			}, {

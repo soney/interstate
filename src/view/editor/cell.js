@@ -259,8 +259,12 @@
 				hide: false,
 				content: ""
 			});
-			var enable_tooltip = _.bind(function() { this.element.tooltip("enable"); }, this);
-			var disable_tooltip = _.bind(function() { this.element.tooltip("disable"); }, this);
+			var enable_tooltip = _.bind(function() {
+				this.element.tooltip("enable");
+			}, this);
+			var disable_tooltip = _.bind(function() {
+				this.element.tooltip("disable");
+			}, this);
 			this._tooltip_live_fn = cjs.liven(function() {
 				var syntax_errors = this.$syntax_errors.get();
 				if(syntax_errors && syntax_errors.length > 0) {

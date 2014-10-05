@@ -90,7 +90,8 @@
 				fill: this.option("fill_color"),
 				stroke: "none"
 			});
-			$(this.circle[0]).on("contextmenu.cm");
+			$(this.circle.node).on("contextmenu.cm", function() {
+			});
 		};
 
 		proto.toFront = function() {
@@ -147,7 +148,7 @@
 		};
 		proto.destroy = function() {
 			if(this.circle) {
-				$(this.circle[0]).off("contextmenu.cm");
+				$(this.circle.node).off("contextmenu.cm");
 			}
 			able.destroy_this_optionable(this);
 			if(this.active_fn) {

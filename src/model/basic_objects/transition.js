@@ -88,6 +88,11 @@
 			My.superclass.destroy.apply(this, arguments);
         };
 
+		proto.get_syntax_errors = function() {
+            var tree = getTree();
+			return tree instanceof ist.Error ? [tree.message()] : [];
+		};
+
 		proto.from = function() { return this.get_from(); };
 		proto.to = function() { return this.get_to(); };
 
@@ -104,7 +109,7 @@
 		};
 
 		proto.setTo = function(state) {
-			var old_state = this.from();
+			var old_state = this.to();
 			if(old_state !== state) {
 				cjs.wait();
 				old_state._removeIncomingTransition(this);
@@ -114,11 +119,15 @@
 				cjs.signal();
 			}
 		};
-		proto.remove = function() {
+		proto.remove = function(also_destroy) {
 			var from = this.from(),
 				to = this.to();
-			from._removeOutgoingTransition(this);
-			to._removeIncomingTransition(this);
+			if(from.isStart()) { // don't remove self; just set to to self
+				this.setTo(from);
+			} else {
+				from._removeOutgoingTransition(this);
+				to._removeIncomingTransition(this);
+			}
 		};
 		proto.getLineage = function() {
 			var from_lineage = this.from().getLineage();

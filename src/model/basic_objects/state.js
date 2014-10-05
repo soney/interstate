@@ -148,7 +148,17 @@
 			return state;
 		};
 		proto.removeSubstate = function(name) {
-			var substates = this._get_substates();
+			var substates = this._get_substates(),
+				substate = substates.get(name);
+
+			if(substate) {
+				var incoming_transitions = substate.getIncomingTransitions(),
+					outgoing_transitions = substate.getIncomingTransitions();
+				_.each(_.unique(incoming_transitions.concat(outgoing_transitions)), function(transition) {
+					transition.remove();
+				});
+			}
+
 			substates.remove(name);
 		};
 		proto.renameSubstate = function(from_name, to_name) {

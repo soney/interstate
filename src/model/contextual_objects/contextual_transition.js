@@ -11,6 +11,8 @@
 
 		if(options.avoid_constructor) { return; }
 
+		this._runtime_errors = new cjs.Constraint(false);
+
 		var transition = this.get_object(),
 			from = transition.from(),
 			lineage = from.getLineage(),
@@ -43,6 +45,10 @@
 		};
 		proto.deactivate = function() {
 			this.$active.set(false);
+		};
+		proto.get_runtime_errors = function() {
+			this._live_event_updater.run();
+			return this._runtime_errors.get();
 		};
 		proto.getStr = function() {
 			var object = this.get_object();
@@ -106,14 +112,16 @@
 				event_object, event, can_destroy_event, actions;
 
 			this._live_event_updater = cjs.liven(function() {
-				event = event_constraint.get();
-
-				if(event instanceof ist.BasicObject) {
-					event_object = event;
-					var ptr = pointer.push(event_object);
-					event = ptr.getContextualObject();
-				} else {
-					event_object = false;
+				try {
+					event = event_constraint.get();
+				} catch(e) {
+					event = new ist.Error({
+						message: e.message,
+						type: "runtime"
+					});
+					if(ist.__log_errors) {
+						console.error(e);
+					}
 				}
 
 				if(event instanceof ist.MultiExpression) {
@@ -121,6 +129,21 @@
 					event = event.first();
 				} else {
 					actions = [];
+				}
+
+				if(event instanceof ist.Error) {
+					this._runtime_errors.set([event.message()]);
+					event_object = false;
+				} else {
+					if(event instanceof ist.BasicObject) {
+						event_object = event;
+						var ptr = pointer.push(event_object);
+						event = ptr.getContextualObject();
+					} else {
+						event_object = false;
+					}
+
+					this._runtime_errors.set(false);
 				}
 
 				if(event instanceof ist.Event) {
@@ -135,7 +158,7 @@
 					}
 
 					can_destroy_event = event_object ? true : false;
-				} else {
+				} else if(!(event instanceof ist.Error)) {
 					if(event && !old_event) {
 						this._manual_event.fire(event);
 					}

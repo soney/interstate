@@ -8,7 +8,7 @@
 
 	ist.ContextualCell = function (options) {
 		ist.ContextualCell.superclass.constructor.apply(this, arguments);
-		this._errors = new cjs.Constraint([]);
+		this._runtime_errors = new cjs.Constraint(false);
 
 		var constraint = false,
 			pointer = this.get_pointer(),
@@ -53,14 +53,21 @@
 			delete this.value_constraint;
 			My.superclass.destroy.apply(this, arguments);
 		};
+		proto.get_runtime_errors = function() {
+			this.val();
+			return this._runtime_errors.get();
+		};
 		proto._getter = function (node, is_preemptive) {
 			var value;
 			if(ist.__debug && !is_preemptive) {
 				value = cjs.get(this.value_constraint.get());
+				this._runtime_errors.set(false);
 			} else {
 				try {
 					value = cjs.get(this.value_constraint.get());
+					this._runtime_errors.set(false);
 				} catch (e) {
+					this._runtime_errors.set([e]);
 					if(ist.__log_errors) {
 						console.error(e);
 					}
