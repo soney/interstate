@@ -113,9 +113,11 @@
             throw new Error("Must select a parent object");
         }
     
-    
         this._cobj = this._options.cobj;
 		this._prop_name = this._options.name;
+		if(this._cobj && this._cobj.get_parent) {
+			this._parent_obj = this._cobj.get_parent();
+		}
     };
     
     (function (My) {
@@ -148,8 +150,10 @@
            parent_obj.set_prop(this._prop_name, this._prop_value);
         };
         proto._unexecute = function () {
-			var parent_obj = this._parent.get_object();
-			parent_obj.unset_prop(this._prop_name);
+			if(this._parent_obj) {
+				var parent_obj = this._parent_obj.get_object();
+				parent_obj.unset_prop(this._prop_name);
+			}
         };
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);

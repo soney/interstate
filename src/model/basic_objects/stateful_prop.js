@@ -76,8 +76,10 @@
 			var keys = [];
 			var vals = [];
 			_.each(infos, function(info) {
-				keys.push(info.state.basis());
-				vals.push(info.value.clone());
+				if(info.state) {
+					keys.push(info.state.basis());
+					vals.push(info.value.clone());
+				}
 			});
 			var direct_values = cjs.map({
 				keys: keys,
