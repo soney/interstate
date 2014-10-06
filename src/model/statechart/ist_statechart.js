@@ -1040,9 +1040,13 @@
 				var initialization_func = function () {
 					delete this.initialize;
 					var substates = ist.deserialize.apply(ist, ([obj.substates]).concat(rest_args));
-					substates.forEach(function(state) {
-						state.do_initialize_substate();
-						delete state.do_initialize_substate;
+					substates.forEach(function(state, key) {
+						if(state.do_initialize_substate) {
+							state.do_initialize_substate();
+							delete state.do_initialize_substate;
+						} else {
+							delete substates[key];
+						}
 					});
 					My.call(this, {
 						id: obj.id,

@@ -162,8 +162,6 @@
 					display: "none"
 				};
 
-				var that = this;
-
 				this.edit_button = $("<a />")	.text("edit")
 												.css(this.edit_button_css)
 												.on("mouseover.make_active", _.bind(function() {
@@ -181,8 +179,6 @@
 				var append_interval = window.setInterval(_.bind(function() {
 					this.element.append(this.edit_button);
 				}, this));
-
-
 			}
 
 			if (this.option("edit_on_open")) {
