@@ -404,7 +404,8 @@ html.full_window_editor {
         font-size: inherit;
         font-family: inherit;
         color: inherit;
-        height: 18px; }
+        height: 18px;
+        width: 120px; }
       #pinned > .pinned_cols > table.col > tbody > .child > .name input, #pinned > .pinned_cols > table.col > tbody > .new_field > .name input, #obj_nav > table.col > tbody > .child > .name input, #obj_nav > table.col > tbody > .new_field > .name input {
         color: black; }
       #pinned > .pinned_cols > table.col > tbody > .child > .name > .edit, #pinned > .pinned_cols > table.col > tbody > .new_field > .name > .edit, #obj_nav > table.col > tbody > .child > .name > .edit, #obj_nav > table.col > tbody > .new_field > .name > .edit {

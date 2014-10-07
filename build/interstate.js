@@ -9419,6 +9419,7 @@ var interstate = (function (root) {
 				deserialized_objs = serialized_obj.serialized_objs;
 				deserialized_obj_vals = [];
 				rv = ist.deserialize.apply(ist, ([serialized_obj.root]).concat(rest_args));
+				ist._emit("done_deserializing");
 				deserialized_objs = deserialized_obj_vals = undefined;
 				deserializing = false;
 			} else {
@@ -9426,6 +9427,7 @@ var interstate = (function (root) {
 					deserialized_objs = serialized_obj.serialized_objs;
 					deserialized_obj_vals = [];
 					rv = ist.deserialize.apply(ist, ([serialized_obj.root]).concat(rest_args));
+					ist._emit("done_deserializing");
 				} finally {
 					deserialized_objs = deserialized_obj_vals = undefined;
 					deserializing = false;
@@ -10460,7 +10462,7 @@ var interstate = (function (root) {
 				if (context_item instanceof ist.Dict) {
 					var contextual_obj = ist.find_or_put_contextual_obj(context_item, curr_context);
 					if (contextual_obj.has(key, _.indexOf(ignore_inherited_in_contexts, context_item)>=0)) {
-						rv = contextual_obj.prop_val(key);
+						rv = contextual_obj._prop_val(key);
 						return rv;
 					}
 				} else if (context_item instanceof ist.ProvisionalContext) {
@@ -11722,6 +11724,8 @@ var interstate = (function (root) {
 	ist.createDevices = function() {
 		var width = cjs(window.innerWidth),
 			height = cjs(window.innerHeight),
+			timestamp = cjs(getTime()),
+			intervalID = false,
 			orientation = cjs(window.orientation),
 			resize_listener = function(event) {
 				cjs.wait();
@@ -11732,19 +11736,25 @@ var interstate = (function (root) {
 			orientation_listener = function(event) {
 				orientation.set(window.orientation);
 			},
+			interval_listener = function() {
+				timestamp.set(getTime());
+			},
 			addListeners = function() {
 				window.addEventListener("resize", resize_listener);
 				window.addEventListener("orientationchange", orientation_listener);
+				intervalID = window.setInterval(interval_listener);
 			},
 			removeListeners = function() {
 				window.removeEventListener("resize", resize_listener);
 				window.removeEventListener("orientationchange", orientation_listener);
+				window.clearInterval(intervalID);
 			},
 			destroy = function(silent) {
 				cjs.wait();
 				removeListeners();
 				width.destroy(silent);
 				height.destroy(silent);
+				timestamp.destroy(silent);
 				cjs.signal();
 			},
 			mouse = ist.createMouseObject(),
@@ -11759,7 +11769,8 @@ var interstate = (function (root) {
 					accelorometer: accelorometer,
 					gyroscope: gyroscope,
 					width: width,
-					height: height
+					height: height,
+					timestamp: timestamp
 				}
 			});
 
@@ -13081,8 +13092,10 @@ var interstate = (function (root) {
 			var keys = [];
 			var vals = [];
 			_.each(infos, function(info) {
-				keys.push(info.state.basis());
-				vals.push(info.value.clone());
+				if(info.state) {
+					keys.push(info.state.basis());
+					vals.push(info.value.clone());
+				}
 			});
 			var direct_values = cjs.map({
 				keys: keys,
@@ -13554,7 +13567,6 @@ var interstate = (function (root) {
 		};
 	}(ist.ProvisionalContext));
 
-/*
 	var ec_counter = 1;
 	ist.EventContext = function (event) {
 		ist.EventContext.superclass.constructor.apply(this, arguments);
@@ -13571,7 +13583,6 @@ var interstate = (function (root) {
 			return this.event;
 		};
 	}(ist.EventContext));
-	*/
 
 	ist.StateContext = function (state) {
 		ist.StateContext.superclass.constructor.apply(this, arguments);
@@ -15778,7 +15789,7 @@ var interstate = (function (root) {
 			search_item = search_item.get_substate_with_name(name);
 		}
 
-		if (search_item.basis() !== to_state) { throw new Error("Could not find correct equivalent item"); }
+		//if (search_item.basis() !== to_state) { throw new Error("Could not find correct equivalent item"); }
 
 		return search_item;
 	};
@@ -16906,6 +16917,7 @@ var interstate = (function (root) {
 
 		this._constructed = true;
 
+
 		if((!this._parent && defer_initialization !== true) || (this._parent && this._parent.is_initialized())) {
 			this.initialize();
 		}
@@ -17309,6 +17321,7 @@ var interstate = (function (root) {
 			if (this.get_active_substate() === state) {
 				this.set_active_substate(this.get_start_state().getTo());
 			}
+			state.set_parent(false);
 			this.$substates.remove(name);
 
 			cjs.signal();
@@ -17654,6 +17667,7 @@ var interstate = (function (root) {
 			},
 			function (include_id) {
 				var arg_array = _.toArray(arguments);
+				//if(!this._constructed) { return false; }
 				var rv = {
 					substates: ist.serialize.apply(ist, ([this.$substates]).concat(arg_array)),
 					concurrent: this.is_concurrent(),
@@ -17684,9 +17698,13 @@ var interstate = (function (root) {
 				var initialization_func = function () {
 					delete this.initialize;
 					var substates = ist.deserialize.apply(ist, ([obj.substates]).concat(rest_args));
-					substates.forEach(function(state) {
-						state.do_initialize_substate();
-						delete state.do_initialize_substate;
+					substates.forEach(function(state, key) {
+						if(state.do_initialize_substate) {
+							state.do_initialize_substate();
+							delete state.do_initialize_substate;
+						} else {
+							delete substates[key];
+						}
 					});
 					My.call(this, {
 						id: obj.id,
@@ -17704,6 +17722,16 @@ var interstate = (function (root) {
 
 				if(obj.parent) {
 					rv.do_initialize_substate = initialization_func;
+
+					ist.once("done_deserializing", function() {
+						if(!rv._constructed) {
+							// If we're done deserializing but haven't initialized the state yet...
+							// then initialize it
+							rv.do_initialize_substate();
+							//rv.set_parent(false); //and note that it must not have a parent
+							delete rv.do_initialize_substate;
+						}
+					});
 				} else {
 					// it's the root
 					rv.initialize = initialization_func;
@@ -17735,7 +17763,7 @@ var interstate = (function (root) {
 				return t;
 			}
 		}
-		throw new Error("Could not find equivalent transition");
+		//throw new Error("Could not find equivalent transition");
 	};
 
 	ist.StatechartTransition = function (options, defer_initialization) {
@@ -18091,21 +18119,21 @@ var interstate = (function (root) {
 
 	var EventQueue = function () {
 		able.make_this_listenable(this);
-
+		
 		this.end_queue_round = false;
 		this.queue = [];
 		this.running_event_queue = false;
 
 		var semaphore = 0;
-		this.wait = function () {
+		this.wait = _.bind(function () {
 			semaphore--;
-		};
-		this.signal = function () {
+		}, this);
+		this.signal = _.bind(function () {
 			semaphore++;
 			if (semaphore >= 0) {
 				this.run_event_queue();
 			}
-		};
+		}, this);
 		this.is_ready = function () {
 			return semaphore >= 0;
 		};
@@ -18172,8 +18200,10 @@ var interstate = (function (root) {
 	ist.event_queue = new EventQueue();
 
 	var id = 0;
-	ist.Event = function () {
+	ist.Event = function (options) {
 		able.make_this_listenable(this);
+
+		this.child_events = [];
 		//this._initialize();
 		this.actual_firetime_listeners = [];
 		this.requested_firetime_listeners = [];
@@ -18188,6 +18218,12 @@ var interstate = (function (root) {
 	(function (my) {
 		var proto = my.prototype;
 		able.make_proto_listenable(proto);
+		proto.set_parent = function(parent) {
+			this._parent = parent;
+		};
+		proto.set_guard = function(guard) {
+			this._guard = guard;
+		};
 		proto.id = function() {
 			return this._id;
 		};
@@ -18206,8 +18242,7 @@ var interstate = (function (root) {
 				}
 				*/
 		};
-		proto.id = function () { return this._id; };
-		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
+		proto.sid = proto.id = function () { return this._id; };
 		proto.on_create = function (options) {
 			this._enabled = options && options.enabled;
 		};
@@ -18252,19 +18287,26 @@ var interstate = (function (root) {
 		};
 		proto.set_transition = function (transition) { this._transition = transition; };
 		proto.get_transition = function () { return this._transition; };
+		proto.get_guard = function() {
+			return this._guard;
+		};
 		proto._fire = function () {
 			var args = _.toArray(arguments);
 			_.forEach(this.actual_firetime_listeners, function (listener) {
 				listener.callback.apply(listener.context || this, listener.args.concat(args));
 			}, this);
+			_.forEach(this.child_events, function(child_event) {
+				var guard = child_event.get_guard();
+				if(guard.apply(child_event, args)) {
+					child_event.fire.apply(child_event, args);
+				}
+			}, this);
 		};
 		proto.guard = proto.when = function (func) {
 			var new_event = new ist.Event();
-			this.on_fire(function () {
-				if (func.apply(this, arguments)) {
-					new_event.fire.apply(new_event, arguments);
-				}
-			});
+			new_event.set_parent(this);
+			new_event.set_guard(func);
+			this.child_events.push(new_event);
 			return new_event;
 		};
 		proto.when_eq = function (prop, val) {
@@ -18334,6 +18376,10 @@ var interstate = (function (root) {
 			delete this._transition;
 			delete this._enabled;
 			able.destroy_this_listenable(this);
+			if(this._parent) { this._parent.destroy(); }
+			delete this.child_events;
+			delete this._parent;
+			delete this._guard;
 		};
 		proto.create_shadow = function () { return new ist.Event(); };
 		proto.stringify = function () {
@@ -18344,9 +18390,11 @@ var interstate = (function (root) {
 		};
 		proto.enable = function () {
 			this._enabled = true;
+			if(this._parent) { this._parent.enable(); }
 		};
 		proto.disable = function () {
 			this._enabled = false;
+			if(this._parent) { this._parent.disable(); }
 		};
 		proto.is_enabled = function () {
 			return this._enabled;
@@ -18833,11 +18881,27 @@ var interstate = (function (root) {
 		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.on_create = function (specified_type, specified_targets) {
+			this.get_wait_listener = cjs.memoize(function (specified_target) {
+				var self = this;
+				return function() {
+					ist.event_queue.wait();
+				};
+			}, {
+				context: this
+			});
+			this.get_signal_listener = cjs.memoize(function (specified_target) {
+				var self = this;
+				return function() {
+					ist.event_queue.signal();
+				};
+			}, {
+				context: this
+			});
 			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var self = this;
 				var id = this._id;
 				var listener = function (event) {
-					ist.event_queue.wait();
+					//ist.event_queue.wait();
 				
 					var new_event = _.extend({}, event, {
 						ist_target: specified_target,
@@ -18848,9 +18912,9 @@ var interstate = (function (root) {
 
 					self.fire(new_event);
 
-					_.defer(function () {
-						ist.event_queue.signal();
-					});
+					//_.defer(function () {
+						//ist.event_queue.signal();
+					//});
 				};
 				listener.destroy = function() {
 					self = null;
@@ -18937,7 +19001,9 @@ var interstate = (function (root) {
 			if(_.isString(target_info.type)) {
 				_.each(target_info.type.split(","), function(type) {
 					//if(_.has(dom_obj, 'addEventListener')) {
-						dom_obj.addEventListener(type, this.get_target_listener(cobj), false); // Bubble
+						dom_obj.addEventListener(type, this.get_wait_listener(cobj), true); // Capture
+						dom_obj.addEventListener(type, this.get_target_listener(cobj), true); // Capture
+						dom_obj.addEventListener(type, this.get_signal_listener(cobj), false); // Bubble
 					//}
 				}, this);
 			}
@@ -18951,7 +19017,9 @@ var interstate = (function (root) {
 			if(_.isString(target_info.type)) {
 				_.each(target_info.type.split(","), function(type) {
 					//if(_.has(dom_obj, 'removeEventListener')) {
-						dom_obj.removeEventListener(type, this.get_target_listener(cobj), false); // Bubble
+						dom_obj.removeEventListener(type, this.get_wait_listener(cobj), true); // Capture
+						dom_obj.removeEventListener(type, this.get_target_listener(cobj), true); // Capture
+						dom_obj.removeEventListener(type, this.get_signal_listener(cobj), false); // Bubble
 					//}
 				}, this);
 			}
@@ -24509,9 +24577,11 @@ var UNDEF = {};
             throw new Error("Must select a parent object");
         }
     
-    
         this._cobj = this._options.cobj;
 		this._prop_name = this._options.name;
+		if(this._cobj && this._cobj.get_parent) {
+			this._parent_obj = this._cobj.get_parent();
+		}
     };
     
     (function (My) {
@@ -24544,8 +24614,10 @@ var UNDEF = {};
            parent_obj.set_prop(this._prop_name, this._prop_value);
         };
         proto._unexecute = function () {
-			var parent_obj = this._parent.get_object();
-			parent_obj.unset_prop(this._prop_name);
+			if(this._parent_obj) {
+				var parent_obj = this._parent_obj.get_object();
+				parent_obj.unset_prop(this._prop_name);
+			}
         };
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
@@ -27125,8 +27197,6 @@ var UNDEF = {};
 					display: "none"
 				};
 
-				var that = this;
-
 				this.edit_button = $("<a />")	.text("edit")
 												.css(this.edit_button_css)
 												.on("mouseover.make_active", _.bind(function() {
@@ -27144,8 +27214,6 @@ var UNDEF = {};
 				var append_interval = window.setInterval(_.bind(function() {
 					this.element.append(this.edit_button);
 				}, this));
-
-
 			}
 
 			if (this.option("edit_on_open")) {
@@ -28123,6 +28191,9 @@ var UNDEF = {};
 		},
 		_redo: function() {
 			this.client_socket.post_command("redo");
+		},
+		get_client_socket: function() {
+			return this.client_socket;
 		},
 
 		_addContentBindings: function() {

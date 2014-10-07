@@ -13,6 +13,9 @@
 		},
 		_create: function() {
 			this.env = new ist.Environment();
+			this.env.set("screen", "<dict>")
+					.cd("screen")
+					.set("(prototypes)", "svg.paper");
 			this.env.set("width", "100+400")
 			this.env.set("height", "width/2")
 			this.app = $("<div />")	.appendTo(this.element)
