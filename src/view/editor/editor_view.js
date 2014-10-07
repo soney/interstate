@@ -277,6 +277,9 @@
 		_redo: function() {
 			this.client_socket.post_command("redo");
 		},
+		get_client_socket: function() {
+			return this.client_socket;
+		},
 
 		_addContentBindings: function() {
 			editor_template({
