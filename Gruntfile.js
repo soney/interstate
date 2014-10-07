@@ -57,11 +57,11 @@ module.exports = function(grunt) {
 		concat: {
 			esprima: {
 				src: "src/_vendor/esprima/esprima.js",
-				dest: build_folder + "/_vendor/esprima.js"
+				dest: build_folder + "/vendor/esprima.js"
 			},
 			qrcode: {
 				src: "src/_vendor/qrcode.min.js",
-				dest: build_folder + "/_vendor/qrcode.min.js"
+				dest: build_folder + "/vendor/qrcode.min.js"
 			}
 		},
 		concat_sourcemap: {
@@ -114,13 +114,13 @@ module.exports = function(grunt) {
 
 			ace: {
 				files: [
-					{ expand: true, cwd: "src/_vendor/ace", src: ["**"], dest: build_folder + "/_vendor/ace" },
+					{ expand: true, cwd: "src/_vendor/ace", src: ["**"], dest: build_folder + "/vendor/ace" },
 				]
 			},
 
 			box2d: {
 				files: [
-					{ expand: true, cwd: "src/_vendor/Box2dWeb-2.1a.3", src: ["**"], dest: build_folder + "/_vendor/Box2dWeb-2.1a.3" },
+					{ expand: true, cwd: "src/_vendor/Box2dWeb-2.1a.3", src: ["**"], dest: build_folder + "/vendor/Box2dWeb-2.1a.3" },
 				]
 			},
 
