@@ -229,7 +229,6 @@ var able = (function (root) {
 				var i;
 				var args = rest(arguments);
 				args.push(event_type);
-				if(!this[listener_prop_name]) debugger;
 				var listeners = this[listener_prop_name][event_type];
 				if (listeners) {
 					var cloned_listeners = listeners.slice();

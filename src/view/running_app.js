@@ -317,7 +317,7 @@
 				var highlighting_objects = this.$highlighting_objects.toArray(),
 					highlighting_elements = _	.chain(highlighting_objects)
 												.map(function(cobj) {
-													if(cobj.is_destroyed()) {
+													if(cobj.isDestroyed()) {
 														return false;
 													} else if(cobj.is_template()) {
 														return cobj.instances();

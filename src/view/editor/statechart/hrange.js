@@ -138,7 +138,7 @@
 
 			my_state.async_get("isConcurrent", function(is_concurrent) {
 				var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
-				this.toggle_concurrency_item.html("Concurrent " + checkbox_mark)
+				this.toggle_concurrency_item.html("Concurrent " + checkbox_mark);
 			}, this);
 
 			this.reset_item = $("<div />")	.addClass("menu_item")

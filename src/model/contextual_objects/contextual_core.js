@@ -154,7 +154,7 @@
 		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
 		proto.get_pointer = function () { return this.pointer; };
 		proto.get_object = function () { return this.object; };
-		proto.is_destroyed = function() { return this._destroyed; };
+		proto.isDestroyed = function() { return this._destroyed; };
 		proto._getter = function () { return this.get_object(); };
 		proto.type = function () { return this._type; };
 		proto.val = function () { return this.$value.get(); };

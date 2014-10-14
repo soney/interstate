@@ -32,9 +32,22 @@
 		}, options);
 
 		var state = this.option("state");
+		var paper = this.option("paper");
+
+		this.path = paper	.path("M0,0");
+		this.path.appendTo(paper);
+		this.vline = paper	.path("M0,0")
+							.attr({
+								stroke: this.option("vline_color"),
+								"stroke-dasharray": this.option("vline_dasharray")
+							});
+		this.vline.prependTo(paper);
+		this.name = state.get_$("getName", "parent");
+		this.label = new ist.EditableText(paper, {x: -100, y: -100, text: "", fill: this.option("text_background"), color: this.option("text_foreground")});
 		this.active = state.get_$("isActive");
 		this.active_fn = cjs.liven(function () {
 			if (this.active.get()) {
+				console.log("active");
 				if (this.path) {
 					this.path.animate({
 						"fill": this.option("active_fill"),
@@ -43,6 +56,7 @@
 					this.label.option("color", this.option("active_text_foreground"), 300);
 				}
 			} else {
+				console.log("not active");
 				if (this.path) {
 					this.path.animate({
 						"fill": this.option("default_fill"),
@@ -55,7 +69,7 @@
 			context: this
 		});
 		if(highlight_running) {
-			var running = state.get_$("isActive");
+			var running = state.get_$("isRunning");
 			this.running_fn = cjs.liven(function () {
 				var state = this.option("state");
 				if (running.get()) {
@@ -71,20 +85,6 @@
 				context: this
 			});
 		}
-
-		var state = this.option("state");
-		var paper = this.option("paper");
-
-		this.path = paper	.path("M0,0");
-		this.path.appendTo(paper);
-		this.vline = paper	.path("M0,0")
-							.attr({
-								stroke: this.option("vline_color"),
-								"stroke-dasharray": this.option("vline_dasharray")
-							});
-		this.vline.prependTo(paper);
-		this.name = state.get_$("getName", "parent");
-		this.label = new ist.EditableText(paper, {x: -100, y: -100, text: "", fill: this.option("text_background"), color: this.option("text_foreground")});
 
 		this.initialize();
 	};
@@ -201,7 +201,7 @@
 			var state = this.option("state");
 			state.async_get("isConcurrent", function(is_concurrent) {
 				var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
-				this.toggle_concurrency_item.html("Concurrent " + checkbox_mark)
+				this.toggle_concurrency_item.html("Concurrent " + checkbox_mark);
 			}, this);
 
 			this.toggle_breakpoint_item = $("<div />")	.addClass("menu_item")
@@ -226,7 +226,6 @@
 													width: width + "px"
 												})
 												.appendTo(parentElement);
-			var state = this.option("state");
 			$(window).on("mousedown.expanded_mousedown", _.bind(this.on_window_click_while_expanded, this));
 			$(window).on("keydown.expanded_keydown", _.bind(this.on_window_keydown_while_expanded, this));
 		};
@@ -399,7 +398,7 @@
 			*/
 			var shape = layout.shape,
 				path_str = _.map(shape, function(cmd_arr) {
-					return cmd_arr[0] + _.rest(cmd_arr).join(",")
+					return cmd_arr[0] + _.rest(cmd_arr).join(",");
 				}).join("");
 			return path_str;
 		};

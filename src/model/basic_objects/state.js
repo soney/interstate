@@ -141,8 +141,15 @@
 			My.superclass.destroy.apply(this, arguments);
         };
 		proto.addSubstate = function(name, index) {
-			var state = new My({parent: this, root: this.root()}),
-				substates = this._get_substates();
+			var substates = this._get_substates(),
+				state;
+			if(index instanceof My) {
+				state = index;
+				state.set_parent(this);
+				state.set_root(this.root());
+			} else {
+				state = new My({parent: this, root: this.root()});
+			}
 
 			substates.put(name, state, index);
 			return state;
@@ -157,9 +164,10 @@
 				_.each(_.unique(incoming_transitions.concat(outgoing_transitions)), function(transition) {
 					transition.remove();
 				});
+				substate.set_parent(false);
+				substate.set_root(false);
+				substates.remove(name);
 			}
-
-			substates.remove(name);
 		};
 		proto.renameSubstate = function(from_name, to_name) {
 			var substates = this._get_substates(),
@@ -226,9 +234,9 @@
 			incoming_transitions.push(transition);
 		};
 		proto.addTransition = function(from_state_name, to_state_name, transition_info) {
-			var from_state, to_state;
+			var from_state, to_state, transition;
 			if(from_state_name instanceof ist.Transition) {
-				var transition = from_state_name;
+				transition = from_state_name;
 				from_state = transition.from();
 				to_state = transition.to();
 
@@ -257,8 +265,9 @@
 							from: from_state,
 							to: to_state,
 							root: this.root()
-						}, transition_info),
-						transition = new ist.Transition(options);
+						}, transition_info);
+
+					transition = new ist.Transition(options);
 
 					cjs.wait();
 					from_state._addOutgoingTransition(transition);

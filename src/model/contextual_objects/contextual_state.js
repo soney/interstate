@@ -27,14 +27,12 @@
 			ptr = ptr.pop();
 			this._statefulObj = ptr.length() > 0 ? ptr.getContextualObject() : false;
 		} else {
-			var pointer = this.get_pointer(),
-				obj_parent = object.parent(),
+			var obj_parent = object.parent(),
 				obj_root = object.root();
 
 			this._parent = pointer.pop().getContextualObject();
 
-			var lineage = object.getLineage(),
-				ptr = pointer;
+			var lineage = object.getLineage();
 			_.each(_.rest(lineage), function() {
 				ptr = ptr.pop();
 			});

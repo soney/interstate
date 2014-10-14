@@ -26,7 +26,6 @@
 		this._stack = (options && options.stack) || [];
 		this._copies = (options && options.copies) || new Array(this._stack.length);
 		this._hashes = (options && options.hashes) || [];
-		if(this._stack.length !== this._copies.length) debugger;
 	};
 	(function (my) {
 		var proto = my.prototype;

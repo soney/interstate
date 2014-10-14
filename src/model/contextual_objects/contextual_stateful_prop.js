@@ -99,7 +99,7 @@
 			var state_object = contextualState.get_object(),
 				raw_values = this.get_raw_values();
 			return _.any(raw_values, function(info) { return info.key === state_object; });
-		}
+		};
 
 		proto.get_raw_values = function (avoid_inherited) {
 			var parent = this.get_parent();
@@ -210,12 +210,14 @@
 				statecharts_len = statecharts.length;
 
 			var rv = _.map(raw_values, function (entry) {
-				var key = entry.key;
-				var contextual_state, i;
+				var key = entry.key,
+					contextual_state, i;
 				if (key) {
+					var key_root = key.root(),
+						statechart;
 					for (i = 0; i < statecharts_len; i += 1) {
-						var statechart = statecharts[i];
-						if (key.root() === statechart.get_object()) {
+						statechart = statecharts[i];
+						if (key_root === statechart.get_object()) {
 							contextual_state = parent.getStateContextualObject(key);
 							break;
 						}
@@ -354,7 +356,9 @@
 		};
 
 		proto.active_value = function() {
-			return this.$active_value.get();
+			var rv = this.$active_value.get();
+			if(rv && rv.state && rv.state.isDestroyed()) return false;
+			return rv;
 		};
 
 

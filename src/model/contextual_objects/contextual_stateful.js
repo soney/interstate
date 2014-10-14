@@ -181,8 +181,10 @@
 			return state_pointer;
 		};
 		proto.getStateContextualObject = function(state) {
-			var state_pointer = this.getStatePointer(state);
-			return state_pointer.getContextualObject();
+			var state_pointer = this.getStatePointer(state),
+				rv = state_pointer.getContextualObject();
+			
+			return rv;
 		};
 		proto._get_valid_cobj_children = function() {
 			var dict_children = My.superclass._get_valid_cobj_children.apply(this, arguments),

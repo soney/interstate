@@ -70,10 +70,10 @@
 	(function (My) {
 		var proto = My.prototype;
 
-		My.INVISIBLE_DISPLAY_TYPE = "invisible",
-		My.HRANGE_DISPLAY_TYPE = "hrange",
-		My.STARTSTATE_DISPLAY_TYPE = "start",
-		My.STATE_DISPLAY_TYPE = "state",
+		My.INVISIBLE_DISPLAY_TYPE = "invisible";
+		My.HRANGE_DISPLAY_TYPE = "hrange";
+		My.STARTSTATE_DISPLAY_TYPE = "start";
+		My.STATE_DISPLAY_TYPE = "state";
 		My.TRANSITION_DISPLAY_TYPE = "transition";
 
 		able.make_proto_optionable(proto);
@@ -302,7 +302,7 @@
 						columnTransitions, transitionTypeArr,
 						fromColumnInfo, toColumnInfo,
 						fromSide, toSide,
-						fromColumn, toColumn, toCenterColumn = toStateWing.centerColumn;
+						fromColumn, toColumn;
 
 					if(atomic) {
 						columnTransitions = fromStateWing.columnTransitions.outgoing;
@@ -478,9 +478,7 @@
 				fromStateWing.numOwnRows = highestTransitionRow-depth + 1;
 			});
 
-			var columnWidths = [],
-				TRANSITION_WIDTH = this.option("transition_width"),
-				TRANSITION_HEIGHT = this.option("transition_height");
+			var columnWidths = [];
 
 			_.each(state_wings, function(stateWing) {
 				var sc_summary = stateWing.sc_summary,
@@ -782,8 +780,8 @@
 					leftColumnIndex, rightColumnIndex;
 
 				if(stateWing.isAtomic) {
-					centerColumnIndex = stateWing.centerColumn,
-					i = 0,
+					centerColumnIndex = stateWing.centerColumn;
+					i = 0;
 					ccx = 0;
 					for(;i<centerColumnIndex; i++) {
 						ccx += columnWidths[i];
@@ -859,10 +857,10 @@
 						numRows = stateWing.numRows,
 						leftColumnTransitions = stateWing.leftColumnTransitions,
 						rightColumnTransitions = stateWing.rightColumnTransitions,
-						i = 0,
 						lastLeftIndentation = -1,
 						lastRightIndentation = -1,
 						leftIndentation, rightIndentation, points;
+					i = 0;
 
 					//console.log(rightColumnTransitions.indentations);
 					while(i < numRows) {
@@ -1072,10 +1070,12 @@
 	}
 
 function reverseArr(input) {
-    var ret = new Array;
-    for(var i = input.length-1; i >= 0; i--) {
+    var ret = [],
+		i = input.length-1;
+	while(i >= 0) {
         ret.push(input[i]);
-    }
+		i--;
+	}
     return ret;
 }
 }(interstate));

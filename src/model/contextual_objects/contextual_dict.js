@@ -296,7 +296,7 @@
 						return {
 							value: sc[name],
 							owner: sc
-						}
+						};
 					}, this);
 				}
 

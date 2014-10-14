@@ -326,7 +326,6 @@
         //
     
         proto.destroy = function () {
-			if(this.sid() === 827) debugger;
 			if(this.constructor === My) { this.begin_destroy(); }
 			ist.unset_instance_builtins(this, My);
 			My.superclass.destroy.apply(this, arguments);

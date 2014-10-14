@@ -256,7 +256,7 @@
 		}
 
 		var getter = function () {
-			var i, curr_context, context_item, rv;
+			var i, curr_context, context_item, rv, contextual_obj;
 			if (key === IDENTIFIER.CONTAINER) {
 				var found_this = false;
 				curr_context = context;
@@ -281,14 +281,14 @@
 				
 			while (!curr_context.isEmpty()) {
 				if (context_item instanceof ist.Dict) {
-					var contextual_obj = curr_context.getContextualObject();
+					contextual_obj = curr_context.getContextualObject();
 					if (contextual_obj.has(key, _.indexOf(ignore_inherited_in_contexts, context_item)>=0)) {
 						rv = contextual_obj._prop_val(key);
 						return rv;
 					}
 				} else if (context_item instanceof ist.State || context_item instanceof ist.Transition) {
 					if(key === "event") {
-						var contextual_obj = curr_context.getContextualObject();
+						contextual_obj = curr_context.getContextualObject();
 						return contextual_object.getEvent();
 					}
 				}

@@ -197,7 +197,6 @@
 		*/
 		
 		transition.on("fire", this.flash, this);
-		var from = this.option("from");
 		/*
 
 		if (event instanceof ist.ParsedEvent) {
