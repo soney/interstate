@@ -47,7 +47,6 @@
 		this.active = state.get_$("isActive");
 		this.active_fn = cjs.liven(function () {
 			if (this.active.get()) {
-				console.log("active");
 				if (this.path) {
 					this.path.animate({
 						"fill": this.option("active_fill"),
@@ -56,7 +55,6 @@
 					this.label.option("color", this.option("active_text_foreground"), 300);
 				}
 			} else {
-				console.log("not active");
 				if (this.path) {
 					this.path.animate({
 						"fill": this.option("default_fill"),

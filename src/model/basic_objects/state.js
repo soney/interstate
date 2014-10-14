@@ -160,7 +160,7 @@
 
 			if(substate) {
 				var incoming_transitions = substate.getIncomingTransitions(),
-					outgoing_transitions = substate.getIncomingTransitions();
+					outgoing_transitions = substate.getOutgoingTransitions();
 				_.each(_.unique(incoming_transitions.concat(outgoing_transitions)), function(transition) {
 					transition.remove();
 				});

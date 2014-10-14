@@ -223,7 +223,7 @@
 					});
 					from_ptr = from_ptr.push(transition);
 					return from_ptr.getContextualObject();
-				});
+				}, this);
 			return contextual_transitions;
 		};
 		proto.getOutgoingTransitions = function() {
@@ -394,6 +394,14 @@
 					.value();
 		};
 
+		proto.onActiveSubstateDestroyed = function() {
+			this._localState = false;
+			if(!this.isConcurrent()) {
+				var startState = this.getStartState();
+				this.setActiveSubstate(startState);
+			}
+		};
+
 		proto.setActiveSubstate = function(state, transition, event) {
 			var doActivate = function() {
 				var isRunning = this.isRunning();
@@ -410,6 +418,7 @@
 					cjs.wait();
 					if(local_state !== state) {
 						if (local_state) {
+							local_state.off('begin_destroy', this.onActiveSubstateDestroyed, this);
 							local_state.stop();
 							local_state.deactivate();
 						}
@@ -420,6 +429,7 @@
 					if (local_state) {
 						local_state.activate();
 						if(isRunning) { local_state.run(); }
+						local_state.on('begin_destroy', this.onActiveSubstateDestroyed, this);
 					}
 					cjs.signal();
 				}
@@ -577,6 +587,10 @@
 		};
 
 		proto.begin_destroy = function() {
+			if(this._localState) {
+				this._localState.off("begin_destroy", this.onActiveSubstateDestroyed, this);
+				this._localState = false;
+			}
 			this._remove_cobj_child_updater();
 
 			My.superclass.begin_destroy.apply(this, arguments);
@@ -588,7 +602,6 @@
 			this.$running.destroy(true);
 			this.$active.destroy(true);
 			this.$event.destroy(true);
-			this._localState = false;
 		};
 
 		proto.pause = function() {

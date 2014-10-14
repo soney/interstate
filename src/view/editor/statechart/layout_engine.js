@@ -298,7 +298,7 @@
 						toStateClient = transition.to,
 						toStateID = toStateClient.cobj_id,
 						toStateWing = state_wings[toStateID],
-						toCenterColumn = toStateWing.centerColumnn,
+						toCenterColumn = toStateWing.centerColumn,
 						columnTransitions, transitionTypeArr,
 						fromColumnInfo, toColumnInfo,
 						fromSide, toSide,
@@ -1072,7 +1072,7 @@
 function reverseArr(input) {
     var ret = [],
 		i = input.length-1;
-	while(i >= 0) {
+	while(i>=0) {
         ret.push(input[i]);
 		i--;
 	}
