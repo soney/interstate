@@ -82,13 +82,13 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p>To say that we want <var>my_circle</var> to be a circle, we need to set its <var>prototypes</var> property to <code>shape.circle</code>. This means we <em>inherit</em> from <var>shape.circle</var>. The grey circle next to <var>prototypes</var> means that <var>prototypes</var> is not set.</p>" +
-						"<div class='directive'>Click the grey circle and enter <code>shape.circle</code> into the blank. Press <kbd>enter</kbd> to confirm. You should see a circle appear in your runtime window. In the editor, hover your mouse over the <var>my_circle</var> header or property row in <var>screen</var> to highlight it in the runtime window.</div>"
+				text: "<p>To say that we want <var>my_circle</var> to be a circle, we need to set its <var>prototypes</var> property to <code>svg.circle</code>. This means we <em>inherit</em> from <var>svg.circle</var>. The grey circle next to <var>prototypes</var> means that <var>prototypes</var> is not set.</p>" +
+						"<div class='directive'>Click the grey circle and enter <code>svg.circle</code> into the blank. Press <kbd>enter</kbd> to confirm. You should see a circle appear in your runtime window. In the editor, hover your mouse over the <var>my_circle</var> header or property row in <var>screen</var> to highlight it in the runtime window.</div>"
 			}
 		}, {
 			editor: {
-				text: "<p>The greyed out properties are <em>inherited</em> properties. These properties are inherited from the <var>shape.circle</var> (which you set <var>prototypes</var> to. You can navigate to <var>shape.circle</var> to see all of these properties' default values by clicking the blue link next to <var>prototypes</var>.</p>" +
-						"<div class='directive'>Navigate to <var>shape.circle</var> and then back to <var>sketch.screen.my_circle</var>.</div>"
+				text: "<p>The greyed out properties are <em>inherited</em> properties. These properties are inherited from the <var>svg.circle</var> (which you set <var>prototypes</var> to. You can navigate to <var>svg.circle</var> to see all of these properties' default values by clicking the blue link next to <var>prototypes</var>.</p>" +
+						"<div class='directive'>Navigate to <var>svg.circle</var> and then back to <var>sketch.screen.my_circle</var>.</div>"
 			}
 		}, {
 			editor: {
@@ -162,7 +162,7 @@ var tutorial_pages = (function() {
 		}, {
 			editor: {
 				text: "<p>These emitted events can be used by other objects. Let's create a counter display whose number increases every time the user hovers over <var>my_circle</var>.</p>" +
-						"<div class='directive'>Create a new object on <var>screen</var> called <var>message</var>. Make it inherit from <var>shape.text</var>, add a variable called <var>counter</var> whose initial value is <code>0</code>. Set the <var>text</var> property to be <code>'hover count: ' + counter</code>. Then, add a new state called <var>init</var> and a transition from <var>init</var> to itself whose event is <code>on('hover_out', my_circle)</code>. Finally, set <var>counter</var> to <code>counter+1</code> on that transition.</div>" +
+						"<div class='directive'>Create a new object on <var>screen</var> called <var>message</var>. Make it inherit from <var>svg.text</var>, add a variable called <var>counter</var> whose initial value is <code>0</code>. Set the <var>text</var> property to be <code>'hover count: ' + counter</code>. Then, add a new state called <var>init</var> and a transition from <var>init</var> to itself whose event is <code>on('hover_out', my_circle)</code>. Finally, set <var>counter</var> to <code>counter+1</code> on that transition.</div>" +
 						"<div class='note'>note 1: you may have to reset the state machine.</div>" +
 						"<div class='note'>note 2: you could refer to <var>my_circle</var> as <var>my_circle</var>, <var>screen.my_circle</var>, or even <var>sketch.screen.my_circle</var>.</div>"
 			}
@@ -186,7 +186,7 @@ var tutorial_pages = (function() {
 		}, {
 			editor: { // The find function can be used to find objects.
 				text: "<p>The built-in <var>find(root)</var> function can be used to query objects. <var>find</var> accepts a <var>root</var> object to start at and returns a special 'query' object. Find uses 'chaining' to filter its query. For example, <code>find(my_circle).in_state('hover').eq(0)</code> returns every copy of <var>my_circle</var> in the <var>hover</var> state and returns the first one. This property will be <code>undefined</code> until you hover over an object.</p>"
-						+ "<div class='directive'>Create a new object on screen that inherits from <var>shape.rect</var>. Set its <var>following</var> property to the expression <code>find(my_circle).in_state('hover').eq(0)</code> and make it follow the highlighted object by settings <var>y</var> property to <var>following.cy-following.r</var>.</div>"
+						+ "<div class='directive'>Create a new object on screen that inherits from <var>svg.rectangle</var>. Set its <var>following</var> property to the expression <code>find(my_circle).in_state('hover').eq(0)</code> and make it follow the highlighted object by settings <var>y</var> property to <var>following.cy-following.r</var>.</div>"
 			}
 		}, {
 			editor: {
