@@ -6,6 +6,7 @@ var express = require('express'),
 	fs = require('fs'),
 	ejs = require('ejs'),
 	sass = require("node-sass"),
+	sass_middleware = require("node-sass-middleware"),
 	ist_inc = require('./include_libs'),
 	http = require("http"),
 	child_process = require('child_process');
@@ -108,7 +109,7 @@ var callback_map = function(arr, func, callback) {
 			}
 		});
 	});
-	app.use(sass.middleware({
+	app.use(sass_middleware({
 		src: __dirname
 	}));
 	app.use(express.static(__dirname));
