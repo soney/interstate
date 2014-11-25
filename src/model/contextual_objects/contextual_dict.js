@@ -409,7 +409,6 @@
 			return contextual_object;
 		};
 		proto._has = function (name, ignore_inherited) {
-			if(this.inert) { debugger; }
 			if(this.is_template()) {
 				return false;
 			}
@@ -852,6 +851,7 @@
 				attachment_instance.destroy(true);
 				delete this._attachment_instances[type];
 			}, this);
+
 			delete this._attachment_instances;
 
 			if(this._live_cobj_child_updater) {
@@ -859,12 +859,10 @@
 				delete this._live_cobj_child_updater;
 			}
 
-
 			My.superclass.begin_destroy.apply(this, arguments);
 		};
 
 		proto.destroy = function (avoid_begin_destroy) {
-			if(this.sid() === 532) debugger;
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
 			this._manifestation_objects.destroy(true);

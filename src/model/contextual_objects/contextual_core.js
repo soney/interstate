@@ -30,7 +30,6 @@
 		this.pointer = options.pointer;
 		this.inherited_from = options.inherited_from || false;
 
-
 		this.$value = new cjs.Constraint(this._getter, {
 			context: this,
 			check_on_nullify: options && (options.check_on_nullify === true),
