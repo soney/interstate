@@ -418,6 +418,11 @@
 				}
 			},
 			proto_props: {
+			},
+			outputs: {
+				fire: function(contextual_object) {
+					return _.bind(ist.fire, contextual_object)
+				}
 			}
 		});
 }(interstate, jQuery));

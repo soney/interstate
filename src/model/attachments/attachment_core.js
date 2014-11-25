@@ -10,6 +10,7 @@
         this.options = options || {};
         this.contextual_object = this.options.contextual_object;
 		this.creator = this.options.creator;
+		this.outputFields = this.options.outputFields || {};
         this.type = "(generic)";
     };
     
@@ -34,16 +35,13 @@
             return this._context.hash();
         };
 		proto.getOutputFields = function() {
-			return {};
+			return this.outputFields;
 		};
 		proto.getOutputFieldNames = function() {
-			return [];
+			return _.keys(this.outputFields);
 		};
-		proto.getOutputValue = function(fieldName) {
-			return false;
-		};
-		proto.getSummaryView = function() {
-			return false;
+		proto.getOutputField = function(fieldName) {
+			return this.outputFields[fieldName];
 		};
     }(ist.AttachmentInstance));
     
@@ -54,7 +52,7 @@
         } else { this._multiple_allowed = false; }
         this._InstanceClass = options.instance_class || ist.AttachmentInstance;
         this.type = "(generic)";
-        this.instance_options = options.instance_options || {};
+        this.instance_options = _.extend({ }, options.instance_options);
     };
     (function (My) {
         var proto = My.prototype;
@@ -103,6 +101,7 @@
 	ist.register_attachment = function(attachment_name, attachment_specs) {
 		var attachment_suffix = "_attachment";
 		var id = 0;
+
 		var InstanceType = function(options) {
 			InstanceType.superclass.constructor.apply(this, arguments);
 
@@ -154,6 +153,10 @@
 						});
 					}
 				}, this);
+
+				_.each(attachment_specs.outputs, function(getter_fn, name) {
+					this.outputFields[name] = getter_fn.call(this, contextual_object);
+				}, this);
 			};
 			proto.on_pause = function() {
 				_.each(this._listeners, function(listener) {
@@ -191,6 +194,7 @@
 		(function(My) {
 			_.proto_extend(My, ist.Attachment);
 			var proto = My.prototype;
+
 			if(attachment_specs.attachment_destroy) {
 				proto.do_destroy = attachment_specs.attachment_destroy;
 			}

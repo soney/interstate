@@ -237,7 +237,6 @@
 						obj._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
 						obj.set("tag", new ist.Cell({str: "'" + tag_name + "'"}));
 					});
-			/**/
 		}
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "physics") >= 0)) {
@@ -256,6 +255,7 @@
 			fixture.set("friction", new ist.Cell({str: "0.5"}));
 			fixture.set("density", new ist.Cell({str: "1.0"}));
 			fixture.set("world", new ist.Cell({str: "physics.world"}));
+			/*
 			fixture.set("computed_x", new ist.Cell({str: "fetch_physics_info(this, 'getComputedX')"}));
 			fixture.set("computed_y", new ist.Cell({str: "fetch_physics_info(this, 'getComputedY')"}));
 			fixture.set("computed_theta", new ist.Cell({str: "fetch_physics_info(this, 'getComputedTheta')"}));
@@ -273,6 +273,7 @@
 				"return fixture_attachment[prop_name]();" +
 				//"}" +
 			"}"}));
+			*/
 		}
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "functions") >= 0)) {
@@ -283,8 +284,10 @@
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "device") >= 0)) {
 			var device = ist.createDevices();
-			root_dict.set("device", device);
-			root_dict.set("mouse", new ist.Cell({str: "device.mouse"}));
+			root_dict	.set("device", device)
+						.set("mouse", new ist.Cell({str: "device.mouse"}))
+						.set("keyboard", new ist.Cell({str: "device.keyboard"}))
+						.set("touch", new ist.Cell({str: "device.touchscreen.touchCluster"}));
 		}
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "event") >= 0)) {
 			var fireable = new ist.Dict({has_protos: false, direct_attachments: [new ist.FireableAttachment()]});

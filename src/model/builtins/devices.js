@@ -13,16 +13,12 @@
 	// mouse
 	ist.createMouseObject = function() {
 		
-		/*
-		var mouse_event = new ist.StatefulObj({});
-		mouse_event._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "event"}));
+		var mouse_event= new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment({
+																						})]
+																					})
 		mouse_event .set("target", new ist.Cell({str: "arguments[0]"}))
 					.set("type", new ist.Cell({str: "arguments[1]"}))
-					.set("arguments", new ist.Cell({str: "[window, 'click']"}))
-					.addSubstate("idle")
-					.startsAt("idle")
-					.addTransition("idle", "idle", "on(type, target);this.fire()");
-					*/
+					.set("arguments", new ist.Cell({str: "[window, 'click']"}));
 
 		var clientX = cjs(0),
 			clientY = cjs(0),
@@ -68,7 +64,6 @@
 					pageY: pageY,
 					screenX: screenX,
 					screenY: screenY,
-					/*
 					mouseEvent: mouse_event,
 					click: new ist.Cell({str: "mouseEvent(window, type='click')"}),
 					down: new ist.Cell({str: "mouseEvent(window,type='mousedown')"}),
@@ -76,7 +71,6 @@
 					move: new ist.Cell({str: "mouseEvent(window,type='mousemove')"}),
 					over: new ist.Cell({str: "mouseEvent(window,type='mouseover')"}),
 					out: new ist.Cell({str: "mouseEvent(window,type='mouseout')"}),
-					*/
 				}
 			});
 		device_mouse.destroy = function() {
@@ -353,41 +347,8 @@
 			touchCluster = new ist.Dict({has_protos: false, direct_attachments: [new ist.TouchClusterAttachment({
 																						})]
 																					})
-																					/*
-				.add_state("inactive")
-				.add_state("active")
-				.starts_at("inactive")
-				.add_transition("inactive", "active", "this.isSatisfied;emit('start', this)")
-				.add_transition("active", "inactive", "!this.isSatisfied;emit('end', this)")
-*/
-				.set("touchCluster_call", new ist.Cell({str: "function(p, prop_name) {" +
-					"var tc_attachment = interstate.get_attachment(p, 'touch_cluster');" +
-					"var tc = tc_attachment.touchCluster;" +
-					"return tc[prop_name]();" +
-				"}"}))
-				.set("touchCluster_fn", new ist.Cell({str: "function(p, prop_name) {" +
-					"var tc_attachment = interstate.get_attachment(p, 'touch_cluster');" +
-					"var tc = tc_attachment.touchCluster;" +
-					"return tc[prop_name].bind(tc);" +
-				"}"}))
-
 				.set("satisfied", new ist.Cell({str: "fireable()"}))
 				.set("dissatisfied", new ist.Cell({str: "fireable()"}))
-				.set("isSatisfied", new ist.Cell({str: "touchCluster_call(this, 'isSatisfied')"}))
-				.set("x", new ist.Cell({str: "touchCluster_call(this, 'getX')"}))
-				.set("y", new ist.Cell({str: "touchCluster_call(this, 'getY')"}))
-				.set("startX", new ist.Cell({str: "touchCluster_call(this, 'getStartX')"}))
-				.set("startY", new ist.Cell({str: "touchCluster_call(this, 'getStartY')"}))
-				.set("endX", new ist.Cell({str: "touchCluster_call(this, 'getEndX')"}))
-				.set("endY", new ist.Cell({str: "touchCluster_call(this, 'getEndY')"}))
-				.set("radius", new ist.Cell({str: "touchCluster_call(this, 'getRadius')"}))
-				.set("startRadius", new ist.Cell({str: "touchCluster_call(this, 'getStartRadius')"}))
-				.set("endRadius", new ist.Cell({str: "touchCluster_call(this, 'getEndRadius')"}))
-				.set("rotation", new ist.Cell({str: "touchCluster_call(this, 'getRotation')"}))
-				.set("scale", new ist.Cell({str: "touchCluster_call(this, 'getScale')"}))
-
-				.set("claimTouches", new ist.Cell({str: "touchCluster_fn(this, 'claimTouches')"}))
-				.set("disclaimTouches", new ist.Cell({str: "touchCluster_fn(this, 'disclaimTouches')"}))
 				.set("downInside", new ist.Cell({str: "false"}))
 				.set("downOutside", new ist.Cell({str: "false"}))
 				.set("numFingers", new ist.Cell({str: "1"}))

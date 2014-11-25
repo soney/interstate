@@ -6,7 +6,7 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	ist.FireableAttachment = ist.register_attachment("fireable_attachment", {
+	ist.JSEventAttachment = ist.register_attachment("js_event_attachment", {
 			ready: function(contextual_object) {
 			},
 			destroy: function(silent) {
@@ -17,19 +17,7 @@
 			},
 			proto_props: {
 				getEvent: function() {
-					var event = new ist.IstObjEvent("fireable", this.contextual_object);
-					return event;
-				}
-			},
-			outputs: {
-				fire: function(contextual_object) {
-					return _.bind(ist.fire, contextual_object)
 				}
 			}
 		});
-
-	ist.fire = function(event) {
-		var cobj = this;
-		ist.emit("fireable", cobj, event);
-	};
 }(interstate, jQuery));

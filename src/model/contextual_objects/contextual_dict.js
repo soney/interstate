@@ -206,7 +206,9 @@
 				direct_names = this.get_direct_prop_names(),
 				owners = {},
 				proto_objects = this.get_all_protos(true),
+				attachment_instances = this.getAttachmentInstance(),
 				inherited_names = [],
+				attachment_field_names = [],
 				i, copy = pointer.copy();
 
 			_.each(builtin_names, function (name) {
@@ -217,6 +219,14 @@
 				owners[name] = this;
 			}, this);
 
+			_.each(attachment_instances, function(attachment_instance) {
+				var outputFields = attachment_instance.getOutputFields();
+				_.each(outputFields, function(value, name) {
+					owners[name] = attachment_instance;
+					attachment_field_names.push(name);
+				});
+			});
+
 
 			if (exclude_builtins !== true && my_ptr_index >= 0) {
 				if(copy) {
@@ -225,23 +235,6 @@
 						special_context_names.push(k);
 					}, this);
 				}
-			/*
-				var special_contexts = pointer.special_contexts(my_ptr_index),
-					len = special_contexts.length,
-					sc, co,
-					each_co = function (v, k) {
-						if (!owners.hasOwnProperty(k)) {
-							owners[k] = sc;
-							special_context_names.push(k);
-						}
-					};
-
-				for (i = 0; i < len; i++) {
-					sc = special_contexts[i];
-					co = sc.get_context_obj();
-					_.each(co, each_co);
-				}
-				*/
 			}
 
 			_.each(proto_objects, function (p) {
@@ -261,12 +254,14 @@
 				["special_context", special_context_names],
 				["builtin", builtin_names],
 				["direct", direct_names],
-				["inherited", inherited_names]
+				["inherited", inherited_names],
+				["attachment", attachment_field_names]
 			], function (info) {
 				var type = info[0],
 					names = info[1],
-					is_inherited = type==="inherited",
-					is_builtin = type==="builtin" || type==="special_context",
+					is_inherited = type === "inherited",
+					is_builtin = type === "builtin" || type === "special_context",
+					is_attachment = type === "attachment",
 					getter_fn, infos;
 
 				if (type === "builtin") {
@@ -277,7 +272,7 @@
 					infos = _.map(names, function (name) {
 						return this.prop_info(name, true);
 					}, this);
-				} else if (type === "inherited") {
+				} else if (is_inherited) {
 					infos = _.map(names, function (name) {
 						var owner = owners[name],
 							value = owner.prop(name),
@@ -296,6 +291,14 @@
 						return {
 							value: sc[name],
 							owner: sc
+						};
+					}, this);
+				} else if(type === "attachment") {
+					infos = _.map(names, function (name) {
+						var attachment = owners[name];
+						return {
+							value: attachment.getOutputField(name),
+							owner: attachment
 						};
 					}, this);
 				}
@@ -490,16 +493,12 @@
 			if (info) {
 				var pointer = this.get_pointer();
 
-				//if(window.dbg && pointer.hash() === 35) { debugger; }
-
 				var opts = {};
 				if(info.inherited_from) {
 					opts.inherited_from = info.inherited_from;
 				}
 
 				var value = get_contextual_object(info.value, pointer, opts);
-
-				//if(value.is_destroyed && value.is_destroyed()) { debugger; }
 
 				return value;
 			} else {
@@ -675,68 +674,68 @@
 			return manifestation_contextual_objects;
 		};
 
+
 		proto.get_attachment_types = function() {
-			var types = [], info;
-			if(!this.is_template()) {
-				var dict = this.get_object(),
-					direct_attachments = dict.direct_attachments(),
-					len = direct_attachments.length,
-					attachment, i, j;
-
-				for (i = 0; i < len; i += 1) {
-					attachment = direct_attachments[i];
-					types.push(attachment.get_type());
-				}
-
-				var proto_objects = this.get_all_protos();
-				var plen = proto_objects.length;
-				var proto_obj;
-
-				outer_loop:
-				for (i = 0; i < plen; i += 1) {
-					proto_obj = proto_objects[i];
-					direct_attachments = proto_obj.get_direct_attachments();
-					len = direct_attachments.length;
-					for (j = 0; j < len; j += 1) {
-						attachment = direct_attachments[j];
-						types.push(attachment.get_type());
-					}
-				}
-				types = _.uniq(types);
-			}
-
+			var infos = this.getAttachmentInfo(),
+				types = _	.chain(infos)
+							.map(function(info) {
+								var attachment = info.attachment;
+								return attachment.get_type();
+							})
+							.uniq()
+							.value();
 			return types;
 		};
 
 		proto.has_attachment_instance = function(type) {
-			var attachment = this.gt_attachment_instance_and_srt(type);
-			return !!atttachment;
+			var attachmentInfo = this.getAttachmentInfo(type);
+			return !!attachmentInfo;
 		};
 
-		proto.get_attachment_instance = function (type) {
-			var info = this.get_attachment_instance_and_src(type);
-			if(info) {
-				var attachment = info.attachment;
-				var attachment_instance;
-				if (this._attachment_instances.hasOwnProperty(type)) {
-					attachment_instance = this._attachment_instances[type];
-					if(attachment_instance.get_creator() !== info.attachment) {
-						attachment_instance.destroy();
-						attachment_instance = this._attachment_instances[type] = attachment.create_instance(this, info.owner);
+		proto.get_attachment_instance = 
+		proto.getAttachmentInstance = function(typeFilter) {
+			var returningList = !typeFilter,
+				info = this.getAttachmentInfo(typeFilter),
+				info_to_instance = function(attachment_info) {
+					var attachment = attachment_info.attachment,
+						type = attachment.get_type(),
+						attachment_instance;
+
+					if(this._attachment_instances.hasOwnProperty(type)) {
+						attachment_instance = this._attachment_instances[type];
+						if(attachment_instance.get_creator() !== attachment_info.attachment) {
+							attachment_instance.destroy();
+							attachment_instance = this._attachment_instances[type]
+								= attachment.create_instacne(this, attachment_info.owner);
+							attachment_instance.on_ready();
+						}
+					} else {
+						attachment_instance = this._attachment_instances[type]
+							= attachment.create_instance(this, attachment_info.owner);
 						attachment_instance.on_ready();
 					}
-				} else {
-					attachment_instance = this._attachment_instances[type] = attachment.create_instance(this, info.owner);
-					attachment_instance.on_ready();
-				}
-				return attachment_instance;
+
+					return attachment_instance;
+				};
+
+			if(returningList) {
+				return _.map(info, info_to_instance, this);
 			} else {
-				return undefined;
+				if(info) {
+					return info_to_instance.call(this, info, this);
+				} else {
+					return undefined;
+				}
 			}
 		};
 
-		proto.get_attachment_instance_and_src = function (type) {
-			var info, attachment_instance;
+		proto.get_attachment_instance_and_src = 
+		proto.getAttachmentInfo = function (typeFilter) {
+			var returningList = !typeFilter,
+				info,
+				attachment_instance,
+				infos = returningList ? [] : false;
+
 			if(!this.is_template()) {
 				var dict = this.get_object(),
 					direct_attachments = dict.direct_attachments(),
@@ -745,12 +744,17 @@
 
 				for (i = 0; i < len; i += 1) {
 					attachment = direct_attachments[i];
-					if (attachment.get_type() === type) {
+					if (returningList || attachment.get_type() === typeFilter) {
 						info = {
 							attachment: attachment,
 							owner: dict
 						};
-						break;
+
+						if(returningList) {
+							infos.push(info);
+						} else {
+							break;
+						}
 					}
 				}
 
@@ -766,27 +770,51 @@
 						len = direct_attachments.length;
 						for (j = 0; j < len; j += 1) {
 							attachment = direct_attachments[j];
-							if (attachment.get_type() === type) {
+							if (returningList || attachment.get_type() === typeFilter) {
 								info = {
 									attachment: attachment,
 									owner: dict
 								};
-								break outer_loop;
+
+								if(returningList) {
+									infos.push(info);
+								} else {
+									break outer_loop;
+								}
 							}
 						}
 					}
 				}
 			}
 
-			if (info) {
-				return info;
-			} else {
-				if (this._attachment_instances.hasOwnProperty(type)) {
-					attachment_instance = this._attachment_instances[type];
+			if(returningList) { // return all the infos
+				var excess_types = {};
+				_.each(this._attachment_instances, function(info, type) {
+					excess_types[type] = true;
+				});
+				_.each(infos, function(info_i) {
+					var type = info_i.attachment.get_type();
+					delete excess_types[type];
+				});
+				_.each(excess_types, function(should_be_true, type) {
+					var attachment_instance = this._attachment_instances[type];
 					attachment_instance.destroy();
 					delete this._attachment_instances[type];
+				}, this);
+
+				return infos;
+			} else {
+				if (info) {
+					return info;
+				} else {
+					// remove the old attachment instance if we searched for a specific one
+					if (this._attachment_instances.hasOwnProperty(typeFilter)) {
+						attachment_instance = this._attachment_instances[typeFilter];
+						attachment_instance.destroy();
+						delete this._attachment_instances[typeFilter];
+					}
+					return undefined;
 				}
-				return undefined;
 			}
 		};
 		proto.updateAttachments = function() {

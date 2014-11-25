@@ -101,6 +101,27 @@
 				claimsTouches: function() {
 					return this.touchCluster.claimsTouches();
 				}
+			},
+			outputs: {
+				x: function() { return this.touchCluster.getXConstraint(); },
+				y: function() { return this.touchCluster.getYConstraint(); },
+				startX: function() { return this.touchCluster.getStartXConstraint(); },
+				startY: function() { return this.touchCluster.getStartYConstraint(); },
+				endX: function() { return this.touchCluster.getEndXConstraint(); },
+				endY: function() { return this.touchCluster.getEndYConstraint(); },
+				radius: function() { return this.touchCluster.getRadiusConstraint(); },
+				startRadius: function() { return this.touchCluster.getStartRadiusConstraint(); },
+				endRadius: function() { return this.touchCluster.getEndRadiusConstraint(); },
+				rotation: function() { return this.touchCluster.getRadiusConstraint(); },
+				endRotation: function() { return this.touchCluster.getEndRadiusConstraint(); },
+				scale: function() { return this.touchCluster.getScaleConstraint(); },
+				endScale: function() { return this.touchCluster.getEndScaleConstraint(); },
+				claimTouches: function() {
+					return _.bind(this.touchCluster.claimTouches, this.touchCluster);
+				},
+				disclaimTouches: function() {
+					return _.bind(this.touchCluster.disclaimTouches, this.touchCluster);
+				}
 			}
 		});
 }(interstate, jQuery));

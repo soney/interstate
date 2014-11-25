@@ -327,17 +327,13 @@
 				},
 				get_shape: function() {
 					return this.shape.get();
-				},
-				getComputedX: function() {
-					return this.b2x.get();
-				},
-				getComputedY: function() {
-					return this.b2y.get();
-				},
-				getComputedTheta: function() {
-					return this.b2t.get();
-				},
-				applyForce: function(x, y) {
+				}
+			},
+			outputs: {
+				computed_x: function() { return this.b2x; },
+				computed_y: function() { return this.b2y; },
+				computed_theta: function() { return this.b2t; },
+				applyForce: function() {
 					var body = this.get_body();
 					if(body) {
 						setTimeout(function() {
