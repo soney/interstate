@@ -113,9 +113,9 @@
 			_.proto_extend(My, ist.AttachmentInstance);
 			var proto = My.prototype;
 			proto.on_ready = function() {
-				attachment_specs.ready.call(this);
-				this._listeners = {};
 				var contextual_object = this.get_contextual_object();
+				attachment_specs.ready.call(this, contextual_object);
+				this._listeners = {};
 				_.each(attachment_specs.parameters, function(parameter_spec, parameter_name) {
 					if(_.isFunction(parameter_spec)) {
 						this._listeners[parameter_name] = cjs.liven(function() {

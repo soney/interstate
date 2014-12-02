@@ -195,7 +195,7 @@
 						old_event.off_fire(this.fire, this);
 					}
 					if(can_destroy_old_event) {
-						old_event.destroy(true);
+						old_event.destroy();
 					}
 				}
 			});
@@ -273,9 +273,9 @@
 		};
 		proto.stringify = function () {
 			var event = this.event(),
-				stringified_event = event ? event.stringify() : "";
+				stringified_event = event ? event.toString() : "";
 
-			return stringified_event.toString();
+			return stringified_event;
 		};
 		proto.root = function () {
 			return this._root;

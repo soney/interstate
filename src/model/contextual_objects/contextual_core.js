@@ -42,6 +42,7 @@
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
 		}
+		if(window.dbg) debugger;
 	};
 
 	(function (My) {
@@ -188,6 +189,8 @@
 		};
 
 		proto.begin_destroy = function(silent) {
+			if(this.sid() === 720) debugger;
+			if(this.sid() === 988) debugger;
 			this.$value.setOption("check_on_nullify", false); // don't re-evaluate on nullification
 
 			if(this.object) {
@@ -197,18 +200,20 @@
 			var to_destroy = this._cobj_children.values();
 			_.each(to_destroy, function(cobj) {
 				cobj.off("begin_destroy", this.remove_cobj_child, this);
-				cobj.begin_destroy(true);
+				cobj.begin_destroy(silent);
 			}, this);
 
 			this.emit_begin_destroy();
 		};
 
 		proto.destroy = function (avoid_begin_destroy) {
+			if(this.sid() === 720) debugger;
+			if(this.sid() === 988) debugger;
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
 			var to_destroy = this._cobj_children.values();
 			_.each(to_destroy, function(cobj) {
-				cobj.destroy(true); // avoid begin destroy call
+				cobj.destroy(true); // avoid begin destroy because begin destroy will be called recursively on the first destroy call
 			});
 
 			this._cobj_children.clear();
@@ -323,7 +328,7 @@
 		proto.updateAttachments = function(){};
 
 		proto.toString = function() {
-			return My + " " + this.id();
+			return this._type + " " + this.id();
 		};
 		proto.print = function (logging_mechanism) {
 			return ist.print(this.pointer, logging_mechanism);

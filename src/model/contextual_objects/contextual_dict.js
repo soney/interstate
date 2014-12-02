@@ -206,7 +206,7 @@
 				direct_names = this.get_direct_prop_names(),
 				owners = {},
 				proto_objects = this.get_all_protos(true),
-				attachment_instances = this.getAttachmentInstance(),
+				attachment_instances = exclude_builtins === true ? [] : this.getAttachmentInstance(),
 				inherited_names = [],
 				attachment_field_names = [],
 				i, copy = pointer.copy();

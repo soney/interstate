@@ -259,7 +259,7 @@
 				var fireable_attachment = event.get_attachment_instance("fireable_attachment");
 				if(fireable_attachment) {
 					builtin_event = true;
-					var eventObject = event_attachment.getEvent(),
+					var eventObject = fireable_attachment.getEvent(),
 						newEvent = eventObject.when(function() { return false; });
 
 					eventObject.on_fire_request(function() {
