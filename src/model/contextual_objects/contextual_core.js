@@ -189,8 +189,6 @@
 		};
 
 		proto.begin_destroy = function(silent) {
-			if(this.sid() === 720) debugger;
-			if(this.sid() === 988) debugger;
 			this.$value.setOption("check_on_nullify", false); // don't re-evaluate on nullification
 
 			if(this.object) {
@@ -207,8 +205,6 @@
 		};
 
 		proto.destroy = function (avoid_begin_destroy) {
-			if(this.sid() === 720) debugger;
-			if(this.sid() === 988) debugger;
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
 			var to_destroy = this._cobj_children.values();

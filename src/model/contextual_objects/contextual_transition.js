@@ -111,6 +111,9 @@
 				can_destroy_old_event = false,
 				event_object, event, can_destroy_event, actions;
 
+			this.can_destroy_event = can_destroy_event;
+			this.event = event;
+
 			this._live_event_updater = cjs.liven(function() {
 				try {
 					event = event_constraint.get();
@@ -186,6 +189,9 @@
 				old_event = event;
 				old_event_object = event_object;
 				can_destroy_old_event = can_destroy_event;
+
+				this.can_destroy_event = can_destroy_event;
+				this.event = event;
 			}, {
 				context: this,
 				run_on_create: false,
@@ -194,9 +200,12 @@
 					if(old_event && old_event.off_fire) {
 						old_event.off_fire(this.fire, this);
 					}
-					if(can_destroy_old_event) {
-						old_event.destroy();
-					}
+
+					//on the begin destroy call, we don't want to actually destroy the event object once we stop running.
+					
+					//if(can_destroy_old_event) {
+						//old_event.destroy();
+					//}
 				}
 			});
 		};
@@ -206,7 +215,6 @@
 			}
 		};
 		proto.begin_destroy = function() {
-			//debugger;
 			this._remove_live_event_updater();
 
 			My.superclass.begin_destroy.apply(this, arguments);
@@ -221,6 +229,9 @@
 				var event = transition.getEvent();
 				event.off_fire(this.fire, this);
 			} else if(eventType === "parsed") {
+				if(this.can_destroy_event) {
+					this.event.destroy();
+				}
 			}
 			this._manual_event.off_fire(this.fire, this);
 			this._manual_event.destroy();
