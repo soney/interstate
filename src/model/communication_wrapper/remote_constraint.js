@@ -228,8 +228,6 @@
 				__value__: "constraint",
 				__id__: ist.registerConstraint(value)
 			};
-		} else if (_.isArray(value)) {
-			rv = _.map(value, summarize_value);
 		} else if (_.isFunction(value)) {
 			rv = {
 				__type__: "summarized_obj",
@@ -250,6 +248,13 @@
 				__type__: "summarized_obj",
 				__value__: "function"
 			};
+		} else if(value instanceof ist.Event) {
+			rv = {
+				__type__: "summarized_obj",
+				__value__: "ist_event"
+			};
+		} else if (_.isArray(value)) {
+			rv = _.map(value, summarize_value);
 		} else if (_.isObject(value)) {
 			rv = {};
 			_.each(value, function (v, k) { rv[k] = summarize_value(v); });

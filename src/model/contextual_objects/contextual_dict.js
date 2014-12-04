@@ -248,7 +248,6 @@
 				});
 			}, this);
 
-
 			var rv = [];
 			_.each([
 				["special_context", special_context_names],
@@ -287,7 +286,6 @@
 				} else if (type === "special_context") {
 					infos = _.map(names, function (name) {
 						var sc = owners[name];
-							//co = sc.get_context_obj();
 						return {
 							value: sc[name],
 							owner: sc
@@ -340,7 +338,9 @@
 						return {name: name, value: info.value, inherited: false, builtin: true };
 					}, this),
 					copy = pointer.copy(),
-					special_context_names = [];
+					attachment_instances = this.getAttachmentInstance(),
+					special_context_names = [],
+					attachment_field_names = [];
 					/*
 				i, copy = pointer.copy();
 
@@ -357,6 +357,14 @@
 				if(copy) {
 				}
 				*/
+				_.each(attachment_instances, function(attachment_instance) {
+					var outputFields = attachment_instance.getOutputFields();
+					_.each(outputFields, function(value, name) {
+						owners[name] = attachment_instance;
+						attachment_field_names.push(name);
+					});
+				});
+
 				if(copy) {
 					_.each(copy, function(v, k) {
 						owners[k] = copy;
@@ -369,7 +377,17 @@
 							return {name: name, value: sc[name], inherited: false, builtin: true };
 							//var co = sc.get_context_obj();
 							//return co[name];
-						}) || [];
+						}) || [],
+					attachment_field_infos = _.map(attachment_field_names, function(name) {
+						var attachment = owners[name];
+						return {
+							name: name,
+							value: attachment.getOutputField(name),
+							//owner: attachment,
+							inherited: false,
+							builtin: true
+						};
+					});
 						/*
 					special_context_contextual_objects = _.map(special_context_infos, function (info, i) {
 						var name = special_context_names[i];
@@ -389,7 +407,7 @@
 					});
 
 
-				return children;
+				return children.concat(attachment_field_infos);
 			}
 		};
 

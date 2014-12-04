@@ -13,12 +13,14 @@
 	// mouse
 	ist.createMouseObject = function() {
 		
-		var mouse_event= new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment({
-																						})]
+		var mouse_event= new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment(), new ist.EventAttachment()]
 																					})
 		mouse_event .set("target", new ist.Cell({str: "arguments[0]"}))
 					.set("type", new ist.Cell({str: "arguments[1]"}))
-					.set("arguments", new ist.Cell({str: "[window, 'click']"}));
+					.set("arguments", new ist.Cell({str: "[window, 'click']"}))
+					.set("delay", new ist.Cell({str: "false"}))
+					.set("priority", new ist.Cell({str: "false"}))
+					;
 
 		var clientX = cjs(0),
 			clientY = cjs(0),
@@ -109,6 +111,15 @@
 			interesting_keycodes[code] = name;
 		});
 
+		var key_event= new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment(), new ist.EventAttachment()]
+																					})
+		key_event	.set("key", new ist.Cell({str: "arguments[0]"}))
+					.set("type", new ist.Cell({str: "arguments[1]"}))
+					.set("arguments", new ist.Cell({str: "[false, 'keypress']"}))
+					.set("delay", new ist.Cell({str: "false"}))
+					.set("priority", new ist.Cell({str: "false"}))
+					;
+
 		var keydown_listener = function(event) {
 				var keyCode = event.keyCode,
 					name = interesting_keycodes[keyCode];
@@ -160,7 +171,11 @@
 					alt: alt,
 					cmd_left: cmd_left,
 					cmd_right: cmd_right,
-					cmd: cmd
+					cmd: cmd,
+					keyEvent: key_event,
+					press: new ist.Cell({str: "keyEvent(false, type='keypress')"}),
+					down: new ist.Cell({str: "keyEvent(false,type='keydown')"}),
+					up: new ist.Cell({str: "keyEvent(false,type='keyup')"}),
 				}
 			});
 		device_keyboard.destroy = function() {

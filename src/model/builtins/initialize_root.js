@@ -286,24 +286,26 @@
 			var device = ist.createDevices();
 			root_dict	.set("device", device)
 						.set("mouse", new ist.Cell({str: "device.mouse"}))
-						.set("keyboard", new ist.Cell({str: "device.keyboard"}))
+						.set("key", new ist.Cell({str: "device.keyboard"}))
 						.set("touch", new ist.Cell({str: "device.touchscreen.touchCluster"}));
 		}
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "event") >= 0)) {
-			var fireable = new ist.Dict({has_protos: false, direct_attachments: [new ist.FireableAttachment()]});
-			fireable.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}));
-			root_dict.set("fireable", fireable);
+			//var fireable = new ist.Dict({has_protos: false, direct_attachments: [new ist.FireableAttachment()]});
+			//fireable.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}));
+			//root_dict.set("fireable", fireable);
 
 			var event = new ist.Dict({has_protos: false, direct_attachments: [new ist.EventAttachment()]});
-			event	.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}))
+			event
+					//.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}))
 					//.set("cancelFire", new ist.Cell({str: "interstate.cancelFire.bind(this)"}))
 					.set("priority", new ist.Cell({str: "false"}))
 					.set("fireDelay", new ist.Cell({str: "false"}))
-					.set("requested", new ist.Cell({str: "fireable()"}))
-					.set("cancelled", new ist.Cell({str: "fireable()"}))
-					.set("blocked", new ist.Cell({str: "fireable()"}))
-					.set("confirmed", new ist.Cell({str: "fireable()"}));
-			event._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "fireable"}));
+					//.set("requested", new ist.Cell({str: "fireable()"}))
+					//.set("cancelled", new ist.Cell({str: "fireable()"}))
+					//.set("blocked", new ist.Cell({str: "fireable()"}))
+					//.set("confirmed", new ist.Cell({str: "fireable()"}));
+					
+			//event._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "fireable"}));
 			root_dict.set("event", event);
 			/*
 			event.set("priority", new ist.Cell({str: "false"}))

@@ -14,8 +14,8 @@
 			<%- ist_include(ist_inc.editor) %>
 			<%- ist_include(ist_inc.runtime_style) %>
 			<script type="text/javascript">
-				var root = interstate.get_default_root(false);
-				//var root = interstate.get_default_root();
+				//var root = interstate.get_default_root(false);
+				var root = interstate.get_default_root();
 				$("div#editor").editor({
 					debug_env: true,
 					server_window: window
@@ -34,6 +34,7 @@
 					return new interstate.Environment({root: getRoot()});
 				}
 				window.env = getEnvironment();
+				/*
 				env.set("x", "<stateful>")
 					.cd("x")
 					.add_state("a")
@@ -70,8 +71,9 @@
 
 				//env.print_on_return = true;
 				*/
-				env.print();
+				//env.print();
 
+				/*
 
 				setTimeout(function() {
 						$("tr").click();

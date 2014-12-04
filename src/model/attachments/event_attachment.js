@@ -236,6 +236,13 @@
 		this._touchClusters = [];
 		this._state = EVENT_STATUS.PENDING;
 		this._id = gesture_id++;
+
+		this.cancelled = new ist.ManualEvent();
+		this.confirmed = new ist.ManualEvent();
+		this.blocked = new ist.ManualEvent();
+		this.requested = new ist.ManualEvent();
+		this.fired = new ist.ManualEvent();
+
 		able.make_this_listenable(this);
 	};
 
@@ -273,6 +280,8 @@
 				}
 			}
 
+			this.requested.fire();
+
 			if(!builtin_event) {
 				this._emit(EVENT_STATUS.PENDING, { });
 				pendingQueue.add(this, function(status) {
@@ -280,13 +289,17 @@
 						callback(status);	
 					}
 					if(status === EVENT_STATUS.BLOCKED) {
-						this._emit(EVENT_STATUS.BLOCKED, { });
+						this.blocked.fire();
+						//this._emit(EVENT_STATUS.BLOCKED, { });
 						this.setState(EVENT_STATUS.READY);
 					} else if(status === EVENT_STATUS.CONFIRMED) {
-						this._emit(EVENT_STATUS.CONFIRMED, { });
+						this.confirmed.fire();
+						this.fired.fire();
+						//this._emit(EVENT_STATUS.CONFIRMED, { });
 						this.setState(EVENT_STATUS.READY);
 					} else if(status === EVENT_STATUS.CANCELLED) {
-						this._emit(EVENT_STATUS.CANCELLED, { });
+						this.cancelled.fire();
+						//this._emit(EVENT_STATUS.CANCELLED, { });
 						this.setState(EVENT_STATUS.READY);
 					} else {
 						throw new Error("Unrecognized status");
@@ -389,19 +402,6 @@
 	ist.EventAttachment = ist.register_attachment("event_attachment", {
 			ready: function(contextual_object) {
 				this.qEvent = new ist.QueueableEvent({ });
-				this.qEvent
-					.on(EVENT_STATUS.PENDING, function() {
-						ist.emit("event_requested", this.contextual_object);
-					}, this)
-					.on(EVENT_STATUS.BLOCKED, function() {
-						ist.emit("event_blocked", this.contextual_object);
-					}, this)
-					.on(EVENT_STATUS.CONFIRMED, function() {
-						ist.emit("event_confirmed", this.contextual_object);
-					}, this)
-					.on(EVENT_STATUS.CANCELLED, function(event) {
-						ist.emit("event_cancelled", this.contextual_object, event);
-					}, this);
 			},
 			destroy: function(silent) {
 				this.qEvent.destroy(silent);
@@ -418,11 +418,29 @@
 				}
 			},
 			proto_props: {
+				fire: function(e) {
+					ist.fire.call(this.contextual_object, e);
+				},
+				getEvent: function() {
+					return this.qEvent.confirmed;
+				}
 			},
 			outputs: {
 				fire: function(contextual_object) {
 					return _.bind(ist.fire, contextual_object)
-				}
+				},
+				cancelled: function(contextual_object) {
+					return this.qEvent.cancelled;
+				},
+				confirmed: function(contextual_object) {
+					return this.qEvent.confirmed;
+				},
+				blocked: function(contextual_object) {
+					return this.qEvent.blocked;
+				},
+				requested: function(contextual_object) {
+					return this.qEvent.requested;
+				},
 			}
 		});
 }(interstate, jQuery));

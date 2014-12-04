@@ -288,8 +288,7 @@
 			}
 		};
 		proto.stringify = function () {
-			var event = this.event(),
-				stringified_event = event ? event.toString() : "";
+			var stringified_event = this.getStr();
 
 			return stringified_event;
 		};
