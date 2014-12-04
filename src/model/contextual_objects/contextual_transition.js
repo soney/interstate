@@ -230,7 +230,7 @@
 				event.off_fire(this.fire, this);
 			} else if(eventType === "parsed") {
 				if(this.can_destroy_event) {
-					this.event.destroy();
+					//this.event.destroy();
 				}
 			}
 			this._manual_event.off_fire(this.fire, this);
