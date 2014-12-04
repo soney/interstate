@@ -192,6 +192,7 @@
 
 				this.can_destroy_event = can_destroy_event;
 				this.event = event;
+				this.event_object = event_object;
 			}, {
 				context: this,
 				run_on_create: false,
@@ -230,7 +231,11 @@
 				event.off_fire(this.fire, this);
 			} else if(eventType === "parsed") {
 				if(this.can_destroy_event) {
-				//	this.event.destroy();
+					if(this.event_object instanceof ist.BasicObject) {
+						this.event_object.destroy(); // destroy the core object
+					} else {
+						this.event.destroy();
+					}
 				}
 			}
 			this._manual_event.off_fire(this.fire, this);
