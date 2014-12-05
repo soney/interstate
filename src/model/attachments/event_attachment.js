@@ -419,7 +419,8 @@
 			},
 			proto_props: {
 				fire: function(e) {
-					ist.fire.call(this.contextual_object, e);
+					this.qEvent.requestFire(e);
+					//ist.fire.call(this.contextual_object, e);
 				},
 				getEvent: function() {
 					return this.qEvent.confirmed;

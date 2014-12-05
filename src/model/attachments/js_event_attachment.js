@@ -23,7 +23,6 @@
 					var event_attachment = contextual_object.get_attachment_instance("event_attachment");
 					if(event_attachment) {
 						event_attachment.fire(e);
-						console.log("FIRE");
 						//var eventObject = event_attachment.getEvent();
 						//eventObject.fire(e);
 					}
@@ -57,6 +56,14 @@
 					}
 					this._oldType = type;
 					this._oldTarget = computed_targets;
+				},
+				key: function(contextual_object) {
+					console.log(this);
+					
+					var key = contextual_object.prop_val("key"),
+						keyCode = keyToCode(key);
+
+					this.keyCode = keyCode;
 				}
 			},
 			proto_props: {

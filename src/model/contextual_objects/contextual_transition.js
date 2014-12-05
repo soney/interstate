@@ -154,10 +154,10 @@
 					can_destroy_event = true;
 				} else if(event instanceof ist.ContextualObject) {
 					var cobj = event,
-						fireable_attachment = cobj.get_attachment_instance("fireable_attachment"); 
+						event_attachment = cobj.get_attachment_instance("event_attachment"); 
 
-					if(fireable_attachment) {
-						event = fireable_attachment.getEvent();
+					if(event_attachment) {
+						event = event_attachment.getEvent();
 					}
 
 					can_destroy_event = event_object ? true : false;
@@ -168,6 +168,7 @@
 				}
 
 				this._event = event;
+
 
 				if(event instanceof ist.Event) {
 					event.on_fire(this.fire, this, actions, csobj, pointer);
@@ -217,6 +218,12 @@
 		};
 		proto.begin_destroy = function() {
 			this._remove_live_event_updater();
+			if(this.can_destroy_event) {
+				if(this.event instanceof ist.Event) { // destroy any event objects early
+					this.event.destroy();
+					this.event = false;
+				}
+			}
 
 			My.superclass.begin_destroy.apply(this, arguments);
 		};
@@ -231,10 +238,9 @@
 				event.off_fire(this.fire, this);
 			} else if(eventType === "parsed") {
 				if(this.can_destroy_event) {
-					if(this.event_object instanceof ist.BasicObject) {
+					if(this.event_object instanceof ist.BasicObject) { // destroy any basic objects late
 						this.event_object.destroy(); // destroy the core object
-					} else {
-						this.event.destroy();
+						delete this.event_object;
 					}
 				}
 			}

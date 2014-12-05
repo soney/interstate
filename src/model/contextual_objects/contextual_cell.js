@@ -74,9 +74,12 @@
 				}
 			}
 
+			if(this._cached_value !== value) {
+				if(this._cached_value instanceof ist.BasicObject) { this._cached_value.destroy(true); }
+				this._cached_value = value;
+			}
+
 			if(value instanceof ist.BasicObject) { value = ist.find_or_put_contextual_obj(value, this.get_pointer().push(value)); }
-			if(this._cached_value instanceof ist.BasicObject) { this._cached_value.destroy(true); }
-			this._cached_value = value;
 
 			return value;
 		};
