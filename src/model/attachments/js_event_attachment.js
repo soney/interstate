@@ -23,6 +23,7 @@
 					var event_attachment = contextual_object.get_attachment_instance("event_attachment");
 					if(event_attachment) {
 						event_attachment.fire(e);
+						console.log("FIRE");
 						//var eventObject = event_attachment.getEvent();
 						//eventObject.fire(e);
 					}
