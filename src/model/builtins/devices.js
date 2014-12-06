@@ -13,7 +13,9 @@
 	// mouse
 	ist.createMouseObject = function() {
 		
-		var mouse_event= new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment(), new ist.EventAttachment()]
+		var mouse_event= new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment(), new ist.EventAttachment({
+			eventType: "mouse"
+		})]
 																					})
 		mouse_event .set("target", new ist.Cell({str: "arguments[0]"}))
 					.set("type", new ist.Cell({str: "arguments[1]"}))
@@ -111,7 +113,9 @@
 			interesting_keycodes[code] = name;
 		});
 
-		var key_event= new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment(), new ist.EventAttachment()]
+		var key_event= new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment(), new ist.EventAttachment({
+			eventType: "keyboard"
+		})]
 																					})
 		key_event	.set("key", new ist.Cell({str: "arguments[0]"}))
 					.set("type", new ist.Cell({str: "arguments[1]"}))
@@ -549,8 +553,18 @@
 			keyboard = ist.createKeyboardObject(),
 			touchscreen = ist.createTouchscreenObject(),
 			accelorometer = ist.createAccelorometerObject(),
-			gyroscope = ist.createGyroscopeObject(),
-			device = new ist.Dict({has_protos: false, value: {
+			gyroscope = ist.createGyroscopeObject();
+
+			var timeout_event= new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment(), new ist.EventAttachment({
+				eventType: "timeout"
+			})]
+																						})
+			timeout_event .set("milliseconds", new ist.Cell({str: "arguments[0]"}))
+						.set("arguments", new ist.Cell({str: "[500]"}))
+						.set("delay", new ist.Cell({str: "false"}))
+						.set("priority", new ist.Cell({str: "false"}))
+						;
+			var device = new ist.Dict({has_protos: false, value: {
 					mouse: mouse,
 					keyboard: keyboard,
 					touchscreen: touchscreen,
@@ -558,6 +572,7 @@
 					gyroscope: gyroscope,
 					width: width,
 					height: height,
+					timeout: timeout,
 					timestamp: timestamp
 				}
 			});

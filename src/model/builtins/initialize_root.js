@@ -285,6 +285,7 @@
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "device") >= 0)) {
 			var device = ist.createDevices();
 			root_dict	.set("device", device)
+						.set("timeout", new ist.Cell({str: "device.timeout"}))
 						.set("mouse", new ist.Cell({str: "device.mouse"}))
 						.set("key", new ist.Cell({str: "device.keyboard"}))
 						.set("touch", new ist.Cell({str: "device.touchscreen.touchCluster"}));
