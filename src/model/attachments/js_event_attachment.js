@@ -13,10 +13,20 @@
 
 	ist.JSEventAttachment = ist.register_attachment("js_event_attachment", {
 			ready: function(contextual_object) {
+				this.eventType = this.options.eventType;
+				this.enabled = false;
+
 				this._eventListener = _.bind(function(e) {
-					if(e.type === 'keydown' || e.type === 'keyup' || e.type === 'keypress') {
-						if(this.keyCode && this.keyCode !== e.keyCode) { // if it's a keyboard event
-							return;
+					if(this.eventType === "keyboard") {
+						if(e.type === 'keydown' || e.type === 'keyup' || e.type === 'keypress') {
+							if(this.keyCode && this.keyCode !== e.keyCode) { // if it's a keyboard event
+								return;
+							}
+						}
+					} else if(this.eventType === "timeout") {
+						if(this._timeout_id) {
+							clearTimeout(this._timeout_id);
+							this._timeout_id = false;
 						}
 					}
 
@@ -30,43 +40,111 @@
 				this._oldType = this._oldTarget = false;
 			},
 			destroy: function(silent) {
-				if(this._oldType) {
-					_.each(this._oldTarget, function(target) {
-						target.removeEventListener(this._oldType, this._eventListener);
-					}, this);
-					this._oldType = this._oldTarget = false;
-				}
-			},
-			parameters: {
-				type_and_target: function(contextual_object) {
-					var type = contextual_object.prop_val("type"),
-						targets = contextual_object.prop_val("target"),
-						computed_targets = _.pluck(get_targets(targets), "dom_obj");
-
+				if(this.eventType === "timeout") {
+					if(this._timeout_id) {
+						clearTimeout(this._timeout_id);
+						this._timeout_id = false;
+					}
+				} else {
 					if(this._oldType) {
 						_.each(this._oldTarget, function(target) {
 							target.removeEventListener(this._oldType, this._eventListener);
 						}, this);
+						this._oldType = this._oldTarget = false;
 					}
+				}
+			},
+			parameters: {
+				type_and_target: function(contextual_object) {
+					if(this.eventType === "keyboard" || this.eventType === "mouse") {
+						var type = contextual_object.prop_val("type"),
+							targets = contextual_object.prop_val("target"),
+							computed_targets = _.pluck(get_targets(targets), "dom_obj");
 
-					if(type) {
-						_.each(computed_targets, function(target) {
-							target.addEventListener(type, this._eventListener);
-						}, this);
+						if(this.eventType === "keyboard") {
+							computed_targets = [window];
+						}
+
+
+						if(this.enabled) {
+							if(this._oldType) {
+								_.each(this._oldTarget, function(target) {
+									target.removeEventListener(this._oldType, this._eventListener);
+								}, this);
+							}
+
+							if(type) {
+								_.each(computed_targets, function(target) {
+									target.addEventListener(type, this._eventListener);
+								}, this);
+							}
+						}
+						this._oldType = type;
+						this._oldTarget = computed_targets;
 					}
-					this._oldType = type;
-					this._oldTarget = computed_targets;
 				},
 				key: function(contextual_object) {
-					console.log(this);
-					
-					var key = contextual_object.prop_val("key"),
-						keyCode = keyToCode(key);
+					if(this.eventType === "keyboard") {
+						var key = contextual_object.prop_val("key"),
+							keyCode = keyToCode(key);
 
-					this.keyCode = keyCode;
+						if(this.enabled) {
+							this.keyCode = keyCode;
+						}
+					}
+				},
+
+				milliseconds: function(contextual_object) {
+					if(this.eventType === "timeout") {
+						var milliseconds = contextual_object.prop_val("milliseconds");
+
+						if(this.enabled) {
+							var current_time = (new Date()).getTime();
+
+							if(this._timeout_id) {
+								clearTimeout(this._timeout_id);
+								milliseconds = Math.max(0, milliseconds-(current_time - this._timeout_set_at));
+							}
+
+							this._timeout_set_at = current_time;
+							this._timeout_id = setTimeout(this._eventListener, milliseconds);
+						}
+					}
 				}
 			},
 			proto_props: {
+				onTransitionEnabled: function() {
+					this.enabled = true;
+					if(this.eventType === "timeout") {
+						var milliseconds = this.contextual_object.prop_val("milliseconds");
+
+						if(this._timeout_id) {
+							clearTimeout(this._timeout_id);
+						}
+						this._timeout_id = setTimeout(this._eventListener, milliseconds);
+					} else {
+						if(this._oldType) {
+							_.each(this._oldTarget, function(target) {
+								target.addEventListener(this._oldType, this._eventListener);
+							}, this);
+						}
+					}
+				},
+				onTransitionDisabled: function() {
+					this.enabled = false;
+					if(this.eventType === "timeout") {
+						if(this._timeout_id) {
+							clearTimeout(this._timeout_id);
+							this._timeout_id = false;
+						}
+					} else {
+						if(this._oldType) {
+							_.each(this._oldTarget, function(target) {
+								target.removeEventListener(this._oldType, this._eventListener);
+							}, this);
+						}
+					}
+				}
 			}
 		});
 

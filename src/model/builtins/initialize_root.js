@@ -7,7 +7,11 @@
 		_ = ist._;
 
 	ist.get_default_root = function(builtins) {
-		var root = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment({instance_options: {tag: 'div'}})]});
+		var root = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment({
+																				instance_options: {
+																					tag: 'div'
+																				}
+																			})]});
 
 		ist.initialize_root(root, builtins);
 

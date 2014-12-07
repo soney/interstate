@@ -43,6 +43,8 @@
 		proto.getOutputField = function(fieldName) {
 			return this.outputFields[fieldName];
 		};
+		proto.onTransitionEnabled = function() { };
+		proto.onTransitionDisabled = function() { };
     }(ist.AttachmentInstance));
     
     ist.Attachment = function (options) {

@@ -13,11 +13,14 @@
 	// mouse
 	ist.createMouseObject = function() {
 		
-		var mouse_event= new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment(), new ist.EventAttachment({
-			eventType: "mouse"
+		var mouse_event = new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment({
+			instance_options: {
+				eventType: "mouse"
+			}
+		}), new ist.EventAttachment({
 		})]
 																					})
-		mouse_event .set("target", new ist.Cell({str: "arguments[0]"}))
+		mouse_event .set("target", new ist.Cell({str: "arguments[0]||window"}))
 					.set("type", new ist.Cell({str: "arguments[1]"}))
 					.set("arguments", new ist.Cell({str: "[window, 'click']"}))
 					.set("delay", new ist.Cell({str: "false"}))
@@ -113,8 +116,11 @@
 			interesting_keycodes[code] = name;
 		});
 
-		var key_event= new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment(), new ist.EventAttachment({
-			eventType: "keyboard"
+		var key_event = new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment({
+			instance_options: {
+				eventType: "keyboard"
+			}
+		}), new ist.EventAttachment({
 		})]
 																					})
 		key_event	.set("key", new ist.Cell({str: "arguments[0]"}))
@@ -555,8 +561,11 @@
 			accelorometer = ist.createAccelorometerObject(),
 			gyroscope = ist.createGyroscopeObject();
 
-			var timeout_event= new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment(), new ist.EventAttachment({
-				eventType: "timeout"
+			var timeout_event = new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment({
+				instance_options: {
+					eventType: "timeout"
+				}
+			}), new ist.EventAttachment({
 			})]
 																						})
 			timeout_event .set("milliseconds", new ist.Cell({str: "arguments[0]"}))
@@ -572,7 +581,7 @@
 					gyroscope: gyroscope,
 					width: width,
 					height: height,
-					timeout: timeout,
+					timeout: timeout_event,
 					timestamp: timestamp
 				}
 			});

@@ -168,12 +168,22 @@
 				}
 
 				this._event = event;
+				this.event = event;
+				this.event_object = event_object;
 
 
 				if(event instanceof ist.Event) {
 					event.on_fire(this.fire, this, actions, csobj, pointer);
 					if(this.isEnabled()) {
 						event.enable();
+						if(this.event && this.event.enable) {
+							this.event.enable();
+						}
+						if(this.event_object instanceof ist.BasicObject) {
+							var ptr = this.get_pointer().push(this.event_object),
+								event_cobj = ptr.getContextualObject();
+							event_cobj.onTransitionEnabled();
+						}
 					}
 				}
 
@@ -192,8 +202,6 @@
 				can_destroy_old_event = can_destroy_event;
 
 				this.can_destroy_event = can_destroy_event;
-				this.event = event;
-				this.event_object = event_object;
 			}, {
 				context: this,
 				run_on_create: false,
@@ -314,6 +322,11 @@
 					if(this._event && this._event.enable) {
 						this._event.enable();
 					}
+					if(this.event_object instanceof ist.BasicObject) {
+						var ptr = this.get_pointer().push(this.event_object),
+							event_cobj = ptr.getContextualObject();
+						event_cobj.onTransitionEnabled();
+					}
 				}
 				if(this._live_event_updater && this._live_event_updater.resume()) {
 					this._live_event_updater.run();
@@ -330,6 +343,12 @@
 				if(eventType === "parsed") {
 					if(this._event && this._event.disable) {
 						this._event.disable();
+					}
+
+					if(this.event_object instanceof ist.BasicObject) {
+						var ptr = this.get_pointer().push(this.event_object),
+							event_cobj = ptr.getContextualObject();
+						event_cobj.onTransitionDisabled();
 					}
 				}
 				if(this._live_event_updater) {

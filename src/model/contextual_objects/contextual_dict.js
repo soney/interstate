@@ -1056,5 +1056,17 @@
 			if(recursive) {
 			}
 		};
+		proto.onTransitionEnabled = function() {
+			var attachment_instances = this.getAttachmentInstance();
+			_.each(attachment_instances, function(attachment_instance) {
+				attachment_instance.onTransitionEnabled();
+			}, this);
+		};
+		proto.onTransitionDisabled = function() {
+			var attachment_instances = this.getAttachmentInstance();
+			_.each(attachment_instances, function(attachment_instance) {
+				attachment_instance.onTransitionDisabled();
+			}, this);
+		};
 	}(ist.ContextualDict));
 }(interstate));
