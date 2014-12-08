@@ -27,7 +27,8 @@
 				this._eventListener = _.bind(function(e) {
 					if(this.eventType === "keyboard") {
 						if(e.type === 'keydown' || e.type === 'keyup' || e.type === 'keypress') {
-							var keyCode = keyToCode(this.key);
+							var key = this.contextual_object.prop_val("key"),
+								keyCode = keyToCode(key);
 
 							if(keyCode && keyCode !== e.keyCode) { // if it's a keyboard event
 								return;
@@ -38,6 +39,14 @@
 							clearTimeout(this._timeout_id);
 							this._timeout_id = false;
 						}
+					}
+
+					if(this.eventType === "keyboard" || this.eventType === "mouse") {
+						var stopPropagation = this.contextual_object.prop_val("stopPropagation"),
+							preventDefault = this.contextual_object.prop_val("preventDefault");
+
+						if(stopPropagation) { e.stopPropagation(); }
+						if(preventDefault) { e.preventDefault(); }
 					}
 
 					var event_attachment = contextual_object.get_attachment_instance("event_attachment");
@@ -92,12 +101,14 @@
 						this._oldTarget = computed_targets;
 					}
 				},
+				/*
 				key: function(contextual_object) {
 					if(this.eventType === "keyboard") {
 						var key = contextual_object.prop_val("key");
 						this.key = key;
 					}
 				},
+				*/
 
 				milliseconds: function(contextual_object) {
 					if(this.eventType === "timeout") {

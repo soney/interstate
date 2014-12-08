@@ -12,7 +12,6 @@
 
 	// mouse
 	ist.createMouseObject = function() {
-		
 		var mouse_event = new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment({
 			instance_options: {
 				eventType: "mouse"
@@ -25,6 +24,8 @@
 					.set("arguments", new ist.Cell({str: "[window, 'click']"}))
 					.set("delay", new ist.Cell({str: "false"}))
 					.set("priority", new ist.Cell({str: "false"}))
+					.set("stopPropagation", new ist.Cell({str: "false"}))
+					.set("preventDefault", new ist.Cell({str: "false"}))
 					;
 
 		var clientX = cjs(0),
