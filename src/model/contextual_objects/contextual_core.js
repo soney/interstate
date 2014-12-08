@@ -42,7 +42,6 @@
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
 		}
-		//if(window.dbg) debugger;
 	};
 
 	(function (My) {

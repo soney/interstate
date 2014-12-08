@@ -115,8 +115,7 @@
 				} else if( op_got instanceof ist.ContextualDict) {
 					var proto = op_got,
 						arg_arr = [];
-					args_got = {
-					};
+					args_got = { };
 					_.each(args, function(arg, index) {
 						var value;
 						if(arg.type === assignmentExpression) {
@@ -135,7 +134,7 @@
 
 					rv = new Constructor_fn({
 						value: args_got,
-						direct_protos: op
+						direct_protos: cjs(op)
 					});
 					return rv;
 				} else {
@@ -311,7 +310,6 @@
 		if (options.get_constraint) {
 			var constraint = cjs(getter);
 			constraint.destroy = function() {
-				if(constraint._id === 25766) debugger;
 				context = false;
 				destroy_constraint_fn.apply(this, arguments);
 			};

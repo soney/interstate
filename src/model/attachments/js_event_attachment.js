@@ -10,7 +10,7 @@
 	function keyToCode(key_name) {
 		var keyCode;
 		if(_.isString(key_name)) {
-			keyCode = keyCodes[key_name] || key_name.charCodeAt(0);
+			keyCode = keyCodes[key_name] || keyCodes[key_name.toUpperCase()] || key_name.charCodeAt(0);
 		} else if(_.isNumber(key_name)) {
 			keyCode = key_name;
 		} else {

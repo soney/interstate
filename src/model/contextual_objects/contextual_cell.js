@@ -78,16 +78,16 @@
 				}
 			}
 
-			if(this._cached_value !== value) {
-				if(this._cached_basic_object instanceof ist.BasicObject) {
-					this._cached_basic_object.destroy(true);
-					this._cached_basic_object = false;
-				}
+			if(this._cached_basic_object && this._cached_basic_object !== value) {
+				this._cached_basic_object.destroy(true);
+				this._cached_basic_object = false;
 			}
 
 			if(value instanceof ist.BasicObject) {
 				this._cached_basic_object = value;
 				value = ist.find_or_put_contextual_obj(value, this.get_pointer().push(value));
+			} else {
+				this._cached_basic_object = false;
 			}
 			this._cached_value = value;
 

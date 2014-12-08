@@ -252,15 +252,21 @@
 					if (old_event && old_event.off_fire) {
 						old_event.off_fire(this.fire, this);
 
-						if(old_event_bobj) { // if we created the old basic object, we can go ahead and destroy this event.
+						if(!old_event_bobj) { // if we created the old basic object, we can go ahead and destroy this event.
 							old_event.destroy(true); //destroy silently (without nullifying)
 						}
 						//if(can_destroy_old_event) {
 						//}
 					}
 
-					if (old_event_cobj && old_event_cobj !== this.event_cobj) {
-						old_event_cobj.destroy(true);
+					//if (old_event_cobj && old_event_cobj !== this.event_cobj) {
+						//old_event_cobj.destroy();
+					//}
+
+					//console.log(old_event_bobj);
+					if(old_event_bobj && old_event_bobj !== this.event_bobj) {
+						//console.log(old_event_bobj);
+						old_event_bobj.destroy();
 					}
 				}
 
@@ -273,9 +279,11 @@
 				run_on_create: false,
 				on_destroy: function() {
 					event_constraint.destroy(true);
+					/*
 					if(old_event && old_event.off_fire) {
 						old_event.off_fire(this.fire, this);
 					}
+					*/
 
 					//on the begin destroy call, we don't want to actually destroy the event object once we stop running.
 					
@@ -291,13 +299,18 @@
 			}
 		};
 		proto.begin_destroy = function() {
+			var eventType = this.eventType();
+
 			this._remove_live_event_updater();
-			//if(this.can_destroy_event) {
-			if(this.event instanceof ist.Event && !this.event_bobj) { // destroy any event objects early
-				this.event.destroy();
-				this.event = false;
+
+			if(eventType === "parsed") {
+				//if(this.can_destroy_event) {
+				if(this.event instanceof ist.Event && !this.event_bobj) { // destroy any event objects early
+					this.event.destroy();
+					this.event = false;
+				}
+					//}
 			}
-				//}
 
 			My.superclass.begin_destroy.apply(this, arguments);
 		};
@@ -311,13 +324,13 @@
 				var event = transition.getEvent();
 				event.off_fire(this.fire, this);
 			} else if(eventType === "parsed") {
-				if(this.can_destroy_event) {
-					if(this.event_bobj) { // destroy any basic objects late
-						this.event_bobj.destroy(); // destroy the core object
-						//delete this.event_object;
-						this.event_bobj = false;
-					}
+				//if(this.can_destroy_event) {
+				if(this.event_bobj) { // destroy any basic objects late
+					this.event_bobj.destroy(); // destroy the core object
+					//delete this.event_object;
 				}
+				//}
+				this.event_bobj = this.event_cobj = this.event = false;
 			}
 			this._manual_event.off_fire(this.fire, this);
 			this._manual_event.destroy();
@@ -389,10 +402,10 @@
 					if(this.event && this.event.enable) {
 						this.event.enable();
 					}
-					if(this.event_object instanceof ist.BasicObject) {
-						var ptr = this.get_pointer().push(this.event_object),
-							event_cobj = ptr.getContextualObject();
-						event_cobj.onTransitionEnabled();
+					if(this.event_cobj) {
+						//var ptr = this.get_pointer().push(this.event_object),
+							//event_cobj = ptr.getContextualObject();
+						this.event_cobj.onTransitionEnabled();
 					}
 				}
 				if(this._live_event_updater && this._live_event_updater.resume()) {
@@ -412,10 +425,11 @@
 						this.event.disable();
 					}
 
-					if(this.event_object instanceof ist.BasicObject) {
-						var ptr = this.get_pointer().push(this.event_object),
-							event_cobj = ptr.getContextualObject();
-						event_cobj.onTransitionDisabled();
+					//if(this.event_object instanceof ist.BasicObject) {
+					if(this.event_cobj) {
+						//var ptr = this.get_pointer().push(this.event_object),
+							//event_cobj = ptr.getContextualObject();
+						this.event_cobj.onTransitionDisabled();
 					}
 				}
 				if(this._live_event_updater) {
