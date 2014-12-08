@@ -277,9 +277,9 @@
 			}
 
 			curr_context = context;
-			context_item = curr_context.pointsAt();
 				
 			while (!curr_context.isEmpty()) {
+				context_item = curr_context.pointsAt();
 				if (context_item instanceof ist.Dict) {
 					contextual_obj = curr_context.getContextualObject();
 					if (contextual_obj.has(key, _.indexOf(ignore_inherited_in_contexts, context_item)>=0)) {
@@ -299,7 +299,6 @@
 				}
 				
 				curr_context = curr_context.pop();
-				context_item = curr_context.pointsAt();
 			}
 			if (window.hasOwnProperty(key)) {
 				return window[key];
@@ -312,6 +311,7 @@
 		if (options.get_constraint) {
 			var constraint = cjs(getter);
 			constraint.destroy = function() {
+				if(constraint._id === 25766) debugger;
 				context = false;
 				destroy_constraint_fn.apply(this, arguments);
 			};

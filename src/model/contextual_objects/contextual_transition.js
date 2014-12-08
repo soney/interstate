@@ -107,18 +107,24 @@
 				root = this.root(),
 				csobj = root.get_pointer().pop().getContextualObject(),
 				old_event = false,
-				old_event_object = false,
-				can_destroy_old_event = false,
-				event_object, event, can_destroy_event, actions;
+				old_event_cobj = false,
+				old_event_bobj = false,
+				//can_destroy_old_event = false,
+				//can_destroy_event,
+				actions, ptr, event_attachment;
 
-			this.can_destroy_event = can_destroy_event;
-			this.event = event;
+			//this.can_destroy_event = can_destroy_event;
+			this.event = this.event_bobj = this.event_cobj = false;
 
 			this._live_event_updater = cjs.liven(function() {
+				old_event = this.event;
+				old_event_cobj = this.event_cobj;
+				old_event_bobj = this.event_bobj;
+
 				try {
-					event = event_constraint.get();
+					this.event = event_constraint.get();
 				} catch(e) {
-					event = new ist.Error({
+					this.event = new ist.Error({
 						message: e.message,
 						type: "runtime"
 					});
@@ -126,6 +132,7 @@
 						console.error(e);
 					}
 				}
+				var str = transition.getStr();
 
 				if(event instanceof ist.MultiExpression) {
 					actions = event.rest();
@@ -136,18 +143,72 @@
 
 				if(event instanceof ist.Error) {
 					this._runtime_errors.set([event.message()]);
-					event_object = false;
+					this.event_cobj = this.event_bobj = false;
 				} else {
-					if(event instanceof ist.BasicObject) {
+					if(this.event instanceof ist.BasicObject) {
+						this.event_bobj = this.event;
+						ptr = pointer.push(this.event_bobj);
+						this.event_cobj = ptr.getContextualObject();
+
+						event_attachment = this.event_cobj.get_attachment_instance("event_attachment");
+						if(event_attachment) {
+							this.event = event_attachment.getEvent();
+						} else {
+							this.event = false;
+						}
+
+						/*
 						event_object = event;
 						var ptr = pointer.push(event_object);
 						event = ptr.getContextualObject();
-					} else {
-						event_object = false;
+
+						var event_attachment = event.get_attachment_instance("event_attachment"); 
+						if(event_attachment) {
+							event = event_attachment.getEvent();
+						}
+						*/
+					} else if(this.event instanceof ist.ContextualObject) {
+						this.event_bobj = false;
+						ptr = pointer.push(this.event.get_object());
+						this.event_cobj = ptr.getContextualObject();
+						 
+						event_attachment = this.event_cobj.get_attachment_instance("event_attachment");
+						if(event_attachment) {
+							this.event = event_attachment.getEvent();
+						} else {
+							this.event = false;
+						}
+					/*
+						event_object = event.get_object();
+						var ptr = pointer.push(event_object);
+						event = ptr.getContextualObject()
+						can_destroy_event = false;
+
+						var event_attachment = event.get_attachment_instance("event_attachment"); 
+						if(event_attachment) {
+							event = event_attachment.getEvent();
+						}
+						//event_object = false;
+						*/
+					} else if(this.event instanceof ist.Event) {
+						this.event_bobj = this.event_cobj = false;
+					/*
+						event.set_transition(this);
+						can_destroy_event = true;
+						*/
+					} else { // boolean event type
+						this.event_bobj = this.event_cobj = false;
+						if(this.event && !old_event) {
+							this._manual_event.fire(this.event);
+						}
 					}
 
 					this._runtime_errors.set(false);
 				}
+				/*
+				this.event = event;
+				this.event_cobj = event_cobj;
+				this.event_bobj = event_bobj;
 
 				if(event instanceof ist.Event) {
 					event.set_transition(this);
@@ -160,48 +221,53 @@
 						event = event_attachment.getEvent();
 					}
 
-					can_destroy_event = event_object ? true : false;
+					//can_destroy_event = event_object ? true : false;
+					/*
 				} else if(!(event instanceof ist.Error)) {
 					if(event && !old_event) {
 						this._manual_event.fire(event);
 					}
 				}
 
-				this._event = event;
 				this.event = event;
 				this.event_object = event_object;
 
-
-				if(event instanceof ist.Event) {
-					event.on_fire(this.fire, this, actions, csobj, pointer);
-					if(this.isEnabled()) {
-						event.enable();
-						if(this.event && this.event.enable) {
+				*/
+				if(this.event !== old_event) {
+					if(this.event instanceof ist.Event) {
+						this.event.on_fire(this.fire, this, actions, csobj, pointer);
+						if(this.isEnabled()) {
 							this.event.enable();
+							if(this.event && this.event.enable) {
+								this.event.enable();
+							}
+							if(this.event_cobj) {
+								//var ptr = this.get_pointer().push(this.event_object),
+									//event_cobj = ptr.getContextualObject();
+								this.event_cobj.onTransitionEnabled();
+							}
 						}
-						if(this.event_object instanceof ist.BasicObject) {
-							var ptr = this.get_pointer().push(this.event_object),
-								event_cobj = ptr.getContextualObject();
-							event_cobj.onTransitionEnabled();
+					}
+
+					if (old_event && old_event.off_fire) {
+						old_event.off_fire(this.fire, this);
+
+						if(old_event_bobj) { // if we created the old basic object, we can go ahead and destroy this event.
+							old_event.destroy(true); //destroy silently (without nullifying)
 						}
+						//if(can_destroy_old_event) {
+						//}
+					}
+
+					if (old_event_cobj && old_event_cobj !== this.event_cobj) {
+						old_event_cobj.destroy(true);
 					}
 				}
 
-				if (old_event && old_event !== event && old_event.off_fire) {
-					old_event.off_fire(this.fire, this);
-
-					if(can_destroy_old_event) {
-						old_event.destroy(true); //destroy silently (without nullifying)
-					}
-				}
-				if (old_event_object && old_event_object !== event_object) {
-					old_event_object.destroy(true);
-				}
-				old_event = event;
-				old_event_object = event_object;
-				can_destroy_old_event = can_destroy_event;
-
-				this.can_destroy_event = can_destroy_event;
+				//old_event = event;
+				//old_event_object = event_object;
+				//can_destroy_old_event = can_destroy_event;
+				//this.can_destroy_event = can_destroy_event;
 			}, {
 				context: this,
 				run_on_create: false,
@@ -226,12 +292,12 @@
 		};
 		proto.begin_destroy = function() {
 			this._remove_live_event_updater();
-			if(this.can_destroy_event) {
-				if(this.event instanceof ist.Event) { // destroy any event objects early
-					this.event.destroy();
-					this.event = false;
-				}
+			//if(this.can_destroy_event) {
+			if(this.event instanceof ist.Event && !this.event_bobj) { // destroy any event objects early
+				this.event.destroy();
+				this.event = false;
 			}
+				//}
 
 			My.superclass.begin_destroy.apply(this, arguments);
 		};
@@ -246,9 +312,10 @@
 				event.off_fire(this.fire, this);
 			} else if(eventType === "parsed") {
 				if(this.can_destroy_event) {
-					if(this.event_object instanceof ist.BasicObject) { // destroy any basic objects late
-						this.event_object.destroy(); // destroy the core object
-						delete this.event_object;
+					if(this.event_bobj) { // destroy any basic objects late
+						this.event_bobj.destroy(); // destroy the core object
+						//delete this.event_object;
+						this.event_bobj = false;
 					}
 				}
 			}
@@ -294,7 +361,7 @@
 				return 0;
 			}
 		};
-		proto.event = function () { return this._event; };
+		proto.event = function () { return this.event; };
 		proto.involves = function (state) { return this.from() === state || this.to() === state; };
 		proto.fire = function (event) {
 			if (this.from()._onOutgoingTransitionFire(this, event)) {
@@ -319,8 +386,8 @@
 				if(eventType === "start") {
 					this.onTransitionToChanged();
 				} else if(eventType === "parsed") {
-					if(this._event && this._event.enable) {
-						this._event.enable();
+					if(this.event && this.event.enable) {
+						this.event.enable();
 					}
 					if(this.event_object instanceof ist.BasicObject) {
 						var ptr = this.get_pointer().push(this.event_object),
@@ -341,8 +408,8 @@
 
 				var eventType = this.eventType();
 				if(eventType === "parsed") {
-					if(this._event && this._event.disable) {
-						this._event.disable();
+					if(this.event && this.event.disable) {
+						this.event.disable();
 					}
 
 					if(this.event_object instanceof ist.BasicObject) {

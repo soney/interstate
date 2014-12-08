@@ -416,7 +416,7 @@
 					var local_state = this._localState;
 
 					cjs.wait();
-					if(local_state !== state) {
+					//if(local_state !== state) {
 						if (local_state) {
 							local_state.off('begin_destroy', this.onActiveSubstateDestroyed, this);
 							local_state.stop();
@@ -425,7 +425,7 @@
 						local_state = state;
 						this._localState = state;
 						local_state.setEvent(event);
-					}
+					//}
 					if (local_state) {
 						local_state.activate();
 						if(isRunning) { local_state.run(); }

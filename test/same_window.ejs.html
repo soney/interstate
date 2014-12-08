@@ -38,10 +38,12 @@
 					.cd("x")
 					.add_state("a")
 					.start_at("a")
-					.add_state("b")
-					.add_transition("a", "b", "mouse.click()")
+					.add_transition("a", "a", "mouse.down")
 					.set("y", "<stateful_prop>")
-					.set("y", "a", "1")
+					.set("y", "a", "1");
+				//env.print()
+
+
 				/*
 
 				env.set("on", interstate.on_event)

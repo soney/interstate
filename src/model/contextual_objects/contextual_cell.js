@@ -46,7 +46,11 @@
 		proto.destroy = function (avoid_begin_destroy) {
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
-			if(this._cached_value instanceof ist.BasicObject) { this._cached_value.destroy(true); }
+			if(this._cached_basic_object instanceof ist.BasicObject) {
+				this._cached_basic_object.destroy(true);
+				this._cached_basic_object = false;
+			}
+
 			this._cached_value = false;
 
 			this.value_constraint.destroy(true);
@@ -75,11 +79,17 @@
 			}
 
 			if(this._cached_value !== value) {
-				if(this._cached_value instanceof ist.BasicObject) { this._cached_value.destroy(true); }
-				this._cached_value = value;
+				if(this._cached_basic_object instanceof ist.BasicObject) {
+					this._cached_basic_object.destroy(true);
+					this._cached_basic_object = false;
+				}
 			}
 
-			if(value instanceof ist.BasicObject) { value = ist.find_or_put_contextual_obj(value, this.get_pointer().push(value)); }
+			if(value instanceof ist.BasicObject) {
+				this._cached_basic_object = value;
+				value = ist.find_or_put_contextual_obj(value, this.get_pointer().push(value));
+			}
+			this._cached_value = value;
 
 			return value;
 		};
