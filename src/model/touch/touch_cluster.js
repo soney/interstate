@@ -339,6 +339,8 @@
 		}, options);
 
 		this._id = tc_id++;
+		this.satisfied = new ist.ManualEvent();
+		this.unsatisfied = new ist.ManualEvent();
 
 		this.$usableFingers = cjs([]);
 		this.$usingFingers = cjs([]);
@@ -533,6 +535,7 @@
 			this.$usableFingers.setValue([]);
 			this.$usingFingers.setValue([]);
 			this.$startCenter.set({ x: false, y: false });
+			this.unsatisfied.fire();
 			cjs.signal();
 		};
 
@@ -556,8 +559,13 @@
 				this.$startCenter.set({ x: false, y: false });
 			}
 
+			this.satisfied.fire();
+			console.log("X");
 			cjs.signal();
 		};
+
+		proto.getSatisfiedEvent = function() { return this.satisfied; };
+		proto.getUnsatisfiedEvent = function() { return this.unsatisfied; };
 
 		proto.getX = function() { return this.$xConstraint.get(); };
 		proto.getY = function() { return this.$yConstraint.get(); };

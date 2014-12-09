@@ -371,16 +371,19 @@
 				}
 			},
 			touchCluster = new ist.Dict({has_protos: false, direct_attachments: [new ist.TouchClusterAttachment({
-																						})]
+															}), new ist.EventAttachment({
+															})]
 																					})
-				.set("satisfied", new ist.Cell({str: "fireable()"}))
-				.set("dissatisfied", new ist.Cell({str: "fireable()"}))
 				.set("downInside", new ist.Cell({str: "false"}))
 				.set("downOutside", new ist.Cell({str: "false"}))
 				.set("numFingers", new ist.Cell({str: "1"}))
 				.set("maxRadius", new ist.Cell({str: "false"}))
 				.set("maxTouchInterval", new ist.Cell({str: "500"}))
-				.set("debugDraw", new ist.Cell({str: "false"})),
+				.set("debugDraw", new ist.Cell({str: "false"}))
+				.set("delay", new ist.Cell({str: "false"}))
+				.set("priority", new ist.Cell({str: "false"}))
+				.set("stopPropagation", new ist.Cell({str: "false"}))
+				.set("preventDefault", new ist.Cell({str: "false"})),
 			device_touchscreen = new ist.Dict({has_protos: false, value: {
 					finger_count: touch_count,
 					getTouch: getTouch,

@@ -51,6 +51,15 @@
 				this.touchCluster = new ist.TouchCluster({ });
 				this.ist_runtime = $(".ist_runtime");
 				this.touchscreen_layer = this.ist_runtime.is(".hasTouchscreenLayer");
+				var contextual_object = this.contextual_object;
+				var satisfiedEvent = this.touchCluster.getSatisfiedEvent();
+				satisfiedEvent.on_fire(function(e) {
+					var event_attachment = contextual_object.get_attachment_instance("event_attachment");
+					if(event_attachment) {
+					console.log("A");
+						event_attachment.fire(e);
+					}
+				});
 			},
 			destroy: function(silent) {
 				this.touchCluster.destroy(silent);
@@ -84,14 +93,12 @@
 					}
 				},
 				satisfied: function(contextual_object) {
-				/*
 					var satisfied = this.touchCluster.isSatisfied();
 					if(satisfied) {
-						var satisfied_event = contextual_object.prop_val("satisfied");
+						//var satisfied_event = contextual_object.prop_val("satisfied");
 					} else {
-						var dissatisfied_event = contextual_object.prop_val("dissatisfied");
+						//var dissatisfied_event = contextual_object.prop_val("dissatisfied");
 					}
-					*/
 				}
 			},
 			proto_props: {
@@ -121,7 +128,9 @@
 				},
 				disclaimTouches: function() {
 					return _.bind(this.touchCluster.disclaimTouches, this.touchCluster);
-				}
+				},
+				satisfied: function() { return this.touchCluster.getSatisfiedEvent(); },
+				unsatisfied: function() { return this.touchCluster.getUnsatisfiedEvent(); }
 			}
 		});
 }(interstate, jQuery));

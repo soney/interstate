@@ -52,8 +52,6 @@
 					var event_attachment = contextual_object.get_attachment_instance("event_attachment");
 					if(event_attachment) {
 						event_attachment.fire(e);
-						//var eventObject = event_attachment.getEvent();
-						//eventObject.fire(e);
 					}
 				}, this);
 				this._oldType = this._oldTarget = false;
