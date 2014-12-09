@@ -134,9 +134,9 @@
 				}
 				var str = transition.getStr();
 
-				if(event instanceof ist.MultiExpression) {
-					actions = event.rest();
-					event = event.first();
+				if(this.event instanceof ist.MultiExpression) {
+					actions = this.event.rest();
+					this.event = this.event.first();
 				} else {
 					actions = [];
 				}

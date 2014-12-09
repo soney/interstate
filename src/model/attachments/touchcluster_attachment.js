@@ -56,7 +56,6 @@
 				satisfiedEvent.on_fire(function(e) {
 					var event_attachment = contextual_object.get_attachment_instance("event_attachment");
 					if(event_attachment) {
-					console.log("A");
 						event_attachment.fire(e);
 					}
 				});
@@ -92,6 +91,7 @@
 						}
 					}
 				},
+				/*
 				satisfied: function(contextual_object) {
 					var satisfied = this.touchCluster.isSatisfied();
 					if(satisfied) {
@@ -100,6 +100,7 @@
 						//var dissatisfied_event = contextual_object.prop_val("dissatisfied");
 					}
 				}
+				*/
 			},
 			proto_props: {
 				tc_id: function() {

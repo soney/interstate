@@ -428,7 +428,9 @@
 			},
 			outputs: {
 				fire: function(contextual_object) {
-					return _.bind(ist.fire, contextual_object)
+					return function() { debugger; }
+					return _.bind(this.qEvent.requestFire, this.qEvent);
+					//return _.bind(ist.fire, contextual_object)
 				},
 				cancelled: function(contextual_object) {
 					return this.qEvent.cancelled;

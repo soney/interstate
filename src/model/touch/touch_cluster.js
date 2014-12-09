@@ -560,7 +560,6 @@
 			}
 
 			this.satisfied.fire();
-			console.log("X");
 			cjs.signal();
 		};
 

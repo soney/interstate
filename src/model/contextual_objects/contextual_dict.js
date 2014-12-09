@@ -468,6 +468,8 @@
 				info = dict._get_direct_prop_info(name);
 			} else if(this._has_special_context_prop(name)) {
 				info = this._get_special_context_prop_info(name);
+			} else if(this._has_attachment_prop(name)) {
+				info = this._get_attachment_prop_info(name);
 			} else {
 				var pointer = this.get_pointer();
 				if (!info && ignore_inherited !== true) {
@@ -504,6 +506,32 @@
 			} else {
 				return false;
 			}
+		};
+		proto._has_attachment_prop = function(name) {
+			var attachment_instances = this.getAttachmentInstance();
+			for(var attachment_name in attachment_instances) {
+				if(attachment_instances.hasOwnProperty(attachment_name)) {
+					var attachment_instance = attachment_instances[attachment_name],
+						outputFields = attachment_instance.getOutputFields();
+					if(outputFields.hasOwnProperty(name)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		};
+		proto._get_attachment_prop_info = function(name) {
+			var attachment_instances = this.getAttachmentInstance();
+			for(var attachment_name in attachment_instances) {
+				if(attachment_instances.hasOwnProperty(attachment_name)) {
+					var attachment_instance = attachment_instances[attachment_name],
+						outputFields = attachment_instance.getOutputFields();
+					if(outputFields.hasOwnProperty(name)) {
+						return {name: name, value: outputFields[name], inherited: false, builtin: true };
+					}
+				}
+			}
+			return false;
 		};
 		proto._prop = function (name, ignore_inherited) {
 			var info = this.prop_info(name, ignore_inherited);

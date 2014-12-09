@@ -285,11 +285,11 @@
 						rv = contextual_obj._prop_val(key);
 						return rv;
 					}
-				} else if (context_item instanceof ist.State || context_item instanceof ist.Transition) {
-					if(key === "event") {
-						contextual_obj = curr_context.getContextualObject();
-						return contextual_object.getEvent();
-					}
+				//} else if (context_item instanceof ist.State || context_item instanceof ist.Transition) {
+					//if(key === "event") {
+						//contextual_obj = curr_context.getContextualObject();
+						//return contextual_object.getEvent();
+					//}
 				}
 
 				var copy = curr_context.copy();
