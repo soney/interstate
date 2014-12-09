@@ -458,6 +458,7 @@
 			return false;
 		};
 		proto.prop_info = function (name, ignore_inherited) {
+			if(name === "satisfied") { console.log("A"); }
 			var dict = this.get_object(),
 				info,
 				i,
