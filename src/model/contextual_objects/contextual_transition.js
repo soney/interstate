@@ -34,6 +34,7 @@
 		this.$times_run = cjs(this._times_run);
 		this._manual_event = new ist.ManualEvent();
 		this._manual_event.on_fire(this.fire, this);
+
 		this._type = "transition";
 	};
 
@@ -101,28 +102,48 @@
 		proto._add_live_event_updater = function() {
 			var transition = this.get_object(),
 				pointer = this.get_pointer(),
-				event_constraint = ist.get_indirect_parsed_$(transition._tree, {
-					context: pointer
-				}),
 				root = this.root(),
 				csobj = root.get_pointer().pop().getContextualObject(),
 				old_event = false,
 				old_event_cobj = false,
-				old_event_bobj = false,
+				//old_event_bobj = false,
 				//can_destroy_old_event = false,
 				//can_destroy_event,
 				actions, ptr, event_attachment;
 
+			var constraint = false;
+			this.event_constraint = cjs(function() {
+				if(constraint && constraint.destroy) {
+					constraint.destroy(true);
+				}
+				constraint = transition.constraint_in_context(pointer, false);
+				return constraint;
+			});
+			var old_destroy = this.event_constraint.destroy;
+			this.event_constraint.destroy = function() {
+				if(constraint && constraint.destroy) {
+					constraint.destroy(true);
+					constraint = false;
+				}
+				old_destroy.apply(this, arguments);
+			};
+
+			//this.event_constraint = ist.get_indirect_parsed_$(transition._tree, {
+				//context: pointer
+			//});
+
 			//this.can_destroy_event = can_destroy_event;
-			this.event = this.event_bobj = this.event_cobj = false;
+			this.event = this.event_cobj = false;
 
 			this._live_event_updater = cjs.liven(function() {
 				old_event = this.event;
 				old_event_cobj = this.event_cobj;
-				old_event_bobj = this.event_bobj;
 
 				try {
-					this.event = event_constraint.get();
+					//if(property === "satisfied") { debugger; }
+					//window.dbg = true;
+					this.event = cjs.get(this.event_constraint.get());
+					//window.dbg = false;
 				} catch(e) {
 					this.event = new ist.Error({
 						message: e.message,
@@ -132,7 +153,6 @@
 						console.error(e);
 					}
 				}
-				var str = transition.getStr();
 
 				if(this.event instanceof ist.MultiExpression) {
 					actions = this.event.rest();
@@ -141,34 +161,12 @@
 					actions = [];
 				}
 
-				if(event instanceof ist.Error) {
-					this._runtime_errors.set([event.message()]);
-					this.event_cobj = this.event_bobj = false;
+				if(this.event instanceof ist.Error) {
+					this._runtime_errors.set([this.event.message()]);
+					this.event_cobj = false;
 				} else {
-					if(this.event instanceof ist.BasicObject) {
-						this.event_bobj = this.event;
-						ptr = pointer.push(this.event_bobj);
-						this.event_cobj = ptr.getContextualObject();
-
-						event_attachment = this.event_cobj.get_attachment_instance("event_attachment");
-						if(event_attachment) {
-							this.event = event_attachment.getEvent();
-						} else {
-							this.event = false;
-						}
-
-						/*
-						event_object = event;
-						var ptr = pointer.push(event_object);
-						event = ptr.getContextualObject();
-
-						var event_attachment = event.get_attachment_instance("event_attachment"); 
-						if(event_attachment) {
-							event = event_attachment.getEvent();
-						}
-						*/
-					} else if(this.event instanceof ist.ContextualObject) {
-						this.event_bobj = false;
+					if(this.event instanceof ist.ContextualObject) {
+						//this.event_bobj = false;
 						ptr = pointer.push(this.event.get_object());
 						this.event_cobj = ptr.getContextualObject();
 						 
@@ -191,13 +189,13 @@
 						//event_object = false;
 						*/
 					} else if(this.event instanceof ist.Event) {
-						this.event_bobj = this.event_cobj = false;
+						this.event_cobj = false;
 					/*
 						event.set_transition(this);
 						can_destroy_event = true;
 						*/
 					} else { // boolean event type
-						this.event_bobj = this.event_cobj = false;
+						this.event_cobj = false;
 						if(this.event && !old_event) {
 							this._manual_event.fire(this.event);
 						}
@@ -252,7 +250,7 @@
 					if (old_event && old_event.off_fire) {
 						old_event.off_fire(this.fire, this);
 
-						if(!old_event_bobj) { // if we created the old basic object, we can go ahead and destroy this event.
+						if(!old_event_cobj) { // if we created the old basic object, we can go ahead and destroy this event.
 							old_event.destroy(true); //destroy silently (without nullifying)
 						}
 						//if(can_destroy_old_event) {
@@ -264,10 +262,6 @@
 					//}
 
 					//console.log(old_event_bobj);
-					if(old_event_bobj && old_event_bobj !== this.event_bobj) {
-						//console.log(old_event_bobj);
-						old_event_bobj.destroy();
-					}
 				}
 
 				//old_event = event;
@@ -277,8 +271,8 @@
 			}, {
 				context: this,
 				run_on_create: false,
-				on_destroy: function() {
-					event_constraint.destroy(true);
+				//on_destroy: function() {
+					//event_constraint.destroy(true);
 					/*
 					if(old_event && old_event.off_fire) {
 						old_event.off_fire(this.fire, this);
@@ -290,7 +284,7 @@
 					//if(can_destroy_old_event) {
 						//old_event.destroy();
 					//}
-				}
+				//}
 			});
 		};
 		proto._remove_live_event_updater = function() {
@@ -305,11 +299,11 @@
 
 			if(eventType === "parsed") {
 				//if(this.can_destroy_event) {
-				if(this.event instanceof ist.Event && !this.event_bobj) { // destroy any event objects early
+				if(this.event instanceof ist.Event && !this.event_cobj) { // destroy any event objects early
 					this.event.destroy();
 					this.event = false;
 				}
-					//}
+				//}
 			}
 
 			My.superclass.begin_destroy.apply(this, arguments);
@@ -324,13 +318,10 @@
 				var event = transition.getEvent();
 				event.off_fire(this.fire, this);
 			} else if(eventType === "parsed") {
+				this.event_constraint.destroy(true);
+					//event_constraint.destroy(true);
 				//if(this.can_destroy_event) {
-				if(this.event_bobj) { // destroy any basic objects late
-					this.event_bobj.destroy(); // destroy the core object
-					//delete this.event_object;
-				}
-				//}
-				this.event_bobj = this.event_cobj = this.event = false;
+				this.event_cobj = this.event = false;
 			}
 			this._manual_event.off_fire(this.fire, this);
 			this._manual_event.destroy();

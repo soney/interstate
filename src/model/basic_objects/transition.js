@@ -87,6 +87,15 @@
 
 			My.superclass.destroy.apply(this, arguments);
         };
+        proto.constraint_in_context = function (pcontext) {
+			var tree = this.getTree();
+			return ist.get_parsed_$(tree, {
+						context: pcontext,
+						//ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext),
+						get_constraint: true
+						//inherited_from_cobj: inherited_from_cobj
+					});
+        };
 
 		proto.get_syntax_errors = function() {
             var tree = getTree();

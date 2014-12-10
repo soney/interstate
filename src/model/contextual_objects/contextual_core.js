@@ -203,12 +203,15 @@
 			this.emit_begin_destroy();
 		};
 
-		proto.destroy = function (avoid_begin_destroy) {
+		proto.destroy = function (avoid_begin_destroy, remove_from_cobj_children) {
+			//if(this.sid() === 1071) debugger;
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
 			var to_destroy = this._cobj_children.values();
 			_.each(to_destroy, function(cobj) {
-				cobj.destroy(true); // avoid begin destroy because begin destroy will be called recursively on the first destroy call
+				//if(!cobj.isDestroyed()) {
+					cobj.destroy(true); // avoid begin destroy because begin destroy will be called recursively on the first destroy call
+				//}
 			});
 
 			this._cobj_children.clear();
@@ -218,10 +221,12 @@
 			ist.remove_cobj_cached_item(this);
 
 			this.$value.destroy(true);
+			//if(remove_from_cobj_children) { ist.remove_cobj_from_tree(this); }
 			delete this.object;
 			delete this.pointer;
 			delete this.inherited_from;
 			delete this.$value;
+
 			ist.unregister_uid(this.id());
 			this._emit("destroyed");
 			able.destroy_this_listenable(this);
@@ -437,5 +442,57 @@
 			cobj_hashes.destroy();
 			cobj_hashes = false;
 		}
+	};
+	ist.remove_cobj_from_tree = function(cobj) {
+		var pointer = cobj.get_pointer(),
+			len = pointer.length();
+		if(len > 1) {
+			var parent_ptr = pointer.pop(),
+				parent = parent_ptr.getContextualObject();
+			parent.remove_cobj_child(pointer, true);
+		}
+
+/*
+
+		var must_initialize = false,
+			rv = cobj_hashes.getOrPut(pointer, function() {
+			var len = pointer.length(),
+				pointer_root, hvi, i, ptr_i, copies_i, hash_i, new_cobj, node, opts;
+
+			pointer_root = pointer.root();
+			hash_i = pointer_root.id();
+			node = cobj_roots[hash_i];
+
+
+			if(!node) {
+				if(len === 1) {
+					must_initialize = true;
+					node = cobj_roots[hash_i] = ist.create_contextual_object(obj, pointer, _.extend({
+						defer_initialization: true
+					}, options));
+				} else {
+					node = ist.find_or_put_contextual_obj(pointer_root, pointer.slice(0,1));
+				}
+			}
+
+			i = 1;
+			
+			while (i < len) {
+				ptr_i = pointer.pointsAt(i);
+				hash_i = pointer.itemHash(i);
+				copies_i = pointer.copy(i);
+				node = node.get_or_put_cobj_child(ptr_i, copies_i, hash_i, i === len-1 ? options : false);//, i === len-1 ? true : false);
+				i++;
+			}
+
+			return node;
+		});
+
+		if(must_initialize) {
+			rv.initialize();
+		}
+
+		return rv;
+		*/
 	};
 }(interstate));

@@ -90,12 +90,31 @@
 
 	var get_op_val = function (options, calling_context, op) {
 		var pcontext = options.context,
-			args = _.rest(arguments, 3);
+			args = _.rest(arguments, 3),
+			created_bobj = false,
+			created_cobj = false,
+			created_from_cobj = false;
 		if (options.get_constraint) {
 			var constraint = cjs(function () {
+			/*
+				if(created_cobj) {
+					//created_cobj.destroy();
+					created_cobj = false;
+				}
+				if(created_bobj) {
+					//created_bobj.destroy();
+					created_bobj = false;
+				}
+				*/
+
 				var op_got = cjs.get(op, options.auto_add_dependency),
 					args_got, rv;
 				if(_.isFunction(op_got) || op_got instanceof ist.ParsedFunction) {
+					if(created_bobj) {
+						created_bobj.destroy();
+						created_bobj = created_cobj = created_from_cobj = false;
+					}
+
 					var calling_context_got = cjs.get(calling_context, options.auto_add_dependency);
 
 					args_got = _.map(args, function(arg) {
@@ -112,7 +131,7 @@
 					} else if (op_got instanceof ist.ParsedFunction) {
 						return op_got._apply(calling_context_got, pcontext, args_got, options);
 					}
-				} else if( op_got instanceof ist.ContextualDict) {
+				} else if(op_got instanceof ist.ContextualDict) {
 					var proto = op_got,
 						arg_arr = [];
 					args_got = { };
@@ -129,20 +148,54 @@
 						arg_arr[index] = value;
 					});
 
-					args_got["arguments"] = cjs(arg_arr);
-					var Constructor_fn = op_got instanceof ist.ContextualStatefulObj ? ist.StatefulObj : ist.Dict;
+					if(created_from_cobj === proto) {
+						rv = created_cobj;
+					} else {
+						if(created_bobj) {
+							created_bobj.destroy();
+						}
 
+						args_got["arguments"] = cjs(arg_arr);
+						var Constructor_fn = proto instanceof ist.ContextualStatefulObj ? ist.StatefulObj : ist.Dict,
+							bobj = new Constructor_fn({
+								value: args_got,
+								direct_protos: cjs(op)
+							}),
+							new_ptr = pcontext.push(bobj);
+
+						rv = new_ptr.getContextualObject();
+
+						created_bobj = bobj;
+						created_cobj = rv;
+						created_from_cobj = proto;
+					}
+					//created_cobj = rv;
+					/*
 					rv = new Constructor_fn({
 						value: args_got,
 						direct_protos: cjs(op)
 					});
+					*/
 					return rv;
 				} else {
+					if(created_bobj) {
+						created_bobj.destroy();
+						created_bobj = created_cobj = created_from_cobj = false;
+					}
 					throw new Error("Calling a non-function");
 					//return undefined;
 				}
 			});
 			constraint.destroy = function() {
+				//The cobj will be destroyed by either the parent obj or destruction of basic obj
+				//if(created_cobj) {
+					//created_cobj.destroy(false, true);
+					//created_cobj = false;
+				//}
+				if(created_bobj) {
+					created_bobj.destroy();
+					created_bobj = created_cobj = created_from_cobj = false;
+				}
 				destroy_constraint_fn.apply(this, arguments);
 			};
 			return constraint;
@@ -646,6 +699,7 @@
 		}, options));
 		return parsed_value;
 	};
+	/*
 
 	ist.get_indirect_parsed_$ = function(node_constraint, options) {
 		var constraint = false,
@@ -682,6 +736,7 @@
 
 		return value_constraint;
 	};
+	*/
 
 	var func_regex = new RegExp("^\\s*function\\s*\\((\\s*[a-zA-Z$][\\w\\$]*\\s*,)*\\s*([a-zA-Z$][\\w\\$]*\\s*)?\\)\\s*{.*}\\s*$");
 	var block_regex = new RegExp("^\\s*{.*}\\s*$");

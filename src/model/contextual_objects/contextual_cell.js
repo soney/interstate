@@ -13,6 +13,7 @@
 		var constraint = false,
 			pointer = this.get_pointer(),
 			is_inherited = this.is_inherited();
+
 		this.value_constraint = cjs(function() {
 			if(constraint && constraint.destroy) {
 				constraint.destroy(true);
@@ -40,18 +41,16 @@
 		proto.initialize = function(options) {
 			if(this.constructor === My) { this.flag_as_initialized();  }
 			My.superclass.initialize.apply(this, arguments);
-			this._cached_value = false;
+			//this._cached_value = false;
 			if(this.constructor === My) { this.shout_initialization();  }
+		};
+		proto.begin_destroy = function() {
+			My.superclass.begin_destroy.apply(this, arguments);
 		};
 		proto.destroy = function (avoid_begin_destroy) {
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
-			if(this._cached_basic_object instanceof ist.BasicObject) {
-				this._cached_basic_object.destroy(true);
-				this._cached_basic_object = false;
-			}
-
-			this._cached_value = false;
+			//this._cached_value = false;
 
 			this.value_constraint.destroy(true);
 			delete this.value_constraint;
@@ -77,19 +76,7 @@
 					}
 				}
 			}
-
-			if(this._cached_basic_object && this._cached_basic_object !== value) {
-				this._cached_basic_object.destroy(true);
-				this._cached_basic_object = false;
-			}
-
-			if(value instanceof ist.BasicObject) {
-				this._cached_basic_object = value;
-				value = ist.find_or_put_contextual_obj(value, this.get_pointer().push(value));
-			} else {
-				this._cached_basic_object = false;
-			}
-			this._cached_value = value;
+			//this._cached_value = value;
 
 			return value;
 		};
