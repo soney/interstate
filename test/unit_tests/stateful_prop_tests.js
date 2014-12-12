@@ -106,7 +106,7 @@
 		{
 			name: "Simultaneous events across multiple objects",
 			expect: 3,
-			builtins: ["functions"],
+			builtins: true,
 			steps: [{
 				setup: function(env) {
 					env	.set("obj1", "<stateful>")
@@ -114,7 +114,7 @@
 							.add_state("pre_click")
 							.start_at("pre_click")
 							.add_state("post_click")
-							.add_transition("pre_click", "post_click", "on('click')")
+							.add_transition("pre_click", "post_click", "mouse.click()")
 							.set("x", "pre_click", "1")
 							.set("x", "pre_click->post_click", "2")
 							.set("x", "post_click", "3")
@@ -124,7 +124,7 @@
 							.add_state("pre_click")
 							.start_at("pre_click")
 							.add_state("post_click")
-							.add_transition("pre_click", "post_click", "on('click')")
+							.add_transition("pre_click", "post_click", "mouse.click()")
 							.set("x", "pre_click", "obj1.x")
 							.set("y", "pre_click->post_click", "obj1.x")
 							.up()
@@ -137,7 +137,7 @@
 					var obj2 = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
 					equal(obj2.prop_val("x"), 1);
 					//click!
-					var evt = document.createEvent("MouseEvents"); 
+					var evt = document.createEvent("MouseEvent"); 
 					evt.initMouseEvent("click", true, true, document.body, 
 						0, 0, 0, 0, 0, false, false, false, false, 0, null); 
 					document.body.dispatchEvent(evt);
@@ -154,7 +154,8 @@
 			builtins: ["functions"],
 			steps: [{
 				setup: function(env) {
-					env.set("dynamic_obj", "<stateful>")
+					env	.set("on", ist.on_event)
+						.set("dynamic_obj", "<stateful>")
 						.cd("dynamic_obj")
 							.add_state("state1")
 							.start_at("state1")

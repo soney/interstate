@@ -222,7 +222,8 @@
 			expect: 3,
 			steps: [{
 				setup: function(env) {
-					env	.set("obj", "<stateful>")
+					env	.set('on', ist.on_event)
+						.set("obj", "<stateful>")
 						.cd("obj")
 							.add_state("INIT")
 							.start_at("INIT")
@@ -247,7 +248,8 @@
 			expect: 6,
 			steps: [{
 				setup: function(env) {
-					env	.set("screen", "<stateful>")
+					env	.set("on", ist.on_event)
+						.set("screen", "<stateful>")
 						.cd("screen")
 							.set("(prototypes)", "(start)", "svg.paper")
 							.set("obj", "<stateful>")
@@ -287,7 +289,8 @@
 			expect: 6,
 			steps: [{
 				setup: function(env) {
-					env	.set("screen", "<stateful>")
+					env	.set("on", ist.on_event)
+						.set("screen", "<stateful>")
 						.cd("screen")
 							.set("(prototypes)", "(start)", "svg.paper")
 							.set("obj", "<stateful>")
@@ -325,7 +328,8 @@
 			expect: 8,
 			steps: [{
 				setup: function(env) {
-					env	.set("mouse", "<stateful>")
+					env	.set("on", ist.on_event)
+						.set("mouse", "<stateful>")
 						.cd("mouse")
 							.set("x", "0")
 							.set("y", "0")
@@ -418,7 +422,7 @@
 			builtins: true,
 			steps: [{
 				setup: function(env) {
-					env	
+					env	.set("on", ist.on_event)
 						.set("screen", "<stateful>")
 						.cd("screen")
 							.set("(prototypes)", "(start)", "svg.paper")
@@ -806,7 +810,8 @@
 			builtins: ["functions"],
 			steps: [{
 				setup: function(env) {
-					env	.set("obj", "<stateful>")
+					env	.set("on", ist.on_event)
+						.set("obj", "<stateful>")
 						.cd("obj")
 							.add_state("state1")
 							.add_state("state2")

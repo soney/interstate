@@ -17,7 +17,8 @@
 			create_builtins: ["functions"],
 			steps: [{
 				setup: function(env) {
-					env	.set("obj", "<stateful>")
+					env	.set("on", ist.on_event)
+						.set("obj", "<stateful>")
 						.cd("obj")
 							.add_state("state1")
 							.add_state("state2")

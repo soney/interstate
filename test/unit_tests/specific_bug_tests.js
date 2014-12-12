@@ -56,7 +56,8 @@
 			builtins: ["functions"],
 			steps: [{
 				setup: function(env) {
-					env.set("A", "<stateful>")
+					env	.set("on", ist.on_event)
+						.set("A", "<stateful>")
 						.cd("A")
 							.set("x", "(start)", "'click'")
 							.add_state("init")
@@ -259,7 +260,7 @@
 			builtins: ["functions"],
 			steps: [{
 				setup: function(env) {
-					env
+					env	.set("on", ist.on_event)
 						.set("item", "<stateful>")
 						.set("C", "<stateful>")
 						.set("B", "<stateful>")

@@ -104,8 +104,8 @@
 					.add_state("init")
 					.add_state("hover")
 					.start_at("init")
-					.add_transition("init", "hover", "on('mouseover', this)")
-					.add_transition("hover", "init", "on('mouseout', this)")
+					.add_transition("init", "hover", "mouse.over(this)")
+					.add_transition("hover", "init", "mouse.out(this)")
 					.set("(prototypes)", "init", "svg.circle");
 					env.set("fill")
 					.set("fill", "init", "'red'")
