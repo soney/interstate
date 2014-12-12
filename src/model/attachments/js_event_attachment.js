@@ -36,9 +36,17 @@
 						}
 					} else if(this.eventType === "timeout") {
 						if(this._timeout_id) {
-							clearTimeout(this._timeout_id);
+							if(this._timeout_type === "frame") {
+								cancelAnimationFrame(this._timeout_id);
+							} else {
+								clearTimeout(this._timeout_id);
+							}
 							this._timeout_id = false;
 						}
+				//window.cancelAnimationFrame(this.req);
+				//this.req = undefined;
+			//}
+			//this.req = requestAnimationFrame(_.bind(this.notify, this));
 					}
 
 					if(this.eventType === "keyboard" || this.eventType === "mouse") {
@@ -59,7 +67,11 @@
 			destroy: function(silent) {
 				if(this.eventType === "timeout") {
 					if(this._timeout_id) {
-						clearTimeout(this._timeout_id);
+						if(this._timeout_type === "frame") {
+							cancelAnimationFrame(this._timeout_id);
+						} else {
+							clearTimeout(this._timeout_id);
+						}
 						this._timeout_id = false;
 					}
 				} else {
@@ -117,12 +129,22 @@
 							var current_time = (new Date()).getTime();
 
 							if(this._timeout_id) {
-								clearTimeout(this._timeout_id);
+								if(this._timeout_type === "frame") {
+									cancelAnimationFrame(this._timeout_id);
+								} else {
+									clearTimeout(this._timeout_id);
+								}
 								milliseconds = Math.max(0, milliseconds-(current_time - this._timeout_set_at));
 							}
 
-							this._timeout_set_at = current_time;
-							this._timeout_id = setTimeout(this._eventListener, milliseconds);
+							if(!milliseconds || milliseconds === 'frame') {
+								this._timeout_id = requestAnimationFrame(this._eventListener);
+								this._timeout_type = "frame";
+							} else {
+								this._timeout_set_at = current_time;
+								this._timeout_id = setTimeout(this._eventListener, milliseconds);
+								this._timeout_type = "delay";
+							}
 						}
 					}
 				}
@@ -134,9 +156,21 @@
 						var milliseconds = this.milliseconds;
 
 						if(this._timeout_id) {
-							clearTimeout(this._timeout_id);
+							if(this._timeout_type === "frame") {
+								cancelAnimationFrame(this._timeout_id);
+							} else {
+								clearTimeout(this._timeout_id);
+							}
 						}
-						this._timeout_id = setTimeout(this._eventListener, milliseconds);
+
+						if(!milliseconds || milliseconds === 'frame') {
+							this._timeout_id = requestAnimationFrame(this._eventListener);
+							this._timeout_type = "frame";
+						} else {
+							this._timeout_set_at = current_time;
+							this._timeout_id = setTimeout(this._eventListener, milliseconds);
+							this._timeout_type = "delay";
+						}
 					} else {
 						if(this._oldType) {
 							_.each(this._oldTarget, function(target) {
@@ -149,7 +183,11 @@
 					this.enabled = false;
 					if(this.eventType === "timeout") {
 						if(this._timeout_id) {
-							clearTimeout(this._timeout_id);
+							if(this._timeout_type === "frame") {
+								cancelAnimationFrame(this._timeout_id);
+							} else {
+								clearTimeout(this._timeout_id);
+							}
 							this._timeout_id = false;
 						}
 					} else {

@@ -36,6 +36,9 @@
 				ililegal_strs: false
 			});
 		};
+		root.collect_garbage = function() {
+			callback();
+		};
 
 		connected = false;
 		QUnit.start();
@@ -46,6 +49,9 @@
 
 		root.take_snapshot = function(forbidden_tokens, callback) {
 			do_command("take_snapshot", {forbidden_tokens: forbidden_tokens}, callback);
+		};
+		root.collect_garbage = function(callback) {
+			do_command("collect_garbage", {}, callback);
 		};
 
 		connected = true;
@@ -137,9 +143,11 @@
 			root_setup();
 			run_tests(function() {
 				destroy();
-				take_snapshot(["ist.", "interstate."], function(response) {
-					ok(!response.illegal_strs, "Make sure nothing was allocated");
-					start();
+				collect_garbage(function() {
+					take_snapshot(["ist.", "interstate."], function(response) {
+						ok(!response.illegal_strs, "Make sure nothing was allocated");
+						start();
+					});
 				});
 			});
 		});

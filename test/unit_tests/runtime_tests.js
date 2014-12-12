@@ -664,7 +664,7 @@
 								.set("r", "(start)", "10")
 								.add_state("moving")
 								.start_at("moving")
-								.add_transition("moving", "moving", "on('frame')")
+								.add_transition("moving", "moving", "timeout('frame')")
 								.set("vx", "(start)", "10")
 								.set("vy", "(start)", "10")
 								.set("cx", "(start)", "Math.random() * screen.width")
