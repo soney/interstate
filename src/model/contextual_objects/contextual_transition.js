@@ -116,7 +116,7 @@
 				if(constraint && constraint.destroy) {
 					constraint.destroy(true);
 				}
-				constraint = transition.constraint_in_context(pointer, false);
+				constraint = transition.constraint_in_context(pointer);
 				return constraint;
 			});
 			var old_destroy = this.event_constraint.destroy;
@@ -142,7 +142,7 @@
 				try {
 					//if(property === "satisfied") { debugger; }
 					//window.dbg = true;
-					this.event = cjs.get(this.event_constraint.get());
+					this.event = this.event_constraint.get();
 					//window.dbg = false;
 				} catch(e) {
 					this.event = new ist.Error({
@@ -154,11 +154,20 @@
 					}
 				}
 
+
 				if(this.event instanceof ist.MultiExpression) {
-					actions = this.event.rest();
-					this.event = this.event.first();
+					actions = _.map(this.event.rest(), function(node) {
+						return _.bind(function() {
+							ist.get_parsed_$(node, {
+								get_constraint: false,
+								context: this._statefulObj.get_pointer()
+							});
+						}, this);
+					}, this);
+					this.event = cjs.get(this.event.first());
 				} else {
 					actions = [];
+					this.event = cjs.get(this.event);
 				}
 
 				if(this.event instanceof ist.Error) {
@@ -367,7 +376,10 @@
 		};
 		proto.event = function () { return this.event; };
 		proto.involves = function (state) { return this.from() === state || this.to() === state; };
-		proto.fire = function (event) {
+		proto.fire = function (actions, event) {
+			_.each(actions, function(action) {
+				action();
+			}, this);
 			if (this.from()._onOutgoingTransitionFire(this, event)) {
 				this._emit("fire", {type: "fire", target: this});
 			}

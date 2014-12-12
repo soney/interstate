@@ -92,7 +92,8 @@
 			return ist.get_parsed_$(tree, {
 						context: pcontext,
 						//ignore_inherited_in_contexts: this.get_ignore_inherited_in_contexts(pcontext),
-						get_constraint: true
+						get_constraint: true,
+						only_parse_first: true
 						//inherited_from_cobj: inherited_from_cobj
 					});
         };
