@@ -213,24 +213,41 @@
 			root_dict.set("dom", dom);
 
 			var node = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
-			dom.set("node", node);
-			node.set("tag", new ist.Cell({str: "'div'"}));
-			node.set("attr", new ist.Dict({has_protos: false}));
-			node.set("style", new ist.Dict({has_protos: false}));
-			node.set("textContent", new ist.Cell({str: "'no text'"}));
-			node.set("show", new ist.Cell({str: "true"}));
-			node.set("showChildren", new ist.Cell({str: "true"}));
+			dom	.set("node", node);
 
-			var div = new ist.Dict();
-			dom.set("div", div);
-			div._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
-			div.set("tag", new ist.Cell({str: "'div'"}));
+			node.set("arguments", new ist.Cell({str: "['div']"}))
+				.set("tag", new ist.Cell({str: "arguments[0] || 'div'"}))
+				.set("attr", new ist.Dict({has_protos: false}))
+				.set("style", new ist.Dict({has_protos: false}))
+				.set("textContent", new ist.Cell({str: "'no text'"}))
+				.set("show", new ist.Cell({str: "true"}))
+				.set("showChildren", new ist.Cell({str: "true"}));
 
 			var input = new ist.Dict();
 			dom.set("input", input);
 			input._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
 			input	.set("tag", new ist.Cell({str: "'input'"}))
 					.set("textContent", new ist.Cell({str: "''"}));
+
+			_.each(["div", "strong", "span", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5",
+					"h6", "table", "tbody", "tr", "td", "th", "p", "pre", "br", "a",
+					"label", "img", "select", "option", "button", "hr"],
+					function(tag_name) {
+						dom.set(tag_name, new ist.Cell({str: "node('" + tag_name + "')"}));
+						/*
+						var obj = new ist.Dict();
+						dom.set(tag_name, obj);
+						obj._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
+						obj.set("tag", new ist.Cell({str: "'" + tag_name + "'"}));
+						*/
+					});
+				/*
+
+			var div = new ist.Dict();
+			dom.set("div", div);
+			div._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
+			div.set("tag", new ist.Cell({str: "'div'"}));
+
 
 			_.each(["strong", "span", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5",
 					"h6", "table", "tbody", "tr", "td", "th", "p", "pre", "br", "a",
@@ -241,6 +258,7 @@
 						obj._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
 						obj.set("tag", new ist.Cell({str: "'" + tag_name + "'"}));
 					});
+					*/
 		}
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "physics") >= 0)) {
@@ -281,9 +299,9 @@
 		}
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "functions") >= 0)) {
-			root_dict.set("on", ist.on_event);
+			//root_dict.set("on", ist.on_event);
 			root_dict.set("find", ist.find_fn);
-			root_dict.set("emit", ist.emit);
+			//root_dict.set("emit", ist.emit);
 		}
 
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "device") >= 0)) {
@@ -292,7 +310,7 @@
 						.set("timeout", new ist.Cell({str: "device.timeout"}))
 						.set("mouse", new ist.Cell({str: "device.mouse"}))
 						.set("key", new ist.Cell({str: "device.keyboard"}))
-						.set("touch", new ist.Cell({str: "device.touchscreen.touchCluster"}));
+						.set("touch", new ist.Cell({str: "device.touchscreen.touch"}));
 		}
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "event") >= 0)) {
 			//var fireable = new ist.Dict({has_protos: false, direct_attachments: [new ist.FireableAttachment()]});
@@ -304,7 +322,7 @@
 					//.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}))
 					//.set("cancelFire", new ist.Cell({str: "interstate.cancelFire.bind(this)"}))
 					.set("priority", new ist.Cell({str: "false"}))
-					.set("fireDelay", new ist.Cell({str: "false"}))
+					.set("fireDelay", new ist.Cell({str: "false"}));
 					//.set("requested", new ist.Cell({str: "fireable()"}))
 					//.set("cancelled", new ist.Cell({str: "fireable()"}))
 					//.set("blocked", new ist.Cell({str: "fireable()"}))

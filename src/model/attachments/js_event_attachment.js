@@ -153,7 +153,8 @@
 				onTransitionEnabled: function() {
 					this.enabled = true;
 					if(this.eventType === "timeout") {
-						var milliseconds = this.milliseconds;
+						var milliseconds = this.milliseconds,
+							current_time = (new Date()).getTime();
 
 						if(this._timeout_id) {
 							if(this._timeout_type === "frame") {

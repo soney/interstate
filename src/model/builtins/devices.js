@@ -13,12 +13,11 @@
 	// mouse
 	ist.createMouseObject = function() {
 		var mouse_event = new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment({
-			instance_options: {
-				eventType: "mouse"
-			}
-		}), new ist.EventAttachment({
-		})]
-																					})
+					instance_options: {
+						eventType: "mouse"
+					}
+				}), new ist.EventAttachment({ })]
+			});
 		mouse_event .set("target", new ist.Cell({str: "arguments[0]||window"}))
 					.set("type", new ist.Cell({str: "arguments[1]"}))
 					.set("arguments", new ist.Cell({str: "[window, 'click']"}))
@@ -74,11 +73,15 @@
 					screenY: screenY,
 					mouseEvent: mouse_event,
 					click: new ist.Cell({str: "mouseEvent(window, type='click')"}),
+					dblclick: new ist.Cell({str: "mouseEvent(window, type='dblclick')"}),
 					down: new ist.Cell({str: "mouseEvent(window,type='mousedown')"}),
 					up: new ist.Cell({str: "mouseEvent(window,type='mouseup')"}),
 					move: new ist.Cell({str: "mouseEvent(window,type='mousemove')"}),
 					over: new ist.Cell({str: "mouseEvent(window,type='mouseover')"}),
 					out: new ist.Cell({str: "mouseEvent(window,type='mouseout')"}),
+					enter: new ist.Cell({str: "mouseEvent(window,type='mouseenter')"}),
+					leave: new ist.Cell({str: "mouseEvent(window,type='mouseleave')"}),
+					contextmenu: new ist.Cell({str: "mouseEvent(window,type='contextmenu')"})
 				}
 			});
 		device_mouse.destroy = function() {
@@ -118,12 +121,11 @@
 		});
 
 		var key_event = new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment({
-			instance_options: {
-				eventType: "keyboard"
-			}
-		}), new ist.EventAttachment({
-		})]
-																					})
+					instance_options: {
+						eventType: "keyboard"
+					}
+				}), new ist.EventAttachment({})]
+			});
 		key_event	.set("key", new ist.Cell({str: "arguments[0]"}))
 					.set("type", new ist.Cell({str: "arguments[1]"}))
 					.set("arguments", new ist.Cell({str: "[false, 'keypress']"}))
@@ -371,24 +373,25 @@
 				}
 			},
 			touchCluster = new ist.Dict({has_protos: false, direct_attachments: [new ist.TouchClusterAttachment({
-															}), new ist.EventAttachment({
-															})]
-																					})
-				.set("downInside", new ist.Cell({str: "false"}))
-				.set("downOutside", new ist.Cell({str: "false"}))
-				.set("numFingers", new ist.Cell({str: "1"}))
-				.set("maxRadius", new ist.Cell({str: "false"}))
-				.set("maxTouchInterval", new ist.Cell({str: "500"}))
-				.set("debugDraw", new ist.Cell({str: "false"}))
-				.set("delay", new ist.Cell({str: "false"}))
-				.set("priority", new ist.Cell({str: "false"}))
-				.set("stopPropagation", new ist.Cell({str: "false"}))
-				.set("preventDefault", new ist.Cell({str: "false"})),
-			device_touchscreen = new ist.Dict({has_protos: false, value: {
+															}), new ist.EventAttachment({})]
+																					});
+
+			touchCluster.set("downInside", new ist.Cell({str: "false"}))
+						.set("downOutside", new ist.Cell({str: "false"}))
+						.set("numFingers", new ist.Cell({str: "1"}))
+						.set("maxRadius", new ist.Cell({str: "false"}))
+						.set("maxTouchInterval", new ist.Cell({str: "500"}))
+						.set("debugDraw", new ist.Cell({str: "false"}))
+						.set("delay", new ist.Cell({str: "false"}))
+						.set("priority", new ist.Cell({str: "false"}))
+						.set("stopPropagation", new ist.Cell({str: "false"}))
+						.set("preventDefault", new ist.Cell({str: "false"}));
+
+			var device_touchscreen = new ist.Dict({has_protos: false, value: {
 					finger_count: touch_count,
 					getTouch: getTouch,
 					getTouchByID: getTouchByID,
-					touchCluster: touchCluster
+					touch: touchCluster
 				}
 			});
 
@@ -566,16 +569,15 @@
 			gyroscope = ist.createGyroscopeObject();
 
 			var timeout_event = new ist.Dict({has_protos: false, direct_attachments: [new ist.JSEventAttachment({
-				instance_options: {
-					eventType: "timeout"
-				}
-			}), new ist.EventAttachment({
-			})]
-																						})
-			timeout_event .set("milliseconds", new ist.Cell({str: "arguments[0]"}))
-						.set("arguments", new ist.Cell({str: "[500]"}))
-						.set("delay", new ist.Cell({str: "false"}))
-						.set("priority", new ist.Cell({str: "false"}))
+						instance_options: {
+							eventType: "timeout"
+						}
+					}), new ist.EventAttachment({})]
+				});
+			timeout_event	.set("milliseconds", new ist.Cell({str: "arguments[0]"}))
+							.set("arguments", new ist.Cell({str: "[500]"}))
+							.set("delay", new ist.Cell({str: "false"}))
+							.set("priority", new ist.Cell({str: "false"}))
 						;
 			var device = new ist.Dict({has_protos: false, value: {
 					mouse: mouse,

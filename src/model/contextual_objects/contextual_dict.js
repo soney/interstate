@@ -751,13 +751,11 @@
 						attachment_instance = this._attachment_instances[type];
 						if(attachment_instance.get_creator() !== attachment_info.attachment) {
 							attachment_instance.destroy();
-							attachment_instance = this._attachment_instances[type]
-								= attachment.create_instacne(this, attachment_info.owner);
+							attachment_instance = this._attachment_instances[type] = attachment.create_instacne(this, attachment_info.owner);
 							attachment_instance.on_ready();
 						}
 					} else {
-						attachment_instance = this._attachment_instances[type]
-							= attachment.create_instance(this, attachment_info.owner);
+						attachment_instance = this._attachment_instances[type] = attachment.create_instance(this, attachment_info.owner);
 						attachment_instance.on_ready();
 					}
 

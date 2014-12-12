@@ -36,7 +36,7 @@
 				ililegal_strs: false
 			});
 		};
-		root.collect_garbage = function() {
+		root.collect_garbage = function(callback) {
 			callback();
 		};
 
