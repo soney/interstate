@@ -1,7 +1,1 @@
-ace.define('ace/snippets/glsl', ['require', 'exports', 'module' ], function(require, exports, module) {
-
-
-exports.snippetText = "";
-exports.scope = "glsl";
-
-});
+define("ace/snippets/glsl",["require","exports","module"],function(e,t,n){"use strict";t.snippetText=undefined,t.scope="glsl"})

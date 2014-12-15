@@ -140,10 +140,22 @@
 				old_event_cobj = this.event_cobj;
 
 				try {
-					//if(property === "satisfied") { debugger; }
-					//window.dbg = true;
 					this.event = this.event_constraint.get();
-					//window.dbg = false;
+
+					if(this.event instanceof ist.MultiExpression) {
+						actions = _.map(this.event.rest(), function(node) {
+							return _.bind(function() {
+								ist.get_parsed_$(node, {
+									get_constraint: false,
+									context: this._statefulObj.get_pointer()
+								});
+							}, this);
+						}, this);
+						this.event = cjs.get(this.event.first());
+					} else {
+						actions = [];
+						this.event = cjs.get(this.event);
+					}
 				} catch(e) {
 					this.event = new ist.Error({
 						message: e.message,
@@ -152,22 +164,6 @@
 					if(ist.__log_errors) {
 						console.error(e);
 					}
-				}
-
-
-				if(this.event instanceof ist.MultiExpression) {
-					actions = _.map(this.event.rest(), function(node) {
-						return _.bind(function() {
-							ist.get_parsed_$(node, {
-								get_constraint: false,
-								context: this._statefulObj.get_pointer()
-							});
-						}, this);
-					}, this);
-					this.event = cjs.get(this.event.first());
-				} else {
-					actions = [];
-					this.event = cjs.get(this.event);
 				}
 
 				if(this.event instanceof ist.Error) {
@@ -185,18 +181,6 @@
 						} else {
 							this.event = false;
 						}
-					/*
-						event_object = event.get_object();
-						var ptr = pointer.push(event_object);
-						event = ptr.getContextualObject()
-						can_destroy_event = false;
-
-						var event_attachment = event.get_attachment_instance("event_attachment"); 
-						if(event_attachment) {
-							event = event_attachment.getEvent();
-						}
-						//event_object = false;
-						*/
 					} else if(this.event instanceof ist.Event) {
 						this.event_cobj = false;
 					/*
@@ -212,34 +196,7 @@
 
 					this._runtime_errors.set(false);
 				}
-				/*
-				this.event = event;
-				this.event_cobj = event_cobj;
-				this.event_bobj = event_bobj;
 
-				if(event instanceof ist.Event) {
-					event.set_transition(this);
-					can_destroy_event = true;
-				} else if(event instanceof ist.ContextualObject) {
-					var cobj = event,
-						event_attachment = cobj.get_attachment_instance("event_attachment"); 
-
-					if(event_attachment) {
-						event = event_attachment.getEvent();
-					}
-
-					//can_destroy_event = event_object ? true : false;
-					/*
-				} else if(!(event instanceof ist.Error)) {
-					if(event && !old_event) {
-						this._manual_event.fire(event);
-					}
-				}
-
-				this.event = event;
-				this.event_object = event_object;
-
-				*/
 				if(this.event !== old_event) {
 					if(this.event instanceof ist.Event) {
 						this.event.on_fire(this.fire, this, actions, csobj, pointer);

@@ -1,7 +1,1 @@
-ace.define('ace/snippets/batchfile', ['require', 'exports', 'module' ], function(require, exports, module) {
-
-
-exports.snippetText = "";
-exports.scope = "batchfile";
-
-});
+define("ace/snippets/batchfile",["require","exports","module"],function(e,t,n){"use strict";t.snippetText=undefined,t.scope="batchfile"})

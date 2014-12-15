@@ -34,12 +34,11 @@
 					return new interstate.Environment({root: getRoot()});
 				}
 				window.env = getEnvironment();
-				/*
 				env.set("x", "<stateful>")
 					.cd("x")
 					.add_state("a")
 					.start_at("a")
-					.add_transition("a", "a", "touch();this.fire()")
+					.add_transition("a", "a", "abc")
 					.set("(prototypes)", "(start)", "event")
 					.set("y", "<stateful_prop>")
 					.set("y", "a", "1")
