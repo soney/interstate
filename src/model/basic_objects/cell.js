@@ -27,6 +27,7 @@
             "ignore_inherited_in_first_dict": {
                 "default": function () { return false; }
             },
+			/*
             "contextual_values": {
                 "default": function () {
                     return cjs.map({
@@ -47,6 +48,7 @@
                 "default": function () { return false; },
 				getter_name: "is_substantiated"
             }
+			*/
         };
         ist.install_proto_builtins(proto, My.builtins);
 

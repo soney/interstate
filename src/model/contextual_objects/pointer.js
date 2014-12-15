@@ -240,27 +240,4 @@
 			return rv;
 		};
 	}(ist.Pointer));
-	/*
-
-	ist.is_pointer = function (obj) {
-		return obj instanceof ist.Cell || obj instanceof ist.StatefulProp;
-	};
-
-
-	ist.check_pointer_equality =  ist.check_pointer_equality_eqeqeq = function (itema, itemb) {
-		if (itema instanceof ist.Pointer && itemb instanceof ist.Pointer) {
-			return itema.eq(itemb);
-		} else {
-			return itema === itemb;
-		}
-	};
-
-	ist.pointer_hash = function(item) {
-		if(item && item.hash) {
-			return item.hash();
-		} else {
-			return item.toString();
-		}
-	};
-	*/
 }(interstate));

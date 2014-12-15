@@ -6,18 +6,12 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 	
-	var editing_text_template = cjs.createTemplate("<textarea cjs-on-blur=on_edit_blur cjs-on-keydown=on_edit_keydown />");
+	var editing_text_template = cjs.createTemplate("<textarea />");
 
 	cjs.registerCustomPartial("editing_text", {
 		createNode: function(init_val) {
-			var node = editing_text_template({
-				on_edit_blur: function(event) {
-					$(node).editing_text("on_edit_blur", event);
-				},
-				on_edit_keydown: function(event) {
-					$(node).editing_text("on_edit_keydown", event);
-				}
-			});
+			var node = editing_text_template({ });
+
 			$(node).editing_text({
 				init_val: init_val
 			});
@@ -25,12 +19,12 @@
 			return node;
 		},
 		onAdd: function(node, init_val) {
-			_.defer(function() { $(node).val(init_val).select().focus(); });
-			$(node).editing_text("onAdd");
+			$(node)	.editing_text("option", "init_val", init_val)
+					.editing_text("onAdd");
 		},
 		onRemove: function(node) {
-			$(node).editing_text("option", "helper", false);
-			$(node).editing_text("onRemove");
+			$(node)	.editing_text("option", "helper", false)
+					.editing_text("onRemove");
 		},
 		destroyNode: function(node) {
 			$(node).editing_text("destroy");
@@ -42,20 +36,41 @@
 			helper: false
 		},
 		_create: function () {
-			this._helper_focused = false;
-			this.element.val(this.option("init_val"));
 			this._confirm = _.bind(this._confirm_edit, this);
 			this._cancel = _.bind(this._cancel_edit, this);
+			this._on_edit_blur = _.bind(this.on_edit_blur, this);
+			this._on_edit_focus = _.bind(this.on_edit_focus, this);
+			this._on_edit_keydown = _.bind(this.on_edit_keydown, this);
+			this._on_helper_focus = _.bind(this.on_helper_focus, this);
+			this._on_helper_blur = _.bind(this.on_helper_blur, this);
+			this._on_helper_change = _.bind(this.on_helper_change, this);
+
+			this._helper_focused = false;
+			this.element.on("blur", this._on_edit_blur)
+						.on("focus", this._on_edit_focus)
+						.on("keydown", this._on_edit_keydown);
 		},
 		_destroy: function () {
 			if(this.$textarea_binding) { this.$textarea_binding.destroy(); }
 			this.option("helper", false);
+			this.element.off("blur", this._on_edit_blur)
+						.off("focus", this._on_edit_focus)
+						.off("keydown", this._on_edit_keydown);
+			var helper = this.option("helper");
+			if(helper) {
+				helper.off("blur", this._on_helper_blur);
+				helper.off("focus", this._on_helper_focus);
+				helper.off("change", this._on_helper_change);
+			}
+
 			this._super();
 		},
 
 		onAdd: function() {
 			$("#confirm_button").on("mousedown", this._confirm);
 			$("#cancel_button").on("mousedown", this._cancel);
+			this.element.val(this.option("init_val"));
+			_.defer(_.bind(function() { $(this.element).select().focus(); }, this));
 		},
 
 		onRemove: function() {
@@ -65,65 +80,66 @@
 
 		_setOption: function(key, value) {
 			if(key === "helper") {
-				var editor = value,
-					old_editor = this.option("helper");
+				var helper = value,
+					old_helper = this.option("helper");
 
 				if(this.$textarea_binding) { this.$textarea_binding.destroy(); }
 
-				if(old_editor) {
-					old_editor.setValue("");
+				if(old_helper) {
+					old_helper.off("change", this._on_helper_change);
+					old_helper.off("focus", this._on_helper_focus);
+					old_helper.off("blur", this._on_helper_blur);
+					old_helper.setValue("");
 				}
 
-				if(editor) {
-					editor.setValue(this.element.val() || " ", 1);
+				if(helper) {
+					helper.on("change", this._on_helper_change);
+					helper.on("focus", this._on_helper_focus);
+					helper.on("blur", this._on_helper_blur);
+
+					helper.setValue(this.element.val() || "", 1);
 					this.$textarea_binding = cjs(this.element[0]);
 					this.$textarea_binding.onChange(function() {
-						editor.setValue(this.$textarea_binding.get(), 1);
+						helper.setValue(this.$textarea_binding.get(), 1);
 					}, this);
 				}
 			}
 			this._super(key, value);
 		},
 		on_edit_blur: function(event) {
-			var editor = this.option("helper"),
-				do_confirm = _.bind(this._confirm_edit, this);
+			var helper = this.option("helper");
 			event.preventDefault();
 			event.stopPropagation();
 
-			var on_editor_blur = _.bind(function(e) {
-					this._helper_focused = false;
-					_.delay(_.bind(function() {
-						if(editor.isFocused()) {
-							this._helper_focused = true;
-						} else if(this.element.is(":focus")) {
-							this._helper_focused = false;
-						} else {
-							do_confirm();
-						}
-					}, this), 50);
-
-					editor.off("blur", on_editor_blur);
-					editor.off("change", on_editor_change);
-				}, this),
-				on_editor_change = _.bind(function(event) {
-					if(this._helper_focused) {
-						this.element.val(editor.getValue());
-					}
-				}, this);
-
-			if(editor) { // they might have clicked on the helper
-				_.delay(_.bind(function() {
-					if(editor.isFocused()) {
-						this._helper_focused = true;
-						editor.on("change", on_editor_change);
-						editor.on("blur", on_editor_blur);
-					} else {
-						do_confirm();
-					}
-				}, this), 50);
+			if(helper) {
+				this._editor_blur_timeout = setTimeout(this._confirm, 50);
 			} else {
-				do_confirm();
+				this._confirm();
 			}
+		},
+		on_edit_focus: function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+
+			if(this._helper_blur_timeout) {
+				window.clearTimeout(this._helper_blur_timeout);
+				delete this._helper_blur_timeout;
+			}
+
+			this._helper_focused = false;
+		},
+		on_helper_blur: function(event) {
+			this._helper_focused = false;
+			this._helper_blur_timeout = setTimeout(this._confirm, 50);
+		},
+		on_helper_focus: function(event) {
+			if(this._editor_blur_timeout) {
+				window.clearTimeout(this._editor_blur_timeout);
+				delete this._editor_blur_timeout;
+			}
+			this._helper_focused = true;
+			var helper = this.option("helper");
+			helper.on("change", this._on_helper_change);
 		},
 		on_edit_keydown: function(event) {
 			var keyCode = event.keyCode;
@@ -148,6 +164,7 @@
 		_confirm_edit: function() {
 			if(!this.__blocked) {
 				this.__blocked = true;
+				var helper = this.option("helper");
 
 				var e = new $.Event("confirm_value");
 				e.value = this.element.val().trim();
@@ -166,6 +183,14 @@
 				_.delay(_.bind(function() {
 					delete this.__blocked;
 				}, this), 50);
+			}
+		},
+		on_helper_change: function() {
+			if(this._helper_focused) {
+				var helper = this.option("helper");
+				if(helper) {
+					this.element.val(helper.getValue());
+				}
 			}
 		}
 	});

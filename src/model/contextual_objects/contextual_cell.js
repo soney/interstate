@@ -41,7 +41,6 @@
 		proto.initialize = function(options) {
 			if(this.constructor === My) { this.flag_as_initialized();  }
 			My.superclass.initialize.apply(this, arguments);
-			//this._cached_value = false;
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
 		proto.begin_destroy = function() {
@@ -49,8 +48,6 @@
 		};
 		proto.destroy = function (avoid_begin_destroy) {
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
-
-			//this._cached_value = false;
 
 			this.value_constraint.destroy(true);
 			delete this.value_constraint;
@@ -76,7 +73,6 @@
 					}
 				}
 			}
-			//this._cached_value = value;
 
 			return value;
 		};

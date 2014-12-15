@@ -128,11 +128,6 @@
 				old_destroy.apply(this, arguments);
 			};
 
-			//this.event_constraint = ist.get_indirect_parsed_$(transition._tree, {
-				//context: pointer
-			//});
-
-			//this.can_destroy_event = can_destroy_event;
 			this.event = this.event_cobj = false;
 
 			this._live_event_updater = cjs.liven(function() {
