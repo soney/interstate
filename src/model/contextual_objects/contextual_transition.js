@@ -219,8 +219,6 @@
 						if(!old_event_cobj) { // if we created the old basic object, we can go ahead and destroy this event.
 							old_event.destroy(true); //destroy silently (without nullifying)
 						}
-						//if(can_destroy_old_event) {
-						//}
 					}
 
 					//if (old_event_cobj && old_event_cobj !== this.event_cobj) {
