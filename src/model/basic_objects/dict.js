@@ -43,6 +43,7 @@
 			has_copies: true
         }, options);
 
+
         ist.Dict.superclass.constructor.call(this, options, defer_initialization);
 
         this.type = "ist_dict";

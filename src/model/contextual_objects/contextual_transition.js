@@ -230,6 +230,7 @@
 			}, {
 				context: this,
 				run_on_create: false,
+				pause_while_running: true
 				//on_destroy: function() {
 					//event_constraint.destroy(true);
 					/*
@@ -327,6 +328,7 @@
 		proto.event = function () { return this.event; };
 		proto.involves = function (state) { return this.from() === state || this.to() === state; };
 		proto.fire = function (actions, event) {
+			//console.log(event);
 			_.each(actions, function(action) {
 				action();
 			}, this);

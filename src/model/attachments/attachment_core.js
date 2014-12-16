@@ -12,11 +12,13 @@
 		this.creator = this.options.creator;
 		this.outputFields = this.options.outputFields || {};
         this.type = "(generic)";
+		this._destroyed = false;
     };
     
     (function (My) {
         var proto = My.prototype;
         proto.destroy = function () {
+			this._destroyed = true;
 			delete this.options;
 			delete this.contextual_object;
 			delete this.creator;
@@ -171,15 +173,17 @@
 				});
 			};
 			proto.destroy = function(silent) {
-				_.each(attachment_specs.parameters, function(parameter_spec, parameter_name) {
-					this._listeners[parameter_name].destroy(true);
-				}, this);
-				delete this._listeners;
-				My.superclass.destroy.apply(this, arguments);
-
 				if(attachment_specs.destroy) {
 					attachment_specs.destroy.call(this, silent);
 				}
+
+				_.each(attachment_specs.parameters, function(parameter_spec, parameter_name) {
+					this._listeners[parameter_name].destroy(true);
+				}, this);
+
+				delete this._listeners;
+
+				My.superclass.destroy.apply(this, arguments);
 			};
 			_.each(attachment_specs.proto_props, function(proto_prop, proto_prop_name) {
 				proto[proto_prop_name] = proto_prop;

@@ -133,9 +133,10 @@
 					}
 				} else if(op_got instanceof ist.ContextualDict) {
 					var proto = op_got,
-						arg_arr = [];
+						arg_arr = [],
+						arg_arr_index=0;
 					args_got = { };
-					_.each(args, function(arg, index) {
+					_.each(args, function(arg) {
 						var value;
 						if(arg.type === assignmentExpression) {
 							value = arg.value;
@@ -144,8 +145,9 @@
 							args_got[name] = value;
 						} else {
 							value = arg;
+							arg_arr[arg_arr_index] = value;
+							arg_arr_index++;
 						}
-						arg_arr[index] = value;
 					});
 
 					if(created_from_cobj === proto) {

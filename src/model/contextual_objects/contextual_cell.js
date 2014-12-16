@@ -12,7 +12,14 @@
 
 		var constraint = false,
 			pointer = this.get_pointer(),
-			is_inherited = this.is_inherited();
+			is_inherited = this.is_inherited(),
+			transitionIndex = pointer.indexWhere(function(x) { return x instanceof ist.Transition; });
+
+		if(transitionIndex >= 0) {
+			this._isEvent = true;
+		} else {
+			this._isEvent = false;
+		}
 
 		this.value_constraint = cjs(function() {
 			if(constraint && constraint.destroy) {
@@ -59,7 +66,7 @@
 		};
 		proto._getter = function (node, is_preemptive) {
 			var value;
-			if(ist.__debug && !is_preemptive) {
+			if(this._isEvent || (ist.__debug && !is_preemptive)) {
 				value = cjs.get(this.value_constraint.get());
 				this._runtime_errors.set(false);
 			} else {

@@ -29,6 +29,18 @@
 	};
 	(function (my) {
 		var proto = my.prototype;
+		proto.indexWhere = function(testFn) {
+			var my_stack = this._stack,
+				my_stack_len = my_stack.length,
+				i;
+
+			for (i = my_stack_len - 1; i >= 0; i -= 1) {
+				if(testFn(my_stack[i])) {
+					return i;
+				}
+			}
+			return -1;
+		};
 		proto.pointsAt = function (index) {
 			if (!_.isNumber(index)) {
 				index = this._stack.length - 1;

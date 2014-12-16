@@ -207,13 +207,13 @@
 				$("ul.menu > li", this.element).on('click.menu_item', _.bind(function(e) {
 					this.on_menu_action(e.target.getAttribute('data-action'));
 					on_mup_oclick(e);
-					e.stopPropagation();
+					//e.stopPropagation();
 					e.preventDefault();
 				}, this));
 				$(window).on('mousedown.menu_item', function(e) {
 					if(!$(e.target).parents().is($("ul.menu", this.element))) {
 						on_mup_oclick(e);
-						e.stopPropagation();
+						//e.stopPropagation();
 						e.preventDefault();
 					}
 				});
@@ -466,7 +466,7 @@
 			var target = $(event.target);
 			
 			if(target.parents(".attachmentView").size() === 0) {
-				event.stopPropagation();
+				//event.stopPropagation();
 				event.preventDefault();
 				if(this.element.not(".selected")) {
 					this.element.trigger("expand");
