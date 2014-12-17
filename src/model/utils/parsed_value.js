@@ -109,12 +109,14 @@
 
 				var op_got = cjs.get(op, options.auto_add_dependency),
 					args_got, rv;
-				if(_.isFunction(op_got) || op_got instanceof ist.ParsedFunction) {
+				if(!(op_got instanceof ist.ContextualDict)) {
 					if(created_bobj) {
 						created_bobj.destroy();
 						created_bobj = created_cobj = created_from_cobj = false;
 					}
+				}
 
+				if(_.isFunction(op_got) || op_got instanceof ist.ParsedFunction) {
 					var calling_context_got = cjs.get(calling_context, options.auto_add_dependency);
 
 					args_got = _.map(args, function(arg) {
@@ -180,10 +182,6 @@
 					*/
 					return rv;
 				} else {
-					if(created_bobj) {
-						created_bobj.destroy();
-						created_bobj = created_cobj = created_from_cobj = false;
-					}
 					throw new Error("Calling a non-function");
 					//return undefined;
 				}
