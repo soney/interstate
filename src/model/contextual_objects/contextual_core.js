@@ -334,7 +334,6 @@
 			return ist.print(this.pointer, logging_mechanism);
 		};
 	}(ist.ContextualObject));
-	/*
 
 	ist.check_contextual_object_equality =  ist.check_contextual_object_equality_eqeqeq = function (itema, itemb) {
 		if (itema instanceof ist.ContextualObject && itemb instanceof ist.ContextualObject) {
@@ -343,7 +342,6 @@
 			return itema === itemb;
 		}
 	};
-	*/
 
 	ist.create_contextual_object = function (object, pointer, options) {
 		options = _.extend({
