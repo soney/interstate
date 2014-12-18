@@ -166,6 +166,7 @@
 								direct_protos: cjs(op)
 							}),
 							new_ptr = pcontext.push(bobj);
+						debugger;
 
 						rv = new_ptr.getContextualObject();
 
@@ -187,6 +188,7 @@
 				}
 			});
 			constraint.destroy = function() {
+				debugger;
 				//The cobj will be destroyed by either the parent obj or destruction of basic obj
 				//if(created_cobj) {
 					//created_cobj.destroy(false, true);

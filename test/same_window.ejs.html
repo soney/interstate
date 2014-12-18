@@ -33,8 +33,14 @@
 				function getEnvironment() {
 					return new interstate.Environment({root: getRoot()});
 				}
-				/*
 				window.env = getEnvironment();
+				
+				env	.set("proto_obj", "<stateful>")
+					.set("my_obj", "<stateful>")
+					.cd("my_obj")
+						.set("instance_obj", "(start)", "proto_obj(x=1)")
+						.set("instance_obj", "(start)", "proto_obj(x=2)")
+				/*
 				env.set("x", "<stateful>")
 					.cd("x")
 					.add_state("a")
