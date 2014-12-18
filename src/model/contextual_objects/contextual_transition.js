@@ -172,14 +172,14 @@
 						//}
 
 						var obj = this.event.get_object();
-						//if(old_event_cobj && old_event_cobj.get_object() === obj) {
-							//console.log("re-use");
-						//} else {
-							//console.log("re-create", transition.getStr());
-							//this.event_bobj = false;
+						if(old_event_cobj && old_event_cobj.get_object() === obj) {
+							console.log("re-use");
+						} else {
+							console.log("create", transition.getStr());
+							this.event_bobj = false;
 							ptr = pointer.push(obj);
 							this.event_cobj = ptr.getContextualObject();
-						//}
+						}
 							 
 						event_attachment = this.event_cobj.get_attachment_instance("event_attachment");
 						if(event_attachment) {

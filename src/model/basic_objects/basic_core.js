@@ -32,7 +32,7 @@
 		proto.begin_destroy = function () {
 			this._emit("begin_destroy");
 		};
-        proto.destroy = function () {
+        proto.destroy = function (silent) {
 			if(this.constructor === My) { this.begin_destroy(); }
 			ist.unset_instance_builtins(this, My);
 			ist.unregister_uid(this.id());

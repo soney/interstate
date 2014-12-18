@@ -182,8 +182,8 @@
 			return "p_" + this.get_pointer().toString();
 		};
 
-		proto.emit_begin_destroy = function() {
-			this._emit("begin_destroy", this);
+		proto.emit_begin_destroy = function(silent) {
+			this._emit("begin_destroy", silent);
 			this._clearManualChildren();
 		};
 
@@ -200,7 +200,7 @@
 				cobj.begin_destroy(silent);
 			}, this);
 
-			this.emit_begin_destroy();
+			this.emit_begin_destroy(silent);
 		};
 
 		proto.destroy = function (avoid_begin_destroy, remove_from_cobj_children) {
@@ -433,7 +433,7 @@
 		var pointer = cobj.get_pointer(),
 			obj = cobj.get_object();
 
-		cobj_hashes.remove(pointer); // TODO: fix
+		cobj_hashes.remove(pointer, true); // TODO: fix
 
 		if(pointer.length() === 1) {
 			delete cobj_roots[obj.id()];

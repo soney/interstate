@@ -761,6 +761,8 @@ var constraint_solver = {
 	// then A is added to the top of the stack and B is marked as dependent on A
 	stack: [],
 
+	check_on_nullified_ids: {},
+
 	// node is the Constraint whose value we are fetching and auto_add_outgoing specifies whether dependencies FROM node should
 	// be automatically added
 	getValue: function (auto_add_outgoing, getter_arg) {
@@ -768,7 +770,6 @@ var constraint_solver = {
 			stack = constraint_solver.stack,
 			stack_len = stack.length,
 			demanding_var, dependency_edge, tstamp;
-		//if(node._id == 609) debugger;
 		
 		if (stack_len > 0) { // There's a constraint that's asking for my value
 			// Let's call it demanding_var
@@ -783,7 +784,7 @@ var constraint_solver = {
 			if(dependency_edge) {
 				// Update timestamp
 				dependency_edge.tstamp = tstamp;
-			} else {
+			} else if(node !== demanding_var) {
 				// Make sure that the dependency should be added
 				if (node._options.auto_add_outgoing_dependencies !== false &&
 						demanding_var._options.auto_add_incoming_dependencies !== false &&
@@ -934,18 +935,23 @@ var constraint_solver = {
 
 			// We only care to nullify if the current node is actually valid
 			if (curr_node._valid) {
+				if(curr_node._id >= 14038) debugger;
 				curr_node._valid = false; // Mark it as invalid...
 				invalid = true;
 
 				// The user can also optionally check if the node should be nullified. This is useful if a large number of nodes
 				// depend on this node, and the potential cost of nullifying/re-evaluating them is higher than the cost of
 				// re-evaluating this node
-				if (curr_node._options.cache_value !== false && curr_node._options.check_on_nullify === true) {
+				if (curr_node._options.cache_value !== false && curr_node._options.check_on_nullify === true &&
+							// check to make sure we aren't already getting this node to avoid an infinite loop
+							!this.check_on_nullified_ids[curr_node._id])  {
+					this.check_on_nullified_ids[curr_node._id] = true;
+
 					// Only mark as invalid if the old value is different from the current value.
 					equals = curr_node._options.equals || eqeqeq;
 					old_value = curr_node._cached_value;
-					new_value = curr_node.get(undefined, true);
 
+					new_value = curr_node.get(undefined, true);
 					if (equals(old_value, new_value)) {
 						invalid = false;
 					}
@@ -969,7 +975,6 @@ var constraint_solver = {
 							// If the edge's timestamp is out of date, then this dependency isn't used
 							// any more and remove it
 							if (outgoingEdge.tstamp < dependentNode._tstamp) {
-								//if(curr_node._id == 609) debugger;
 								delete curr_node._outEdges[toNodeID];
 								delete dependentNode._inEdges[curr_node_id];
 							} else {
@@ -986,6 +991,7 @@ var constraint_solver = {
 
 		// If I'm the first one, then run the nullification listeners and remove the is_nullifying flag
 		if (is_root) {
+			this.check_on_nullified_ids = {};
 			// If nobody told us to wait, then run the nullification listeners
 			if (this.semaphore >= 0 && this.nullified_call_stack.length > 0) {
 				this.run_nullified_listeners();
@@ -1000,7 +1006,6 @@ var constraint_solver = {
 	 * @method cjs.removeDependency
 	 */
 	removeDependency: function(fromNode, toNode) {
-		//if(fromNode._id == 609) debugger;
 		delete fromNode._outEdges[toNode._id];
 		delete toNode._inEdges[fromNode._id];
 	},
@@ -1071,7 +1076,6 @@ var constraint_solver = {
 		// Clear the incoming edges
 		for(key in inEdges) {
 			if(has(inEdges, key)) {
-				//if(inEdges[key].from._id == 609) debugger;
 				delete inEdges[key].from._outEdges[node_id];
 				delete inEdges[key];
 			}
@@ -1214,8 +1218,10 @@ Constraint = function (value, options) {
 		var old_value = this._value;
 		this._value = value;
 
-		// If it's a value
-		if (this._options.literal || (!isFunction(value) && !is_constraint(value))) {
+		if(options && options.silent === true) {
+			return this;
+		} else if (this._options.literal || (!isFunction(value) && !is_constraint(value))) {
+ // If it's a value
 			// Then use the specified equality check
 			var equality_check = this._options.equal || eqeqeq;
 			if(!equality_check(old_value, value)) {
@@ -2257,15 +2263,15 @@ ArrayConstraint = function (options) {
 				$val.destroy(silent); // Clear memory for every element
 			}
 		}
-		_update_len(arr);
+		_update_len(arr, silent);
 
 		cjs.signal();
 		return this;
 	};
 
-	var _update_len = function (arr) {
+	var _update_len = function (arr, silent) {
 		// The setter will automatically not update if the value is the same
-		arr.$len.set(arr._value.length);
+		arr.$len.set(arr._value.length, silent ? {silent:true} : false);
 	};
 
 
@@ -4186,7 +4192,7 @@ extend(cjs, {
 			hash: memoize_default_hash,
 			equals: memoize_default_equals,
 			context: root,
-			literal_values: true,
+			literal_values: true
 		}, options);
 
 		// Map from args to value
@@ -4213,8 +4219,6 @@ extend(cjs, {
 				constraint.destroy(silent);
 			});
 			options.args_map.destroy(silent);
-			delete options.context;
-			delete options.args_map;
 		};
 
 		// Run through every argument and call fn on it

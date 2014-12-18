@@ -59,7 +59,7 @@
 			}
 		};
 
-        proto.destroy = function () {
+        proto.destroy = function (silent) {
 			if(this.constructor === My) { this.begin_destroy(); }
             My.superclass.destroy.apply(this, arguments);
 			ist.unset_instance_builtins(this, My);
