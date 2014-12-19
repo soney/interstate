@@ -41,8 +41,8 @@
 						.start_at("state1")
 						.add_state("state2")
 						.add_transition("state1", "state2", "timeout(500)")
-						.add_transition("state2", "state1", "timeout(500)")
-						.set_event("state1->state2", "timeout(501)")
+						.add_transition("state2", "state1", "timeout(501)")
+						.set_event("state1->state2", "timeout(502)")
 				/*
 				env.set("x", "<stateful>")
 					.cd("x")

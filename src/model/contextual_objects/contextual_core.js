@@ -28,6 +28,7 @@
 		this.object = options.object;
 		this.pointer = options.pointer;
 		this.inherited_from = options.inherited_from || false;
+		this.createdInline = options.inline === true;
 
 		this.$value = new cjs.Constraint(this._getter, {
 			context: this,
@@ -222,6 +223,10 @@
 
 			this.$value.destroy(true);
 			//if(remove_from_cobj_children) { ist.remove_cobj_from_tree(this); }
+
+			if(this.createdInline) {
+				this.object.destroy();
+			}
 			delete this.object;
 			delete this.pointer;
 			delete this.inherited_from;

@@ -921,6 +921,8 @@
 		};
 
 		proto.destroy = function (avoid_begin_destroy) {
+			//if(this.sid() === 520) debugger;
+			//if(this.sid() === 309) debugger;
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
 			this._manifestation_objects.destroy(true);

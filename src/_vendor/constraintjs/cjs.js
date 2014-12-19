@@ -935,7 +935,6 @@ var constraint_solver = {
 
 			// We only care to nullify if the current node is actually valid
 			if (curr_node._valid) {
-				if(curr_node._id >= 14038) debugger;
 				curr_node._valid = false; // Mark it as invalid...
 				invalid = true;
 

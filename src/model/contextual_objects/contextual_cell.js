@@ -10,8 +10,8 @@
 		ist.ContextualCell.superclass.constructor.apply(this, arguments);
 		this._runtime_errors = new cjs.Constraint(false);
 
-		var constraint = false,
-			pointer = this.get_pointer(),
+		//var constraint = false,
+		var pointer = this.get_pointer(),
 			is_inherited = this.is_inherited(),
 			transitionIndex = pointer.indexWhere(function(x) { return x instanceof ist.Transition; });
 
@@ -21,15 +21,16 @@
 			this._isEvent = false;
 		}
 
+		this.value = false;
 		this.value_constraint = cjs(function() {
-			if(constraint && constraint.destroy) {
-				constraint.destroy(true);
-			}
-			constraint = this.object.constraint_in_context(pointer, is_inherited);
-			return constraint;
+			//if(constraint && constraint.destroy) { constraint.destroy(true); }
+			//constraint = this.object.constraint_in_context(pointer, is_inherited);
+			//return constraint;
+			return this.object.constraint_in_context(pointer, is_inherited);
 		}, {
 			context: this,
 		});
+		/*
 		var old_destroy = this.value_constraint.destroy;
 		this.value_constraint.destroy = function() {
 			if(constraint && constraint.destroy) {
@@ -38,6 +39,7 @@
 			}
 			old_destroy.apply(this, arguments);
 		};
+		*/
 
 		this._type = "cell";
 	};
@@ -58,6 +60,18 @@
 
 			this.value_constraint.destroy(true);
 			delete this.value_constraint;
+			if(this.value && this.value.destroy) {
+				if(this.value instanceof ist.ContextualObject) {
+					console.log("A");
+					//if(this.value.createdInline) {
+						//var obj = this.value.get_object();
+						//obj.destroy();
+					//}
+				} else {
+					this.value.destroy();
+				}
+				delete this.value;
+			}
 			My.superclass.destroy.apply(this, arguments);
 		};
 		proto.get_runtime_errors = function() {
@@ -65,13 +79,14 @@
 			return this._runtime_errors.get();
 		};
 		proto._getter = function (node, is_preemptive) {
-			var value;
+			var old_value = this.value;
+			//var value;
 			if(this._isEvent || (ist.__debug && !is_preemptive)) {
-				value = cjs.get(this.value_constraint.get());
+				this.value = cjs.get(this.value_constraint.get());
 				this._runtime_errors.set(false);
 			} else {
 				try {
-					value = cjs.get(this.value_constraint.get());
+					this.value = cjs.get(this.value_constraint.get());
 					this._runtime_errors.set(false);
 				} catch (e) {
 					this._runtime_errors.set([e]);
@@ -81,7 +96,20 @@
 				}
 			}
 
-			return value;
+			if(old_value !== this.value && old_value && old_value.destroy) {
+				if(old_value instanceof ist.ContextualObject) {
+					old_value.destroy();
+					//console.log("A");
+					//if(old_value.createdInline) {
+						//var obj = old_value.get_object();
+						//obj.destroy();
+					//}
+				} else {
+					old_value.destroy();
+				}
+			}
+
+			return this.value;
 		};
 		proto.get_str = function () {
 			var cell = this.get_object();

@@ -228,7 +228,9 @@
 		proto.inheritsFrom = function(cobj) {
 			var flat_objs = flatten_containment_hierarchy(this.value()),
 				value = _.filter(flat_objs, function(x) {
-					return x.inherits_from(cobj);
+					var inheritsFromObj = x.inherits_from(cobj);
+					console.log(inheritsFromObj);
+					return inheritsFromObj;
 				}),
 				new_query = new My({
 					value: value,

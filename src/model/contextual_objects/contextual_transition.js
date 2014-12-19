@@ -111,14 +111,18 @@
 				//can_destroy_event,
 				actions, ptr, event_attachment;
 
-			var constraint = false;
+			//var constraint = false;
 			this.event_constraint = cjs(function() {
+				return transition.constraint_in_context(pointer);
+			/*
 				if(constraint && constraint.destroy) {
 					constraint.destroy(true);
 				}
 				constraint = transition.constraint_in_context(pointer);
 				return constraint;
+				*/
 			});
+			/*
 			var old_destroy = this.event_constraint.destroy;
 			this.event_constraint.destroy = function() {
 				if(constraint && constraint.destroy) {
@@ -127,6 +131,7 @@
 				}
 				old_destroy.apply(this, arguments);
 			};
+			*/
 
 			this.event = this.event_cobj = false;
 
@@ -136,6 +141,13 @@
 
 				try {
 					this.event = this.event_constraint.get();
+					/*
+
+					if((old_event !== this.event) && old_event && old_event.destroy) {
+						old_event.destroy(true);
+						old_event = false;
+					}
+					*/
 
 					if(this.event instanceof ist.MultiExpression) {
 						actions = _.map(this.event.rest(), function(node) {
@@ -219,12 +231,21 @@
 						}
 					}
 
+					//if(old_event_cobj) {
+						//if(old_event_cobj.createdInline) {
+							//var object = old_event_cobj.get_object();
+							//object.destroy();
+							//old_event = false;
+						//}
+					//}
+
 					if (old_event && old_event.off_fire) {
 						old_event.off_fire(this.fire, this);
 
-						if(!old_event_cobj) { // if we created the old basic object, we can go ahead and destroy this event.
-							old_event.destroy(true); //destroy silently (without nullifying)
-						}
+						//if(!old_event_cobj) { // if we created the old basic object, we can go ahead and destroy this event.
+							//old_event.destroy(true); //destroy silently (without nullifying)
+						//}
+						old_event.destroy();
 					}
 
 					//if (old_event_cobj && old_event_cobj !== this.event_cobj) {

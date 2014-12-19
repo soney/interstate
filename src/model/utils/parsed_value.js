@@ -167,7 +167,9 @@
 							}),
 							new_ptr = pcontext.push(bobj);
 
-						rv = new_ptr.getContextualObject();
+						rv = new_ptr.getContextualObject({
+							inline: true
+						});
 
 						created_bobj = bobj;
 						created_cobj = rv;
