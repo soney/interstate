@@ -62,7 +62,6 @@
 			delete this.value_constraint;
 			if(this.value && this.value.destroy) {
 				if(this.value instanceof ist.ContextualObject) {
-					console.log("A");
 					//if(this.value.createdInline) {
 						//var obj = this.value.get_object();
 						//obj.destroy();
@@ -98,8 +97,7 @@
 
 			if(old_value !== this.value && old_value && old_value.destroy) {
 				if(old_value instanceof ist.ContextualObject) {
-					old_value.destroy();
-					//console.log("A");
+					//old_value.destroy();
 					//if(old_value.createdInline) {
 						//var obj = old_value.get_object();
 						//obj.destroy();

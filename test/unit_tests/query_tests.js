@@ -85,9 +85,12 @@
 
 					console.log("(before)");
 
+					console.log(B.get_all_protos());
 					env	.cd("B")
 						.set("(prototypes)", "(start)", "")
 						.top();
+					console.log(B.get_all_protos());
+
 
 					console.log("(after)");
 

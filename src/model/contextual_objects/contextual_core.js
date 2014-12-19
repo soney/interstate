@@ -438,7 +438,7 @@
 		var pointer = cobj.get_pointer(),
 			obj = cobj.get_object();
 
-		cobj_hashes.remove(pointer, true); // TODO: fix
+		cobj_hashes.remove(pointer); // TODO: fix
 
 		if(pointer.length() === 1) {
 			delete cobj_roots[obj.id()];

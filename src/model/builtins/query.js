@@ -229,7 +229,6 @@
 			var flat_objs = flatten_containment_hierarchy(this.value()),
 				value = _.filter(flat_objs, function(x) {
 					var inheritsFromObj = x.inherits_from(cobj);
-					console.log(inheritsFromObj);
 					return inheritsFromObj;
 				}),
 				new_query = new My({
