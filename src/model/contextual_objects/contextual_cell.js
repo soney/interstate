@@ -21,25 +21,27 @@
 			this._isEvent = false;
 		}
 
+		//var constraint;
 		this.value = false;
 		this.value_constraint = cjs(function() {
+			return this.object.constraint_in_context(pointer, is_inherited);
 			//if(constraint && constraint.destroy) { constraint.destroy(true); }
 			//constraint = this.object.constraint_in_context(pointer, is_inherited);
 			//return constraint;
-			return this.object.constraint_in_context(pointer, is_inherited);
+			//return this.object.constraint_in_context(pointer, is_inherited);
 		}, {
 			context: this,
 		});
-		/*
-		var old_destroy = this.value_constraint.destroy;
-		this.value_constraint.destroy = function() {
-			if(constraint && constraint.destroy) {
-				constraint.destroy(true);
-				constraint = false;
-			}
-			old_destroy.apply(this, arguments);
-		};
-		*/
+		//var old_destroy = this.value_constraint.destroy;
+		//this.value_constraint.destroy = function() {
+			//if(constraint && constraint.destroy) {
+				//constraint.destroy(true);
+				//constraint = false;
+			//}
+			//old_destroy.apply(this, arguments);
+		//};
+
+		//if(this.sid() === 578) debugger;
 
 		this._type = "cell";
 	};
@@ -58,19 +60,15 @@
 		proto.destroy = function (avoid_begin_destroy) {
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
-			this.value_constraint.destroy(true);
+			//if(this.value && this.value.destroy) {
+				// if value is a contextual objec,t it will automatically be destroyed when the tree is removed
+				//if(!(this.value instanceof ist.ContextualObject)) {
+					//this.value.destroy();
+				//}
+				//delete this.value;
+			//}
+			this.value_constraint.destroy();
 			delete this.value_constraint;
-			if(this.value && this.value.destroy) {
-				if(this.value instanceof ist.ContextualObject) {
-					//if(this.value.createdInline) {
-						//var obj = this.value.get_object();
-						//obj.destroy();
-					//}
-				} else {
-					this.value.destroy();
-				}
-				delete this.value;
-			}
 			My.superclass.destroy.apply(this, arguments);
 		};
 		proto.get_runtime_errors = function() {
@@ -78,6 +76,7 @@
 			return this._runtime_errors.get();
 		};
 		proto._getter = function (node, is_preemptive) {
+			//if(this.sid() === 578) debugger;
 			var old_value = this.value;
 			//var value;
 			if(this._isEvent || (ist.__debug && !is_preemptive)) {

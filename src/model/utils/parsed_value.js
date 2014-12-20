@@ -96,32 +96,35 @@
 			created_from_cobj = false;
 		if (options.get_constraint) {
 			var constraint = cjs(function () {
-			/*
-				if(created_cobj) {
+				//if(created_cobj) {
 					//created_cobj.destroy();
-					created_cobj = false;
-				}
-				if(created_bobj) {
+					//created_cobj = false;
+				//}
+				//if(created_bobj) {
 					//created_bobj.destroy();
-					created_bobj = false;
-				}
-				*/
+					//created_bobj = false;
+				//}
 
 				var op_got = cjs.get(op, options.auto_add_dependency),
 					args_got, rv;
 				if(!(op_got instanceof ist.ContextualDict)) {
-					if(created_bobj) {
-						created_bobj.destroy();
+					if(created_cobj) {
+						created_cobj.destroy();
 						created_bobj = created_cobj = created_from_cobj = false;
 					}
 				}
-
 				if(_.isFunction(op_got) || op_got instanceof ist.ParsedFunction) {
 					var calling_context_got = cjs.get(calling_context, options.auto_add_dependency);
 
 					args_got = _.map(args, function(arg) {
 													return cjs.get(arg, options.auto_add_dependency);
 												});
+					//console.log(args_got);
+					//if(window.dbg1) {
+						//if(calling_context_got instanceof ist.Query) {
+							//debugger;
+						//}
+					//}
 
 					if(op_got === ist.find_fn) {
 						// Give it the context of root
@@ -155,8 +158,8 @@
 					if(created_from_cobj === proto) {
 						rv = created_cobj;
 					} else {
-						if(created_bobj) {
-							created_bobj.destroy();
+						if(created_cobj) {
+							created_cobj.destroy();
 						}
 
 						args_got["arguments"] = cjs(arg_arr);
@@ -176,12 +179,10 @@
 						created_from_cobj = proto;
 					}
 					//created_cobj = rv;
-					/*
-					rv = new Constructor_fn({
-						value: args_got,
-						direct_protos: cjs(op)
-					});
-					*/
+					//rv = new Constructor_fn({
+						//value: args_got,
+						//direct_protos: cjs(op)
+					//});
 					return rv;
 				} else {
 					throw new Error("Calling a non-function");
@@ -194,9 +195,9 @@
 					//created_cobj.destroy(false, true);
 					//created_cobj = false;
 				//}
-				if(created_bobj) {
-					created_bobj.destroy(silent);
-					created_bobj = created_cobj = created_from_cobj = false;
+				if(created_cobj) {
+					created_cobj.destroy();
+					created_cobj = created_cobj = created_from_cobj = false;
 				}
 				destroy_constraint_fn.apply(this, arguments);
 			};
@@ -701,44 +702,42 @@
 		}, options));
 		return parsed_value;
 	};
-	/*
 
-	ist.get_indirect_parsed_$ = function(node_constraint, options) {
-		var constraint = false,
-			value_constraint = cjs(function() {
-				var node = node_constraint.get();
-				if(constraint && constraint.destroy) {
-					constraint.destroy(true);
-				}
-				if(node instanceof ist.Error) {
-					return node;
-				}
-				constraint = ist.get_parsed_$(node, options);
-				if(constraint instanceof ist.MultiExpression) {
-					return new ist.MultiExpression(_.map(constraint.expressions, function(x) {
-						return x.get();
-					}));
-				} else if (constraint instanceof cjs.Constraint) {
-					return constraint.get();
-				} else {
-					return constraint;
-				}
-			}, {
-				context: this,
-			}),
-			old_destroy = value_constraint.destroy;
-
-		value_constraint.destroy = function() {
-			if(constraint && constraint.destroy) {
-				constraint.destroy(true);
-				constraint = false;
-			}
-			old_destroy.apply(this, arguments);
-		};
-
-		return value_constraint;
-	};
-	*/
+	//ist.get_indirect_parsed_$ = function(node_constraint, options) {
+		//var constraint = false,
+			//value_constraint = cjs(function() {
+				//var node = node_constraint.get();
+				//if(constraint && constraint.destroy) {
+					//constraint.destroy(true);
+				//}
+				//if(node instanceof ist.Error) {
+					//return node;
+				//}
+				//constraint = ist.get_parsed_$(node, options);
+				//if(constraint instanceof ist.MultiExpression) {
+					//return new ist.MultiExpression(_.map(constraint.expressions, function(x) {
+						//return x.get();
+					//}));
+				//} else if (constraint instanceof cjs.Constraint) {
+					//return constraint.get();
+				//} else {
+					//return constraint;
+				//}
+			//}, {
+				//context: this,
+			//}),
+			//old_destroy = value_constraint.destroy;
+//
+		//value_constraint.destroy = function() {
+			//if(constraint && constraint.destroy) {
+				//constraint.destroy(true);
+				//constraint = false;
+			//}
+			//old_destroy.apply(this, arguments);
+		//};
+//
+		//return value_constraint;
+	//};
 
 	var func_regex = new RegExp("^\\s*function\\s*\\((\\s*[a-zA-Z$][\\w\\$]*\\s*,)*\\s*([a-zA-Z$][\\w\\$]*\\s*)?\\)\\s*{.*}\\s*$");
 	var block_regex = new RegExp("^\\s*{.*}\\s*$");

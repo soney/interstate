@@ -317,6 +317,7 @@
 					cobj.initialize();
 				}
 
+				//if(cobj.sid() === 528) debugger;
 				cobj.on("begin_destroy", this.remove_cobj_child, this, ptr);
 			}
 

@@ -553,7 +553,11 @@
 		};
 
 		proto._prop_val = function (name, ignore_inherited) {
-			var value = this.prop(name, ignore_inherited);
+			//if(window.dbg1) {
+				//console.log(name);
+				//if(name === "query4") debugger;
+			//}
+			var value = this._prop(name, ignore_inherited);
 
 			if (value instanceof ist.ContextualObject) {
 				return value.val();
@@ -921,8 +925,7 @@
 		};
 
 		proto.destroy = function (avoid_begin_destroy) {
-			//if(this.sid() === 520) debugger;
-			//if(this.sid() === 309) debugger;
+			//if(this.sid() === 528) debugger;
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
 			this._manifestation_objects.destroy(true);

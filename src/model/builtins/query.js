@@ -29,7 +29,11 @@
             value: [],
             parent_query: null
         }, options);
-        if (!_.isArray(this.options.value)) {
+		/*
+		if(_.isArray(this.options.value)) {
+			
+		} else if (_.isFunction(this.options.value)) {
+		} else {
             this.options.value = [this.options.value];
         }
         this.options.value = _	.chain(this.options.value)
@@ -42,11 +46,19 @@
 								})
 								.flatten(true)
 								.value();
+								*/
 		this.type = options.type || "root";
     };
 
     (function (My) {
         var proto = My.prototype;
+
+		proto.destroy = function() {
+			if(cjs.isConstraint(this.value)) {
+				this.value.destroy.apply(this.value, arguments);
+			}
+			delete this.value;
+		};
     
         var raw_filter_funcs = {
             "lt": function (a, b) { return a < b; },
@@ -160,6 +172,13 @@
         };
     
         proto.add = function () {
+			return this.op(function(parent_value) {
+				var my_value_set = new RedSet({value: parent_value, equals: ist.check_contextual_object_equality, hash: "hash"}),
+					items = extract_items.apply(this, arguments),
+					new_value_set = my_value_set.add.apply(my_value_set, items);
+				return new_value_set.toArray();
+			});
+		/*
             var my_value_set = new RedSet({value: this.value(), equals: ist.check_contextual_object_equality, hash: "hash"});
             var items = extract_items.apply(this, arguments);
             
@@ -171,9 +190,17 @@
 				type: "add"
             });
             return new_query;
+			*/
         };
     
         proto.not = proto.remove = function () {
+			return this.op(function(parent_value) {
+				var my_value_set = new RedSet({value: parent_value, equals: ist.check_contextual_object_equality, hash: "hash"}),
+					items = extract_items.apply(this, arguments),
+					new_value_set = my_value_set.remove.apply(my_value_set, items);
+				return new_value_set.toArray();
+			});
+			/*
             var my_value_set = new RedSet({value: this.value(), equals: ist.check_contextual_object_equality, hash: "hash"});
             var items = extract_items.apply(this, arguments);
     
@@ -184,12 +211,16 @@
 				type: "not"
             });
             return new_query;
+			*/
         };
     
         proto.op = function (op_func, context) {
-            var value = op_func.call(context || window, this.value()),
+			var parent_query = this,
 				new_query = new My({
-					value: value,
+					value: cjs(function() {
+						var parent_val = parent_query.value();
+						return op_func.call(context|| window, parent_val);
+					}),
 					parent_query: this,
 					type: "op"
 				});
@@ -197,7 +228,24 @@
         };
     
         proto.value = function () {
-            return this.options.value;
+			var value = cjs.get(this.options.value);
+
+			if(!_.isArray(value)) {
+				value = [value];
+			}
+
+			value = _	.chain(value)
+						.map(function (cobj) {
+							if (cobj instanceof ist.ContextualDict && cobj.is_template()) {
+								return cobj.instances();
+							} else {
+								return cobj;
+							}
+						})
+						.flatten(true)
+						.value();
+
+            return value;
         };
         proto.parent_query = function () {
             return this.options.parent_query;
@@ -226,17 +274,14 @@
 			};
 
 		proto.inheritsFrom = function(cobj) {
-			var flat_objs = flatten_containment_hierarchy(this.value()),
-				value = _.filter(flat_objs, function(x) {
-					var inheritsFromObj = x.inherits_from(cobj);
-					return inheritsFromObj;
-				}),
-				new_query = new My({
-					value: value,
-					parent_query: this,
-					type: "inheritsFrom"
-				});
-            return new_query;
+			return this.op(function(parent_val) {
+				var flat_objs = flatten_containment_hierarchy(parent_val),
+					value = _.filter(flat_objs, function(x) {
+						var inheritsFromObj = x.inherits_from(cobj);
+						return inheritsFromObj;
+					});
+				return value;
+			});
 		};
     }(ist.Query));
 

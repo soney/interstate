@@ -771,6 +771,9 @@ var constraint_solver = {
 			stack_len = stack.length,
 			demanding_var, dependency_edge, tstamp;
 		
+		//if(node._id === 11603) debugger;
+		//if(node._id === 11603) debugger;
+		//if(node._id === 11635) debugger;
 		if (stack_len > 0) { // There's a constraint that's asking for my value
 			// Let's call it demanding_var
 			demanding_var = stack[stack_len - 1];
@@ -812,6 +815,8 @@ var constraint_solver = {
 			node._valid = true;
 
 			if (node._options.cache_value !== false) {
+				//if(node._id === 12177) debugger;
+				//if(node._id === 12178) debugger;
 				// Check if dynamic value. If it is, then call it. If not, just fetch it
 				// set this to the node's cached value, which will be returned
 				node._cached_value = node._options.literal ? node._value :
@@ -931,6 +936,14 @@ var constraint_solver = {
 		// recursive calls
 		for (i = 0; i < to_nullify_len; i+= 1) {
 			curr_node = to_nullify[i]; // the constraint we are currently nullifying
+			if(window.dbg1) {
+				//if(curr_node._id === 12190) debugger;
+				//if(curr_node._id === 12177) debugger;
+				//if(curr_node._id === 12178) debugger;
+			}
+			//if(curr_node._id === 11603) debugger;
+			//if(curr_node._id === 11635) debugger;
+			//if(curr_node._id === 11603) debugger;
 			to_nullify[i] = false; // To save space, stop keeping track of the object (also useful for debugging occasionally)
 
 			// We only care to nullify if the current node is actually valid
@@ -974,6 +987,10 @@ var constraint_solver = {
 							// If the edge's timestamp is out of date, then this dependency isn't used
 							// any more and remove it
 							if (outgoingEdge.tstamp < dependentNode._tstamp) {
+								//if(dependentNode._id === 11603) debugger;
+								//if(dependentNode._id === 11605) debugger;
+								//if(curr_node._id === 11603) debugger;
+								//if(curr_node._id === 11605) debugger;
 								delete curr_node._outEdges[toNodeID];
 								delete dependentNode._inEdges[curr_node_id];
 							} else {
@@ -1173,6 +1190,10 @@ Constraint = function (value, options) {
 		this._valid = false;
 		this._cached_value = undefined;
 	}
+	//if(window.dbg1) {
+		//if(this._id === 12177) debugger;
+		//if(this._id === 12147) debugger;
+	//}
 };
 
 (function(My) {
