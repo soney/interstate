@@ -7,9 +7,9 @@
 		_ = ist._;
 
 	ist.ContextualStatefulObj = function (options) {
-		this.statecharts_per_proto = new RedMap({
-			hash: "hash"
-		});
+		//this.statecharts_per_proto = new RedMap({
+			//hash: "hash"
+		//});
 		ist.ContextualStatefulObj.superclass.constructor.apply(this, arguments);
 		this._type = "stateful";
 	};
@@ -138,12 +138,12 @@
 				delete this._live_statechart_child_updater;
 			}
 
-			this.statecharts_per_proto.forEach(function(statechart) {
-				statechart.destroy(true);
-			});
+			//this.statecharts_per_proto.forEach(function(statechart) {
+				//statechart.destroy(true);
+			//});
 
-			this.statecharts_per_proto.destroy(true);
-			delete this.statecharts_per_proto;
+			//this.statecharts_per_proto.destroy(true);
+			//delete this.statecharts_per_proto;
 
 			My.superclass.begin_destroy.apply(this, arguments);
 		};

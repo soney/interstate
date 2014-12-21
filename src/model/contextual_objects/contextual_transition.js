@@ -179,15 +179,8 @@
 					this.event_cobj = false;
 				} else {
 					if(this.event instanceof ist.ContextualObject) {
-						//if(transition.getStr() === "timeout(x)") {
-							//debugger;
-						//}
-
 						var obj = this.event.get_object();
 						if(!(old_event_cobj && old_event_cobj.get_object() === obj)) {
-							//console.log("re-use");
-						//} else {
-							//console.log("create", transition.getStr());
 							this.event_bobj = false;
 							ptr = pointer.push(obj);
 							this.event_cobj = ptr.getContextualObject();
@@ -201,10 +194,6 @@
 						}
 					} else if(this.event instanceof ist.Event) {
 						this.event_cobj = false;
-					/*
-						event.set_transition(this);
-						can_destroy_event = true;
-						*/
 					} else { // boolean event type
 						this.event_cobj = false;
 						if(this.event && !old_event) {

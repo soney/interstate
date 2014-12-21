@@ -10,47 +10,7 @@
 		ist.ContextualState.superclass.constructor.apply(this, arguments);
 		this._type = "statechart";
 
-		var object = this.get_object(),
-			pointer = this.get_pointer(),
-			ptr = pointer,
-			running, active;
 
-		this.sub_children = new RedMap({
-			hash: "hash"
-		});
-		if(object.isRoot()) {
-			this._parent = false;
-			this._root = this;
-			this._running = true;
-			this._active = true;
-
-			ptr = ptr.pop();
-			this._statefulObj = ptr.length() > 0 ? ptr.getContextualObject() : false;
-		} else {
-			var obj_parent = object.parent(),
-				obj_root = object.root();
-
-			this._parent = pointer.pop().getContextualObject();
-
-			var lineage = object.getLineage();
-			_.each(_.rest(lineage), function() {
-				ptr = ptr.pop();
-			});
-
-			this._root = ptr.getContextualObject();
-
-			ptr = ptr.pop();
-			this._statefulObj = ptr.length() > 0 ? ptr.getContextualObject() : false;
-
-			this._running = false;
-			this._active = false;
-		}
-
-		this.$running = cjs(this._running);
-		this.$active = cjs(this._active);
-		this.$event = cjs(false);
-		this._localState = false;
-		this.cell_children = [];
 		//this._localState = this.getStartState();
 	};
 
@@ -59,6 +19,42 @@
 		var proto = My.prototype;
 		proto.initialize = function(options) {
 			if(this.constructor === My) { this.flag_as_initialized();  }
+			var object = this.get_object(),
+				pointer = this.get_pointer(),
+				ptr = pointer,
+				running, active;
+			if(object.isRoot()) {
+				this._parent = false;
+				this._root = this;
+				this._running = true;
+				this._active = true;
+
+				ptr = ptr.pop();
+				this._statefulObj = ptr.length() > 0 ? ptr.getContextualObject() : false;
+			} else {
+				var obj_parent = object.parent(),
+					obj_root = object.root();
+
+				this._parent = pointer.pop().getContextualObject();
+
+				var lineage = object.getLineage();
+				_.each(_.rest(lineage), function() {
+					ptr = ptr.pop();
+				});
+
+				this._root = ptr.getContextualObject();
+
+				ptr = ptr.pop();
+				this._statefulObj = ptr.length() > 0 ? ptr.getContextualObject() : false;
+
+				this._running = false;
+				this._active = false;
+			}
+
+			this.$running = cjs(this._running);
+			this.$active = cjs(this._active);
+			this.$event = cjs(false);
+			this._localState = false;
 			My.superclass.initialize.apply(this, arguments);
 
 			if(!this.isStart()) {

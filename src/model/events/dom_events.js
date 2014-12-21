@@ -93,7 +93,7 @@
 		proto.run_live_fn_and_check_for_uninitialized_cobjs = function(add_deps) {
 			var target_cobjs = get_target_cobjs(cjs.get(this.specified_targets)),
 				uninitialized_target_cobjs = _.filter(target_cobjs, function(cobj) {
-					return (cobj instanceof ist.ContextualDict) && !cobj.is_initialized();
+					return (cobj instanceof ist.ContextualDict) && !cobj.isInitialized();
 				});
 
 			if(uninitialized_target_cobjs.length > 0) {
@@ -265,7 +265,7 @@
 							if (_.isElement(target_cobj) || target_cobj === window) {
 								return {dom_obj: target_cobj, cobj: target_cobj};
 							} else if (target_cobj instanceof ist.ContextualDict) {
-								if(target_cobj.is_initialized()) {
+								if(target_cobj.isInitialized()) {
 									if (target_cobj.is_template()) {
 										return _.chain(target_cobj.instances())
 												.map(ist.get_instance_targs)
