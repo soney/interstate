@@ -465,6 +465,7 @@
 						console.log("begin define path");
 					}
 				} else {
+							/*
 					if(command instanceof ist.SetTransitionEventCommand) {
 						var event_str = command._event_str,
 							parsed_event_str = esprima.parse(event_str);
@@ -540,6 +541,7 @@
 						} catch(e) {
 						}
 					}
+					*/
 					this._command_stack._do(command);
 					this.$dirty_program.set(true);
 				}
