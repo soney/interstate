@@ -174,6 +174,7 @@
 				}
 
 
+
 				if(this.event instanceof ist.Error) {
 					this._runtime_errors.set([this.event.message()]);
 					this.event_cobj = false;
@@ -197,6 +198,7 @@
 					} else { // boolean event type
 						this.event_cobj = false;
 						if(this.event && !old_event) {
+							this.runActions(actions);
 							this._manual_event.fire(this.event);
 						}
 					}
@@ -349,13 +351,15 @@
 		proto.event = function () { return this.event; };
 		proto.involves = function (state) { return this.from() === state || this.to() === state; };
 		proto.fire = function (actions, event) {
-			//console.log(event);
-			_.each(actions, function(action) {
-				action();
-			}, this);
+			this.runActions(actions);
 			if (this.from()._onOutgoingTransitionFire(this, event)) {
 				this._emit("fire", {type: "fire", target: this});
 			}
+		};
+		proto.runActions = function(actions) {
+			_.each(actions, function(action) {
+				action();
+			}, this);
 		};
 		proto.stringify = function () {
 			var stringified_event = this.getStr();
