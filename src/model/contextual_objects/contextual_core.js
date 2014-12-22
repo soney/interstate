@@ -184,7 +184,7 @@
 		};
 
 		proto.emit_begin_destroy = function(silent) {
-			this._emit("begin_destroy", silent);
+			this._emit("begin_destroy", this, silent);
 			this._clearManualChildren();
 		};
 

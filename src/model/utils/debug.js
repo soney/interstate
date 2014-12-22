@@ -48,7 +48,7 @@
 		}).join(" ");
 		logging_mechanism.group("  Statechart " + stringified_statecharts);
 		_.each(statecharts, function (statechart) {
-			if(!statechart.is_initialized()) {
+			if(!statechart.isInitialized()) {
 				logging_mechanism.log("(not initialized)");
 				return;
 			}

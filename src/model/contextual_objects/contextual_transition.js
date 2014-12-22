@@ -391,7 +391,7 @@
 						this.event.enable();
 					}
 					if(this.event_cobj) {
-						console.log("ENABLED");
+						//console.log("ENABLED");
 						//var ptr = this.get_pointer().push(this.event_object),
 							//event_cobj = ptr.getContextualObject();
 						this.event_cobj.onTransitionEnabled();
