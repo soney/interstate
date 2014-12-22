@@ -114,7 +114,8 @@
 		this.event_type = false;
 		var from = this.option("from"),
 			to = this.option("to"),
-			c = center(from, to);
+			c = center(from, to),
+			paper_height = this.option("paper_height");
 
 		transition.async_get("eventType", function(type) {
 			this.event_type = type;
@@ -140,7 +141,7 @@
 					}
 				});
 
-				this.vline = paper	.path("M0,0")
+				this.vline = paper	.path("M" + from.x + "," + from.y + "V" + paper_height)
 									.attr({
 										fill: "none",
 										stroke: this.option("vline_color"),

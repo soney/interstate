@@ -402,9 +402,13 @@
 	ist.EventAttachment = ist.register_attachment("event_attachment", {
 			ready: function(contextual_object) {
 				this.qEvent = new ist.QueueableEvent({ });
+				this.enabled = new ist.ManualEvent();
+				this.disabled = new ist.ManualEvent();
 			},
 			destroy: function(silent) {
 				this.qEvent.destroy(silent);
+				this.enabled.destroy(silent);
+				this.disabled.destroy(silent);
 			},
 			parameters: {
 				options: function(contextual_object) {
@@ -424,6 +428,14 @@
 				},
 				getEvent: function() {
 					return this.qEvent.confirmed;
+				},
+				onTransitionEnabled: function() {
+					this.enabled.fire();
+					//console.log("ENABLED", this.enabled._id);
+				},
+				onTransitionDisabled: function() {
+					this.disabled.fire();
+					//console.log("DISABLED", this.disabled._id);
 				}
 			},
 			outputs: {
@@ -442,6 +454,12 @@
 				},
 				requested: function(contextual_object) {
 					return this.qEvent.requested;
+				},
+				enabled: function(contextual_object) {
+					return this.enabled;
+				},
+				disabled: function(contextual_object) {
+					return this.disabled;
 				},
 			}
 		});

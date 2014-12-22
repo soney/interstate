@@ -447,9 +447,12 @@
 
 			var dict = this.get_object();
 			var i;
-			if (dict._has_direct_prop(name) || dict._has_builtin_prop(name)) {
+			if (dict._has_direct_prop(name) || dict._has_builtin_prop(name) || this._has_special_context_prop(name)) {
 				return true;
 			} else if (ignore_inherited !== true) {
+				if(this._has_attachment_prop(name)) {
+					return true;
+				}
 				var proto_objects = this.get_all_protos();
 				if (_.any(proto_objects, function (d) { return d.has_direct_prop(name); })) {
 					return true;

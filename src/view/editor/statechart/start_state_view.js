@@ -79,7 +79,7 @@
 				});
 			}
 
-			this.vline = paper	.path("M" + layout.x + "," + layout.y + "V" + this.option("paper_height"))
+			this.vline = paper	.path("M" + (layout.x||-50) + "," + (layout.y||0) + "V" + this.option("paper_height"))
 								.attr({
 									stroke: this.option("vline_color"),
 									"stroke-dasharray": this.option("vline_dasharray")

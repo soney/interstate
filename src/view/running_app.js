@@ -465,6 +465,81 @@
 						console.log("begin define path");
 					}
 				} else {
+					if(command instanceof ist.SetTransitionEventCommand) {
+						var event_str = command._event_str,
+							parsed_event_str = esprima.parse(event_str);
+						try {
+							if(parsed_event_str.type === "Program") {
+								var body = parsed_event_str.body[0];
+								if(body.type === "ExpressionStatement") {
+									var expression = body.expression;
+									if(expression.type === "CallExpression") {
+										function getStr(node) {
+											if(node.type === "Identifier") {
+												return node.name;
+											} else if(node.type === "Literal") {
+												return node.raw;
+											} else if(node.type === "MemberExpression") {
+												if(node.computed) {
+													return getStr(node.object)+"["+getStr(node.property)+"]";
+												} else {
+													return getStr(node.object)+"."+getStr(node.property);
+												}
+											} else if(node.type === "UnaryExpression") {
+												return node.operator+getStr(argument);
+											} else if(node.type === "BinaryExpression") {
+												return getStr(node.left)+node.operator+getStr(node.right);
+											} else {
+												return "";
+											}
+										}
+
+										var protoName = getStr(expression.callee);
+										var obj = new ist.StatefulObj(undefined, true);
+										var protos = new ist.StatefulProp({ can_inherit: false, statechart_parent: obj })
+										obj.initialize({
+											direct_protos: protos
+										});
+										var startstate = obj.getSubstate("(start)");
+										protos.set(startstate, new ist.Cell({str: protoName}));
+
+										_.each(expression.arguments, function(arg) {
+											if(arg.type === "AssignmentExpression") {
+												var prop = new ist.StatefulProp({ })
+												prop.set(startstate, new ist.Cell({str: getStr(arg.right)}));
+												obj.set(getStr(arg.left), prop);
+											}
+										}, this)
+
+										var event_name = protoName.replace(".", "_");
+										var transition_cobj = command._transition_cobj;
+										var sobj = transition_cobj.statefulObj(),
+											bobj = sobj.get_object();
+										var original_name = event_name;
+										var i = 1;
+										while(event_name === protoName || bobj._has_direct_prop(event_name)) {
+											event_name = original_name+"_"+i;
+											i++;
+										}
+
+										command =  new ist.CombinedCommand({ commands: [
+											new ist.SetPropCommand({
+												parent: bobj,
+												name: event_name,
+												value: obj
+											}),
+											new ist.SetTransitionEventCommand({
+												transition: command._transition,
+												transition_cobj: transition_cobj,
+												event: event_name
+											})
+										]});
+									}
+								}
+							}
+						} catch(e) {
+						}
+					}
 					this._command_stack._do(command);
 					this.$dirty_program.set(true);
 				}

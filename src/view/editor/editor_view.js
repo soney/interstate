@@ -760,6 +760,7 @@
 				command = new ist.SetTransitionEventCommand({
 					in_effect: true,
 					transition: { id: to_func(transition.obj_id) },
+					transition_cobj: { id: to_func(transition.cobj_id) },
 					event: str
 				});
 				command_str = this.client_socket.post_command(command, function() {

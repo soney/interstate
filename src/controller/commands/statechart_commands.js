@@ -419,6 +419,7 @@
         this._event_str = this._options.event;
     
         this._transition = this._options.transition || this._options.statechart.get_transition_by_id(this.options.id);
+        this._transition_cobj = this._options.transition_cobj;
     };
     
     (function (My) {
@@ -444,12 +445,14 @@
             function () {
                 var arg_array = _.toArray(arguments);
                 return {
+                    transition_cobj_id: this._transition_cobj.id(),
                     transition_id: this._transition.id(),
                     event_str: this._event_str
                 };
             },
             function (obj) {
                 return new My({
+                    transition_cobj: ist.find_uid(obj.transition_cobj_id),
                     transition: ist.find_uid(obj.transition_id),
                     event: obj.event_str
                 });

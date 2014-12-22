@@ -99,6 +99,9 @@
 
 			if(this.constructor === My) { this.shout_initialization();  }
 		};
+		proto.statefulObj = function() {
+			return this.from().statefulObj();
+		};
 		proto._add_live_event_updater = function() {
 			var transition = this.get_object(),
 				pointer = this.get_pointer(),
@@ -281,11 +284,16 @@
 			this._remove_live_event_updater();
 
 			if(eventType === "parsed") {
-				//if(this.can_destroy_event) {
-				if(this.event instanceof ist.Event && !this.event_cobj) { // destroy any event objects early
+				if(this.event instanceof ist.CombinationEvent && !this.event_cobj) { // created from an 'on' call
 					this.event.destroy();
 					this.event = false;
 				}
+				//console.log(this.event);
+				//if(this.can_destroy_event) {
+				//if(this.event instanceof ist.Event && !this.event_cobj) { // destroy any event objects early
+					//this.event.destroy();
+					//this.event = false;
+				//}
 				//}
 			}
 
@@ -383,6 +391,7 @@
 						this.event.enable();
 					}
 					if(this.event_cobj) {
+						console.log("ENABLED");
 						//var ptr = this.get_pointer().push(this.event_object),
 							//event_cobj = ptr.getContextualObject();
 						this.event_cobj.onTransitionEnabled();
