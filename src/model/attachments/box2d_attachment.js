@@ -334,20 +334,24 @@
 				computed_y: function() { return this.b2y; },
 				computed_theta: function() { return this.b2t; },
 				applyForce: function() {
-					var body = this.get_body();
-					if(body) {
-						setTimeout(function() {
-							body.ApplyForce(new B2Vec2(x, y), body.GetWorldCenter());
-						});
-					}
+					return _.bind(function() {
+						var body = this.get_body();
+						if(body) {
+							setTimeout(function() {
+								body.ApplyForce(new B2Vec2(x, y), body.GetWorldCenter());
+							});
+						}
+					}, this);
 				},
 				applyImpulse: function(x, y) {
-					var body = this.get_body();
-					if(body) {
-						setTimeout(function() {
-							body.ApplyImpulse(new B2Vec2(x, y), body.GetWorldCenter());
-						});
-					}
+					return _.bind(function() {
+						var body = this.get_body();
+						if(body) {
+							setTimeout(function() {
+								body.ApplyImpulse(new B2Vec2(x, y), body.GetWorldCenter());
+							});
+						}
+					}, this);
 				}
 			}
 		});

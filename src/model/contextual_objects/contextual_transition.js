@@ -183,12 +183,15 @@
 					this.event_cobj = false;
 				} else {
 					if(this.event instanceof ist.ContextualObject) {
+					/*
 						var obj = this.event.get_object();
 						if(!(old_event_cobj && old_event_cobj.get_object() === obj)) {
 							this.event_bobj = false;
 							ptr = pointer.push(obj);
 							this.event_cobj = ptr.getContextualObject();
 						}
+						*/
+						this.event_cobj = this.event;
 							 
 						event_attachment = this.event_cobj.get_attachment_instance("event_attachment");
 						if(event_attachment) {
@@ -197,6 +200,7 @@
 							this.event = false;
 						}
 					} else if(this.event instanceof ist.Event) {
+						//console.log(this.getStr(), this.event._id, this.sid());
 						this.event_cobj = false;
 					} else { // boolean event type
 						this.event_cobj = false;
@@ -361,6 +365,9 @@
 		proto.fire = function (actions, event) {
 			this.runActions(actions);
 			if (this.from()._onOutgoingTransitionFire(this, event)) {
+				//if(this.sid() === 352) {
+					//console.log("FIRE", event);
+				//}
 				this._emit("fire", {type: "fire", target: this});
 			}
 		};

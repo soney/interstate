@@ -16,12 +16,14 @@
 		var semaphore = 0;
 		this.wait = _.bind(function () {
 			semaphore--;
+			//return semaphore;
 		}, this);
 		this.signal = _.bind(function () {
 			semaphore++;
 			if (semaphore >= 0) {
 				this.run_event_queue();
 			}
+			//return semaphore;
 		}, this);
 		this.is_ready = function () {
 			return semaphore >= 0;

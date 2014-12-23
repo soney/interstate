@@ -430,18 +430,25 @@
 					return this.qEvent.confirmed;
 				},
 				onTransitionEnabled: function() {
+					ist.event_queue.wait();
 					this.enabled.fire();
-					//console.log("ENABLED", this.enabled._id);
+					ist.event_queue.signal();
+					//console.log("ENABLED", this.enabled._id, w, x);
 				},
 				onTransitionDisabled: function() {
+					ist.event_queue.wait();
 					this.disabled.fire();
-					//console.log("DISABLED", this.disabled._id);
+					ist.event_queue.signal();
+					//console.log("DISABLED", this.disabled._id, w, x);
 				}
 			},
 			outputs: {
 				fire: function(contextual_object) {
 					return _.bind(this.qEvent.requestFire, this.qEvent);
 					//return _.bind(ist.fire, contextual_object)
+				},
+				cancel: function(contextual_object) {
+					return _.bind(this.qEvent.cancel, this.qEvent);
 				},
 				cancelled: function(contextual_object) {
 					return this.qEvent.cancelled;
