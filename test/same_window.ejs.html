@@ -34,9 +34,14 @@
 					return new interstate.Environment({root: getRoot()});
 				}
 				window.env = getEnvironment();
-				/*
 				
 				setTimeout(function() {
+						$("tr:nth-child(3)").click();
+					setTimeout(function() {
+						env.cd("a");
+						env.print();
+						env.reset();
+					/*
 						//env.set("x", "<stateful>")
 						setTimeout(function() {
 							env .cd("x")
@@ -49,7 +54,9 @@
 								//}, 2000);
 							//}, 2000);
 						}, 2000);
-					}, 2000);
+					*/
+					}, 1000);
+				}, 1000);
 				/*
 				env	.set("my_obj", "<stateful>")
 					.cd("my_obj")

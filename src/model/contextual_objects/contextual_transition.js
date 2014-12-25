@@ -76,9 +76,7 @@
 				transition = this.get_object(),
 				from = this.from();
 
-			if(from.isActive() && from.isRunning()) {
-				this.enable();
-			}
+			if(from.isActive() && from.isRunning()) { this.enable(); }
 
 			if(eventType === "start") {
 				transition.on("setTo", this.onTransitionToChanged, this);
@@ -386,6 +384,8 @@
 		};
 
 		proto.enable = function () {
+			var eventType = this.eventType();
+			//if(eventType === "start") { console.log(this.sid()); }
 			if(!this.isEnabled()) {
 				this._enabled = true;
 				this.$enabled.set(true);

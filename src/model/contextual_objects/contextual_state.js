@@ -18,6 +18,10 @@
 		_.proto_extend(My, ist.ContextualObject);
 		var proto = My.prototype;
 		proto.initialize = function(options) {
+			ist.event_queue.wait();
+			// wait and signal during initialization to ensure the start transition event
+			// doesn't fire until everything has been initialized
+
 			if(this.constructor === My) { this.flag_as_initialized();  }
 			var object = this.get_object(),
 				pointer = this.get_pointer(),
@@ -77,6 +81,7 @@
 			this._add_cobj_child_updater();
 
 			if(this.constructor === My) { this.shout_initialization();  }
+			ist.event_queue.signal();
 		};
 		proto.setEvent = function(event) {
 			this.$event.set(event);	
