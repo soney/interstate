@@ -384,8 +384,6 @@
 		};
 
 		proto.enable = function () {
-			var eventType = this.eventType();
-			//if(eventType === "start") { console.log(this.sid()); }
 			if(!this.isEnabled()) {
 				this._enabled = true;
 				this.$enabled.set(true);
