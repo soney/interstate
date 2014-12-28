@@ -12,9 +12,20 @@
 			CANCELLED: "CANCELLED",
 			PENDING: "PENDING"
 		},
+		getTime = function() { return (new Date()).getTime(); },
 		pendingQueue = {
 			queue: [],
-			priority: 0,
+			groupPriorities: {},
+			semaphore: 0,
+			wait: function() {
+				this.semaphore--;
+			},
+			signal: function() {
+				this.semaphore++;
+				if (this.semaphore >= 0) {
+					this.runQueue();
+				}
+			},
 			contains: function(gesture) {
 				var i = 0, queue = this.queue, len = queue.length, item;
 				for(; i<len; i++) {
@@ -25,38 +36,94 @@
 				}
 				return false;
 			},
+			/*
 			activate: function(gesture) {
-				var priority = false;
-				this.remove(gesture, function(item) {
-					priority = item.priority;
-					if(priority < this.priority) {
-						item.callback.call(item.thisArg, EVENT_STATUS.BLOCKED);
-					} else {
-						item.callback.call(item.thisArg, EVENT_STATUS.CONFIRMED);
-					}
+				if(this.semaphore >= 0) {
+					var priority = false;
+					this.remove(gesture, function(item) {
+						priority = item.priority;
+						if(priority < this.priority) {
+							item.callback.call(item.thisArg, EVENT_STATUS.BLOCKED);
+						} else {
+							item.callback.call(item.thisArg, EVENT_STATUS.CONFIRMED);
+						}
 
-					if(item.timeoutID) {
-						window.clearTimeout(item.timeoutID);
-						delete item.timeoutID;
-					}
-				}, this);
-
-				if(priority) {
-					this.removeBelowPriority(priority, function(item) {
-						item.callback.call(item.thisArg, EVENT_STATUS.BLOCKED);
 						if(item.timeoutID) {
 							window.clearTimeout(item.timeoutID);
 							delete item.timeoutID;
 						}
-					});
+					}, this);
+
+					if(priority) {
+						this.removeBelowPriority(priority, function(item) {
+							item.callback.call(item.thisArg, EVENT_STATUS.BLOCKED);
+							if(item.timeoutID) {
+								window.clearTimeout(item.timeoutID);
+								delete item.timeoutID;
+							}
+						});
+					}
 				}
 			},
+			*/
+			runQueue: function() {
+				var i = 0, queue = this.queue, len = queue.length, item,
+					group,
+					deadline,
+					groupPriority,
+					newMaxGroupPriorities = {},
+					currentTime = getTime();
+				for(; i<len; i++) {
+					item = queue[i];
+					group = item.group;
+					deadline = item.deadline;
+					groupPriority = this.groupPriorities[group];
+
+					if(groupPriority && item.priority < groupPriority) {
+						if(item.timeoutID) { clearTimeout(info.timeoutID); }
+						item.callback.call(item.thisArg, EVENT_STATUS.BLOCKED);
+
+						queue.splice(i, 1);
+						i--;
+						len--;
+					} else if(deadline <= currentTime) {
+						item.callback.call(item.thisArg, EVENT_STATUS.CONFIRMED);
+
+						queue.splice(i, 1);
+						i--;
+						len--;
+					} else {
+						newMaxGroupPriorities[group] = groupPriority;
+					}
+					/*
+					if(item.priority<priority) {
+
+						item.callback.call(item.thisArg, EVENT_STATUS.BLOCKED);
+					} else if(item.priority > maxPriority) {
+						maxPriority = item.priority;
+					}
+					*/
+				}
+				for(group in this.groupPriorities) {
+					if(this.groupPriorities.hasOwnProperty(group)) {
+						if(newMaxGroupPriorities.hasOwnProperty(group)) {
+							this.groupPriorities[group] = newMaxGroupPriorities[group];
+						} else {
+							delete this.groupPriorities[group];
+						}
+					}
+				}
+				//queue.splice(0, queue.length);
+				//this.priority = maxPriority;
+			},
+			/*
 
 			removeAndClearTimeout: function(gesture) {
 				this.remove(gesture, function(item) {
 					window.clearTimeout(item.timeoutID);
 				});
 			},
+			*/
 
 			cancel: function(gesture) {
 				this.remove(gesture, function(item) {
@@ -72,7 +139,10 @@
 			add: function(gesture, callback, callbackThisArg) {
 				if(!this.contains(gesture)) {
 					var priority = gesture.getPriority(),
-						activationDelay = gesture.getActivationDelay();
+						group = gesture.getGroup(),
+						groupPriority = this.groupPriorities[group],
+						activationDelay = gesture.getActivationDelay(),
+						currentTime = getTime();
 
 					callbackThisArg = callbackThisArg || window;
 
@@ -80,25 +150,37 @@
 						gesture: gesture,
 						priority: priority,
 						activationDelay: activationDelay,
+						setAt: currentTime,
+						deadline: currentTime + (activationDelay || 0),
 						callback: callback,
-						thisArg: callbackThisArg
+						thisArg: callbackThisArg,
+						group: group
 					};
 
-					this.queue.push(info);
-					if(_.isNumber(activationDelay)) {
-						var timeoutID = setTimeout(_.bind(function() {
-								this.activate(gesture);
-							}, this), activationDelay);
+					if(priority && (!groupPriority || priority > groupPriority)) {
+						groupPriority = this.groupPriorities[group] = priority;
+					} else if(!priority) {
+						groupPriority = this.groupPriorities[group] = false;
+					}
 
-						info.timeoutID = timeoutID;
+					if(_.isNumber(activationDelay)) {
+						this.queue.push(info);
+						info.timeoutID = setTimeout(_.bind(function() {
+								if (this.semaphore >= 0) { this.runQueue(); }
+								//this.activate(gesture);
+							}, this), activationDelay);
 					} else {
-						this.activate(gesture);
+						this.queue.push(info);
+						if(groupPriority && (!priority || priority < groupPriority)) {
+							//immediately block
+							info.callback.call(info.thisArg, EVENT_STATUS.BLOCKED);
+						} else {
+							if (this.semaphore >= 0) { this.runQueue(); }
+						}
+						//this.activate(gesture);
 						//callback.call(callbackThisArg, EVENT_STATUS.SUCCESS);
 					}
-
-					if(priority > this.priority) {
-						this.priority = priority;
-					}
+					/*
 
 					/*
 
@@ -176,6 +258,7 @@
 					*/
 				}
 			},
+			/*
 			remove: function(gesture, fn, fnContext) {
 				var i = 0, queue = this.queue, len = queue.length, item, maxPriority = 0;
 				for(; i<len; i++) {
@@ -223,6 +306,7 @@
 				}
 				this.priority = 0;
 			}
+			*/
 		};
 
 	var gesture_id = 0;
@@ -230,7 +314,8 @@
 	ist.QueueableEvent = function (options) {
 		this.options = _.extend({
 			priority: false,
-			activationDelay: 5
+			activationDelay: 5,
+			group: "default"
 		}, options);
 
 		this._touchClusters = [];
@@ -366,6 +451,9 @@
 		proto.getPriority = function() {
 			return this.options.priority || 0;
 		};
+		proto.getGroup = function() {
+			return this.options.group;
+		};
 		/*
 		proto.getName = function() {
 			return this.options.name;
@@ -422,6 +510,12 @@
 				}
 			},
 			proto_props: {
+				wait: function() {
+					pendingQueue.wait();
+				},
+				signal: function() {
+					pendingQueue.signal();
+				},
 				fire: function(e) {
 					this.qEvent.requestFire(e);
 					//ist.fire.call(this.contextual_object, e);

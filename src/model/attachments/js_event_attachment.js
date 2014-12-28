@@ -25,13 +25,20 @@
 				this.enabled = false;
 
 				this.get_wait_listener = cjs.memoize(function (specified_target) {
-					return function() {
-						//console.log("wait");
+					return _.bind(function() {
+						var event_attachment = this.contextual_object.get_attachment_instance("event_attachment");
+						if(event_attachment) {
+							event_attachment.wait();
+						}
 						ist.event_queue.wait();
-					};
+					}, this);
 				}, { context: this });
 				this.get_signal_listener = cjs.memoize(function (specified_target) {
 					return _.bind(function() {
+						var event_attachment = this.contextual_object.get_attachment_instance("event_attachment");
+						if(event_attachment) {
+							event_attachment.signal();
+						}
 						ist.event_queue.signal();
 
 						if(this.eventType === "keyboard" || this.eventType === "mouse") {
@@ -45,7 +52,6 @@
 				}, { context: this });
 				this.get_target_listener = cjs.memoize(function (specified_target) {
 					var listener = _.bind(function (event) {
-						//console.log(event);
 						if(this.eventType === "keyboard") {
 							if(e.type === 'keydown' || e.type === 'keyup' || e.type === 'keypress') {
 								var key = this.contextual_object.prop_val("key"),
@@ -123,6 +129,7 @@
 			},
 			parameters: {
 				type_and_target: function(contextual_object) {
+					//console.log(this.eventType);
 					if(this.eventType === "keyboard" || this.eventType === "mouse") {
 						var type, targets;
 
