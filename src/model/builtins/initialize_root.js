@@ -322,7 +322,8 @@
 					//.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}))
 					//.set("cancelFire", new ist.Cell({str: "interstate.cancelFire.bind(this)"}))
 					.set("priority", new ist.Cell({str: "false"}))
-					.set("fireDelay", new ist.Cell({str: "false"}));
+					.set("fireDelay", new ist.Cell({str: "false"}))
+					.set("eventGroup", new ist.Cell({str: "false"}));
 					//.set("requested", new ist.Cell({str: "fireable()"}))
 					//.set("cancelled", new ist.Cell({str: "fireable()"}))
 					//.set("blocked", new ist.Cell({str: "fireable()"}))

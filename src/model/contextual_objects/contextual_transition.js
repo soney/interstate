@@ -32,7 +32,7 @@
 
 		this._times_run = 0;
 		this.$times_run = cjs(this._times_run);
-		this._manual_event = new ist.ManualEvent();
+		this._manual_event = new ist.Event();
 		this._manual_event.on_fire(this.fire, this);
 
 		this._type = "transition";
@@ -286,7 +286,7 @@
 			this._remove_live_event_updater();
 
 			if(eventType === "parsed") {
-				if(this.event instanceof ist.CombinationEvent && !this.event_cobj) { // created from an 'on' call
+				if(this.event instanceof ist.IstObjEvent && !this.event_cobj) { // created from an 'on' call
 					this.event.destroy();
 					this.event = false;
 				}
@@ -462,6 +462,7 @@
 	}(ist.ContextualTransition));
 
 	ist.on_event = function (event_type, arg1, arg2, arg3, arg4) {
+		/*
 		if (event_type === "timeout") {
 			var timeout_event = new ist.TimeoutEvent(arg1);
 			return timeout_event;
@@ -490,11 +491,6 @@
 			var events = [];
 
 			if (targets) {
-				/*
-				var statechart_spec = event_type;
-				var statechart_event = new ist.TransitionEvent(targets, statechart_spec);
-				events.push(statechart_event);
-				*/
 				if (arguments.length <= 1) { // Ex: on('mouseup') <-> on('mouseup', window)
 					targets = window;
 				}
@@ -510,6 +506,15 @@
 
 			return new ist.CombinationEvent(events);
 		}
+		*/
+		var targets;
+		if (arguments.length <= 1) { // Ex: on('mouseup') <-> on('mouseup', window)
+			targets = window;
+		} else {
+   			targets = _.rest(arguments);
+		}
+		
+		return new ist.IstObjEvent(event_type, targets);
 	};
 
 	ist.register_serializable_type("ist_on_event_func",

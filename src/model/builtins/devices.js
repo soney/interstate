@@ -23,6 +23,7 @@
 					.set("arguments", new ist.Cell({str: "[window, 'click']"}))
 					.set("delay", new ist.Cell({str: "false"}))
 					.set("priority", new ist.Cell({str: "false"}))
+					.set("eventGroup", new ist.Cell({str: "false"}))
 					.set("stopPropagation", new ist.Cell({str: "false"}))
 					.set("preventDefault", new ist.Cell({str: "false"}))
 					;
@@ -131,6 +132,7 @@
 					.set("arguments", new ist.Cell({str: "[false, 'keypress']"}))
 					.set("delay", new ist.Cell({str: "false"}))
 					.set("priority", new ist.Cell({str: "false"}))
+					.set("eventGroup", new ist.Cell({str: "false"}))
 					;
 
 		var keydown_listener = function(event) {
@@ -384,6 +386,7 @@
 						.set("debugDraw", new ist.Cell({str: "false"}))
 						.set("delay", new ist.Cell({str: "false"}))
 						.set("priority", new ist.Cell({str: "false"}))
+						.set("eventGroup", new ist.Cell({str: "false"}))
 						.set("stopPropagation", new ist.Cell({str: "false"}))
 						.set("preventDefault", new ist.Cell({str: "false"}));
 
@@ -578,6 +581,7 @@
 							.set("arguments", new ist.Cell({str: "[500]"}))
 							.set("delay", new ist.Cell({str: "false"}))
 							.set("priority", new ist.Cell({str: "false"}))
+							.set("eventGroup", new ist.Cell({str: "false"}))
 						;
 			var device = new ist.Dict({has_protos: false, value: {
 					mouse: mouse,

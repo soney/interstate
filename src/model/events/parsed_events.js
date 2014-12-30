@@ -2,6 +2,7 @@
 /*global interstate,esprima,able,uid,console */
 
 (function (ist) {
+	return;
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
@@ -40,7 +41,7 @@
 				cjs.removeDependency(event_constraint, live_event_creator._constraint);
 			}
 			var event = new ist.ConstraintEvent(event_constraint, got_event);
-			return {event: event/*.throttle(10)*/, actions: actions};
+			return {event: event, actions: actions};
 		}
 	};
 
@@ -169,24 +170,9 @@
 					context: this,
 					run_on_create: false
 				});
-				/*
-				//cjs.signal();
-				_.delay(_.bind(function () {
-					//Delay it because parsed events can run up the dictionary tree and create all sorts of contextual objects that they shouldn't
-					//Delay it because if an event relies on an object's inherited property while the object is still being created, we're all fucked
-					this.on_ready();
-				}, this));
-				*/
 					//console.log(this);
 			}
 		};
-		/*
-		proto.on_ready = function() {
-			if(this._live_event_creator && this.is_enabled()) {
-				this._live_event_creator.run(false);
-			}
-		};
-		*/
 		proto.get_errors = function() {
 			return this.$errors.get();
 		};
@@ -218,12 +204,6 @@
 							console.error(e);
 						}
 					}
-				/*
-					if(expression.invalidate) {
-						expression.invalidate();
-					}
-					cjs.get(expression, false);
-					*/
 				});
 			}
 		};

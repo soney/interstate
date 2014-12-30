@@ -9,8 +9,8 @@
 		statechart.addSubstate("state2");
 		statechart.startsAt("state1");
 
-		var fwd = new ist.ManualEvent(),
-			bak = new ist.ManualEvent(),
+		var fwd = new ist.Event(),
+			bak = new ist.Event(),
 			fwd_t = statechart.addTransition("state1", "state2", fwd),
 			bak_t = statechart.addTransition("state2", "state1", bak),
 			s1 = statechart.getSubstate("state1"),
@@ -112,7 +112,7 @@
 			["state1", "state1.sub1", "state1.sub1.substate1", "state1.sub1.substate1.(start)"]);
 
 
-		var state1_state2_sub2 = new ist.ManualEvent();
+		var state1_state2_sub2 = new ist.Event();
 		statechart.addTransition("state1", "state2.sub2", state1_state2_sub2);
 		state1_state2_sub2.fire();
 

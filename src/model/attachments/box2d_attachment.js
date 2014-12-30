@@ -5,6 +5,14 @@
 	"use strict";
 
 	if(!window.Box2D) { return; }
+	var requestAnimFrame = (function(){
+		return	window.requestAnimationFrame		||
+				window.webkitRequestAnimationFrame	||
+				window.mozRequestAnimationFrame		||
+		function(callback) {
+			window.setTimeout(callback, 1000/60);
+		};
+	})();
 
 	var cjs = ist.cjs,
 		_ = ist._;
@@ -70,14 +78,14 @@
 
 				var update_world = _.bind(function() {
 					this.world.Step(1 / 60, 10, 10);
-					ist.requestAnimationFrame.call(window, update_world);
+					requestAnimationFrame.call(window, update_world);
 					/*
 					if(this.world.m_gravity.y < 5) {
 						this.world.DrawDebugData();
 					}
 					*/
 				}, this);
-				ist.requestAnimationFrame.call(window, update_world);
+				requestAnimationFrame.call(window, update_world);
 
 /*
 				var world = this.world;

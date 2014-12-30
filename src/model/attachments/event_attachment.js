@@ -36,36 +36,6 @@
 				}
 				return false;
 			},
-			/*
-			activate: function(gesture) {
-				if(this.semaphore >= 0) {
-					var priority = false;
-					this.remove(gesture, function(item) {
-						priority = item.priority;
-						if(priority < this.priority) {
-							item.callback.call(item.thisArg, EVENT_STATUS.BLOCKED);
-						} else {
-							item.callback.call(item.thisArg, EVENT_STATUS.CONFIRMED);
-						}
-
-						if(item.timeoutID) {
-							window.clearTimeout(item.timeoutID);
-							delete item.timeoutID;
-						}
-					}, this);
-
-					if(priority) {
-						this.removeBelowPriority(priority, function(item) {
-							item.callback.call(item.thisArg, EVENT_STATUS.BLOCKED);
-							if(item.timeoutID) {
-								window.clearTimeout(item.timeoutID);
-								delete item.timeoutID;
-							}
-						});
-					}
-				}
-			},
-			*/
 			runQueue: function() {
 				var i = 0, queue = this.queue, len = queue.length, item,
 					group,
@@ -95,14 +65,6 @@
 					} else {
 						newMaxGroupPriorities[group] = groupPriority;
 					}
-					/*
-					if(item.priority<priority) {
-
-						item.callback.call(item.thisArg, EVENT_STATUS.BLOCKED);
-					} else if(item.priority > maxPriority) {
-						maxPriority = item.priority;
-					}
-					*/
 				}
 				for(group in this.groupPriorities) {
 					if(this.groupPriorities.hasOwnProperty(group)) {
@@ -113,17 +75,7 @@
 						}
 					}
 				}
-				//queue.splice(0, queue.length);
-				//this.priority = maxPriority;
 			},
-			/*
-
-			removeAndClearTimeout: function(gesture) {
-				this.remove(gesture, function(item) {
-					window.clearTimeout(item.timeoutID);
-				});
-			},
-			*/
 
 			cancel: function(gesture) {
 				this.remove(gesture, function(item) {
@@ -180,133 +132,8 @@
 						//this.activate(gesture);
 						//callback.call(callbackThisArg, EVENT_STATUS.SUCCESS);
 					}
-					/*
-
-					/*
-
-					if(priority > this.priority) {
-						this.clear(function(item) {
-							window.clearTimeout(item.timeoutID);
-							item.callback.call(item.thisArg, EVENT_STATUS.BLOCKED, [gesture]);
-						});
-
-						if(_.isNumber(activationDelay)) {
-							this.priority = priority;
-						} else {
-							
-						}
-					}
-
-					if(_.isNumber(activationDelay)) {
-						var timeoutID = setTimeout(_.bind(function() {
-								this.activate(gesture);
-							}, this), activationDelay),
-							info = {
-								gesture: gesture,
-								priority: priority,
-								activationDelay: activationDelay,
-								callback: callback,
-								timeoutID: timeoutID,
-								thisArg: callbackThisArg
-							};
-
-						this.queue.push(info);
-					} else {
-						callback.call(callbackThisArg, EVENT_STATUS.SUCCESS);
-					}
-
-
-					/*
-
-					if(priority < this.priority) {
-						callback.call(callbackThisArg, EVENT_STATUS.BLOCKED, this.queue);
-						return false;
-					} else {
-						var activationDelay = gesture.getActivationDelay();
-
-						if(priority > this.priority) {
-							this.clear(function(item) {
-								window.clearTimeout(item.timeoutID);
-								item.callback.call(item.thisArg, EVENT_STATUS.BLOCKED, [gesture]);
-							});
-
-							if(_.isNumber(activationDelay)) {
-								this.priority = priority;
-							} else {
-								
-							}
-						}
-
-						if(_.isNumber(activationDelay)) {
-							var timeoutID = setTimeout(_.bind(function() {
-									this.activate(gesture);
-								}, this), activationDelay),
-								info = {
-									gesture: gesture,
-									priority: priority,
-									activationDelay: activationDelay,
-									callback: callback,
-									timeoutID: timeoutID,
-									thisArg: callbackThisArg
-								};
-
-							this.queue.push(info);
-						} else {
-							callback.call(callbackThisArg, EVENT_STATUS.SUCCESS);
-						}
-					}
-					*/
 				}
 			},
-			/*
-			remove: function(gesture, fn, fnContext) {
-				var i = 0, queue = this.queue, len = queue.length, item, maxPriority = 0;
-				for(; i<len; i++) {
-					item = queue[i];
-					if(item.gesture === gesture) {
-						queue.splice(i, 1);
-						i--;
-						len--;
-
-						if(fn) { fn.call(fnContext, item); }
-					} else if(item.priority > maxPriority) {
-						maxPriority = item.priority;
-					}
-				}
-				this.priority = maxPriority;
-			},
-			removeBelowPriority: function(priority, fn, fnContext) {
-				var i = 0, queue = this.queue, len = queue.length, item, maxPriority = 0;
-				for(; i<len; i++) {
-					item = queue[i];
-					if(item.priority<priority) {
-						queue.splice(i, 1);
-						i--;
-						len--;
-
-						if(fn) { fn.call(fnContext, item); }
-					} else if(item.priority > maxPriority) {
-						maxPriority = item.priority;
-					}
-				}
-				this.priority = maxPriority;
-			},
-			clear: function(fn, fnContext) {
-				if(fn) {
-					var i = 0, queue = this.queue, len = queue.length, item;
-					for(; i<len; i++) {
-						item = queue[i];
-						fn.call(fnContext, item);
-						queue.splice(i, 1);
-						i--;
-						len--;
-					}
-				} else {
-					this.queue.splice(0, this.queue.length);
-				}
-				this.priority = 0;
-			}
-			*/
 		};
 
 	var gesture_id = 0;
@@ -322,11 +149,11 @@
 		this._state = EVENT_STATUS.PENDING;
 		this._id = gesture_id++;
 
-		this.cancelled = new ist.ManualEvent();
-		this.confirmed = new ist.ManualEvent();
-		this.blocked = new ist.ManualEvent();
-		this.requested = new ist.ManualEvent();
-		this.fired = new ist.ManualEvent();
+		this.cancelled	= new ist.Event();
+		this.confirmed	= new ist.Event();
+		this.blocked	= new ist.Event();
+		this.requested	= new ist.Event();
+		this.fired		= new ist.Event();
 
 		able.make_this_listenable(this);
 	};
@@ -396,57 +223,6 @@
 		proto.cancel = function() {
 			pendingQueue.cancel(this);
 		};
-		/*
-
-		proto.markPossible = function() {
-			pendingQueue.removeAndClearTimeout(this);
-			this._state.set(EVENT_STATUS.POSSIBLE);
-			this._emit(EVENT_STATUS.POSSIBLE, { });
-		};
-		proto.markFailed = function() {
-			pendingQueue.removeAndClearTimeout(this);
-			this._state.set(EVENT_STATUS.FAILED);
-			this._emit(EVENT_STATUS.FAILED, { });
-		};
-		proto.markBegan = function() {
-			this._state.set(EVENT_STATUS.BEGAN);
-			this.addToPendingQueue(function(status, info) {
-				if(status === EVENT_STATUS.BLOCKED) {
-					this.markBlocked(info);
-				} else if(status === EVENT_STATUS.SUCCESS) {
-					this._emit(EVENT_STATUS.BEGAN, { });
-				} else {
-					throw new Error("Unrecognized status");
-				}
-			}, this);
-		};
-		proto.markBlocked = function(blockedBy) {
-			pendingQueue.removeAndClearTimeout(this);
-			this._state.set(EVENT_STATUS.BLOCKED);
-			this._emit(EVENT_STATUS.BLOCKED, {
-				blockedBy: blockedBy
-			});
-		};
-		proto.markRecognized = function() {
-			this._state.set(EVENT_STATUS.RECOGNIZED);
-			this.addToPendingQueue(function(status, info) {
-				if(status === EVENT_STATUS.BLOCKED) {
-					this.markBlocked(info);
-				} else if(status === EVENT_STATUS.SUCCESS) {
-					this._emit(EVENT_STATUS.RECOGNIZED, { });
-				} else {
-					throw new Error("Unrecognized status");
-				}
-			}, this);
-		};
-
-		proto.addToPendingQueue = function(callback, thisArg) {
-			pendingQueue.add(this, callback, thisArg);
-		};
-		proto.isPendingApproval = function() {
-			return pendingQueue.contains(this);
-		};
-		*/
 			
 		proto.getPriority = function() {
 			return this.options.priority || 0;
@@ -454,25 +230,12 @@
 		proto.getGroup = function() {
 			return this.options.group;
 		};
-		/*
-		proto.getName = function() {
-			return this.options.name;
-		};
-		*/
 		proto.getActivationDelay = function() {
 			return this.options.activationDelay;
 		};
 		proto.id = function() {
 			return this._id;
 		};
-		/*
-		proto.getTouchClusters = function() {
-			return this._touchClusters;
-		};
-		proto.isDiscrete = function() {
-			return this.options.discrete;
-		};
-		*/
 
 		proto.setOption = function(a, b) {
 			if(arguments.length === 1) {
@@ -490,8 +253,8 @@
 	ist.EventAttachment = ist.register_attachment("event_attachment", {
 			ready: function(contextual_object) {
 				this.qEvent = new ist.QueueableEvent({ });
-				this.enabled = new ist.ManualEvent();
-				this.disabled = new ist.ManualEvent();
+				this.enabled = new ist.Event();
+				this.disabled = new ist.Event();
 			},
 			destroy: function(silent) {
 				this.qEvent.destroy(silent);
@@ -501,11 +264,13 @@
 			parameters: {
 				options: function(contextual_object) {
 					var priority = contextual_object.prop_val("priority"),
-						activationDelay = contextual_object.prop_val("activationDelay");
+						activationDelay = contextual_object.prop_val("activationDelay"),
+						group = contextual_object.prop_val("eventGroup");
 
 					this.qEvent.setOption({
 						priority: priority,
-						activationDelay: activationDelay
+						activationDelay: activationDelay,
+						group: group
 					});
 				}
 			},

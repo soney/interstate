@@ -339,8 +339,8 @@
 		}, options);
 
 		this._id = tc_id++;
-		this.satisfied = new ist.ManualEvent();
-		this.unsatisfied = new ist.ManualEvent();
+		this.satisfied = new ist.Event();
+		this.unsatisfied = new ist.Event();
 
 		this.$usableFingers = cjs([]);
 		this.$usingFingers = cjs([]);

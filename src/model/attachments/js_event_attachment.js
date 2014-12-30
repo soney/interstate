@@ -19,22 +19,48 @@
 		return keyCode;
 	}
 
+	ist.get_instance_targs = function(instance) {
+		var dom_objs = instance.get_dom_obj();
+		if(dom_objs) {
+			if(_.isArray(dom_objs)) {
+				return _.map(dom_objs, function(dom_obj) {
+					return {dom_obj: dom_obj, cobj: instance};
+				});
+			} else {
+				return {dom_obj: dom_objs, cobj: instance};
+			}
+		} else {
+			return false;
+		}
+	};
+
 	ist.JSEventAttachment = ist.register_attachment("js_event_attachment", {
 			ready: function(contextual_object) {
 				this.eventType = this.options.eventType;
 				this.enabled = false;
 
+				var signal_timeouts = {};
+
 				this.get_wait_listener = cjs.memoize(function (specified_target) {
-					return _.bind(function() {
-						var event_attachment = this.contextual_object.get_attachment_instance("event_attachment");
+					return _.bind(function(event) {
+						var event_attachment = this.contextual_object.get_attachment_instance("event_attachment"),
+							eventSignature = event.type+event.timestamp;
 						if(event_attachment) {
 							event_attachment.wait();
 						}
 						ist.event_queue.wait();
+
+
+						// If default is prevented, make sure to clear the hold on the event queue
+						signal_timeouts[event.type+event.timestamp] = setTimeout(function() {
+							if(event_attachment) { event_attachment.signal(); }
+							ist.event_queue.signal();
+							delete signal_timeouts[event.type+event.timestamp];
+						}, 0);
 					}, this);
 				}, { context: this });
 				this.get_signal_listener = cjs.memoize(function (specified_target) {
-					return _.bind(function() {
+					return _.bind(function(event) {
 						var event_attachment = this.contextual_object.get_attachment_instance("event_attachment");
 						if(event_attachment) {
 							event_attachment.signal();
@@ -47,6 +73,10 @@
 
 							if(stopPropagation) { event.stopPropagation(); }
 							if(preventDefault) { event.preventDefault(); }
+						}
+						if(signal_timeouts[event.type+event.timestamp]) {
+							clearTimeout(signal_timeouts[event.type+event.timestamp]);
+							delete signal_timeouts[event.type+event.timestamp];
 						}
 					}, this);
 				}, { context: this });
@@ -217,7 +247,6 @@
 				}
 			},
 			proto_props: {
-				
 				onTransitionEnabled: function() {
 					//var contextual_object = this.get_contextual_object();
 					this.enabled = true;
