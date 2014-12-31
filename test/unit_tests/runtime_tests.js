@@ -741,7 +741,8 @@
 		},
 		{
 			name: "StopPropagation on Events",
-			expect: 10,
+			expect: 4,
+			//expect: 10,
 			builtins: true,
 			steps: [{
 				setup: function(env) {
@@ -751,15 +752,17 @@
 							.add_state("state1")
 							.add_state("state2")
 							.add_transition("state1", "state2", "mouse.down(this, stopPropagation=true)")
-							.add_transition("state2", "state1", "mouse.down(this)")
+							//.add_transition("state2", "state1", "mouse.down(this)")
 							.set("x", "state1", "1")
 							.set("x", "state2", "2")
 							.start_at("state1")
 						;
+					//env.print();
 				},
 				test: function(env, runtime, make_async) {
 					var window_md_count = 0,
 						window_md_listener = function() {
+							//console.log("increment md count");
 							window_md_count++;
 						},
 						cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
@@ -771,14 +774,18 @@
 					equal(cobj.prop_val("x"), 1);
 					equal(window_md_count, 0);
 
+					//console.log("== BEGIN SIMULATE CLICK ==");
 					simulateClick("mousedown", h1[0]);
+					//console.log("== END SIMULATE CLICK ==");
 
 					_.delay(function() {
 						equal(cobj.prop_val("x"), 2);
 						equal(window_md_count, 0);
 
-						simulateClick("mousedown", h1[0]);
+						callback();
+						return;
 
+						simulateClick("mousedown", h1[0]);
 						_.delay(function() {
 							equal(cobj.prop_val("x"), 1);
 							equal(window_md_count, 1);

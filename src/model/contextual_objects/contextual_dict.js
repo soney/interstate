@@ -1097,5 +1097,19 @@
 				attachment_instance.onTransitionDisabled();
 			}, this);
 		};
+		proto.onTransitionFired = function() {
+			var attachment_instances = this.getAttachmentInstance(),
+				args = arguments;
+			_.each(attachment_instances, function(attachment_instance) {
+				attachment_instance.onTransitionFired.apply(attachment_instance, args);
+			}, this);
+		};
+		proto.onTransitionNotFired = function() {
+			var attachment_instances = this.getAttachmentInstance(),
+				args = arguments;
+			_.each(attachment_instances, function(attachment_instance) {
+				attachment_instance.onTransitionNotFired.apply(attachment_instance, args);
+			}, this);
+		};
 	}(ist.ContextualDict));
 }(interstate));

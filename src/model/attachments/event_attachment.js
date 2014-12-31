@@ -43,6 +43,8 @@
 					groupPriority,
 					newMaxGroupPriorities = {},
 					currentTime = getTime();
+				//console.log(queue);
+				//debugger;
 				for(; i<len; i++) {
 					item = queue[i];
 					group = item.group;
@@ -111,7 +113,7 @@
 
 					if(priority && (!groupPriority || priority > groupPriority)) {
 						groupPriority = this.groupPriorities[group] = priority;
-					} else if(!priority) {
+					} else if(!priority && !this.groupPriorities[group]) {
 						groupPriority = this.groupPriorities[group] = false;
 					}
 
@@ -184,7 +186,7 @@
 					eventObject.on_fire_request(function() {
 						this.requestFire(false, function(status) {
 							if(status === EVENT_STATUS.CONFIRMED) {
-								newEvent.fire();
+								newEvent.fire(event);
 							}
 						});
 					}, this);
@@ -192,7 +194,7 @@
 				}
 			}
 
-			this.requested.fire();
+			this.requested.fire(event);
 
 			if(!builtin_event) {
 				this._emit(EVENT_STATUS.PENDING, { });
@@ -201,16 +203,16 @@
 						callback(status);	
 					}
 					if(status === EVENT_STATUS.BLOCKED) {
-						this.blocked.fire();
+						this.blocked.fire(event);
 						//this._emit(EVENT_STATUS.BLOCKED, { });
 						this.setState(EVENT_STATUS.READY);
 					} else if(status === EVENT_STATUS.CONFIRMED) {
-						this.confirmed.fire();
-						this.fired.fire();
+						this.confirmed.fire(event);
+						this.fired.fire(event);
 						//this._emit(EVENT_STATUS.CONFIRMED, { });
 						this.setState(EVENT_STATUS.READY);
 					} else if(status === EVENT_STATUS.CANCELLED) {
-						this.cancelled.fire();
+						this.cancelled.fire(event);
 						//this._emit(EVENT_STATUS.CANCELLED, { });
 						this.setState(EVENT_STATUS.READY);
 					} else {
@@ -290,13 +292,13 @@
 				},
 				onTransitionEnabled: function() {
 					ist.event_queue.wait();
-					this.enabled.fire();
+					this.enabled.fire(event);
 					ist.event_queue.signal();
 					//console.log("ENABLED", this.enabled._id, w, x);
 				},
 				onTransitionDisabled: function() {
 					ist.event_queue.wait();
-					this.disabled.fire();
+					this.disabled.fire(event);
 					ist.event_queue.signal();
 					//console.log("DISABLED", this.disabled._id, w, x);
 				}

@@ -360,13 +360,20 @@
 		};
 		proto.event = function () { return this.event; };
 		proto.involves = function (state) { return this.from() === state || this.to() === state; };
-		proto.fire = function (actions, event) {
+		proto.fire = function (actions, cobj, pointer, event) {
 			this.runActions(actions);
-			if (this.from()._onOutgoingTransitionFire(this, event)) {
+			if (this.from()._onOutgoingTransitionFire(this, cobj)) {
 				//if(this.sid() === 352) {
 					//console.log("FIRE", event);
 				//}
 				this._emit("fire", {type: "fire", target: this});
+				if(this.event_cobj) {
+					this.event_cobj.onTransitionFired(event);
+				}
+			} else {
+				if(this.event_cobj) {
+					this.event_cobj.onTransitionNotFired(event);
+				}
 			}
 		};
 		proto.runActions = function(actions) {

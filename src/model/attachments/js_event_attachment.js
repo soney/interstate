@@ -37,51 +37,61 @@
 	ist.JSEventAttachment = ist.register_attachment("js_event_attachment", {
 			ready: function(contextual_object) {
 				this.eventType = this.options.eventType;
-				this.enabled = false;
+				//this.enabled = false;
 
-				var signal_timeouts = {};
+				this.signal_timeouts = {};
 
 				this.get_wait_listener = cjs.memoize(function (specified_target) {
 					return _.bind(function(event) {
 						var event_attachment = this.contextual_object.get_attachment_instance("event_attachment"),
-							eventSignature = event.type+event.timestamp;
+							eventSignature = event.type+event.timeStamp+specified_target.sid();
 						if(event_attachment) {
 							event_attachment.wait();
 						}
 						ist.event_queue.wait();
 
-
+						//console.log("set", eventSignature);
 						// If default is prevented, make sure to clear the hold on the event queue
-						signal_timeouts[event.type+event.timestamp] = setTimeout(function() {
+						this.signal_timeouts[eventSignature] = setTimeout(function() {
+							console.log("TIMEOUT1");
+							//console.log("run", eventSignature, specified_target.sid());
 							if(event_attachment) { event_attachment.signal(); }
 							ist.event_queue.signal();
-							delete signal_timeouts[event.type+event.timestamp];
+							delete this.signal_timeouts[eventSignature];
 						}, 0);
 					}, this);
 				}, { context: this });
 				this.get_signal_listener = cjs.memoize(function (specified_target) {
 					return _.bind(function(event) {
-						var event_attachment = this.contextual_object.get_attachment_instance("event_attachment");
+						console.log("SIGNAL1");
+						var event_attachment = this.contextual_object.get_attachment_instance("event_attachment"),
+							eventSignature = event.type+event.timeStamp+specified_target.sid();
+
+						if(this.signal_timeouts[eventSignature]) {
+							//console.log("clear", eventSignature);
+							clearTimeout(this.signal_timeouts[eventSignature]);
+							delete this.signal_timeouts[eventSignature];
+						}
 						if(event_attachment) {
 							event_attachment.signal();
 						}
 						ist.event_queue.signal();
+						/*
 
 						if(this.eventType === "keyboard" || this.eventType === "mouse") {
 							var stopPropagation = this.contextual_object.prop_val("stopPropagation"),
 								preventDefault = this.contextual_object.prop_val("preventDefault");
+							console.log("signal", stopPropagation,preventDefault, event);
 
 							if(stopPropagation) { event.stopPropagation(); }
 							if(preventDefault) { event.preventDefault(); }
 						}
-						if(signal_timeouts[event.type+event.timestamp]) {
-							clearTimeout(signal_timeouts[event.type+event.timestamp]);
-							delete signal_timeouts[event.type+event.timestamp];
-						}
+						/**/
 					}, this);
 				}, { context: this });
 				this.get_target_listener = cjs.memoize(function (specified_target) {
 					var listener = _.bind(function (event) {
+						//console.log("target listener", event);
 						if(this.eventType === "keyboard") {
 							if(e.type === 'keydown' || e.type === 'keyup' || e.type === 'keypress') {
 								var key = this.contextual_object.prop_val("key"),
@@ -178,8 +188,9 @@
 						if(this.eventType === "keyboard") {
 							computed_targets = [window];
 						}
+						console.log(type, computed_targets);
 
-						if(this.enabled) {
+						//if(this.enabled) {
 							if(this._oldType) {
 								_.each(this._oldTarget, function(dom_obj) {
 									//console.log("disable", this._oldType, dom_obj);
@@ -193,7 +204,9 @@
 							//console.log(type, targets);
 
 							if(type) {
+								//console.log(computed_targets);
 								_.each(computed_targets, function(dom_obj) {
+									//console.log(dom_obj, this.contextual_object.sid());
 									//console.log("enable", type, dom_obj);
 									dom_obj.addEventListener(type, this.get_wait_listener(this.contextual_object), true); // Capture
 									dom_obj.addEventListener(type, this.get_target_listener(this.contextual_object), true); // Capture
@@ -201,7 +214,7 @@
 									//target.addEventListener(type, this._eventListener);
 								}, this);
 							}
-						}
+						//}
 						this._oldType = type;
 						this._oldTarget = computed_targets;
 					}
@@ -214,7 +227,7 @@
 						this.milliseconds = milliseconds;
 						//console.log(milliseconds);
 
-						if(this.enabled) {
+						//if(this.enabled) {
 							var current_time = (new Date()).getTime();
 
 							if(this._timeout_id) {
@@ -243,13 +256,13 @@
 								this._timeout_type = "delay";
 							}
 						}
-					}
+					//}
 				}
 			},
 			proto_props: {
 				onTransitionEnabled: function() {
 					//var contextual_object = this.get_contextual_object();
-					this.enabled = true;
+					//this.enabled = true;
 					if(this.eventType === "timeout") {
 						var milliseconds = this.milliseconds,
 							current_time = (new Date()).getTime();
@@ -271,6 +284,7 @@
 							this._timeout_type = "delay";
 						}
 					} else {
+					/*
 						if(this._oldType) {
 							_.each(this._oldTarget, function(dom_obj) {
 								//console.log("enable", this._oldType, dom_obj);
@@ -280,11 +294,12 @@
 								dom_obj.addEventListener(this._oldType, this.get_signal_listener(this.contextual_object), false); // Bubble
 							}, this);
 						}
+						*/
 					}
 				},
 				onTransitionDisabled: function() {
 					//var contextual_object = this.get_contextual_object();
-					this.enabled = false;
+					//this.enabled = false;
 					if(this.eventType === "timeout") {
 						if(this._timeout_id) {
 							if(this._timeout_type === "frame") {
@@ -295,6 +310,7 @@
 							this._timeout_id = false;
 						}
 					} else {
+					/*
 						if(this._oldType) {
 							_.each(this._oldTarget, function(dom_obj) {
 								//console.log("disable", this._oldType, dom_obj);
@@ -304,8 +320,22 @@
 								dom_obj.removeEventListener(this._oldType, this.get_signal_listener(this.contextual_object), false); // Bubble
 							}, this);
 						}
+						*/
 					}
-				}
+				},
+				onTransitionFired: function(event) {
+					console.log("B");
+					if(this.eventType === "keyboard" || this.eventType === "mouse") {
+						var stopPropagation = this.contextual_object.prop_val("stopPropagation"),
+							preventDefault = this.contextual_object.prop_val("preventDefault");
+						//console.log("onFired", stopPropagation,preventDefault, event, this.contextual_object.sid());
+
+						if(stopPropagation) { event.stopImmediatePropagation(); }
+						//if(stopPropagation) { event.stopPropagation(); }
+						if(preventDefault) { event.preventDefault(); }
+					}
+				},
+				onTransitionNotFired: function(event) { },
 			}
 		});
 

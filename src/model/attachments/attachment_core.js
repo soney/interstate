@@ -47,6 +47,8 @@
 		};
 		proto.onTransitionEnabled = function() { };
 		proto.onTransitionDisabled = function() { };
+		proto.onTransitionFired = function() { };
+		proto.onTransitionNotFired = function() { };
     }(ist.AttachmentInstance));
     
     ist.Attachment = function (options) {
