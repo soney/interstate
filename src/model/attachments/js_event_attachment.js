@@ -45,7 +45,7 @@
 
 				this.get_bubble_listener = cjs.memoize(function (specified_target) {
 					var listener = _.bind(function(event) {
-						console.log("signal", this.contextual_object.sid());
+						//console.log("signal", this.contextual_object.sid());
 						var event_attachment = this.contextual_object.get_attachment_instance("event_attachment"),
 							eventSignature = event.type+event.timeStamp+specified_target.sid();
 
@@ -114,7 +114,7 @@
 				});
 				this.get_capture_listener = cjs.memoize(function (specified_target) {
 					var listener = _.bind(function (event) {
-						console.log("wait", this.contextual_object.sid());
+						//console.log("wait", this.contextual_object.sid());
 						var event_attachment = this.contextual_object.get_attachment_instance("event_attachment"),
 							eventSignature = event.type+event.timeStamp+specified_target.sid();
 						if(event_attachment) {
@@ -124,13 +124,13 @@
 
 						//console.log("set", eventSignature);
 						// If default is prevented, make sure to clear the hold on the event queue
-						this.bubble_timeouts[eventSignature] = setTimeout(function() {
-							console.log("TIMEOUT1");
+						this.bubble_timeouts[eventSignature] = setTimeout(_.bind(function() {
+							//console.log("TIMEOUT1");
 							//console.log("run", eventSignature, specified_target.sid());
 							if(event_attachment) { event_attachment.signal(); }
 							ist.event_queue.signal();
 							delete this.bubble_timeouts[eventSignature];
-						}, 0);
+						}, this), 0);
 						//console.log("target listener", event);
 					}, this);
 					//target_listeners.push(listener);
@@ -226,7 +226,7 @@
 							if(type) {
 								//console.log(computed_targets);
 								_.each(computed_targets, function(dom_obj) {
-									console.log(dom_obj, this.contextual_object.sid());
+									//console.log(dom_obj, this.contextual_object.sid());
 									//console.log("enable", type, dom_obj);
 									//dom_obj.addEventListener(type, this.get_wait_listener(this.contextual_object), true); // Capture
 									dom_obj.addEventListener(type, this.get_capture_listener(this.contextual_object), true); // Capture
@@ -345,17 +345,17 @@
 				},
 				onTransitionFired: function(event) {
 					if(this.eventType === "keyboard" || this.eventType === "mouse") {
-						var stopPropagation = this.contextual_object.prop_val("stopPropagation"),
-							preventDefault = this.contextual_object.prop_val("preventDefault");
+						var preventDefault = this.contextual_object.prop_val("preventDefault");
+						//var stopPropagation = this.contextual_object.prop_val("stopPropagation"),
 
-						if(stopPropagation) {
-							console.log("stopPropagation", this.contextual_object.sid());
+						//if(stopPropagation) {
+							//console.log("stopPropagation", this.contextual_object.sid());
 							//debugger;
-							event.stopPropagation();
-						}
+							//event.stopPropagation();
+						//}
 
 						//if(stopPropagation) { event.stopImmediatePropagation(); }
-						if(stopPropagation) { event.stopPropagation(); }
+						//if(stopPropagation) { event.stopPropagation(); }
 						if(preventDefault) { event.preventDefault(); }
 					}
 				},
