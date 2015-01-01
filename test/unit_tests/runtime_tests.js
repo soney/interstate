@@ -761,8 +761,9 @@
 				},
 				test: function(env, runtime, make_async) {
 					var window_md_count = 0,
-						window_md_listener = function() {
-							//console.log("increment md count");
+						window_md_listener = function(e) {
+							//debugger;
+							console.log("increment md count", e);
 							window_md_count++;
 						},
 						cobj = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer),
@@ -774,9 +775,16 @@
 					equal(cobj.prop_val("x"), 1);
 					equal(window_md_count, 0);
 
-					//console.log("== BEGIN SIMULATE CLICK ==");
+					console.log("== BEGIN SIMULATE CLICK ==");
+					h1[0].addEventListener("mousedown", function(e) {
+						console.log("d");
+						h1[0].addEventListener("mousedown", function(e2) {
+							console.log(e2);
+						});
+						//debugger;
+					}, true);
 					simulateClick("mousedown", h1[0]);
-					//console.log("== END SIMULATE CLICK ==");
+					console.log("== END SIMULATE CLICK ==");
 
 					_.delay(function() {
 						equal(cobj.prop_val("x"), 2);
