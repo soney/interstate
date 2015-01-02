@@ -560,4 +560,42 @@
 			});
 	}(ist.DomAttachment));
 
+	ist.DomInputAttachment = ist.register_attachment("input", {
+			ready: function(contextual_object) {
+				var old_value_constraint = false,
+					old_dom_obj = false;
+
+				this.$value_constraint = cjs(function() {
+					var dom_obj = this.contextual_object.get_dom_obj();
+					if(dom_obj !== old_dom_obj) {
+						//return old_value_constraint;
+					//} else {
+						if(old_value_constraint && old_value_constraint.destroy) { old_value_constraint.destroy(true); }
+
+						old_value_constraint = cjs.inputValue(dom_obj);
+						//return old_value_constraint;
+					}
+					return cjs.get(old_value_constraint);
+				}, {context: this});
+				var old_destroy = this.$value_constraint.destroy;
+				this.$value_constraint.destroy = function(silent) {
+					if(old_value_constraint && old_value_constraint.destroy) { old_value_constraint.destroy(silent); }
+					old_destroy.apply(this, arguments);
+				};
+			},
+			destroy: function(silent) {
+				this.$value_constraint.destroy(silent);
+			},
+			parameters: {
+				value_updater: function(contextual_object) {
+				}
+			},
+			proto_props: {
+			},
+			outputs: {
+				inputValue: function(contextual_object) {
+					return this.$value_constraint;
+				},
+			}
+		});
 }(interstate, jQuery));

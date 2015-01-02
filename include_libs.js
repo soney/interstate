@@ -61,6 +61,8 @@ exports.runtime = c(
 				"model/utils/parsed_value.js",
 				"model/utils/parsed_fn.js",
 				"model/utils/map_diff.js",
+				"model/builtins/dom.js",
+				"model/builtins/svg.js",
 				"model/builtins/devices.js",
 				"model/builtins/query.js",
 				"model/builtins/initialize_root.js",

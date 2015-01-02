@@ -50,11 +50,11 @@
 							eventSignature = event.type+event.timeStamp+specified_target.sid();
 
 						if(this.eventType === "keyboard") {
-							if(e.type === 'keydown' || e.type === 'keyup' || e.type === 'keypress') {
+							if(event.type === 'keydown' || event.type === 'keyup' || event.type === 'keypress') {
 								var key = this.contextual_object.prop_val("key"),
 									keyCode = keyToCode(key);
 
-								if(keyCode && keyCode !== e.keyCode) { // if it's a keyboard event
+								if(keyCode && keyCode !== event.keyCode) { // if it's a keyboard event
 									return;
 								}
 							}
