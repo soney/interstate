@@ -560,8 +560,10 @@
 			});
 	}(ist.DomAttachment));
 
+	var inp_change_events = ["keyup", "input", "paste", "propertychange", "change", "click"];
 	ist.DomInputAttachment = ist.register_attachment("input", {
 			ready: function(contextual_object) {
+			/*
 				var old_value_constraint = false,
 					old_dom_obj = false;
 
@@ -573,6 +575,7 @@
 						if(old_value_constraint && old_value_constraint.destroy) { old_value_constraint.destroy(true); }
 
 						old_value_constraint = cjs.inputValue(dom_obj);
+						old_dom_obj = dom_obj;
 						//return old_value_constraint;
 					}
 					return cjs.get(old_value_constraint);
@@ -582,20 +585,82 @@
 					if(old_value_constraint && old_value_constraint.destroy) { old_value_constraint.destroy(silent); }
 					old_destroy.apply(this, arguments);
 				};
+				*/
+				this.changed_event = new ist.Event();
+				this.focus_event = new ist.Event();
+				this.blur_event = new ist.Event();
+
+				this._on_blur = _.bind(this.blur_event.fire, this.blur_event);
+				this._on_focus = _.bind(this.focus_event.fire, this.focus_event);
+				this._check_for_input_change = _.bind(this.check_for_input_change, this);
+				this.$value = cjs(false);
 			},
 			destroy: function(silent) {
-				this.$value_constraint.destroy(silent);
+				this.$value.destroy(silent);
 			},
 			parameters: {
-				value_updater: function(contextual_object) {
+				target: function(contextual_object) {
+					var dom_obj = this.contextual_object.get_dom_obj();
+
+					if(this._old_dom_obj) {
+						this._old_dom_obj.removeEventListener("focus", this._on_focus);
+						this._old_dom_obj.removeEventListener("blur", this._on_blur);
+						$(dom_obj).off('change', this._check_for_input_change);
+						/*
+						_.each(inp_change_events, function(event_type) {
+							this._old_dom_obj.removeEventListener(event_type, this._check_for_input_change);
+						}, this);
+						*/
+					}
+
+					if(dom_obj) {
+						this.check_for_input_change();
+						dom_obj.addEventListener("focus", this._on_focus);
+						dom_obj.addEventListener("blur", this._on_blur);
+						$(dom_obj).on('change', this._check_for_input_change);
+						/*
+						_.each(inp_change_events, function(event_type) {
+							dom_obj.addEventListener(event_type, this._check_for_input_change);
+						}, this);
+						*/
+					}
+
+					this._old_dom_obj = dom_obj
 				}
 			},
 			proto_props: {
+				check_for_input_change: function() {
+					var dom_obj = this.contextual_object.get_dom_obj(),
+						old_value = this.$value.get(),
+						value;
+					if(dom_obj) {
+						var type = dom_obj.type;
+						if(type === "checkbox" || type === "radio") {
+							value = dom_obj.checked;
+						} else {
+							value = dom_obj.value;
+						}
+					}
+
+					if(old_value !== value) {
+						this.$value.set(value);
+						this.changed_event.fire();
+					}
+				}
 			},
 			outputs: {
 				inputValue: function(contextual_object) {
-					return this.$value_constraint;
+					return this.$value;
 				},
+				change: function() {
+					return this.changed_event;
+				},
+				focus: function() {
+					return this.focus_event;
+				},
+				blur: function() {
+					return this.blur_event;
+				}
 			}
 		});
 }(interstate, jQuery));

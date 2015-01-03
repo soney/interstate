@@ -43,15 +43,19 @@
 			} else if(tag_name === "input") {
 				attr.set("placeholder", new ist.Cell({str: "container.placeholder"}))
 					.set("type", new ist.Cell({str: "container.type"}))
-					.set("name", new ist.Cell({str: "container.name"}));
+					.set("name", new ist.Cell({str: "container.name"}))
+					.set("disabled", new ist.Cell({str: "container.disabled"}));
 
 				dict.set("placeholder", new ist.Cell({str: "false"}))
 					.set("type", new ist.Cell({str: "'text'"}))
-					.set("name", new ist.Cell({str: "false"}));
+					.set("name", new ist.Cell({str: "false"}))
+					.set("disabled", new ist.Cell({str: "false"}));
 			} else if(tag_name === "textarea") {
-				attr.set("placeholder", new ist.Cell({str: "container.placeholder"}));
+				attr.set("placeholder", new ist.Cell({str: "container.placeholder"}))
+					.set("disabled", new ist.Cell({str: "container.disabled"}));
 
-				dict.set("placeholder", new ist.Cell({str: "false"}));
+				dict.set("placeholder", new ist.Cell({str: "false"}))
+					.set("disabled", new ist.Cell({str: "false"}));
 			} else if(tag_name === "form") {
 				attr.set("action", new ist.Cell({str: "container.action"}))
 					.set("target", new ist.Cell({str: "container.target"}))
@@ -66,15 +70,27 @@
 			dom.set(tag_name, dict);
 		});
 		_.each(["radio", "text", "checkbox", "submit"], function(tag_name) {
-			var dict = new ist.Dict();
-				//attr = new ist.Dict();
+			var dict = new ist.Dict(),
+				attr = new ist.Dict();
 
 			dict._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.input"}));
 			dict.set("type", new ist.Cell({str: "'"+tag_name+"'"}))
+				.set("attr", attr);
+
+			attr.set("placeholder", new ist.Cell({str: "container.placeholder"}))
+				.set("type", new ist.Cell({str: "container.type"}))
+				.set("name", new ist.Cell({str: "container.name"}));
 
 			if(tag_name === "radio") {
+				dict.set("checked", new ist.Cell({str: "false"}))
+
+				attr.set("checked", new ist.Cell({str: "container.checked"}))
 			} else if(tag_name === "checkbox") {
+				dict.set("checked", new ist.Cell({str: "false"}));
+
+				attr.set("checked", new ist.Cell({str: "container.checked"}));
 			} else if(tag_name === "text") {
+				
 			}
 			dom.set(tag_name, dict);
 		});
