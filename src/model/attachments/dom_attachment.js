@@ -560,7 +560,7 @@
 			});
 	}(ist.DomAttachment));
 
-	var inp_change_events = ["keyup", "input", "paste", "propertychange", "change", "click"];
+	var inp_change_events = ["keyup", "input", "paste", "propertychange", "change", "click", "DOMAttrModified"];
 	ist.DomInputAttachment = ist.register_attachment("input", {
 			ready: function(contextual_object) {
 			/*
@@ -597,6 +597,15 @@
 			},
 			destroy: function(silent) {
 				this.$value.destroy(silent);
+				if(this._old_dom_obj) {
+					this._old_dom_obj.removeEventListener("focus", this._on_focus);
+					this._old_dom_obj.removeEventListener("blur", this._on_blur);
+					//$(dom_obj).off('change', this._check_for_input_change);
+					_.each(inp_change_events, function(event_type) {
+						this._old_dom_obj.removeEventListener(event_type, this._check_for_input_change);
+					}, this);
+					$(window).off("radio_button_changed", this._check_for_input_change);
+				}
 			},
 			parameters: {
 				target: function(contextual_object) {
@@ -605,24 +614,22 @@
 					if(this._old_dom_obj) {
 						this._old_dom_obj.removeEventListener("focus", this._on_focus);
 						this._old_dom_obj.removeEventListener("blur", this._on_blur);
-						$(dom_obj).off('change', this._check_for_input_change);
-						/*
+						//$(dom_obj).off('change', this._check_for_input_change);
 						_.each(inp_change_events, function(event_type) {
 							this._old_dom_obj.removeEventListener(event_type, this._check_for_input_change);
 						}, this);
-						*/
+						$(window).off("radio_button_changed", this._check_for_input_change);
 					}
 
 					if(dom_obj) {
 						this.check_for_input_change();
 						dom_obj.addEventListener("focus", this._on_focus);
 						dom_obj.addEventListener("blur", this._on_blur);
-						$(dom_obj).on('change', this._check_for_input_change);
-						/*
+						//$(dom_obj).on('change', this._check_for_input_change);
 						_.each(inp_change_events, function(event_type) {
 							dom_obj.addEventListener(event_type, this._check_for_input_change);
 						}, this);
-						*/
+						$(window).on("radio_button_changed", this._check_for_input_change);
 					}
 
 					this._old_dom_obj = dom_obj
@@ -645,6 +652,9 @@
 					if(old_value !== value) {
 						this.$value.set(value);
 						this.changed_event.fire();
+						if(type === "checkbox" || type === "radio") {
+							$(window).trigger("radio_button_changed");
+						}
 					}
 				}
 			},

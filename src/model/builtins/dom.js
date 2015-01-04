@@ -21,9 +21,9 @@
 			.set("show", new ist.Cell({str: "true"}))
 			.set("showChildren", new ist.Cell({str: "true"}));
 
-		_.each(["a", "input", "textarea", "form"], function(tag_name) {
+		_.each(["a", "input", "textarea", "form", "select"], function(tag_name) {
 			var dict, attr;
-			if(tag_name === "input") {
+			if(tag_name === "input" || tag_name === "select") {
 				dict = new ist.Dict({direct_attachments: [new ist.DomInputAttachment()]});
 			} else {
 				dict = new ist.Dict();
@@ -66,6 +66,7 @@
 					.set("target", new ist.Cell({str: "'_self'"}))
 					.set("method", new ist.Cell({str: "'GET'"}))
 					.set("autocomplete", new ist.Cell({str: "'off'"}))
+			} else if(tag_name === "select") {
 			}
 			dom.set(tag_name, dict);
 		});
@@ -97,7 +98,7 @@
 
 		_.each(["div", "strong", "span", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5",
 				"h6", "table", "tbody", "tr", "td", "th", "p", "pre", "br",
-				"label", "img", "select", "option", "button", "hr", "legend", "fieldset"],
+				"label", "img", "option", "button", "hr", "legend", "fieldset"],
 				function(tag_name) {
 					dom.set(tag_name, new ist.Cell({str: "node('" + tag_name + "')"}));
 				});
