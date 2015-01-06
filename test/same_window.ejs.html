@@ -36,12 +36,16 @@
 				window.env = getEnvironment();
 				
 				env	.set("my_obj", "<stateful>")
+					.cd("my_obj")
+						.set("(prototypes)", "(start)", "dom.h1")
 				setTimeout(function() {
 						//$("tr:nth-child(13)").click();
 					setTimeout(function() {
 						//env.cd("a");
 						//env.print();
-						//env.unset("my_obj");
+						env.top();
+						env.unset("my_obj");
+						env.undo();
 
 						/*
 						//env.set("x", "<stateful>")
