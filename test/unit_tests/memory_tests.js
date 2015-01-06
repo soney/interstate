@@ -73,14 +73,29 @@
 			var env, root, runtime_div,
 				delay_between_steps = default_delay_between_steps || test.delay_between_steps || test.delay,
 				delay_before_test = default_delay_before_test || test.delay_before_test || test.delay,
-				root_setup = function() {
-					env = new ist.Environment({builtins: test.builtins});
-					root = env.get_root();
-					runtime_div = $("<div />")	.appendTo(document.body)
-												.dom_output({
-													root: root,
-													show_edit_button: false
-												});
+				root_setup = function(callback) {
+					if(test.filename) {
+						loadFile(test.filename, function(errors,str) {
+							if(errors) { throw new Error(errors); }
+							root = ist.destringify(str);
+							env = new ist.Environment({root: root});
+							runtime_div = $("<div />")	.appendTo(document.body)
+														.dom_output({
+															root: root,
+															show_edit_button: false
+														});
+							callback();
+						});
+					} else {
+						env = new ist.Environment({builtins: test.builtins});
+						root = env.get_root();
+						runtime_div = $("<div />")	.appendTo(document.body)
+													.dom_output({
+														root: root,
+														show_edit_button: false
+													});
+						callback();
+					}
 				},
 				run_step = function(step, callback) {
 					var test_will_say_when_ready = false,
@@ -140,16 +155,41 @@
 				};
 
 			expect(test.expect + 1);
-			root_setup();
-			run_tests(function() {
-				destroy();
-				collect_garbage(function() {
-					take_snapshot(["ist.", "interstate."], function(response) {
-						ok(!response.illegal_strs, "Make sure nothing was allocated");
-						start();
+			root_setup(function() {
+				run_tests(function() {
+					destroy();
+					collect_garbage(function() {
+						take_snapshot(["ist.", "interstate."], function(response) {
+							ok(!response.illegal_strs, "Make sure nothing was allocated");
+							start();
+						});
 					});
 				});
 			});
 		});
 	};
+	function loadFile(fname, callback) {
+		var xmlhttp;
+
+		if (root.XMLHttpRequest) {
+			// code for IE7+, Firefox, Chrome, Opera, Safari
+			xmlhttp = new XMLHttpRequest();
+		} else {
+			// code for IE6, IE5
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState === 4 ) {
+				if(xmlhttp.status === 200) {
+					callback(false, xmlhttp.responseText);
+				} else {
+					callback(xmlhttp.status);
+				}
+			}
+		};
+
+		xmlhttp.open("GET", fname, true);
+		xmlhttp.send();
+	}
 }(this, interstate));

@@ -91,6 +91,9 @@
 						}
 					}
 				},
+				onTransitionFired: function(event) {
+					//return this.touchCluster.claimTouches();
+				},
 				/*
 				satisfied: function(contextual_object) {
 					var satisfied = this.touchCluster.isSatisfied();

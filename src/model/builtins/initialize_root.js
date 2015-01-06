@@ -24,12 +24,12 @@
 
 		if(!_.isArray(builtins) || (_.indexOf(builtins, "svg") >= 0)) {
 			var svg = ist.createSvgObject();
-			root_dict.set("svg", svg)
+			root_dict.set("svg", svg);
 		}
 
 		if(!_.isArray(builtins) || (_.indexOf(builtins, "dom") >= 0)) {
 			var dom = ist.createDomObject();
-			root_dict.set("dom", dom)
+			root_dict.set("dom", dom);
 		}
 
 		if(!_.isArray(builtins) || (_.indexOf(builtins, "functions") >= 0)) {

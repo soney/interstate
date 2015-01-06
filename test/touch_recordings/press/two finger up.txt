@@ -1,0 +1,1 @@
+[{"type":"touchend","changedTouches":[{"identifier":3797424149,"pageY":399,"screenX":396,"clientX":396,"clientY":399,"screenY":399,"pageX":396},{"identifier":3797424150,"pageY":318,"screenX":516,"clientX":516,"clientY":318,"screenY":318,"pageX":516}],"timestamp":1405806477798}]

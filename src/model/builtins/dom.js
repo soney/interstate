@@ -65,7 +65,7 @@
 				dict.set("action", new ist.Cell({str: "'#'"}))
 					.set("target", new ist.Cell({str: "'_self'"}))
 					.set("method", new ist.Cell({str: "'GET'"}))
-					.set("autocomplete", new ist.Cell({str: "'off'"}))
+					.set("autocomplete", new ist.Cell({str: "'off'"}));
 			} else if(tag_name === "select") {
 			}
 			dom.set(tag_name, dict);
@@ -83,9 +83,9 @@
 				.set("name", new ist.Cell({str: "container.name"}));
 
 			if(tag_name === "radio") {
-				dict.set("checked", new ist.Cell({str: "false"}))
+				dict.set("checked", new ist.Cell({str: "false"}));
 
-				attr.set("checked", new ist.Cell({str: "container.checked"}))
+				attr.set("checked", new ist.Cell({str: "container.checked"}));
 			} else if(tag_name === "checkbox") {
 				dict.set("checked", new ist.Cell({str: "false"}));
 

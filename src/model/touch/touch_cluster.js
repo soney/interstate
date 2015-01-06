@@ -87,9 +87,8 @@
 		cjs.wait();
 
 		_.each(touchClusters, function(touchCluster) {
-			touchCluster.pruneTimedOutUsableFingers();
-			touchCluster.pruneClaimedFingers();
-
+			//touchCluster.pruneTimedOutUsableFingers();
+			//touchCluster.pruneClaimedFingers();
 			var downInside = touchCluster.options.downInside,
 				downOutside = touchCluster.options.downOutside;
 
@@ -219,6 +218,9 @@
 		var distanceMatrix = computeTouchDistances();
 
 		_.each(touchClusters, function(touchCluster) {
+			touchCluster.pruneClaimedFingers();
+			touchCluster.pruneTimedOutUsableFingers();
+
 			var satisfied = touchCluster.isSatisfied(),
 				usableFingers = touchCluster.getUsableFingers(),
 				usingFingers = touchCluster.getUsingFingers(),
@@ -239,6 +241,7 @@
 					}
 				}
 			} else if(!satisfied && addedTouches) { // check if now satisfied
+
 				if(usableFingers.length >= numFingers) {
 					if(numFingers > 1) {
 						var closestTouchArr = _.keys(closestTouchObject),

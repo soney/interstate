@@ -10,7 +10,6 @@
 		ist.ContextualState.superclass.constructor.apply(this, arguments);
 		this._type = "statechart";
 
-
 		//this._localState = this.getStartState();
 	};
 

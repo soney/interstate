@@ -27,9 +27,9 @@
 	var insert_at = function (child_node, parent_node, index) {
 		var children = parent_node.childNodes;
 		if (children.length <= index) {
-		try{
-			parent_node.appendChild(child_node);
-			}catch(e){}
+			try{
+				parent_node.appendChild(child_node);
+			} catch(e) { }
 		} else {
 			var before_child = children[index];
 			parent_node.insertBefore(child_node, before_child);
@@ -632,16 +632,16 @@
 						$(window).on("radio_button_changed", this._check_for_input_change);
 					}
 
-					this._old_dom_obj = dom_obj
+					this._old_dom_obj = dom_obj;
 				}
 			},
 			proto_props: {
 				check_for_input_change: function() {
 					var dom_obj = this.contextual_object.get_dom_obj(),
 						old_value = this.$value.get(),
-						value;
+						value, type;
 					if(dom_obj) {
-						var type = dom_obj.type;
+						type = dom_obj.type;
 						if(type === "checkbox" || type === "radio") {
 							value = dom_obj.checked;
 						} else {

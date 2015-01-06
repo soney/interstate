@@ -2,7 +2,6 @@
 /*global interstate,esprima,able,uid,window,console */
 
 (function (ist) {
-	return;
 	"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
