@@ -183,6 +183,10 @@
 				this.touchscreen_layer = this.ist_runtime.is(".hasTouchscreenLayer");
 			},
 			destroy: function(silent) {
+				if(this.touchscreen_layer) {
+					this.ist_runtime.touchscreen_layer("removePath", this.contextual_object);
+				}
+
 				var robj = this.get_robj();
 				if(robj) {
 					robj.remove();
