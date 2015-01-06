@@ -98,24 +98,23 @@
 			vline_dasharray: "1,2",
 			from_state_view: null,
 		}, options);
-		var paper = this.option("paper");
+		var paper = this.option("paper"),
+			transition = this.option("transition"),
+			from = this.option("from"),
+			to = this.option("to"),
+			c = center(from, to),
+			paper_height = this.option("paper_height");
 
 		this.arrow = new ist.ArrowView({
 			paper: paper,
 			color: this.option("color"),
 			active_color: this.option("active_color"),
 			transition: this.option("transition"),
-			from: this.option("from"),
-			to: this.option("to")
+			from: from,
+			to: to
 		});
-		var transition = this.option("transition");
 
-		//var event = transition.event();
 		this.event_type = false;
-		var from = this.option("from"),
-			to = this.option("to"),
-			c = center(from, to),
-			paper_height = this.option("paper_height");
 
 		transition.async_get("eventType", function(type) {
 			this.event_type = type;

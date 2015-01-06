@@ -386,7 +386,9 @@
 						.set("delay", new ist.Cell({str: "false"}))
 						.set("priority", new ist.Cell({str: "false"}))
 						.set("eventGroup", new ist.Cell({str: "false"}))
-						.set("preventDefault", new ist.Cell({str: "false"}));
+						.set("preventDefault", new ist.Cell({str: "false"}))
+						.set("greedy", new ist.Cell({str: "false"}))
+						;
 
 			var device_touchscreen = new ist.Dict({has_protos: false, value: {
 					finger_count: touch_count,

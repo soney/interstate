@@ -454,7 +454,7 @@
 							});
 						}, this))
 						.on("begin_editing_cell", _.bind(function(event) {
-							this.editor.setValue(event.initial_val, 1);
+							this.editor.setValue(event.initial_val);
 
 							this._enable_editor();
 							$(event.textarea).editing_text("option", "helper", this.editor);

@@ -92,7 +92,11 @@
 					}
 				},
 				onTransitionFired: function(event) {
-					//return this.touchCluster.claimTouches();
+					var greedy = contextual_object.prop_val("greedy");
+
+					if(greedy) {
+						this.touchCluster.claimTouches();
+					}
 				},
 				/*
 				satisfied: function(contextual_object) {
@@ -127,12 +131,8 @@
 				endRotation: function() { return this.touchCluster.getEndRadiusConstraint(); },
 				scale: function() { return this.touchCluster.getScaleConstraint(); },
 				endScale: function() { return this.touchCluster.getEndScaleConstraint(); },
-				claimTouches: function() {
-					return _.bind(this.touchCluster.claimTouches, this.touchCluster);
-				},
-				disclaimTouches: function() {
-					return _.bind(this.touchCluster.disclaimTouches, this.touchCluster);
-				},
+				//claimTouches: function() { return _.bind(this.touchCluster.claimTouches, this.touchCluster); },
+				//disclaimTouches: function() { return _.bind(this.touchCluster.disclaimTouches, this.touchCluster); },
 				satisfied: function() { return this.touchCluster.getSatisfiedEvent(); },
 				unsatisfied: function() { return this.touchCluster.getUnsatisfiedEvent(); }
 			}

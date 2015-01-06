@@ -14,7 +14,6 @@
 
 	$.widget("interstate.touch_cluster", {
 		options: {
-			ctx: false,
 			paper: false,
 			fingerRadius: 50,
 			fingerStartRadius: 3,

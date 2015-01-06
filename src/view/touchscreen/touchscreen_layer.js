@@ -16,14 +16,8 @@
 
 			this.element.addClass("hasTouchscreenLayer");
 
-			this.canvasDiv = $("<canvas />").prependTo(document.body).css({
-				"pointer-events": "none",
-				"position": "absolute"
-			});
-
 			this.paper = new Snap(0,0);
 			this.raphaelDiv = $(this.paper.node);
-			this.ctx = this.canvasDiv[0].getContext("2d");
 			this.raphaelDiv.prependTo(document.body).css({
 				"pointer-events": "none",
 				"position": "absolute",
@@ -31,19 +25,20 @@
 			});
 
 			var onWindowResize = _.bind(function() {
-				var width = Math.max(document.body.scrollWidth, window.innerWidth),
-					height = Math.max(document.body.scrollHeight, window.innerHeight);
-				//this.paper.setSize(window.innerWidth, window.innerHeight);
+				var width = window.innerWidth,
+					height = window.innerHeight;
+
 				this.paper.attr({
 					width: width,
 					height: height
 				});
-				this.canvasDiv.css({
-					width: width+'px',
-					height: height+'px'
-				}).attr({
-					width: width,
-					height: height
+
+				var scrollWidth = document.body.scrollWidth,
+					scrollHeight = document.body.scrollHeight;
+
+				this.paper.attr({
+					width: scrollWidth,
+					height: scrollHeight
 				});
 			}, this);
 
@@ -52,13 +47,11 @@
 
 			if(this.option("highlightTouches")) {
 				this.element.screen_touches({
-					ctx: this.ctx,
 					paper: this.paper
 				});
 			}
 
 			this.element.svg_path({
-				ctx: this.ctx,
 				paper: this.paper,
 				pathAttributes: {
 					"stroke-dasharray": "5, 5, 1, 5"
@@ -66,7 +59,6 @@
 			});
 
 			this.element.touch_cluster({
-				ctx: this.ctx,
 				paper: this.paper
 			});
 			/*
@@ -108,7 +100,6 @@
 
 			this.paper.clear();
 			this.raphaelDiv.remove();
-			this.canvasDiv.remove();
 		},
 		addPath: function(toAdd) {
 			this.element.svg_path("addPathToPaper", toAdd);

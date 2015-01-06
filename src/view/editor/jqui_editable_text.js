@@ -97,7 +97,7 @@
 					helper.on("focus", this._on_helper_focus);
 					helper.on("blur", this._on_helper_blur);
 
-					helper.setValue(this.element.val() || "", 1);
+					helper.setValue(this.element.val() || " ", 1);
 					this.$textarea_binding = cjs(this.element[0]);
 					this.$textarea_binding.onChange(function() {
 						helper.setValue(this.$textarea_binding.get(), 1);

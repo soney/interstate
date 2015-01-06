@@ -10,7 +10,6 @@
 	$.widget("interstate.svg_path", {
 		options: {
 			cluster: false,
-			ctx: false,
 			paper: false,
 			defaultPathAttributes: {
 				fill: "#666",
@@ -67,7 +66,7 @@
 			var i = 0, len = this.paths.length, pinfo;
 			for(; i<len; i++) {
 				pinfo = this.paths[i];
-				if(pinfo.cluster === path) { // we already have this cluster
+				if(pinfo.path === path) { // we already have this cluster
 					pinfo.draw_fn.destroy();
 					this.paths.splice(i, 1);
 					return;
