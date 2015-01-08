@@ -796,19 +796,17 @@
 				root = ptr.root(),
 				croot = ist.find_or_put_contextual_obj(root);
 
-
-			this._command_stack.destroy();
-			delete this._command_stack;
-
-			window.dbg = true;
 			croot.destroy();
-			window.dbg = false;
 			/*
 			if(_.keys(interstate.cobj_hashes).length>0) {
 				debugger;
 			}
 			*/
 			root.destroy();
+
+			this._command_stack.destroy();
+			delete this._command_stack;
+
 			delete this.pointer;
 		};
 		proto._cycle_stringify_destringify = function() {

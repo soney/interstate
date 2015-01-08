@@ -61,7 +61,7 @@
 				});
 			},
 			destroy: function(silent) {
-				if(this.touchscreen_layer) {
+				if(this.ist_runtime.is(".hasTouchscreenLayer")) {
 					this.ist_runtime.touchscreen_layer("addTouchCluster", this.touchCluster);
 				}
 				this.touchCluster.destroy(silent);

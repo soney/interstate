@@ -343,8 +343,7 @@
 		},
 		{
 			name: "Removing Transitions",
-			expect: 1,
-			builtins: false,
+			expect: 4,
 			steps: [{
 				setup: function(env) {
 					env	.set("g", "<stateful>")
@@ -355,9 +354,29 @@
 							.set("ev", "(start)", "mouse.click()")
 							.add_transition("s0", "s1", "ev")
 							.add_transition("s1", "s0", "ev")
+							.set("x", "s0", "'s0'")
+							.set("x", "s1", "'s1'")
 							;
 				},
 				test: function(env, runtime) {
+					var g = ist.find_or_put_contextual_obj(env.get_pointer_obj(), env.pointer);
+
+					equal(g.prop_val("x"), "s0");
+
+					simulateClick("click", window);
+
+					equal(g.prop_val("x"), "s1");
+
+					simulateClick("click", window);
+
+					equal(g.prop_val("x"), "s0");
+
+					env.remove_state("s1");
+
+					simulateClick("click", window);
+
+					equal(g.prop_val("x"), "s0");
+
 				}
 			}]
 		},

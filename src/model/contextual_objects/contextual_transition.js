@@ -235,13 +235,13 @@
 						//}
 					//}
 
-					if (old_event && old_event.off_fire) {
+					if (old_event && old_event.off_fire && !old_event.destroyed) {
 						old_event.off_fire(this.fire, this);
 
 						//if(!old_event_cobj) { // if we created the old basic object, we can go ahead and destroy this event.
 							//old_event.destroy(true); //destroy silently (without nullifying)
 						//}
-						old_event.destroy();
+						//old_event.destroy();
 					}
 
 					//if (old_event_cobj && old_event_cobj !== this.event_cobj) {
@@ -258,8 +258,12 @@
 			}, {
 				context: this,
 				run_on_create: false,
-				pause_while_running: true
-				//on_destroy: function() {
+				pause_while_running: true,
+				on_destroy: function() {
+					old_event = this.event;
+					if (old_event && old_event.off_fire && !old_event.destroyed) {
+						old_event.off_fire(this.fire, this);
+					}
 					//event_constraint.destroy(true);
 					/*
 					if(old_event && old_event.off_fire) {
@@ -272,7 +276,7 @@
 					//if(can_destroy_old_event) {
 						//old_event.destroy();
 					//}
-				//}
+				}
 			});
 		};
 		proto._remove_live_event_updater = function() {

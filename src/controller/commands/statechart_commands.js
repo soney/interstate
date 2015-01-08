@@ -104,7 +104,7 @@
                 hash: "hash"
             });
             var incoming_transitions = this._state.getIncomingTransitions(),
-                outgoing_transitions = this._state.getIncomingTransitions();
+                outgoing_transitions = this._state.getOutgoingTransitions();
             transitions.add.apply(transitions, incoming_transitions);
             transitions.add.apply(transitions, outgoing_transitions);
             this._transitions = transitions.toArray();
@@ -122,8 +122,8 @@
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);
             if (in_effect) {
-				if(this._statechart && this._statechart.destroy) {
-					this._statechart.destroy();
+				if(this._state && this._state.destroy) {
+					this._state.destroy();
 				}
                 _.forEach(this._transitions, function (transition) {
                     transition.destroy();
