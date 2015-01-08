@@ -114,7 +114,7 @@
 					clip_rect: "null",
 					cursor: "'default'",
 					opacity: "1.0",
-					src: "'http://interstate.from.so/images/interstate_logo.png'",
+					href: "'http://interstate.from.so/images/interstate_logo.png'",
 					transform: "''",
 					x: "20",
 					y: "20",

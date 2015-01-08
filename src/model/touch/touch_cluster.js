@@ -533,12 +533,19 @@
 			this.$usingFingers.forEach(function(touchID) {
 				var touch = touches.get(touchID),
 					usedBy = touch.get('usedBy'),
+					claimedBy = touch.get('claimedBy'),
 					index = usedBy.indexOf(this);
 				if(index >= 0) {
 					usedBy.splice(index, 1);
 				}
+
+				index = claimedBy.indexOf(this);
+				if(index >= 0) {
+					claimedBy.splice(index, 1);
+				}
 			}, this);
 			this.$satisfied.set(false);
+			this.$claimed.set(false);
 			this.$usableFingers.setValue([]);
 			this.$usingFingers.setValue([]);
 			this.$startCenter.set({ x: false, y: false });
