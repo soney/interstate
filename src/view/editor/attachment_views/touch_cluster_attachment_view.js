@@ -28,7 +28,7 @@
 			var client = this.option("client");
 
 			this.$numFingers = client.get_$("prop_val", "numFingers");
-			this.$satisfied = client.get_$("prop_val", "isSatisfied");
+			this.$satisfied = client.get_$("_attachment_call", "touch_cluster", "isSatisfied");
 			this.$tc_id = client.get_$("_attachment_call", "touch_cluster", "tc_id");
 			this.$claims_touches = client.get_$("_attachment_call", "touch_cluster", "claimsTouches");
 

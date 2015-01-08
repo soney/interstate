@@ -36,6 +36,9 @@
 
 	ist.JSEventAttachment = ist.register_attachment("js_event_attachment", {
 			ready: function(contextual_object) {
+				this.$target = cjs(false);
+				this.$domTarget = cjs(false);
+
 				this.eventType = this.options.eventType;
 				//this.enabled = false;
 
@@ -47,7 +50,8 @@
 					var listener = _.bind(function(event) {
 						//console.log("signal", this.contextual_object.sid());
 						var event_attachment = this.contextual_object.get_attachment_instance("event_attachment"),
-							eventSignature = event.type+event.timeStamp+specified_target.sid();
+							eventSignature = event.type+event.timeStamp+(specified_target instanceof ist.ContextualObject ? specified_target.sid() : specified_target);
+
 
 						if(this.eventType === "keyboard") {
 							if(event.type === 'keydown' || event.type === 'keyup' || event.type === 'keypress') {
@@ -68,6 +72,12 @@
 								this._timeout_id = false;
 							}
 						}
+
+						if(this.eventType === "keyboard" || this.eventType === "mouse") {
+							this.$domTarget.set(event.target);
+							this.$target.set(specified_target);
+						}
+
 						//var event_attachment = this.contextual_object.get_attachment_instance("event_attachment");
 						if(event_attachment) {
 							event_attachment.fire(event);
@@ -116,7 +126,7 @@
 					var listener = _.bind(function (event) {
 						//console.log("wait", this.contextual_object.sid());
 						var event_attachment = this.contextual_object.get_attachment_instance("event_attachment"),
-							eventSignature = event.type+event.timeStamp+specified_target.sid();
+							eventSignature = event.type+event.timeStamp+(specified_target instanceof ist.ContextualObject ? specified_target.sid() : specified_target);
 						if(event_attachment) {
 							event_attachment.wait();
 						}
@@ -150,7 +160,7 @@
 					}
 				});
 
-				this._eventListener = _.bind(function(event) {
+				this._timeoutEventListener = _.bind(function(event) {
 					var event_attachment = this.contextual_object.get_attachment_instance("event_attachment");
 					if(event_attachment) {
 						event_attachment.fire(event);
@@ -170,11 +180,13 @@
 					}
 				} else {
 					if(this._oldType) {
-						_.each(this._oldTarget, function(dom_obj) {
+						_.each(this._oldTarget, function(computed_target) {
+							var dom_obj = computed_target.dom_obj,
+								cobj = computed_target.cobj || false;
 							//console.log("disable", this._oldType, dom_obj);
 							//dom_obj.removeEventListener(this._oldType, this.get_wait_listener(this.contextual_object), true); // Capture
-							dom_obj.removeEventListener(this._oldType, this.get_capture_listener(this.contextual_object), true); // Capture
-							dom_obj.removeEventListener(this._oldType, this.get_bubble_listener(this.contextual_object), false); // Bubble
+							dom_obj.removeEventListener(this._oldType, this.get_capture_listener(cobj), true); // Capture
+							dom_obj.removeEventListener(this._oldType, this.get_bubble_listener(cobj), false); // Bubble
 						}, this);
 						this._oldType = this._oldTarget = false;
 					}
@@ -186,6 +198,11 @@
 				//delete this.get_wait_listener;
 				delete this.get_capture_listener;
 				delete this.get_bubble_listener;
+
+				delete this._oldTarget;
+
+				this.$target.destroy(true);
+				this.$domTarget.destroy(true);
 			},
 			parameters: {
 				type_and_target: function(contextual_object) {
@@ -195,7 +212,7 @@
 
 						try {
 							type = this.contextual_object.prop_val("type");
-							targets = this.contextual_object.prop_val("target");
+							targets = this.contextual_object.prop_val("element");
 						} catch(e) {
 							type = false;
 							targets = [];
@@ -203,21 +220,22 @@
 							console.log(e);
 						}
 
-						var computed_targets = _.pluck(get_targets(targets), "dom_obj");
-
+						var computed_targets = get_targets(targets);
 						if(this.eventType === "keyboard") {
-							computed_targets = [window];
+							computed_targets = [{dom_obj: window}];
 						}
 						//console.log(type, computed_targets);
 
 						//if(this.enabled) {
 							if(this._oldType) {
-								_.each(this._oldTarget, function(dom_obj) {
+								_.each(this._oldTarget, function(computed_target) {
+									var dom_obj = computed_target.dom_obj,
+										cobj = computed_target.cobj || false;
 									//console.log("disable", this._oldType, dom_obj);
-									//target.removeEventListener(this._oldType, this._eventListener);
+									//target.removeEventListener(this._oldType, this._timeoutEventListener);
 									//dom_obj.removeEventListener(this._oldType, this.get_wait_listener(this.contextual_object), true); // Capture
-									dom_obj.removeEventListener(this._oldType, this.get_capture_listener(this.contextual_object), true); // Capture
-									dom_obj.removeEventListener(this._oldType, this.get_bubble_listener(this.contextual_object), false); // Bubble
+									dom_obj.removeEventListener(this._oldType, this.get_capture_listener(cobj), true); // Capture
+									dom_obj.removeEventListener(this._oldType, this.get_bubble_listener(cobj), false); // Bubble
 								}, this);
 							}
 
@@ -225,13 +243,15 @@
 
 							if(type) {
 								//console.log(computed_targets);
-								_.each(computed_targets, function(dom_obj) {
+								_.each(computed_targets, function(computed_target) {
+									var dom_obj = computed_target.dom_obj,
+										cobj = computed_target.cobj || false;
 									//console.log(dom_obj, this.contextual_object.sid());
 									//console.log("enable", type, dom_obj);
 									//dom_obj.addEventListener(type, this.get_wait_listener(this.contextual_object), true); // Capture
-									dom_obj.addEventListener(type, this.get_capture_listener(this.contextual_object), true); // Capture
-									dom_obj.addEventListener(type, this.get_bubble_listener(this.contextual_object), false); // Bubble
-									//target.addEventListener(type, this._eventListener);
+									dom_obj.addEventListener(type, this.get_capture_listener(cobj), true); // Capture
+									dom_obj.addEventListener(type, this.get_bubble_listener(cobj), false); // Bubble
+									//target.addEventListener(type, this._timeoutEventListener);
 								}, this);
 							}
 						//}
@@ -268,11 +288,11 @@
 
 
 							if(!milliseconds || milliseconds === 'frame') {
-								this._timeout_id = requestAnimationFrame(this._eventListener);
+								this._timeout_id = requestAnimationFrame(this._timeoutEventListener);
 								this._timeout_type = "frame";
 							} else {
 								this._timeout_set_at = current_time;
-								this._timeout_id = setTimeout(this._eventListener, milliseconds);
+								this._timeout_id = setTimeout(this._timeoutEventListener, milliseconds);
 								this._timeout_type = "delay";
 							}
 						}
@@ -296,11 +316,11 @@
 						}
 
 						if(!milliseconds || milliseconds === 'frame') {
-							this._timeout_id = requestAnimationFrame(this._eventListener);
+							this._timeout_id = requestAnimationFrame(this._timeoutEventListener);
 							this._timeout_type = "frame";
 						} else {
 							this._timeout_set_at = current_time;
-							this._timeout_id = setTimeout(this._eventListener, milliseconds);
+							this._timeout_id = setTimeout(this._timeoutEventListener, milliseconds);
 							this._timeout_type = "delay";
 						}
 					} else {
@@ -308,7 +328,7 @@
 						if(this._oldType) {
 							_.each(this._oldTarget, function(dom_obj) {
 								//console.log("enable", this._oldType, dom_obj);
-								//target.addEventListener(this._oldType, this._eventListener);
+								//target.addEventListener(this._oldType, this._timeoutEventListener);
 								dom_obj.addEventListener(this._oldType, this.get_wait_listener(this.contextual_object), true); // Capture
 								dom_obj.addEventListener(this._oldType, this.get_target_listener(this.contextual_object), true); // Capture
 								dom_obj.addEventListener(this._oldType, this.get_signal_listener(this.contextual_object), false); // Bubble
@@ -334,7 +354,7 @@
 						if(this._oldType) {
 							_.each(this._oldTarget, function(dom_obj) {
 								//console.log("disable", this._oldType, dom_obj);
-								//target.removeEventListener(this._oldType, this._eventListener);
+								//target.removeEventListener(this._oldType, this._timeoutEventListener);
 								dom_obj.removeEventListener(this._oldType, this.get_wait_listener(this.contextual_object), true); // Capture
 								dom_obj.removeEventListener(this._oldType, this.get_target_listener(this.contextual_object), true); // Capture
 								dom_obj.removeEventListener(this._oldType, this.get_signal_listener(this.contextual_object), false); // Bubble
@@ -360,6 +380,14 @@
 					}
 				},
 				onTransitionNotFired: function(event) { },
+			},
+			outputs: {
+				target: function() {
+					return this.$target;
+				},
+				domTarget: function() {
+					return this.$domTarget;
+				}
 			}
 		});
 

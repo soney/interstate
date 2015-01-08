@@ -61,6 +61,9 @@
 				});
 			},
 			destroy: function(silent) {
+				if(this.touchscreen_layer) {
+					this.ist_runtime.touchscreen_layer("addTouchCluster", this.touchCluster);
+				}
 				this.touchCluster.destroy(silent);
 			},
 			parameters: {
@@ -69,14 +72,16 @@
 						downOutside = ist.convertObjectToPath(contextual_object.prop_val("downOutside")),
 						numFingers = contextual_object.prop_val("numFingers"),
 						maxRadius = contextual_object.prop_val("maxRadius"),
-						maxTouchInterval = contextual_object.prop_val("maxTouchInterval");
+						maxTouchInterval = contextual_object.prop_val("maxTouchInterval"),
+						greedy = contextual_object.prop_val("greedy");
 
 					this.touchCluster.setOption({
 						downInside: downInside,
 						downOutside: downOutside,
 						numFingers: numFingers,
 						maxRadius: maxRadius,
-						maxTouchInterval: maxTouchInterval
+						maxTouchInterval: maxTouchInterval,
+						greedy: greedy
 					});
 				},
 				debugDraw: function(contextual_object) {
@@ -90,14 +95,8 @@
 							this.ist_runtime.touchscreen_layer("removeTouchCluster", this.touchCluster);
 						}
 					}
-				},
-				onTransitionFired: function(event) {
-					var greedy = contextual_object.prop_val("greedy");
-
-					if(greedy) {
-						this.touchCluster.claimTouches();
-					}
-				},
+				}
+				//onTransitionFired: function(event) { },
 				/*
 				satisfied: function(contextual_object) {
 					var satisfied = this.touchCluster.isSatisfied();
@@ -113,9 +112,8 @@
 				tc_id: function() {
 					return this.touchCluster.id();
 				},
-				claimsTouches: function() {
-					return this.touchCluster.claimsTouches();
-				}
+				claimsTouches: function() { return this.touchCluster.claimsTouches(); },
+				isSatisfied: function() { return this.touchCluster.isSatisfied(); }
 			},
 			outputs: {
 				x: function() { return this.touchCluster.getXConstraint(); },
@@ -131,6 +129,9 @@
 				endRotation: function() { return this.touchCluster.getEndRadiusConstraint(); },
 				scale: function() { return this.touchCluster.getScaleConstraint(); },
 				endScale: function() { return this.touchCluster.getEndScaleConstraint(); },
+				//isSatisfied: function() { return this.touchCluster.isSatisfied(); },
+				//isSatisfied: function() { return this.touchCLuster.isSatisfiedConstraint(); },
+				//endScale: function() { return this.touchCluster.getEndScaleConstraint(); },
 				//claimTouches: function() { return _.bind(this.touchCluster.claimTouches, this.touchCluster); },
 				//disclaimTouches: function() { return _.bind(this.touchCluster.disclaimTouches, this.touchCluster); },
 				satisfied: function() { return this.touchCluster.getSatisfiedEvent(); },

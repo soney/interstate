@@ -338,7 +338,9 @@
 			numFingers: 1,
 
 			maxRadius: false,
-			maxTouchInterval: 500
+			maxTouchInterval: 500,
+
+			greedy: false
 		}, options);
 
 		this._id = tc_id++;
@@ -515,6 +517,8 @@
 			this.$endYConstraint.destroy(true);
 		};
 
+		proto.isGreedy = function() { return this.options.greedy; };
+
 		proto.isSatisfied = function() { return this.$satisfied.get(); };
 		proto.isSatisfiedConstraint = function() { return this.$satisfied; };
 
@@ -563,6 +567,11 @@
 			}
 
 			this.satisfied.fire();
+
+			if(this.isGreedy()) {
+				this.claimTouches();
+			}
+
 			cjs.signal();
 		};
 

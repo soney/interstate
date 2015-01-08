@@ -341,6 +341,26 @@
 				}
 			}]
 		},
+		{
+			name: "Removing Transitions",
+			expect: 1,
+			builtins: false,
+			steps: [{
+				setup: function(env) {
+					env	.set("g", "<stateful>")
+						.cd("g")
+							.add_state("s0")
+							.start_at("s0")
+							.add_state("s1")
+							.set("ev", "(start)", "mouse.click()")
+							.add_transition("s0", "s1", "ev")
+							.add_transition("s1", "s0", "ev")
+							;
+				},
+				test: function(env, runtime) {
+				}
+			}]
+		},
 	];
 	tests.forEach(function(test) {
 		dt(test.name, test);

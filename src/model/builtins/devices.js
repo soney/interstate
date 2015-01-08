@@ -18,7 +18,7 @@
 					}
 				}), new ist.EventAttachment({ })]
 			});
-		mouse_event .set("target", new ist.Cell({str: "arguments[0]||window"}))
+		mouse_event .set("element", new ist.Cell({str: "arguments[0]||window"}))
 					.set("type", new ist.Cell({str: "arguments[1]"}))
 					.set("arguments", new ist.Cell({str: "[window, 'click']"}))
 					.set("delay", new ist.Cell({str: "false"}))
@@ -375,7 +375,10 @@
 			},
 			touchCluster = new ist.Dict({has_protos: false, direct_attachments: [new ist.TouchClusterAttachment({
 															}), new ist.EventAttachment({})]
-																					});
+																					}),
+			touchCross = new ist.Dict({has_protos: false, direct_attachments: [new ist.CrossEventAttachment({
+														}), new ist.EventAttachment({})]
+														});
 
 			touchCluster.set("downInside", new ist.Cell({str: "false"}))
 						.set("downOutside", new ist.Cell({str: "false"}))
@@ -389,6 +392,15 @@
 						.set("preventDefault", new ist.Cell({str: "false"}))
 						.set("greedy", new ist.Cell({str: "false"}))
 						;
+
+
+			touchCross	.set("touchCluster", new ist.Cell({str: "this.container"}))
+						.set("minVelocity", new ist.Cell({str: "false"}))
+						.set("maxVelocity", new ist.Cell({str: "false"}))
+						.set("path", new ist.Cell({str: "arguments[0]"}))
+						.set("arguments", new ist.Cell({str: "[false]"}));
+
+			touchCluster.set("cross", touchCross)
 
 			var device_touchscreen = new ist.Dict({has_protos: false, value: {
 					finger_count: touch_count,

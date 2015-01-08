@@ -1,134 +1,111 @@
 /*jslint nomen: true, vars: true */
-/*global interstate,esprima,able,uid,window,console */
+/*global interstate,able,uid,console,jQuery,Raphael,window */
 
-(function (ist) {
-	"use strict";
+(function (ist, $) {
+	//"use strict";
 	var cjs = ist.cjs,
 		_ = ist._;
 
-	ist.CrossEvent = function () {
-		ist.Event.apply(this, arguments);
-		//this._initialize();
-		this._type = "cross";
-	};
+	ist.CrossEventAttachment = ist.register_attachment("cross_event_attachment", {
+			ready: function(contextual_object) {
+			},
+			destroy: function(silent) {
+				if(this._crossing_path_listener_id) {
+					removeCrossingPathListener(this._crossing_path_listener_id);
+				}
+			},
+			parameters: {
+				options: function() {
+					var path = this.contextual_object.prop_val("path"),
+						min_velocity = this.contextual_object.prop_val("minVelocity"),
+						max_velocity = this.contextual_object.prop_val("maxVelocity"),
+						touchCluster = this.contextual_object.prop_val("touchCluster");
 
-	(function (My) {
-		_.proto_extend(My, ist.Event);
-		var proto = My.prototype;
-		proto.on_create = function (touchCluster, path, min_velocity, max_velocity) {
-			this.path = path;
-			this.min_velocity = min_velocity;
-			this.max_velocity = max_velocity;
-			this.touchCluster = touchCluster;
+					if(!_.isNumber(min_velocity)) { min_velocity = false; }
+					if(!_.isNumber(max_velocity)) { max_velocity = false; }
 
-			this._curr_path = null;
-			this._crossing_path_listener_id = false;
+					if(path instanceof ist.ContextualDict) {
+						var shape_attachment = path.get_attachment_instance("shape");
+						if(shape_attachment) {
+							if(shape_attachment.shape_type === "path") {
+								path = path.prop_val("path");
+							} else if(shape_attachment.shape_type === "circle") {
+								cx = path.prop_val("cx");
+								cy = path.prop_val("cy");
+								var r = path.prop_val("r");
 
-			this.live_fn = cjs.liven(function () {
-				var min_velocity = cjs.get(this.min_velocity),
-					max_velocity = cjs.get(this.max_velocity),
-					cx, cy;
+								path = "M"+(cx-r)+','+cy+'a'+r+','+r+',0,1,1,0,0.0001Z';
+							} else if(shape_attachment.shape_type === "ellipse") {
+								cx = path.prop_val("cx");
+								cy = path.prop_val("cy");
 
-				if(!_.isNumber(min_velocity)) { min_velocity = false; }
-				if(!_.isNumber(max_velocity)) { max_velocity = false; }
+								var rx = path.prop_val("rx"),
+									ry = path.prop_val("ry");
 
-				var path = cjs.get(this.path);
-				if(path instanceof ist.ContextualDict) {
-					var shape_attachment = path.get_attachment_instance("shape");
-					if(shape_attachment) {
-						if(shape_attachment.shape_type === "path") {
-							path = path.prop_val("path");
-						} else if(shape_attachment.shape_type === "circle") {
-							cx = path.prop_val("cx");
-							cy = path.prop_val("cy");
-							var r = path.prop_val("r");
+								path = "M"+(cx-rx)+','+cy+'a'+rx+','+ry+',0,1,1,0,0.0001Z';
+							} else if(shape_attachment.shape_type === "rect") {
+								var x = path.prop_val("x"),
+									y = path.prop_val("y"),
+									width = path.prop_val("width"),
+									height = path.prop_val("height");
 
-							path = "M"+(cx-r)+','+cy+'a'+r+','+r+',0,1,1,0,0.0001Z';
-						} else if(shape_attachment.shape_type === "ellipse") {
-							cx = path.prop_val("cx");
-							cy = path.prop_val("cy");
-
-							var rx = path.prop_val("rx"),
-								ry = path.prop_val("ry");
-
-							path = "M"+(cx-rx)+','+cy+'a'+rx+','+ry+',0,1,1,0,0.0001Z';
-						} else if(shape_attachment.shape_type === "rect") {
-							var x = path.prop_val("x"),
-								y = path.prop_val("y"),
-								width = path.prop_val("width"),
-								height = path.prop_val("height");
-
-							path = "M"+x+','+y+'h'+width+'v'+height+'h'+(-width)+'Z';
-						} else {
-							path = false;
+								path = "M"+x+','+y+'h'+width+'v'+height+'h'+(-width)+'Z';
+							} else {
+								path = false;
+							}
 						}
 					}
-				}
 
-				var touchCluster = cjs.get(this.touchCluster);
-				if(touchCluster instanceof ist.ContextualDict) {
-					var tc_attachment = touchCluster.get_attachment_instance("touch_cluster");
-					if(tc_attachment) {
-						touchCluster = tc_attachment.touchCluster;
+					if(touchCluster instanceof ist.ContextualDict) {
+						var tc_attachment = touchCluster.get_attachment_instance("touch_cluster");
+						if(tc_attachment) {
+							touchCluster = tc_attachment.touchCluster;
+						} else {
+							touchCluster = false;
+						}
+					}
+
+					if(this._min_velocity !== min_velocity || this._max_velocity !== max_velocity ||
+							this._curr_path !== path || this._touch_cluster !== touchCluster) {
+						this.remove_listener();
+
+						this._min_velocity = min_velocity;
+						this._max_velocity = max_velocity;
+						this._curr_path = path;
+						this._touch_cluster = touchCluster;
+
+						this.add_listener();
 					}
 				}
-
-				if(this._min_velocity !== min_velocity || this._max_velocity !== max_velocity || this._curr_path !== path || this._touch_cluster !== touchCluster) {
-					this.remove_listener();
-
-					this._min_velocity = min_velocity;
-					this._max_velocity = max_velocity;
-					this._curr_path = path;
-					this._touch_cluster = touchCluster;
-
-					this.add_listener();
-				}
-			}, {
-				context: this,
-				run_on_create: false
-			});
-			this.live_fn.run(false);
-		};
-		proto.remove_listener = function() {
-			if(this._crossing_path_listener_id) {
-				removeCrossingPathListener(this._crossing_path_listener_id);
-				this._crossing_path_listener_id = false;
-			}
-		};
-		proto.add_listener = function() {
-			this._crossing_path_listener_id = addCrossingPathListener(this._touch_cluster, this._curr_path, function(velocity) {
-				if(velocity >= this._min_velocity) {
-					ist.event_queue.wait();
-					this.fire();
-					_.defer(function() {
-						ist.event_queue.signal();
-					});
-				}
-			}, this);
-		};
-		proto.enable = function () {
-			if(!this.is_enabled()) {
-				if(this.live_fn.resume()) {
-					this.add_listener();
-					this.live_fn.run();
+			},
+			proto_props: {
+				fire: function(event) {
+					var event_attachment = this.contextual_object.get_attachment_instance("event_attachment");
+					if(event_attachment) {
+						event_attachment.fire(event);
+					}
+				},
+				add_listener: function() {
+					this._crossing_path_listener_id = addCrossingPathListener(this._touch_cluster, this._curr_path, function(velocity) {
+						if(velocity >= this._min_velocity) {
+							ist.event_queue.wait();
+							this.fire({
+								velocity: velocity
+							});
+							_.defer(function() {
+								ist.event_queue.signal();
+							});
+						}
+					}, this);
+				},
+				remove_listener: function() {
+					if(this._crossing_path_listener_id) {
+						removeCrossingPathListener(this._crossing_path_listener_id);
+						this._crossing_path_listener_id = false;
+					}
 				}
 			}
-			My.superclass.enable.apply(this, arguments);
-		};
-		proto.disable = function () {
-			if(this.is_enabled()) {
-				this.live_fn.pause();
-				this.remove_listener();
-			}
-			My.superclass.disable.apply(this, arguments);
-		};
-		proto.destroy = function () {
-			My.superclass.destroy.apply(this, arguments);
-			if(this._crossing_path_listener_id) {
-				removeCrossingPathListener(this._crossing_path_listener_id);
-			}
-		};
-	}(ist.CrossEvent));
+		});
 
 
 	var lowerCase = String.prototype.toLowerCase,
@@ -1011,4 +988,4 @@
 				}
 			}
 		};
-}(interstate));
+}(interstate, jQuery));

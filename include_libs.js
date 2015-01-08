@@ -103,6 +103,7 @@ exports.runtime = c(
 				"model/attachments/raphael_attachment.js",
 				//"model/attachments/fireable_attachment.js",
 				"model/attachments/event_attachment.js",
+				"model/attachments/cross_event_attachment.js",
 				"model/attachments/js_event_attachment.js",
 				//"model/attachments/three_attachment.js",
 				"model/attachments/box2d_attachment.js",
