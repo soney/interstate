@@ -52,7 +52,7 @@
 					groupPriority = this.groupPriorities[group];
 
 					if(groupPriority && item.priority < groupPriority) {
-						if(item.timeoutID) { clearTimeout(info.timeoutID); }
+						if(item.timeoutID) { clearTimeout(item.timeoutID); }
 						item.callback.call(item.thisArg, EVENT_STATUS.BLOCKED);
 
 						queue.splice(i, 1);
@@ -266,7 +266,7 @@
 			parameters: {
 				options: function(contextual_object) {
 					var priority = contextual_object.prop_val("priority"),
-						activationDelay = contextual_object.prop_val("activationDelay"),
+						activationDelay = contextual_object.prop_val("delay"),
 						group = contextual_object.prop_val("eventGroup");
 
 					this.qEvent.setOption({

@@ -237,6 +237,9 @@
 
 					if (old_event && old_event.off_fire && !old_event.destroyed) {
 						old_event.off_fire(this.fire, this);
+						if(old_event instanceof ist.IstObjEvent) { // created by an 'on' call
+							old_event.destroy();
+						}
 
 						//if(!old_event_cobj) { // if we created the old basic object, we can go ahead and destroy this event.
 							//old_event.destroy(true); //destroy silently (without nullifying)

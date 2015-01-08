@@ -167,17 +167,6 @@
 					equal(B.prop_val("x"), "s1");
 				}
 			}]
-		},
-		{
-			name: "Loading files",
-			filename: "../saved_programs/single_no_text_h1.ist",
-			expect: 1,
-			steps: [{
-				test: function(env, runtime) {
-					equal($("h1", runtime).length, 1)
-					replayTouches("../touch_recordings/tap/tap.txt")
-				}
-			}]
 		}
 		/**/
 	];

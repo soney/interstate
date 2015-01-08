@@ -113,7 +113,6 @@
             throw new Error("Must select a parent object");
         }
     
-    
         this._cobj = this._options.cobj;
 		this._prop_name = this._options.name;
     };
@@ -127,6 +126,8 @@
 				parent_ptr = ptr.pop(),
 				parent_cobj = ist.find_or_put_contextual_obj(parent_ptr.pointsAt(), parent_ptr),
 				parent_obj = parent_cobj.get_object();
+
+			this._parent_obj = parent_obj;
 			
 			if(!this._prop_value && parent_cobj instanceof ist.ContextualStatefulObj) {
 				var vobj = this._cobj.get_object();
@@ -148,12 +149,12 @@
            parent_obj.set_prop(this._prop_name, this._prop_value);
         };
         proto._unexecute = function () {
-			var ptr = this._cobj.get_pointer(),
-				parent_ptr = ptr.pop(),
-				parent_cobj = ist.find_or_put_contextual_obj(parent_ptr.pointsAt(), parent_ptr),
-				parent_obj = parent_cobj.get_object();
+			//var ptr = this._cobj.get_pointer(),
+				//parent_ptr = ptr.pop(),
+				//parent_cobj = ist.find_or_put_contextual_obj(parent_ptr.pointsAt(), parent_ptr),
+				//parent_obj = parent_cobj.get_object();
 			//var parent_obj = this._parent.get_object();
-			parent_obj.unset_prop(this._prop_name);
+			this._parent_obj.unset_prop(this._prop_name);
         };
         proto._do_destroy = function (in_effect) {
 			My.superclass._do_destroy.apply(this, arguments);

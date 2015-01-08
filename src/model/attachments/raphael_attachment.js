@@ -164,7 +164,7 @@
 				}
 			}
 		});
-	var can_animate_parameters = ["r", "cx", "cy", "x", "y", "width", "height", "path", "fill", "stroke", "opacity", "fill_opacity", "stroke_opacity", "transform"];
+	var can_animate_parameters = ["r", "cx", "cy", "x", "y", "width", "height", "path", "fill", "stroke", "opacity", "fill_opacity", "stroke_opacity"];
 	var can_animate_dict = {};
 	_.each(can_animate_parameters, function(name) {
 		can_animate_dict[name] = true;
@@ -232,6 +232,10 @@
 									var easing = contextual_object.prop_val("animation_easing");
 									if(!_.isString(easing)) {
 										easing = "linear";
+									}
+
+									if(_.isString(easing)) {
+										easing = mina[easing] || mina.linear;
 									}
 
 									var anim_options = { };
