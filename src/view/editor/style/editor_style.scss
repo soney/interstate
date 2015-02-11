@@ -18,6 +18,8 @@ $dropdown_padding: 5px;
 
 $link_color: royalblue;
 
+$sshot_mode: false;
+
 @mixin non-selectable {
 	-webkit-user-select: none;
 	-khtml-user-select: none;
@@ -54,8 +56,12 @@ html.full_window_editor {
 	> body {
 		font-size: 1em;
 		line-height: 1;
-		//background-color: #FEFEFE;
-		//background-image: url(images/fabric_plaid.png);
+		@if $sshot_mode {
+			background-color: #FFF;
+		} @else {
+			background-color: #FEFEFE;
+			background-image: url(images/fabric_plaid.png);
+		}
 
 		overflow: hidden;
 		height: 100%;
@@ -278,7 +284,10 @@ html.full_window_editor {
 
 		&.curr_col {
 			min-width: 150px;
-			//box-shadow: 2px 2px 10px #666;
+
+			@if $sshot_mode == false {
+				box-shadow: 2px 2px 10px #666;
+			}
 			&.template {
 				box-shadow: 0 -7px 0 -4px #fff,
 							0 -7px 0 -3px #c2c0b8,

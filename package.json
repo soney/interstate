@@ -29,7 +29,7 @@
 		"grunt-contrib-watch": "~0.5",
 		"grunt-contrib-qunit": "~0.3",
 		"grunt-concat-sourcemap": "~0.4",
-		"node-sass": ">=0.6",
+		"node-sass": "latest",
 		"node-sass-middleware": "latest",
 		"socket.io": ">=0.9"
 	},

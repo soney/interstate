@@ -100,10 +100,11 @@ var callback_map = function(arr, func, callback) {
 				};
 
 				
-				var body = ejs.render(str, {cache: false, locals: locals});
+				var body = ejs.render(str, locals);
+				//{cache: false, locals: locals});
 				res.writeHead(200, {
-					  'Content-Type': 'text/html'
-					, 'Content-Length': body.length
+					'Content-Type': 'text/html',
+					'Content-Length': body.length
 				});
 				res.end(body);
 			}
