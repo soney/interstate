@@ -670,6 +670,12 @@
 				},
 				blur: function() {
 					return this.blur_event;
+				},
+				doFocus: function() {
+					return function(value) {
+						var dom_obj = this.get_dom_obj();
+						$(dom_obj).val(value).focus();
+					};
 				}
 			}
 		});

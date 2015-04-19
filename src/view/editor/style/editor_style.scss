@@ -1,3 +1,5 @@
+$sshot_mode: false;
+
 $nav_header_color: #F7F7F7;
 $nav_header_hover_color: #EEE;
 $nav_header_active_color: #E0E0E0;
@@ -17,8 +19,6 @@ $drag_handle_width: 15px;
 $dropdown_padding: 5px;
 
 $link_color: royalblue;
-
-$sshot_mode: false;
 
 @mixin non-selectable {
 	-webkit-user-select: none;

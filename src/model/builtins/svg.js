@@ -31,7 +31,7 @@
 				image: new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "image",
-																									constructor_params: ["", 0, 0, 0, 0]
+																									constructor_params: ["http://interstate.from.so/images/interstate_logo.png", 0, 0, 0, 0]
 																								}
 																						})]
 																					}),

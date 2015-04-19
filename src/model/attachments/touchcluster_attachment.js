@@ -130,7 +130,7 @@
 				scale: function() { return this.touchCluster.getScaleConstraint(); },
 				endScale: function() { return this.touchCluster.getEndScaleConstraint(); },
 				//isSatisfied: function() { return this.touchCluster.isSatisfied(); },
-				//isSatisfied: function() { return this.touchCLuster.isSatisfiedConstraint(); },
+				isSatisfied: function() { return this.touchCluster.isSatisfiedConstraint(); },
 				//endScale: function() { return this.touchCluster.getEndScaleConstraint(); },
 				//claimTouches: function() { return _.bind(this.touchCluster.claimTouches, this.touchCluster); },
 				//disclaimTouches: function() { return _.bind(this.touchCluster.disclaimTouches, this.touchCluster); },
