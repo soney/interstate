@@ -6,6 +6,7 @@ var express = require('express'),
 	fs = require('fs'),
 	ejs = require('ejs'),
 	sass = require("node-sass"),
+	sass_middleware = require("node-sass-middleware"),
 	ist_inc = require('./include_libs'),
 	http = require("http"),
 	child_process = require('child_process');
@@ -57,7 +58,7 @@ var callback_map = function(arr, func, callback) {
 	app.set('view engine', 'ejs');
 
 	app.get("/e/:uid", function(req, res, next) {
-		res.redirect("src/view/editor/editor.ejs.html?comm=socket&client_id="+req.params.uid);
+		res.redirect("../src/view/editor/editor.ejs.html?comm=socket&client_id="+req.params.uid);
 	});
 	app.get("/auto_open_editor", function(req, res, next) {
 		child_process.exec('open -a /Applications/Google\\ Chrome\\ Canary.app http://'+addresses[0]+':8000/e/'+req.param('client_id'), function callback(error, stdout, stderr){
@@ -77,6 +78,7 @@ var callback_map = function(arr, func, callback) {
 		} else {
 			filename = text_before(relative_url, ".ejs.html");
 		}
+		filename = "" + filename;
 
 		get_file_string(filename, function(str) {
 			if(!str) {
@@ -98,16 +100,17 @@ var callback_map = function(arr, func, callback) {
 				};
 
 				
-				var body = ejs.render(str, {cache: false, locals: locals});
+				var body = ejs.render(str, locals);
+				//{cache: false, locals: locals});
 				res.writeHead(200, {
-					  'Content-Type': 'text/html'
-					, 'Content-Length': body.length
+					'Content-Type': 'text/html',
+					'Content-Length': body.length
 				});
 				res.end(body);
 			}
 		});
 	});
-	app.use(sass.middleware({
+	app.use(sass_middleware({
 		src: __dirname
 	}));
 	app.use(express.static(__dirname));
@@ -121,6 +124,7 @@ process.on('SIGINT', function () {
 
 var filter_regex = /\.(js|html|css|swp)$/; // include swp files because they are added and removed when files get edited...for some reason,
 											// edits aren't otherwise detected
+/*
 
 var render_files = function(res, files) {
 	concat_files(files, function(str) {
@@ -148,9 +152,10 @@ var concat_files = function(file_list, callback) {
 	};
 	get_curr();
 };
+*/
 
 var get_file_string = function(path, callback) {
-	fs.readFile(path+"", {encoding: 'ascii'}, function(err, data) {
+	fs.readFile(path, {encoding: 'ascii'}, function(err, data) {
 		callback(data);
 	});
 };
