@@ -82,7 +82,7 @@
 			ellipse.set("animation_duration", new ist.Cell({str: "300"}));
 			ellipse.set("animation_easing", new ist.Cell({str: "'linear'"}));
 			ellipse.set("shape", new ist.Cell({str: "'ellipse'"}));
-			
+
 			var image = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "image",
@@ -135,7 +135,7 @@
 			rect.set("animation_duration", new ist.Cell({str: "300"}));
 			rect.set("animation_easing", new ist.Cell({str: "'linear'"}));
 			rect.set("shape", new ist.Cell({str: "'rectangle'"}));
-			
+
 			var text = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
 																								instance_options: {
 																									shape_type: "text",
@@ -232,6 +232,14 @@
 						obj._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "dom.node"}));
 						obj.set("tag", new ist.Cell({str: "'" + tag_name + "'"}));
 					});
+
+			var canvas = new ist.Dict({
+				has_protos: false,
+				direct_attachments: [new ist.CanvasAttachment()]
+			});
+			canvas.set("width", new ist.Cell({str: "400"}));
+			canvas.set("height", new ist.Cell({str: "400"}));
+			dom.set("canvas", canvas)
 			/**/
 		}
 
