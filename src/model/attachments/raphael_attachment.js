@@ -11,6 +11,10 @@
 	var get_children = function(child_nodes) {
 		var children = [];
 		_.each(child_nodes, function(child) {
+			if(child instanceof ist.ContextualCell || child instanceof ist.ContextualStatefulProp) {
+				child = child.val();
+			}
+
 			if(child instanceof ist.ContextualDict) {
 				if(child.is_template()) {
 					var copies = child.instances();
@@ -64,7 +68,8 @@
 	ist.PaperAttachment = ist.register_attachment("paper", {
 			ready: function() {
 				this.dom_obj = window.document.createElement("span");
-				this.paper = new Raphael(this.dom_obj, 0, 0);
+				this.paper = Snap(0,0);
+				this.dom_obj.appendChild(this.paper.node);
 			},
 			destroy: function(silent) {
 				this.paper.clear();
@@ -76,7 +81,11 @@
 				width_height: function(contextual_object) {
 					var width = contextual_object.prop_val("width"),
 						height = contextual_object.prop_val("height");
-					this.paper.setSize(width, height);
+					//this.paper.setSize(width, height);
+					this.paper.attr({
+						width: width,
+						height: height
+					});
 				},
 				fill: function(contextual_object) {
 					var fill = contextual_object.prop_val("fill"),
@@ -86,22 +95,32 @@
 				screen: {
 					type: "list",
 					add: function(shape_attachment_instance, to_index) {
-						var shape = shape_attachment_instance.create_robj(this.paper);
-						var itemi, len;
-						var index = 0;
-						var item;
-						this.paper.forEach(function(elem) {
+						var shape = shape_attachment_instance.create_robj(this.paper),
+							items = this.paper.selectAll(":not(desc):not(defs)"),
+							itemi = items[to_index],
+							len = items.length;
+							/*
+							itemi, len,
+							index = 0,
+							item;
+						items.forEach
+						//rect,circle,path,ellipse,image,text")[index];
+						/*
+						.forEach(function(elem) {
 							if(index === to_index) {
 								itemi = elem;
 							}
 							len = index;
 							index++;
 						});
+						*/
 						if(itemi !== shape) {
 							if(to_index >= len) {
-								shape.toBack();
+								//https://github.com/adobe-webplatform/Snap.svg/issues/121
+								//shape.toBack();
+								shape.appendTo(this.paper);
 							} else {
-								shape.insertBefore(itemi);
+								shape.before(itemi);
 							}
 						}
 					},
@@ -110,10 +129,14 @@
 					},
 					move: function(item, from_index, to_index) {
 						var shape = item.get_robj();
-						var index = 0;
+						//var index = 0;
 						if (from_index < to_index) { //If it's less than the index we're inserting at...
 							to_index += 1; //Increase the index by 1, to make up for the fact that we're removing me at the beginning
 						}
+						var items = this.paper.selectAll(":not(desc):not(defs)"),
+							itemi = items[to_index],
+							len = items.length;
+							/*
 						var itemi, len;
 						this.paper.forEach(function(elem) {
 							if(index === to_index) {
@@ -122,8 +145,10 @@
 							len = index;
 							index++;
 						});
+						*/
 						if(to_index >= len) {
-							shape.toBack();
+							//shape.toBack();
+							shape.appendTo(this.paper);
 						} else {
 							shape.insertBefore(itemi);
 						}
@@ -148,11 +173,14 @@
 			ready: function() {
 				this.shape_type = this.options.shape_type;
 				if(this.shape_type === "rectangle") {
-					this.shape_type = "rect";
+					this.shape_type = "rectangle";
 				}
 				this.constructor_params = this.options.constructor_params;
 				this.$robj = cjs(false);
 				this.$children = cjs(this.child_getter, {context: this});
+
+				this.ist_runtime = $(".ist_runtime");
+				this.touchscreen_layer = this.ist_runtime.is(".hasTouchscreenLayer");
 			},
 			destroy: function(silent) {
 				this.remove();
@@ -162,7 +190,20 @@
 				delete this.$robj;
 				delete this.$children;
 			},
-			parameters: (function(infos) {
+			parameters: _.extend({
+				debugDraw: function(contextual_object) {
+					var debugDraw = contextual_object.prop_val("debugDraw");
+					if(debugDraw) {
+						if(this.touchscreen_layer) {
+							this.ist_runtime.touchscreen_layer("addPath", contextual_object);
+						}
+					} else {
+						if(this.touchscreen_layer) {
+							this.ist_runtime.touchscreen_layer("removePath", contextual_object);
+						}
+					}
+				}
+			}, (function(infos) {
 				var parameters = {};
 				_.each(infos, function(euc_name, raph_name) {
 					parameters[euc_name] = function(contextual_object) {
@@ -247,7 +288,7 @@
 				width: "width",
 				x: "x",
 				y: "y"
-			})),
+			}))),
 			proto_props: {
 				create_robj: function(paper) {
 					var robj = this.get_robj();
@@ -255,7 +296,8 @@
 						return robj;
 					} else {
 						robj = paper[this.shape_type].apply(paper, this.constructor_params);
-						robj[0].__ist_contextual_object__ = this.get_contextual_object();
+						//robj[0].__ist_contextual_object__ = this.get_contextual_object();
+						robj.node.__ist_contextual_object__ = this.get_contextual_object();
 						this.$robj.set(robj);
 						return robj;
 					}

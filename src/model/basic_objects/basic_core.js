@@ -47,4 +47,31 @@
     
         proto.summarize = function () { return this.id(); };
     }(ist.BasicObject));
+
+	var constraints = {};
+	ist.registerConstraint = function(x) {
+		var id = x._id;
+		if(!constraints[id]) {
+			constraints[id] = x;
+			var oldDestroy = x.destroy;
+			x.destroy = function() {
+				ist.unregisterConstraint(x);
+				delete x.destroy;
+				return oldDestroy.apply(x, arguments);
+			};
+		}
+		return id;
+	};
+	ist.findConstraint = function(id) {
+		if(constraints.hasOwnProperty(id)) {
+			return constraints[id];
+		} else {
+			debugger;
+			return false;
+		}
+	};
+	ist.unregisterConstraint = function(x) {
+		var id = x._id;
+		delete constraints[id];
+	};
 }(interstate));

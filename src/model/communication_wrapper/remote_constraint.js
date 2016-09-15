@@ -13,7 +13,8 @@
 		GET_TYPE = "get",
 		VALUE_TYPE = "value",
 		DESTROY_SERVER_TYPE = "destroy_server",
-		DESTROY_CLIENT_TYPE = "destroy_client";
+		DESTROY_CLIENT_TYPE = "destroy_client",
+		GET_SERVER_ID_TYPE = "get_server_id";
 
 	var RemoteConstraintServer = function(value) {
 		this.comm_mechanism = false;
@@ -69,11 +70,11 @@
 	}(RemoteConstraintServer));
 
 	var client_id = 0;
-	var RemoteConstraintClient = function(server_id) {
+	var RemoteConstraintClient = function(server_id, constraint_id) {
 		this.comm_mechanism = false;
 		this._id = client_id++;
 		this.server_id = server_id;
-		this.message_signature = "rc_" + this.server_id;
+		this.constraint_id = constraint_id;
 
 		this.$onMessage = _.bind(this.onMessage, this);
 		this.$value = cjs();
@@ -82,11 +83,35 @@
 		var proto = my.prototype;
 
 		proto.requestUpdate = function() {
-			this.comm_mechanism.post({
-				type: this.message_signature,
-				subtype: GET_TYPE,
-				client_id: this._id
-			});
+			if(this.server_id !== false) {
+				this.comm_mechanism.post({
+					type: this.message_signature,
+					subtype: GET_TYPE,
+					client_id: this._id
+				});
+			} else {
+				var on_response = _.bind(function(info) {
+						if(info.client_id === this._id) {
+							this.comm_mechanism.off("constraint_server_id_response", on_response);
+							this.server_id = info.server_id;
+							this.updateMessageSignature();
+							this.requestUpdate();
+						}
+					}, this);
+				this.comm_mechanism.on("constraint_server_id_response", on_response);
+				this.comm_mechanism.post({
+					type: "get_constraint_server",
+					client_id: this._id,
+					constraint_id: this.constraint_id
+				});
+			}
+		};
+		proto.updateMessageSignature = function() {
+			if(this.comm_mechanism) {
+				this.comm_mechanism.off(this.message_signature, this.$onMessage);
+			}
+			this.message_signature = "rc_"+this.server_id;
+			this.comm_mechanism.on(this.message_signature, this.$onMessage);
 		};
 
 		proto.get = function() {
@@ -121,7 +146,7 @@
 				this.comm_mechanism.off(this.message_signature, this.$on_message);
 			}
 			this.comm_mechanism = comm_mechanism;
-			this.comm_mechanism.on(this.message_signature, this.$onMessage);
+			this.updateMessageSignature();
 			this.requestUpdate();
 		};
 	}(RemoteConstraintClient));
@@ -132,20 +157,19 @@
 	var summarize_value = ist.summarize_value_for_comm_wrapper = function (value, avoid_dict_followup) {
 		var rv;
 		if (value instanceof ist.ContextualObject) {
-			var id = value.id();
-			var type = value.type();
-			var object_summary = {
-				type: type,
-				id: id,
-				obj_id: value.get_object().id(),
-				colloquial_name: value.get_colloquial_name(),
-				name: value.get_name()
-			};
+			var id = value.id(),
+				type = value.type(),
+				object_summary = {
+					type: type,
+					id: id,
+					obj_id: value.get_object().id(),
+					colloquial_name: value.get_colloquial_name(),
+					name: value.get_name()
+				};
 
 			if((type === "dict" || type === "stateful") && avoid_dict_followup !== true) {
-				var is_template = value.is_template();
-				var is_instance;
-				var template, index, instances;
+				var is_template = value.is_template(),
+					is_instance, template, index, instances;
 
 				if(is_template) {
 					is_instance = index = template = false;
@@ -226,7 +250,8 @@
 		} else if (cjs.isConstraint(value)) {
 			rv = {
 				__type__: "summarized_obj",
-				__value__: "constraint"
+				__value__: "constraint",
+				__id__: ist.registerConstraint(value)
 			};
 		} else if (_.isArray(value)) {
 			rv = _.map(value, summarize_value);

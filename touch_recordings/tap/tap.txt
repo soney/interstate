@@ -1,0 +1,1 @@
+[{"type":"touchstart","changedTouches":[{"identifier":3797424148,"pageY":315,"screenX":371,"clientX":371,"clientY":315,"screenY":315,"pageX":371}],"timestamp":1405806468675},{"type":"touchend","changedTouches":[{"identifier":3797424148,"pageY":315,"screenX":371,"clientX":371,"clientY":315,"screenY":315,"pageX":371}],"timestamp":1405806468781}]

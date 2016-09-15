@@ -25,11 +25,13 @@
 					"{{>editing_text prop_name 'input'}}" +
 			"{{/fsm}}" +
 			"{{#if show_menu}}" +
-				"<ul class='menu'>" +
-					"<li class='menu-item' data-action='change_type'>Change to {{ (type === 'stateful_prop' || type==='cell') ? 'object' : 'property'}}</li>" +
-					"<li class='menu-item' data-action='delete'>Delete</li>" +
-					"<li class='menu-item' data-action='rename'>Rename</li>" +
-				"</ul>" +
+				"<div class='menu_container'>" +
+					"<ul class='menu'>" +
+						"<li class='menu-item' data-action='change_type'>Change to {{ (type === 'stateful_prop' || type==='cell') ? 'object' : 'property'}}</li>" +
+						"<li class='menu-item' data-action='delete'>Delete</li>" +
+						"<li class='menu-item' data-action='rename'>Rename</li>" +
+					"</ul>" +
+				"</div>" +
 			"{{/if}}" +
 		"</td>" +
 		"{{#if show_prev_value}}" +
@@ -49,6 +51,10 @@
 			"{{#elif type==='cell'}}" +
 				"<td class='src'>" +
 					"{{> propCell getPurePropCellOptions() }}" +
+				"</td>" +
+			"{{#elif hasComponentView()}}" +
+				"<td class='attachmentView'>" +
+					"{{>attachmentViews getAttachmentViewOptions() }}" + 
 				"</td>" +
 			"{{#else}}" +
 				"<td class='cannot_modify src' />" +
@@ -88,6 +94,7 @@
 			this.prev_value = ist.indirectClient(this.$prev_dict_client, ["prop_val", this.option("name")]);
 			this.next_value = ist.indirectClient(this.$next_dict_client, ["prop_val", this.option("name")]);
 
+
 			this.$type = cjs(function() {
 				if(client instanceof ist.WrapperClient) {
 					return client.type();
@@ -95,6 +102,7 @@
 					return "";
 				}
 			});
+
 
 			var elem = this.element;
 			this.name_edit_state = cjs	.fsm("idle", "editing")
@@ -112,6 +120,12 @@
 										}, this);
 
 			this.element.on("click.expand", _.bind(this._trigger_expand, this));
+
+			if(client instanceof ist.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
+				this.$attachmentTypes = client.get_$("get_attachment_types");
+			} else {
+				this.$attachmentTypes = [];
+			}
 
 			this._add_menu();
 			this._create_state_map();
@@ -140,6 +154,9 @@
 			this._destroy_state_map();
 			this._destroy_menu();
 
+			if(this.$attachmentTypes.destroy) {
+				this.$attachmentTypes.destroy();
+			}
 			if(client instanceof ist.WrapperClient) {
 				client.signal_destroy();
 			}
@@ -402,7 +419,20 @@
 					event.client = client;
 
 					this.element.trigger(event);
+				}, this),
+				attachmentTypes: this.$attachmentTypes,
+				hasComponentView: _.bind(function() {
+					var attachmentTypes = cjs.get(this.$attachmentTypes);
+					return _.intersection(attachmentTypes, _.keys(ist.attachmentViews)).length > 0;
+				}, this),
+
+				getAttachmentViewOptions: _.bind(function() {
+					return {
+						client: this.option("client"),
+						attachmentTypes: this.$attachmentTypes 
+					};
 				}, this)
+
 			}, this.element);
 		},
 
@@ -433,10 +463,14 @@
 		},
 
 		_trigger_expand: function(event) {
-			event.stopPropagation();
-			event.preventDefault();
-			if(this.element.not(".selected")) {
-				this.element.trigger("expand");
+			var target = $(event.target);
+			
+			if(target.parents(".attachmentView").size() === 0) {
+				event.stopPropagation();
+				event.preventDefault();
+				if(this.element.not(".selected")) {
+					this.element.trigger("expand");
+				}
 			}
 		},
 		inherit: function(e) {

@@ -233,6 +233,9 @@
 				return id;
 			}, this).join(", ") + ")";
 		};
+		proto.getContextualObject = function() {
+			return ist.find_or_put_contextual_obj(this.points_at(), this);
+		};
 
 		proto.getContextualObjects = function() {
 			return _.map(this._stack, function(item, i) {

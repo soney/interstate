@@ -6,10 +6,13 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	ist.programStateCommands = ["undo", "redo", "reset", "export", "upload", "store", "begin_define_path"];
+
 	ist.ProgramStateClient = function (options) {
 		able.make_this_listenable(this);
 		this.comm_mechanism = options.comm_mechanism;
 		this.wrapper_clients = {};
+		this.constraint_clients = {};
 		this.clients = {};
 		this.response_listeners = {};
 		this.pending_responses = {};
@@ -151,6 +154,16 @@
 			}
 		};
 
+		proto.get_constraint_client = function(id) {
+			if(this.constraint_clients.hasOwnProperty(id)) {
+				return this.constraint_clients[id];
+			} else {
+				var rv = this.constraint_clients[id] = new ist.RemoteConstraintClient(false, id);
+				rv.set_communication_mechanism(this.comm_mechanism);
+				return rv;
+			}
+		};
+
 		proto.get_wrapper_client = function(object_summary) {
 			var cobj_id = object_summary.id;
 			var rv;
@@ -217,7 +230,7 @@
 
 		proto.post_command = function (command, callback) {
 			var stringified_command;
-			if ((["undo", "redo", "reset", "export", "upload", "store"]).indexOf(command) >= 0) {
+			if (ist.programStateCommands.indexOf(command) >= 0) {
 				stringified_command = command;
 			} else {
 				stringified_command = ist.stringify(command);

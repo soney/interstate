@@ -50,6 +50,8 @@
 		_create: function () {
 			this.element.addClass("statechart");
 			this.paper = new Raphael(this.element[0], 0, 0);
+			//this.paper = Snap(0,0);
+			//$(this.paper.node).appendTo(this.element);
 			var statecharts = this.option("statecharts");
 			this.layout_manager = new ist.RootStatechartLayoutEngine({
 				statecharts: statecharts,
@@ -233,6 +235,12 @@
 				height = layout_info.height,
 				layout = layout_info.locations;
 			this.paper.setSize(width, height);
+			/*
+			this.paper.attr({
+				width: width,
+				height: height
+			});
+			*/
 			var new_items = [];
 			layout.each(function (layout_info, state) {
 				var view;
@@ -487,6 +495,7 @@
 				});
 			});
 			var this_element = $(this.paper.canvas.parentNode);
+			//var this_element = $(this.paper.node.parentNode);
 			$(window).on("mousedown.cancel_state_selection", function(event) {
 				if(this_element.has(event.target).length === 0) {
 					on_cancel();
@@ -527,5 +536,31 @@
 		};
 
 	}(ist.RootStatechartView));
+	/*
 	
+	Snap.plugin(function (Snap, Element) {
+		var elProto = Element.prototype;
+		// displays the element
+		elProto.show = function() {
+			this.attr('display', '');
+			return this;
+		};
+
+		// hides the element
+		elProto.hide = function() {
+			this.attr('display', 'none');
+			return this;
+		};
+
+		elProto.toFront = function () {
+			this.prependTo(this.paper);
+			return this;
+		};
+
+		elProto.toBack = function () {
+			this.appendTo(this.paper);
+			return this;
+		};
+	});
+	*/
 }(interstate, jQuery));

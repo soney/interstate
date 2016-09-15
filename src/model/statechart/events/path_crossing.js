@@ -15,20 +15,72 @@
 	(function (My) {
 		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
-		proto.on_create = function (path, min_velocity) {
+		proto.on_create = function (touchCluster, path, min_velocity, max_velocity) {
 			this.path = path;
 			this.min_velocity = min_velocity;
+			this.max_velocity = max_velocity;
+			this.touchCluster = touchCluster;
 
 			this._curr_path = null;
 			this._crossing_path_listener_id = false;
 
 			this.live_fn = cjs.liven(function () {
-				this.remove_listener();
-				var min_velocity = cjs.get(this.min_velocity);
-				if(!_.isNumber(min_velocity)) { min_velocity = 0; }
-				this._min_velocity = min_velocity;
-				this._curr_path = cjs.get(this.path);
-				this.add_listener();
+				var min_velocity = cjs.get(this.min_velocity),
+					max_velocity = cjs.get(this.max_velocity);
+
+				if(!_.isNumber(min_velocity)) { min_velocity = false; }
+				if(!_.isNumber(max_velocity)) { max_velocity = false; }
+
+				var path = cjs.get(this.path);
+				if(path instanceof ist.ContextualDict) {
+					var shape_attachment = path.get_attachment_instance("shape");
+					if(shape_attachment) {
+						if(shape_attachment.shape_type === "path") {
+							path = path.prop_val("path");
+						} else if(shape_attachment.shape_type === "circle") {
+							var cx = path.prop_val("cx"),
+								cy = path.prop_val("cy"),
+								r = path.prop_val("r");
+
+							path = "M"+(cx-r)+','+cy+'a'+r+','+r+',0,1,1,0,0.0001Z';
+						} else if(shape_attachment.shape_type === "ellipse") {
+							var cx = path.prop_val("cx"),
+								cy = path.prop_val("cy"),
+								rx = path.prop_val("rx"),
+								ry = path.prop_val("ry");
+
+							path = "M"+(cx-rx)+','+cy+'a'+rx+','+ry+',0,1,1,0,0.0001Z';
+						} else if(shape_attachment.shape_type === "rect") {
+							var x = path.prop_val("x"),
+								y = path.prop_val("y"),
+								width = path.prop_val("width"),
+								height = path.prop_val("height");
+
+							path = "M"+x+','+y+'h'+width+'v'+height+'h'+(-width)+'Z';
+						} else {
+							path = false;
+						}
+					}
+				}
+
+				var touchCluster = cjs.get(this.touchCluster);
+				if(touchCluster instanceof ist.ContextualDict) {
+					var tc_attachment = touchCluster.get_attachment_instance("touch_cluster");
+					if(tc_attachment) {
+						touchCluster = tc_attachment.touchCluster;
+					}
+				}
+
+				if(this._min_velocity !== min_velocity || this._max_velocity !== max_velocity || this._curr_path !== path || this._touch_cluster !== touchCluster) {
+					this.remove_listener();
+
+					this._min_velocity = min_velocity;
+					this._max_velocity = max_velocity;
+					this._curr_path = path;
+					this._touch_cluster = touchCluster;
+
+					this.add_listener();
+				}
 			}, {
 				context: this,
 				run_on_create: false
@@ -42,7 +94,7 @@
 			}
 		};
 		proto.add_listener = function() {
-			this._crossing_path_listener_id = addCrossingPathListener(this._curr_path, function(velocity) {
+			this._crossing_path_listener_id = addCrossingPathListener(this._touch_cluster, this._curr_path, function(velocity) {
 				if(velocity >= this._min_velocity) {
 					ist.event_queue.wait();
 					this.fire();
@@ -834,35 +886,46 @@
 
 	var touches, latest_touches, last_time,
 		crossingPaths = [],
-		pathCallbacks = [],
 		set_touches = function(to_touches, type) {
-			var fingerPath, x, y, tx, ty, j, cpLen = crossingPaths.length, i = 0,
-				len = to_touches.length,
-				time = (new Date()).getTime(),
-				dt = time - last_time;
-			last_time = time;
-			if(touches && touches.length === to_touches.length) {
-				outer: for(i; i<len; i++) {
-					x = to_touches[i].x;
-					y = to_touches[i].y;
-					tx = touches[i].x;
-					ty = touches[i].y;
-					fingerPath = [["M", tx, ty],
-									["C", tx, ty, x, y, x, y]];
-					for(j = 0; j < cpLen; j++) {
-						var inter = interPathHelper(crossingPaths[j], fingerPath, true);
+			var time = (new Date()).getTime(),
+				i = 0, len = crossingPaths.length,
+				crossingPath, path, touchCluster,
+				cpPath, inter,
+				oldX, oldY, newX, newY;
+			while(i < len) {
+				crossingPath = crossingPaths[i];
+				path = crossingPath.path;
+				touchCluster = crossingPath.touchCluster;
+
+				if(path && touchCluster) {
+					oldX = crossingPath._x;
+					oldY = crossingPath._y;
+					
+					newX = touchCluster.getX();
+					newY = touchCluster.getY();
+
+					if(oldX && oldY && newX && newY) {
+						cpPath = [["M", oldX, oldY],
+										["C", oldX, oldY, newX, newY, newX, newY]];
+
+						inter = interPathHelper(path, cpPath, true);
 						if(inter) {
-							var dx = x - tx,
-								dy = y - ty,
-								d = Math.sqrt(Math.pow(dx, 2), Math.pow(dy, 2)),
-								v = d / dt;
-							var callback_info = pathCallbacks[j];
-							callback_info.callback.call(callback_info.context || this, v);
-							break outer;
+							var d = Math.sqrt(Math.pow(newX-oldX, 2) + Math.pow(newY-oldY, 2)),
+								v = d / (time-crossingPath._time);
+
+							crossingPath.callback.call(crossingPath.context || this, v);
 						}
 					}
+					crossingPath._x = newX;
+					crossingPath._y = newY;
+					crossingPath._time = time;
+				} else {
+					crossingPath._x = crossingPath._y = crossingPath._time = false;
 				}
+
+				i++;
 			}
+
 			touches = clone(to_touches);
 		},
 		timeout_id = false,
@@ -908,21 +971,24 @@
 			window.addEventListener("touchstart", touchstart_listener);
 			window.addEventListener("touchmove", touchmove_listener);
 			window.addEventListener("touchend", touchend_listener);
+			window.addEventListener("touchcancel", touchend_listener);
 		},
 		removeTouchListeners = function() {
 			window.removeEventListener("touchstart", touchstart_listener);
 			window.removeEventListener("touchmove", touchmove_listener);
 			window.removeEventListener("touchend", touchend_listener);
+			window.removeEventListener("touchcancel", touchend_listener);
 		},
 		crossing_path_listener_id = 1,
-		addCrossingPathListener = function(path, callback, context) {
+		addCrossingPathListener = function(touchCluster, path, callback, context) {
 			var cpl_id = crossing_path_listener_id;
 			crossing_path_listener_id+=1;
-			crossingPaths.push(path);
-			pathCallbacks.push({
+			crossingPaths.push({
 				callback: callback,
 				context: context,
-				id: cpl_id
+				id: cpl_id,
+				touchCluster: touchCluster,
+				path: path
 			});
 			if(crossingPaths.length === 1) {
 				addTouchListeners();
@@ -933,11 +999,9 @@
 			var i = 0, len = crossingPaths.length, cp, linfo;
 			for(i; i<len; i++) {
 				cp = crossingPaths[i];
-				linfo = pathCallbacks[i];
 
-				if(cp === path || linfo.id === path) {
+				if(cp === path || cp.id === path) {
 					crossingPaths.splice(i, 1);
-					pathCallbacks.splice(i, 1);
 					len -= 1;
 					if(len === 0) {
 						removeTouchListeners();

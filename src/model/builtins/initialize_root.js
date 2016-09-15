@@ -52,6 +52,7 @@
 			circle.set("animated_properties", new ist.Cell({str: "false"}));
 			circle.set("animation_duration", new ist.Cell({str: "300"}));
 			circle.set("animation_easing", new ist.Cell({str: "'linear'"}));
+			circle.set("debugDraw", new ist.Cell({str: "false"}));
 			circle.set("shape", new ist.Cell({str: "'circle'"}));
 
 
@@ -81,6 +82,7 @@
 			ellipse.set("animated_properties", new ist.Cell({str: "false"}));
 			ellipse.set("animation_duration", new ist.Cell({str: "300"}));
 			ellipse.set("animation_easing", new ist.Cell({str: "'linear'"}));
+			ellipse.set("debugDraw", new ist.Cell({str: "false"}));
 			ellipse.set("shape", new ist.Cell({str: "'ellipse'"}));
 
 			var image = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
@@ -134,6 +136,7 @@
 			rect.set("animated_properties", new ist.Cell({str: "false"}));
 			rect.set("animation_duration", new ist.Cell({str: "300"}));
 			rect.set("animation_easing", new ist.Cell({str: "'linear'"}));
+			rect.set("debugDraw", new ist.Cell({str: "false"}));
 			rect.set("shape", new ist.Cell({str: "'rectangle'"}));
 
 			var text = new ist.Dict({has_protos: false, direct_attachments: [new ist.ShapeAttachment({
@@ -191,7 +194,9 @@
 			path.set("transform", new ist.Cell({str: "''"}));
 			path.set("animated_properties", new ist.Cell({str: "false"}));
 			path.set("animation_duration", new ist.Cell({str: "300"}));
+			path.set("debugDraw", new ist.Cell({str: "false"}));
 			path.set("animation_easing", new ist.Cell({str: "'linear'"}));
+
 			path.set("shape", new ist.Cell({str: "'path'"}));
 
 			var group = new ist.Dict({has_protos: false, direct_attachments: [new ist.GroupAttachment()]});
@@ -203,11 +208,11 @@
 			var dom = new ist.Dict({has_protos: false});
 			root_dict.set("dom", dom);
 
-			var node = new ist.Dict({direct_attachments: [new ist.DomAttachment()]});
+			var node = new ist.Dict({has_protos: false, direct_attachments: [new ist.DomAttachment()]});
 			dom.set("node", node);
 			node.set("tag", new ist.Cell({str: "'div'"}));
-			node.set("attr", new ist.Dict());
-			node.set("style", new ist.Dict());
+			node.set("attr", new ist.Dict({has_protos: false}));
+			node.set("style", new ist.Dict({has_protos: false}));
 			node.set("textContent", new ist.Cell({str: "'no text'"}));
 			node.set("show", new ist.Cell({str: "true"}));
 			node.set("showChildren", new ist.Cell({str: "true"}));
@@ -247,12 +252,12 @@
 			var physics = new ist.Dict({has_protos: false});
 			root_dict.set("physics", physics);
 
-			var world = new ist.Dict({direct_attachments: [new ist.WorldAttachment()]});
+			var world = new ist.Dict({has_protos: false, direct_attachments: [new ist.WorldAttachment()]});
 			physics.set("world", world);
 			world.set("gx", new ist.Cell({str: "0.0"}));
 			world.set("gy", new ist.Cell({str: "9.8"}));
 
-			var fixture = new ist.Dict({direct_attachments: [new ist.FixtureAttachment()]});
+			var fixture = new ist.Dict({has_protos: false, direct_attachments: [new ist.FixtureAttachment()]});
 			physics.set("fixture", fixture);
 			fixture.set("fixed", new ist.Cell({str: "true"}));
 			fixture.set("restitution", new ist.Cell({str: "0.2"}));
@@ -287,6 +292,101 @@
 		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "device") >= 0)) {
 			var device = ist.createDevices();
 			root_dict.set("device", device);
+			root_dict.set("mouse", new ist.Cell({str: "device.mouse"}));
+		}
+		if((builtins !== false && !_.isArray(builtins)) || (_.indexOf(builtins, "event") >= 0)) {
+			var fireable = new ist.Dict({has_protos: false, direct_attachments: [new ist.FireableAttachment()]});
+			fireable.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}));
+			root_dict.set("fireable", fireable);
+
+			var event = new ist.Dict({has_protos: false, direct_attachments: [new ist.EventAttachment()]});
+			event	.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}))
+					//.set("cancelFire", new ist.Cell({str: "interstate.cancelFire.bind(this)"}))
+					.set("priority", new ist.Cell({str: "false"}))
+					.set("fireDelay", new ist.Cell({str: "false"}))
+					.set("requested", new ist.Cell({str: "fireable()"}))
+					.set("cancelled", new ist.Cell({str: "fireable()"}))
+					.set("blocked", new ist.Cell({str: "fireable()"}))
+					.set("confirmed", new ist.Cell({str: "fireable()"}));
+			event._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "fireable"}));
+			root_dict.set("event", event);
+			/*
+			event.set("priority", new ist.Cell({str: "false"}))
+			root_dict.set("event", event);
+
+			var gesture = new ist.StatefulObj({direct_attachments: [new ist.TouchGestureAttachment({
+																						})]
+																					})
+				.add_state("ready")
+				.add_state("pendingApproval")
+				.starts_at("ready")
+				.add_transition("ready", "pendingApproval", "on('gesture_requested', this);requested.fire()")
+				.add_transition("pendingApproval", "ready", "on('gesture_cancelled', this);cancelled.fire()")
+				.add_transition("pendingApproval", "ready", "on('gesture_confirmed', this);confirmed.fire();this.fire()")
+				.add_transition("pendingApproval", "ready", "on('gesture_blocked', this);blocked.fire()");
+			gesture._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "event"}));
+			gesture.set("priority", new ist.Cell({str: "0"}))
+				.set("activationDelay", new ist.Cell({str: "5"}))
+				.set("touchGesture_fn", new ist.Cell({str: "function(p, prop_name) {" +
+					"var tg_attachment = interstate.get_attachment(p, 'touch_gesture');" +
+					"var tg = tg_attachment.touchGesture;" +
+					"return tg[prop_name].bind(tg);" +
+				"}"}))
+				.set("requestFire", new ist.Cell({str: "touchGesture_fn(this, 'requestFire')"}))
+				.set("requested", new ist.Cell({str: "event()"}))
+				.set("cancelled", new ist.Cell({str: "event()"}))
+				.set("blocked", new ist.Cell({str: "event()"}))
+				.set("confirmed", new ist.Cell({str: "event()"}));
+			var pending = new ist.StatefulProp({statechart_parent: gesture});
+			pending	.set(gesture.find_state("ready"), new ist.Cell({str: "false"}))
+					.set(gesture.find_state("pendingApproval"), new ist.Cell({str: "true"}))
+			gesture.set("pending", pending);
+				/*
+				.set("markFailed", new ist.Cell({str: "touchGesture_fn(this, 'markFailed')"}))
+				.set("markBegan", new ist.Cell({str: "touchGesture_fn(this, 'markBegan')"}))
+																					/*
+				.add_state("possible")
+				.add_state("failed")
+				.add_state("blocked")
+				.add_state("began")
+				.add_transition("possible", "failed", "on('gesture_failed', this);failed.fire()")
+				.add_transition("possible", "began", "on('gesture_began', this);began.fire()")
+				.add_transition("possible", "blocked", "on('gesture_blocked', this);blocked.fire()")
+				.add_transition("failed", "possible", "on('gesture_possible', this)")
+				.add_transition("blocked", "possible", "on('gesture_possible', this)")
+				.add_transition("began", "possible", "on('gesture_possible', this)")
+				.starts_at("possible")
+
+				.set("(prototypes)", "(start)", "event")
+				.set("discrete", new ist.Cell({str: "false"}))
+				.set("priority", new ist.Cell({str: "0"}))
+				.set("activationDelay", new ist.Cell({str: "5"}))
+
+				.set("possible", new ist.Cell({str: "event()"}))
+				.set("failed", new ist.Cell({str: "event()"}))
+				.set("blocked", new ist.Cell({str: "event()"}))
+				.set("began", new ist.Cell({str: "event()"}))
+
+				.set("touchGesture_fn", new ist.Cell({str: "function(p, prop_name) {" +
+					"var tg_attachment = interstate.get_attachment(p, 'touch_gesture');" +
+					"var tg = tg_attachment.touchGesture;" +
+					"return tg[prop_name].bind(tg);" +
+				"}"}))
+				.set("markPossible", new ist.Cell({str: "touchGesture_fn(this, 'markPossible')"}))
+				.set("markFailed", new ist.Cell({str: "touchGesture_fn(this, 'markFailed')"}))
+				.set("markBegan", new ist.Cell({str: "touchGesture_fn(this, 'markBegan')"}))
+				.set("markRecognized", new ist.Cell({str: "touchGesture_fn(this, 'markRecognized')"}))
+				.set("markBlocked", new ist.Cell({str: "touchGesture_fn(this, 'markBlocked')"}));
+																					/*
+				.set("discrete", new ist.Cell({str: "false"}))
+				.set("priority", new ist.Cell({str: "0"}))
+				.set("activationDelay", new ist.Cell({str: "5"}))
+				.set("touchGesture_call", new ist.Cell({str: "function(p, prop_name) {" +
+					"var tg_attachment = interstate.get_attachment(p, 'touch_gesture');" +
+					"var tg = tg_attachment.touchGesture;" +
+					"return tg[prop_name]();" +
+				"}"}))
+				*/
 		}
 	};
 }(interstate));

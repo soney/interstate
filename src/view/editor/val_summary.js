@@ -92,6 +92,11 @@
 			if(client instanceof ist.WrapperClient) {
 				this.$type = client.type();
 				this.$value = ist.indirectClient(client, "val");
+			} else if(client instanceof ist.RemoteConstraintClient) {
+				this.$type = "remote_constraint";
+				this.$value = cjs(function() {
+					return client.get();
+				});
 			} else {
 				this.$type = false;
 				this.$value = client;
@@ -171,7 +176,7 @@
 			var disable_tooltip = _.bind(function() { this.element.tooltip("disable"); }, this);
 			this._tooltip_live_fn = cjs.liven(function() {
 				var type = this.$type;
-				if(type === "stateful_prop" || type === "cell") {
+				if(type === "stateful_prop" || type === "cell" || type === "remote_constraint") {
 					var str = summarize_plain_val(cjs.get(this.$value));
 
 					if(str.length > this.option("char_limit")) {

@@ -177,9 +177,13 @@
 				var id = rv._id;
 				var old_destroy = rv.destroy;
 				rv.destroy = function() {
-					self.destroy_$(rv, args);
-					old_destroy.apply(rv, arguments);
-					self = rv = constraint = null;
+					try {
+						self.destroy_$(rv, args);
+						old_destroy.apply(rv, arguments);
+						self = rv = constraint = null;
+					} catch(e) {
+						console.error(e);
+					}
 				};
 				var semaphore = 0;
 				rv.signal_interest = function() { semaphore++; };
@@ -243,24 +247,26 @@
 					return "(native object)";
 				} else if (val === "contextual_obj") {
 					object_summary = value.object_summary;
-					wrapper_client = this.program_state_client.get_wrapper_client(object_summary, this.comm_mechanism);
+					wrapper_client = this.program_state_client.get_wrapper_client(object_summary);
 					return wrapper_client;
 				} else if (val === "state") {
 					object_summary = value.object_summary;
-					wrapper_client = this.program_state_client.get_wrapper_client(object_summary, this.comm_mechanism);
+					wrapper_client = this.program_state_client.get_wrapper_client(object_summary);
 					return wrapper_client;
 				} else if (val === "transition") {
 					object_summary = value.object_summary;
-					wrapper_client = this.program_state_client.get_wrapper_client(object_summary, this.comm_mechanism);
+					wrapper_client = this.program_state_client.get_wrapper_client(object_summary);
 					return wrapper_client;
 				} else if (val === "event") {
 					object_summary = value.object_summary;
-					wrapper_client = this.program_state_client.get_wrapper_client(object_summary, this.comm_mechanism);
+					wrapper_client = this.program_state_client.get_wrapper_client(object_summary);
 					return wrapper_client;
 				} else if (val === "client_wrapper") {
 					return "(communication wrapper)";
 				} else if (val === "constraint") {
-					return "(cjs constraint)";
+					var constraint_client = this.program_state_client.get_constraint_client(value.__id__);
+					return constraint_client;
+					//"(cjs constraint)";
 				} else if(val === "dom_elem") {
 					return "(dom element)";
 				}

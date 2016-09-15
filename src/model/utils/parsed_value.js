@@ -21,6 +21,8 @@
 			}
 		};
 
+	var assignmentExpression = {};
+
 	ist.construct = function(constructor, args) {
 		if(constructor === Date) { // Functions check to see if date object
 			var rv = eval("new constructor(" + args.join(",") + ")");
@@ -53,7 +55,7 @@
 		};
 	}(ist.MultiExpression));
 
-	ist.on_event = function (event_type, arg1, arg2) {
+	ist.on_event = function (event_type, arg1, arg2, arg3, arg4) {
 		if (event_type === "timeout") {
 			//console.log(arg1);
 			var timeout_event = new ist.TimeoutEvent(arg1);
@@ -65,9 +67,11 @@
 			var frame_event = new ist.FrameEvent();
 			return frame_event;
 		} else if(event_type === "cross") {
-			var target = arg1,
-				min_velocity = arg2,
-				cross_event = new ist.CrossEvent(target, min_velocity);
+			var touchCluster = arg1,
+				target = arg2,
+				min_velocity = arg3,
+				max_velocity = arg4,
+				cross_event = new ist.CrossEvent(touchCluster, target, min_velocity, max_velocity);
 
 			return cross_event;
 		} else if(event_type === "collision") {
@@ -153,21 +157,50 @@
 		if (options.get_constraint) {
 			var constraint = cjs(function () {
 				var op_got = cjs.get(op, options.auto_add_dependency),
+					args_got, rv;
+				if(_.isFunction(op_got) || op_got instanceof ist.ParsedFunction) {
+					var calling_context_got = cjs.get(calling_context, options.auto_add_dependency);
+
 					args_got = _.map(args, function(arg) {
 													return cjs.get(arg, options.auto_add_dependency);
-												}),
-					calling_context_got = cjs.get(calling_context, options.auto_add_dependency),
-					rv;
+												});
 
-				if(op_got === ist.find_fn) {
-					// Give it the context of root
-					rv = op_got.apply(pcontext, args_got);
+					if(op_got === ist.find_fn) {
+						// Give it the context of root
+						rv = op_got.apply(pcontext, args_got);
+						return rv;
+					} else if (_.isFunction(op_got)) {
+						rv = op_got.apply(calling_context_got, args_got);
+						return rv;
+					} else if (op_got instanceof ist.ParsedFunction) {
+						return op_got._apply(calling_context_got, pcontext, args_got, options);
+					}
+				} else if( op_got instanceof ist.ContextualDict) {
+					var proto = op_got,
+						arg_arr = [];
+					args_got = {
+					};
+					_.each(args, function(arg, index) {
+						var value;
+						if(arg.type === assignmentExpression) {
+							value = arg.value;
+
+							var name = arg.identifier;
+							args_got[name] = value;
+						} else {
+							value = arg;
+						}
+						arg_arr[index] = value;
+					});
+
+					args_got["arguments"] = cjs(arg_arr);
+					var constructor_fn = op_got instanceof ist.ContextualStatefulObj ? ist.StatefulObj : ist.Dict;
+
+					rv = new constructor_fn({
+						value: args_got,
+						direct_protos: op
+					});
 					return rv;
-				} else if (_.isFunction(op_got)) {
-					rv = op_got.apply(calling_context_got, args_got);
-					return rv;
-				} else if (op_got instanceof ist.ParsedFunction) {
-					return op_got._apply(calling_context_got, pcontext, args_got, options);
 				} else {
 					throw new Error("Calling a non-function");
 					//return undefined;
@@ -295,7 +328,7 @@
 				while (!curr_context.is_empty()) {
 					if (context_item instanceof ist.Dict) {
 						if (found_this) {
-							rv = ist.find_or_put_contextual_obj(context_item, curr_context);
+							rv = curr_context.getContextualObject();
 							return rv;
 						} else {
 							found_this = true;
@@ -311,7 +344,7 @@
 				
 			while (!curr_context.is_empty()) {
 				if (context_item instanceof ist.Dict) {
-					var contextual_obj = ist.find_or_put_contextual_obj(context_item, curr_context);
+					var contextual_obj = curr_context.getContextualObject();
 					if (contextual_obj.has(key, _.indexOf(ignore_inherited_in_contexts, context_item)>=0)) {
 						rv = contextual_obj._prop_val(key);
 						return rv;
@@ -329,7 +362,12 @@
 						var sc = special_contexts[i];
 						var context_obj = sc.get_context_obj();
 						if (context_obj.hasOwnProperty(key)) {
-							return cjs.get(context_obj[key].value);
+							var value = context_obj[key].value;
+							if(cjs.isConstraint(value)) {
+								return value.get();
+							} else {
+								return value;
+							}
 						}
 					}
 				}
@@ -393,8 +431,6 @@
 				//throw new Error("No parent object for property '" + prop + "'");
 				return undefined;
 			}
-
-
 			if (object instanceof ist.ContextualObject) {
 				if (property === "container") {
 					var found_this = false;
@@ -434,7 +470,12 @@
 				return rv;
 			} else if(cjs.isArrayConstraint(object)) {
 				if(_.isNumber(property)) {
-					return object.item(property);
+					var item = object.item(property);
+					if(cjs.isConstraint(item)) {
+						return item.get();
+					} else {
+						return item;
+					}
 				} else {
 					if(property === "length") {
 						return object.length();
@@ -449,8 +490,13 @@
 
 		if (options.get_constraint) {
 			var constraint = cjs(function () {
-				var object = cjs.get(obj, options.auto_add_dependency),
-					property = cjs.get(prop, options.auto_add_dependency);
+				var object;
+				if(cjs.isConstraint(obj)) {
+					object = obj.get(options.auto_add_dependency);
+				} else {
+					object = obj;
+				}
+				var property = cjs.get(prop, options.auto_add_dependency);
 				return getter(object, property);
 			});
 			constraint.destroy = function() {
@@ -654,6 +700,15 @@
 					}
 				}));
 			}
+		} else if (type === "AssignmentExpression") {
+			var identifier = node.left.name,
+				value = get_val(node.right, options);
+
+			rv = {
+				type: assignmentExpression,
+				identifier: identifier,
+				value: value
+			};
 		} else {
 			console.log(type, node);
 		}

@@ -9,22 +9,32 @@
 	var get_event = function (tree, options, live_event_creator) {
 		//debugger;
 		var event_constraint = ist.get_parsed_$(tree, options);
-		var got_event, actions;
+		var got_event, actions, obj;
 		if(event_constraint instanceof ist.MultiExpression) {
 			actions = event_constraint.rest();
 			event_constraint = event_constraint.first();
 		} else {
 			actions = [];
 		}
-		//console.log("A");
-		//debugger;
 		got_event = cjs.get(event_constraint);
-		//console.log("B");
-		//var got_value = cjs.get(event_constraint, false);
-		//console.log(got_value);
+		if(got_event instanceof ist.BasicObject) {
+			obj = got_event;
+
+			got_event = ist.find_or_put_contextual_obj(obj, options.transition_context.push(obj));
+		}
+
 		if (got_event instanceof ist.Event) {
 			//event_constraint.destroy(true);
 			return {event: got_event, actions: actions};
+		} else if(got_event instanceof ist.ContextualObject) {
+			var cobj = got_event,
+				fireable_attachment = cobj.get_attachment_instance("fireable_attachment"); 
+
+			if(fireable_attachment) {
+				return {obj: obj, cobj: cobj, event: fireable_attachment.getEvent(), actions: actions}
+			} else {
+				return {obj: obj, cobj: cobj, event: false, actions: actions}
+			}
 		} else {
 			if(cjs.isConstraint(event_constraint)) {
 				cjs.removeDependency(event_constraint, live_event_creator._constraint);
@@ -72,14 +82,13 @@
 			if (options.inert !== true) {
 				var SOandC = ist.find_stateful_obj_and_context(options.context);
 
-				var context;
 				var parent;
 
 				if (SOandC) {
-					context = SOandC.context;
+					//context = SOandC.context;
 					parent = SOandC.stateful_obj;
 				} else {
-					context = options.context;
+					//context = options.context;
 					parent = options.context.points_at();
 				}
 
@@ -91,12 +100,10 @@
 				this._old_event = null;
 				//cjs.wait(); // ensure our live event creator isn't immediately run
 				this._live_event_creator = cjs.liven(function () {
-					if (this._old_event) {
-						this._old_event.off_fire(this.child_fired, this);
-						this._old_event.destroy(true); //destroy silently (without nullifying)
-					}
-
-					var tree, event_info = false, event = false;
+					var tree, event_info = false, event = false,
+						transition = this.get_transition(),
+						context = transition.original_context(),
+						transition_context = transition.context();
 					cjs.wait();
 					if(ist.__debug) {
 						tree = this._tree.get();
@@ -107,24 +114,24 @@
 							event_info = get_event(tree, {
 								parent: parent,
 								context: context,
+								transition_context: transition_context,
 								only_parse_first: true
 							}, this._live_event_creator);
-							event = event_info.event;
 						}
 						cjs.signal();
 					} else {
 						try {
 							tree = this._tree.get();
 							if(tree instanceof ist.Error) {
-								//console.log("no event");
 								event = null;
 							} else {
 								event_info = get_event(tree, {
 									parent: parent,
 									context: context,
+									transition_context: transition_context,
 									only_parse_first: true
 								}, this._live_event_creator);
-								event = event_info.event;
+
 								if(this._has_errors) {
 									this.$errors.set([]);
 									this._has_errors = false;
@@ -139,13 +146,22 @@
 						}
 					}
 
-					if (event) {
+					if(event_info) {
+						this._obj = event_info.obj;
+						event = event_info.event;
+					}
 
+					if (event) {
 						event.set_transition(this.get_transition());
 						event.on_fire(this.child_fired, this, event_info.actions, parent, context);
 						if (this.is_enabled()) {
 							event.enable();
 						}
+					}
+
+					if (this._old_event && this._old_event !== event) {
+						this._old_event.off_fire(this.child_fired, this);
+						this._old_event.destroy(true); //destroy silently (without nullifying)
 					}
 
 					this._old_event = event;
@@ -271,6 +287,9 @@
 					inert: obj.inert
 				});
 			});
+		proto.get_obj = function() {
+			return this._obj;
+		};
 		proto.enable = function () {
 			My.superclass.enable.apply(this, arguments);
 			if (this._old_event) {

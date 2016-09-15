@@ -241,7 +241,7 @@
 													pinned.pinned("addClient", client);
 												}
 											}, this));
-				
+
 				targ.on("dragcancel.pin dragend.pin", _.bind(function(ev2) {
 					clear_drag_info.call(this);
 				}, this));
@@ -277,10 +277,6 @@
 		_redo: function() {
 			this.client_socket.post_command("redo");
 		},
-		get_client_socket: function() {
-			return this.client_socket;
-		},
-
 		_addContentBindings: function() {
 			editor_template({
 				loading_state: this.loading_state,
@@ -340,7 +336,7 @@
 			this.editor = ace.edit(ace_editor[0]);
 			this.editor.setHighlightActiveLine(false);
 			this.editor.setShowPrintMargin(false);
-			this.editor.renderer.setShowGutter(false); 
+			this.editor.renderer.setShowGutter(false);
 			this.editor.getSession().setMode("ace/mode/javascript");
 
 			this._cellwidth_binding = cjs.bindCSS(ace_editor, "width", this.$window_inner_width.sub((this.$window_inner_width.le(767).iif(300, 300))).add("px"));
@@ -619,7 +615,7 @@
 				});
 			} else if(type === "add_state") {
 				state = event.state;
-				statechart_puppet_id = state.puppet_master_id || state.id(); 
+				statechart_puppet_id = state.puppet_master_id || state.id();
 				var substates = state.get_substates();
 
 				var substates_size = _.size(substates);

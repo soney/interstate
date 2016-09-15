@@ -511,4 +511,24 @@
 	ist.setDefaultProgramName = function(name) {
 		window.localStorage.setItem(default_program_name, name);
 	};
+
+	var editorDimensionsKey = "IST_EDITOR_DIMESIONS";
+
+	ist.storeEditorDimensions = function(x, y, width, height) {
+		var str = JSON.stringify({ x: x, y: y, width: width, height: height });
+		window.localStorage.setItem(editorDimensionsKey, str);
+	};
+	ist.getStoredEditorDimensions = function(x, y, width, height) {
+		var str = window.localStorage.getItem(editorDimensionsKey);
+		if(str) {
+			try {
+				var dimensions = JSON.parse(str);
+				return dimensions
+			} catch(e) {
+				window.localStorage.removeItem(editorDimensionsKey);
+			}
+		}
+
+		return false;
+	};
 }(interstate));

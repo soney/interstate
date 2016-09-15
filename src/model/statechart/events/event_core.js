@@ -118,18 +118,6 @@
 		};
 		proto.initialize = function () {
 			this._initialized = true;
-			/*
-			if(this.is_active()) {
-				this.enable_outgoing_transitions();
-			}
-				/*
-
-				if(from.is_active()) {
-					transition.enable();
-				} else {
-					transition.disable();
-				}
-				*/
 		};
 		proto.sid = proto.id = function () { return this._id; };
 		proto.on_create = function (options) {

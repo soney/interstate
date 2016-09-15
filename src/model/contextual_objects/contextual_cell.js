@@ -62,6 +62,11 @@
 					}
 				}
 			}
+
+			if(value instanceof ist.BasicObject) {
+				value = ist.find_or_put_contextual_obj(value, this.get_pointer().push(value));
+			}
+
 			return value;
 		};
 		proto.get_str = function () {
@@ -71,6 +76,10 @@
 		proto.get_syntax_errors = function() {
 			var cell = this.get_object();
 			return cell.get_syntax_errors();
+		};
+		proto._get_valid_cobj_children = function() {
+			var value = this.val();
+			return [];
 		};
 	}(ist.ContextualCell));
 }(interstate));

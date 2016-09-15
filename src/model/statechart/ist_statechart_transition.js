@@ -32,6 +32,7 @@
 			able.make_this_listenable(this);
 
 			this._id = options.id || uid();
+			this._hash = uid.strip_prefix(this._id);
 			ist.register_uid(this._id, this);
 		}
 
@@ -50,7 +51,9 @@
 		this.$times_run = cjs(this._times_run);
 		this._from_state = new cjs.Constraint(options.from);
 		this._to_state = new cjs.Constraint(options.to);
-		this._context = options.context;
+		if(options.context) {
+			this.set_context(options.context);
+		}
 		this.set_basis(options.basis);
 		this.set_event(options.event);
 
@@ -95,6 +98,14 @@
 		proto.context = function () {
 			return this._context;
 		};
+		proto.original_context = function() {
+			return this._original_context;
+		};
+		proto.set_context = function (context) {
+			this._context = context.push_special_context(new ist.StateContext(this));
+			this._original_context = context;
+			return this;
+		};
 		proto.set_active = function (to_active) {
 			to_active = to_active === true;
 			this.$active.set(to_active);
@@ -117,8 +128,9 @@
 			}
 			return this;
 		};
-		proto.id = proto.hash = function () { return this._id; };
+		proto.id =  function () { return this._id; };
 		proto.sid = function() { return parseInt(uid.strip_prefix(this.id()), 10); };
+		proto.hash = function () { return this._hash; };
 		proto.from = function () { return this._from_state.get(); };
 		proto.to = function () { return this._to_state.get(); };
 		proto.setFrom = function (state) {

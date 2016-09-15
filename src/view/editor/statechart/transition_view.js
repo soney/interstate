@@ -230,6 +230,7 @@
 			var paper = this.option("paper");
 			var transition = this.option("transition");
 			var parentElement = paper.canvas.parentNode;
+			//var parentElement = paper.node.parentNode;
 			this.edit_event = $("<div />").addClass("menu_item")
 											.text("Change event")
 											.on("click.menu_item", _.bind(this.on_edit_event_pressed, this));

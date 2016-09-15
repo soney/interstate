@@ -17,6 +17,10 @@
 		display = "desktop";
 	}
 
+	function is_touch_device() {
+		return !!('ontouchstart' in window);
+	}
+
 /*	var run_edit_template = cjs.createTemplate(
 		"{{#fsm run_state}}" +
 			"{{#state edit}}" +
@@ -31,17 +35,25 @@
 		options: {
 			root: undefined,
 			show_edit_button: true,
+			autosave: true,
 			edit_on_open: false,
 			editor_url: "editor.html",
 			editor_name: uid.get_prefix() + "ist_editor",
 			open_separate_client_window: true,
 			external_editor: display === "phone" || display === "tablet",
-			auto_open_external_editor: false,
+			auto_open_external_editor: true,
 			editor_window_options: function () {
-				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + window.innerWidth + ", height=" + (2*window.innerHeight/3) + ", left=" + window.screenX + ", top=" + (window.screenY + window.outerHeight);
+				var dimensions = ist.getStoredEditorDimensions() || {
+										x: window.screenX,
+										y: window.screenY + window.outerHeight,
+										width: window.innerWidth,
+										height: 2*window.innerHeight/3
+									};
+				return "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=" + dimensions.width + ", height=" + dimensions.height + ", left=" + dimensions.x + ", top=" + dimensions.y;
 			},
 			client_id: uid.get_prefix(),
-			immediately_create_server_socket: false
+			immediately_create_server_socket: false,
+			touchscreen_layer: true || is_touch_device()
 		},
 
 		_create: function () {
@@ -52,6 +64,11 @@
 			this.$inspecting_hover_object = cjs(false);
 			this.$breakpoints = cjs({});
 
+
+			if(this.option("touchscreen_layer")) {
+				this.element.touchscreen_layer({
+				});
+			}
 			if(!this.option("root")) {
 				var root = ist.load();
 				if(!root) {
@@ -187,7 +204,9 @@
 
 			$(window)	.on("keydown.open_editor", _.bind(this.on_key_down, this))
 						.on("beforeunload.do_save onunload.do_save unload.do_save pagehide.do_save", _.bind(function() {
-							this._save();
+							if(this.option("autosave")) {
+								this._save();
+							}
 							this.element.dom_output("destroy");
 						}, this));
 
@@ -253,6 +272,9 @@
 		},
 
 		_destroy: function () {
+			if(this.option("touchscreen_layer")) {
+				this.element.touchscreen_layer("destroy");
+			}
 			this._super();
 			this.close_editor();
 			$(window).off(".do_save");
@@ -431,12 +453,16 @@
 			}, this).on("disconnected", function () {
 				this.cleanup_closed_editor();
 			}, this).on("command", function (command) {
-				if (command === "undo") {
-					this._command_stack._undo();
-					this.$dirty_program.set(true);
-				} else if (command === "redo") {
-					this._command_stack._redo();
-					this.$dirty_program.set(true);
+				if(_.isString(command)) {
+					if (command === "undo") {
+						this._command_stack._undo();
+						this.$dirty_program.set(true);
+					} else if (command === "redo") {
+						this._command_stack._redo();
+						this.$dirty_program.set(true);
+					} else if (command === "begin_define_path") {
+						console.log("begin define path");
+					}
 				} else {
 					this._command_stack._do(command);
 					this.$dirty_program.set(true);
@@ -553,7 +579,7 @@
 			}
 			if(event) {
 				event.preventDefault();
-				event.stopPropagation();
+				//event.stopPropagation();
 			}
 			if (this.editor_window) {
 				this.editor_window.focus();
@@ -631,7 +657,19 @@
 			}
 		},
 
+		_store_editor_dimensions: function() {
+			if(this.editor_window) {
+				var width = this.editor_window.innerWidth,
+					height = this.editor_window.innerHeight,
+					x = this.editor_window.screenX,
+					y = this.editor_window.screenY;
+
+				ist.storeEditorDimensions(x, y, width, height);
+			}
+		},
+
 		cleanup_closed_editor: function () {
+			this._store_editor_dimensions();
 			this.$highlighting_objects.setValue([]);
 			if(this.edit_button) {
 				this.edit_button.removeClass("active").css(this.edit_button_css);

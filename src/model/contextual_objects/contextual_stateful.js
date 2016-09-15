@@ -21,13 +21,15 @@
 		proto.initialize = function() {
 			if(this.constructor === My) { this.flag_as_initialized(); }
 			My.superclass.initialize.apply(this, arguments);
-			this._live_statechart_child_updater = cjs.liven(function() {
-				this.update_statecharts();
-			}, {
-				context: this,
-				priority: 1,
-				pause_while_running: true
-			});
+			if(!this.inert) {
+				this._live_statechart_child_updater = cjs.liven(function() {
+					this.update_statecharts();
+				}, {
+					context: this,
+					priority: 1,
+					pause_while_running: true
+				});
+			}
 			if(this.constructor === My) { this.shout_initialization(); }
 		};
 
@@ -149,6 +151,36 @@
 			_.each(statecharts, function(statechart) {
 				statechart.resume();
 			});
+		};
+		proto._get_valid_cobj_children = function() {
+			var dict_children = My.superclass._get_valid_cobj_children.apply(this, arguments),
+				statecharts = this.get_statecharts(),
+				sc_children = _	.chain(statecharts)
+								.map(function(statechart) {
+									var transitions = statechart.get_all_transitions(),
+										infos = _	.chain(transitions)
+													.map(function(transition) {
+														var event = transition.event();
+														if(event instanceof ist.ParsedEvent) {
+															var obj = event.get_obj();
+															if(obj) {
+																var ptr = transition.context().push(obj);
+																return {
+																	obj: obj,
+																	pointer: ptr
+																};
+															}
+														}
+													}, this)
+													.compact()
+													.value();
+									return infos;
+								}, this)
+								.flatten(true)
+								.value();
+
+
+			return dict_children.concat(sc_children);
 		};
 	}(ist.ContextualStatefulObj));
 }(interstate));

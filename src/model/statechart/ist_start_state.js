@@ -68,6 +68,7 @@
 				this.outgoingTransition = new ist.StatechartTransition({
 					from: this,
 					to: this,
+					context: this.original_context(),
 					event: new ist.StatechartEvent({
 						target: "me",
 						spec: "run"

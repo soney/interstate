@@ -27,12 +27,21 @@
         proto.get_contextual_object = function () {
             return this.contextual_object;
         };
-		proto.get_creator = function() {
+		proto.get_creator = function () {
 			return this.creator;
 		};
         proto.hash = function () {
             return this._context.hash();
         };
+		proto.getOutputFieldNames = function() {
+			return [];
+		};
+		proto.getOutputValue = function(fieldName) {
+			return false;
+		};
+		proto.getSummaryView = function() {
+			return false;
+		};
     }(ist.AttachmentInstance));
     
     ist.Attachment = function (options) {
@@ -77,14 +86,7 @@
 			this.do_destroy();
 		};
     }(ist.Attachment));
-	/*
-    
-    ist.define("attachment", function (options) {
-        var attachment = new ist.Attachment(options);
-        return attachment;
-    });
 
-*/
 	ist.register_attachments = function(object_types) {
 		var attachment_suffix = "_attachment";
 		_.each(object_types, function(attachment_specs, attachment_name) {

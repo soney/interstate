@@ -6,7 +6,6 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
-
 	ist.ContextualObject = function (options) {
 		var id = uid();
 
@@ -27,9 +26,9 @@
 		able.make_this_listenable(this);
 
 		this.object = options.object;
+		this.inert = options.inert;
 		this.pointer = options.pointer;
 		this.inherited_from = options.inherited_from || false;
-
 
 		this.$value = new cjs.Constraint(this._getter, {
 			context: this,
@@ -38,9 +37,6 @@
 		});
 		this._do_destroy_no_args = function() { this.destroy(); };
 		this.object.on("begin_destroy", this._do_destroy_no_args, this);
-
-		//if(this.sid() === 2440) { debugger; }
-		//if(this.sid() === 2770) { debugger; }
 
 		if(options.defer_initialization !== true) {
 			this.initialize(options);
@@ -171,10 +167,6 @@
 		proto.destroy = function (avoid_begin_destroy) {
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
-			//if(this.sid() === 2440) { debugger; }
-			//if(this.sid() === 2770) { debugger; }
-
-
 			var to_destroy = this._cobj_children.values();
 			_.each(to_destroy, function(cobj) {
 				cobj.destroy(true); // avoid begin destroy call
@@ -197,7 +189,6 @@
 		};
 
 		proto._get_valid_cobj_children = function() { return []; };
-
 
 		proto.update_cobj_children = function(recursive) {
 			cjs.wait();
@@ -245,6 +236,7 @@
 					}, this);
 				}
 			}, this);
+			/*
 
 			var to_destroy_list = _.compact(_.values(to_destroy));
 
@@ -254,8 +246,10 @@
 			_.each(to_destroy_list, function(cobj) {
 				cobj.destroy(true);
 			});
+			*/
 
 			this.updateAttachments();
+			
 			cjs.signal();
 		};
 
@@ -263,9 +257,14 @@
 			var ptr = this.pointer.push(obj, special_contexts),
 				must_initialize = false,
 				cobj = this._cobj_children.getOrPut(ptr, function() {
-					var rv = ist.create_contextual_object(obj, ptr, _.extend({
-						defer_initialization: true
-					}, options));
+					var inert = special_contexts &&
+								special_contexts.length > 0 &&
+								_.every(special_contexts, function(sc) { return !sc.requires_different_cobj; }),
+						rv = ist.create_contextual_object(obj, ptr, _.extend({
+							defer_initialization: true,
+							inert: inert
+						}, options));
+
 					must_initialize = true;
 					return rv;
 				});

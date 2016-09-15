@@ -31,9 +31,11 @@ exports.vendor = c(
 				"jquery-ui-1.10.4.custom/js/jquery-2.1.1.js",
 				"jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.js",
 				"raphael/raphael.js",
+				"snap/snap.svg.js",
 				"esprima/esprima.js",
 				"qrcode.min.js",
 				"ace/ace.js",
+				"magictouch.js",
 				"Box2dWeb-2.1a.3/Box2dWeb-2.1.a.3.js"
 			])
 );
@@ -42,7 +44,8 @@ exports.runtime = c(
 	cp(vendor_src, [
 				"set.js",
 				"map.js",
-				"uid.js"
+				"uid.js",
+				"touch_replay.js"
 	]),
 	cp(cjs_path, ["cjs.js"]),
 	cp(vendor_src, [
@@ -91,11 +94,17 @@ exports.runtime = c(
 				"model/statechart/events/combination_event.js",
 				"model/statechart/events/path_crossing.js",
 				"model/attachments/attachment_core.js",
+				"model/attachments/touchcluster_attachment.js",
 				"model/attachments/dom_attachment.js",
 				"model/attachments/raphael_attachment.js",
+				"model/attachments/fireable_attachment.js",
+				"model/attachments/event_attachment.js",
 				//"model/attachments/three_attachment.js",
 				"model/attachments/canvas_attachment.js",
 				"model/attachments/box2d_attachment.js",
+				"model/touch/touch_cluster.js",
+				//"model/touch/gesture.js",
+				"model/touch/svg_path.js",
 				"model/communication_wrapper/remote_constraint.js",
 				"model/communication_wrapper/comm_mechanisms.js",
 				"model/communication_wrapper/wrapper_server.js",
@@ -111,6 +120,10 @@ exports.runtime = c(
 				"controller/environment/command_stack.js",
 				"controller/environment/ist_environment.js",
 				"view/running_app.js",
+				"view/touchscreen/touchscreen_layer.js",
+				"view/touchscreen/simple_touch_view.js",
+				"view/touchscreen/touch_cluster_view.js",
+				"view/touchscreen/svg_path_view.js",
 			])
 );
 
@@ -137,8 +150,14 @@ exports.editor = c(
 		"view/editor/statechart/statechart_view.js",
 		"view/editor/statechart/hrange.js",
 		"view/editor/style/editor_style.css",
+		"view/editor/style/attachment_styles.css",
 		"view/editor/style/fonts/Inconsolata/stylesheet.css",
 		"view/editor/style/fonts/SourceSansPro/stylesheet.css",
+		"view/editor/attachment_views/attachment_view.js",
+		"view/editor/attachment_views/dom_attachment_view.js",
+		"view/editor/attachment_views/raphael_attachment_view.js",
+		"view/editor/attachment_views/touch_cluster_attachment_view.js",
+		"view/editor/attachment_views/gesture_attachment_view.js",
 		"_vendor/bootstrap-3.1.0/css/bootstrap.css",
 		"_vendor/bootstrap-3.1.0/css/bootstrap-theme.css"
 	])
