@@ -18,6 +18,7 @@
 			pageY = cjs(0),
 			screenX = cjs(0),
 			screenY = cjs(0),
+			force = cjs(false),
 			move_listener = function(event) {
 				cjs.wait();
 				clientX.set(event.clientX);
@@ -28,8 +29,23 @@
 				screenY.set(event.screenY);
 				cjs.signal();
 			},
+			force_change_listener = function(event) {
+				cjs.wait();
+				force.set(event.webkitForce);
+				cjs.signal();
+			},
+			prepare_force_click = function(event) {
+				event.preventDefault();
+			},
+			enter_force_click = function(event) { },
+			end_force_click = function(event) { },
 			addMouseListeners = function() {
 				window.addEventListener("mousemove", move_listener);
+				window.addEventListener("webkitmouseforcechanged", force_change_listener);
+				window.addEventListener("webkitmouseforcewillbegin", prepare_force_click, false);
+				window.addEventListener("webkitmouseforcedown", enter_force_click, false);
+				window.addEventListener("webkitmouseforceup", end_force_click, false);
+				window.addEventListener("webkitmouseforcechanged", force_change_listener, false);
 			},
 			removeMouseListeners = function() {
 				window.removeEventListener("mousemove", move_listener);
@@ -44,6 +60,7 @@
 				pageY.destroy(silent);
 				screenX.destroy(silent);
 				screenY.destroy(silent);
+				force.destroy(silent);
 
 				cjs.signal();
 			},
@@ -55,7 +72,8 @@
 					pageX: pageX,
 					pageY: pageY,
 					screenX: screenX,
-					screenY: screenY
+					screenY: screenY,
+					force: force
 				}
 			});
 		device_mouse.destroy = function() {
@@ -76,7 +94,7 @@
 		function (obj) {
 			return ist.createMouseObject();
 		});
-	
+
 	// keyboard
 	ist.createKeyboardObject = function() {
 		var key_codes = {
@@ -166,7 +184,7 @@
 		function (obj) {
 			return ist.createKeyboardObject();
 		});
-	
+
 	// touches
 	ist.createTouchscreenObject = function() {
 		var touch_props = ["identifier",
@@ -539,5 +557,5 @@
 		function (obj) {
 			return ist.createDevices();
 		});
-	
+
 }(interstate));
