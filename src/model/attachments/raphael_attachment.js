@@ -272,7 +272,8 @@
 				r: "r",
 				rx: "rx",
 				ry: "ry",
-				src: "src",
+				// Snap uses the SVG image link attribute, not Raphael's src alias.
+				"xlink:href": "src",
 				stroke: "stroke",
 				"stroke-dasharray": "stroke_dasharray",
 				"stroke-linecap": "stroke_linecap",

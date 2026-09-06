@@ -4,7 +4,7 @@ test('Breakout renders finite shapes and the ball moves without runtime errors',
   const failures = [];
   page.on('pageerror', error => failures.push(error.message));
   page.on('console', message => { if (message.type() === 'error') failures.push(message.text()); });
-  await page.goto('/?open=examples%2Fbreakout.ist');
+  await page.goto('/build/?open=examples%2Fbreakout.ist');
   const ballPosition = () => page.evaluate(() => {
     const root = $('.content').dom_output('option', 'root');
     const ball = interstate.find_or_put_contextual_obj(root).prop_val('game').prop_val('ball').instances()[0];
@@ -25,7 +25,7 @@ test('Breakout renders finite shapes and the ball moves without runtime errors',
 });
 
 test('non-bubbling DOM events batch transitions and release the queue', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/build/');
   const result = await page.evaluate(() => {
     const ist = interstate, target = document.createElement('input');
     document.body.appendChild(target);
@@ -45,7 +45,7 @@ test('non-bubbling DOM events batch transitions and release the queue', async ({
 });
 
 test('constraint invalidation does not re-enter an unfinished getter', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/build/');
   expect(await page.evaluate(() => {
     const cjs = interstate.cjs, source = cjs(0);
     let calls = 0;

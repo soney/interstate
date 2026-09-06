@@ -97,7 +97,7 @@
 			image.set("clip_rect", new ist.Cell({str: "null"}));
 			image.set("cursor", new ist.Cell({str: "'default'"}));
 			image.set("opacity", new ist.Cell({str: "1.0"}));
-			image.set("src", new ist.Cell({str: "'http://interstate.from.so/images/interstate_logo.png'"}));
+			image.set("src", new ist.Cell({str: "'images/interstate_logo.png'"}));
 			image.set("transform", new ist.Cell({str: "''"}));
 			image.set("x", new ist.Cell({str: "20"}));
 			image.set("y", new ist.Cell({str: "20"}));

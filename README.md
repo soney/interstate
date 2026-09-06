@@ -13,7 +13,8 @@ npm run build
 npm start
 ```
 
-Open http://127.0.0.1:8000 and click **edit** to open the editor. Allow the
+Open http://127.0.0.1:8000 for the project homepage, choose **Open Editor**,
+then click **edit** to open the editor. Allow the
 editor popup if your browser prompts. Programs are saved in the browser's local
 storage; use the editor's export feature for backups. Keep the same site origin
 to retain access to existing saved programs.
@@ -71,7 +72,12 @@ https://soney.github.io/interstate/ with HTTPS. The old `gh-pages` branch is no
 longer the publishing source. To roll back, revert the faulty source commit on
 `master` and let the checks and deployment run again.
 
-`npm run build` produces the complete static site in `.build/`. Upload its
+`npm run build` produces the complete static site in `.build/`. The project
+homepage and public navigation live in `site/`; the runtime is published at
+`build/`, preserving the historical `build/index.html?open=...`, `breakout/`,
+`drag_lock/`, `image_carousel/`, and `touch_map/` links. Do not replace the public
+homepage with the runtime's intentionally empty canvas. Root editor/tutorial
+assets remain available for links shared during the earlier deployment. Upload its
 **contents** to an HTTPS static host; do not serve the repository or `dist/`
 directly. All core scripts, CSS, and fonts are local, so HTTPS pages work without
 CDN access. Example projects can still reference external content.

@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test('remote editing messages stay within a session and reconnect', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/build/');
   await page.addScriptTag({ url: '/socket.io/socket.io.js' });
   const result = await page.evaluate(async () => {
     const connect = id => new Promise(resolve => {

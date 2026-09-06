@@ -14,7 +14,7 @@ test.beforeAll(async () => {
 });
 test.afterAll(() => new Promise(resolve => server.close(resolve)));
 
-for (const route of ['/', '/tutorial/']) {
+for (const route of ['/build/', '/build/tutorial/']) {
   test(`static hosting supports runtime and popup editor: ${route}`, async ({ context }) => {
     const errors = [];
     context.on('page', page => {
@@ -26,7 +26,7 @@ for (const route of ['/', '/tutorial/']) {
     const popup = page.waitForEvent('popup');
     await page.locator('a').filter({ hasText: /^edit$/ }).click();
     const editor = await popup;
-    if (route === '/tutorial/') {
+    if (route === '/build/tutorial/') {
       await expect(editor.locator('.instructions')).toContainText('This tutorial will teach you');
       await editor.locator('.next').click();
       await expect(editor.locator('.instructions')).toContainText('Position these windows');

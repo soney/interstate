@@ -34,7 +34,15 @@ async function build() {
   });
   fs.writeFileSync(path.join(output, 'interstate.min.js'), result.code);
   fs.writeFileSync(path.join(output, 'interstate.min.js.map'), result.map);
-  console.log('Built self-contained site in .build/');
+  // Preserve the published runtime URLs before overlaying the project homepage.
+  // Keep root runtime assets too, for existing editor/tutorial links.
+  const entries = fs.readdirSync(output);
+  fs.mkdirSync(path.join(output, 'build'));
+  for (const entry of entries) {
+    fs.cpSync(path.join(output, entry), path.join(output, 'build', entry), { recursive: true });
+  }
+  fs.cpSync(path.join(root, 'site'), output, { recursive: true });
+  console.log('Built project homepage and runtime in .build/');
 }
 
 build().catch(error => { console.error(error); process.exitCode = 1; });

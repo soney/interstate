@@ -21,7 +21,7 @@ test('runtime and popup editor work with only local assets', async ({ context })
     return route.continue();
   });
   const page = await context.newPage();
-  await page.goto('/');
+  await page.goto('/build/');
   await expect(page.locator('a').filter({ hasText: /^edit$/ })).toBeVisible();
   const popupPromise = page.waitForEvent('popup');
   await page.locator('a').filter({ hasText: /^edit$/ }).click();
@@ -43,7 +43,7 @@ for (const example of ['breakout', 'drag_lock', 'img_carousel', 'map']) {
   test(`example loads: ${example}`, async ({ context }) => {
     const failures = captureFailures(context);
     const page = await context.newPage();
-    await page.goto(`/?open=examples%2F${example}.ist`);
+    await page.goto(`/build/?open=examples%2F${example}.ist`);
     await expect(page.locator('a').filter({ hasText: /^edit$/ })).toBeVisible();
     expect(failures).toEqual([]);
   });
