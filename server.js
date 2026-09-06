@@ -14,9 +14,14 @@ function createServer({ development = false } = {}) {
   const app = express();
   app.disable('x-powered-by');
   app.get('/healthz', (req, res) => res.json({ status: 'ok' }));
-  app.get('/e/:uid', (req, res) => res.redirect(
-    '/src/view/editor/editor.ejs.html?comm=socket&client_id=' + encodeURIComponent(req.params.uid)
-  ));
+  app.get('/e/:uid', (req, res) => {
+    // Only allow simple client identifiers; reject anything that isn't safe to
+    // embed in the redirect target to prevent open-redirect/header injection.
+    if (!/^[A-Za-z0-9_-]+$/.test(req.params.uid)) return res.sendStatus(400);
+    res.redirect(
+      '/src/view/editor/editor.ejs.html?comm=socket&client_id=' + encodeURIComponent(req.params.uid)
+    );
+  });
   // Only render known templates, never arbitrary request-supplied filesystem paths.
   app.get(/\.ejs\.html$/, async (req, res, next) => {
     const file = req.path.slice(1);
