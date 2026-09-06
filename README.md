@@ -26,20 +26,23 @@ legacy test pages. Re-run the build after source changes.
 
 ```sh
 npm ci
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 npm test
 ```
 
 The checks rebuild the site, exercise HTTP routes, open the runtime and popup
-editor in Chromium, verify saving/reloading and remote session reconnection,
+editor in Chromium, Firefox, and WebKit, verify saving/reloading and remote session reconnection,
 exercise Breakout movement, and run the legacy QUnit suite. Static-host checks
 serve only `.build/` under a subdirectory and verify both editor popups and
-tutorial navigation. Linux machines may need `npx playwright install --with-deps chromium`.
+tutorial navigation. Linux machines may need `npx playwright install --with-deps chromium firefox webkit`.
 The old heap-snapshot tests require their original browser extension for actual
 memory-leak measurement; without it, they only exercise the functional paths.
 
 GitHub Actions runs checks on pushes, pull requests, and weekly on Node 22 and
-24. Successful Node 24 runs publish an `interstate-site` artifact. Dependabot
+24. Successful Node 24 runs publish an `interstate-site` artifact.
+Pushes to `master` and manual runs on `master` deploy that exact artifact to
+[GitHub Pages](https://soney.github.io/interstate/) only after both Node versions
+pass all three browser engines. Failed checks leave the previous site deployed. Dependabot
 proposes dependency updates; merge them only after checks pass. Exact versions
 and `package-lock.json` make installs repeatable. Vendored browser libraries
 remain checked in for compatibility and need deliberate, tested updates.
@@ -51,7 +54,22 @@ and non-bubbling events. The Breakout sample initializes its position before
 following physics coordinates; moving those expressions back to its initial
 state creates a circular dependency.
 
+## Browser support
+
+The automated suite covers the current Chromium, Firefox, and WebKit engines,
+including the runtime, popup editor, saving, examples, and tutorial. These cover
+the engines used by Chrome/Edge, Firefox, and Safari. WebKit automation is not
+an actual Safari installation. Old browsers and every browser/device combination
+cannot be guaranteed; keep the browser tests and Playwright updates passing to
+catch compatibility regressions.
+
 ## Deploy
+
+GitHub Pages must use **GitHub Actions** as its publishing source. The workflow
+in `.github/workflows/ci.yml` publishes `.build/` to
+https://soney.github.io/interstate/ with HTTPS. The old `gh-pages` branch is no
+longer the publishing source. To roll back, revert the faulty source commit on
+`master` and let the checks and deployment run again.
 
 `npm run build` produces the complete static site in `.build/`. Upload its
 **contents** to an HTTPS static host; do not serve the repository or `dist/`

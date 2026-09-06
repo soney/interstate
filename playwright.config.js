@@ -11,5 +11,7 @@ module.exports = defineConfig({
     url: `http://127.0.0.1:${port}/healthz`,
     reuseExistingServer: false
   },
-  projects: [{ name: 'chromium', use: { browserName: 'chromium' } }]
+  projects: ['chromium', 'firefox', 'webkit'].map(browserName => ({
+    name: browserName, use: { browserName }
+  }))
 });
