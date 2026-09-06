@@ -16,7 +16,7 @@ test('project homepage retains its public navigation and local assets', async ({
   expect((await page.request.get('/' + paper)).status()).toBe(200);
   await page.getByRole('link', { name: 'Open Editor Start a new program or open your saved work' }).click();
   await expect(page).toHaveURL(/\/build\/$/);
-  await expect(page.locator('a').filter({ hasText: /^edit$/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Edit/ })).toBeVisible();
   expect(failures).toEqual([]);
 });
 

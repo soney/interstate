@@ -95,7 +95,7 @@ test('closing Breakout releases physics animation and collision subscriptions', 
     root.destroy();
     const atClose = steps;
     await new Promise(r => setTimeout(r, 150));
-    return { wasRunning, stopped: world.stopped, extraSteps: steps - atClose, listeners: ist.contact_listeners.keys().length };
+    return { wasRunning, stopped: world.stopped, extraSteps: steps - atClose, editButtons: document.querySelectorAll(".ist-edit-button").length, listeners: ist.contact_listeners.keys().length };
   });
-  expect(result).toEqual({ wasRunning: true, stopped: true, extraSteps: 0, listeners: 0 });
+  expect(result).toEqual({ wasRunning: true, stopped: true, extraSteps: 0, editButtons: 0, listeners: 0 });
 });

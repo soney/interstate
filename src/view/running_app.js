@@ -79,22 +79,6 @@
 			}
 			if (this.option("show_edit_button")) {
 				this.button_color = "#990000";
-				this.edit_button_css = {
-					float: "right",
-					"text-decoration": "none",
-					"font-variant": "small-caps",
-					//"padding-top": "0px",
-					position: "fixed",
-					top: (display === "tablet" || display === "phone") ? "15px" : "0px",
-					right: "0px",
-					color: this.button_color,
-					"background-color": "",
-					"font-size": "1.2em",
-					"font-family": '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-					cursor: "pointer",
-					padding: "5px",
-					"border-bottom": ""
-				};
 				this.running_button_css = {
 					float: "right",
 					position: "fixed",
@@ -128,20 +112,6 @@
 				};
 				this.run_edit_inactive_css = {
 					"font-weight": "normal"
-				};
-				this.edit_hover_css = {
-					opacity: 1.0,
-					color: "white",
-					"background-color": this.button_color,
-					cursor: "pointer",
-					"border-bottom": ""
-				};
-				this.edit_active_css = {
-					opacity: 1.0,
-					color: this.button_color,
-					"background-color": "",
-					cursor: "default",
-					"border-bottom": "5px solid " + this.button_color
 				};
 				this.palette_css = {
 					"float":"right",					
@@ -179,23 +149,12 @@
 					display: "none"
 				};
 
-				this.edit_button = $("<a />")	.text("edit")
-												.css(this.edit_button_css)
-												.on("mouseover.make_active", _.bind(function() {
-													if (!this.edit_button.hasClass("active")) {
-														this.edit_button.addClass("hover").css(this.edit_hover_css);
-													}
-												}, this))
-												.on("mouseout.make_active", _.bind(function () {
-													if (!this.edit_button.hasClass("active")) {
-														this.edit_button.removeClass("hover").css(this.edit_button_css);
-													}
-												}, this))
-												.on("mousedown.open_editor touchstart.open_editor", _.bind(this.open_editor, this));
-
-				var append_interval = window.setInterval(_.bind(function() {
-					this.element.append(this.edit_button);
-				}, this));
+				this.edit_button = $("<button />")
+					.attr({type: "button", title: "Open the InterState editor in a new window"})
+					.addClass("ist-edit-button")
+					.text("Edit")
+					.on("click.open_editor", _.bind(this.open_editor, this));
+				this.element.append(this.edit_button);
 			}
 
 			if (this.option("edit_on_open")) {
@@ -294,9 +253,7 @@
 			this.element.removeClass("ist_runtime");
 			$(window).off("keydown.open_editor");
 			if (this.edit_button) {
-				this.edit_button.off("mouseover.make_active")
-								.off("mouseout.make_active")
-								.off("click.open_editor")
+				this.edit_button.off("click.open_editor")
 								.remove();
 			}
 			if (this.server_socket) {
@@ -409,9 +366,9 @@
 					var dom_attachment = root_contextual_object.get_attachment_instance("dom");
 					var dom_element = dom_attachment.get_dom_obj();
 					if (this.element.children().is(dom_element)) {
-						this.element.children().not(dom_element).remove();
+						this.element.children().not(dom_element).not(this.edit_button).remove();
 					} else {
-						this.element.children().remove();
+						this.element.children().not(this.edit_button).remove();
 						this.element.append(dom_element);
 					}
 				}, {
@@ -448,7 +405,7 @@
 				dirty_program: this.$dirty_program
 			}).on("connected", function () {
 				if(this.edit_button) {
-					this.edit_button.addClass("active").css(this.edit_active_css);
+					this.edit_button.addClass("active");
 				}
 			}, this).on("disconnected", function () {
 				this.cleanup_closed_editor();
@@ -590,7 +547,7 @@
 
 					if (this.server_socket.is_connected()) { // It connected immediately
 						if(this.edit_button) {
-							this.edit_button.addClass("active").css(this.edit_active_css);
+							this.edit_button.addClass("active");
 						}
 					}
 					this.element.trigger("editor_open");
@@ -672,7 +629,7 @@
 			this._store_editor_dimensions();
 			this.$highlighting_objects.setValue([]);
 			if(this.edit_button) {
-				this.edit_button.removeClass("active").css(this.edit_button_css);
+				this.edit_button.removeClass("active");
 			}
 			delete this.editor_window;
 		},

@@ -24,7 +24,7 @@ for (const route of ['/build/', '/build/tutorial/']) {
     const page = await context.newPage();
     await page.goto(base + route);
     const popup = page.waitForEvent('popup');
-    await page.locator('a').filter({ hasText: /^edit$/ }).click();
+    await page.getByRole('button', { name: /^Edit/ }).click();
     const editor = await popup;
     if (route === '/build/tutorial/') {
       await expect(editor.locator('.instructions')).toContainText('This tutorial will teach you');

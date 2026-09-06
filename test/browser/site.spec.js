@@ -22,9 +22,9 @@ test('runtime and popup editor work with only local assets', async ({ context })
   });
   const page = await context.newPage();
   await page.goto('/build/');
-  await expect(page.locator('a').filter({ hasText: /^edit$/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Edit/ })).toBeVisible();
   const popupPromise = page.waitForEvent('popup');
-  await page.locator('a').filter({ hasText: /^edit$/ }).click();
+  await page.getByRole('button', { name: /^Edit/ }).press('Enter');
   const editor = await popupPromise;
   await expect(editor.locator('.col').first()).toBeVisible();
   await expect.poll(() => page.evaluate(() => $('.content').dom_output('get_server_socket').is_connected())).toBe(true);
@@ -44,7 +44,7 @@ for (const example of ['breakout', 'drag_lock', 'img_carousel', 'map']) {
     const failures = captureFailures(context);
     const page = await context.newPage();
     await page.goto(`/build/?open=examples%2F${example}.ist`);
-    await expect(page.locator('a').filter({ hasText: /^edit$/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Edit/ })).toBeVisible();
     expect(failures).toEqual([]);
   });
 }
@@ -53,7 +53,7 @@ test('tutorial initializes', async ({ context }) => {
   const failures = captureFailures(context);
   const page = await context.newPage();
   await page.goto('/tutorial/');
-  await expect(page.locator('a').filter({ hasText: /^edit$/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Edit/ })).toBeVisible();
   expect(failures).toEqual([]);
 });
 
