@@ -242,10 +242,9 @@
 					var name = info.from_item;
 					var listener = current_listeners[name];
 					listener.destroy();
-					delete diff.removed[name];
+					delete current_listeners[name];
 					if (dom_obj) {
-						dom_obj.style[name] = "";
-						delete dom_obj.style[name];
+						dom_obj.removeAttribute(name);
 					}
 				}, this);
 				_.each(diff.added, function (info) {
@@ -264,7 +263,8 @@
 				var dom_obj = this.get_dom_obj();
 				if (dom_obj) {
 					var val = child_val.val();
-					if (val) {
+					if(name === "checked" || name === "selected") { dom_obj[name] = !!val; }
+					if (val || val === 0 || val === "") {
 						dom_obj.setAttribute(name, val);
 					} else {
 						dom_obj.removeAttribute(name);

@@ -88,7 +88,9 @@
 
 		proto.get_statecharts = function () {
 			if(this.is_template()) {
-				return [];
+				// Keep the inert chart used to inspect prototype values. Deleting it
+				// here makes readers recreate it indefinitely when copies change.
+				return [this.get_own_statechart()];
 			}
 
 			var contextual_protos = this.get_all_protos();

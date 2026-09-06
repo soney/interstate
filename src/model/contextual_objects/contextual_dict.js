@@ -865,6 +865,8 @@
 		};
 
 		proto.destroy = function (avoid_begin_destroy) {
+			// Do not render intermediate values while a whole object tree is torn down.
+			cjs.wait();
 			if(this.constructor === My && !avoid_begin_destroy) { this.begin_destroy(true); }
 
 			this._manifestation_objects.destroy(true);
@@ -923,6 +925,7 @@
 				delete this.has.options.context;
 				delete this.has.options.args_map;
 			}
+			cjs.signal();
 		};
 
 		proto._getter = function () {

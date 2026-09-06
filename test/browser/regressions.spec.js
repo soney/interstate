@@ -85,3 +85,56 @@ test('unused sensors stay inactive and sensor values retain zeros and release li
     return { initially, initialValues, changed, zero, added, removed };
   })).toEqual({ initially: [], initialValues: [0, 0], changed: 12, zero: 0, added: ['deviceorientation', 'devicemotion'], removed: ['deviceorientation', 'devicemotion'] });
 });
+
+test('destroyed or disabled timers cannot fire, and enabled timers still run', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto('/build/');
+  const result = await page.evaluate(async () => {
+    const ist = interstate, fired = [];
+    for (const kind of ['timeout', 'time']) {
+      const make = () => kind === 'timeout' ? new ist.TimeoutEvent(30) : new ist.TimeEvent(Date.now() + 30);
+      const destroyed = make(), disabled = make(), working = make();
+      destroyed.on_fire(() => fired.push('destroyed')); disabled.on_fire(() => fired.push('disabled'));
+      working.on_fire(() => fired.push(kind));
+      destroyed.enable(); disabled.enable(); working.enable();
+      destroyed.destroy(); disabled.disable();
+      await new Promise(r => setTimeout(r, 80));
+      disabled.destroy(); working.destroy();
+    }
+    return fired;
+  });
+  expect(result).toEqual(['timeout', 'time']);
+  expect(errors).toEqual([]);
+});
+
+test('statechart teardown during deferred transition rounds cancels remaining callbacks', async ({ page }) => {
+  await page.goto('/build/');
+  expect(await page.evaluate(() => {
+    const ist = interstate;
+    for (const round of [0, 2, 4]) {
+      const chart = new ist.Statechart();
+      chart.add_state('a').add_state('b').starts_at('a');
+      const event = new ist.ManualEvent();
+      chart.add_transition('a', 'b', event);
+      ist.event_queue.once('end_event_queue_round_' + round, () => chart.destroy());
+      event.fire();
+    }
+    return ist.event_queue.is_ready();
+  })).toBe(true);
+});
+
+test('destroying a throttled event cancels pending delivery', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto('/build/');
+  expect(await page.evaluate(async () => {
+    const source = new interstate.ManualEvent(), delayed = source.throttle(30);
+    let calls = 0;
+    delayed.on_fire(() => calls++);
+    delayed.enable(); source.fire(); delayed.destroy();
+    await new Promise(r => setTimeout(r, 80));
+    return calls;
+  })).toBe(0);
+  expect(errors).toEqual([]);
+});

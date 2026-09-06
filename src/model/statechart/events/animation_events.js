@@ -18,6 +18,7 @@
 	var cancelAnimFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame ||
 		window.mozCancelAnimationFrame || window.clearTimeout;
 	ist.requestAnimationFrame = requestAnimFrame;
+	ist.cancelAnimationFrame = cancelAnimFrame;
 
 	ist.FrameEvent = function () {
 		ist.Event.apply(this, arguments);

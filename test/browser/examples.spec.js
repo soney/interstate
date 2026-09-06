@@ -96,6 +96,13 @@ test('map pans, pinches, releases touches, and fits the viewport', async ({ page
   await touch(page, 'touchmove', [[2, 150, 200], [3, 450, 200]]);
   await expect.poll(async () => (await position(map))[2]).toBeGreaterThan(4642);
   await touch(page, 'touchend', [], [[2, 150, 200], [3, 450, 200]]);
+  const beforeCancel = (await position(map)).slice(0, 2);
+  await touch(page, 'touchstart', [[4, 200, 200]]);
+  await touch(page, 'touchcancel', [], [[4, 200, 200]]);
+  await touch(page, 'touchstart', [[5, 200, 200]]);
+  await touch(page, 'touchmove', [[5, 180, 180]]);
+  await expect.poll(async () => (await position(map)).slice(0, 2)).toEqual(beforeCancel.map(v => v - 20));
+  await touch(page, 'touchend', [], [[5, 180, 180]]);
   for (const viewport of [{ width: 1280, height: 720 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(viewport);
     await expect.poll(() => page.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.scrollHeight])).toEqual([viewport.width, viewport.height]);

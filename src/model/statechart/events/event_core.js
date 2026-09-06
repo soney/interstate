@@ -201,10 +201,10 @@
 			this.on_fire(function () {
 				last_args = arguments;
 				if(!timeout) {
-					timeout = true;
-					window.setTimeout(function() {
+					timeout = window.setTimeout(function() {
 						timeout = false;
-						new_event.fire.apply(new_event, _.toArray(last_args));
+						if(new_event.is_enabled()) { new_event.fire.apply(new_event, _.toArray(last_args)); }
+						last_args = undefined;
 					}, limit);
 				}
 			});
@@ -217,10 +217,14 @@
 				this.enable();
 			}, this);
 			new_event.disable = _.bind(function() {
+				window.clearTimeout(timeout);
+				timeout = false;
+				last_args = undefined;
 				old_disable.apply(new_event, arguments);
 				this.disable();
 			}, this);
 			new_event.destroy = _.bind(function() {
+				new_event.disable();
 				old_destroy.apply(new_event, arguments);
 				this.destroy();
 				delete new_event.enable;

@@ -17,19 +17,28 @@
 		var proto = My.prototype;
 		proto.on_create = function (time) {
 			this.time = time;
-			var creation_time = (new Date()).getTime();
-			var time_diff = this.time - creation_time;
+			this.created_at = (new Date()).getTime();
+			this.fired = false;
+		};
+		proto.enable = function() {
+			My.superclass.enable.apply(this, arguments);
+			if(this.fired || this.timeout !== undefined) { return; }
 			var self = this;
-			window.setTimeout(function () {
-				self.fire({
-					type: "time",
-					time: time,
-					current_time: (new Date()).getTime(),
-					created_at: creation_time
-				});
-			}, time_diff);
+			this.timeout = window.setTimeout(function() {
+				self.timeout = undefined;
+				if(!self.is_enabled()) { return; }
+				self.fired = true;
+				self.fire({type: "time", time: self.time,
+					current_time: (new Date()).getTime(), created_at: self.created_at});
+			}, Math.max(0, this.time - (new Date()).getTime()));
+		};
+		proto.disable = function() {
+			My.superclass.disable.apply(this, arguments);
+			window.clearTimeout(this.timeout);
+			this.timeout = undefined;
 		};
 		proto.destroy = function () {
+			this.disable();
 			My.superclass.destroy.apply(this, arguments);
 		};
 	}(ist.TimeEvent));
@@ -49,21 +58,21 @@
 			this.created_at = (new Date()).getTime();
 		};
 		proto.set_transition = function (transition) {
+			if (this._from) {
+				this._from.off("active", this.enter_listener, this);
+				this._from.off("inactive", this.leave_listener, this);
+			}
+			this.leave_listener();
 			this._transition = transition;
-			if (transition) {
-				var from = transition.from();
-
-				from.on("active", this.enter_listener, this);
-				from.on("inactive", this.leave_listener, this);
-
-				//_.defer(function (self) {
-				if (from.is_active()) {
-					this.enter_listener();
-				}
-				//}, this);
+			this._from = transition ? transition.from() : null;
+			if (this._from) {
+				this._from.on("active", this.enter_listener, this);
+				this._from.on("inactive", this.leave_listener, this);
+				this.enter_listener();
 			}
 		};
 		proto.enter_listener = function() {
+			if (!this.is_enabled() || (this._from && !this._from.is_active())) { return; }
 			if (this.timeout) {
 				window.clearTimeout(this.timeout);
 				this.timeout = undefined;
@@ -77,6 +86,8 @@
 			}
 		};
 		proto.notify = function () {
+			this.timeout = undefined;
+			if (!this.is_enabled() || (this._from && !this._from.is_active())) { return; }
 			//ist.event_queue.wait();
 			this.fire({
 				type: "timeout",
@@ -87,21 +98,19 @@
 			//ist.event_queue.signal();
 		};
 		proto.destroy = function () {
-			if(this._transition) {
-			/*
-				var from = this._transition.from();
-				from.off("active", this.enter_listener, this);
-				from.off("inactive", this.leave_listener, this);
-				*/
-			}
+			this.disable();
+			this.set_transition(null);
 			My.superclass.destroy.apply(this, arguments);
 		};
-
 		proto.enable = function () {
+			if(this.is_enabled()) { return; }
 			My.superclass.enable.apply(this, arguments);
+			this.enter_listener();
 		};
 		proto.disable = function () {
 			My.superclass.disable.apply(this, arguments);
+			this.leave_listener();
 		};
+
 	}(ist.TimeoutEvent));
 }(interstate));

@@ -73,11 +73,11 @@
 				debugDraw: function(contextual_object) {
 					var debugDraw = contextual_object.prop_val("debugDraw");
 					if(debugDraw) {
-						if(this.touchscreen_layer) {
+						if(this.ist_runtime.is(".hasTouchscreenLayer")) {
 							this.ist_runtime.touchscreen_layer("addTouchCluster", this.touchCluster);
 						}
 					} else {
-						if(this.touchscreen_layer) {
+						if(this.ist_runtime.is(".hasTouchscreenLayer")) {
 							this.ist_runtime.touchscreen_layer("removeTouchCluster", this.touchCluster);
 						}
 					}

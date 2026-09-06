@@ -46,12 +46,14 @@
 	
 	ist.WorldAttachment = ist.register_attachment("box2d_world", {
 			ready: function() {
+				this.stopped = false;
+				var attachment = this;
 				this.world = new B2World(new B2Vec2(0, 0), true);
 				this.world.SetContactListener({
 					BeginContact: function() { },
 					EndContact: function(contact) {
-						var cobj_a = contact.m_fixtureA.cobj,
-							cobj_b = contact.m_fixtureB.cobj;
+						var fixture_a = contact.m_fixtureA, fixture_b = contact.m_fixtureB,
+							cobj_a = fixture_a.cobj, cobj_b = fixture_b.cobj;
 
 						var contact_listeners = _.filter(ist.contact_listeners.get(cobj_a), function(x) {
 							return ist.check_contextual_object_equality(x.target, cobj_b);
@@ -59,6 +61,7 @@
 							return ist.check_contextual_object_equality(x.target, cobj_a);
 						}));
 						window.setTimeout(function() {
+							if(attachment.stopped || fixture_a.ist_destroyed || fixture_b.ist_destroyed) { return; }
 							_.each(contact_listeners, function(x) {
 								x.callback(contact);
 							});
@@ -69,15 +72,16 @@
 				});
 
 				var update_world = _.bind(function() {
+					if(this.stopped) { return; }
 					this.world.Step(1 / 60, 10, 10);
-					ist.requestAnimationFrame.call(window, update_world);
+					this.frame = ist.requestAnimationFrame.call(window, update_world);
 					/*
 					if(this.world.m_gravity.y < 5) {
 						this.world.DrawDebugData();
 					}
 					*/
 				}, this);
-				ist.requestAnimationFrame.call(window, update_world);
+				this.frame = ist.requestAnimationFrame.call(window, update_world);
 
 /*
 				var world = this.world;
@@ -91,6 +95,10 @@
 					world.SetDebugDraw(debugDraw);
 				}
 				*/
+			},
+			destroy: function() {
+				this.stopped = true;
+				ist.cancelAnimationFrame.call(window, this.frame);
 			},
 			parameters: {
 				gravity: function(contextual_object) {
@@ -186,7 +194,8 @@
 			destroy: function(silent) {
 				window.clearInterval(this._update_interval);
 
-				var body = this.get_body();
+				var body = this.get_body(), fixture = this.get_fixture();
+				if(fixture) { fixture.ist_destroyed = true; }
 				if(body) {
 					var world = body.m_world;
 					world.DestroyBody(body);

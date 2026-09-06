@@ -65,6 +65,21 @@ removing the physics prototype. The carousel keeps a fallback selection during
 state changes, and the map uses reactive viewport dimensions and finite coordinates
 after touch release. Preserve these sample fixes when replacing saved `.ist` files.
 
+Breakout now starts in mouse mode with a matching checkbox, displays game over
+when the last ball is lost and provides a native Restart button, and advances levels in a separate
+state before resetting bricks. Its score counts cleared bricks, including the
+last brick of a level. Example canvases adapt to narrow and short windows; the
+touch overlay uses viewport dimensions instead of feeding its own overflow back
+into its size. Map gestures also handle cancellation.
+
+The interaction suite checks actual physics collisions, level progression,
+repeated losses/restarts, mouse/keyboard switching, carousel selection and
+advancement, drag locking, map pan/pinch/cancellation, and repeated viewport
+resizing (320×480 through 1280×720). Teardown tests check timer cancellation,
+deferred transition callbacks, and physics/collision cleanup. Template charts
+must stay inert but cached: repeatedly discarding them causes an infinite
+reconstruction loop when the number of copies changes.
+
 ## Browser support
 
 The automated suite covers the current Chromium, Firefox, and WebKit engines,

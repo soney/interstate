@@ -18,8 +18,18 @@
 		var proto = My.prototype;
 		proto.on_create = function (targa, targb) {
 			var old_targa = [],
-				old_targb = [],
 				$notify = _.bind(this.notify, this);
+
+			this.remove_listeners = function() {
+				_.each(old_targa, function(ta) {
+					var listeners = ist.contact_listeners.get(ta) || [];
+					for(var i = listeners.length - 1; i >= 0; i--) {
+						if(listeners[i].callback === $notify) { listeners.splice(i, 1); }
+					}
+					if(listeners.length === 0) { ist.contact_listeners.remove(ta); }
+				});
+				old_targa = [];
+			};
 
 			this.live_fn = cjs.liven(function () {
 				var new_targa, new_targb;
@@ -40,25 +50,7 @@
 					new_targa = new_targb = [];
 				}
 
-				_.each(old_targa, function(ta) {
-					var clisteners = ist.contact_listeners.get(ta),
-						len = clisteners.length,
-						cli, i;
-					_.each(old_targb, function(tb) {
-						for(i = 0; i<len; i++) {
-							cli = clisteners[i];
-							if(cli.target === tb) {
-								if(len === 1) {
-									ist.contact_listeners.remove(targa);
-								} else {
-									clisteners.splice(i, 1);
-								}
-								len--;
-								break;
-							}
-						}
-					}, this);
-				}, this);
+				this.remove_listeners();
 
 				_.each(new_targa, function(ta) {
 					var clisteners = ist.contact_listeners.get_or_put(ta, function() {
@@ -72,35 +64,22 @@
 				}, this);
 
 				old_targa = new_targa;
-				old_targb = new_targb;
 			}, {
 				context: this,
 				//run_on_create: false
 			});
 		};
-		proto.set_transition = function (transition) {
-			this._transition = transition;
-			if (transition) {
-				var from = transition.from();
-
-				from.on("active", this.enter_listener, this);
-				from.on("inactive", this.leave_listener, this);
-			}
-		};
-		proto.enter_listener = function() {
-		};
-		proto.leave_listener = function() {
-		};
 		proto.notify = function (contact) {
-			//ist.event_queue.wait();
+			if(!this.is_enabled()) { return; }
 			this.fire({
 				type: "collision"
 			});
 			//ist.event_queue.signal();
 		};
 		proto.destroy = function () {
-			if(this._transition) {
-			}
+			this.disable();
+			this.live_fn.destroy();
+			this.remove_listeners();
 			My.superclass.destroy.apply(this, arguments);
 		};
 

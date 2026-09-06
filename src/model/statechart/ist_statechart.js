@@ -88,13 +88,13 @@
 						activated = true;
 
 						ist.event_queue.once("end_event_queue_round_6", function () {
-							activation_listener.apply(context, listener_args);
+							if(!statechart.destroyed) { activation_listener.apply(context, listener_args); }
 						}, this);
 					} else if (activated === true && !mname) {
 						activated = false;
 
 						ist.event_queue.once("end_event_queue_round_2", function () {
-							deactivation_listener.apply(context, listener_args);
+							if(!statechart.destroyed) { deactivation_listener.apply(context, listener_args); }
 						}, this);
 					}
 				};
@@ -120,15 +120,15 @@
 											matches_name(statechart, listener_info.from, to))) {
 
 							var listener_args = arguments;
-							activation_listener.apply(context, listener_args);
+							if(!statechart.destroyed) { activation_listener.apply(context, listener_args); }
 
 							if (listener_info.pre) {
 								ist.event_queue.once("end_event_queue_round_1", function () {
-									deactivation_listener.apply(context, listener_args);
+									if(!statechart.destroyed) { deactivation_listener.apply(context, listener_args); }
 								});
 							} else {
 								ist.event_queue.once("end_event_queue_round_5", function () {
-									deactivation_listener.apply(context, listener_args);
+									if(!statechart.destroyed) { deactivation_listener.apply(context, listener_args); }
 								});
 							}
 						}
@@ -453,6 +453,7 @@
 				*/
 
 				ist.event_queue.once("end_event_queue_round_3", function () {
+					if(this.destroyed || state.destroyed || transition.destroyed) { return; }
 					if(this.is_concurrent()) {
 						_.each(this.get_substates(true), function(substate) {
 							substate.set_active(true);

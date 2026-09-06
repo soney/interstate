@@ -200,11 +200,11 @@
 				debugDraw: function(contextual_object) {
 					var debugDraw = contextual_object.prop_val("debugDraw");
 					if(debugDraw) {
-						if(this.touchscreen_layer) {
+						if(this.ist_runtime.is(".hasTouchscreenLayer")) {
 							this.ist_runtime.touchscreen_layer("addPath", contextual_object);
 						}
 					} else {
-						if(this.touchscreen_layer) {
+						if(this.ist_runtime.is(".hasTouchscreenLayer")) {
 							this.ist_runtime.touchscreen_layer("removePath", contextual_object);
 						}
 					}

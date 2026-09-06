@@ -423,6 +423,7 @@
 
 
 				ist.event_queue.once("end_event_queue_round_0", function () {
+					if (this.destroyed || transition.destroyed) { return; }
 					this._emit("pre_transition_fire", {
 						type: "pre_transition_fire",
 						transition: transition,
@@ -430,14 +431,16 @@
 						event: event,
 						state: to
 					});
-					transition.set_active(true);
+					if (!transition.destroyed) { transition.set_active(true); }
 				}, this);
 
 				ist.event_queue.once("end_event_queue_round_2", function () {
+					if (this.destroyed || transition.destroyed) { return; }
 					transition.increment_times_run();
 				}, this);
 
 				ist.event_queue.once("end_event_queue_round_4", function () {
+					if (this.destroyed || transition.destroyed) { return; }
 					transition.set_active(false);
 					this._emit("post_transition_fire", {
 						type: "post_transition_fire",

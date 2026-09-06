@@ -204,9 +204,6 @@
 			this.destroyed = true;
 			this._emit("destroy", {type: "destroy", target: this});
 			cjs.wait();
-			if(this.$active) {
-				this.$active.destroy(silent);
-			}
 
 			this._from_state.destroy(silent);
 			delete this._from_state;

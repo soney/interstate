@@ -18,7 +18,9 @@
 
 			this.canvasDiv = $("<canvas />").prependTo(document.body).css({
 				"pointer-events": "none",
-				"position": "absolute"
+				"position": "fixed",
+				"top": 0,
+				"left": 0
 			});
 
 			this.paper = Snap(0,0);
@@ -26,13 +28,15 @@
 			this.ctx = this.canvasDiv[0].getContext("2d");
 			this.raphaelDiv.prependTo(document.body).css({
 				"pointer-events": "none",
-				"position": "absolute",
+				"position": "fixed",
+				"top": 0,
+				"left": 0,
 				"z-index": 10
 			});
 
 			var onWindowResize = _.bind(function() {
-				var width = Math.max(document.body.scrollWidth, window.innerWidth),
-					height = Math.max(document.body.scrollHeight, window.innerHeight);
+				var width = window.innerWidth,
+					height = window.innerHeight;
 				//this.paper.setSize(window.innerWidth, window.innerHeight);
 				this.paper.attr({
 					width: width,
