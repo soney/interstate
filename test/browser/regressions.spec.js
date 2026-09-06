@@ -5,6 +5,7 @@ test('Breakout renders finite shapes and the ball moves without runtime errors',
   page.on('pageerror', error => failures.push(error.message));
   page.on('console', message => { if (message.type() === 'error') failures.push(message.text()); });
   await page.goto('/build/?open=examples%2Fbreakout.ist');
+  await expect(page.locator('.content svg circle')).toBeVisible();
   const ballPosition = () => page.evaluate(() => {
     const root = $('.content').dom_output('option', 'root');
     const ball = interstate.find_or_put_contextual_obj(root).prop_val('game').prop_val('ball').instances()[0];
