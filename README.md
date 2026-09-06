@@ -55,7 +55,10 @@ remain checked in for compatibility and need deliberate, tested updates.
 The vendored ConstraintJS solver includes a regression-tested guard against
 re-entering a getter while it is constructing its value. Preserve this fix when
 updating that library. Runtime regression checks also cover DOM event batching
-and non-bubbling events. The Breakout sample initializes its position before
+and non-bubbling events. SVG child lists deduplicate aliases so cyclic links
+between carousel thumbnails cannot repeatedly remove/reinsert the same node and
+cancel native clicks. The carousel test checks that timer updates leave those
+nodes in place. The Breakout sample initializes its position before
 following physics coordinates; moving those expressions back to its initial
 state creates a circular dependency. Its dead state also clears coordinates before
 removing the physics prototype. The carousel keeps a fallback selection during

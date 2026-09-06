@@ -36,7 +36,10 @@
 				}
 			}
 		}, this);
-		return children;
+		// Aliases (including cyclic next-item links) can reach the same SVG node.
+		// A node can occur only once in a paper; duplicates cause perpetual moves
+		// and can cancel a native click between mouse down and mouse up.
+		return _.uniq(children);
 	},
 	get_cobj_children = function(contextual_object) {
 		var children, cobj_children, values;
@@ -62,7 +65,10 @@
 			children = [];
 		}
 
-		return children;
+		// Aliases (including cyclic next-item links) can reach the same SVG node.
+		// A node can occur only once in a paper; duplicates cause perpetual moves
+		// and can cancel a native click between mouse down and mouse up.
+		return _.uniq(children);
 	};
 
 	ist.PaperAttachment = ist.register_attachment("paper", {

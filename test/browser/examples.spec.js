@@ -39,14 +39,23 @@ test('drag lock drags, releases, locks dragging on, and unlocks', async ({ page 
 test('carousel selects every photo and automatically advances', async ({ page }) => {
   await open(page, 'img_carousel');
   const main = page.locator('.content svg image[width="400"]');
+  // Timer updates must not remove/reinsert thumbnails while a user clicks.
+  await page.evaluate(() => {
+    window.thumbnailMoves = 0;
+    window.thumbnailObserver = new MutationObserver(records => {
+      for (const record of records) for (const node of record.removedNodes) {
+        if (node.nodeType === 1 && node.matches('image[width="75"]')) thumbnailMoves++;
+      }
+    });
+    thumbnailObserver.observe(document.querySelector('.content svg'), { childList: true });
+  });
   const source = el => el.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
   for (const name of ['leaf', 'tulips', 'winter', 'wonderland', 'fish']) {
-    const thumb = page.locator('.content svg image[width="75"]').filter({ visible: true });
-    const target = await thumb.evaluateAll((els, name) => els.findIndex(el => (el.getAttributeNS('http://www.w3.org/1999/xlink', 'href') || '').includes(name)), name);
-    await thumb.nth(target).click();
+    await page.locator(`.content svg image[width="75"][*|href$="${name}.jpg"]`).click({ delay: 50 });
     await expect.poll(() => main.evaluate(source)).toContain(name + '.jpg');
   }
   await expect.poll(() => main.evaluate(source), { timeout: 8000 }).toContain('leaf.jpg');
+  expect(await page.evaluate(() => { thumbnailObserver.disconnect(); return thumbnailMoves; })).toBe(0);
 });
 
 test('Breakout responds to mouse and keyboard controls', async ({ page }) => {
