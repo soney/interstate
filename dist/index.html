@@ -32,23 +32,25 @@
 			}
 		</style>
 		<link rel="stylesheet" href="editor/style/runtime_style.css" />
-		<link rel="shortcut icon" href="../images/interstate_logo_128.png">
+		<link rel="shortcut icon" href="images/interstate_logo_128.png">
 	</head>
 	<body>
 		<div class="content"></div>
 	</body>
-	<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
-	<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
-	<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-	<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.2/raphael-min.js"></script>
+	<script src="vendor/underscore/underscore.js"></script>
+	<script src="vendor/jquery-ui-1.10.4.custom/js/jquery-2.1.1.js"></script>
+	<script src="vendor/jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.js"></script>
+	<script src="vendor/raphael/raphael.js"></script>
+	<script src="vendor/snap/snap.svg.js"></script>
 	<script src="vendor/Box2dWeb-2.1a.3/Box2dWeb-2.1.a.3.js"></script>
-	<script src="vendor/esprima.js"></script>
+	<script src="vendor/esprima/esprima.js"></script>
 	<script src="vendor/ace/ace.js"></script>
+	<script src="vendor/qrcode.min.js"></script>
 	
 	<script src="interstate.min.js"></script>
 	<script type="text/javascript">
 		$(function() {
-			var openFile = getUrlParameter('open');
+			var openFile = new URLSearchParams(window.location.search).get('open');
 			if(openFile) {
 				$.ajax({
 					url: openFile

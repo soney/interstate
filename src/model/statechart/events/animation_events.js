@@ -11,10 +11,12 @@
 				window.webkitRequestAnimationFrame	||
 				window.mozRequestAnimationFrame		||
 		function(callback) {
-			window.setTimeout(callback, 1000/60);
+			return window.setTimeout(callback, 1000/60);
 		};
 	})();
 
+	var cancelAnimFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame ||
+		window.mozCancelAnimationFrame || window.clearTimeout;
 	ist.requestAnimationFrame = requestAnimFrame;
 
 	ist.FrameEvent = function () {
@@ -29,7 +31,13 @@
 			this.created_at = (new Date()).getTime();
 		};
 		proto.set_transition = function (transition) {
+			if (this._from) {
+				this._from.off("active", this.enter_listener, this);
+				this._from.off("inactive", this.leave_listener, this);
+			}
+			this.leave_listener();
 			this._transition = transition;
+			this._from = transition ? transition.from() : null;
 			if (transition) {
 				var from = transition.from();
 				from.on("active", this.enter_listener, this);
@@ -43,7 +51,8 @@
 			}
 		};
 		proto.notify = function () {
-			//ist.event_queue.wait();
+			this.req = undefined;
+			if (!this.is_enabled()) { return; }
 			this.fire({
 				type: "frame",
 				current_time: (new Date()).getTime(),
@@ -53,8 +62,9 @@
 		};
 
 		proto.enter_listener = function() {
+			if (!this.is_enabled()) { return; }
 			if (this.req) {
-				window.cancelAnimationFrame(this.req);
+				cancelAnimFrame.call(window, this.req);
 				this.req = undefined;
 			}
 			this.req = requestAnimFrame(_.bind(this.notify, this));
@@ -62,12 +72,14 @@
 
 		proto.leave_listener = function() {
 			if (this.req) {
-				window.cancelAnimationFrame(this.req);
+				cancelAnimFrame.call(window, this.req);
 				this.req = undefined;
 			}
 		};
 
 		proto.destroy = function () {
+			this.disable();
+			this.set_transition(null);
 			My.superclass.destroy.apply(this, arguments);
 		};
 		proto.enable = function () {
@@ -77,7 +89,7 @@
 		proto.disable = function () {
 			My.superclass.disable.apply(this, arguments);
 			if (this.req) {
-				window.cancelAnimationFrame(this.req);
+				cancelAnimFrame.call(window, this.req);
 				this.req = undefined;
 			}
 		};

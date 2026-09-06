@@ -44,7 +44,7 @@
 			$("svg").show();
 
 			this.server_socket = this.app.dom_output("get_server_socket");
-			this.server_socket.on("message", function(data) {
+			this.server_socket.on("tutorial", function(data) {
 				if(data.type === "tutorial") {
 					if(data.subtype === "page_set") {
 						this.show_page_no(data.page_index);

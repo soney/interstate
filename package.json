@@ -1,39 +1,40 @@
 {
-	"name": "InterState",
-	"description": "An editor for creating interactive applications.",
-	"version": "0.1.0",
-	"author": "Stephen Oney (Carnegie Mellon)",
-	"maintainers": [{
-		"name": "Stephen Oney",
-		"email": "soney@cs.cmu.edu",
-		"web": "http://from.so/"
-	}],
-	"licenses": [{
-		"type": "MIT",
-		"url": "https://github.com/soney/interstate/blob/master/LICENSE"
-	}],
-	"private": true,
-	"dependencies": {
-		"express": ">= 2.4.3",
-		"ejs": ">= 0.4.3"
-	},
-	"devDependencies": {
-		"grunt": ">=0.4.1",
-		"grunt-contrib-jshint": ">=0.1",
-		"grunt-contrib-nodeunit": ">=0.1",
-		"grunt-contrib-uglify": ">=0.2",
-		"grunt-contrib-concat": ">=0.2",
-		"grunt-contrib-copy": ">=0.4",
-		"grunt-contrib-clean": ">=0.4",
-		"grunt-contrib-sass": ">=0.5",
-		"grunt-contrib-watch": "~0.5",
-		"grunt-contrib-qunit": "~0.3",
-		"grunt-concat-sourcemap": "~0.4",
-		"node-sass": ">=0.6",
-		"node-sass-middleware": ">=0.9",
-		"socket.io": ">=0.9"
-	},
-	"engines": {
-		"node": ">= 0.4.7"
-	}
+  "name": "InterState",
+  "description": "An editor for creating interactive applications.",
+  "version": "0.1.0",
+  "author": "Stephen Oney (Carnegie Mellon)",
+  "maintainers": [
+    {
+      "name": "Stephen Oney",
+      "email": "soney@cs.cmu.edu",
+      "web": "http://from.so/"
+    }
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/soney/interstate/blob/master/LICENSE"
+    }
+  ],
+  "private": true,
+  "dependencies": {
+    "ejs": "3.1.10",
+    "express": "5.2.1",
+    "socket.io": "4.8.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "sass": "1.104.0",
+    "terser": "5.51.2"
+  },
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "build": "node scripts/build.js",
+    "start": "node server.js",
+    "dev": "node scripts/build.js && node server.js --dev",
+    "test": "npm run build && node --test test/server.test.js && playwright test",
+    "test:browser": "playwright test"
+  }
 }

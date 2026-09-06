@@ -271,6 +271,9 @@
 										cy = contextual_object.prop_val("cy"),
 										radius = contextual_object.prop_val("r");
 
+									// Expressions can be unresolved while the statechart initializes.
+									// Never poison a physics world with a non-finite position.
+									if (![cx, cy, radius].every(Number.isFinite)) { return; }
 									bodyDef.position.x = (cx) / PIXELS_PER_METER;
 									bodyDef.position.y = (cy) / PIXELS_PER_METER;
 									fixDef.shape = new B2CircleShape(radius/PIXELS_PER_METER);
@@ -280,6 +283,7 @@
 										half_width = contextual_object.prop_val("width")/2,
 										half_height = contextual_object.prop_val("height")/2;
 
+									if (![x, y, half_width, half_height].every(Number.isFinite)) { return; }
 									bodyDef.position.x = (x+half_width) / PIXELS_PER_METER;
 									bodyDef.position.y = (y+half_height) / PIXELS_PER_METER;
 									fixDef.shape = new B2PolygonShape();

@@ -1,23 +1,79 @@
 # Interstate
-##### A Live Editor for Creating Interactive Web Applications
 
-* Webpage: [interstate.from.so](http://interstate.from.so)
+A live editor for creating interactive web applications.
 
-### Building from Scratch
-To build from scratch, you will need:
+## Run locally
 
-* [Node.JS/NPM](http://nodejs.org/): A desktop JavaScript evaluator
-* [Grunt](http://gruntjs.com/): A JavaScript task runner
-* [Ruby](http://www.ruby-lang.org/en/downloads/) (for SASS): Check by running `ruby -v` in Terminal
-* [SASS](http://sass-lang.com/download.html): Install by running `gem install sass` after Ruby is installed
+Use Node.js 24 LTS (Node.js 22 is also tested). No Ruby, native Sass compiler,
+Grunt installation, or third-party CDN is needed.
 
-Then run:
+```sh
+npm ci
+npm run build
+npm start
+```
 
-    git clone https://github.com/soney/interstate.git
-    cd interstate
-    npm install .
-    grunt
-    node server
+Open http://127.0.0.1:8000 and click **edit** to open the editor. Allow the
+editor popup if your browser prompts. Programs are saved in the browser's local
+storage; use the editor's export feature for backups. Keep the same site origin
+to retain access to existing saved programs.
 
----
-Contact: [Stephen Oney](http://from.so/) [(soney@cmu.edu)](mailto:soney@cmu.edu)
+`PORT` and `HOST` configure the server. For containers or access from another
+computer, use `HOST=0.0.0.0 npm start`. `npm run dev` additionally enables the
+legacy test pages. Re-run the build after source changes.
+
+## Verify changes
+
+```sh
+npm ci
+npx playwright install chromium
+npm test
+```
+
+The checks rebuild the site, exercise HTTP routes, open the runtime and popup
+editor in Chromium, verify saving/reloading and remote session reconnection,
+exercise Breakout movement, and run the legacy QUnit suite. Static-host checks
+serve only `.build/` under a subdirectory and verify both editor popups and
+tutorial navigation. Linux machines may need `npx playwright install --with-deps chromium`.
+The old heap-snapshot tests require their original browser extension for actual
+memory-leak measurement; without it, they only exercise the functional paths.
+
+GitHub Actions runs checks on pushes, pull requests, and weekly on Node 22 and
+24. Successful Node 24 runs publish an `interstate-site` artifact. Dependabot
+proposes dependency updates; merge them only after checks pass. Exact versions
+and `package-lock.json` make installs repeatable. Vendored browser libraries
+remain checked in for compatibility and need deliberate, tested updates.
+
+The vendored ConstraintJS solver includes a regression-tested guard against
+re-entering a getter while it is constructing its value. Preserve this fix when
+updating that library. Runtime regression checks also cover DOM event batching
+and non-bubbling events. The Breakout sample initializes its position before
+following physics coordinates; moving those expressions back to its initial
+state creates a circular dependency.
+
+## Deploy
+
+`npm run build` produces the complete static site in `.build/`. Upload its
+**contents** to an HTTPS static host; do not serve the repository or `dist/`
+directly. All core scripts, CSS, and fonts are local, so HTTPS pages work without
+CDN access. Example projects can still reference external content.
+
+For a Node host, run `npm ci && npm run build`, then `npm start` under the host's
+process supervisor. Set `HOST=0.0.0.0` and the host-provided `PORT`, terminate
+HTTPS at the proxy, and forward WebSocket connections if using remote editing.
+`/healthz` is available for health monitoring. The runtime defaults to a local
+popup editor on all devices, which also works on static hosting. Remote editing
+via Socket.IO requires the Node server and an explicitly configured external
+editor; it is not an authenticated collaboration service.
+
+The optional `DEPLOY_TARGET=user@host:/path/ ./upload.sh` runs installation and
+all tests before copying the build. Prefer your host's atomic release mechanism
+for deployments that must not expose a partially uploaded release. Retain the
+previous build for rollback.
+
+The historical address is `interstate.from.so`. Hosting and DNS must be
+configured separately; repository changes cannot repair missing DNS records.
+After deployment, check the public HTTPS URL and editor popup, then configure
+an uptime monitor against that URL (or `/healthz` on a Node host).
+
+Contact: [Stephen Oney](https://from.so/) ([soney@cmu.edu](mailto:soney@cmu.edu)).

@@ -191,6 +191,10 @@
 			return this.$errors.get();
 		};
 		proto.child_fired = function (actions, parent, context, event) {
+			// A copies expression may resolve after a frame was scheduled. Templates
+			// provide definitions; events and actions belong to their instances.
+			var owner = ist.find_or_put_contextual_obj(context.points_at(), context);
+			if (owner instanceof ist.ContextualDict && owner.is_template()) { return; }
 			this.fire.apply(this, _.rest(arguments, 3));
 			
 			if(actions.length > 0) {

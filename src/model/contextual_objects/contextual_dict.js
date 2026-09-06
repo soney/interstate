@@ -746,6 +746,8 @@
 		};
 
 		proto.get_attachment_instance_and_src = function (type) {
+			// Reactive listeners may still observe a child during its teardown.
+			if (!this._attachment_instances) { return undefined; }
 			var info, attachment_instance;
 			if(!this.is_template()) {
 				var dict = this.get_object(),

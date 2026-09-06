@@ -43,7 +43,7 @@
 		var show = contextual_object.prop_val("showChildren");
 
 		if(_.isArray(show)) { // put in order
-			cobj_children = contextual_object.children();
+			cobj_children = contextual_object.children(true).slice();
 			children = [];
 			_.each(show, function(show_child) {
 				var child_index = _.index_where(cobj_children, function(child) {
@@ -56,7 +56,7 @@
 				}
 			});
 		} else if(show !== false) {
-			cobj_children = contextual_object.children();
+			cobj_children = contextual_object.children(true).slice();
 			children = get_children(_.pluck(cobj_children, "value"));
 		} else {
 			children = [];
@@ -120,7 +120,7 @@
 								//shape.toBack();
 								shape.appendTo(this.paper);
 							} else {
-								shape.before(itemi);
+								shape.insertBefore(itemi);
 							}
 						}
 					},
@@ -173,7 +173,7 @@
 			ready: function() {
 				this.shape_type = this.options.shape_type;
 				if(this.shape_type === "rectangle") {
-					this.shape_type = "rectangle";
+					this.shape_type = "rect";
 				}
 				this.constructor_params = this.options.constructor_params;
 				this.$robj = cjs(false);
@@ -321,14 +321,14 @@
 						if(_.isString(to_show)) {
 							to_show = [to_show];
 						}
-						cobj_children = _.filter(contextual_object.children(), function(child_info) {
+						cobj_children = _.filter(contextual_object.children(true).slice(), function(child_info) {
 							return _.contains(to_show, child_info.name);
 						});
 						values = _.pluck(cobj_children, "value");
 						values.reverse();
 						children = get_children(values);
 					} else if(to_show) {
-						cobj_children = contextual_object.children();
+						cobj_children = contextual_object.children(true).slice();
 						values = _.pluck(cobj_children, "value");
 						values.reverse();
 						children = get_children(values);

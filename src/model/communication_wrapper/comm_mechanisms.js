@@ -38,7 +38,7 @@
 			}
 		};
 		proto.destroy = function() {
-			window.removeEventListener("message", this.$on_messsage);
+			window.removeEventListener("message", this.$on_message);
 			delete this.$on_message;
 		};
 	}(ist.InterWindowCommWrapper));
@@ -98,7 +98,9 @@
 		this.client_id = client_id;
 		this.is_server = is_server;
 		this.socket = io.connect(origin);
-		this.socket.emit("comm_wrapper", this.client_id, this.is_server);
+		this.socket.on("connect", _.bind(function() {
+			this.socket.emit("comm_wrapper", this.client_id, this.is_server);
+		}, this));
 		this.$on_message = _.bind(this.on_message, this);
 		this.socket.on("message", this.$on_message);
 	};

@@ -569,7 +569,7 @@
 			var transition = event.transition;
 			var new_from = ist.find_equivalent_state(event.from_state, this);
 			var new_to = ist.find_equivalent_state(event.to_state, this);
-			var transition_shadow = transition.create_shadow(new_from, new_to, this, this.context());
+			var transition_shadow = transition.create_shadow(new_from, new_to, this, this.original_context());
 			new_from._add_direct_outgoing_transition(transition_shadow);
 			new_to._add_direct_incoming_transition(transition_shadow);
 			this.add_transition(transition_shadow);
@@ -578,7 +578,7 @@
 			var state_name = event.state_name,
 				state = event.state,
 				index = event.index;
-			this.add_substate(state_name, state.create_shadow({parent: this, context: this.context()}), index);
+			this.add_substate(state_name, state.create_shadow({parent: this, context: this.original_context()}), index);
 		};
 		proto.onBasisRemoveSubstate = function (event) {
 			this.remove_substate(event.name, undefined, false);

@@ -39,7 +39,7 @@
 											.on("click", $.proxy(this.next, this));
 
 			this.client_socket = this.editor.editor("get_client_socket");
-			this.client_socket.on("message", function(data) {
+			this.client_socket.on("tutorial", function(data) {
 				if(data.type === "tutorial") {
 					console.log(data.subtype);
 				}

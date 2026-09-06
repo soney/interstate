@@ -40,8 +40,8 @@
 			editor_url: "editor.html",
 			editor_name: uid.get_prefix() + "ist_editor",
 			open_separate_client_window: true,
-			external_editor: display === "phone" || display === "tablet",
-			auto_open_external_editor: true,
+			external_editor: false,
+			auto_open_external_editor: false,
 			editor_window_options: function () {
 				var dimensions = ist.getStoredEditorDimensions() || {
 										x: window.screenX,

@@ -44,7 +44,8 @@
 				var super_sc = proto.get_own_statechart();
 				var shadow_sc = super_sc.create_shadow({
 					context: this.get_pointer(),
-					running: true,
+					// Templates supply prototypes; only their instances run events.
+					running: !this.is_template(),
 					basis: super_sc,
 					concurrent: super_sc.is_concurrent(),
 					set_basis_as_root: true

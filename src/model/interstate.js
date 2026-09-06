@@ -10,14 +10,16 @@ var interstate = (function (root) {
 		version: "<%= version %>",
 		build_time: "<%= build_time %>",
 		__log_errors: true,
-		__debug: true,
+		// Incomplete expressions are normal while editing; report them in the UI.
+		__debug: false,
 		__empty_files: false,
 		__garbage_collect: true,
 		root_name: "sketch"
 	};
 
-	ist.cjs.__debug = ist.__debug;
-	ist.__debug_statecharts = ist.__debug;
+	ist.cjs.__debug = true;
+	// Statechart views require the reactive state fields enabled by this flag.
+	ist.__debug_statecharts = true;
 
 	able.make_this_listenable(ist);
 	able.make_proto_listenable(ist);

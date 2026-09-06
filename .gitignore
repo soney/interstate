@@ -9,3 +9,6 @@ dist/gallery/upload.php
 dist/gallery/index.php
 dist/user_study/index.php
 dist/user_study/upload.php
+
+test-results/
+playwright-report/

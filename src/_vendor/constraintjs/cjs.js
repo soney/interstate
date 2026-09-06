@@ -939,7 +939,10 @@ var constraint_solver = {
 				// The user can also optionally check if the node should be nullified. This is useful if a large number of nodes
 				// depend on this node, and the potential cost of nullifying/re-evaluating them is higher than the cost of
 				// re-evaluating this node
-				if (curr_node._options.cache_value !== false && curr_node._options.check_on_nullify === true) {
+				// Do not re-enter a getter that is still constructing its value.
+				// Leave it invalid so the next read can recompute after construction.
+				if (curr_node._options.cache_value !== false && curr_node._options.check_on_nullify === true &&
+						indexOf(this.stack, curr_node) < 0) {
 					// Only mark as invalid if the old value is different from the current value.
 					equals = curr_node._options.equals || eqeqeq;
 					old_value = curr_node._cached_value;

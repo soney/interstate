@@ -301,7 +301,7 @@
 					getter_name = builtin_info._get_getter_name();
 					val = parent_obj[getter_name]();
 					if (val) {
-						if (val instanceof ist.Cell && _.isString(arg1)) {
+						if (val instanceof ist.Cell && _.isString(value)) {
 							commands.push(new ist.ChangeCellCommand({
 								cell: val,
 								str: arg1
@@ -323,7 +323,7 @@
 				} else {
 					if (parent_obj._has_direct_prop(prop_name)) {
 						val = parent_obj._get_direct_prop(prop_name);
-						if (val instanceof ist.Cell && _.isString(arg1)) {
+						if (val instanceof ist.Cell && _.isString(value)) {
 							commands.push(new ist.ChangeCellCommand({
 								cell: val,
 								str: value

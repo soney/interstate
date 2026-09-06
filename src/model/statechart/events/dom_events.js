@@ -6,6 +6,37 @@
 	var cjs = ist.cjs,
 		_ = ist._;
 
+	// One native listener batches all transitions for a target and event type.
+	// Flushing inside each listener makes later objects see post-transition values.
+	// A finally block also handles non-bubbling events and stopped propagation.
+	var dom_listeners = new WeakMap();
+	function add_dom_listener(target, type, listener) {
+		var types = dom_listeners.get(target);
+		if (!types) { types = Object.create(null); dom_listeners.set(target, types); }
+		var entry = types[type];
+		if (!entry) {
+			entry = types[type] = { listeners: [] };
+			entry.dispatch = function(event) {
+				ist.event_queue.wait();
+				try {
+					entry.listeners.slice().forEach(function(callback) { callback(event); });
+				} finally { ist.event_queue.signal(); }
+			};
+			target.addEventListener(type, entry.dispatch, true);
+		}
+		if (entry.listeners.indexOf(listener) < 0) { entry.listeners.push(listener); }
+	}
+	function remove_dom_listener(target, type, listener) {
+		var types = dom_listeners.get(target), entry = types && types[type];
+		if (!entry) { return; }
+		var index = entry.listeners.indexOf(listener);
+		if (index >= 0) { entry.listeners.splice(index, 1); }
+		if (!entry.listeners.length) {
+			target.removeEventListener(type, entry.dispatch, true);
+			delete types[type];
+		}
+	}
+
 	ist.DOMEvent = function () {
 		ist.Event.apply(this, arguments);
 		//this._initialize();
@@ -16,22 +47,6 @@
 		_.proto_extend(My, ist.Event);
 		var proto = My.prototype;
 		proto.on_create = function (specified_type, specified_targets) {
-			this.get_wait_listener = cjs.memoize(function (specified_target) {
-				var self = this;
-				return function() {
-					ist.event_queue.wait();
-				};
-			}, {
-				context: this
-			});
-			this.get_signal_listener = cjs.memoize(function (specified_target) {
-				var self = this;
-				return function() {
-					ist.event_queue.signal();
-				};
-			}, {
-				context: this
-			});
 			this.get_target_listener = cjs.memoize(function (specified_target) {
 				var self = this;
 				var id = this._id;
@@ -82,10 +97,10 @@
 					return a.dom_obj === b.dom_obj && a.type === b.type;
 				});
 
-				//if(this.is_enabled()) {
+				if(this.is_enabled()) {
 				_.each(diff.removed, function(x) { this.remove_listener(x.from_item); }, this);
 				_.each(diff.added, function(x) { this.add_listener(x.item); }, this);
-				//}
+				}
 
 				this.targets = targets;
 			}, {
@@ -109,12 +124,10 @@
 
 			if(uninitialized_target_cobjs.length > 0) {
 				var on_initialized = _.bind(function(cobj) {
+					var index = uninitialized_target_cobjs.indexOf(cobj);
+					if (index >= 0) { uninitialized_target_cobjs.splice(index, 1); }
 					if(uninitialized_target_cobjs.length === 0) {
 						this.live_fn.run(add_deps);
-						on_initialized = false;
-					} else {
-						var index = uninitialized_target_cobjs.indexOf(cobj);
-						uninitialized_target_cobjs.splice(index, 1);
 					}
 				}, this);
 				_.each(uninitialized_target_cobjs, function(cobj) {
@@ -136,9 +149,7 @@
 			if(_.isString(target_info.type)) {
 				_.each(target_info.type.split(","), function(type) {
 					//if(_.has(dom_obj, 'addEventListener')) {
-						dom_obj.addEventListener(type, this.get_wait_listener(cobj), true); // Capture
-						dom_obj.addEventListener(type, this.get_target_listener(cobj), true); // Capture
-						dom_obj.addEventListener(type, this.get_signal_listener(cobj), false); // Bubble
+						add_dom_listener(dom_obj, type, this.get_target_listener(cobj));
 					//}
 				}, this);
 			}
@@ -152,9 +163,7 @@
 			if(_.isString(target_info.type)) {
 				_.each(target_info.type.split(","), function(type) {
 					//if(_.has(dom_obj, 'removeEventListener')) {
-						dom_obj.removeEventListener(type, this.get_wait_listener(cobj), true); // Capture
-						dom_obj.removeEventListener(type, this.get_target_listener(cobj), true); // Capture
-						dom_obj.removeEventListener(type, this.get_signal_listener(cobj), false); // Bubble
+						remove_dom_listener(dom_obj, type, this.get_target_listener(cobj));
 					//}
 				}, this);
 			}
@@ -178,12 +187,12 @@
 
 		proto.enable = function () {
 			if(!this.is_enabled()) {
+				My.superclass.enable.apply(this, arguments);
 				this.add_listeners();
 				if(this.live_fn.resume()) {
 					this.run_live_fn_and_check_for_uninitialized_cobjs();
 				}
 			}
-			My.superclass.enable.apply(this, arguments);
 		};
 		proto.disable = function () {
 			if(this.is_enabled()) {

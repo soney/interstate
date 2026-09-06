@@ -439,7 +439,7 @@
 					if(show === undefined) { show = true; }
 
 					if(_.isArray(show)) { // put in order
-						children = contextual_object.children();
+						children = contextual_object.children(true).slice();
 						_.each(show, function(show_child) {
 							var child_index = _.index_where(children, function(child) {
 								return child.value === show_child || child.name === show_child;
@@ -456,7 +456,7 @@
 							}
 						}, this);
 					} else if(show !== false) {
-						children = contextual_object.children();
+						children = contextual_object.children(true).slice();
 						_.each(children, function (child) {
 							if(show===true || show === child.name || show === child.value) {
 								//if(!child.value._destroyed) {

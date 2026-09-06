@@ -8,15 +8,17 @@
 		<link rel="stylesheet" href="editor/style/fonts/Inconsolata/stylesheet.css" />
 		<link rel="stylesheet" href="editor/style/fonts/SourceSansPro/stylesheet.css" />
 		<link rel="stylesheet" href="editor/style/editor_style.css" />
-		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
-		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap-theme.min.css">
+		<link rel="stylesheet" href="editor/style/attachment_styles.css" />
+		<link rel="stylesheet" href="vendor/bootstrap-3.1.0/css/bootstrap.css">
+		<link rel="stylesheet" href="vendor/bootstrap-3.1.0/css/bootstrap-theme.css">
 
-		<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
-		<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
-		<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-		<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.2/raphael-min.js"></script>
+		<script src="vendor/underscore/underscore.js"></script>
+		<script src="vendor/jquery-ui-1.10.4.custom/js/jquery-2.1.1.js"></script>
+		<script src="vendor/jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.js"></script>
+		<script src="vendor/raphael/raphael.js"></script>
+	<script src="vendor/snap/snap.svg.js"></script>
 		<script src="vendor/ace/ace.js"></script>
-		<script src="vendor/esprima.js"></script>
+		<script src="vendor/esprima/esprima.js"></script>
 		<script src="vendor/qrcode.min.js"></script>
 		<script src="interstate.min.js"></script>
 	</head>
@@ -27,7 +29,8 @@
 			<script type="text/javascript">
 				$(function () {
 					$("div#editor").editor({
-						server_window: window
+						server_window: window.opener,
+						client_id: new URLSearchParams(window.location.search).get("client_id")
 						//client_id: getURLParameter("client_id")
 					//	debug_ready: true,
 					//	debug_env: true,

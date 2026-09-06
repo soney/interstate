@@ -271,6 +271,10 @@
 			this._super();
 		},
 
+		get_client_socket: function() {
+			return this.client_socket;
+		},
+
 		_undo: function() {
 			this.client_socket.post_command("undo");
 		},
