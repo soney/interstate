@@ -60,3 +60,28 @@ test('constraint invalidation does not re-enter an unfinished getter', async ({ 
     return [first, second, afterFirst];
   })).toEqual([1, 1, 1]);
 });
+
+test('unused sensors stay inactive and sensor values retain zeros and release listeners', async ({ page }) => {
+  await page.goto('/build/');
+  expect(await page.evaluate(() => {
+    const ist = interstate, added = [], removed = [];
+    const add = window.addEventListener, remove = window.removeEventListener;
+    window.addEventListener = function(type, ...args) { added.push(type); return add.call(this, type, ...args); };
+    window.removeEventListener = function(type, ...args) { removed.push(type); return remove.call(this, type, ...args); };
+    const gyro = ist.createGyroscopeObject(), motion = ist.createAccelorometerObject();
+    const initially = added.slice();
+    const gc = ist.find_or_put_contextual_obj(gyro), mc = ist.find_or_put_contextual_obj(motion);
+    const initialValues = [gc.prop_val('alpha'), mc.prop_val('x')];
+    const orientation = new Event('deviceorientation');
+    Object.assign(orientation, { alpha: 12, beta: 0, gamma: 0 });
+    window.dispatchEvent(orientation);
+    const changed = gc.prop_val('alpha');
+    Object.assign(orientation, { alpha: 0 });
+    window.dispatchEvent(orientation);
+    const zero = gc.prop_val('alpha');
+    window.dispatchEvent(new Event('devicemotion')); // unavailable acceleration data
+    gyro.destroy(true); motion.destroy(true);
+    window.addEventListener = add; window.removeEventListener = remove;
+    return { initially, initialValues, changed, zero, added, removed };
+  })).toEqual({ initially: [], initialValues: [0, 0], changed: 12, zero: 0, added: ['deviceorientation', 'devicemotion'], removed: ['deviceorientation', 'devicemotion'] });
+});

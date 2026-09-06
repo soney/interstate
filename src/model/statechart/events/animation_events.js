@@ -52,7 +52,7 @@
 		};
 		proto.notify = function () {
 			this.req = undefined;
-			if (!this.is_enabled()) { return; }
+			if (!this.is_enabled() || (this._from && !this._from.is_active())) { return; }
 			this.fire({
 				type: "frame",
 				current_time: (new Date()).getTime(),
@@ -62,7 +62,7 @@
 		};
 
 		proto.enter_listener = function() {
-			if (!this.is_enabled()) { return; }
+			if (!this.is_enabled() || (this._from && !this._from.is_active())) { return; }
 			if (this.req) {
 				cancelAnimFrame.call(window, this.req);
 				this.req = undefined;

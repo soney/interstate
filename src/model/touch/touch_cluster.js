@@ -136,7 +136,7 @@
 		cjs.signal();
 
 		// Recompute active touches
-		event.preventDefault();
+		if (event.cancelable !== false) { event.preventDefault(); }
 		event.stopPropagation();
 	};
 
@@ -155,7 +155,7 @@
 
 		// radius checking
 	
-		event.preventDefault();
+		if (event.cancelable !== false) { event.preventDefault(); }
 		event.stopPropagation();
 	};
 
@@ -192,14 +192,14 @@
 		cjs.signal();
 
 		// Recompute active touches
-		event.preventDefault();
+		if (event.cancelable !== false) { event.preventDefault(); }
 		event.stopPropagation();
 	};
 
-	window.addEventListener("touchstart",  _onTouchStart);
-	window.addEventListener("touchmove",   _onTouchMove);
-	window.addEventListener("touchend",    _onTouchEnd);
-	window.addEventListener("touchcancel", _onTouchEnd);
+	window.addEventListener("touchstart",  _onTouchStart, {passive: false});
+	window.addEventListener("touchmove",   _onTouchMove, {passive: false});
+	window.addEventListener("touchend",    _onTouchEnd, {passive: false});
+	window.addEventListener("touchcancel", _onTouchEnd, {passive: false});
 
 	function updateTouchDistributions(addedTouches, removedTouches, movedTouches) {
 		var distanceMatrix = computeTouchDistances();

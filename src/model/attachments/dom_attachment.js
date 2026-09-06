@@ -431,7 +431,7 @@
 						show = contextual_object.prop_val("showChildren"),
 						textContent = contextual_object.prop_val("textContent");
 					
-					if(textContent) {
+					if(textContent || textContent === 0) {
 						desired_children.push(document.createTextNode(textContent));
 						desired_children_srcs.push(false);
 					}

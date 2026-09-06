@@ -33,7 +33,11 @@ npm test
 
 The checks rebuild the site, exercise HTTP routes, open the runtime and popup
 editor in Chromium, Firefox, and WebKit, verify saving/reloading and remote session reconnection,
-exercise Breakout movement, and run the legacy QUnit suite. Static-host checks
+exercise all four examples, and run the legacy QUnit suite. Example checks fail
+on console errors as well as uncaught exceptions and failed asset requests. They
+cover dragging/releasing/locking, all carousel selections and timed advancement,
+Breakout mouse/keyboard controls and scoring, map pan/pinch gestures, and viewport
+size. Chromium additionally checks native touchscreen input and page scrolling. Static-host checks
 serve only `.build/` under a subdirectory and verify both editor popups and
 tutorial navigation. Linux machines may need `npx playwright install --with-deps chromium firefox webkit`.
 The old heap-snapshot tests require their original browser extension for actual
@@ -53,7 +57,10 @@ re-entering a getter while it is constructing its value. Preserve this fix when
 updating that library. Runtime regression checks also cover DOM event batching
 and non-bubbling events. The Breakout sample initializes its position before
 following physics coordinates; moving those expressions back to its initial
-state creates a circular dependency.
+state creates a circular dependency. Its dead state also clears coordinates before
+removing the physics prototype. The carousel keeps a fallback selection during
+state changes, and the map uses reactive viewport dimensions and finite coordinates
+after touch release. Preserve these sample fixes when replacing saved `.ist` files.
 
 ## Browser support
 

@@ -22,7 +22,7 @@
 					entry.listeners.slice().forEach(function(callback) { callback(event); });
 				} finally { ist.event_queue.signal(); }
 			};
-			target.addEventListener(type, entry.dispatch, true);
+			target.addEventListener(type, entry.dispatch, {capture: true, passive: false});
 		}
 		if (entry.listeners.indexOf(listener) < 0) { entry.listeners.push(listener); }
 	}
@@ -53,7 +53,14 @@
 				var listener = function (event) {
 					//ist.event_queue.wait();
 				
-					var new_event = _.extend({}, event, {
+					// Skip obsolete Gecko getters when copying native event data.
+					var event_data = {};
+					for (var key in event) {
+						if (key !== "mozPressure" && key !== "mozInputSource") {
+							event_data[key] = event[key];
+						}
+					}
+					var new_event = _.extend(event_data, {
 						ist_target: specified_target,
 						preventDefault: event.preventDefault ? _.bind(event.preventDefault, event) : function(){},
 						stopPropagation: event.stopPropagation ? _.bind(event.stopPropagation, event) : function(){},

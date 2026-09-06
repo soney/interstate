@@ -13,8 +13,9 @@
 	// mouse
 	ist.createMouseObject = function() {
 
-		var mouse_event = new ist.StatefulObj({});
-		mouse_event._set_direct_protos(new ist.Cell({ ignore_inherited_in_first_dict: true, str: "event"}));
+		// Device events must also work in saved programs predating the event builtins.
+		var mouse_event = new ist.StatefulObj({direct_attachments: [new ist.FireableAttachment()]});
+		mouse_event.set("fire", new ist.Cell({str: "interstate.fire.bind(this)"}));
 		mouse_event .set("target", new ist.Cell({str: "arguments[0]"}))
 					.set("type", new ist.Cell({str: "arguments[1]"}))
 					.set("arguments", new ist.Cell({str: "[window, 'click']"}))
@@ -45,7 +46,7 @@
 				cjs.signal();
 			},
 			prepare_force_click = function(event) {
-				event.preventDefault();
+				if (event.cancelable !== false) { event.preventDefault(); }
 			},
 			enter_force_click = function(event) { },
 			end_force_click = function(event) { },
@@ -134,7 +135,7 @@
 					name = interesting_keycodes[keyCode];
 				if(name) {
 					keyboard_info[name].set(true);
-					event.preventDefault();
+					if (event.cancelable !== false) { event.preventDefault(); }
 				}
 			},
 			keyup_listener = function(event) {
@@ -143,7 +144,7 @@
 
 				if(interesting_keycodes[keyCode]) {
 					keyboard_info[name].set(false);
-					event.preventDefault();
+					if (event.cancelable !== false) { event.preventDefault(); }
 				}
 			},
 			addKeyboardListeners = function() {
@@ -259,7 +260,7 @@
 					}
 				});
 
-				event.preventDefault();
+				if (event.cancelable !== false) { event.preventDefault(); }
 				cjs.signal();
 			},
 			touch_move_listener = function(event) {
@@ -284,7 +285,7 @@
 					}
 				});
 
-				event.preventDefault();
+				if (event.cancelable !== false) { event.preventDefault(); }
 				cjs.signal();
 			},
 			touch_end_listener = function(event) {
@@ -322,14 +323,14 @@
 					}
 				});
 
-				event.preventDefault();
+				if (event.cancelable !== false) { event.preventDefault(); }
 				cjs.signal();
 			},
 			addTouchListeners = function() {
-				window.addEventListener("touchstart", touch_start_listener);
-				window.addEventListener("touchmove", touch_move_listener);
-				window.addEventListener("touchend", touch_end_listener);
-				window.addEventListener("touchcancel", touch_end_listener);
+				window.addEventListener("touchstart", touch_start_listener, {passive: false});
+				window.addEventListener("touchmove", touch_move_listener, {passive: false});
+				window.addEventListener("touchend", touch_end_listener, {passive: false});
+				window.addEventListener("touchcancel", touch_end_listener, {passive: false});
 			},
 			removeTouchListeners = function() {
 				window.removeEventListener("touchstart", touch_start_listener);
@@ -385,8 +386,10 @@
 					"return tc[prop_name].bind(tc);" +
 				"}"}))
 
-				.set("satisfied", new ist.Cell({str: "fireable()"}))
-				.set("dissatisfied", new ist.Cell({str: "fireable()"}))
+				.set("satisfied", new ist.Dict({has_protos: false, direct_attachments: [new ist.FireableAttachment()],
+					value: {fire: new ist.Cell({str: "interstate.fire.bind(this)"})}}))
+				.set("dissatisfied", new ist.Dict({has_protos: false, direct_attachments: [new ist.FireableAttachment()],
+					value: {fire: new ist.Cell({str: "interstate.fire.bind(this)"})}}))
 				.set("isSatisfied", new ist.Cell({str: "touchCluster_call(this, 'isSatisfied')"}))
 				.set("x", new ist.Cell({str: "touchCluster_call(this, 'getX')"}))
 				.set("y", new ist.Cell({str: "touchCluster_call(this, 'getY')"}))
@@ -438,117 +441,58 @@
 			return ist.createTouchscreenObject();
 		});
 
-	// accelorometer
-	ist.createAccelorometerObject = function() {
-		var x = cjs(0),
-			y = cjs(0),
-			z = cjs(0),
-			motion_listener = function(event) {
-				cjs.wait();
-				x.set(event.accelerationIncludingGravity.x);
-				y.set(event.accelerationIncludingGravity.y);
-				z.set(event.accelerationIncludingGravity.z);
-				cjs.signal();
-			},
-			addAccelorometerListeners = function() {
-				window.addEventListener("devicemotion", motion_listener);
-			},
-			removeAccelorometerListeners = function() {
-				window.removeEventListener("devicemotion", motion_listener);
-			},
-			destroy = function(silent) {
-				cjs.wait();
-				removeAccelorometerListeners();
-				x.destroy(silent);
-				y.destroy(silent);
-				z.destroy(silent);
-				cjs.signal();
-			},
-			device_accelorometer = new ist.Dict({has_protos: false, value: {
-					x: x,
-					y: y,
-					z: z
-				}
+	// Subscribe only when a program reads a sensor value. Ordinary mouse/touch
+	// programs should not activate motion sensors merely by loading a device.
+	function createSensorObject(type, names, read, marker) {
+		var samples = {}, values = {}, listening = false;
+		var listener = function(event) {
+			var next = read(event);
+			if (!next) { return; }
+			cjs.wait();
+			_.each(names, function(name) {
+				samples[name] = next[name] == null ? 0 : next[name];
+				values[name].invalidate();
 			});
-		device_accelorometer.destroy = function() {
-			ist.Dict.prototype.destroy.apply(this, arguments);
-			destroy();
+			cjs.signal();
 		};
-		device_accelorometer.__is_accelorometer_device__ = true;
-		addAccelorometerListeners();
-		return device_accelorometer;
+		_.each(names, function(name) {
+			samples[name] = 0;
+			values[name] = cjs(function() {
+				if (!listening) {
+					window.addEventListener(type, listener);
+					listening = true;
+				}
+				return samples[name];
+			});
+		});
+		var device = new ist.Dict({has_protos: false, value: values});
+		device[marker] = true;
+		device.destroy = function(silent) {
+			if (listening) { window.removeEventListener(type, listener); }
+			ist.Dict.prototype.destroy.apply(this, arguments);
+			_.each(values, function(value) { value.destroy(silent); });
+		};
+		return device;
+	}
+	ist.createAccelorometerObject = function() {
+		return createSensorObject("devicemotion", ["x", "y", "z"], function(event) {
+			return event.accelerationIncludingGravity;
+		}, "__is_accelorometer_device__");
+	};
+	ist.createGyroscopeObject = function() {
+		return createSensorObject("deviceorientation", ["alpha", "beta", "gamma", "heading", "accuracy"], function(event) {
+			return event;
+		}, "__is_gyroscope_device__");
 	};
 	ist.register_serializable_type("ist_device_accelorometer",
-		function (x) {
-			return x.__is_accelorometer_device__;
-		},
-		function () {
-			return {};
-		},
-		function (obj) {
-			return ist.createAccelorometerObject();
-		});
-
-	// gyroscope
-	ist.createGyroscopeObject = function() {
-		var alpha = cjs(0),
-			beta = cjs(0),
-			gamma = cjs(0),
-			heading = cjs(0),
-			accuracy = cjs(0),
-			motion_listener = function(event) {
-				cjs.wait();
-				alpha.set(event.alpha || null);
-				beta.set(event.beta || null);
-				gamma.set(event.gamma || null);
-				heading.set(event.heading || null);
-				accuracy.set(event.accuracy || null);
-				cjs.signal();
-			},
-			addGyroscopeListeners = function() {
-				window.addEventListener("deviceorientation", motion_listener);
-			},
-			removeGyroscopeListeners = function() {
-				window.removeEventListener("deviceorientation", motion_listener);
-			},
-			destroy = function(silent) {
-				cjs.wait();
-				removeGyroscopeListeners();
-				alpha.destroy(silent);
-				beta.destroy(silent);
-				gamma.destroy(silent);
-				heading.destroy(silent);
-				accuracy.destroy(silent);
-				cjs.signal();
-			},
-			device_gyroscope = new ist.Dict({has_protos: false, value: {
-					alpha: alpha,
-					beta: beta,
-					gamma: gamma,
-					heading: heading,
-					accuracy: accuracy
-				}
-			});
-		device_gyroscope.destroy = function() {
-			ist.Dict.prototype.destroy.apply(this, arguments);
-			destroy();
-		};
-		device_gyroscope.__is_gyroscope_device__ = true;
-		addGyroscopeListeners();
-		return device_gyroscope;
-	};
+		function(x) { return x.__is_accelorometer_device__; },
+		function() { return {}; },
+		function() { return ist.createAccelorometerObject(); });
 	ist.register_serializable_type("ist_device_gyroscope",
-		function (x) {
-			return x.__is_gyroscope_device__;
-		},
-		function () {
-			return {};
-		},
-		function (obj) {
-			return ist.createGyroscopeObject();
-		});
+		function(x) { return x.__is_gyroscope_device__; },
+		function() { return {}; },
+		function() { return ist.createGyroscopeObject(); });
 
-	// device
 	ist.createDevices = function() {
 		var width = cjs(window.innerWidth),
 			height = cjs(window.innerHeight),
