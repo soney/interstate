@@ -17,7 +17,6 @@ var interstate = (function (root) {
 		root_name: "sketch"
 	};
 
-	ist.cjs.__debug = true;
 	// Statechart views require the reactive state fields enabled by this flag.
 	ist.__debug_statecharts = true;
 

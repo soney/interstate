@@ -52,9 +52,12 @@ proposes dependency updates; merge them only after checks pass. Exact versions
 and `package-lock.json` make installs repeatable. Vendored browser libraries
 remain checked in for compatibility and need deliberate, tested updates.
 
-The vendored ConstraintJS solver includes a regression-tested guard against
-re-entering a getter while it is constructing its value. Preserve this fix when
-updating that library. Runtime regression checks also cover DOM event batching
+`src/_vendor/constraintjs/` holds ConstraintJS 0.10.1 unmodified: `cjs.js` is its
+`dist/constraintjs.global.js` (without its source map comment, since the build
+concatenates it) and `cjs.min.js` is `dist/constraintjs.global.min.js`. Since
+0.10.1, ConstraintJS itself guards against re-entering a getter while it is
+constructing its value; a regression check covers this. Runtime regression
+checks also cover DOM event batching
 and non-bubbling events. SVG child lists deduplicate aliases so cyclic links
 between carousel thumbnails cannot repeatedly remove/reinsert the same node and
 cancel native clicks. The carousel test checks that timer updates leave those

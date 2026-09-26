@@ -13,44 +13,38 @@
 	// Compute the differences between two objects
 	ist.get_map_diff = function(from_keys, to_keys, from_vals, to_vals, key_eq_check, val_eq_check) {
 		var key_diff = cjs.arrayDiff(from_keys, to_keys, key_eq_check),
-			set = [], unset = [], key_change = [], value_change = [], index_changed = [], moved = [],
+			set = [], unset = [], key_change = [], value_change = [],
+			// For every key in to_keys, its index in from_keys (or -1 if it was added). Keys that
+			// arrayDiff doesn't list as added or index_changed are at the same index in both.
+			from_indices = [],
 
-			i = 0, j, mapping = key_diff.mapping, mapping_len = mapping.length,
-			mi, from,from_item,item,to,to_item, old_val, new_val, set_len, unset_len, si, ui;
+			i = 0, j, to_len = to_keys.length,
+			from, old_val, new_val, set_len, unset_len, si, ui;
 
 		val_eq_check = val_eq_check || eqeqeq;
 
-		while(i < mapping_len) {
-			mi = mapping[i];
-			if(!_.has(mi, 'from')) { // added
-				to = mi.to;
-				to_item = mi.to_item;
+		for(i = 0; i < to_len; i++) { from_indices[i] = i; }
+		_.each(key_diff.added, function(info) { from_indices[info.to] = -1; });
+		_.each(key_diff.index_changed, function(info) { from_indices[info.to] = info.from; });
 
-				new_val = to_vals[to];
+		for(i = 0; i < to_len; i++) {
+			from = from_indices[i];
+			new_val = to_vals[i];
 
-				set.push({ key: to_item, value: new_val, to: to});
-			} else if(!_.has(mi, 'to')) { // removed
-				from = mi.from;
-				from_item = mi.from_item;
-
-				old_val = from_vals[from];
-				unset.push({key: from_item, value: old_val, from: from});
+			if(from < 0) { // added
+				set.push({ key: to_keys[i], value: new_val, to: i});
 			} else {
-				from = mi.from;
-				to = mi.to;
-				from_item = mi.from_item;
-				to_item = mi.to_item;
-
 				old_val = from_vals[from];
-				new_val = to_vals[to];
-				
+
 				if(!val_eq_check(old_val, new_val)) {
-					value_change.push({key: to_item, from: old_val, to: new_val});
+					value_change.push({key: to_keys[i], from: old_val, to: new_val});
 				}
 			}
-
-			i++;
 		}
+		// (arrayDiff lists removed keys from back to front)
+		_.each(key_diff.removed, function(info) {
+			unset.unshift({key: info.from_item, value: from_vals[info.from], from: info.from});
+		});
 		i = 0;
 		set_len = set.length;
 		unset_len = unset.length;
