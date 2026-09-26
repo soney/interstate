@@ -46,7 +46,7 @@ memory-leak measurement; without it, they only exercise the functional paths.
 GitHub Actions runs checks on pushes, pull requests, and weekly on Node 22 and
 24. Successful Node 24 runs publish an `interstate-site` artifact.
 Pushes to `master` and manual runs on `master` deploy that exact artifact to
-[GitHub Pages](https://soney.github.io/interstate/) only after both Node versions
+[GitHub Pages](https://interstate.from.so/) only after both Node versions
 pass all three browser engines. Failed checks leave the previous site deployed. Dependabot
 proposes dependency updates; merge them only after checks pass. Exact versions
 and `package-lock.json` make installs repeatable. Vendored browser libraries
@@ -95,8 +95,11 @@ catch compatibility regressions.
 ## Deploy
 
 GitHub Pages must use **GitHub Actions** as its publishing source. The workflow
-in `.github/workflows/ci.yml` publishes `.build/` to
-https://soney.github.io/interstate/ with HTTPS. The old `gh-pages` branch is no
+in `.github/workflows/ci.yml` publishes `.build/` to https://interstate.from.so/
+(https://soney.github.io/interstate/ redirects there). The custom domain is set in
+the repository's Pages settings, since GitHub ignores CNAME files in sites that
+Actions publish; `site/CNAME` records it in the published site, and DNS points
+`interstate.from.so` at `soney.github.io`. The old `gh-pages` branch is no
 longer the publishing source. To roll back, revert the faulty source commit on
 `master` and let the checks and deployment run again.
 
@@ -123,8 +126,8 @@ all tests before copying the build. Prefer your host's atomic release mechanism
 for deployments that must not expose a partially uploaded release. Retain the
 previous build for rollback.
 
-The historical address is `interstate.from.so`. Hosting and DNS must be
-configured separately; repository changes cannot repair missing DNS records.
+To serve `interstate.from.so` from another host, point its DNS record there
+instead; repository changes cannot repair missing DNS records.
 After deployment, check the public HTTPS URL and editor popup, then configure
 an uptime monitor against that URL (or `/healthz` on a Node host).
 
