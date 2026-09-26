@@ -1,5 +1,5 @@
 /*jslint nomen: true, vars: true */
-/*global interstate,able,uid,console,jQuery,Raphael,window */
+/*global interstate,able,uid,console,jQuery,Raphael,mina,window */
 
 (function (ist, $) {
 	"use strict";
@@ -170,11 +170,25 @@
 				}
 			}
 		});
-	var can_animate_parameters = ["r", "cx", "cy", "x", "y", "width", "height", "path", "fill", "stroke", "opacity", "fill_opacity", "stroke_opacity", "transform"];
+	// (Not transform: Snap can't animate an empty transform, which breaks every running animation,
+	// and it loses Raphael-style ones like 'r45'. Transforms change without animating.)
+	var can_animate_parameters = ["r", "cx", "cy", "x", "y", "width", "height", "path", "fill", "stroke", "opacity", "fill_opacity", "stroke_opacity"];
 	var can_animate_dict = {};
 	_.each(can_animate_parameters, function(name) {
 		can_animate_dict[name] = true;
 	});
+	// Programs name easings like Raphael did ('linear', '<>', 'ease-in', ...), but Snap animates
+	// with easing functions (and an easing that isn't a function breaks every running animation)
+	var easing_functions = {
+		"linear": mina.linear,
+		"<": mina.easein, "ease-in": mina.easein, "easeIn": mina.easein, "easein": mina.easein,
+		">": mina.easeout, "ease-out": mina.easeout, "easeOut": mina.easeout, "easeout": mina.easeout,
+		"<>": mina.easeinout, "ease-in-out": mina.easeinout, "easeInOut": mina.easeinout, "easeinout": mina.easeinout,
+		"backIn": mina.backin, "back-in": mina.backin, "backin": mina.backin,
+		"backOut": mina.backout, "back-out": mina.backout, "backout": mina.backout,
+		"elastic": mina.elastic,
+		"bounce": mina.bounce
+	};
 	ist.ShapeAttachment = ist.register_attachment("shape", {
 			ready: function() {
 				this.shape_type = this.options.shape_type;
@@ -228,8 +242,8 @@
 									}
 									
 									var easing = contextual_object.prop_val("animation_easing");
-									if(!_.isString(easing)) {
-										easing = "linear";
+									if(!_.isFunction(easing)) {
+										easing = _.has(easing_functions, easing) ? easing_functions[easing] : mina.linear;
 									}
 
 									var anim_options = { };
