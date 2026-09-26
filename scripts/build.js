@@ -12,6 +12,9 @@ const output = path.join(root, '.build');
 async function build() {
   fs.rmSync(output, { recursive: true, force: true });
   fs.cpSync(path.join(root, 'dist'), output, { recursive: true });
+  // The tutorial runs Interstate from tutorial/, and the default image of svg.image
+  // ('images/interstate_logo.png') is relative to the page.
+  fs.cpSync(path.join(root, 'dist/images/interstate_logo.png'), path.join(output, 'tutorial/images/interstate_logo.png'));
   // Ship the same checked-in libraries used by the development and test pages.
   fs.cpSync(path.join(root, 'src/_vendor'), path.join(output, 'vendor'), { recursive: true });
   fs.cpSync(path.join(root, 'src/view/editor/style'), path.join(output, 'editor/style'), { recursive: true });
