@@ -551,13 +551,17 @@
 					curr_target = false;
 				}
 			};
-			var on_mup = _.bind(function() {
+			var on_mup = _.bind(function(e) {
+				// (Check where this was dropped before the pinned area hides its instructions)
+				var pinned = $(e.target).closest("#pinned");
 				this.$dragging.set(false);
 				targets.off("mouseover", on_mover_child);
 				targets.off("mouseout", on_mout_child);
 				$(window).off("mouseup", on_mup);
 				this.element.removeClass("dragging");
-				if(curr_target) {
+				if(!curr_target && pinned.length > 0 && ist.can_pin(this.option("client"))) {
+					pinned.pinned("addClient", this.option("client"));
+				} else if(curr_target) {
 					var my_obj = this.option("obj"),
 						my_name = this.option("name");
 					var target_name, target_obj;

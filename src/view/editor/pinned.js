@@ -24,6 +24,13 @@
 		"{{/if}}"
 	);
 
+	// Whether what's being dragged (see the editor's getDraggingClientConstraint) can be pinned: a
+	// column (true) or the row of a property whose value is an object (that object's client)
+	ist.can_pin = function(dragging) {
+		return dragging === true ||
+				(dragging instanceof ist.WrapperClient && (dragging.type() === "dict" || dragging.type() === "stateful"));
+	};
+
 	cjs.registerCustomPartial("pinned", {
 		createNode: function(options) {
 			return $("<div />").pinned(options);
@@ -54,10 +61,7 @@
 			this.$dragging = this.option("editor").getDraggingClientConstraint();
 
 			this.$show_instructions = cjs(function() {
-				if(this.$columns.length() === 0) {
-					return this.$dragging.get();
-				}
-				return false;
+				return this.$columns.length() === 0 && ist.can_pin(this.$dragging.get());
 			}, {context: this});
 
 			this.element.on("child_select.nav", _.bind(this.on_child_select, this))

@@ -106,7 +106,7 @@
 
 			var get_pinned_height_pct = _.bind(function() {
 				if(this.$pinned_columns.length() === 0) {
-					if(this.$dragging_client.get()) {
+					if(ist.can_pin(this.$dragging_client.get())) {
 						return 0.3;
 					} else {
 						return 0;
@@ -218,9 +218,13 @@
 				}
 			}, this));
 			this.element.on("dragstart.pin", _.bind(function(event) {
+				var targ = $(event.target);
+				// Columns are dragged natively (property rows and components do their own dragging)
+				if(!targ.is(".col")) { return; }
+				// (Firefox only starts a drag that has some data)
+				event.originalEvent.dataTransfer.setData("application/x-interstate-column", String(targ.column("option", "client").cobj_id));
 				this.$dragging_client.set(true);
-				var targ = $(event.target),
-					component_list = $(".components", this.element),
+				var component_list = $(".components", this.element),
 					pinned = $("#pinned", this.element);
 				var clear_drag_info = function() {
 												this.$dragging_client.set(false);
@@ -230,6 +234,7 @@
                                         };
 				component_list.add(pinned)	.addClass("drop_indicator")
 											.on("drop.pin", _.bind(function(e) {
+												e.preventDefault();
 												var client = targ.column("option", "client");
 												if($(e.target).parents().is(".component_drop")) {
 													this.client_socket.post({
