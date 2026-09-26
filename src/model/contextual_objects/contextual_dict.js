@@ -802,7 +802,17 @@
 			}
 		};
 		proto.updateAttachments = function() {
-			_.each(this.get_attachment_types(), function(type) {
+			if (!this._attachment_instances) { return; }
+			var types = this.get_attachment_types();
+			// Destroy the attachments that no prototype provides anymore (for example, a Breakout
+			// brick's physics body once it leaves physics.fixture), or they keep running unseen
+			_.each(_.keys(this._attachment_instances), function(type) {
+				if (!_.contains(types, type)) {
+					this._attachment_instances[type].destroy();
+					delete this._attachment_instances[type];
+				}
+			}, this);
+			_.each(types, function(type) {
 				this.get_attachment_instance(type);
 			}, this);
 		};

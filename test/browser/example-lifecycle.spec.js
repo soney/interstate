@@ -79,6 +79,28 @@ test('Breakout clears a level through collisions and continues playing', async (
   expect(await gameValue(page, 'score')).toBeGreaterThanOrEqual(50);
 });
 
+test('a destroyed Breakout brick no longer deflects the ball', async ({ page }) => {
+  await page.goto('/build/?open=examples/breakout.ist');
+  await expect(page.locator('.content svg circle')).toBeVisible();
+  // Destroy the leftmost brick (x 0-80, y 0-20), then launch the ball straight up where it was.
+  await launchBall(page, 40, 45, -10);
+  await expect.poll(() => gameValue(page, 'score')).toBeGreaterThanOrEqual(10);
+  await launchBall(page, 40, 300, -10);
+  const highest = await page.evaluate(async () => {
+    const game = interstate.find_or_put_contextual_obj($('.content').dom_output('option', 'root')).prop_val('game');
+    const ball = game.prop_val('ball').instances().find(b => b.get_attachment_instance('box2d_fixture'));
+    const body = ball.get_attachment_instance('box2d_fixture').body.get();
+    let minY = Infinity;
+    for (const start = performance.now(); performance.now() - start < 1500;) {
+      minY = Math.min(minY, body.GetPosition().y * 30);
+      await new Promise(r => requestAnimationFrame(r));
+    }
+    return minY;
+  });
+  // The ball (radius 10) reaches the top wall instead of bouncing off the brick's leftover body at y = 20.
+  expect(highest).toBeLessThan(20);
+});
+
 test('closing Breakout releases physics animation and collision subscriptions', async ({ page }) => {
   await page.goto('/build/?open=examples/breakout.ist');
   await expect(page.locator('.content svg circle')).toBeVisible();
