@@ -52,6 +52,41 @@
 		equal(md.unset.length, 1);
 		equal(md.key_change.length, 0);
 		equal(md.value_change.length, 2);
+
+		// More keys added than removed
+		md = ist.get_map_diff(['a'], ['b','c'], [1], [2,3]);
+		equal(md.set.length, 2);
+		equal(md.unset.length, 1);
+		equal(md.key_change.length, 0);
+		equal(md.value_change.length, 0);
+
+		// Renamed keys are paired with whichever removed key had the same value
+		md = ist.get_map_diff(['a','b'], ['x','y'], [1,2], [2,1]);
+		deepEqual(md.key_change, [{from: 'b', to: 'x', value: 2}, {from: 'a', to: 'y', value: 1}]);
+		equal(md.set.length, 0);
+		equal(md.unset.length, 0);
+	});
+
+	test("Key/value map", function() {
+		var keys = cjs.constraint(['a', 'b']),
+			vals = cjs.constraint([1, 2]),
+			map = ist.create_key_val_map(keys, vals);
+		deepEqual(map.toObject(), {a: 1, b: 2});
+
+		keys.set(['a', 'c']); // 'b' is renamed to 'c'
+		deepEqual(map.keys(), ['a', 'c']);
+		equal(map.get('c'), 2);
+
+		// More keys added than removed
+		cjs.wait();
+		keys.set(['a', 'd', 'e']);
+		vals.set([1, 3, 4]);
+		cjs.signal();
+		deepEqual(map.toObject(), {a: 1, d: 3, e: 4});
+
+		map.destroy();
+		keys.destroy();
+		vals.destroy();
 	});
 	asyncTest("Remote Constraints", function() {
 		expect(3);

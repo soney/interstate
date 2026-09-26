@@ -45,6 +45,7 @@
 		_.each(key_diff.removed, function(info) {
 			unset.unshift({key: info.from_item, value: from_vals[info.from], from: info.from});
 		});
+		// A key that was added with the same value as a removed key is treated as a renamed key
 		i = 0;
 		set_len = set.length;
 		unset_len = unset.length;
@@ -53,10 +54,10 @@
 			si = set[i];
 			j = 0;
 			while(j < unset_len) {
-				ui = unset[i];
+				ui = unset[j];
 
 				if(val_eq_check(from_vals[ui.from], to_vals[si.to])) {
-					key_change.push({from: ui.key, to: si.key});
+					key_change.push({from: ui.key, to: si.key, value: si.value});
 
 					removeIndex(set, i);
 					removeIndex(unset, j);

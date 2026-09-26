@@ -853,7 +853,9 @@
 			var map_diff = ist.get_map_diff(old_keys, keys, old_vals, vals);
 
 			_.each(map_diff.key_change, function(info) {
-				map.rename(info.from, info.to);
+				// (Map constraints can't rename a key, so move the value to its new key)
+				map.remove(info.from);
+				map.put(info.to, info.value);
 			});
 			_.each(map_diff.set, function(info) {
 				map.put(info.key, info.value);
