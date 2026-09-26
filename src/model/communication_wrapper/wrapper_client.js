@@ -177,6 +177,7 @@
 				var id = rv._id;
 				var old_destroy = rv.destroy;
 				rv.destroy = function() {
+					if(!self) { return; } // (already destroyed)
 					try {
 						self.destroy_$(rv, args);
 						old_destroy.apply(rv, arguments);
@@ -188,7 +189,7 @@
 				var semaphore = 0;
 				rv.signal_interest = function() { semaphore++; };
 				rv.signal_destroy = function() {
-					if(--semaphore <= 0) {
+					if(--semaphore <= 0 && rv) {
 						rv.destroy();
 					}
 				};
