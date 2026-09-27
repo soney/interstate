@@ -94,6 +94,20 @@ an actual Safari installation. Old browsers and every browser/device combination
 cannot be guaranteed; keep the browser tests and Playwright updates passing to
 catch compatibility regressions.
 
+## Accessibility
+
+The homepage, runtime, tutorial, and editor aim to meet WCAG 2.2 AA, and the
+editor can be used entirely from the keyboard: Tab moves between objects, fields,
+cells, states, and transitions; Enter opens, edits, or renames them; and
+Shift+F10 (or the menu key) shows their menus, which also offer what dragging
+does (moving fields, pinning, and saving and adding components). The editor's
+**Keyboard** button lists the keys. `src/view/editor/keyboard.js` holds the
+shared keyboard support. `test/browser/accessibility.spec.js` runs axe's WCAG
+2.2 A and AA rules on the pages and on the editor as it is used (in Chromium),
+and edits programs with only the keyboard (in all three engines). Automated
+checks can't catch everything; check changes with a screen reader and the
+keyboard too.
+
 ## Deploy
 
 GitHub Pages must use **GitHub Actions** as its publishing source. The workflow

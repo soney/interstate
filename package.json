@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
+    "axe-core": "4.13.0",
     "sass": "1.105.0",
     "terser": "5.51.2"
   },
