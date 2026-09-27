@@ -27,7 +27,7 @@
 			state_text_background_color: "#FFF",
 			state_text_color: "#000",
 			state_fill: "#EEE",
-			state_stroke: "#999",
+			state_stroke: "#888",
 			active_state_fill: "#FFF",
 			active_state_stroke: "#007000",
 			active_state_text_color: "#007000",
@@ -50,6 +50,8 @@
 		_create: function () {
 			this.element.addClass("statechart");
 			this.paper = new Raphael(this.element[0], 0, 0);
+			$(this.paper.canvas).attr({ role: "group", "aria-label": "Statechart" })
+								.children("desc").remove();
 			//this.paper = Snap(0,0);
 			//$(this.paper.node).appendTo(this.element);
 			var statecharts = this.option("statecharts");
@@ -222,11 +224,19 @@
 
 		this.add_state_button	.attr({
 									"font-size": "42px",
-									fill: this.option("state_stroke"),
-									opacity: 0.5,
+									fill: "#767676",
 									cursor: "pointer"
 								})
 								.click(_.bind(this.on_add_state_click, this));
+		ist.keyboard.control(this.add_state_button[0], {
+			label: "Add state",
+			activate: _.bind(this.on_add_state_click, this)
+		});
+		$(this.add_state_button[0]).on("focus.show_focus", _.bind(function() {
+			this.add_state_shape.attr({ stroke: "#1a5fb4", "stroke-width": 2 });
+		}, this)).on("blur.show_focus", _.bind(function() {
+			this.add_state_shape.attr({ stroke: this.option("state_stroke"), "stroke-width": 1 });
+		}, this));
 
 		var curr_items = [];
 		this.live_layout = cjs.liven(function () {
@@ -336,6 +346,9 @@
 					view.toFront();
 				}
 			});
+			// (Last, so that the keyboard reaches it after the states and transitions)
+			this.add_state_shape.toFront();
+			this.add_state_button.toFront();
 			curr_items = new_items;
 		}, {
 			context: this
@@ -355,7 +368,7 @@
 					paper: this.paper,
 					text: text,
 					line_color: "#AAA",
-					color: "#999",
+					color: "#595959",
 					background: "#EEE",
 					y: this.option("hrange_y"),
 					height: this.option("hrange_height"),
@@ -452,11 +465,12 @@
 			}
 			var states = event.states,
 				on_select = event.on_select,
-				on_cancel = event.on_cancel;
+				on_cancel = event.on_cancel || function() {},
+				return_focus = document.activeElement;
 			var select_obj_text = this.paper.text(this.paper.width/2, 10, "(click a destination state)")
 											.attr({
 												"font-size": 16,
-												"fill": '#777',
+												"fill": '#595959',
 												"font-family": "Source Sans Pro"
 											});
 			var bbox = select_obj_text.getBBox();
@@ -471,6 +485,9 @@
 				if(e.keyCode === 27) { //esc
 					on_cancel();
 					unmake_selectable();
+					if(return_focus && document.body.contains(return_focus)) {
+						return_focus.focus();
+					}
 				}
 			};
 			$(window).on("keydown.awaiting_state_selection", on_keydown);
@@ -494,6 +511,14 @@
 					unmake_selectable();
 				});
 			});
+			if(return_focus && $(return_focus).closest(".statechart").is(this.paper.canvas.parentNode)) {
+				// (The keyboard was used to get here)
+				ist.keyboard.announce("Choose a state: press Enter on one, or Escape to cancel");
+				var first = _.find(state_views, function(view) { return view.label; });
+				if(first) {
+					first.label.text[0].focus();
+				}
+			}
 			var this_element = $(this.paper.canvas.parentNode);
 			//var this_element = $(this.paper.node.parentNode);
 			$(window).on("mousedown.cancel_state_selection", function(event) {
@@ -510,6 +535,7 @@
 		};
 		proto.destroy = function () {
 			$(window).off("keydown.awaiting_state_selection");
+			$(this.add_state_button[0]).off(".keyboard_control .show_focus");
 			delete this.statecharts;
 
 			this.live_layout.destroy();

@@ -45,7 +45,7 @@
 			return "[" + _.map(val, function(v) { return summarize_val(v, is_primary); }).join(", ") + "]";
 		} else if(val instanceof ist.WrapperClient) {
 			if(is_primary) {
-				return "<span class='cobj_link' data-cobj_id='"+val.cobj_id+"'>" + val.colloquial_name + "</span>";
+				return "<span class='cobj_link' role='link' tabindex='0' data-cobj_id='"+val.cobj_id+"'>" + val.colloquial_name + "</span>";
 			} else {
 				return "";
 			}
@@ -119,9 +119,16 @@
 						event.stopPropagation();
 					}
 				}
+			}, this)).on("keydown.navigate", ".cobj_link", _.bind(function(event) {
+				if(event.key === "Enter") {
+					this.open_cobj($(event.currentTarget).attr("data-cobj_id"));
+					event.preventDefault();
+					event.stopPropagation();
+				}
 			}, this));
 		},
 		_destroy: function() {
+			this.element.off(".navigate");
 			this._remove_tooltip();
 			this._remove_content_bindings();
 			this._remove_class_bindings();
@@ -152,6 +159,9 @@
 		},
 		_add_class_bindings: function() {
 			this.element.addClass("value_summary " + this.option("itemClass"));
+			if(this.option("decorative")) {
+				this.element.attr("aria-hidden", "true");
+			}
 		},
 		_remove_class_bindings: function() {
 			this.element.removeClass("value_summary");

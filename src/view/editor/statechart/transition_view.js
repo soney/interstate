@@ -132,6 +132,9 @@
 				if(this.label) {
 					var str = e.to;
 					this.label.option("text", str);
+					if(this._keyboard_control) {
+						this._keyboard_control.update_label();
+					}
 				}
 			}, this);
 			str = event.get_str();
@@ -175,6 +178,24 @@
 							.toBack();
 		this.$clickable = $([this.label.text[0], this.label.label_background[0], this.arrow.line_path[0], this.arrow.circle[0], this.arrow.arrow_path[0]]);
 		this.$clickable.on("contextmenu.cm", _.bind(this.show_menu, this));
+		// From the keyboard, Enter edits the event and the context menu key shows the transition's menu
+		// (the start state's transition is reached from the start state instead)
+		if(!(transition.from() instanceof ist.StartState)) {
+			this.label.option("edit_label", "Transition event");
+			this._keyboard_control = ist.keyboard.control(this.label.text[0], {
+				label: _.bind(function() {
+					var transition = this.option("transition"),
+						from = transition.from(),
+						to = transition.to(),
+						str = this.get_str();
+					return "Transition" + (str ? " on " + str : " with no event") +
+							(from && to && from.get_name && to.get_name ?
+								" from " + from.get_name() + " to " + to.get_name() : "");
+				}, this),
+				activate: _.bind(this.begin_rename, this),
+				menu: true
+			});
+		}
 
 		$(this.label.text[0]).tooltip({
 			tooltipClass: "error"
@@ -274,6 +295,17 @@
 			}
 			$(window).on("mousedown.close_menu", _.bind(this.on_window_click_while_expanded, this));
 			$(window).on("keydown.close_menu", _.bind(this.on_window_keydown_while_expanded, this));
+			var return_focus = this.label.text[0];
+			if(transition.from() instanceof ist.StartState) {
+				var start_view = this.option("parent") && this.option("parent").object_views &&
+									this.option("parent").object_views.get(transition.from());
+				return_focus = start_view && start_view.circle ? start_view.circle[0] : null;
+			}
+			ist.keyboard.menu(this.edit_dropdown, {
+				items: "> .menu_item",
+				close: _.bind(this.remove_edit_dropdown, this),
+				return_focus: return_focus
+			});
 		};
 
 		proto.on_edit_event_pressed = function() {

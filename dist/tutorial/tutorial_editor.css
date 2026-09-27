@@ -43,18 +43,31 @@ html, body, #tutorial {
 	vertical-align: middle;
 	text-decoration: none;
 	background-color: #444;
-	color: #999;
+	color: #DDD;
 	cursor: pointer;
-	padding-top: 0px;
-	padding-bottom: 0px;
-	padding-left: 5px;
-	padding-right: 5px;
+	padding: 0px;
 }
 
-.instructions .next:hover, .instructions .prev:hover {
+.instructions .next > button, .instructions .prev > button {
+	width: 100%;
+	min-height: 44px;
+	padding: 10px 5px;
+	border: none;
+	background: none;
+	color: inherit;
+	font: inherit;
+}
+
+.instructions .next:hover, .instructions .prev:hover,
+.instructions .next:focus-within, .instructions .prev:focus-within {
 	color: white;
 	text-decoration: underline;
-	background-color: #999933;
+	background-color: #666622;
+}
+
+.instructions button:focus-visible, .instructions .content > div:focus-visible {
+	outline: 2px solid white;
+	outline-offset: -4px;
 }
 
 .instructions p {

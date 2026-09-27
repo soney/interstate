@@ -33,32 +33,32 @@
 				"{{#if new_program}}" +
 					"<div class='new_prog'>" +
 						"{{>editing_text getDefaultSketchName()}}" +
-						"<button type='button' class='btn btn-success btn-xs'>OK</button>" +
-						"<button cjs-on-mousedown='cancel_newprog' type='button' class='btn btn-danger btn-xs'>Cancel</button>" +
+						"<button type='button' data-cjs-on-mousedown='confirm_newprog' data-cjs-on-click='confirm_newprog' class='btn btn-success btn-xs'>OK</button>" +
+						"<button data-cjs-on-mousedown='cancel_newprog' data-cjs-on-click='cancel_newprog' type='button' class='btn btn-danger btn-xs'>Cancel</button>" +
 					"</div>" +
 				"{{/if}}" +
 				"<div class='btn-group'>" +
-					"<button disabled={{new_program}} class='new_sketch btn btn-sm btn-default' data-cjs-on-click='createNewSketch'>" +
-						"<span class='glyphicon glyphicon-file'></span>" +
+					"<button type='button' disabled={{new_program}} class='new_sketch btn btn-sm btn-default' data-cjs-on-click='createNewSketch'>" +
+						"<span class='glyphicon glyphicon-file' aria-hidden='true'></span>" +
 						" New" +
 					"</button>" +
-					"<button disabled={{disable_save_btn}} class='save_sketch btn btn-sm btn-default' data-cjs-on-click='saveSketch'>" +
+					"<button type='button' disabled={{disable_save_btn}} class='save_sketch btn btn-sm btn-default' data-cjs-on-click='saveSketch'>" +
 						"{{#if dirty_program}}" +
-							"<span class='glyphicon glyphicon-floppy-disk'></span>" +
+							"<span class='glyphicon glyphicon-floppy-disk' aria-hidden='true'></span>" +
 							" Save" +
 						"{{#else}}" +
-							"<span class='glyphicon glyphicon-floppy-saved'></span>" +
+							"<span class='glyphicon glyphicon-floppy-saved' aria-hidden='true'></span>" +
 							" Saved" +
 						"{{/if}}" +
 					"</button>" +
-					"<button disabled={{new_program}} class='saveas_sketch btn btn-sm btn-default' data-cjs-on-click='saveSketchAs'>" +
-						"<span class='glyphicon glyphicon-floppy-save'></span>" +
+					"<button type='button' disabled={{new_program}} class='saveas_sketch btn btn-sm btn-default' data-cjs-on-click='saveSketchAs'>" +
+						"<span class='glyphicon glyphicon-floppy-save' aria-hidden='true'></span>" +
 						" Save as..." +
 					"</button>" +
-					"<div disabled={{new_program}} style='position:relative' id='import_btn' class='btn btn-sm btn-default'>" +
-						"<span class='glyphicon glyphicon-cloud-upload'></span>" +
+					"<div style='position:relative' class='import_btn btn btn-sm btn-default'>" +
+						"<span class='glyphicon glyphicon-cloud-upload' aria-hidden='true'></span>" +
 						" Import" +
-						"<input multiple data-cjs-on-change='onImport' style='width:100%;position:absolute;top:0px;left:-3px;height:30px;opacity:0' title='Import' type='file'/>" +
+						"<input multiple data-cjs-on-change='onImport' style='width:100%;position:absolute;top:0px;left:-3px;height:30px;opacity:0' title='Import' aria-label='Import files' type='file'/>" +
 					"</div>" +
 				"</div>" +
 				"<div class='header components_header'>" +
@@ -75,10 +75,10 @@
 				"</div>" +
 
 				"<div class='toolbar'>" +
-					"<div disabled={{new_program}} style='position:relative' id='import_btn' class='btn btn-sm btn-default'>" +
-						"<span class='glyphicon glyphicon-cloud-upload'></span>" +
+					"<div style='position:relative' class='import_btn btn btn-sm btn-default'>" +
+						"<span class='glyphicon glyphicon-cloud-upload' aria-hidden='true'></span>" +
 						" Import" +
-						"<input multiple data-cjs-on-change='onImport' style='width:100%;position:absolute;top:0px;left:-3px;height:30px;opacity:0' title='Import' type='file'/>" +
+						"<input multiple data-cjs-on-change='onImport' style='width:100%;position:absolute;top:0px;left:-3px;height:30px;opacity:0' title='Import' aria-label='Import files' type='file'/>" +
 					"</div>" +
 				"</div>"
 				);
@@ -119,7 +119,7 @@
 			this._super();
 		},
 		_addClassBindings: function() {
-			this.element.addClass("component_list");
+			this.element.addClass("component_list").attr({ role: "region", "aria-label": "Files" });
 		},
 		_removeClassBindings: function() {
 		},
@@ -153,6 +153,16 @@
 					event.preventDefault();
 					event.stopPropagation();
 					this.$new_program.set(false);
+					$(".new_sketch", this.element).focus();
+					return false;
+				}, this),
+				confirm_newprog: _.bind(function(event) {
+					var textarea = $(".new_prog > textarea", this.element);
+					if(textarea.length > 0) {
+						textarea.editing_text("confirm");
+					}
+					event.preventDefault();
+					event.stopPropagation();
 					return false;
 				}, this),
 				new_program: this.$new_program,
@@ -297,11 +307,11 @@
 	});
 
 	var witem_tlate = cjs.createTemplate(
-					"<div data-name='{{name}}' data-cjs-on-click='load_program'>" +
+					"<div data-name='{{name}}' data-cjs-on-click='load_program' class='entry_name' tabindex='0' role='button' aria-haspopup='menu' aria-current='{{selected ? \"true\" : \"false\"}}'>" +
 						"{{#fsm name_edit_state}}" +
 							"{{#state idle}}" +
 								"{{name}}" +
-								"<span class='hover_tip'>{{hover_tip}}</span>" +
+								"<span class='hover_tip' aria-hidden='true'>{{hover_tip}}</span>" +
 							"{{#state editing}}" +
 								"{{>editing_text name 'input'}}" +
 						"{{/fsm}}" +
@@ -311,6 +321,10 @@
 							"<li class='menu-item' data-action='export'>Export</li>" +
 							"<li class='menu-item' data-action='delete'>Delete</li>" +
 							"<li class='menu-item' data-action='rename'>Rename</li>" +
+							// (What dragging a component into an object does)
+							"{{#if storage_type === 'component' && insert_target}}" +
+								"<li class='menu-item' data-action='insert'>Add to {{insert_target}}</li>" +
+							"{{/if}}" +
 						"</ul>" +
 					"{{/if}}"
 					);
@@ -341,7 +355,21 @@
 											if(event.type === 'confirm_value') {
 												this._emit_new_name(event.value);
 											}
-										}, this);
+										}, this)
+										// (Controls can't contain other controls: while the name is being
+										// edited, it isn't a button. Afterwards, focus goes back to it.)
+										.on('idle->editing', function() {
+											$(".entry_name", elem).removeAttr("role tabindex aria-haspopup");
+										})
+										.on('editing->idle', function() {
+											var entry_name = $(".entry_name", elem).attr({ role: "button", tabindex: "0", "aria-haspopup": "menu" });
+											_.defer(function() {
+												var active = document.activeElement;
+												if(!active || active === document.body) {
+													entry_name.focus();
+												}
+											});
+										});
 			if(this.option("storage_type") === "component") {
 				this.element.attr("draggable", true)
 							.on("dragstart.ondragstart", _.bind(this.on_drag_start, this));
@@ -360,6 +388,7 @@
 		},
 		_addMenu: function() {
 			this.$show_menu  = cjs(false);
+			this.$insert_target = cjs(false);
 			this.menu_state = cjs.fsm("hidden", "holding", "on_release", "on_click")
 									.addTransition("hidden", "holding", cjs.on("contextmenu", this.element[0]))
 									.addTransition("holding", "on_click", cjs.on("mouseup"))
@@ -373,6 +402,8 @@
 				on_mup_oclick = this.menu_state.addTransition("on_click", "hidden");
 
 			this.menu_state.on("hidden->holding", function(event) {
+				var target = this._insert_target();
+				this.$insert_target.set(target ? target.name : false);
 				this.$show_menu.set(true);
 				event.stopPropagation();
 				event.preventDefault();
@@ -425,12 +456,51 @@
 			this.menu_state.on("on_click", on_click, this);
 			this.menu_state.on("holding", on_hold, this);
 			this.menu_state.on("hidden", on_hidden, this);
+			this._hide_menu = function() {
+				on_mup_holding();
+				on_mup_orelease();
+				on_mup_oclick();
+			};
+
+			this.element.on("keydown.keyboard", ".entry_name", _.bind(function(event) {
+				var entry_name = event.currentTarget;
+				if(event.target !== entry_name) {
+					return; // (renaming)
+				} else if(ist.keyboard.is_activation(event)) {
+					event.preventDefault();
+					ist.keyboard.click(entry_name);
+				} else if(ist.keyboard.is_menu_key(event)) {
+					event.preventDefault();
+					ist.keyboard.contextmenu(entry_name);
+					ist.keyboard.menu($("ul.menu", this.element), {
+						items: "> li",
+						choose: _.bind(function(item) {
+							var action = item.getAttribute("data-action");
+							this._hide_menu();
+							this.on_menu_action(action);
+						}, this),
+						close: _.bind(function() { this._hide_menu(); }, this),
+						return_focus: entry_name
+					});
+				}
+			}, this));
 		},
 		_removeMenu: function() {
 			$("ul.menu > li", this.element).off('.menu_item');
 			$(window).off('.menu_item');
+			this.element.off(".keyboard");
 			this.menu_state.destroy();
 			this.$show_menu.destroy();
+			this.$insert_target.destroy();
+		},
+		// The object that's open in the editor, which a component can be added to
+		_insert_target: function() {
+			var column = $("#obj_nav > .col.curr_col");
+			if(column.length > 0 && column.data("interstate-column")) {
+				var client = column.column("option", "client");
+				return client ? { client: client, name: $.trim($(".obj_name_label", column).first().text()) } : false;
+			}
+			return false;
 		},
 
 		_emit_new_name: function(str) {
@@ -456,6 +526,8 @@
 					}
 				}, this),
 				hover_tip: this.option("hover_tip"),
+				storage_type: this.option("storage_type"),
+				insert_target: this.$insert_target,
 				name_edit_state: this.name_edit_state
 			}, this.element);
 		},
@@ -488,6 +560,16 @@
 				event.name = cjs.get(this.$name);
 				event.storage_type = this.option("storage_type");
 				this.element.trigger(event);
+			} else if(action_name === 'insert') {
+				var target = this._insert_target();
+				if(target) {
+					event = new $.Event("copy_component");
+					event.name = cjs.get(this.$name);
+					event.target_obj_id = target.client.obj_id;
+					event.above_below = "above";
+					this.element.trigger(event);
+					ist.keyboard.announce("Added " + event.name + " to " + target.name);
+				}
 			}
 		},
 		on_drag_start: function(event) {

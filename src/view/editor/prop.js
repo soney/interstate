@@ -20,7 +20,7 @@
 		"<td data-cjs-on-mouseover='propMOver' data-cjs-on-mouseout='propMOut' class='name'>" +
 			"{{#fsm name_edit_state}}" +
 				"{{#state idle}}" +
-					"<span>{{ prop_name }}</span>" +
+					"<span class='prop_label' tabindex='0' role='button' data-cjs-on-focus='propMOver' data-cjs-on-blur='propMOut'>{{ prop_name }}</span>" +
 				"{{#state editing}}" +
 					"{{>editing_text prop_name 'input'}}" +
 			"{{/fsm}}" +
@@ -30,6 +30,17 @@
 						"<li class='menu-item' data-action='change_type'>Change to {{ (type === 'stateful_prop' || type==='cell') ? 'object' : 'property'}}</li>" +
 						"<li class='menu-item' data-action='delete'>Delete</li>" +
 						"<li class='menu-item' data-action='rename'>Rename</li>" +
+						// (Ways to do what dragging does)
+						"{{#if can_move_up}}" +
+							"<li class='menu-item' data-action='move_up'>Move up</li>" +
+						"{{/if}}" +
+						"{{#if can_move_down}}" +
+							"<li class='menu-item' data-action='move_down'>Move down</li>" +
+						"{{/if}}" +
+						"{{#if can_pin}}" +
+							"<li class='menu-item' data-action='pin'>Pin</li>" +
+							"<li class='menu-item' data-action='save_component'>Save as component</li>" +
+						"{{/if}}" +
 					"</ul>" +
 				"</div>" +
 			"{{/if}}" +
@@ -119,7 +130,9 @@
 											}
 										}, this);
 
-			this.element.on("click.expand", _.bind(this._trigger_expand, this));
+			this.element.on("click.expand", _.bind(this._trigger_expand, this))
+						.on("focusin.keyboard", ".prop_label", _.bind(this._on_label_focus, this))
+						.on("keydown.keyboard", ".prop_label", _.bind(this._on_label_keydown, this));
 
 			if(client instanceof ist.WrapperClient && (client.type() === "dict" || client.type() === "stateful")) {
 				this.$attachmentTypes = client.get_$("get_attachment_types");
@@ -147,7 +160,7 @@
 		_destroy: function() {
 			var client = this.option("client");
 
-			this.element.off(".prop").off(".inherit .ondragstart .menu_item");
+			this.element.off(".prop").off(".inherit .ondragstart .menu_item .keyboard");
 			this._remove_tooltip();
 			this._remove_content_bindings();
 			this._remove_class_bindings();
@@ -172,6 +185,8 @@
 
 		_add_menu: function() {
 			this.$show_menu  = cjs(false);
+			this.$can_move_up = cjs(false);
+			this.$can_move_down = cjs(false);
 			this.menu_state = cjs.fsm("hidden", "holding", "on_release", "on_click");
 			if(this.option("builtin")) {
 				this.element.on("contextmenu", function(event) {
@@ -193,6 +208,8 @@
 				on_mup_oclick = this.menu_state.addTransition("on_click", "hidden");
 
 			this.menu_state.on("hidden->holding", function(event) {
+				this.$can_move_up.set(!!this._move_target("above"));
+				this.$can_move_down.set(!!this._move_target("below"));
 				this.$show_menu.set(true);
 				event.stopPropagation();
 				event.preventDefault();
@@ -246,11 +263,18 @@
 			this.menu_state.on("on_click", on_click, this);
 			this.menu_state.on("holding", on_hold, this);
 			this.menu_state.on("hidden", on_hidden, this);
+			this._hide_menu = function() {
+				on_mup_holding();
+				on_mup_orelease();
+				on_mup_oclick();
+			};
 		},
 		_destroy_menu: function() {
 			$(window).add("ul.menu > li", this.element).off('.menu_item').remove();
 			this.menu_state.destroy();
 			this.$show_menu.destroy();
+			this.$can_move_up.destroy();
+			this.$can_move_down.destroy();
 		},
 		on_menu_action: function(action_name) {
 			// Give the menu a bit of time to transition back to hidden
@@ -264,6 +288,21 @@
 					this.element.trigger(event);
 				} else if(action_name === 'rename') {
 					this.begin_rename();
+				} else if(action_name === 'move_up' || action_name === 'move_down') {
+					this._move(action_name === 'move_up' ? "above" : "below");
+				} else if(action_name === 'pin') {
+					var to_pin = this.option("client");
+					if(ist.can_pin(to_pin)) {
+						$("#pinned").pinned("addClient", to_pin);
+						ist.keyboard.announce("Pinned " + this.$prop_name.get());
+					}
+				} else if(action_name === 'save_component') {
+					// (What dragging the object's column to the list of components does)
+					this.option("client_socket").post({
+						type: "save_component",
+						cobj_id: this.option("client").cobj_id
+					});
+					ist.keyboard.announce("Saved " + this.$prop_name.get() + " as a component");
 				} else if(action_name === 'change_type') {
 					var client = this.option("client"),
 						client_type = client.type(),
@@ -373,13 +412,13 @@
 				prop_name: this.$prop_name,
 				name_edit_state: this.name_edit_state,
 				getPrevValueSummaryOptions: _.bind(function() {
-					return { is_primary: false, client: this.prev_value, itemClass:'prev'};
+					return { is_primary: false, client: this.prev_value, itemClass:'prev', decorative: true };
 				}, this),
 				getValueSummaryOptions: _.bind(function() {
 					return { is_primary: true, client: this.option("client"), itemClass:'primary' };
 				}, this),
 				getNextValueSummaryOptions: _.bind(function() {
-					return { is_primary: false, client: this.next_value, itemClass:'next'};
+					return { is_primary: false, client: this.next_value, itemClass:'next', decorative: true };
 				}, this),
 				getPurePropCellOptions: _.bind(function() {
 					return { client: cjs.constraint(this.option("client")), prop: false };
@@ -396,7 +435,8 @@
 							client: value,
 							left: left,
 							width: width,
-							active_value: this.$active_value
+							active_value: this.$active_value,
+							get_state_object: function() { return layout_manager.get_state(key); }
 							};
 				}, this),
 				show_prev_value: this.$show_prev_value,
@@ -406,6 +446,9 @@
 				type: this.$type,
 				propValues: this.$prop_values,
 				show_menu: this.$show_menu,
+				can_move_up: this.$can_move_up,
+				can_move_down: this.$can_move_down,
+				can_pin: ist.can_pin(this.option("client")),
 				propMOver: _.bind(function() {
 					var client = this.option("client"),
 						event = new $.Event("add_highlight");
@@ -471,6 +514,118 @@
 				if(this.element.not(".selected")) {
 					this.element.trigger("expand");
 				}
+			}
+		},
+		_is_object: function() {
+			var client = this.option("client"),
+				type = client instanceof ist.WrapperClient ? client.type() : "";
+			return type === "dict" || type === "stateful";
+		},
+		// What the row's name says to screen readers: its name and value, and whether it's inherited
+		_describe: function() {
+			var summary = this.element.children("td.value_summary.primary"),
+				copies = $(".copies", summary).text().replace(/[\[\]]/g, ""),
+				parts = [this.$prop_name.get() + ": " + (this._is_object() ?
+							(copies ? "object with " + copies + " copies" : "object") :
+							($.trim(summary.text()) || "no value"))];
+			if(this.option("inherited")) {
+				parts.push("inherited");
+			} else if(this.option("builtin")) {
+				parts.push("built in");
+			}
+			if(this.element.hasClass("error")) {
+				parts.push("error: " + this.element.attr("title"));
+			}
+			return parts.join(", ");
+		},
+		_on_label_focus: function(event) {
+			var label = $(event.currentTarget).attr("aria-label", this._describe());
+			if(this._is_object()) {
+				label.attr({ "aria-expanded": String(this.element.hasClass("selected")) });
+			}
+			if(!this.option("builtin")) {
+				label.attr("aria-haspopup", "menu");
+			}
+		},
+		_on_label_keydown: function(event) {
+			var label = event.currentTarget;
+			if(ist.keyboard.is_activation(event)) {
+				event.preventDefault();
+				event.stopPropagation();
+				if(this.option("inherited")) {
+					// (What clicking an inherited field does: give this object its own copy to edit)
+					this.inherit();
+				} else {
+					var client = this.option("client"),
+						expanding = this._is_object() && !this.element.hasClass("selected"),
+						container = this.element.closest("#obj_nav, #pinned");
+					ist.keyboard.click(label);
+					if(expanding) {
+						// Continue in the column that just opened
+						_.defer(function() {
+							container.children(".col").each(function() {
+								if($(this).data("interstate-column") && $(this).column("option", "client") === client) {
+									$(".obj_name_label", this).first().focus();
+									return false;
+								}
+							});
+						});
+					} else {
+						// (Clicking a selected object's row closes its column)
+						_.defer(_.bind(function() {
+							if(document.body.contains(label)) {
+								this._on_label_focus({ currentTarget: label });
+							}
+						}, this));
+					}
+				}
+			} else if(ist.keyboard.is_menu_key(event) && !this.option("builtin")) {
+				event.preventDefault();
+				event.stopPropagation();
+				ist.keyboard.contextmenu(label);
+				ist.keyboard.menu($("ul.menu", this.element), {
+					items: "> li",
+					choose: _.bind(function(item) {
+						var action = item.getAttribute("data-action");
+						this._hide_menu();
+						this.on_menu_action(action);
+					}, this),
+					close: _.bind(function() { this._hide_menu(); }, this),
+					return_focus: label
+				});
+			}
+		},
+		// The row that dragging this one above (or below) would drop it next to
+		_move_target: function(above_below) {
+			if(this.option("inherited") || this.option("builtin")) {
+				return false;
+			}
+			var rows = this.element.parent().children("tr.child").not(".inherited, .builtin"),
+				index = rows.index(this.element),
+				target_index = above_below === "above" ? index - 1 : index + 1;
+			return index >= 0 && target_index >= 0 && target_index < rows.length ? rows.eq(target_index) : false;
+		},
+		_move: function(above_below) {
+			var target = this._move_target(above_below);
+			if(target) {
+				var event = new $.Event("command");
+				event.command_type = "move_prop";
+				event.from_obj = this.option("obj");
+				event.from_name = this.option("name");
+				event.target_obj = target.prop("option", "obj");
+				event.target_name = target.prop("option", "name");
+				event.above_below = above_below;
+
+				var column = this.element.closest(".col"),
+					name = this.option("name"),
+					old_index = this.element.index();
+				this.element.trigger(event);
+				// Keep focus on this field once it has moved
+				ist.keyboard.focus_when(function() {
+					var row = column.data("interstate-column") ? column.column("get_prop_row", name) : $();
+					return row.length > 0 && row.index() !== old_index && $(".prop_label", row)[0];
+				});
+				ist.keyboard.announce("Moved " + name + (above_below === "above" ? " up" : " down"));
 			}
 		},
 		inherit: function(e) {

@@ -14,7 +14,8 @@
 			"</div>" +
 		"{{#else}}" +
 			"{{#if columns.length()>0}}" +
-				"<div class='resize_bar' data-cjs-on-mousedown=beginResize />" +
+				// (Drag it, click it to step through sizes, or use the arrow keys)
+				"<div class='resize_bar' data-cjs-on-mousedown=beginResize data-cjs-on-keydown=resizeKey tabindex='0' role='separator' aria-orientation='horizontal' aria-label='Height of pinned objects' aria-valuemin='0' aria-valuemax='100' aria-valuenow='50' />" +
 			"{{/if}}" +
 			"<div class='pinned_cols'>" +
 				"{{#each columns}}" +
@@ -104,9 +105,11 @@
 				}, this),
 				show_instructions: this.$show_instructions,
 				beginResize: _.bind(function(event) {
-					var origY = event.clientY;
+					var origY = event.clientY,
+						moved = false;
 
 					$(window).on("mousemove.resize_pinned", _.bind(function(e) {
+						moved = moved || Math.abs(e.clientY - origY) > 3;
 						var event = new $.Event("resize_pinned");
 						event.clientY = e.clientY;
 
@@ -114,9 +117,23 @@
 
 					}, this)).on("mouseup.resize_pinned", _.bind(function(e) {
 						$(window).off(".resize_pinned");
+						if(!moved) {
+							// Clicking (rather than dragging) steps through a few sizes
+							var pct = this._get_height_pct();
+							this._set_height_pct(pct < 0.35 ? 0.5 : (pct < 0.65 ? 0.75 : 0.25));
+						} else {
+							this._update_resize_bar();
+						}
 					}, this));
 					event.preventDefault();
 					event.stopPropagation();
+				}, this),
+				resizeKey: _.bind(function(event) {
+					var step = event.key === "ArrowUp" ? 0.05 : (event.key === "ArrowDown" ? -0.05 : 0);
+					if(step) {
+						this._set_height_pct(Math.min(0.85, Math.max(0.15, this._get_height_pct() + step)));
+						event.preventDefault();
+					}
 				}, this)
 			}, this.element);
 		},
@@ -124,15 +141,32 @@
 		_remove_content_bindings: function() {
 			cjs.destroyTemplate(this.element);
 		},
+		// How much of the editor's height (below the objects' columns) pinned objects take up
+		_get_height_pct: function() {
+			var pinned_height = this.element.outerHeight(),
+				nav_height = $("#obj_nav").outerHeight() || 0;
+			return pinned_height + nav_height > 0 ? pinned_height / (pinned_height + nav_height) : 0.5;
+		},
+		_set_height_pct: function(pct) {
+			var event = new $.Event("resize_pinned");
+			event.height_pct = pct;
+			this.element.trigger(event);
+			this._update_resize_bar();
+		},
+		_update_resize_bar: function() {
+			_.defer(_.bind(function() {
+				$("> .resize_bar", this.element).attr("aria-valuenow", String(Math.round(100 * this._get_height_pct())));
+			}, this));
+		},
 
 		_add_class_bindings: function() {
-			this.element.attr("id", "pinned");
+			this.element.attr({ id: "pinned", role: "region", "aria-label": "Pinned objects" });
 			this._height_binding = cjs.bindCSS(this.element, "height", this.option("height").add("px"));
 		},
 
 		_remove_class_bindings: function() {
 			this._height_binding.destroy();
-			this.element.attr("id", "");
+			this.element.attr("id", "").removeAttr("role aria-label");
 		},
 		_add_destroy_check: function() {
 			var old_cols = [],

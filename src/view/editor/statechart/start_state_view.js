@@ -92,7 +92,21 @@
 				fill: state.is_active() ? this.option("active_fill") : this.option("fill_color"),
 				stroke: "none"
 			});
-			$(this.circle[0]).on("contextmenu.cm");
+			$(this.circle[0]).on("contextmenu.cm", _.bind(this.on_context_menu, this));
+			// (Its menu changes where the statechart starts)
+			ist.keyboard.control(this.circle[0], {
+				label: function() {
+					var parent = state.parent();
+					return parent && parent.parent() ? "Start state of " + parent.get_name() : "Start state";
+				},
+				activate: _.bind(this.on_context_menu, this),
+				menu: _.bind(this.on_context_menu, this)
+			});
+			$(this.circle[0]).on("focus.show_focus", _.bind(function() {
+				this.circle.attr({ stroke: "#1a5fb4", "stroke-width": 3 });
+			}, this)).on("blur.show_focus", _.bind(function() {
+				this.circle.attr({ stroke: this.option("stroke"), "stroke-width": this.option("stroke_width") });
+			}, this));
 		};
 
 		proto.toFront = function() {
@@ -124,8 +138,10 @@
 		};
 
 		proto.on_context_menu = function(event) {
-			event.preventDefault();
-			event.stopPropagation();
+			if(event) {
+				event.preventDefault();
+				event.stopPropagation();
+			}
 			var parent = this.option("parent");
 			var outgoing_transition = this.option("state").get_outgoing_transition();
 			var view = parent.get_view(outgoing_transition);
@@ -148,7 +164,7 @@
 		};
 		proto.destroy = function() {
 			if(this.circle) {
-				$(this.circle[0]).off("contextmenu.cm");
+				$(this.circle[0]).off("contextmenu.cm .keyboard_control .show_focus");
 			}
 			able.destroy_this_optionable(this);
 			if(this.active_fn) {

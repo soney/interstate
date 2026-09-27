@@ -26,7 +26,7 @@
 	ist.RootStatechartLayoutEngine = function (options) {
 		able.make_this_optionable(this, {
 			theta_degrees: 45,
-			transition_height: 18,
+			transition_height: 24, // (and so transitions are 24px apart: big enough targets for their cells)
 			transition_margin: 1,
 			state_name_width: 90,
 			state_name_height: function() { return this.option("transition_height"); },
@@ -118,6 +118,13 @@
 			} else {
 				return full_layout_info.width;
 			}
+		};
+		// The state (or transition) that a client for one refers to
+		proto.get_state = function (state_wrapper) {
+			var id = state_wrapper && state_wrapper.cobj_id;
+			return id ? _.find(this.get_layout().locations.keys(), function (x) {
+				return (x.puppet_master_id || x.id()) === id;
+			}) : undefined;
 		};
 		proto.total_width = function () {
 			var full_layout_info = this.get_layout();

@@ -25,7 +25,16 @@
 			return node;
 		},
 		onAdd: function(node, init_val) {
-			_.defer(function() { $(node).val(init_val).select().focus(); });
+			_.defer(function() {
+				// (What's being edited, for screen readers)
+				var $node = $(node);
+				if(!node.hasAttribute("aria-label")) {
+					node.setAttribute("aria-label", $node.closest(".cell").length > 0 ? "Expression" :
+													$node.closest("td.name").length > 0 ? "Field name" :
+													$node.closest(".new_prog").length > 0 ? "Program name" : "Name");
+				}
+				$node.val(init_val).select().focus();
+			});
 			$(node).editing_text("onAdd");
 		},
 		onRemove: function(node) {
@@ -143,6 +152,9 @@
 		},
 		cancel: function() {
 			return this._cancel_edit();
+		},
+		confirm: function() {
+			return this._confirm_edit();
 		},
 
 		_confirm_edit: function() {

@@ -15,25 +15,26 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p>This is the <span style='color: #7493a2'>editor</span> window and the other window is the <span style='color: #c1a562'>runtime</span> window.</p>" +
-						"<div class='directive'>Position these windows so you can see both simultaneously. Place the <span style='color: #c1a562'>runtime</span> window in the top third of your screen and the <span style='color: #7493a2'>editor</span> window in the bottom two thirds.</div>",
+				text: "<p>This is the <span style='color: #9db8c6'>editor</span> window and the other window is the <span style='color: #c1a562'>runtime</span> window.</p>" +
+						"<div class='directive'>Position these windows so you can see both simultaneously. Place the <span style='color: #c1a562'>runtime</span> window in the top third of your screen and the <span style='color: #9db8c6'>editor</span> window in the bottom two thirds.</div>",
 				on_enter: function($, post) {
 					this.editor.hide();
-					$("html")	.css("background-color", "#7493a2")
-								.css("background-image", "none");
+					// (The body has its own background, so color it too)
+					$("html, body")	.css("background-color", "#7493a2")
+									.css("background-image", "none");
 					this.editor_text = $("<div />")	.text("editor")
 													.css({ "font-size": "3em",
 														"text-align": "center",
 														"font-family": '"HelveticaNeue-UltraLight", "Helvetica Neue Ultra Light", "Helvetica Neue", Helvetica',
 														"font-weight": "100",
 														"padding-top": "30px",
-														"color": "#f3f0e9"
+														"color": "#222"
 													})
 													.prependTo(document.body);
 				},
 				on_exit: function($, post) {
-					$("html")	.css("background-color", "")
-								.css("background-image", "");
+					$("html, body")	.css("background-color", "")
+									.css("background-image", "");
 					this.editor.show();
 					this.editor_text.remove();
 					delete this.editor_text;
@@ -49,7 +50,7 @@ var tutorial_pages = (function() {
 															"font-family": '"HelveticaNeue-UltraLight", "Helvetica Neue Ultra Light", "Helvetica Neue", Helvetica',
 															"font-weight": "100",
 															"padding-top": "30px",
-															"color": "#f3f0e9"
+															"color": "#222"
 														})
 														.prependTo(document.body);
 					$("svg").hide();
@@ -63,12 +64,12 @@ var tutorial_pages = (function() {
 			}
 		}, {
 			editor: {
-				text: "<p>Right now, you are looking at an <em>object</em> named <var>sketch</var> and its <em>properties</em> (highlighted in <span style='color:#d17702'>orange</span>).</p>" +
+				text: "<p>Right now, you are looking at an <em>object</em> named <var>sketch</var> and its <em>properties</em> (highlighted in <span style='color:#ffb347'>orange</span>).</p>" +
 						"<p>The value of every property is shown right next to its property name. If a property's value is an arrow (<code>&gt;</code>), that property is another object. If the value is '(native function)', as it is for <var>on</var>, <var>find</var>, and <var>emit</var>, then the property is built-in and can't be modified.</p>" +
 						"<p>You can refer to objects and their properties with the 'dot' syntax, as in: <code>sketch.screen</code></p>" +
 						"<div class='directive'>Click on the <var>screen</var> property to view the <var>screen</var> object.</div>",
 				on_enter: function($, post) {
-					$(".col td.name").css("color", "#d17702");
+					$(".col td.name").css("color", "#b35900");
 				},
 				on_exit: function($, post) {
 					$(".col td.name").css("color", "");

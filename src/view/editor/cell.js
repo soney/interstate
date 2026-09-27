@@ -33,6 +33,25 @@
 		"{{/fsm}}"
 	);
 
+	// What a cell's state (or transition) is called, for screen readers
+	var describe_state = function(state) {
+		if(state instanceof ist.StartState) {
+			return "the start state";
+		} else if(state instanceof ist.StatechartTransition) {
+			var event = state.event(),
+				str = event instanceof ist.ParsedEvent ? event.get_str() : "",
+				from = state.from(),
+				to = state.to();
+			return "the transition" + (str ? " on " + str : "") +
+					(from && to ? " from " + describe_state(from).replace(/^state /, "") +
+									" to " + describe_state(to).replace(/^state /, "") : "");
+		} else if(state && state.get_name) {
+			return state.parent() ? "state " + state.get_name() : "any state";
+		} else {
+			return "";
+		}
+	};
+
 	var eqProp = function(prop_name, values, thisArg) {
 		return function(x) {
 			var val = x[prop_name];
@@ -49,6 +68,7 @@
 			width: 0,
 			edit_width: 150,
 			unset_radius: 7,
+			unset_size: 24, // (the circle's clickable area; big enough to hit easily)
 			active: false,
 			parent: false,
 			state: false,
@@ -120,13 +140,59 @@
 			this._add_tooltip();
 			this._add_class_bindings();
 			this._add_position_bindings();
+
+			// Enter and Space edit the cell, like clicking it
+			ist.keyboard.control(this.element, {
+				label: _.bind(this._describe, this)
+			});
+			// (Keep its name up to date: a new value shows up a moment after it's entered)
+			this._label_fn = cjs.liven(function() {
+				var label = this._describe();
+				if(this.element.attr("role")) {
+					this.element.attr("aria-label", label);
+				}
+			}, {
+				context: this
+			});
+			// While its text field is open, the cell isn't a button (controls can't contain other
+			// controls). Afterwards, focus goes back to it.
+			var elem = this.element,
+				describe = _.bind(this._describe, this),
+				begin_editing = function() {
+					elem.removeAttr("role tabindex aria-label");
+				},
+				done_editing = function() {
+					elem.attr({ role: "button", tabindex: "0", "aria-label": describe() });
+					_.defer(function() {
+						var active = document.activeElement;
+						if(!active || active === document.body) {
+							elem.focus();
+						}
+					});
+				};
+			this.edit_state.on("idle->editing", begin_editing).on("editing->idle", done_editing);
+			this.client_state.on("unset->initialedit", begin_editing).on("initialedit->*", done_editing);
+		},
+		_describe: function() {
+			var row = this.element.closest("tr.child"),
+				prop = row.data("interstate-prop"),
+				name = prop ? prop.option("name") : (this.element.closest(".copies_spec").length > 0 ? "copies" : ""),
+				get_state_object = this.option("get_state_object"),
+				state = get_state_object ? describe_state(get_state_object()) : "",
+				str = this.$str.get(),
+				value = this.client_state.is("unset") ? "not set" : (str ? str : "empty"),
+				errors = this.$syntax_errors.get();
+			return (name ? name + (state ? " in " + state : "") + ": " : "") + value +
+					(this.$active.get() ? " (active)" : "") +
+					(errors && errors.length > 0 ? ", error: " + errors[0] : "");
 		},
 		_destroy: function() {
 			var client = this.option("client");
 
-			this.element.off("confirm_value.cell cancel_value.cell")
+			this.element.off("confirm_value.cell cancel_value.cell .keyboard_control")
 				.children().remove();
 
+			this._label_fn.destroy();
 			this._remove_position_bindings();
 			this._remove_class_bindings();
 			this._remove_tooltip();
@@ -211,7 +277,7 @@
 			this.$specified_width = cjs(this.option("width"));
 			this.$width = cjs.inFSM(this.edit_state, {
 				idle: cjs.inFSM(this.client_state, {
-					unset: this.option("unset_radius")*2,
+					unset: this.option("unset_size"),
 					set: this.$specified_width,
 					initialedit: this.option("edit_width")
 				}),
@@ -235,7 +301,7 @@
 				"visibility": this.$visible.iif("visible", "hidden"),
 				'max-width': cjs.inFSM(this.edit_state, {
 					idle: cjs.inFSM(this.client_state, {
-						unset: this.option("unset_radius")*2,
+						unset: this.option("unset_size") + 'px',
 						set: this.option("default_max_width") + 'px',
 						initialedit: 'none'
 					}),

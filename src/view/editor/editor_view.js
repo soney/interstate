@@ -8,57 +8,79 @@
 		_ = ist._;
 
 	var editor_template = cjs.createTemplate(
-		"<nav class='navbar navbar-default' role='navigation'>" +
+		"<nav class='navbar navbar-default' aria-label='Editor'>" +
 			"<div class='undoredo_group btn-group navbar-left'>" +
 				"{{#if undo_desc}}" +
-					"<div type='button' class='btn btn btn-default' data-cjs-on-click='undo'>" +
-						"<div class='tooltip'>{{undo_desc}}</div>" +
-						"<span class='glyphicon glyphicon-arrow-left'></span> " +
+					"<button type='button' class='btn btn-default' data-cjs-on-click='undo' aria-label='{{undo_label}}'>" +
+						"<span class='tooltip' aria-hidden='true'>{{undo_desc}}</span>" +
+						"<span class='glyphicon glyphicon-arrow-left' aria-hidden='true'></span> " +
 						"Undo" +
-					"</div>" +
+					"</button>" +
 				"{{#else}}" +
-					"<div disabled type='button' class='btn btn btn-default'>" +
-						"<span class='glyphicon glyphicon-arrow-left'></span> " +
+					"<button type='button' disabled class='btn btn-default'>" +
+						"<span class='glyphicon glyphicon-arrow-left' aria-hidden='true'></span> " +
 						"Undo" +
-					"</div>" +
+					"</button>" +
 				"{{/if}}" +
 
 				"{{#if redo_desc}}" +
-					"<div type='button' class='btn btn btn-default' data-cjs-on-click='redo'>" +
-						"<div class='tooltip'>{{redo_desc}}</div>" +
+					"<button type='button' class='btn btn-default' data-cjs-on-click='redo' aria-label='{{redo_label}}'>" +
+						"<span class='tooltip' aria-hidden='true'>{{redo_desc}}</span>" +
 						"Redo" +
-						" <span class='glyphicon glyphicon-arrow-right'></span>" +
-					"</div>" +
+						" <span class='glyphicon glyphicon-arrow-right' aria-hidden='true'></span>" +
+					"</button>" +
 				"{{#else}}" +
-					"<div disabled type='button' class='btn btn btn-default'>" +
+					"<button type='button' disabled class='btn btn-default'>" +
 						"Redo" +
-						" <span class='glyphicon glyphicon-arrow-right'></span>" +
-					"</div>" +
+						" <span class='glyphicon glyphicon-arrow-right' aria-hidden='true'></span>" +
+					"</button>" +
 				"{{/if}}" +
 			"</div>" + // btn group
-			"<table id='cell_group' class='input-group navbar-left'>" +
+			"<table id='cell_group' class='input-group navbar-left' role='presentation'>" +
 				"<tr>" +
 					"<td>" +
 						"<pre id='ace_ajax_editor'></pre>" +
 					"</td>" +
 					"<td id='confirm'>" +
-						"<span title='Confirm cell' id='confirm_button' class='glyphicon glyphicon-ok-circle'></span>" +
+						// (Enter and Escape confirm and cancel from the keyboard)
+						"<button type='button' tabindex='-1' title='Confirm cell' aria-label='Confirm cell' id='confirm_button' class='glyphicon glyphicon-ok-circle'></button>" +
 					"</td>" +
 					"<td id='cancel'>" +
-						"<span title='Cancel' id='cancel_button' class='glyphicon glyphicon-remove-circle'></span>" +
+						"<button type='button' tabindex='-1' title='Cancel' aria-label='Cancel' id='cancel_button' class='glyphicon glyphicon-remove-circle'></button>" +
 					"</td>" +
 				"</tr>" +
 				"<tr>" +
-					"<td class='resize_bar' data-cjs-on-mousedown='beginResizeAce'></td>" +
+					"<td class='resize_bar' data-cjs-on-mousedown='beginResizeAce' data-cjs-on-keydown='resizeAceKey' tabindex='0' role='separator' aria-orientation='horizontal' aria-label='Expression editor height' aria-valuemin='30' aria-valuemax='600' aria-valuenow='30'></td>" +
 				"</tr>" +
 			"</table>" +
 			"<div class='widget_group navbar-right pull-right'>" +
-				"<div type='button' class='btn btn btn-default {{show_components ? \"active\" : \"\"}}' data-cjs-on-click='toggle_show_widgets'>" +
+				"<button type='button' class='btn btn-default {{show_shortcuts ? \"active\" : \"\"}}' aria-expanded='{{show_shortcuts ? \"true\" : \"false\"}}' aria-controls='keyboard_shortcuts' data-cjs-on-click='toggle_shortcuts'>" +
+					"Keyboard" +
+				"</button>" +
+				"<button type='button' class='btn btn-default {{show_components ? \"active\" : \"\"}}' aria-expanded='{{show_components ? \"true\" : \"false\"}}' data-cjs-on-click='toggle_show_widgets'>" +
 					"Files" +
-					" <span class='glyphicon {{show_components ? \"glyphicon-chevron-up\" : \"glyphicon-chevron-down\"}}'></span>" +
-				"</div>" +
+					" <span class='glyphicon {{show_components ? \"glyphicon-chevron-up\" : \"glyphicon-chevron-down\"}}' aria-hidden='true'></span>" +
+				"</button>" +
 			"</div>" +
 		"</nav>" +
+		"<div id='keyboard_shortcuts' class='keyboard_shortcuts {{show_shortcuts ? \"\" : \"hidden\"}}' role='region' aria-label='Keyboard shortcuts'>" +
+			"<dl>" +
+				"<dt><kbd>Tab</kbd>, <kbd>Shift</kbd>+<kbd>Tab</kbd></dt>" +
+				"<dd>Move between objects, fields, cells, states, and transitions</dd>" +
+				"<dt><kbd>Enter</kbd> or <kbd>Space</kbd></dt>" +
+				"<dd>Open an object, edit a cell, rename a state, or change a transition's event. " +
+					"On an inherited field, give this object its own copy.</dd>" +
+				"<dt><kbd>Shift</kbd>+<kbd>F10</kbd> or the menu key</dt>" +
+				"<dd>Show the menu for an object, field, state, transition, program, or component " +
+					"(with Move up, Move down, Pin, Save as component, and Add transition, which dragging also does)</dd>" +
+				"<dt>Arrow keys</dt>" +
+				"<dd>Move through a menu, or resize the expression editor or the pinned objects</dd>" +
+				"<dt><kbd>Enter</kbd>, <kbd>Shift</kbd>+<kbd>Enter</kbd>, <kbd>Escape</kbd></dt>" +
+				"<dd>While editing: confirm, start a new line, or cancel. <kbd>Escape</kbd> also closes a menu.</dd>" +
+				"<dt><kbd>Ctrl</kbd>+<kbd>Z</kbd>, <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></dt>" +
+				"<dd>Undo and redo (<kbd>&#8984;</kbd> instead of <kbd>Ctrl</kbd> on a Mac)</dd>" +
+			"</dl>" +
+		"</div>" +
 
 
 		"{{#fsm loading_state}}" +
@@ -99,6 +121,7 @@
 			}, this));
 
 			this.$show_components = cjs(false);
+			this.$show_shortcuts = cjs(false);
 			this.$info_servers = cjs(false);
 			this.$undo_client = this.$info_servers.prop("undo_description");
 			this.$redo_client = this.$info_servers.prop("redo_description");
@@ -217,6 +240,20 @@
 					event.preventDefault();
 				}
 			}, this));
+			// Escape closes the keyboard shortcuts and the files panels (which can cover what has focus),
+			// unless something else (like a menu or a text field) used it
+			$(window).on("keydown.editor_panels", _.bind(function (event) {
+				if ((event.key === "Escape" || event.key === "Esc") && !event.isDefaultPrevented()) {
+					var panel = this.$show_shortcuts.get() ? this.$show_shortcuts : (this.$show_components.get() ? this.$show_components : false);
+					if (panel) {
+						var focus_was_inside = $(document.activeElement).closest(".keyboard_shortcuts, .component_list").length > 0;
+						panel.set(false);
+						if (focus_was_inside) {
+							$(".widget_group > button", this.element).eq(panel === this.$show_shortcuts ? 0 : 1).focus();
+						}
+					}
+				}
+			}, this));
 			this.element.on("dragstart.pin", _.bind(function(event) {
 				var targ = $(event.target);
 				// Columns are dragged natively (property rows and components do their own dragging)
@@ -252,6 +289,10 @@
 				}, this));
 			}, this))
 			.on("resize_pinned", _.bind(function(event) {
+				if(event.height_pct) {
+					this.$pinned_height_pct.set(event.height_pct);
+					return;
+				}
 				var obj_nav_y = $("#obj_nav", this.element).position().top,
 					obj_nav_height = Math.max(200, event.clientY - obj_nav_y),
 					pinned_height = Math.max(200, window.innerHeight - obj_nav_height - obj_nav_y);
@@ -271,6 +312,7 @@
 			this._removeEventListeners();
 			this._removeClassBindings();
 			this.$show_components.destroy();
+			this.$show_shortcuts.destroy();
 			this.on_unload();
 
 			this._super();
@@ -312,6 +354,10 @@
 				toggle_show_widgets: _.bind(function() {
 					this.$show_components.set(!this.$show_components.get());
 				}, this),
+				show_shortcuts: this.$show_shortcuts,
+				toggle_shortcuts: _.bind(function() {
+					this.$show_shortcuts.set(!this.$show_shortcuts.get());
+				}, this),
 				getWidgetListOptions: _.bind(function() {
 					return {
 						info_servers: this.$info_servers,
@@ -319,23 +365,52 @@
 					};
 				}, this),
 				undo_desc: this.$undo_desc,
+				// ("Undo" plus what it undoes, if the command says; commands that don't are described as "Undo")
+				undo_label: this.$undo_desc.iif(cjs(function() {
+					var desc = this.$undo_desc.get();
+					return desc === "Undo" ? "Undo" : "Undo " + desc;
+				}, { context: this }), "Undo"),
+				redo_label: this.$redo_desc.iif(cjs(function() {
+					var desc = this.$redo_desc.get();
+					return desc === "Redo" ? "Redo" : "Redo " + desc;
+				}, { context: this }), "Redo"),
 				redo_desc: this.$redo_desc,
 				dirty_program: this.$dirty_program,
 				beginResizeAce: _.bind(function(event) {
 					if(!$("table#cell_group", this.element).hasClass("disabled")) {
 						var origY = event.clientY,
 							height_diff = 0,
-							origHeight = ace_editor.height();
+							origHeight = ace_editor.height(),
+							resize_bar = event.currentTarget,
+							moved = false;
 						$(window).on("mousemove.resize_editor", _.bind(function(e) {
 							height_diff = e.clientY - origY;
+							moved = moved || Math.abs(height_diff) > 3;
 							var height = origHeight + height_diff;
 							ace_editor.height(height);
 							this.editor.resize();
 						}, this)).on("mouseup.resize_editor", _.bind(function(e) {
 							$(window).off(".resize_editor");
+							if(!moved) {
+								// Clicking (rather than dragging) switches between a short and a tall editor
+								ace_editor.height(origHeight < 100 ? 150 : 30);
+								this.editor.resize();
+							}
+							resize_bar.setAttribute("aria-valuenow", String(Math.round(ace_editor.height())));
 						}, this));
 						event.preventDefault();
 						event.stopPropagation();
+					}
+				}, this),
+				resizeAceKey: _.bind(function(event) {
+					// Arrow keys resize the expression editor, like dragging its bottom edge
+					var step = event.key === "ArrowDown" ? 20 : event.key === "ArrowUp" ? -20 : 0;
+					if(step && !$("table#cell_group", this.element).hasClass("disabled")) {
+						var height = Math.min(600, Math.max(30, ace_editor.height() + step));
+						ace_editor.height(height);
+						this.editor.resize();
+						event.currentTarget.setAttribute("aria-valuenow", String(Math.round(height)));
+						event.preventDefault();
 					}
 				}, this),
 				dragging_client: this.$dragging_client
@@ -343,12 +418,26 @@
 			var ace_editor = $("nav #ace_ajax_editor", this.element);
 			ace_editor.css("width", "100%");
 			this.editor = ace.edit(ace_editor[0]);
+			this.editor.textInput.getElement().setAttribute("aria-label", "Expression editor");
+			// Like the cell's own text field: Escape cancels (so the keyboard can always leave the editor)
+			// and Ctrl+Enter (or Command+Enter) confirms
+			this.editor.commands.addCommand({
+				name: "confirmCell",
+				bindKey: { win: "Ctrl-Enter", mac: "Command-Enter" },
+				exec: function() { $("#confirm_button").trigger("mousedown"); }
+			});
+			this.editor.commands.addCommand({
+				name: "cancelCell",
+				bindKey: { win: "Esc", mac: "Esc" },
+				exec: function() { $("#cancel_button").trigger("mousedown"); }
+			});
 			this.editor.setHighlightActiveLine(false);
 			this.editor.setShowPrintMargin(false);
 			this.editor.renderer.setShowGutter(false);
 			this.editor.getSession().setMode("ace/mode/javascript");
 
-			this._cellwidth_binding = cjs.bindCSS(ace_editor, "width", this.$window_inner_width.sub((this.$window_inner_width.le(767).iif(300, 300))).add("px"));
+			// (Leaving room for the buttons on either side of it, and its own OK and Cancel buttons)
+			this._cellwidth_binding = cjs.bindCSS(ace_editor, "width", this.$window_inner_width.sub(390).add("px"));
 			this.$window_inner_width.onChange(function() {
 				this.editor.resize();
 			}, this);
@@ -497,6 +586,7 @@
 		},
 
 		_removeEventListeners: function() {
+			$(window).off(".editor_panels");
 			this.element.off(".editor");
 		},
 

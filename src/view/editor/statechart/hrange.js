@@ -57,6 +57,19 @@
 
 			this.show_menu();
 		}, this));
+		// (The bar over this object's own states, or the states it inherits; its menu adds states)
+		ist.keyboard.control(this.text_foreground[0], {
+			label: _.bind(function() {
+				return this.option("text") === "own" ? "Own states" : "Inherited states";
+			}, this),
+			activate: _.bind(this.show_menu, this),
+			menu: _.bind(this.show_menu, this)
+		});
+		$(this.text_foreground[0]).on("focus.show_focus", _.bind(function() {
+			this.text_background.attr({ stroke: "#1a5fb4", "stroke-width": 2 });
+		}, this)).on("blur.show_focus", _.bind(function() {
+			this.text_background.attr({ stroke: "none" });
+		}, this));
 	};
 
 	(function (My) {
@@ -65,7 +78,7 @@
 		able.make_proto_listenable(proto);
 
 		proto.destroy = function() {
-			$(this.hline[0]).add(this.text_foreground[0]).off("contextmenu.showmenu");
+			$(this.hline[0]).add(this.text_foreground[0]).off("contextmenu.showmenu .keyboard_control .show_focus");
 			this.remove_edit_dropdown();
 			able.destroy_this_optionable(this);
 			able.destroy_this_listenable(this);
@@ -103,6 +116,7 @@
 			this.update();
 		};
 		proto.show_menu = function() {
+			this.remove_edit_dropdown();
 			var my_state = this.option("state");
 			this.add_substate_item = $("<div />")	.addClass("menu_item")
 													.text("Add substate")
@@ -116,7 +130,7 @@
 			var is_concurrent = this.option("state").is_concurrent();
 			var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
 			this.toggle_concurrency_item = $("<div />")	.addClass("menu_item")
-														.html("Concurrent " + checkbox_mark)
+														.html("Concurrent <span aria-hidden='true'>" + checkbox_mark + "</span>")
 														.on("click", _.bind(function() {
 															this.remove_edit_dropdown();
 															this._emit("make_concurrent", {
@@ -151,6 +165,12 @@
 												.appendTo(parentElement);
 			$(window).on("mousedown.collapse", _.bind(this.on_window_click_while_expanded, this));
 			$(window).on("keydown.collapse", _.bind(this.on_window_keydown_while_expanded, this));
+			this.toggle_concurrency_item.attr({ role: "menuitemcheckbox", "aria-checked": String(is_concurrent) });
+			ist.keyboard.menu(this.edit_dropdown, {
+				items: "> .menu_item",
+				close: _.bind(this.remove_edit_dropdown, this),
+				return_focus: this.text_foreground[0]
+			});
 		};
 		proto.on_window_click_while_expanded = function(event) {
 			if(!$(event.target).parents().is(this.edit_dropdown)) {

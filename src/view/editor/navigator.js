@@ -91,12 +91,13 @@
 		},
 
 		_add_class_bindings: function() {
-			this.element.attr("id", "obj_nav");
+			// (The main landmark, for screen readers)
+			this.element.attr({ id: "obj_nav", role: "main", "aria-label": "Objects" });
 			this._height_binding = cjs.bindCSS(this.element, "height", this.option("height").add("px"));
 		},
 
 		_remove_class_bindings: function() {
-			this.element.attr("id", "");
+			this.element.attr("id", "").removeAttr("role aria-label");
 			this._height_binding.destroy();
 		},
 		_add_destroy_check: function() {

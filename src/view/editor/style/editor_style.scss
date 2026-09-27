@@ -2,10 +2,10 @@ $nav_header_color: #F7F7F7;
 $nav_header_hover_color: #EEE;
 $nav_header_active_color: #E0E0E0;
 
-$nav_header_text_color: #888;
+$nav_header_text_color: #707070;
 $nav_header_active_text_color: #222;
 
-$nav_selected_color: rgb(82, 116, 212);
+$nav_selected_color: rgb(66, 97, 191);
 
 $nav_column_text_color: #666;
 $nav_column_active_text_color: #222;
@@ -16,7 +16,10 @@ $unset_prop_val_radius: 7px;
 $drag_handle_width: 15px;
 $dropdown_padding: 5px;
 
-$link_color: royalblue;
+$link_color: #2f55c8;
+$focus_color: #1a5fb4;
+// (Text that's lighter than the rest, but still readable)
+$muted_text_color: #595959;
 
 @mixin non-selectable {
 	-webkit-user-select: none;
@@ -39,9 +42,31 @@ $link_color: royalblue;
 	@include non-selectable;
 	cursor: pointer;
 
-	&:hover {
+	&:hover, &:focus {
 		text-decoration: underline;
 	}
+}
+
+// A <button> that looks like whatever it's in
+@mixin plain-button {
+	background: none;
+	border: none;
+	padding: 0px;
+	margin: 0px;
+	font: inherit;
+	color: inherit;
+	text-align: inherit;
+	cursor: pointer;
+}
+
+// Where the keyboard is
+:focus-visible {
+	outline: 2px solid $focus_color;
+	outline-offset: 1px;
+}
+// (SVG shapes draw their own focus rings)
+svg :focus-visible {
+	outline: none;
 }
 
 html {
@@ -113,10 +138,10 @@ html.full_window_editor {
 		.widget_group {
 			border-left: 1px solid #DDD;
 		}
-		div.btn {
+		.btn {
 			border: none;
 			border-radius: 0px;
-			&:hover {
+			&:hover, &:focus {
 				> .tooltip {
 					display: block;
 					opacity: 1;
@@ -152,6 +177,13 @@ html.full_window_editor {
 			td#confirm,td#cancel {
 				padding:3px;
 			}
+			#confirm_button, #cancel_button {
+				background: none;
+				border: none;
+				padding: 0px;
+				width: 24px;
+				height: 24px;
+			}
 			#confirm_button {
 				color: #090;
 				font-size: 1.0em;
@@ -174,10 +206,47 @@ html.full_window_editor {
 			.resize_bar {
 				padding-left: 10px;
 				height: 4px;
-				background-color: #AAA;
+				background-color: #888;
 				cursor: ns-resize;
+				&:focus-visible {
+					outline-offset: 0px;
+					background-color: $focus_color;
+				}
 			}
 		}
+	}
+}
+
+.keyboard_shortcuts {
+	position: absolute;
+	right: 0px;
+	z-index: 700;
+	max-width: 460px;
+	padding: 10px 15px;
+	font-family: "Source Sans Pro";
+	color: #222;
+	background-color: white;
+	border: 1px solid #BBB;
+	border-top: none;
+	box-shadow: 2px 2px 10px #666;
+	dl {
+		margin: 0px;
+	}
+	dt {
+		margin-top: 8px;
+		&:first-child {
+			margin-top: 0px;
+		}
+	}
+	dd {
+		margin-left: 10px;
+	}
+	kbd {
+		color: #222;
+		background-color: #F2F2F2;
+		border: 1px solid #BBB;
+		box-shadow: none;
+		font-size: 0.85em;
 	}
 }
 
@@ -185,7 +254,11 @@ html.full_window_editor {
 	>.resize_bar {
 		height: 5px;
 		cursor: ns-resize;
-		background-color: #CCC;
+		background-color: #888;
+		&:focus-visible {
+			outline-offset: 0px;
+			background-color: $focus_color;
+		}
 	}
 	overflow: auto;
 	clear: both;
@@ -212,7 +285,7 @@ html.full_window_editor {
 		padding-top: 15px;
 		color: white;
 		text-shadow: 0px 0px 40px #333;
-		background-color: rgba(50, 50, 50, 0.3);
+		background-color: rgba(50, 50, 50, 0.6);
 		height: 100%;
 		vertical-align: middle;
 		box-sizing: border-box;
@@ -235,7 +308,7 @@ html.full_window_editor {
 			font-size: 0.9em;
 			font-family: "Source Sans Pro";
 			padding: 3px;
-			color: #777;
+			color: $muted_text_color;
 			text-align: center;
 			.copies_label {
 				position: relative;
@@ -252,7 +325,7 @@ html.full_window_editor {
 				background-color: #EEE;
 				padding: 2px;
 				.empty {
-					color: #BBB;
+					color: $muted_text_color;
 				}
 
 				textarea {
@@ -310,6 +383,9 @@ html.full_window_editor {
 						}
 						.cobj_link {
 							@include link;
+							display: inline-block;
+							min-width: 24px;
+							line-height: 24px;
 						}
 					}
 				}
@@ -321,10 +397,14 @@ html.full_window_editor {
 				&.primary {
 					max-width: $value_summary_width;
 				}
+				// (Just a sliver that shows there are more copies: its text was too small and faint to read)
 				&.prev, &.next {
 					max-width: 5px;
 					text-align: center;
-					opacity: .4;
+					background-color: #E4E4E4;
+					> * {
+						visibility: hidden;
+					}
 				}
 				overflow: hidden;
 				text-align: right;
@@ -356,7 +436,7 @@ html.full_window_editor {
 					font-weight: 100;
 					cursor: pointer;
 					padding: 5px;
-					color: #999;
+					color: $muted_text_color;
 				}
 			}
 
@@ -375,6 +455,10 @@ html.full_window_editor {
 					cursor: pointer;
 					text-align: center;
 					position: relative;
+					>.prev_btn, >.close_btn {
+						@include plain-button;
+						padding: 2px;
+					}
 					>.prev_btn {
 						position: absolute;
 						left: 5px;
@@ -397,6 +481,10 @@ html.full_window_editor {
 						padding-bottom: 2px;
 						padding-left: 10px;
 						padding-right: 10px;
+						> .obj_name_label {
+							@include plain-button;
+							text-align: center;
+						}
 					}
 					> a.prev {
 						top: 4px;
@@ -465,6 +553,11 @@ html.full_window_editor {
 					border: 1px solid #DDD;
 					padding: 2px;
 				}
+				> .prev_copy, > .next_copy {
+					> button {
+						@include plain-button;
+					}
+				}
 			}
 
 			
@@ -472,13 +565,15 @@ html.full_window_editor {
 				> td.add_prop {
 					background-color: $nav_header_color;
 					> .add_prop {
+						@include plain-button;
+						width: 100%;
 						font-size: 0.9em;
 						padding: 4px;
 						text-align: center;
 						background-color: white;
 						@include link;
-						color: #999;
-						&:hover {
+						color: $muted_text_color;
+						&:hover, &:focus {
 							color: $link_color;
 						}
 					}
@@ -489,7 +584,7 @@ html.full_window_editor {
 				@include non-selectable;
 
 				&.builtin {
-					color: #777;
+					color: $muted_text_color;
 					text-shadow: 0px 1px 1px #FFF;
 					background-color: #EEE;
 					border-bottom: 1px solid #DDD;
@@ -499,6 +594,11 @@ html.full_window_editor {
 
 				font-family: "Inconsolata";
 				font-size: 1em;
+
+				// (Tall enough that names and cells are big enough to click easily)
+				> td {
+					height: 24px;
+				}
 
 				&:nth-child(even) {
 					background-color: #FFF;
@@ -533,7 +633,9 @@ html.full_window_editor {
 					padding-left: 5px;
 					padding-right: 5px;
 					border-left: 1px solid #DDD;
-					a {
+					> button {
+						@include plain-button;
+						@include link;
 						display: block;
 					}
 				}
@@ -573,6 +675,12 @@ html.full_window_editor {
 					padding-right: 5px;
 					border-right: 1px solid #DDD;
 
+					> .prop_label {
+						display: block;
+						min-width: 24px;
+						line-height: 24px;
+					}
+
 					> .drag_handle {
 						cursor: -moz-grab;
 						cursor: -webkit-grab;
@@ -593,7 +701,7 @@ html.full_window_editor {
 						font-size: inherit;
 						font-family: inherit;
 						color: inherit;
-						height: 18px;
+						height: 24px;
 						width: 120px;
 					}
 					input {
@@ -633,17 +741,17 @@ html.full_window_editor {
 					text-align: right;
 					border-right: 1px solid #DDD;
 					
-					color: #888;
+					color: $muted_text_color;
 
 					cursor: pointer;
 
 					>.copies {
-						color: #BBB;
+						color: $muted_text_color;
 						padding-right: 3px;
 					}
 
 					>.expand_arrow {
-						color: #CCC;
+						color: #767676;
 					}
 					
 					&.constant {
@@ -653,22 +761,23 @@ html.full_window_editor {
 
 
 				&.selected {
-					background-color: rgb(82, 116, 212);
+					background-color: $nav_selected_color;
 					color: white;
 					.drag_handle {
 						color: rgb(190, 190, 190);
 					}
 					> .value_summary {
 						border-left: 1px dashed #99B;
-						> .dict {
+						&, > .copies, > .expand_arrow, > .dict {
 							color: white;
 						}
 					}
 				}
 
+				// (Was faded with opacity, which made its text too faint to read)
 				&.inherited {
 					cursor: default;
-					opacity: 0.5;
+					color: $muted_text_color;
 					background-image: url('images/stripe.png');
 				}
 
@@ -693,14 +802,17 @@ html.full_window_editor {
 							overflow: hidden;
 							word-break: break-all;
 							white-space: nowrap;
-							color: #999;
+							color: $muted_text_color;
+							height: 24px;
+							line-height: 24px;
+							top: 0px;
 
 							>.empty {
-								color: #BBB;
+								color: $muted_text_color;
 							}
 
 							&.active {
-								color: green;
+								color: #006400;
 								border-left: 2px solid green;
 								border-right: 2px solid green;
 							}
@@ -722,7 +834,7 @@ html.full_window_editor {
 								font-size: inherit;
 								padding: 2px;
 								margin: 0px;
-								height: 18px;
+								height: 24px;
 								text-align: left;
 								background-color: #EEE;
 								border: 1px solid #CCC;
@@ -740,7 +852,8 @@ html.full_window_editor {
 						white-space: nowrap;
 						overflow: hidden;
 						min-width: 30px;
-						min-height: 17px;
+						min-height: 24px;
+						line-height: 24px;
 						> textarea {
 							background: none;
 							border: none;
@@ -758,7 +871,7 @@ html.full_window_editor {
 							font-size: inherit;
 							padding: 2px;
 							margin: 0px;
-							height: 20px;
+							height: 24px;
 							min-width:50px;
 							text-align: left;
 							background-color: #EEE;
@@ -766,22 +879,33 @@ html.full_window_editor {
 							box-shadow: 0px 0px 5px #777;
 						}
 						> .empty {
-							color: #BBB;
+							color: $muted_text_color;
 						}
 					}
 
-					> .unset {
-						width: $unset_prop_val_radius * 2;
-						height: $unset_prop_val_radius * 2;
-						border-radius: $unset_prop_val_radius;
-						border: 1px solid #CCC;
-						box-sizing: border-box;
-						-moz-box-sizing: border-box;
-						background-color: #EEE;
+					// (A 24px target, big enough to click easily, with the circle in its middle)
+					> .cell.unset, &.stateful_prop > .cell.unset {
+						width: 24px;
+						height: 24px;
+						border: none;
+						background: none;
 						display: inline-block;
-						top: 1px;
+						top: 0px;
 						cursor: pointer;
-						&:hover {
+						&::before {
+							content: "";
+							position: absolute;
+							left: 12px - $unset_prop_val_radius;
+							top: 12px - $unset_prop_val_radius;
+							width: $unset_prop_val_radius * 2;
+							height: $unset_prop_val_radius * 2;
+							border-radius: $unset_prop_val_radius;
+							border: 1px solid #888;
+							box-sizing: border-box;
+							-moz-box-sizing: border-box;
+							background-color: #EEE;
+						}
+						&:hover::before {
 							background-color: #DEDEDE;
 						}
 					}
@@ -900,10 +1024,16 @@ html.full_window_editor {
 			cursor: pointer;
 			padding-left: 2px;
 			text-align: left;
+			min-height: 24px;
+			line-height: 24px;
 			background-color: #EEE;
 			border-bottom: 1px solid #C9C9C9;
-			&:hover {
+			&:hover, &:focus {
 				background-color: #DDD;
+			}
+			&:focus {
+				outline: 2px solid $focus_color;
+				outline-offset: -2px;
 			}
 			&:last-child {
 				border-bottom: none;
@@ -982,7 +1112,7 @@ html.full_window_editor {
 		}
 
 		background-color: #DEDEDE;
-		color: #777;
+		color: #505050;
 		border-bottom: 1px solid #CCC;
 		text-align: center;
 		text-shadow: 1px 1px 1px #DDD;
@@ -1003,7 +1133,7 @@ html.full_window_editor {
 	}
 	.toolbar {
 		background-color: #EEE;
-		color: #777;
+		color: $muted_text_color;
 		text-shadow: 1px 1px 1px #DDD;
 		font-family: "Source Sans Pro";
 		font-weight: 200;
@@ -1015,7 +1145,7 @@ html.full_window_editor {
 	}
 	.none {
 		padding: 10px;
-		color: #BBB;
+		color: $muted_text_color;
 		font-family: "Source Sans Pro";
 		font-weight: 200;
 		text-align: center;
@@ -1035,6 +1165,9 @@ html.full_window_editor {
 				text-decoration: none;
 			}
 		}
+		.entry_name:focus-visible {
+			outline-offset: -2px;
+		}
 
 		&.selected {
 			background-color: $nav_selected_color;
@@ -1045,7 +1178,7 @@ html.full_window_editor {
 			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 			font-weight: 200;
 			font-size: 0.9em;
-			opacity: 0.5;
+			color: $muted_text_color;
 			float: right;
 			padding-left: 5px;
 			position: relative;
@@ -1063,8 +1196,13 @@ html.full_window_editor {
 	button.btn-block {
 		margin-top: 0px;
 	}
-	#import_btn {
+	.import_btn {
 		cursor: pointer;
+		// (Its file input is invisible, so show that it has focus)
+		&:focus-within {
+			outline: 2px solid $focus_color;
+			outline-offset: 1px;
+		}
 		input {
 			cursor: pointer;
 			//;color: transparent;
@@ -1141,14 +1279,20 @@ html.full_window_editor {
 		padding: 1px;
 		padding-left: 10px;
 		padding-right: 10px;
+		min-height: 24px;
+		line-height: 22px;
 		cursor: pointer;
 		&:first-child {
 			border-top: none;
 		}
 		border-top: 1px solid #CCC;
-		&:hover {
+		&:hover, &:focus {
 			text-decoration: underline;
 			color: $link_color;
+		}
+		&:focus {
+			outline: none;
+			background-color: #E8EEFB;
 		}
 	}
 }

@@ -51,6 +51,7 @@
 			"fill-opacity": 0.7,
 			textbox_background: "white",
 			textbox_color: "black",
+			edit_label: "",
 			edit_on_click: true
 		}, options);
 
@@ -75,8 +76,18 @@
 			"fill-opacity": this.option("fill-opacity"),
 			stroke: "none"
 		});
+		// (Chrome lets the keyboard focus SVG elements that listen for focus, as tooltips do; only
+		// labels that are made into controls should be)
+		this.text[0].setAttribute("tabindex", "-1");
 		this.$text = $(this.text[0]).tooltip();
-		this.$text.on("click.onclick", _.bind(this.onClick, this));
+		this.$text.on("click.onclick", _.bind(this.onClick, this))
+					// (SVG elements don't all draw an outline when they have focus, so draw one)
+					.on("focus.show_focus", _.bind(function() {
+						this.label_background.attr({ stroke: "#1a5fb4", "stroke-width": 2 });
+					}, this))
+					.on("blur.show_focus", _.bind(function() {
+						this.label_background.attr({ stroke: "none" });
+					}, this));
 
 		this.paper = paper;
 	};
@@ -86,7 +97,7 @@
 		able.make_proto_optionable(proto);
 
 		proto.destroy = function() {
-			this.$text.off("click.onclick");
+			this.$text.off("click.onclick .show_focus .keyboard_control");
 			this.$text.tooltip("destroy")
 						.remove();
 			delete this.$text;
@@ -127,6 +138,9 @@
 		proto.edit = function () {
 			this.textbox = window.document.createElement("input");
 			this.textbox.type = "text";
+			if (this.option("edit_label")) {
+				this.textbox.setAttribute("aria-label", this.option("edit_label"));
+			}
 			this.textbox.style.zIndex = 2;
 			var bbox = this.getBBox();
 			var width = Math.max(bbox.width, this.option("width"));
@@ -173,11 +187,12 @@
 		proto.onKeydown = function (event) {
 			//var textbox = event.srcElement;
 			if (event.keyCode === 27) { //esc
+				event.stopPropagation();
 				this.onCancel();
-				this.showText();
+				this.showText(true);
 			} else if (event.keyCode === 13) { // enter
 				this.onTextChange(this.textbox.value);
-				this.showText();
+				this.showText(true);
 			}
 		};
 		proto.onCancel = function() {
@@ -202,12 +217,15 @@
 			this.onTextChange(this.textbox.value);
 			this.showText();
 		};
-		proto.showText = function () {
+		proto.showText = function (refocus) {
 			this.text.show();
 			$(this.textbox)	.off("keydown.onkeydown")
 							.off("blur.onblur")
 							.remove();
 			delete this.textbox;
+			if (refocus && this.text && this.text[0].hasAttribute("tabindex")) {
+				this.text[0].focus();
+			}
 		};
 		proto._on_options_set = function (values, animated) {
 			if(_.isNumber(animated)) {

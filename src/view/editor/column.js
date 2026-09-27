@@ -21,16 +21,19 @@
 			"<tr class='header'>" +
 				"<th colspan={{num_curr_values+1}} class='obj_name'>" +
 					"{{#if pinned && !is_root}}" +
-						"<span title='Previous' data-cjs-on-click='prev_col' class='prev_btn glyphicon glyphicon-chevron-left'/>" +
+						"<button type='button' title='Previous' aria-label='Previous object' data-cjs-on-click='prev_col' class='prev_btn glyphicon glyphicon-chevron-left'></button>" +
 					"{{/if}}" +
 					"<h2 data-cjs-on-mouseover='headerMOver' data-cjs-on-mouseout='headerMOut' data-cjs-on-click='headerClicked'>" +
-						"{{ci}}{{name}}" +
-						"{{#if is_template}}" +
-							"[{{curr_copy_index}}]" +
-						"{{/if}}" +
+						// (a button, so that the keyboard can come back to this object)
+						"<button type='button' class='obj_name_label' data-cjs-on-focus='headerMOver' data-cjs-on-blur='headerMOut'>" +
+							"{{ci}}{{name}}" +
+							"{{#if is_template}}" +
+								"[{{curr_copy_index}}]" +
+							"{{/if}}" +
+						"</button>" +
 					"</h2>" +
 					"{{#if pinned}}" +
-						"<span title='Close' data-cjs-on-click='close_col' class='close_btn glyphicon glyphicon-remove'/>" +
+						"<button type='button' title='Close' aria-label='Close' data-cjs-on-click='close_col' class='close_btn glyphicon glyphicon-remove'></button>" +
 					"{{/if}}" +
 				"</th>" +
 				"{{#if stateful}}" +
@@ -56,7 +59,7 @@
 
 				"<tr class='add_prop'>" +
 					"<td colspan='{{num_curr_values+1}}' class='add_prop'>" +
-						"<div class='add_prop' data-cjs-on-click=addProperty>Add Field</div>" +
+						"<button type='button' class='add_prop' data-cjs-on-click=addProperty>Add Field</button>" +
 					"</td>" +
 				"</tr>" +
 				"{{#if is_template}}" +
@@ -64,15 +67,15 @@
 						"<td></td>" +
 						"{{#if show_prev_value}}" +
 							"<td class='prev_copy' data-cjs-on-mouseover='prevMOver' data-cjs-on-mouseout='prevMOut' data-cjs-on-click='selectPrevClient'>" +
-								"<span class='glyphicon glyphicon-chevron-left'></span>" +
+								"<button type='button' aria-label='Previous copy' class='glyphicon glyphicon-chevron-left'></button>" +
 							"</td>" +
 						"{{/if}}" +
-						"<td class='curr_copy' data-cjs-on-mouseover='currMOver' data-cjs-on-mouseout='currMOut'>" +
+						"<td class='curr_copy' aria-live='polite' data-cjs-on-mouseover='currMOver' data-cjs-on-mouseout='currMOut'>" +
 							"copy {{curr_copy_index+1}} of {{num_instances}}" +
 						"</td>" +
 						"{{#if show_next_value}}" +
 							"<td class='next_copy' data-cjs-on-mouseover='nextMOver' data-cjs-on-mouseout='nextMOut' data-cjs-on-click='selectNextClient'>" +
-								"<span class='glyphicon glyphicon-chevron-right'></span>" +
+								"<button type='button' aria-label='Next copy' class='glyphicon glyphicon-chevron-right'></button>" +
 							"</td>" +
 						"{{/if}}" +
 					"</tr>" +
@@ -84,15 +87,15 @@
 
 			"{{#if adding_field&&is_curr_col}}" +
 				"<tr class='new_field'>" +
-					"<td class='name'><input placeholder='Field name' class='name' /></td>" +
+					"<td class='name'><input placeholder='Field name' aria-label='Field name' class='name' /></td>" +
 					"<td class='type'>" +
-						"<select class='type'>" + 
+						"<select class='type' aria-label='Field type'>" + 
 							"<option value='stateful'>Object</option>" +
 							"<option value='stateful_prop'>Property</option>" +
 						"</select>" + 
 					"</td>" +
 					"<td class='confirm_field'>" +
-						"<a href='javascript:void(0)'>OK</a>" +
+						"<button type='button' class='confirm_field'>OK</button>" +
 					"</td>" +
 				"</tr>" +
 			"{{/if}}" +
@@ -265,11 +268,21 @@
 			this._add_content_bindings();
 			this._add_class_bindings();
 
-			this.element.on("expand.on_child_select", _.bind(this.on_child_select, this));
+			this.element.on("expand.on_child_select", _.bind(this.on_child_select, this))
+						.on("contextmenu.header_menu", ".obj_name_label", _.bind(this.show_header_menu, this))
+						.on("keydown.header_menu", ".obj_name_label", _.bind(function(event) {
+							if(ist.keyboard.is_menu_key(event)) {
+								event.preventDefault();
+								event.stopPropagation();
+								this.show_header_menu();
+							}
+						}, this));
 		},
 		_destroy: function() {
 			var client = this.option("client");
 
+			this.hide_header_menu();
+			this.element.off(".header_menu .on_child_select");
 			this._remove_class_bindings();
 			this._remove_content_bindings();
 
@@ -405,6 +418,7 @@
 						if(child.name === this._just_added_prop_name) {
 							this._trigger_child_select(child.value);
 							delete this._just_added_prop_name;
+							_.defer(_.bind(this.focus_prop, this, child.name));
 							return;
 						}
 					}
@@ -422,10 +436,13 @@
 			this._class_binding = cjs.bindClass(this.element, "col",
 									this.$is_curr_col.iif("curr_col"),
 									this.$is_template.iif("template"));
+			// (Screen readers call the object's table by its name)
+			this._label_binding = cjs.bindAttr(this.element, "aria-label", this.$name);
 		},
 
 		_remove_class_bindings: function() {
 			this._class_binding.destroy();
+			this._label_binding.destroy();
 		},
 
 		_setOption: function(key, value) {
@@ -435,6 +452,51 @@
 			}
 		},
 
+		// What dragging the column does: pin it, or save it as a component
+		show_header_menu: function(event) {
+			if(event) {
+				event.preventDefault();
+				event.stopPropagation();
+			}
+			this.hide_header_menu();
+			var label = $(".obj_name_label", this.element).first(),
+				client = this.option("client"),
+				menu = $("<ul class='menu header_menu' />")	.css({ left: 0, top: "100%" })
+															.appendTo(label.closest("th"));
+			if(!this.option("pinned")) {
+				$("<li class='menu-item' />").text("Pin").appendTo(menu).on("click", _.bind(function() {
+					this.hide_header_menu();
+					$("#pinned").pinned("addClient", client);
+					ist.keyboard.announce("Pinned " + label.text());
+				}, this));
+			}
+			$("<li class='menu-item' />").text("Save as component").appendTo(menu).on("click", _.bind(function() {
+				this.hide_header_menu();
+				this.option("client_socket").post({
+					type: "save_component",
+					cobj_id: client.cobj_id
+				});
+				ist.keyboard.announce("Saved " + label.text() + " as a component");
+			}, this));
+			this._header_menu = menu;
+			$(window).on("mousedown.header_menu", _.bind(function(e) {
+				if(!$(e.target).closest(menu).length) {
+					this.hide_header_menu();
+				}
+			}, this));
+			ist.keyboard.menu(menu, {
+				items: "> li",
+				close: _.bind(this.hide_header_menu, this),
+				return_focus: label
+			});
+		},
+		hide_header_menu: function() {
+			if(this._header_menu) {
+				this._header_menu.remove();
+				delete this._header_menu;
+			}
+			$(window).off("mousedown.header_menu");
+		},
 		close_col: function(event) {
 			event.stopPropagation();
 			event.preventDefault();
@@ -466,6 +528,16 @@
 		_trigger_child_select: function(client) {
 			this.element.trigger("child_select", client);
 		},
+		// The row of the field called `name`
+		get_prop_row: function(name) {
+			return this.element.children("tbody").children("tr.child").filter(function() {
+				var prop = $(this).data("interstate-prop");
+				return prop && prop.option("name") === name;
+			}).first();
+		},
+		focus_prop: function(name) {
+			$(".prop_label", this.get_prop_row(name)).focus();
+		},
 		_add_property: function() {
 			var child_names = _.pluck(this.$children.get(), "name"),
 				default_name = "field_"+(child_names.length+1),
@@ -489,7 +561,7 @@
 												.select()
 												.focus();
 			var trigger_add_prop = _.bind(function() {
-					$('select.type,input', this.element).off('.addfield');
+					$('select.type,input,button.confirm_field', this.element).off('.addfield');
 					clearTimeout(onFormBlur);
 
 					var event = new $.Event("command");
@@ -506,11 +578,17 @@
 					this.$adding_field.set(false);
 				}, this),
 				cancel_add_prop = _.bind(function() {
-					$('select.type,input', this.element).off('.addfield');
+					$('select.type,input,button.confirm_field', this.element).off('.addfield');
 					this.$adding_field.set(false);
+					$("button.add_prop", this.element).focus();
 				}, this);
 			var onFormBlur;
-			$('select.type,input', this.element).on('blur.addfield', function(e) {
+			$('button.confirm_field', this.element).on('click.addfield', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				trigger_add_prop();
+			});
+			$('select.type,input,button.confirm_field', this.element).on('blur.addfield', function(e) {
 				e.preventDefault();
 				e.stopPropagation();
 				onFormBlur = setTimeout(function() {

@@ -119,6 +119,23 @@
 			this.label.on("change", this.forward_event, this);
 			this.$clickable = $([this.path[0], this.label.text[0]]);
 			this.$clickable.on("contextmenu.show", _.bind(this.show_menu, this));
+			// From the keyboard, Enter renames the state (or picks it, when choosing a state) and the
+			// context menu key shows its menu
+			this.label.option("edit_label", "State name");
+			this._keyboard_control = ist.keyboard.control(this.label.text[0], {
+				label: _.bind(function() {
+					return (this._selectable_callback ? "Choose " : "State ") + this.get_name() +
+							(this.option("state").is_active() ? " (active)" : "");
+				}, this),
+				activate: _.bind(function() {
+					if(this._selectable_callback) {
+						this._selectable_callback();
+					} else {
+						this.begin_rename();
+					}
+				}, this),
+				menu: true
+			});
 			if(state.parent_is_concurrent()) {
 				this.path.attr({
 					"stroke-dasharray": "- "
@@ -166,6 +183,9 @@
 					y: center.y,
 					text: name
 				});
+				if(this._keyboard_control) {
+					this._keyboard_control.update_label();
+				}
 				this.update_menu_position();
 				this.vline.attr({
 					path: "M" + center.x + "," + center.y + "V" + paper_height
@@ -195,7 +215,7 @@
 			var is_concurrent = this.option("state").is_concurrent();
 			var checkbox_mark = is_concurrent ? "&#x2612;" : "&#x2610;";
 			this.toggle_concurrency_item = $("<div />")	.addClass("menu_item")
-														.html("Concurrent " + checkbox_mark)
+														.html("Concurrent <span aria-hidden='true'>" + checkbox_mark + "</span>")
 														.on("click.menu_item", _.bind(this.on_toggle_concurrency_item_pressed, this));
 			this.toggle_breakpoint_item = $("<div />")	.addClass("menu_item")
 														.text("Add breakpoint")
@@ -221,9 +241,15 @@
 													width: width + "px"
 												})
 												.appendTo(parentElement);
+			this.toggle_concurrency_item.attr({ role: "menuitemcheckbox", "aria-checked": String(is_concurrent) });
 			var state = this.option("state");
 			$(window).on("mousedown.expanded_mousedown", _.bind(this.on_window_click_while_expanded, this));
 			$(window).on("keydown.expanded_keydown", _.bind(this.on_window_keydown_while_expanded, this));
+			ist.keyboard.menu(this.edit_dropdown, {
+				items: "> .menu_item",
+				close: _.bind(this.remove_edit_dropdown, this),
+				return_focus: this.label.text[0]
+			});
 		};
 		proto.add_transition_to_state = function(to_state) {
 			this._emit("add_transition", {
@@ -304,17 +330,6 @@
 			this._emit("toggle_breakpoint", {
 				state: my_state
 			});
-			if(this.togglebreakpoint.text() === "Add breakpoint") {
-				this.togglebreakpoint.text("Remove breakpoint");
-				this._emit("toggle_breakpoint", {
-					transition: my_transition
-				});
-			} else {
-				this.togglebreakpoint.text("Add breakpoint");
-				this._emit("toggle_breakpoint", {
-					transition: my_transition
-				});
-			}
 		};
 		proto.on_window_click_while_expanded = function(event) {
 			if(!$(event.target).parents().is(this.edit_dropdown)) {
@@ -426,6 +441,9 @@
 			}
 			this._selectable_callback = callback;
 			this.path.click(this._selectable_callback);
+			if(this._keyboard_control) {
+				this._keyboard_control.update_label();
+			}
 			var even = false;
 			var interval_time = 500;
 			this.change_color_interval = window.setInterval(_.bind(function() {
@@ -450,6 +468,9 @@
 			if(this._selectable_callback) {
 				this.path.unclick(this._selectable_callback);
 				delete this._selectable_callback;
+				if(this._keyboard_control) {
+					this._keyboard_control.update_label();
+				}
 			}
 			var state = this.option("state");
 			this.path.attr({
