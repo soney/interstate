@@ -1,4 +1,4 @@
-/* constraintjs v0.10.1 (https://soney.github.io/constraintjs/) | MIT License */
+/* constraintjs v0.10.2 (https://cjs.from.so/) | MIT License */
 var cjs = (function() {
 
 //#region src/scheduler.ts
@@ -2153,15 +2153,28 @@ var cjs = (function() {
 		});
 		let paused = false;
 		const runIfInvalid = () => {
-			if (pause_while_running) pause();
-			node.get();
-			if (pause_while_running) resume();
+			if (!pause_while_running) {
+				node.get();
+				return;
+			}
+			pause();
+			try {
+				node.get();
+			} catch (error) {
+				listen();
+				throw error;
+			}
+			resume();
 		};
 		const runSoon = () => {
-			if (!run_on_create) return;
+			if (!run_on_create || node.isValid()) return;
 			if (isBatching()) node._enqueueListeners();
 			else node.get(false);
 		};
+		function listen() {
+			paused = false;
+			node.onChangeWithPriority(priority, runIfInvalid);
+		}
 		function pause() {
 			if (paused) return false;
 			paused = true;
@@ -2170,12 +2183,11 @@ var cjs = (function() {
 		}
 		function resume() {
 			if (!paused) return false;
-			paused = false;
-			node.onChangeWithPriority(priority, runIfInvalid);
+			listen();
 			runSoon();
 			return true;
 		}
-		node.onChangeWithPriority(priority, runIfInvalid);
+		listen();
 		const liveFunction = {
 			destroy(silent) {
 				if (on_destroy) on_destroy.call(context, silent);
@@ -4208,9 +4220,9 @@ var cjs = (function() {
 		createTemplate,
 		createParsedConstraint,
 		/** The version of ConstraintJS. */
-		version: "0.10.1",
+		version: "0.10.2",
 		/** `"ConstraintJS v" + cjs.version` */
-		toString: () => `ConstraintJS v0.10.1`
+		toString: () => `ConstraintJS v0.10.2`
 	}, {
 		registerPartial(name, template) {
 			registerPartial(name, template);

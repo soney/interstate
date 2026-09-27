@@ -191,7 +191,17 @@
 		proto._get_valid_cobj_children = function() { return []; };
 
 		proto.update_cobj_children = function(recursive) {
+			// (Always end the batch, even if an expression throws: a batch that never ends holds
+			// every listener back)
 			cjs.wait();
+			try {
+				this._update_cobj_children(recursive);
+			} finally {
+				cjs.signal();
+			}
+		};
+
+		proto._update_cobj_children = function(recursive) {
 			var valid_children = this._get_valid_cobj_children(),
 				to_destroy = {},
 				to_initialize = [],
@@ -249,8 +259,6 @@
 			*/
 
 			this.updateAttachments();
-			
-			cjs.signal();
 		};
 
 		proto.get_or_put_cobj_child = function (obj, special_contexts, hash, options, avoid_initialization) {

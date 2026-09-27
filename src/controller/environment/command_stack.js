@@ -36,41 +36,52 @@
 			transient_stack = [];
 		};
 
+		// (Each of these always ends its batch, even if the command throws: a batch that never ends
+		// holds every listener back)
 		this._do = function(command, transient) {
 			cjs.wait();
-			command._do();
+			try {
+				command._do();
 
-			if(transient) {
-				transient_stack.push(command);
-			} else {
-				_add_to_stack.call(this, command);
+				if(transient) {
+					transient_stack.push(command);
+				} else {
+					_add_to_stack.call(this, command);
+				}
+			} finally {
+				cjs.signal();
 			}
-			cjs.signal();
 		};
 
 		this._undo = function() {
 			if (this.can_undo()) {
 				cjs.wait();
-				var last_command = stack[index];
-				last_command._undo();
-				index -= 1;
+				try {
+					var last_command = stack[index];
+					last_command._undo();
+					index -= 1;
 
-				this.$undo_description.invalidate();
-				this.$redo_description.invalidate();
-				cjs.signal();
+					this.$undo_description.invalidate();
+					this.$redo_description.invalidate();
+				} finally {
+					cjs.signal();
+				}
 			}
 		};
 
 		this._redo = function() {
 			if (this.can_redo()) {
 				cjs.wait();
-				var last_command = stack[index + 1];
-				last_command._do();
-				index += 1;
+				try {
+					var last_command = stack[index + 1];
+					last_command._do();
+					index += 1;
 
-				this.$undo_description.invalidate();
-				this.$redo_description.invalidate();
-				cjs.signal();
+					this.$undo_description.invalidate();
+					this.$redo_description.invalidate();
+				} finally {
+					cjs.signal();
+				}
 			}
 		};
 

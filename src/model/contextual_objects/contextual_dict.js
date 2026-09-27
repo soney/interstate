@@ -561,8 +561,15 @@
 
 			var manifestations = this.copies_obj();
 			if (manifestations instanceof ist.Cell) {
-				var constraint = manifestations.value_in_context(pointer);
-				return cjs.get(constraint);
+				// A copies expression that can't be evaluated (say, it uses a property that was renamed)
+				// means no copies, as an empty one does
+				var constraint;
+				try {
+					constraint = manifestations.value_in_context(pointer);
+					return cjs.get(constraint);
+				} catch (e) {
+					return undefined;
+				}
 				//return constraint.get();
 			/*
 				var manifestations_pointer = pointer.push(manifestations),
