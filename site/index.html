@@ -4,6 +4,9 @@
 		<title>InterState</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="icon" type="image/png" href="images/interstate_logo.png">
+		<link rel="stylesheet" href="vendor/bootstrap-3.1.0/css/bootstrap.min.css">
+		<link rel="stylesheet" href="interstate_www.css">
+		<link rel="stylesheet" href="font-awesome-4.1.0/css/font-awesome.min.css">
 	</head>
 	<body>
         <script>
@@ -11,28 +14,28 @@
           if (new URLSearchParams(location.search).has('open')) location.replace('build/index.html' + location.search + location.hash);
         </script>
 		<div class="container">
-			<div class="header row">
+			<header class="header row">
 				<div class="col-md-4">
 				</div>
 				<div class="col-md-8">
 					<h1>
-						<object height="50px" data="images/interstate_logo.svg" type="image/svg+xml" style="position: relative; top: 8px;">
-							<img height="50px" style="position:relative; top:-12px" src="images/interstate_logo.png" />
+						<object height="50px" data="images/interstate_logo.svg" type="image/svg+xml" style="position: relative; top: 8px;" aria-hidden="true" tabindex="-1">
+							<img height="50px" style="position:relative; top:-12px" src="images/interstate_logo.png" alt="" />
 						</object>
 						InterState
 					</h1>
 				</div>
-			</div>
-			<div class="row">
+			</header>
+			<main class="row">
 				<div class="col-sm-8 col-sm-push-4">
 					<p class="abstract"><em>InterState</em> is a programming language and environment that addresses the challenges of writing and reusing user interface code. InterState represents interactive behaviors clearly and concisely using a combination of novel forms of state machines and constraints. It also introduces new language features that allow programmers to easily modularize and reuse behaviors. InterState uses a new visual notation that allows programmers to better understand and navigate their code. InterState also includes a live editor that immediately updates the running application in response to changes in the editor and vice versa to help programmers understand the state of their program.</p>
 					<div class="embed-responsive embed-responsive-16by9">
-						<iframe src="https://www.youtube.com/embed/M--9jsuDZis" frameborder="0" allowfullscreen></iframe>
+						<iframe title="InterState demo video (YouTube)" src="https://www.youtube.com/embed/M--9jsuDZis" frameborder="0" allowfullscreen></iframe>
 					</div>
 				</div>
 				<div class="col-sm-4 col-sm-pull-8">
 					<a class="headline_link row" href="InterState_UIST14.pdf" target="_blank">
-						<i class="fa fa-file-pdf-o col-xs-3"></i>
+						<i aria-hidden="true" class="fa fa-file-pdf-o col-xs-3"></i>
 						<div class="col-xs-9">
 							<h3 class="">
 								Paper
@@ -41,7 +44,7 @@
 						</div>
 					</a>
 					<a class="headline_link row" href="build/tutorial/">
-						<i class="fa fa-info-circle col-xs-3"></i>
+						<i aria-hidden="true" class="fa fa-info-circle col-xs-3"></i>
 						<div class="col-xs-9">
 							<h3 class="">
 								Tutorial
@@ -50,7 +53,7 @@
 						</div>
 					</a>
 					<a class="headline_link row" href="https://github.com/soney/interstate" target="_blank">
-						<i class="fa fa-github col-xs-3"></i>
+						<i aria-hidden="true" class="fa fa-github col-xs-3"></i>
 						<div class="col-xs-9">
 							<h3 class="">
 								Source
@@ -85,18 +88,15 @@
 						</ul>
 					</div>
 				</div>
-			</div>
-			<div class="footer row">
+			</main>
+			<footer class="footer row">
 				<div class="col-md-4">
 					Tested in Chromium, Firefox, and WebKit
 				</div>
 				<div class="col-md-8">
 					Contact: <a href="https://from.so/">Stephen Oney</a>, <a target="_blank" href="https://www.cs.cmu.edu/~NatProg/">Natural Programming Project</a>
 				</div>
-			</div>
+			</footer>
 		</div>
 	</body>
-	<link rel="stylesheet" href="vendor/bootstrap-3.1.0/css/bootstrap.min.css">
-	<link rel="stylesheet" href="interstate_www.css">
-	<link rel="stylesheet" href="font-awesome-4.1.0/css/font-awesome.min.css">
 </html>

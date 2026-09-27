@@ -69,12 +69,26 @@ a.headline_link h3 {
 }
 
 .footer a {
-	color: #999;
+	color: #595959;
+	text-decoration: underline;
 }
 .comparisons {
 	font-size: 0.9em;
 	list-style: none;
 	padding-left: 5px;
+}
+/* Big enough to tap (WCAG 2.2 target size) */
+.comparisons a {
+	display: inline-block;
+	min-height: 24px;
+	line-height: 24px;
+}
+/* Links with enough contrast (WCAG AA) */
+a {
+	color: #2a6496;
+}
+a:hover, a:focus {
+	color: #1b4263;
 }
 
 /* Responsive video sizing, kept local alongside the Bootstrap 3.1 styles. */
