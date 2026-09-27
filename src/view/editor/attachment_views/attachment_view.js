@@ -31,7 +31,7 @@
 					diff = _.diff(old_attachment_types, attachmentTypesValue);
 
 				_.each(diff.removed, function(info) {
-					var item = info.item,
+					var item = info.from_item, // (removed items are listed as {from, from_item})
 						attachmentViewName = ist.attachmentViews[item];
 					this.element[attachmentViewName]("destroy");
 				}, this);
