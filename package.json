@@ -20,12 +20,12 @@
   "dependencies": {
     "ejs": "6.0.1",
     "express": "5.2.1",
-    "socket.io": "4.8.3"
+    "socket.io": "4.8.4"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
     "axe-core": "4.13.0",
-    "sass": "1.105.0",
+    "sass": "1.105.1",
     "terser": "5.51.2"
   },
   "engines": {
